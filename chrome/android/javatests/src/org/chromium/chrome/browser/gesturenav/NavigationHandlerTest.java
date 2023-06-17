@@ -173,19 +173,8 @@ public class NavigationHandlerTest {
     @Test
     @SmallTest
     public void testSwipeNavigateOnRenderedPage() {
-        FeatureList.setTestFeatures(Map.of(ChromeFeatureList.BACK_FORWARD_TRANSITIONS, false));
-        testSwipeNavigateOnRenderedPageInternal();
-    }
-
-    @Test
-    @SmallTest
-    @DisabledTest(message = "crbug.com/1426201")
-    public void testSwipeNavigateOnRenderedPage_withBackForwardTransition() {
-        FeatureList.setTestFeatures(Map.of(ChromeFeatureList.BACK_FORWARD_TRANSITIONS, true));
-        testSwipeNavigateOnRenderedPageInternal();
-    }
-
-    private void testSwipeNavigateOnRenderedPageInternal() {
+        // TODO(crbug.com/1426201): Write a test variation running with
+        //     ChromeFeatureList.BACK_FORWARD_TRANSITIONS enabled when the feature is completed.
         mTestServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
         mActivityTestRule.loadUrl(mTestServer.getURL(RENDERED_PAGE));
@@ -204,7 +193,6 @@ public class NavigationHandlerTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "crbug.com/1426201")
     public void testLeftEdgeSwipeClosesTabLaunchedFromLink_withBackForwardTransition() {
         FeatureList.setTestFeatures(Map.of(ChromeFeatureList.BACK_FORWARD_TRANSITIONS, true));
         testLeftEdgeSwipeClosesTabLaunchedFromLinkInternal();
@@ -303,13 +291,14 @@ public class NavigationHandlerTest {
     @Test
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @DisabledTest(message = "https://crbug.com/1435090")
     public void testSwipeAndHoldOnNtp_EnterTabSwitcher() throws TimeoutException {
         // Clicking tab switcher button while swiping and holding the gesture navigation
         // bubble should reset the state and dismiss the UI.
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         mNavUtils.swipeFromEdgeAndHold(/*leftEdge=*/true);
         setTabSwitcherModeAndWait(true);
-        CriteriaHelper.pollUiThread(() -> !mNavigationHandler.isActive());
+        Assert.assertFalse("Navigation UI should be reset.", mNavigationHandler.isActive());
     }
 
     /**

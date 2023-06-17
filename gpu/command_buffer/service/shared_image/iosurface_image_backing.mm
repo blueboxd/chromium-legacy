@@ -7,24 +7,24 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/trace_event/memory_dump_manager.h"
-#include "components/viz/common/gpu/dawn_context_provider.h"
 #include "components/viz/common/gpu/metal_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
+#include "gpu/command_buffer/service/dawn_context_provider.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/iosurface_image_backing_factory.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_format_service_utils.h"
 #include "gpu/command_buffer/service/shared_image/skia_graphite_dawn_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
-#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrContextThreadSafeProxy.h"
 #include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
 #include "third_party/skia/include/gpu/graphite/Recorder.h"
 #include "third_party/skia/include/gpu/graphite/Surface.h"
+#include "third_party/skia/include/private/chromium/GrPromiseImageTexture.h"
 #include "ui/gl/egl_surface_io_surface.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_display.h"
@@ -221,7 +221,7 @@ SkiaIOSurfaceRepresentation::SkiaIOSurfaceRepresentation(
     SharedImageBacking* backing,
     scoped_refptr<IOSurfaceBackingEGLState> egl_state,
     scoped_refptr<SharedContextState> context_state,
-    std::vector<sk_sp<SkPromiseImageTexture>> promise_textures,
+    std::vector<sk_sp<GrPromiseImageTexture>> promise_textures,
     MemoryTypeTracker* tracker)
     : SkiaGaneshImageRepresentation(context_state->gr_context(),
                                     manager,
@@ -301,7 +301,7 @@ std::vector<sk_sp<SkSurface>> SkiaIOSurfaceRepresentation::BeginWriteAccess(
   return surfaces;
 }
 
-std::vector<sk_sp<SkPromiseImageTexture>>
+std::vector<sk_sp<GrPromiseImageTexture>>
 SkiaIOSurfaceRepresentation::BeginWriteAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
@@ -333,7 +333,7 @@ void SkiaIOSurfaceRepresentation::EndWriteAccess() {
     egl_state_->EndAccess(/*readonly=*/false);
 }
 
-std::vector<sk_sp<SkPromiseImageTexture>>
+std::vector<sk_sp<GrPromiseImageTexture>>
 SkiaIOSurfaceRepresentation::BeginReadAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
@@ -966,7 +966,7 @@ IOSurfaceImageBacking::ProduceSkiaGanesh(
     MemoryTypeTracker* tracker,
     scoped_refptr<SharedContextState> context_state) {
   scoped_refptr<IOSurfaceBackingEGLState> egl_state;
-  std::vector<sk_sp<SkPromiseImageTexture>> promise_textures;
+  std::vector<sk_sp<GrPromiseImageTexture>> promise_textures;
 
   if (context_state->GrContextIsGL()) {
     egl_state = RetainGLTexture();
@@ -985,8 +985,8 @@ IOSurfaceImageBacking::ProduceSkiaGanesh(
         context_state->feature_info(), egl_state->GetGLTarget(), plane_size,
         egl_state->GetGLServiceId(plane_index), gl_texture_storage_format,
         context_state->gr_context()->threadSafeProxy(), &backend_texture);
-    sk_sp<SkPromiseImageTexture> promise_texture =
-        SkPromiseImageTexture::Make(backend_texture);
+    sk_sp<GrPromiseImageTexture> promise_texture =
+        GrPromiseImageTexture::Make(backend_texture);
     if (!promise_texture) {
       return nullptr;
     }

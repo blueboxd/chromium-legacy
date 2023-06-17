@@ -19,7 +19,6 @@ source_set("flags") {
     "//components/autofill/core/common",
     "//components/autofill/ios/browser",
     "//components/bookmarks/common",
-    "//components/breadcrumbs/core:feature_flags",
     "//components/commerce/core:feature_list",
     "//components/dom_distiller/core",
     "//components/download/public/background_service:public",
@@ -71,6 +70,7 @@ source_set("flags") {
     "//ios/chrome/browser/promos_manager:features",
     "//ios/chrome/browser/screen_time:buildflags",
     "//ios/chrome/browser/shared/public/features",
+    "//ios/chrome/browser/shared/public/features:system_flags",
     "//ios/chrome/browser/tabs:features",
     "//ios/chrome/browser/tabs/inactive_tabs:features",
     "//ios/chrome/browser/text_selection:text_selection_utils",
@@ -105,17 +105,6 @@ source_set("system_flags") {
   sources = [
     "chrome_switches.cc",
     "chrome_switches.h",
-    "system_flags.h",
-    "system_flags.mm",
-  ]
-  deps = [
-    "//base",
-    "//build:branding_buildflags",
-    "//components/autofill/core/common",
-    "//components/password_manager/core/common:features",
-    "//components/variations",
-    "//ios/chrome/browser/browsing_data:feature_flags",
-    "//ios/chrome/browser/shared/public/features",
   ]
 }
 
@@ -130,7 +119,7 @@ source_set("client_side") {
     "//components/metrics",
     "//components/variations",
     "//ios/chrome/app:tests_hook",
-    "//ios/chrome/browser/paths",
+    "//ios/chrome/browser/shared/model/paths",
     "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/ui/first_run:field_trial",
     "//ios/chrome/browser/ui/ntp:field_trial",

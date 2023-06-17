@@ -532,6 +532,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Net.CertVerifier.AndroidTrustStoreInit" units="ms"
+    expires_after="2024-02-01">
+  <owner>hchao@chromium.org</owner>
+  <owner>mattm@chromium.org</owner>
+  <summary>
+    Time needed to initialize the Android platform Trust store when using the
+    builtin certificate verifier on Android.
+  </summary>
+</histogram>
+
 <histogram name="Net.CertVerifier.InvalidRsaPssParams" enum="Boolean"
     expires_after="M101">
   <obsolete>
@@ -1068,24 +1078,24 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Net.DNS.DnsTransaction.Insecure.FailureTime"
-    units="ms" expires_after="2023-06-14">
+    units="ms" expires_after="2024-06-13">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
   <owner>awillia@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
+  <owner>src/net/dns/OWNERS</owner>
   <summary>
     Duration of time taken by an insecure DnsTransaction to fail.
   </summary>
 </histogram>
 
 <histogram base="true" name="Net.DNS.DnsTransaction.Insecure.SuccessTime"
-    units="ms" expires_after="2023-06-14">
+    units="ms" expires_after="2024-06-13">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
   <owner>awillia@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
+  <owner>src/net/dns/OWNERS</owner>
   <summary>
     Duration of time taken by an insecure DnsTransaction to succeed.
   </summary>
@@ -1093,12 +1103,12 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureNotValidated.FailureError"
-    enum="NetErrorCodes" expires_after="2023-06-14">
+    enum="NetErrorCodes" expires_after="2023-11-30">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
   <owner>awillia@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
+  <owner>src/net/dns/OWNERS</owner>
   <summary>
     Counts of specific error codes returned by secure DnsTransactions to a DoH
     server that is unavailable or has unknown availability. These transactions
@@ -1108,12 +1118,12 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureNotValidated.FailureTime" units="ms"
-    expires_after="2023-06-14">
+    expires_after="2023-11-30">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
   <owner>awillia@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
+  <owner>src/net/dns/OWNERS</owner>
   <summary>
     Duration of time taken by a secure DnsTransaction to a DoH server that is
     unavailable or has unknown availability to fail. These transactions may be
@@ -1123,12 +1133,12 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureNotValidated.SuccessTime" units="ms"
-    expires_after="2023-06-14">
+    expires_after="2023-11-30">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
   <owner>awillia@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
+  <owner>src/net/dns/OWNERS</owner>
   <summary>
     Duration of time taken by a secure DnsTransaction to a DoH server that is
     unavailable or has unknown availability to succeed. These transactions may
@@ -1138,12 +1148,12 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureValidated.FailureError"
-    enum="NetErrorCodes" expires_after="2023-06-14">
+    enum="NetErrorCodes" expires_after="2024-06-13">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
   <owner>awillia@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
+  <owner>src/net/dns/OWNERS</owner>
   <summary>
     Counts of specific error codes returned by secure DnsTransactions to an
     available DoH server. A DoH server is available if a probe has been
@@ -1154,12 +1164,12 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureValidated.FailureTime" units="ms"
-    expires_after="2023-06-14">
+    expires_after="2024-06-13">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
   <owner>awillia@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
+  <owner>src/net/dns/OWNERS</owner>
   <summary>
     Duration of time taken by a secure DnsTransaction to an available DoH server
     to fail. A DoH server is available if a probe has been successfully
@@ -1169,12 +1179,12 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Net.DNS.DnsTransaction.SecureValidated.SuccessTime" units="ms"
-    expires_after="2023-06-14">
+    expires_after="2024-06-13">
 <!-- Name completed by histogram_suffixes
    name="DohProviderId" -->
 
   <owner>awillia@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
+  <owner>src/net/dns/OWNERS</owner>
   <summary>
     Duration of time taken by a secure DnsTransaction to an available DoH server
     to succeed. A DoH server is available if a probe has been successfully
@@ -1512,63 +1522,6 @@ chromium-metrics-reviews@google.com.
     <variant name="AAAABeforeA" summary="AAAA resolved before A"/>
     <variant name="ABeforeAAAA" summary="A resolved before AAAA"/>
   </token>
-</histogram>
-
-<histogram name="Net.DNS.SecureDnsMode.Automatic.ResolveTime" units="ms"
-    expires_after="2023-11-19">
-  <owner>horo@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
-  <summary>
-    Duration of time taken by HostResolverManager::Job (the basic internal unit
-    of work for non-local host resolutions, potentially merging redundant
-    requests from Chrome) in resolutions for in AUTOMATIC secure DNS mode.
-    Excludes jobs where all requests are speculative.
-  </summary>
-</histogram>
-
-<histogram name="Net.DNS.SecureDnsMode.Off.ResolveTime" units="ms"
-    expires_after="2023-11-19">
-  <owner>horo@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
-  <summary>
-    Duration of time taken by HostResolverManager::Job (the basic internal unit
-    of work for non-local host resolutions, potentially merging redundant
-    requests from Chrome) in resolutions for in OFF secure DNS mode. Excludes
-    jobs where all requests are speculative.
-  </summary>
-</histogram>
-
-<histogram name="Net.DNS.SecureDnsMode.Secure.ResolveTime" units="ms"
-    expires_after="2023-11-19">
-  <owner>horo@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
-  <summary>
-    Duration of time taken by HostResolverManager::Job (the basic internal unit
-    of work for non-local host resolutions, potentially merging redundant
-    requests from Chrome) in resolutions for in SECURE secure DNS mode. Excludes
-    jobs where all requests are speculative.
-  </summary>
-</histogram>
-
-<histogram name="Net.DNS.SecureDnsTask.DnsModeAutomatic.FailureTime" units="ms"
-    expires_after="2023-06-14">
-  <owner>awillia@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
-  <summary>
-    Duration of time taken by a secure DnsTask in resolutions that failed that
-    were issued in AUTOMATIC mode. Excludes time spent in the subsequent
-    fallback.
-  </summary>
-</histogram>
-
-<histogram name="Net.DNS.SecureDnsTask.DnsModeSecure.FailureTime" units="ms"
-    expires_after="2023-09-07">
-  <owner>horo@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
-  <summary>
-    Duration of time taken by a secure DnsTask in resolutions that failed that
-    were issued in SECURE mode.
-  </summary>
 </histogram>
 
 <histogram name="Net.DNS.SystemTask.FailureTime" units="ms"
@@ -2353,6 +2306,16 @@ chromium-metrics-reviews@google.com.
   <owner>src/net/quic/OWNERS</owner>
   <summary>
     The status of the multi-port path when the client initiates the migration.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicConnection.ServerAllowsActiveMigrationForMultiPort"
+    enum="BooleanEnabled" expires_after="2024-04-03">
+  <owner>renjietang@chromium.org</owner>
+  <owner>src/net/OWNERS</owner>
+  <summary>
+    When multi-port is enabled, log whether the server allows active migration
+    that's required for multi-port
   </summary>
 </histogram>
 
@@ -4753,8 +4716,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Net.SharedDictionaryManagerOnDisk.DictionarySize"
-    units="bytes" expires_after="2023-12-01">
+<histogram name="Net.SharedDictionaryManagerOnDisk.DictionarySizeKB" units="KB"
+    expires_after="2023-12-01">
   <owner>horo@chromium.org</owner>
   <owner>src/net/extras/shared_dictionary/OWNERS</owner>
   <summary>
@@ -4798,7 +4761,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Net.SharedDictionaryManagerOnDisk.TotalDictionaryCountWhenAdded"
-    units="bytes" expires_after="2023-12-01">
+    units="count" expires_after="2023-12-01">
   <owner>horo@chromium.org</owner>
   <owner>src/net/extras/shared_dictionary/OWNERS</owner>
   <summary>
@@ -4809,14 +4772,36 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="Net.SharedDictionaryManagerOnDisk.TotalDictionarySizeWhenAdded"
-    units="bytes" expires_after="2023-12-01">
+    name="Net.SharedDictionaryManagerOnDisk.TotalDictionarySizeKBWhenAdded"
+    units="KB" expires_after="2023-12-01">
   <owner>horo@chromium.org</owner>
   <owner>src/net/extras/shared_dictionary/OWNERS</owner>
   <summary>
     The total size of shared dictionary on disk. Emitted when
     SharedDictionaryManagerOnDisk succeeded to store a dictionary in disk cache
     and database.
+  </summary>
+</histogram>
+
+<histogram name="Net.SharedDictionaryStore.DictionaryCountPerSiteWhenAdded"
+    units="count" expires_after="2023-12-01">
+  <owner>horo@chromium.org</owner>
+  <owner>src/net/extras/shared_dictionary/OWNERS</owner>
+  <summary>
+    The count of shared dictionary per top frame site on metadata. Emitted when
+    SQLitePersistentSharedDictionaryStore is writing a dictionary in the
+    database.
+  </summary>
+</histogram>
+
+<histogram name="Net.SharedDictionaryStore.DictionarySizeKBPerSiteWhenAdded"
+    units="KB" expires_after="2023-12-01">
+  <owner>horo@chromium.org</owner>
+  <owner>src/net/extras/shared_dictionary/OWNERS</owner>
+  <summary>
+    The size of shared dictionary per top frame site on metadata. Emitted when
+    SQLitePersistentSharedDictionaryStore is writing a dictionary in the
+    database.
   </summary>
 </histogram>
 
@@ -5001,6 +4986,15 @@ chromium-metrics-reviews@google.com.
   <owner>src/net/OWNERS</owner>
   <summary>
     The number of bytes that is pushed when the session is closed.
+  </summary>
+</histogram>
+
+<histogram name="Net.SpdySession.RstStreamReceived" enum="Http2WireErrorCodes"
+    expires_after="2024-04-03">
+  <owner>bashi@chromium.org</owner>
+  <owner>src/net/OWNERS</owner>
+  <summary>
+    Records the error code value received in each HTTP/2 RST_STREAM frame.
   </summary>
 </histogram>
 
@@ -5598,14 +5592,28 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Net.WebSocket.ErrorCodes" enum="NetErrorCodes"
+<histogram name="Net.WebSocket.ErrorCodes{Protocol}" enum="NetErrorCodes"
     expires_after="never">
 <!-- expires-never: needed for long-term tracking of ecosystem -->
 
-  <owner>yhirano@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
+  <owner>blink-network-stack@google.com</owner>
   <summary>
     Positive net error codes that WebSockets end with, including OK and ABORTED.
+  </summary>
+  <token key="Protocol">
+    <variant name="" summary="All protocols"/>
+    <variant name=".Http2" summary="HTTP/2"/>
+  </token>
+</histogram>
+
+<histogram name="Net.WebSocket.FallbackResult" enum="WebSocketFallbackResult"
+    expires_after="2023-12-16">
+  <owner>bashi@chromium.org</owner>
+  <owner>blink-network-stack@google.com</owner>
+  <summary>
+    Fallback result of WebSocket handshakes. Recorded when a WebSocket handshake
+    completed.
   </summary>
 </histogram>
 

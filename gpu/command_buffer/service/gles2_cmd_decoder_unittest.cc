@@ -23,12 +23,15 @@
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/config/gpu_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gpu_timing_fake.h"
 #include "ui/gl/scoped_make_current.h"
+
+#if BUILDFLAG(IS_OZONE)
+#include "gpu/command_buffer/service/shared_image/gl_image_native_pixmap.h"
+#endif
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "gpu/command_buffer/service/validating_abstract_texture_impl.h"
@@ -57,17 +60,6 @@ using ::testing::StrictMock;
 namespace gpu {
 namespace gles2 {
 
-namespace {
-
-class GLImageStub : public gl::GLImage {
- public:
-  GLImageStub() = default;
-
- private:
-  ~GLImageStub() override = default;
-};
-
-}  // namespace
 void GLES2DecoderRGBBackbufferTest::SetUp() {
   InitState init;
   init.bind_generates_resource = true;
@@ -268,7 +260,7 @@ TEST_P(GLES2DecoderTest, IsTexture) {
   EXPECT_FALSE(DoIsTexture(client_texture_id_));
 }
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_APPLE)
+#if BUILDFLAG(IS_OZONE)
 TEST_P(GLES2DecoderTest, TestImageBindingForDecoderManagement) {
   const GLuint service_id = 123;
   EXPECT_CALL(*gl_, GenTextures(1, _))
@@ -282,7 +274,8 @@ TEST_P(GLES2DecoderTest, TestImageBindingForDecoderManagement) {
                                           1,                    /* depth */
                                           0,                    /* border */
                                           GL_RGBA, GL_UNSIGNED_BYTE);
-  scoped_refptr<gl::GLImage> image(new GLImageStub);
+  scoped_refptr<gl::GLImage> image(
+      GLImageNativePixmap::CreateForTesting(gfx::Size(256, 256)));
 
   abstract_texture->SetBoundImage(image.get());
 
@@ -323,7 +316,8 @@ TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
   EXPECT_EQ(texture->min_filter(), static_cast<GLenum>(GL_LINEAR));
 
   // Attach an image and see if it works.
-  scoped_refptr<gl::GLImage> image(new GLImageStub);
+  scoped_refptr<gl::GLImage> image(
+      GLImageNativePixmap::CreateForTesting(gfx::Size()));
 
   abstract_texture->SetBoundImage(image.get());
 
@@ -345,7 +339,9 @@ TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
   abstract_texture.reset();
   EXPECT_TRUE(cleanup_flag);
 }
+#endif
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_APPLE)
 TEST_P(GLES2DecoderTest, AbstractTextureIsDestroyedWithDecoder) {
   // Deleting the decoder should delete the AbstractTexture's TextureRef.
   const GLuint service_id = 123;

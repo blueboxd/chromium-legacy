@@ -4,7 +4,7 @@
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
 
-import {InputDeviceSettingsProviderInterface, Keyboard, KeyboardObserverInterface, KeyboardSettings, MetaKey, ModifierKey, Mouse, MouseObserverInterface, MouseSettings, PointingStick, PointingStickObserverInterface, PointingStickSettings, Touchpad, TouchpadObserverInterface, TouchpadSettings} from './input_device_settings_types.js';
+import {GraphicsTablet, GraphicsTabletObserverInterface, InputDeviceSettingsProviderInterface, Keyboard, KeyboardObserverInterface, KeyboardSettings, MetaKey, ModifierKey, Mouse, MouseObserverInterface, MouseSettings, PointingStick, PointingStickObserverInterface, PointingStickSettings, Stylus, StylusObserverInterface, Touchpad, TouchpadObserverInterface, TouchpadSettings} from './input_device_settings_types.js';
 
 /**
  * @fileoverview
@@ -17,6 +17,8 @@ interface InputDeviceType {
   fakeTouchpads: Touchpad[];
   fakeMice: Mouse[];
   fakePointingSticks: PointingStick[];
+  fakeStyluses: Stylus[];
+  fakeGraphicsTablets: GraphicsTablet[];
 }
 
 class FakeMethodState {
@@ -79,6 +81,8 @@ export class FakeInputDeviceSettingsProvider implements
   private pointingStickObservers: PointingStickObserverInterface[] = [];
   private mouseObservers: MouseObserverInterface[] = [];
   private touchpadObservers: TouchpadObserverInterface[] = [];
+  private stylusObservers: StylusObserverInterface[] = [];
+  private graphicsTabletObservers: GraphicsTabletObserverInterface[] = [];
 
   constructor() {
     // Setup method resolvers.
@@ -86,6 +90,8 @@ export class FakeInputDeviceSettingsProvider implements
     this.methods.register('fakeTouchpads');
     this.methods.register('fakeMice');
     this.methods.register('fakePointingSticks');
+    this.methods.register('fakeStyluses');
+    this.methods.register('fakeGraphicsTablets');
   }
 
   setFakeKeyboards(keyboards: Keyboard[]): void {
@@ -124,7 +130,23 @@ export class FakeInputDeviceSettingsProvider implements
     return this.methods.resolveMethod('fakePointingSticks');
   }
 
-  restoreDefaultKeyboardModifierRemappings(id: number): void {
+  setFakeStyluses(styluses: Stylus[]): void {
+    this.methods.setResult('fakeStyluses', styluses);
+  }
+
+  getConnectedStylusSettings(): Promise<Stylus[]> {
+    return this.methods.resolveMethod('fakeStyluses');
+  }
+
+  setFakeGraphicsTablets(graphicsTablets: GraphicsTablet[]): void {
+    this.methods.setResult('fakeGraphicsTablets', graphicsTablets);
+  }
+
+  getConnectedGraphicsTabletSettings(): Promise<GraphicsTablet[]> {
+    return this.methods.resolveMethod('fakeGraphicsTablets');
+  }
+
+  restoreDefaultKeyboardRemappings(id: number): void {
     const keyboards = this.methods.getResult('fakeKeyboards');
     for (const keyboard of keyboards) {
       if (keyboard.id === id) {
@@ -211,6 +233,20 @@ export class FakeInputDeviceSettingsProvider implements
     }
   }
 
+  notifyStylusListUpdated(): void {
+    const styluses = this.methods.getResult('fakeStyluses');
+    for (const observer of this.stylusObservers) {
+      observer.onStylusListUpdated(styluses);
+    }
+  }
+
+  notifyGraphicsTabletUpdated(): void {
+    const graphicsTablets = this.methods.getResult('fakeGraphicsTablets');
+    for (const observer of this.graphicsTabletObservers) {
+      observer.onGraphicsTabletListUpdated(graphicsTablets);
+    }
+  }
+
   observeKeyboardSettings(observer: KeyboardObserverInterface): void {
     this.keyboardObservers.push(observer);
     this.notifyKeboardListUpdated();
@@ -229,5 +265,16 @@ export class FakeInputDeviceSettingsProvider implements
   observePointingStickSettings(observer: PointingStickObserverInterface): void {
     this.pointingStickObservers.push(observer);
     this.notifyPointingStickListUpdated();
+  }
+
+  observeStylusSettings(observer: StylusObserverInterface): void {
+    this.stylusObservers.push(observer);
+    this.notifyStylusListUpdated();
+  }
+
+  observeGraphicsTabletSettings(observer: GraphicsTabletObserverInterface):
+      void {
+    this.graphicsTabletObservers.push(observer);
+    this.notifyGraphicsTabletUpdated();
   }
 }

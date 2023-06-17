@@ -30,7 +30,6 @@
  parringen. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="1547295885616600893">ChromeOS er lavet ved hjælp af <ph name="BEGIN_LINK_CROS_OSS" />open source-software<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="1553358976309200471">Opdater Chrome</translation>
-<translation id="1555506416658437797">redigere betalingsmetoder.</translation>
 <translation id="1583073672411044740"><ph name="EXISTING_USER" /> er allerede logget ind på denne Chrome-profil. Denne handling vil oprette en ny Chrome-profil til <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1587223624401073077">Google Chrome bruger dit kamera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> er skadelig, så Chrome har blokeret den.</translation>
@@ -79,7 +78,6 @@
 <translation id="234869673307233423">Chrome kan ikke tjekke dine adgangskoder. Prøv igen senere.</translation>
 <translation id="235650106824528204">Alle Chrome-data, der genereres ved brug af denne profil (f.eks. oprettelse af bogmærker, historik, adgangskoder og andre indstillinger) kan fjernes af arbejdsprofilens administrator. <ph name="LEARN_MORE" /></translation>
 <translation id="2359808026110333948">Fortsæt</translation>
-<translation id="2399868464369312507">Google Chrome forsøger at redigere betalingsmetoder.</translation>
 <translation id="2401189691232800402">ChromeOS-system</translation>
 <translation id="2424440923901031101">Denne udvidelse overtræder politikken for Chrome Webshop og er muligvis ikke sikker. Fjern den fra Chrome, så den ikke længere kan se og ændre dine data på de websites, du besøger, herunder dine personlige oplysninger.</translation>
 <translation id="2467438592969358367">Google Chrome anmoder om at eksportere dine adgangskoder. Angiv din Windows-adgangskode for at tillade dette.</translation>
@@ -253,7 +251,6 @@
 <translation id="5756509061973259733">Der findes allerede en Chrome-profil med denne konto på enheden</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome kunne ikke startes. Prøv igen.</translation>
-<translation id="585620188971323280">at ændre indstillingerne for udfyldning af betalingsmetoder.</translation>
 <translation id="5895138241574237353">Genstart</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – Login på netværk</translation>
 <translation id="5924017743176219022">Opretter forbindelse til internettet…</translation>
@@ -284,6 +281,7 @@
 <translation id="6327105987658262776">Der er ingen opdatering tilgængelig.</translation>
 <translation id="6360449101159168105">Mens denne fane var inaktiv, blev der frigjort hukommelse for at sikre, at Chrome kører hurtigt. Du kan vælge, at dette website altid skal være inaktivt.</translation>
 <translation id="6412673304250309937">Tjekker webadresser ift. en liste over usikre websites, der er gemt i Chrome. Hvis et website forsøger at stjæle din adgangskode, eller når du downloader en skadelig fil, sender Chrome muligvis også webadresser, bl.a. mindre mængder sideindhold, til Beskyttet browsing.</translation>
+<translation id="6417690341895039567">{COUNT,plural, =1{Din organisation lukker automatisk Chrome, når den ikke bruges i 1 minut. Browserdataene slettes. Disse kan omfatte historik, autofyld og downloads.}one{Din organisation lukker automatisk Chrome, når den ikke bruges i # minut. Browserdataene slettes. Disse kan omfatte historik, autofyld og downloads.}other{Din organisation lukker automatisk Chrome, når den ikke bruges i # minutter. Browserdataene slettes. Disse kan omfatte historik, autofyld og downloads.}}</translation>
 <translation id="6418662306461808273">Vil du skifte til den eksisterende Chrome-profil?</translation>
 <translation id="648319183876919572">Udvidet beskyttet browsing gør mere for at beskytte dig mod skadelige websites og downloads</translation>
 <translation id="6493527311031785448">Google Chrome forsøger at <ph name="AUTHENTICATION_PURPOSE" /></translation>
@@ -333,6 +331,7 @@ De tilladelser, du har givet til websites og apps, gælder muligvis for denne ko
 <translation id="7398801000654795464">Du loggede ind i Chrome som <ph name="USER_EMAIL_ADDRESS" />. Brug den samme konto til at logge ind igen.</translation>
 <translation id="7410958280246779049">Chrome har blokeret denne fil, fordi den er skadelig</translation>
 <translation id="7426611252293106642">Google Chrome fungerer muligvis ikke korrekt, da det ikke længere understøttes af denne Linux-distribution</translation>
+<translation id="7449333426561673451">{COUNT,plural, =1{Din organisation lukker automatisk Chrome, når den ikke bruges i 1 minut.}one{Din organisation lukker automatisk Chrome, når den ikke bruges i # minut.}other{Din organisation lukker automatisk Chrome, når den ikke bruges i # minutter.}}</translation>
 <translation id="7481213027396403996">Få Chromes stærkeste beskyttelse</translation>
 <translation id="7535429826459677826">Udviklerversionen af Chrome</translation>
 <translation id="7583399374488819119">Installationsprogram til <ph name="COMPANY_NAME" /></translation>
@@ -367,6 +366,7 @@ De tilladelser, du har givet til websites og apps, gælder muligvis for denne ko
 <translation id="8013993649590906847">Hvis et billede ikke har en brugbar beskrivelse, forsøger Chrome at angive en for dig. Billederne sendes til Google, så der kan oprettes beskrivelser.</translation>
 <translation id="8019103195866286235">Udgivelsen af denne udvidelse blev fjernet af dens udvikler og er muligvis ikke sikker. Fjern den fra Chrome, så den ikke længere kan se og ændre dine data på de websites, du besøger, herunder dine personlige oplysninger.</translation>
 <translation id="80471789339884597">Tak for installationen. Du skal genstarte alle dine browsere, før du bruger <ph name="BUNDLE_NAME" />.</translation>
+<translation id="8057070436257749375">{COUNT,plural, =1{Din organisation sletter automatisk browserdata, når Chrome ikke bruges i 1 minut. Disse kan omfatte historik, autofyld og downloads. Dine eksisterende faner forbliver åbne.}one{Din organisation sletter automatisk browserdata, når Chrome ikke bruges i # minut. Disse kan omfatte historik, autofyld og downloads. Dine eksisterende faner forbliver åbne.}other{Din organisation sletter automatisk browserdata, når Chrome ikke bruges i # minutter. Disse kan omfatte historik, autofyld og downloads. Dine eksisterende faner forbliver åbne.}}</translation>
 <translation id="8064015586118426197">ChromeOS Flex</translation>
 <translation id="8129812357326543296">Om &amp;Google Chrome</translation>
 <translation id="813913629614996137">Initialiserer...</translation>
@@ -390,7 +390,6 @@ De tilladelser, du har givet til websites og apps, gælder muligvis for denne ko
 <translation id="8504220326736535258">Chrome har blokeret denne fil, fordi den har malware</translation>
 <translation id="8516431725144212809">Dine interesser, som de er estimeret af Chrome</translation>
 <translation id="8521348052903287641">Indgående regel for udviklerversionen af Chrome om at tillade mDNS-trafik.</translation>
-<translation id="8544217240017914508">Google Chrome forsøger at ændre indstillinger for udfyldning af betalingsmetoder.</translation>
 <translation id="8550334526674375523">Denne arbejdsprofil er totalt adskilt fra din personlige profile.</translation>
 <translation id="8556340503434111824">Der findes en ny version af Google Chrome, som er hurtigere end nogensinde før.</translation>
 <translation id="8571790202382503603">Du kan organisere alle dine ting i Chrome ved hjælp af Chrome-profiler. Når du har flere profiler, kan du nemmere adskille arbejde og fornøjelse.</translation>

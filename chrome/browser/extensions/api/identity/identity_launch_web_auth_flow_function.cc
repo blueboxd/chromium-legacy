@@ -34,6 +34,8 @@ IdentityLaunchWebAuthFlowFunction::Error WebAuthFlowFailureToError(
       return IdentityLaunchWebAuthFlowFunction::Error::kPageLoadFailure;
     case WebAuthFlow::TIMED_OUT:
       return IdentityLaunchWebAuthFlowFunction::Error::kPageLoadTimedOut;
+    case WebAuthFlow::CANNOT_CREATE_WINDOW:
+      return IdentityLaunchWebAuthFlowFunction::Error::kCannotCreateWindow;
     default:
       NOTREACHED() << "Unexpected error from web auth flow: " << failure;
       return IdentityLaunchWebAuthFlowFunction::Error::kUnexpectedError;
@@ -58,6 +60,8 @@ std::string ErrorToString(IdentityLaunchWebAuthFlowFunction::Error error) {
       return identity_constants::kInvalidRedirect;
     case IdentityLaunchWebAuthFlowFunction::Error::kPageLoadTimedOut:
       return identity_constants::kPageLoadTimedOut;
+    case IdentityLaunchWebAuthFlowFunction::Error::kCannotCreateWindow:
+      return identity_constants::kCannotCreateWindow;
   }
 }
 
@@ -122,7 +126,8 @@ ExtensionFunction::ResponseAction IdentityLaunchWebAuthFlowFunction::Run() {
 
   auth_flow_ = std::make_unique<WebAuthFlow>(
       this, profile, auth_url, mode, WebAuthFlow::LAUNCH_WEB_AUTH_FLOW,
-      abort_on_load_for_non_interactive, timeout_for_non_interactive);
+      user_gesture(), abort_on_load_for_non_interactive,
+      timeout_for_non_interactive);
   // An extension might call `launchWebAuthFlow()` with any URL. Add an infobar
   // to attribute displayed URL to the extension.
   auth_flow_->SetShouldShowInfoBar(extension()->name());

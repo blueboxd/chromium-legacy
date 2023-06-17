@@ -67,6 +67,7 @@
 #include "content/public/common/url_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -177,7 +178,6 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::FEDERATED_IDENTITY_ACTIVE_SESSION, nullptr},
     {ContentSettingsType::AUTO_DARK_WEB_CONTENT, nullptr},
     {ContentSettingsType::REQUEST_DESKTOP_SITE, nullptr},
-    {ContentSettingsType::GET_DISPLAY_MEDIA_SET_SELECT_ALL_SCREENS, nullptr},
     {ContentSettingsType::NOTIFICATION_INTERACTIONS, nullptr},
     {ContentSettingsType::REDUCED_ACCEPT_LANGUAGE, nullptr},
     {ContentSettingsType::NOTIFICATION_PERMISSION_REVIEW, nullptr},
@@ -194,6 +194,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::FEDERATED_IDENTITY_IDENTITY_PROVIDER_REGISTRATION,
      nullptr},
     {ContentSettingsType::THIRD_PARTY_STORAGE_PARTITIONING, nullptr},
+    {ContentSettingsType::ALL_SCREEN_CAPTURE, nullptr},
 };
 
 static_assert(std::size(kContentSettingsTypeGroupNames) ==
@@ -571,7 +572,7 @@ const std::vector<ContentSettingsType>& GetVisiblePermissionCategories() {
     }
 
     if (base::FeatureList::IsEnabled(
-            blink::features::kPrivateNetworkAccessPermissionPrompt)) {
+            network::features::kPrivateNetworkAccessPermissionPrompt)) {
       base_types->push_back(ContentSettingsType::PRIVATE_NETWORK_GUARD);
     }
 
@@ -885,7 +886,8 @@ ContentSetting GetContentSettingForOrigin(Profile* profile,
   *source_string = SiteSettingSourceToString(
       CalculateSiteSettingSource(profile, content_type, origin, info, result));
 
-  if (info.metadata.session_model == content_settings::SessionModel::OneTime) {
+  if (info.metadata.session_model() ==
+      content_settings::SessionModel::OneTime) {
     DCHECK(
         permissions::PermissionUtil::CanPermissionBeAllowedOnce(content_type));
     DCHECK_EQ(result.content_setting, CONTENT_SETTING_ALLOW);

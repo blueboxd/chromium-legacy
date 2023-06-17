@@ -88,22 +88,6 @@ class ScopedFramebufferBindingReset {
   GLint read_framebuffer_;
 };
 
-class ScopedRenderbufferBindingReset {
- public:
-  explicit ScopedRenderbufferBindingReset(gl::GLApi* api)
-      : api_(api), renderbuffer_(0) {
-    api_->glGetIntegervFn(GL_RENDERBUFFER_BINDING, &renderbuffer_);
-  }
-
-  ~ScopedRenderbufferBindingReset() {
-    api_->glBindRenderbufferEXTFn(GL_RENDERBUFFER, renderbuffer_);
-  }
-
- private:
-  raw_ptr<gl::GLApi> api_;
-  GLint renderbuffer_;
-};
-
 class ScopedTextureBindingReset {
  public:
   // |texture_target| only supports GL_TEXTURE_2D, GL_TEXTURE_EXTERNAL_OES, and
@@ -208,20 +192,6 @@ bool GetClientID(const ClientServiceMap<ClientType, ServiceType>* map,
   }
   *result = static_cast<ResultType>(client_id);
   return true;
-}
-
-void ResizeRenderbuffer(const GLES2DecoderPassthroughImpl* impl,
-                        GLuint renderbuffer,
-                        const gfx::Size& size,
-                        GLenum internal_format) {
-  gl::GLApi* api = impl->api();
-  GLES2DecoderPassthroughImpl::ScopedPixelLocalStorageInterrupt
-      scoped_pls_interrupt(impl);
-  ScopedRenderbufferBindingReset scoped_renderbuffer_reset(api);
-
-  api->glBindRenderbufferEXTFn(GL_RENDERBUFFER, renderbuffer);
-  api->glRenderbufferStorageEXTFn(GL_RENDERBUFFER, internal_format,
-                                  size.width(), size.height());
 }
 
 void RequestExtensions(gl::GLApi* api,
@@ -595,11 +565,26 @@ GLES2DecoderPassthroughImpl::BufferShadowUpdate&
 GLES2DecoderPassthroughImpl::BufferShadowUpdate::operator=(
     BufferShadowUpdate&&) = default;
 
-GLES2DecoderPassthroughImpl::EmulatedColorBuffer::EmulatedColorBuffer(
-    const GLES2DecoderPassthroughImpl* impl)
-    : impl_(impl) {
+GLES2DecoderPassthroughImpl::EmulatedDefaultFramebuffer::
+    EmulatedDefaultFramebuffer(const GLES2DecoderPassthroughImpl* impl)
+    : impl_(impl) {}
+
+GLES2DecoderPassthroughImpl::EmulatedDefaultFramebuffer::
+    ~EmulatedDefaultFramebuffer() = default;
+
+bool GLES2DecoderPassthroughImpl::EmulatedDefaultFramebuffer::Initialize(
+    const gfx::Size& size) {
+  DCHECK(!size.IsEmpty());
+
   ScopedPixelLocalStorageInterrupt scoped_pls_interrupt(impl_);
+  ScopedFramebufferBindingReset scoped_fbo_reset(
+      api(), impl_->supports_separate_fbo_bindings_);
   ScopedTextureBindingReset scoped_texture_reset(api(), GL_TEXTURE_2D);
+
+  api()->glGenFramebuffersEXTFn(1, &framebuffer_service_id);
+  api()->glBindFramebufferEXTFn(GL_FRAMEBUFFER, framebuffer_service_id);
+
+  const auto format = impl_->emulated_default_framebuffer_format_;
 
   GLuint color_buffer_texture = 0;
   api()->glGenTexturesFn(1, &color_buffer_texture);
@@ -608,191 +593,23 @@ GLES2DecoderPassthroughImpl::EmulatedColorBuffer::EmulatedColorBuffer(
   api()->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   api()->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   api()->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  api()->glTexImage2DFn(GL_TEXTURE_2D, 0, format, size.width(), size.height(),
+                        0, format, GL_UNSIGNED_BYTE, nullptr);
+
   texture = new TexturePassthrough(color_buffer_texture, GL_TEXTURE_2D);
-}
-
-GLES2DecoderPassthroughImpl::EmulatedColorBuffer::~EmulatedColorBuffer() =
-    default;
-
-void GLES2DecoderPassthroughImpl::EmulatedColorBuffer::Resize(
-    const gfx::Size& new_size) {
-  if (size == new_size) {
-    return;
-  }
-  size = new_size;
-
-  ScopedPixelLocalStorageInterrupt scoped_pls_interrupt(impl_);
-  ScopedTextureBindingReset scoped_texture_reset(api(), GL_TEXTURE_2D);
-
-  DCHECK(texture);
-  DCHECK(texture->target() == GL_TEXTURE_2D);
-
-  const EmulatedDefaultFramebufferFormat& format =
-      impl_->emulated_default_framebuffer_format_;
-  api()->glBindTextureFn(texture->target(), texture->service_id());
-  api()->glTexImage2DFn(texture->target(), 0,
-                        format.color_texture_internal_format, size.width(),
-                        size.height(), 0, format.color_texture_format,
-                        format.color_texture_type, nullptr);
   UpdateBoundTexturePassthroughSize(api(), texture.get());
-}
 
-void GLES2DecoderPassthroughImpl::EmulatedColorBuffer::Destroy(
-    bool have_context) {
-  if (!have_context) {
-    texture->MarkContextLost();
-  }
-  texture = nullptr;
-}
-
-GLES2DecoderPassthroughImpl::EmulatedDefaultFramebuffer::
-    EmulatedDefaultFramebuffer(const GLES2DecoderPassthroughImpl* impl)
-    : impl_(impl) {
-  ScopedPixelLocalStorageInterrupt scoped_pls_interrupt(impl_);
-  ScopedFramebufferBindingReset scoped_fbo_reset(
-      api(), impl_->supports_separate_fbo_bindings_);
-  ScopedRenderbufferBindingReset scoped_renderbuffer_reset(api());
-
-  api()->glGenFramebuffersEXTFn(1, &framebuffer_service_id);
-  api()->glBindFramebufferEXTFn(GL_FRAMEBUFFER, framebuffer_service_id);
-
-  const EmulatedDefaultFramebufferFormat& format =
-      impl_->emulated_default_framebuffer_format_;
-  color_texture = std::make_unique<EmulatedColorBuffer>(impl_);
   api()->glFramebufferTexture2DEXTFn(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                     GL_TEXTURE_2D,
-                                     color_texture->texture->service_id(), 0);
-
-  if (format.depth_stencil_internal_format != GL_NONE) {
-    DCHECK(format.depth_internal_format == GL_NONE &&
-           format.stencil_internal_format == GL_NONE);
-    api()->glGenRenderbuffersEXTFn(1, &depth_stencil_buffer_service_id);
-    api()->glBindRenderbufferEXTFn(GL_RENDERBUFFER,
-                                   depth_stencil_buffer_service_id);
-    if (impl_->feature_info_->gl_version_info().IsAtLeastGLES(3, 0) ||
-        impl_->features().angle_webgl_compatibility) {
-      api()->glFramebufferRenderbufferEXTFn(
-          GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
-          depth_stencil_buffer_service_id);
-    } else {
-      api()->glFramebufferRenderbufferEXTFn(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                                            GL_RENDERBUFFER,
-                                            depth_stencil_buffer_service_id);
-      api()->glFramebufferRenderbufferEXTFn(
-          GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
-          depth_stencil_buffer_service_id);
-    }
-  } else {
-    if (format.depth_internal_format != GL_NONE) {
-      api()->glGenRenderbuffersEXTFn(1, &depth_buffer_service_id);
-      api()->glBindRenderbufferEXTFn(GL_RENDERBUFFER, depth_buffer_service_id);
-      api()->glFramebufferRenderbufferEXTFn(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                                            GL_RENDERBUFFER,
-                                            depth_buffer_service_id);
-    }
-
-    if (format.stencil_internal_format != GL_NONE) {
-      api()->glGenRenderbuffersEXTFn(1, &stencil_buffer_service_id);
-      api()->glBindRenderbufferEXTFn(GL_RENDERBUFFER,
-                                     stencil_buffer_service_id);
-      api()->glFramebufferRenderbufferEXTFn(
-          GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
-          stencil_buffer_service_id);
-    }
-  }
-}
-
-GLES2DecoderPassthroughImpl::EmulatedDefaultFramebuffer::
-    ~EmulatedDefaultFramebuffer() = default;
-
-std::unique_ptr<GLES2DecoderPassthroughImpl::EmulatedColorBuffer>
-GLES2DecoderPassthroughImpl::EmulatedDefaultFramebuffer::SetColorBuffer(
-    std::unique_ptr<EmulatedColorBuffer> new_color_buffer) {
-  DCHECK(color_texture != nullptr);
-  DCHECK(new_color_buffer != nullptr);
-  DCHECK_EQ(color_texture->size, new_color_buffer->size);
-  std::unique_ptr<EmulatedColorBuffer> old_buffer(std::move(color_texture));
-  color_texture = std::move(new_color_buffer);
-
-  // Bind the new texture to this FBO
-  ScopedPixelLocalStorageInterrupt scoped_pls_interrupt(impl_);
-  ScopedFramebufferBindingReset scoped_fbo_reset(
-      api(), impl_->supports_separate_fbo_bindings_);
-  api()->glBindFramebufferEXTFn(GL_FRAMEBUFFER, framebuffer_service_id);
-  api()->glFramebufferTexture2DEXTFn(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                     GL_TEXTURE_2D,
-                                     color_texture->texture->service_id(), 0);
-
-  return old_buffer;
-}
-
-void GLES2DecoderPassthroughImpl::EmulatedDefaultFramebuffer::Blit(
-    EmulatedColorBuffer* target) {
-  DCHECK(target != nullptr);
-  DCHECK_EQ(target->size, size);
-
-  ScopedPixelLocalStorageInterrupt scoped_pls_interrupt(impl_);
-  ScopedFramebufferBindingReset scoped_fbo_reset(
-      api(), impl_->supports_separate_fbo_bindings_);
-
-  api()->glBindFramebufferEXTFn(GL_READ_FRAMEBUFFER, framebuffer_service_id);
-
-  GLuint temp_fbo;
-  api()->glGenFramebuffersEXTFn(1, &temp_fbo);
-  api()->glBindFramebufferEXTFn(GL_DRAW_FRAMEBUFFER, temp_fbo);
-  api()->glFramebufferTexture2DEXTFn(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                     GL_TEXTURE_2D,
-                                     target->texture->service_id(), 0);
-
-  api()->glBlitFramebufferFn(0, 0, size.width(), size.height(), 0, 0,
-                             target->size.width(), target->size.height(),
-                             GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-  api()->glDeleteFramebuffersEXTFn(1, &temp_fbo);
-}
-
-bool GLES2DecoderPassthroughImpl::EmulatedDefaultFramebuffer::Resize(
-    const gfx::Size& new_size) {
-  DCHECK(!new_size.IsEmpty());
-  if (size == new_size) {
-    return true;
-  }
-  size = new_size;
-
-  const EmulatedDefaultFramebufferFormat& format =
-      impl_->emulated_default_framebuffer_format_;
-  if (color_texture) {
-    color_texture->Resize(size);
-  }
-  if (depth_stencil_buffer_service_id != 0) {
-    ResizeRenderbuffer(impl_, depth_stencil_buffer_service_id, size,
-                       format.depth_stencil_internal_format);
-  }
-  if (depth_buffer_service_id != 0) {
-    ResizeRenderbuffer(impl_, depth_buffer_service_id, size,
-                       format.depth_internal_format);
-  }
-  if (stencil_buffer_service_id != 0) {
-    ResizeRenderbuffer(impl_, stencil_buffer_service_id, size,
-                       format.stencil_internal_format);
-  }
+                                     GL_TEXTURE_2D, texture->service_id(), 0);
 
   // Check that the framebuffer is complete
-  {
-    ScopedPixelLocalStorageInterrupt scoped_pls_interrupt(impl_);
-    ScopedFramebufferBindingReset scoped_fbo_reset(
-        api(), impl_->supports_separate_fbo_bindings_);
-    api()->glBindFramebufferEXTFn(GL_FRAMEBUFFER, framebuffer_service_id);
-    if (api()->glCheckFramebufferStatusEXTFn(GL_FRAMEBUFFER) !=
-        GL_FRAMEBUFFER_COMPLETE) {
-      LOG(ERROR)
-          << "GLES2DecoderPassthroughImpl::ResizeOffscreenFramebuffer failed "
-          << "because the resulting framebuffer was not complete.";
-      return false;
-    }
+  if (api()->glCheckFramebufferStatusEXTFn(GL_FRAMEBUFFER) !=
+      GL_FRAMEBUFFER_COMPLETE) {
+    LOG(ERROR)
+        << "GLES2DecoderPassthroughImpl::ResizeOffscreenFramebuffer failed "
+        << "because the resulting framebuffer was not complete.";
+    return false;
   }
-
-  DCHECK(color_texture == nullptr || color_texture->size == size);
 
   return true;
 }
@@ -802,19 +619,10 @@ void GLES2DecoderPassthroughImpl::EmulatedDefaultFramebuffer::Destroy(
   if (have_context) {
     api()->glDeleteFramebuffersEXTFn(1, &framebuffer_service_id);
     framebuffer_service_id = 0;
-
-    api()->glDeleteRenderbuffersEXTFn(1, &depth_stencil_buffer_service_id);
-    depth_stencil_buffer_service_id = 0;
-
-    api()->glDeleteRenderbuffersEXTFn(1, &depth_buffer_service_id);
-    depth_buffer_service_id = 0;
-
-    api()->glDeleteRenderbuffersEXTFn(1, &stencil_buffer_service_id);
-    stencil_buffer_service_id = 0;
+  } else {
+    texture->MarkContextLost();
   }
-  if (color_texture) {
-    color_texture->Destroy(have_context);
-  }
+  texture = nullptr;
 }
 
 GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(
@@ -1205,11 +1013,8 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
 #else
     const bool alpha_channel_requested = false;
 #endif
-    emulated_default_framebuffer_format_.color_texture_internal_format =
+    emulated_default_framebuffer_format_ =
         alpha_channel_requested ? GL_RGBA : GL_RGB;
-    emulated_default_framebuffer_format_.color_texture_format =
-        emulated_default_framebuffer_format_.color_texture_internal_format;
-    emulated_default_framebuffer_format_.color_texture_type = GL_UNSIGNED_BYTE;
 
     CheckErrorCallbackState();
     emulated_back_buffer_ = std::make_unique<EmulatedDefaultFramebuffer>(this);
@@ -1219,9 +1024,11 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
     // devices), there are driver limitations on the minimum size of a buffer.
     // Thus, we set the initial size to 64x64 here instead of 1x1.
     gfx::Size initial_size(
-        std::max(64, attrib_helper.offscreen_framebuffer_size.width()),
-        std::max(64, attrib_helper.offscreen_framebuffer_size.height()));
-    if (!emulated_back_buffer_->Resize(initial_size)) {
+        std::max(64,
+                 attrib_helper.offscreen_framebuffer_size_for_testing.width()),
+        std::max(
+            64, attrib_helper.offscreen_framebuffer_size_for_testing.height()));
+    if (!emulated_back_buffer_->Initialize(initial_size)) {
       bool was_lost = CheckResetStatus();
       Destroy(true);
       LOG(ERROR) << (was_lost ? "ContextResult::kTransientFailure: "
@@ -1247,8 +1054,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
     // Bind the emulated default framebuffer and initialize the viewport
     api()->glBindFramebufferEXTFn(
         GL_FRAMEBUFFER, emulated_back_buffer_->framebuffer_service_id);
-    api()->glViewportFn(0, 0, attrib_helper.offscreen_framebuffer_size.width(),
-                        attrib_helper.offscreen_framebuffer_size.height());
+    api()->glViewportFn(0, 0, initial_size.width(), initial_size.height());
   }
 
   // Initialize the tracked scissor and viewport state and then apply the
@@ -1493,46 +1299,6 @@ void GLES2DecoderPassthroughImpl::SetDefaultFramebufferSharedImage(
   }
 }
 
-bool GLES2DecoderPassthroughImpl::ResizeOffscreenFramebuffer(
-    const gfx::Size& size) {
-  DCHECK(offscreen_);
-  if (!emulated_back_buffer_) {
-    LOG(ERROR)
-        << "GLES2DecoderPassthroughImpl::ResizeOffscreenFramebuffer called "
-        << " with an onscreen framebuffer.";
-    return false;
-  }
-
-  if (emulated_back_buffer_->size == size) {
-    return true;
-  }
-
-  if (size.width() < 0 || size.height() < 0 ||
-      size.width() > max_offscreen_framebuffer_size_ ||
-      size.height() > max_offscreen_framebuffer_size_) {
-    LOG(ERROR) << "GLES2DecoderPassthroughImpl::ResizeOffscreenFramebuffer "
-                  "failed to allocate storage due to excessive dimensions.";
-    return false;
-  }
-
-  CheckErrorCallbackState();
-
-  if (!emulated_back_buffer_->Resize(size)) {
-    LOG(ERROR) << "GLES2DecoderPassthroughImpl::ResizeOffscreenFramebuffer "
-                  "failed to resize the emulated framebuffer.";
-    return false;
-  }
-
-  if (CheckErrorCallbackState()) {
-    LOG(ERROR) << "GLES2DecoderPassthroughImpl::ResizeOffscreenFramebuffer "
-                  "failed to resize the emulated framebuffer because errors "
-                  "were generated.";
-    return false;
-  }
-
-  return true;
-}
-
 bool GLES2DecoderPassthroughImpl::MakeCurrent() {
   if (!context_.get())
     return false;
@@ -1665,6 +1431,9 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   if (base::FeatureList::IsEnabled(features::kPassthroughYuvRgbConversion)) {
     caps.supports_yuv_rgb_conversion = true;
   }
+  // Technically, YUV readback is handled on the client side, but enable it here
+  // so that clients can use this to detect support.
+  caps.supports_yuv_readback = true;
   caps.texture_npot = feature_info_->feature_flags().npot_ok;
   caps.supports_scanout_shared_images =
       SharedImageManager::SupportsScanoutImages();

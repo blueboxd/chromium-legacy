@@ -140,6 +140,13 @@ void FedCmAccountSelectionView::Show(
   // Else:
   // Do not force show the bubble. The bubble may be purposefully hidden if the
   // WebContents are hidden.
+
+  if (!idp_close_popup_time_.is_null()) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "Blink.FedCm.IdpSigninStatus."
+        "IdpClosePopupToBrowserShowAccountsDuration",
+        base::TimeTicks::Now() - idp_close_popup_time_);
+  }
 }
 
 void FedCmAccountSelectionView::ShowFailureDialog(
@@ -176,7 +183,7 @@ void FedCmAccountSelectionView::ShowFailureDialog(
       base::UTF8ToUTF16(top_frame_etld_plus_one), iframe_etld_plus_one_u16,
       base::UTF8ToUTF16(idp_etld_plus_one), idp_metadata);
 
-  if (create_bubble) {
+  if (create_bubble || should_show_bubble_widget_) {
     bubble_widget_->Show();
     input_protector_->VisibilityChanged(true);
   }
@@ -374,6 +381,9 @@ void FedCmAccountSelectionView::OnCloseButtonClicked(const ui::Event& event) {
 
 void FedCmAccountSelectionView::OnSigninToIdP() {
   delegate_->OnSigninToIdP();
+  is_mismatch_continue_clicked_ = true;
+  UMA_HISTOGRAM_ENUMERATION("Blink.FedCm.IdpSigninStatus.MismatchDialogResult",
+                            MismatchDialogResult::kContinued);
 }
 
 content::WebContents* FedCmAccountSelectionView::ShowModalDialog(
@@ -394,6 +404,7 @@ void FedCmAccountSelectionView::CloseModalDialog() {
     idp_signin_modal_dialog_->ClosePopupWindow();
     idp_signin_modal_dialog_.reset();
     should_show_bubble_widget_ = true;
+    idp_close_popup_time_ = base::TimeTicks::Now();
   }
 
   if (show_accounts_dialog_callback_) {
@@ -473,4 +484,15 @@ void FedCmAccountSelectionView::OnDismiss(DismissReason dismiss_reason) {
 
   if (notify_delegate_of_dismiss_)
     delegate_->OnDismiss(dismiss_reason);
+
+  // Check is_mismatch_continue_clicked_ to ensure we don't record this metric
+  // after MismatchDialogResult::kContinued has been recorded.
+  if (state_ == State::IDP_SIGNIN_STATUS_MISMATCH &&
+      !is_mismatch_continue_clicked_) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Blink.FedCm.IdpSigninStatus.MismatchDialogResult",
+        dismiss_reason == DismissReason::kCloseButton
+            ? MismatchDialogResult::kDismissedByCloseIcon
+            : MismatchDialogResult::kDismissedForOtherReasons);
+  }
 }

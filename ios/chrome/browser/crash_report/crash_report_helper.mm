@@ -20,7 +20,7 @@
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/crash_report/crash_report_user_application_state.h"
 #import "ios/chrome/browser/crash_report/crash_reporter_url_observer.h"
-#import "ios/chrome/browser/paths/paths.h"
+#import "ios/chrome/browser/shared/model/paths/paths.h"
 #import "ios/chrome/browser/shared/model/web_state_list/all_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
@@ -164,8 +164,8 @@ const NSString* kDocumentMimeType = @"application/pdf";
                        change:(const WebStateListChange&)change
                     selection:(const WebStateSelection&)selection {
   switch (change.type()) {
-    case WebStateListChange::Type::kDestroy:
-      // Do nothing when a WebStateList is destroyed.
+    case WebStateListChange::Type::kSelectionOnly:
+      // Do nothing when a WebState is selected and its status is updated.
       break;
     case WebStateListChange::Type::kDetach:
       // TODO(crbug.com/1442546): Move the implementation from

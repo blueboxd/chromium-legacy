@@ -51,6 +51,7 @@
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "url/url_constants.h"
 
 namespace commerce {
 
@@ -381,7 +382,7 @@ bool ShoppingService::CheckIsPDPFromMetaOnly(
   }
 
   const std::string* currency = on_page_meta_map.FindString(kOgPriceCurrency);
-  const std::string* amount = on_page_meta_map.FindString(kOgPriceCurrency);
+  const std::string* amount = on_page_meta_map.FindString(kOgPriceAmount);
   const std::string* image = on_page_meta_map.FindString(kOgImage);
 
   if (currency && amount && image) {
@@ -463,6 +464,13 @@ void ShoppingService::PDPMetricsCallback(
 
   metrics::RecordPDPMetrics(decision, metadata, pref_service_,
                             is_off_the_record, IsShoppingListEligible());
+
+  bool supported_country =
+      IsRegionLockedFeatureEnabled(kShoppingList, kShoppingListRegionLaunched,
+                                   country_on_startup_, locale_on_startup_);
+  metrics::RecordShoppingListIneligibilityReasons(
+      pref_service_, account_checker_.get(), is_off_the_record,
+      supported_country);
 }
 
 void ShoppingService::GetProductInfoForUrl(const GURL& url,
@@ -635,7 +643,8 @@ void ShoppingService::HandleOptGuideProductInfoResponse(
     std::move(callback).Run(url, absl::nullopt);
 
     // If doing local PDP detection, we might still want to run this.
-    if (base::FeatureList::IsEnabled(kCommerceLocalPDPDetection)) {
+    if (base::FeatureList::IsEnabled(kCommerceLocalPDPDetection) &&
+        url.SchemeIsHTTPOrHTTPS()) {
       UpdateProductInfoCache(url, true, nullptr);
       if (web) {
         ScheduleProductInfoJavascript(web);

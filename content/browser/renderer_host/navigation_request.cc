@@ -1256,7 +1256,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           /*fenced_frame_properties=*/absl::nullopt,
           /*not_restored_reasons=*/nullptr,
           /*load_with_storage_access=*/load_with_storage_access,
-          /*browsing_context_group_info=*/absl::nullopt);
+          /*browsing_context_group_info=*/absl::nullopt,
+          /*lcpp_hint=*/nullptr);
 
   commit_params->navigation_timing->system_entropy_at_navigation_start =
       SystemEntropyUtils::ComputeSystemEntropyForFrameTreeNode(
@@ -1399,7 +1400,8 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           /*fenced_frame_properties=*/absl::nullopt,
           /*not_restored_reasons=*/nullptr,
           /*load_with_storage_access=*/false,
-          /*browsing_context_group_info=*/absl::nullopt);
+          /*browsing_context_group_info=*/absl::nullopt,
+          /*lcpp_hint=*/nullptr);
   blink::mojom::BeginNavigationParamsPtr begin_params =
       blink::mojom::BeginNavigationParams::New();
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -1836,8 +1838,7 @@ NavigationRequest::NavigationRequest(
   navigation_handle_proxy_ = std::make_unique<NavigationHandleProxy>(this);
 #endif
 
-  if (base::FeatureList::IsEnabled(features::kNavigationRequestPreconnect) &&
-      NeedsUrlLoader() && common_params_->url.SchemeIsHTTPOrHTTPS()) {
+  if (NeedsUrlLoader() && common_params_->url.SchemeIsHTTPOrHTTPS()) {
     BrowserContext* browser_context =
         frame_tree_node_->navigator().controller().GetBrowserContext();
     if (GetContentClient()->browser()->ShouldPreconnectNavigation(
@@ -2512,6 +2513,9 @@ void NavigationRequest::BeginNavigationImpl() {
       // MHTML iframe, before selecting the RenderFrameHost.
       const url::Origin origin = GetOriginForURLLoaderFactoryUnchecked(this);
       const net::SchemefulSite site = net::SchemefulSite(origin);
+
+      // Set the COOP origin in the policy container builder via the mutable
+      // reference before FinalPolicies() is called.
       absl::optional<url::Origin>& coop_origin =
           policy_container_builder_->GetPolicyContainerHost()
               ->cross_origin_opener_policy()
@@ -3085,6 +3089,8 @@ void NavigationRequest::OnRequestRedirected(
     return;
   }
   const url::Origin origin = GetOriginForURLLoaderFactoryUnchecked(this);
+  // Set the COOP origin in the policy container builder via the mutable
+  // reference before coop is sent to EnforceCOOP.
   network::CrossOriginOpenerPolicy& coop =
       response()->parsed_headers->cross_origin_opener_policy;
   coop.origin = origin;
@@ -3915,6 +3921,8 @@ void NavigationRequest::OnResponseStarted(
   // can be determined. This is needed for enforcing COOP below.
 
   {
+    // Set the COOP origin in the policy container builder before
+    // FinalPolicies() is called.
     const url::Origin origin = GetOriginForURLLoaderFactoryBeforeResponse(
         policy_container_builder_->FinalPolicies().sandbox_flags);
     policy_container_builder_->GetPolicyContainerHost()
@@ -4489,6 +4497,8 @@ void NavigationRequest::OnRequestFailedInternal(
   ComputePoliciesToCommitForError();
 
   const auto origin = url::Origin();
+  // Set the COOP origin in the policy container builder before FinalPolicies()
+  // is called.
   policy_container_builder_->GetPolicyContainerHost()
       ->cross_origin_opener_policy()
       .origin = origin;
@@ -7466,6 +7476,12 @@ void NavigationRequest::SetCorsExemptRequestHeader(
     const std::string& header_value) {
   DCHECK(state_ == WILL_START_REQUEST || state_ == WILL_REDIRECT_REQUEST);
   cors_exempt_request_headers_.SetHeader(header_name, header_value);
+}
+
+void NavigationRequest::SetLCPPNavigationHint(
+    const blink::mojom::LCPCriticalPathPredictorNavigationTimeHint& hint) {
+  DCHECK_EQ(WILL_START_REQUEST, state_);
+  commit_params_->lcpp_hint = hint.Clone();
 }
 
 const net::HttpResponseHeaders* NavigationRequest::GetResponseHeaders() {

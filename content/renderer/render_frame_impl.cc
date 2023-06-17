@@ -2408,11 +2408,15 @@ void RenderFrameImpl::NotifyResourceResponseReceived(
     const url::SchemeHostPort& final_response_url,
     network::mojom::URLResponseHeadPtr response_head,
     network::mojom::RequestDestination request_destination) {
-  if (!blink::IsRequestDestinationFrame(request_destination) &&
-      ShouldNotifySubresourceResponseStarted(
-          GetWebView()->GetRendererPreferences())) {
-    GetFrameHost()->SubresourceResponseStarted(final_response_url,
-                                               response_head->cert_status);
+  if (!blink::IsRequestDestinationFrame(request_destination)) {
+    bool notify = ShouldNotifySubresourceResponseStarted(
+        GetWebView()->GetRendererPreferences());
+    UMA_HISTOGRAM_BOOLEAN(
+        "Renderer.ReduceSubresourceResponseIPC.DidNotifyBrowser", notify);
+    if (notify) {
+      GetFrameHost()->SubresourceResponseStarted(final_response_url,
+                                                 response_head->cert_status);
+    }
   }
   DidStartResponse(final_response_url, request_id, std::move(response_head),
                    request_destination);
@@ -2764,6 +2768,10 @@ void RenderFrameImpl::CommitNavigationWithParams(
     // report for PerformanceNavigationTiming API.
     frame_->SetNotRestoredReasons(
         std::move(commit_params->not_restored_reasons));
+  }
+
+  if (commit_params->lcpp_hint) {
+    frame_->SetLCPPHint(std::move(commit_params->lcpp_hint));
   }
 
   // Note: this intentionally does not call |Detach()| before |reset()|. If

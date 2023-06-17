@@ -25,7 +25,6 @@
 #import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
 #import "ios/chrome/browser/drag_and_drop/url_drag_drop_handler.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
-#import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
@@ -42,6 +41,7 @@
 #import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/shared/public/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/named_guide.h"
 #import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
@@ -1170,17 +1170,31 @@ const CGFloat kSymbolSize = 18;
                        change:(const WebStateListChange&)change
                     selection:(const WebStateSelection&)selection {
   switch (change.type()) {
-    case WebStateListChange::Type::kDestroy:
-      // Do nothing when a WebStateList is destroyed.
+    case WebStateListChange::Type::kSelectionOnly:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
+      // here. Note that here is reachable only when `reason` ==
+      // ActiveWebStateChangeReason::Activated.
       break;
     case WebStateListChange::Type::kDetach:
       // TODO(crbug.com/1442546): Move the implementation from
       // webStateList:didDetachWebState:atIndex: to here.
       break;
-    case WebStateListChange::Type::kMove:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didMoveWebState:fromIndex:toIndex: to here.
+    case WebStateListChange::Type::kMove: {
+      DCHECK(!_isReordering);
+
+      // Reorder the objects in _tabArray to keep in sync with the model
+      // ordering.
+      const WebStateListChangeMove& moveChange =
+          change.As<WebStateListChangeMove>();
+      NSUInteger arrayIndex =
+          [self indexForWebStateListIndex:moveChange.moved_from_index()];
+      TabView* view = [_tabArray objectAtIndex:arrayIndex];
+      [_tabArray removeObject:view];
+      [_tabArray insertObject:view atIndex:selection.index];
+      [self setNeedsLayoutWithAnimation];
       break;
+    }
     case WebStateListChange::Type::kReplace: {
       const WebStateListChangeReplace& replaceChange =
           change.As<WebStateListChangeReplace>();
@@ -1229,21 +1243,6 @@ const CGFloat kSymbolSize = 18;
   // z-ordering of the TabViews.  If a new tab was selected as a result of a tab
   // closure, then the animated layout has already been scheduled.
   [_tabStripView setNeedsLayout];
-}
-
-// Observer method. `webState` moved in `webStateList`.
-- (void)webStateList:(WebStateList*)webStateList
-     didMoveWebState:(web::WebState*)webState
-           fromIndex:(int)fromIndex
-             toIndex:(int)toIndex {
-  DCHECK(!_isReordering);
-
-  // Reorder the objects in _tabArray to keep in sync with the model ordering.
-  NSUInteger arrayIndex = [self indexForWebStateListIndex:fromIndex];
-  TabView* view = [_tabArray objectAtIndex:arrayIndex];
-  [_tabArray removeObject:view];
-  [_tabArray insertObject:view atIndex:toIndex];
-  [self setNeedsLayoutWithAnimation];
 }
 
 // Observer method, `webState` removed from `webStateList`.

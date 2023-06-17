@@ -117,12 +117,16 @@ class NearbyPresenceCredentialManagerImplTest : public testing::Test {
             std::move(local_device_data_provider));
 
     // Simulate first time registration flow.
-    fake_local_device_data_provider_->SetIsUserRegistrationInfoSaved(false);
+    fake_local_device_data_provider_->SetRegistrationComplete(false);
     EXPECT_FALSE(credential_manager_->IsLocalDeviceRegistered());
 
     // Simulate the device id which will be generated in a call to
     // |GetDeviceId|.
     fake_local_device_data_provider_->SetDeviceId(kDeviceId);
+
+    // Simulate the credentials being generated in the NP library.
+    fake_nearby_presence_.SetGenerateCredentialsResponse(
+        BuildSharedCredentials(), mojom::StatusCode::kOk);
   }
 
   void TearDown() override {
@@ -166,6 +170,23 @@ class NearbyPresenceCredentialManagerImplTest : public testing::Test {
         ->InvokeUpdateDeviceSuccessCallback(update_credentials_response);
   }
 
+  void TriggerFirstTimeDownloadRemoteCredentialSuccess() {
+    // Simulate the scheduler notifying the CredentialManager that the download
+    // task is ready when it has network connectivity.
+    const raw_ptr<FakeNearbyScheduler, ExperimentalAsh>
+        first_time_download_scheduler =
+            scheduler_factory_.pref_name_to_on_demand_instance()
+                .find(prefs::kNearbyPresenceSchedulingFirstTimeDownloadPrefName)
+                ->second.fake_scheduler;
+    first_time_download_scheduler->InvokeRequestCallback();
+
+    // Next, mock and return the server response for fetching remote device
+    // public certificates.
+    ash::nearby::proto::ListPublicCertificatesResponse certificate_response;
+    server_client_factory_.fake_server_client()
+        ->InvokeListPublicCertificatesSuccessCallback({certificate_response});
+  }
+
  protected:
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
@@ -181,10 +202,6 @@ class NearbyPresenceCredentialManagerImplTest : public testing::Test {
 };
 
 TEST_F(NearbyPresenceCredentialManagerImplTest, RegistrationSuccess) {
-  // Simulate the credentials being generated in the NP library.
-  fake_nearby_presence_.SetGenerateCredentialsResponse(BuildSharedCredentials(),
-                                                       mojom::StatusCode::kOk);
-
   // Wait until after the generated credentials are saved to continue the test.
   base::RunLoop run_loop;
   fake_local_device_data_provider_->SetUpdatePersistedSharedCredentialsCallback(
@@ -202,6 +219,8 @@ TEST_F(NearbyPresenceCredentialManagerImplTest, RegistrationSuccess) {
   run_loop.Run();
 
   TriggerFirstTimeLocalCredentialUploadSuccess();
+
+  TriggerFirstTimeDownloadRemoteCredentialSuccess();
 
   EXPECT_TRUE(credential_manager_->IsLocalDeviceRegistered());
 }
@@ -269,17 +288,13 @@ TEST_F(NearbyPresenceCredentialManagerImplTest, CredentialGenerationFailure) {
   // Required for credentials to be generated and passed over the mojo pipe.
   run_loop.Run();
 
-  // Since the user registration with the server was successful, this will be
-  // true.
-  EXPECT_TRUE(credential_manager_->IsLocalDeviceRegistered());
+  // Since the user registration with the server was not successful, this will
+  // be false.
+  EXPECT_FALSE(credential_manager_->IsLocalDeviceRegistered());
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest,
        UploadCredentialsServerTimeout) {
-  // Simulate the credentials being generated in the NP library.
-  fake_nearby_presence_.SetGenerateCredentialsResponse(BuildSharedCredentials(),
-                                                       mojom::StatusCode::kOk);
-
   // Wait until after the generated credentials are saved to continue the test.
   base::RunLoop run_loop;
   fake_local_device_data_provider_->SetUpdatePersistedSharedCredentialsCallback(
@@ -310,16 +325,12 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
       kServerCommunicationMaxAttempts);
   task_environment_.FastForwardBy(kServerResponseTimeout);
 
-  // Since the user registration with the server was successful, this will be
-  // true.
-  EXPECT_TRUE(credential_manager_->IsLocalDeviceRegistered());
+  // Since the user registration with the server was not successful, this will
+  // be false.
+  EXPECT_FALSE(credential_manager_->IsLocalDeviceRegistered());
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest, UploadCredentialsFailure) {
-  // Simulate the credentials being generated in the NP library.
-  fake_nearby_presence_.SetGenerateCredentialsResponse(BuildSharedCredentials(),
-                                                       mojom::StatusCode::kOk);
-
   // Wait until after the generated credentials are saved to continue the test.
   base::RunLoop run_loop;
   fake_local_device_data_provider_->SetUpdatePersistedSharedCredentialsCallback(
@@ -351,9 +362,83 @@ TEST_F(NearbyPresenceCredentialManagerImplTest, UploadCredentialsFailure) {
   server_client_factory_.fake_server_client()->InvokeUpdateDeviceErrorCallback(
       ash::nearby::NearbyHttpError::kInternalServerError);
 
-  // Since the user registration with the server was successful, this will be
-  // true.
-  EXPECT_TRUE(credential_manager_->IsLocalDeviceRegistered());
+  // Since the user registration with the server was not successful, this will
+  // be false.
+  EXPECT_FALSE(credential_manager_->IsLocalDeviceRegistered());
+}
+
+TEST_F(NearbyPresenceCredentialManagerImplTest, DownloadCredentialsFailure) {
+  // Wait until after the generated credentials are saved to continue the test.
+  base::RunLoop run_loop;
+  fake_local_device_data_provider_->SetUpdatePersistedSharedCredentialsCallback(
+      run_loop.QuitClosure());
+
+  // Expect success on the callback.
+  base::MockCallback<base::OnceCallback<void(bool)>>
+      on_registered_mock_callback;
+  EXPECT_CALL(on_registered_mock_callback, Run(false)).Times(1);
+  credential_manager_->RegisterPresence(on_registered_mock_callback.Get());
+
+  TriggerFirstTimeRegistrationSuccess();
+  // Required for credentials to be generated and passed over the mojo pipe.
+  run_loop.Run();
+
+  TriggerFirstTimeLocalCredentialUploadSuccess();
+
+  // Simulate the scheduler notifying the CredentialManager that the download
+  // task is ready when it has network connectivity.
+  const raw_ptr<FakeNearbyScheduler, ExperimentalAsh>
+      first_time_download_scheduler =
+          scheduler_factory_.pref_name_to_on_demand_instance()
+              .find(prefs::kNearbyPresenceSchedulingFirstTimeDownloadPrefName)
+              ->second.fake_scheduler;
+
+  // Simulate the max number of failures caused by a RPC failure.
+  first_time_download_scheduler->SetNumConsecutiveFailures(
+      kServerCommunicationMaxAttempts);
+  first_time_download_scheduler->InvokeRequestCallback();
+  ash::nearby::proto::ListPublicCertificatesResponse certificate_response;
+  server_client_factory_.fake_server_client()
+      ->InvokeListPublicCertificatesErrorCallback(
+          ash::nearby::NearbyHttpError::kInternalServerError);
+
+  EXPECT_FALSE(credential_manager_->IsLocalDeviceRegistered());
+}
+
+TEST_F(NearbyPresenceCredentialManagerImplTest, DownloadCredentialsTimeout) {
+  // Wait until after the generated credentials are saved to continue the test.
+  base::RunLoop run_loop;
+  fake_local_device_data_provider_->SetUpdatePersistedSharedCredentialsCallback(
+      run_loop.QuitClosure());
+
+  // Expect success on the callback.
+  base::MockCallback<base::OnceCallback<void(bool)>>
+      on_registered_mock_callback;
+  EXPECT_CALL(on_registered_mock_callback, Run(false)).Times(1);
+  credential_manager_->RegisterPresence(on_registered_mock_callback.Get());
+
+  TriggerFirstTimeRegistrationSuccess();
+
+  // Required for credentials to be generated and passed over the mojo pipe.
+  run_loop.Run();
+
+  TriggerFirstTimeLocalCredentialUploadSuccess();
+
+  // Simulate the scheduler notifying the CredentialManager that the download
+  // task is ready when it has network connectivity.
+  const raw_ptr<FakeNearbyScheduler, ExperimentalAsh>
+      first_time_download_scheduler =
+          scheduler_factory_.pref_name_to_on_demand_instance()
+              .find(prefs::kNearbyPresenceSchedulingFirstTimeDownloadPrefName)
+              ->second.fake_scheduler;
+  first_time_download_scheduler->InvokeRequestCallback();
+
+  // Simulate the max number of failures caused by a server response timeout.
+  first_time_download_scheduler->SetNumConsecutiveFailures(
+      kServerCommunicationMaxAttempts);
+  task_environment_.FastForwardBy(kServerResponseTimeout);
+
+  EXPECT_FALSE(credential_manager_->IsLocalDeviceRegistered());
 }
 
 }  // namespace ash::nearby::presence

@@ -707,6 +707,15 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
         // only says that the device frequency reported by successive calls to
         // GetFrequency never changes during the lifetime of a stream "in
         // Windows Vista".
+        {
+            // TODO(olka): Exploratory check. Run it for a couple of days on
+            // Canary/Dev and remove.
+            UINT64 device_frequency_now = 0;
+            hr = audio_clock_->GetFrequency(&device_frequency_now);
+            if (SUCCEEDED(hr)) {
+                CHECK_EQ(device_frequency, device_frequency_now);
+            }
+        }
         CHECK_GE(position, last_position_);
         base::TimeDelta position_time_increase =
             media::AudioTimestampHelper::FramesToTime(position - last_position_,
@@ -752,10 +761,8 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
         glitch_reporter_.UpdateStats(is_glitch ? gap_duration
                                                : base::TimeDelta());
         if (is_glitch) {
-          // TODO(olka): Exploratory check. Run it for a couple of days on
-          // Canary/Dev and remove.
-          CHECK_LE(gap_duration, base::Seconds(10));
-          glitch_info_accumulator.Add({.duration = gap_duration, .count = 1});
+            glitch_info_accumulator.Add(AudioGlitchInfo::SingleBoundedGlitch(
+                gap_duration, AudioGlitchInfo::Direction::kRender));
         }
       }
 
@@ -797,6 +804,9 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
       delay_timestamp = base::TimeTicks::Now();
     }
 
+    UMA_HISTOGRAM_COUNTS_1000("Media.Audio.Render.SystemDelay",
+                              delay.InMilliseconds());
+
     // Read a data packet from the registered client source and
     // deliver a delay estimate in the same callback to the client.
 
@@ -806,8 +816,8 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
           AudioBus::WrapMemory(params_, audio_data));
       audio_bus_->set_is_bitstream_format(true);
       int frames_filled = source_->OnMoreData(
-          delay, delay_timestamp, glitch_info_accumulator.GetAndReset(),
-          audio_bus.get());
+          BoundedDelay(delay), delay_timestamp,
+          glitch_info_accumulator.GetAndReset(), audio_bus.get());
 
       // During pause/seek, keep the pipeline filled with zero'ed frames.
       if (!frames_filled) {
@@ -824,8 +834,8 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
     }
 #endif  // BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
     int frames_filled = source_->OnMoreData(
-        delay, delay_timestamp, glitch_info_accumulator.GetAndReset(),
-        audio_bus_.get());
+        BoundedDelay(delay), delay_timestamp,
+        glitch_info_accumulator.GetAndReset(), audio_bus_.get());
     uint32_t num_filled_bytes = frames_filled * format_.Format.nBlockAlign;
     DCHECK_LE(num_filled_bytes, packet_size_bytes_);
     audio_bus_->Scale(volume_);

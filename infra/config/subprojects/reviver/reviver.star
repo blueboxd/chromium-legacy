@@ -96,6 +96,7 @@ polymorphic.launcher(
             builder = "ci/Android x64 Builder (dbg)",
             dimensions = dimensions.dimensions(
                 builderless = "",
+                os = "Ubuntu-22.04",
                 ssd = "",
                 free_space = "",
                 builder = "Android x64 Builder (dbg)",
@@ -226,12 +227,13 @@ builder(
     executable = "recipe:reviver/chromium/runner",
     pool = ci.DEFAULT_POOL,
     builderless = 1,
+    cores = 32,
     os = os.LINUX_DEFAULT,
     cpu = cpu.X86_64,
-    ssd = False,
-    free_space = free_space.high,
+    ssd = True,
+    free_space = free_space.standard,
     auto_builder_dimension = False,
-    execution_timeout = 12 * time.hour,
+    execution_timeout = 6 * time.hour,
     resultdb_bigquery_exports = [
         resultdb.export_test_results(
             bq_table = "chrome-luci-data.chromium.reviver_test_results",

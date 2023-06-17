@@ -50,13 +50,13 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
-#include "chrome/browser/enterprise/connectors/analysis/fake_content_analysis_delegate.h"
 #include "chrome/browser/enterprise/connectors/common.h"
+#include "chrome/browser/enterprise/connectors/test/deep_scanning_test_utils.h"
+#include "chrome/browser/enterprise/connectors/test/fake_content_analysis_delegate.h"
 #include "chrome/browser/policy/dm_token_utils.h"
-#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-#include "chrome/browser/enterprise/connectors/analysis/fake_content_analysis_sdk_manager.h"  //nogncheck
+#include "chrome/browser/enterprise/connectors/analysis/fake_content_analysis_sdk_manager.h"  // nogncheck
 #endif
 #endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
 
@@ -1551,13 +1551,13 @@ class ContentAnalysisPrintPreviewHandlerTest
       public testing::WithParamInterface<bool> {
  public:
   ContentAnalysisPrintPreviewHandlerTest() {
-    feature_list_.InitAndEnableFeature(features::kEnablePrintScanAfterPreview);
+    feature_list_.InitAndEnableFeature(features::kEnableLocalScanAfterPreview);
   }
 
   void SetUp() override {
     enterprise_connectors::ContentAnalysisDelegate::SetFactoryForTesting(
         base::BindRepeating(
-            &enterprise_connectors::FakeContentAnalysisDelegate::Create,
+            &enterprise_connectors::test::FakeContentAnalysisDelegate::Create,
             run_loop_.QuitClosure(),
             base::BindRepeating(
                 &ContentAnalysisPrintPreviewHandlerTest::ScanningResponse,
@@ -1568,7 +1568,7 @@ class ContentAnalysisPrintPreviewHandlerTest
     PrintPreviewHandlerTest::SetUp();
 
     // Set the policy that enables local content analysis for print.
-    safe_browsing::SetAnalysisConnector(
+    enterprise_connectors::test::SetAnalysisConnector(
         profile()->GetPrefs(), enterprise_connectors::AnalysisConnector::PRINT,
         R"({
           "service_provider": "local_system_agent",

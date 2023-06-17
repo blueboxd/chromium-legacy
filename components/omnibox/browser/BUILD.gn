@@ -70,6 +70,7 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "http_chrome_refresh.icon",
     "https_valid_in_chip.icon",
     "incognito.icon",
+    "incognito_cr2023.icon",
     "install_desktop.icon",
     "journeys.icon",
     "journeys_chrome_refresh.icon",
@@ -79,7 +80,9 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "page_chrome_refresh.icon",
     "pedal.icon",
     "price_tracking_disabled.icon",
+    "price_tracking_disabled_refresh.icon",
     "price_tracking_enabled_filled.icon",
+    "price_tracking_enabled_refresh.icon",
     "product.icon",
     "product_chrome_refresh.icon",
     "secure_page_info_chrome_refresh.icon",
@@ -391,6 +394,8 @@ static_library("browser") {
 
   if (is_ios) {
     deps += [ "//base/ios" ]
+  } else {
+    deps += [ "//ui/base/clipboard" ]
   }
 
   if (use_blink) {
@@ -739,6 +744,7 @@ source_set("unit_tests") {
     "actions/omnibox_pedal_unittest.cc",
     "answers_cache_unittest.cc",
     "autocomplete_controller_metrics_unittest.cc",
+    "autocomplete_controller_unittest.cc",
     "autocomplete_grouper_groups_unittest.cc",
     "autocomplete_grouper_sections_unittest.cc",
     "autocomplete_input_unittest.cc",
@@ -861,6 +867,7 @@ source_set("unit_tests") {
       "actions/history_clusters_action_unittest.cc",
       "history_cluster_provider_unittest.cc",
     ]
+    deps += [ "//ui/base/clipboard:clipboard_test_support" ]
   }
 
   if (use_blink) {

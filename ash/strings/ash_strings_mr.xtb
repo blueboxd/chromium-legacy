@@ -63,7 +63,6 @@
 <translation id="1235458158152011030">ज्ञात नेटवर्क</translation>
 <translation id="1239161794459865856"><ph name="FEATURE_NAME" /> शी कनेक्ट केले.</translation>
 <translation id="1240638468526743569">ॲप</translation>
-<translation id="1242704516557658755">सर्वात अलीकडे वापरलेल्या विंडो सूचीमध्ये मागे फिरा</translation>
 <translation id="124678866338384709">वर्तमान टॅब बंद करा</translation>
 <translation id="1246890715821376239">सपोर्ट नसलेली ॲप्स</translation>
 <translation id="1247372569136754018">मायक्रोफोन (अंतर्गत)</translation>
@@ -1067,7 +1066,7 @@
 <translation id="5679050765726761783">कमी पॉवरचे अडॅप्टर कनेक्ट केले</translation>
 <translation id="5682642926269496722">सध्याच्या वापरकर्ता खात्यावर Google असिस्टंट उपलब्ध नाही.</translation>
 <translation id="5689633613396158040">रात्रीच्या प्रकाशामुळे तुमच्या स्क्रीनकडे पाहणे किंवा मंद प्रकाशात वाचणे आणखी सोपे होते. रात्रीचा प्रकाश कधी सुरू होईल किंवा पूर्ण बंद होईल हे बदलण्यासाठी टॅप करा.</translation>
-<translation id="5691772641933328258">फिंगरप्रिंट ओळखले नाही</translation>
+<translation id="5691772641933328258">फिंगरप्रिंट ओळखली नाही</translation>
 <translation id="5693255400847650006">मायक्रोफोन वापरात आहे</translation>
 <translation id="5699366815052349604">अ‍ॅक्टिव्ह विंडो सर्व डेस्कना असाइन करा</translation>
 <translation id="570390244361237317">सर्व ॲप्स, सर्व ॲप्स ॲक्सेस करण्यासाठी ॲरो की वापरून नेव्हिगेट करा</translation>
@@ -1120,7 +1119,6 @@
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">सुरू</translation>
 <translation id="5920710855273935292">माइक म्यूट केलेला आहे.</translation>
-<translation id="5922962980596822074">सर्वात अलीकडे वापरलेल्या विंडोपासून सुरू करून विंडो पहा</translation>
 <translation id="5924855612669061715">हॉटस्पॉट सुरू आहे</translation>
 <translation id="5946788582095584774"><ph name="FEATURE_NAME" /> सुरू आहे.</translation>
 <translation id="5947494881799873997">परत करा</translation>
@@ -1239,7 +1237,6 @@
 <translation id="6469104339369989396">हॉटस्पॉट टॉगल करा</translation>
 <translation id="6477681113376365978">फाइल डाउनलोड करू शकत नाही</translation>
 <translation id="6482559668224714696">फुल-स्क्रीन मॅग्निफायर</translation>
-<translation id="6483727822843292440">सर्वात कमी वापरलेल्या विंडोपासून सुरू करून विंडो पहा</translation>
 <translation id="6490471652906364588">USB-C डिव्‍हाइस (उजवे पोर्ट)</translation>
 <translation id="6491071886865974820"><ph name="MANAGER" /> ला तुम्ही तुमचे <ph name="DEVICE_TYPE" /> डिव्हाइस डेडलाइनच्या आधी अपडेट करणे आवश्यक आहे</translation>
 <translation id="649452524636452238">स्मार्ट कार्डाचा पिन</translation>

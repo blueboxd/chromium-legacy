@@ -467,6 +467,7 @@ Pogledajte uputstva pretraživača za brisanje istorije pretrage ako je to prime
 <translation id="4045648459118332842">Pristupajte sačuvanim lozinkama u bilo kojoj aplikaciji jednim dodirom</translation>
 <translation id="4049507953662678203">Proverite da li ste povezani na mrežu i pokušajte ponovo.</translation>
 <translation id="4063300985191096908">Idi na fid</translation>
+<translation id="4066639687323968621">Prijavite se pomoću Google naloga da biste sinhronizovali obeleživače, istoriju i drugo.</translation>
 <translation id="408404951701638773">Traka za pretragu je sada dostupnija</translation>
 <translation id="4092655288299341041">Prikazuje pomoć</translation>
 <translation id="4105841739161771091">{count,plural, =1{Izbriši adresu}one{Izbriši adrese}few{Izbriši adrese}other{Izbriši adrese}}</translation>
@@ -1083,6 +1084,7 @@ Kada ste u režimu bez arhiviranja, sajtovi ne mogu da koriste kolačiće da bi
 
 Sajtovi mogu da koriste kolačiće da bi videli vaše aktivnosti pregledanja na različitim sajtovima, na primer, za personalizaciju oglasa.</translation>
 <translation id="7971521879845308059">Blokiraj iskačuće prozore</translation>
+<translation id="7975036700432177008">Isprobaj</translation>
 <translation id="7978018860671536736">3. Dodirnite Automatski popuni lozinke</translation>
 <translation id="7982789257301363584">Mreža</translation>
 <translation id="7987685713885608670">Radi dodatne zaštite šifrujte lozinke na uređaju pre nego što se sačuvaju u Google menadžeru lozinki.</translation>
@@ -1144,6 +1146,7 @@ Sajtovi mogu da koriste kolačiće da bi videli vaše aktivnosti pregledanja na
 <translation id="8323906514956095947">Dodirnite i zadržite ako želite više opcija za kartice</translation>
 <translation id="8328777765163860529">Zatvori sve</translation>
 <translation id="8343993175958086504">Pravite rezervne kopije sadržaja i koristite ga na bilo kom uređaju.</translation>
+<translation id="834783239627985533">Najposećeniji sajtovi</translation>
 <translation id="8378714024927312812">Ovim upravlja organizacija</translation>
 <translation id="8386068868580335421">Resetuj</translation>
 <translation id="838867811594159347">Unesi pristupnu frazu…</translation>
@@ -1273,6 +1276,7 @@ Podaci su šifrovani pomoću pristupne fraze <ph name="TIME" />. Unesite je da 
 <translation id="9157836665414082580">Spreči dijaloge</translation>
 <translation id="9162432979321511934">Uključite Automatsko popunjavanje lozinki</translation>
 <translation id="9165320910061267720">Da biste dobijali obaveštenja o sniženjima, treba da uključite obaveštenja u iOS podešavanjima.</translation>
+<translation id="9172603439892261948">Sinhronizujte obeleživače, istoriju i drugo.</translation>
 <translation id="9177438225260810839">Pretražite otvorene kartice</translation>
 <translation id="9187853111759024059">Želite da zatvorite više od 99 neaktivnih kartica?</translation>
 <translation id="9188680907066685419">Odjavite se sa naloga kojim se upravlja</translation>

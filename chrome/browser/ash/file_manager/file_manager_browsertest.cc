@@ -27,14 +27,14 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/chromeos/policy/dlp/mock_dlp_rules_manager.h"
-#include "chrome/browser/enterprise/connectors/analysis/fake_content_analysis_delegate.h"
-#include "chrome/browser/enterprise/connectors/analysis/fake_files_request_handler.h"
 #include "chrome/browser/enterprise/connectors/analysis/mock_file_transfer_analysis_delegate.h"
 #include "chrome/browser/enterprise/connectors/reporting/realtime_reporting_client_factory.h"
+#include "chrome/browser/enterprise/connectors/test/deep_scanning_test_utils.h"
+#include "chrome/browser/enterprise/connectors/test/fake_content_analysis_delegate.h"
+#include "chrome/browser/enterprise/connectors/test/fake_files_request_handler.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/policy/dm_token_utils.h"
-#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -43,6 +43,7 @@
 #include "chromeos/dbus/dlp/dlp_client.h"
 #include "chromeos/dbus/dlp/dlp_service.pb.h"
 #include "components/account_id/account_id.h"
+#include "components/file_access/test/mock_scoped_file_access_delegate.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -239,6 +240,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& EnableJellybean() {
+    options.enable_jellybean = true;
+    return *this;
+  }
+
   std::string GetFullName() const {
     std::string full_name = name;
 
@@ -312,6 +318,10 @@ struct TestCase {
 
     if (options.enable_drive_shortcuts) {
       full_name += "_DriveShortcuts";
+    }
+
+    if (options.enable_jellybean) {
+      full_name += "_Jellybean";
     }
 
     switch (options.device_mode) {
@@ -620,6 +630,18 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
               ::testing::Return(policy::DlpRulesManager::Level::kBlock));
       return true;
     }
+    if (name == "setupScopedFileAccessDelegateAllowed") {
+      scoped_file_access_delegate_ =
+          std::make_unique<file_access::MockScopedFileAccessDelegate>();
+      EXPECT_CALL(*scoped_file_access_delegate_, RequestFilesAccessForSystem)
+          .WillOnce([](const std::vector<base::FilePath>& paths,
+                       base::OnceCallback<void(file_access::ScopedFileAccess)>
+                           callback) {
+            std::move(callback).Run(file_access::ScopedFileAccess::Allowed());
+          });
+
+      return true;
+    }
     return false;
   }
 
@@ -627,6 +649,9 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
   // this class.
   raw_ptr<policy::MockDlpRulesManager, ExperimentalAsh> mock_rules_manager_ =
       nullptr;
+
+  std::unique_ptr<file_access::MockScopedFileAccessDelegate>
+      scoped_file_access_delegate_;
 
  private:
   std::unique_ptr<KeyedService> SetDlpRulesManager(
@@ -746,11 +771,12 @@ class FileTransferConnectorFilesAppBrowserTest : public FilesAppBrowserTest {
     SetDMTokenForTesting(policy::DMToken::CreateValidToken("dm_token"));
 
     // Enable reporting.
-    safe_browsing::SetOnSecurityEventReporting(profile()->GetPrefs(),
-                                               /*enabled*/ true,
-                                               /*enabled_event_names*/ {},
-                                               /*enabled_opt_in_events*/ {},
-                                               /*machine_scope*/ false);
+    enterprise_connectors::test::SetOnSecurityEventReporting(
+        profile()->GetPrefs(),
+        /*enabled*/ true,
+        /*enabled_event_names*/ {},
+        /*enabled_opt_in_events*/ {},
+        /*machine_scope*/ false);
     // Add mock to check reports.
     cloud_policy_client_ = std::make_unique<policy::MockCloudPolicyClient>();
     cloud_policy_client_->SetDMToken("dm_token");
@@ -838,7 +864,7 @@ class FileTransferConnectorFilesAppBrowserTest : public FilesAppBrowserTest {
       CHECK(destination);
       LOG(INFO) << "Setting file transfer policy for transfers from " << *source
                 << " to " << *destination;
-      safe_browsing::SetAnalysisConnector(
+      enterprise_connectors::test::SetAnalysisConnector(
           profile()->GetPrefs(), enterprise_connectors::FILE_TRANSFER,
           base::StringPrintf(kFileTransferConnectorSettingsForDlp,
                              source->c_str(), destination->c_str(),
@@ -848,7 +874,7 @@ class FileTransferConnectorFilesAppBrowserTest : public FilesAppBrowserTest {
       // responses.
       enterprise_connectors::FilesRequestHandler::SetFactoryForTesting(
           base::BindRepeating(
-              &enterprise_connectors::FakeFilesRequestHandler::Create,
+              &enterprise_connectors::test::FakeFilesRequestHandler::Create,
               base::BindRepeating(&FileTransferConnectorFilesAppBrowserTest::
                                       FakeFileUploadCallback,
                                   base::Unretained(this), *source,
@@ -952,8 +978,9 @@ class FileTransferConnectorFilesAppBrowserTest : public FilesAppBrowserTest {
         expected_scan_ids.push_back(GetScanIDForFileName(file_name));
       }
 
-      validator_ = std::make_unique<safe_browsing::EventReportValidator>(
-          cloud_policy_client());
+      validator_ =
+          std::make_unique<enterprise_connectors::test::EventReportValidator>(
+              cloud_policy_client());
       validator_->ExpectSensitiveDataEvents(
           /*url*/ "",
           /*source*/ *source_volume_name,
@@ -985,8 +1012,8 @@ class FileTransferConnectorFilesAppBrowserTest : public FilesAppBrowserTest {
       safe_browsing::BinaryUploadService::Result result,
       const base::FilePath& path,
       std::unique_ptr<safe_browsing::BinaryUploadService::Request> request,
-      enterprise_connectors::FakeFilesRequestHandler::FakeFileRequestCallback
-          callback) {
+      enterprise_connectors::test::FakeFilesRequestHandler::
+          FakeFileRequestCallback callback) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     EXPECT_FALSE(path.empty());
     EXPECT_EQ(request->device_token(), "dm_token");
@@ -1032,12 +1059,12 @@ class FileTransferConnectorFilesAppBrowserTest : public FilesAppBrowserTest {
     enterprise_connectors::ContentAnalysisResponse response;
     // We return a block verdict if the basename contains "blocked".
     if (base::Contains(path.BaseName().value(), "blocked")) {
-      response = enterprise_connectors::FakeContentAnalysisDelegate::
+      response = enterprise_connectors::test::FakeContentAnalysisDelegate::
           FakeContentAnalysisDelegate::DlpResponse(
               enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS,
               "rule", enterprise_connectors::TriggeredRule::BLOCK);
     } else {
-      response = enterprise_connectors::FakeContentAnalysisDelegate::
+      response = enterprise_connectors::test::FakeContentAnalysisDelegate::
           SuccessfulResponse({"dlp"});
     }
     response.set_request_token(
@@ -1052,7 +1079,7 @@ class FileTransferConnectorFilesAppBrowserTest : public FilesAppBrowserTest {
   // Used to test reporting.
   std::unique_ptr<policy::MockCloudPolicyClient> cloud_policy_client_;
   std::unique_ptr<signin::IdentityTestEnvironment> identity_test_environment_;
-  std::unique_ptr<safe_browsing::EventReportValidator> validator_;
+  std::unique_ptr<enterprise_connectors::test::EventReportValidator> validator_;
   static constexpr char kUserName[] = "test@chromium.org";
   static constexpr char kScanId[] = "scan id";
 
@@ -1456,6 +1483,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("directoryTreeExpandHorizontalScrollRTL"),
         TestCase("directoryTreeVerticalScroll"),
         TestCase("directoryTreeExpandFolder"),
+        TestCase("directoryTreeExpandFolder").FilesExperimental(),
         TestCase(
             "directoryTreeExpandFolderWithHiddenFileAndShowHiddenFilesOff"),
         TestCase("directoryTreeExpandFolderWithHiddenFileAndShowHiddenFilesOn"),
@@ -1543,8 +1571,12 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         // TODO(b/189173190): Enable
         // TestCase("drivePinFileMobileNetwork"),
         TestCase("drivePinToggleUpdatesInFakeEntries"),
+        TestCase("drivePinToggleUpdatesInFakeEntries").EnableJellybean(),
         TestCase("drivePinToggleIsDisabledAndHiddenWhenBulkPinningEnabled")
             .EnableBulkPinning(),
+        TestCase("drivePinToggleIsDisabledAndHiddenWhenBulkPinningEnabled")
+            .EnableBulkPinning()
+            .EnableJellybean(),
         TestCase("driveClickFirstSearchResult"),
         TestCase("drivePressEnterToSearch"),
         TestCase("drivePressClearSearch"),
@@ -1553,6 +1585,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveAvailableOfflineGearMenu"),
         TestCase("driveAvailableOfflineDirectoryGearMenu"),
         TestCase("driveAvailableOfflineActionBar"),
+        TestCase("driveAvailableOfflineActionBar").EnableJellybean(),
         TestCase("driveLinkToDirectory"),
         TestCase("driveLinkToDirectory").EnableDriveShortcuts(),
         TestCase("driveLinkOpenFileThroughLinkedDirectory"),
@@ -1573,6 +1606,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableBulkPinning(),
         TestCase("drivePinToggleIsEnabledInSharedWithMeWhenBulkPinningEnabled")
             .EnableBulkPinning(),
+        TestCase("drivePinToggleIsEnabledInSharedWithMeWhenBulkPinningEnabled")
+            .EnableBulkPinning()
+            .EnableJellybean(),
         TestCase("driveCantPinItemsShouldHaveClassNameAndGetUpdatedWhenCanPin")
             .EnableBulkPinning(),
         TestCase("driveItemsOutOfViewportShouldUpdateTheirSyncStatus")
@@ -1698,7 +1734,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("saveAsDlpRestrictedRedirectsToMyFiles").EnableDlp(),
         TestCase("openDlpRestrictedFile").EnableDlp(),
         TestCase("openFolderDlpRestricted").EnableDlp(),
-        TestCase("fileTasksDlpRestricted").EnableDlp()));
+        TestCase("fileTasksDlpRestricted").EnableDlp(),
+        TestCase("zipExtractRestrictedArchiveCheckContent").EnableDlp()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DriveSpecific, /* drive_specific.js */
@@ -1857,6 +1894,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("tabindexFocusDownloads"),
         TestCase("tabindexFocusDownloads").InGuestMode(),
         TestCase("tabindexFocusDirectorySelected"),
+        TestCase("tabindexFocusDirectorySelected").EnableJellybean(),
         TestCase("tabindexOpenDialogDownloads").WithBrowser()
         // TODO(b/189173190): Enable
         // TestCase("tabindexOpenDialogDownloads").WithBrowser(),
@@ -2192,7 +2230,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("selectionPath").EnableSearchV2(),
         TestCase("searchHierarchy").EnableSearchV2(),
         TestCase("hideSearchInTrash").EnableSearchV2(),
+// TODO(b/287169303): test is flaky on ChromiumOS MSan
+#if !defined(MEMORY_SANITIZER)
         TestCase("searchTrashedFiles").EnableSearchV2(),
+#endif
         TestCase("matchDriveFilesByName").EnableSearchV2(),
         TestCase("searchSharedWithMe").EnableSearchV2(),
         TestCase("searchDocumentsProvider")

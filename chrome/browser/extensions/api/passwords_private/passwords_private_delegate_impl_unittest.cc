@@ -389,7 +389,7 @@ void PasswordsPrivateDelegateImplTest::SetUp() {
       profile(),
       base::BindRepeating(
           [](content::BrowserContext*) -> std::unique_ptr<KeyedService> {
-            return std::make_unique<TestPasskeyModel>();
+            return std::make_unique<webauthn::TestPasskeyModel>();
           }));
 }
 
@@ -993,7 +993,8 @@ TEST_F(PasswordsPrivateDelegateImplTest, ChangeCredential_Passkey) {
        syncer::kSyncWebauthnCredentials},
       /*disabled_features=*/{});
 
-  PasskeyModel* passkey_model = PasskeyModelFactory::GetForProfile(profile());
+  webauthn::PasskeyModel* passkey_model =
+      PasskeyModelFactory::GetForProfile(profile());
   ASSERT_EQ(passkey_model, PasskeyModelFactory::GetForProfile(profile()));
   ASSERT_TRUE(passkey_model);
   sync_pb::WebauthnCredentialSpecifics passkey = CreatePasskey();
@@ -1591,7 +1592,8 @@ TEST_F(PasswordsPrivateDelegateImplTest,
 
 #endif
 
-TEST_F(PasswordsPrivateDelegateImplTest, ShowAddShortcutDialog) {
+// TODO(http://crbug.com/1455574) Re-enable.
+TEST_F(PasswordsPrivateDelegateImplTest, DISABLED_ShowAddShortcutDialog) {
   base::HistogramTester histogram_tester;
   // Set up a browser instance and simulate a navigation.
   Browser::CreateParams params(profile(), /*user_gesture=*/true);
@@ -1698,7 +1700,8 @@ TEST_F(PasswordsPrivateDelegateImplTest, GetPasskeyInGroups) {
 
   auto delegate = CreateDelegate();
 
-  PasskeyModel* passkey_model = PasskeyModelFactory::GetForProfile(profile());
+  webauthn::PasskeyModel* passkey_model =
+      PasskeyModelFactory::GetForProfile(profile());
   ASSERT_EQ(passkey_model, PasskeyModelFactory::GetForProfile(profile()));
   ASSERT_TRUE(passkey_model);
   sync_pb::WebauthnCredentialSpecifics passkey = CreatePasskey();
@@ -1742,7 +1745,8 @@ TEST_F(PasswordsPrivateDelegateImplTest, RemovePasskey) {
 
   auto delegate = CreateDelegate();
 
-  PasskeyModel* passkey_model = PasskeyModelFactory::GetForProfile(profile());
+  webauthn::PasskeyModel* passkey_model =
+      PasskeyModelFactory::GetForProfile(profile());
   ASSERT_EQ(passkey_model, PasskeyModelFactory::GetForProfile(profile()));
   ASSERT_TRUE(passkey_model);
   sync_pb::WebauthnCredentialSpecifics passkey = CreatePasskey();

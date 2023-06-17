@@ -134,13 +134,19 @@ source_set("tests_fake_hook") {
 
   # This target is intentionally not test-only, as the main app depends on it.
   sources = [ "tests_fake_hook.mm" ]
-  deps = [ ":tests_hook" ]
+  deps = [
+    ":tests_hook",
+    "//components/signin/internal/identity_manager",
+  ]
 }
 
 source_set("perf_tests_hook") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [ "perf_tests_hook.mm" ]
-  deps = [ ":tests_hook" ]
+  deps = [
+    ":tests_hook",
+    "//components/signin/internal/identity_manager",
+  ]
 }
 
 tweak_info_plist("info_plist") {
@@ -428,7 +434,7 @@ source_set("app_internal") {
     "//build:branding_buildflags",
     "//components/bookmarks/browser",
     "//components/breadcrumbs/core",
-    "//components/breadcrumbs/core:feature_flags",
+    "//components/breadcrumbs/core:status",
     "//components/browser_sync",
     "//components/browsing_data/core",
     "//components/component_updater",
@@ -450,6 +456,7 @@ source_set("app_internal") {
     "//components/prefs/ios",
     "//components/previous_session_info",
     "//components/proxy_config",
+    "//components/signin/internal/identity_manager",
     "//components/sync",
     "//components/sync/base",
     "//components/web_resource",
@@ -478,7 +485,6 @@ source_set("app_internal") {
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/feature_engagement",
     "//ios/chrome/browser/first_run",
-    "//ios/chrome/browser/flags:system_flags",
     "//ios/chrome/browser/geolocation",
     "//ios/chrome/browser/history",
     "//ios/chrome/browser/mailto_handler",
@@ -490,7 +496,6 @@ source_set("app_internal") {
     "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/omaha",
     "//ios/chrome/browser/passwords",
-    "//ios/chrome/browser/paths",
     "//ios/chrome/browser/promos_manager:factory",
     "//ios/chrome/browser/push_notification:push_notification_service",
     "//ios/chrome/browser/reading_list",
@@ -505,9 +510,11 @@ source_set("app_internal") {
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
     "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser_state",
+    "//ios/chrome/browser/shared/model/paths",
     "//ios/chrome/browser/shared/model/web_state_list",
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/shared/public/features",
+    "//ios/chrome/browser/shared/public/features:system_flags",
     "//ios/chrome/browser/shared/ui/table_view",
     "//ios/chrome/browser/shared/ui/util",
     "//ios/chrome/browser/signin",
@@ -598,7 +605,7 @@ source_set("main") {
     "//ios/chrome/app/startup:ios_enable_sandbox_dump_buildflags",
     "//ios/chrome/app/startup:startup_basic",
     "//ios/chrome/browser/crash_report",
-    "//ios/chrome/browser/paths",
+    "//ios/chrome/browser/shared/model/paths",
     "//ios/chrome/common",
     "//ios/public/provider/chrome/browser/primes:primes_api",
   ]

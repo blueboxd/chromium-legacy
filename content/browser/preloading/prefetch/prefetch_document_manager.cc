@@ -9,6 +9,7 @@
 #include <tuple>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "content/browser/browser_context_impl.h"
 #include "content/browser/preloading/prefetch/prefetch_container.h"
@@ -86,7 +87,6 @@ SpeculationCandidateToPrefetchUrlParams(
 PrefetchDocumentManager::PrefetchDocumentManager(RenderFrameHost* rfh)
     : DocumentUserData(rfh),
       WebContentsObserver(WebContents::FromRenderFrameHost(rfh)),
-      no_vary_search_helper_(base::MakeRefCounted<NoVarySearchHelper>()),
       prefetch_eviction_callback_(base::DoNothing()) {}
 
 PrefetchDocumentManager::~PrefetchDocumentManager() {
@@ -102,6 +102,18 @@ PrefetchDocumentManager::~PrefetchDocumentManager() {
     prefetch_service->RemovePrefetch(
         prefetch_iter.second->GetPrefetchContainerKey());
   }
+}
+
+base::WeakPtr<PrefetchContainer> PrefetchDocumentManager::MatchUrl(
+    const GURL& url) const {
+  return no_vary_search::MatchUrl(url, all_prefetches_);
+}
+
+std::vector<std::pair<GURL, base::WeakPtr<PrefetchContainer>>>
+PrefetchDocumentManager::GetAllForUrlWithoutRefAndQueryForTesting(
+    const GURL& url) const {
+  return no_vary_search::GetAllForUrlWithoutRefAndQueryForTesting(
+      url, all_prefetches_);
 }
 
 void PrefetchDocumentManager::DidStartNavigation(
@@ -139,24 +151,22 @@ void PrefetchDocumentManager::DidStartNavigation(
   // navigations where the prefetch is used in a different tab.
   serving_page_metrics_container->SetSameTabAsPrefetchingTab(true);
 
+  base::WeakPtr<PrefetchContainer> prefetch_container = nullptr;
+
   // Get the prefetch for the URL being navigated to. If there is no prefetch
   // for that URL, then check if there is an equivalent prefetch using
   // No-Vary-Search equivalence. If there is not then stop.
   auto prefetch_iter = all_prefetches_.find(navigation_handle->GetURL());
-  if (prefetch_iter == all_prefetches_.end() || !prefetch_iter->second) {
-    if (no_vary_search_support_enabled_ &&
-        base::FeatureList::IsEnabled(
-            network::features::kPrefetchNoVarySearch)) {
-      const auto no_vary_search_match_url =
-          GetNoVarySearchHelper().MatchUrl(navigation_handle->GetURL());
-      if (no_vary_search_match_url.has_value()) {
-        // Find the prefetched url matching |navigation_handle->GetURL()| based
-        // on No-Vary-Search in |all_prefetches_|.
-        prefetch_iter = all_prefetches_.find(no_vary_search_match_url.value());
-      }
-    }
+  if (prefetch_iter != all_prefetches_.end()) {
+    prefetch_container = prefetch_iter->second;
   }
-  if (prefetch_iter == all_prefetches_.end() || !prefetch_iter->second) {
+
+  if (!prefetch_container && no_vary_search_support_enabled_ &&
+      base::FeatureList::IsEnabled(network::features::kPrefetchNoVarySearch)) {
+    prefetch_container = MatchUrl(navigation_handle->GetURL());
+  }
+
+  if (!prefetch_container) {
     DVLOG(1) << "PrefetchDocumentManager::DidStartNavigation() for "
              << navigation_handle->GetURL()
              << ": skipped (PrefetchContainer not found)";
@@ -166,9 +176,9 @@ void PrefetchDocumentManager::DidStartNavigation(
     return;
   }
 
-  prefetch_iter->second->SetServingPageMetrics(
+  prefetch_container->SetServingPageMetrics(
       serving_page_metrics_container->GetWeakPtr());
-  prefetch_iter->second->UpdateServingPageMetrics();
+  prefetch_container->UpdateServingPageMetrics();
 
   // Inform |PrefetchService| of the navigation to the prefetch.
   // |navigation_handle->GetURL()| and |prefetched_iter->second->GetURL()|
@@ -176,7 +186,7 @@ void PrefetchDocumentManager::DidStartNavigation(
   PrefetchService* prefetch_service = GetPrefetchService();
   if (prefetch_service) {
     prefetch_service->PrepareToServe(navigation_handle->GetURL(),
-                                     prefetch_iter->second);
+                                     std::move(prefetch_container));
   }
 }
 
@@ -193,6 +203,30 @@ void PrefetchDocumentManager::ProcessCandidates(
                          network::mojom::NoVarySearchPtr,
                          blink::mojom::SpeculationInjectionWorld>>
       prefetches;
+
+  // Evicts an existing prefetch if there is no longer a matching speculation
+  // candidate for it. Note: A matching candidate is not necessarily the
+  // candidate that originally triggered the prefetch, but is any prefetch
+  // candidate that has the same URL.
+  if (PrefetchNewLimitsEnabled()) {
+    std::vector<GURL> urls_from_candidates;
+    urls_from_candidates.reserve(candidates.size());
+    for (const auto& candidate_ptr : candidates) {
+      if (candidate_ptr->action == blink::mojom::SpeculationAction::kPrefetch) {
+        urls_from_candidates.push_back(candidate_ptr->url);
+      }
+    }
+    base::flat_set<GURL> url_set(std::move(urls_from_candidates));
+    std::vector<base::WeakPtr<PrefetchContainer>> prefetches_to_evict;
+    for (const auto& [url, prefetch] : all_prefetches_) {
+      if (prefetch && !base::Contains(url_set, url)) {
+        prefetches_to_evict.push_back(prefetch);
+      }
+    }
+    for (const auto& prefetch : prefetches_to_evict) {
+      EvictPrefetch(prefetch);
+    }
+  }
 
   auto should_process_entry =
       [&](const blink::mojom::SpeculationCandidatePtr& candidate) {
@@ -253,7 +287,7 @@ void PrefetchDocumentManager::PrefetchUrl(
   absl::optional<net::HttpNoVarySearchData> no_vary_search_expected;
   if (mojo_no_vary_search_expected) {
     no_vary_search_expected =
-        NoVarySearchHelper::ParseHttpNoVarySearchDataFromMojom(
+        no_vary_search::ParseHttpNoVarySearchDataFromMojom(
             mojo_no_vary_search_expected);
   }
   // Create a new |PrefetchContainer| and take ownership of it
@@ -350,11 +384,6 @@ PrefetchService* PrefetchDocumentManager::GetPrefetchService() const {
       ->GetPrefetchService();
 }
 
-const NoVarySearchHelper& PrefetchDocumentManager::GetNoVarySearchHelper()
-    const {
-  return *no_vary_search_helper_.get();
-}
-
 void PrefetchDocumentManager::OnEligibilityCheckComplete(bool is_eligible) {
   if (is_eligible)
     referring_page_metrics_.prefetch_eligible_count++;
@@ -373,9 +402,8 @@ void PrefetchDocumentManager::OnPrefetchedHeadReceived(const GURL& url) {
 
   const auto* head = it->second->GetHead();
   DCHECK(head);
-  no_vary_search_helper_->MaybeSendErrorsToConsole(url, *head,
-                                                   render_frame_host());
-  no_vary_search_helper_->AddUrl(url, *head);
+  no_vary_search::MaybeSendErrorsToConsole(url, *head, render_frame_host());
+  no_vary_search::SetNoVarySearchData(it->second);
 }
 
 void PrefetchDocumentManager::OnPrefetchSuccessful(
@@ -414,13 +442,11 @@ bool PrefetchDocumentManager::CanPrefetchNow(PrefetchContainer* prefetch) {
     DCHECK(GetPrefetchService());
     base::WeakPtr<PrefetchContainer> oldest_prefetch =
         completed_non_eager_prefetches_.front();
-    auto oldest_prefetch_key = oldest_prefetch->GetPrefetchContainerKey();
     // TODO(crbug.com/1445086): We should also be checking if the prefetch is
     // currently being used to serve a navigation. In that scenario, evicting
     // doesn't make sense.
-    GetPrefetchService()->EvictPrefetch(oldest_prefetch_key);
+    EvictPrefetch(oldest_prefetch);
     completed_non_eager_prefetches_.pop_front();
-    prefetch_eviction_callback_.Run(oldest_prefetch_key.second);
     return true;
   }
 }
@@ -428,6 +454,20 @@ bool PrefetchDocumentManager::CanPrefetchNow(PrefetchContainer* prefetch) {
 void PrefetchDocumentManager::SetPrefetchEvictionCallback(
     PrefetchEvictionCallback callback) {
   prefetch_eviction_callback_ = std::move(callback);
+}
+
+void PrefetchDocumentManager::EvictPrefetch(
+    base::WeakPtr<PrefetchContainer> prefetch) {
+  DCHECK(prefetch);
+  const GURL url = prefetch->GetURL();
+  if (auto it = owned_prefetches_.find(url); it != owned_prefetches_.end()) {
+    owned_prefetches_.erase(it);
+  } else {
+    DCHECK(GetPrefetchService());
+    GetPrefetchService()->EvictPrefetch(prefetch->GetPrefetchContainerKey());
+  }
+  all_prefetches_.erase(url);
+  prefetch_eviction_callback_.Run(url);
 }
 
 DOCUMENT_USER_DATA_KEY_IMPL(PrefetchDocumentManager);

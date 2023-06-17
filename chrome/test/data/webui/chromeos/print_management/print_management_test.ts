@@ -12,6 +12,7 @@ import {PrintManagementElement} from 'chrome://print-management/print_management
 import {PrinterSetupInfoElement} from 'chrome://print-management/printer_setup_info.js';
 import {ActivePrintJobInfo, ActivePrintJobState, CompletedPrintJobInfo, PrinterErrorCode, PrintingMetadataProviderInterface, PrintJobCompletionStatus, PrintJobInfo, PrintJobsObserverRemote} from 'chrome://print-management/printing_manager.mojom-webui.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -922,7 +923,8 @@ suite('PrintManagementTest', () => {
     // Clean up element.
     page?.remove();
     page = null;
-    document.body.innerHTML = '';
+    assert(window.trustedTypes);
+    document.body.innerHTML = window.trustedTypes.emptyHTML;
 
     // Setup for enabled test.
     loadTimeData.overrideValues({
@@ -936,6 +938,79 @@ suite('PrintManagementTest', () => {
 
     // Clean up test element.
     document.head.removeChild(linkEl);
+  });
+
+  // Verify 'manage printers' button in header does not show when setup
+  // assistance flag is off.
+  test('HeaderManagePrinterButton_HiddenWhenFlagOff', async () => {
+    const kId = 'fileA';
+    const kTitle = 'titleA';
+    const kTime =
+        convertToMojoTime(new Date(Date.parse('February 5, 2020 03:23:00')));
+
+    const jobsArr = [
+      createJobEntry(
+          kId, kTitle, kTime, PrinterErrorCode.kNoError,
+          /*completedInfo=*/ undefined,
+          createOngoingPrintJobInfo(
+              /*printedPages=*/ 0, ActivePrintJobState.kStarted)),
+    ];
+
+    // Setup for disabled test.
+    loadTimeData.overrideValues({
+      isSetupAssistanceEnabled: false,
+    });
+
+    await initializePrintManagementApp(jobsArr);
+
+    assertFalse(
+        isVisible(querySelector<CrButtonElement>(page!, '#managePrinters')));
+  });
+
+  // Verify 'manage printers' button in header does not show when setup
+  // assistance flag is on and there are no active or historical print jobs.
+  test('HeaderManagePrinterButton_HiddenWhenFlagOnAndHasNoJobs', async () => {
+    // Setup for disabled test.
+    loadTimeData.overrideValues({
+      isSetupAssistanceEnabled: true,
+    });
+
+    await initializePrintManagementApp([]);
+
+    assertFalse(
+        isVisible(querySelector<CrButtonElement>(page!, '#managePrinters')));
+  });
+
+  // Verify 'manage printers' button in header shows when setup
+  // assistance flag is on and there any print jobs.
+  test('HeaderManagePrinterButton_VisibleWhenFlagOn', async () => {
+    const kId = 'fileA';
+    const kTitle = 'titleA';
+    const kTime =
+        convertToMojoTime(new Date(Date.parse('February 5, 2020 03:23:00')));
+
+    const jobsArr = [
+      createJobEntry(
+          kId, kTitle, kTime, PrinterErrorCode.kNoError,
+          /*completedInfo=*/ undefined,
+          createOngoingPrintJobInfo(
+              /*printedPages=*/ 0, ActivePrintJobState.kStarted)),
+    ];
+
+    // Setup for disabled test.
+    loadTimeData.overrideValues({
+      isSetupAssistanceEnabled: true,
+    });
+
+    await initializePrintManagementApp(jobsArr);
+
+    const managePrintersButton: CrButtonElement =
+        querySelector<CrButtonElement>(page!, '#managePrinters')!;
+    assertTrue(isVisible(managePrintersButton));
+    assertTrue(page!.i18nExists('headerManagePrintersButtonLabel'));
+    assertEquals(
+        page!.i18n('headerManagePrintersButtonLabel'),
+        managePrintersButton.textContent!.trim());
   });
 });
 

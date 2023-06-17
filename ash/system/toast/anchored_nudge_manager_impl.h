@@ -9,6 +9,8 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "ash/constants/notifier_catalogs.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/system/anchored_nudge_data.h"
 #include "ash/public/cpp/system/anchored_nudge_manager.h"
 #include "ash/system/toast/anchored_nudge.h"
@@ -25,7 +27,8 @@ namespace ash {
 struct AnchoredNudgeData;
 
 // Class managing anchored nudge requests.
-class ASH_EXPORT AnchoredNudgeManagerImpl : public AnchoredNudgeManager {
+class ASH_EXPORT AnchoredNudgeManagerImpl : public AnchoredNudgeManager,
+                                            public SessionObserver {
  public:
   AnchoredNudgeManagerImpl();
   AnchoredNudgeManagerImpl(const AnchoredNudgeManagerImpl&) = delete;
@@ -35,6 +38,7 @@ class ASH_EXPORT AnchoredNudgeManagerImpl : public AnchoredNudgeManager {
   // AnchoredNudgeManager:
   void Show(AnchoredNudgeData& nudge_data) override;
   void Cancel(const std::string& id) override;
+  void MaybeRecordNudgeAction(NudgeCatalogName catalog_name) override;
 
   // Closes all `shown_nudges_`.
   void CloseAllNudges();
@@ -45,6 +49,9 @@ class ASH_EXPORT AnchoredNudgeManagerImpl : public AnchoredNudgeManager {
 
   // AnchoredNudge::Delegate:
   void OnNudgeHoverStateChanged(const std::string& nudge_id, bool is_hovering);
+
+  // SessionObserver:
+  void OnSessionStateChanged(session_manager::SessionState state) override;
 
   // Returns true if `id` is stored in `shown_nudges_`.
   bool IsNudgeShown(const std::string& id);
@@ -58,11 +65,22 @@ class ASH_EXPORT AnchoredNudgeManagerImpl : public AnchoredNudgeManager {
   // Default nudge duration that is used for nudges that expire.
   static constexpr base::TimeDelta kAnchoredNudgeDuration = base::Seconds(6);
 
+  // Resets the registry map that records the time a nudge was last shown.
+  void ResetNudgeRegistryForTesting();
+
  private:
   friend class AnchoredNudgeManagerImplTest;
   class AnchorViewObserver;
   class NudgeWidgetObserver;
   class NudgeHoverObserver;
+
+  // Returns the registry which keeps track of when a nudge was last shown.
+  static std::vector<std::pair<NudgeCatalogName, base::TimeTicks>>&
+  GetNudgeRegistry();
+
+  // Records the nudge `ShownCount` metric, and stores the time the nudge was
+  // shown in the nudge registry.
+  void RecordNudgeShown(NudgeCatalogName catalog_name);
 
   // Chains the provided `callback` to a `Cancel()` call to dismiss a nudge with
   // `id`, and returns this chained callback. If the provided `callback` is

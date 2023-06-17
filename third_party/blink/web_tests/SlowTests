@@ -113,7 +113,6 @@ crbug.com/24182 html/marquee/marquee-destroyed-without-removed-from-crash.html [
 crbug.com/24182 fast/js/regress/string-cons-tower.html [ Slow ]
 crbug.com/24182 [ Debug Mac13-arm64 ] fast/events/tabindex-focus-blur-all.html [ Slow ]
 crbug.com/24182 [ Linux ] fast/events/tabindex-focus-blur-all.html [ Slow ]
-crbug.com/24182 [ Mac10.13 Release ] fast/events/tabindex-focus-blur-all.html [ Slow ]
 crbug.com/24182 [ Mac10.15 Release ] fast/events/tabindex-focus-blur-all.html [ Slow ]
 crbug.com/24182 [ Mac11 Release ] fast/events/tabindex-focus-blur-all.html [ Slow ]
 crbug.com/24182 [ Mac12 ] fast/events/tabindex-focus-blur-all.html [ Slow ]
@@ -281,12 +280,8 @@ crbug.com/459009 [ Mac11 Release ] crypto/subtle/* [ Slow ]
 crbug.com/459009 [ Mac12 ] crypto/subtle/* [ Slow ]
 crbug.com/459009 [ Release Win ] crypto/subtle/* [ Slow ]
 
-crbug.com/802029 [ Linux ] fast/dom/shadow/focus-controller-recursion-crash.html [ Slow ]
-crbug.com/802029 [ Mac10.13 Release ] fast/dom/shadow/focus-controller-recursion-crash.html [ Slow ]
-crbug.com/802029 [ Mac10.15 Release ] fast/dom/shadow/focus-controller-recursion-crash.html [ Slow ]
-crbug.com/802029 [ Mac11 Release ] fast/dom/shadow/focus-controller-recursion-crash.html [ Slow ]
-crbug.com/802029 [ Mac12 ] fast/dom/shadow/focus-controller-recursion-crash.html [ Slow ]
-crbug.com/802029 [ Release Win ] fast/dom/shadow/focus-controller-recursion-crash.html [ Slow ]
+# This test is slow across platforms.
+crbug.com/802029 fast/dom/shadow/focus-controller-recursion-crash.html [ Slow ]
 
 crbug.com/614910 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-filter.html [ Slow ]
 
@@ -332,7 +327,6 @@ crbug.com/1081534 [ Mac10.15 Release ] virtual/oopr-canvas2d/fast/canvas/canvas-
 crbug.com/1081534 [ Mac11 Release ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-transformclip.html [ Slow ]
 crbug.com/1081534 [ Mac12 ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-transformclip.html [ Slow ]
 crbug.com/1081534 [ Mac10.14 Release ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-video-shadow.html [ Slow ]
-crbug.com/1081534 [ Debug Mac13 ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-video.html [ Slow ]
 crbug.com/1081534 [ Mac10.14 Release ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-video.html [ Slow ]
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-gradient-over-pattern.html [ Slow ]
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-image-over-gradient.html [ Slow ]
@@ -412,7 +406,6 @@ crbug.com/866850 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-color-over-pa
 crbug.com/866850 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-gradient-over-image.html [ Slow ]
 crbug.com/866850 [ Debug Mac13 ] virtual/gpu/fast/canvas/canvas-blending-gradient-over-image.html [ Slow ]
 crbug.com/866850 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-image-over-gradient.html [ Slow ]
-crbug.com/866850 [ Mac12 Release ] virtual/gpu/fast/canvas/canvas-blending-image-over-gradient.html [ Slow ]
 crbug.com/866850 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-image-over-image.html [ Slow ]
 crbug.com/866850 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-image-over-pattern.html [ Slow ]
 crbug.com/866850 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-color.html [ Slow ]
@@ -1463,3 +1456,5 @@ crbug.com/1376679 [ Mac ] virtual/threaded-prefer-compositing/external/wpt/scrol
 crbug.com/1271091 http/tests/security/frameNavigation/xss-ALLOWED-same-etld-plus-1-top-navigation-without-user-gesture.html [ Slow ]
 
 crbug.com/1453341 fast/frames/frame-limit.html [ Slow ]
+
+crbug.com/626703 external/wpt/html/semantics/forms/form-submission-0/multipart-formdata.window.html [ Slow ]

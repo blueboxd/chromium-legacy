@@ -38,6 +38,8 @@ typedef NS_ENUM(NSInteger, SyncSettingsSectionIdentifier) {
   AdvancedSettingsSectionIdentifier,
   // Sync errors.
   SyncErrorsSectionIdentifier,
+  // Section to show the signed-in account.
+  AccountSectionIdentifier,
 };
 
 // Item types used per Sync Setting section.
@@ -62,6 +64,8 @@ typedef NS_ENUM(NSInteger, SyncSettingsItemType) {
   SettingsDataTypeItemType,
   // Item for kAutofillWalletImportEnabled.
   AutocompleteWalletItemType,
+  // Sign out and turn off sync item,
+  SignOutAndTurnOffSyncItemType,
   // Sign out item,
   SignOutItemType,
   // AdvancedSettingsSectionIdentifier section.
@@ -81,6 +85,8 @@ typedef NS_ENUM(NSInteger, SyncSettingsItemType) {
   SignOutItemFooterType,
   // Item for the header and the footer of the types list.
   TypesListHeaderOrFooterType,
+  // Item for the signed in identity.
+  IdentityAccountItemType,
 };
 
 // States for Sync Settings page to be in.

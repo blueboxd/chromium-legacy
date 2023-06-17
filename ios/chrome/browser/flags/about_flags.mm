@@ -26,7 +26,6 @@
 #import "components/autofill/core/common/autofill_switches.h"
 #import "components/autofill/ios/browser/autofill_switches.h"
 #import "components/bookmarks/common/bookmark_features.h"
-#import "components/breadcrumbs/core/features.h"
 #import "components/commerce/core/commerce_feature_list.h"
 #import "components/commerce/core/flag_descriptions.h"
 #import "components/content_settings/core/common/features.h"
@@ -76,7 +75,6 @@
 #import "ios/chrome/browser/find_in_page/features.h"
 #import "ios/chrome/browser/flags/chrome_switches.h"
 #import "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
-#import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/follow/follow_features.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_constants.h"
@@ -85,6 +83,7 @@
 #import "ios/chrome/browser/promos_manager/features.h"
 #import "ios/chrome/browser/screen_time/screen_time_buildflags.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/tabs/inactive_tabs/features.h"
 #import "ios/chrome/browser/text_selection/text_selection_util.h"
@@ -222,9 +221,13 @@ const FeatureEntry::FeatureVariation kOmniboxMaxURLMatchesVariations[] = {
 
 const FeatureEntry::FeatureParam kDefaultBrowserVideoPromoHalfscreen[] = {
     {"default_browser_video_promo_halfscreen", "true"}};
+const FeatureEntry::FeatureParam kDefaultBrowserVideoPromoFullscreen[] = {
+    {"default_browser_video_promo_halfscreen", "false"}};
 const FeatureEntry::FeatureVariation kDefaultBrowserVideoPromoVariations[] = {
     {"Show half screen ui", kDefaultBrowserVideoPromoHalfscreen,
      std::size(kDefaultBrowserVideoPromoHalfscreen), nullptr},
+    {"Show full screen ui", kDefaultBrowserVideoPromoFullscreen,
+     std::size(kDefaultBrowserVideoPromoFullscreen), nullptr},
 };
 
 const FeatureEntry::FeatureParam
@@ -488,38 +491,35 @@ const FeatureEntry::FeatureVariation kEnablePinnedTabsVariations[] = {
      std::size(kEnablePinnedTabsOverflow), nullptr},
 };
 
-const FeatureEntry::FeatureParam
-    kAutofillBrandingIOSDismissWhenInteractedNoAnimation[] = {
-        {autofill::features::kAutofillBrandingIOSParamFrequencyTypePhone,
-         autofill::features::
-             kAutofillBrandingIOSParamFrequencyTypeDismissWhenInteracted},
-        {autofill::features::kAutofillBrandingIOSParamFrequencyTypeTablet,
-         autofill::features::
-             kAutofillBrandingIOSParamFrequencyTypeDismissWhenInteracted}};
-const FeatureEntry::FeatureParam kAutofillBrandingIOSAlwaysShowAndDismiss[] = {
+const FeatureEntry::FeatureParam kAutofillBrandingIOSUntilInteracted[] = {
+    {autofill::features::kAutofillBrandingIOSParamFrequencyTypePhone,
+     autofill::features::kAutofillBrandingIOSParamFrequencyTypeUntilInteracted},
+    {autofill::features::kAutofillBrandingIOSParamFrequencyTypeTablet,
+     autofill::features::
+         kAutofillBrandingIOSParamFrequencyTypeUntilInteracted}};
+const FeatureEntry::FeatureParam kAutofillBrandingIOSAlwaysShowAndSlideOut[] = {
     {autofill::features::kAutofillBrandingIOSParamFrequencyTypePhone,
      autofill::features::
          kAutofillBrandingIOSParamFrequencyTypeAlwaysShowAndDismiss},
     {autofill::features::kAutofillBrandingIOSParamFrequencyTypeTablet,
      autofill::features::kAutofillBrandingIOSParamFrequencyTypeAlways}};
-const FeatureEntry::FeatureParam
-    kAutofillBrandingIOSDismissWhenInteractedWithAnimation[] = {
-        {autofill::features::kAutofillBrandingIOSParamFrequencyTypePhone,
-         autofill::features::
-             kAutofillBrandingIOSParamFrequencyTypeDismissWhenInteracted},
-        {autofill::features::kAutofillBrandingIOSParamFrequencyTypeTablet,
-         autofill::features::kAutofillBrandingIOSParamFrequencyTypeAlways}};
+const FeatureEntry::FeatureParam kAutofillBrandingIOSSlideOutWhenInteracted[] =
+    {{autofill::features::kAutofillBrandingIOSParamFrequencyTypePhone,
+      autofill::features::
+          kAutofillBrandingIOSParamFrequencyTypeDismissWhenInteracted},
+     {autofill::features::kAutofillBrandingIOSParamFrequencyTypeTablet,
+      autofill::features::kAutofillBrandingIOSParamFrequencyTypeAlways}};
 const FeatureEntry::FeatureVariation kAutofillBrandingIOSVariations[] = {
     {"(will not show again after user interacts with keyboard accessories)",
-     kAutofillBrandingIOSDismissWhenInteractedNoAnimation,
-     std::size(kAutofillBrandingIOSDismissWhenInteractedNoAnimation), nullptr},
-    {"(shows and fades to the left every time)",
-     kAutofillBrandingIOSAlwaysShowAndDismiss,
-     std::size(kAutofillBrandingIOSAlwaysShowAndDismiss), nullptr},
-    {"(fades to the left after user interacts with keyboard accessories)",
-     kAutofillBrandingIOSDismissWhenInteractedWithAnimation,
-     std::size(kAutofillBrandingIOSDismissWhenInteractedWithAnimation),
-     nullptr}};
+     kAutofillBrandingIOSUntilInteracted,
+     std::size(kAutofillBrandingIOSUntilInteracted), nullptr},
+    {"(shows and slides out from leading edge every time)",
+     kAutofillBrandingIOSAlwaysShowAndSlideOut,
+     std::size(kAutofillBrandingIOSAlwaysShowAndSlideOut), nullptr},
+    {"(slides out from leading edge after user interacts with keyboard "
+     "accessories)",
+     kAutofillBrandingIOSSlideOutWhenInteracted,
+     std::size(kAutofillBrandingIOSSlideOutWhenInteracted), nullptr}};
 
 const FeatureEntry::FeatureParam kNewTabPageFieldTrialTileAblationHideAll[] = {
     {ntp_tiles::kNewTabPageFieldTrialParam, "1"}};
@@ -683,6 +683,18 @@ const FeatureEntry::FeatureVariation
          std::size(kPostRestoreDefaultBrowserPromoFullscreen), nullptr},
 };
 
+const FeatureEntry::Choice kReplaceSyncPromosWithSignInPromosChoices[] = {
+    {"Default", "", ""},
+    {"Base only", "enable-features", "ReplaceSyncPromosWithSignInPromos"},
+    {"Everything (bookmarks, reading list, etc)", "enable-features",
+     "ReplaceSyncPromosWithSignInPromos,"
+     "SyncEnableContactInfoDataTypeInTransportMode,"
+     "EnablePasswordsAccountStorage,"
+     "EnableBookmarksAccountStorage,"
+     "ReadingListEnableDualReadingListModel,"
+     "ReadingListEnableSyncTransportModeUponSignIn"},
+};
+
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
 // . ENABLE_DISABLE_VALUE: entry is either enabled, disabled, or uses the
@@ -804,9 +816,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          autofill::features::kAutofillUseMobileLabelDisambiguation,
          kAutofillUseMobileLabelDisambiguationVariations,
          "AutofillUseMobileLabelDisambiguation")},
-    {"ios-breadcrumbs", flag_descriptions::kLogBreadcrumbsName,
-     flag_descriptions::kLogBreadcrumbsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(breadcrumbs::kLogBreadcrumbs)},
     {"force-startup-signin-promo",
      flag_descriptions::kForceStartupSigninPromoName,
      flag_descriptions::kForceStartupSigninPromoDescription, flags_ui::kOsIos,
@@ -1526,11 +1535,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableCardArtImageDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableCardArtImage)},
-    {"replace-sync-promos-with-sign-in-promos",
-     flag_descriptions::kReplaceSyncPromosWithSignInPromosName,
-     flag_descriptions::kReplaceSyncPromosWithSignInPromosDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(syncer::kReplaceSyncPromosWithSignInPromos)},
     {"hide-content-suggestions-tiles",
      flag_descriptions::kHideContentSuggestionTilesName,
      flag_descriptions::kHideContentSuggestionTilesDescription,
@@ -1594,7 +1598,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSpotlightOpenTabsSourceName,
      flag_descriptions::kSpotlightOpenTabsSourceDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSpotlightOpenTabsSource)},
-};
+    {"replace-sync-promos-with-sign-in-promos",
+     flag_descriptions::kReplaceSyncPromosWithSignInPromosName,
+     flag_descriptions::kReplaceSyncPromosWithSignInPromosDescription,
+     flags_ui::kOsIos,
+     MULTI_VALUE_TYPE(kReplaceSyncPromosWithSignInPromosChoices)}};
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
   return false;

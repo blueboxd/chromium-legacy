@@ -6,12 +6,19 @@
 
 #include "ash/game_dashboard/game_dashboard_context.h"
 
+#include "ash/capture_mode/capture_mode_test_util.h"
 #include "ash/game_dashboard/game_dashboard_controller.h"
 #include "ash/game_dashboard/game_dashboard_test_base.h"
 #include "ash/game_dashboard/test_game_dashboard_delegate.h"
+#include "ash/public/cpp/ash_view_ids.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/system/unified/feature_tile.h"
+#include "base/check.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/frame_header.h"
 #include "chromeos/ui/wm/window_util.h"
+#include "extensions/common/constants.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -35,6 +42,13 @@ class GameDashboardContextTest : public GameDashboardTestBase {
     DCHECK(game_context_);
   }
 
+  void SetUpGeForceNowApp() {
+    game_window_->SetProperty(
+        kAppIDKey, static_cast<std::string>(extension_misc::kGeForceNowAppId));
+    game_window_->SetProperty(aura::client::kAppType,
+                              static_cast<int>(AppType::NON_APP));
+  }
+
   void TearDown() override {
     game_window_.reset();
     GameDashboardTestBase::TearDown();
@@ -46,6 +60,14 @@ class GameDashboardContextTest : public GameDashboardTestBase {
 
   views::Widget* GetMainMenuDialogWidget() {
     return game_context_->main_menu_widget_.get();
+  }
+
+  views::View* GetMainMenuViewById(int tile_view_id) {
+    CHECK(GetMainMenuDialogWidget())
+        << "The main menu must be opened first before trying to retrieve a "
+           "main menu View.";
+    return GetMainMenuDialogWidget()->GetContentsView()->GetViewByID(
+        tile_view_id);
   }
 
  protected:
@@ -106,6 +128,61 @@ TEST_F(GameDashboardContextTest, CloseMainMenuButtonWidget) {
 
   // Verifies that the menu is no longer visible.
   EXPECT_FALSE(GetMainMenuDialogWidget());
+}
+
+// Verifies the main menu shows all items allowed for ARC games.
+TEST_F(GameDashboardContextTest, MainMenuDialogWidget_ARCGame) {
+  // Open the main menu.
+  LeftClickOn(GetMainMenuButtonWidget()->GetContentsView());
+  ASSERT_TRUE(GetMainMenuDialogWidget());
+
+  // Verify whether each element available in the main menu is available as
+  // expected.
+  EXPECT_TRUE(GetMainMenuViewById(VIEW_ID_GD_TOOLBAR_TILE));
+  // TODO(b/273641402): Update Game Controls visibility once implemented.
+  EXPECT_FALSE(GetMainMenuViewById(VIEW_ID_GD_CONTROLS_TILE));
+  EXPECT_TRUE(GetMainMenuViewById(VIEW_ID_GD_RECORD_TILE));
+  EXPECT_TRUE(GetMainMenuViewById(VIEW_ID_GD_SCREENSHOT_TILE));
+  EXPECT_TRUE(GetMainMenuViewById(VIEW_ID_GD_SCREEN_SIZE_TILE));
+  EXPECT_TRUE(GetMainMenuViewById(VIEW_ID_GD_FEEDBACK_BUTTON));
+  EXPECT_TRUE(GetMainMenuViewById(VIEW_ID_GD_HELP_BUTTON));
+  EXPECT_TRUE(GetMainMenuViewById(VIEW_ID_GD_GENERAL_SETTINGS_BUTTON));
+}
+
+// Verifies the main menu doesn't show items only allowed for ARC games on
+// non-ARC apps.
+TEST_F(GameDashboardContextTest, MainMenuDialogWidget_NonARCGame) {
+  // Override the default `game_window_` to reflect GeForce Now and open the
+  // main menu.
+  SetUpGeForceNowApp();
+  LeftClickOn(GetMainMenuButtonWidget()->GetContentsView());
+  ASSERT_TRUE(GetMainMenuDialogWidget());
+
+  // Verify whether each element available in the main menu is available as
+  // expected.
+  EXPECT_TRUE(GetMainMenuViewById(VIEW_ID_GD_TOOLBAR_TILE));
+  EXPECT_FALSE(GetMainMenuViewById(VIEW_ID_GD_CONTROLS_TILE));
+  EXPECT_TRUE(GetMainMenuViewById(VIEW_ID_GD_RECORD_TILE));
+  EXPECT_TRUE(GetMainMenuViewById(VIEW_ID_GD_SCREENSHOT_TILE));
+  EXPECT_FALSE(GetMainMenuViewById(VIEW_ID_GD_SCREEN_SIZE_TILE));
+  EXPECT_TRUE(GetMainMenuViewById(VIEW_ID_GD_FEEDBACK_BUTTON));
+  EXPECT_TRUE(GetMainMenuViewById(VIEW_ID_GD_HELP_BUTTON));
+  EXPECT_TRUE(GetMainMenuViewById(VIEW_ID_GD_GENERAL_SETTINGS_BUTTON));
+}
+
+TEST_F(GameDashboardContextTest, TakeScreenshot) {
+  // Retrieve the screenshot button and verify the initial state.
+  LeftClickOn(GetMainMenuButtonWidget()->GetContentsView());
+  FeatureTile* screenshot_tile = static_cast<FeatureTile*>(
+      GetMainMenuViewById(VIEW_ID_GD_SCREENSHOT_TILE));
+  ASSERT_TRUE(screenshot_tile);
+
+  LeftClickOn(screenshot_tile);
+
+  // Verify that a screenshot is taken of the game window.
+  const auto file_path = WaitForCaptureFileToBeSaved();
+  const gfx::Image image = ReadAndDecodeImageFile(file_path);
+  EXPECT_EQ(image.Size(), game_window_->bounds().size());
 }
 
 }  // namespace ash

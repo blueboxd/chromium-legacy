@@ -18,7 +18,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/time/time.h"
 #import "components/autofill/core/browser/data_model/credit_card.h"
-#import "components/breadcrumbs/core/features.h"
+#import "components/breadcrumbs/core/breadcrumbs_status.h"
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/tracker.h"
 #import "components/infobars/core/infobar_manager.h"
@@ -1216,6 +1216,10 @@ void InjectNTP(Browser* browser) {
   [self.sceneState.appState removeObserver:self];
 }
 
+- (void)dealloc {
+  CHECK(!self.sceneState.UIEnabled);
+}
+
 // Formats string for display on iPadOS application switcher with the
 // domain of the foreground tab and the tab count. Assumes the scene is
 // visible. Will return nil if there are no tabs.
@@ -1431,10 +1435,6 @@ void InjectNTP(Browser* browser) {
 
 - (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion {
   [self dismissModalDialogsWithCompletion:completion dismissOmnibox:YES];
-}
-
-- (void)dismissModalDialogs {
-  [self dismissModalDialogsWithCompletion:nil dismissOmnibox:YES];
 }
 
 - (void)showHistory {
@@ -1990,7 +1990,7 @@ void InjectNTP(Browser* browser) {
   DCHECK(!self.signinCoordinator)
       << "self.signinCoordinator: "
       << base::SysNSStringToUTF8([self.signinCoordinator description]);
-  [self dismissModalDialogs];
+  [self dismissModalDialogsWithCompletion:nil];
   if (self.settingsNavigationController) {
     [self.settingsNavigationController
         showSavedPasswordsSettingsFromViewController:baseViewController
@@ -3430,7 +3430,7 @@ void InjectNTP(Browser* browser) {
   // will be destroyed.
   self.mainCoordinator.incognitoBrowser = nil;
 
-  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
+  if (breadcrumbs::IsEnabled()) {
     BreadcrumbManagerBrowserAgent::FromBrowser(self.incognitoInterface.browser)
         ->SetLoggingEnabled(false);
   }

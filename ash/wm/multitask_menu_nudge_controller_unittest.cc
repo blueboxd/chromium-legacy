@@ -14,7 +14,7 @@
 #include "ash/wm/multitask_menu_nudge_delegate_ash.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
-#include "ash/wm/tablet_mode/tablet_mode_multitask_cue.h"
+#include "ash/wm/tablet_mode/tablet_mode_multitask_cue_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_multitask_menu_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_state.h"
@@ -27,6 +27,7 @@
 #include "chromeos/ui/frame/immersive/immersive_fullscreen_controller_test_api.h"
 #include "chromeos/ui/frame/multitask_menu/multitask_button.h"
 #include "chromeos/ui/frame/multitask_menu/multitask_menu.h"
+#include "chromeos/ui/frame/multitask_menu/multitask_menu_view_test_api.h"
 #include "chromeos/ui/wm/features.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/screen.h"
@@ -45,7 +46,7 @@ chromeos::MultitaskMenuNudgeController* GetNudgeControllerForWindow(
     return TabletModeControllerTestApi()
         .tablet_mode_window_manager()
         ->tablet_mode_multitask_menu_controller()
-        ->multitask_cue()
+        ->multitask_cue_controller()
         ->nudge_controller_for_testing();
   }
 
@@ -109,8 +110,8 @@ class MultitaskMenuNudgeControllerTest : public AshTestBase {
     const auto window_screen_bounds = window->GetBoundsInScreen();
     const int tablet_nudge_y_offset =
         MultitaskMenuNudgeDelegateAsh::kTabletNudgeAdditionalYOffset +
-        TabletModeMultitaskCue::kCueHeight +
-        TabletModeMultitaskCue::kCueYOffset;
+        TabletModeMultitaskCueController::kCueHeight +
+        TabletModeMultitaskCueController::kCueYOffset;
     const gfx::Rect expected_bounds(
         (window_screen_bounds.width() - size.width()) / 2 +
             window_screen_bounds.x(),
@@ -180,7 +181,8 @@ TEST_F(MultitaskMenuNudgeControllerTest,
 
   // After floating the window from the multitask menu, there is no crash.
   LeftClickOn(
-      multitask_menu->multitask_menu_view()->float_button_for_testing());
+      chromeos::MultitaskMenuViewTestApi(multitask_menu->multitask_menu_view())
+          .GetFloatButton());
   EXPECT_TRUE(WindowState::Get(window.get())->IsFloated());
 }
 

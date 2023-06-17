@@ -50,6 +50,7 @@ extern NSString* const kCloudAndArrowUpSymbol;
 extern NSString* const kDinoSymbol;
 extern NSString* const kChromeProductSymbol;
 extern NSString* const kTunerSymbol;
+extern NSString* const kMoveFolderSymbol;
 
 // Custom symbol names which can be configured with a color palette. iOS 15+
 // only.
@@ -119,6 +120,7 @@ extern NSString* const kWarningFillSymbol;
 extern NSString* const kHelpSymbol;
 extern NSString* const kCheckmarkCircleSymbol;
 extern NSString* const kCheckmarkCircleFillSymbol;
+extern NSString* const kErrorCircleSymbol;
 extern NSString* const kErrorCircleFillSymbol;
 extern NSString* const kTrashSymbol;
 extern NSString* const kInfoCircleSymbol;

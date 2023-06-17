@@ -9,6 +9,8 @@
 #include <utility>
 
 class Profile;
+class ProfileAttributesEntry;
+struct AccountInfo;
 
 // Navigates to the Google Account page.
 void NavigateToGoogleAccountPage(Profile* profile, const std::string& email);
@@ -22,5 +24,15 @@ bool HasUnconstentedProfile(Profile* profile);
 // Returns the number of browsers associated with |profile|.
 // Note: For regular profiles this includes incognito sessions.
 int CountBrowsersFor(Profile* profile);
+
+// Returns the AccountInfo from the profile.
+AccountInfo GetAccountInfoFromProfile(const Profile* profile);
+
+// Returns the ProfileAttributesEntry from the profile.
+ProfileAttributesEntry* GetProfileAttributesFromProfile(const Profile* profile);
+
+// Returns the profile display name based off the profile attributes.
+std::u16string GetProfileMenuDisplayName(
+    ProfileAttributesEntry* profile_attributes);
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_UI_UTILS_H_

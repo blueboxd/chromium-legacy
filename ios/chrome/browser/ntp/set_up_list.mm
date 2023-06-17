@@ -75,6 +75,20 @@ void AddItemIfNotNil(NSMutableArray* array, id item) {
     [array addObject:item];
   }
 }
+
+// Returns true if signin is allowed / enabled.
+bool IsSigninEnabled(AuthenticationService* auth_service) {
+  switch (auth_service->GetServiceStatus()) {
+    case AuthenticationService::ServiceStatus::SigninForcedByPolicy:
+    case AuthenticationService::ServiceStatus::SigninAllowed:
+      return true;
+    case AuthenticationService::ServiceStatus::SigninDisabledByUser:
+    case AuthenticationService::ServiceStatus::SigninDisabledByPolicy:
+    case AuthenticationService::ServiceStatus::SigninDisabledByInternal:
+      return false;
+  }
+}
+
 }  // namespace
 
 @interface SetUpList () <PrefObserverDelegate>
@@ -97,8 +111,10 @@ void AddItemIfNotNil(NSMutableArray* array, id item) {
   }
   NSMutableArray<SetUpListItem*>* items =
       [[NSMutableArray<SetUpListItem*> alloc] init];
-  AddItemIfNotNil(items, BuildItem(SetUpListItemType::kSignInSync, prefs,
-                                   localState, authService));
+  if (IsSigninEnabled(authService)) {
+    AddItemIfNotNil(items, BuildItem(SetUpListItemType::kSignInSync, prefs,
+                                     localState, authService));
+  }
   AddItemIfNotNil(items, BuildItem(SetUpListItemType::kDefaultBrowser, prefs,
                                    localState, authService));
   AddItemIfNotNil(items, BuildItem(SetUpListItemType::kAutofill, prefs,
@@ -140,6 +156,25 @@ void AddItemIfNotNil(NSMutableArray* array, id item) {
     }
   }
   return YES;
+}
+
+- (NSArray<SetUpListItem*>*)allItems {
+  NSMutableArray* itemTypes = [[NSMutableArray alloc]
+      initWithObjects:@(int(SetUpListItemType::kSignInSync)),
+                      @(int(SetUpListItemType::kDefaultBrowser)),
+                      @(int(SetUpListItemType::kAutofill)), nil];
+  for (SetUpListItem* item in _items) {
+    [itemTypes removeObject:@(int(item.type))];
+  }
+
+  NSMutableArray* completeItems = [_items mutableCopy];
+  for (NSNumber* typeNum in itemTypes) {
+    [completeItems
+        addObject:[[SetUpListItem alloc]
+                      initWithType:(SetUpListItemType)[typeNum intValue]
+                          complete:YES]];
+  }
+  return completeItems;
 }
 
 #pragma mark - PrefObserverDelegate

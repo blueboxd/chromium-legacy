@@ -8,6 +8,7 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "components/sync/base/features.h"
@@ -27,13 +28,19 @@ namespace {
 using sync_pb::NigoriSpecifics;
 
 void InitKeyPair(NigoriState* state) {
-  if (state->public_key.has_value()) {
+  if (state->cross_user_sharing_public_key.has_value()) {
     return;
   }
   PublicPrivateKeyPair key_pair = PublicPrivateKeyPair::GenerateNewKeyPair();
-  state->public_key = PublicKey::CreateByImport(key_pair.GetRawPublicKey());
-  state->key_pair_version = 0;
+  state->cross_user_sharing_public_key =
+      PublicKey::CreateByImport(key_pair.GetRawPublicKey());
+  state->cross_user_sharing_key_pair_version = 0;
   state->cryptographer->EmplaceKeyPair(std::move(key_pair), 0);
+}
+
+void LogCrossUserSharingPublicPrivateKeyInit(bool is_succesful) {
+  base::UmaHistogramBoolean("Sync.CrossUserSharingPublicPrivateKeyInitSuccess",
+                            is_succesful);
 }
 
 class CustomPassphraseSetter : public PendingLocalNigoriCommit {
@@ -146,9 +153,16 @@ class KeystoreInitializer : public PendingLocalNigoriCommit {
                                       /*passphrase_time=*/base::Time());
     observer->OnCryptographerStateChanged(state.cryptographer.get(),
                                           /*has_pending_keys=*/false);
+    if (base::FeatureList::IsEnabled(kSharingOfferKeyPairBootstrap)) {
+      LogCrossUserSharingPublicPrivateKeyInit(true);
+    }
   }
 
-  void OnFailure(SyncEncryptionHandler::Observer* observer) override {}
+  void OnFailure(SyncEncryptionHandler::Observer* observer) override {
+    if (base::FeatureList::IsEnabled(kSharingOfferKeyPairBootstrap)) {
+      LogCrossUserSharingPublicPrivateKeyInit(false);
+    }
+  }
 };
 
 class KeystoreReencryptor : public PendingLocalNigoriCommit {
@@ -180,20 +194,23 @@ class KeystoreReencryptor : public PendingLocalNigoriCommit {
   void OnFailure(SyncEncryptionHandler::Observer* observer) override {}
 };
 
-class PublicPrivateKeyInitializer : public PendingLocalNigoriCommit {
+class CrossUserSharingPublicPrivateKeyInitializer
+    : public PendingLocalNigoriCommit {
  public:
-  PublicPrivateKeyInitializer() = default;
+  CrossUserSharingPublicPrivateKeyInitializer() = default;
 
-  PublicPrivateKeyInitializer(const PublicPrivateKeyInitializer&) = delete;
-  PublicPrivateKeyInitializer& operator=(const PublicPrivateKeyInitializer&) =
-      delete;
+  CrossUserSharingPublicPrivateKeyInitializer(
+      const CrossUserSharingPublicPrivateKeyInitializer&) = delete;
+  CrossUserSharingPublicPrivateKeyInitializer& operator=(
+      const CrossUserSharingPublicPrivateKeyInitializer&) = delete;
 
-  ~PublicPrivateKeyInitializer() override = default;
+  ~CrossUserSharingPublicPrivateKeyInitializer() override = default;
 
   bool TryApply(NigoriState* state) const override {
     // It is not safe to commit while we have pending keys.
     // Also, there is no work to do if a public-key already exists.
-    if (state->pending_keys.has_value() || state->public_key.has_value()) {
+    if (state->pending_keys.has_value() ||
+        state->cross_user_sharing_public_key.has_value()) {
       return false;
     }
     InitKeyPair(state);
@@ -204,11 +221,11 @@ class PublicPrivateKeyInitializer : public PendingLocalNigoriCommit {
                  SyncEncryptionHandler::Observer* observer) override {
     observer->OnCryptographerStateChanged(state.cryptographer.get(),
                                           /*has_pending_keys=*/false);
+    LogCrossUserSharingPublicPrivateKeyInit(true);
   }
 
   void OnFailure(SyncEncryptionHandler::Observer* observer) override {
-    // TODO(crbug.com/1445056): handle rejection of Public-private key, can be
-    // due to already existing key.
+    LogCrossUserSharingPublicPrivateKeyInit(false);
   }
 };
 
@@ -237,8 +254,8 @@ PendingLocalNigoriCommit::ForKeystoreReencryption() {
 
 // static
 std::unique_ptr<PendingLocalNigoriCommit>
-PendingLocalNigoriCommit::ForPublicPrivateKeyInitialization() {
-  return std::make_unique<PublicPrivateKeyInitializer>();
+PendingLocalNigoriCommit::ForCrossUserSharingPublicPrivateKeyInitializer() {
+  return std::make_unique<CrossUserSharingPublicPrivateKeyInitializer>();
 }
 
 }  // namespace syncer

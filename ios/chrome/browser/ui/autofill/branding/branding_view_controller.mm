@@ -21,9 +21,12 @@ namespace {
 // The left margin of the branding logo, if visible.
 constexpr CGFloat kLeadingInset = 10;
 // The scale used by the "pop" animation.
-constexpr CGFloat kAnimationScale = ((CGFloat)4) / 3;
+constexpr CGFloat kPopAnimationScale = ((CGFloat)4) / 3;
 // Wait time after the keyboard settles into place to perform pop animation.
-constexpr base::TimeDelta kAnimationWaitTime = base::Milliseconds(200);
+constexpr base::TimeDelta kPopAnimationWaitTime = base::Milliseconds(200);
+// Wait time after the keyboard settles into place to perform the
+// slide-away-from-leading-edge animation.
+constexpr base::TimeDelta kSlideAnimationWaitTime = base::Milliseconds(400);
 // Time it takes the "pop" animation to perform.
 constexpr base::TimeDelta kTimeToAnimate = base::Milliseconds(400);
 // Minimum time interval between two animations.
@@ -36,16 +39,16 @@ constexpr NSString* kBrandingButtonAXId = @"kBrandingButtonAXId";
   // Button that shows the branding.
   UIButton* _brandingIcon;
   // The start time of the last or ongoing animation.
-  base::TimeTicks _lastAnimationStartTime;
-  // A constraint of the view that should be activated when the branding is
-  // invisible.
-  NSLayoutConstraint* _constraintToHideView;
+  base::TimeTicks _lastPopAnimationStartTime;
+  // Horizontal constraints that are used for animation purpose.
+  NSLayoutConstraint* _leadingConstraint;
+  NSLayoutConstraint* _widthConstraintWhenHidingBranding;
+  // A boolean representing visibility of the keyboard.
+  BOOL _keyboardVisible;
 }
 
 @synthesize visible = _visible;
 @synthesize shouldPerformPopAnimation = _shouldPerformPopAnimation;
-
-#pragma mark - Life Cycle
 
 - (void)viewDidLoad {
   [super viewDidLoad];
@@ -70,14 +73,48 @@ constexpr NSString* kBrandingButtonAXId = @"kBrandingButtonAXId";
   // settled.
   [[NSNotificationCenter defaultCenter]
       addObserver:self
-         selector:@selector(onKeyboardAnimationStart)
+         selector:@selector(keyboardWillShow)
              name:UIKeyboardWillShowNotification
            object:nil];
   [[NSNotificationCenter defaultCenter]
       addObserver:self
-         selector:@selector(onKeyboardAnimationComplete)
+         selector:@selector(keyboardDidShow)
              name:UIKeyboardDidShowNotification
            object:nil];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(keyboardDidHide)
+             name:UIKeyboardDidHideNotification
+           object:nil];
+}
+
+- (void)notifyFormInputAccessoryTapped {
+  [self.delegate keyboardAccessoryDidTap];
+}
+
+#pragma mark - BrandingConsumer
+
+- (void)slideAwayFromLeadingEdge {
+  __weak BrandingViewController* weakSelf = self;
+  __weak UIButton* weakBranding = _brandingIcon;
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE, base::BindOnce(^{
+        [UIView animateWithDuration:kTimeToAnimate.InSecondsF()
+            animations:^{
+              [weakSelf slideAwayAnimation];
+            }
+            completion:^(BOOL finished) {
+              if (weakBranding.superview == nil || !finished) {
+                return;
+              }
+              [NSLayoutConstraint
+                  deactivateConstraints:weakSelf.view.constraints];
+              [weakSelf hideBranding];
+              // Restore original size.
+              weakBranding.transform = CGAffineTransformIdentity;
+            }];
+      }),
+      kSlideAnimationWaitTime);
 }
 
 #pragma mark - Keyboard Event Handlers
@@ -85,31 +122,52 @@ constexpr NSString* kBrandingButtonAXId = @"kBrandingButtonAXId";
 // Called right before the keyboard is visible. This method adds the autofill
 // branding to the view if it should be visible, and otherwise remove it from
 // the view hierarchy.
-- (void)onKeyboardAnimationStart {
-  if (!_constraintToHideView) {
-    _constraintToHideView = [self.view.widthAnchor constraintEqualToConstant:0];
+- (void)keyboardWillShow {
+  // Early return if the keyboard was not hidden prior to the animation. Note
+  // that this method may still be called if the user consecutively taps on two
+  // input fields.
+  if (_keyboardVisible) {
+    return;
+  }
+
+  // Add or remove the branding icon to keyboard accessories accordingly.
+  if (!_widthConstraintWhenHidingBranding) {
+    _widthConstraintWhenHidingBranding =
+        [self.view.widthAnchor constraintEqualToConstant:0];
   }
   BOOL shouldShow = self.visible && self.keyboardAccessoryVisible;
   if (shouldShow && _brandingIcon.superview == nil) {
     [self.view addSubview:_brandingIcon];
-    _constraintToHideView.active = NO;
-    AddSameConstraintsWithInsets(
+    _widthConstraintWhenHidingBranding.active = NO;
+    AddSameConstraintsToSides(
         _brandingIcon, self.view,
-        NSDirectionalEdgeInsetsMake(0, kLeadingInset, 0, 0));
+        LayoutSides::kTop | LayoutSides::kBottom | LayoutSides::kTrailing);
+    _leadingConstraint = [_brandingIcon.leadingAnchor
+        constraintEqualToAnchor:self.view.leadingAnchor
+                       constant:kLeadingInset];
+    _leadingConstraint.active = YES;
   } else if (!shouldShow) {
-    [_brandingIcon removeFromSuperview];
-    _constraintToHideView.active = YES;
+    [self hideBranding];
   }
 }
 
-// Check if the branding icon is visible and should perform an animation, and do
-// so if it should.
-- (void)onKeyboardAnimationComplete {
-  // Early return if branding is invisible.
-  if (self.view.window == nil || _brandingIcon.hidden) {
+// Update keybaord visibility, check if the branding icon is visible and should
+// perform an animation, and do so if it should.
+- (void)keyboardDidShow {
+  // Early return if the keyboard was not hidden prior to the animation. Note
+  // that this method may still be called if the user consecutively taps on two
+  // input fields.
+  if (_keyboardVisible) {
     return;
   }
-  const base::TimeTicks lastAnimationStartTime = _lastAnimationStartTime;
+  _keyboardVisible = YES;
+
+  // Early return if branding is invisible.
+  if (self.view.window == nil || _brandingIcon.superview == nil) {
+    return;
+  }
+  [self.delegate brandingIconDidShow];
+  const base::TimeTicks lastAnimationStartTime = _lastPopAnimationStartTime;
   BOOL shouldPerformPopAnimation =
       self.shouldPerformPopAnimation &&
       (lastAnimationStartTime.is_null() ||
@@ -123,29 +181,61 @@ constexpr NSString* kBrandingButtonAXId = @"kBrandingButtonAXId";
         FROM_HERE, base::BindOnce(^{
           [weakSelf performPopAnimation];
         }),
-        kAnimationWaitTime);
+        kPopAnimationWaitTime);
   }
+}
+
+// Updates keyboard visibility when the keyboard is hidden.
+- (void)keyboardDidHide {
+  _keyboardVisible = NO;
 }
 
 #pragma mark - Private
 
+// Hides the branding icon from the view. This does NOT mean that the branding
+// would not show again when the keyboard pops up next time.
+- (void)hideBranding {
+  [_brandingIcon removeFromSuperview];
+  _leadingConstraint.active = NO;
+  _leadingConstraint = nil;
+  _widthConstraintWhenHidingBranding.constant = 0;
+  _widthConstraintWhenHidingBranding.active = YES;
+}
+
 // Method that is invoked when the user taps the branding icon.
 - (void)onBrandingTapped {
-  [_delegate brandingIconPressed];
+  [_delegate brandingIconDidPress];
+}
+
+// Animation to slide the branding away from the leading edge,
+- (void)slideAwayAnimation {
+  if (_brandingIcon.superview == nil) {
+    return;
+  }
+  _leadingConstraint.constant = 0;
+  [self.view layoutIfNeeded];
+  _brandingIcon.transform =
+      CGAffineTransformScale(CGAffineTransformIdentity, 0.1, 0.1);
+  CGFloat newWidth = CGSizeApplyAffineTransform(_brandingIcon.bounds.size,
+                                                _brandingIcon.transform)
+                         .width;
+  _widthConstraintWhenHidingBranding.constant = newWidth;
+  _widthConstraintWhenHidingBranding.active = YES;
+  [self.view.superview layoutIfNeeded];
 }
 
 // Performs the "pop" animation. This includes a quick enlarging of the icon
 // and shrinking it back to the original size, and if finishes successfully,
 // also notifies the delegate on completion.
 - (void)performPopAnimation {
-  _lastAnimationStartTime = base::TimeTicks::Now();
+  _lastPopAnimationStartTime = base::TimeTicks::Now();
   __weak UIButton* weakBranding = _brandingIcon;
   __weak id<BrandingViewControllerDelegate> weakDelegate = self.delegate;
   [UIView animateWithDuration:kTimeToAnimate.InSecondsF() / 2
       // Scale up the icon.
       animations:^{
         weakBranding.transform = CGAffineTransformScale(
-            CGAffineTransformIdentity, kAnimationScale, kAnimationScale);
+            CGAffineTransformIdentity, kPopAnimationScale, kPopAnimationScale);
       }
       completion:^(BOOL finished) {
         if (!finished) {
@@ -163,7 +253,5 @@ constexpr NSString* kBrandingButtonAXId = @"kBrandingButtonAXId";
             }];
       }];
 }
-
-// TODO(crbug.com/1447909): Implement method for "exit to the left" animation.
 
 @end

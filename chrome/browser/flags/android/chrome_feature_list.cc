@@ -279,6 +279,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kRequestDesktopSiteDefaultsDowngrade,
     &kRequestDesktopSiteDefaultsLogging,
     &kRequestDesktopSitePerSiteIph,
+    &kRestoreTabsOnFRE,
     &kSafeModeForCachedFlags,
     &kShowScrollableMVTOnNTPAndroid,
     &kFeedPositionAndroid,
@@ -306,6 +307,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kTabToGTSAnimation,
     &kTestDefaultDisabled,
     &kTestDefaultEnabled,
+    &kThumbnailPlaceholder,
     &kToolbarMicIphAndroid,
     &kToolbarScrollAblationAndroid,
     &kTrustedWebActivityPostMessage,
@@ -355,10 +357,9 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &omnibox::kSuggestionAnswersColorReverse,
     &omnibox::kUpdatedConnectionSecurityIndicators,
     &optimization_guide::features::kPushNotifications,
-    &page_info::kPageInfoAboutThisSiteEn,
     &page_info::kPageInfoAboutThisSiteImprovedBottomSheet,
+    &page_info::kPageInfoAboutThisSiteMoreLangs,
     &page_info::kPageInfoAboutThisSiteNewIcon,
-    &page_info::kPageInfoAboutThisSiteNonEn,
     &password_manager::features::kBiometricTouchToFill,
     &password_manager::features::kEnablePasswordsAccountStorage,
     &password_manager::features::kPasskeyManagementUsingAccountSettingsAndroid,
@@ -929,6 +930,10 @@ BASE_FEATURE(kRequestDesktopSitePerSiteIph,
              "RequestDesktopSitePerSiteIph",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kRestoreTabsOnFRE,
+             "RestoreTabsOnFRE",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kSafeModeForCachedFlags,
              "SafeModeForCachedFlags",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -943,11 +948,11 @@ BASE_FEATURE(kShowScrollableMVTOnNTPAndroid,
 
 BASE_FEATURE(kShareSheetCustomActionsPolish,
              "ShareSheetCustomActionsPolish",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kShareSheetMigrationAndroid,
              "ShareSheetMigrationAndroid",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSpecialLocaleWrapper,
              "SpecialLocaleWrapper",
@@ -967,7 +972,7 @@ BASE_FEATURE(kStoreHoursAndroid,
 
 BASE_FEATURE(kSuppressToolbarCaptures,
              "SuppressToolbarCaptures",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSwapPixelFormatToFixConvertFromTranslucent,
              "SwapPixelFormatToFixConvertFromTranslucent",
@@ -1029,6 +1034,10 @@ BASE_FEATURE(kTestDefaultDisabled,
 BASE_FEATURE(kTestDefaultEnabled,
              "TestDefaultEnabled",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kThumbnailPlaceholder,
+             "ThumbnailPlaceholder",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kToolbarMicIphAndroid,
              "ToolbarMicIphAndroid",

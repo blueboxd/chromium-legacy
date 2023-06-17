@@ -69,7 +69,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkGraphics.h"
-#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "third_party/skia/include/core/SkTypeface.h"
@@ -80,6 +79,7 @@
 #include "third_party/skia/include/gpu/GrYUVABackendTextures.h"
 #include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
 #include "third_party/skia/include/gpu/graphite/Context.h"
+#include "third_party/skia/include/private/chromium/GrPromiseImageTexture.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/geometry/skia_conversions.h"
@@ -1253,7 +1253,9 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
   caps.shared_image_swap_chain = D3DImageBackingFactory::IsSwapChainSupported();
 #endif  // BUILDFLAG(IS_WIN)
   caps.disable_legacy_mailbox = disable_legacy_mailbox_;
-  caps.supports_yuv_rgb_conversion = true;
+  // TODO(crbug.com/1450879): Support YUV rendering and readback for Graphite.
+  caps.supports_yuv_rgb_conversion = !graphite_context();
+  caps.supports_yuv_readback = !graphite_context();
   return caps;
 }
 
@@ -2058,10 +2060,7 @@ void RasterDecoderImpl::DoWritePixelsINTERNAL(GLint x_offset,
   }
 
   // Try a direct texture upload without using SkSurface.
-  // TODO(crbug.com/1423576): Enable this path for Graphite after fixing
-  // RGBA/BGRA mismatch.
-  if (!graphite_context() &&
-      gfx::Size(src_width, src_height) == dest_shared_image->size() &&
+  if (gfx::Size(src_width, src_height) == dest_shared_image->size() &&
       x_offset == 0 && y_offset == 0 &&
       (src_info.alphaType() == dest_shared_image->alpha_type() ||
        src_info.alphaType() == kUnknown_SkAlphaType) &&

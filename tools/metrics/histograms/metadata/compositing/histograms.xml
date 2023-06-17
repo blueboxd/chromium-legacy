@@ -142,16 +142,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Compositing.CopyFromSurfaceTime" units="ms"
-    expires_after="2018-08-30">
-  <owner>wychen@chromium.org</owner>
-  <summary>
-    The turn around time taken for the async readback of pixels is measured
-    here. This should be marked as obsolete once some tests no longer rely on
-    this histogram. See crbug/1110961 for more details.
-  </summary>
-</histogram>
-
 <histogram name="Compositing.DecodeLCPCandidateImage.{DecodeMethod}"
     enum="Boolean" expires_after="2023-01-31">
   <owner>mmocny@chromium.org</owner>
@@ -855,6 +845,22 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Compositing.SurfaceAggregator.Has{Type}PerFrame"
+    enum="Boolean" expires_after="2023-11-01">
+  <owner>magchen@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    Record whether a frame has a specific type of render pass. This is logged
+    once per frame.
+  </summary>
+  <token key="Type">
+    <variant name="CopyRequests"/>
+    <variant name="PixelMovingBackdropFilters"/>
+    <variant name="PixelMovingFilters"/>
+    <variant name="UnembeddedRenderPasses"/>
+  </token>
+</histogram>
+
 <histogram name="Compositing.SurfaceAggregator.PrewalkedSurfaceCount"
     units="surfaces" expires_after="2023-08-20">
   <owner>kylechar@chromium.org</owner>
@@ -947,6 +953,39 @@ chromium-metrics-reviews@google.com.
     <variant
         name="SubmitCompositorFrameToPresentationCompositorFrame.SwapStartToSwapEnd"/>
     <variant name="TotalLatency"/>
+  </token>
+</histogram>
+
+<histogram name="CompositorLatency.IpcThread.{LatencyType}"
+    units="microseconds" expires_after="2024-06-12">
+  <owner>jonross@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    Reports the overhead of IPC's and thread hops during the production of a
+    single frame. Measures {LatencyType}
+
+    This is reported by the Renderer, at a subsampled rate of effectively once
+    per 1000 frames. Non-Renderer clients do not report this. This metric drops
+    reports on low-resolution clocks, which will bias the Windows population.
+  </summary>
+  <token key="LatencyType">
+    <variant name="BeginMainFrameQueuing"
+        summary="the time from when the Compositor thread posts
+                 BeginMainFrame to when the task actually begins on the Main
+                 thread. This is a subset of
+                 CompositorLatency.*.SendBeginMainFrameToCommit."/>
+    <variant name="DispatchToRenderer"
+        summary="the time from when Viz dispatched the BeginFrameArgs to when
+                 it is received by the client."/>
+    <variant name="FrameTimeToDispatch"
+        summary="the time from the targeted frame start time to when Viz
+                 dispatches it to the client."/>
+    <variant name="ImplThreadTotalLatency"
+        summary="the total latency overhead for Compositor-only frames. Which
+                 excludes BeginMainFrameQueuing."/>
+    <variant name="MainThreadTotalLatency"
+        summary="the total latency overhead for frames which had Main-thread
+                 work."/>
   </token>
 </histogram>
 
@@ -1377,22 +1416,6 @@ chromium-metrics-reviews@google.com.
     <variant name="MainThread."/>
   </token>
   <token key="Sequence" variants="SmoothnessSequence"/>
-</histogram>
-
-<histogram
-    name="Graphics.Smoothness.PerSession.MaxPercentDroppedFrames_1sWindow"
-    units="%" expires_after="2023-06-11">
-  <owner>jonross@chromium.org</owner>
-  <owner>graphics-dev@chromium.org</owner>
-  <summary>
-    Tracks the Max of dropped frames percent of a sliding window of 1 second.
-    The metric is reported once per page-load when the page closes.
-
-    PercentDroppedFrames is measured by tracking the number of frames which were
-    not displayed on screen out of the total number of frames expected to be
-    produced and displayed. In other words, the lower this number is, the
-    smoother experience.
-  </summary>
 </histogram>
 
 <histogram name="Graphics.Smoothness.Stale" units="ms"

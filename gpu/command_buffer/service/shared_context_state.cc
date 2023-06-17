@@ -51,7 +51,11 @@
 #endif
 
 #if BUILDFLAG(SKIA_USE_DAWN)
-#include "components/viz/common/gpu/dawn_context_provider.h"
+#include "gpu/command_buffer/service/dawn_context_provider.h"
+#endif
+
+#if BUILDFLAG(IS_WIN)
+#include "ui/gl/gl_angle_util_win.h"
 #endif
 
 namespace {
@@ -153,7 +157,7 @@ SharedContextState::SharedContextState(
     GrContextType gr_context_type,
     viz::VulkanContextProvider* vulkan_context_provider,
     viz::MetalContextProvider* metal_context_provider,
-    viz::DawnContextProvider* dawn_context_provider,
+    DawnContextProvider* dawn_context_provider,
     base::WeakPtr<gpu::MemoryTracker::Observer> peak_memory_monitor,
     bool created_on_compositor_gpu_thread)
     : use_virtualized_gl_contexts_(use_virtualized_gl_contexts),
@@ -959,5 +963,20 @@ int32_t SharedContextState::GetMaxTextureSize() const {
   max_texture_size = std::min(max_texture_size, INT32_MAX - 1);
   return max_texture_size;
 }
+
+#if BUILDFLAG(IS_WIN)
+Microsoft::WRL::ComPtr<ID3D11Device> SharedContextState::GetD3D11Device()
+    const {
+  switch (gr_context_type_) {
+    case GrContextType::kGL:
+      return gl::QueryD3D11DeviceObjectFromANGLE();
+    case GrContextType::kGraphiteDawn:
+      return dawn_context_provider_->GetD3D11Device();
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+#endif
 
 }  // namespace gpu

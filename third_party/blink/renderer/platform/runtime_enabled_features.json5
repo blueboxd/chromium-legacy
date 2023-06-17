@@ -509,7 +509,7 @@
     },
     {
       name: "ByobFetch",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CacheStorageCodeCacheHint",
@@ -1029,7 +1029,7 @@
       // regardless of whether the new highlights or decorations are exposed
       // to authors (see CSSSpellingGrammarErrors).
       name: "CSSPaintingForSpellingGrammarErrors",
-      status: "experimental",
+      status: "stable",
       base_feature: "CssPaintingForSpellingGrammarErrors",
     },
     {
@@ -1058,6 +1058,12 @@
       name: "CSSPseudoPlayingPaused",
       status: "test",
       base_feature: "none",
+    },
+    // Support relative numbers in non-length properties.
+    // Design doc: https://docs.google.com/document/d/1rikPXstHFK3b8N95QzfDar6dDDrEsuVgw1YF-JgvKQM
+    {
+      name: "CSSRelativeNumbersForNonLengthProperties",
+      status: "experimental",
     },
     {
       // https://drafts.csswg.org/css-cascade-6/#scoped-styles
@@ -1281,7 +1287,6 @@
     {
       name: "DelegatedInkTrails",
       status: "stable",
-      base_feature: "none",
     },
     // https://github.com/w3c/resource-timing/pull/343
     {
@@ -1428,17 +1433,14 @@
     },
     {
       name: "DocumentOpenSandboxInheritanceRemoval",
-      status: "experimental",
+      status: "stable",
       copied_from_base_feature_if: "overridden",
     },
     {
       name: "DocumentPictureInPictureAPI",
-      origin_trial_feature_name: "DocumentPictureInPictureAPI",
-      origin_trial_os: ["win", "mac", "linux", "chromeos"],
       status: {
         "Android": "",
-        "ChromeOS_Lacros": "",
-        "default": "experimental",
+        "default": "stable",
       },
     },
     {
@@ -1495,6 +1497,7 @@
       // If enabled, allows web pages to use the experimental EditContext API to
       // better control text input. See crbug.com/999184.
       name: "EditContext",
+      origin_trial_feature_name: "EditContext",
       status: "experimental",
     },
     {
@@ -1645,7 +1648,7 @@
       name: "FedCmLoginHint",
       depends_on: ["FedCm"],
       public: true,
-      status: "test",
+      status: "stable",
       base_feature: "none",
     },
     {
@@ -1658,6 +1661,7 @@
       name: "FedCmRpContext",
       depends_on: ["FedCm"],
       public: true,
+      status: "stable",
       base_feature: "none",
     },
     {
@@ -1670,7 +1674,7 @@
       name: "FedCmUserInfo",
       depends_on: ["FedCm"],
       public: true,
-      status: "test",
+      status: "stable",
       base_feature: "none",
     },
     {
@@ -1793,6 +1797,9 @@
     {
       name: "FontAccess",
       status: {"Android": "", "default": "stable"},
+    },
+    {
+      name: "FontationsFontBackend",
     },
     {
       name: "FontPaletteAnimation",
@@ -2103,7 +2110,7 @@
     },
     {
       name: "LayoutFlexNewRowAlgorithmV2",
-      status: "stable",
+      status: "test",
     },
     {
       name: "LayoutFlexSafeAlignment",
@@ -2834,6 +2841,7 @@
     },
     {
       name: "PrivateNetworkAccessPermissionPrompt",
+      base_feature: "none",
     },
     {
       name: "PrivateStateTokens",

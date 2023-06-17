@@ -663,15 +663,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Download.Later.Events" enum="DownloadLaterEvent"
-    expires_after="2022-12-25">
-  <owner>shaktisahu@chromium.org</owner>
-  <owner>clank-downloads@google.com</owner>
-  <summary>
-    Records events for download later feature in download core code.
-  </summary>
-</histogram>
-
 <histogram name="Download.Later.ScheduledDownloadSize" units="Mb"
     expires_after="2022-05-01">
   <owner>shaktisahu@chromium.org</owner>
@@ -797,14 +788,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records user interactions with the dangerous download infobar on Android.
   </summary>
-</histogram>
-
-<histogram base="true" name="Download.NetworkConnectionType.Complete"
-    enum="NetworkConnectionType" expires_after="2022-09-11">
-<!-- Name completed by histogram_suffixes name="DownloadSource" -->
-
-  <owner>dtrainor@chromium.org</owner>
-  <summary>Network connection type when a download is completed.</summary>
 </histogram>
 
 <histogram base="true" name="Download.NetworkConnectionType.StartNew"

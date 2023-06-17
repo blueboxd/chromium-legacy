@@ -1664,6 +1664,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // `UserActivationState` for details.
   void DidReceiveUserActivation();
 
+  // Called when successful web authn assertion occurred in this
+  // RenderFrameHost.
+  void WebAuthnAssertionRequestSucceeded();
+
   // Apply any isolation policies, such as site isolation triggered by COOP
   // headers, that might be triggered when a particular frame has just seen a
   // user activation. Called whenever this frame sees a user activation (which
@@ -2942,6 +2946,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // which is a stable identifier used by DevTools to identify frames and is
   // kept constant across navigations in a frame.
   const absl::optional<base::UnguessableToken>& GetDevToolsNavigationToken();
+
+  // Returns if the RenderFrameHostImpl is loaded with the "Cache-Control:
+  // no-store" header.
+  bool LoadedWithCacheControlNoStoreHeader();
 
  protected:
   friend class RenderFrameHostFactory;

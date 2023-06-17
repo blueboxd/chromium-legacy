@@ -15,11 +15,11 @@
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "third_party/libyuv/include/libyuv/planar_functions.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/ganesh/SkImageGanesh.h"
 #include "third_party/skia/include/gpu/graphite/Context.h"
 #include "third_party/skia/include/gpu/graphite/Image.h"
+#include "third_party/skia/include/private/chromium/GrPromiseImageTexture.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_utils.h"
@@ -32,7 +32,7 @@
 #endif
 
 #if BUILDFLAG(SKIA_USE_DAWN)
-#include "components/viz/common/gpu/dawn_context_provider.h"
+#include "gpu/command_buffer/service/dawn_context_provider.h"
 #endif
 
 #if BUILDFLAG(SKIA_USE_METAL)
@@ -144,7 +144,7 @@ void SharedImageTestBase::InitializeContext(GrContextType context_type) {
 
   if (context_type == GrContextType::kGraphiteDawn) {
 #if BUILDFLAG(SKIA_USE_DAWN)
-    dawn_context_provider_ = viz::DawnContextProvider::Create();
+    dawn_context_provider_ = DawnContextProvider::Create();
     ASSERT_TRUE(dawn_context_provider_);
 #else
     FAIL() << "Graphite-Dawn not available";

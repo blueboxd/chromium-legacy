@@ -157,6 +157,8 @@ class ChromeShelfPrefsTest : public testing::Test {
         prefs::kPolicyPinnedLauncherApps);
     pref_service_.registry()->RegisterBooleanPref(
         ash::prefs::kFilesAppUIPrefsMigrated, true);
+    pref_service_.registry()->RegisterBooleanPref(
+        ash::prefs::kProjectorSWAUIPrefsMigrated, true);
     fake_user_manager_ = new ash::FakeChromeUserManager;
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         base::WrapUnique(fake_user_manager_.get()));
@@ -312,33 +314,6 @@ TEST_F(ChromeShelfPrefsTest, TransformationForStandaloneBrowserChromeApps) {
   ASSERT_EQ(pinned_apps_strs[index], kAshChromeAppIdWithUsualPrefix);
   ASSERT_EQ(pinned_apps_strs[index + 1], kNeitherId);
   ASSERT_EQ(pinned_apps_strs[index + 2], kLacrosChromeAppIdWithUsualPrefix);
-}
-
-// If Lacros is the primary browser, then it should be pinned before non-browser
-// apps.
-TEST_F(ChromeShelfPrefsTest, LacrosPrimaryPinnedApp) {
-  // Enable lacros-only.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {ash::features::kLacrosPrimary, ash::features::kLacrosSupport}, {});
-  AddRegularUser("test@test.com");
-
-  ASSERT_TRUE(shelf_prefs_->ShouldPerformConsistencyMigrations());
-  std::vector<ash::ShelfID> pinned_apps =
-      shelf_prefs_->GetPinnedAppsFromSync(helper_.get());
-  std::vector<std::string> pinned_apps_strs;
-  pinned_apps_strs.reserve(pinned_apps.size());
-  for (auto& shelf_id : pinned_apps) {
-    pinned_apps_strs.push_back(shelf_id.app_id);
-  }
-
-  // Pinned apps should have the chrome and lacros apps as first two items.
-  ASSERT_GE(pinned_apps_strs.size(), 2u);
-  EXPECT_EQ(pinned_apps_strs[0], app_constants::kChromeAppId);
-  EXPECT_EQ(pinned_apps_strs[1], app_constants::kLacrosAppId);
-
-  // Pinned apps should have the gmail app.
-  EXPECT_TRUE(base::Contains(pinned_apps_strs, extension_misc::kGmailAppId));
 }
 
 // If Lacros is the only browser, then it should be pinned instead of ash.

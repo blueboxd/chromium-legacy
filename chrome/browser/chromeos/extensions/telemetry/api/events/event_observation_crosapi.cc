@@ -130,6 +130,45 @@ class DefaultEventDelegate : public EventObservationCrosapi::Delegate {
             browser_context_);
         break;
       }
+      case crosapi::internal::TelemetryEventInfo_Data::TelemetryEventInfo_Tag::
+          kTouchpadButtonEventInfo: {
+        base::Value::List args;
+        args.Append(converters::ConvertStructPtr<
+                        api::os_events::TouchpadButtonEventInfo>(
+                        std::move(info->get_touchpad_button_event_info()))
+                        .ToValue());
+        event = std::make_unique<extensions::Event>(
+            extensions::events::OS_EVENTS_ON_TOUCHPAD_BUTTON_EVENT,
+            api::os_events::OnTouchpadButtonEvent::kEventName, std::move(args),
+            browser_context_);
+        break;
+      }
+      case crosapi::internal::TelemetryEventInfo_Data::TelemetryEventInfo_Tag::
+          kTouchpadTouchEventInfo: {
+        base::Value::List args;
+        args.Append(converters::ConvertStructPtr<
+                        api::os_events::TouchpadTouchEventInfo>(
+                        std::move(info->get_touchpad_touch_event_info()))
+                        .ToValue());
+        event = std::make_unique<extensions::Event>(
+            extensions::events::OS_EVENTS_ON_TOUCHPAD_TOUCH_EVENT,
+            api::os_events::OnTouchpadTouchEvent::kEventName, std::move(args),
+            browser_context_);
+        break;
+      }
+      case crosapi::internal::TelemetryEventInfo_Data::TelemetryEventInfo_Tag::
+          kTouchpadConnectedEventInfo: {
+        base::Value::List args;
+        args.Append(converters::ConvertStructPtr<
+                        api::os_events::TouchpadConnectedEventInfo>(
+                        std::move(info->get_touchpad_connected_event_info()))
+                        .ToValue());
+        event = std::make_unique<extensions::Event>(
+            extensions::events::OS_EVENTS_ON_TOUCHPAD_CONNECTED_EVENT,
+            api::os_events::OnTouchpadConnectedEvent::kEventName,
+            std::move(args), browser_context_);
+        break;
+      }
     }
 
     extensions::EventRouter::Get(browser_context_)

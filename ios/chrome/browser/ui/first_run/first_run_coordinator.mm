@@ -72,11 +72,11 @@
   void (^completion)(void) = ^{
   };
   if (self.completed) {
+    __weak __typeof(self) weakSelf = self;
     completion = ^{
       base::UmaHistogramEnumeration("FirstRun.Stage", first_run::kComplete);
       WriteFirstRunSentinel();
-
-      [self.delegate didFinishPresentingScreens];
+      [weakSelf.delegate didFinishPresentingScreens];
     };
   }
 
@@ -85,6 +85,12 @@
 
   [self.baseViewController dismissViewControllerAnimated:YES
                                               completion:completion];
+  _navigationController = nil;
+  [super stop];
+}
+
+- (void)dealloc {
+  CHECK(!_navigationController);
 }
 
 #pragma mark - FirstRunScreenDelegate

@@ -17,6 +17,7 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
 import '../icons.html.js';
 import '../main_page_container/main_page_container_styles.css.js';
+import '../main_page_container/page_displayer.js';
 import '../os_settings_page/os_settings_animated_pages.js';
 import '../os_settings_page/os_settings_section.js';
 import '../os_settings_page/os_settings_subpage.js';
@@ -38,6 +39,7 @@ import {isCrostiniSupported} from '../common/load_time_booleans.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {MainPageMixin} from '../main_page_mixin.js';
 import {recordSettingChange} from '../metrics_recorder.js';
+import {Section} from '../mojom-webui/routes.mojom-webui.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {isAboutRoute, Route, Router, routes} from '../router.js';
 
@@ -71,6 +73,12 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBaseElement {
 
   static get properties() {
     return {
+      section_: {
+        type: Number,
+        value: Section.kAboutChromeOs,
+        readOnly: true,
+      },
+
       /**
        * Whether the about page is being rendered in dark mode.
        */
@@ -265,12 +273,13 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBaseElement {
   private eolMessageWithMonthAndYear_: string;
   private hasInternetConnection_: boolean;
   private firmwareUpdateCount_: number;
+  private focusConfig_: Map<string, string>;
   private showCrostiniLicense_: boolean;
   private showUpdateStatus_: boolean;
   private showButtonContainer_: boolean;
   private showRelaunch_: boolean;
   private showCheckUpdates_: boolean;
-  private focusConfig_: Map<string, string>;
+  private section_: Section;
   private showUpdateWarningDialog_: boolean;
   private showTPMFirmwareUpdateLineItem_: boolean;
   private showTPMFirmwareUpdateDialog_: boolean;

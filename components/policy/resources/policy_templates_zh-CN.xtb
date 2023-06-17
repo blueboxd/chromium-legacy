@@ -353,11 +353,11 @@
 <translation id="1343128241903870688">停用设备应用信息报告功能</translation>
 <translation id="1347198119056266798">此政策已被弃用，请改用 <ph name="FORCE_GOOGLE_SAFE_SEARCH_POLICY_NAME" /> 和 <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" />。如果设置了 <ph name="FORCE_GOOGLE_SAFE_SEARCH_POLICY_NAME" /> 政策、<ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" /> 政策或（已弃用的）<ph name="FORCE_YOUTUBE_SAFETY_MODE_POLICY_NAME" /> 政策，则系统会忽略此政策。
 
-      强制启用安全搜索功能来处理 Google 网页搜索中的查询，并禁止用户更改此设置。此设置还会强制启用 YouTube“适中”过滤模式。
+      强制启用安全搜索功能来处理 Google 网页搜索中的查询，并禁止用户更改此设置。此设置还会强制启用 YouTube“适中”受限模式。
 
-      如果您启用此设置，则 Google 搜索中的安全搜索功能和 YouTube 中的“适中”过滤模式将始终处于启用状态。
+      如果您启用此设置，则 Google 搜索中的安全搜索功能和 YouTube 中的“适中”受限模式将始终处于启用状态。
 
-      如果您停用此设置或未设置值，则系统不会在 Google 搜索中强制启用安全搜索功能，也不会在 YouTube 中强制启用过滤模式。</translation>
+      如果您停用此设置或未设置值，则系统不会在 Google 搜索中强制启用安全搜索功能，也不会在 YouTube 中强制启用受限模式。</translation>
 <translation id="134745581157553029">如果您设置了“DeviceArcDataSnapshotHours”政策，系统会开启 ARC 数据快照机制，并可在指定的时间间隔内自动启动 ARC 数据快照更新。当某个时间间隔已开始且 ARC 数据快照需要更新时，如果任何用户均未登录，系统会直接启动 ARC 数据快照更新过程，而不通知用户；如果用户会话正在进行中，系统会显示界面通知，且会等到用户接受通知后才重启设备并启动 ARC 数据快照更新过程。注意：在 ARC 数据快照更新过程中，用户无法使用设备。</translation>
 <translation id="1348603614848418219">禁止将 <ph name="MS_AD_NAME" /> 管理的设备迁移到云管理服务。</translation>
 <translation id="1352799151662469739">当使用交流电源供电时系统应在设备闲置多久（以毫秒为单位）后锁定屏幕</translation>
@@ -682,7 +682,7 @@
       如果您未设置此政策，所有 <ph name="PRODUCT_OS_NAME" />功能都将默认处于启用状态，而且用户可以使用其中的任一功能。
 
       注意：目前，扫描功能的默认状态是已通过功能标志停用。即便用户通过功能标志启用了该功能，它仍能被此政策停用。</translation>
-<translation id="1643642938972654829">允许访问策略测试页面</translation>
+<translation id="1643642938972654829">允许访问政策测试页面</translation>
 <translation id="1645793986494086629">架构：</translation>
 <translation id="1647558381546345298">通过设置此政策，您可以配置 <ph name="PRODUCT_NAME" /> 在磁盘上存储缓存媒体文件时使用的缓存大小；无论用户是否指定了 --media-cache-size 标记，Google Chrome 都会使用您在此政策中设定的缓存大小。此政策所指定的值并非硬性限值，而是针对缓存系统提出的建议值。任何低于几兆字节的值都会被向上舍入。
 
@@ -1074,6 +1074,11 @@
 <translation id="2006530844219044261">电源管理</translation>
 <translation id="2006954055163088863">视频播放时将用户视为空闲</translation>
 <translation id="2008514891623783266">WebRTC 的 IP 处理政策</translation>
+<translation id="201153120366509312">如果此政策设为允许或未设置，用户将能启用以网址为键的指标收集功能。
+如果此政策设为允许，且用户已启用以网址为键的指标收集功能，该功能就会将用户访问的网页网址发送给 Google 以用于改善搜索和浏览体验，同时也会发送每个网页的使用情况统计信息。
+以网址为键的指标还包括其他可修改/提供内容的浏览器组件（例如扩展程序）的标识符和使用情况统计信息。
+
+如果此政策设为禁止，用户将无法启用以网址为键的指标收集功能。</translation>
 <translation id="2012296492055302633">始终启用隐私保护屏幕</translation>
 <translation id="2014757022750736514">控制登录屏幕（用户会从这里登录帐号）的行为。设置包括：谁可以登录、允许使用什么类型的帐号、应该使用什么样的身份验证方法，以及常规的无障碍设置、输入法设置和语言区域设置。</translation>
 <translation id="201557587962247231">设备状态报告的上传频率</translation>
@@ -1175,11 +1180,11 @@
 <translation id="2096932573113293941">请求用户许可运行需要授权的插件</translation>
 <translation id="2098658257603918882">启用关于使用情况和崩溃相关数据的报告</translation>
 <translation id="2099380339157427935">不在任务栏中显示“退出”按钮</translation>
-<translation id="2100630160869631650">添加预先填充的 Kerberos 帐号。如果 Kerberos 凭据与登录凭据相匹配，则可以将帐号配置为重复使用登录凭据，方法是针对主帐号和密码分别指定“<ph name="LOGIN_EMAIL_PLACEHOLDER" />”和“<ph name="PASSWORD_PLACEHOLDER" />”；这样一来，除非配置了双重身份验证，否则系统便可以自动检索 Kerberos 票据。用户无法修改通过此策略添加的帐号。
+<translation id="2100630160869631650">添加预先填充的 Kerberos 帐号。如果 Kerberos 凭据与登录凭据相匹配，则可以将帐号配置为重复使用登录凭据，方法是分别为主帐号和密码指定“<ph name="LOGIN_EMAIL_PLACEHOLDER" />”和“<ph name="PASSWORD_PLACEHOLDER" />”；这样一来，除非配置了双重身份验证，否则系统便可以自动检索 Kerberos 票据。用户无法修改通过此政策添加的帐号。
 
-          如果已启用此策略，系统会将此策略定义的帐号列表添加到 Kerberos 帐号设置。
+          如果已启用此政策，系统会将此政策定义的帐号列表添加到 Kerberos 帐号设置。
 
-          如果已停用或未设置此策略，系统不会向 Kerberos 帐号设置中添加帐号，并会移除之前使用此策略添加的所有帐号。如果启用了“用户可以添加 Kerberos 帐号”策略，用户仍可手动添加帐号。</translation>
+          如果已停用或未设置此政策，系统不会向 Kerberos 帐号设置中添加帐号，并会移除之前启用此政策时添加的所有帐号。即使启用了“用户可以添加 Kerberos 帐号”政策，用户也仍可手动添加帐号。</translation>
 <translation id="2104418465060359056">报告扩展程序和插件信息</translation>
 <translation id="2106627642643925514">替换默认 PIN 码打印模式。如果这种模式不适用，系统会忽略此政策。</translation>
 <translation id="2107563874993284076">如果此政策已启用，用户便可在 <ph name="PRODUCT_NAME" />中使用网络文件共享功能。如果此政策已停用，用户便无法使用此功能。</translation>
@@ -1273,7 +1278,7 @@
 <translation id="2175353308236295184">包含一系列键值对的应用专属 JSON 配置对象，例如“"managedConfiguration": { "key1": value1, "key2": value2 }”。这些键是在应用清单中定义的。</translation>
 <translation id="2176115444876446233">阻止用户收集系统级性能跟踪记录。</translation>
 <translation id="2177696016354404697">始终停用隐私保护屏幕</translation>
-<translation id="2178899310296064282">至少强制启用 YouTube“适中”过滤模式</translation>
+<translation id="2178899310296064282">至少强制启用 YouTube“适中”受限模式</translation>
 <translation id="2180958780733364832">控制对无头模式的使用权限</translation>
 <translation id="2182291258410176649">用户可决定是否启用备份和恢复服务</translation>
 <translation id="219297066914002620">指示 <ph name="PRODUCT_OS_NAME" />启用或停用虚拟机管理控制台工具。
@@ -1320,6 +1325,15 @@
 <translation id="2223393221350938149">不允许任何网站运行 JavaScript JIT</translation>
 <translation id="2223598546285729819">默认通知设置</translation>
 <translation id="222673035924187991">启用经过 TLS 加密的 ClientHello</translation>
+<translation id="222944823539535006">此政策已被弃用，并将在里程碑 130 中移除，请改用 <ph name="URL_KEYED_METRICS_ALLOWED_POLICY_NAME" />。
+
+如果此政策已启用，系统会始终启用以网址为键的匿名化数据收集功能，从而将用户访问的网页网址发送给 Google，用于改善搜索和浏览体验。
+
+如果此政策已停用，系统将不会启用以网址为键的匿名化数据收集功能。
+
+如果此政策未设置，用户将能手动更改此设置。
+
+在 <ph name="PRODUCT_OS_NAME" /> 自助服务终端中，此政策不提供“允许用户决定”选项。如果不为 <ph name="PRODUCT_OS_NAME" /> 自助服务终端设置此政策，系统会始终启用以网址为键的匿名化数据收集功能。</translation>
 <translation id="2231817271680715693">首次运行时，从默认浏览器导入浏览记录</translation>
 <translation id="2231962946025538735">此政策已被弃用。请使用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> 控制 Flash 插件的可用性，并使用 <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> 控制是否应使用集成式 PDF 查看器打开 PDF 文件。
 
@@ -2058,6 +2072,7 @@
       此政策已从 Chrome 99 中移除。
 
       请参阅 https://www.chromestatus.com/feature/4664843055398912。</translation>
+<translation id="2948720459196236547">允许含 CCNS 标头的网页储存至<ph name="BACK_FORWARD_CACHE_NAME" />。</translation>
 <translation id="2952347049958405264">限制：</translation>
 <translation id="2957506574938329824">不允许任何网站通过 Web Bluetooth API 请求访问蓝牙设备</translation>
 <translation id="2957513448235202597">进行 <ph name="HTTP_NEGOTIATE" />身份验证时使用的帐号类型</translation>
@@ -2248,6 +2263,7 @@
 注意：请求方法 <ph name="POST_LOWERCASE_METHOD_NAME" /> 和 <ph name="PUT_LOWERCASE_METHOD_NAME" /> 不受影响，而 <ph name="PATCH_LOWERCASE_METHOD_NAME" /> 会受到影响。
 
 此政策只是暂时性措施，日后会被移除。</translation>
+<translation id="3107054704365085676">允许含“<ph name="CACHE_CONTROL_NO_STORE_NAME" />”标头的网页储存至<ph name="BACK_FORWARD_CACHE_NAME" /></translation>
 <translation id="3110248563985502478">此政策已在 M88 中弃用，而且 Chrome 已不再支持 Flash。如果此政策已启用，过期插件可作为正常插件使用。如果此政策已停用，系统将不会使用过期插件。
 
       如果您未设置此政策，系统会请求用户授权其运行过期插件。</translation>
@@ -3776,7 +3792,7 @@
 <translation id="4510131075424939993">此政策用于指定评估身份信息时要在 <ph name="DOH_TEMPLATES_WITH_IDENTIFIERS_POLICY_NAME" /> 中使用的盐值</translation>
 <translation id="4510923771103268849">允许用户拥有 Crostini 容器的 root 权限</translation>
 <translation id="4512407512989846472">允许禁止指定网址向剪贴板中复制数据</translation>
-<translation id="4513691822411041977">不强制在 Google 搜索中使用安全搜索功能，也不强制使用 YouTube 过滤模式</translation>
+<translation id="4513691822411041977">不强制在 Google 搜索中使用安全搜索功能，也不强制使用 YouTube 受限模式</translation>
 <translation id="4515404363392014383">针对可信来源启用安全浏览功能</translation>
 <translation id="4518251772179446575">每次网站尝试跟踪用户的地理位置时都询问我</translation>
 <translation id="4521193243799782295">在用户登录期间，<ph name="PRODUCT_OS_NAME" />可通过服务器（在线）或使用缓存的密码（离线）来验证用户的身份。
@@ -4287,6 +4303,7 @@
 <translation id="5025239932007658691">如果此政策已启用或未设置，<ph name="PRODUCT_NAME" /> 会不定时向 Google 服务器发送查询以检索准确的时间戳。
 
       如果此政策已停用，系统会阻止 <ph name="PRODUCT_NAME" /> 发送此类查询。</translation>
+<translation id="5030415914668947893">允许进行以网址为键的指标收集</translation>
 <translation id="5033070732967197381">允许在 TLS 证书已损坏的网站上发出 WebAuthn API 请求。</translation>
 <translation id="5034504101537897433">启用设备崩溃报告信息报告功能</translation>
 <translation id="5036013147560568855">证书配置协议的版本。默认是 1。1 表示“静态”协议。2 表示“动态”协议。</translation>
@@ -4423,13 +4440,13 @@
       </translation>
 <translation id="51859390023061147">停用“完全还原”功能。</translation>
 <translation id="5189360528842591274">仅允许连接到此列表中的蓝牙服务</translation>
-<translation id="5190426551516379357">通过设置此政策，您可以强制启用最基本的 YouTube 过滤模式，并禁止用户选择限制条件更加宽松的模式。如果此政策设为：
+<translation id="5190426551516379357">通过设置此政策，您可以强制启用最基本的 YouTube 受限模式，并禁止用户选择限制条件更加宽松的模式。如果此政策设为：
 
-      *“严格”- YouTube“严格”过滤模式将始终处于启用状态。
+      *“严格”- YouTube“严格”受限模式将始终处于启用状态。
 
-      *“适中”- 用户只可选择启用 YouTube“适中”过滤模式和 YouTube“严格”过滤模式，但无法关闭过滤模式。
+      *“适中”- 用户只可选择启用 YouTube“适中”受限模式和 YouTube“严格”受限模式，但无法关闭受限模式。
 
-      *“关闭”或未设置值 - Chrome 不会强制启用 YouTube 过滤模式。但是，外部政策（例如 YouTube 政策）仍有可能会强制启用过滤模式。</translation>
+      *“关闭”或未设置值 - Chrome 不会强制启用 YouTube 受限模式。但是，外部政策（例如 YouTube 政策）仍有可能会强制启用受限模式。</translation>
 <translation id="5191476996923842491">setTimeout() 函数延迟的默认行为。</translation>
 <translation id="519247340330463721">配置与安全浏览功能相关的政策。</translation>
 <translation id="5194683382395300627">允许在网页上使用 <ph name="ASSISTANT_PRODUCT_NAME" />来实现诸多目的（例如启用自动更改密码的功能）</translation>
@@ -4746,7 +4763,7 @@
 <translation id="5460797984317417682">启用全屏提醒</translation>
 <translation id="5464816904705580310">为受管理用户配置设置。</translation>
 <translation id="5466596281866046569">报告应用信息</translation>
-<translation id="5467175549232776406">策略测试页面可供访问</translation>
+<translation id="5467175549232776406">政策测试页面可供访问</translation>
 <translation id="546726650689747237">使用交流电源供电时的屏幕变暗延迟时间</translation>
 <translation id="546830339470589966">为新的 Kerberos 票据自动补全域名</translation>
 <translation id="5469143988693423708">允许用户运行 Crostini</translation>
@@ -4788,6 +4805,7 @@
 <translation id="5503933085302625442">请勿将 OS 回滚到目标版本。</translation>
 <translation id="55057839818162162">启用由 <ph name="GOOGLE_LENS_PRODUCT_NAME" />提供支持的摄像头辅助搜索功能</translation>
 <translation id="55057971769693300">禁止使用光标突出显示</translation>
+<translation id="5507027524345233268">禁止含 CCNS 标头的网页储存至<ph name="BACK_FORWARD_CACHE_NAME" />。</translation>
 <translation id="5508307164752647432">启用 Kerberos 功能</translation>
 <translation id="5511702823008968136">启用书签栏</translation>
 <translation id="5512418063782665071">主页网址</translation>
@@ -5291,6 +5309,7 @@
 <translation id="603768430528561926">如果此政策已启用或未设置，企业设备用户便可通过 <ph name="PRODUCT_OS_NAME" />注册流程来兑换优惠。
 
       如果此政策已停用，用户将无法兑换这类优惠。</translation>
+<translation id="6042629184389251062">禁止进行以网址为键的指标收集</translation>
 <translation id="6046615715547751255">不允许使用精细报告控件</translation>
 <translation id="6048199181629830227">启用用电高峰转移电源管理</translation>
 <translation id="6048690591359317353">不允许用户手动断开或修改 VPN</translation>
@@ -5793,6 +5812,7 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 <translation id="6462604655173570082">如果此政策未设置或已启用，用户便可在“新标签页”页面上的搜索框中查看和使用 <ph name="GOOGLE_LENS_PRODUCT_NAME" />按钮。如果此政策已停用，用户将不会在“新标签页”页面上的搜索框中看到 <ph name="GOOGLE_LENS_PRODUCT_NAME" />按钮。</translation>
 <translation id="6464074037294098618">自动填充地址信息</translation>
 <translation id="6467613372414922590">允许使用用户级本地消息传递主机（安装时没有管理员权限）</translation>
+<translation id="6471018476824827813">允许进行以网址为键的指标收集</translation>
 <translation id="6473623140202114570">配置安全浏览功能在哪些网域中不会触发警告。</translation>
 <translation id="6474194795370862403">系统将使用旧的 offsetParent 行为。</translation>
 <translation id="647645276885673708">启用 <ph name="LACROS_NAME" /> 并将其设为主要浏览器</translation>
@@ -5819,11 +5839,11 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 <translation id="6491305972928809525">不在自助服务终端模式下显示悬浮式无障碍功能菜单</translation>
 <translation id="6491872498385040936">此政策已被弃用。请考虑使用替换此政策的 <ph name="FORCE_YOUTUBE_RESTRICT_POLICY_NAME" />；借助该政策，您可以进行更加精确的微调。
 
-      强制启用 YouTube“适中”过滤模式，并禁止用户更改此设置。
+      强制启用 YouTube“适中”受限模式，并禁止用户更改此设置。
 
-      如果您启用了此设置，则系统会始终强制启用 YouTube 过滤模式，且至少启用“适中”过滤模式。
+      如果您启用了此设置，则系统会始终强制启用 YouTube 受限模式，且至少启用“适中”受限模式。
 
-      如果您停用此设置或未设置值，则 <ph name="PRODUCT_NAME" /> 不会强制启用 YouTube 过滤模式。但是，外部政策（例如 YouTube 政策）仍有可能会强制启用过滤模式。</translation>
+      如果您停用此设置或未设置值，则 <ph name="PRODUCT_NAME" /> 不会强制启用 YouTube 受限模式。但是，外部政策（例如 YouTube 政策）仍有可能会强制启用受限模式。</translation>
 <translation id="6492177700737407141">注册“高级保护计划”的用户将只能获享标准的消费者级别保护功能</translation>
 <translation id="6492737559291967859">通过设置此政策，您可以指定要让 <ph name="PRODUCT_NAME" /> 使用的语言区域。
 
@@ -6303,7 +6323,7 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 <translation id="6857240169209507953">禁止 <ph name="BOREALIS_NAME" /> 在设备上运行</translation>
 <translation id="6857372417233723544">通过设置此政策，您可为 <ph name="PRODUCT_OS_NAME" /> 启用印地语 Inscript 布局。
 如果此政策设为 false 或未设置，布局将不可用。需要重新启动才能生效。</translation>
-<translation id="685769593149966548">强制启用 YouTube“严格”过滤模式</translation>
+<translation id="685769593149966548">强制启用 YouTube“严格”受限模式</translation>
 <translation id="686079137349561371">Microsoft Windows 7 或更高版本</translation>
 <translation id="6881447940489194100">数据的十六进制编码 SHA-256 哈希。</translation>
 <translation id="68818134518270542">通过设置此政策，您可以指定用户能在 <ph name="PRODUCT_OS_NAME" />锁定屏幕中将哪些应用作为笔记应用开启。
@@ -7245,7 +7265,7 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
       如果相应网站与此政策中的网址格式匹配，系统将不会考虑以下政策：<ph name="WINDOW_CAPTURE_ALLOWED_BY_ORIGINS_POLICY_NAME" />、<ph name="SCREEN_CAPTURE_ALLOWED_BY_ORIGINS_POLICY_NAME" />、<ph name="SCREEN_CAPTURE_ALLOWED_POLICY_NAME" />。
 
       如需详细了解有效的<ph name="URL_LABEL" />格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。此政策只能根据来源进行匹配，因此网址格式中的任何路径都会被忽略。</translation>
-<translation id="77675082813227181">策略测试页面已被屏蔽</translation>
+<translation id="77675082813227181">政策测试页面已被屏蔽</translation>
 <translation id="7771298620150437359">配置首选语言的内容和顺序</translation>
 <translation id="7773790010815041731">在 <ph name="MS_WIN_NAME" />、<ph name="MAC_OS_NAME" /> 和 <ph name="LINUX_OS_NAME" /> 上，Chrome 应用已被弃用。
       如果此政策已启用，<ph name="PRODUCT_NAME" /> 会允许 Chrome 应用在这些平台上继续运行，直到从所有平台上移除对 Chrome 应用的支持的截止日期（2022 年 6 月）来临为止。
@@ -7570,7 +7590,7 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 
 如果 <ph name="SCREENSAVER_LOCK_SCREEN_ENABLED_POLICY_NAME" /> 政策设为 false，此政策将不会产生任何影响。</translation>
 <translation id="8113731369695819720">为登录屏幕停用单声道音频</translation>
-<translation id="8114382167597081590">不强制启用 YouTube 过滤模式</translation>
+<translation id="8114382167597081590">不强制启用 YouTube 受限模式</translation>
 <translation id="8117662664312039036">不允许设备使用 PluginVm</translation>
 <translation id="8117921351531866504">该政策让您能够设置是否允许网站检查用户有无已保存的付款方式。
 
@@ -7734,11 +7754,11 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 <ph name="PRIVACY_SANDBOX_AD_TOPICS_ENABLED_POLICY_NAME" />
 <ph name="PRIVACY_SANDBOX_SITE_ENABLED_ADS_ENABLED_POLICY_NAME" />
 <ph name="PRIVACY_SANDBOX_AD_MEASUREMENT_ENABLED_POLICY_NAME" /></translation>
-<translation id="826163650738550159">此策略会提供对政策测试页面的访问权限；在该页面上测试策略时，系统会忽略所有其他策略。
+<translation id="826163650738550159">此政策会提供对政策测试页面的访问权限；在该页面上测试政策时，系统会忽略所有其他政策。
 此功能将仅在 Canary 版渠道中提供。
 
-如果已启用或未设置此策略，用户将能访问该页面。
-如果已停用此策略，该页面将被屏蔽。</translation>
+如果已启用或未设置此政策，用户将能访问该页面。
+如果已停用此政策，该页面将被屏蔽。</translation>
 <translation id="8266778278542911985">如果此政策设为 3，系统会允许网站请求访问串行端口。如果此政策设为 2，系统会禁止访问串行端口。
 
       如果此政策未设置，系统会允许网站请求访问，但用户可以更改此设置。</translation>
@@ -7948,7 +7968,7 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 <translation id="8455529558077979314">隐私保护屏设置</translation>
 <translation id="8461914792118322307">代理</translation>
 <translation id="8465065632133292531">在使用 POST 的即搜即得网址中所需的参数</translation>
-<translation id="8470317291588703478">不强制使用 YouTube 过滤模式</translation>
+<translation id="8470317291588703478">不强制使用 YouTube 受限模式</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8479032202539686055">WebRTC 会在搜索最佳路径时使用所有可用接口。</translation>
 <translation id="8483004350080020634">先剔除 https:// 网址中关乎隐私和安全性的敏感部分，然后再将网址传递给 PAC（代理自动配置）脚本，以供 <ph name="PRODUCT_NAME" /> 在代理解析期间使用。
@@ -8018,7 +8038,7 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 
       警告：最好不要配置版本限制，因为这些限制可能会妨碍用户接收软件更新以及重要的安全性修补程序。限制设备更新为特定版本可能会将用户置于风险之中。</translation>
 <translation id="8519617069657262768">启用 Google 云端硬盘同步</translation>
-<translation id="8520064498689833152">强制在 Google 搜索中使用级别至少为“中等”的安全搜索功能，也强制使用级别至少为“中等”的 YouTube 过滤模式</translation>
+<translation id="8520064498689833152">强制在 Google 搜索中使用级别至少为“中等”的安全搜索功能，也强制使用级别至少为“中等”的 YouTube 受限模式</translation>
 <translation id="8524334245528364388">包含一系列打印服务器的 JSON 文件的网址。</translation>
 <translation id="8525526490824335042">Linux 容器</translation>
 <translation id="8526745614158856826">通过设置此政策，您可以罗列一些网址，从而指定自动授权哪些网站访问所有可用的设备。
@@ -8193,7 +8213,7 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
 <translation id="8676959842615154675">如果此政策已启用，远程访问主机会对比这两个名称：与主机关联的本地用户的名称，以及注册为主机所有者的 Google 帐号的名称（如果主机归“johndoe@example.com”所有，Google 帐号的名称就是“johndoe”）。如果主机所有者的名称不同于与主机关联的本地用户的名称，该主机将不会启动。若要强制将所有者的 Google 帐号与特定网域关联，请将此政策与 <ph name="REMOTE_ACCESS_HOST_DOMAIN_POLICY_NAME" /> 搭配使用。
 
       如果此政策已停用或未设置，远程访问主机便能与任何本地用户关联。</translation>
-<translation id="867708016260789630">强制使用级别至少为“中等”的 YouTube 过滤模式</translation>
+<translation id="867708016260789630">强制使用级别至少为“中等”的 YouTube 受限模式</translation>
 <translation id="8677853537025397834">允许在这些网站上使用 WebHID API</translation>
 <translation id="8684000025871334499">在 <ph name="PRODUCT_OS_NAME" /> 上为 Bruschetta 虚拟机配置安装政策和运行时政策。这样一来，用户便能安装第三方虚拟机。此功能默认处于停用状态。
 
@@ -8255,7 +8275,7 @@ Origin-Agent-Cluster HTTP 标头可控制是将某个文档隔离在以源为键
       “http://acme.com/ABC”仅在“IESiteListMode”下匹配。</translation>
 <translation id="8728854710675158426">已允许在 TLS 握手时使用不安全哈希</translation>
 <translation id="8734543507835977857">在会话启动后才开始实施电源管理延迟和会话时长限制</translation>
-<translation id="8736538322216687231">强制启用最低级别的 YouTube 过滤模式</translation>
+<translation id="8736538322216687231">强制启用最低级别的 YouTube 受限模式</translation>
 <translation id="874149307422233209">此政策让管理员能够控制 Google 以何种方式处理通过 <ph name="PRODUCT_OS_NAME" /> 相关功能向 Google 搜索发送的用户数据。
 如果此政策已启用，用户不仅能使用 <ph name="PRODUCT_OS_NAME" /> 启动器搜索框，也能在 <ph name="PRODUCT_OS_NAME" /> 中使用 <ph name="PRODUCT_NAME" /> 浏览器地址框，而且用户的搜索记录不会与其身份关联。
 如果此政策未设置或已停用，用户的这些搜索数据将与其身份关联。</translation>

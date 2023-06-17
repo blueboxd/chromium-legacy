@@ -1077,6 +1077,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.Render.SystemDelay" units="ms"
+    expires_after="2024-06-01">
+  <owner>fhernqvist@google.com</owner>
+  <owner>olka@chromium.org</owner>
+  <owner>webrtc-audio-uma@google.com</owner>
+  <summary>
+    The delay between audio being delivered to the OS-specific implementation of
+    AudioOutputStream and the audio being played out by the speakers. Reported
+    every time the AudioOutputStream calls AudioSourceCallback::OnMoreData.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.TabAudioMuted" enum="Boolean"
     expires_after="2023-11-12">
   <owner>evliu@google.com</owner>
@@ -1219,6 +1231,22 @@ chromium-metrics-reviews@google.com.
     size 10 ms) and is logged at the end of each collection interval if any
     glitches were detected. Not recorded for streams shorter than 1000
     callbacks. Reported on Windows and Mac.
+  </summary>
+  <token key="Type">
+    <variant name="Capture"/>
+    <variant name="Render"/>
+  </token>
+</histogram>
+
+<histogram name="Media.Audio.{Type}.SystemGlitchDuration" units="ms"
+    expires_after="2024-06-01">
+  <owner>fhernqvist@google.com</owner>
+  <owner>olka@chromium.org</owner>
+  <owner>webrtc-audio-uma@google.com</owner>
+  <summary>
+    The duration of audio glitches occurring in the OS-specific implementation
+    of an audio stream (AudioInputStream for Capture and AudioOutputStream for
+    Render). Reported every time a glitch occurs.
   </summary>
   <token key="Type">
     <variant name="Capture"/>
@@ -3111,6 +3139,30 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Media.GPU.OutputFormatHardwareGmb" enum="OutputFormat"
+    expires_after="2023-12-01">
+  <owner>hitawala@chromium.org</owner>
+  <owner>vasilyt@chromium.org</owner>
+  <owner>shared-image-team@google.com</owner>
+  <summary>
+    Records the format used for creating video frames with hardware backed
+    GpuMemoryBuffers. Result is an enum that represents OutputFormat in
+    GpuMemoryBufferVideoFramePool. Recorded once per VideoFrame creation.
+  </summary>
+</histogram>
+
+<histogram name="Media.GPU.OutputFormatSoftwareGmb" enum="OutputFormat"
+    expires_after="2023-12-01">
+  <owner>hitawala@chromium.org</owner>
+  <owner>vasilyt@chromium.org</owner>
+  <owner>shared-image-team@google.com</owner>
+  <summary>
+    Records the format used for creating video frames with software backed
+    GpuMemoryBuffers. Result is an enum that represents OutputFormat in
+    GpuMemoryBufferVideoFramePool. Recorded once per VideoFrame creation.
+  </summary>
+</histogram>
+
 <histogram name="Media.GPU.VideoDecoderType" enum="VideoDecoderType"
     expires_after="2023-12-04">
   <owner>dalecurtis@chromium.org</owner>
@@ -3252,6 +3304,13 @@ chromium-metrics-reviews@google.com.
     The HW/SW suffix indicates the type of the decoder that was ultimately
     selected.
   </summary>
+</histogram>
+
+<histogram name="Media.InitializeRendererTimeout" enum="CallbackTimeoutStatus"
+    expires_after="2024-04-11">
+  <owner>xhwang@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>The timeout status of Renderer initialization.</summary>
 </histogram>
 
 <histogram name="Media.InputErrorMac" enum="OSStatus_Audio"
@@ -4553,7 +4612,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.RtcLowLatencyVideoRenderer.MaxQueueLength"
-    units="frames" expires_after="2023-05-27">
+    units="frames" expires_after="2023-10-22">
   <owner>kron@chromium.org</owner>
   <owner>webrtc-video@google.com</owner>
   <summary>
@@ -4564,7 +4623,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.RtcLowLatencyVideoRenderer.MaxSizeDropQueueCount"
-    units="count" expires_after="2023-10-01">
+    units="count" expires_after="2023-10-22">
   <owner>kron@chromium.org</owner>
   <owner>webrtc-video@google.com</owner>
   <summary>
@@ -4969,6 +5028,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     URL scheme used with HTML5 media; only recorded for src=URL playbacks and
     not for Media Source Extensions playbacks. Each URL provides one sample.
+  </summary>
+</histogram>
+
+<histogram name="Media.V4l2VideoDecoder.Error" enum="V4l2VideoDecoderFunctions"
+    expires_after="2023-12-07">
+  <owner>stevecho@chromium.org</owner>
+  <owner>chromeos-gfx-video@google.com</owner>
+  <summary>
+    Records errors during normal V4L2VideoDecoder operations. These can happen
+    during initialization, decode or other internal state changes. Multiple
+    errors can be recorded during the object lifetime.
   </summary>
 </histogram>
 
@@ -6007,7 +6077,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Media.WebmMuxer.DidAdjustTimestamp.{StreamTypesRecorded}.{Domain}"
-    enum="Boolean" expires_after="2023-06-26">
+    enum="Boolean" expires_after="2023-11-26">
   <owner>handellm@google.com</owner>
   <owner>video-performance-team@google.com</owner>
   <summary>

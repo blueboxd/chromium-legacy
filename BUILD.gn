@@ -319,9 +319,12 @@ group("gn_all") {
       deps += [
         "//ui/aura:aura_demo",
         "//ui/aura:aura_unittests",
-        "//ui/webui/examples:webui_examples",
         "//ui/wm:wm_unittests",
       ]
+    }
+
+    if (use_aura || is_mac) {
+      deps += [ "//ui/webui/examples:webui_examples" ]
     }
 
     if (use_ozone) {
@@ -1009,7 +1012,7 @@ if (is_chromeos_ash) {
       "//ui/ozone/gl:ozone_gl_unittests",
     ]
 
-    if (enable_plugins) {
+    if (enable_ppapi) {
       data_deps += [ "//ppapi/examples/video_decode" ]
     }
 

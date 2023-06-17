@@ -312,6 +312,9 @@ void RecordSigninUserActionForAccessPoint(AccessPoint access_point) {
     case AccessPoint::ACCESS_POINT_NTP_LINK:
       base::RecordAction(base::UserMetricsAction("Signin_Signin_FromNTP"));
       break;
+    case AccessPoint::ACCESS_POINT_MENU:
+      base::RecordAction(base::UserMetricsAction("Signin_Signin_FromMenu"));
+      break;
     case AccessPoint::ACCESS_POINT_SETTINGS:
       base::RecordAction(base::UserMetricsAction("Signin_Signin_FromSettings"));
       break;
@@ -350,10 +353,6 @@ void RecordSigninUserActionForAccessPoint(AccessPoint access_point) {
     case AccessPoint::ACCESS_POINT_CLOUD_PRINT:
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromCloudPrint"));
-      break;
-    case AccessPoint::ACCESS_POINT_CONTENT_AREA:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_Signin_FromContentArea"));
       break;
     case AccessPoint::ACCESS_POINT_SIGNIN_PROMO:
       base::RecordAction(
@@ -490,6 +489,9 @@ void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point) {
     case AccessPoint::ACCESS_POINT_NTP_LINK:
       base::RecordAction(base::UserMetricsAction("Signin_Impression_FromNTP"));
       break;
+    case AccessPoint::ACCESS_POINT_MENU:
+      base::RecordAction(base::UserMetricsAction("Signin_Impression_FromMenu"));
+      break;
     case AccessPoint::ACCESS_POINT_SETTINGS:
       base::RecordAction(
           base::UserMetricsAction("Signin_Impression_FromSettings"));
@@ -595,7 +597,6 @@ void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point) {
           base::UserMetricsAction("Signin_Impression_FromSetUpList"));
       break;
     case AccessPoint::ACCESS_POINT_ENTERPRISE_SIGNOUT_COORDINATOR:
-    case AccessPoint::ACCESS_POINT_CONTENT_AREA:
     case AccessPoint::ACCESS_POINT_EXTENSIONS:
     case AccessPoint::ACCESS_POINT_SUPERVISED_USER:
     case AccessPoint::ACCESS_POINT_UNKNOWN:
@@ -634,6 +635,7 @@ void RecordConsistencyPromoUserAction(AccountConsistencyPromoAction action,
     // But not these access points.
     case AccessPoint::ACCESS_POINT_START_PAGE:
     case AccessPoint::ACCESS_POINT_NTP_LINK:
+    case AccessPoint::ACCESS_POINT_MENU:
     case AccessPoint::ACCESS_POINT_SETTINGS:
     case AccessPoint::ACCESS_POINT_SUPERVISED_USER:
     case AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE:
@@ -644,7 +646,6 @@ void RecordConsistencyPromoUserAction(AccountConsistencyPromoAction action,
     case AccessPoint::ACCESS_POINT_USER_MANAGER:
     case AccessPoint::ACCESS_POINT_DEVICES_PAGE:
     case AccessPoint::ACCESS_POINT_CLOUD_PRINT:
-    case AccessPoint::ACCESS_POINT_CONTENT_AREA:
     case AccessPoint::ACCESS_POINT_SIGNIN_PROMO:
     case AccessPoint::ACCESS_POINT_RECENT_TABS:
     case AccessPoint::ACCESS_POINT_UNKNOWN:

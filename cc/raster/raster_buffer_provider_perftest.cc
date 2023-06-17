@@ -25,8 +25,10 @@
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/resources/platform_color.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_context_support.h"
+#include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -126,6 +128,12 @@ class PerfContextProvider
   base::Lock* GetLock() override { return &context_lock_; }
   void AddObserver(viz::ContextLostObserver* obs) override {}
   void RemoveObserver(viz::ContextLostObserver* obs) override {}
+  unsigned int GetGrGLTextureFormat(
+      viz::SharedImageFormat format) const override {
+    return viz::TextureStorageFormat(
+        format.resource_format(),
+        ContextCapabilities().angle_rgbx_internal_format);
+  }
 
  private:
   friend class base::RefCountedThreadSafe<PerfContextProvider>;

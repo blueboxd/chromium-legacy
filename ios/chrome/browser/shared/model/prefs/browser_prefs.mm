@@ -223,7 +223,11 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   // animation should perform. Defaults to 2, which is the maximum number of
   // times a user should see autofill branding animation after installation.
   registry->RegisterIntegerPref(
-      prefs::kAutofillBrandingIconAnimationRemainingCountPrefName, 2);
+      prefs::kAutofillBrandingIconAnimationRemainingCount, 2);
+  // Register other autofill branding prefs.
+  registry->RegisterIntegerPref(prefs::kAutofillBrandingIconDisplayCount, 0);
+  registry->RegisterBooleanPref(
+      prefs::kAutofillBrandingKeyboardAccessoriesTapped, false);
 
   registry->RegisterDictionaryPref(kLocalConsentsDictionary);
 
@@ -388,7 +392,12 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(kPrefPromoObject);
 
   // Register pref storing whether Web Inspector support is enabled.
+#if BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
+  // Enable it by default on debug builds
+  registry->RegisterBooleanPref(prefs::kWebInspectorEnabled, true);
+#else
   registry->RegisterBooleanPref(prefs::kWebInspectorEnabled, false);
+#endif
 
   // Register prerender network prediction preferences.
   registry->RegisterIntegerPref(

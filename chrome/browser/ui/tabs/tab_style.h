@@ -102,6 +102,8 @@ class TabStyle {
   TabStyle& operator=(const TabStyle&) = delete;
   virtual ~TabStyle();
 
+  virtual int GetHeight() const = 0;
+
   // Returns the preferred width of a single Tab, assuming space is
   // available.
   virtual int GetStandardWidth() const = 0;
@@ -109,11 +111,22 @@ class TabStyle {
   // Returns the width for pinned tabs. Pinned tabs always have this width.
   virtual int GetPinnedWidth() const = 0;
 
+  // Returns the minimum possible width of an active Tab. Active tabs must
+  // always show a close button, and thus have a larger minimum size than
+  // inactive tabs.
+  virtual int GetMinimumActiveWidth() const = 0;
+
+  // Returns the minimum possible width of a single inactive Tab.
+  virtual int GetMinimumInactiveWidth() const = 0;
+
   // Returns the overlap between adjacent tabs.
   virtual int GetTabOverlap() const = 0;
 
   // Gets the size of the separator drawn between tabs, if any.
   virtual gfx::Size GetSeparatorSize() const = 0;
+
+  // Gets the distance beteween thethe separator and tab, if any.
+  virtual gfx::Insets GetSeparatorMargins() const = 0;
 
   // Returns, for a tab of height |height|, how far the window top drag handle
   // can extend down into inactive tabs or the new tab button. This behavior

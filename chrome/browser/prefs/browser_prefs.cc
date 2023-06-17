@@ -36,6 +36,7 @@
 #include "chrome/browser/media/media_storage_id_salt.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
 #include "chrome/browser/media/router/media_router_feature.h"
+#include "chrome/browser/media/webrtc/capture_policy_utils.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/permission_bubble_media_access_handler.h"
 #include "chrome/browser/memory/enterprise_memory_limit_pref_observer.h"
@@ -212,10 +213,6 @@
 #include "chrome/browser/ui/webui/signin/ash/inline_login_handler_impl.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-#include "chrome/browser/offline_pages/prefetch/offline_metrics_collector_impl.h"
-#endif
 
 #if BUILDFLAG(ENABLE_PDF)
 #include "chrome/browser/pdf/pdf_pref_names.h"
@@ -883,6 +880,17 @@ const char kWebAppCalculatorAppErasureFixAppliedPref[] =
 // Deprecated 06/2023.
 const char kWebAppsExtensionIDs[] = "web_apps.extension_ids";
 
+// Deprecated 06/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+constexpr char kOsSyncPrefsMigrated[] = "sync.os_sync_prefs_migrated";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Deprecated 06/2023
+#if !BUILDFLAG(IS_ANDROID)
+const char kShouldShowSidePanelBookmarkTab[] =
+    "should_show_side_panel_bookmark_tab";
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -1255,6 +1263,16 @@ void RegisterProfilePrefsForMigration(
 
   // Deprecated 06/2023.
   registry->RegisterDictionaryPref(kWebAppsExtensionIDs);
+
+  // Deprecated 06/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterBooleanPref(kOsSyncPrefsMigrated, false);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  // Deprecated 06/2023.
+#if !BUILDFLAG(IS_ANDROID)
+  registry->RegisterBooleanPref(kShouldShowSidePanelBookmarkTab, false);
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 }  // namespace
@@ -1510,6 +1528,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   AnnouncementNotificationService::RegisterProfilePrefs(registry);
   autofill::prefs::RegisterProfilePrefs(registry);
   browsing_data::prefs::RegisterBrowserUserPrefs(registry);
+  capture_policy::RegisterProfilePrefs(registry);
   certificate_transparency::prefs::RegisterPrefs(registry);
   ChromeContentBrowserClient::RegisterProfilePrefs(registry);
   chrome_labs_prefs::RegisterProfilePrefs(registry);
@@ -1611,10 +1630,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   extensions::RegisterSettingsOverriddenUiPrefs(registry);
   update_client::RegisterProfilePrefs(registry);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  offline_pages::OfflineMetricsCollectorImpl::RegisterPrefs(registry);
-#endif
 
 #if BUILDFLAG(ENABLE_PDF)
   registry->RegisterListPref(prefs::kPdfLocalFileAccessAllowedForDomains,
@@ -2359,6 +2374,16 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 06/2023.
   profile_prefs->ClearPref(kWebAppsExtensionIDs);
+
+  // Added 06/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  profile_prefs->ClearPref(kOsSyncPrefsMigrated);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  // Added 06/2023.
+#if !BUILDFLAG(IS_ANDROID)
+  profile_prefs->ClearPref(kShouldShowSidePanelBookmarkTab);
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

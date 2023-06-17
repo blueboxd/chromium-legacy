@@ -231,7 +231,7 @@ public class BookmarkUtils {
     }
 
     /**
-     * Add all selected tabs from TabSelectionEditorV2 as bookmarks. This logic depends on the
+     * Add all selected tabs from TabSelectionEditor as bookmarks. This logic depends on the
      * snackbar workflow above. Currently there is no support for adding the selected tabs or newly
      * created folder directly to the reading list.
      * @param activity The current activity.
@@ -555,17 +555,6 @@ public class BookmarkUtils {
         }
 
         return ColorStateList.valueOf(context.getColor(R.color.default_icon_color_tint_list));
-    }
-
-    /**
-     * Retrieve the save flow start icon for the given bookmark.
-     *
-     * @param bookmarkId The {@link BookmarkId} to get the start icon for.
-     * @return The start icon associated with the given bookmarkId.
-     */
-    public static Drawable getSaveFlowStartIconForBookmark(BookmarkId bookmarkId) {
-        // TODO(crbug.com/1243383): Add start icon for price tracking.
-        return null;
     }
 
     /**

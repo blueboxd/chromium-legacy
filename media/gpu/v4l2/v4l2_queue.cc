@@ -17,7 +17,6 @@
 #include "base/trace_event/trace_event.h"
 #include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
-#include "media/gpu/v4l2/v4l2_device.h"
 
 namespace media {
 
@@ -40,7 +39,7 @@ struct v4l2_format BuildV4L2Format(const enum v4l2_buf_type type,
   format.fmt.pix_mp.pixelformat = fourcc;
   format.fmt.pix_mp.width = size.width();
   format.fmt.pix_mp.height = size.height();
-  format.fmt.pix_mp.num_planes = V4L2Device::GetNumPlanesOfV4L2PixFmt(fourcc);
+  format.fmt.pix_mp.num_planes = GetNumPlanesOfV4L2PixFmt(fourcc);
   format.fmt.pix_mp.plane_fmt[0].sizeimage = buffer_size;
 
   return format;
@@ -299,7 +298,7 @@ size_t V4L2Buffer::GetMemoryUsage() const {
 }
 
 scoped_refptr<VideoFrame> V4L2Buffer::CreateVideoFrame() {
-  auto layout = V4L2Device::V4L2FormatToVideoFrameLayout(format_);
+  auto layout = V4L2FormatToVideoFrameLayout(format_);
   if (!layout) {
     VLOGF(1) << "Cannot create frame layout for V4L2 buffers";
     return nullptr;

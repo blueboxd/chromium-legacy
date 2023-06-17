@@ -40,6 +40,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/pending_task.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -512,11 +513,13 @@ std::string ExtractDanglingPtrSignature(std::string stacktrace) {
       "base::RefCountedThreadSafe<>::Release()",
 
       // Windows signatures
-      "internal::RawPtrBackupRefImpl<0>::ReleaseInternal",
+      "internal::RawPtrBackupRefImpl<0,0>::ReleaseInternal",
+      "internal::RawPtrBackupRefImpl<0,1>::ReleaseInternal",
       "_free_base",
 
       // Mac signatures
-      "internal::RawPtrBackupRefImpl<false>::ReleaseInternal",
+      "internal::RawPtrBackupRefImpl<false, false>::ReleaseInternal",
+      "internal::RawPtrBackupRefImpl<false, true>::ReleaseInternal",
 
       // Task traces are prefixed with "Task trace:" in
       // |TaskTrace::OutputToStream|
@@ -612,6 +615,16 @@ std::string ExtractDanglingPtrSignature(
       ExtractDanglingPtrSignature(release_task_trace).c_str());
 }
 
+bool operator==(const debug::TaskTrace& lhs, const debug::TaskTrace& rhs) {
+  // Compare the addresses contained in the task traces.
+  // The task traces are at most |PendingTask::kTaskBacktraceLength| long.
+  std::array<const void*, PendingTask::kTaskBacktraceLength> addresses_lhs = {};
+  std::array<const void*, PendingTask::kTaskBacktraceLength> addresses_rhs = {};
+  lhs.GetAddresses(addresses_lhs);
+  rhs.GetAddresses(addresses_rhs);
+  return addresses_lhs == addresses_rhs;
+}
+
 template <features::DanglingPtrMode dangling_pointer_mode,
           features::DanglingPtrType dangling_pointer_type>
 void DanglingRawPtrReleased(uintptr_t id) {
@@ -628,7 +641,7 @@ void DanglingRawPtrReleased(uintptr_t id) {
     if (!free_info) {
       return;
     }
-    if (task_trace_release.ToString() == free_info->task_trace.ToString()) {
+    if (task_trace_release == free_info->task_trace) {
       return;
     }
   }

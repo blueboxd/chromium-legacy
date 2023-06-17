@@ -10,9 +10,9 @@
 #include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
-#include "components/viz/common/gpu/dawn_context_provider.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
+#include "gpu/command_buffer/service/dawn_context_provider.h"
 #include "gpu/command_buffer/service/dxgi_shared_handle_manager.h"
 #include "gpu/command_buffer/service/shared_image/d3d_image_representation.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_format_service_utils.h"
@@ -57,6 +57,8 @@ size_t NumPlanes(DXGI_FORMAT dxgi_format) {
     case DXGI_FORMAT_NV12:
     case DXGI_FORMAT_P010:
       return 2;
+    case DXGI_FORMAT_R8_UNORM:
+    case DXGI_FORMAT_R8G8_UNORM:
     case DXGI_FORMAT_R8G8B8A8_UNORM:
     case DXGI_FORMAT_B8G8R8A8_UNORM:
     case DXGI_FORMAT_R10G10B10A2_UNORM:
@@ -1080,9 +1082,13 @@ D3DImageBacking::ProduceSkiaGanesh(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     scoped_refptr<SharedContextState> context_state) {
-  return SkiaGLImageRepresentation::Create(
-      ProduceGLTexturePassthrough(manager, tracker), std::move(context_state),
-      manager, this, tracker);
+  auto gl_representation = ProduceGLTexturePassthrough(manager, tracker);
+  if (!gl_representation) {
+    return nullptr;
+  }
+  return SkiaGLImageRepresentation::Create(std::move(gl_representation),
+                                           std::move(context_state), manager,
+                                           this, tracker);
 }
 
 std::unique_ptr<SkiaGraphiteImageRepresentation>

@@ -1048,7 +1048,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void setTabIndex(int);
   int tabIndex() const;
 
-  void setEditContext(EditContext* editContext);
+  void setEditContext(EditContext* editContext, ExceptionState&);
   EditContext* editContext() const;
 
   // Helpers for V8DOMActivityLogger::logEvent.  They call logEvent only if
@@ -1115,6 +1115,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   // For font-related style invalidation.
   void SetScrollbarPseudoElementStylesDependOnFontMetrics(bool);
+
+  // True if a scroller has not been explicitly scrolled by a user or by a
+  // programmatic scroll. Indicates that we should use the CSS scroll-start
+  // property.
+  bool HasBeenExplicitlyScrolled() const;
+  void SetHasBeenExplicitlyScrolled();
 
   bool AffectedBySubjectHas() const;
   void SetAffectedBySubjectHas();

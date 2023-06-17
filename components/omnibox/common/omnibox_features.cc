@@ -70,7 +70,7 @@ BASE_FEATURE(kIgnoreIntermediateResults,
 // autocomplete_grouper_sections.h) to limit and group (but not sort) matches.
 BASE_FEATURE(kGroupingFrameworkForZPS,
              "OmniboxGroupingFrameworkForZPS",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             enabled_by_default_android_only);
 
 // When enabled, uses the grouping framework with prefixed suggestions (i.e.
 // autocomplete_grouper_sections.h) to limit and group (but not sort) matches.
@@ -295,10 +295,22 @@ BASE_FEATURE(kClipboardSuggestionContentHidden,
              "ClipboardSuggestionContentHidden",
              enabled_by_default_android_only);
 
-// If enabled, uses Chrome Refresh 2023 Action Chips in the omnibox suggestion
-// popup.
+// If enabled, clipboard suggestion for distinct clip data will not show after
+// first use.
+BASE_FEATURE(kSuppressClipboardSuggestionAfterFirstUsed,
+             "SuppressClipboardSuggestionAfterFirstUsed",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, uses the Chrome Refresh 2023 design's shape for action chips in
+// the omnibox suggestion popup.
 BASE_FEATURE(kCr2023ActionChips,
              "Cr2023ActionChips",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, uses the Chrome Refresh 2023 design's icons for action chips in
+// the omnibox suggestion popup.
+BASE_FEATURE(kCr2023ActionChipsIcons,
+             "Cr2023ActionChipsIcons",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, finance ticker answer from omnibox will reverse the color for
@@ -313,7 +325,7 @@ BASE_FEATURE(kSuggestionAnswersColorReverse,
 // with a carousel of tiles, instead of one URL per row.
 BASE_FEATURE(kMostVisitedTiles,
              "OmniboxMostVisitedTiles",
-             enabled_by_default_android_ios);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, expands autocompletion to possibly (depending on params) include
 // suggestion titles and non-prefixes as opposed to be restricted to URL
@@ -396,6 +408,12 @@ BASE_FEATURE(kExpandedStateSuggestIcons,
 // guidelines.
 BASE_FEATURE(kExpandedLayout,
              "OmniboxExpandedLayout",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, the shape of the "hover fill" that's rendered for Omnibox
+// suggestions is updated to match CR23 guidelines.
+BASE_FEATURE(kSuggestionHoverFillShape,
+             "OmniboxSuggestionHoverFillShape",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, use Assistant for omnibox voice query recognition instead of
@@ -656,7 +674,7 @@ BASE_FEATURE(kUrlScoringModel,
 
 // If enabled, appends additional Trending and Recent Search Related Queries to
 // the suggestion list on the NTP and SRP.
-BASE_FEATURE(kInspireMe, "OmniboxInspireMe", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kInspireMe, "OmniboxInspireMe", enabled_by_default_android_only);
 
 // Actions in Suggest is a data-driven feature; it's considered enabled when the
 // data is available.

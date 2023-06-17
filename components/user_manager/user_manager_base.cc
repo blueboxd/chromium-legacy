@@ -805,27 +805,33 @@ bool UserManagerBase::IsUserNonCryptohomeDataEphemeral(
 
 bool UserManagerBase::IsUserCryptohomeDataEphemeral(
     const AccountId& account_id) const {
-  // Don't consider stub users data as ephemeral.
-  if (IsStubAccountId(account_id))
+  return IsEphemeralAccountId(account_id);
+}
+
+bool UserManagerBase::IsEphemeralAccountId(const AccountId& account_id) const {
+  // Data belonging to the device owner is never ephemeral.
+  if (account_id == GetOwnerAccountId()) {
     return false;
+  }
 
-  // Data belonging to the guest users is always ephemeral.
-  if (IsGuestAccountId(account_id))
-    return true;
+  // Data belonging to the stub users is never ephemeral.
+  if (IsStubAccountId(account_id)) {
+    return false;
+  }
 
-  // Data belonging to the public accounts is always ephemeral.
-  const User* user = FindUser(account_id);
-  if (user && user->GetType() == USER_TYPE_PUBLIC_ACCOUNT)
-    return true;
-
-  // Ephemeral users.
-  if (IsEphemeralAccountId(account_id) && user &&
-      user->GetType() == USER_TYPE_REGULAR &&
-      FindUserInList(account_id) == nullptr) {
+  // Data belonging to the guest user is always ephemeral.
+  if (IsGuestAccountId(account_id)) {
     return true;
   }
 
-  return false;
+  // Data belonging to the public accounts (e.g. managed guest sessions) is
+  // always ephemeral.
+  if (const User* user = FindUser(account_id);
+      user && user->GetType() == USER_TYPE_PUBLIC_ACCOUNT) {
+    return true;
+  }
+
+  return IsEphemeralAccountIdByPolicy(account_id);
 }
 
 void UserManagerBase::AddObserver(UserManager::Observer* obs) {

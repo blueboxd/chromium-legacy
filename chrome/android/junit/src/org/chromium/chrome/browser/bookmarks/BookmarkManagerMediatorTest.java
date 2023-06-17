@@ -33,6 +33,8 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.Pair;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
@@ -76,6 +78,8 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
+import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableRecyclerViewAdapter;
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableRecyclerViewAdapter.DragListener;
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableRecyclerViewAdapter.DraggabilityProvider;
@@ -110,7 +114,6 @@ import org.chromium.url.JUnitTestGURLs;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 /** Unit tests for {@link BookmarkManagerMediator}. */
 @Batch(Batch.UNIT_TESTS)
@@ -360,12 +363,43 @@ public class BookmarkManagerMediatorTest {
         assertEquals(item.model.get(ListMenuItemProperties.ENABLED), enabled);
     }
 
-    private void verifyOrderedViewTypes(List<Integer> orderedViewTypes) {
-        assertEquals(orderedViewTypes.size(), mModelList.size());
-        for (int i = 0; i < orderedViewTypes.size(); ++i) {
-            assertEquals("ViewType did not match at index " + i, orderedViewTypes.get(i).intValue(),
-                    mModelList.get(i).type);
+    private void verifyCurrentViewTypes(int... expectedViewTypes) {
+        verifyModelListHaViewTypes(mModelList, expectedViewTypes);
+    }
+
+    private static void verifyModelListHaViewTypes(ModelList modelList, int... expectedViewTypes) {
+        assertEquals(expectedViewTypes.length, modelList.size());
+        for (int i = 0; i < expectedViewTypes.length; ++i) {
+            assertEquals("ViewType did not match at index " + i, expectedViewTypes[i],
+                    modelList.get(i).type);
         }
+    }
+
+    private void verifyCurrentBookmarkIds(BookmarkId... expectedBookmarkIds) {
+        verifyModelListHasBookmarkIds(mModelList, expectedBookmarkIds);
+    }
+
+    private static void verifyModelListHasBookmarkIds(
+            ModelList modelList, BookmarkId... expectedBookmarkIds) {
+        assertEquals(expectedBookmarkIds.length, modelList.size());
+        for (int i = 0; i < expectedBookmarkIds.length; ++i) {
+            BookmarkId bookmarkId = getBookmarkIdFromModel(modelList.get(i).model);
+            assertEquals(
+                    "BookmarkId did not match at index " + i, expectedBookmarkIds[i], bookmarkId);
+        }
+    }
+
+    private static @Nullable BookmarkId getBookmarkIdFromModel(PropertyModel propertyModel) {
+        BookmarkListEntry bookmarkListEntry =
+                propertyModel.get(BookmarkManagerProperties.BOOKMARK_LIST_ENTRY);
+        if (bookmarkListEntry == null) {
+            return null;
+        }
+        BookmarkItem bookmarkItem = bookmarkListEntry.getBookmarkItem();
+        if (bookmarkItem == null) {
+            return null;
+        }
+        return bookmarkItem.getId();
     }
 
     @Test
@@ -973,14 +1007,14 @@ public class BookmarkManagerMediatorTest {
         finishLoading();
         mMediator.openFolder(mFolderId1);
 
-        verifyOrderedViewTypes(Arrays.asList(ViewType.SEARCH_BOX, ViewType.PERSONALIZED_SYNC_PROMO,
-                ViewType.IMPROVED_BOOKMARK_COMPACT, ViewType.IMPROVED_BOOKMARK_COMPACT));
+        verifyCurrentViewTypes(ViewType.SEARCH_BOX, ViewType.PERSONALIZED_SYNC_PROMO,
+                ViewType.IMPROVED_BOOKMARK_COMPACT, ViewType.IMPROVED_BOOKMARK_COMPACT);
 
         BookmarkPromoHeader.forcePromoStateForTesting(SyncPromoState.NO_PROMO);
         mMediator.getPromoHeaderManager().syncStateChanged();
 
-        verifyOrderedViewTypes(Arrays.asList(ViewType.SEARCH_BOX,
-                ViewType.IMPROVED_BOOKMARK_COMPACT, ViewType.IMPROVED_BOOKMARK_COMPACT));
+        verifyCurrentViewTypes(ViewType.SEARCH_BOX, ViewType.IMPROVED_BOOKMARK_COMPACT,
+                ViewType.IMPROVED_BOOKMARK_COMPACT);
     }
 
     @Test
@@ -990,13 +1024,12 @@ public class BookmarkManagerMediatorTest {
                 .thenReturn(Collections.singletonList(mFolderId3));
         finishLoading();
         mMediator.openFolder(mFolderId1);
-        verifyOrderedViewTypes(Arrays.asList(ViewType.SEARCH_BOX,
-                ViewType.IMPROVED_BOOKMARK_COMPACT, ViewType.IMPROVED_BOOKMARK_COMPACT));
+        verifyCurrentViewTypes(ViewType.SEARCH_BOX, ViewType.IMPROVED_BOOKMARK_COMPACT,
+                ViewType.IMPROVED_BOOKMARK_COMPACT);
 
         mModelList.addObserver(mListObserver);
         mModelList.get(0).model.get(BookmarkSearchBoxRowProperties.QUERY_CALLBACK).onResult("3");
-        verifyOrderedViewTypes(
-                Arrays.asList(ViewType.SEARCH_BOX, ViewType.IMPROVED_BOOKMARK_COMPACT));
+        verifyCurrentViewTypes(ViewType.SEARCH_BOX, ViewType.IMPROVED_BOOKMARK_COMPACT);
         verify(mListObserver, never()).onItemRangeChanged(any(), eq(0), anyInt(), any());
         verify(mListObserver, never()).onItemRangeRemoved(any(), eq(0), anyInt());
         verify(mListObserver, never()).onItemRangeInserted(any(), eq(0), anyInt());
@@ -1048,5 +1081,37 @@ public class BookmarkManagerMediatorTest {
         assertEquals(BookmarkUiMode.FOLDER, mMediator.getCurrentUiMode());
         verify(mBookmarkModel, never()).searchBookmarks(eq(""), anyInt());
         verify(mBookmarkModel, never()).searchBookmarks(eq(null), anyInt());
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS)
+    public void testImprovedSpecialFolders() {
+        final @ColorInt int specialBackgroundColor =
+                SemanticColorUtils.getColorPrimaryContainer(mActivity);
+        final @ColorInt int normalBackgroundColor =
+                ChromeColors.getSurfaceColor(mActivity, R.dimen.default_elevation_1);
+        finishLoading();
+
+        mMediator.openFolder(mRootFolderId);
+
+        assertEquals(3, mModelList.size());
+        verifyCurrentBookmarkIds(null, mReadingListFolderId, mDesktopFolderId);
+        assertEquals(specialBackgroundColor,
+                mModelList.get(1).model.get(
+                        ImprovedBookmarkRowProperties.START_AREA_BACKGROUND_COLOR));
+        assertEquals(specialBackgroundColor,
+                mModelList.get(2).model.get(
+                        ImprovedBookmarkRowProperties.START_AREA_BACKGROUND_COLOR));
+
+        mMediator.openFolder(mFolderId1);
+
+        assertEquals(3, mModelList.size());
+        verifyCurrentBookmarkIds(null, mFolderId2, mFolderId3);
+        assertEquals(normalBackgroundColor,
+                mModelList.get(1).model.get(
+                        ImprovedBookmarkRowProperties.START_AREA_BACKGROUND_COLOR));
+        assertEquals(normalBackgroundColor,
+                mModelList.get(2).model.get(
+                        ImprovedBookmarkRowProperties.START_AREA_BACKGROUND_COLOR));
     }
 }

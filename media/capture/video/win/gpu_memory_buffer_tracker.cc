@@ -22,6 +22,27 @@ namespace media {
 
 namespace {
 
+class DXGIGMBTrackerHandle : public media::VideoCaptureBufferHandle {
+ public:
+  explicit DXGIGMBTrackerHandle(base::span<uint8_t> data,
+                                HANDLE dxgi_handle,
+                                ID3D11Device* d3d11_device)
+      : data_(data), dxgi_handle_(dxgi_handle), d3d11_device_(d3d11_device) {}
+
+  size_t mapped_size() const final { return data_.size(); }
+  uint8_t* data() const final { return data_.data(); }
+  const uint8_t* const_data() const final { return data_.data(); }
+
+  ~DXGIGMBTrackerHandle() override {
+    gpu::CopyShMemToDXGIBuffer(data_, dxgi_handle_, d3d11_device_);
+  }
+
+ private:
+  base::span<uint8_t> data_;
+  HANDLE dxgi_handle_;
+  raw_ptr<ID3D11Device> d3d11_device_;
+};
+
 base::win::ScopedHandle CreateNV12Texture(ID3D11Device* d3d11_device,
                                           const gfx::Size& size) {
   const DXGI_FORMAT dxgi_format = DXGI_FORMAT_NV12;
@@ -166,8 +187,9 @@ bool GpuMemoryBufferTracker::IsReusableForFormat(
 
 std::unique_ptr<VideoCaptureBufferHandle>
 GpuMemoryBufferTracker::GetMemoryMappedAccess() {
-  NOTREACHED() << "Unsupported operation";
-  return std::make_unique<NullHandle>();
+  return std::make_unique<DXGIGMBTrackerHandle>(
+      mapping_.GetMemoryAsSpan<uint8_t>(), buffer_->GetHandle(),
+      d3d_device_.Get());
 }
 
 base::UnsafeSharedMemoryRegion
@@ -204,6 +226,18 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferTracker::GetGpuMemoryBufferHandle() {
   auto handle = buffer_->CloneHandle();
   handle.region = region_.Duplicate();
   return handle;
+}
+
+void GpuMemoryBufferTracker::OnHeldByConsumersChanged(
+    bool is_held_by_consumers) {
+  if (!is_held_by_consumers) {
+    imf_buffer_ = nullptr;
+  }
+}
+
+void GpuMemoryBufferTracker::UpdateExternalData(
+    media::CapturedExternalVideoBuffer buffer) {
+  imf_buffer_ = std::move(buffer.imf_buffer);
 }
 
 uint32_t GpuMemoryBufferTracker::GetMemorySizeInBytes() {

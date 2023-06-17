@@ -863,13 +863,15 @@ void TrayBackgroundView::SetIsActive(bool is_active) {
     return;
   }
   is_active_ = is_active;
-  if (!chromeos::features::IsJellyEnabled()) {
+  UpdateBackgroundColor(is_active);
+  if (chromeos::features::IsJellyEnabled()) {
+    UpdateTrayItemColor(is_active);
+  } else {
     views::InkDrop::Get(this)->AnimateToState(
         is_active_ ? views::InkDropState::ACTIVATED
                    : views::InkDropState::DEACTIVATED,
         nullptr);
   }
-  UpdateBackgroundColor(is_active);
 }
 
 views::View* TrayBackgroundView::GetBubbleAnchor() const {
@@ -967,8 +969,8 @@ gfx::Insets TrayBackgroundView::GetBackgroundInsets() const {
   insets += local_contents_insets;
 
   if (Shell::Get()->IsInTabletMode() && ShelfConfig::Get()->is_in_app()) {
-    insets += gfx::Insets::VH(
-        ShelfConfig::Get()->in_app_control_button_height_inset(), 0);
+    insets +=
+        gfx::Insets(ShelfConfig::Get()->in_app_control_button_height_inset());
   }
 
   return insets;

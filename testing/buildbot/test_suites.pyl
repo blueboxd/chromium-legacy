@@ -184,10 +184,6 @@
       },
     },
 
-    'android_pagecontroller_self_tests': {
-      'chrome_java_test_pagecontroller_tests': {},
-    },
-
     # TODO(crbug.com/1111436): Deprecate this group in favor of
     # android_pie_rel_gtests if/when android Pie capacity is fully restored.
     'android_pie_rel_reduced_capacity_gtests': {
@@ -513,7 +509,6 @@
           'skia_gold_test',
         ],
       },
-      'chrome_webapk_integration_tests': {},
     },
 
     'chrome_public_wpt': {
@@ -1206,7 +1201,7 @@
       'android_webview_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1218,7 +1213,7 @@
       'base_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1230,7 +1225,7 @@
       'build_junit_tests':{
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1242,7 +1237,7 @@
       'chrome_java_test_pagecontroller_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1254,7 +1249,7 @@
       'chrome_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1266,7 +1261,7 @@
       'components_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1278,7 +1273,7 @@
       'content_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1290,7 +1285,7 @@
       'device_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1302,7 +1297,7 @@
       'junit_unit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1314,7 +1309,7 @@
       'keyboard_accessory_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1326,7 +1321,7 @@
       'media_base_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1338,7 +1333,7 @@
       'module_installer_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1350,7 +1345,7 @@
       'net_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1362,7 +1357,7 @@
       'paint_preview_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1374,7 +1369,7 @@
       'password_check_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1386,7 +1381,7 @@
       'password_manager_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1398,7 +1393,7 @@
       'services_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1410,7 +1405,7 @@
       'touch_to_fill_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1422,7 +1417,7 @@
       'ui_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1434,7 +1429,7 @@
       'webapk_client_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1446,7 +1441,7 @@
       'webapk_shell_apk_h2o_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1458,7 +1453,7 @@
       'webapk_shell_apk_junit_tests': {
         'mixins': [
           'x86-64',
-          'linux-bionic',
+          'linux-jammy',
           'junit-swarming',
         ],
         'remove_mixins': [
@@ -1757,24 +1752,11 @@
     # try bots and fyi bots. When tests start to fail in the _full variety
     # (and aren't also failing in the non-cr23 variety), we can add them
     # to the subsets.
-    'cr23_linux_gtests': {
+    'cr23_fyi_linux_gtests': {
       'browser_tests': {
         'swarming': {
           'shards': 20,
         },
-      },
-      'cr23_browser_tests': {
-        'args': [
-          '--enable-features=ChromeRefresh2023',
-          ('--test-launcher-filter-file='
-           '../../testing/buildbot/filters/cr23.tests.cr23_browser_tests.filter;'
-           '../../testing/buildbot/filters/cr23.linux.cr23_browser_tests.filter'
-          ),
-        ],
-        'swarming': {
-          'shards': 2,
-        },
-        'test': 'browser_tests',
       },
       'cr23_browser_tests_full': {
         'args': [
@@ -1788,16 +1770,6 @@
         },
         'test': 'browser_tests',
       },
-      'cr23_interactive_ui_tests': {
-        'args': [
-          '--enable-features=ChromeRefresh2023',
-          ('--test-launcher-filter-file='
-           '../../testing/buildbot/filters/cr23.tests.cr23_interactive_ui_tests.filter;'
-           '../../testing/buildbot/filters/cr23.linux.cr23_interactive_ui_tests.filter'
-          ),
-        ],
-        'test': 'interactive_ui_tests',
-      },
       'cr23_interactive_ui_tests_full': {
         'args': [
           '--enable-features=ChromeRefresh2023',
@@ -1808,6 +1780,109 @@
         'swarming': {
           'shards': 10,
         },
+        'test': 'interactive_ui_tests',
+      },
+      'interactive_ui_tests': {
+        'swarming': {
+          'shards': 10,
+        },
+      },
+      'views_unittests': {},
+    },
+    'cr23_fyi_mac_gtests': {
+      'browser_tests': {
+        'swarming': {
+          'shards': 20,
+        },
+        'ci_only': True,
+      },
+      'cr23_browser_tests_full': {
+        'args': [
+          '--enable-features=ChromeRefresh2023',
+          ('--test-launcher-filter-file='
+           '../../testing/buildbot/filters/cr23.mac.cr23_browser_tests.filter'
+          ),
+        ],
+        'swarming': {
+          'shards': 20,
+        },
+        'test': 'browser_tests',
+        'ci_only': True,
+      },
+      'cr23_interactive_ui_tests_full': {
+        'args': [
+          '--enable-features=ChromeRefresh2023',
+          ('--test-launcher-filter-file='
+           '../../testing/buildbot/filters/cr23.mac.cr23_interactive_ui_tests.filter'
+          ),
+        ],
+        'swarming': {
+          'shards': 10,
+        },
+        'test': 'interactive_ui_tests',
+      },
+      'interactive_ui_tests': {
+        'swarming': {
+          'shards': 10,
+        },
+      },
+      'views_unittests': {},
+    },
+    'cr23_fyi_win_gtests': {
+      'browser_tests': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'cr23_browser_tests_full': {
+        'args': [
+          '--enable-features=ChromeRefresh2023',
+          ('--test-launcher-filter-file='
+           '../../testing/buildbot/filters/cr23.win.cr23_browser_tests.filter'
+          ),
+        ],
+        'swarming': {
+          'shards': 20,
+        },
+        'test': 'browser_tests',
+      },
+      'cr23_interactive_ui_tests_full': {
+        'args': [
+          '--enable-features=ChromeRefresh2023',
+          ('--test-launcher-filter-file='
+           '../../testing/buildbot/filters/cr23.win.cr23_interactive_ui_tests.filter'
+          ),
+        ],
+        'test': 'interactive_ui_tests',
+      },
+      'interactive_ui_tests': {
+        'swarming': {
+          'shards': 10,
+        },
+      },
+      'views_unittests': {},
+    },
+    'cr23_main_linux_gtests': {
+      'cr23_browser_tests': {
+        'args': [
+          '--enable-features=ChromeRefresh2023',
+          ('--test-launcher-filter-file='
+           '../../testing/buildbot/filters/cr23.tests.cr23_browser_tests.filter;'
+           '../../testing/buildbot/filters/cr23.linux.cr23_browser_tests.filter'
+          ),
+        ],
+        'experiment_percentage': 1,
+        'test': 'browser_tests',
+      },
+      'cr23_interactive_ui_tests': {
+        'args': [
+          '--enable-features=ChromeRefresh2023',
+          ('--test-launcher-filter-file='
+           '../../testing/buildbot/filters/cr23.tests.cr23_interactive_ui_tests.filter;'
+           '../../testing/buildbot/filters/cr23.linux.cr23_interactive_ui_tests.filter'
+          ),
+        ],
+        'experiment_percentage': 1,
         'test': 'interactive_ui_tests',
       },
       'cr23_views_unittests': {
@@ -1817,22 +1892,11 @@
            '../../testing/buildbot/filters/cr23.linux.cr23_views_unittests.filter'
           ),
         ],
+        'experiment_percentage': 1,
         'test': 'views_unittests',
       },
-      'interactive_ui_tests': {
-        'swarming': {
-          'shards': 10,
-        },
-      },
-      'views_unittests': {},
     },
-    'cr23_mac_gtests': {
-      'browser_tests': {
-        'swarming': {
-          'shards': 20,
-        },
-        'ci_only': True,
-      },
+    'cr23_main_mac_gtests': {
       'cr23_browser_tests': {
         'args': [
           '--enable-features=ChromeRefresh2023',
@@ -1841,24 +1905,8 @@
            '../../testing/buildbot/filters/cr23.mac.cr23_browser_tests.filter'
           ),
         ],
-        'swarming': {
-          'shards': 2,
-        },
+        'experiment_percentage': 1,
         'test': 'browser_tests',
-        'ci_only': True,
-      },
-      'cr23_browser_tests_full': {
-        'args': [
-          '--enable-features=ChromeRefresh2023',
-          ('--test-launcher-filter-file='
-           '../../testing/buildbot/filters/cr23.mac.cr23_browser_tests.filter'
-          ),
-        ],
-        'swarming': {
-          'shards': 20,
-        },
-        'test': 'browser_tests',
-        'ci_only': True,
       },
       'cr23_interactive_ui_tests': {
         'args': [
@@ -1868,18 +1916,7 @@
            '../../testing/buildbot/filters/cr23.mac.cr23_interactive_ui_tests.filter'
           ),
         ],
-        'test': 'interactive_ui_tests',
-      },
-      'cr23_interactive_ui_tests_full': {
-        'args': [
-          '--enable-features=ChromeRefresh2023',
-          ('--test-launcher-filter-file='
-           '../../testing/buildbot/filters/cr23.mac.cr23_interactive_ui_tests.filter'
-          ),
-        ],
-        'swarming': {
-          'shards': 10,
-        },
+        'experiment_percentage': 1,
         'test': 'interactive_ui_tests',
       },
       'cr23_views_unittests': {
@@ -1889,21 +1926,11 @@
            '../../testing/buildbot/filters/cr23.mac.cr23_views_unittests.filter'
           ),
         ],
+        'experiment_percentage': 1,
         'test': 'views_unittests',
       },
-      'interactive_ui_tests': {
-        'swarming': {
-          'shards': 10,
-        },
-      },
-      'views_unittests': {},
     },
-    'cr23_win_gtests': {
-      'browser_tests': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
+    'cr23_main_win_gtests': {
       'cr23_browser_tests': {
         'args': [
           '--enable-features=ChromeRefresh2023',
@@ -1912,21 +1939,7 @@
            '../../testing/buildbot/filters/cr23.win.cr23_browser_tests.filter'
           ),
         ],
-        'swarming': {
-          'shards': 2,
-        },
-        'test': 'browser_tests',
-      },
-      'cr23_browser_tests_full': {
-        'args': [
-          '--enable-features=ChromeRefresh2023',
-          ('--test-launcher-filter-file='
-           '../../testing/buildbot/filters/cr23.win.cr23_browser_tests.filter'
-          ),
-        ],
-        'swarming': {
-          'shards': 20,
-        },
+        'experiment_percentage': 1,
         'test': 'browser_tests',
       },
       'cr23_interactive_ui_tests': {
@@ -1937,15 +1950,7 @@
            '../../testing/buildbot/filters/cr23.win.cr23_interactive_ui_tests.filter'
           ),
         ],
-        'test': 'interactive_ui_tests',
-      },
-      'cr23_interactive_ui_tests_full': {
-        'args': [
-          '--enable-features=ChromeRefresh2023',
-          ('--test-launcher-filter-file='
-           '../../testing/buildbot/filters/cr23.win.cr23_interactive_ui_tests.filter'
-          ),
-        ],
+        'experiment_percentage': 1,
         'test': 'interactive_ui_tests',
       },
       'cr23_views_unittests': {
@@ -1955,16 +1960,10 @@
            '../../testing/buildbot/filters/cr23.win.cr23_views_unittests.filter'
           ),
         ],
+        'experiment_percentage': 1,
         'test': 'views_unittests',
       },
-      'interactive_ui_tests': {
-        'swarming': {
-          'shards': 10,
-        },
-      },
-      'views_unittests': {},
     },
-
     'cronet_gtests': {
       'cronet_sample_test_apk': {},
       'cronet_smoketests_missing_native_library_instrumentation_apk': {},
@@ -2324,7 +2323,7 @@
         ],
         'test': 'android_browsertests',
         'swarming': {
-          'shards': 2,
+          'shards': 3,
         },
       },
       'webview_cts_tests_no_field_trial': {
@@ -4702,7 +4701,6 @@
       'message_center_unittests': {},
       'native_theme_unittests': {},
       'pdf_unittests': {},
-      'ppapi_unittests': {},
       'printing_unittests': {},
       'remoting_unittests': {},
       'service_manager_unittests': {}, # https://crbug.com/843134
@@ -5917,7 +5915,6 @@
       'android_ar_gtests',
       'android_ddready_vr_gtests',
       'android_monochrome_smoke_tests',
-      'android_pagecontroller_self_tests',
       'android_smoke_tests',
       'chromium_tracing_gtests',
       # No standard tests due to capacity, no Vega tests since it's currently
@@ -5930,7 +5927,6 @@
     'android_pie_rel_emulator_gtests': [
       'android_emulator_specific_chrome_public_tests',
       'android_monochrome_smoke_tests',
-      'android_pagecontroller_self_tests',
       'android_smoke_tests',
       'android_specific_chromium_gtests',  # Already includes gl_gtests.
       'chromium_gtests',
@@ -5946,9 +5942,7 @@
       # TODO(crbug.com/1111436): Deprecate this when all the test suites below
       # it are re-enabled.
       'android_pie_rel_reduced_capacity_gtests',
-
       'android_monochrome_smoke_tests',
-      'android_pagecontroller_self_tests',
       'android_smoke_tests',
     #   'android_specific_chromium_gtests',  # Already includes gl_gtests.
     #   'chromium_gtests',
@@ -6022,6 +6016,7 @@
       'chromium_gtests_for_linux_and_mac_only',
       'chromium_gtests_for_linux_only',
       'chromium_gtests_for_win_and_linux_only',
+      'cr23_main_linux_gtests',
       'linux_flavor_specific_chromium_gtests',
       'linux_specific_xr_gtests',
       'gl_gtests_passthrough',
@@ -6041,6 +6036,7 @@
       'chromium_gtests_for_linux_and_mac_only',
       'chromium_gtests_for_linux_only',
       'chromium_gtests_for_win_and_linux_only',
+      'cr23_main_linux_gtests',
       'linux_flavor_specific_chromium_gtests',
       'linux_specific_xr_gtests',
       'gl_gtests_passthrough',
@@ -6076,8 +6072,7 @@
     ],
 
     # When changing something here, change chromium_linux_and_gl_gtests,
-    # chromium_linux_and_gl_and_vulkan_gtests, linux_ozone_x11_ci_tests and
-    # linux_ozone_wayland_ci_tests in the same way.
+    # and chromium_linux_and_gl_and_vulkan_gtests in the same way.
     'chromium_linux_gtests': [
       'aura_gtests',
       'chromium_gtests',
@@ -6086,6 +6081,7 @@
       'chromium_gtests_for_linux_and_mac_only',
       'chromium_gtests_for_linux_only',
       'chromium_gtests_for_win_and_linux_only',
+      'cr23_main_linux_gtests',
       'linux_flavor_specific_chromium_gtests',
       'linux_specific_xr_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
@@ -6136,6 +6132,7 @@
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'chromium_gtests_for_linux_and_mac_only',
+      'cr23_main_mac_gtests',
       'mac_specific_chromium_gtests',
       'nocompile_tests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
@@ -6146,6 +6143,7 @@
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'chromium_gtests_for_linux_and_mac_only',
+      'cr23_main_mac_gtests',
       'mac_specific_chromium_gtests',
       'nocompile_tests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
@@ -6155,6 +6153,7 @@
     'chromium_mac_gtests_no_nacl_no_nocompile': [
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
+      'cr23_main_mac_gtests',
       'mac_specific_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_android_chromium_gtests_no_nacl',
@@ -6205,6 +6204,7 @@
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'chromium_gtests_for_win_and_linux_only',
+      'cr23_main_win_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_android_chromium_gtests',
       'non_android_chromium_gtests_skia_gold',
@@ -6226,6 +6226,7 @@
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'chromium_gtests_for_win_and_linux_only',
+      'cr23_main_win_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_android_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
@@ -6259,6 +6260,21 @@
       'telemetry_desktop_minidump_unittests_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
       'win_specific_isolated_scripts',
+    ],
+
+    'cr23_linux_gtests': [
+      'cr23_fyi_linux_gtests',
+      'cr23_main_linux_gtests',
+    ],
+
+    'cr23_mac_gtests': [
+      'cr23_fyi_mac_gtests',
+      'cr23_main_mac_gtests',
+    ],
+
+    'cr23_win_gtests': [
+      'cr23_fyi_win_gtests',
+      'cr23_main_win_gtests',
     ],
 
     'cronet_dbg_isolated_scripts': [

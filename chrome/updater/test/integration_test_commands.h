@@ -91,6 +91,8 @@ class IntegrationTestCommands
   virtual void Update(const std::string& app_id,
                       const std::string& install_data_index) const = 0;
   virtual void UpdateAll() const = 0;
+  virtual void GetAppStates(
+      const base::Value::Dict& expected_app_states) const = 0;
   virtual void DeleteUpdaterDirectory() const = 0;
   virtual void DeleteFile(const base::FilePath& path) const = 0;
   virtual void PrintLog() const = 0;
@@ -130,10 +132,10 @@ class IntegrationTestCommands
   virtual void ExpectLastChecked() const = 0;
   virtual void ExpectLastStarted() const = 0;
   virtual void UninstallApp(const std::string& app_id) const = 0;
-
   virtual void RunOfflineInstall(bool is_legacy_install,
                                  bool is_silent_install) = 0;
-
+  virtual void RunOfflineInstallOsNotSupported(bool is_legacy_install,
+                                               bool is_silent_install) = 0;
   virtual void DMDeregisterDevice() = 0;
   virtual void DMCleanup() = 0;
 

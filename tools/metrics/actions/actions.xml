@@ -11763,11 +11763,97 @@ should be able to be added at any place in this file.
   <description>A tailored fullscren promo appeared. iOS only.</description>
 </action>
 
+<action name="IOS.DefaultBrowserPromo.TailoredFullscreen.Cancel">
+  <owner>gayane@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    The user dismissed a tailored browser fullscreen promo modal using secondary
+    action button. iOS only.
+  </description>
+</action>
+
 <action name="IOS.DefaultBrowserPromo.TailoredFullscreen.Dismiss">
   <owner>rkgibson@google.com</owner>
   <owner>djean@chromium.org</owner>
   <description>
-    The user dismissed a tailored browser fullscreen promo modal. iOS only.
+    The user dismissed a tailored browser fullscreen promo modal by swiping
+    down. iOS only.
+  </description>
+</action>
+
+<action name="IOS.DefaultBrowserPromo.TailoredFullscreen.MoreInfoTapped">
+  <owner>gayane@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    The user tapped on the more information icon on the tailored browser
+    fullscreen promo modal. iOS only.
+  </description>
+</action>
+
+<action name="IOS.DefaultBrowserVideoPromo.Appear">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    The user is presented with the default browser video promo. iOS only.
+  </description>
+</action>
+
+<action name="IOS.DefaultBrowserVideoPromo.Fullscreen.Dismiss">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    The user dismissed the full screen default browser video promo. iOS only.
+  </description>
+</action>
+
+<action name="IOS.DefaultBrowserVideoPromo.Fullscreen.Impression">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    The user is presented with the fullscreen screen arm of the default browser
+    video promo. iOS only.
+  </description>
+</action>
+
+<action name="IOS.DefaultBrowserVideoPromo.Fullscreen.OpenSettingsTapped">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    The user accepted the full screen default browser video promo, and was taken
+    to the Settings app. iOS only.
+  </description>
+</action>
+
+<action name="IOS.DefaultBrowserVideoPromo.Halfscreen.Dismiss">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    The user dismissed the half screen default browser video promo. iOS only.
+  </description>
+</action>
+
+<action name="IOS.DefaultBrowserVideoPromo.Halfscreen.Impression">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    The user is presented with the half screen arm of the default browser video
+    promo. iOS only.
+  </description>
+</action>
+
+<action name="IOS.DefaultBrowserVideoPromo.Halfscreen.ShowMeHow">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    The user accepted the half screen default browser video promo, and was taken
+    to the full screen default browser video promo. iOS only.
   </description>
 </action>
 
@@ -31534,7 +31620,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_Impression_FromMenu" not_user_triggered="true">
-  <obsolete>Removed in M116.</obsolete>
   <owner>gogerald@chromium.org</owner>
   <description>Recorded when showing sign in entry in the menu.</description>
 </action>
@@ -32134,6 +32219,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_Signin_FromContentArea">
+  <obsolete>Removed in M116.</obsolete>
   <owner>gogerald@chromium.org</owner>
   <description>
     Recorded on sign in start from access point
@@ -32228,7 +32314,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_Signin_FromMenu">
-  <obsolete>Removed in M116.</obsolete>
   <owner>gogerald@chromium.org</owner>
   <description>
     Recorded on sign in start from access point
@@ -37405,6 +37490,12 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="WhatsNew.Started">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>The user started What's New.</description>
+</action>
+
 <action name="WhatsNew.UseChromeByDefault">
   <owner>cheickcisse@google.com</owner>
   <owner>sebsg@chromium.org</owner>
@@ -37760,6 +37851,15 @@ should be able to be added at any place in this file.
   <affected-action name="Bookmarks.FolderAdded"/>
 </action-suffix>
 
+<action-suffix separator="." ordering="suffix">
+  <suffix name="AccountStorage" label="Bookmark opened from account storage."/>
+  <suffix name="LocalStorage"
+      label="Bookmark opened from local storage which is not being synced."/>
+  <suffix name="LocalStorageSyncing"
+      label="Bookmark opened from local storage which is being synced."/>
+  <affected-action name="Bookmarks.Opened"/>
+</action-suffix>
+
 <action-suffix separator="_" ordering="suffix">
   <suffix name="AdaptiveButtonInTopToolbarCustomization_AddToBookmarks"
       label="For AdaptiveButtonInTopToolbarCustomization add to bookmarks
@@ -38029,6 +38129,7 @@ should be able to be added at any place in this file.
       label="For the RequestDesktopSiteExceptionsSpecific feature."/>
   <suffix name="RequestDesktopSiteOptIn"
       label="For the RequestDesktopSiteOptIn feature."/>
+  <suffix name="RestoreTabsOnFRE" label="For the RestoreTabsOnFRE feature."/>
   <suffix name="SharedHighlightingBuilder"
       label="For SharedHighlightingBuilder feature."/>
   <suffix name="SharedHighlightingReceiver"

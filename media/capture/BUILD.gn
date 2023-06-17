@@ -55,7 +55,6 @@ component("capture_base") {
 source_set("capture_device_specific") {
   visibility = [
     ":capture_lib",
-    "//media/capture/content/android",
     "//media/capture/video/android",
   ]
   defines = [ "CAPTURE_IMPLEMENTATION" ]
@@ -97,6 +96,7 @@ source_set("capture_device_specific") {
     "//gpu/command_buffer/client",
     "//gpu/ipc/common:common",
     "//media",
+    "//media/capture:capture_switches",
     "//media/capture/mojom:image_capture",
     "//media/capture/mojom:image_capture_types",
     "//media/capture/mojom:video_capture",
@@ -161,14 +161,8 @@ component("capture_lib") {
   ]
 
   if (is_android) {
-    public_deps += [
-      "content/android",
-      "video/android",
-    ]
-    deps += [
-      "content/android:screen_capture_jni_headers",
-      "video/android:capture_jni_headers",
-    ]
+    public_deps += [ "video/android" ]
+    deps += [ "video/android:capture_jni_headers" ]
   }
 
   if (is_mac) {

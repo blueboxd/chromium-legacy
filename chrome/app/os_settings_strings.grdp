@@ -2585,6 +2585,12 @@ Press an assigned switch or key to remove assignment.
     Loading apps...
   </message>
 
+  <!-- Graphics tablet page (OS settings)-->
+  <!-- TODO(b/286930911): Translate string for peripherals customization launch. -->
+  <message name="IDS_SETTINGS_GRAPHICS_TABLET_TITLE" translateable="false" desc="Title of Graphics tablet settings page">
+    Graphics tablet
+  </message>
+
   <!-- Bluetooth page (OS settings) -->
   <message name="IDS_SETTINGS_BLUETOOTH_CONNECTED" desc="In Bluetooth device list, this label is shown below a device which is already connected.">
     Connected
@@ -2999,6 +3005,25 @@ Press an assigned switch or key to remove assignment.
   </message>
   <message name="IDS_SETTINGS_LEARN_MORE_LABEL" translateable="false" desc="In Device Settings, the learn more label for the cr toggle button.">
     Learn more
+  </message>
+  <message name="IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_LABEL" translateable="false" desc="In Device Settings, the text next to the dropdown for setting the behavior of simulating a right click using a keyboard and touchpad.">
+    Use touchpad and keyboard to right-click
+  </message>
+  <message name="IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_OFF" translateable="false" desc="In the touchpad settings subpage, the dropdown list item for the Off option.">
+    Off
+  </message>
+  <message name="IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_SEARCH" translateable="false" desc="In the touchpad settings subpage, the dropdown list item for the Search + Click option.">
+    search + click
+  </message>
+  <message name="IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_ALT" translateable="false" desc="In the touchpad settings subpage, the dropdown list item for the Alt + Click option.">
+    alt + click
+  </message>
+  <!-- TODO(b/286937607): Finalize and translate these strings -->
+  <message name="IDS_SETTINGS_MODIFIER_KEYS_LABEL" translateable="false" desc="In the remap keyboard keys settings subpage, the label for the section that contains all of the modifier keys (Ctrl, Alt, etc).">
+    Modifier keys
+  </message>
+  <message name="IDS_SETTINGS_OTHER_KEYS_LABEL" translateable="false" desc="In the remap keyboard keys settings subpage, the label for the section that contains all of the non-modifier keys (Backspace, Home, etc).">
+    Other keys
   </message>
 
   <!-- Printing Page (OS Settings)-->
@@ -3759,6 +3784,18 @@ Press an assigned switch or key to remove assignment.
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_PASSPOINT_REMOVAL_INFORMATION" desc="Settings > Network > Wi-Fi > Network details: Information on the Passpoint subscription displayed in the network removal dialog.">
     Your Passpoint provider will be removed from this device only. To make changes to your subscription, contact the subscription provider.
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_PASSPOINT_GO_TO_SUBSCRIPTION_TITLE" desc="Settings > Network > Wi-Fi > Network details: Title of the Passpoint removal dialog that leads the user to the subscription page.">
+    Remove this network in Passpoint subscription page?
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_PASSPOINT_GO_TO_SUBSCRIPTION_INFORMATION" desc="Settings > Network > Wi-Fi > Network details: Information displayed in the Passpoint removal dialog that leads the user to the subscription page.">
+    To forget this subscription and its associated networks, go to the Passpoint subscription page to remove the subscription.
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_PASSPOINT_GO_TO_SUBSCRIPTION_BUTTON" desc="Settings > Network > Wi-Fi > Network details: Label of the button that leads the user to the subscription page.">
+    Go to subscription
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_PASSPOINT_GO_TO_SUBSCRIPTION_BUTTON_A11Y_LABEL" desc="Settings > Network > Wi-Fi > Network details: Accessibility label for the button that leads the user to the subscription page.">
+    Go to subscription page
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_PROXY" desc="Settings > Internet > Network details: Proxy section label.">
     Proxy

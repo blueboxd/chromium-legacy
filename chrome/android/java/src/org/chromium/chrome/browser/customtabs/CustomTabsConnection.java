@@ -884,8 +884,7 @@ public class CustomTabsConnection {
         mClientManager.registerLaunch(session, url);
     }
 
-    @Nullable
-    public String getSpeculatedUrl(CustomTabsSessionToken session) {
+    public @Nullable String getSpeculatedUrl(CustomTabsSessionToken session) {
         return mHiddenTabHolder.getSpeculatedUrl(session);
     }
 
@@ -898,8 +897,7 @@ public class CustomTabsConnection {
      * @param referrer The referrer to use for |url|.
      * @return The hidden tab, or null.
      */
-    @Nullable
-    public Tab takeHiddenTab(
+    public @Nullable Tab takeHiddenTab(
             @Nullable CustomTabsSessionToken session, String url, @Nullable String referrer) {
         return mHiddenTabHolder.takeHiddenTab(
                 session, mClientManager.getIgnoreFragmentsForSession(session), url, referrer);
@@ -1004,8 +1002,8 @@ public class CustomTabsConnection {
      * @param intent Incoming intent with the extras.
      * @return Whether the request was started, with reason in case of failure.
      */
-    @ParallelRequestStatus
-    private int maybeStartParallelRequest(CustomTabsSessionToken session, Intent intent) {
+    private @ParallelRequestStatus int maybeStartParallelRequest(
+            CustomTabsSessionToken session, Intent intent) {
         ThreadUtils.assertOnUiThread();
 
         if (!intent.hasExtra(PARALLEL_REQUEST_URL_KEY)) return ParallelRequestStatus.NO_REQUEST;
@@ -1271,7 +1269,7 @@ public class CustomTabsConnection {
                 mClientManager.getEngagementSignalsCallbackForSession(session);
         if (callback == null) return;
         try {
-            callback.onVerticalScrollEvent(isDirectionUp, null);
+            callback.onVerticalScrollEvent(isDirectionUp, Bundle.EMPTY);
         } catch (Exception e) {
             // Catching all exceptions is really bad, but we need it here,
             // because Android exposes us to client bugs by throwing a variety
@@ -1300,7 +1298,7 @@ public class CustomTabsConnection {
                 mClientManager.getEngagementSignalsCallbackForSession(session);
         if (callback == null) return;
         try {
-            callback.onGreatestScrollPercentageIncreased(scrollPercentage, null);
+            callback.onGreatestScrollPercentageIncreased(scrollPercentage, Bundle.EMPTY);
         } catch (Exception e) {
             // Catching all exceptions is really bad, but we need it here,
             // because Android exposes us to client bugs by throwing a variety
@@ -1327,7 +1325,7 @@ public class CustomTabsConnection {
                 mClientManager.getEngagementSignalsCallbackForSession(session);
         if (callback == null) return;
         try {
-            callback.onSessionEnded(didGetUserInteraction, null);
+            callback.onSessionEnded(didGetUserInteraction, Bundle.EMPTY);
         } catch (Exception e) {
             // Catching all exceptions is really bad, but we need it here,
             // because Android exposes us to client bugs by throwing a variety

@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_ablation_study.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
+#include "components/autofill/core/browser/payments/mandatory_reauth_manager.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_manager.h"
 #include "components/autofill/core/browser/single_field_form_fill_router.h"
 #include "components/autofill/core/browser/ui/payments/bubble_show_options.h"
@@ -124,10 +125,17 @@ void AutofillClient::ShowVirtualCardEnrollDialog(
   // ChromeAutofillClient (Chrome Desktop and Clank) implements this.
 }
 
+payments::MandatoryReauthManager*
+AutofillClient::GetOrCreatePaymentsMandatoryReauthManager() {
+  return nullptr;
+}
+
 void AutofillClient::ShowMandatoryReauthOptInPrompt(
     base::OnceClosure accept_mandatory_reauth_callback,
     base::OnceClosure cancel_mandatory_reauth_callback,
     base::RepeatingClosure close_mandatory_reauth_callback) {}
+
+void AutofillClient::ShowMandatoryReauthOptInConfirmation() {}
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 void AutofillClient::HideVirtualCardEnrollBubbleAndIconIfVisible() {

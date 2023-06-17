@@ -332,7 +332,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     /**
      *  The controller for the auxiliary search.
      */
-    private AuxiliarySearchController mAuxiliarySearchController;
+    private @Nullable AuxiliarySearchController mAuxiliarySearchController;
 
     // This is the cached value of mIntentHandler#shouldIgnoreIntent and shouldn't be read directly.
     // Use #shouldIgnoreIntent instead.
@@ -737,11 +737,13 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
             // clang-format off
             ViewGroup tabSwitcherViewHolder = findViewById(R.id.tab_switcher_view_holder);
+            View toolbarContainerView = findViewById(R.id.toolbar_container);
             mLayoutManager = new LayoutManagerChromeTablet(compositorViewHolder, mContentContainer,
                 mStartSurfaceSupplier, mTabSwitcherSupplier, getTabContentManagerSupplier(),
                 mRootUiCoordinator::getTopUiThemeColorProvider, mTabModelStartupInfoSupplier,
                 tabSwitcherViewHolder, mRootUiCoordinator.getScrimCoordinator(),
-                getLifecycleDispatcher(), () -> createAndSetStartSurfaceForTablet());
+                getLifecycleDispatcher(), () -> createAndSetStartSurfaceForTablet(),
+                mMultiInstanceManager, toolbarContainerView);
             mLayoutStateProviderSupplier.set(mLayoutManager);
             // clang-format on
         }
@@ -1359,7 +1361,9 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             mAuxiliarySearchController =
                     AuxiliarySearchControllerFactory.createAuxiliarySearchController(
                             Profile.getLastUsedRegularProfile(), mTabModelSelector);
-            mAuxiliarySearchController.register(this.getLifecycleDispatcher());
+            if (mAuxiliarySearchController != null) {
+                mAuxiliarySearchController.register(this.getLifecycleDispatcher());
+            }
             mInactivityTracker.register(this.getLifecycleDispatcher());
             boolean isIntentWithEffect = false;
             boolean isMainIntentFromLauncher = false;
@@ -1424,13 +1428,13 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 // If homepage URI is not determined, due to PartnerBrowserCustomizations provider
                 // async reading, then create a tab at the async reading finished. If it takes
                 // too long, just create NTP.
-
                 mPendingInitialTabCreation = true;
                 PartnerBrowserCustomizations.getInstance().setOnInitializeAsyncFinished(() -> {
-                    if (!isActivityFinishingOrDestroyed()) {
-                        RecordHistogram.recordBooleanHistogram(
-                                "Android.PartnerCustomizationInitializedBeforeInitialTab",
-                                PartnerBrowserCustomizations.getInstance().isInitialized());
+                    boolean isActivityFinishingOrDestroyed = isActivityFinishingOrDestroyed();
+                    PartnerBrowserCustomizations.logActivityFinishingOrDestroyed(
+                            isActivityFinishingOrDestroyed);
+                    if (!isActivityFinishingOrDestroyed) {
+                        PartnerBrowserCustomizations.getInstance().onCreateInitialTab();
                         createInitialTab();
                     }
                 }, INITIAL_TAB_CREATION_TIMEOUT_MS);
@@ -1487,7 +1491,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                     url = UrlConstants.NTP_URL;
                 }
             }
-
             getTabCreator(false).launchUrl(url, TabLaunchType.FROM_STARTUP);
         }
 
@@ -1505,6 +1508,19 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     @Override
     public void onAccessibilityModeChanged(boolean enabled) {
+        if (mIsAccessibilityTabSwitcherEnabled != null
+                && mIsAccessibilityTabSwitcherEnabled != enabled) {
+            // TODO(https://crbug.com/1455234): This is a temporary solution to prevent a crash when
+            // toggling a11y state (e.g. through TalkBack) while using tab groups in the grid tab
+            // switcher and the legacy a11y list switcher. When TabGroupsContinuationAndroid
+            // launches, we can clean up the legacy a11y switcher along with this check.
+            if (isTablet()) {
+                if (getTabReparentingControllerSupplier().get() != null) {
+                    getTabReparentingControllerSupplier().get().prepareTabsForReparenting();
+                }
+                recreate();
+            }
+        }
         onAccessibilityTabSwitcherModeChanged();
     }
 
@@ -2837,6 +2853,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         if (mTabDelegateFactory != null) mTabDelegateFactory.destroy();
 
         mAppLaunchDrawBlocker.destroy();
+
+        if (mAuxiliarySearchController != null) {
+            mAuxiliarySearchController.destroy();
+        }
 
         super.onDestroyInternal();
     }

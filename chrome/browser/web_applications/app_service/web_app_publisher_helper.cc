@@ -463,15 +463,14 @@ void WebAppPublisherHelper::BadgeManagerDelegate::OnAppBadgeUpdated(
 
 WebAppPublisherHelper::WebAppPublisherHelper(Profile* profile,
                                              WebAppProvider* provider,
-                                             Delegate* delegate,
-                                             bool observe_media_requests)
+                                             Delegate* delegate)
     : profile_(profile),
       provider_(provider),
       app_type_(GetWebAppType()),
       delegate_(delegate) {
   DCHECK(profile_);
   DCHECK(delegate_);
-  Init(observe_media_requests);
+  Init();
 }
 
 WebAppPublisherHelper::~WebAppPublisherHelper() = default;
@@ -634,7 +633,7 @@ apps::IntentFilters WebAppPublisherHelper::CreateIntentFiltersForWebApp(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (ash::features::IsProjectorEnabled() &&
-      app_id == ash::kChromeUITrustedProjectorSwaAppId) {
+      app_id == ash::kChromeUIUntrustedProjectorSwaAppId) {
     filters.push_back(apps_util::MakeIntentFilterForUrlScope(
         GURL(ash::kChromeUIUntrustedProjectorPwaUrl)));
   }
@@ -1578,7 +1577,7 @@ void WebAppPublisherHelper::OnWebAppSettingsPolicyChanged() {
   }
 }
 
-void WebAppPublisherHelper::Init(bool observe_media_requests) {
+void WebAppPublisherHelper::Init() {
   // Allow for web app migration tests.
   if (!AreWebAppsEnabled(profile_)) {
     return;
@@ -1606,9 +1605,7 @@ void WebAppPublisherHelper::Init(bool observe_media_requests) {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
-  if (observe_media_requests) {
-    media_dispatcher_.Observe(MediaCaptureDevicesDispatcher::GetInstance());
-  }
+  media_dispatcher_.Observe(MediaCaptureDevicesDispatcher::GetInstance());
 #endif
 }
 
@@ -1804,13 +1801,9 @@ void WebAppPublisherHelper::MaybeAddWebPageNotifications(
                           : notification.origin_url();
 
     auto app_ids = registrar().FindAppsInScope(url);
-    int count = 0;
     for (const auto& app_id : app_ids) {
-      if (MaybeAddNotification(app_id, notification.id())) {
-        ++count;
-      }
+      MaybeAddNotification(app_id, notification.id());
     }
-    apps::RecordAppsPerNotification(count);
   }
 }
 

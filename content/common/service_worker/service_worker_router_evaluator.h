@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/values.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "third_party/blink/public/common/service_worker/service_worker_router_rule.h"
@@ -19,13 +20,16 @@ class CONTENT_EXPORT ServiceWorkerRouterEvaluator {
   explicit ServiceWorkerRouterEvaluator(blink::ServiceWorkerRouterRules rules);
   ~ServiceWorkerRouterEvaluator();
 
-  bool IsValid() { return is_valid_; }
+  bool IsValid() const { return is_valid_; }
 
   // Returns an empty list if nothing matched.
   std::vector<blink::ServiceWorkerRouterSource> Evaluate(
       const network::ResourceRequest& request) const;
 
   const blink::ServiceWorkerRouterRules& rules() const { return rules_; }
+
+  base::Value ToValue() const;
+  std::string ToString() const;
 
  private:
   struct RouterRule;

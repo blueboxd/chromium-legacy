@@ -43,27 +43,6 @@ try_.builder(
 )
 
 try_.builder(
-    name = "linux-1mbu-compile-fyi-rel",
-    mirrors = [
-        "ci/Linux Builder",
-    ],
-    try_settings = builder_config.try_settings(
-        include_all_triggered_testers = True,
-        is_compile_only = True,
-    ),
-    builderless = False,
-    properties = {
-        "bot_update_experiments": [
-            "no_sync",
-        ],
-    },
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
-    tryjob = try_.job(
-        experiment_percentage = 5,
-    ),
-)
-
-try_.builder(
     name = "linux-afl-asan-rel",
     branch_selector = branches.selector.LINUX_BRANCHES,
     executable = "recipe:chromium/fuzz",
@@ -734,6 +713,25 @@ try_.gpu.optional_tests_builder(
 try_.builder(
     name = "linux-js-coverage-rel",
     mirrors = ["ci/linux-js-code-coverage"],
+    coverage_test_types = ["unit", "overall"],
+    main_list_view = "try",
+    tryjob = try_.job(
+        experiment_percentage = 10,
+        location_filters = [
+            cq.location_filter(path_regexp = r".*\.(js|ts)"),
+        ],
+    ),
+    use_javascript_coverage = True,
+)
+
+# This builder is different from try/chromeos-js-code-coverage builder below as
+# this is a try builder meant to provide javascript coverage for webui related
+# CLs, where as try/chromeos-js-code-coverage builder is there to test changes
+# in ci/chromeos-js-code-coverage builder and would mostly be used by coverage
+# devs only.
+try_.builder(
+    name = "chromeos-js-coverage-rel",
+    mirrors = ["ci/chromeos-js-code-coverage"],
     coverage_test_types = ["unit", "overall"],
     main_list_view = "try",
     tryjob = try_.job(

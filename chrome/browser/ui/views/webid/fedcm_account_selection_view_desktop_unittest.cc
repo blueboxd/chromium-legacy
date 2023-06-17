@@ -538,6 +538,110 @@ TEST_F(FedCmAccountSelectionViewDesktopTest, CloseAutoReauthnSheetMetric) {
       static_cast<int>(FedCmAccountSelectionView::SheetType::AUTO_REAUTHN), 1);
 }
 
+// Tests that when the mismatch dialog is closed through the close icon, the
+// relevant metric is recorded.
+TEST_F(FedCmAccountSelectionViewDesktopTest,
+       MismatchDialogDismissedByCloseIconMetric) {
+  std::unique_ptr<TestFedCmAccountSelectionView> controller =
+      CreateAndShowFailureDialog();
+  histogram_tester_.ExpectTotalCount(
+      "Blink.FedCm.IdpSigninStatus.MismatchDialogResult", 0);
+
+  // Emulate user clicking the close icon.
+  widget_->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
+  controller->OnWidgetDestroying(widget_.get());
+
+  histogram_tester_.ExpectUniqueSample(
+      "Blink.FedCm.IdpSigninStatus.MismatchDialogResult",
+      static_cast<int>(FedCmAccountSelectionView::MismatchDialogResult::
+                           kDismissedByCloseIcon),
+      1);
+}
+
+// Tests that when the mismatch dialog is closed through means other than the
+// close icon, the relevant metric is recorded.
+TEST_F(FedCmAccountSelectionViewDesktopTest,
+       MismatchDialogDismissedForOtherReasonsMetric) {
+  std::unique_ptr<TestFedCmAccountSelectionView> controller =
+      CreateAndShowFailureDialog();
+  histogram_tester_.ExpectTotalCount(
+      "Blink.FedCm.IdpSigninStatus.MismatchDialogResult", 0);
+
+  // Emulate user closing the mismatch dialog for an unspecified reason.
+  widget_->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
+  controller->OnWidgetDestroying(widget_.get());
+
+  histogram_tester_.ExpectUniqueSample(
+      "Blink.FedCm.IdpSigninStatus.MismatchDialogResult",
+      static_cast<int>(FedCmAccountSelectionView::MismatchDialogResult::
+                           kDismissedForOtherReasons),
+      1);
+}
+
+// Tests that when FedCmAccountSelectionView is destroyed while the mismatch
+// dialog is open, the relevant metric is recorded.
+TEST_F(FedCmAccountSelectionViewDesktopTest, MismatchDialogDestroyedMetric) {
+  {
+    std::unique_ptr<TestFedCmAccountSelectionView> controller =
+        CreateAndShowFailureDialog();
+    histogram_tester_.ExpectTotalCount(
+        "Blink.FedCm.IdpSigninStatus.MismatchDialogResult", 0);
+  }
+
+  histogram_tester_.ExpectUniqueSample(
+      "Blink.FedCm.IdpSigninStatus.MismatchDialogResult",
+      static_cast<int>(FedCmAccountSelectionView::MismatchDialogResult::
+                           kDismissedForOtherReasons),
+      1);
+}
+
+// Tests that when the continue button on the mismatch dialog is clicked, the
+// relevant metric is recorded.
+TEST_F(FedCmAccountSelectionViewDesktopTest,
+       MismatchDialogContinueClickedMetric) {
+  std::unique_ptr<TestFedCmAccountSelectionView> controller =
+      CreateAndShowFailureDialog();
+  histogram_tester_.ExpectTotalCount(
+      "Blink.FedCm.IdpSigninStatus.MismatchDialogResult", 0);
+
+  AccountSelectionBubbleView::Observer* observer =
+      static_cast<AccountSelectionBubbleView::Observer*>(controller.get());
+
+  // Called when user clicks on "Continue" button in the mismatch dialog.
+  observer->OnSigninToIdP();
+
+  histogram_tester_.ExpectUniqueSample(
+      "Blink.FedCm.IdpSigninStatus.MismatchDialogResult",
+      static_cast<int>(
+          FedCmAccountSelectionView::MismatchDialogResult::kContinued),
+      1);
+}
+
+// Tests that when the continue button on the mismatch dialog is clicked and
+// then FedCmAccountSelectionView is destroyed, we record only the metric for
+// the continue button being clicked.
+TEST_F(FedCmAccountSelectionViewDesktopTest,
+       MismatchDialogContinueClickedThenDestroyedMetric) {
+  {
+    std::unique_ptr<TestFedCmAccountSelectionView> controller =
+        CreateAndShowFailureDialog();
+    histogram_tester_.ExpectTotalCount(
+        "Blink.FedCm.IdpSigninStatus.MismatchDialogResult", 0);
+
+    AccountSelectionBubbleView::Observer* observer =
+        static_cast<AccountSelectionBubbleView::Observer*>(controller.get());
+
+    // Called when user clicks on "Continue" button in the mismatch dialog.
+    observer->OnSigninToIdP();
+  }
+
+  histogram_tester_.ExpectUniqueSample(
+      "Blink.FedCm.IdpSigninStatus.MismatchDialogResult",
+      static_cast<int>(
+          FedCmAccountSelectionView::MismatchDialogResult::kContinued),
+      1);
+}
+
 // Test transitioning from IdP sign-in status mismatch failure dialog to regular
 // sign-in dialog. This emulates a user signing into the IdP in a pop-up window
 // and the pop-up window closes PRIOR to the failure dialog being updated to a
@@ -562,6 +666,10 @@ TEST_F(FedCmAccountSelectionViewDesktopTest,
   // accounts dialog yet.
   EXPECT_FALSE(widget_->IsVisible());
 
+  histogram_tester_.ExpectTotalCount(
+      "Blink.FedCm.IdpSigninStatus.IdpClosePopupToBrowserShowAccountsDuration",
+      0);
+
   // Emulate IdP sending the IdP sign-in status header which updates the failure
   // dialog to an accounts dialog.
   const char kAccountId[] = "account_id";
@@ -572,6 +680,10 @@ TEST_F(FedCmAccountSelectionViewDesktopTest,
 
   // Accounts dialog should now be visible.
   EXPECT_TRUE(widget_->IsVisible());
+
+  histogram_tester_.ExpectTotalCount(
+      "Blink.FedCm.IdpSigninStatus.IdpClosePopupToBrowserShowAccountsDuration",
+      1);
 }
 
 // Test transitioning from IdP sign-in status mismatch failure dialog to regular
@@ -602,11 +714,19 @@ TEST_F(FedCmAccountSelectionViewDesktopTest,
   // closed yet.
   EXPECT_FALSE(widget_->IsVisible());
 
+  histogram_tester_.ExpectTotalCount(
+      "Blink.FedCm.IdpSigninStatus.IdpClosePopupToBrowserShowAccountsDuration",
+      0);
+
   // Emulate IdP closing the pop-up window.
   controller->CloseModalDialog();
 
   // Accounts dialog should now be visible.
   EXPECT_TRUE(widget_->IsVisible());
+
+  histogram_tester_.ExpectTotalCount(
+      "Blink.FedCm.IdpSigninStatus.IdpClosePopupToBrowserShowAccountsDuration",
+      1);
 }
 
 // Test closing the IdP sign-in pop-up window through IdentityProvider.close()
@@ -643,4 +763,34 @@ TEST_F(FedCmAccountSelectionViewDesktopTest,
 
   // Widget should be closed.
   EXPECT_TRUE(widget_->IsClosed());
+}
+
+// Test that the mismatch dialog can be shown again after the pop-up window is
+// closed.
+TEST_F(FedCmAccountSelectionViewDesktopTest,
+       IdpSigninStatusMismatchDialogReshown) {
+  // Trigger IdP sign-in status mismatch failure dialog.
+  std::unique_ptr<TestFedCmAccountSelectionView> controller =
+      CreateAndShowFailureDialog();
+
+  // Emulate user clicking on "Continue" button in the failure dialog.
+  CreateAndShowPopupWindow(*controller);
+
+  // Mismatch dialog should be hidden because pop-up window is open.
+  EXPECT_FALSE(widget_->IsVisible());
+
+  // Emulate IdentityProvider.close() being called in the pop-up window.
+  controller->CloseModalDialog();
+
+  // Failure dialog should remain hidden because it has not been updated to an
+  // accounts dialog yet.
+  EXPECT_FALSE(widget_->IsVisible());
+
+  // Emulate another mismatch so we need to show the mismatch dialog again.
+  controller->ShowFailureDialog(kTopFrameEtldPlusOne, kIframeEtldPlusOne,
+                                kIdpEtldPlusOne,
+                                content::IdentityProviderMetadata());
+
+  // Mismatch dialog is visible again.
+  EXPECT_TRUE(widget_->IsVisible());
 }

@@ -47,6 +47,7 @@ var OSSettingsDevicePageTest = class extends OSSettingsBrowserTest {
     return {
       enabled: [
         'ash::features::kInputDeviceSettingsSplit',
+        'ash::features::kPeripheralCustomization',
       ],
     };
   }
@@ -200,7 +201,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'CupsPrinterPage', 'cups_printer_page_tests.js',
    {enabled: ['ash::features::kPrinterSettingsRevamp']}
  ],
- ['DateTimePage', 'date_time_page_tests.js'],
+ ['DateTimePage', 'date_time_page/date_time_page_test.js'],
  ['DateTimePageTimezoneSelector', 'date_time_page/timezone_selector_test.js'],
  ['DateTimePageTimezoneSubpage', 'date_time_page/timezone_subpage_test.js'],
  ['DevicePageAudioPage', 'device_page/audio_page_test.js'],
@@ -334,6 +335,15 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    }
  ],
  [
+   'InternetPagePasspointRemoveDialog',
+   'internet_page/passpoint_remove_dialog_test.js', {
+     enabled: [
+       'ash::features::kPasspointARCSupport',
+       'ash::features::kPasspointSettings',
+     ]
+   }
+ ],
+ [
    'InternetPageTetherConnectionDialog',
    'internet_page/tether_connection_dialog_test.js'
  ],
@@ -354,6 +364,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  ],
  ['LockScreenSubpage', 'lock_screen_subpage_test.js'],
  ['MainPageContainer', 'main_page_container_test.js'],
+ [
+   'MainPageContainerPageDisplayer',
+   'main_page_container/page_displayer_test.js',
+ ],
  ['ManageUsersSubpage', 'manage_users_subpage_tests.js'],
  // TODO(b/208932892): Re-enable once flakiness is fixed.
  // ['MultideviceFeatureItem', 'multidevice_feature_item_tests.js'],

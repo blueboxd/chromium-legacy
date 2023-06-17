@@ -91,6 +91,7 @@ class ASH_EXPORT HoldingSpaceTray : public TrayBackgroundView,
   void OnThemeChanged() override;
   void OnShouldShowAnimationChanged(bool should_animate) override;
   std::unique_ptr<ui::SimpleMenuModel> CreateContextMenuModel() override;
+  void UpdateTrayItemColor(bool is_active) override;
 
   // Invoke to cause the holding space tray to recalculate and update its
   // visibility. Note that this may or may not result in a visibility change

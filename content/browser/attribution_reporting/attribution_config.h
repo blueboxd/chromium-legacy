@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/time/time.h"
+#include "content/browser/attribution_reporting/destination_throttler.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -82,9 +83,12 @@ struct CONTENT_EXPORT AttributionConfig {
     // destination.
     int max_reports_per_destination = 1024;
 
+    static constexpr int kDefaultMaxAttributionsPerEventSource = 1;
+
     // Controls how many times a single source can create an event-level report.
     int max_attributions_per_navigation_source = 3;
-    int max_attributions_per_event_source = 1;
+    int max_attributions_per_event_source =
+        kDefaultMaxAttributionsPerEventSource;
 
     // Default constants for report window deadlines.
     static constexpr base::TimeDelta kDefaultFirstReportWindowDeadline =
@@ -144,6 +148,15 @@ struct CONTENT_EXPORT AttributionConfig {
     // should also be updated.
   };
 
+  AttributionConfig();
+
+  AttributionConfig(const AttributionConfig&);
+  AttributionConfig(AttributionConfig&&);
+  ~AttributionConfig();
+
+  AttributionConfig& operator=(const AttributionConfig&);
+  AttributionConfig& operator=(AttributionConfig&&);
+
   // Returns true if this config is valid.
   [[nodiscard]] bool Validate() const;
 
@@ -158,6 +171,7 @@ struct CONTENT_EXPORT AttributionConfig {
   RateLimitConfig rate_limit;
   EventLevelLimit event_level_limit;
   AggregateLimit aggregate_limit;
+  DestinationThrottler::Policy throttler_policy;
 
   // When adding new members, the corresponding `Validate()` definition and
   // `operator==()` definition in `attribution_interop_parser_unittest.cc`

@@ -2079,6 +2079,7 @@ Il criterio <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" /> potrebbe eseguire l'
       Questo criterio è stato rimosso in Chrome 99.
 
       Visita la pagina https://www.chromestatus.com/feature/4664843055398912.</translation>
+<translation id="2948720459196236547">Consenti la memorizzazione nella <ph name="BACK_FORWARD_CACHE_NAME" /> delle pagine con l'intestazione CCNS.</translation>
 <translation id="2952347049958405264">Limitazioni:</translation>
 <translation id="2957506574938329824">Non consentire ad alcun sito di richiedere l'accesso ai dispositivi Bluetooth tramite l'API Web Bluetooth</translation>
 <translation id="2957513448235202597">Tipo di account per l'autenticazione <ph name="HTTP_NEGOTIATE" /></translation>
@@ -2270,6 +2271,7 @@ e verrebbe accettata invece <ph name="ACCEPTED_CASE" />.
 Nota: i metodi di richiesta <ph name="POST_LOWERCASE_METHOD_NAME" /> e <ph name="PUT_LOWERCASE_METHOD_NAME" /> non sono interessati, mentre <ph name="PATCH_LOWERCASE_METHOD_NAME" /> lo è.
 
 Questo criterio è stato pensato per essere temporaneo e verrà rimosso in futuro.</translation>
+<translation id="3107054704365085676">Consenti la memorizzazione nella <ph name="BACK_FORWARD_CACHE_NAME" /> delle pagine con l'intestazione <ph name="CACHE_CONTROL_NO_STORE_NAME" /></translation>
 <translation id="3110248563985502478">Questo criterio è deprecato in M88 e Flash non è più supportato da Chrome. Se il criterio viene impostato su Attivato, i plug-in obsoleti vengono utilizzati come normali plug-in. Se viene impostato su Disattivato, i plug-in obsoleti non vengono utilizzati.
 
       Se non viene configurato, agli utenti viene richiesta l'autorizzazione per eseguire i plug-in obsoleti.</translation>
@@ -3056,6 +3058,7 @@ Dalla versione 114 in poi, il criterio <ph name="DOH_SALT_POLICY_NAME" /> è fac
       Se questa norma non viene impostata, per impostazione predefinita la funzione non è consentita per gli utenti gestiti dall'azienda ed è consentita per gli utenti non gestiti.</translation>
 <translation id="3791179836066841809">Documentazione per le norme</translation>
 <translation id="3791556154364029875">Abilita l'area di lavoro mobile e avvia le finestre del browser remoto al momento dell'accesso</translation>
+<translation id="379318040165550702">Consenti agli utenti di scegliere</translation>
 <translation id="3793998702484455655">Chrome tenterà di eseguire l'upgrade di alcuni tipi di sottorisorse di contenuto misto (HTTP su un sito HTTPS) su iOS.
 Per informazioni dettagliate, visita la pagina https://chromium.googlesource.com/chromium/src/+/main/docs/security/autoupgrade-mixed.md.
 
@@ -4656,6 +4659,13 @@ Nota: questo criterio non viene applicato agli upgrade a HSTS.</translation>
 <translation id="5345910753471481870">Non mostrare il pulsante di Google Lens nella casella di ricerca della pagina Nuova scheda.</translation>
 <translation id="5346587320074666194">Blocca l'accesso ai sensori su questi siti</translation>
 <translation id="534836255587440809">Disattiva i clic automatici nella schermata di accesso</translation>
+<translation id="5361708558735884308">La configurazione del criterio consente di fornire l'accesso agli URL elencati, sotto forma di eccezioni a <ph name="URL_BLOCKLIST_POLICY_NAME" />. Leggi la descrizione del criterio per conoscere il formato delle voci di questo elenco. Ad esempio, se imposti il criterio <ph name="URL_BLOCKLIST_POLICY_NAME" /> su *, tutte le richieste verranno bloccate e puoi utilizzare questo criterio per consentire l'accesso a un elenco limitato di URL. Utilizzalo per aprire le eccezioni di alcuni schemi, sottodomini di altri domini, porte o percorsi specifici utilizzando il formato specificato all'indirizzo https://support.google.com/chrome/a?p=url_blocklist_filter_format. Il filtro più specifico consente di determinare se un URL è bloccato o consentito. Il criterio <ph name="URL_ALLOWLIST_POLICY_NAME" /> ha la precedenza sul criterio <ph name="URL_BLOCKLIST_POLICY_NAME" />. Per questo criterio è possibile definire al massimo 1000 voci.
+
+Questo criterio consente anche di attivare la chiamata automatica da parte del browser di applicazioni esterne registrate come gestori di protocollo per i protocolli elencati come "tel:" o "ssh:".
+
+Se il criterio non viene configurato, non sono consentite eccezioni a <ph name="URL_BLOCKLIST_POLICY_NAME" />.
+
+A partire dalla versione 92 di <ph name="PRODUCT_NAME" />, questo criterio è supportato anche nella modalità headless.</translation>
 <translation id="5362531528507578966">Consente di sostituire la modalità di stampa predefinita delle immagini di sfondo.</translation>
 <translation id="5365476955714838841">Parametri della riga di comando per il browser alternativo.</translation>
 <translation id="5365946944967967336">Mostra il pulsante Pagina iniziale nella barra degli strumenti</translation>
@@ -4849,6 +4859,7 @@ Questo criterio è stato rimosso nella versione M112.</translation>
 <translation id="5503933085302625442">Non eseguire il rollback del sistema operativo alla versione target</translation>
 <translation id="55057839818162162">Consenti la ricerca tramite fotocamera con <ph name="GOOGLE_LENS_PRODUCT_NAME" /></translation>
 <translation id="55057971769693300">Disattiva l'evidenziazione del cursore</translation>
+<translation id="5507027524345233268">Non consentire la memorizzazione nella <ph name="BACK_FORWARD_CACHE_NAME" /> delle pagine con l'intestazione CCNS.</translation>
 <translation id="5508307164752647432">Attiva la funzionalità Kerberos</translation>
 <translation id="5511702823008968136">Attiva barra dei Preferiti</translation>
 <translation id="5512418063782665071">URL pagina iniziale</translation>

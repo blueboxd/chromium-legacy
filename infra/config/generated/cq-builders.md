@@ -543,6 +543,12 @@ by CQ. These are often used to test new configurations before they are added
 as required builders.
 
 ### chromium
+* [chromeos-js-coverage-rel](https://ci.chromium.org/p/chromium/builders/try/chromeos-js-coverage-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""chromeos-js-coverage-rel""))
+  * Experiment percentage: 10.0
+
+  Location filters:
+  * [`//.*\.(js|ts)`](https://cs.chromium.org/search?q=+file:.*\.(js|ts))
+
 * [dawn-android-arm64-deps-rel](https://ci.chromium.org/p/chromium/builders/try/dawn-android-arm64-deps-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""dawn-android-arm64-deps-rel""))
   * Experiment percentage: 100.0
 
@@ -558,9 +564,6 @@ as required builders.
   * [`//third_party/webgpu-cts/.+`](https://cs.chromium.org/chromium/src/third_party/webgpu-cts/)
   * [`//tools/clang/scripts/update.py`](https://cs.chromium.org/search?q=+file:tools/clang/scripts/update.py)
   * [`//ui/gl/features.gni`](https://cs.chromium.org/search?q=+file:ui/gl/features.gni)
-
-* [linux-1mbu-compile-fyi-rel](https://ci.chromium.org/p/chromium/builders/try/linux-1mbu-compile-fyi-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-1mbu-compile-fyi-rel""))
-  * Experiment percentage: 5.0
 
 * [linux-js-coverage-rel](https://ci.chromium.org/p/chromium/builders/try/linux-js-coverage-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-js-coverage-rel""))
   * Experiment percentage: 10.0

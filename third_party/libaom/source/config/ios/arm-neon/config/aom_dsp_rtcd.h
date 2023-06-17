@@ -995,112 +995,256 @@ unsigned int aom_masked_sad128x128_neon(const uint8_t *src, int src_stride, cons
 #define aom_masked_sad128x128 aom_masked_sad128x128_neon
 
 void aom_masked_sad128x128x4d_c(const uint8_t *src, int src_stride, const uint8_t *ref[4], int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned sads[4]);
-#define aom_masked_sad128x128x4d aom_masked_sad128x128x4d_c
+void aom_masked_sad128x128x4d_neon(const uint8_t* src,
+                                   int src_stride,
+                                   const uint8_t* ref[4],
+                                   int ref_stride,
+                                   const uint8_t* second_pred,
+                                   const uint8_t* msk,
+                                   int msk_stride,
+                                   int invert_mask,
+                                   unsigned sads[4]);
+#define aom_masked_sad128x128x4d aom_masked_sad128x128x4d_neon
 
 unsigned int aom_masked_sad128x64_c(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 unsigned int aom_masked_sad128x64_neon(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 #define aom_masked_sad128x64 aom_masked_sad128x64_neon
 
 void aom_masked_sad128x64x4d_c(const uint8_t *src, int src_stride, const uint8_t *ref[4], int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned sads[4]);
-#define aom_masked_sad128x64x4d aom_masked_sad128x64x4d_c
+void aom_masked_sad128x64x4d_neon(const uint8_t* src,
+                                  int src_stride,
+                                  const uint8_t* ref[4],
+                                  int ref_stride,
+                                  const uint8_t* second_pred,
+                                  const uint8_t* msk,
+                                  int msk_stride,
+                                  int invert_mask,
+                                  unsigned sads[4]);
+#define aom_masked_sad128x64x4d aom_masked_sad128x64x4d_neon
 
 unsigned int aom_masked_sad16x16_c(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 unsigned int aom_masked_sad16x16_neon(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 #define aom_masked_sad16x16 aom_masked_sad16x16_neon
 
 void aom_masked_sad16x16x4d_c(const uint8_t *src, int src_stride, const uint8_t *ref[4], int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned sads[4]);
-#define aom_masked_sad16x16x4d aom_masked_sad16x16x4d_c
+void aom_masked_sad16x16x4d_neon(const uint8_t* src,
+                                 int src_stride,
+                                 const uint8_t* ref[4],
+                                 int ref_stride,
+                                 const uint8_t* second_pred,
+                                 const uint8_t* msk,
+                                 int msk_stride,
+                                 int invert_mask,
+                                 unsigned sads[4]);
+#define aom_masked_sad16x16x4d aom_masked_sad16x16x4d_neon
 
 unsigned int aom_masked_sad16x32_c(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 unsigned int aom_masked_sad16x32_neon(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 #define aom_masked_sad16x32 aom_masked_sad16x32_neon
 
 void aom_masked_sad16x32x4d_c(const uint8_t *src, int src_stride, const uint8_t *ref[4], int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned sads[4]);
-#define aom_masked_sad16x32x4d aom_masked_sad16x32x4d_c
+void aom_masked_sad16x32x4d_neon(const uint8_t* src,
+                                 int src_stride,
+                                 const uint8_t* ref[4],
+                                 int ref_stride,
+                                 const uint8_t* second_pred,
+                                 const uint8_t* msk,
+                                 int msk_stride,
+                                 int invert_mask,
+                                 unsigned sads[4]);
+#define aom_masked_sad16x32x4d aom_masked_sad16x32x4d_neon
 
 unsigned int aom_masked_sad16x8_c(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 unsigned int aom_masked_sad16x8_neon(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 #define aom_masked_sad16x8 aom_masked_sad16x8_neon
 
 void aom_masked_sad16x8x4d_c(const uint8_t *src, int src_stride, const uint8_t *ref[4], int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned sads[4]);
-#define aom_masked_sad16x8x4d aom_masked_sad16x8x4d_c
+void aom_masked_sad16x8x4d_neon(const uint8_t* src,
+                                int src_stride,
+                                const uint8_t* ref[4],
+                                int ref_stride,
+                                const uint8_t* second_pred,
+                                const uint8_t* msk,
+                                int msk_stride,
+                                int invert_mask,
+                                unsigned sads[4]);
+#define aom_masked_sad16x8x4d aom_masked_sad16x8x4d_neon
 
 unsigned int aom_masked_sad32x16_c(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 unsigned int aom_masked_sad32x16_neon(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 #define aom_masked_sad32x16 aom_masked_sad32x16_neon
 
 void aom_masked_sad32x16x4d_c(const uint8_t *src, int src_stride, const uint8_t *ref[4], int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned sads[4]);
-#define aom_masked_sad32x16x4d aom_masked_sad32x16x4d_c
+void aom_masked_sad32x16x4d_neon(const uint8_t* src,
+                                 int src_stride,
+                                 const uint8_t* ref[4],
+                                 int ref_stride,
+                                 const uint8_t* second_pred,
+                                 const uint8_t* msk,
+                                 int msk_stride,
+                                 int invert_mask,
+                                 unsigned sads[4]);
+#define aom_masked_sad32x16x4d aom_masked_sad32x16x4d_neon
 
 unsigned int aom_masked_sad32x32_c(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 unsigned int aom_masked_sad32x32_neon(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 #define aom_masked_sad32x32 aom_masked_sad32x32_neon
 
 void aom_masked_sad32x32x4d_c(const uint8_t *src, int src_stride, const uint8_t *ref[4], int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned sads[4]);
-#define aom_masked_sad32x32x4d aom_masked_sad32x32x4d_c
+void aom_masked_sad32x32x4d_neon(const uint8_t* src,
+                                 int src_stride,
+                                 const uint8_t* ref[4],
+                                 int ref_stride,
+                                 const uint8_t* second_pred,
+                                 const uint8_t* msk,
+                                 int msk_stride,
+                                 int invert_mask,
+                                 unsigned sads[4]);
+#define aom_masked_sad32x32x4d aom_masked_sad32x32x4d_neon
 
 unsigned int aom_masked_sad32x64_c(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 unsigned int aom_masked_sad32x64_neon(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 #define aom_masked_sad32x64 aom_masked_sad32x64_neon
 
 void aom_masked_sad32x64x4d_c(const uint8_t *src, int src_stride, const uint8_t *ref[4], int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned sads[4]);
-#define aom_masked_sad32x64x4d aom_masked_sad32x64x4d_c
+void aom_masked_sad32x64x4d_neon(const uint8_t* src,
+                                 int src_stride,
+                                 const uint8_t* ref[4],
+                                 int ref_stride,
+                                 const uint8_t* second_pred,
+                                 const uint8_t* msk,
+                                 int msk_stride,
+                                 int invert_mask,
+                                 unsigned sads[4]);
+#define aom_masked_sad32x64x4d aom_masked_sad32x64x4d_neon
 
 unsigned int aom_masked_sad4x4_c(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 unsigned int aom_masked_sad4x4_neon(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 #define aom_masked_sad4x4 aom_masked_sad4x4_neon
 
 void aom_masked_sad4x4x4d_c(const uint8_t *src, int src_stride, const uint8_t *ref[4], int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned sads[4]);
-#define aom_masked_sad4x4x4d aom_masked_sad4x4x4d_c
+void aom_masked_sad4x4x4d_neon(const uint8_t* src,
+                               int src_stride,
+                               const uint8_t* ref[4],
+                               int ref_stride,
+                               const uint8_t* second_pred,
+                               const uint8_t* msk,
+                               int msk_stride,
+                               int invert_mask,
+                               unsigned sads[4]);
+#define aom_masked_sad4x4x4d aom_masked_sad4x4x4d_neon
 
 unsigned int aom_masked_sad4x8_c(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 unsigned int aom_masked_sad4x8_neon(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 #define aom_masked_sad4x8 aom_masked_sad4x8_neon
 
 void aom_masked_sad4x8x4d_c(const uint8_t *src, int src_stride, const uint8_t *ref[4], int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned sads[4]);
-#define aom_masked_sad4x8x4d aom_masked_sad4x8x4d_c
+void aom_masked_sad4x8x4d_neon(const uint8_t* src,
+                               int src_stride,
+                               const uint8_t* ref[4],
+                               int ref_stride,
+                               const uint8_t* second_pred,
+                               const uint8_t* msk,
+                               int msk_stride,
+                               int invert_mask,
+                               unsigned sads[4]);
+#define aom_masked_sad4x8x4d aom_masked_sad4x8x4d_neon
 
 unsigned int aom_masked_sad64x128_c(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 unsigned int aom_masked_sad64x128_neon(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 #define aom_masked_sad64x128 aom_masked_sad64x128_neon
 
 void aom_masked_sad64x128x4d_c(const uint8_t *src, int src_stride, const uint8_t *ref[4], int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned sads[4]);
-#define aom_masked_sad64x128x4d aom_masked_sad64x128x4d_c
+void aom_masked_sad64x128x4d_neon(const uint8_t* src,
+                                  int src_stride,
+                                  const uint8_t* ref[4],
+                                  int ref_stride,
+                                  const uint8_t* second_pred,
+                                  const uint8_t* msk,
+                                  int msk_stride,
+                                  int invert_mask,
+                                  unsigned sads[4]);
+#define aom_masked_sad64x128x4d aom_masked_sad64x128x4d_neon
 
 unsigned int aom_masked_sad64x32_c(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 unsigned int aom_masked_sad64x32_neon(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 #define aom_masked_sad64x32 aom_masked_sad64x32_neon
 
 void aom_masked_sad64x32x4d_c(const uint8_t *src, int src_stride, const uint8_t *ref[4], int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned sads[4]);
-#define aom_masked_sad64x32x4d aom_masked_sad64x32x4d_c
+void aom_masked_sad64x32x4d_neon(const uint8_t* src,
+                                 int src_stride,
+                                 const uint8_t* ref[4],
+                                 int ref_stride,
+                                 const uint8_t* second_pred,
+                                 const uint8_t* msk,
+                                 int msk_stride,
+                                 int invert_mask,
+                                 unsigned sads[4]);
+#define aom_masked_sad64x32x4d aom_masked_sad64x32x4d_neon
 
 unsigned int aom_masked_sad64x64_c(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 unsigned int aom_masked_sad64x64_neon(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 #define aom_masked_sad64x64 aom_masked_sad64x64_neon
 
 void aom_masked_sad64x64x4d_c(const uint8_t *src, int src_stride, const uint8_t *ref[4], int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned sads[4]);
-#define aom_masked_sad64x64x4d aom_masked_sad64x64x4d_c
+void aom_masked_sad64x64x4d_neon(const uint8_t* src,
+                                 int src_stride,
+                                 const uint8_t* ref[4],
+                                 int ref_stride,
+                                 const uint8_t* second_pred,
+                                 const uint8_t* msk,
+                                 int msk_stride,
+                                 int invert_mask,
+                                 unsigned sads[4]);
+#define aom_masked_sad64x64x4d aom_masked_sad64x64x4d_neon
 
 unsigned int aom_masked_sad8x16_c(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 unsigned int aom_masked_sad8x16_neon(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 #define aom_masked_sad8x16 aom_masked_sad8x16_neon
 
 void aom_masked_sad8x16x4d_c(const uint8_t *src, int src_stride, const uint8_t *ref[4], int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned sads[4]);
-#define aom_masked_sad8x16x4d aom_masked_sad8x16x4d_c
+void aom_masked_sad8x16x4d_neon(const uint8_t* src,
+                                int src_stride,
+                                const uint8_t* ref[4],
+                                int ref_stride,
+                                const uint8_t* second_pred,
+                                const uint8_t* msk,
+                                int msk_stride,
+                                int invert_mask,
+                                unsigned sads[4]);
+#define aom_masked_sad8x16x4d aom_masked_sad8x16x4d_neon
 
 unsigned int aom_masked_sad8x4_c(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 unsigned int aom_masked_sad8x4_neon(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 #define aom_masked_sad8x4 aom_masked_sad8x4_neon
 
 void aom_masked_sad8x4x4d_c(const uint8_t *src, int src_stride, const uint8_t *ref[4], int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned sads[4]);
-#define aom_masked_sad8x4x4d aom_masked_sad8x4x4d_c
+void aom_masked_sad8x4x4d_neon(const uint8_t* src,
+                               int src_stride,
+                               const uint8_t* ref[4],
+                               int ref_stride,
+                               const uint8_t* second_pred,
+                               const uint8_t* msk,
+                               int msk_stride,
+                               int invert_mask,
+                               unsigned sads[4]);
+#define aom_masked_sad8x4x4d aom_masked_sad8x4x4d_neon
 
 unsigned int aom_masked_sad8x8_c(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 unsigned int aom_masked_sad8x8_neon(const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask);
 #define aom_masked_sad8x8 aom_masked_sad8x8_neon
 
 void aom_masked_sad8x8x4d_c(const uint8_t *src, int src_stride, const uint8_t *ref[4], int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned sads[4]);
-#define aom_masked_sad8x8x4d aom_masked_sad8x8x4d_c
+void aom_masked_sad8x8x4d_neon(const uint8_t* src,
+                               int src_stride,
+                               const uint8_t* ref[4],
+                               int ref_stride,
+                               const uint8_t* second_pred,
+                               const uint8_t* msk,
+                               int msk_stride,
+                               int invert_mask,
+                               unsigned sads[4]);
+#define aom_masked_sad8x8x4d aom_masked_sad8x8x4d_neon
 
 unsigned int aom_masked_sub_pixel_variance128x128_c(const uint8_t *src, int src_stride, int xoffset, int yoffset, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned int *sse);
 unsigned int aom_masked_sub_pixel_variance128x128_neon(
@@ -2467,12 +2611,6 @@ unsigned int aom_variance16x8_c(const uint8_t *src_ptr, int source_stride, const
 unsigned int aom_variance16x8_neon(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
 #define aom_variance16x8 aom_variance16x8_neon
 
-unsigned int aom_variance2x2_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
-#define aom_variance2x2 aom_variance2x2_c
-
-unsigned int aom_variance2x4_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
-#define aom_variance2x4 aom_variance2x4_c
-
 unsigned int aom_variance32x16_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
 unsigned int aom_variance32x16_neon(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
 #define aom_variance32x16 aom_variance32x16_neon
@@ -2484,9 +2622,6 @@ unsigned int aom_variance32x32_neon(const uint8_t *src_ptr, int source_stride, c
 unsigned int aom_variance32x64_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
 unsigned int aom_variance32x64_neon(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
 #define aom_variance32x64 aom_variance32x64_neon
-
-unsigned int aom_variance4x2_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
-#define aom_variance4x2 aom_variance4x2_c
 
 unsigned int aom_variance4x4_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
 unsigned int aom_variance4x4_neon(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);

@@ -37,7 +37,6 @@
 #import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
-#import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/language/language_model_manager_factory.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ntp/features.h"
@@ -60,6 +59,7 @@
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/symbols/buildflags.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_icon_item.h"
@@ -693,7 +693,10 @@ UIImage* GetBrandedGoogleServicesSymbol() {
                                           prefService:_browserState
                                                           ->GetPrefs()] &&
       !syncService->GetUserSettings()->IsInitialSyncFeatureSetupComplete();
-  return shouldDisplay && !base::FeatureList::IsEnabled(kHideSettingsSyncPromo);
+  return shouldDisplay &&
+         !base::FeatureList::IsEnabled(kHideSettingsSyncPromo) &&
+         !base::FeatureList::IsEnabled(
+             syncer::kReplaceSyncPromosWithSignInPromos);
 }
 
 #pragma mark - Model Items
@@ -2359,6 +2362,16 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 
 - (NSString*)manageSyncSettingsCoordinatorTitle {
   return l10n_util::GetNSString(IDS_IOS_GOOGLE_SYNC_SETTINGS_TITLE);
+}
+
+- (void)showSignOutToast {
+  [self.snackbarCommandsHandler
+      showSnackbarWithMessage:
+          l10n_util::GetNSString(
+              IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_SIGN_OUT_SNACKBAR_MESSAGE)
+                   buttonText:nil
+                messageAction:nil
+             completionAction:nil];
 }
 
 #pragma mark - NotificationsSettingsObserverDelegate

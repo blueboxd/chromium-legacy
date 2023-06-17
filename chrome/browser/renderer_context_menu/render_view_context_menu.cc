@@ -118,6 +118,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/popup_types.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/custom_handlers/protocol_handler.h"
 #include "components/download/public/common/download_url_parameters.h"
@@ -237,7 +239,6 @@
 
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/browser/printing/print_view_manager_common.h"
-#include "components/printing/common/print.mojom.h"
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_preview_context_menu_observer.h"
@@ -1245,6 +1246,19 @@ void RenderViewContextMenu::InitMenu() {
   // menu, meaning that each menu item added/removed in this function will cause
   // it to visibly jump on the screen (see b/173569669).
   AppendQuickAnswersItems();
+
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillPopupDoesNotOverlapWithContextMenu)) {
+    // If the autofill popup is shown the context menu could
+    // overlap with the autofill popup, therefore we hide the autofill popup.
+    content::WebContents* web_contents = GetWebContents();
+    autofill::AutofillClient* autofill_client =
+        autofill::ContentAutofillClient::FromWebContents(web_contents);
+    if (autofill_client) {
+      autofill_client->HideAutofillPopup(
+          autofill::PopupHidingReason::kContextMenuOpened);
+    }
+  }
 }
 
 Profile* RenderViewContextMenu::GetProfile() const {
@@ -2213,7 +2227,7 @@ void RenderViewContextMenu::AppendOtherEditableItems() {
       submenu_model_ = chromeos::clipboard_history::
           ClipboardHistorySubmenuModel::CreateClipboardHistorySubmenuModel(
               crosapi::mojom::ClipboardHistoryControllerShowSource::
-                  kRenderViewContextMenu,
+                  kRenderViewContextSubmenu,
               base::BindRepeating(
                   &RenderViewContextMenu::ShowClipboardHistoryMenu,
                   base::Unretained(this)));
@@ -3559,6 +3573,12 @@ bool RenderViewContextMenu::IsRegionSearchEnabled() const {
 bool RenderViewContextMenu::IsAddANoteEnabled() const {
   DCHECK(user_notes::IsUserNotesEnabled());
 
+  // Generating a user note in an iframe is not currently supported.
+  if (!GetRenderFrameHost() ||
+      GetRenderFrameHost()->GetParentOrOuterDocument()) {
+    return false;
+  }
+
   return UserNotesController::IsUserNotesSupported(source_web_contents_);
 }
 
@@ -4043,23 +4063,21 @@ void RenderViewContextMenu::ExecRestartPackagedApp() {
 
 void RenderViewContextMenu::ExecPrint() {
 #if BUILDFLAG(ENABLE_PRINTING)
+  const bool print_preview_disabled =
+      GetPrefs(browser_context_)->GetBoolean(prefs::kPrintPreviewDisabled);
   if (params_.media_type != ContextMenuDataMediaType::kNone) {
     RenderFrameHost* rfh = GetRenderFrameHost();
     if (rfh) {
-      mojo::AssociatedRemote<printing::mojom::PrintRenderFrame> remote;
-      rfh->GetRemoteAssociatedInterfaces()->GetInterface(&remote);
-      remote->PrintNodeUnderContextMenu();
+      printing::StartPrintNodeUnderContextMenu(rfh, print_preview_disabled);
     }
     return;
   }
 
-  printing::StartPrint(
-      source_web_contents_,
+  printing::StartPrint(source_web_contents_,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-      mojo::NullAssociatedRemote(),
+                       mojo::NullAssociatedRemote(),
 #endif
-      GetPrefs(browser_context_)->GetBoolean(prefs::kPrintPreviewDisabled),
-      !params_.selection_text.empty());
+                       print_preview_disabled, !params_.selection_text.empty());
 #endif  // BUILDFLAG(ENABLE_PRINTING)
 }
 

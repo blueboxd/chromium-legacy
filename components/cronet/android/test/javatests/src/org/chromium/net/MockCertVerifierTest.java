@@ -6,8 +6,6 @@ package org.chromium.net;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.chromium.net.CronetTestRule.getContext;
-
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
@@ -24,8 +22,6 @@ import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
  */
 @RunWith(AndroidJUnit4.class)
 public class MockCertVerifierTest {
-    private static final String TAG = MockCertVerifierTest.class.getSimpleName();
-
     @Rule
     public final CronetTestRule mTestRule = CronetTestRule.withManualEngineStartup();
 
@@ -34,7 +30,8 @@ public class MockCertVerifierTest {
         // Load library first to create MockCertVerifier.
         System.loadLibrary("cronet_tests");
 
-        assertThat(Http2TestServer.startHttp2TestServer(getContext())).isTrue();
+        assertThat(Http2TestServer.startHttp2TestServer(mTestRule.getTestFramework().getContext()))
+                .isTrue();
     }
 
     @After

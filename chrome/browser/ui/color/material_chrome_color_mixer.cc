@@ -59,8 +59,12 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
 
   // Tab Search Colors.
   mixer[kColorTabSearchBackground] = {ui::kColorSysSurface};
+  mixer[kColorTabSearchDivider] = {ui::kColorSysOnBaseDivider};
+  mixer[kColorTabSearchMediaIcon] = {ui::kColorSysOnSurfaceSubtle};
+  mixer[kColorTabSearchMediaRecordingIcon] = {ui::kColorSysError};
   mixer[kColorTabSearchPrimaryForeground] = {ui::kColorSysOnSurface};
   mixer[kColorTabSearchSecondaryForeground] = {ui::kColorSysOnSurfaceSubtle};
+  mixer[kColorTabSearchScrollbarThumb] = {ui::kColorSysPrimary};
 
   if (!ShouldApplyChromeMaterialOverrides(key)) {
     return;
@@ -74,8 +78,22 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
       ui::kColorSysOnTonalContainer};
   mixer[kColorAppMenuChipInkDropHover] = {ui::kColorSysStateHoverOnSubtle};
   mixer[kColorAppMenuChipInkDropRipple] = {ui::kColorSysStateRipplePrimary};
-  mixer[kColorAvatarButtonHighlightNormal] =
-      AdjustHighlightColorForContrast(ui::kColorSysPrimary, kColorToolbar);
+  mixer[kColorAvatarButtonHighlightNormal] = {ui::kColorSysTonalContainer};
+  mixer[kColorAvatarButtonHighlightSyncPaused] = {
+      kColorAvatarButtonHighlightNormal};
+  mixer[kColorAvatarButtonHighlightSyncError] = {ui::kColorSysErrorContainer};
+  mixer[kColorAvatarButtonHighlightIncognito] = {ui::kColorSysBaseContainer};
+  mixer[kColorAvatarButtonHighlightNormalForeground] = {
+      ui::kColorSysOnTonalContainer};
+  mixer[kColorAvatarButtonHighlightDefaultForeground] = {
+      ui::kColorSysOnSecondaryContainer};
+  mixer[kColorAvatarButtonHighlightSyncErrorForeground] = {
+      ui::kColorSysOnErrorContainer};
+  mixer[kColorAvatarButtonHighlightIncognitoForeground] = {
+      ui::kColorSysOnSurface};
+  mixer[kColorAvatarButtonIncognitoHover] = {
+      ui::kColorSysStateHoverBrightBlendProtection};
+  mixer[kColorAvatarButtonNormalRipple] = {ui::kColorSysStateRipplePrimary};
   mixer[kColorBookmarkBarBackground] = {ui::kColorSysBase};
   mixer[kColorBookmarkBarForeground] = {ui::kColorSysOnSurfaceSubtle};
   mixer[kColorBookmarkBarSeparatorChromeRefresh] = {ui::kColorSysOnBaseDivider};

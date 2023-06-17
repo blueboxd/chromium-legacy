@@ -268,9 +268,8 @@ base::ScopedCFTypeRef<CMFormatDescriptionRef> CreateVideoFormatVP9(
     media::VideoCodecProfile profile,
     absl::optional<gfx::HDRMetadata> hdr_metadata,
     const gfx::Size& coded_size) {
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> format_config(
-      CreateFormatExtensions(kCMVideoCodecType_VP9, profile, color_space,
-                             hdr_metadata));
+  base::ScopedCFTypeRef<CFDictionaryRef> format_config = CreateFormatExtensions(
+      kCMVideoCodecType_VP9, profile, color_space, hdr_metadata);
 
   base::ScopedCFTypeRef<CMFormatDescriptionRef> format;
   if (!format_config) {
@@ -1495,14 +1494,14 @@ void VTVideoDecodeAccelerator::DecodeTaskHEVC(
                   sei_msg.alpha_channel_info.alpha_channel_cancel_flag == 0;
               break;
             case H265SEIMessage::kSEIMasteringDisplayInfo:
-              if (config_.hdr_metadata.has_value()) {
+              if (!config_.hdr_metadata.has_value()) {
                 config_.hdr_metadata.emplace();
               }
               config_.hdr_metadata->smpte_st_2086 =
                   sei_msg.mastering_display_info.ToGfx();
               break;
             case H265SEIMessage::kSEIContentLightLevelInfo:
-              if (config_.hdr_metadata.has_value()) {
+              if (!config_.hdr_metadata.has_value()) {
                 config_.hdr_metadata.emplace();
               }
               config_.hdr_metadata->cta_861_3 =

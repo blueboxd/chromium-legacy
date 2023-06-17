@@ -1034,8 +1034,12 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
   [self.historyCoordinator stop];
   self.historyCoordinator = nil;
 
-  [_bookmarksCoordinator shutdown];
+  [_bookmarksCoordinator stop];
   _bookmarksCoordinator = nil;
+}
+
+- (void)dealloc {
+  CHECK(!_recentTabsContextMenuHelper);
 }
 
 #pragma mark - TabPresentationDelegate

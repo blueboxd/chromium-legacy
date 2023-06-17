@@ -7,20 +7,27 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_load_waiter.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/translate/translate_test_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/profile_picker.h"
+#include "chrome/browser/ui/profile_ui_test_utils.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_browsertest.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -30,9 +37,13 @@
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
+#include "components/translate/core/browser/language_state.h"
+#include "components/translate/core/browser/translate_manager.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "net/base/network_change_notifier.h"
 #include "ui/base/ui_base_features.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -52,7 +63,7 @@ class BrowserCommandControllerBrowserTest : public InProcessBrowserTest {
   BrowserCommandControllerBrowserTest& operator=(
       const BrowserCommandControllerBrowserTest&) = delete;
 
-  ~BrowserCommandControllerBrowserTest() override {}
+  ~BrowserCommandControllerBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -68,6 +79,37 @@ class BrowserCommandControllerBrowserTestRefreshOnly
  public:
   BrowserCommandControllerBrowserTestRefreshOnly() {
     scoped_feature_list_.InitWithFeatures({features::kChromeRefresh2023}, {});
+  }
+  BrowserCommandControllerBrowserTestRefreshOnly(
+      const BrowserCommandControllerBrowserTestRefreshOnly&) = delete;
+  BrowserCommandControllerBrowserTestRefreshOnly& operator=(
+      const BrowserCommandControllerBrowserTestRefreshOnly&) = delete;
+
+  ~BrowserCommandControllerBrowserTestRefreshOnly() override = default;
+
+ protected:
+  void LoadAndWaitForLanguage(base::StringPiece relative_url) {
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    GURL url = embedded_test_server()->GetURL(relative_url);
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+    ChromeTranslateClient* chrome_translate_client =
+        ChromeTranslateClient::FromWebContents(
+            browser()->tab_strip_model()->GetActiveWebContents());
+
+    std::unique_ptr<translate::TranslateWaiter> translate_waiter =
+        translate::CreateTranslateWaiter(
+            browser()->tab_strip_model()->GetActiveWebContents(),
+            translate::TranslateWaiter::WaitEvent::kLanguageDetermined);
+
+    while (
+        chrome_translate_client->GetLanguageState().source_language().empty()) {
+      translate_waiter->Wait();
+    }
+    translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
+    net::NetworkChangeNotifier::CreateMockIfNeeded();
+    browser()->command_controller()->TabStateChanged();
   }
 
  private:
@@ -306,5 +348,89 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTestRefreshOnly,
                        ExecuteProfileMenuCloseProfile) {
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_CLOSE_PROFILE));
 }
+
+IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTestRefreshOnly,
+                       ExecuteShowSyncSettings) {
+  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_SHOW_SYNC_SETTINGS));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WaitForLoadStop(web_contents);
+  EXPECT_EQ(web_contents->GetURL().possibly_invalid_spec(),
+            "chrome://settings/syncSetup");
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTestRefreshOnly,
+                       ExecuteProfileMenuOpenGuestProfile) {
+  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_OPEN_GUEST_PROFILE));
+  Browser* guest_browser = ui_test_utils::WaitForBrowserToOpen();
+  ASSERT_TRUE(guest_browser);
+  ASSERT_TRUE(guest_browser->profile()->IsGuestSession());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTestRefreshOnly,
+                       ExecuteTurnOnSync) {
+  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_TURN_ON_SYNC));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTestRefreshOnly,
+                       ExecuteShowSigninWhenPaused) {
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(browser()->profile());
+  signin::MakePrimaryAccountAvailable(identity_manager, "user@example.com",
+                                      signin::ConsentLevel::kSync);
+  signin::SetRefreshTokenForPrimaryAccount(identity_manager);
+  signin::SetInvalidRefreshTokenForPrimaryAccount(identity_manager);
+  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_SHOW_SIGNIN_WHEN_PAUSED));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTestRefreshOnly,
+                       ExecuteProfileMenuAddNewProfile) {
+  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_ADD_NEW_PROFILE));
+  profiles::testing::WaitForPickerLoadStop(
+      GURL("chrome://profile-picker/new-profile"));
+  EXPECT_TRUE(ProfilePicker::IsOpen());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTestRefreshOnly,
+                       ExecuteProfileMenuManageChromeProfiles) {
+  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_MANAGE_CHROME_PROFILES));
+  profiles::testing::WaitForPickerWidgetCreated();
+  EXPECT_TRUE(ProfilePicker::IsOpen());
+}
+
 #endif
+IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTestRefreshOnly,
+                       ShowTranslateStatusChromePage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = GURL("chrome://new-tab-page/");
+  translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
+  net::NetworkChangeNotifier::CreateMockIfNeeded();
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  browser()->command_controller()->TabStateChanged();
+
+  EXPECT_FALSE(
+      browser()->command_controller()->IsCommandEnabled(IDC_SHOW_TRANSLATE));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTestRefreshOnly,
+                       ShowTranslateStatusEnglishPage) {
+  LoadAndWaitForLanguage("/english_page.html");
+  EXPECT_TRUE(
+      browser()->command_controller()->IsCommandEnabled(IDC_SHOW_TRANSLATE));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTestRefreshOnly,
+                       ShowTranslateStatusFrenchPage) {
+  LoadAndWaitForLanguage("/french_page.html");
+  EXPECT_TRUE(
+      browser()->command_controller()->IsCommandEnabled(IDC_SHOW_TRANSLATE));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTestRefreshOnly,
+                       ExecuteShowTranslateBubble) {
+  LoadAndWaitForLanguage("/french_page.html");
+  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_SHOW_TRANSLATE));
+}
+
 }  // namespace chrome

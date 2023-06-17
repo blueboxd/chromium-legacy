@@ -25,17 +25,17 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/ganesh/SkImageGanesh.h"
+#include "third_party/skia/include/private/chromium/GrPromiseImageTexture.h"
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/progress_reporter.h"
 
 #if BUILDFLAG(SKIA_USE_DAWN)
-#include "components/viz/common/gpu/dawn_context_provider.h"
+#include "gpu/command_buffer/service/dawn_context_provider.h"
 #endif
 
 #if BUILDFLAG(USE_DAWN)

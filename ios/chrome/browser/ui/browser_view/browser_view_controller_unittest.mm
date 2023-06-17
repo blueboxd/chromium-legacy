@@ -327,6 +327,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     [tab_events_mediator_ disconnect];
     [[bvc_ view] removeFromSuperview];
     [bvc_ shutdown];
+    [bookmarks_coordinator_ stop];
 
     BlockCleanupTest::TearDown();
   }
@@ -458,7 +459,8 @@ TEST_F(BrowserViewControllerTest,
                      animated:NO
                    completion:nil];
 
-  OCMExpect([mockApplicationCommandHandler_ dismissModalDialogs]);
+  OCMExpect(
+      [mockApplicationCommandHandler_ dismissModalDialogsWithCompletion:nil]);
 
   // Present incognito authentication must dismiss presented state.
   [bvc_ setItemsRequireAuthentication:YES];

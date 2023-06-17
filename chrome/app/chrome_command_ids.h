@@ -106,7 +106,7 @@
 #define IDC_EMAIL_PAGE_LOCATION         35006
 #define IDC_BASIC_PRINT                 35007
 #define IDC_SAVE_CREDIT_CARD_FOR_PAGE   35008
-#define IDC_TRANSLATE_PAGE              35009
+#define IDC_SHOW_TRANSLATE              35009
 #define IDC_MANAGE_PASSWORDS_FOR_PAGE   35010
 #define IDC_ROUTE_MEDIA                 35011
 #define IDC_WINDOW_MUTE_SITE            35012
@@ -167,6 +167,12 @@
 #define IDC_CUSTOMIZE_CHROME            37350
 #define IDC_CLOSE_PROFILE               35351
 #define IDC_MANAGE_GOOGLE_ACCOUNT       35352
+#define IDC_SHOW_SYNC_SETTINGS          35353
+#define IDC_TURN_ON_SYNC                35354
+#define IDC_SHOW_SIGNIN_WHEN_PAUSED     35355
+#define IDC_OPEN_GUEST_PROFILE          35356
+#define IDC_ADD_NEW_PROFILE             35357
+#define IDC_MANAGE_CHROME_PROFILES      35358
 
 // Zoom
 #define IDC_ZOOM_MENU                   38000

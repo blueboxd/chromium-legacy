@@ -21,7 +21,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
@@ -43,7 +42,6 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
-import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -56,7 +54,8 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Render tests for the improved bookmark row.
+ * Render tests for {@link ImprovedBookmarkRow} when the row represents a bookmark folder and the
+ * start/image is a {@link ImprovedBookmarkFolderView}.
  */
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
@@ -68,25 +67,18 @@ public class ImprovedBookmarkFolderRowRenderTest {
 
     @Rule
     public final DisableAnimationsTestRule mDisableAnimationsRule = new DisableAnimationsTestRule();
-
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
-
     @Rule
     public BaseActivityTestRule<BlankUiTestActivity> mActivityTestRule =
             new BaseActivityTestRule<>(BlankUiTestActivity.class);
-
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus()
                     .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_BOOKMARKS)
                     .build();
-
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
-
-    @Mock
-    CurrencyFormatter mFormatter;
 
     private ImprovedBookmarkRow mView;
     private PropertyModel mModel;
@@ -154,6 +146,27 @@ public class ImprovedBookmarkFolderRowRenderTest {
                             R.color.default_icon_color_secondary_tint_list));
         });
         mRenderTestRule.render(mContentView, "no_image");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testNoImageDrawableProperty() throws IOException {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.set(ImprovedBookmarkRowProperties.START_IMAGE_VISIBILITY,
+                    StartImageVisibility.FOLDER_DRAWABLE);
+            // Don't set START_IMAGE_FOLDER_DRAWABLES, it should default to something sane.
+            mModel.set(ImprovedBookmarkRowProperties.START_ICON_DRAWABLE,
+                    BookmarkUtils.getFolderIcon(mActivityTestRule.getActivity(),
+                            BookmarkType.NORMAL, BookmarkRowDisplayPref.VISUAL));
+            mModel.set(ImprovedBookmarkRowProperties.START_AREA_BACKGROUND_COLOR,
+                    ChromeColors.getSurfaceColor(
+                            mActivityTestRule.getActivity(), R.dimen.default_elevation_1));
+            mModel.set(ImprovedBookmarkRowProperties.START_ICON_TINT,
+                    AppCompatResources.getColorStateList(mActivityTestRule.getActivity(),
+                            R.color.default_icon_color_secondary_tint_list));
+        });
+        mRenderTestRule.render(mContentView, "no_image_drawable_property");
     }
 
     @Test

@@ -174,7 +174,6 @@ uint32_t RenderWidgetHostViewBase::GetCaptureSequenceNumber() const {
 }
 
 ui::TextInputClient* RenderWidgetHostViewBase::GetTextInputClient() {
-  NOTREACHED();
   return nullptr;
 }
 
@@ -354,6 +353,10 @@ bool RenderWidgetHostViewBase::GetIsMouseLockedUnadjustedMovementForTesting() {
 }
 
 bool RenderWidgetHostViewBase::CanBeMouseLocked() {
+  return HasFocus();
+}
+
+bool RenderWidgetHostViewBase::AccessibilityHasFocus() {
   return HasFocus();
 }
 

@@ -124,8 +124,9 @@ export {LifetimeBrowserProxyImpl} from '/shared/settings/lifetime_browser_proxy.
 export {AddSmbShareDialogElement} from 'chrome://resources/ash/common/smb_shares/add_smb_share_dialog.js';
 export {SmbBrowserProxy, SmbBrowserProxyImpl, SmbMountResult} from 'chrome://resources/ash/common/smb_shares/smb_browser_proxy.js';
 export {CrostiniBrowserProxy, CrostiniBrowserProxyImpl} from './crostini_page/crostini_browser_proxy.js';
+export {SettingsDateTimePageElement} from './date_time_page/date_time_page.js';
 export {TimeZoneAutoDetectMethod} from './date_time_page/date_time_types.js';
-export {TimeZoneBrowserProxyImpl} from './date_time_page/timezone_browser_proxy.js';
+export {TimeZoneBrowserProxy, TimeZoneBrowserProxyImpl} from './date_time_page/timezone_browser_proxy.js';
 export {TimezoneSelectorElement} from './date_time_page/timezone_selector.js';
 export {TimezoneSubpageElement} from './date_time_page/timezone_subpage.js';
 export {CROSTINI_TYPE, GuestOsBrowserProxy, GuestOsBrowserProxyImpl, GuestOsSharedUsbDevice, PLUGIN_VM_TYPE} from './guest_os/guest_os_browser_proxy.js';
@@ -134,6 +135,7 @@ export {SettingsGuestOsSharedUsbDevicesElement} from './guest_os/guest_os_shared
 export {SettingsHotspotSubpageElement} from './internet_page/hotspot_subpage.js';
 export {NetworkAlwaysOnVpnElement} from './internet_page/network_always_on_vpn.js';
 export {NetworkProxySectionElement} from './internet_page/network_proxy_section.js';
+export {PasspointRemoveDialogElement} from './internet_page/passpoint_remove_dialog.js';
 export {SettingsPasspointSubpageElement} from './internet_page/passpoint_subpage.js';
 export {TetherConnectionDialogElement} from './internet_page/tether_connection_dialog.js';
 export {KerberosAccount, KerberosAccountsBrowserProxy, KerberosAccountsBrowserProxyImpl, KerberosConfigErrorCode, KerberosErrorType, ValidateKerberosConfigResult} from './kerberos_page/kerberos_accounts_browser_proxy.js';

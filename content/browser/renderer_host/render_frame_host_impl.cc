@@ -263,6 +263,7 @@
 #include "ui/accessibility/ax_action_handler_registry.h"
 #include "ui/accessibility/ax_common.h"
 #include "ui/accessibility/ax_tree_update.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
@@ -2569,7 +2570,7 @@ RenderFrameHostImpl::CreateURLLoaderFactoriesForIsolatedWorlds(
 gfx::NativeView RenderFrameHostImpl::GetNativeView() {
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (!view)
-    return nullptr;
+    return gfx::NativeView();
   return view->GetNativeView();
 }
 
@@ -2799,7 +2800,7 @@ void RenderFrameHostImpl::AccessibilityPerformAction(
 bool RenderFrameHostImpl::AccessibilityViewHasFocus() {
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (view)
-    return view->HasFocus();
+    return view->AccessibilityHasFocus();
   return false;
 }
 
@@ -4505,6 +4506,20 @@ void RenderFrameHostImpl::DidFocusFrame() {
 
   DCHECK(owner_);  // See `owner_` invariants about `IsActive()`.
   owner_->SetFocusedFrame(GetSiteInstance()->group());
+
+#if BUILDFLAG(IS_WIN)
+  // If the frame has a url, notify the view to allow it to supply the Url to
+  // any interested IME (e.g. Windows 11's TSF uses this information).
+  if (!last_committed_url_.is_empty()) {
+    RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
+    if (view) {
+      ui::TextInputClient* input_client = view->GetTextInputClient();
+      if (input_client) {
+        input_client->OnFrameFocusChanged();
+      }
+    }
+  }
+#endif  // BUILDFLAG(IS_WIN)
 }
 
 void RenderFrameHostImpl::DidCallFocus() {
@@ -7177,6 +7192,10 @@ void RenderFrameHostImpl::TextSelectionChanged(const std::u16string& text,
 
 void RenderFrameHostImpl::DidReceiveUserActivation() {
   delegate_->DidReceiveUserActivation(this);
+}
+
+void RenderFrameHostImpl::WebAuthnAssertionRequestSucceeded() {
+  delegate_->WebAuthnAssertionRequestSucceeded(this);
 }
 
 void RenderFrameHostImpl::MaybeIsolateForUserActivation() {
@@ -11894,9 +11913,11 @@ bool RenderFrameHostImpl::ShouldBypassSecurityChecksForErrorPage(
 
 void RenderFrameHostImpl::SetAudioOutputDeviceIdForGlobalMediaControls(
     std::string hashed_device_id) {
-  audio_service_audio_output_stream_factory_
-      ->SetAuthorizedDeviceIdForGlobalMediaControls(
-          std::move(hashed_device_id));
+  if (audio_service_audio_output_stream_factory_.has_value()) {
+    audio_service_audio_output_stream_factory_
+        ->SetAuthorizedDeviceIdForGlobalMediaControls(
+            std::move(hashed_device_id));
+  }
 }
 
 std::unique_ptr<mojo::MessageFilter>
@@ -15286,6 +15307,12 @@ bool RenderFrameHostImpl::GetIsThirdPartyCookiesUserBypassEnabled() {
 void RenderFrameHostImpl::SetResourceCacheRemote(
     mojo::PendingRemote<blink::mojom::ResourceCache> pending_remote) {
   GetMojomFrameInRenderer()->SetResourceCache(std::move(pending_remote));
+}
+
+bool RenderFrameHostImpl::LoadedWithCacheControlNoStoreHeader() {
+  return GetBackForwardCacheDisablingFeatures().Has(
+      blink::scheduler::WebSchedulerTrackedFeature::
+          kMainResourceHasCacheControlNoStore);
 }
 
 }  // namespace content

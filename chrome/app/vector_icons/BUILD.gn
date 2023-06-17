@@ -12,6 +12,7 @@ aggregate_vector_icons("chrome_vector_icons") {
 
   # Keep sorted alphabetically.
   sources = [
+    "account_add_chrome_refresh.icon",
     "account_box.icon",
     "account_child.icon",
     "account_child_circle.icon",
@@ -21,6 +22,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "add.icon",
     "apps.icon",
     "autofill/local_offer_flipped.icon",
+    "autofill/local_offer_flipped_refresh.icon",
     "autofill/webauthn_dialog_header.icon",
     "autofill/webauthn_dialog_header_dark.icon",
     "back_arrow_touch.icon",
@@ -163,6 +165,8 @@ aggregate_vector_icons("chrome_vector_icons") {
     "read_later_add.icon",
     "reader_mode.icon",
     "reader_mode_disabled.icon",
+    "reader_mode_disabled_refresh.icon",
+    "reader_mode_refresh.icon",
     "release_alert.icon",
     "reload_touch.icon",
     "remove.icon",
@@ -186,6 +190,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "sign_out.icon",
     "signin_button_drop_down_arrow.icon",
     "smartphone.icon",
+    "smartphone_refresh.icon",
     "speaker.icon",
     "speaker_group.icon",
     "submit_feedback.icon",
@@ -298,6 +303,7 @@ aggregate_vector_icons("chrome_vector_icons") {
   if (is_chromeos_ash) {
     sources += [
       "autocorrect_undo.icon",
+      "floating_workspace_notification.icon",
       "full_restore_notification.icon",
       "game_controls_add.icon",
       "game_controls_delete.icon",

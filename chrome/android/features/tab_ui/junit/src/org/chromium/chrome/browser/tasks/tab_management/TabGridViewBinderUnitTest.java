@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -20,6 +22,7 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
+import android.util.DisplayMetrics;
 import android.util.Size;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
@@ -34,6 +37,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RuntimeEnvironment;
 
@@ -44,7 +48,9 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider.TabFavicon;
 import org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider.TabFaviconFetcher;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.chrome.test.AutomotiveContextWrapperTestRule;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.ui.display.DisplayUtil;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.ViewLookupCachingFrameLayout;
 
@@ -55,6 +61,9 @@ public final class TabGridViewBinderUnitTest {
     private static final int INIT_HEIGHT = 200;
     @Rule
     public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
+    @Rule
+    public AutomotiveContextWrapperTestRule mAutomotiveContextWrapperTestRule =
+            new AutomotiveContextWrapperTestRule();
     @Mock
     private ViewLookupCachingFrameLayout mViewGroup;
     @Mock
@@ -119,7 +128,7 @@ public final class TabGridViewBinderUnitTest {
         TabGridViewBinder.bindClosableTab(mModel, mViewGroup, TabProperties.GRID_CARD_SIZE);
 
         verify(mViewGroup).setMinimumWidth(updatedCardWidth);
-        verify(mThumbnailView).setColorThumbnailPlaceHolder(false, true);
+        verify(mThumbnailView).updateThumbnailPlaceholder(false, true);
         verify(mThumbnailView).setImageDrawable(null);
         assertThat(mLayoutParams.width, equalTo(updatedCardWidth));
 
@@ -130,7 +139,6 @@ public final class TabGridViewBinderUnitTest {
         verify(mThumbnailView).setImageBitmap(mBitmap);
         ArgumentCaptor<Matrix> matrixCaptor = ArgumentCaptor.forClass(Matrix.class);
         verify(mThumbnailView).setImageMatrix(matrixCaptor.capture());
-        verify(mThumbnailView).getLayoutParams();
         verifyNoMoreInteractions(mThumbnailView);
 
         // Verify metrics scale + translate.
@@ -153,7 +161,7 @@ public final class TabGridViewBinderUnitTest {
         TabGridViewBinder.bindClosableTab(mModel, mViewGroup, TabProperties.GRID_CARD_SIZE);
 
         verify(mViewGroup).setMinimumWidth(updatedCardWidth);
-        verify(mThumbnailView).setColorThumbnailPlaceHolder(false, false);
+        verify(mThumbnailView).updateThumbnailPlaceholder(false, false);
         verify(mThumbnailView).setImageDrawable(null);
         assertThat(mLayoutParams.width, equalTo(updatedCardWidth));
 
@@ -164,7 +172,6 @@ public final class TabGridViewBinderUnitTest {
         verify(mThumbnailView).setImageBitmap(mBitmap);
         ArgumentCaptor<Matrix> matrixCaptor = ArgumentCaptor.forClass(Matrix.class);
         verify(mThumbnailView).setImageMatrix(matrixCaptor.capture());
-        verify(mThumbnailView).getLayoutParams();
         verifyNoMoreInteractions(mThumbnailView);
 
         // Verify metrics scale + translate.
@@ -189,7 +196,7 @@ public final class TabGridViewBinderUnitTest {
 
         // Verify.
         verify(mViewGroup).setMinimumWidth(updatedCardWidth);
-        verify(mThumbnailView).setColorThumbnailPlaceHolder(false, true);
+        verify(mThumbnailView).updateThumbnailPlaceholder(false, true);
         verify(mThumbnailView).setImageDrawable(null);
         assertThat(mLayoutParams.width, equalTo(updatedCardWidth));
         verify(mFetcher).fetch(mCallbackCaptor.capture(), any(), eq(true));
@@ -201,7 +208,6 @@ public final class TabGridViewBinderUnitTest {
         verify(mThumbnailView).setImageBitmap(mBitmap);
         ArgumentCaptor<Matrix> matrixCaptor = ArgumentCaptor.forClass(Matrix.class);
         verify(mThumbnailView).setImageMatrix(matrixCaptor.capture());
-        verify(mThumbnailView).getLayoutParams();
         verifyNoMoreInteractions(mThumbnailView);
 
         // Verify metrics scale + translate.
@@ -225,7 +231,7 @@ public final class TabGridViewBinderUnitTest {
 
         // Verify.
         verify(mViewGroup).setMinimumHeight(updatedCardHeight);
-        verify(mThumbnailView).setColorThumbnailPlaceHolder(false, true);
+        verify(mThumbnailView).updateThumbnailPlaceholder(false, true);
         verify(mThumbnailView).setImageDrawable(null);
         assertThat(mLayoutParams.height, equalTo(updatedCardHeight));
         verify(mFetcher).fetch(mCallbackCaptor.capture(), any(), eq(true));
@@ -237,7 +243,6 @@ public final class TabGridViewBinderUnitTest {
         verify(mThumbnailView).setImageBitmap(mBitmap);
         ArgumentCaptor<Matrix> matrixCaptor = ArgumentCaptor.forClass(Matrix.class);
         verify(mThumbnailView).setImageMatrix(matrixCaptor.capture());
-        verify(mThumbnailView).getLayoutParams();
         verifyNoMoreInteractions(mThumbnailView);
 
         // Verify metrics scale + translate.
@@ -272,6 +277,44 @@ public final class TabGridViewBinderUnitTest {
         TabGridViewBinder.bindClosableTab(mModel, mViewGroup, TabProperties.FAVICON_FETCHER);
 
         verify(mFaviconView).setImageDrawable(null);
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
+    public void testUpdateThumbnailMatrix_notOnAutomotiveDevice_thumbnailImageHasOriginalDensity() {
+        mAutomotiveContextWrapperTestRule.setIsAutomotive(false);
+        int mockImageSize = 100;
+        int mockTargetSize = 50;
+
+        TabGridThumbnailView thumbnailView = Mockito.mock(TabGridThumbnailView.class);
+        Bitmap bitmap = Bitmap.createBitmap(mockImageSize, mockImageSize, Bitmap.Config.ARGB_8888);
+        bitmap.setDensity(DisplayMetrics.DENSITY_DEFAULT);
+        TabGridViewBinder.updateThumbnailMatrix(
+                thumbnailView, bitmap, new Size(mockTargetSize, mockTargetSize));
+
+        assertNotEquals("The bitmap image density should not be zero.", 0, bitmap.getDensity());
+        assertEquals("The bitmap image's density should not be scaled up on non-automotive"
+                        + " devices.",
+                DisplayMetrics.DENSITY_DEFAULT, bitmap.getDensity());
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
+    public void testUpdateThumbnailMatrix_onAutomotiveDevice_thumbnailImageHasScaledUpDensity() {
+        mAutomotiveContextWrapperTestRule.setIsAutomotive(true);
+        int mockImageSize = 100;
+        int mockTargetSize = 50;
+
+        TabGridThumbnailView thumbnailView = Mockito.mock(TabGridThumbnailView.class);
+        Bitmap bitmap = Bitmap.createBitmap(mockImageSize, mockImageSize, Bitmap.Config.ARGB_8888);
+        bitmap.setDensity(DisplayMetrics.DENSITY_DEFAULT);
+        TabGridViewBinder.updateThumbnailMatrix(
+                thumbnailView, bitmap, new Size(mockTargetSize, mockTargetSize));
+
+        assertNotEquals("The bitmap image density should not be zero.", 0, bitmap.getDensity());
+        assertEquals("The bitmap image's density should be scaled up on automotive.",
+                (int) (DisplayMetrics.DENSITY_DEFAULT * DisplayUtil.UI_SCALING_FACTOR_FOR_AUTO),
+                bitmap.getDensity());
     }
 
     private void assertImageMatrix(

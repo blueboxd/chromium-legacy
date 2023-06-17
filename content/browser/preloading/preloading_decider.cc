@@ -181,7 +181,6 @@ void PreloadingDecider::OnPointerHover(
     // ditto (async fallback)
     if (ShouldWaitForPrefetchResult(url))
       return;
-    preconnector_.MaybePreconnect(url);
   }
 }
 
@@ -362,7 +361,7 @@ bool PreloadingDecider::MaybePrefetch(const GURL& url,
       auto inner_it = base::ranges::find_if(
           standby_it->second, [&](const auto& on_standby_candidate) {
             return on_standby_candidate->no_vary_search_hint &&
-                   NoVarySearchHelper::ParseHttpNoVarySearchDataFromMojom(
+                   no_vary_search::ParseHttpNoVarySearchDataFromMojom(
                        on_standby_candidate->no_vary_search_hint)
                        .AreEquivalent(url, prefetch_url) &&
                    IsSuitableCandidate(on_standby_candidate, predictor);

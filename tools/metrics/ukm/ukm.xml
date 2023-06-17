@@ -235,6 +235,21 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Accessibility.ReadAnything.EmptyState">
+  <owner>abigailbklein@google.com</owner>
+  <summary>
+    Recorded when an empty state is shown in Read Anything. The empty state is
+    shown whenever distillation fails. When this happens, the user can
+    &quot;select to distill&quot;, meaning they can manually select text in the
+    main web page they would like to see in reading mode.
+  </summary>
+  <metric name="TotalNumSelections">
+    <summary>
+      Total number of selections made.
+    </summary>
+  </metric>
+</event>
+
 <event name="Accessibility.Renderer">
   <owner>aleventhal@chromium.org</owner>
   <owner>nektar@chromium.org</owner>
@@ -7760,8 +7775,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="HasStickyActivation" enum="BooleanHasUserActivation">
     <summary>
-      Populated for client redirects only. Whether the user ever interacted with
-      the page. (See the HTML spec for a definition.)
+      Populated for client redirects only. Whether the user interacted with the
+      page (See the HTML spec for a definition). This info is persistem within
+      DIPS for a duration of `dips::kInteractionTtl`.
     </summary>
   </metric>
   <metric name="InitialAndFinalSitesSame" enum="BooleanSameSite">
@@ -7807,6 +7823,14 @@ be describing additional metrics about the same event.
     <summary>
       The site engagement level of the redirect URL, at the time the redirect
       took place.
+    </summary>
+  </metric>
+  <metric name="WebAuthnAssertionRequestSucceeded"
+      enum="BooleanWebAuthnAssertionRequestSucceeded">
+    <summary>
+      Populated for client redirects only. Whether the user triggered a
+      successful web authn assertion. This info is persistem within DIPS for a
+      duration of `dips::kInteractionTtl`.
     </summary>
   </metric>
 </event>

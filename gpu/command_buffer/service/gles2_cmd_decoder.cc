@@ -578,7 +578,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
                                         bool preserve,
                                         bool needs_depth,
                                         bool needs_stencil) override;
-  bool ResizeOffscreenFramebuffer(const gfx::Size& size) override;
+  bool ResizeOffscreenFramebuffer(const gfx::Size& size);
   bool MakeCurrent() override;
   gl::GLApi* api() const { return state_.api(); }
   GLES2Util* GetGLES2Util() override { return &util_; }
@@ -3281,7 +3281,8 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
         std::min(renderbuffer_manager()->max_renderbuffer_size(),
                  texture_manager()->MaxSizeForTarget(GL_TEXTURE_2D));
 
-    gfx::Size initial_size = attrib_helper.offscreen_framebuffer_size;
+    gfx::Size initial_size =
+        attrib_helper.offscreen_framebuffer_size_for_testing;
     if (initial_size.IsEmpty()) {
       // If we're an offscreen surface with zero width and/or height, set to a
       // non-zero size so that we have a complete framebuffer for operations
@@ -3680,6 +3681,10 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
 
   caps.angle_rgbx_internal_format =
       feature_info_->feature_flags().angle_rgbx_internal_format;
+
+  // Technically, YUV readback is handled on the client side, but enable it here
+  // so that clients can use this to detect support.
+  caps.supports_yuv_readback = true;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   PopulateDRMCapabilities(&caps, feature_info_.get());

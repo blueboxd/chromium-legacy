@@ -25,6 +25,7 @@ const TestNames = {
   DevicePage: 'device page',
   Audio: 'audio',
   Display: 'display',
+  GraphicsTablet: 'graphics tablet',
   Keyboard: 'keyboard',
   PerDeviceMouse: 'per-device mouse',
   PerDeviceTouchpad: 'per-device touchpad',
@@ -485,6 +486,16 @@ suite('SettingsDevicePage', function() {
     });
   }
 
+  /**
+   * Set enablePeripheralCustomization feature flag to true for split tests.
+   * @param {!boolean} isEnabled
+   */
+  function setPeripheralCustomizationEnabled(isEnabled) {
+    loadTimeData.overrideValues({
+      enablePeripheralCustomization: isEnabled,
+    });
+  }
+
   test(assert(TestNames.DevicePage), async function() {
     const provider = new FakeInputDeviceSettingsProvider();
     setInputDeviceSettingsProviderForTesting(provider);
@@ -508,6 +519,9 @@ suite('SettingsDevicePage', function() {
     assertFalse(isVisible(devicePage.shadowRoot.querySelector('#pointersRow')));
     assertFalse(isVisible(devicePage.shadowRoot.querySelector('#keyboardRow')));
 
+    // enablePeripheralCustomization feature flag by default is turned on.
+    assertTrue(isVisible(devicePage.shadowRoot.querySelector('#tabletRow')));
+
     // Turn off the enableInputDeviceSettingsSplit feature flag.
     setDeviceSplitEnabled(false);
     await init();
@@ -529,6 +543,11 @@ suite('SettingsDevicePage', function() {
     webUIListenerCallback('has-mouse-changed', true);
     await flushTasks();
     assertTrue(isVisible(devicePage.shadowRoot.querySelector('#pointersRow')));
+
+    // Turn off the enablePeripheralCustomization feature flag.
+    setPeripheralCustomizationEnabled(false);
+    await init();
+    assertFalse(isVisible(devicePage.shadowRoot.querySelector('#tabletRow')));
   });
 
   test('per-device-mouse row visibility', async function() {
@@ -699,9 +718,7 @@ suite('SettingsDevicePage', function() {
       const page =
           devicePage.shadowRoot.querySelector('settings-per-device-keyboard');
       assert(page);
-      return Promise.resolve(page).then(function(page) {
-        perDeviceKeyboardPage = page;
-      });
+      perDeviceKeyboardPage = page;
     });
 
     test('per-device keyboard subpage visibility', function() {
@@ -2046,6 +2063,30 @@ suite('SettingsDevicePage', function() {
           keyboardPage.shadowRoot.querySelector('#keyboardShortcutViewer')
               .shadowRoot.querySelector('cr-icon-button'),
           'Keyboard shortcuts button');
+    });
+  });
+
+  suite(assert(TestNames.GraphicsTablet), function() {
+    let graphicsTabletPage;
+    setup(async function() {
+      setPeripheralCustomizationEnabled(true);
+      await init();
+      const row =
+          assert(devicePage.shadowRoot.querySelector(`#main #tabletRow`));
+      row.click();
+      assertEquals(routes.GRAPHICS_TABLET, Router.getInstance().currentRoute);
+      const page = devicePage.shadowRoot.querySelector(
+          'settings-graphics-tablet-subpage');
+      assert(page);
+      return Promise.resolve(page).then(function(page) {
+        graphicsTabletPage = page;
+      });
+    });
+
+    test('graphics tablet subpage visibility', function() {
+      assertEquals(routes.GRAPHICS_TABLET, Router.getInstance().currentRoute);
+      assertTrue(isVisible(graphicsTabletPage.shadowRoot.querySelector(
+          '#graphicsTabletSubpageTitle')));
     });
   });
 

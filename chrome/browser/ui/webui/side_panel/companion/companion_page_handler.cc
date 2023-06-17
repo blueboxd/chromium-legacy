@@ -36,7 +36,9 @@
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/url_util.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
@@ -89,6 +91,12 @@ void CompanionPageHandler::OnPrimaryAccountChanged(
     return;
   }
 
+  NotifyURLChanged(/*is_full_reload=*/true);
+}
+
+void CompanionPageHandler::OnErrorStateOfRefreshTokenUpdatedForAccount(
+    const CoreAccountInfo& account_info,
+    const GoogleServiceAuthError& error) {
   NotifyURLChanged(/*is_full_reload=*/true);
 }
 
@@ -149,7 +157,23 @@ void CompanionPageHandler::DidFinishLoad(
   // on/off, use histogram check to determine whether or not classification was
   // called.
   if (visual_search_host_) {
-    visual_search_host_->StartClassification(render_frame_host, validated_url);
+    visual_search::VisualSearchClassifierHost::ResultCallback callback =
+        base::BindOnce(&CompanionPageHandler::HandleVisualSearchResult,
+                       weak_ptr_factory_.GetWeakPtr());
+    visual_search_host_->StartClassification(render_frame_host, validated_url,
+                                             std::move(callback));
+  }
+}
+
+void CompanionPageHandler::HandleVisualSearchResult(
+    std::vector<std::string> results) {
+  std::vector<side_panel::mojom::VisualSearchResultPtr> final_results;
+  for (const auto& result : results) {
+    final_results.emplace_back(
+        side_panel::mojom::VisualSearchResult::New(result));
+  }
+  if (!final_results.empty()) {
+    page_->OnDeviceVisualClassificationResult(std::move(final_results));
   }
 }
 
@@ -160,6 +184,11 @@ void CompanionPageHandler::ShowUI() {
     // Calls to the browser need to happen after the ShowUI() call above since
     // it is only added to browser hierarchy after the side panel has loaded the
     // page.
+    auto* browser = GetBrowser();
+    if (!browser) {
+      return;
+    }
+
     auto* active_web_contents =
         GetBrowser()->tab_strip_model()->GetActiveWebContents();
     Observe(active_web_contents);
@@ -173,6 +202,9 @@ void CompanionPageHandler::ShowUI() {
     metrics_logger_->RecordOpenTrigger(
         helper->GetAndResetMostRecentSidePanelOpenTrigger());
 
+    // Register a modal dialog manager to show permissions dialog like those
+    // requested from the feedback UI.
+    RegisterModalDialogManager(browser);
     std::string initial_text_query = helper->GetTextQuery();
     if (!initial_text_query.empty()) {
       OnSearchTextQuery(initial_text_query);
@@ -338,6 +370,15 @@ void CompanionPageHandler::DidFinishFindingCqTexts(
     find_results[i] = text_found.second;
   }
   page_->OnCqFindTextResultsAvailable(text_directives, find_results);
+}
+
+void CompanionPageHandler::RegisterModalDialogManager(Browser* browser) {
+  CHECK(companion_untrusted_ui_);
+  web_modal::WebContentsModalDialogManager::CreateForWebContents(
+      companion_untrusted_ui_->web_ui()->GetWebContents());
+  web_modal::WebContentsModalDialogManager::FromWebContents(
+      companion_untrusted_ui_->web_ui()->GetWebContents())
+      ->SetDelegate(browser);
 }
 
 }  // namespace companion

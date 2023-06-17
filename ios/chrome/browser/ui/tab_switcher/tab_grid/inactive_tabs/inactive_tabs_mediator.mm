@@ -280,18 +280,18 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   }
 
   switch (change.type()) {
-    case WebStateListChange::Type::kDestroy:
+    case WebStateListChange::Type::kSelectionOnly:
       // TODO(crbug.com/1442546): Move the implementation from
-      // webStateListDestroyed: to here.
+      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason and
+      // webStateList:didChangePinnedStateForWebState:atIndexto here. Note that
+      // here is reachable only when `reason` ==
+      // ActiveWebStateChangeReason::Activated for didChangeActiveWebState:.
       break;
     case WebStateListChange::Type::kDetach:
       // TODO(crbug.com/1442546): Move the implementation from
       // webStateList:didDetachWebState:atIndex: to here.
       break;
     case WebStateListChange::Type::kMove:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didMoveWebState:fromIndex:toIndex: to here.
-      break;
     case WebStateListChange::Type::kReplace:
       NOTREACHED_NORETURN();
     case WebStateListChange::Type::kInsert: {
@@ -311,13 +311,6 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
       break;
     }
   }
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-     didMoveWebState:(web::WebState*)webState
-           fromIndex:(int)fromIndex
-             toIndex:(int)toIndex {
-  NOTREACHED_NORETURN();
 }
 
 - (void)webStateList:(WebStateList*)webStateList

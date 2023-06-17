@@ -261,6 +261,7 @@
 
       &lt;p&gt;Установите точную дату и время. Для этого откройте раздел &lt;strong&gt;Общие&lt;/strong&gt; в приложении &lt;strong&gt;Настройки&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1559839503761818503">Администратор перезапустит устройство <ph name="DATE" /> в <ph name="TIME" />.</translation>
+<translation id="1564753300777780201">Изображения не были преобразованы в текст</translation>
 <translation id="156703335097561114">Сетевые данные, такие как адреса, настройки интерфейса и качество подключения.</translation>
 <translation id="1567040042588613346">Правило работает корректно, но заменяет одинаковое значение, заданное где-то ещё.</translation>
 <translation id="1567405528131216114">Снова добавить тему "<ph name="TOPIC" />"</translation>
@@ -1181,6 +1182,7 @@
 <translation id="3890664840433101773">Добавление адреса электронной почты</translation>
 <translation id="3897092660631435901">Меню</translation>
 <translation id="3901925938762663762">Срок действия карты истек</translation>
+<translation id="3906095212874392000">Конец полученного текста</translation>
 <translation id="3906954721959377182">Планшет</translation>
 <translation id="3909695131102177774"><ph name="LABEL" />. <ph name="ERROR" />.</translation>
 <translation id="3911401144270344103">Вы можете в любое время изменить свое решение в настройках Chrome</translation>
@@ -1379,6 +1381,7 @@
 <translation id="4331519897422864041">Укладчик 5</translation>
 <translation id="4331708818696583467">Не защищено</translation>
 <translation id="4333561522337981382">Управлять окнами на всех ваших экранах</translation>
+<translation id="4338709847516294988">Нажмите Поиск + M и в контекстном меню выберите "Распознать текст на изображении".</translation>
 <translation id="4340575312453649552">Это объявление удалено, так как оно использовало слишком много системных ресурсов.</translation>
 <translation id="4340982228985273705">По нашим данным, этот компьютер не является корпоративным, поэтому в соответствии с правилом на него можно автоматически устанавливать только расширения из Интернет-магазина Chrome. URL для обновления: <ph name="CWS_UPDATE_URL" />.</translation>
 <translation id="4348834659292907206">Подключение к сайту <ph name="SITE" /> не защищено.</translation>
@@ -1386,7 +1389,6 @@
 <translation id="4349810866125026513">Все равно загрузить</translation>
 <translation id="4350629523305688469">Многофункциональный лоток</translation>
 <translation id="4351060348582610152">Сайт <ph name="ORIGIN" /> ищет устройства Bluetooth поблизости. Обнаружены следующие устройства:</translation>
-<translation id="4351175281479794167">Введите код подтверждения</translation>
 <translation id="4355383636893709732">Обновление ChromeOS для приложений Android</translation>
 <translation id="4356973930735388585">Злоумышленники могут использовать этот сайт, чтобы установить на ваш компьютер вредоносное ПО, которое крадет или удаляет личную информацию (например, фотографии, пароли, сообщения и реквизиты банковских карт).</translation>
 <translation id="4358059973562876591">Указанные вами шаблоны нельзя применить из-за ошибки в настройке правила DnsOverHttpsMode.</translation>
@@ -1394,6 +1396,7 @@
 <translation id="4359160567981085931">Вы только что ввели пароль на поддельном сайте. Чтобы изменить пароль и сообщить Google о возможной угрозе безопасности, нажмите "Защитить аккаунт".</translation>
 <translation id="4363222835916186793">Оповещения об этом товаре отключены.</translation>
 <translation id="437040971055499437">Зарегистрировано событие безопасности</translation>
+<translation id="4371307856413138486">Начало полученного текста</translation>
 <translation id="4371591986692297148">неактивно</translation>
 <translation id="4372948949327679948">Ожидаемое значение: <ph name="VALUE_TYPE" />.</translation>
 <translation id="4375864595697821259">Вы можете снова добавить тему в список, который Chrome использует для определения ваших интересов.</translation>
@@ -1478,6 +1481,7 @@
 <translation id="460848736049414407">Заблокировано администратором</translation>
 <translation id="4610279718074907952">Этот сайт входит в группу <ph name="SET_OWNER" /> и может отслеживать ваши действия</translation>
 <translation id="4617273035598175554">ПО для графики и анимации</translation>
+<translation id="4619564267100705184">Подтвердить личность</translation>
 <translation id="4622292761762557753">Все равно передать</translation>
 <translation id="4627675673814409125">Это правило нельзя установить на уровне профиля Chrome, поэтому оно будет игнорироваться.</translation>
 <translation id="4628948037717959914">Фото</translation>
@@ -1700,7 +1704,6 @@
 <translation id="5123433949759960244">Баскетбол</translation>
 <translation id="5125751979347152379">Недопустимый URL.</translation>
 <translation id="512592033764059484">Футбол</translation>
-<translation id="5126510351761255129">Подтвердите данные карты</translation>
 <translation id="512670116361803001">Если размер приложения "<ph name="APP_NAME" />" изменить, оно может работать некорректно. Чтобы избежать проблем, используйте стандартные размеры.</translation>
 <translation id="5127934926273826089">Цветы</translation>
 <translation id="5129534298163637277">Окно подтверждения</translation>
@@ -1990,7 +1993,6 @@
 <translation id="5869405914158311789">Не удается получить доступ к сайту</translation>
 <translation id="5869522115854928033">Сайты с сохраненными паролями</translation>
 <translation id="5872692522325383488">Код IBAN сохранен</translation>
-<translation id="5873013647450402046">Банку нужно убедиться, что это действительно вы.</translation>
 <translation id="5877831137320480913">Красота и фитнес</translation>
 <translation id="5879989559903563723">Недоступно в гостевом режиме</translation>
 <translation id="5884465125445718607">Конверт Chinese 6</translation>
@@ -2061,6 +2063,7 @@
 <translation id="6040143037577758943">Закрыть</translation>
 <translation id="6041777658117377052">Температура камеры</translation>
 <translation id="6042308850641462728">Ещё</translation>
+<translation id="6042688167654081154">Изображение преобразовано в текст</translation>
 <translation id="6044573915096792553">Размер: 12</translation>
 <translation id="6045164183059402045">Шаблон спуска полос</translation>
 <translation id="6047233362582046994">Если вы осознаете, что можете подвергнуть риску свои личные данные, то можете <ph name="BEGIN_LINK" />перейти на зараженный сайт<ph name="END_LINK" />, не дожидаясь удаления вредоносных приложений.</translation>
@@ -2122,6 +2125,7 @@
 <translation id="6195371403461054755">Геология</translation>
 <translation id="6196640612572343990">Блокировать сторонние файлы cookie</translation>
 <translation id="6197648101609735209">89 x 89 мм</translation>
+<translation id="6200386911308538077">Изображение анализируется</translation>
 <translation id="6203231073485539293">Проверьте подключение к Интернету</translation>
 <translation id="6205314730813004066">Конфиденциальность в рекламе</translation>
 <translation id="6212314149070368045">US Fanfold</translation>
@@ -2239,6 +2243,7 @@
 <translation id="6468485451923838994">Шрифты</translation>
 <translation id="647261751007945333">Правила устройства</translation>
 <translation id="647330291963761005">Обновления устанавливаются</translation>
+<translation id="6474220430271405609">Проверки правил</translation>
 <translation id="6475672344094591109">Сайты, которые вы посещаете, могут запрашивать у Chrome информацию для оценки эффективности рекламы. Chrome защищает вашу конфиденциальность, ограничивая данные, которыми сайты могут обмениваться друг с другом.</translation>
 <translation id="6476284679642588870">Настроить способы оплаты</translation>
 <translation id="6486200200930923183">Документальные фильмы</translation>
@@ -2397,7 +2402,6 @@
 <translation id="6896758677409633944">Копировать</translation>
 <translation id="6897140037006041989">User Agent</translation>
 <translation id="6898699227549475383">Организация (O)</translation>
-<translation id="6899000063526916106">Введите <ph name="NUMBER_OF_DIGITS" />-значный код</translation>
 <translation id="6907458757809079309">Фитнес</translation>
 <translation id="6910240653697687763">Сайт <ph name="URL" /> запрашивает полный контроль над MIDI-устройствами.</translation>
 <translation id="691024665142758461">скачивание нескольких файлов</translation>
@@ -3005,6 +3009,7 @@
 <translation id="8296205692406981542">Парки и скверы</translation>
 <translation id="8297545700510100061">Файлы cookie и другие данные сайтов используются, чтобы хранить информацию о вас, в том числе для входа в систему и персонализации рекламы. Для управления файлами cookie перейдите в <ph name="SETTINGS" />.</translation>
 <translation id="8298115750975731693">Возможно, вам нужно перейти на страницу <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> сети Wi-Fi (<ph name="WIFI_NAME" />).</translation>
+<translation id="8301894345671534559">Ввести код</translation>
 <translation id="8303854710873047864">Показан раздел "<ph name="SECTION" />".</translation>
 <translation id="830498451218851433">Фальцовка книжкой</translation>
 <translation id="831997045666694187">До вечера</translation>
@@ -3350,7 +3355,6 @@
 <translation id="9191834167571392248">Отверстие в левом нижнем углу</translation>
 <translation id="9199905725844810519">Печать заблокирована</translation>
 <translation id="9205078245616868884">Данные зашифрованы с помощью кодовой фразы. Введите ее, чтобы начать синхронизацию.</translation>
-<translation id="920511547311754821">Не можете найти код? <ph name="IDS_AUTOFILL_CARD_UNMASK_OTP_INPUT_DIALOG_NEW_CODE_MESSAGE" /></translation>
 <translation id="9207861905230894330">Не удалось добавить статью</translation>
 <translation id="9213433120051936369">Настроить вид</translation>
 <translation id="9215416866750762878">Приложение не позволяет Chrome безопасно подключиться к этому сайту</translation>

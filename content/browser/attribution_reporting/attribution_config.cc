@@ -8,6 +8,7 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
+#include "content/browser/attribution_reporting/destination_throttler.h"
 #include "third_party/blink/public/common/features.h"
 
 namespace content {
@@ -20,7 +21,12 @@ const base::FeatureParam<int> kMaxReportingOriginsPerSiteParam{
     AttributionConfig::RateLimitConfig::
         kDefaultMaxReportingOriginsPerSourceReportingSite};
 
-}
+const base::FeatureParam<int> kMaxAttributionsPerEventSourceParam{
+    &blink::features::kConversionMeasurement,
+    "max_attributions_per_event_source",
+    AttributionConfig::EventLevelLimit::kDefaultMaxAttributionsPerEventSource};
+
+}  // namespace
 
 bool AttributionConfig::Validate() const {
   if (max_sources_per_origin <= 0) {
@@ -40,6 +46,10 @@ bool AttributionConfig::Validate() const {
   }
 
   if (!aggregate_limit.Validate()) {
+    return false;
+  }
+
+  if (!throttler_policy.Validate()) {
     return false;
   }
 
@@ -160,7 +170,23 @@ bool AttributionConfig::AggregateLimit::Validate() const {
   return true;
 }
 
-AttributionConfig::EventLevelLimit::EventLevelLimit() = default;
+AttributionConfig::AttributionConfig() = default;
+AttributionConfig::AttributionConfig(const AttributionConfig&) = default;
+AttributionConfig::AttributionConfig(AttributionConfig&&) = default;
+AttributionConfig::~AttributionConfig() = default;
+
+AttributionConfig& AttributionConfig::operator=(const AttributionConfig&) =
+    default;
+AttributionConfig& AttributionConfig::operator=(AttributionConfig&&) = default;
+
+AttributionConfig::EventLevelLimit::EventLevelLimit()
+    : max_attributions_per_event_source(
+          kMaxAttributionsPerEventSourceParam.Get()) {
+  if (max_attributions_per_event_source <= 0) {
+    max_attributions_per_event_source = kDefaultMaxAttributionsPerEventSource;
+  }
+}
+
 AttributionConfig::EventLevelLimit::EventLevelLimit(const EventLevelLimit&) =
     default;
 AttributionConfig::EventLevelLimit::EventLevelLimit(EventLevelLimit&&) =

@@ -12,7 +12,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
-#include "ash/wm/tablet_mode/tablet_mode_multitask_cue.h"
+#include "ash/wm/tablet_mode/tablet_mode_multitask_cue_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_multitask_menu.h"
 #include "ash/wm/tablet_mode/tablet_mode_multitask_menu_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
@@ -24,6 +24,7 @@
 #include "chromeos/ui/frame/multitask_menu/multitask_button.h"
 #include "chromeos/ui/frame/multitask_menu/multitask_menu_metrics.h"
 #include "chromeos/ui/frame/multitask_menu/multitask_menu_view.h"
+#include "chromeos/ui/frame/multitask_menu/multitask_menu_view_test_api.h"
 #include "chromeos/ui/frame/multitask_menu/split_button_view.h"
 #include "chromeos/ui/wm/features.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -90,7 +91,9 @@ class TabletModeMultitaskMenuTest : public AshTestBase {
     ShowMultitaskMenu(*window);
     auto* multitask_menu_view = GetMultitaskMenuView(GetMultitaskMenu());
     const gfx::Rect half_bounds =
-        multitask_menu_view->half_button_for_testing()->GetBoundsInScreen();
+        chromeos::MultitaskMenuViewTestApi(multitask_menu_view)
+            .GetHalfButton()
+            ->GetBoundsInScreen();
     GetEventGenerator()->GestureTapAt(left ? half_bounds.left_center()
                                            : half_bounds.right_center());
     auto* split_view_controller = SplitViewController::Get(window);
@@ -159,10 +162,11 @@ TEST_F(TabletModeMultitaskMenuTest, BasicShowMenu) {
   chromeos::MultitaskMenuView* multitask_menu_view =
       GetMultitaskMenuView(multitask_menu);
   ASSERT_TRUE(multitask_menu_view);
-  EXPECT_TRUE(multitask_menu_view->half_button_for_testing());
+  chromeos::MultitaskMenuViewTestApi test_api(multitask_menu_view);
+  EXPECT_TRUE(test_api.GetHalfButton());
   EXPECT_TRUE(multitask_menu_view->partial_button());
-  EXPECT_TRUE(multitask_menu_view->full_button_for_testing());
-  EXPECT_TRUE(multitask_menu_view->float_button_for_testing());
+  EXPECT_TRUE(test_api.GetFullButton());
+  EXPECT_TRUE(test_api.GetFloatButton());
 
   // Verify that the menu is horizontally centered.
   EXPECT_EQ(multitask_menu->widget()
@@ -214,8 +218,9 @@ TEST_F(TabletModeMultitaskMenuTest, PressMoveAndReleaseTouch) {
   ShowMultitaskMenu(*window);
 
   // Press and move the touch slightly to mimic a real tap.
-  auto* half_button =
-      GetMultitaskMenuView(GetMultitaskMenu())->half_button_for_testing();
+  auto* half_button = chromeos::MultitaskMenuViewTestApi(
+                          GetMultitaskMenuView(GetMultitaskMenu()))
+                          .GetHalfButton();
   GetEventGenerator()->set_current_screen_location(
       half_button->GetBoundsInScreen().left_center());
   GetEventGenerator()->PressMoveAndReleaseTouchBy(0, 3);
@@ -383,8 +388,9 @@ TEST_F(TabletModeMultitaskMenuTest, CloseMultitaskMenuOnButtonPress) {
   auto window = CreateAppWindow();
   GenerateScroll(window->bounds().CenterPoint().x(), 0,
                  /*end_y=*/60);
-  GestureTapOn(
-      GetMultitaskMenuView(GetMultitaskMenu())->float_button_for_testing());
+  GestureTapOn(chromeos::MultitaskMenuViewTestApi(
+                   GetMultitaskMenuView(GetMultitaskMenu()))
+                   .GetFloatButton());
 
   // Wait for the TabletModeMultitaskMenuView layer to fade out.
   ui::LayerAnimationStoppedWaiter().Wait(
@@ -445,8 +451,9 @@ TEST_F(TabletModeMultitaskMenuTest, HalfButtonFunctionality) {
   ShowMultitaskMenu(*window);
 
   // Press the primary half split button.
-  auto* half_button =
-      GetMultitaskMenuView(GetMultitaskMenu())->half_button_for_testing();
+  auto* half_button = chromeos::MultitaskMenuViewTestApi(
+                          GetMultitaskMenuView(GetMultitaskMenu()))
+                          .GetHalfButton();
   GetEventGenerator()->GestureTapAt(
       half_button->GetBoundsInScreen().left_center());
   histogram_tester_.ExpectBucketCount(
@@ -556,7 +563,8 @@ TEST_F(TabletModeMultitaskMenuTest, WindowMinimumSizes) {
   ASSERT_TRUE(GetMultitaskMenu());
   chromeos::MultitaskMenuView* multitask_menu_view =
       GetMultitaskMenuView(GetMultitaskMenu());
-  ASSERT_TRUE(multitask_menu_view->half_button_for_testing());
+  ASSERT_TRUE(
+      chromeos::MultitaskMenuViewTestApi(multitask_menu_view).GetHalfButton());
   ASSERT_TRUE(multitask_menu_view->partial_button()->GetEnabled());
   ASSERT_FALSE(multitask_menu_view->partial_button()
                    ->GetRightBottomButton()
@@ -569,7 +577,8 @@ TEST_F(TabletModeMultitaskMenuTest, WindowMinimumSizes) {
       gfx::Size(work_area_bounds.width() * 0.6f, work_area_bounds.height()));
   ShowMultitaskMenu(*window);
   multitask_menu_view = GetMultitaskMenuView(GetMultitaskMenu());
-  EXPECT_FALSE(multitask_menu_view->half_button_for_testing());
+  ASSERT_FALSE(
+      chromeos::MultitaskMenuViewTestApi(multitask_menu_view).GetHalfButton());
   EXPECT_TRUE(multitask_menu_view->partial_button()->GetEnabled());
   ASSERT_FALSE(multitask_menu_view->partial_button()
                    ->GetRightBottomButton()
@@ -582,7 +591,8 @@ TEST_F(TabletModeMultitaskMenuTest, WindowMinimumSizes) {
       gfx::Size(work_area_bounds.width() * 0.7f, work_area_bounds.height()));
   ShowMultitaskMenu(*window);
   multitask_menu_view = GetMultitaskMenuView(GetMultitaskMenu());
-  EXPECT_FALSE(multitask_menu_view->half_button_for_testing());
+  EXPECT_FALSE(
+      chromeos::MultitaskMenuViewTestApi(multitask_menu_view).GetHalfButton());
   EXPECT_FALSE(multitask_menu_view->partial_button());
 }
 
@@ -607,10 +617,11 @@ TEST_F(TabletModeMultitaskMenuTest, HiddenButtons) {
   chromeos::MultitaskMenuView* multitask_menu_view =
       GetMultitaskMenuView(multitask_menu);
   ASSERT_TRUE(multitask_menu_view);
-  EXPECT_FALSE(multitask_menu_view->half_button_for_testing());
+  chromeos::MultitaskMenuViewTestApi test_api(multitask_menu_view);
+  EXPECT_FALSE(test_api.GetHalfButton());
   EXPECT_FALSE(multitask_menu_view->partial_button());
-  EXPECT_TRUE(multitask_menu_view->full_button_for_testing());
-  EXPECT_FALSE(multitask_menu_view->float_button_for_testing());
+  EXPECT_TRUE(test_api.GetFullButton());
+  EXPECT_FALSE(test_api.GetFloatButton());
 }
 
 // Tests that the cue is still showing when the menu is opened, and it has been
@@ -618,30 +629,33 @@ TEST_F(TabletModeMultitaskMenuTest, HiddenButtons) {
 TEST_F(TabletModeMultitaskMenuTest, CueTransformOnShowMenu) {
   auto window = CreateAppWindow();
 
-  auto* multitask_cue = GetMultitaskMenuController()->multitask_cue();
-  ASSERT_TRUE(multitask_cue);
-  EXPECT_TRUE(multitask_cue->cue_layer());
+  auto* multitask_cue_controller =
+      GetMultitaskMenuController()->multitask_cue_controller();
+  ASSERT_TRUE(multitask_cue_controller);
+  EXPECT_TRUE(multitask_cue_controller->cue_layer());
 
   // Cue should still be showing when the menu is activated.
   ShowMultitaskMenu(*window);
-  ASSERT_TRUE(multitask_cue);
-  ui::Layer* cue_layer = multitask_cue->cue_layer();
+  ASSERT_TRUE(multitask_cue_controller);
+  ui::Layer* cue_layer = multitask_cue_controller->cue_layer();
   EXPECT_TRUE(cue_layer);
 
   // Verify cue is transformed to the right position.
   const gfx::Rect expected_bounds(
-      (window->bounds().width() - TabletModeMultitaskCue::kCueWidth) / 2,
+      (window->bounds().width() - TabletModeMultitaskCueController::kCueWidth) /
+          2,
       GetMultitaskMenuView(GetMultitaskMenu())->bounds().bottom() +
-          kVerticalPosition + TabletModeMultitaskCue::kCueYOffset,
-      TabletModeMultitaskCue::kCueWidth, TabletModeMultitaskCue::kCueHeight);
+          kVerticalPosition + TabletModeMultitaskCueController::kCueYOffset,
+      TabletModeMultitaskCueController::kCueWidth,
+      TabletModeMultitaskCueController::kCueHeight);
   EXPECT_EQ(expected_bounds, cue_layer->GetTargetTransform().MapRect(
                                  cue_layer->GetTargetBounds()));
 
   // Cue should still dismiss via timer after menu opened.
-  multitask_cue->FireCueDismissTimerForTesting();
+  multitask_cue_controller->FireCueDismissTimerForTesting();
 
-  ASSERT_TRUE(multitask_cue);
-  EXPECT_FALSE(multitask_cue->cue_layer());
+  ASSERT_TRUE(multitask_cue_controller);
+  EXPECT_FALSE(multitask_cue_controller->cue_layer());
 }
 
 // Tests that the cue appears on the correct window when the multitask menu is
@@ -659,17 +673,19 @@ TEST_F(TabletModeMultitaskMenuTest, CueCorrectWindowInSplitView) {
 
   // Show the menu and cue on the first window.
   ShowMultitaskMenu(*window1);
-  auto* multitask_cue = GetMultitaskMenuController()->multitask_cue();
-  ASSERT_TRUE(multitask_cue);
-  EXPECT_TRUE(multitask_cue->cue_layer());
-  EXPECT_EQ(window1.get(), multitask_cue->window_);
+  auto* multitask_cue_controller =
+      GetMultitaskMenuController()->multitask_cue_controller();
+  ASSERT_TRUE(multitask_cue_controller);
+  EXPECT_TRUE(multitask_cue_controller->cue_layer());
+  EXPECT_EQ(window1.get(), multitask_cue_controller->window_);
 
   // Show the menu and cue on the second window.
   ShowMultitaskMenu(*window2);
-  multitask_cue = GetMultitaskMenuController()->multitask_cue();
-  ASSERT_TRUE(multitask_cue);
-  EXPECT_TRUE(multitask_cue->cue_layer());
-  EXPECT_EQ(window2.get(), multitask_cue->window_);
+  multitask_cue_controller =
+      GetMultitaskMenuController()->multitask_cue_controller();
+  ASSERT_TRUE(multitask_cue_controller);
+  EXPECT_TRUE(multitask_cue_controller->cue_layer());
+  EXPECT_EQ(window2.get(), multitask_cue_controller->window_);
 }
 
 // Tests that the bottom window can open the multitask menu in portrait mode. In

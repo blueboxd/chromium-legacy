@@ -12,14 +12,19 @@
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_service_delegate.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_view_controller_model_delegate.h"
 
-@protocol SyncErrorSettingsCommandHandler;
+class AuthenticationService;
+class ChromeAccountManagerService;
 @protocol ManageSyncSettingsCommandHandler;
 @protocol ManageSyncSettingsConsumer;
 class PrefService;
+@protocol SyncErrorSettingsCommandHandler;
 class SyncSetupService;
+namespace signin {
+class IdentityManager;
+}  // namespace signin
 namespace syncer {
 class SyncService;
-}  // syncer
+}  // namespace syncer
 
 // Mediator for the manager sync settings.
 @interface ManageSyncSettingsMediator
@@ -49,10 +54,13 @@ class SyncService;
 
 // Designated initializer.
 // `syncService`: Sync service. Should not be null.
-- (instancetype)initWithSyncService:(syncer::SyncService*)syncService
-                    userPrefService:(PrefService*)userPrefService
-                initialAccountState:
-                    (SyncSettingsAccountState)initialAccountState
+- (instancetype)
+      initWithSyncService:(syncer::SyncService*)syncService
+          userPrefService:(PrefService*)userPrefService
+          identityManager:(signin::IdentityManager*)identityManager
+    authenticationService:(AuthenticationService*)authenticationService
+    accountManagerService:(ChromeAccountManagerService*)accountManagerService
+      initialAccountState:(SyncSettingsAccountState)initialAccountState
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 

@@ -37,6 +37,10 @@ export class ColorChangeUpdater {
     this.root_ = root;
   }
 
+  /**
+   * Starts listening for ColorProvider changes from the browser and updates the
+   * `root_` whenever changes occur.
+   */
   start() {
     if (this.listenerId_ !== null) {
       return;
@@ -113,12 +117,4 @@ export class ColorChangeUpdater {
     return documentInstance ||
         (documentInstance = new ColorChangeUpdater(document));
   }
-}
-
-/**
- * Starts listening for ColorProvider changes from the browser and updates the
- * top level HTML document whenever changes occur.
- */
-export function startColorChangeUpdater() {
-  ColorChangeUpdater.forDocument().start();
 }

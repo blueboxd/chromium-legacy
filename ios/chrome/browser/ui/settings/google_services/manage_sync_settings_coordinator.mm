@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_coordinator.h"
 
 #import "base/check_op.h"
+#import "base/ios/block_types.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/notreached.h"
@@ -25,6 +26,8 @@
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/signin/system_identity_manager.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
@@ -98,9 +101,9 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
 
 - (void)start {
   DCHECK(self.baseNavigationController);
+  ChromeBrowserState* browserState = self.browser->GetBrowserState();
   SyncSetupService* syncSetupService =
-      SyncSetupServiceFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
+      SyncSetupServiceFactory::GetForBrowserState(browserState);
   switch (_accountState) {
     case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
     case SyncSettingsAccountState::kSyncing:
@@ -116,11 +119,16 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
   }
 
   self.mediator = [[ManageSyncSettingsMediator alloc]
-      initWithSyncService:self.syncService
-          userPrefService:self.browser->GetBrowserState()->GetPrefs()
-      initialAccountState:_accountState];
-  self.mediator.syncSetupService = SyncSetupServiceFactory::GetForBrowserState(
-      self.browser->GetBrowserState());
+        initWithSyncService:self.syncService
+            userPrefService:browserState->GetPrefs()
+            identityManager:IdentityManagerFactory::GetForBrowserState(
+                                browserState)
+      authenticationService:self.authService
+      accountManagerService:ChromeAccountManagerServiceFactory::
+                                GetForBrowserState(browserState)
+        initialAccountState:_accountState];
+  self.mediator.syncSetupService =
+      SyncSetupServiceFactory::GetForBrowserState(browserState);
   self.mediator.commandHandler = self;
   self.mediator.syncErrorHandler = self;
   self.mediator.forcedSigninEnabled =
@@ -144,7 +152,7 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
   self.mediator.consumer = self.viewController;
   [self.baseNavigationController pushViewController:self.viewController
                                            animated:YES];
-  _syncObserver.reset(new SyncObserverBridge(self, self.syncService));
+  _syncObserver = std::make_unique<SyncObserverBridge>(self, self.syncService);
 }
 
 - (void)stop {
@@ -244,6 +252,31 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
     }
   };
   [self.signoutActionSheetCoordinator start];
+}
+
+- (void)signOut {
+  if (!self.authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
+    // This could happen in very rare cases, if the account somehow got removed
+    // after the settings UI was created.
+    return;
+  }
+
+  self.signOutFlowInProgress = YES;
+  [self.viewController preventUserInteraction];
+  __weak ManageSyncSettingsCoordinator* weakSelf = self;
+  ProceduralBlock signOutCompletion = ^() {
+    __strong ManageSyncSettingsCoordinator* strongSelf = weakSelf;
+    if (!strongSelf) {
+      return;
+    }
+    [strongSelf.viewController allowUserInteraction];
+    strongSelf.signOutFlowInProgress = NO;
+    base::RecordAction(base::UserMetricsAction("Signin_Signout"));
+    [strongSelf closeManageSyncSettings];
+  };
+  self.authService->SignOut(
+      signin_metrics::ProfileSignout::kUserClickedSignoutSettings,
+      /*force_clear_browsing_data=*/NO, signOutCompletion);
 }
 
 #pragma mark - SignoutActionSheetCoordinatorDelegate

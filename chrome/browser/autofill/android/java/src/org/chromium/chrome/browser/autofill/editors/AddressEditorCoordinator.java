@@ -16,6 +16,8 @@ import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -26,6 +28,8 @@ import java.lang.annotation.RetentionPolicy;
 public class AddressEditorCoordinator {
     private final AddressEditorMediator mMediator;
     private EditorDialogView mEditorDialog;
+    @Nullable
+    private PropertyModel mEditorModel;
 
     /**
      * Delegate used to subscribe to AddressEditor user interactions.
@@ -147,7 +151,10 @@ public class AddressEditorCoordinator {
      * Shows editor dialog to the user.
      */
     public void showEditorDialog() {
-        mEditorDialog.show(mMediator.buildEditorModel());
+        mEditorModel = mMediator.buildEditorModel();
+        PropertyModelChangeProcessor.create(
+                mEditorModel, mEditorDialog, EditorDialogViewBinder::bindEditorDialogView, false);
+        mEditorDialog.show(mEditorModel);
     }
 
     /**
@@ -171,6 +178,14 @@ public class AddressEditorCoordinator {
      */
     void setEditorDialogForTesting(EditorDialogView editorDialog) {
         mEditorDialog = editorDialog;
+    }
+
+    /**
+     * @return editor dialog model for testing purposes.
+     */
+    @Nullable
+    PropertyModel getEditorModelForTesting() {
+        return mEditorModel;
     }
 
     /**

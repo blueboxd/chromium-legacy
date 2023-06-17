@@ -110,7 +110,6 @@ ShoppingListUiTabHelper::~ShoppingListUiTabHelper() = default;
 void ShoppingListUiTabHelper::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kShouldShowPriceTrackFUEBubble, true);
-  registry->RegisterBooleanPref(prefs::kShouldShowSidePanelBookmarkTab, false);
 }
 
 void ShoppingListUiTabHelper::DidFinishNavigation(
@@ -304,6 +303,15 @@ void ShoppingListUiTabHelper::SetPriceTrackingState(
           std::move(wrapped_callback));
     }
   }
+}
+
+void ShoppingListUiTabHelper::ShowShoppingInsightsSidePanel() {
+  auto* side_panel_ui = GetSidePanelUI();
+  auto* registry = SidePanelRegistry::Get(web_contents());
+  DCHECK(side_panel_ui && registry->GetEntryForKey(SidePanelEntry::Key(
+                              SidePanelEntry::Id::kShoppingInsights)));
+
+  side_panel_ui->Show(SidePanelEntryId::kShoppingInsights);
 }
 
 void ShoppingListUiTabHelper::UpdatePriceTrackingStateFromSubscriptions() {

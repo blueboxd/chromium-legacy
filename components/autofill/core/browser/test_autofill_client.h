@@ -36,6 +36,7 @@
 #include "components/autofill/core/browser/payments/credit_card_otp_authenticator.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
+#include "components/autofill/core/browser/payments/test/mock_mandatory_reauth_manager.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/strike_databases/payments/test_strike_database.h"
 #include "components/autofill/core/browser/test_address_normalizer.h"
@@ -256,6 +257,15 @@ class TestAutofillClientTemplate : public T {
       base::OnceClosure accept_virtual_card_callback,
       base::OnceClosure decline_virtual_card_callback) override {}
 
+  payments::MandatoryReauthManager* GetOrCreatePaymentsMandatoryReauthManager()
+      override {
+    if (!mock_payments_mandatory_reauth_manager_) {
+      mock_payments_mandatory_reauth_manager_ = std::make_unique<
+          testing::NiceMock<payments::MockMandatoryReauthManager>>();
+    }
+    return mock_payments_mandatory_reauth_manager_.get();
+  }
+
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
   std::vector<std::string> GetAllowedMerchantsForVirtualCards() override {
@@ -393,7 +403,9 @@ class TestAutofillClientTemplate : public T {
 
   void ShowAutofillPopup(
       const AutofillClient::PopupOpenArgs& open_args,
-      base::WeakPtr<AutofillPopupDelegate> delegate) override {}
+      base::WeakPtr<AutofillPopupDelegate> delegate) override {
+    is_showing_popup_ = true;
+  }
 
   void UpdateAutofillPopupDataListValues(
       const std::vector<std::u16string>& values,
@@ -410,7 +422,14 @@ class TestAutofillClientTemplate : public T {
   void UpdatePopup(const std::vector<Suggestion>& suggestions,
                    PopupType popup_type) override {}
 
-  void HideAutofillPopup(PopupHidingReason reason) override {}
+  void HideAutofillPopup(PopupHidingReason reason) override {
+    popup_hidden_reason_ = reason;
+    is_showing_popup_ = false;
+  }
+
+  bool IsShowingAutofillPopup() { return is_showing_popup_; }
+
+  PopupHidingReason popup_hiding_reason() { return popup_hidden_reason_; }
 
   void ShowVirtualCardErrorDialog(
       const AutofillErrorDialogContext& context) override {
@@ -462,6 +481,25 @@ class TestAutofillClientTemplate : public T {
 #else
     return nullptr;
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+  }
+
+  void ShowMandatoryReauthOptInPrompt(
+      base::OnceClosure accept_mandatory_reauth_callback,
+      base::OnceClosure cancel_mandatory_reauth_callback,
+      base::RepeatingClosure close_mandatory_reauth_callback) override {
+    mandatory_reauth_opt_in_prompt_was_shown_ = true;
+  }
+
+  bool GetMandatoryReauthOptInPromptWasShown() {
+    return mandatory_reauth_opt_in_prompt_was_shown_;
+  }
+
+  void ShowMandatoryReauthOptInConfirmation() override {
+    mandatory_reauth_opt_in_prompt_was_reshown_ = true;
+  }
+
+  bool GetMandatoryReauthOptInPromptWasReshown() {
+    return mandatory_reauth_opt_in_prompt_was_reshown_;
   }
 
   void LoadRiskData(
@@ -656,6 +694,8 @@ class TestAutofillClientTemplate : public T {
   scoped_refptr<device_reauth::MockDeviceAuthenticator>
       mock_device_authenticator_ =
           base::MakeRefCounted<device_reauth::MockDeviceAuthenticator>();
+  std::unique_ptr<::testing::NiceMock<payments::MockMandatoryReauthManager>>
+      mock_payments_mandatory_reauth_manager_;
 
   // NULL by default.
   std::unique_ptr<PrefService> prefs_;
@@ -706,6 +746,10 @@ class TestAutofillClientTemplate : public T {
 
   bool is_off_the_record_ = false;
 
+  bool is_showing_popup_ = false;
+
+  PopupHidingReason popup_hidden_reason_;
+
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_ =
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
@@ -720,6 +764,11 @@ class TestAutofillClientTemplate : public T {
   // Populated if IBAN save was offered. True if bubble was shown, false
   // otherwise.
   bool offer_to_save_iban_bubble_was_shown_ = false;
+
+  // Populated if mandatory re-auth opt-in was offered, or re-offered,
+  // respectively.
+  bool mandatory_reauth_opt_in_prompt_was_shown_ = false;
+  bool mandatory_reauth_opt_in_prompt_was_reshown_ = false;
 
   std::vector<std::string> migration_card_selection_;
 

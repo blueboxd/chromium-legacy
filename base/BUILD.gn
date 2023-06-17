@@ -1242,7 +1242,7 @@ component("base") {
       "android/apk_assets.h",
       "android/application_status_listener.cc",
       "android/application_status_listener.h",
-      "android/base_feature_list.cc",
+      "android/base_feature_map.cc",
       "android/base_features.cc",
       "android/base_features.h",
       "android/build_info.cc",
@@ -2130,7 +2130,13 @@ component("base") {
       "synchronization/waitable_event_mac.cc",
       "threading/atomic.c",
     ]
-    frameworks += [ "Security.framework" ]
+    frameworks += [
+      "CoreFoundation.framework",
+      "CoreGraphics.framework",
+      "CoreText.framework",
+      "Foundation.framework",
+      "Security.framework",
+    ]
     public_deps += [ ":base_arc" ]
     allow_circular_includes_from = [ ":base_arc" ]
   }
@@ -2980,6 +2986,15 @@ if (is_apple) {
   }
 }
 
+if (is_ios) {
+  bundle_data("base_test_proto_bundle_data") {
+    testonly = true
+    public_deps = [ "//base/test:test_proto_descriptor" ]
+    sources = [ "$root_gen_dir/base/test/test_proto.descriptor" ]
+    outputs = [ "{{bundle_resources_dir}}/gen/base/test/{{source_file_part}}" ]
+  }
+}
+
 if (is_apple) {
   source_set("base_unittests_noarc") {
     testonly = true
@@ -3241,6 +3256,7 @@ test("base_unittests") {
     "metrics/sample_vector_unittest.cc",
     "metrics/single_sample_metrics_unittest.cc",
     "metrics/sparse_histogram_unittest.cc",
+    "metrics/statistics_recorder_starvation_unittest.cc",
     "metrics/statistics_recorder_unittest.cc",
     "native_library_unittest.cc",
     "no_destructor_unittest.cc",
@@ -3394,6 +3410,7 @@ test("base_unittests") {
     "test/test_future_unittest.cc",
     "test/test_mock_time_task_runner_unittest.cc",
     "test/test_pending_task_unittest.cc",
+    "test/test_proto_loader_unittest.cc",
     "test/test_waitable_event_unittest.cc",
     "third_party/dynamic_annotations/dynamic_annotations_compiletest.cc",
     "thread_annotations_unittest.cc",
@@ -3475,7 +3492,9 @@ test("base_unittests") {
     ":sanitizer_buildflags",
     "//base/allocator:buildflags",
     "//base/test:native_library_test_utils",
+    "//base/test:proto_test_support",
     "//base/test:run_all_unittests",
+    "//base/test:test_proto",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
     "//build:blink_buildflags",
@@ -3509,14 +3528,17 @@ test("base_unittests") {
     ]
   }
 
-  if (!is_ios) {
-    sources += [ "allocator/partition_allocator/tagging_unittest.cc" ]
-  }
-
   data = [
     "test/data/",
     "//tools/metrics/histograms/enums.xml",
   ]
+
+  if (!is_ios) {
+    sources += [ "allocator/partition_allocator/tagging_unittest.cc" ]
+
+    data_deps += [ "//base/test:test_proto_descriptor" ]
+    data += [ "$root_gen_dir/base/test/test_proto.descriptor" ]
+  }
 
   if (is_win) {
     deps += [ "//base/win:base_win_buildflags" ]
@@ -3752,6 +3774,8 @@ test("base_unittests") {
     ]
 
     deps += [ "//base/ios" ]
+
+    bundle_deps = [ ":base_test_proto_bundle_data" ]
 
     if (is_cronet_build) {
       sources += [ "message_loop/message_pump_io_ios_unittest.cc" ]
@@ -4127,7 +4151,7 @@ if (is_android || is_robolectric) {
     sources = [
       "android/java/src/org/chromium/base/ApkAssets.java",
       "android/java/src/org/chromium/base/ApplicationStatus.java",
-      "android/java/src/org/chromium/base/BaseFeatureList.java",
+      "android/java/src/org/chromium/base/BaseFeatureMap.java",
       "android/java/src/org/chromium/base/BuildInfo.java",
       "android/java/src/org/chromium/base/BundleUtils.java",
       "android/java/src/org/chromium/base/Callback.java",
@@ -4283,7 +4307,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/ApiCompatibilityUtils.java",
       "android/java/src/org/chromium/base/ApkAssets.java",
       "android/java/src/org/chromium/base/ApplicationStatus.java",
-      "android/java/src/org/chromium/base/BaseFeatureList.java",
+      "android/java/src/org/chromium/base/BaseFeatureMap.java",
       "android/java/src/org/chromium/base/BuildInfo.java",
       "android/java/src/org/chromium/base/BundleUtils.java",
       "android/java/src/org/chromium/base/Callback.java",

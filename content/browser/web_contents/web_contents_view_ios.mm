@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "ui/base/cocoa/animation_utils.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace content {
 
@@ -38,7 +39,7 @@ void WebContentsViewIOS::InstallCreateHookForTests(
 // of the WebContentsViewIOS.
 class WebContentsUIViewHolder {
  public:
-  base::scoped_nsobject<UIView> view_;
+  base::scoped_nsobject<UIScrollView> view_;
 };
 
 std::unique_ptr<WebContentsView> CreateWebContentsView(
@@ -56,7 +57,9 @@ WebContentsViewIOS::WebContentsViewIOS(
     std::unique_ptr<WebContentsViewDelegate> delegate)
     : web_contents_(web_contents), delegate_(std::move(delegate)) {
   ui_view_ = std::make_unique<WebContentsUIViewHolder>();
-  ui_view_->view_ = base::scoped_nsobject<UIView>([[UIView alloc] init]);
+  ui_view_->view_ =
+      base::scoped_nsobject<UIScrollView>([[UIScrollView alloc] init]);
+  [ui_view_->view_ setScrollEnabled:NO];
   [ui_view_->view_ setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                        UIViewAutoresizingFlexibleHeight];
 }
@@ -70,7 +73,7 @@ gfx::NativeView WebContentsViewIOS::GetNativeView() const {
 gfx::NativeView WebContentsViewIOS::GetContentNativeView() const {
   RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
   if (!rwhv) {
-    return nullptr;
+    return gfx::NativeView();
   }
   return rwhv->GetNativeView();
 }
@@ -78,7 +81,7 @@ gfx::NativeView WebContentsViewIOS::GetContentNativeView() const {
 gfx::NativeWindow WebContentsViewIOS::GetTopLevelNativeWindow() const {
   gfx::NativeView view = GetContentNativeView();
   if (!view) {
-    return nullptr;
+    return gfx::NativeWindow();
   }
   return gfx::NativeWindow([view window]);
 }
@@ -214,7 +217,7 @@ void WebContentsViewIOS::RenderViewHostChanged(RenderViewHost* old_host,
     auto* rwhv = old_host->GetWidget()->GetView();
     if (rwhv && rwhv->GetNativeView()) {
       static_cast<RenderWidgetHostViewIOS*>(rwhv)->UpdateNativeViewTree(
-          nullptr);
+          gfx::NativeView());
     }
   }
 

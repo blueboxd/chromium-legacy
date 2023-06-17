@@ -23,6 +23,7 @@ import './device_page/fake_input_device_data.js';
 import './device_page/fake_input_device_settings_provider.js';
 import './device_page/input_device_mojo_interface_provider.js';
 import './device_page/input_device_settings_types.js';
+import './device_page/graphics_tablet_subpage.js';
 import './device_page/keyboard.js';
 import './device_page/per_device_keyboard.js';
 import './device_page/per_device_keyboard_remap_keys.js';
@@ -69,7 +70,7 @@ import './os_bluetooth_page/os_saved_devices_list.js';
 import './os_bluetooth_page/os_saved_devices_list_item.js';
 import './os_bluetooth_page/settings_fast_pair_constants.js';
 
-import {startColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
+import {ColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
 /**
@@ -82,6 +83,7 @@ export * as nearbyShareMojom from '/shared/nearby_share.mojom-webui.js';
 export {getNearbyShareSettings, observeNearbyShareSettings, setNearbyShareSettingsForTesting} from '/shared/nearby_share_settings.js';
 export {NearbySettings, NearbyShareSettingsMixin} from '/shared/nearby_share_settings_mixin.js';
 export {ControlledButtonElement} from '/shared/settings/controls/controlled_button.js';
+export {ControlledRadioButtonElement} from '/shared/settings/controls/controlled_radio_button.js';
 export {SettingsDropdownMenuElement} from '/shared/settings/controls/settings_dropdown_menu.js';
 export {SettingsSliderElement} from '/shared/settings/controls/settings_slider.js';
 export {SettingsToggleButtonElement} from '/shared/settings/controls/settings_toggle_button.js';
@@ -99,10 +101,11 @@ export {SettingsAudioElement} from './device_page/audio.js';
 export {setCrosAudioConfigForTesting} from './device_page/cros_audio_config.js';
 export {DevicePageBrowserProxy, DevicePageBrowserProxyImpl, IdleBehavior, LidClosedBehavior, NoteAppInfo, NoteAppLockScreenSupport, setDisplayApiForTesting, StorageSpaceState} from './device_page/device_page_browser_proxy.js';
 export * as fakeCrosAudioConfig from './device_page/fake_cros_audio_config.js';
-export {fakeKeyboards, fakeKeyboards2, fakeMice, fakeMice2, fakePointingSticks, fakePointingSticks2, fakeTouchpads, fakeTouchpads2} from './device_page/fake_input_device_data.js';
+export {fakeGraphicsTablets, fakeKeyboards, fakeKeyboards2, fakeMice, fakeMice2, fakePointingSticks, fakePointingSticks2, fakeStyluses, fakeTouchpads, fakeTouchpads2} from './device_page/fake_input_device_data.js';
 export {FakeInputDeviceSettingsProvider} from './device_page/fake_input_device_settings_provider.js';
+export {SettingsGraphicsTabletSubpageElement} from './device_page/graphics_tablet_subpage.js';
 export {getInputDeviceSettingsProvider, setInputDeviceSettingsProviderForTesting, setupFakeInputDeviceSettingsProvider} from './device_page/input_device_mojo_interface_provider.js';
-export {InputDeviceSettingsPolicy, Keyboard, MetaKey, ModifierKey, Mouse, PolicyStatus} from './device_page/input_device_settings_types.js';
+export {InputDeviceSettingsPolicy, Keyboard, MetaKey, ModifierKey, Mouse, PolicyStatus, SimulateRightClickModifier} from './device_page/input_device_settings_types.js';
 export {KeyboardRemapModifierKeyRowElement} from './device_page/keyboard_remap_modifier_key_row.js';
 export {SettingsPerDeviceKeyboardElement} from './device_page/per_device_keyboard.js';
 export {SettingsPerDeviceKeyboardRemapKeysElement} from './device_page/per_device_keyboard_remap_keys.js';
@@ -122,6 +125,7 @@ export {NetworkSummaryElement} from './internet_page/network_summary.js';
 export {NetworkSummaryItemElement} from './internet_page/network_summary_item.js';
 export {SettingsKerberosPageElement} from './kerberos_page/kerberos_page.js';
 export {MainPageContainerElement} from './main_page_container/main_page_container.js';
+export {PageDisplayerElement} from './main_page_container/page_displayer.js';
 export {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSearch, recordSettingChange, setUserActionRecorderForTesting} from './metrics_recorder.js';
 export * as appNotificationHandlerMojom from './mojom-webui/app_notification_handler.mojom-webui.js';
 export * as crosAudioConfigMojom from './mojom-webui/cros_audio_config.mojom-webui.js';
@@ -175,7 +179,7 @@ export {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl, 
 export {OsSettingsMainElement} from './os_settings_main/os_settings_main.js';
 export {OsSettingsMenuElement} from './os_settings_menu/os_settings_menu.js';
 export {OsSettingsSectionElement} from './os_settings_page/os_settings_section.js';
-export {createRoutes as createRoutesForTesting, OsSettingsRoutes} from './os_settings_routes.js';
+export {createRoutes as createRoutesForTesting, createSection as createSectionForTesting, createSubpage as createSubpageForTesting, OsSettingsRoutes} from './os_settings_routes.js';
 export {OsSettingsSearchBoxElement} from './os_settings_search_box/os_settings_search_box.js';
 export {OsSettingsSearchBoxBrowserProxyImpl} from './os_settings_search_box/os_settings_search_box_browser_proxy.js';
 export {OsSettingsHatsBrowserProxy, OsSettingsHatsBrowserProxyImpl} from './os_settings_ui/os_settings_hats_browser_proxy.js';
@@ -207,6 +211,6 @@ if (jellyEnabled) {
 
 window.addEventListener('load', () => {
   if (jellyEnabled) {
-    startColorChangeUpdater();
+    ColorChangeUpdater.forDocument().start();
   }
 });

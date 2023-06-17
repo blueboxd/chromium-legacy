@@ -2720,7 +2720,7 @@ std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
   view_ = CreateWebContentsView(
       this, GetContentClient()->browser()->GetWebContentsViewDelegate(this),
       &render_view_host_delegate_view_);
-  view_->CreateView(nullptr);
+  view_->CreateView(gfx::NativeView());
   std::unique_ptr<WebContents> web_contents =
       node_.DisconnectFromOuterWebContents();
   DCHECK_EQ(web_contents.get(), this);
@@ -7878,6 +7878,16 @@ void WebContentsImpl::DidReceiveUserActivation(
                         "render_frame_host", render_frame_host);
   observers_.NotifyObservers(&WebContentsObserver::FrameReceivedUserActivation,
                              render_frame_host);
+}
+
+void WebContentsImpl::WebAuthnAssertionRequestSucceeded(
+    RenderFrameHostImpl* render_frame_host) {
+  OPTIONAL_TRACE_EVENT1("content",
+                        "WebContentsImpl::WebAuthnAssertionRequestSucceeded",
+                        "render_frame_host", render_frame_host);
+  observers_.NotifyObservers(
+      &WebContentsObserver::WebAuthnAssertionRequestSucceeded,
+      render_frame_host);
 }
 
 void WebContentsImpl::BindDisplayCutoutHost(

@@ -629,6 +629,8 @@ static_library("browser") {
     "interstitials/enterprise_util.h",
     "invalidation/profile_invalidation_provider_factory.cc",
     "invalidation/profile_invalidation_provider_factory.h",
+    "ip_protection/blind_sign_http_impl.cc",
+    "ip_protection/blind_sign_http_impl.h",
     "ip_protection/ip_protection_auth_token_getter.cc",
     "ip_protection/ip_protection_auth_token_getter.h",
     "k_anonymity_service/k_anonymity_service_client.cc",
@@ -2060,7 +2062,7 @@ static_library("browser") {
     "//components/bookmarks/browser",
     "//components/bookmarks/managed",
     "//components/breadcrumbs/core",
-    "//components/breadcrumbs/core:feature_flags",
+    "//components/breadcrumbs/core:status",
     "//components/browser_sync",
     "//components/browsing_data/content",
     "//components/browsing_data/core",
@@ -2184,7 +2186,6 @@ static_library("browser") {
     "//components/offline_pages/buildflags",
     "//components/offline_pages/core",
     "//components/offline_pages/core/background:background_offliner",
-    "//components/offline_pages/core/prefetch",
     "//components/offline_pages/core/request_header",
     "//components/omnibox/browser",
     "//components/onc",
@@ -2400,6 +2401,7 @@ static_library("browser") {
     "//mojo/public/cpp/bindings",
     "//net",
     "//net:extras",
+    "//net/third_party/quiche:blind_sign_auth",
     "//ppapi/buildflags",
     "//printing/buildflags",
     "//rlz/buildflags",
@@ -2935,6 +2937,8 @@ static_library("browser") {
       "enterprise/reporting/browser_report_generator_android.h",
       "enterprise/reporting/profile_report_generator_android.cc",
       "enterprise/reporting/profile_report_generator_android.h",
+      "enterprise/reporting/real_time_report_controller_android.cc",
+      "enterprise/reporting/real_time_report_controller_android.h",
       "enterprise/reporting/report_scheduler_android.cc",
       "enterprise/reporting/report_scheduler_android.h",
       "enterprise/reporting/reporting_delegate_factory_android.cc",
@@ -3079,6 +3083,8 @@ static_library("browser") {
       "password_manager/android/credential_leak_controller_android.h",
       "password_manager/android/generated_password_saved_message_delegate.cc",
       "password_manager/android/generated_password_saved_message_delegate.h",
+      "password_manager/android/local_passwords_migration_warning_util.cc",
+      "password_manager/android/local_passwords_migration_warning_util.h",
       "password_manager/android/password_accessory_controller.h",
       "password_manager/android/password_accessory_controller_impl.cc",
       "password_manager/android/password_accessory_controller_impl.h",
@@ -3284,7 +3290,6 @@ static_library("browser") {
       "//chrome/browser/password_manager:password_manager_buildflags",
       "//chrome/browser/password_manager/android:backend_public",
       "//chrome/browser/password_manager/android:jni_headers",
-      "//chrome/browser/password_manager/android/pwd_migration:utils",
       "//chrome/browser/payments/android:jni_headers",
       "//chrome/browser/policy/android:android",
       "//chrome/browser/policy/android:jni_headers",
@@ -3682,6 +3687,8 @@ static_library("browser") {
       "enterprise/reporting/extension_request/extension_request_report_generator.h",
       "enterprise/reporting/profile_report_generator_desktop.cc",
       "enterprise/reporting/profile_report_generator_desktop.h",
+      "enterprise/reporting/real_time_report_controller_desktop.cc",
+      "enterprise/reporting/real_time_report_controller_desktop.h",
       "enterprise/reporting/real_time_report_generator_desktop.cc",
       "enterprise/reporting/real_time_report_generator_desktop.h",
       "enterprise/reporting/report_generator_desktop.cc",
@@ -3739,6 +3746,8 @@ static_library("browser") {
       "hid/hid_connection_tracker_factory.h",
       "hid/hid_policy_allowed_devices.cc",
       "hid/hid_policy_allowed_devices.h",
+      "hid/hid_policy_allowed_devices_factory.cc",
+      "hid/hid_policy_allowed_devices_factory.h",
       "hid/hid_system_tray_icon.cc",
       "hid/hid_system_tray_icon.h",
       "hid/web_hid_histograms.cc",
@@ -5051,6 +5060,7 @@ static_library("browser") {
       "//ash/webui/personalization_app/mojom",
       "//ash/webui/personalization_app/search:mojo_bindings",
       "//ash/webui/print_management",
+      "//ash/webui/print_management/backend:backend",
       "//ash/webui/projector_app",
       "//ash/webui/projector_app/mojom:annotator_mojo_bindings",
       "//ash/webui/projector_app/mojom:projector_mojo_bindings",
@@ -6185,6 +6195,8 @@ static_library("browser") {
       "enterprise/connectors/device_trust/browser/signing_key_policy_observer.h",
       "enterprise/connectors/device_trust/signals/decorators/browser/browser_signals_decorator.cc",
       "enterprise/connectors/device_trust/signals/decorators/browser/browser_signals_decorator.h",
+      "enterprise/connectors/device_trust/signals/dependency_factory_impl.cc",
+      "enterprise/connectors/device_trust/signals/dependency_factory_impl.h",
       "enterprise/idle/dialog_manager.cc",
       "enterprise/idle/dialog_manager.h",
       "enterprise/profile_management/profile_management_features.cc",
@@ -6844,6 +6856,7 @@ static_library("browser") {
       "signin/bound_session_credentials/bound_session_cookie_refresh_service_factory.h",
       "signin/bound_session_credentials/bound_session_cookie_refresh_service_impl.cc",
       "signin/bound_session_credentials/bound_session_cookie_refresh_service_impl.h",
+      "signin/bound_session_credentials/bound_session_refresh_cookie_fetcher.cc",
       "signin/bound_session_credentials/bound_session_refresh_cookie_fetcher.h",
       "signin/bound_session_credentials/bound_session_refresh_cookie_fetcher_impl.cc",
       "signin/bound_session_credentials/bound_session_refresh_cookie_fetcher_impl.h",
@@ -6854,6 +6867,8 @@ static_library("browser") {
       "signin/bound_session_credentials/unexportable_key_service_factory.cc",
       "signin/bound_session_credentials/unexportable_key_service_factory.h",
     ]
+
+    public_deps += [ ":bound_session_credentials_proto" ]
 
     deps += [
       "//chrome/common",
@@ -7221,10 +7236,6 @@ static_library("browser") {
       "offline_pages/offliner_helper.h",
       "offline_pages/offliner_user_data.cc",
       "offline_pages/offliner_user_data.h",
-      "offline_pages/prefetch/offline_metrics_collector_impl.cc",
-      "offline_pages/prefetch/offline_metrics_collector_impl.h",
-      "offline_pages/prefetch/prefetch_service_factory.cc",
-      "offline_pages/prefetch/prefetch_service_factory.h",
       "offline_pages/recent_tab_helper.cc",
       "offline_pages/recent_tab_helper.h",
       "offline_pages/request_coordinator_factory.h",
@@ -7270,7 +7281,6 @@ static_library("browser") {
     public_deps += [
       "//components/offline_pages/core",
       "//components/offline_pages/core/background:background_offliner",
-      "//components/offline_pages/core/prefetch",
     ]
 
     deps += [
@@ -7827,6 +7837,12 @@ proto_library("permissions_proto") {
   sources = [ "permissions/crowd_deny.proto" ]
 }
 
+if (enable_bound_session_credentials) {
+  proto_library("bound_session_credentials_proto") {
+    sources = [ "signin/bound_session_credentials/bound_session_registration_params.proto" ]
+  }
+}
+
 grit("resources") {
   source = "browser_resources.grd"
 
@@ -8236,10 +8252,6 @@ static_library("test_support") {
 
   if (safe_browsing_mode == 1) {
     sources += [
-      "enterprise/connectors/analysis/fake_content_analysis_delegate.cc",
-      "enterprise/connectors/analysis/fake_content_analysis_delegate.h",
-      "enterprise/connectors/analysis/fake_files_request_handler.cc",
-      "enterprise/connectors/analysis/fake_files_request_handler.h",
       "extensions/fake_safe_browsing_database_manager.cc",
       "extensions/fake_safe_browsing_database_manager.h",
     ]

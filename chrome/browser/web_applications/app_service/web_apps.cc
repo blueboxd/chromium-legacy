@@ -38,14 +38,6 @@ using apps::IconEffects;
 
 namespace web_app {
 
-namespace {
-
-bool ShouldObserveMediaRequests() {
-  return true;
-}
-
-}  // namespace
-
 WebApps::WebApps(apps::AppServiceProxy* proxy)
     : apps::AppPublisher(proxy),
       profile_(proxy->profile()),
@@ -53,10 +45,7 @@ WebApps::WebApps(apps::AppServiceProxy* proxy)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       instance_registry_(&proxy->InstanceRegistry()),
 #endif
-      publisher_helper_(profile_,
-                        provider_,
-                        this,
-                        ShouldObserveMediaRequests()) {
+      publisher_helper_(profile_, provider_, this) {
   Initialize();
 }
 
@@ -256,10 +245,10 @@ void WebApps::PublishWebApps(std::vector<apps::AppPtr> apps) {
                               /*should_notify_initialized=*/false);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  const WebApp* web_app = GetWebApp(ash::kChromeUITrustedProjectorSwaAppId);
+  const WebApp* web_app = GetWebApp(ash::kChromeUIUntrustedProjectorSwaAppId);
   if (web_app) {
     proxy()->SetSupportedLinksPreference(
-        ash::kChromeUITrustedProjectorSwaAppId);
+        ash::kChromeUIUntrustedProjectorSwaAppId);
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
@@ -270,7 +259,7 @@ void WebApps::PublishWebApp(apps::AppPtr app) {
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  bool is_projector = app->app_id == ash::kChromeUITrustedProjectorSwaAppId;
+  bool is_projector = app->app_id == ash::kChromeUIUntrustedProjectorSwaAppId;
 #endif
 
   apps::AppPublisher::Publish(std::move(app));
@@ -282,7 +271,7 @@ void WebApps::PublishWebApp(apps::AppPtr app) {
     // after the intent filter has been registered, we need this call for the
     // OOBE case.
     proxy()->SetSupportedLinksPreference(
-        ash::kChromeUITrustedProjectorSwaAppId);
+        ash::kChromeUIUntrustedProjectorSwaAppId);
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }

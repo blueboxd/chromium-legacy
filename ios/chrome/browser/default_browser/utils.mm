@@ -8,6 +8,7 @@
 #import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 #import "base/metrics/field_trial_params.h"
+#import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
 #import "base/notreached.h"
 #import "base/strings/string_number_conversions.h"
@@ -451,7 +452,6 @@ DefaultPromoType ForceDefaultPromoType() {
           kDefaultBrowserPromoForceShowPromo);
   int default_promo_type = 0;
   if (base::StringToInt(type, &default_promo_type)) {
-    // return static_cast<DefaultPromoType>(default_promo_type);
     switch (default_promo_type) {
       case DefaultPromoTypeGeneral:
       case DefaultPromoTypeStaySafe:
@@ -465,7 +465,7 @@ DefaultPromoType ForceDefaultPromoType() {
   return DefaultPromoType::DefaultPromoTypeGeneral;
 }
 
-bool IsDefaultBrowserVideoPromoFullscreenEnabled() {
+bool IsDefaultBrowserVideoPromoHalfscreenEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
       kDefaultBrowserVideoPromo, "default_browser_video_promo_halfscreen",
       false);
@@ -508,11 +508,9 @@ void LogUserInteractionWithFullscreenPromo() {
 }
 
 void LogUserInteractionWithTailoredFullscreenPromo() {
-  const NSInteger displayed_promo_count = DisplayedPromoCount();
   UpdateStorageWithDictionary(@{
     kUserHasInteractedWithTailoredFullscreenPromo : @YES,
     kLastTimeUserInteractedWithPromo : [NSDate date],
-    kDisplayedPromoCount : @(displayed_promo_count + 1),
   });
 }
 
@@ -664,10 +662,12 @@ bool HasAppLaunchedOnColdStartAndRecordsLaunch() {
   return NO;
 }
 
-bool ShouldRegisterPromoWithPromoManager(bool is_signed_in) {
+bool ShouldRegisterPromoWithPromoManager(bool is_signed_in,
+                                         feature_engagement::Tracker* tracker) {
   if (ShouldForceDefaultPromoType()) {
     return YES;
   }
+
   // Consider showing the default browser promo if (1) launch is not after a
   // crash, (2) chrome is not likely set as default browser, (3) the user has
   // not seen a default browser promo too recently, (4) the user is eligible
@@ -675,7 +675,8 @@ bool ShouldRegisterPromoWithPromoManager(bool is_signed_in) {
   return GetApplicationContext()->WasLastShutdownClean() &&
          !IsChromeLikelyDefaultBrowser() && !UserInPromoCooldown() &&
          (IsTailoredPromoEligibleUser(is_signed_in) ||
-          IsGeneralPromoEligibleUser(is_signed_in));
+          IsGeneralPromoEligibleUser(is_signed_in) ||
+          IsVideoPromoEligibleUser(tracker));
 }
 
 bool IsTailoredPromoEligibleUser(bool is_signed_in) {
@@ -730,6 +731,31 @@ DefaultPromoTypeForUMA GetDefaultPromoTypeForUMA(DefaultPromoType type) {
       return DefaultPromoTypeForUMA::kStaySafe;
     case DefaultPromoTypeAllTabs:
       return DefaultPromoTypeForUMA::kAllTabs;
+    default:
+      NOTREACHED_NORETURN();
+  }
+}
+
+void LogDefaultBrowserPromoHistogramForAction(
+    DefaultPromoType type,
+    IOSDefaultBrowserPromoAction action) {
+  switch (type) {
+    case DefaultPromoTypeGeneral:
+      base::UmaHistogramEnumeration("IOS.DefaultBrowserFullscreenPromo",
+                                    action);
+      break;
+    case DefaultPromoTypeAllTabs:
+      base::UmaHistogramEnumeration(
+          "IOS.DefaultBrowserFullscreenTailoredPromoAllTabs", action);
+      break;
+    case DefaultPromoTypeMadeForIOS:
+      base::UmaHistogramEnumeration(
+          "IOS.DefaultBrowserFullscreenTailoredPromoMadeForIOS", action);
+      break;
+    case DefaultPromoTypeStaySafe:
+      base::UmaHistogramEnumeration(
+          "IOS.DefaultBrowserFullscreenTailoredPromoStaySafe", action);
+      break;
     default:
       NOTREACHED_NORETURN();
   }

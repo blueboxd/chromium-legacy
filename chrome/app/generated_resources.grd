@@ -1168,6 +1168,21 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_NEW_INCOGNITO_WINDOW" desc="The text label of a menu item for opening a new Incognito window">
             New &amp;Incognito window
           </message>
+          <message name="IDS_PROFILE_ROW_SIGNED_IN_MESSAGE" desc="Label that let's the user know what email they are signed into their profile as.">
+            Signed in as <ph name="EMAIL">$1<ex>user@gmail.com</ex></ph>
+          </message>
+          <message name="IDS_PROFILE_ROW_SYNC_IS_ON" desc="The text label of a menu item that notifies the user that sync is on.">
+            &amp;Sync is on
+          </message>
+          <message name="IDS_PROFILE_ROW_TURN_ON_SYNC" desc="The text label of a menu item that prompts the user to turn on sync.">
+            Turn on &amp;sync...
+          </message>
+          <message name="IDS_PROFILE_ROW_SYNC_ERROR_MESSAGE" desc="The text label of a menu item that prompts the user to fix the profile sync issue.">
+            Fix &amp;sync issue
+          </message>
+           <message name="IDS_PROFILE_ROW_SIGN_IN_AGAIN" desc="The text label of a menu item that prompts the user to sign in again.">
+            &amp;Sign in again
+          </message>
           <message name="IDS_EDIT2" desc="The text label before the cut/copy/paste buttons in the merged menu">
             Edit
           </message>
@@ -1258,6 +1273,18 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_MANAGE_GOOGLE_ACCOUNT" desc="The text label of the Manage Google account item">
             Manage your &amp;Google account
           </message>
+          <message name="IDS_OTHER_CHROME_PROFILES_TITLE" desc="The title of the Other Chrome profiles section">
+            Other Chrome profiles
+          </message>
+          <message name="IDS_OPEN_GUEST_PROFILE" desc="The text label of the open guest profile item">
+            &amp;Open Guest profile
+          </message>
+          <message name="IDS_ADD_NEW_PROFILE" desc="The text label of the add new profile item">
+            &amp;Add new profile
+          </message>
+          <message name="IDS_MANAGE_CHROME_PROFILES" desc="The text label of the manage chrome profile item">
+            &amp;Manage Chrome profiles
+          </message>
         </if>
         <if expr="use_titlecase">
           <message name="IDS_ADDRESSES_AND_MORE_SUBMENU_OPTION" desc="In Title Case: The text label of the addresses and more item for the passwords and autofill submenu">
@@ -1280,6 +1307,21 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_NEW_INCOGNITO_WINDOW" desc="In Title Case: The text label of a menu item for opening a new Incognito window">
             New &amp;Incognito Window
+          </message>
+          <message name="IDS_PROFILE_ROW_SIGNED_IN_MESSAGE" desc="In Title Case: Label that let's the user know what email they are signed into their profile as.">
+            Signed in as <ph name="EMAIL">$1<ex>user@gmail.com</ex></ph>
+          </message>
+          <message name="IDS_PROFILE_ROW_SYNC_IS_ON" desc="In Title Case: The text label of a menu item that notifies the user that sync is on.">
+            &amp;Sync is On
+          </message>
+          <message name="IDS_PROFILE_ROW_TURN_ON_SYNC" desc="In Title Case: The text label of a menu item that prompts the user to turn on sync.">
+            Turn on &amp;Sync...
+          </message>
+          <message name="IDS_PROFILE_ROW_SYNC_ERROR_MESSAGE" desc="In Title Case: The text label of a menu item that prompts the user to fix the profile sync issue.">
+            Fix &amp;Sync Issue
+          </message>
+           <message name="IDS_PROFILE_ROW_SIGN_IN_AGAIN" desc="In Title Case: The text label of a menu item that prompts the user to sign in again.">
+            &amp;Sign in Again
           </message>
           <message name="IDS_EDIT2" desc="In Title Case: The text label before the cut/copy/paste buttons in the merged menu">
             Edit
@@ -1370,6 +1412,18 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_MANAGE_GOOGLE_ACCOUNT" desc="In Title Case: The text label of the Manage Google account item">
             Manage Your &amp;Google Account
+          </message>
+          <message name="IDS_OTHER_CHROME_PROFILES_TITLE" desc="In Title Case: The title of the Other Chrome profiles section">
+            Other Chrome Profiles
+          </message>
+          <message name="IDS_OPEN_GUEST_PROFILE" desc="In Title Case: The text label of the open guest profile item">
+            &amp;Open Guest Profile
+          </message>
+          <message name="IDS_ADD_NEW_PROFILE" desc="In Title Case: The text label of the add new profile item">
+            &amp;Add New Profile
+          </message>
+          <message name="IDS_MANAGE_CHROME_PROFILES" desc="In Title Case: The text label of the manage chrome profile item">
+            &amp;Manage Chrome Profiles
           </message>
         </if>
       </if>
@@ -5342,7 +5396,7 @@ You can send it to Google to check if it's unsafe. Scans usually take a few seco
           Not allowed to read &amp; change
         </message>
         <message name="IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_TITLE_REQUESTS_ACCESS" desc="The title in the card that shows up on mouse hover of a toolbar action when the extension requests access to the current site.">
-          Requested to read &amp; change
+          Requesting to read &amp; change
         </message>
         <message name="IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_DESCRIPTION_ALL_EXTENSIONS_ALLOWED_ACCESS" desc="The description in the card that shows up on mouse hover of a toolbar action when all extensions have access to the current site.">
           All extensions can read &amp; change <ph name="HOST">$1<ex>google.com</ex></ph>
@@ -5351,10 +5405,10 @@ You can send it to Google to check if it's unsafe. Scans usually take a few seco
           You blocked all extensions from <ph name="HOST">$1<ex>google.com</ex></ph>
         </message>
          <message name="IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_DESCRIPTION_EXTENSION_HAS_ACCESS" desc="The description in the card that shows up on mouse hover of a toolbar action when the extension has access to the current site.">
-          This extension can read &amp; change <ph name="HOST">$1<ex>google.com</ex></ph>
+          This extension can read and change <ph name="HOST">$1<ex>google.com</ex></ph>
         </message>
         <message name="IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_DESCRIPTION_EXTENSION_REQUESTS_ACCESS" desc="The description in the card that shows up on mouse hover of a toolbar action when the extension requests access to the current site.">
-          Click this extension's icon to read &amp; change <ph name="HOST">$1<ex>google.com</ex></ph>
+          Click this extension's icon to read and change <ph name="HOST">$1<ex>google.com</ex></ph>
         </message>
         <message name="IDS_EXTENSIONS_TOOLBAR_ACTION_HOVER_CARD_POLICY_LABEL_PINNED_TEXT" desc="The text in the card that shows up on mouse hover of a toolbar action when extension was pinned by the administrator.">
           Pinned by your administrator
@@ -5960,10 +6014,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Dismiss request
       </message>
       <message name="IDS_EXTENSIONS_MENU_EXTENSION_SITE_ACCESS_TOGGLE_ON_TOOLTIP" desc="Tooltip text for the site access toggle of an extensions menu item when is on.">
-        Allowed to request access
+        Allowed on this site
       </message>
       <message name="IDS_EXTENSIONS_MENU_EXTENSION_SITE_ACCESS_TOGGLE_OFF_TOOLTIP" desc="Tooltip text for the site access toggle of an extensions menu item when is off.">
-        Not allowed to request access
+        Not allowed on this site
       </message>
       <message name="IDS_EXTENSIONS_MENU_EXTENSION_SITE_ACCESS_TOGGLE_ACCESSIBLE_NAME" desc="Accessibility string for the site access toggle of an extensions menu item.">
         Allow <ph name="EXTENSION_NAME">$1<ex>AdBlock</ex></ph> on this site
@@ -8134,6 +8188,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TOOLTIP_EXTENSIONS_BUTTON" desc="The tooltip for the extensions button">
         Extensions
       </message>
+      <message name="IDS_TOOLTIP_EXTENSIONS_BUTTON_ALL_EXTENSIONS_BLOCKED" desc="The tooltip for the extensions button when all the extensions are blocked on the current site.">
+        Extensions are blocked on this site
+      </message>
+      <message name="IDS_TOOLTIP_EXTENSIONS_BUTTON_ANY_EXTENSION_HAS_ACCESS" desc="The tooltip for the extensions button when any extension has access to the current site.">
+        Extensions are allowed on this site
+      </message>
       <message name="IDS_TOOLTIP_EXTENSIONS_SITE_ACCESS_BUTTON" desc="The tooltip for the extensions site access button">
         Extension permissions
       </message>
@@ -8677,12 +8737,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Password Manager Tutorial Strings -->
-      <message name="IDS_TUTORIAL_PASSWORD_MANAGER_OPEN_APP_MENU" desc="The description of the 'open add menu' step in password manager tutorial">
-        Click the Chrome menu
-      </message>
-      <message name="IDS_TUTORIAL_PASSWORD_MANAGER_CLICK_PASSWORD_MANAGER" desc="The description of the 'click password manager' step in password manager tutorial">
-        Click “Google Password Manager”
-      </message>
       <message name="IDS_TUTORIAL_PASSWORD_MANAGER_SELECT_SETTINGS" desc="The description of the 'select settings' step in password manager tutorial">
         Click “Settings”
       </message>
@@ -8691,9 +8745,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_TUTORIAL_PASSWORD_MANAGER_CLICK_INSTALL" desc="The description of the 'click install' step in password manager tutorial">
         Click “Install”
-      </message>
-      <message name="IDS_TUTORIAL_PASSWORD_MANAGER_SUCCESS_BODY" desc="The description of the body text in the 'success' step in password manager tutorial">
-        Use your shortcut to quickly get to the Google Password Manager. You can move your shortcut to your computer's home screen or app launcher.
       </message>
 
       <!-- Browser Hung Plugin Detector -->
@@ -8879,9 +8930,6 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         </message>
         <message name="IDS_PASSWORD_MANAGER_IPH_CREATE_SHORTCUT_TITLE" desc="Body of the in Product Help shown after successfully logging into a website telling user about how to create a shortcut">
           Get to your saved passwords quicker
-        </message>
-        <message name="IDS_PASSWORD_MANAGER_IPH_CREATE_SHORTCUT_BODY" desc="Body of the in Product Help shown after successfully logging into a website telling user about how to create a shortcut">
-          Add a shortcut to Google Password Manager
         </message>
         <message name="IDS_PASSWORD_MANAGER_IPH_MANAGEMENT_BUBBLE_DURING_SIGNIN" desc="Body of the in Product Help shown during sign-in flows informing the user about the password management bubble">
           You saved a note for a password on this site. To view it, click the key icon.
@@ -11142,15 +11190,11 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         This profile is managed by <ph name="DOMAIN">$1<ex>example.com</ex></ph>. To continue using this managed profile, your organization requires you to share your device signals.
 
 Device signals can include information about your browser, OS, device, installed software, and files.
-
-If you choose not to share signals, this profile will be closed.
         </message>
         <message name="IDS_DEVICE_SIGNALS_CONSENT_DIALOG_DEFAULT_BODY_TEXT" desc="Default message for device signals consent dialog when we are unable to retrieve the name of the managing organization.">
         This profile is managed by your organization. To continue using this managed profile, your organization requires you to share your device signals.
 
 Device signals can include information about your browser, OS, device, installed software, and files.
-
-If you choose not to share signals, this profile will be closed.
         </message>
       </if>
 
@@ -13236,6 +13280,18 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_PAGE_LOADING_AX_TITLE_FORMAT" is_accessibility_with_no_ui="true" desc="Screen reader announcement when the back/forward button is focused and has been pressed. If the title of the page can be obtained, it will be included. Example: 'Loading Google News'.">
           Loading <ph name="WINDOW_TITLE">$1<ex>Google News</ex></ph>
       </message>
+      <message name="IDS_TAB_AX_INACTIVE_TAB" desc="Accessibility label text when the tab becomes inactive to save memory.'">
+        <ph name="WINDOW_TITLE">$1<ex>Google Hangouts</ex></ph> - Inactive tab
+      </message>
+      <message name="IDS_TAB_AX_MEMORY_SAVINGS" desc="Accessibility label text of how much memory was saved by the inactive tab'">
+        <ph name="WINDOW_TITLE">$1<ex>Google Hangouts</ex></ph> - Saved <ph name="MEMORY_VALUE">$2<ex>175MB</ex></ph>
+      </message>
+      <message name="IDS_TAB_AX_MEMORY_USAGE" desc="Accessibility label text of how much memory is used by the tab'">
+        <ph name="WINDOW_TITLE">$1<ex>Google Hangouts</ex></ph> - Memory usage - <ph name="MEMORY_VALUE">$2<ex>175MB</ex></ph>
+      </message>
+      <message name="IDS_TAB_AX_HIGH_MEMORY_USAGE" desc="Accessibility label text of how much memory is used by the tab'">
+        <ph name="WINDOW_TITLE">$1<ex>Google Hangouts</ex></ph> - High memory usage - <ph name="MEMORY_VALUE">$2<ex>175MB</ex></ph>
+      </message>
 
       <!-- ProcessSingleton -->
       <message name="IDS_PROFILE_IN_USE_LINUX_QUIT" desc="Text of button in profile in use dialog to quit without doing anything.">
@@ -14688,6 +14744,13 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
     <message name="IDS_APP_UNINSTALL_PROMPT_LEARN_MORE" desc="The label that the user can click to learn more about removing associated data at uninstall time.">
       Learn more
+    </message>
+
+    <!-- Additional information for app uninstall prompt for apps that are considered 'parent apps' by the Multi App API-->
+    <message name="IDS_APP_UNINSTALL_PROMPT_ADDITIONAL_UNINSTALLS_MESSAGE" desc="Text displayed in the app uninstall prompt above a list of one or more associated apps that will also be uninstalled if the user continues with the uninstallation. [ICU Syntax]">
+      {NUM_SUB_APPS, plural,
+        =1 {Uninstalling "<ph name="APP_NAME">{APP_NAME}<ex>Citrix</ex></ph>" will also uninstall this app:}
+        other {Uninstalling "<ph name="APP_NAME">{APP_NAME}<ex>Citrix</ex></ph>" will also uninstall these apps:}}
     </message>
 
     <!-- Speech Recognition -->

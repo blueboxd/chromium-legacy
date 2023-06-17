@@ -59,6 +59,14 @@ if (is_mac) {
       "cocoa/applescript/tab_applescript.mm",
       "cocoa/applescript/window_applescript.h",
       "cocoa/applescript/window_applescript.mm",
+      "cocoa/confirm_quit_panel_controller.h",
+      "cocoa/confirm_quit_panel_controller.mm",
+      "cocoa/first_run_dialog_cocoa.h",
+      "cocoa/first_run_dialog_cocoa.mm",
+      "cocoa/first_run_dialog_controller.h",
+      "cocoa/first_run_dialog_controller.mm",
+      "cocoa/main_menu_builder.h",
+      "cocoa/main_menu_builder.mm",
       "cocoa/scoped_menu_bar_lock.h",
       "cocoa/scoped_menu_bar_lock.mm",
       "cocoa/screentime/fake_webpage_controller.h",
@@ -100,6 +108,7 @@ if (is_mac) {
       "//chrome/app:command_ids",
       "//chrome/app:generated_resources",
       "//chrome/app/vector_icons",
+      "//chrome/browser:browser_process",
       "//chrome/browser/autofill",
       "//chrome/browser/profiles:profile",
       "//chrome/browser/ui/tabs:tab_enums",
@@ -550,7 +559,7 @@ static_library("ui") {
     "//components/bookmarks/browser",
     "//components/bookmarks/managed",
     "//components/breadcrumbs/core",
-    "//components/breadcrumbs/core:feature_flags",
+    "//components/breadcrumbs/core:status",
     "//components/browser_sync",
     "//components/browsing_data/content",
     "//components/browsing_data/core",
@@ -2010,6 +2019,7 @@ static_library("ui") {
       "//third_party/libaddressinput:strings",
       "//ui/base/dragdrop:types",
       "//ui/base/dragdrop/mojom",
+      "//ui/color/dynamic_color",
       "//ui/events",
       "//ui/webui/resources/cr_components/app_management:mojo_bindings",
       "//ui/webui/resources/cr_components/help_bubble:mojo_bindings",
@@ -3690,6 +3700,10 @@ static_library("ui") {
 
   if (is_chromeos_lacros) {
     sources += [
+      "media_router/cast_notification_controller_lacros.cc",
+      "media_router/cast_notification_controller_lacros.h",
+      "media_router/cast_notification_controller_lacros_factory.cc",
+      "media_router/cast_notification_controller_lacros_factory.h",
       "startup/silent_sync_enabler.cc",
       "startup/silent_sync_enabler.h",
       "views/chrome_browser_main_extra_parts_views_lacros.cc",
@@ -4028,14 +4042,8 @@ static_library("ui") {
       "cocoa/color_chooser_mac.mm",
       "cocoa/confirm_quit.cc",
       "cocoa/confirm_quit.h",
-      "cocoa/confirm_quit_panel_controller.h",
-      "cocoa/confirm_quit_panel_controller.mm",
       "cocoa/dock_icon.h",
       "cocoa/dock_icon.mm",
-      "cocoa/first_run_dialog_cocoa.h",
-      "cocoa/first_run_dialog_cocoa.mm",
-      "cocoa/first_run_dialog_controller.h",
-      "cocoa/first_run_dialog_controller.mm",
       "cocoa/fullscreen/fullscreen_menubar_tracker.h",
       "cocoa/fullscreen/fullscreen_menubar_tracker.mm",
       "cocoa/fullscreen/fullscreen_toolbar_animation_controller.h",
@@ -4060,8 +4068,6 @@ static_library("ui") {
       "cocoa/l10n_util.mm",
       "cocoa/last_active_browser_cocoa.cc",
       "cocoa/last_active_browser_cocoa.h",
-      "cocoa/main_menu_builder.h",
-      "cocoa/main_menu_builder.mm",
       "cocoa/main_menu_item.h",
       "cocoa/profiles/profile_menu_controller.h",
       "cocoa/profiles/profile_menu_controller.mm",
@@ -4611,6 +4617,8 @@ static_library("ui") {
       "views/autofill/payments/virtual_card_manual_fallback_icon_view.h",
       "views/autofill/popup/popup_base_view.cc",
       "views/autofill/popup/popup_base_view.h",
+      "views/autofill/popup/popup_cell_utils.cc",
+      "views/autofill/popup/popup_cell_utils.h",
       "views/autofill/popup/popup_cell_view.cc",
       "views/autofill/popup/popup_cell_view.h",
       "views/autofill/popup/popup_row_strategy.cc",
@@ -5020,6 +5028,8 @@ static_library("ui") {
       "views/omnibox/omnibox_mouse_enter_exit_handler.h",
       "views/omnibox/omnibox_popup_view_views.cc",
       "views/omnibox/omnibox_popup_view_views.h",
+      "views/omnibox/omnibox_popup_view_webui.cc",
+      "views/omnibox/omnibox_popup_view_webui.h",
       "views/omnibox/omnibox_result_view.cc",
       "views/omnibox/omnibox_result_view.h",
       "views/omnibox/omnibox_row_view.cc",
@@ -6229,7 +6239,6 @@ static_library("ui") {
     deps += [
       "//components/offline_pages/core",
       "//components/offline_pages/core/background:background_offliner",
-      "//components/offline_pages/core/prefetch",
     ]
   }
 
@@ -6302,6 +6311,7 @@ static_library("test_support") {
 
   if (is_mac) {
     assert(toolkit_views)
+    configs += [ "//build/config/compiler:enable_arc" ]
     sources += [
       "cocoa/test/cocoa_test_helper.h",
       "cocoa/test/cocoa_test_helper.mm",

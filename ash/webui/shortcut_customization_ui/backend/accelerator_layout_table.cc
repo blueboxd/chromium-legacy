@@ -42,7 +42,6 @@ const base::flat_map<ui::KeyboardCode, std::u16string>& GetKeyDisplayMap() {
           {ui::KeyboardCode::VKEY_WLAN, u"ToggleWifi"},
           {ui::KeyboardCode::VKEY_EMOJI_PICKER, u"EmojiPicker"},
           {ui::KeyboardCode::VKEY_MENU, u"alt"},
-          {ui::KeyboardCode::VKEY_LWIN, u"meta"},
           {ui::KeyboardCode::VKEY_HOME, u"home"},
           {ui::KeyboardCode::VKEY_END, u"end"},
           {ui::KeyboardCode::VKEY_DELETE, u"delete"},
@@ -489,6 +488,10 @@ const NonConfigurableActionsMap& GetNonConfigurableActionsMap() {
                 // TODO(longbowei): Confirm if we want to keep this accelerator
                 // or remove it.
                 ui::Accelerator(ui::VKEY_RETURN, ui::EF_SHIFT_DOWN)})},
+          {NonConfigurableActions::kBrowserFocusAddressBar,
+           NonConfigurableAcceleratorDetails(
+               {ui::Accelerator(ui::VKEY_L, ui::EF_CONTROL_DOWN),
+                ui::Accelerator(ui::VKEY_D, ui::EF_ALT_DOWN)})},
           {NonConfigurableActions::kBrowserFocusSearch,
            NonConfigurableAcceleratorDetails(
                {ui::Accelerator(ui::VKEY_K, ui::EF_CONTROL_DOWN),

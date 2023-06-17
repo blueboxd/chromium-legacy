@@ -132,7 +132,7 @@
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/document_parser_timing.h"
-#include "third_party/blink/renderer/core/dom/document_part.h"
+#include "third_party/blink/renderer/core/dom/document_part_root.h"
 #include "third_party/blink/renderer/core/dom/document_type.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -2482,8 +2482,12 @@ CSSToggleInference& Document::EnsureCSSToggleInference() {
   return *css_toggle_inference_;
 }
 
-DocumentPart* Document::getDocumentPart() {
-  return MakeGarbageCollected<DocumentPart>(this);
+DocumentPartRoot& Document::getPartRoot() {
+  CHECK(RuntimeEnabledFeatures::DOMPartsAPIEnabled());
+  if (!document_part_root_) {
+    document_part_root_ = MakeGarbageCollected<DocumentPartRoot>(*this);
+  }
+  return *document_part_root_;
 }
 
 void Document::ApplyScrollRestorationLogic() {
@@ -2700,6 +2704,7 @@ scoped_refptr<const ComputedStyle> Document::StyleForPage(uint32_t page_index) {
   AtomicString page_name;
   if (const LayoutView* layout_view = GetLayoutView())
     page_name = layout_view->NamedPageAtIndex(page_index);
+  GetStyleEngine().UpdateViewportSize();
   GetStyleEngine().UpdateActiveStyle();
   return GetStyleEngine().GetStyleResolver().StyleForPage(page_index,
                                                           page_name);
@@ -6487,14 +6492,11 @@ void Document::OnGotExistingStorageAccessPermissionState(
   DCHECK(script_state);
   ScriptState::Scope scope(script_state);
 
-  if (previous_status != mojom::blink::PermissionStatus::ASK) {
-    // Permission state already exists, resolve with the existing value.
-    ProcessStorageAccessPermissionState(resolver, /*use_existing_status=*/true,
-                                        previous_status);
-    return;
-  }
-  // Proceed to request permission.
-  if (!has_user_gesture) {
+  // TODO(crbug.com/1433644): We can avoid querying the current permission state
+  // by handling the user gesture requirement in
+  // StorageAccessGrantPermissionContext::DecidePermission
+  if (previous_status == mojom::blink::PermissionStatus::ASK &&
+      !has_user_gesture) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kSecurity,
         mojom::blink::ConsoleMessageLevel::kError,
@@ -7944,7 +7946,7 @@ void Document::AddConsoleMessage(ConsoleMessage* message,
 void Document::AddToTopLayer(Element* element, const Element* before) {
   if (element->IsInTopLayer()) {
     if (RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled() &&
-        top_layer_elements_pending_removal_.Contains(element)) {
+        IsScheduledForTopLayerRemoval(element)) {
       // Since the html spec currently says close() should remove the dialog
       // element from the top layer immediately, we need to remove any
       // transitioning elements out of the top layer in order to keep the
@@ -7960,7 +7962,7 @@ void Document::AddToTopLayer(Element* element, const Element* before) {
     }
   }
 
-  DCHECK(!top_layer_elements_pending_removal_.Contains(element));
+  DCHECK(!IsScheduledForTopLayerRemoval(element));
   DCHECK(!before || top_layer_elements_.Contains(before));
 
   if (before) {
@@ -7979,7 +7981,8 @@ void Document::AddToTopLayer(Element* element, const Element* before) {
   probe::TopLayerElementsChanged(this);
 }
 
-void Document::ScheduleForTopLayerRemoval(Element* element) {
+void Document::ScheduleForTopLayerRemoval(Element* element,
+                                          TopLayerReason reason) {
   if (!RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled()) {
     RemoveFromTopLayerImmediately(element);
     return;
@@ -7987,7 +7990,8 @@ void Document::ScheduleForTopLayerRemoval(Element* element) {
   if (!element->IsInTopLayer()) {
     return;
   }
-  top_layer_elements_pending_removal_.insert(element);
+  top_layer_elements_pending_removal_.push_back(
+      MakeGarbageCollected<TopLayerPendingRemoval>(element, reason));
   ScheduleLayoutTreeUpdateIfNeeded();
 }
 
@@ -7997,7 +8001,8 @@ void Document::RemoveFinishedTopLayerElements() {
   }
   DCHECK(RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled());
   HeapVector<Member<Element>> to_remove;
-  for (Element* element : top_layer_elements_pending_removal_) {
+  for (const auto& pending_removal : top_layer_elements_pending_removal_) {
+    Element* element = pending_removal->element;
     const ComputedStyle* style = element->GetComputedStyle();
     if (!style || style->Overlay() == EOverlay::kNone) {
       to_remove.push_back(element);
@@ -8016,12 +8021,27 @@ void Document::RemoveFromTopLayerImmediately(Element* element) {
   DCHECK_NE(position, kNotFound);
   top_layer_elements_.EraseAt(position);
   if (RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled()) {
-    top_layer_elements_pending_removal_.erase(element);
+    for (unsigned i = 0; i < top_layer_elements_pending_removal_.size(); i++) {
+      if (top_layer_elements_pending_removal_[i]->element == element) {
+        top_layer_elements_pending_removal_.EraseAt(i);
+        break;
+      }
+    }
   }
   element->SetIsInTopLayer(false);
   display_lock_document_state_->ElementRemovedFromTopLayer(element);
 
   probe::TopLayerElementsChanged(this);
+}
+
+absl::optional<Document::TopLayerReason>
+Document::IsScheduledForTopLayerRemoval(Element* element) const {
+  for (const auto& entry : top_layer_elements_pending_removal_) {
+    if (entry->element == element) {
+      return entry->reason;
+    }
+  }
+  return absl::nullopt;
 }
 
 HTMLDialogElement* Document::ActiveModalDialog() const {
@@ -8030,7 +8050,7 @@ HTMLDialogElement* Document::ActiveModalDialog() const {
       if (dialog->IsModal()) {
         // Modal dialogs transitioning out after being closed are not considered
         // to be active.
-        if (!top_layer_elements_pending_removal_.Contains(dialog)) {
+        if (!IsScheduledForTopLayerRemoval(dialog)) {
           return dialog;
         }
       }
@@ -8807,6 +8827,7 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(elements_with_css_toggles_);
   visitor->Trace(elements_needing_style_recalc_for_toggle_);
   visitor->Trace(css_toggle_inference_);
+  visitor->Trace(document_part_root_);
   visitor->Trace(load_event_delay_timer_);
   visitor->Trace(plugin_loading_timer_);
   visitor->Trace(elem_sheet_);

@@ -179,29 +179,6 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
   </token>
 </histogram>
 
-<histogram name="ChromeOS.Apps.ExternalProtocolDialog"
-    enum="ArcIntentHandlerAction" expires_after="2022-05-21">
-  <owner>dominickn@chromium.org</owner>
-  <owner>melzhang@chromium.org</owner>
-  <owner>mxcai@chromium.org</owner>
-  <summary>
-    Records the response when the intent picker is shown to the user on Chrome
-    OS to allow them to open an external protocol in an app.
-  </summary>
-</histogram>
-
-<histogram name="ChromeOS.Apps.ExternalProtocolDialog.Accepted"
-    enum="ArcExternalProtocolAction" expires_after="2022-05-21">
-  <owner>dominickn@chromium.org</owner>
-  <owner>melzhang@chromium.org</owner>
-  <owner>mxcai@chromium.org</owner>
-  <summary>
-    Records the response when users that are shown the intent picker accept
-    opening an external protocol in an app as well as whether the app is
-    persisted.
-  </summary>
-</histogram>
-
 <histogram name="ChromeOS.Apps.ExternalProtocolDialog.Rejected"
     enum="ArcExternalProtocolAction" expires_after="2022-05-21">
   <owner>dominickn@chromium.org</owner>
@@ -221,26 +198,6 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
     Records the app platform shown as the result of link intent handling.
     Recorded when the user makes a choice in the Intent Picker dialog, and when
     the result of a previous user preference is applied during a link click.
-  </summary>
-</histogram>
-
-<histogram name="ChromeOS.Apps.NumberOfAppsForNotification"
-    enum="BooleanMultipleApps" expires_after="2022-07-01">
-  <owner>dominickn@chromium.org</owner>
-  <owner>nancylingwang@chromium.org</owner>
-  <summary>
-    Records whether a notification matches multiple apps, when there is one or
-    multiple web apps matching a web page nonpersistent notification.
-  </summary>
-</histogram>
-
-<histogram name="ChromeOS.Apps.OpenBrowser" enum="OpenBrowserType"
-    expires_after="2022-05-21">
-  <owner>ajlinker@chromium.org</owner>
-  <owner>dominickn@chromium.org</owner>
-  <owner>mxcai@chromium.org</owner>
-  <summary>
-    Records the type of app sending a link to the browser to be opened.
   </summary>
 </histogram>
 
@@ -1916,6 +1873,17 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.LanguagePacks.Oobe.ValidLocale" enum="BooleanSuccess"
+    expires_after="2023-09-01">
+  <owner>claudiomagni@chromium.org</owner>
+  <owner>mlcui@google.com</owner>
+  <owner>dvallet@chromium.org</owner>
+  <summary>
+    Records whether LanguagePackManager is called with a valid locale when
+    updating packs in OOBE.
+  </summary>
+</histogram>
+
 <histogram name="ChromeOS.LanguagePacks.UninstallComplete.Success"
     enum="BooleanSuccess" expires_after="2023-09-01">
   <owner>claudiomagni@chromium.org</owner>
@@ -2892,17 +2860,6 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
         summary="After copy to clipboard is selected"/>
     <variant name="Invocation" summary="When the sharesheet is first invoked"/>
   </token>
-</histogram>
-
-<histogram name="ChromeOS.Sync.PreferencesMigrated" enum="BooleanMigrated"
-    expires_after="2023-11-12">
-  <owner>rsorokin@chromium.org</owner>
-  <owner>jamescook@chromium.org</owner>
-  <owner>cros-oac@google.com</owner>
-  <summary>
-    Tracks whether browser sync preferences were migrated to the new OS sync
-    feature (project SplitSettingsSync). Recorded once per session during login.
-  </summary>
 </histogram>
 
 <histogram base="true" name="ChromeOS.SystemTray.AnimationSmoothness" units="%"

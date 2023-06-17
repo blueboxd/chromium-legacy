@@ -227,7 +227,7 @@ BASE_FEATURE(kAutocorrectByDefault,
 
 BASE_FEATURE(kAutocorrectUseReplaceSurroundingText,
              "AutocorrectUseReplaceSurroundingText",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, the autozoom nudge shown prefs will be reset at the start of
 // each new user session.
@@ -822,7 +822,7 @@ BASE_FEATURE(kExoLinuxDmabufV4,
 // effectively matching version 2 behavior more closely.
 BASE_FEATURE(kExoLinuxDmabufModifiers,
              "ExoLinuxDmabufModifiers",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable or disable use of ordinal (unaccelerated) motion by Exo clients.
 BASE_FEATURE(kExoOrdinalMotion,
@@ -994,7 +994,7 @@ BASE_FEATURE(kFilesConflictDialog,
 // shortcut.
 BASE_FEATURE(kFilesDriveShortcuts,
              "FilesDriveShortcuts",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable inline sync status in Files app.
 BASE_FEATURE(kFilesInlineSyncStatus,
@@ -1005,7 +1005,7 @@ BASE_FEATURE(kFilesInlineSyncStatus,
 // robust ProgressEvents (enables inline sync status for downsync events).
 BASE_FEATURE(kFilesInlineSyncStatusProgressEvents,
              "FilesInlineSyncStatusProgressEvents",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables V2 of search functionality in files.
 BASE_FEATURE(kFilesSearchV2, "FilesSearchV2", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1112,7 +1112,7 @@ BASE_FEATURE(kGlanceablesV2,
 // Enables the Gaia reauth endpoint.
 BASE_FEATURE(kGaiaReauthEndpoint,
              "GaiaReauthEndpoint",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable the Game Dashboard.
 BASE_FEATURE(kGameDashboard,
@@ -1176,6 +1176,12 @@ BASE_FEATURE(kHelpAppDiscoverTabNotificationAllChannels,
 // Enable showing search results from the help app in the launcher.
 BASE_FEATURE(kHelpAppLauncherSearch,
              "HelpAppLauncherSearch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable showing the welcome tips page in the help app. This feature
+// is dependent on the 'ScalableIph' feature being enabled as well.
+BASE_FEATURE(kHelpAppWelcomeTips,
+             "HelpAppWelcomeTips",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable ChromeOS hibernation features.
@@ -1579,7 +1585,7 @@ const base::FeatureParam<base::TimeDelta> kEcheConnectionStatusResetTimeout{
 // Enables multi-zone rgb keyboard customization.
 BASE_FEATURE(kMultiZoneRgbKeyboard,
              "MultiZoneRgbKeyboard",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables support for multilingual assistive typing on ChromeOS.
 BASE_FEATURE(kMultilingualTyping,
@@ -1787,6 +1793,11 @@ BASE_FEATURE(kPasspointSettings,
 // devices correctly.
 BASE_FEATURE(kPcieBillboardNotification,
              "PcieBillboardNotification",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// More permissive USB passthrough to Crostini, Chrome tabs, etc.
+BASE_FEATURE(kPermissiveUsbPassthrough,
+             "Permissive USB Passthrough",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Limits the items on the shelf to the ones associated with windows the
@@ -2126,6 +2137,11 @@ BASE_FEATURE(kShimlessRMADisableDarkMode,
 // Enables or disables the diagnostic page in the Shimless RMA flow.
 BASE_FEATURE(kShimlessRMADiagnosticPage,
              "ShimlessRMADiagnosticPage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables or disables device compliance check in the Shimless RMA flow.
+BASE_FEATURE(kShimlessRMAComplianceCheck,
+             "ShimlessRMAComplianceCheck",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, the jelly colors will be used in the shortcut customization app.
@@ -2566,6 +2582,11 @@ bool AreContextualNudgesEnabled() {
 
 bool AreDesksTemplatesEnabled() {
   return base::FeatureList::IsEnabled(kDesksTemplates);
+}
+
+bool AreHelpAppWelcomeTipsEnabled() {
+  return base::FeatureList::IsEnabled(kHelpAppWelcomeTips) &&
+         base::FeatureList::IsEnabled(kScalableIph);
 }
 
 bool ArePolicyProvidedTrustAnchorsAllowedAtLockScreen() {
@@ -3397,7 +3418,8 @@ bool IsPhoneHubMonochromeNotificationIconsEnabled() {
 }
 
 bool IsPhoneHubNudgeEnabled() {
-  return base::FeatureList::IsEnabled(kPhoneHubNudge);
+  return base::FeatureList::IsEnabled(kPhoneHubNudge) &&
+         base::FeatureList::IsEnabled(kSystemNudgeV2);
 }
 
 bool IsPhoneHubFeatureSetupErrorHandlingEnabled() {
@@ -3575,6 +3597,10 @@ bool IsShimlessRMADarkModeDisabled() {
 
 bool IsShimlessRMADiagnosticPageEnabled() {
   return base::FeatureList::IsEnabled(kShimlessRMADiagnosticPage);
+}
+
+bool IsShimlessRMAComplianceCheckEnabled() {
+  return base::FeatureList::IsEnabled(kShimlessRMAComplianceCheck);
 }
 
 bool IsSmdsSupportEnabled() {

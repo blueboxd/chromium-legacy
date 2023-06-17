@@ -12,6 +12,7 @@ static_library("common") {
     "content_settings.h",
     "content_settings_constraints.cc",
     "content_settings_constraints.h",
+    "content_settings_metadata.cc",
     "content_settings_metadata.h",
     "content_settings_param_traits.cc",
     "content_settings_param_traits.h",
@@ -22,6 +23,7 @@ static_library("common") {
     "content_settings_types.h",
     "content_settings_utils.cc",
     "content_settings_utils.h",
+    "cookie_controls_breakage_confidence_level.h",
     "cookie_controls_enforcement.h",
     "cookie_controls_status.h",
     "cookie_settings_base.cc",
@@ -55,6 +57,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "content_settings_constraints_unittest.cc",
+    "content_settings_metadata_unittest.cc",
     "content_settings_mojom_traits_unittest.cc",
     "content_settings_pattern_parser_unittest.cc",
     "content_settings_pattern_unittest.cc",

@@ -455,6 +455,7 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
     }
     for (SetUpListItemViewData* data in items) {
       data.compactLayout = shouldShowCompactedSetUpListModule;
+      data.heroCellMagicStackLayout = !shouldShowCompactedSetUpListModule;
       SetUpListItemView* view = [[SetUpListItemView alloc] initWithData:data];
       view.tapDelegate = self;
       ContentSuggestionsModuleType type =
@@ -587,6 +588,8 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
     SetUpListItemViewData* allSetData =
         [[SetUpListItemViewData alloc] initWithType:SetUpListItemType::kAllSet
                                            complete:NO];
+    allSetData.heroCellMagicStackLayout =
+        !set_up_list_utils::ShouldShowCompactedSetUpListModule();
     SetUpListItemView* view =
         [[SetUpListItemView alloc] initWithData:allSetData];
     MagicStackModuleContainer* allSetModule = [[MagicStackModuleContainer alloc]
@@ -736,7 +739,7 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
       titleStringForModule:[self currentlyShownModule]];
 }
 
-#pragma mark - MagicStackModuleContainer
+#pragma mark - MagicStackModuleContainerDelegate
 
 - (BOOL)doesMagicStackShowOnlyOneModule:(ContentSuggestionsModuleType)type {
   // Return NO if Most Visited Module is asking while it is not in the Magic
@@ -748,6 +751,10 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
   ContentSuggestionsModuleType firstModuleType = (ContentSuggestionsModuleType)[
       [_magicStackModuleOrder objectAtIndex:0] intValue];
   return [_magicStackModuleOrder count] == 1 && firstModuleType == type;
+}
+
+- (void)seeMoreWasTappedForModuleType:(ContentSuggestionsModuleType)type {
+  [self.audience showSetUpListShowMoreMenu];
 }
 
 #pragma mark - Private
@@ -982,7 +989,7 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
   NSUInteger moduleCount = [_magicStackModuleOrder count];
   // Find closest page to the current scroll offset.
   CGFloat closestPage = roundf(offset / moduleWidth);
-  closestPage = fminf(closestPage, moduleCount);
+  closestPage = fminf(closestPage, moduleCount - 1);
   return (ContentSuggestionsModuleType)[_magicStackModuleOrder[(
       NSUInteger)closestPage] intValue];
 }

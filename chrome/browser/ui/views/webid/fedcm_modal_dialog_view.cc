@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/metrics/histogram_macros.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -23,11 +24,29 @@ FedCmModalDialogView::FedCmModalDialogView(
 FedCmModalDialogView::~FedCmModalDialogView() = default;
 
 content::WebContents* FedCmModalDialogView::ShowPopupWindow(const GURL& url) {
+  CHECK(!popup_window_);
+
+  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS()) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Blink.FedCm.IdpSigninStatus.ShowPopupWindowResult",
+        ShowPopupWindowResult::kFailedByInvalidUrl);
+
+    return nullptr;
+  }
+
   content::OpenURLParams params(
       url, content::Referrer(), WindowOpenDisposition::NEW_POPUP,
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, /*is_renderer_initiated=*/false);
   popup_window_ =
       source_window_->GetDelegate()->OpenURLFromTab(source_window_, params);
+
+  if (!popup_window_) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Blink.FedCm.IdpSigninStatus.ShowPopupWindowResult",
+        ShowPopupWindowResult::kFailedForOtherReasons);
+
+    return nullptr;
+  }
 
   constexpr int kPopupWindowWidth = 500;
   constexpr int kPopupWindowPreferredHeight = 600;
@@ -45,6 +64,9 @@ content::WebContents* FedCmModalDialogView::ShowPopupWindow(const GURL& url) {
 
   Observe(popup_window_);
 
+  UMA_HISTOGRAM_ENUMERATION("Blink.FedCm.IdpSigninStatus.ShowPopupWindowResult",
+                            ShowPopupWindowResult::kSuccess);
+
   return popup_window_;
 }
 
@@ -54,6 +76,10 @@ void FedCmModalDialogView::ClosePopupWindow() {
   }
 
   popup_window_->Close();
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Blink.FedCm.IdpSigninStatus.ClosePopupWindowReason",
+      FedCmModalDialogView::ClosePopupWindowReason::kIdpInitiatedClose);
 }
 
 void FedCmModalDialogView::WebContentsDestroyed() {
@@ -61,4 +87,8 @@ void FedCmModalDialogView::WebContentsDestroyed() {
   if (observer_) {
     observer_->OnPopupWindowDestroyed();
   }
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Blink.FedCm.IdpSigninStatus.ClosePopupWindowReason",
+      FedCmModalDialogView::ClosePopupWindowReason::kPopupWindowDestroyed);
 }

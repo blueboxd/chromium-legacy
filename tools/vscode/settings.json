@@ -12,13 +12,15 @@
   // Add a line at 80 characters.
   "editor.rulers": [80],
 
-  // Except for Java where we add a line at 100 characters per that style guide.
+  // Except for Java where we add a line at 100 characters per that style guide
+  // and the tab width should be 4 spaces.
   // The chrome java style guide:
   // https://chromium.googlesource.com/chromium/src/+/main/styleguide/java/java.md
   // does not override this and defers to the android style guide:
-  // https://source.android.com/docs/setup/contribute/code-style#limit-line-length
+  // https://source.android.com/docs/setup/contribute/code-style
   "[java]": {
-    "editor.rulers": [100]
+    "editor.rulers": [100],
+    "editor.tabSize": 4
   },
 
   "extensions": {
@@ -69,11 +71,6 @@
   "C_Cpp.clang_format_sortIncludes": true,
   "editor.formatOnSave": true,
   "editor.formatOnSaveMode": "modifications",
-
-  // Format Java code according to Android style. Requires the "Language Support
-  // for Java(TM) by Red Hat" extension. Read the "Java/Android Support" section
-  // in //docs/vscode.md *before* installing the extension.
-  "java.format.settings.url": "https://raw.githubusercontent.com/android/platform_development/master/ide/eclipse/android-formatting.xml",
 
   // Disable automatic task detection to speed up opening the task menu.
   "task.autoDetect": "off",

@@ -23,6 +23,7 @@
 #include "chrome/browser/enterprise/idle/idle_timeout_policy_handler.h"
 #include "chrome/browser/enterprise/reporting/legacy_tech/legacy_tech_report_policy_handler.h"
 #include "chrome/browser/first_party_sets/first_party_sets_overrides_policy_handler.h"
+#include "chrome/browser/media/webrtc/capture_policy_utils.h"
 #include "chrome/browser/net/disk_cache_dir_policy_handler.h"
 #include "chrome/browser/net/explicitly_allowed_network_ports_policy_handler.h"
 #include "chrome/browser/net/secure_dns_policy_handler.h"
@@ -271,6 +272,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #endif // BUILDFLAG(ENABLE_PRINTING)
   { key::kSafeBrowsingEnabled,
     prefs::kSafeBrowsingEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kSafeBrowsingProxiedRealTimeChecksAllowed,
+    prefs::kHashPrefixRealTimeChecksAllowedByPolicy,
     base::Value::Type::BOOLEAN },
   { key::kSavingBrowserHistoryDisabled,
     prefs::kSavingBrowserHistoryDisabled,
@@ -826,6 +830,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::INTEGER },
   { key::kEncryptedClientHelloEnabled,
     prefs::kEncryptedClientHelloEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kPostQuantumKeyAgreementEnabled,
+    prefs::kPostQuantumKeyAgreementEnabled,
     base::Value::Type::BOOLEAN },
   { key::kRSAKeyUsageForLocalAnchorsEnabled,
     prefs::kRSAKeyUsageForLocalAnchorsEnabled,
@@ -1735,9 +1742,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
 #endif // BUILDFLAG(IS_CHROMEOS)
 
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_LINUX)
+  // TODO(crbug.com/1454054): replace the
+  // kGetDisplayMediaSetSelectAllScreensAllowedForUrls policy by a policy that
+  // matches the name of the new `getAllScreensMedia` API.
   { key::kGetDisplayMediaSetSelectAllScreensAllowedForUrls,
-    prefs::kManagedGetDisplayMediaSetSelectAllScreensAllowedForUrls,
+    capture_policy::kManagedAccessToGetAllScreensMediaAllowedForUrls,
     base::Value::Type::LIST },
 #endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
 
@@ -2152,6 +2162,11 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<WebHidDevicePolicyHandler>(
       key::kWebHidAllowDevicesForUrls, prefs::kManagedWebHidAllowDevicesForUrls,
       chrome_schema));
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  handlers->AddHandler(std::make_unique<WebHidDevicePolicyHandler>(
+      key::kDeviceLoginScreenWebHidAllowDevicesForUrls,
+      prefs::kManagedWebHidAllowDevicesForUrlsOnLoginScreen, chrome_schema));
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   handlers->AddHandler(std::make_unique<WebHidDevicePolicyHandler>(
       key::kWebHidAllowDevicesWithHidUsagesForUrls,
       prefs::kManagedWebHidAllowDevicesWithHidUsagesForUrls, chrome_schema));

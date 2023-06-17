@@ -314,17 +314,43 @@ TEST_P(PreloadingDeciderTest, PrefetchOnPointerEventHeuristics) {
     EXPECT_FALSE(preconnect_delegate->Target().has_value());
     EXPECT_EQ(1u, GetPrefetchService()->prefetches_.size());
 
-    // It should preconnect if the target is not safe to prefetch
     call_pointer_event_handler(GetCrossOriginUrl("/candidate2.html"));
-    EXPECT_TRUE(preconnect_delegate->Target().has_value());
+    // It should preconnect if the target is not safe to prefetch and it is a
+    // `kPointerDown` event.
+    switch (event_type) {
+      case EventType::kPointerDown:
+        EXPECT_TRUE(preconnect_delegate->Target().has_value());
+        break;
+      case EventType::kPointerHover:
+        EXPECT_FALSE(preconnect_delegate->Target().has_value());
+        break;
+    }
     EXPECT_EQ(1u, GetPrefetchService()->prefetches_.size());
   } else {
     call_pointer_event_handler(GetCrossOriginUrl("/candidate1.html"));
-    EXPECT_TRUE(preconnect_delegate->Target().has_value());
+    // It should preconnect if the target is not safe to prefetch and it is a
+    // `kPointerDown` event.
+    switch (event_type) {
+      case EventType::kPointerDown:
+        EXPECT_TRUE(preconnect_delegate->Target().has_value());
+        break;
+      case EventType::kPointerHover:
+        EXPECT_FALSE(preconnect_delegate->Target().has_value());
+        break;
+    }
     EXPECT_EQ(0u, GetPrefetchService()->prefetches_.size());
 
     call_pointer_event_handler(GetCrossOriginUrl("/candidate2.html"));
-    EXPECT_TRUE(preconnect_delegate->Target().has_value());
+    // It should preconnect if the target is not safe to prefetch and it is a
+    // `kPointerDown` event.
+    switch (event_type) {
+      case EventType::kPointerDown:
+        EXPECT_TRUE(preconnect_delegate->Target().has_value());
+        break;
+      case EventType::kPointerHover:
+        EXPECT_FALSE(preconnect_delegate->Target().has_value());
+        break;
+    }
     EXPECT_EQ(0u, GetPrefetchService()->prefetches_.size());
   }
 }
@@ -431,15 +457,31 @@ TEST_P(PreloadingDeciderTest, PrerenderOnPointerEventHeuristics) {
     EXPECT_EQ(2u, GetPrefetchService()->prefetches_.size());
     EXPECT_EQ(1u, prerenderer.Get()->prerenders_.size());
 
-    // It should preconnect if the target is not safe to prerender nor safe to
-    // prefetch.
     call_pointer_event_handler(GetSameOriginUrl("/candidate3.html"));
-    EXPECT_TRUE(preconnect_delegate->Target().has_value());
+    // It should preconnect if the target is not safe to prerender nor safe to
+    // prefetch and it is a `kPointerDown` event.
+    switch (event_type) {
+      case EventType::kPointerDown:
+        EXPECT_TRUE(preconnect_delegate->Target().has_value());
+        break;
+      case EventType::kPointerHover:
+        EXPECT_FALSE(preconnect_delegate->Target().has_value());
+        break;
+    }
     EXPECT_EQ(2u, GetPrefetchService()->prefetches_.size());
     EXPECT_EQ(1u, prerenderer.Get()->prerenders_.size());
   } else {
     call_pointer_event_handler(GetSameOriginUrl("/candidate1.html"));
-    EXPECT_TRUE(preconnect_delegate->Target().has_value());
+    // It should preconnect if the target is not safe to prerender nor safe to
+    // prefetch and it is a `kPointerDown` event.
+    switch (event_type) {
+      case EventType::kPointerDown:
+        EXPECT_TRUE(preconnect_delegate->Target().has_value());
+        break;
+      case EventType::kPointerHover:
+        EXPECT_FALSE(preconnect_delegate->Target().has_value());
+        break;
+    }
     EXPECT_EQ(0u, GetPrefetchService()->prefetches_.size());
     EXPECT_EQ(0u, prerenderer.Get()->prerenders_.size());
   }
@@ -626,6 +668,160 @@ TEST_F(PreloadingDeciderTest, CandidateCanBeReprefetchedAfterEviction) {
   // prefetch should automatically trigger.
   preloading_decider->UpdateSpeculationCandidates(candidates);
   EXPECT_EQ(1u, GetPrefetchService()->prefetches_.size());
+}
+
+// Tests that candidate removal causes a prefetch to be destroyed, and that
+// a reinserted candidate with the same url is re-processed.
+TEST_F(PreloadingDeciderTest, ProcessCandidates_EagerCandidateRemoval) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({features::kPrefetchNewLimits}, {});
+
+  auto* preloading_decider =
+      PreloadingDecider::GetOrCreateForCurrentDocument(&GetPrimaryMainFrame());
+  ASSERT_TRUE(preloading_decider);
+  const GURL url_1 = GetSameOriginUrl("/candidate1.html");
+  const GURL url_2 = GetSameOriginUrl("/candidate2.html");
+
+  auto candidate_1 = blink::mojom::SpeculationCandidate::New();
+  candidate_1->url = url_1;
+  candidate_1->action = blink::mojom::SpeculationAction::kPrefetch;
+  candidate_1->referrer = blink::mojom::Referrer::New();
+  candidate_1->eagerness = blink::mojom::SpeculationEagerness::kEager;
+  candidate_1->requires_anonymous_client_ip_when_cross_origin = false;
+
+  auto candidate_2 = candidate_1.Clone();
+  candidate_2->url = url_2;
+
+  std::vector<blink::mojom::SpeculationCandidatePtr> candidates;
+  candidates.push_back(candidate_1.Clone());
+  candidates.push_back(candidate_2.Clone());
+  preloading_decider->UpdateSpeculationCandidates(candidates);
+
+  const auto& prefetches = GetPrefetchService()->prefetches_;
+  ASSERT_EQ(2u, prefetches.size());
+  EXPECT_EQ(prefetches[0]->GetURL(), url_1);
+  EXPECT_EQ(prefetches[1]->GetURL(), url_2);
+
+  // Remove |candidate_2|.
+  candidates.clear();
+  candidates.push_back(candidate_1.Clone());
+  preloading_decider->UpdateSpeculationCandidates(candidates);
+
+  EXPECT_TRUE(prefetches[0]);
+  EXPECT_FALSE(prefetches[1]);
+
+  // Re-add |candidate_2|.
+  candidates.clear();
+  candidates.push_back(candidate_1.Clone());
+  candidates.push_back(candidate_2.Clone());
+  preloading_decider->UpdateSpeculationCandidates(candidates);
+
+  ASSERT_EQ(3u, prefetches.size());
+  EXPECT_TRUE(prefetches[0]);
+  EXPECT_FALSE(prefetches[1]);
+  EXPECT_EQ(prefetches[2]->GetURL(), url_2);
+}
+
+// Tests that candidate removal works correctly for non-eager candidates, and
+// that a non-eager candidate is reprocessed correctly after re-insertion.
+TEST_F(PreloadingDeciderTest, ProcessCandidates_NonEagerCandidateRemoval) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({features::kPrefetchNewLimits}, {});
+
+  auto* preloading_decider =
+      PreloadingDecider::GetOrCreateForCurrentDocument(&GetPrimaryMainFrame());
+  ASSERT_TRUE(preloading_decider);
+  const GURL url_1 = GetSameOriginUrl("/candidate1.html");
+  const GURL url_2 = GetSameOriginUrl("/candidate2.html");
+
+  auto candidate_1 = blink::mojom::SpeculationCandidate::New();
+  candidate_1->url = url_1;
+  candidate_1->action = blink::mojom::SpeculationAction::kPrefetch;
+  candidate_1->referrer = blink::mojom::Referrer::New();
+  candidate_1->eagerness = blink::mojom::SpeculationEagerness::kEager;
+
+  auto candidate_2 = candidate_1.Clone();
+  candidate_2->url = url_2;
+  candidate_2->eagerness = blink::mojom::SpeculationEagerness::kConservative;
+
+  std::vector<blink::mojom::SpeculationCandidatePtr> candidates;
+  candidates.push_back(candidate_1.Clone());
+  candidates.push_back(candidate_2.Clone());
+  preloading_decider->UpdateSpeculationCandidates(candidates);
+
+  const auto& prefetches = GetPrefetchService()->prefetches_;
+  ASSERT_EQ(1u, prefetches.size());
+  EXPECT_EQ(prefetches[0]->GetURL(), url_1);
+
+  preloading_decider->OnPointerDown(url_2);
+
+  ASSERT_EQ(2u, prefetches.size());
+  EXPECT_TRUE(prefetches[0]);
+  EXPECT_EQ(prefetches[1]->GetURL(), url_2);
+
+  // Remove |candidate_2|.
+  candidates.clear();
+  candidates.push_back(candidate_1.Clone());
+  preloading_decider->UpdateSpeculationCandidates(candidates);
+
+  ASSERT_EQ(2u, prefetches.size());
+  EXPECT_TRUE(prefetches[0]);
+  EXPECT_FALSE(prefetches[1]);
+
+  // Re-add |candidate_2|, remove |candidate_1|.
+  candidates.clear();
+  candidates.push_back(candidate_2.Clone());
+  preloading_decider->UpdateSpeculationCandidates(candidates);
+
+  ASSERT_EQ(2u, prefetches.size());
+  EXPECT_FALSE(prefetches[0]);
+
+  preloading_decider->OnPointerDown(url_2);
+
+  ASSERT_EQ(3u, prefetches.size());
+  EXPECT_TRUE(prefetches[2]);
+  EXPECT_EQ(prefetches[2]->GetURL(), url_2);
+}
+
+// Test to demonstrate current behaviour where a prefetch is still considered
+// to have a speculation candidate even if its original triggering speculation
+// candidate was removed; so long as there exists a candidate with the same
+// URL.
+TEST_F(PreloadingDeciderTest,
+       ProcessCandidates_SecondCandidateWithSameUrlKeepsPrefetchAlive) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({features::kPrefetchNewLimits}, {});
+
+  auto* preloading_decider =
+      PreloadingDecider::GetOrCreateForCurrentDocument(&GetPrimaryMainFrame());
+  ASSERT_TRUE(preloading_decider);
+  const GURL url = GetSameOriginUrl("/candidate.html");
+
+  auto candidate_1 = blink::mojom::SpeculationCandidate::New();
+  candidate_1->url = url;
+  candidate_1->action = blink::mojom::SpeculationAction::kPrefetch;
+  candidate_1->referrer = blink::mojom::Referrer::New();
+  candidate_1->eagerness = blink::mojom::SpeculationEagerness::kEager;
+
+  auto candidate_2 = candidate_1.Clone();
+  candidate_2->eagerness = blink::mojom::SpeculationEagerness::kConservative;
+
+  std::vector<blink::mojom::SpeculationCandidatePtr> candidates;
+  candidates.push_back(candidate_1.Clone());
+  candidates.push_back(candidate_2.Clone());
+  preloading_decider->UpdateSpeculationCandidates(candidates);
+
+  const auto& prefetches = GetPrefetchService()->prefetches_;
+  ASSERT_EQ(prefetches.size(), 1u);
+  EXPECT_EQ(prefetches[0]->GetURL(), url);
+
+  // Remove |candidate_1|.
+  candidates.clear();
+  candidates.push_back(candidate_2.Clone());
+  preloading_decider->UpdateSpeculationCandidates(candidates);
+
+  EXPECT_EQ(prefetches.size(), 1u);
+  EXPECT_TRUE(prefetches[0]);
 }
 
 }  // namespace

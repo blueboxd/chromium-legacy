@@ -1167,6 +1167,9 @@ Style notes:
       <message name="IDS_ASH_SELECT_TO_SPEAK_RESUME" desc="The label for the Select-to-speak resume button, that allows users to continue text-to-speech playback.">
         Continue
       </message>
+      <message name="IDS_ASH_SELECT_TO_SPEAK_TOGGLE_PLAYBACK" is_accessibility_with_no_ui="true" desc="The label for the Select-to-speak pause/resume button as read by screen readers. This button allows users to toggle text-to-speech playback. It is used for both the 'play' and 'pause' states.">
+        Toggle playback
+      </message>
       <message name="IDS_ASH_SELECT_TO_SPEAK_READING_SPEED" desc="The label for the Select-to-speak reading speed button, that allows users to update the rate of text-to-speech playback.">
         Reading speed
       </message>
@@ -1613,8 +1616,11 @@ Style notes:
       <message name="IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_HARDWARE_DISABLED" desc="A toast message that we show when an app tries to access camera or microphone while it is disabled by hardware.">
         <ph name="APP_NAME">$1<ex>Meet</ex></ph> wants to use the <ph name="DEVICE_NAME">$2<ex>camera</ex></ph>. Turn on your device's physical <ph name="DEVICE_NAME">$2<ex>camera</ex></ph> switch.
       </message>
-      <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_MESSAGE" desc="A nudge message that is shown so users can opt-in or out of the speak-on-mute detection feature.">
-        Turn on mute nudge? You'll get notified if you talk while muted. Audio never leaves your device.
+      <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_TITLE" desc="The title for the nudge that is shown so users can opt-in or out of the speak-on-mute detection feature.">
+        Turn on mute nudge?
+      </message>
+      <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_BODY" desc="The message for the nudge that is shown so users can opt-in or out of the speak-on-mute detection feature.">
+        You'll get notified if you talk while muted. Audio never leaves your device.
       </message>
       <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_DISMISS_BUTTON" desc="A toast message that we show when an app tries to access camera or microphone while it is disabled by hardware.">
         No thanks
@@ -3518,12 +3524,6 @@ Connect your device to power.
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_BRIGHTNESS_UP" desc="Label for accelerator action - Turn brightness up.">
         Turn brightness up
       </message>
-      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_CYCLE_BACKWARD_MRU" desc="Label for accelerator action - Go through windows from the least used window.">
-        Go through windows from the least used window
-      </message>
-      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_CYCLE_FORWARD_MRU" desc="Label for accelerator action - Go through windows from the most recently used window.">
-        Go through windows from the most recently used window
-      </message>
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_DESKS_ACTIVATE_DESK_LEFT" desc="Label for accelerator action - Activate desk on left.">
         Activate desk on left
       </message>
@@ -3763,6 +3763,9 @@ Connect your device to power.
       </message>
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_FLOATING" translateable="false" desc="Label for accelerator action - Toggle floating.">
         Toggle floating
+      </message>
+      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_MULTITASK_MENU" desc="Label for accelerator action - Toggle multitask menu.">
+        Open window layout options
       </message>
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_FULLSCREEN" desc="Label for accelerator action - Enter or exit fullscreen.">
         Enter or exit fullscreen
@@ -4037,9 +4040,8 @@ Connect your device to power.
       <message name="IDS_BROWSER_ACCELERATOR_DESCRIPTION_ZOOM_MINUS" desc="Label for accelerator action - Zoom out on page.">
         Zoom out on page
       </message>
-      <!-- TODO(b/286268215): Translate this string -->
-      <message name="IDS_BROWSER_ACCELERATOR_DESCRIPTION_FOCUS_LOCATION" translateable="false" desc="Label for accelerator action - Focus address bar.">
-        Focus address bar
+      <message name="IDS_BROWSER_ACCELERATOR_DESCRIPTION_FOCUS_ADDRESS_BAR" desc="Label for accelerator action - Focus address bar.">
+        Focus on address bar
       </message>
       <message name="IDS_BROWSER_ACCELERATOR_DESCRIPTION_FOCUS_TOOLBAR" desc="Label for accelerator action - Select first icon to the left of address bar.">
         Select first icon to the left of address bar
@@ -4080,9 +4082,6 @@ Connect your device to power.
       <message name="IDS_AMBIENT_ACCELERATOR_DESCRIPTION_GO_TO_TAB_IN_RANGE" desc="Label for accelerator action - Go through tabs 1 to 8.">
         Go through tabs 1 to 8
       </message>
-      <message name="IDS_AMBIENT_ACCELERATOR_DESCRIPTION_CYCLE_FORWARD_MRU" translateable="false" desc="Label for accelerator description - Switch quickly between windows.">
-        Switch quickly between windows
-      </message>
       <message name="IDS_AMBIENT_ACCELERATOR_DESCRIPTION_DRAG_LINK_IN_NEW_TAB" desc="Label for accelerator description - Open link in new tab.">
         Open link in new tab
       </message>
@@ -4101,8 +4100,11 @@ Connect your device to power.
       <message name="IDS_AMBIENT_ACCELERATOR_DESCRIPTION_OPEN_PAGE_IN_NEW_TAB" desc="Label for accelerator description - Open the website in the address bar in a new tab.">
         Open the website in the address bar in a new tab
       </message>
-      <message name="IDS_AMBIENT_ACCELERATOR_DESCRIPTION_CYCLE_BACKWARD_MRU" desc="Label for accelerator description - Cycle backwards in the most recently used window list.">
-        Cycle backwards in the most recently used window list
+      <message name="IDS_AMBIENT_ACCELERATOR_DESCRIPTION_CYCLE_BACKWARD_MRU" desc="Label for accelerator description - Cycle backward through windows.">
+        Cycle backward through windows
+      </message>
+      <message name="IDS_AMBIENT_ACCELERATOR_DESCRIPTION_CYCLE_FORWARD_MRU" desc="Label for accelerator action - Cycle forward through windows.">
+        Cycle forward through windows
       </message>
       <!-- TODO(b/286268215): Translate this string -->
       <message name="IDS_AMBIENT_ACCELERATOR_DESCRIPTION_RIGHT_CLICK" translateable="false" desc="Label for accelerator description - Right-click a link.">
@@ -4718,6 +4720,9 @@ Connect your device to power.
       <!-- Strings shown within MultiDevice setup notifications -->
       <message name="IDS_ASH_MULTI_DEVICE_SETUP_NEW_USER_POTENTIAL_HOST_EXISTS_TITLE" desc="Title of the notification shown to a user that has not completed the MultiDevice setup when their Chrome device recognizes that they have a phone on their account that the Chrome device can connect to">
         Your devices work even better together
+      </message>
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_NOTIFIER_TEXT_WITH_PHONE_HUB" desc="The text mentions Phone Hub that shows in the notifier of multidevice setup.">
+        Quickly send or reply to your phone's messages using Phone Hub.
       </message>
       <message name="IDS_ASH_MULTI_DEVICE_SETUP_NEW_USER_POTENTIAL_HOST_EXISTS_MESSAGE" desc="Message shown as part of the notification shown to a user that has not completed the MultiDevice setup when their Chrome device recognizes that they have a phone on their account that the Chrome device can connect to. Clicking it opens a prompt to guide them through setting up.">
         Connect your <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> with your phone
@@ -6757,6 +6762,9 @@ To shut down the device, press and hold the power button on the device again.
       <message name="IDS_ASH_GAME_DASHBOARD_CONTROLS_TILE_BUTTON_TITLE" translateable="false" desc="The display name for the Game Dashboard game controls tile.">
         Controls
       </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_HELP_TOOLTIP" translateable="false" desc="Tooltip for the Game Dashboard help icon button.">
+        Help center
+      </message>
       <message name="IDS_ASH_GAME_DASHBOARD_MAIN_MENU_BUTTON_TITLE" desc="The title of the Game Dashboard main menu button.">
         Game Dashboard
       </message>
@@ -6765,6 +6773,15 @@ To shut down the device, press and hold the power button on the device again.
       </message>
       <message name="IDS_ASH_GAME_DASHBOARD_SCREENSHOT_TILE_BUTTON_TITLE" translateable="false" desc="The display name for the Game Dashboard screenshot tile.">
         Take screenshot
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_SCREEN_SIZE_SETTINGS_TITLE" translateable="false" desc="The display name for the Game Dashboard screen size settings.">
+        Screen size
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_SEND_FEEDBACK_TITLE" translateable="false" desc="The display name for the Game Dashboard send feedback button.">
+        Send feedback
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_SETTINGS_TOOLTIP" translateable="false" desc="Tooltip for the Game Dashboard settings icon button.">
+        Dashboard settings
       </message>
       <message name="IDS_ASH_GAME_DASHBOARD_TOOLBAR_TILE_BUTTON_TITLE" translateable="false" desc="The display name for the Game Dashboard toolbar tile.">
         Toolbar

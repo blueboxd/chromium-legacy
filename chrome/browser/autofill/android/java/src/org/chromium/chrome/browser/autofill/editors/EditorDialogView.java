@@ -61,10 +61,10 @@ import org.chromium.components.browser_ui.widget.AlwaysDismissedDialog;
 import org.chromium.components.browser_ui.widget.FadingEdgeScrollView;
 import org.chromium.components.browser_ui.widget.FadingEdgeScrollView.EdgeType;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
-import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 import org.chromium.components.browser_ui.widget.displaystyle.ViewResizer;
 import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.interpolators.Interpolators;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -315,6 +315,16 @@ public class EditorDialogView
         mDialogInOutAnimator.start();
     }
 
+    public void setEditorFields(ListModel<ListItem> editorFields) {
+        // The dialog has been dismissed.
+        if (mEditorModel == null) return;
+
+        prepareEditor(editorFields);
+        prepareFooter();
+
+        if (sObserverForTest != null) sObserverForTest.onEditorReadyToEdit();
+    }
+
     public void setAsNotDismissed() {
         mIsDismissed = false;
     }
@@ -381,8 +391,10 @@ public class EditorDialogView
      *
      * This would be more optimal as a RelativeLayout, but because it's dynamically generated, it's
      * much more human-parsable with inefficient LinearLayouts for half-width controls sharing rows.
+     *
+     * @param editorFields the list of fields this editor should display.
      */
-    private void prepareEditor() {
+    private void prepareEditor(ListModel<ListItem> editorFields) {
         assert mEditorModel != null;
 
         // Ensure the layout is empty.
@@ -476,18 +488,9 @@ public class EditorDialogView
 
         switch (fieldItem.type) {
             case DROPDOWN: {
-                Runnable prepareEditorRunnable = () -> {
-                    // The dialog has been dismissed.
-                    if (mEditorModel == null) return;
-
-                    // The fields may have changed.
-                    prepareEditor();
-                    prepareFooter();
-                    if (sObserverForTest != null) sObserverForTest.onEditorReadyToEdit();
-                };
-                DropdownFieldView dropdownView = new DropdownFieldView(mActivity, parent,
-                        fieldItem.model, prepareEditorRunnable,
-                        mEditorModel.get(EditorProperties.SHOW_REQUIRED_INDICATOR));
+                DropdownFieldView dropdownView =
+                        new DropdownFieldView(mActivity, parent, fieldItem.model,
+                                mEditorModel.get(EditorProperties.SHOW_REQUIRED_INDICATOR));
                 mFieldViews.add(dropdownView);
                 mDropdownFields.add(dropdownView.getDropdown());
 
@@ -529,7 +532,7 @@ public class EditorDialogView
                 R.layout.editable_option_editor_footer, null, false);
 
         prepareToolbar();
-        prepareEditor();
+        prepareEditor(editorModel.get(EDITOR_FIELDS));
         prepareFooter();
         prepareButtons();
         onConfigurationChanged();

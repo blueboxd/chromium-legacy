@@ -31,6 +31,8 @@
 #include "chrome/browser/ui/views/side_panel/search_companion/search_companion_side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_toolbar_container.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -275,12 +277,48 @@ class CompanionPageBrowserTest : public InProcessBrowserTest {
     nav_observer.Wait();
   }
 
+  // Mimics a user clicking a link to `url` in search companion and waits for
+  // the page to load.
+  void ClickUrlInCompanion(const GURL& url, bool wait_for_navigation = true) {
+    content::TestNavigationObserver nav_observer(web_contents());
+    std::string script =
+        "const link = document.createElement('a');link.target = "
+        "\"blank_\";link.href=\"" +
+        url.spec() + "\";document.body.appendChild(link);link.click();";
+    ExecJs(script);
+    if (wait_for_navigation) {
+      nav_observer.Wait();
+    }
+  }
+
+  // Clicks a link to `url` in search companion, waits for it to open in the
+  // main page, then redirects the main page to `redirect_url`.
+  void ClickUrlInCompanionWithRedirect(const GURL& clicked_url,
+                                       const GURL& redirect_url) {
+    ClickUrlInCompanion(clicked_url);
+    content::TestNavigationObserver nav_observer(web_contents());
+    ExecJsInMainPage("location.replace('" + redirect_url.spec() + "');");
+    nav_observer.Wait();
+  }
+
+  // Mimics pressing the back arrow
+  void PressBackButton() {
+    content::TestNavigationObserver nav_observer(web_contents());
+    web_contents()->GetController().GoBack();
+    nav_observer.Wait();
+  }
+
   ::testing::AssertionResult ExecJs(const std::string& code) {
     // Execute test in iframe.
     content::RenderFrameHost* iframe =
         content::ChildFrameAt(GetCompanionWebContents(browser()), 0);
 
     return content::ExecJs(iframe, code);
+  }
+
+  // Executes Javascript in the active tab.
+  ::testing::AssertionResult ExecJsInMainPage(const std::string& code) {
+    return content::ExecJs(web_contents()->GetPrimaryMainFrame(), code);
   }
 
   content::EvalJsResult EvalJs(const std::string& code) {
@@ -375,14 +413,19 @@ class CompanionPageBrowserTest : public InProcessBrowserTest {
     base::FieldTrialParams params2;
     params2["exps-registration-success-page-urls"] =
         kExpsRegistrationSuccessUrl;
+    params2["companion-homepage-url"] =
+        companion_server_.GetURL("/companion_iframe.html").spec();
+    params2["companion-image-upload-url"] =
+        companion_server_.GetURL("/upload").spec();
 
     std::vector<base::test::FeatureRefAndParams> enabled_features;
     if (enable_feature_side_panel_companion_) {
-      enabled_features.emplace_back(companion::features::kSidePanelCompanion,
-                                    params);
+      enabled_features.emplace_back(
+          companion::features::internal::kSidePanelCompanion, params);
     }
     enabled_features.emplace_back(
-        companion::features::kCompanionEnabledByObservingExpsNavigations,
+        companion::features::internal::
+            kCompanionEnabledByObservingExpsNavigations,
         params2);
 
     feature_list_.InitWithFeaturesAndParameters(enabled_features,
@@ -446,6 +489,12 @@ class CompanionPageBrowserTest : public InProcessBrowserTest {
 
   size_t requests_received_on_server() const {
     return requests_received_on_server_;
+  }
+
+  SidePanelToolbarContainer* side_panel_toolbar_container() {
+    BrowserView* browser_view =
+        BrowserView::GetBrowserViewForBrowser(browser());
+    return browser_view->toolbar()->side_panel_container();
   }
 
  protected:
@@ -540,6 +589,152 @@ IN_PROC_BROWSER_TEST_F(CompanionPageSameTabBrowserTest,
   ExpectUkmEntryAt(
       &ukm_recorder, 1, ukm::builders::Companion_PageView::kOpenTriggerName,
       static_cast<int>(SidePanelOpenTrigger::kOpenedInNewTabFromSidePanel));
+}
+
+// This interaction tests that pages in the tab frame opened from the side panel
+// are correctly marked as being non-skippable despite the tab frame not
+// receiving a user gesture.
+//   1. Have the side panel open A in the tab.
+//   2. Have the side panel open B1 in the tab.
+//   3. B1 automatically redirects to B2 to attempt to trap the user.
+//   4. Navigating backwards from B2 should skip back to A.
+//   5. Navigating backwards from A should skip back to the tab's initial page.
+IN_PROC_BROWSER_TEST_F(CompanionPageSameTabBrowserTest,
+                       LinkClickWithRedirectNavigatesBackProperly) {
+  const GURL initial_url = CreateUrl(kHost, "/initial.html");
+  const GURL a_url = CreateUrl(kHost, "/A.html");
+  const GURL b1_url = CreateUrl(kHost, "/B1.html");
+  const GURL b2_url = CreateUrl(kHost, "/B2.html");
+
+  // Load the initial page on the active tab and open companion side panel
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
+  side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion,
+                                 SidePanelOpenTrigger::kComboboxSelected);
+
+  // The history stack should currently have 2 entries, the page the browser
+  // process starts with, and the initial page we navigate to.
+  EXPECT_EQ(2, web_contents()->GetController().GetEntryCount());
+
+  // Ensure companion is open and loaded.
+  WaitForCompanionToBeLoaded();
+  EXPECT_EQ(1u, requests_received_on_server());
+  EXPECT_EQ(side_panel_coordinator()->GetCurrentEntryId(),
+            SidePanelEntry::Id::kSearchCompanion);
+
+  // Have the side panel open page A in the main tab contents.
+  ClickUrlInCompanion(a_url);
+  EXPECT_EQ(3, web_contents()->GetController().GetEntryCount());
+
+  // Have the side panel open page B1 in the main tab contents, then immediately
+  // redirect to B2.
+  ClickUrlInCompanionWithRedirect(b1_url, b2_url);
+
+  // Ensure redirect actually happened. If redirected properly, the middle page
+  // shouldn't be in the NavigationController, so we should still be at 4
+  // entries. i.e. about:blank -> initial.html -> a.html -> b2.html
+  EXPECT_EQ(b2_url, web_contents()->GetURL());
+  EXPECT_EQ(4, web_contents()->GetController().GetEntryCount());
+
+  // Go back from page B2. We should return to page A.
+  PressBackButton();
+  EXPECT_EQ(a_url, web_contents()->GetURL());
+
+  // Go back from page A. We should return to the initial page.
+  PressBackButton();
+  EXPECT_EQ(initial_url, web_contents()->GetURL());
+}
+
+// This tests that only the final page in the tab frame arrived at from a
+// redirection chain initiated from the side panel is marked as skippable and
+// not the intermediate pages in the chain.
+//   1. Have the side panel open A1 in the tab.
+//   2. A1 automatically redirects to A2 to attempt to trap the user.
+//   3. Have the side panel open B in the tab.
+//   4. Navigating backwards from B should skip back to A2.
+//   5. Navigating backwards from A2 should skip back to the tab's initial page.
+IN_PROC_BROWSER_TEST_F(
+    CompanionPageSameTabBrowserTest,
+    LinkClickWithRedirectPlusSubsequentUserNavigationNavigatesBackProperly) {
+  const GURL initial_url = CreateUrl(kHost, "/initial.html");
+  const GURL a1_url = CreateUrl(kHost, "/A1.html");
+  const GURL a2_url = CreateUrl(kHost, "/A2.html");
+  const GURL b_url = CreateUrl(kHost, "/B.html");
+
+  // Load the initial page on the active tab and open companion side panel
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
+  side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion,
+                                 SidePanelOpenTrigger::kComboboxSelected);
+
+  // Ensure companion is open and loaded.
+  WaitForCompanionToBeLoaded();
+  EXPECT_EQ(1u, requests_received_on_server());
+  EXPECT_EQ(side_panel_coordinator()->GetCurrentEntryId(),
+            SidePanelEntry::Id::kSearchCompanion);
+  EXPECT_EQ(2, web_contents()->GetController().GetEntryCount());
+
+  // Have the side panel open page A1 in the main tab contents, then immediately
+  // redirect to A2.
+  ClickUrlInCompanionWithRedirect(a1_url, a2_url);
+
+  // Ensure redirect actually happened. If redirected properly, the middle page
+  // shouldn't be in the NavigationController, so we should still be at 3
+  // entries. i.e. about:blank -> initial.html -> a2.html
+  EXPECT_EQ(a2_url, web_contents()->GetURL());
+  EXPECT_EQ(3, web_contents()->GetController().GetEntryCount());
+
+  // Have the side panel open page B in the main tab contents.
+  ClickUrlInCompanion(b_url);
+
+  // Ensure that all pages, including redirects, are in the navigation stack.
+  // This ensures the test fails if a redirect doesn't occur, which would
+  // indicate the test is not WAI.
+  EXPECT_EQ(4, web_contents()->GetController().GetEntryCount());
+
+  // Go back from page B. We should return to page A2.
+  PressBackButton();
+  EXPECT_EQ(a2_url, web_contents()->GetURL());
+
+  // Go back from page A2. We should return to the initial page.
+  PressBackButton();
+  EXPECT_EQ(initial_url, web_contents()->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(CompanionPageSameTabBrowserTest,
+                       LinkClickFromUntrustedSourceDontOpen) {
+  const GURL initial_url = CreateUrl(kHost, "/initial.html");
+  const GURL clicked_url = CreateUrl(kHost, "/clicked.html");
+  const GURL malicious_url =
+      CreateUrl("www.malicious-site.com", "/companion_iframe.html");
+
+  // Load a page on the active tab and open companion side panel
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
+  side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion);
+
+  WaitForCompanionToBeLoaded();
+  EXPECT_EQ(1u, requests_received_on_server());
+  EXPECT_EQ(side_panel_coordinator()->GetCurrentEntryId(),
+            SidePanelEntry::Id::kSearchCompanion);
+  EXPECT_EQ(2, web_contents()->GetController().GetEntryCount());
+
+  // Set Search Comapnion iframe to to an untrusted domain
+  content::WebContents* companion_web_contents =
+      GetCompanionWebContents(browser());
+  std::string script =
+      "const iframe = document.getElementsByTagName('iframe')[0];iframe.src='" +
+      malicious_url.spec() + "';";
+  EXPECT_TRUE(content::ExecJs(companion_web_contents, script));
+  WaitForCompanionIframeReload();
+
+  // Click a URL
+  ClickUrlInCompanion(clicked_url, false);
+
+  // Ensure side panel did not open link
+  EXPECT_NE(clicked_url, companion_web_contents->GetURL());
+
+  // Ensure main tab did not open link
+  EXPECT_EQ(nullptr, web_contents()->GetController().GetPendingEntry());
+  EXPECT_EQ(2, web_contents()->GetController().GetEntryCount());
+  EXPECT_NE(clicked_url, web_contents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest, LinkClickOnCompanionPage) {
@@ -1254,20 +1449,95 @@ class CompanionPageDisabledBrowserTest : public CompanionPageBrowserTest {
   }
 };
 
+// Verifies the behavior when companion feature is disabled but a navigation to
+// exps registration URL is observed.
 IN_PROC_BROWSER_TEST_F(CompanionPageDisabledBrowserTest,
-                       ObservesExpsRegistrationSuccessURL) {
+                       PRE_ObservesExpsRegistrationSuccessURL) {
+  EXPECT_TRUE(companion::IsCompanionFeatureEnabled());
+  EXPECT_TRUE(base::FeatureList::IsEnabled(
+      companion::features::internal::
+          kCompanionEnabledByObservingExpsNavigations));
+  EXPECT_FALSE(base::FeatureList::IsEnabled(
+      companion::features::internal::kSidePanelCompanion));
+
+  base::HistogramTester histogram_tester;
+
   // Navigate to a random page.
   ASSERT_TRUE(
       ui_test_utils::NavigateToURL(browser(), CreateUrl(kHost, kRelativeUrl1)));
   EXPECT_FALSE(browser()->profile()->GetPrefs()->GetBoolean(
       companion::kHasNavigatedToExpsSuccessPage));
 
-  // Navigate to exps registration success page. It should enable the pref.
+  // Load a page on the active tab and open companion side panel.
+  // Verify that companion is not enabled even though
+  // `kCompanionEnabledByObservingExpsNavigations` is enabled.
+  EXPECT_TRUE(companion::IsCompanionFeatureEnabled());
+  WaitForMainPageToBeLoaded(kRelativeUrl1);
+  side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion);
+  EXPECT_FALSE(side_panel_coordinator()->GetCurrentEntryId().has_value());
+  EXPECT_EQ(0u, requests_received_on_server());
+  EXPECT_FALSE(side_panel_toolbar_container()->IsPinned(
+      SidePanelEntry::Id::kSearchCompanion));
+
+  // Navigate to exps registration success page. It should enable the pref and
+  // companion.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
                                            GURL(kExpsRegistrationSuccessUrl)));
-  // Verify that the pref.
+  // Verify that the pref and companion are enabled now.
   EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
       companion::kHasNavigatedToExpsSuccessPage));
+  histogram_tester.ExpectTotalCount(
+      "Companion.HasNavigatedToExpsSuccessPagePref.OnChanged", 1);
+  histogram_tester.ExpectBucketCount(
+      "Companion.HasNavigatedToExpsSuccessPagePref.OnChanged", 1, 1);
+  histogram_tester.ExpectTotalCount("Companion.SidePanelAvailabilityChanged",
+                                    1);
+  histogram_tester.ExpectBucketCount("Companion.SidePanelAvailabilityChanged",
+                                     1 /* kUnavailableToAvailable */, 1);
+
+  // Load a page on the active tab and open companion side panel
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), CreateUrl(kHost, kRelativeUrl1)));
+  side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion);
+
+  WaitForCompanionToBeLoaded();
+  EXPECT_EQ(side_panel_coordinator()->GetCurrentEntryId(),
+            SidePanelEntry::Id::kSearchCompanion);
+  EXPECT_EQ(1u, requests_received_on_server());
+  // Companion is immediately pinned.
+  EXPECT_TRUE(side_panel_toolbar_container()->IsPinned(
+      SidePanelEntry::Id::kSearchCompanion));
+}
+
+// Verifies the behavior when companion feature is disabled but a navigation to
+// exps registration URL is observed. Restart the browser and verify that
+// companion is active and pinned.
+IN_PROC_BROWSER_TEST_F(CompanionPageDisabledBrowserTest,
+                       ObservesExpsRegistrationSuccessURL) {
+  EXPECT_TRUE(companion::IsCompanionFeatureEnabled());
+  EXPECT_TRUE(base::FeatureList::IsEnabled(
+      companion::features::internal::
+          kCompanionEnabledByObservingExpsNavigations));
+  EXPECT_FALSE(base::FeatureList::IsEnabled(
+      companion::features::internal::kSidePanelCompanion));
+
+  // Verify that the pref and companion are enabled.
+  EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
+      companion::kHasNavigatedToExpsSuccessPage));
+
+  // Load a page on the active tab and open companion side panel.
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), CreateUrl(kHost, kRelativeUrl1)));
+  side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion);
+
+  WaitForCompanionToBeLoaded();
+  EXPECT_EQ(side_panel_coordinator()->GetCurrentEntryId(),
+            SidePanelEntry::Id::kSearchCompanion);
+  EXPECT_EQ(1u, requests_received_on_server());
+
+  // Companion should be pinned now.
+  EXPECT_TRUE(side_panel_toolbar_container()->IsPinned(
+      SidePanelEntry::Id::kSearchCompanion));
 }
 
 class CompanionPagePolicyBrowserTest : public CompanionPageBrowserTest {

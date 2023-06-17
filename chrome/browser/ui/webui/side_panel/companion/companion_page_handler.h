@@ -73,6 +73,9 @@ class CompanionPageHandler
   // IdentityManager::Observer overrides.
   void OnPrimaryAccountChanged(
       const signin::PrimaryAccountChangeEvent& event) override;
+  void OnErrorStateOfRefreshTokenUpdatedForAccount(
+      const CoreAccountInfo& account_info,
+      const GoogleServiceAuthError& error) override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
 
@@ -94,6 +97,10 @@ class CompanionPageHandler
   // subsequent navigations on the main frame.
   void NotifyURLChanged(bool is_full_reload);
 
+  // Registers a WebContentsModalDialogManager for our WebContents in order to
+  // display web modal dialogs triggered by it.
+  void RegisterModalDialogManager(Browser* browser);
+
   // Get the current browser associated with the WebUI.
   Browser* GetBrowser();
   // Get the profile associated with the WebUI.
@@ -103,6 +110,10 @@ class CompanionPageHandler
   // all input text directives.
   void DidFinishFindingCqTexts(
       const std::vector<std::pair<std::string, bool>>& text_found_vec);
+
+  // This method is used as the callback that handles visual search results.
+  // Its role is to perform some checks and do a mojom IPC to side panel.
+  void HandleVisualSearchResult(std::vector<std::string> results);
 
   mojo::Receiver<side_panel::mojom::CompanionPageHandler> receiver_;
   mojo::Remote<side_panel::mojom::CompanionPage> page_;

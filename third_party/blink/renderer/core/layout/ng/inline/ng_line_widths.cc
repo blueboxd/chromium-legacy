@@ -11,11 +11,12 @@
 namespace blink {
 
 bool NGLineWidths::Set(const NGInlineNode& node,
-                       base::span<const NGLayoutOpportunity> opportunities) {
+                       base::span<const NGLayoutOpportunity> opportunities,
+                       const NGInlineBreakToken* break_token) {
   // Set the default width if no exclusions.
   DCHECK_GE(opportunities.size(), 1u);
   const NGLayoutOpportunity& first_opportunity = opportunities.front();
-  if (opportunities.size() == 1) {
+  if (opportunities.size() == 1 && !node.HasFloats()) {
     DCHECK(!first_opportunity.HasShapeExclusions());
     default_width_ = first_opportunity.rect.InlineSize();
     DCHECK(!num_excluded_lines_);
@@ -41,10 +42,19 @@ bool NGLineWidths::Set(const NGInlineNode& node,
   const NGInlineItemsData& items_data = node.ItemsData(/*is_first_line*/ false);
   // `::first-line` is not supported.
   DCHECK_EQ(&items_data, &node.ItemsData(true));
-  const HeapVector<NGInlineItem>& items = items_data.items;
+  base::span<const NGInlineItem> items(items_data.items);
+  bool is_empty_so_far = true;
+  if (break_token) {
+    DCHECK(break_token->Start());
+    items = items.subspan(break_token->StartItemIndex());
+    is_empty_so_far = false;
+  }
   for (const NGInlineItem& item : items) {
     switch (item.Type()) {
       case NGInlineItem::kText: {
+        if (UNLIKELY(!item.Length())) {
+          break;
+        }
         const ShapeResult* shape_result = item.TextShapeResult();
         DCHECK(shape_result);
         if (shape_result->PrimaryFont() != primary_font ||
@@ -72,14 +82,44 @@ bool NGLineWidths::Set(const NGInlineNode& node,
       case NGInlineItem::kOpenTag: {
         DCHECK(item.Style());
         const ComputedStyle& style = *item.Style();
-        if (style.VerticalAlign() != EVerticalAlign::kBaseline) {
+        if (UNLIKELY(style.VerticalAlign() != EVerticalAlign::kBaseline)) {
           return false;
         }
         break;
       }
-      default:
+      case NGInlineItem::kCloseTag:
+      case NGInlineItem::kControl:
+      case NGInlineItem::kOutOfFlowPositioned:
+      case NGInlineItem::kBidiControl:
+        // These items don't affect line heights.
         break;
+      case NGInlineItem::kFloating:
+        // Only leading floats are computable without layout.
+        if (is_empty_so_far) {
+          break;
+        }
+        return false;
+      case NGInlineItem::kAtomicInline:
+      case NGInlineItem::kBlockInInline:
+      case NGInlineItem::kInitialLetterBox:
+      case NGInlineItem::kListMarker:
+        // These items need layout to determine the height.
+        return false;
     }
+    if (is_empty_so_far && !item.IsEmptyItem()) {
+      is_empty_so_far = false;
+    }
+  }
+
+  if (opportunities.size() == 1) {
+    // There are two conditions to come here:
+    // * The `node` has floats, but only before `break_token`; i.e., no floats
+    //   after `break_token`.
+    // * The `node` has leading floats, but their size is 0, so they don't
+    //   create exclusions.
+    // Either way, there are no exclusions.
+    default_width_ = first_opportunity.rect.InlineSize();
+    return true;
   }
 
   // All lines have the same line height.
@@ -88,6 +128,7 @@ bool NGLineWidths::Set(const NGInlineNode& node,
   if (UNLIKELY(line_height <= LayoutUnit())) {
     return false;
   }
+  DCHECK_GE(opportunities.size(), 2u);
   const NGLayoutOpportunity& last_opportunity = opportunities.back();
   DCHECK(!last_opportunity.HasShapeExclusions());
   default_width_ = last_opportunity.rect.InlineSize();
@@ -95,9 +136,12 @@ bool NGLineWidths::Set(const NGInlineNode& node,
       last_opportunity.rect.BlockStartOffset() -
       first_opportunity.rect.BlockStartOffset();
   DCHECK_GT(exclusion_block_size, LayoutUnit());
-  const int num_excluded_lines = (exclusion_block_size / line_height).Ceil();
-  DCHECK_GT(num_excluded_lines, 0);
-  num_excluded_lines_ = num_excluded_lines;
+  // Use the float division because `LayoutUnit::operator/` doesn't have enough
+  // precision; e.g., `LayoutUnit` computes "46.25 / 23" to 2.
+  const float num_excluded_lines =
+      ceil(exclusion_block_size.ToFloat() / line_height.ToFloat());
+  DCHECK_GE(num_excluded_lines, 1);
+  num_excluded_lines_ = base::saturated_cast<wtf_size_t>(num_excluded_lines);
   excluded_width_ = first_opportunity.rect.InlineSize();
   return true;
 }

@@ -37,7 +37,7 @@
 #import "components/sync/service/sync_user_settings.h"
 #import "components/url_formatter/url_fixer.h"
 #import "ios/chrome/browser/bookmarks/bookmarks_utils.h"
-#import "ios/chrome/browser/flags/system_flags.h"
+#import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/bookmarks/undo_manager_wrapper.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -363,7 +363,7 @@ MDCSnackbarMessage* CreateBookmarkAtPositionWithUndoToast(
   NSString* text =
       l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_BOOKMARK_CREATED);
   return CreateUndoToastWithWrapper(wrapper, text,
-                                    "MobileBookmarkManagerBookmarkAddedUndone");
+                                    "MobileBookmarkManagerAddedBookmarkUndone");
 }
 
 MDCSnackbarMessage* UpdateBookmarkPositionWithUndoToast(

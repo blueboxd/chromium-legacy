@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.util.Pair;
 import android.view.View;
+import android.view.View.OnLayoutChangeListener;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 
 import androidx.annotation.IntDef;
@@ -39,6 +40,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Batch;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Restriction;
@@ -114,16 +116,17 @@ public class TabGridAccessibilityHelperTest {
     @MediumTest
     // Low-end uses list mode.
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    public void testGetPotentialActionsForView() {
+    public void testGetPotentialActionsForView() throws Exception {
         final ChromeTabbedActivity cta = sActivityTestRule.getActivity();
         final AccessibilityActionChecker checker = new AccessibilityActionChecker(cta);
         createTabs(cta, false, 5);
         enterTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 5);
 
-        assertTrue(cta.findViewById(R.id.tab_list_view)
-                           instanceof TabListMediator.TabGridAccessibilityHelper);
-        TabListMediator.TabGridAccessibilityHelper helper = cta.findViewById(R.id.tab_list_view);
+        View view = cta.findViewById(R.id.tab_list_view);
+        assertTrue(view instanceof TabListMediator.TabGridAccessibilityHelper);
+        TabListMediator.TabGridAccessibilityHelper helper =
+                (TabListMediator.TabGridAccessibilityHelper) view;
 
         // Verify action list in portrait mode with span count = 2.
         onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
@@ -166,7 +169,17 @@ public class TabGridAccessibilityHelperTest {
                             new ArrayList<>(Arrays.asList(TabMovementDirection.UP)));
                 });
 
+        assertTrue(view instanceof TabListRecyclerView);
+        TabListRecyclerView tabListRecyclerView = (TabListRecyclerView) view;
+        CallbackHelper callbackHelper = new CallbackHelper();
+        OnLayoutChangeListener listener =
+                (rv, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            callbackHelper.notifyCalled();
+        };
+        tabListRecyclerView.addOnLayoutChangeListener(listener);
+        final int callCount = callbackHelper.getCallCount();
         ActivityTestUtils.rotateActivityToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+        callbackHelper.waitForCallback(callCount);
 
         // Verify action list in landscape mode with span count = 3.
         onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
@@ -216,7 +229,7 @@ public class TabGridAccessibilityHelperTest {
     @MediumTest
     // Low-end uses list mode.
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    public void testGetPositionsOfReorderAction() {
+    public void testGetPositionsOfReorderAction() throws Exception {
         final ChromeTabbedActivity cta = sActivityTestRule.getActivity();
         int leftActionId = R.id.move_tab_left;
         int rightActionId = R.id.move_tab_right;
@@ -226,9 +239,10 @@ public class TabGridAccessibilityHelperTest {
         enterTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 5);
 
-        assertTrue(cta.findViewById(R.id.tab_list_view)
-                           instanceof TabListMediator.TabGridAccessibilityHelper);
-        TabListMediator.TabGridAccessibilityHelper helper = cta.findViewById(R.id.tab_list_view);
+        View view = cta.findViewById(R.id.tab_list_view);
+        assertTrue(view instanceof TabListMediator.TabGridAccessibilityHelper);
+        TabListMediator.TabGridAccessibilityHelper helper =
+                (TabListMediator.TabGridAccessibilityHelper) view;
 
         // Span count 2.
         onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
@@ -262,7 +276,17 @@ public class TabGridAccessibilityHelperTest {
                     assertEquals(1, (int) positions.second);
                 });
 
+        assertTrue(view instanceof TabListRecyclerView);
+        TabListRecyclerView tabListRecyclerView = (TabListRecyclerView) view;
+        CallbackHelper callbackHelper = new CallbackHelper();
+        OnLayoutChangeListener listener =
+                (rv, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            callbackHelper.notifyCalled();
+        };
+        tabListRecyclerView.addOnLayoutChangeListener(listener);
+        final int callCount = callbackHelper.getCallCount();
         ActivityTestUtils.rotateActivityToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+        callbackHelper.waitForCallback(callCount);
 
         // Span count 3.
         onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))

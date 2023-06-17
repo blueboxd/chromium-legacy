@@ -349,7 +349,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // that way throughout. This should simply be a NativeWindow - windows are
     // parented to other windows, not to views, and it being a view confuses
     // the concept with bubble anchoring a la BubbleDialogDelegateView.
-    gfx::NativeView parent = nullptr;
+    gfx::NativeView parent = gfx::NativeView();
 
     // Specifies the initial bounds of the Widget. Default is empty, which means
     // the NativeWidget may specify a default size. If the parent is specified,
@@ -385,7 +385,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // where it wants your window placed.) Nullptr is not allowed on Windows and
     // Linux. Nullptr is allowed on Chrome OS, which will place the window on
     // the default desktop for new windows.
-    gfx::NativeWindow context = nullptr;
+    gfx::NativeWindow context = gfx::NativeWindow();
 
     // If true, forces the window to be shown in the taskbar, even for window
     // types that do not appear in the taskbar by default (popup and bubble).
@@ -1188,15 +1188,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // ui::ColorProviderSource:
   ui::ColorProviderManager::Key GetColorProviderKey() const override;
-
-  // Gets the user color for this widget. This is used as an input to generate
-  // color palettes for the material design system. Tracks the user color of the
-  // parent widget by default.
-  virtual absl::optional<SkColor> GetUserColor() const;
-
-  // Gets the color mode for this widget. Tracks the color mode of the parent
-  // widget by default.
-  virtual ui::ColorProviderManager::ColorMode GetColorMode() const;
 
  private:
   // Type of ways to ignore activation changes.

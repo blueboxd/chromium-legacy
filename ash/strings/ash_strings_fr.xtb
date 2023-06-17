@@ -63,7 +63,6 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="1235458158152011030">Réseaux connus</translation>
 <translation id="1239161794459865856">La fonctionnalité <ph name="FEATURE_NAME" /> est connectée.</translation>
 <translation id="1240638468526743569">Une appli</translation>
-<translation id="1242704516557658755">Revenir en arrière dans la liste des fenêtres utilisées en dernier</translation>
 <translation id="124678866338384709">Fermer l'onglet actuel</translation>
 <translation id="1246890715821376239">Applis non compatibles</translation>
 <translation id="1247372569136754018">Micro (interne)</translation>
@@ -1119,7 +1118,6 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Activé</translation>
 <translation id="5920710855273935292">Le son du micro est coupé.</translation>
-<translation id="5922962980596822074">Parcourir les fenêtres à partir de la dernière utilisée</translation>
 <translation id="5924855612669061715">Le point d'accès est activé</translation>
 <translation id="5946788582095584774">La fonctionnalité <ph name="FEATURE_NAME" /> est activée.</translation>
 <translation id="5947494881799873997">Rétablir</translation>
@@ -1238,7 +1236,6 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="6469104339369989396">Activer/Désactiver le point d'accès</translation>
 <translation id="6477681113376365978">Impossible de télécharger le fichier</translation>
 <translation id="6482559668224714696">Loupe plein écran</translation>
-<translation id="6483727822843292440">Parcourir les fenêtres à partir de celle la moins utilisée</translation>
 <translation id="6490471652906364588">Appareil USB de type C (port situé sur la droite de l'appareil)</translation>
 <translation id="6491071886865974820"><ph name="MANAGER" /> exige la mise à jour de votre <ph name="DEVICE_TYPE" /> avant la date limite</translation>
 <translation id="649452524636452238">Code de la carte à puce</translation>
@@ -1393,7 +1390,7 @@ Nouvelle installation</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Rétablissement de la résolution précédente dans <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Actualiser</translation>
-<translation id="7185362672357349361">Activer l'envoi d'une notification si le son est coupé ? Vous recevrez une notification si vous parlez lorsque le son est coupé. Les données audio ne quittent jamais votre appareil.</translation>
+<translation id="7185362672357349361">Activer le rappel micro ? Vous recevrez une notification si vous parlez lorsque le micro est coupé. Les données audio ne quittent jamais votre appareil.</translation>
 <translation id="7187711731540696127">Votre point d'accès <ph name="DEVICE_NAME" /> est activé, aucun appareil connecté</translation>
 <translation id="7188494361780961876">Le menu a été déplacé dans l'angle supérieur gauche de l'écran.</translation>
 <translation id="7189412385142492784">À quelle distance se trouve Vénus</translation>
@@ -1478,7 +1475,7 @@ Pour éteindre l'appareil, appuyez à nouveau de manière prolongée sur le bout
 <translation id="7579778809502851308">Capture d'écran</translation>
 <translation id="7593891976182323525">Recherche ou Maj</translation>
 <translation id="7600875258240007829">Afficher toutes les notifications</translation>
-<translation id="7601417191446344542">Activer l'envoi d'une notification si le son est coupé ?</translation>
+<translation id="7601417191446344542">Activer le rappel micro ?</translation>
 <translation id="7607002721634913082">Suspendu</translation>
 <translation id="7609951632080598826">Vue de l'agenda, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Appareil photo reconnecté.</translation>

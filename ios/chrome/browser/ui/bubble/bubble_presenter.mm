@@ -13,10 +13,10 @@
 #import "components/feature_engagement/public/feature_constants.h"
 #import "components/feature_engagement/public/tracker.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
-#import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/model/url/url_util.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/util/named_guide.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
@@ -294,7 +294,7 @@ const CGFloat kBubblePresentationDelay = 1;
   // the tip, then end early to prevent the potential reassignment of the
   // existing `whatsNewBubblePresenter` to nil.
   BubbleViewControllerPresenter* presenter = [self
-      presentBubbleForFeature:feature_engagement::kIPHFollowWhileBrowsingFeature
+      presentBubbleForFeature:feature_engagement::kIPHWhatsNewFeature
                     direction:arrowDirection
                     alignment:BubbleAlignmentTrailing
                          text:text

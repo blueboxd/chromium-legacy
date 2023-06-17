@@ -156,11 +156,18 @@ int GetTextInputExtensionV1Version() {
   if (base::FeatureList::IsEnabled(
           ash::features::kExoExtendedConfirmComposition) &&
       base::FeatureList::IsEnabled(ash::features::kExoSurroundingTextOffset)) {
-    return 11;
+    // set_surrounding_text_offset_utf16 + new surrounding_text_support
+    // strategy enabled once at version 10 was reverted (crbug.com/1451324).
+    // Unfortunately, we have to disable confirm-composition in version 11
+    // together, because of wayland's versioning system.
+    //
+    // Now, the new API to fix the issue is introduced in version 12.
+    // We cannot enable confirm-composition only, because it will be hitting
+    // the same issue at version 10. Thus, we'll set version 12 (including
+    // all fixes + confirm-composition), or 9 (before everything).
+    return 12;
   }
-  if (base::FeatureList::IsEnabled(ash::features::kExoSurroundingTextOffset)) {
-    return 10;
-  }
+
   return 9;
 }
 
@@ -260,6 +267,7 @@ Server::Server(Display* display,
 
 void Server::Initialize() {
   serial_tracker_ = std::make_unique<SerialTracker>(wl_display_.get());
+  rotation_serial_tracker_ = std::make_unique<SerialTracker>(wl_display_.get());
   wl_global_create(wl_display_.get(), &wl_compositor_interface,
                    kWlCompositorVersion, this, bind_compositor);
   wl_global_create(wl_display_.get(), &wl_shm_interface, 1, display_, bind_shm);
@@ -397,8 +405,8 @@ void Server::Initialize() {
                    zcr_text_input_extension_data_.get(),
                    bind_text_input_extension);
 
-  xdg_shell_data_ =
-      std::make_unique<WaylandXdgShell>(display_, serial_tracker_.get());
+  xdg_shell_data_ = std::make_unique<WaylandXdgShell>(
+      display_, serial_tracker_.get(), rotation_serial_tracker_.get());
   wl_global_create(wl_display_.get(), &xdg_wm_base_interface, 3,
                    xdg_shell_data_.get(), bind_xdg_shell);
 

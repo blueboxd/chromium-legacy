@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <utility>
 
 #include "base/allocator/partition_allocator/pointers/raw_ptr.h"
 #include "base/location.h"
@@ -99,7 +100,8 @@ class TelemetryExtensionEventsApiBrowserTest
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
                        CheckCorrectEventsAvailable) {
   constexpr char kEnabledEvents[] =
-      "['onAudioJackEvent', 'onLidEvent', 'onUsbEvent']";
+      "['onAudioJackEvent', 'onLidEvent', 'onUsbEvent', "
+      "'onKeyboardDiagnosticEvent', 'onSdCardEvent', 'onPowerEvent']";
 
   CreateExtensionAndRunServiceWorker(base::StringPrintf(R"(
     chrome.test.runTests([
@@ -366,174 +368,7 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
-                       CheckSdCardApiWithoutFeatureFlagFail) {
-  // Open the PWA.
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(pwa_page_url())));
-
-  CreateExtensionAndRunServiceWorker(R"(
-    chrome.test.runTests([
-      function sdCardNotWorking() {
-        chrome.test.assertThrows(() => {
-          chrome.os.events.onSdCardEvent.addListener((event) => {
-            // unreachable.
-          });
-        }, [],
-          'Cannot read properties of undefined (reading \'addListener\')'
-        );
-
-        chrome.test.succeed();
-      }
-    ]);
-  )");
-}
-
-IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
-                       CheckPowerApiWithoutFeatureFlagFail) {
-  // Open the PWA.
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(pwa_page_url())));
-
-  CreateExtensionAndRunServiceWorker(R"(
-    chrome.test.runTests([
-      function powerNotWorking() {
-        chrome.test.assertThrows(() => {
-          chrome.os.events.onPowerEvent.addListener((event) => {
-            // unreachable.
-          });
-        }, [],
-          'Cannot read properties of undefined (reading \'addListener\')'
-        );
-
-        chrome.test.succeed();
-      }
-    ]);
-  )");
-}
-
-IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
-                       CheckKeyboardDiagnosticApiWithoutFeatureFlagFail) {
-  // Open the PWA.
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(pwa_page_url())));
-
-  CreateExtensionAndRunServiceWorker(R"(
-    chrome.test.runTests([
-      function keyboardDiagnosticsNotWorking() {
-        chrome.test.assertThrows(() => {
-          chrome.os.events.onKeyboardDiagnosticEvent.addListener((event) => {
-            // unreachable.
-          });
-        }, [],
-          'Cannot read properties of undefined (reading \'addListener\')'
-        );
-
-        chrome.test.succeed();
-      }
-    ]);
-  )");
-}
-
-IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
-                       CheckStylusGarageApiWithoutFeatureFlagFail) {
-  // Open the PWA.
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(pwa_page_url())));
-
-  CreateExtensionAndRunServiceWorker(R"(
-    chrome.test.runTests([
-      function stylusGarageNotWorking() {
-        chrome.test.assertThrows(() => {
-          chrome.os.events.onStylusGarageEvent.addListener((event) => {
-            // unreachable.
-          });
-        }, [],
-          'Cannot read properties of undefined (reading \'addListener\')'
-        );
-
-        chrome.test.succeed();
-      }
-    ]);
-  )");
-}
-
-class PendingApprovalTelemetryExtensionEventsApiBrowserTest
-    : public TelemetryExtensionEventsApiBrowserTest {
- public:
-  PendingApprovalTelemetryExtensionEventsApiBrowserTest() {
-    feature_list_.InitAndEnableFeature(
-        extensions_features::kTelemetryExtensionPendingApprovalApi);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(PendingApprovalTelemetryExtensionEventsApiBrowserTest,
-                       CheckSdCardApiWithFeatureFlagWork) {
-  // Open the PWA.
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(pwa_page_url())));
-
-  GetFakeService()->SetOnSubscriptionChange(
-      base::BindLambdaForTesting([this]() {
-        auto sd_card_info = crosapi::TelemetrySdCardEventInfo::New();
-        sd_card_info->state = crosapi::TelemetrySdCardEventInfo::State::kAdd;
-
-        GetFakeService()->EmitEventForCategory(
-            crosapi::TelemetryEventCategoryEnum::kSdCard,
-            crosapi::TelemetryEventInfo::NewSdCardEventInfo(
-                std::move(sd_card_info)));
-      }));
-
-  CreateExtensionAndRunServiceWorker(R"(
-    chrome.test.runTests([
-      async function startCapturingEvents() {
-        chrome.os.events.onSdCardEvent.addListener((event) => {
-          chrome.test.assertEq(event, {
-            event: 'connected'
-          });
-
-          chrome.test.succeed();
-        });
-
-        await chrome.os.events.startCapturingEvents("sd_card");
-      }
-    ]);
-  )");
-}
-
-IN_PROC_BROWSER_TEST_F(PendingApprovalTelemetryExtensionEventsApiBrowserTest,
-                       CheckPowerApiWithFeatureFlagWork) {
-  // Open the PWA.
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(pwa_page_url())));
-
-  GetFakeService()->SetOnSubscriptionChange(
-      base::BindLambdaForTesting([this]() {
-        auto power_info = crosapi::TelemetryPowerEventInfo::New();
-        power_info->state =
-            crosapi::TelemetryPowerEventInfo::State::kAcInserted;
-
-        GetFakeService()->EmitEventForCategory(
-            crosapi::TelemetryEventCategoryEnum::kPower,
-            crosapi::TelemetryEventInfo::NewPowerEventInfo(
-                std::move(power_info)));
-      }));
-
-  CreateExtensionAndRunServiceWorker(R"(
-    chrome.test.runTests([
-      async function startCapturingEvents() {
-        chrome.os.events.onPowerEvent.addListener((event) => {
-          chrome.test.assertEq(event, {
-            event: 'ac_inserted'
-          });
-
-          chrome.test.succeed();
-        });
-
-        await chrome.os.events.startCapturingEvents("power");
-      }
-    ]);
-  )");
-}
-
-IN_PROC_BROWSER_TEST_F(PendingApprovalTelemetryExtensionEventsApiBrowserTest,
-                       CheckKeyboardDiagnosticApiWithFeatureFlagWork) {
+                       OnKeyboardDiagnosticEvent_Success) {
   // Open the PWA.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(pwa_page_url())));
 
@@ -592,8 +427,95 @@ IN_PROC_BROWSER_TEST_F(PendingApprovalTelemetryExtensionEventsApiBrowserTest,
   )");
 }
 
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
+                       OnSdCardEvent_Success) {
+  // Open the PWA.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(pwa_page_url())));
+
+  GetFakeService()->SetOnSubscriptionChange(
+      base::BindLambdaForTesting([this]() {
+        auto sd_card_info = crosapi::TelemetrySdCardEventInfo::New();
+        sd_card_info->state = crosapi::TelemetrySdCardEventInfo::State::kAdd;
+
+        GetFakeService()->EmitEventForCategory(
+            crosapi::TelemetryEventCategoryEnum::kSdCard,
+            crosapi::TelemetryEventInfo::NewSdCardEventInfo(
+                std::move(sd_card_info)));
+      }));
+
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function startCapturingEvents() {
+        chrome.os.events.onSdCardEvent.addListener((event) => {
+          chrome.test.assertEq(event, {
+            event: 'connected'
+          });
+
+          chrome.test.succeed();
+        });
+
+        await chrome.os.events.startCapturingEvents("sd_card");
+      }
+    ]);
+  )");
+}
+
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
+                       OnPowerEvent_Success) {
+  // Open the PWA.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(pwa_page_url())));
+
+  GetFakeService()->SetOnSubscriptionChange(
+      base::BindLambdaForTesting([this]() {
+        auto power_info = crosapi::TelemetryPowerEventInfo::New();
+        power_info->state =
+            crosapi::TelemetryPowerEventInfo::State::kAcInserted;
+
+        GetFakeService()->EmitEventForCategory(
+            crosapi::TelemetryEventCategoryEnum::kPower,
+            crosapi::TelemetryEventInfo::NewPowerEventInfo(
+                std::move(power_info)));
+      }));
+
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function startCapturingEvents() {
+        chrome.os.events.onPowerEvent.addListener((event) => {
+          chrome.test.assertEq(event, {
+            event: 'ac_inserted'
+          });
+
+          chrome.test.succeed();
+        });
+
+        await chrome.os.events.startCapturingEvents("power");
+      }
+    ]);
+  )");
+}
+
+class PendingApprovalTelemetryExtensionEventsApiBrowserTest
+    : public TelemetryExtensionEventsApiBrowserTest {
+ public:
+  PendingApprovalTelemetryExtensionEventsApiBrowserTest() {
+    feature_list_.InitAndEnableFeature(
+        extensions_features::kTelemetryExtensionPendingApprovalApi);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// TODO(crbug.com/1454755): Flaky on ChromeOS.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_KeyboardDiagnosticEventOpensDiagnosticApp \
+  DISABLED_KeyboardDiagnosticEventOpensDiagnosticApp
+#else
+#define MAYBE_KeyboardDiagnosticEventOpensDiagnosticApp \
+  KeyboardDiagnosticEventOpensDiagnosticApp
+#endif
 IN_PROC_BROWSER_TEST_F(PendingApprovalTelemetryExtensionEventsApiBrowserTest,
-                       KeyboardDiagnosticEventOpensDiagnosticApp) {
+                       MAYBE_KeyboardDiagnosticEventOpensDiagnosticApp) {
   // Open the PWA.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(pwa_page_url())));
 
@@ -705,6 +627,139 @@ IN_PROC_BROWSER_TEST_F(PendingApprovalTelemetryExtensionEventsApiBrowserTest,
         });
 
         await chrome.os.events.startCapturingEvents("stylus_garage");
+      }
+    ]);
+  )");
+}
+
+IN_PROC_BROWSER_TEST_F(PendingApprovalTelemetryExtensionEventsApiBrowserTest,
+                       CheckTouchpadButtonApiWithFeatureFlagWork) {
+  // Open the PWA.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(pwa_page_url())));
+
+  GetFakeService()->SetOnSubscriptionChange(
+      base::BindLambdaForTesting([this]() {
+        auto button_event = crosapi::TelemetryTouchpadButtonEventInfo::New();
+        button_event->state =
+            crosapi::TelemetryTouchpadButtonEventInfo_State::kPressed;
+        button_event->button = crosapi::TelemetryInputTouchButton::kLeft;
+
+        GetFakeService()->EmitEventForCategory(
+            crosapi::TelemetryEventCategoryEnum::kTouchpadButton,
+            crosapi::TelemetryEventInfo::NewTouchpadButtonEventInfo(
+                std::move(button_event)));
+      }));
+
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function startCapturingEvents() {
+        chrome.os.events.onTouchpadButtonEvent.addListener((event) => {
+          chrome.test.assertEq(event, {
+            button: 'left',
+            state: 'pressed'
+          });
+
+          chrome.test.succeed();
+        });
+
+        await chrome.os.events.startCapturingEvents("touchpad_button");
+      }
+    ]);
+  )");
+}
+
+IN_PROC_BROWSER_TEST_F(PendingApprovalTelemetryExtensionEventsApiBrowserTest,
+                       CheckTouchpadTouchApiWithFeatureFlagWork) {
+  // Open the PWA.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(pwa_page_url())));
+
+  GetFakeService()->SetOnSubscriptionChange(
+      base::BindLambdaForTesting([this]() {
+        std::vector<crosapi::TelemetryTouchPointInfoPtr> touch_points;
+        touch_points.push_back(crosapi::TelemetryTouchPointInfo::New(
+            1, 2, 3, crosapi::UInt32Value::New(4), crosapi::UInt32Value::New(5),
+            crosapi::UInt32Value::New(6)));
+        touch_points.push_back(crosapi::TelemetryTouchPointInfo::New(
+            7, 8, 9, nullptr, nullptr, nullptr));
+
+        auto touch_event = crosapi::TelemetryTouchpadTouchEventInfo::New(
+            std::move(touch_points));
+
+        GetFakeService()->EmitEventForCategory(
+            crosapi::TelemetryEventCategoryEnum::kTouchpadTouch,
+            crosapi::TelemetryEventInfo::NewTouchpadTouchEventInfo(
+                std::move(touch_event)));
+      }));
+
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function startCapturingEvents() {
+        chrome.os.events.onTouchpadTouchEvent.addListener((event) => {
+          chrome.test.assertEq(event, {
+            touchPoints: [{
+              trackingId: 1,
+              x: 2,
+              y: 3,
+              pressure: 4,
+              touchMajor: 5,
+              touchMinor: 6
+            },{
+              trackingId: 7,
+              x: 8,
+              y: 9,
+            }]
+          });
+
+          chrome.test.succeed();
+        });
+
+        await chrome.os.events.startCapturingEvents("touchpad_touch");
+      }
+    ]);
+  )");
+}
+
+IN_PROC_BROWSER_TEST_F(PendingApprovalTelemetryExtensionEventsApiBrowserTest,
+                       CheckTouchpadConnectedApiWithFeatureFlagWork) {
+  // Open the PWA.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(pwa_page_url())));
+
+  GetFakeService()->SetOnSubscriptionChange(
+      base::BindLambdaForTesting([this]() {
+        std::vector<crosapi::TelemetryInputTouchButton> buttons{
+            crosapi::TelemetryInputTouchButton::kLeft,
+            crosapi::TelemetryInputTouchButton::kMiddle,
+            crosapi::TelemetryInputTouchButton::kRight};
+
+        auto connected_event =
+            crosapi::TelemetryTouchpadConnectedEventInfo::New(
+                1, 2, 3, std::move(buttons));
+
+        GetFakeService()->EmitEventForCategory(
+            crosapi::TelemetryEventCategoryEnum::kTouchpadConnected,
+            crosapi::TelemetryEventInfo::NewTouchpadConnectedEventInfo(
+                std::move(connected_event)));
+      }));
+
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function startCapturingEvents() {
+        chrome.os.events.onTouchpadConnectedEvent.addListener((event) => {
+          chrome.test.assertEq(event, {
+            maxX: 1,
+            maxY: 2,
+            maxPressure: 3,
+            buttons: [
+              'left',
+              'middle',
+              'right'
+            ]
+          });
+
+          chrome.test.succeed();
+        });
+
+        await chrome.os.events.startCapturingEvents("touchpad_connected");
       }
     ]);
   )");

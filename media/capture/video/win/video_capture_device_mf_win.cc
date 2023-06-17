@@ -1938,14 +1938,26 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedData(
   // To serialize all access to this class we post to the task
   // runner which is used for Video capture service API calls
   // (E.g. DeallocateAndStop).
-  main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VideoCaptureDeviceMFWin::OnIncomingCapturedDataInternal,
-                     weak_factory_.GetWeakPtr(), std::move(buffer),
-                     reference_time, timestamp));
+
+  bool need_to_post = false;
+  {
+    base::AutoLock lock(queueing_lock_);
+    need_to_post = !input_buffer_;
+    input_buffer_ = std::move(buffer);
+    input_reference_time_ = reference_time;
+    input_timestamp_ = timestamp;
+  }
+
+  if (need_to_post) {
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VideoCaptureDeviceMFWin::OnIncomingCapturedDataInternal,
+                       weak_factory_.GetWeakPtr()));
+  }
 }
 
 HRESULT VideoCaptureDeviceMFWin::DeliverTextureToClient(
+    Microsoft::WRL::ComPtr<IMFMediaBuffer> imf_buffer,
     ID3D11Texture2D* texture,
     base::TimeTicks reference_time,
     base::TimeDelta timestamp) {
@@ -1988,7 +2000,8 @@ HRESULT VideoCaptureDeviceMFWin::DeliverTextureToClient(
 
   if (base::FeatureList::IsEnabled(kMediaFoundationD3D11VideoCaptureZeroCopy) &&
       is_cross_process_shared_texture) {
-    return DeliverExternalBufferToClient(texture, texture_size, pixel_format,
+    return DeliverExternalBufferToClient(std::move(imf_buffer), texture,
+                                         texture_size, pixel_format,
                                          reference_time, timestamp);
   }
 
@@ -2060,6 +2073,7 @@ HRESULT VideoCaptureDeviceMFWin::DeliverTextureToClient(
 }
 
 HRESULT VideoCaptureDeviceMFWin::DeliverExternalBufferToClient(
+    Microsoft::WRL::ComPtr<IMFMediaBuffer> imf_buffer,
     ID3D11Texture2D* texture,
     const gfx::Size& texture_size,
     const VideoPixelFormat& pixel_format,
@@ -2113,25 +2127,34 @@ HRESULT VideoCaptureDeviceMFWin::DeliverExternalBufferToClient(
   gmb_handle.dxgi_handle.Set(texture_handle_duplicated);
   gmb_handle.dxgi_token = private_data->GetDXGIToken();
 
-  client_->OnIncomingCapturedExternalBuffer(
+  media::CapturedExternalVideoBuffer external_buffer =
       media::CapturedExternalVideoBuffer(
-          std::move(gmb_handle),
+          std::move(imf_buffer), std::move(gmb_handle),
           VideoCaptureFormat(
               texture_size,
               selected_video_capability_->supported_format.frame_rate,
               pixel_format),
-          gfx::ColorSpace()),
-      {}, reference_time, timestamp, gfx::Rect(texture_size));
+          gfx::ColorSpace());
+  client_->OnIncomingCapturedExternalBuffer(std::move(external_buffer), {},
+                                            reference_time, timestamp,
+                                            gfx::Rect(texture_size));
   return hr;
 }
 
-void VideoCaptureDeviceMFWin::OnIncomingCapturedDataInternal(
-    Microsoft::WRL::ComPtr<IMFMediaBuffer> buffer,
-    base::TimeTicks reference_time,
-    base::TimeDelta timestamp) {
+void VideoCaptureDeviceMFWin::OnIncomingCapturedDataInternal() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
                "VideoCaptureDeviceMFWin::OnIncomingCapturedDataInternal");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  Microsoft::WRL::ComPtr<IMFMediaBuffer> buffer;
+  base::TimeTicks reference_time;
+  base::TimeDelta timestamp;
+  {
+    base::AutoLock lock(queueing_lock_);
+    buffer = std::move(input_buffer_);
+    reference_time = input_reference_time_;
+    timestamp = input_timestamp_;
+  }
 
   SendOnStartedIfNotYetSent();
 
@@ -2152,8 +2175,8 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedDataInternal(
             PIXEL_FORMAT_NV12 &&
         params_.requested_format.pixel_format == PIXEL_FORMAT_NV12 &&
         SUCCEEDED(GetTextureFromMFBuffer(buffer.Get(), &texture))) {
-      HRESULT hr =
-          DeliverTextureToClient(texture.Get(), reference_time, timestamp);
+      HRESULT hr = DeliverTextureToClient(buffer, texture.Get(), reference_time,
+                                          timestamp);
       DLOG_IF_FAILED_WITH_HRESULT("Failed to deliver D3D11 texture to client.",
                                   hr);
       delivered_texture = SUCCEEDED(hr);

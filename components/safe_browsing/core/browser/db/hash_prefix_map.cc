@@ -4,6 +4,7 @@
 
 #include "components/safe_browsing/core/browser/db/hash_prefix_map.h"
 
+#include "base/debug/crash_logging.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ref.h"
@@ -127,9 +128,14 @@ void InMemoryHashPrefixMap::Clear() {
 
 HashPrefixMapView InMemoryHashPrefixMap::view() const {
   HashPrefixMapView view;
+  view.reserve(map_.size());
   for (const auto& kv : map_)
     view.emplace(kv.first, kv.second);
   return view;
+}
+
+HashPrefixesView InMemoryHashPrefixMap::at(PrefixSize size) const {
+  return map_.at(size);
 }
 
 void InMemoryHashPrefixMap::Append(PrefixSize size, HashPrefixesView prefix) {
@@ -346,6 +352,7 @@ void MmapHashPrefixMap::Clear() {
 
 HashPrefixMapView MmapHashPrefixMap::view() const {
   HashPrefixMapView view;
+  view.reserve(map_.size());
   for (const auto& kv : map_) {
     if (!kv.second.IsReadable())
       continue;
@@ -353,6 +360,12 @@ HashPrefixMapView MmapHashPrefixMap::view() const {
     view.emplace(kv.first, kv.second.GetView());
   }
   return view;
+}
+
+HashPrefixesView MmapHashPrefixMap::at(PrefixSize size) const {
+  const FileInfo& info = map_.at(size);
+  CHECK(info.IsReadable());
+  return info.GetView();
 }
 
 void MmapHashPrefixMap::Append(PrefixSize size, HashPrefixesView prefix) {
@@ -370,8 +383,9 @@ ApplyUpdateResult MmapHashPrefixMap::ReadFromDisk(
     const V4StoreFileFormat& file_format) {
   DCHECK(file_format.list_update_response().additions().empty());
   for (const auto& hash_file : file_format.hash_files()) {
-    if (!GetFileInfo(hash_file.prefix_size()).Initialize(hash_file))
+    if (!GetFileInfo(hash_file.prefix_size()).Initialize(hash_file)) {
       return MMAP_FAILURE;
+    }
   }
   return APPLY_UPDATE_SUCCESS;
 }
@@ -500,14 +514,29 @@ HashPrefixesView MmapHashPrefixMap::FileInfo::GetView() const {
 }
 
 bool MmapHashPrefixMap::FileInfo::Initialize(const HashFile& hash_file) {
+  // Make sure file size is correct before attempting to mmap.
+  int64_t file_size;
+  base::FilePath path = GetPath(store_path_, hash_file.extension());
+  if (!GetFileSize(path, &file_size)) {
+    return false;
+  }
+  if (static_cast<uint64_t>(file_size) != hash_file.file_size()) {
+    return false;
+  }
+
   if (IsReadable()) {
     DCHECK_EQ(offsets_.size(), static_cast<size_t>(hash_file.offsets().size()));
     DCHECK_EQ(file_.length(), hash_file.file_size());
     return true;
   }
 
-  if (!file_.Initialize(GetPath(store_path_, hash_file.extension())))
+  if (!file_.Initialize(path)) {
     return false;
+  }
+
+  if (file_.length() != static_cast<size_t>(file_size)) {
+    return false;
+  }
 
   offsets_.assign(hash_file.offsets().begin(), hash_file.offsets().end());
   return true;
@@ -545,6 +574,19 @@ HashPrefixStr MmapHashPrefixMap::FileInfo::Matches(
     if (start == end)
       return HashPrefixStr();
   }
+
+  // TODO(crbug.com/1409674): Remove crash logging.
+  base::StringPiece start_prefix = prefixes.substr(0, prefix_size_);
+  base::StringPiece end_prefix =
+      prefixes.substr(prefix_size_ * (end - 1), prefix_size_);
+  SCOPED_CRASH_KEY_STRING64(
+      "SafeBrowsing", "prefix_match",
+      base::StrCat({base::NumberToString(start), ":", base::NumberToString(end),
+                    ":", base::NumberToString(prefix_size_), ":",
+                    base::NumberToString(prefixes.size()), ":",
+                    base::NumberToString(start_prefix.compare(hash_prefix)),
+                    ":",
+                    base::NumberToString(end_prefix.compare(hash_prefix))}));
 
   if (HashPrefixMatches(hash_prefix, prefixes, prefix_size_, start, end))
     return hash_prefix;

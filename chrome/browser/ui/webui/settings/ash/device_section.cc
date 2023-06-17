@@ -51,6 +51,7 @@ using ::chromeos::settings::mojom::kAudioSubpagePath;
 using ::chromeos::settings::mojom::kDeviceSectionPath;
 using ::chromeos::settings::mojom::kDisplaySubpagePath;
 using ::chromeos::settings::mojom::kExternalStorageSubpagePath;
+using ::chromeos::settings::mojom::kGraphicsTabletSubpagePath;
 using ::chromeos::settings::mojom::kKeyboardSubpagePath;
 using ::chromeos::settings::mojom::kPerDeviceKeyboardRemapKeysSubpagePath;
 using ::chromeos::settings::mojom::kPerDeviceKeyboardSubpagePath;
@@ -1186,7 +1187,20 @@ void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("isDemoSession", DemoSession::IsDeviceInDemoMode());
 
+  html_source->AddBoolean(
+      "enableInputDeviceSettingsSplit",
+      base::FeatureList::IsEnabled(ash::features::kInputDeviceSettingsSplit));
+
+  html_source->AddBoolean(
+      "enablePeripheralCustomization",
+      base::FeatureList::IsEnabled(ash::features::kPeripheralCustomization));
+
+  html_source->AddBoolean("enableAltClickAndSixPackCustomization",
+                          base::FeatureList::IsEnabled(
+                              ash::features::kAltClickAndSixPackCustomization));
+
   AddDevicePointersStrings(html_source);
+  AddDeviceGraphicsTabletStrings(html_source);
   AddDeviceKeyboardStrings(html_source);
   AddDeviceStylusStrings(html_source);
   AddDeviceDisplayStrings(html_source);
@@ -1315,6 +1329,16 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
         mojom::SearchResultIcon::kDisplay,
         mojom::SearchResultDefaultRank::kMedium,
         mojom::kPerDevicePointingStickSubpagePath);
+  }
+
+  if (base::FeatureList::IsEnabled(ash::features::kPeripheralCustomization)) {
+    // TODO(yyhyyh@): Add icon for graphics tablet to replace the temporary
+    // stylus icon.
+    generator->RegisterTopLevelSubpage(IDS_SETTINGS_GRAPHICS_TABLET_TITLE,
+                                       mojom::Subpage::kGraphicsTablet,
+                                       mojom::SearchResultIcon::kStylus,
+                                       mojom::SearchResultDefaultRank::kMedium,
+                                       mojom::kGraphicsTabletSubpagePath);
   }
 
   // Keyboard.
@@ -1691,7 +1715,17 @@ void DeviceSection::AddDevicePointersStrings(
       {"touchpadScrollAccelerationLabel",
        IDS_SETTINGS_TOUCHPAD_SCROLL_ACCELERATION_LABEL},
       {"touchpadScrollSpeed", IDS_SETTINGS_TOUCHPAD_SCROLL_SPEED_LABEL},
+      {"touchpadSimulateRightClickLabel",
+       IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_LABEL},
+      {"touchpadSimulateRightClickOptionAlt",
+       IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_ALT},
+      {"touchpadSimulateRightClickOptionOff",
+       IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_OFF},
+      {"touchpadSimulateRightClickOptionSearch",
+       IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_SEARCH},
       {"learnMoreLabel", IDS_SETTINGS_LEARN_MORE_LABEL},
+      {"modifierKeysLabel", IDS_SETTINGS_MODIFIER_KEYS_LABEL},
+      {"otherKeysLabel", IDS_SETTINGS_OTHER_KEYS_LABEL},
   };
   html_source->AddLocalizedStrings(kPointersStrings);
 
@@ -1701,10 +1735,14 @@ void DeviceSection::AddDevicePointersStrings(
                          GetHelpUrlWithBoard(chrome::kHapticFeedbackHelpURL));
 
   html_source->AddBoolean("allowScrollSettings", AreScrollSettingsAllowed());
+}
 
-  html_source->AddBoolean(
-      "enableInputDeviceSettingsSplit",
-      base::FeatureList::IsEnabled(ash::features::kInputDeviceSettingsSplit));
+void DeviceSection::AddDeviceGraphicsTabletStrings(
+    content::WebUIDataSource* html_source) const {
+  static constexpr webui::LocalizedString kGraphicsTabletStrings[] = {
+      {"tabletTitle", IDS_SETTINGS_GRAPHICS_TABLET_TITLE},
+  };
+  html_source->AddLocalizedStrings(kGraphicsTabletStrings);
 }
 
 void DeviceSection::AddDeviceDisplayStrings(

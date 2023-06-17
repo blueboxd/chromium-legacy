@@ -2249,6 +2249,7 @@ FilterOperations StyleResolver::ComputeFilterOperations(
                            nullptr /* StyleRecalcContext */,
                            StyleRequest(parent.get()));
 
+  GetDocument().GetStyleEngine().UpdateViewportSize();
   state.SetStyle(*parent);
 
   StyleBuilder::ApplyProperty(GetCSSPropertyFilter(), state,
@@ -2429,6 +2430,7 @@ Font StyleResolver::ComputeFont(Element& element,
   StyleResolverState state(GetDocument(), element,
                            nullptr /* StyleRecalcContext */,
                            StyleRequest(&style));
+  GetDocument().GetStyleEngine().UpdateViewportSize();
   state.SetStyle(style);
   if (const ComputedStyle* parent_style = element.GetComputedStyle()) {
     state.SetParentStyle(parent_style);
@@ -2743,6 +2745,18 @@ void StyleResolver::PropagateStyleToViewport() {
                    kScrollbarGutterAuto);
     PROPAGATE_FROM(document_element_style, ForcedColorAdjust,
                    SetForcedColorAdjust, EForcedColorAdjust::kAuto);
+  }
+
+  // scroll-start
+  {
+    PROPAGATE_FROM(document_element_style, ScrollStartBlock,
+                   SetScrollStartBlock, ScrollStartData());
+    PROPAGATE_FROM(document_element_style, ScrollStartInline,
+                   SetScrollStartInline, ScrollStartData());
+    PROPAGATE_FROM(document_element_style, ScrollStartX, SetScrollStartX,
+                   ScrollStartData());
+    PROPAGATE_FROM(document_element_style, ScrollStartY, SetScrollStartY,
+                   ScrollStartData());
   }
 
   changed |= PropagateScrollSnapStyleToViewport(

@@ -25,6 +25,7 @@ ci.defaults.set(
 consoles.console_view(
     name = "chromium.fyi",
     branch_selector = [
+        branches.selector.CROS_LTS_BRANCHES,
         branches.selector.IOS_BRANCHES,
         branches.selector.LINUX_BRANCHES,
     ],
@@ -240,38 +241,6 @@ ci.builder(
     console_view_entry = consoles.console_view_entry(
         category = "lacros",
         short_name = "larsf",
-    ),
-)
-
-ci.thin_tester(
-    name = "lacros-arm64-generic-rel-skylab-fyi-tests",
-    triggered_by = ["lacros-arm64-generic-rel-skylab-fyi"],
-    builder_spec = builder_config.builder_spec(
-        execution_mode = builder_config.execution_mode.TEST,
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "chromeos",
-                "checkout_lacros_sdk",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = ["mb", "mb_no_luci_auth"],
-            target_bits = 64,
-            target_platform = "chromeos",
-            target_cros_boards = "kevin:jacuzzi",
-            cros_boards_with_qemu_images = "arm64-generic",
-        ),
-        build_gs_bucket = "chromium-fyi-archive",
-        skylab_upload_location = builder_config.skylab_upload_location(
-            gs_bucket = "chromium-ci-skylab",
-        ),
-    ),
-    os = os.LINUX_DEFAULT,
-    console_view_entry = consoles.console_view_entry(
-        category = "lacros",
-        short_name = "fyi-tst",
     ),
 )
 
@@ -1680,6 +1649,69 @@ This builder measures build performance for Windows developer builds, by simulat
     reclient_instance = reclient.instance.DEVELOPER,
     reclient_jobs = 1000,
     use_clang_coverage = None,
+)
+
+build_perf_builder(
+    name = "linux-chromeos-build-perf",
+    branch_selector = branches.selector.CROS_LTS_BRANCHES,
+    description_html = """\
+This builder measures ChromeOS build performance with and without remote caches.<br/>\
+The build configs and the bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium/builders/try/linux-chromeos-rel-compilator">linux-chromeos-rel-compilator</a>.\
+""",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chromeos",
+                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
+                "chromium_no_telemetry_dependencies",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+        ),
+    ),
+    os = os.LINUX_DEFAULT,
+    console_view_entry = consoles.console_view_entry(
+        category = "buildperf",
+        short_name = "cros",
+    ),
+)
+
+build_perf_builder(
+    name = "linux-chromeos-build-perf-siso",
+    branch_selector = branches.selector.CROS_LTS_BRANCHES,
+    description_html = """\
+This builder measures ChromeOS build performance with Siso.<br/>\
+The build configs and the bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium/builders/try/linux-chromeos-rel-compilator">linux-chromeos-rel-compilator</a>.\
+""",
+    executable = "recipe:chrome_build/build_perf_siso",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chromeos",
+                "checkout_siso",
+                "siso_latest",
+                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
+                "chromium_no_telemetry_dependencies",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+        ),
+    ),
+    os = os.LINUX_DEFAULT,
+    console_view_entry = consoles.console_view_entry(
+        category = "buildperf",
+        short_name = "crosss",
+    ),
 )
 
 ci.builder(

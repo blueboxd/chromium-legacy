@@ -11,6 +11,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModel.ReadableObjectPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -19,6 +20,13 @@ import java.lang.annotation.RetentionPolicy;
  * Properties defined here reflect the visible state of the local passwords migration warning.
  */
 class PasswordMigrationWarningProperties {
+    @IntDef({MigrationOption.SYNC_PASSWORDS, MigrationOption.EXPORT_AND_DELETE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface MigrationOption {
+        int SYNC_PASSWORDS = 0;
+        int EXPORT_AND_DELETE = 1;
+    }
+
     /**
      * The different screens that can be shown on the sheet.
      */
@@ -37,10 +45,14 @@ class PasswordMigrationWarningProperties {
             ON_CLICK_HANDLER = new ReadableObjectPropertyKey<>("on_click_handler");
     public static final WritableIntPropertyKey CURRENT_SCREEN =
             new WritableIntPropertyKey("current_screen");
+    public static final WritableObjectPropertyKey ACCOUNT_DISPLAY_NAME =
+            new WritableObjectPropertyKey("account_display_name");
 
     static PropertyModel createDefaultModel(Callback<Integer> dismissHandler,
             PasswordMigrationWarningOnClickHandler onClickHandler) {
-        return new PropertyModel.Builder(VISIBLE, DISMISS_HANDLER, ON_CLICK_HANDLER, CURRENT_SCREEN)
+        return new PropertyModel
+                .Builder(VISIBLE, DISMISS_HANDLER, ON_CLICK_HANDLER, CURRENT_SCREEN,
+                        ACCOUNT_DISPLAY_NAME)
                 .with(DISMISS_HANDLER, dismissHandler)
                 .with(ON_CLICK_HANDLER, onClickHandler)
                 .build();

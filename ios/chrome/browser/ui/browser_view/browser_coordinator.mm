@@ -913,6 +913,7 @@ enum class ToolbarKind {
 
   _toolbarCoordinator.omniboxFocusDelegate = self.viewController;
   _toolbarCoordinator.popupPresenterDelegate = self.viewController;
+  _toolbarCoordinator.toolbarHeightDelegate = self.viewController;
   [_toolbarCoordinator start];
 
   _loadQueryCommandsHandler =
@@ -953,7 +954,7 @@ enum class ToolbarKind {
   _viewControllerDependencies.pagePlaceholderBrowserAgent = nil;
   _viewControllerDependencies.webStateUpdateBrowserAgent = nil;
 
-  [_bookmarksCoordinator shutdown];
+  [_bookmarksCoordinator stop];
   _bookmarksCoordinator = nil;
 
   _legacyTabStripCoordinator = nil;
@@ -1595,8 +1596,10 @@ enum class ToolbarKind {
 }
 
 - (void)dismissWhatsNew {
-  [self.whatsNewCoordinator stop];
-  self.whatsNewCoordinator = nil;
+  if (self.whatsNewCoordinator) {
+    [self.whatsNewCoordinator stop];
+    self.whatsNewCoordinator = nil;
+  }
 }
 
 - (void)showWhatsNewIPH {
@@ -1653,6 +1656,11 @@ enum class ToolbarKind {
             self.viewController, self.browser);
   }
   [self.choiceCoordinator start];
+}
+
+- (void)dismissChoice {
+  [self.choiceCoordinator stop];
+  self.choiceCoordinator = nil;
 }
 
 #pragma mark - DefaultBrowserPromoCommands

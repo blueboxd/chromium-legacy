@@ -91,6 +91,7 @@
 #include "cc/trees/mobile_optimized_viewport_util.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/presentation_time_callback_buffer.h"
+#include "cc/trees/raster_capabilities.h"
 #include "cc/trees/raster_context_provider_wrapper.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "cc/trees/render_frame_metadata_observer.h"
@@ -117,7 +118,6 @@
 #include "components/viz/common/transition_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -523,9 +523,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   frame_trackers_.set_custom_tracker_results_added_callback(
       base::BindRepeating(&LayerTreeHostImpl::NotifyThroughputTrackerResults,
                           weak_factory_.GetWeakPtr()));
-
-  raster_caps_.use_dmsaa_for_tiles =
-      base::FeatureList::IsEnabled(features::kUseDMSAAForTiles);
 }
 
 LayerTreeHostImpl::~LayerTreeHostImpl() {
@@ -795,9 +792,6 @@ void LayerTreeHostImpl::CommitComplete() {
 }
 
 void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
-  // LayerTreeHost may have changed the GPU rasterization flags state, which
-  // may require an update of the tree resources.
-  UpdateTreeResourcesForGpuRasterizationIfNeeded();
   sync_tree()->set_needs_update_draw_properties();
 
   // We need an update immediately post-commit to have the opportunity to create
@@ -2860,81 +2854,46 @@ int LayerTreeHostImpl::RequestedMSAASampleCount() const {
   return settings_.gpu_rasterization_msaa_sample_count;
 }
 
-bool LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
-  if (!raster_caps().need_update_gpu_rasterization_status) {
-    return false;
-  }
-  raster_caps_.need_update_gpu_rasterization_status = false;
+void LayerTreeHostImpl::UpdateRasterCapabilities() {
+  CHECK(layer_tree_frame_sink_);
 
-  // TODO(danakj): Can we avoid having this run when there's no
-  // LayerTreeFrameSink?
-  // For now just early out and leave things unchanged, we'll come back here
-  // when we get a LayerTreeFrameSink.
-  if (!layer_tree_frame_sink_)
-    return false;
+  raster_caps_ = RasterCapabilities();
 
-  RasterCapabilities new_raster_caps;
-  [this](RasterCapabilities& gpu_caps) {
-    if (settings_.gpu_rasterization_disabled) {
-      return;
-    }
+  auto* context_provider = layer_tree_frame_sink_->context_provider();
+  auto* worker_context_provider =
+      layer_tree_frame_sink_->worker_context_provider();
 
-    if (!(layer_tree_frame_sink_ &&
-          layer_tree_frame_sink_->context_provider() &&
-          layer_tree_frame_sink_->worker_context_provider())) {
-      return;
-    }
-
-    viz::RasterContextProvider* context_provider =
-        layer_tree_frame_sink_->worker_context_provider();
-    viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
-        context_provider);
-
-    const auto& caps = context_provider->ContextCapabilities();
-    gpu_caps.use_gpu_rasterization = caps.gpu_rasterization;
-    if (!gpu_caps.use_gpu_rasterization) {
-      return;
-    }
-
-    DCHECK(caps.supports_oop_raster);
-    gpu_caps.can_use_msaa = !caps.msaa_is_slow && !caps.avoid_stencil_buffers;
-  }(new_raster_caps);
-
-  // Changes in MSAA settings require that we re-raster resources for the
-  // settings to take effect. But we don't need to trigger any raster
-  // invalidation in this case since these settings change only if the context
-  // changed. In this case we already re-allocate and re-raster all resources.
-  if (new_raster_caps.use_gpu_rasterization ==
-          raster_caps().use_gpu_rasterization &&
-      new_raster_caps.can_use_msaa == raster_caps().can_use_msaa) {
-    return false;
-  }
-
-  raster_caps_.use_gpu_rasterization = new_raster_caps.use_gpu_rasterization;
-  raster_caps_.can_use_msaa = new_raster_caps.can_use_msaa;
-  return true;
-}
-
-void LayerTreeHostImpl::UpdateTreeResourcesForGpuRasterizationIfNeeded() {
-  if (!UpdateGpuRasterizationStatus())
+  if (!context_provider) {
+    // No context provider means software raster + compositing.
+    CHECK(!worker_context_provider);
+    raster_caps_.max_texture_size = settings_.max_render_buffer_bounds_for_sw;
     return;
-
-  // Clean up and replace existing tile manager with another one that uses
-  // appropriate rasterizer. Only do this however if we already have a
-  // resource pool, since otherwise we might not be able to create a new
-  // one.
-  ReleaseTileResources();
-  if (resource_pool_) {
-    CleanUpTileManagerResources();
-    CreateTileManagerResources();
   }
-  RecreateTileResources();
 
-  // We have released tilings for both active and pending tree.
-  // We would not have any content to draw until the pending tree is activated.
-  // Prevent the active tree from drawing until activation.
-  // TODO(crbug.com/469175): Replace with RequiresHighResToDraw.
-  SetRequiresHighResToDraw();
+  if (!worker_context_provider) {
+    // For Android UI it's possible to only have a compositor context and no
+    // worker context. Raster is not supported in this mode.
+    raster_caps_.max_texture_size =
+        context_provider->ContextCapabilities().max_texture_size;
+    return;
+  }
+
+  viz::RasterContextProvider::ScopedRasterContextLock scoped_lock(
+      worker_context_provider);
+  const auto& context_caps = worker_context_provider->ContextCapabilities();
+
+  raster_caps_.max_texture_size = context_caps.max_texture_size;
+
+  if (settings_.gpu_rasterization_disabled || !context_caps.gpu_rasterization) {
+    return;
+  }
+
+  // GPU rasterization is enabled if we get this far.
+  CHECK(context_caps.supports_oop_raster);
+  raster_caps_.use_gpu_rasterization = true;
+
+  raster_caps_.can_use_msaa =
+      !context_caps.msaa_is_slow && !context_caps.avoid_stencil_buffers;
 }
 
 ImageDecodeCache* LayerTreeHostImpl::GetImageDecodeCache() const {
@@ -3900,38 +3859,12 @@ bool LayerTreeHostImpl::InitializeFrameSink(
   layer_tree_frame_sink_ = layer_tree_frame_sink;
   has_valid_layer_tree_frame_sink_ = true;
 
-  auto* context_provider = layer_tree_frame_sink_->context_provider();
-  auto* worker_context_provider =
-      layer_tree_frame_sink_->worker_context_provider();
-
-  if (worker_context_provider) {
-    viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
-        worker_context_provider);
-    raster_caps_.max_texture_size =
-        worker_context_provider->ContextCapabilities().max_texture_size;
-#if BUILDFLAG(IS_ANDROID)
-    // On Android, DMSAA is only enabled for vulkan until GL regressions are
-    // fixed.
-    raster_caps_.use_dmsaa_for_tiles &=
-        worker_context_provider->ContextCapabilities().using_vulkan_context;
-#endif
-  } else if (context_provider) {
-    raster_caps_.max_texture_size =
-        context_provider->ContextCapabilities().max_texture_size;
-  } else {
-    raster_caps_.max_texture_size = settings_.max_render_buffer_bounds_for_sw;
-  }
+  UpdateRasterCapabilities();
 
   resource_pool_ = std::make_unique<ResourcePool>(
-      &resource_provider_, context_provider, GetTaskRunner(),
-      ResourcePool::kDefaultExpirationDelay,
+      &resource_provider_, layer_tree_frame_sink_->context_provider(),
+      GetTaskRunner(), ResourcePool::kDefaultExpirationDelay,
       settings_.disallow_non_exact_resource_reuse);
-
-  // Since the new context may support GPU raster or be capable of MSAA, update
-  // status here. We don't need to check the return value since we are
-  // recreating all resources already.
-  SetNeedUpdateGpuRasterizationStatus();
-  UpdateGpuRasterizationStatus();
 
   // See note in LayerTreeImpl::UpdateDrawProperties, new LayerTreeFrameSink
   // means a new max texture size which affects draw properties. Also, if the
@@ -4970,10 +4903,6 @@ void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(
     return;
   property_trees->scroll_tree_mutable().OnScrollOffsetAnimated(
       element_id, scroll_node->id, scroll_offset, tree);
-}
-
-void LayerTreeHostImpl::SetNeedUpdateGpuRasterizationStatus() {
-  raster_caps_.need_update_gpu_rasterization_status = true;
 }
 
 void LayerTreeHostImpl::SetElementFilterMutated(

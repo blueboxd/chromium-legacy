@@ -334,11 +334,11 @@ public abstract class ChromeFeatureList {
     public static final String OPTIMIZATION_GUIDE_PUSH_NOTIFICATIONS =
             "OptimizationGuidePushNotifications";
     public static final String PAGE_ANNOTATIONS_SERVICE = "PageAnnotationsService";
-    public static final String PAGE_INFO_ABOUT_THIS_SITE_EN = "PageInfoAboutThisSiteEn";
     public static final String PAGE_INFO_ABOUT_THIS_SITE_IMPROVED_BOTTOMSHEET =
             "PageInfoAboutThisSiteImprovedBottomSheet";
     public static final String PAGE_INFO_ABOUT_THIS_SITE_NEW_ICON = "PageInfoAboutThisSiteNewIcon";
-    public static final String PAGE_INFO_ABOUT_THIS_SITE_NON_EN = "PageInfoAboutThisSiteNonEn";
+    public static final String PAGE_INFO_ABOUT_THIS_SITE_MORE_LANGS =
+            "PageInfoAboutThisSiteMoreLangs";
     public static final String PAINT_PREVIEW_DEMO = "PaintPreviewDemo";
     public static final String PARTNER_CUSTOMIZATIONS_UMA = "PartnerCustomizationsUma";
     public static final String PASSKEY_MANAGEMENT_USING_ACCOUNT_SETTINGS_ANDROID =
@@ -378,6 +378,7 @@ public abstract class ChromeFeatureList {
             "ReduceToolbarUpdatesForSameDocNavigations";
     public static final String REENGAGEMENT_NOTIFICATION = "ReengagementNotification";
     public static final String RELATED_SEARCHES = "RelatedSearches";
+    public static final String RESTORE_TABS_ON_FRE = "RestoreTabsOnFRE";
     public static final String REQUEST_DESKTOP_SITE_DEFAULTS = "RequestDesktopSiteDefaults";
     public static final String REQUEST_DESKTOP_SITE_DEFAULTS_CONTROL =
             "RequestDesktopSiteDefaultsControl";
@@ -446,6 +447,7 @@ public abstract class ChromeFeatureList {
     public static final String TEST_DEFAULT_DISABLED = "TestDefaultDisabled";
     public static final String TEST_DEFAULT_ENABLED = "TestDefaultEnabled";
     public static final String THUMBNAIL_CACHE_REFACTOR = "ThumbnailCacheRefactor";
+    public static final String THUMBNAIL_PLACEHOLDER = "ThumbnailPlaceholder";
     public static final String TOOLBAR_MIC_IPH_ANDROID = "ToolbarMicIphAndroid";
     public static final String TOOLBAR_SCROLL_ABLATION_ANDROID = "ToolbarScrollAblationAndroid";
     public static final String TOOLBAR_USE_HARDWARE_BITMAP_DRAW = "ToolbarUseHardwareBitmapDraw";

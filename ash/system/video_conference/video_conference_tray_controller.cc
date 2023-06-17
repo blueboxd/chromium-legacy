@@ -182,10 +182,13 @@ void VideoConferenceTrayController::MaybeShowSpeakOnMuteOptInNudge(
 
   AnchoredNudgeData nudge_data(
       kVideoConferenceTraySpeakOnMuteOptInNudgeId,
-      AnchoredNudgeCatalogName::kVideoConferenceTraySpeakOnMuteOptIn,
+      NudgeCatalogName::kVideoConferenceTraySpeakOnMuteOptIn,
       l10n_util::GetStringUTF16(
-          IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_MESSAGE),
+          IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_BODY),
       anchor_view);
+
+  nudge_data.title_text = l10n_util::GetStringUTF16(
+      IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_TITLE);
 
   nudge_data.dismiss_text = l10n_util::GetStringUTF16(
       IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_DISMISS_BUTTON);
@@ -198,6 +201,8 @@ void VideoConferenceTrayController::MaybeShowSpeakOnMuteOptInNudge(
   nudge_data.second_button_callback = base::BindRepeating(
       &VideoConferenceTrayController::OnSpeakOnMuteNudgeOptIn,
       weak_ptr_factory_.GetWeakPtr());
+
+  nudge_data.has_infinite_duration = true;
 
   AnchoredNudgeManager::Get()->Show(nudge_data);
 
@@ -220,6 +225,9 @@ void VideoConferenceTrayController::OnSpeakOnMuteNudgeOptIn() {
 
   pref_service->SetBoolean(prefs::kShouldShowSpeakOnMuteOptInNudge, false);
   pref_service->SetBoolean(prefs::kUserSpeakOnMuteDetectionEnabled, true);
+
+  Shell::Get()->anchored_nudge_manager()->MaybeRecordNudgeAction(
+      NudgeCatalogName::kVideoConferenceTraySpeakOnMuteOptIn);
 }
 
 void VideoConferenceTrayController::OnSpeakOnMuteNudgeOptOut() {
@@ -231,6 +239,9 @@ void VideoConferenceTrayController::OnSpeakOnMuteNudgeOptOut() {
 
   pref_service->SetBoolean(prefs::kShouldShowSpeakOnMuteOptInNudge, false);
   pref_service->SetBoolean(prefs::kUserSpeakOnMuteDetectionEnabled, false);
+
+  Shell::Get()->anchored_nudge_manager()->MaybeRecordNudgeAction(
+      NudgeCatalogName::kVideoConferenceTraySpeakOnMuteOptIn);
 }
 
 void VideoConferenceTrayController::CloseAllVcNudges() {
@@ -350,6 +361,12 @@ void VideoConferenceTrayController::OnCameraHWPrivacySwitchStateChanged(
         crosapi::mojom::VideoConferenceMediaDevice::kCamera,
         /*disabled=*/GetCameraMuted());
   }
+
+  // Attempt recording "Use while disabled" nudge action when camera is unmuted.
+  if (!camera_muted_by_hardware_switch_) {
+    Shell::Get()->anchored_nudge_manager()->MaybeRecordNudgeAction(
+        NudgeCatalogName::kVideoConferenceTrayCameraUseWhileHWDisabled);
+  }
 }
 
 void VideoConferenceTrayController::OnCameraSWPrivacySwitchStateChanged(
@@ -363,6 +380,12 @@ void VideoConferenceTrayController::OnCameraSWPrivacySwitchStateChanged(
     video_conference_manager_->SetSystemMediaDeviceStatus(
         crosapi::mojom::VideoConferenceMediaDevice::kCamera,
         /*disabled=*/GetCameraMuted());
+  }
+
+  // Attempt recording "Use while disabled" nudge action when camera is unmuted.
+  if (!camera_muted_by_software_switch_) {
+    Shell::Get()->anchored_nudge_manager()->MaybeRecordNudgeAction(
+        NudgeCatalogName::kVideoConferenceTrayCameraUseWhileSWDisabled);
   }
 }
 
@@ -402,6 +425,15 @@ void VideoConferenceTrayController::OnInputMuteChanged(
     // Cancel speak-on-mute opt-in nudge if one was being shown.
     AnchoredNudgeManager::Get()->Cancel(
         kVideoConferenceTraySpeakOnMuteOptInNudgeId);
+    Shell::Get()->anchored_nudge_manager()->MaybeRecordNudgeAction(
+        NudgeCatalogName::kVideoConferenceTraySpeakOnMuteDetected);
+
+    // Attempt recording "Use while disabled" nudge action when mic is unmuted.
+    Shell::Get()->anchored_nudge_manager()->MaybeRecordNudgeAction(
+        microphone_muted_by_hardware_switch_
+            ? NudgeCatalogName::kVideoConferenceTrayMicrophoneUseWhileHWDisabled
+            : NudgeCatalogName::
+                  kVideoConferenceTrayMicrophoneUseWhileSWDisabled);
   }
 }
 
@@ -413,7 +445,7 @@ void VideoConferenceTrayController::OnSpeakOnMuteDetected() {
               .InSeconds() >= KSpeakOnMuteNotificationCoolDownDuration) {
     AnchoredNudgeData nudge_data(
         kVideoConferenceTraySpeakOnMuteDetectedNudgeId,
-        AnchoredNudgeCatalogName::kVideoConferenceTraySpeakOnMuteDetected,
+        NudgeCatalogName::kVideoConferenceTraySpeakOnMuteDetected,
         l10n_util::GetStringUTF16(
             IDS_ASH_VIDEO_CONFERENCE_TOAST_SPEAK_ON_MUTE_DETECTED),
         /*anchor_view=*/GetVcTrayInActiveWindow()->audio_icon());
@@ -557,6 +589,7 @@ void VideoConferenceTrayController::HandleDeviceUsedWhileDisabled(
   // being used while disabled.
   std::u16string device_name;
   int text_id;
+  NudgeCatalogName catalog_name;
   views::View* anchor_view = nullptr;
   switch (device) {
     case crosapi::mojom::VideoConferenceMediaDevice::kMicrophone:
@@ -566,6 +599,11 @@ void VideoConferenceTrayController::HandleDeviceUsedWhileDisabled(
           microphone_muted_by_hardware_switch_
               ? IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_HARDWARE_DISABLED
               : IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_SOFTWARE_DISABLED;
+      catalog_name = microphone_muted_by_hardware_switch_
+                         ? NudgeCatalogName::
+                               kVideoConferenceTrayMicrophoneUseWhileHWDisabled
+                         : NudgeCatalogName::
+                               kVideoConferenceTrayMicrophoneUseWhileSWDisabled;
       anchor_view = GetVcTrayInActiveWindow()->audio_icon();
       break;
     case crosapi::mojom::VideoConferenceMediaDevice::kCamera:
@@ -575,6 +613,10 @@ void VideoConferenceTrayController::HandleDeviceUsedWhileDisabled(
           camera_muted_by_hardware_switch_
               ? IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_HARDWARE_DISABLED
               : IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_SOFTWARE_DISABLED;
+      catalog_name =
+          camera_muted_by_hardware_switch_
+              ? NudgeCatalogName::kVideoConferenceTrayCameraUseWhileHWDisabled
+              : NudgeCatalogName::kVideoConferenceTrayCameraUseWhileSWDisabled;
       anchor_view = GetVcTrayInActiveWindow()->camera_icon();
       break;
     default:
@@ -583,8 +625,7 @@ void VideoConferenceTrayController::HandleDeviceUsedWhileDisabled(
   }
 
   AnchoredNudgeData nudge_data(
-      kVideoConferenceTrayUseWhileDisabledNudgeId,
-      AnchoredNudgeCatalogName::kVideoConferenceTrayUseWhileDisabled,
+      kVideoConferenceTrayUseWhileDisabledNudgeId, catalog_name,
       l10n_util::GetStringFUTF16(text_id, app_name, device_name), anchor_view);
   AnchoredNudgeManager::Get()->Show(nudge_data);
 }

@@ -10,6 +10,10 @@
 #import "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
 
+namespace autofill {
+class FormStructure;
+}  // namespace autofill
+
 namespace web {
 class ScriptMessage;
 class WebFrame;
@@ -47,16 +51,16 @@ class AutofillBottomSheetTabHelper
 
   // Prepare bottom sheet using data from the credit card form prediction.
   void AttachPaymentsListeners(
-      const std::vector<autofill::FieldRendererId>& renderer_ids,
+      const std::vector<autofill::FormStructure*>& forms,
       web::WebFrame* frame);
 
-  // Whether the provided field type is one which can trigger the Payments
-  // Bottom Sheet.
-  bool IsPaymentsBottomSheetTriggeringField(
-      autofill::ServerFieldType type) const;
+  // Detach the password listeners, which will deactivate the password bottom
+  // sheet.
+  void DetachPasswordListeners(web::WebFrame* frame, bool refocus);
 
-  // Detach the password listeners, which will deactivate the bottom sheet.
-  void DetachPasswordListenersAndRefocus(web::WebFrame* frame);
+  // Detach the payments listeners, which will deactivate the payments bottom
+  // sheet.
+  void DetachPaymentsListeners(web::WebFrame* frame, bool refocus);
 
   // WebStateObserver:
   void DidFinishNavigation(web::WebState* web_state,
@@ -79,7 +83,8 @@ class AutofillBottomSheetTabHelper
   void AttachListeners(
       const std::vector<autofill::FieldRendererId>& renderer_ids,
       std::set<autofill::FieldRendererId>& registered_renderer_ids,
-      web::WebFrame* frame);
+      web::WebFrame* frame,
+      bool must_be_empty);
 
   // Handler used to request showing the password bottom sheet.
   __weak id<AutofillBottomSheetCommands> commands_handler_;

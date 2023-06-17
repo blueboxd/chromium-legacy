@@ -4,7 +4,11 @@
 
 #include "chrome/browser/ui/views/side_panel/search_companion/search_companion_side_panel_coordinator.h"
 
+#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/companion/core/constants.h"
+#include "chrome/browser/companion/core/features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -25,6 +29,20 @@
 #include "components/prefs/pref_service.h"
 #include "components/vector_icons/vector_icons.h"
 
+namespace {
+
+// Should be kept in sync with histogram enum
+// CompanionSidePanelAvailabilityChanged.
+enum class CompanionSidePanelAvailabilityChanged {
+  kUnavailableToUnavailable = 0,
+  kUnavailableToAvailable = 1,
+  kAvailableToUnavailable = 2,
+  kAvailableToAvailable = 3,
+  kMaxValue = kAvailableToAvailable
+};
+
+}  // namespace
+
 SearchCompanionSidePanelCoordinator::SearchCompanionSidePanelCoordinator(
     Browser* browser)
     : BrowserUserData<SearchCompanionSidePanelCoordinator>(*browser),
@@ -32,7 +50,7 @@ SearchCompanionSidePanelCoordinator::SearchCompanionSidePanelCoordinator(
       // TODO(b/269331995): Localize menu item label.
       name_(l10n_util::GetStringUTF16(IDS_SIDE_PANEL_COMPANION_TITLE)),
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-      icon_(vector_icons::kGoogleSearchCompanionLogoIcon),
+      icon_(vector_icons::kGoogleSearchCompanionMonochromeLogoIcon),
       disabled_icon_(vector_icons::kGoogleSearchCompanionMonochromeLogoIcon),
 #else
       icon_(vector_icons::kSearchIcon),
@@ -57,6 +75,18 @@ SearchCompanionSidePanelCoordinator::SearchCompanionSidePanelCoordinator(
       base::BindRepeating(
           &SearchCompanionSidePanelCoordinator::OnPolicyPrefChanged,
           base::Unretained(this)));
+
+  if (base::FeatureList::IsEnabled(
+          companion::features::internal::
+              kCompanionEnabledByObservingExpsNavigations)) {
+    exps_optin_pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+    exps_optin_pref_change_registrar_->Init(pref_service_);
+    exps_optin_pref_change_registrar_->Add(
+        companion::kHasNavigatedToExpsSuccessPage,
+        base::BindRepeating(
+            &SearchCompanionSidePanelCoordinator::OnExpsPolicyPrefChanged,
+            base::Unretained(this)));
+  }
 }
 
 SearchCompanionSidePanelCoordinator::~SearchCompanionSidePanelCoordinator() =
@@ -67,6 +97,10 @@ bool SearchCompanionSidePanelCoordinator::IsSupported(
     Profile* profile,
     bool include_runtime_checks) {
   if (profile->IsIncognitoProfile() || profile->IsGuestSession()) {
+    return false;
+  }
+
+  if (!companion::IsCompanionFeatureEnabled()) {
     return false;
   }
 
@@ -107,6 +141,14 @@ void SearchCompanionSidePanelCoordinator::OnTabStripModelChanged(
   if (change.type() == TabStripModelChange::Type::kInserted) {
     for (const auto& inserted_tab : change.GetInsert()->contents) {
       companion::CompanionTabHelper::FromWebContents(inserted_tab.contents)
+          ->CreateAndRegisterEntry();
+    }
+  }
+  if (change.type() == TabStripModelChange::Type::kReplaced) {
+    raw_ptr<content::WebContents> new_contents =
+        change.GetReplace()->new_contents;
+    if (new_contents) {
+      companion::CompanionTabHelper::FromWebContents(new_contents)
           ->CreateAndRegisterEntry();
     }
   }
@@ -157,6 +199,9 @@ void SearchCompanionSidePanelCoordinator::
   // Update existence of companion entry points based on changes.
   if (companion::IsSearchInCompanionSidePanelSupported(browser_) &&
       !is_currently_observing_tab_changes_) {
+    base::UmaHistogramEnumeration(
+        "Companion.SidePanelAvailabilityChanged",
+        CompanionSidePanelAvailabilityChanged::kUnavailableToAvailable);
     is_currently_observing_tab_changes_ = true;
     container->AddPinnedEntryButtonFor(SidePanelEntry::Id::kSearchCompanion,
                                        name(), icon());
@@ -167,12 +212,32 @@ void SearchCompanionSidePanelCoordinator::
 
   if (!companion::IsSearchInCompanionSidePanelSupported(browser_) &&
       is_currently_observing_tab_changes_) {
+    base::UmaHistogramEnumeration(
+        "Companion.SidePanelAvailabilityChanged",
+        CompanionSidePanelAvailabilityChanged::kAvailableToUnavailable);
     is_currently_observing_tab_changes_ = false;
     container->RemovePinnedEntryButtonFor(SidePanelEntry::Id::kSearchCompanion);
     browser_->tab_strip_model()->RemoveObserver(this);
     DeregisterEntriesForExistingWebContents(browser_->tab_strip_model());
     return;
   }
+
+  if (companion::IsSearchInCompanionSidePanelSupported(browser_) &&
+      is_currently_observing_tab_changes_) {
+    base::UmaHistogramEnumeration(
+        "Companion.SidePanelAvailabilityChanged",
+        CompanionSidePanelAvailabilityChanged::kAvailableToAvailable);
+    return;
+  }
+
+  if (!companion::IsSearchInCompanionSidePanelSupported(browser_) &&
+      !is_currently_observing_tab_changes_) {
+    base::UmaHistogramEnumeration(
+        "Companion.SidePanelAvailabilityChanged",
+        CompanionSidePanelAvailabilityChanged::kUnavailableToUnavailable);
+    return;
+  }
+  NOTREACHED();
 }
 
 void SearchCompanionSidePanelCoordinator::MaybeUpdateCompanionEnabledState() {
@@ -226,6 +291,18 @@ void SearchCompanionSidePanelCoordinator::OnPolicyPrefChanged() {
   }
 
   UpdateCompanionAvailabilityInSidePanel();
+}
+
+void SearchCompanionSidePanelCoordinator::OnExpsPolicyPrefChanged() {
+  if (!pref_service_) {
+    return;
+  }
+  base::UmaHistogramBoolean(
+      "Companion.HasNavigatedToExpsSuccessPagePref.OnChanged",
+      pref_service_->GetBoolean(companion::kHasNavigatedToExpsSuccessPage));
+
+  UpdateCompanionAvailabilityInSidePanel();
+  companion::UpdateCompanionDefaultPinnedToToolbarState(pref_service_);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SearchCompanionSidePanelCoordinator);

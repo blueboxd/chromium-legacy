@@ -63,11 +63,18 @@ void SigninDelegateImpl::StartSigninFlow() {
   DCHECK(AllowedSignin());
 
   // Show the promo here.
-  signin_ui_util::EnableSyncFromSingleAccountPromo(
-      GetProfile(),
-      IdentityManagerFactory::GetForProfile(GetProfile())
-          ->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin),
-      signin_metrics::AccessPoint::ACCESS_POINT_SEARCH_COMPANION);
+  if (SyncServiceFactory::GetForProfile(GetProfile())->GetTransportState() !=
+      syncer::SyncService::TransportState::PAUSED) {
+    signin_ui_util::EnableSyncFromSingleAccountPromo(
+        GetProfile(),
+        IdentityManagerFactory::GetForProfile(GetProfile())
+            ->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin),
+        signin_metrics::AccessPoint::ACCESS_POINT_SEARCH_COMPANION);
+    return;
+  }
+
+  signin_ui_util::ShowReauthForPrimaryAccountWithAuthError(
+      GetProfile(), signin_metrics::AccessPoint::ACCESS_POINT_SEARCH_COMPANION);
 }
 
 void SigninDelegateImpl::EnableMsbb(bool enable_msbb) {
@@ -77,13 +84,17 @@ void SigninDelegateImpl::EnableMsbb(bool enable_msbb) {
 }
 
 void SigninDelegateImpl::OpenUrlInBrowser(const GURL& url, bool use_new_tab) {
+  auto* browser = companion::GetBrowserForWebContents(webui_contents_);
+  if (!browser) {
+    return;
+  }
+
   content::OpenURLParams params(url, content::Referrer(),
                                 use_new_tab
                                     ? WindowOpenDisposition::NEW_FOREGROUND_TAB
                                     : WindowOpenDisposition::CURRENT_TAB,
                                 ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                 /*is_renderer_initiated*/ false);
-  auto* browser = companion::GetBrowserForWebContents(webui_contents_);
   browser->OpenURL(params);
 }
 

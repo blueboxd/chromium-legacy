@@ -84,6 +84,10 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
     titleStackView.alignment = UIStackViewAlignmentCenter;
     titleStackView.axis = UILayoutConstraintAxisHorizontal;
     titleStackView.distribution = UIStackViewDistributionFill;
+    // Resist Vertical expansion so all titles are the same height, allowing
+    // content view to fill the rest of the module space.
+    [titleStackView setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                                      forAxis:UILayoutConstraintAxisVertical];
 
     UILabel* title = [[UILabel alloc] init];
     title.text = [MagicStackModuleContainer titleStringForModule:type];
@@ -130,6 +134,8 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
     }
     if ([self shouldShowSeparator]) {
       UIView* separator = [[UIView alloc] init];
+      [separator setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                                   forAxis:UILayoutConstraintAxisVertical];
       separator.backgroundColor = [UIColor colorNamed:kSeparatorColor];
       [stackView addArrangedSubview:separator];
       [NSLayoutConstraint activateConstraints:@[
@@ -238,8 +244,7 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
 #pragma mark - Helpers
 
 - (void)seeMoreButtonWasTapped:(UIButton*)button {
-  // TODO(crbug.com/1432252): Implement presenting views for different module
-  // types.
+  [_delegate seeMoreWasTappedForModuleType:_type];
 }
 
 - (BOOL)shouldShowSeeMore {

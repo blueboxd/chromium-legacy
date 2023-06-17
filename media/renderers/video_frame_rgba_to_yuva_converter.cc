@@ -61,9 +61,7 @@ class ScopedAcceleratedSkImage {
     GrGLTextureInfo gl_info = {
         mailbox_holder.texture_target,
         texture_id,
-        viz::TextureStorageFormat(
-            format.resource_format(),
-            provider->ContextCapabilities().angle_rgbx_internal_format),
+        provider->GetGrGLTextureFormat(format),
     };
     GrBackendTexture backend_texture(size.width(), size.height(),
                                      GrMipmapped::kNo, gl_info);
@@ -134,10 +132,18 @@ bool CopyRGBATextureToVideoFrame(viz::RasterContextProvider* provider,
     return false;
   }
 
+  // If RGB->YUV conversion is unsupported, the CopySharedImage calls will fail
+  // on the service side with no ability to detect failure on the client side.
+  // Hence, check for support preemptively and early out here if unsupported.
+  if (!provider->ContextCapabilities().supports_yuv_rgb_conversion) {
+    DVLOG(1) << "RGB->YUV conversion not supported";
+    return false;
+  }
+
 #if BUILDFLAG(IS_WIN)
   // CopyToGpuMemoryBuffer is only supported for D3D shared images on Windows.
   if (!provider->ContextCapabilities().shared_image_d3d) {
-    DLOG(ERROR) << "CopyToGpuMemoryBuffer not supported.";
+    DVLOG(1) << "CopyToGpuMemoryBuffer not supported.";
     return false;
   }
 #endif  // BUILDFLAG(IS_WIN)

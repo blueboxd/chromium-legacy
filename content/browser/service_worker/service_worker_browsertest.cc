@@ -5297,7 +5297,7 @@ class ServiceWorkerRaceNetworkRequestBrowserTest
     return web_contents()->GetPrimaryMainFrame();
   }
 
-  void SetupAndRegisterServiceWorker() {
+  scoped_refptr<ServiceWorkerVersion> SetupAndRegisterServiceWorker() {
     RegisterRequestMonitorForRequestCount();
     RegisterRequestHandlerForSlowResponsePage();
     StartServerAndNavigateToSetup();
@@ -5307,18 +5307,20 @@ class ServiceWorkerRaceNetworkRequestBrowserTest
 
     // Register a service worker.
     WorkerRunningStatusObserver observer1(public_context());
-    ASSERT_TRUE(NavigateToURL(shell(), create_service_worker_url));
-    ASSERT_EQ("DONE",
+    EXPECT_TRUE(NavigateToURL(shell(), create_service_worker_url));
+    EXPECT_EQ("DONE",
               EvalJs(GetPrimaryMainFrame(),
                      "register('/service_worker/race_network_request.js')"));
     observer1.WaitUntilRunning();
     scoped_refptr<ServiceWorkerVersion> version =
         wrapper()->GetLiveVersion(observer1.version_id());
-    ASSERT_EQ(EmbeddedWorkerStatus::RUNNING, version->running_status());
+    EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version->running_status());
 
     // Stop the current running service worker.
     StopServiceWorker(version.get());
-    ASSERT_EQ(EmbeddedWorkerStatus::STOPPED, version->running_status());
+    EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version->running_status());
+
+    return version;
   }
 
   EvalJsResult GetInnerText() {
@@ -5597,6 +5599,64 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerRaceNetworkRequestBrowserTest,
       shell(), embedded_test_server()->GetURL(path), 1);
   EXPECT_EQ("[ServiceWorkerRaceNetworkRequest] Response from the fetch handler",
             GetInnerText());
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerRaceNetworkRequestBrowserTest,
+                       FetchHandler_PassThrough) {
+  // Register the ServiceWorker and navigate to the in scope URL.
+  scoped_refptr<ServiceWorkerVersion> version = SetupAndRegisterServiceWorker();
+  // Capture the response head.
+  const std::string relative_url =
+      "/service_worker/mock_response?sw_pass_through";
+  const GURL test_url = embedded_test_server()->GetURL(relative_url);
+
+  WorkerRunningStatusObserver service_worker_running_status_observer(
+      public_context());
+  NavigationHandleObserver observer(web_contents(), test_url);
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
+  EXPECT_TRUE(observer.has_committed());
+  service_worker_running_status_observer.WaitUntilRunning();
+
+  // Request count should be 1. RaceNetworkRequest + pass through request from
+  // fetch handler but the fetch handler request will reuse the response from
+  // RaceNetworkRequest.
+  //
+  // TODO(crbug.com/1420517) Add the mechanism to wait for the fetch handler
+  // completion signal to ensure the request count is exactly not incremented
+  // anymore. Currently we don't record the UMA for the fetch handler completion
+  // if the RaceNetworkRequest wins.
+  while (GetRequestCount(relative_url) != 1) {
+    base::RunLoop().RunUntilIdle();
+  }
+  EXPECT_EQ(1, GetRequestCount(relative_url));
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerRaceNetworkRequestBrowserTest,
+                       FetchHandler_PassThrough_Clone) {
+  // Register the ServiceWorker and navigate to the in scope URL.
+  scoped_refptr<ServiceWorkerVersion> version = SetupAndRegisterServiceWorker();
+  // URL which create a cloned request and pass-through.
+  const std::string relative_url_for_clone =
+      "/service_worker/mock_response?sw_clone_pass_through";
+  const GURL test_url_for_clone =
+      embedded_test_server()->GetURL(relative_url_for_clone);
+
+  WorkerRunningStatusObserver service_worker_running_status_observer(
+      public_context());
+  NavigationHandleObserver observer_for_clone(web_contents(),
+                                              test_url_for_clone);
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url_for_clone, 1);
+  EXPECT_TRUE(observer_for_clone.has_committed());
+  service_worker_running_status_observer.WaitUntilRunning();
+
+  // Request count should be 2. RaceNetworkRequest + pass through cloned request
+  // from fetch handler. The fetch handler will create a new request because the
+  // request is cloned hence it may have different metadata from the one
+  // initiated by RaceNetworkRequest.
+  while (GetRequestCount(relative_url_for_clone) != 2) {
+    base::RunLoop().RunUntilIdle();
+  }
+  EXPECT_EQ(2, GetRequestCount(relative_url_for_clone));
 }
 
 // TODO(crbug.com/1431421): Flaky on Fuchsia.
@@ -5885,4 +5945,108 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerRaceNetworkRequestOriginTrialBrowserTest,
 
   run_loop.Run();
 }
+
+// Test class for static routing API (crbug.com/1420517) browsertest.
+class ServiceWorkerStaticRouterBrowserTest : public ServiceWorkerBrowserTest {
+ public:
+  ServiceWorkerStaticRouterBrowserTest() {
+    feature_list_.InitWithFeatures({features::kServiceWorkerStaticRouter}, {});
+  }
+  ~ServiceWorkerStaticRouterBrowserTest() override = default;
+
+  WebContents* web_contents() const { return shell()->web_contents(); }
+
+  RenderFrameHost* GetPrimaryMainFrame() {
+    return web_contents()->GetPrimaryMainFrame();
+  }
+
+  void SetupAndRegisterServiceWorker() {
+    RegisterRequestMonitorForRequestCount();
+    RegisterRequestHandlerForTest();
+    StartServerAndNavigateToSetup();
+
+    const GURL create_service_worker_url(embedded_test_server()->GetURL(
+        "/service_worker/create_service_worker.html"));
+
+    // Register a service worker.
+    WorkerRunningStatusObserver observer1(public_context());
+    ASSERT_TRUE(NavigateToURL(shell(), create_service_worker_url));
+    ASSERT_EQ("DONE", EvalJs(GetPrimaryMainFrame(),
+                             "register('/service_worker/static_router.js')"));
+    observer1.WaitUntilRunning();
+    scoped_refptr<ServiceWorkerVersion> version =
+        wrapper()->GetLiveVersion(observer1.version_id());
+    ASSERT_EQ(EmbeddedWorkerStatus::RUNNING, version->running_status());
+
+    // Stop the current running service worker.
+    StopServiceWorker(version.get());
+    ASSERT_EQ(EmbeddedWorkerStatus::STOPPED, version->running_status());
+  }
+
+  int GetRequestCount(const std::string& relative_url) const {
+    const auto& it = request_log_.find(relative_url);
+    if (it == request_log_.end()) {
+      return 0;
+    }
+    return it->second.size();
+  }
+
+ private:
+  void RegisterRequestHandlerForTest() {
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        [](const net::test_server::HttpRequest& request)
+            -> std::unique_ptr<net::test_server::HttpResponse> {
+          if (base::Contains(request.GetURL().path(),
+                             "/service_worker/direct")) {
+            auto http_response =
+                std::make_unique<net::test_server::BasicHttpResponse>();
+            http_response->set_code(net::HTTP_OK);
+            http_response->set_content_type("text/plain");
+            http_response->set_content(
+                "[ServiceWorkerStaticRouter] "
+                "Response from the network");
+            return http_response;
+          }
+          return nullptr;
+        }));
+  }
+
+  void RegisterRequestMonitorForRequestCount() {
+    embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
+        &ServiceWorkerStaticRouterBrowserTest::MonitorRequestHandler,
+        base::Unretained(this)));
+  }
+  void MonitorRequestHandler(const net::test_server::HttpRequest& request) {
+    request_log_[request.relative_url].push_back(request);
+  }
+  std::map<std::string, std::vector<net::test_server::HttpRequest>>
+      request_log_;
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerStaticRouterBrowserTest,
+                       SubresourceNetworkFetchHandler) {
+  SetupAndRegisterServiceWorker();
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+  EXPECT_EQ("[ServiceWorkerStaticRouter] Response from the fetch handler",
+            EvalJs(GetPrimaryMainFrame(),
+                   "fetch('/service_worker/fetch_handler').then(response => "
+                   "response.text())"));
+  // The result should be got from the fetch handler, and no network access is
+  // expected.
+  EXPECT_EQ(0, GetRequestCount("/service_worker/fetch_handler"));
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerStaticRouterBrowserTest,
+                       SubresourceNetworkFallback) {
+  SetupAndRegisterServiceWorker();
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+  EXPECT_EQ("[ServiceWorkerStaticRouter] Response from the network",
+            EvalJs(GetPrimaryMainFrame(),
+                   "fetch('/service_worker/direct').then(response => "
+                   "response.text())"));
+  // The result should be got from the network.
+  EXPECT_EQ(1, GetRequestCount("/service_worker/direct"));
+}
+
 }  // namespace content

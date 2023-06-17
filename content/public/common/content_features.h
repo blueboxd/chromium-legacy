@@ -166,7 +166,6 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kMojoDedicatedThread);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kMojoVideoCapture);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kMojoVideoCaptureSecondary);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kNavigationNetworkResponseQueue);
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kNavigationRequestPreconnect);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kNetworkQualityEstimatorWebHoldback);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kNetworkServiceInProcess);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kNotificationContentImage);
@@ -189,7 +188,6 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kPrivateNetworkAccessForWorkersWarningOnly);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(
     kPrivateNetworkAccessRespectPreflightResults);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kPrivateNetworkAccessSendPreflights);
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kPrivateNetworkAccessPermissionPrompt);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kProactivelySwapBrowsingInstance);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kOriginKeyedProcessesByDefault);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kProcessSharingWithDefaultSiteInstances);

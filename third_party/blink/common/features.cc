@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
@@ -96,12 +97,6 @@ const base::FeatureParam<AutomaticLazyFrameLoadingToEmbedLoadingStrategy>
         &kAutomaticLazyFrameLoadingToEmbedUrls, "strategy",
         AutomaticLazyFrameLoadingToEmbedLoadingStrategy::kAllowList,
         &kAutomaticLazyFrameLoadingToEmbedLoadingStrategies};
-
-// Allows pages with DedicatedWorker to stay eligible for the back/forward
-// cache.
-BASE_FEATURE(kBackForwardCacheDedicatedWorker,
-             "BackForwardCacheDedicatedWorker",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kBackForwardCacheDWCOnJavaScriptExecution,
              "BackForwardCacheDWCOnJavaScriptExecution",
@@ -636,6 +631,10 @@ BASE_FEATURE(kSpeculativeServiceWorkerWarmUp,
 const base::FeatureParam<bool> kSpeculativeServiceWorkerWarmUpDryRun{
     &kSpeculativeServiceWorkerWarmUp, "sw_warm_up_dry_run", false};
 
+// If true, warm-up immediately without waiting for load event.
+const base::FeatureParam<bool> kSpeculativeServiceWorkerWarmUpWaitForLoad{
+    &kSpeculativeServiceWorkerWarmUp, "sw_warm_up_wait_for_load", false};
+
 // kSpeculativeServiceWorkerWarmUp observes anchor events such as visibility,
 // pointerover, and pointerdown. These events could be triggered very often. To
 // reduce the frequency of processing, kSpeculativeServiceWorkerWarmUp uses a
@@ -643,18 +642,25 @@ const base::FeatureParam<bool> kSpeculativeServiceWorkerWarmUpDryRun{
 const base::FeatureParam<base::TimeDelta>
     kSpeculativeServiceWorkerWarmUpBatchTimer{&kSpeculativeServiceWorkerWarmUp,
                                               "sw_warm_up_batch_timer",
-                                              base::Milliseconds(100)};
+                                              base::Milliseconds(300)};
+
+// Similar to 'kSpeculativeServiceWorkerWarmUpBatchTimer`. But this is used for
+// the first batch in the page.
+const base::FeatureParam<base::TimeDelta>
+    kSpeculativeServiceWorkerWarmUpFirstBatchTimer{
+        &kSpeculativeServiceWorkerWarmUp, "sw_warm_up_first_batch_timer",
+        base::Seconds(1)};
+
+// The maximum URL candidate count (batch size) to notify URL candidates
+// from renderer process to browser process. If URL candidate count
+// exceeds batch size, the remaining URL candidate will be sent later.
+const base::FeatureParam<int> kSpeculativeServiceWorkerWarmUpBatchSize{
+    &kSpeculativeServiceWorkerWarmUp, "sw_warm_up_batch_size", 10};
 
 // kSpeculativeServiceWorkerWarmUp warms up service workers up to this max
 // count.
 const base::FeatureParam<int> kSpeculativeServiceWorkerWarmUpMaxCount{
     &kSpeculativeServiceWorkerWarmUp, "sw_warm_up_max_count", 10};
-
-// kSpeculativeServiceWorkerWarmUp remembers recent warm-up requests to prevent
-// excessive duplicate warm-up. The following cache size is the cache size for
-// duplicated request checks.
-const base::FeatureParam<int> kSpeculativeServiceWorkerWarmUpRequestCacheSize{
-    &kSpeculativeServiceWorkerWarmUp, "sw_warm_up_request_cache_size", 1000};
 
 // kSpeculativeServiceWorkerWarmUp enqueues navigation candidate URLs. This is
 // the queue length of the candidate URLs.
@@ -671,12 +677,6 @@ const base::FeatureParam<base::TimeDelta>
     kSpeculativeServiceWorkerWarmUpDuration{&kSpeculativeServiceWorkerWarmUp,
                                             "sw_warm_up_duration",
                                             base::Minutes(10)};
-// Duration to re-warmup service worker. This duration must be shorter than
-// sw_warm_up_duration.
-const base::FeatureParam<base::TimeDelta>
-    kSpeculativeServiceWorkerWarmUpReWarmUpThreshold{
-        &kSpeculativeServiceWorkerWarmUp, "sw_warm_up_re_warm_up_threshold",
-        base::Minutes(7)};
 
 // Enable IntersectionObserver to detect anchor's visibility.
 const base::FeatureParam<bool>
@@ -1102,40 +1102,46 @@ BLINK_COMMON_EXPORT bool IsAllowURNsInIframeEnabled() {
   return base::FeatureList::IsEnabled(blink::features::kAllowURNsInIframes);
 }
 
-// https://github.com/jkarlin/topics
+// https://github.com/patcg-individual-drafts/topics
 // Kill switch for the Topics API.
 BASE_FEATURE(kBrowsingTopics,
              "BrowsingTopics",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Decoupled with the main `kBrowsingTopics` feature, so it allows us to
+// decouple the server side configs.
+BASE_FEATURE(kBrowsingTopicsParameters,
+             "BrowsingTopicsParameters",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 // The number of epochs from where to calculate the topics to give to a
 // requesting contexts.
 const base::FeatureParam<int> kBrowsingTopicsNumberOfEpochsToExpose{
-    &kBrowsingTopics, "number_of_epochs_to_expose", 3};
+    &kBrowsingTopicsParameters, "number_of_epochs_to_expose", 3};
 // The periodic topics calculation interval.
 const base::FeatureParam<base::TimeDelta> kBrowsingTopicsTimePeriodPerEpoch{
-    &kBrowsingTopics, "time_period_per_epoch", base::Days(7)};
+    &kBrowsingTopicsParameters, "time_period_per_epoch", base::Days(7)};
 // The number of top topics to derive and to keep for each epoch (week).
 const base::FeatureParam<int> kBrowsingTopicsNumberOfTopTopicsPerEpoch{
-    &kBrowsingTopics, "number_of_top_topics_per_epoch", 5};
+    &kBrowsingTopicsParameters, "number_of_top_topics_per_epoch", 5};
 // The probability (in percent number) to return the random topic to a site. The
 // "random topic" is per-site, and is selected from the full taxonomy uniformly
 // at random, and each site has a
 // `kBrowsingTopicsUseRandomTopicProbabilityPercent`% chance to see their random
 // topic instead of one of the top topics.
 const base::FeatureParam<int> kBrowsingTopicsUseRandomTopicProbabilityPercent{
-    &kBrowsingTopics, "use_random_topic_probability_percent", 5};
+    &kBrowsingTopicsParameters, "use_random_topic_probability_percent", 5};
 // Maximum duration between when a epoch is calculated and when a site starts
 // using that new epoch's topics. The time chosen is a per-site random point in
 // time between [calculation time, calculation time + max duration).
 const base::FeatureParam<base::TimeDelta>
     kBrowsingTopicsMaxEpochIntroductionDelay{
-        &kBrowsingTopics, "browsing_topics_max_epoch_introduction_delay",
-        base::Days(2)};
+        &kBrowsingTopicsParameters,
+        "browsing_topics_max_epoch_introduction_delay", base::Days(2)};
 // How many epochs (weeks) of API usage data (i.e. topics observations) will be
 // based off for the filtering of topics for a calling context.
 const base::FeatureParam<int>
     kBrowsingTopicsNumberOfEpochsOfObservationDataToUseForFiltering{
-        &kBrowsingTopics,
+        &kBrowsingTopicsParameters,
         "number_of_epochs_of_observation_data_to_use_for_filtering", 3};
 // The max number of observed-by context domains to keep for each top topic
 // during the epoch topics calculation. The final number of domains associated
@@ -1144,7 +1150,7 @@ const base::FeatureParam<int>
 // topics. The intent is to cap the in-use memory.
 const base::FeatureParam<int>
     kBrowsingTopicsMaxNumberOfApiUsageContextDomainsToKeepPerTopic{
-        &kBrowsingTopics,
+        &kBrowsingTopicsParameters,
         "max_number_of_api_usage_context_domains_to_keep_per_topic", 1000};
 // The max number of entries allowed to be retrieved from the
 // `BrowsingTopicsSiteDataStorage` database for each query for the API usage
@@ -1152,28 +1158,23 @@ const base::FeatureParam<int>
 // time. The intent is to cap the peak memory usage.
 const base::FeatureParam<int>
     kBrowsingTopicsMaxNumberOfApiUsageContextEntriesToLoadPerEpoch{
-        &kBrowsingTopics,
+        &kBrowsingTopicsParameters,
         "max_number_of_api_usage_context_entries_to_load_per_epoch", 100000};
 // The max number of API usage context domains allowed to be stored per page
 // load.
 const base::FeatureParam<int>
     kBrowsingTopicsMaxNumberOfApiUsageContextDomainsToStorePerPageLoad{
-        &kBrowsingTopics,
+        &kBrowsingTopicsParameters,
         "max_number_of_api_usage_context_domains_to_store_per_page_load", 30};
-// Encodes the configuration parameters above. A version number can be used for
-// multiple configurations as long as they are compatible (from both Chrome's
-// and users/websites' perspective). For a configuration that's incompatible
-// with previous ones, a new dedicated version number should be used.
-const base::FeatureParam<int> kBrowsingTopicsConfigVersion{
-    &kBrowsingTopics, "config_version", kBrowsingTopicsConfigVersionDefault};
 // The taxonomy version. This only affects the topics classification that occurs
 // during this browser session, and doesn't affect the pre-existing epochs.
 const base::FeatureParam<int> kBrowsingTopicsTaxonomyVersion{
-    &kBrowsingTopics, "taxonomy_version",
+    &kBrowsingTopicsParameters, "taxonomy_version",
     kBrowsingTopicsTaxonomyVersionDefault};
-
+// Comma separated Topic IDs to be blocked. Descendant topics of each blocked
+// topic will be blocked as well.
 const base::FeatureParam<std::string> kBrowsingTopicsDisabledTopicsList{
-    &kBrowsingTopics, "browsing_topics_disabled_topics_list", ""};
+    &kBrowsingTopicsParameters, "browsing_topics_disabled_topics_list", ""};
 
 // Enables the deprecatedBrowsingTopics XHR attribute. For this feature to take
 // effect, the main Topics feature has to be enabled first (i.e.
@@ -1671,7 +1672,7 @@ const base::FeatureParam<bool> kProcessHtmlDataImmediatelySubsequentChunks{
 
 BASE_FEATURE(kFastPathPaintPropertyUpdates,
              "FastPathPaintPropertyUpdates",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kThreadedBodyLoader,
              "ThreadedBodyLoader",
@@ -1867,6 +1868,10 @@ const base::FeatureParam<bool> kStorageAccessAPIAutoDenyOutsideFPS{
 const base::FeatureParam<bool> kStorageAccessAPIRefreshGrantsOnUserInteraction{
     &kStorageAccessAPI, "storage_access_api_refresh_grants_on_user_interaction",
     true};
+const base::FeatureParam<base::TimeDelta>
+    kStorageAccessAPITopLevelUserInteractionBound{
+        &kStorageAccessAPI,
+        "storage_access_api_top_level_user_interaction_bound", base::Days(30)};
 
 BASE_FEATURE(kDisableThirdPartyStoragePartitioningDeprecationTrial,
              "DisableThirdPartyStoragePartitioningDeprecationTrial",
@@ -1917,7 +1922,7 @@ BASE_FEATURE(kDirectCompositorThreadIpc,
 
 BASE_FEATURE(kCSPWildcardsInPermissionsPolicies,
              "CSPWildcardsInPermissionsPolicies",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAllowDevToolsMainThreadDebuggerForMultipleMainFrames,
              "AllowDevToolsMainThreadDebuggerForMultipleMainFrames",

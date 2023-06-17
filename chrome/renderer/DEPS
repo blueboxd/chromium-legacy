@@ -73,6 +73,7 @@ include_rules = [
   "+components/translate/content/renderer",
   "+components/translate/core/common",
   "+components/translate/core/language_detection",
+  "+components/trusted_vault/features.h",
   "+components/trusted_vault/trusted_vault_server_constants.h",
   "+components/version_info",
   "+components/visitedlink/renderer",
@@ -103,6 +104,8 @@ include_rules = [
   "+third_party/metrics_proto",
   "+third_party/widevine/cdm/buildflags.h",
   "+third_party/libwebp/src/src/webp/decode.h",
+  "+third_party/tflite",
+  "+third_party/tflite_support",
   "+third_party/widevine/cdm/widevine_cdm_common.h",
   "+ui/gfx/geometry/size_f.h",
 ]

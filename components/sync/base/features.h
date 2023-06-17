@@ -195,23 +195,18 @@ BASE_DECLARE_FEATURE(kSyncIgnoreGetUpdatesRetryDelay);
 // If enabled, uses a JsonPrefStore for account preferences.
 BASE_DECLARE_FEATURE(kSyncEnablePersistentStorageForAccountPreferences);
 
-// Flag to control if a user can enable sync for the #tab-groups-save feature.
-BASE_DECLARE_FEATURE(kTabGroupsSaveSyncIntegration);
+// Wrapper flag to control the nudge delay of the #tab-groups-save feature.
+BASE_DECLARE_FEATURE(kTabGroupsSaveNudgeDelay);
 
 // If provided, changes the amount of time before we send messages to the sync
 // service.
 inline constexpr base::FeatureParam<base::TimeDelta>
-    kTabGroupsSaveCustomNudgeDelay(&kTabGroupsSaveSyncIntegration,
+    kTabGroupsSaveCustomNudgeDelay(&kTabGroupsSaveNudgeDelay,
                                    "TabGroupsSaveCustomNudgeDelay",
                                    base::Seconds(11));
 
 // Feature flag to replace all sync-related UI with sign-in ones.
 BASE_DECLARE_FEATURE(kReplaceSyncPromosWithSignInPromos);
-
-#if !BUILDFLAG(IS_ANDROID)
-// Enables the chrome.setClientEncryptionKeys() JS API.
-BASE_DECLARE_FEATURE(kSetClientEncryptionKeysJsApi);
-#endif
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_BASE_FEATURES_H_

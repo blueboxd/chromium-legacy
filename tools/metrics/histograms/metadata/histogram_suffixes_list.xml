@@ -1044,6 +1044,10 @@ chromium-metrics-reviews@google.com.
   <suffix name="Ask" label="Ask"/>
   <suffix name="Block" label="Block"/>
   <suffix name="DetectImportantContent" label="Detect important content"/>
+  <suffix name="MaxRequester"
+      label="Maximum number of exceptions per requester"/>
+  <suffix name="MaxTopLevel"
+      label="Maximum number of exceptions per top-level"/>
   <suffix name="SessionOnly" label="Session only"/>
   <affected-histogram name="ContentSettings.Exceptions.cookies">
     <obsolete>
@@ -1066,6 +1070,8 @@ chromium-metrics-reviews@google.com.
   </affected-histogram>
   <affected-histogram name="ContentSettings.RegularProfile.Exceptions.cookies"/>
   <affected-histogram name="ContentSettings.RegularProfile.Exceptions.popups"/>
+  <affected-histogram
+      name="ContentSettings.RegularProfile.Exceptions.storage-access"/>
   <affected-histogram
       name="ContentSettings.RegularProfile.Exceptions.subresource-filter"/>
 </histogram_suffixes>
@@ -1810,7 +1816,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="WebContentsAPI" label="WebContentsAPI."/>
   <affected-histogram name="Download.Counts"/>
   <affected-histogram name="Download.InterruptedReason"/>
-  <affected-histogram name="Download.NetworkConnectionType.Complete"/>
   <affected-histogram name="Download.NetworkConnectionType.StartNew"/>
 </histogram_suffixes>
 
@@ -4923,7 +4928,10 @@ chromium-metrics-reviews@google.com.
              {Local,Remote}SafeBrowsingDatabaseManager."/>
   <suffix name="from_real_time_check"
       label="Interstitial for a resource classified as unsafe by the Safe
-             Browsing real time API."/>
+             Browsing URL real-time API."/>
+  <suffix name="from_hash_prefix_real_time_check_v5"
+      label="Interstitial for a resource classified as unsafe by the Safe
+             Browsing hash-prefix real-time API version 5."/>
   <affected-histogram name="interstitial.harmful.decision"/>
   <affected-histogram name="interstitial.harmful.decision.repeat_visit"/>
   <affected-histogram name="interstitial.harmful.interaction"/>
@@ -5167,7 +5175,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="SMS_FETCH_REQUEST" label="SMS Fetch Request"/>
   <suffix name="UNKNOWN_MESSAGE" label="Unknown Message"/>
   <suffix name="WEB_RTC_SIGNALING_FRAME" label="Web RTC Signalling Message"/>
-  <affected-histogram name="Sharing.MessageHandlerTime"/>
   <affected-histogram name="Sharing.SendMessageResult"/>
   <affected-histogram name="Sharing.SendMessageResult.Android"/>
   <affected-histogram name="Sharing.SendMessageResult.ChromeOS"/>

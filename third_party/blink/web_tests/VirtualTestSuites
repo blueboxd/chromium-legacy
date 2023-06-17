@@ -602,13 +602,14 @@
   },
 
   "The Wasm code cache test requires access to V8 internals, so only the",
-  "virtual test should be run.",
+  "virtual test should be run. Additionally the tiering budget is reduced to",
+  "speed up the test.",
   {
     "prefix": "wasm-code-caching",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["http/tests/wasm/caching"],
     "exclusive_tests": "ALL",
-    "args": ["--js-flags=--allow-natives-syntax"],
+    "args": ["--js-flags=--wasm-tiering-budget=100 --allow-natives-syntax"],
     "expires": "Jul 1, 2024"
   },
 
@@ -1217,7 +1218,27 @@
   {
     "prefix": "no-alloc-direct-call",
     "platforms": ["Linux"],
-    "bases": ["fast/canvas"],
+    "bases": [
+      "fast/canvas",
+      "external/wpt/html/canvas/element/layers/2d.layer.invalid-calls.beginLayer-reset-endLayer.html",
+      "external/wpt/html/canvas/element/layers/2d.layer.invalid-calls.beginLayer-restore.html",
+      "external/wpt/html/canvas/element/layers/2d.layer.invalid-calls.beginLayer-save-endLayer.html",
+      "external/wpt/html/canvas/element/layers/2d.layer.invalid-calls.endLayer.html",
+      "external/wpt/html/canvas/element/layers/2d.layer.invalid-calls.save-beginLayer-restore.html",
+      "external/wpt/html/canvas/element/layers/2d.layer.invalid-calls.save-endLayer.html",
+      "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.beginLayer-reset-endLayer.html",
+      "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.beginLayer-reset-endLayer.worker.js",
+      "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.beginLayer-restore.html",
+      "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.beginLayer-restore.worker.js",
+      "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.beginLayer-save-endLayer.html",
+      "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.beginLayer-save-endLayer.worker.js",
+      "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.endLayer.html",
+      "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.endLayer.worker.js",
+      "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.save-beginLayer-restore.html",
+      "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.save-beginLayer-restore.worker.js",
+      "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.save-endLayer.html",
+      "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.save-endLayer.worker.js"
+    ],
     "args": ["--enable-fake-no-alloc-direct-call-for-testing"],
     "expires": "Jul 1, 2023"
   },
@@ -1231,7 +1252,7 @@
               "external/wpt/soft-navigation-heuristics/navigation-api-view-transition.tentative.html"],
     "exclusive_tests": "ALL",
     "args": ["--enable-threaded-compositing"],
-    "expires": "Jul 1, 2023"
+    "expires": "May 1, 2024"
   },
   {
     "prefix": "view-transition-on-navigation",
@@ -1240,7 +1261,7 @@
     "exclusive_tests": "ALL",
     "args": ["--enable-features=ViewTransitionOnNavigation",
              "--enable-threaded-compositing"],
-    "expires": "Jul 1, 2023"
+    "expires": "May 1, 2024"
   },
   {
     "prefix": "view-transition-wide-gamut",
@@ -1252,7 +1273,7 @@
     "exclusive_tests": "ALL",
     "args": ["--enable-threaded-compositing",
              "--force-color-profile=display-p3-d65"],
-    "expires": "Jul 1, 2023"
+    "expires": "May 1, 2024"
   },
   {
     "prefix": "view-transition-mpa-serialization",
@@ -1265,7 +1286,7 @@
     "exclusive_tests": "ALL",
     "args": ["--enable-threaded-compositing",
              "--enable-blink-features=SerializeViewTransitionStateInSPA"],
-    "expires": "Feb 1, 2024"
+    "expires": "May 1, 2024"
   },
   {
     "prefix": "mutation-events-disabled",
@@ -1464,6 +1485,24 @@
     ],
     "args": ["--enable-features=BrowsingTopics,BrowsingTopicsXHR,PrivacySandboxAdsAPIsOverride"],
     "expires": "Aug 10, 2023"
+  },
+  {
+    "prefix": "private-aggregation",
+    "platforms": ["Linux"],
+    "bases": [
+      "external/wpt/private-aggregation",
+      "wpt_internal/private-aggregation"
+    ],
+    "exclusive_tests": [
+      "external/wpt/private-aggregation",
+      "wpt_internal/private-aggregation"
+    ],
+    "args": [
+      "--enable-privacy-sandbox-ads-apis",
+      "--private-aggregation-developer-mode",
+      "--enable-features=FencedFramesDefaultMode,PrivacySandboxAggregationService:trusted_server_url/https%3A%2F%2Fweb-platform.test%3A8444%2Fwpt_internal%2Fattribution-reporting%2Fresources%2FpublicKeys"
+    ],
+    "expires": "Jan 1, 2024"
   },
   {
     "prefix": "shared-storage-fenced-frame-mparch",
@@ -2068,7 +2107,7 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/permissions-policy"],
     "args": [
-      "--enable-features=CSPWildcardsInPermissionsPolicies"
+      "--disable-features=CSPWildcardsInPermissionsPolicies"
     ],
     "expires": "Dec 1, 2023"
   }

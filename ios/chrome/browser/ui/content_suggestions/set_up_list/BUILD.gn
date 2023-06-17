@@ -11,6 +11,10 @@ source_set("set_up_list") {
     "set_up_list_item_view.mm",
     "set_up_list_item_view_data.h",
     "set_up_list_item_view_data.mm",
+    "set_up_list_show_more_item_view.h",
+    "set_up_list_show_more_item_view.mm",
+    "set_up_list_show_more_view_controller.h",
+    "set_up_list_show_more_view_controller.mm",
     "set_up_list_view.h",
     "set_up_list_view.mm",
   ]
@@ -18,10 +22,12 @@ source_set("set_up_list") {
   deps = [
     ":constants",
     "//base",
+    "//components/password_manager/core/common:features",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ntp:set_up_list_item_type",
     "//ios/chrome/browser/shared/ui/elements",
     "//ios/chrome/browser/shared/ui/symbols",
+    "//ios/chrome/browser/shared/ui/util",
     "//ios/chrome/browser/ui/content_suggestions/set_up_list/resources",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/util",

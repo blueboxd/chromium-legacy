@@ -1042,7 +1042,6 @@
       # TODO(crbug.com/1171053): Enable the suite in 'Mac10.15 Tests' once it's
       # off CQ.
       'Mac10.13 Tests', # https://crbug.com/1042757
-      'Mac10.15 Tests', # https://crbug.com/1042757
       'Mac13 Tests (dbg)', # https://crbug.com/1201386
       'mac-code-coverage', # https://crbug.com/1201386
       'mac11-arm64-rel-tests', # https://crbug.com/1406364
@@ -1148,20 +1147,17 @@
           'shards': 20,  # crbug.com/1419045
         },
       },
+      'Mac10.14 Tests': {
+        'swarming': {
+          'shards': 25,  # crbug.com/1455542
+        },
+      },
       'Mac10.15 Tests': {
         # crbug.com/1042757
         'swarming': {
-          'dimension_sets': [
-            {
-              # These shards are liable to time out when running on macmini7,1.
-              'cores': '8|12',
-            }
-          ],
+          'shards': 30,
         },
-        # crbug.com/1196416
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac-rel.browser_tests.filter',
-        ],
+        'experiment_percentage': 100,
       },
       'Mac11 Tests': {
         'ci_only': True,
@@ -1473,21 +1469,6 @@
         'args': [
           '--tast-shard-method=hash',
         ],
-      },
-    },
-  },
-  'chrome_java_test_pagecontroller_tests': {
-    'modifications': {
-      'android-pie-arm64-rel': {
-        # TODO(crbug.com/1111436): Move this back to walleye if/when additional
-        # capacity has been deployed.
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_type': 'sailfish',
-            },
-          ],
-        },
       },
     },
   },
@@ -2138,12 +2119,6 @@
           ],
         },
       },
-      'mac13-arm64-rel-tests': {
-        'ci_only': False,
-        'swarming': {
-          'shards': 12,
-        },
-      },
       'win-asan': {
          # Tests shows tests run faster with fewer retries by using fewer jobs crbug.com/1411912
         'args': [
@@ -2308,6 +2283,39 @@
     'remove_from': [
       'Android FYI Release (Pixel 2)',
     ],
+  },
+  'cr23_browser_tests': {
+    'cr23-linux-rel': {
+      'experiment_percentage': None,
+    },
+    'cr23-mac-rel': {
+      'experiment_percentage': None,
+    },
+    'cr23-win-rel': {
+      'experiment_percentage': None,
+    },
+  },
+  'cr23_interactive_ui_tests': {
+    'cr23-linux-rel': {
+      'experiment_percentage': None,
+    },
+    'cr23-mac-rel': {
+      'experiment_percentage': None,
+    },
+    'cr23-win-rel': {
+      'experiment_percentage': None,
+    },
+  },
+  'cr23_views_unittests': {
+    'cr23-linux-rel': {
+      'experiment_percentage': None,
+    },
+    'cr23-mac-rel': {
+      'experiment_percentage': None,
+    },
+    'cr23-win-rel': {
+      'experiment_percentage': None,
+    },
   },
   'crashpad_tests': {
     'remove_from': [
@@ -3011,6 +3019,12 @@
           'shards': 6,
         },
       },
+      'mac13-arm64-rel-tests': {
+        'ci_only': False,
+        'swarming': {
+          'shards': 6,
+        },
+      },
       'win-arm64-rel': {
         # Surface Pros have touch turned on by default, which makes some interactive-ui-tests fail.
         'args': [
@@ -3278,6 +3292,7 @@
     },
   },
   'nacl_loader_unittests': {
+    # If you change this, make similar changes in ppapi_unittests
     'remove_from': [
       'ToTMacASan',  # The mac asan tot bot sets enable_nacl=false
       'linux-win_cross-rel',  # Sets enable_nacl=false, https://crbug.com/774186
@@ -3671,6 +3686,17 @@
         },
       },
     },
+  },
+  'ppapi_unittests': {
+    # If you change this, make similar changes in nacl_loader_unittests
+    'remove_from': [
+      'ToTMacASan',  # The mac asan tot bot sets enable_nacl=false
+      'linux-win_cross-rel',  # Sets enable_nacl=false, https://crbug.com/774186
+      'Linux TSan Tests',  # The TSan bot sets enable_nacl=false
+      'linux-exp-tsan-fyi-rel',  # The TSan bot sets enable_nacl=false
+      'Mac ASan 64 Tests (1)',  # The mac asan bot sets enable_nacl=false
+      'win-arm64-rel',  # Not available on arm64.
+    ],
   },
   'sandbox_linux_unittests': {
     'modifications': {

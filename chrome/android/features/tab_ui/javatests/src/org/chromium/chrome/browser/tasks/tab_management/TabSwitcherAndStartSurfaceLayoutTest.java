@@ -65,6 +65,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -1000,6 +1001,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     public void testTabSuggestionMessageCard_dismiss(boolean isStartSurfaceRefactorEnable)
             throws InterruptedException {
         // clang-format on
+        Assume.assumeFalse("crbug/1455473", isStartSurfaceRefactorEnable);
+
         prepareTabs(3, 0, null);
 
         // TODO(meiliang): Avoid using static variable for tracking state,
@@ -1643,7 +1646,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         enterTabSwitcher(cta);
         onView(tabSwitcherViewMatcher()).check(TabCountAssertion.havingTabCount(3));
 
-        enterTabSelectionEditorV2(cta);
+        enterTabSelectionEditor(cta);
         robot.resultRobot.verifyTabSelectionEditorIsVisible();
 
         // Group first two tabs.
@@ -1662,14 +1665,14 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @UseMethodParameter(RefactorTestParams.class)
     // clang-format off
     @EnableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION})
-    public void testTabSelectionEditorV2_SystemBackDismiss(boolean isStartSurfaceRefactorEnabled) {
+    public void testTabSelectionEditor_SystemBackDismiss(boolean isStartSurfaceRefactorEnabled) {
         // clang-format on
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         TabSelectionEditorTestingRobot robot = new TabSelectionEditorTestingRobot();
         createTabs(cta, false, 2);
         enterTabSwitcher(cta);
         onView(tabSwitcherViewMatcher()).check(TabCountAssertion.havingTabCount(2));
-        enterTabSelectionEditorV2(cta);
+        enterTabSelectionEditor(cta);
         robot.resultRobot.verifyTabSelectionEditorIsVisible();
 
         // Pressing system back should dismiss the selection editor.
@@ -1726,7 +1729,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         createTabs(cta, false, 3);
 
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
-        enterTabSelectionEditorV2(cta);
+        enterTabSelectionEditor(cta);
         robot.resultRobot.verifyTabSelectionEditorIsVisible();
 
         // Group first two tabs.
@@ -2133,7 +2136,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         return tabListDelegate.get();
     }
 
-    private void enterTabSelectionEditorV2(ChromeTabbedActivity cta) {
+    private void enterTabSelectionEditor(ChromeTabbedActivity cta) {
         MenuUtils.invokeCustomMenuActionSync(
                 InstrumentationRegistry.getInstrumentation(), cta, R.id.menu_select_tabs);
     }

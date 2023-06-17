@@ -213,6 +213,11 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
 
   void UpdateAll() const override { updater::test::UpdateAll(updater_scope_); }
 
+  void GetAppStates(
+      const base::Value::Dict& expected_app_states) const override {
+    updater::test::GetAppStates(updater_scope_, expected_app_states);
+  }
+
   void DeleteUpdaterDirectory() const override {
     updater::test::DeleteUpdaterDirectory(updater_scope_);
   }
@@ -333,6 +338,12 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
                          bool is_silent_install) override {
     updater::test::RunOfflineInstall(updater_scope_, is_legacy_install,
                                      is_silent_install);
+  }
+
+  void RunOfflineInstallOsNotSupported(bool is_legacy_install,
+                                       bool is_silent_install) override {
+    updater::test::RunOfflineInstallOsNotSupported(
+        updater_scope_, is_legacy_install, is_silent_install);
   }
 
   void DMDeregisterDevice() override {

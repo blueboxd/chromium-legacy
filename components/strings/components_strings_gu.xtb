@@ -267,6 +267,7 @@
 
           &lt;p&gt;કૃપા કરીને &lt;strong&gt;સેટિંગ&lt;/strong&gt; અ‍ૅપના &lt;strong&gt;સામાન્ય&lt;/strong&gt; વિભાગમાં તારીખ અને સમય ગોઠવો.&lt;/p&gt;</translation>
 <translation id="1559839503761818503">તમારા ઍડમિનિસ્ટ્રેટર <ph name="DATE" />ના રોજ <ph name="TIME" /> વાગ્યે તમારું ડિવાઇસ ફરી શરૂ કરશે</translation>
+<translation id="1564753300777780201">છબીઓનું રૂપાંતરણ ટેક્સ્ટમાં કરવામાં આવ્યું નથી</translation>
 <translation id="156703335097561114">ઍડ્રેસ, ઇન્ટરફેસ કન્ફિગ્યુરેશન અને કનેક્શન ક્વૉલિટી જેવી નેટવર્કની માહિતી</translation>
 <translation id="1567040042588613346">આ પૉલિસી હેતુ મુજબ કાર્ય કરી રહી છે પરંતુ સમાન મૂલ્ય બીજે ક્યાંક સેટ કરવામાં આવ્યું છે અને આ પૉલિસી તેની જગ્યા લે છે.</translation>
 <translation id="1567405528131216114"><ph name="TOPIC" /> ઉમેરો</translation>
@@ -1207,6 +1208,7 @@
 <translation id="3890664840433101773">ઇમેઇલ ઉમેરો</translation>
 <translation id="3897092660631435901">મેનૂ</translation>
 <translation id="3901925938762663762">કાર્ડની સમયસીમા સમાપ્ત થઇ ગઈ છે</translation>
+<translation id="3906095212874392000">રૂપાંતરિત ટેક્સ્ટની સમાપ્તિ</translation>
 <translation id="3906954721959377182">ટૅબ્લેટ</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3911401144270344103">તમે કોઈપણ સમયે Chrome સેટિંગમાં જઈને તમારો નિર્ણય બદલી શકો છો</translation>
@@ -1409,6 +1411,7 @@
 <translation id="4331519897422864041">સ્ટૅકર 5</translation>
 <translation id="4331708818696583467">સુરક્ષિત નથી</translation>
 <translation id="4333561522337981382">તમારા બધા ડિસ્પ્લે પર વિન્ડો મેનેજ કરો</translation>
+<translation id="4338709847516294988">Search + M કી દબાવો અને સંદર્ભ મેનૂમાં છબીનું રૂપાંતરણ ટેક્સ્ટમાં કરો</translation>
 <translation id="4340575312453649552">આ જાહેરાતે તમારા ડિવાઇસ માટે ઘણાં વધારે સાધનોનો ઉપયોગ કર્યો, આથી Chrome દ્વારા તેને કાઢી નાખવામાં આવી છે.</translation>
 <translation id="4340982228985273705">આ કમ્પ્યુટર એન્ટરપ્રાઇઝ દ્વારા મેનેજ થતું હોય તેવું જણાયું નથી, તેથી પૉલિસી માત્ર Chrome Webstore પર હોસ્ટ થયેલા એક્સ્ટેન્શન ઑટોમૅટિક રીતે ઇન્સ્ટૉલ કરી શકશે. Chrome Webstore અપડેટનું URL "<ph name="CWS_UPDATE_URL" />" છે.</translation>
 <translation id="4348834659292907206"><ph name="SITE" />નું કનેક્શન સુરક્ષિત નથી</translation>
@@ -1416,7 +1419,6 @@
 <translation id="4349810866125026513">કોઈપણ રીતે અપલોડ કરો</translation>
 <translation id="4350629523305688469">મલ્ટિ ફંક્શન ટ્રે</translation>
 <translation id="4351060348582610152"><ph name="ORIGIN" /> નજીકના બ્લૂટૂથ ડિવાઇસ માટે સ્કૅન કરવા માગે છે. નીચે મુજબના ડિવાઇસ મળ્યા છે:</translation>
-<translation id="4351175281479794167">ચકાસણી કોડ દાખલ કરો</translation>
 <translation id="4355383636893709732">Android ઍપ માટે ChromeOSની અપડેટ</translation>
 <translation id="4356973930735388585">આ સાઇટ પરના હુમલાખોરો તમારા કમ્પ્યુટર પર તમારી માહિતી (ઉદાહરણ તરીકે, ફોટા, પાસવર્ડ, મેસેજ અને ક્રેડિટ કાર્ડ)ને ચોરી શકે કે ડિલીટ કરી શકે એવા જોખમી પ્રોગ્રામને ઇન્સ્ટૉલ કરવાનો પ્રયાસ કરી શકે છે.</translation>
 <translation id="4358059973562876591">DnsOverHttpsMode નીતિમાં ભૂલના કારણે તમે ઉલ્લેખ કરેલા નમૂનાઓને કદાચ લાગુ કરવામાં આવશે નહીં.</translation>
@@ -1424,6 +1426,7 @@
 <translation id="4359160567981085931">હમણાં જ કોઈ છેતરામણી સાઇટ પર તમે તમારો પાસવર્ડ દાખલ કર્યો. Chrome સહાય કરી શકે છે. તમારો પાસવર્ડ બદલવા માટે અને Googleને એ જાણ કરવા માટે કે તમારું એકાઉન્ટ જોખમમાં હોઈ શકે છે, એકાઉન્ટ સુરક્ષિત કરો પર ક્લિક કરો.</translation>
 <translation id="4363222835916186793">આ પ્રોડક્ટ માટેના અલર્ટ બંધ કરવામાં આવ્યા છે</translation>
 <translation id="437040971055499437">સુરક્ષા ઇવેન્ટ થવા પર</translation>
+<translation id="4371307856413138486">રૂપાંતરિત ટેક્સ્ટની શરૂઆત</translation>
 <translation id="4371591986692297148">નિષ્ક્રિય</translation>
 <translation id="4372948949327679948">અપેક્ષિત <ph name="VALUE_TYPE" /> મૂલ્ય.</translation>
 <translation id="4375864595697821259">તમારી રુચિઓનો અંદાજ કાઢતી વખતે Chrome પસંદ કરી શકે તેવા વિષયોના પૂલમાં જો તમે કોઈ આઇટમ મેળવવા ઇચ્છતા હો, તો તેને ફરી પાછી ઉમેરો</translation>
@@ -1464,7 +1467,6 @@
 <translation id="4489023393592172404">એન્વલપ કાકૂ 4</translation>
 <translation id="4490717597759821841">A7</translation>
 <translation id="449126573531210296">તમારા Google એકાઉન્ટ સાથે સિંક કરેલા પાસવર્ડ એન્ક્રિપ્ટ કરો</translation>
-<translation id="4492332866628791879">સાચવો અને કિંમત ટ્રૅક કરો</translation>
 <translation id="4492519888999857993">આ સુવિધાઓને ડિફૉલ્ટ તરીકે બંધ કરેલી છે. આ હવે Chromeના ભાવિ વર્ઝનમાં ઉપલબ્ધ થશે નહીં.</translation>
 <translation id="4493480324863638523">અમાન્ય URL. કોઈ માનક સ્કીમ ધરાવતું URL હોવું આવશ્યક છે, દા.ત. http://example.com અથવા https://example.com.</translation>
 <translation id="4494323206460475851">તમે સેટિંગમાં જાહેરાતના વિષયો જોઈ શકો છો અને તમે સાઈટ સાથે શેર કરવા માગતા ન હો તેને બ્લૉક કરી શકો છો. 4 અઠવાડિયાથી જૂના જે પણ જાહેરાતના વિષયો હોય, તે Chrome ઑટોમૅટિક રીતે ડિલીટ કરે છે.</translation>
@@ -1511,6 +1513,7 @@
 <translation id="460848736049414407">ઍડમિન દ્વારા બ્લૉક કરવામાં આવ્યું છે</translation>
 <translation id="4610279718074907952">આ સાઇટ <ph name="SET_OWNER" /> દ્વારા નિર્ધારિત ગ્રૂપમાં છે, જે તમારી પ્રવૃત્તિ જોઈ શકે છે</translation>
 <translation id="4617273035598175554">ગ્રાફિક અને ઍનિમેશન સૉફ્ટવેર</translation>
+<translation id="4619564267100705184">આ તમે જ છો તેની ચકાસણી કરો</translation>
 <translation id="4622292761762557753">તેમ છતાં ટ્રાન્સફર કરો</translation>
 <translation id="4627675673814409125">Chrome પ્રોફાઇલના લેવલ પર આ પૉલિસી સેટ કરી શકાતી નથી અને તેને અવગણવામાં આવશે.</translation>
 <translation id="4628948037717959914">ફોટો</translation>
@@ -1737,7 +1740,6 @@
 <translation id="5123433949759960244">બાસ્કેટબૉલ</translation>
 <translation id="5125751979347152379">અમાન્ય URL.</translation>
 <translation id="512592033764059484">સૉકર</translation>
-<translation id="5126510351761255129">તમારું કાર્ડ ચકાસો</translation>
 <translation id="512670116361803001"><ph name="APP_NAME" /> કદાચ યોગ્ય રીતે કદ બદલી શકશે નહીં. ઍપમાં અનુભવાતી સમસ્યા અટકાવવા માટે, વિન્ડોના પ્રીસેટ કરેલા કદનો ઉપયોગ કરો.</translation>
 <translation id="5127934926273826089">ફૂલો</translation>
 <translation id="5129534298163637277">કન્ફર્મેશન માટેનો સંવાદ</translation>
@@ -2032,7 +2034,6 @@
 <translation id="5869405914158311789">આ સાઇટ પર પહોંચી શકાતું નથી</translation>
 <translation id="5869522115854928033">સાચવેલા પાસવર્ડ્સ</translation>
 <translation id="5872692522325383488">IBAN સાચવ્યો</translation>
-<translation id="5873013647450402046">તમારી બેંક કન્ફર્મ કરવા માગે છે કે આ તમે જ છો.</translation>
 <translation id="5877831137320480913">બ્યુટી અને ફિટનેસ</translation>
 <translation id="5879989559903563723">અતિથિ મોડમાં મંજૂરી નથી</translation>
 <translation id="5884465125445718607">એન્વલપ ચાઇનીઝ #6</translation>
@@ -2103,6 +2104,7 @@
 <translation id="6040143037577758943">બંધ કરો</translation>
 <translation id="6041777658117377052">ચેમ્બરનું તાપમાન</translation>
 <translation id="6042308850641462728">વધુ</translation>
+<translation id="6042688167654081154">છબીનું રૂપાંતરણ ટેક્સ્ટમાં કરવામાં આવ્યું</translation>
 <translation id="6044573915096792553">કદ 12</translation>
 <translation id="6045164183059402045">લાગુ કરવા માટેનો નમૂનો</translation>
 <translation id="6047233362582046994">જો તમે તમારી સુરક્ષાના જોખમોને સમજો છો, તો તમે જોખમકારક ઍપ્લિકેશનો દૂર કરતા પહેલા <ph name="BEGIN_LINK" />આ સાઇટની મુલાકાત<ph name="END_LINK" /> લઈ શકો છો.</translation>
@@ -2165,6 +2167,7 @@
 <translation id="6195371403461054755">ભૂસ્તરશાસ્ત્ર</translation>
 <translation id="6196640612572343990">ત્રીજા પક્ષની કુકીને બ્લૉક કરો</translation>
 <translation id="6197648101609735209">89 x 89 મિમી</translation>
+<translation id="6200386911308538077">છબીનું વિશ્લેષણ કરવામાં આવી રહ્યું છે</translation>
 <translation id="6203231073485539293">તમારું ઇન્ટરનેટ કનેક્શન તપાસો</translation>
 <translation id="6205314730813004066">જાહેરાત સંબંધી પ્રાઇવસી</translation>
 <translation id="6212314149070368045">યુએસ ફૅનફોલ્ડ</translation>
@@ -2283,6 +2286,7 @@
 <translation id="6468485451923838994">ફૉન્ટ</translation>
 <translation id="647261751007945333">ડિવાઇસ પૉલિસીઓ</translation>
 <translation id="647330291963761005">અપડેટ ઇન્સ્ટૉલ કરી રહ્યાં છીએ</translation>
+<translation id="6474220430271405609">પૉલિસીના પરીક્ષણો</translation>
 <translation id="6475672344094591109">તમે મુલાકાત લો એ બધી સાઈટ Chrome પાસે એવી માહિતી માગી શકે છે, જે તેમની જાહેરાતોનું પર્ફોર્મન્સ માપવામાં તેમને સહાય કરે છે. વિવિધ સાઈટ એક-બીજા સાથે શેર કરી શકે તેવી માહિતીને મર્યાદિત કરીને Chrome, તમારી પ્રાઇવસીને સુરક્ષિત કરે છે.</translation>
 <translation id="6476284679642588870">ચુકવણી પદ્ધતિઓ મેનેજ કરો</translation>
 <translation id="6486200200930923183">દસ્તાવેજી મૂવી</translation>
@@ -2448,7 +2452,6 @@
 <translation id="6896758677409633944">કૉપિ કરો</translation>
 <translation id="6897140037006041989">વપરાશકર્તા એજન્ટ</translation>
 <translation id="6898699227549475383">ઑર્ગેનાઇઝેશન (O)</translation>
-<translation id="6899000063526916106"><ph name="NUMBER_OF_DIGITS" /> અંકનો કોડ દાખલ કરો</translation>
 <translation id="6907458757809079309">ફિટનેસ</translation>
 <translation id="6910240653697687763"><ph name="URL" /> તમારા MIDI ઉપકરણોનું પૂર્ણ નિયંત્રણ મેળવવા માગે છે</translation>
 <translation id="691024665142758461">બહુવિધ ફાઇલોને ડાઉનલોડ કરવા</translation>
@@ -3064,6 +3067,7 @@
 <translation id="8296205692406981542">પ્રાદેશિક પાર્ક અને બગીચા</translation>
 <translation id="8297545700510100061">કુકી અને અન્ય સાઇટ ડેટાનો ઉપયોગ તમને યાદ રાખવા માટે કરવામાં આવે છે, ઉદાહરણ તરીકે, તમને સાઇન ઇન કરવા માટે અથવા જાહેરાતો મનગમતી બનાવવા માટે. બધી સાઇટ માટે કુકી મેનેજ કરવા, <ph name="SETTINGS" /> જુઓ.</translation>
 <translation id="8298115750975731693">તમે વાપરી રહેલા વાઇ-ફાઇ (<ph name="WIFI_NAME" />)ના <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />ની જવું પડી શકે.</translation>
+<translation id="8301894345671534559">કોડ દાખલ કરો</translation>
 <translation id="8303854710873047864">"<ph name="SECTION" />" વિભાગ બતાવ્યો</translation>
 <translation id="830498451218851433">અડધું વાળો</translation>
 <translation id="831997045666694187">સાંજ</translation>
@@ -3415,7 +3419,6 @@
 <translation id="9191834167571392248">નીચે ડાબી બાજુએ કાણું પાડો</translation>
 <translation id="9199905725844810519">પ્રિન્ટ કરવાની સુવિધા બ્લૉક કરવામાં આવી છે</translation>
 <translation id="9205078245616868884">તમારો ડેટા તમારા સિંક પાસફ્રેઝ સાથે એન્ક્રિપ્ટ કરવામાં આવ્યો છે. સિંક શરૂ કરવા માટે એ દાખલ કરો.</translation>
-<translation id="920511547311754821">શું તમારો કોડ મળી રહ્યો નથી? <ph name="IDS_AUTOFILL_CARD_UNMASK_OTP_INPUT_DIALOG_NEW_CODE_MESSAGE" /></translation>
 <translation id="9207861905230894330">લેખ ઉમેરવામાં નિષ્ફળ થયાં.</translation>
 <translation id="9213433120051936369">દેખાવને કસ્ટમાઇઝ કરો</translation>
 <translation id="9215416866750762878">કોઈ ઍપ્લિકેશન Chromeને આ સાઇટ સાથે સુરક્ષિત રીતે કનેક્ટ થવાથી અટકાવી રહી છે</translation>

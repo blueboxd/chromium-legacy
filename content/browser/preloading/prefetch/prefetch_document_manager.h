@@ -105,9 +105,9 @@ class CONTENT_EXPORT PrefetchDocumentManager
   // Whether the prefetch attempt for target |url| failed or discarded
   bool IsPrefetchAttemptFailedOrDiscarded(const GURL& url);
 
-  // Helper function to get the |NoVarySearchHelper| associated with |this|.
-  const NoVarySearchHelper& GetNoVarySearchHelper() const;
-
+  base::WeakPtr<PrefetchContainer> MatchUrl(const GURL& url) const;
+  std::vector<std::pair<GURL, base::WeakPtr<PrefetchContainer>>>
+  GetAllForUrlWithoutRefAndQueryForTesting(const GURL& url) const;
   void EnableNoVarySearchSupport();
 
   // Returns true if we can prefetch |next_prefetch| based on the number of
@@ -119,6 +119,10 @@ class CONTENT_EXPORT PrefetchDocumentManager
 
   // See documentation for |prefetch_eviction_callback_|.
   void SetPrefetchEvictionCallback(PrefetchEvictionCallback callback);
+
+  // Destroys |prefetch|. |prefetch| could either be owned by |this| or by
+  // PrefetchService.
+  void EvictPrefetch(base::WeakPtr<PrefetchContainer> prefetch);
 
   base::WeakPtr<PrefetchDocumentManager> GetWeakPtr() {
     return weak_method_factory_.GetWeakPtr();
@@ -160,10 +164,6 @@ class CONTENT_EXPORT PrefetchDocumentManager
 
   // Metrics related to the prefetches requested by this page load.
   PrefetchReferringPageMetrics referring_page_metrics_;
-
-  // NoVarySearchHelper that manages NoVarySearch data and url matching.
-  // Used through the getter GetNoVarySearchHelper
-  scoped_refptr<NoVarySearchHelper> no_vary_search_helper_;
 
   bool no_vary_search_support_enabled_ = false;
 

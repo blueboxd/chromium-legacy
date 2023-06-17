@@ -38,9 +38,7 @@ import static org.chromium.chrome.browser.autofill.editors.EditorProperties.Text
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType.STREET_ADDRESS_INPUT;
 
 import android.app.ProgressDialog;
-import android.os.Handler;
 import android.text.TextUtils;
-import android.util.Pair;
 
 import androidx.annotation.Nullable;
 
@@ -56,11 +54,13 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.GetSubKeysRequestDelegate;
 import org.chromium.chrome.browser.autofill.PhoneNumberUtil;
 import org.chromium.chrome.browser.autofill.editors.EditorBase;
+import org.chromium.chrome.browser.autofill.editors.EditorDialogViewBinder;
 import org.chromium.chrome.browser.autofill.editors.EditorProperties.EditorFieldValidator;
 import org.chromium.payments.mojom.AddressErrors;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -80,7 +80,6 @@ import java.util.UUID;
 @Deprecated
 public class AddressEditor
         extends EditorBase<AutofillAddress> implements GetSubKeysRequestDelegate {
-    private final Handler mHandler = new Handler();
     private final Map<Integer, ListItem> mAddressFields = new HashMap<>();
     private final Set<String> mPhoneNumbers = new HashSet<>();
     private final boolean mSaveToDisk;
@@ -96,9 +95,7 @@ public class AddressEditor
     private List<AddressUiComponent> mAddressUiComponents;
     private boolean mAdminAreasLoaded;
     private String mRecentlySelectedCountry;
-    private Runnable mCountryChangeCallback;
     private AutofillProfile mProfile;
-    private PropertyModel mEditorModel;
     private ProgressDialog mProgressDialog;
     @Nullable
     private AddressErrors mAddressErrors;
@@ -219,23 +216,16 @@ public class AddressEditor
                             .build();
         }
 
-        // Changing the country will update which fields are in the model. The actual fields are not
-        // discarded, so their contents are preserved.
-        mCountryField.set(DROPDOWN_CALLBACK, new Callback<Pair<String, Runnable>>() {
+        mCountryField.set(DROPDOWN_CALLBACK, new Callback<String>() {
             /**
-             * If the selected country on the country dropdown list is changed,
-             * the first element of eventData is the recently selected dropdown key,
-             * the second element is the callback to invoke for when the dropdown
-             * change has been processed.
+             * Load admin areas for the selected country.
              */
             @Override
-            public void onResult(Pair<String, Runnable> eventData) {
-                mEditorModel.get(EDITOR_FIELDS).clear();
+            public void onResult(String countryCode) {
                 showProgressDialog();
-                mRecentlySelectedCountry = eventData.first;
+                mRecentlySelectedCountry = countryCode;
                 mPhoneFormatter.setCountryCode(mRecentlySelectedCountry);
                 mPhoneValidator.setCountryCode(mRecentlySelectedCountry);
-                mCountryChangeCallback = eventData.second;
                 loadAdminAreasForCountry(mRecentlySelectedCountry);
             }
         });
@@ -334,6 +324,9 @@ public class AddressEditor
             mAdminAreasLoaded = true;
             PersonalDataManager.getInstance().cancelPendingGetSubKeys();
             cancelCallback.onResult(toEdit);
+
+            // Clean up the state of this editor.
+            reset();
         };
 
         // If the user clicks [Done], save changes on disk, mark the address "complete" if possible,
@@ -344,6 +337,9 @@ public class AddressEditor
             commitChanges(mProfile);
             address.completeAddress(mProfile);
             doneCallback.onResult(address);
+
+            // Clean up the state of this editor.
+            reset();
         };
 
         mEditorModel = new PropertyModel.Builder(ALL_KEYS)
@@ -353,6 +349,8 @@ public class AddressEditor
                                .with(DONE_RUNNABLE, onDone)
                                .with(CANCEL_RUNNABLE, onCancel)
                                .build();
+        mEditorMCP = PropertyModelChangeProcessor.create(
+                mEditorModel, mEditorDialog, EditorDialogViewBinder::bindEditorDialogView, false);
 
         loadAdminAreasForCountry(mCountryField.get(VALUE));
         if (mAddressErrors != null) mEditorDialog.validateForm();
@@ -505,9 +503,6 @@ public class AddressEditor
             // start with a person's full name or a with a prefecture name, depending on whether the
             // language code is "ja-Latn" or "ja".
             addAddressFieldsToEditor(mRecentlySelectedCountry, Locale.getDefault().getLanguage());
-            // Notify EditorDialog that the fields in the model have changed. EditorDialog should
-            // re-read the model and update the UI accordingly.
-            mHandler.post(mCountryChangeCallback);
         } else {
             // This should be called when all required fields are put in mAddressField.
             setAddressFieldValuesFromCache();
@@ -583,7 +578,7 @@ public class AddressEditor
         // Phone number (and email if applicable) are the last fields of the address.
         mPhoneField.set(CUSTOM_ERROR_MESSAGE, mAddressErrors != null ? mAddressErrors.phone : null);
         editorFields.add(new ListItem(TEXT_INPUT, mPhoneField));
-        mEditorModel.get(EDITOR_FIELDS).addAll(editorFields);
+        mEditorModel.set(EDITOR_FIELDS, editorFields);
     }
 
     /** Country based phone number validator. */

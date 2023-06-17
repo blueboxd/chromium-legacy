@@ -351,10 +351,22 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Sync.CrossUserSharingPublicPrivateKeyInitSuccess"
+    enum="Boolean" expires_after="2023-12-08">
+  <owner>eliaskh@chromium.org</owner>
+  <owner>rushans@google.com</owner>
+  <component>Services&gt;Sync</component>
+  <summary>
+    Histogram that keeps track of the bootstrap of Public-private key
+    initialization outcome. Recorded upon attempt to commit NigoriSpecifics with
+    CrossUserSharingPrivateKey, that happens upon browser restart.
+  </summary>
+</histogram>
+
 <histogram
     name="Sync.Crypto.CustomPassphraseKeyDerivationMethodOnSuccessfulDecryption"
     enum="SyncCustomPassphraseKeyDerivationMethodState"
-    expires_after="2023-07-09">
+    expires_after="2024-01-09">
   <owner>mmoskvitin@google.com</owner>
   <owner>treib@chromium.org</owner>
   <component>Services&gt;Sync</component>
@@ -1055,23 +1067,24 @@ chromium-metrics-reviews@google.com.
     {SyncModelType}. Recorded at most once per browser session if sync and the
     data type is enabled (in either transport or full-sync mode) and there are
     no errors. If the data type is waiting for updates for too long, it will be
-    recorded in Sync.ModelTypeWaitingForUpdatesTimeout.
+    recorded in Sync.ModelTypeWaitingForUpdatesTimeoutReason.
   </summary>
   <token key="SyncModelType" variants="SyncModelType">
     <variant name="" summary="all data types"/>
   </token>
 </histogram>
 
-<histogram name="Sync.ModelTypeWaitingForUpdatesTimeout" enum="SyncModelTypes"
-    expires_after="2024-05-26">
+<histogram name="Sync.ModelTypeWaitingForUpdatesTimeoutReason{SyncModelType}"
+    enum="SyncDownloadStatusWaitingForUpdatesReason" expires_after="2024-05-26">
   <owner>rushans@google.com</owner>
   <owner>treib@chromium.org</owner>
   <component>Services&gt;Sync</component>
   <summary>
-    Recorded whenever a data type waits for updates during browser startup for
-    too long, and it hasn't reached up-to-date or error download status. Each
-    data type can be recorded at most once per browser session. Recorded only if
-    the data type (and the whole sync) is enabled and there are no errors.
+    Recorded the reason of waiting for updates whenever a data type waits for
+    updates during browser startup for too long, and it hasn't reached
+    up-to-date or error download status. Each data type can be recorded at most
+    once per browser session. Recorded only if the data type (and the whole
+    sync) is enabled and there are no errors.
   </summary>
 </histogram>
 

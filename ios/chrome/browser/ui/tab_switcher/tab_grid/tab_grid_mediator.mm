@@ -23,7 +23,6 @@
 #import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/commerce/shopping_persisted_data_tab_helper.h"
 #import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
-#import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/main/browser_util.h"
 #import "ios/chrome/browser/reading_list/reading_list_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
@@ -42,6 +41,7 @@
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/util/url_with_title.h"
 #import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
@@ -259,16 +259,31 @@ void RecordTabGridCloseTabsCount(int count) {
   }
 
   switch (change.type()) {
-    case WebStateListChange::Type::kDestroy:
-      // Do nothing when a WebStateList is destroyed.
+    case WebStateListChange::Type::kSelectionOnly:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason and
+      // webStateList:didChangePinnedStateForWebState:atIndex to here. Note that
+      // here is reachable only when `reason` ==
+      // ActiveWebStateChangeReason::Activated in didChangeActiveWebState:.
       break;
     case WebStateListChange::Type::kDetach:
       // Do nothing when a WebState is detached.
       break;
-    case WebStateListChange::Type::kMove:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didMoveWebState:fromIndex:toIndex: to here.
+    case WebStateListChange::Type::kMove: {
+      if (IsPinnedTabsEnabled() &&
+          webStateList->IsWebStatePinnedAt(selection.index)) {
+        return;
+      }
+
+      const WebStateListChangeMove& moveChange =
+          change.As<WebStateListChangeMove>();
+      NSUInteger itemIndex =
+          [self itemIndexFromWebStateListIndex:selection.index];
+      [self.consumer
+          moveItemWithID:moveChange.moved_web_state()->GetStableIdentifier()
+                 toIndex:itemIndex];
       break;
+    }
     case WebStateListChange::Type::kReplace: {
       if (IsPinnedTabsEnabled() &&
           webStateList->IsWebStatePinnedAt(selection.index)) {
@@ -319,24 +334,6 @@ void RecordTabGridCloseTabsCount(int count) {
       break;
     }
   }
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-     didMoveWebState:(web::WebState*)webState
-           fromIndex:(int)fromIndex
-             toIndex:(int)toIndex {
-  DCHECK_EQ(_webStateList, webStateList);
-  if (webStateList->IsBatchInProgress()) {
-    return;
-  }
-
-  if (IsPinnedTabsEnabled() && webStateList->IsWebStatePinnedAt(toIndex)) {
-    return;
-  }
-
-  NSUInteger itemIndex = [self itemIndexFromWebStateListIndex:toIndex];
-  [self.consumer moveItemWithID:webState->GetStableIdentifier()
-                        toIndex:itemIndex];
 }
 
 - (void)webStateList:(WebStateList*)webStateList

@@ -108,6 +108,7 @@ WebAuthFlow::WebAuthFlow(
     const GURL& provider_url,
     Mode mode,
     Partition partition,
+    bool user_gesture,
     AbortOnLoad abort_on_load_for_non_interactive,
     absl::optional<base::TimeDelta> timeout_for_non_interactive)
     : delegate_(delegate),
@@ -115,6 +116,7 @@ WebAuthFlow::WebAuthFlow(
       provider_url_(provider_url),
       mode_(mode),
       partition_(partition),
+      user_gesture_(user_gesture),
       abort_on_load_for_non_interactive_(abort_on_load_for_non_interactive),
       timeout_for_non_interactive_(timeout_for_non_interactive),
       non_interactive_timeout_timer_(std::make_unique<base::OneShotTimer>()) {
@@ -301,7 +303,7 @@ bool WebAuthFlow::DisplayAuthPageInPopupWindow() {
   }
 
   Browser::CreateParams browser_params(Browser::TYPE_POPUP, profile_,
-                                       /*user_gesture=*/true);
+                                       user_gesture_);
   browser_params.omit_from_session_restore = true;
   browser_params.should_trigger_session_restore = false;
 
@@ -351,7 +353,8 @@ void WebAuthFlow::AfterUrlLoaded() {
       case features::WebAuthFlowInBrowserTabMode::kPopupWindow: {
         bool is_auth_page_displayed = DisplayAuthPageInPopupWindow();
         if (!is_auth_page_displayed) {
-          delegate_->OnAuthFlowFailure(WebAuthFlow::Failure::LOAD_FAILED);
+          delegate_->OnAuthFlowFailure(
+              WebAuthFlow::Failure::CANNOT_CREATE_WINDOW);
           return;
         }
         break;
@@ -432,7 +435,12 @@ void WebAuthFlow::DidStartNavigation(
   // If the navigation is initiated by the user, the tab will exit the auth
   // flow screen, this should result in a declined authentication and deleting
   // the flow.
+  // These conditions do not apply for the Popup Window, where the url bar is
+  // deactivated and the user cannot navigate away directly, to allow going back
+  // and forth within the same flow.
   if (IsDisplayingAuthPageInTab() &&
+      features::kWebAuthFlowInBrowserTabMode.Get() !=
+          features::WebAuthFlowInBrowserTabMode::kPopupWindow &&
       !navigation_handle->IsRendererInitiated()) {
     // Stop observing the web contents since it is not part of the flow anymore.
     WebContentsObserver::Observe(nullptr);

@@ -189,6 +189,8 @@ class ChromeURLDataManagerWebUITrustedTypesTest
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     enabled_features.push_back(ash::features::kDriveFsMirroring);
+    enabled_features.push_back(ash::features::kShimlessRMADiagnosticPage);
+    enabled_features.push_back(ash::features::kShimlessRMAOsUpdate);
     enabled_features.push_back(chromeos::features::kUploadOfficeToCloud);
 #else
     enabled_features.push_back(kForYouFre);
@@ -246,6 +248,9 @@ class ChromeURLDataManagerWebUITrustedTypesTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(ash::switches::kSamlPasswordChangeUrl,
                                     "http://password-change.example");
+    if (GetParam() == base::StringPiece("chrome://shimless-rma")) {
+      command_line->AppendSwitchASCII(ash::switches::kLaunchRma, "");
+    }
   }
 
   void SetUpOnMainThread() override {
@@ -393,6 +398,7 @@ static constexpr const char* const kChromeUrls[] = {
     // TODO(crbug.com/1400799): Add CrOS-only WebUI URLs here as TrustedTypes
     // are deployed to more WebUIs.
 
+    "chrome://accessory-update",
     "chrome://account-manager-error",
     "chrome://account-migration-welcome",
     "chrome://add-supervision/",
@@ -402,10 +408,12 @@ static constexpr const char* const kChromeUrls[] = {
     // for confirm password change UI.
     // "chrome://confirm-password-change",
     "chrome://cloud-upload",
+    "chrome://connectivity-diagnostics",
     "chrome://cryptohome",
     "chrome://drive-internals",
     "chrome://emoji-picker",
     "chrome://family-link-user-internals",
+    "chrome://guest-os-installer",
     "chrome://help-app",
     "chrome://linux-proxy-config",
     "chrome://manage-mirrorsync",
@@ -415,12 +423,18 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://nearby-internals",
     "chrome://network",
     "chrome://office-fallback/",
+    "chrome://os-feedback",
+    "chrome-untrusted://os-feedback",
     "chrome://parent-access",
     "chrome://password-change",
+    "chrome://personalization",
     "chrome://power",
-    "chrome://projector",
+    "chrome://print-management",
+    "chrome-untrusted://projector",
     "chrome://proximity-auth/proximity_auth.html",
     "chrome://set-time",
+    "chrome://shimless-rma",
+    "chrome://shortcut-customization",
     "chrome://slow",
     "chrome://smb-credentials-dialog/",
     "chrome://smb-share-dialog/",

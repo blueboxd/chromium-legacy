@@ -47,10 +47,10 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
-#include "chrome/browser/enterprise/connectors/analysis/fake_content_analysis_delegate.h"
 #include "chrome/browser/enterprise/connectors/common.h"
+#include "chrome/browser/enterprise/connectors/test/deep_scanning_test_utils.h"  // nogncheck
+#include "chrome/browser/enterprise/connectors/test/fake_content_analysis_delegate.h"  // nogncheck
 #include "chrome/browser/policy/dm_token_utils.h"
-#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
 #endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -2162,7 +2162,7 @@ class ContentAnalysisPrintBrowserTest
         policy::DMToken::CreateValidToken(kFakeDmToken));
     enterprise_connectors::ContentAnalysisDelegate::SetFactoryForTesting(
         base::BindRepeating(
-            &enterprise_connectors::FakeContentAnalysisDelegate::Create,
+            &enterprise_connectors::test::FakeContentAnalysisDelegate::Create,
             base::DoNothing(),
             base::BindRepeating(
                 &ContentAnalysisPrintBrowserTest::ScanningResponse,
@@ -2179,7 +2179,7 @@ class ContentAnalysisPrintBrowserTest
   }
 
   void SetUpOnMainThread() override {
-    safe_browsing::SetAnalysisConnector(
+    enterprise_connectors::test::SetAnalysisConnector(
         browser()->profile()->GetPrefs(),
         enterprise_connectors::AnalysisConnector::PRINT,
         R"({
@@ -2483,8 +2483,16 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisPrintBrowserTest, PrintWithPreview) {
   ASSERT_EQ(new_document_called_count(), 0);
 }
 
+// Test is flaky on linux-ubsan-vptr for the parameters where
+// `!content_analysis_allows_print()`.
+// TODO(crbug.com/1454426): Re-enabled when fixed.
+#if defined(UNDEFINED_SANITIZER)
+#define MAYBE_SystemPrintFromPrintPreview DISABLED_SystemPrintFromPrintPreview
+#else
+#define MAYBE_SystemPrintFromPrintPreview SystemPrintFromPrintPreview
+#endif
 IN_PROC_BROWSER_TEST_P(ContentAnalysisPrintBrowserTest,
-                       SystemPrintFromPrintPreview) {
+                       MAYBE_SystemPrintFromPrintPreview) {
   AddPrinter("printer_name");
 
   ASSERT_TRUE(embedded_test_server()->Started());

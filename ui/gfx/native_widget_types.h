@@ -52,6 +52,9 @@
 // TODO(https://crbug.com/1443009): Both gfx::NativeEvent and ui::PlatformEvent
 // are typedefs for native event types on different platforms, but they're
 // slightly different and used in different places. They should be merged.
+//
+// TODO(https://crbug.com/1149906): gfx::NativeCursor is ui::Cursor in Aura;
+// perhaps remove gfx::NativeCursor and use ui::Cursor everywhere?
 
 #if defined(USE_AURA)
 namespace aura {
@@ -75,27 +78,21 @@ struct objc_object;
 @class UIImage;
 @class UIView;
 @class UIWindow;
-@class UITextField;
 #else
 class UIImage;
 class UIView;
 class UIWindow;
-class UITextField;
 #endif  // __OBJC__
 #elif BUILDFLAG(IS_MAC)
 #ifdef __OBJC__
-@class NSCursor;
 @class NSImage;
 @class NSView;
 @class NSWindow;
-@class NSTextField;
 #else
 struct objc_object;
-class NSCursor;
 class NSImage;
 class NSView;
 class NSWindow;
-class NSTextField;
 #endif  // __OBJC__
 #endif
 
@@ -124,17 +121,13 @@ using NativeCursor = ui::Cursor;
 using NativeView = aura::Window*;
 using NativeWindow = aura::Window*;
 using NativeEvent = ui::Event*;
-constexpr NativeView kNullNativeView = nullptr;
-constexpr NativeWindow kNullNativeWindow = nullptr;
 #elif BUILDFLAG(IS_IOS)
 using NativeCursor = void*;
 using NativeView = UIView*;
 using NativeWindow = UIWindow*;
 using NativeEvent = base::apple::OwnedUIEvent;
-constexpr NativeView kNullNativeView = nullptr;
-constexpr NativeWindow kNullNativeWindow = nullptr;
 #elif BUILDFLAG(IS_MAC)
-using NativeCursor = NSCursor*;
+using NativeCursor = base::apple::OwnedNSCursor;
 using NativeEvent = base::apple::OwnedNSEvent;
 // NativeViews and NativeWindows on macOS are not necessarily in the same
 // process as the NSViews and NSWindows that they represent. Require an explicit
@@ -207,15 +200,11 @@ class GFX_EXPORT NativeWindow {
   RAW_PTR_EXCLUSION NSWindow* ns_window_ = nullptr;
 #endif
 };
-constexpr NativeView kNullNativeView = NativeView(nullptr);
-constexpr NativeWindow kNullNativeWindow = NativeWindow(nullptr);
 #elif BUILDFLAG(IS_ANDROID)
 using NativeCursor = void*;
 using NativeView = ui::ViewAndroid*;
 using NativeWindow = ui::WindowAndroid*;
 using NativeEvent = base::android::ScopedJavaGlobalRef<jobject>;
-constexpr NativeView kNullNativeView = nullptr;
-constexpr NativeWindow kNullNativeWindow = nullptr;
 #else
 #error Unknown build environment.
 #endif
@@ -244,17 +233,6 @@ using NativeViewAccessible = AtkObject*;
 using UnimplementedNativeViewAccessible =
     struct _UnimplementedNativeViewAccessible;
 using NativeViewAccessible = UnimplementedNativeViewAccessible*;
-#endif
-
-// Returns if the event is valid.
-GFX_EXPORT bool IsNativeEventValid(const NativeEvent& event);
-
-// A constant value to indicate that gfx::NativeCursor refers to no cursor.
-#if defined(USE_AURA)
-const ui::mojom::CursorType kNullCursor =
-    static_cast<ui::mojom::CursorType>(-1);
-#else
-const NativeCursor kNullCursor = static_cast<NativeCursor>(nullptr);
 #endif
 
 // Note: for test_shell we're packing a pointer into the NativeViewId. So, if

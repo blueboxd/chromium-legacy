@@ -110,6 +110,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_result.h"
+#include "content/public/browser/private_aggregation_data_model.h"
 #include "content/public/browser/service_process_host.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
@@ -1009,7 +1010,7 @@ class StoragePartitionImpl::DataDeletionHelper {
       InterestGroupManagerImpl* interest_group_manager,
       AttributionManager* attribution_manager,
       AggregationService* aggregation_service,
-      PrivateAggregationManager* private_aggregation_manager,
+      PrivateAggregationManagerImpl* private_aggregation_manager,
       storage::SharedStorageManager* shared_storage_manager,
       bool perform_storage_cleanup,
       const base::Time begin,
@@ -1864,6 +1865,12 @@ StoragePartitionImpl::GetPrivateAggregationManager() {
   return private_aggregation_manager_.get();
 }
 
+PrivateAggregationDataModel*
+StoragePartitionImpl::GetPrivateAggregationDataModel() {
+  DCHECK(initialized_);
+  return private_aggregation_manager_.get();
+}
+
 ResourceCacheManager* StoragePartitionImpl::GetResourceCacheManager() {
   CHECK(initialized_);
   return resource_cache_manager_.get();
@@ -2006,7 +2013,7 @@ void StoragePartitionImpl::OnAuthRequired(
   if (current_web_contents) {
     // Evict all the BFCache entries that
     // 1): are stored in the same BrowserContext
-    // 2): contain CCNS header
+    // 2): were loaded with the "Cache-control: no-store" header
     // 3): match the challenger information of the page that requires HTTP
     // authentication.
     for (WebContentsImpl* web_contents : WebContentsImpl::GetAllWebContents()) {
@@ -2016,9 +2023,7 @@ void StoragePartitionImpl::OnAuthRequired(
              web_contents->GetController().GetBackForwardCache().GetEntries()) {
           RenderFrameHostImpl* rfh = entry->render_frame_host();
           const GURL& last_committed_url = rfh->GetLastCommittedURL();
-          if (rfh->GetBackForwardCacheDisablingFeatures().Has(
-                  blink::scheduler::WebSchedulerTrackedFeature::
-                      kMainResourceHasCacheControlNoStore) &&
+          if (rfh->LoadedWithCacheControlNoStoreHeader() &&
               auth_info.challenger ==
                   url::SchemeHostPort(last_committed_url.scheme(),
                                       last_committed_url.host(),
@@ -2567,7 +2572,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     InterestGroupManagerImpl* interest_group_manager,
     AttributionManager* attribution_manager,
     AggregationService* aggregation_service,
-    PrivateAggregationManager* private_aggregation_manager,
+    PrivateAggregationManagerImpl* private_aggregation_manager,
     storage::SharedStorageManager* shared_storage_manager,
     bool perform_storage_cleanup,
     const base::Time begin,
@@ -3096,7 +3101,8 @@ void StoragePartitionImpl::OverrideAttributionManagerForTesting(
 }
 
 void StoragePartitionImpl::OverridePrivateAggregationManagerForTesting(
-    std::unique_ptr<PrivateAggregationManager> private_aggregation_manager) {
+    std::unique_ptr<PrivateAggregationManagerImpl>
+        private_aggregation_manager) {
   DCHECK(initialized_);
   private_aggregation_manager_ = std::move(private_aggregation_manager);
 }

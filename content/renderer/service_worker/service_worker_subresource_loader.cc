@@ -18,6 +18,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/common/fetch/fetch_request_type_converters.h"
 #include "content/common/service_worker/race_network_request_url_loader_client.h"
+#include "content/common/service_worker/service_worker_router_evaluator.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
@@ -25,6 +26,7 @@
 #include "net/base/net_errors.h"
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/record_ontransfersizeupdate_utils.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -211,8 +213,18 @@ bool ServiceWorkerSubresourceLoader::MaybeStartRaceNetworkRequest() {
   }
 
   DCHECK(!race_network_request_loader_client_);
-  race_network_request_loader_client_.emplace(resource_request_,
-                                              weak_factory_.GetWeakPtr());
+  race_network_request_loader_client_.emplace(
+      resource_request_, weak_factory_.GetWeakPtr(), absl::nullopt,
+      network::features::GetDataPipeDefaultAllocationSize(
+          network::features::DataPipeAllocationSize::kLargerSizeIfPossible));
+
+  // If the initial state is not kWaitForBody, that means creating data pipes
+  // failed. Do not start RaceNetworkRequest this case.
+  if (race_network_request_loader_client_->state() !=
+      ServiceWorkerRaceNetworkRequestURLLoaderClient::State::kWaitForBody) {
+    return false;
+  }
+
   mojo::PendingRemote<network::mojom::URLLoaderClient> client_to_pass;
   race_network_request_loader_client_->Bind(&client_to_pass);
 
@@ -358,6 +370,28 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
               &ServiceWorkerSubresourceLoader::DispatchFetchEventForSubresource,
               weak_factory_.GetWeakPtr()));
       return;
+    }
+  }
+
+  if (base::FeatureList::IsEnabled(features::kServiceWorkerStaticRouter)) {
+    auto* router_evaluator = controller_connector_->router_evaluator();
+    if (router_evaluator) {
+      CHECK(router_evaluator->IsValid());
+      auto sources = router_evaluator->Evaluate(resource_request_);
+      if (!sources.empty()) {  // matched the rule.
+        // TODO(crbug.com/1371756): support other sources in the full form.
+        // https://github.com/yoshisatoyanagisawa/service-worker-static-routing-api/blob/main/final-form.md
+        if (sources[0].type ==
+            blink::ServiceWorkerRouterSource::SourceType::kNetwork) {
+          // Network fallback is requested.
+          fallback_factory_->CreateLoaderAndStart(
+              url_loader_receiver_.Unbind(), request_id_, options_,
+              resource_request_, url_loader_client_.Unbind(),
+              traffic_annotation_);
+          delete this;
+          return;
+        }
+      }
     }
   }
 

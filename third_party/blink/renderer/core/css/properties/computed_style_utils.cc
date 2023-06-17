@@ -84,47 +84,49 @@ CSSValue* ConvertFontPaletteToCSSValue(const blink::FontPalette* palette) {
       return MakeGarbageCollected<CSSCustomIdentValue>(
           palette->GetPaletteValuesName());
     case blink::FontPalette::kInterpolablePalette: {
+      // TODO(crbug.com/1400620): Change the serialization of palette-mix()
+      // function to match color-mix(), i.e.: palette-mix() =
+      // palette-mix(<color-interpolation-method> , [ [normal | light | dark |
+      // <palette-identifier> | <palette-mix()> ] && <percentage [0,100]>?
+      // ]#{2})
       DCHECK(RuntimeEnabledFeatures::FontPaletteAnimationEnabled());
-      CSSFunctionValue* result = nullptr;
-      blink::FontPalette::InterpolablePaletteOperationType type =
-          palette->GetOperation().type;
-      switch (type) {
-        case blink::FontPalette::kMixPalettes:
-          result =
-              MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kPaletteMix);
-          break;
-        case blink::FontPalette::kAddPalettes:
-          result =
-              MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kPaletteAdd);
-          break;
-        case blink::FontPalette::kScalePalette:
-          result =
-              MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kPaletteScale);
-          break;
-        case blink::FontPalette::kNoInterpolation:
-          NOTREACHED();
+      CSSFunctionValue* result =
+          MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kPaletteMix);
+
+      CSSValueList* color_space_css_value_list =
+          CSSValueList::CreateSpaceSeparated();
+      color_space_css_value_list->Append(
+          *MakeGarbageCollected<CSSCustomIdentValue>(AtomicString("in")));
+      if (palette->GetHueInterpolationMethod().has_value()) {
+        color_space_css_value_list->Append(
+            *MakeGarbageCollected<CSSCustomIdentValue>(
+                AtomicString(Color::SerializeInterpolationSpace(
+                    palette->GetColorInterpolationSpace(),
+                    *palette->GetHueInterpolationMethod()))));
+      } else {
+        color_space_css_value_list->Append(
+            *MakeGarbageCollected<CSSCustomIdentValue>(
+                AtomicString(Color::SerializeInterpolationSpace(
+                    palette->GetColorInterpolationSpace()))));
       }
+      result->Append(*color_space_css_value_list);
+
       CSSValue* start = ConvertFontPaletteToCSSValue(palette->GetStart().get());
       result->Append(*start);
 
-      if (type != blink::FontPalette::kScalePalette) {
-        CSSValue* end = ConvertFontPaletteToCSSValue(palette->GetEnd().get());
-        if (*start == *end && type == blink::FontPalette::kMixPalettes) {
-          return start;
-        }
-        result->Append(*end);
+      CSSValueList* end_palette_with_percentage =
+          CSSValueList::CreateSpaceSeparated();
+      CSSValue* end = ConvertFontPaletteToCSSValue(palette->GetEnd().get());
+      if (*start == *end) {
+        return start;
       }
+      end_palette_with_percentage->Append(*end);
 
-      if (type != blink::FontPalette::kAddPalettes) {
-        CSSValue* param = CSSNumericLiteralValue::Create(
-            palette->GetOperation().param,
-            CSSPrimitiveValue::UnitType::kNumber);
-        if (palette->GetOperation().param == 1 &&
-            type == blink::FontPalette::kScalePalette) {
-          return start;
-        }
-        result->Append(*param);
-      }
+      CSSValue* param = CSSNumericLiteralValue::Create(
+          palette->GetPercentage() * 100,
+          CSSPrimitiveValue::UnitType::kPercentage);
+      end_palette_with_percentage->Append(*param);
+      result->Append(*end_palette_with_percentage);
 
       return result;
     }
@@ -2290,21 +2292,28 @@ CSSValue* ComputedStyleUtils::ValueForAnimationDirectionList(
 }
 
 CSSValue* ComputedStyleUtils::ValueForAnimationDuration(
-    const absl::optional<double>& duration) {
-  if (!duration.has_value()) {
+    const absl::optional<double>& duration,
+    bool resolve_auto_to_zero) {
+  absl::optional<double> resolved_duration =
+      (!duration.has_value() && resolve_auto_to_zero) ? 0 : duration;
+  if (!resolved_duration.has_value()) {
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
   }
-  return CSSNumericLiteralValue::Create(duration.value(),
+  return CSSNumericLiteralValue::Create(resolved_duration.value(),
                                         CSSPrimitiveValue::UnitType::kSeconds);
 }
 
 CSSValue* ComputedStyleUtils::ValueForAnimationDurationList(
-    const CSSAnimationData* animation_data) {
+    const CSSAnimationData* animation_data,
+    CSSValuePhase phase) {
+  bool resolve_auto_to_zero =
+      (phase == CSSValuePhase::kUsedValue) &&
+      (!animation_data || animation_data->HasSingleInitialTimeline());
   return CreateAnimationValueList(
       animation_data
           ? animation_data->DurationList()
           : Vector<absl::optional<double>>{CSSAnimationData::InitialDuration()},
-      &ValueForAnimationDuration);
+      ValueForAnimationDuration, resolve_auto_to_zero);
 }
 
 CSSValue* ComputedStyleUtils::ValueForAnimationDurationList(
@@ -2314,7 +2323,8 @@ CSSValue* ComputedStyleUtils::ValueForAnimationDurationList(
           ? transition_data->DurationList()
           : Vector<
                 absl::optional<double>>{CSSTransitionData::InitialDuration()},
-      &ValueForAnimationDuration);
+      ValueForAnimationDuration,
+      /* resolve_auto_to_zero */ false);
 }
 
 CSSValue* ComputedStyleUtils::ValueForAnimationFillMode(
@@ -3885,6 +3895,9 @@ const CSSValue* ComputedStyleUtils::ComputedPropertyValue(
     const ComputedStyle& style,
     const LayoutObject* layout_object) {
   switch (property.PropertyID()) {
+    case CSSPropertyID::kAnimationDuration:
+      return ComputedStyleUtils::ValueForAnimationDurationList(
+          style.Animations(), CSSValuePhase::kComputedValue);
     // Computed value is usually relative so that multiple fonts in child
     // elements work properly, but resolved value is always a pixel length.
     case CSSPropertyID::kLineHeight:

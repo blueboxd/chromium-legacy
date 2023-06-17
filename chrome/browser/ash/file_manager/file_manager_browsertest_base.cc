@@ -2220,6 +2220,12 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.push_back(ash::features::kFilesDriveShortcuts);
   }
 
+  if (options.enable_jellybean) {
+    enabled_features.push_back(chromeos::features::kJelly);
+  } else {
+    disabled_features.push_back(chromeos::features::kJelly);
+  }
+
   if (options.feature_ids.size() > 0) {
     for (const std::string& feature_id : options.feature_ids) {
       base::AddTagToTestResult("feature_id", feature_id);
@@ -2422,8 +2428,10 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
     EnableVirtualKeyboard();
   }
 
-  select_factory_ = new SelectFileDialogExtensionTestFactory();
-  ui::SelectFileDialog::SetFactory(select_factory_);
+  auto select_factory =
+      std::make_unique<SelectFileDialogExtensionTestFactory>();
+  select_factory_ = select_factory.get();
+  ui::SelectFileDialog::SetFactory(std::move(select_factory));
 }
 
 void FileManagerBrowserTestBase::TearDownOnMainThread() {
@@ -3441,6 +3449,11 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "isFilesExperimentalEnabled") {
+    *output = options.files_experimental ? "true" : "false";
+    return;
+  }
+
   if (name == "switchLanguage") {
     const std::string* language = value.FindString("language");
     ASSERT_TRUE(language);
@@ -3645,6 +3658,11 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     const std::string* path = value.FindString("path");
     ASSERT_TRUE(path) << "No supplied path to sendDriveFilesChangedEvent";
     drive_volume_->SendCloudDeleteEvent(*path);
+    return;
+  }
+
+  if (name == "isJellybean") {
+    *output = options.enable_jellybean ? "true" : "false";
     return;
   }
 
@@ -3861,7 +3879,7 @@ FileManagerBrowserTestBase::GetLastOpenWindowWebContents() {
 }
 
 bool FileManagerBrowserTestBase::PostKeyEvent(ui::KeyEvent* key_event) {
-  gfx::NativeWindow native_window = nullptr;
+  gfx::NativeWindow native_window = gfx::NativeWindow();
 
   content::WebContents* web_contents = GetLastOpenWindowWebContents();
   if (!web_contents && swa_web_contents_.size() > 0) {

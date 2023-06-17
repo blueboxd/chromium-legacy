@@ -6,6 +6,7 @@ import("//build/config/features.gni")
 import("//build/config/ozone.gni")
 import("//build/config/ui.gni")
 import("//device/vr/buildflags/buildflags.gni")
+import("//gpu/vulkan/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
@@ -513,7 +514,6 @@ source_set("native_widget_types_sources") {
   visibility = [ ":*" ]  # Depend on through ":native_widget_types".
 
   public = [ "native_widget_types.h" ]
-  sources = [ "native_widget_types.cc" ]
 
   public_deps = [
     ":gfx_export",
@@ -525,7 +525,7 @@ source_set("native_widget_types_sources") {
   defines = [ "GFX_IMPLEMENTATION" ]
 
   if (is_mac) {
-    sources += [ "native_widget_types_mac.mm" ]
+    sources = [ "native_widget_types_mac.mm" ]
     frameworks = [ "AppKit.framework" ]
   }
 }
@@ -627,6 +627,7 @@ source_set("memory_buffer_sources") {
     "//base",
     "//build:chromecast_buildflags",
     "//build:chromeos_buildflags",
+    "//gpu/vulkan:buildflags",
     "//ui/gfx/geometry",
   ]
 
@@ -669,6 +670,11 @@ source_set("memory_buffer_sources") {
       "native_pixmap_handle.cc",
       "native_pixmap_handle.h",
     ]
+  }
+
+  if (enable_vulkan) {
+    public_deps +=
+        [ "//third_party/vulkan-deps/vulkan-headers/src:vulkan_headers" ]
   }
 }
 

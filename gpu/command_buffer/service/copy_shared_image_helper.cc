@@ -22,7 +22,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkYUVAInfo.h"
@@ -36,6 +35,7 @@
 #include "third_party/skia/include/gpu/graphite/Image.h"
 #include "third_party/skia/include/gpu/graphite/Recorder.h"
 #include "third_party/skia/include/gpu/graphite/YUVABackendTextures.h"
+#include "third_party/skia/include/private/chromium/GrPromiseImageTexture.h"
 
 namespace gpu {
 
@@ -522,7 +522,7 @@ base::expected<void, GLError> CopySharedImageHelper::ConvertYUVAMailboxesToRGB(
         yuva_textures[i] = source_scoped_access[i]->graphite_texture();
       }
       skgpu::graphite::YUVABackendTextures yuva_backend_textures(
-          recorder, yuva_info, yuva_textures.data());
+          recorder, yuva_info, yuva_textures);
       result_image = SkImages::TextureFromYUVATextures(
           recorder, yuva_backend_textures, src_rgb_color_space);
     }

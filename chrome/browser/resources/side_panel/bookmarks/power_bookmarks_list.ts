@@ -30,7 +30,7 @@ import '//resources/polymer/v3_0/iron-list/iron-list.js';
 import {ShoppingListApiProxy, ShoppingListApiProxyImpl} from '//bookmarks-side-panel.top-chrome/shared/commerce/shopping_list_api_proxy.js';
 import {BookmarkProductInfo} from '//bookmarks-side-panel.top-chrome/shared/shopping_list.mojom-webui.js';
 import {SpEmptyStateElement} from '//bookmarks-side-panel.top-chrome/shared/sp_empty_state.js';
-import {startColorChangeUpdater} from '//resources/cr_components/color_change_listener/colors_css_updater.js';
+import {ColorChangeUpdater} from '//resources/cr_components/color_change_listener/colors_css_updater.js';
 import {getInstance as getAnnouncerInstance} from '//resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {CrActionMenuElement} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrDialogElement} from '//resources/cr_elements/cr_dialog/cr_dialog.js';
@@ -191,6 +191,11 @@ export class PowerBookmarksListElement extends PolymerElement {
         value: false,
         reflectToAttribute: true,
       },
+
+      hasLoadedData_: {
+        type: Boolean,
+        value: false,
+      },
     };
   }
 
@@ -230,10 +235,11 @@ export class PowerBookmarksListElement extends PolymerElement {
   private shownBookmarksResizeObserver_?: ResizeObserver;
   private hasScrollbars_: boolean;
   private contextMenuBookmark_: chrome.bookmarks.BookmarkTreeNode|undefined;
+  private hasLoadedData_: boolean;
 
   constructor() {
     super();
-    startColorChangeUpdater();
+    ColorChangeUpdater.forDocument().start();
   }
 
   override connectedCallback() {
@@ -297,6 +303,7 @@ export class PowerBookmarksListElement extends PolymerElement {
 
   onBookmarksLoaded() {
     this.updateShownBookmarks_();
+    this.hasLoadedData_ = true;
   }
 
   onBookmarkChanged(id: string, changedInfo: chrome.bookmarks.ChangeInfo) {
@@ -719,6 +726,10 @@ export class PowerBookmarksListElement extends PolymerElement {
             ActionSource.kBookmark);
       }
     }
+    // Workaround for this issue, causing unexpected list scrolling when
+    // refocusing the list after changing tabs:
+    // https://github.com/PolymerElements/iron-list/issues/270
+    (event.target as HTMLElement).blur();
   }
 
   private onRowSelectedChange_(
@@ -789,8 +800,12 @@ export class PowerBookmarksListElement extends PolymerElement {
 
   private shouldShowTopLevelEmptyState_(): boolean {
     return this.guestMode_ ||
-        (this.shownBookmarks_.length === 0 &&
+        (this.hasLoadedData_ && this.shownBookmarks_.length === 0 &&
          (!!this.searchQuery_ || this.activeFolderPath_.length === 0));
+  }
+
+  private shouldShowFolderEmptyState_(): boolean {
+    return this.hasLoadedData_ && this.shownBookmarks_.length === 0;
   }
 
   private shouldHideCard_(): boolean {

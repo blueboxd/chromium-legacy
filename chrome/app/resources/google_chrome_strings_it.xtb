@@ -29,7 +29,6 @@
 <translation id="1516530951338665275">Google Chrome richiede l'accesso al Bluetooth per continuare l'accoppiamento. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="1547295885616600893">La realizzazione di ChromeOS è stata possibile grazie a <ph name="BEGIN_LINK_CROS_OSS" />software open source<ph name="END_LINK_CROS_OSS" /> aggiuntivi.</translation>
 <translation id="1553358976309200471">Aggiorna Chrome</translation>
-<translation id="1555506416658437797">modifica metodi di pagamento.</translation>
 <translation id="1583073672411044740"><ph name="EXISTING_USER" /> ha già eseguito l'accesso a questo profilo Chrome. Questa operazione creerà un nuovo profilo Chrome per <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1587223624401073077">Google Chrome sta utilizzando la videocamera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> è pericoloso, pertanto è stato bloccato da Chrome.</translation>
@@ -78,7 +77,6 @@
 <translation id="234869673307233423">Chrome non può controllare le tue password. Riprova più tardi.</translation>
 <translation id="235650106824528204">Tutti i dati di Chrome generati durante l'utilizzo di questo profilo (come i preferiti, la cronologia, le password e altre impostazioni) possono essere rimossi dall'amministratore del profilo di lavoro. <ph name="LEARN_MORE" /></translation>
 <translation id="2359808026110333948">Continua</translation>
-<translation id="2399868464369312507">Google Chrome sta tentando di modificare i metodi di pagamento.</translation>
 <translation id="2401189691232800402">Sistema ChromeOS</translation>
 <translation id="2424440923901031101">Questa estensione viola le norme del Chrome Web Store e potrebbe non essere sicura. Rimuovila da Chrome in modo che non possa più vedere e modificare i tuoi dati sui siti che visiti, incluse le tue informazioni personali.</translation>
 <translation id="2467438592969358367">Google Chrome vuole esportare le password. Per consentire l'esportazione, digita la tua password Windows.</translation>
@@ -252,7 +250,6 @@
 <translation id="5756509061973259733">Esiste già un profilo Chrome con questo account su questo dispositivo</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Impossibile avviare Chrome. Riprova.</translation>
-<translation id="585620188971323280">modificare le impostazioni per la compilazione dei metodi di pagamento.</translation>
 <translation id="5895138241574237353">Riavvia</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - Accesso rete</translation>
 <translation id="5924017743176219022">Connessione a Internet in corso…</translation>
@@ -283,6 +280,7 @@
 <translation id="6327105987658262776">Nessun aggiornamento disponibile.</translation>
 <translation id="6360449101159168105">Mentre questa scheda non era attiva, la memoria è stata liberata per mantenere Chrome veloce. Puoi scegliere di escludere sempre il sito dall'inattività.</translation>
 <translation id="6412673304250309937">Verifica gli URL con un elenco di siti non sicuri archiviati in Chrome. Se un sito cerca di rubare la tua password o se scarichi un file dannoso, Chrome potrebbe inviare anche gli URL, inclusi bit e contenuti di pagina, a Navigazione sicura.</translation>
+<translation id="6417690341895039567">{COUNT,plural, =1{La tua organizzazione chiude automaticamente Chrome quando non viene utilizzato per 1 minuto. I dati di navigazione vengono eliminati. Potrebbero essere inclusi cronologia, compilazione automatica e download.}other{La tua organizzazione chiude automaticamente Chrome quando non viene utilizzato per # minuti. I dati di navigazione vengono eliminati. Potrebbero essere inclusi cronologia, compilazione automatica e download.}}</translation>
 <translation id="6418662306461808273">Vuoi passare a un profilo Chrome esistente?</translation>
 <translation id="648319183876919572">Navigazione sicura avanzata fa di più per proteggerti da download e siti web pericolosi</translation>
 <translation id="6493527311031785448">Google Chrome sta cercando di <ph name="AUTHENTICATION_PURPOSE" /></translation>
@@ -332,6 +330,7 @@ A questo account potrebbero essere applicate le autorizzazioni già concesse a s
 <translation id="7398801000654795464">Hai eseguito l'accesso a Chrome come <ph name="USER_EMAIL_ADDRESS" />. Utilizza lo stesso account per eseguire di nuovo l'accesso.</translation>
 <translation id="7410958280246779049">Chrome ha bloccato questo file perché è pericoloso</translation>
 <translation id="7426611252293106642">Google Chrome potrebbe non funzionare correttamente perché non è più supportato su questa distribuzione Linux</translation>
+<translation id="7449333426561673451">{COUNT,plural, =1{La tua organizzazione chiude automaticamente Chrome quando non viene utilizzato per 1 minuto.}other{La tua organizzazione chiude automaticamente Chrome quando non viene utilizzato per # minuti.}}</translation>
 <translation id="7481213027396403996">Usa la funzionalità di sicurezza più efficace di Chrome</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7583399374488819119">Programma di installazione di <ph name="COMPANY_NAME" /></translation>
@@ -366,6 +365,7 @@ A questo account potrebbero essere applicate le autorizzazioni già concesse a s
 <translation id="8013993649590906847">Se un'immagine è senza descrizione utile, Chrome proverà a fornirne una. Per la creazione delle descrizioni, le immagini vengono inviate a Google.</translation>
 <translation id="8019103195866286235">La pubblicazione di questa estensione è stata annullata dallo sviluppatore e potrebbe non essere sicura. Rimuovila da Chrome in modo che non possa più vedere e modificare i tuoi dati sui siti che visiti, incluse le tue informazioni personali.</translation>
 <translation id="80471789339884597">L'installazione è terminata. Dovrai riavviare tutti i browser per poter utilizzare <ph name="BUNDLE_NAME" />.</translation>
+<translation id="8057070436257749375">{COUNT,plural, =1{La tua organizzazione elimina automaticamente i dati di navigazione quando Chrome non viene utilizzato per 1 minuto. Potrebbero essere inclusi cronologia, compilazione automatica e download. Le schede esistenti rimarranno aperte.}other{La tua organizzazione elimina automaticamente i dati di navigazione quando Chrome non viene utilizzato per # minuti. Potrebbero essere inclusi cronologia, compilazione automatica e download. Le schede esistenti rimarranno aperte.}}</translation>
 <translation id="8064015586118426197">ChromeOS Flex</translation>
 <translation id="8129812357326543296">Informazioni su &amp;Google Chrome</translation>
 <translation id="813913629614996137">Inizializzazione...</translation>
@@ -389,7 +389,6 @@ A questo account potrebbero essere applicate le autorizzazioni già concesse a s
 <translation id="8504220326736535258">Chrome ha bloccato questo file perché ha un malware</translation>
 <translation id="8516431725144212809">I tuoi interessi stimati da Chrome</translation>
 <translation id="8521348052903287641">Regola inbound per consentire il traffico mDNS in Google Chrome Dev.</translation>
-<translation id="8544217240017914508">Google Chrome sta cercando di modificare le impostazioni per la compilazione dei metodi di pagamento.</translation>
 <translation id="8550334526674375523">Questo profilo di lavoro è completamente separato dal tuo profilo personale.</translation>
 <translation id="8556340503434111824">È disponibile una nuova versione di Google Chrome con una velocità senza precedenti.</translation>
 <translation id="8571790202382503603">Con i profili Chrome puoi separare tutti i tuoi contenuti di Chrome. In questo modo potrai alternare lavoro e divertimento con più facilità.</translation>

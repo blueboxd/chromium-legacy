@@ -944,6 +944,7 @@ class MathFunctionParser {
       CSSParserTokenRange& range,
       const CSSParserContext& context,
       CSSPrimitiveValue::ValueRange value_range,
+      const bool is_percentage_allowed = true,
       CSSAnchorQueryTypes allowed_anchor_queries = kCSSAnchorQueryTypesNone)
       : source_range_(range), range_(range) {
     const CSSParserToken& token = range.Peek();
@@ -951,7 +952,7 @@ class MathFunctionParser {
       calc_value_ = CSSMathFunctionValue::Create(
           CSSMathExpressionNode::ParseMathFunction(
               token.FunctionId(), ConsumeFunction(range_), context,
-              allowed_anchor_queries),
+              is_percentage_allowed, allowed_anchor_queries),
           value_range);
     }
     if (calc_value_ && calc_value_->HasComparisons()) {
@@ -1259,7 +1260,7 @@ CSSPrimitiveValue* ConsumeAlphaValue(CSSParserTokenRange& range,
                                 CSSPrimitiveValue::ValueRange::kAll);
 }
 
-bool CanConsumeCalcValue(CalculationCategory category,
+bool CanConsumeCalcValue(CalculationResultCategory category,
                          CSSParserMode css_parser_mode) {
   return category == kCalcLength || category == kCalcPercent ||
          category == kCalcPercentLength ||
@@ -1280,6 +1281,7 @@ CSSPrimitiveValue* ConsumeLengthOrPercent(
     return ConsumePercent(range, context, value_range);
   }
   MathFunctionParser math_parser(range, context, value_range,
+                                 true /* is_percentage_allowed */,
                                  allowed_anchor_queries);
   if (const CSSMathFunctionValue* calculation = math_parser.Value()) {
     if (CanConsumeCalcValue(calculation->Category(), context.Mode())) {
@@ -2953,7 +2955,7 @@ static CSSPrimitiveValue* ConsumeGradientAngleOrPercent(
   }
   MathFunctionParser math_parser(range, context, value_range);
   if (const CSSMathFunctionValue* calculation = math_parser.Value()) {
-    CalculationCategory category = calculation->Category();
+    CalculationResultCategory category = calculation->Category();
     // TODO(fs): Add and support kCalcPercentAngle?
     if (category == kCalcAngle || category == kCalcPercent) {
       return math_parser.ConsumeValue();
@@ -4403,6 +4405,7 @@ bool ConsumeAnimationShorthand(
     const StylePropertyShorthand& shorthand,
     HeapVector<Member<CSSValueList>, kMaxNumAnimationLonghands>& longhands,
     ConsumeAnimationItemValue consumeLonghandItem,
+    IsResetOnlyFunction is_reset_only,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     bool use_legacy_parsing) {
@@ -4439,9 +4442,30 @@ bool ConsumeAnimationShorthand(
     } while (!range.AtEnd() && range.Peek().GetType() != kCommaToken);
 
     for (unsigned i = 0; i < longhand_count; ++i) {
+      const Longhand& longhand = *To<Longhand>(shorthand.properties()[i]);
       if (!parsed_longhand[i]) {
-        longhands[i]->Append(
-            *To<Longhand>(shorthand.properties()[i])->InitialValue());
+        // For each longhand that doesn't parse, add the initial (list-item)
+        // value instead. However, we only do this *once* for reset-only
+        // properties to end up with the initial value for the property as
+        // a whole.
+        //
+        // Example:
+        //
+        //  animation: anim1, anim2;
+        //
+        // Should expand to (ignoring longhands other than name and timeline):
+        //
+        //   animation-name: anim1, anim2;
+        //   animation-timeline: auto;
+        //
+        // It should *not* expand to:
+        //
+        //   animation-name: anim1, anim2;
+        //   animation-timeline: auto, auto;
+        //
+        if (!is_reset_only(longhand.PropertyID()) || !longhands[i]->length()) {
+          longhands[i]->Append(*longhand.InitialValue());
+        }
       }
       parsed_longhand[i] = false;
     }
@@ -6630,7 +6654,9 @@ CSSValue* ConsumeOffsetPath(CSSParserTokenRange& range,
   if (offset_path) {
     list->Append(*offset_path);
   }
-  if (coord_box) {
+  if (!offset_path ||
+      (coord_box && To<CSSIdentifierValue>(coord_box)->GetValueID() !=
+                        CSSValueID::kBorderBox)) {
     list->Append(*coord_box);
   }
 

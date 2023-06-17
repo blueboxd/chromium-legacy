@@ -10,7 +10,8 @@
     margin-inline-end: 8px;
   }
 </style>
-<os-settings-animated-pages id="pages" section="device"
+<os-settings-animated-pages id="pages"
+    section="[[section_]]"
     focus-config="[[focusConfig_]]">
   <div id="main" route-path="default">
     <template is="dom-if"
@@ -64,6 +65,12 @@
     <template is="dom-if" if="[[hasStylus_]]">
       <cr-link-row class="hr" id="stylusRow" label="$i18n{stylusTitle}"
           on-click="onStylusClick_"
+          role-description="$i18n{subpageArrowRoleDescription}">
+      </cr-link-row>
+    </template>
+    <template is="dom-if" if="[[isPeripheralCustomizationEnabled]]">
+      <cr-link-row class="hr" id="tabletRow" label="$i18n{tabletTitle}"
+          on-click="onGraphicsTabletClick"
           role-description="$i18n{subpageArrowRoleDescription}">
       </cr-link-row>
     </template>
@@ -134,6 +141,11 @@
   <template is="dom-if" route-path="/stylus">
     <os-settings-subpage page-title="$i18n{stylusTitle}">
       <settings-stylus prefs="{{prefs}}"></settings-stylus>
+    </os-settings-subpage>
+  </template>
+  <template is="dom-if" route-path="/graphics-tablet">
+    <os-settings-subpage page-title="$i18n{tabletTitle}">
+      <settings-graphics-tablet-subpage></settings-graphics-tablet-subpage>
     </os-settings-subpage>
   </template>
   <template is="dom-if" route-path="/display">

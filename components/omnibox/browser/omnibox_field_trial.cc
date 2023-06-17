@@ -542,21 +542,6 @@ bool OmniboxFieldTrial::HUPSearchDatabase() {
   return value.empty() || (value == "true");
 }
 
-int OmniboxFieldTrial::KeywordScoreForSufficientlyCompleteMatch() {
-  std::string value_str = base::GetFieldTrialParamValue(
-      kBundledExperimentFieldTrialName,
-      kKeywordScoreForSufficientlyCompleteMatchRule);
-  if (value_str.empty()) {
-    return -1;
-  }
-  // This is a best-effort conversion; we trust the hand-crafted parameters
-  // downloaded from the server to be perfect.  There's no need for handle
-  // errors smartly.
-  int value;
-  base::StringToInt(value_str, &value);
-  return value;
-}
-
 bool OmniboxFieldTrial::IsFuzzyUrlSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxFuzzyUrlSuggestions);
 }
@@ -687,7 +672,7 @@ bool OmniboxFieldTrial::IsUniformRowHeightEnabled() {
 const base::FeatureParam<int> OmniboxFieldTrial::kRichSuggestionVerticalMargin(
     &omnibox::kUniformRowHeight,
     "OmniboxRichSuggestionVerticalMargin",
-    4);
+    6);
 
 bool OmniboxFieldTrial::IsChromeRefreshIconsEnabled() {
   static bool enabled =
@@ -706,7 +691,13 @@ bool OmniboxFieldTrial::IsChromeRefreshSuggestIconsEnabled() {
 bool OmniboxFieldTrial::IsChromeRefreshActionChipIconsEnabled() {
   return features::GetChromeRefresh2023Level() ==
              features::ChromeRefresh2023Level::kLevel2 ||
-         base::FeatureList::IsEnabled(omnibox::kCr2023ActionChips);
+         base::FeatureList::IsEnabled(omnibox::kCr2023ActionChipsIcons);
+}
+
+bool OmniboxFieldTrial::IsChromeRefreshSuggestHoverFillShapeEnabled() {
+  return features::GetChromeRefresh2023Level() ==
+             features::ChromeRefresh2023Level::kLevel2 ||
+         base::FeatureList::IsEnabled(omnibox::kSuggestionHoverFillShape);
 }
 
 bool OmniboxFieldTrial::IsGM3TextStyleEnabled() {
@@ -771,11 +762,6 @@ const char OmniboxFieldTrial::kHQPNumTitleWordsRule[] = "HQPNumTitleWords";
 const char OmniboxFieldTrial::kHQPAlsoDoHUPLikeScoringRule[] =
     "HQPAlsoDoHUPLikeScoring";
 const char OmniboxFieldTrial::kHUPSearchDatabaseRule[] = "HUPSearchDatabase";
-const char OmniboxFieldTrial::kKeywordRequiresRegistryRule[] =
-    "KeywordRequiresRegistry";
-const char OmniboxFieldTrial::kKeywordScoreForSufficientlyCompleteMatchRule[] =
-    "KeywordScoreForSufficientlyCompleteMatch";
-
 const char OmniboxFieldTrial::kHUPNewScoringTypedCountRelevanceCapParam[] =
     "TypedCountRelevanceCap";
 const char OmniboxFieldTrial::kHUPNewScoringTypedCountHalfLifeTimeParam[] =
@@ -1133,20 +1119,6 @@ const base::FeatureParam<bool> kRealboxSecondaryZeroSuggestCounterfactual(
     false);
 
 // <- Two-column realbox
-// ---------------------------------------------------------
-// Inspire Me ->
-
-const base::FeatureParam<int> kInspireMeAdditionalRelatedQueries(
-    &omnibox::kInspireMe,
-    "AdditionalRelatedQueries",
-    0);
-
-const base::FeatureParam<int> kInspireMeAdditionalTrendingQueries(
-    &omnibox::kInspireMe,
-    "AdditionalTrendingQueries",
-    0);
-
-// <- Inspire Me
 // ---------------------------------------------------------
 // Android UI Revamp ->
 const base::FeatureParam<bool> kOmniboxModernizeVisualUpdateMergeClipboardOnNTP(

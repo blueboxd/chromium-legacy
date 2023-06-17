@@ -82,6 +82,10 @@ class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
   // this function. Returns false if printing is impossible at the moment.
   virtual bool PrintNow(content::RenderFrameHost* rfh);
 
+  // Like PrintNow(), but for the node under the context menu, instead of the
+  // entire frame.
+  void PrintNodeUnderContextMenu(content::RenderFrameHost* rfh);
+
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // Prints the document in `print_data` with settings specified in
   // `job_settings`. Runs `callback` with an error string on failure and with an
@@ -148,6 +152,10 @@ class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
   bool IsCrashed();
 
   void SetPrintingRFH(content::RenderFrameHost* rfh);
+
+  // Helper method to do some common operations and checks when starting to
+  // printing.
+  bool StartPrintCommon(content::RenderFrameHost* rfh);
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
   // Register with the `PrintBackendServiceManager` as a client for queries

@@ -63,7 +63,6 @@
 <translation id="1235458158152011030">បណ្តាញដែលស្គាល់</translation>
 <translation id="1239161794459865856">បានភ្ជាប់ <ph name="FEATURE_NAME" />។</translation>
 <translation id="1240638468526743569">កម្មវិធី​មួយ</translation>
-<translation id="1242704516557658755">រុករកថយក្រោយនៅក្នុងបញ្ជីវិនដូដែលបានប្រើថ្មីៗបំផុត</translation>
 <translation id="124678866338384709">បិទផ្ទាំងបច្ចុប្បន្ន</translation>
 <translation id="1246890715821376239">កម្មវិធីដែលមិនអាចប្រើបាន</translation>
 <translation id="1247372569136754018">មីក្រូហ្វូន (ខាងក្នុង)</translation>
@@ -141,6 +140,7 @@
 <translation id="1550406609415860283">អាចប្រើឧបករណ៍​បាន</translation>
 <translation id="1550523713251050646">ចុចសម្រាប់ជម្រើសជាច្រើនទៀត</translation>
 <translation id="1555130319947370107">ខៀវ</translation>
+<translation id="1557622599341396706">បង្ហាញឈ្មោះតុ</translation>
 <translation id="1576511610858879060">Chromebook ឬឧបករណ៍ប៊្លូធូសរបស់អ្នកកំពុងប្រើប៊្លូធូសកំណែចាស់។ សូមប្រើប្រភពចូលផ្សេងទៀត ដើម្បីទទួលបានគុណភាពសំឡេងកាន់តែប្រសើរ។</translation>
 <translation id="1576623706766186887">បង្រួម​នៅ​ពេល​កែវពង្រីក​ត្រូវ​បានបើក</translation>
 <translation id="1586324912145647027">ចូល​ទៅកាន់​តុទី 1 នៃ 8</translation>
@@ -986,6 +986,7 @@
 <translation id="5317780077021120954">រក្សាទុក</translation>
 <translation id="5319712128756744240">ផ្គូផ្គង​ឧបករណ៍ថ្មី</translation>
 <translation id="5322611492012084517">រកទូរសព្ទរបស់អ្នក​មិនឃើញទេ</translation>
+<translation id="5323994101633366939">លាក់ឈ្មោះតុ</translation>
 <translation id="5327248766486351172">ឈ្មោះ</translation>
 <translation id="5329548388331921293">កំពុង​ភ្ជាប់...</translation>
 <translation id="5331975486040154427">ឧបករណ៍ USB-C (រន្ធក្រោយផ្នែកខាងឆ្វេង)</translation>
@@ -1120,7 +1121,6 @@
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">បើក</translation>
 <translation id="5920710855273935292">បានបិទសំឡេងមីក្រូហ្វូន។</translation>
-<translation id="5922962980596822074">ពិនិត្យមើល​វិនដូ​ពី​វិនដូ​ដែល​បាន​ប្រើ​ថ្មីៗបំផុត</translation>
 <translation id="5924855612669061715">ហតស្ប៉ត​ត្រូវបានបើក</translation>
 <translation id="5946788582095584774"><ph name="FEATURE_NAME" /> បាន​បើក។</translation>
 <translation id="5947494881799873997">ត្រលប់ក្រោយ</translation>
@@ -1168,6 +1168,7 @@
 <translation id="6103838137565245112">ប្រព័ន្ធ</translation>
 <translation id="6114505516289286752">បានទាញយក​ឯកសារនៃការនិយាយ​ជាភាសា<ph name="LANGUAGE" /></translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />។ <ph name="BATTERY_SAVER_STATE" /></translation>
+<translation id="6119972796024789243">ការកែតម្រូវ​ពណ៌</translation>
 <translation id="6121838516699723042">បញ្ជាក់​ការទាញយក <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">​មិន​អាចប្រើ​ Google ជំនួយការនៅក្នុង​វេនភ្ញៀវ​បានទេ។</translation>
 <translation id="6129953537138746214">ដកឃ្លា</translation>
@@ -1239,7 +1240,6 @@
 <translation id="6469104339369989396">បិទ/បើក​ហតស្ប៉ត</translation>
 <translation id="6477681113376365978">មិនអាចទាញយកឯកសារបានទេ</translation>
 <translation id="6482559668224714696">កែវ​ពង្រីក​ពេញ​អេក្រង់</translation>
-<translation id="6483727822843292440">ពិនិត្យមើល​វិនដូ​នានាពី​វិនដូ​ដែលបានប្រើ​តិច​បំផុត</translation>
 <translation id="6490471652906364588">ឧបករណ៍ USB-C (រន្ធខាងស្តាំ)</translation>
 <translation id="6491071886865974820"><ph name="MANAGER" /> តម្រូវឱ្យ​អ្នក​ដំឡើងកំណែ <ph name="DEVICE_TYPE" /> របស់អ្នក​ឱ្យបានមុន​ថ្ងៃផុតកំណត់</translation>
 <translation id="649452524636452238">កូដ PIN របស់​កាត​ឆ្លាតវៃ</translation>
@@ -1637,6 +1637,7 @@
 <translation id="8247998213073982446"><ph name="APP_NAME" />, កម្មវិធី</translation>
 <translation id="8255234195843591763">កំណត់​ឡើងវិញ ដើម្បី​ដំឡើងកំណែ</translation>
 <translation id="8261506727792406068">លុប</translation>
+<translation id="8262312463845990408">បិទ/បើកការចាក់</translation>
 <translation id="8270450402312105425">{0,plural, =1{ប្ដូរកំណែ​ឧបករណ៍​ទៅកំណែមុន​ក្នុងរយៈពេល​មួយម៉ោង}other{ប្ដូរកំណែ​ឧបករណ៍​ទៅកំណែមុន​ក្នុងរយៈពេល # ម៉ោង}}</translation>
 <translation id="8277261673056602147">រំលេចអក្សរនៅលើអេក្រង់របស់អ្នក</translation>
 <translation id="8284362522226889623">អូសទៅឆ្វេង​ដោយប្រើម្រាមដៃបួន ដើម្បីប្ដូរទៅតុមុន</translation>

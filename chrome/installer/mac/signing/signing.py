@@ -27,10 +27,6 @@ class Invoker(invoker.Base):
         reqs = product.requirements_string(config)
         if reqs:
             command.extend(['--requirements', '=' + reqs])
-        if product.options:
-            command.extend(
-                ['--options',
-                 product.options.to_comma_delimited_string()])
         if product.entitlements:
             command.extend(
                 ['--entitlements',

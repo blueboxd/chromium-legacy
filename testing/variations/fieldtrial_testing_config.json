@@ -4978,33 +4978,6 @@
             ]
         }
     ],
-    "DownweightAutocompleteSearchResultsStudy": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledWithCutoff_20221221",
-                    "params": {
-                        "enable_cutoff": "true"
-                    },
-                    "enable_features": [
-                        "LauncherFuzzyMatchForOmnibox"
-                    ]
-                },
-                {
-                    "name": "EnabledWithRelevance_20221221",
-                    "params": {
-                        "enable_relevance": "true"
-                    },
-                    "enable_features": [
-                        "LauncherFuzzyMatchForOmnibox"
-                    ]
-                }
-            ]
-        }
-    ],
     "EcheNetworkConnectionState": [
         {
             "platforms": [
@@ -12739,6 +12712,33 @@
                         "ServiceWorkerScopeCache",
                         "ServiceWorkerStorageControlOnThreadPool",
                         "ServiceWorkerStorageControlResponseUseHighPriority"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SpeculativeServiceWorkerWarmUp": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnableWarmUp_20230613",
+                    "params": {
+                        "sw_warm_up_intersection_observer": "false",
+                        "sw_warm_up_on_visible": "false"
+                    },
+                    "enable_features": [
+                        "SpeculativeServiceWorkerWarmUp"
+                    ],
+                    "disable_features": [
+                        "SpeculativeServiceWorkerStartup"
                     ]
                 }
             ]

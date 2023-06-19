@@ -739,6 +739,7 @@
 <translation id="4261870227682513959">顯示通知設定。通知已關閉</translation>
 <translation id="4269883910223712419">此裝置的管理員擁有下列權限：</translation>
 <translation id="4274537685965975248">「Ctrl + Alt + 向下箭咀」的鍵盤快速鍵已變更。如要使用 End 鍵，請按下<ph name="LAUNCHER_KEY_NAME" />鍵 + 向右箭咀。</translation>
+<translation id="4275283744500212192">開啟視窗版面配置選項</translation>
 <translation id="4279490309300973883">鏡像</translation>
 <translation id="4280601795273309128">安全更新已結束，請升級裝置。</translation>
 <translation id="4283888303416325161">為安全起見，請輸入密碼</translation>
@@ -980,6 +981,7 @@
 <translation id="5308380583665731573">連線</translation>
 <translation id="5313326810920013265">藍牙設定</translation>
 <translation id="5314219114274263156">已錄影螢幕畫面</translation>
+<translation id="5314489738835854379">向後循環切換視窗</translation>
 <translation id="5316716239522500219">建立顯示器鏡像</translation>
 <translation id="5317780077021120954">儲存</translation>
 <translation id="5319712128756744240">配對新裝置</translation>
@@ -1126,6 +1128,7 @@
 <translation id="5958529069007801266">受管使用者</translation>
 <translation id="5961960957587052807">亮度</translation>
 <translation id="5965524703725988602">切換深色主題背景。<ph name="STATE_TEXT" />。</translation>
+<translation id="5975235751479998104">向前循環切換視窗</translation>
 <translation id="5976112937189445008">㩒 Enter 掣就可以錄視窗畫面</translation>
 <translation id="5978382165065462689">透過「遠端協助」共用螢幕控制權。</translation>
 <translation id="5980301590375426705">結束訪客工作階段</translation>
@@ -1335,6 +1338,7 @@
 <translation id="6891721121089053234">在 <ph name="DEVICE_TYPE" /> 上查看手機最近的相片、媒體和應用程式</translation>
 <translation id="6896758677409633944">複製</translation>
 <translation id="6901883536534621389">試用手勢瀏覽功能</translation>
+<translation id="6912841030378044227">聚焦在網址列</translation>
 <translation id="6919251195245069855">無法辨識智能卡，請再試一次。</translation>
 <translation id="6920245099716267363">切換熱點。熱點已開啟，並連接 1 部裝置。</translation>
 <translation id="6931576957638141829">儲存至</translation>
@@ -1389,7 +1393,6 @@
 <translation id="7165278925115064263">Alt + Shift + K 鍵</translation>
 <translation id="7168224885072002358">系統將在 <ph name="TIMEOUT_SECONDS" /> 秒後還原成原來的解像度</translation>
 <translation id="7180611975245234373">重新整理</translation>
-<translation id="7185362672357349361">要開啟靜音狀態的自動提醒嗎？如果在靜音狀態下說話，系統會傳送通知給您。音訊資料只會儲存在裝置上。</translation>
 <translation id="7187711731540696127">您的 <ph name="DEVICE_NAME" /> 熱點已開啟，但未連線至任何裝置</translation>
 <translation id="7188494361780961876">已經將選單移去螢幕左上角。</translation>
 <translation id="7189412385142492784">金星距離幾遠</translation>

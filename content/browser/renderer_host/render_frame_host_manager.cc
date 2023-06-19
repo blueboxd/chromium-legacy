@@ -373,9 +373,14 @@ void UpdateProcessReusePolicyForProcessPerSiteWithMainFrameThreshold(
   // target for DevTools to  attach to. Exclude localhost and IP based host name
   // for process reuse to work around the problem, unless a field parameter
   // explicitly allows it.
-  const GURL& url = site_instance->GetSiteURL();
+  const GURL& site_url = site_instance->GetSiteURL();
   if (!features::kProcessPerSiteMainFrameAllowIPAndLocalhost.Get() &&
-      (url.HostIsIPAddress() || net::IsLocalHostname(url.host()))) {
+      (site_url.HostIsIPAddress() || net::IsLocalHostname(site_url.host()))) {
+    return;
+  }
+
+  // Disallow process reuse when scheme is not HTTP(S).
+  if (!site_url.SchemeIsHTTPOrHTTPS()) {
     return;
   }
 
@@ -4648,14 +4653,12 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
   // Update the count of active documents using this SiteInstance, both for
   // active document tracking and related active contents tracking.
   if (render_frame_host_) {
-    render_frame_host_->GetSiteInstance()->increment_active_document_count();
     if (frame_tree_node_->IsMainFrame()) {
       render_frame_host_->GetSiteInstance()
           ->IncrementRelatedActiveContentsCount();
     }
   }
   if (old_render_frame_host) {
-    old_render_frame_host->GetSiteInstance()->decrement_active_document_count();
     if (frame_tree_node_->IsMainFrame()) {
       old_render_frame_host->GetSiteInstance()
           ->DecrementRelatedActiveContentsCount();

@@ -325,11 +325,22 @@ class CONTENT_EXPORT BackForwardCacheImpl
   // marked as evicted.
   void PostTaskToDestroyEvictedFrames();
 
+  // This enum indicates if the method is called from a "Cache-Control:
+  // no-store" context, i.e. the page's same-origin main document has
+  // "Cache-Control: no-store" header.
+  enum CacheControlNoStoreContext {
+    kInCCNSContext,
+    kNotInCCNSContext,
+  };
+
   // Storing frames in back-forward cache is not supported indefinitely
   // due to potential privacy issues and memory leaks. Instead we are evicting
   // the frame from the cache after the time to live, which can be controlled
   // via experiment.
-  static base::TimeDelta GetTimeToLiveInBackForwardCache();
+  // The return value may vary depending on if the main frame of the cached page
+  // has "Cache-Control: no-store" header.
+  static base::TimeDelta GetTimeToLiveInBackForwardCache(
+      CacheControlNoStoreContext ccns_context);
 
   // Gets the maximum number of entries the BackForwardCache can hold per tab.
   static size_t GetCacheSize();
@@ -479,9 +490,12 @@ class CONTENT_EXPORT BackForwardCacheImpl
   void RemoveProcessesForEntry(Entry& entry);
 
   static BlockListedFeatures GetAllowedFeatures(
-      RequestedFeatures requested_features);
+      RequestedFeatures requested_features,
+      CacheControlNoStoreContext ccns_context);
+
   static BlockListedFeatures GetDisallowedFeatures(
-      RequestedFeatures requested_features);
+      RequestedFeatures requested_features,
+      CacheControlNoStoreContext ccns_context);
 
   // Contains the set of stored Entries.
   // Invariant:

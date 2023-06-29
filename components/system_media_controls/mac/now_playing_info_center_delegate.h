@@ -18,7 +18,7 @@
 namespace system_media_controls::internal {
 
 // Wraps an NSObject which interfaces with the MPNowPlayingInfoCenter.
-class NowPlayingInfoCenterDelegate {
+class API_AVAILABLE(macos(10.13.1)) NowPlayingInfoCenterDelegate {
  public:
   NowPlayingInfoCenterDelegate();
   NowPlayingInfoCenterDelegate(const NowPlayingInfoCenterDelegate&) = delete;

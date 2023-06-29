@@ -75,12 +75,14 @@
 }
 
 - (void)setThumbnail:(NSImage*)image {
-  MPMediaItemArtwork* artwork = [[MPMediaItemArtwork alloc]
-      initWithBoundsSize:image.size
-          requestHandler:^NSImage* _Nonnull(CGSize aSize) {
-            return image;
-          }];
-  [_nowPlayingInfo setObject:artwork forKey:MPMediaItemPropertyArtwork];
+  if (@available(macOS 10.13.2, *)) {
+    MPMediaItemArtwork* artwork = [[MPMediaItemArtwork alloc]
+        initWithBoundsSize:image.size
+            requestHandler:^NSImage* _Nonnull(CGSize aSize) {
+              return image;
+            }];
+    [_nowPlayingInfo setObject:artwork forKey:MPMediaItemPropertyArtwork];
+  }
 }
 
 - (void)clearMetadata {
@@ -96,7 +98,9 @@
   [_nowPlayingInfo setObject:@"" forKey:MPMediaItemPropertyTitle];
   [_nowPlayingInfo setObject:@"" forKey:MPMediaItemPropertyArtist];
   [_nowPlayingInfo setObject:@"" forKey:MPMediaItemPropertyAlbumTitle];
-  [_nowPlayingInfo removeObjectForKey:MPMediaItemPropertyArtwork];
+  if (@available(macOS 10.13.2, *)) {
+    [_nowPlayingInfo removeObjectForKey:MPMediaItemPropertyArtwork];
+  }
 }
 
 - (void)updateNowPlayingInfo {

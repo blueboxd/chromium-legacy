@@ -8,9 +8,8 @@ import static org.chromium.chrome.browser.autofill.editors.EditorProperties.Fiel
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.IS_REQUIRED;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.LABEL;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.VALUE;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.LENGTH_COUNTER_LIMIT_NONE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_FORMATTER;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_INPUT_TYPE;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_LENGTH_COUNTER_LIMIT;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_SUGGESTIONS;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType.ALPHA_NUMERIC_INPUT;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType.EMAIL_ADDRESS_INPUT;
@@ -19,14 +18,11 @@ import static org.chromium.chrome.browser.autofill.editors.EditorProperties.Text
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType.REGION_INPUT;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType.STREET_ADDRESS_INPUT;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.getValidationErrorMessage;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.hasMaximumLength;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.isFieldValid;
 
 import android.content.Context;
 import android.text.Editable;
-import android.text.InputFilter;
 import android.text.InputType;
-import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -62,36 +58,37 @@ class TextFieldView extends FrameLayout implements FieldView {
     private static EditorObserverForTest sObserverForTest;
 
     @Nullable
-    private final TextWatcher mFormatter;
-
+    private Runnable mDoneRunnable;
+    @SuppressWarnings("WrongConstant") // https://crbug.com/1038784
+    private final OnEditorActionListener mEditorActionListener = (view, actionId, event) -> {
+        if (actionId == EditorInfo.IME_ACTION_DONE && mDoneRunnable != null) {
+            mDoneRunnable.run();
+            return true;
+        } else if (actionId != EditorInfo.IME_ACTION_NEXT) {
+            return false;
+        }
+        View next = view.focusSearch(View.FOCUS_FORWARD);
+        if (next == null) {
+            return false;
+        }
+        next.requestFocus();
+        return true;
+    };
     private PropertyModel mEditorFieldModel;
-    private OnEditorActionListener mEditorActionListener;
     private TextInputLayout mInputLayout;
     private AutoCompleteTextView mInput;
     private View mIconsLayer;
     private ImageView mActionIcon;
-    private boolean mHasFocusedAtLeastOnce;
 
-    public TextFieldView(Context context, final PropertyModel fieldModel,
-            OnEditorActionListener actionListener, @Nullable TextWatcher formatter,
-            boolean focusAndShowKeyboard, boolean hasRequiredIndicator) {
+    public TextFieldView(Context context, final PropertyModel fieldModel) {
         super(context);
         mEditorFieldModel = fieldModel;
-        mEditorActionListener = actionListener;
 
         LayoutInflater.from(context).inflate(R.layout.payments_request_editor_textview, this, true);
         mInputLayout = (TextInputLayout) findViewById(R.id.text_input_layout);
 
-        // Build up the label.  Required fields are indicated by appending a '*'.
-        CharSequence label = fieldModel.get(LABEL);
-        if (fieldModel.get(IS_REQUIRED) && hasRequiredIndicator) {
-            label = label + REQUIRED_FIELD_INDICATOR;
-        }
-        mInputLayout.setHint(label);
-
         mInput = (AutoCompleteTextView) mInputLayout.findViewById(R.id.text_view);
         mInput.setText(fieldModel.get(VALUE));
-        mInput.setContentDescription(label);
         mInput.setOnEditorActionListener(mEditorActionListener);
         // AutoCompleteTextView requires and explicit onKeyListener to show the OSK upon receiving
         // a KEYCODE_DPAD_CENTER.
@@ -107,6 +104,8 @@ class TextFieldView extends FrameLayout implements FieldView {
             return true;
         });
 
+        setShowRequiredIndicator(/*showRequiredIndicator=*/false);
+
         mIconsLayer = findViewById(R.id.icons_layer);
         mIconsLayer.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
@@ -121,27 +120,10 @@ class TextFieldView extends FrameLayout implements FieldView {
         mInput.setOnFocusChangeListener(new OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    // Show the keyboard based on focusAndShowKeyboard parameter, after receiving
-                    // focus for the first time.
-                    if (focusAndShowKeyboard && !mHasFocusedAtLeastOnce) {
-                        // Set the cursor position to the end of the text in text input
-                        // when autofocused with focusAndShowKeyboard.
-                        mInput.setSelection(mInput.getText().length());
-                        InputMethodManager imm =
-                                (InputMethodManager) v.getContext().getSystemService(
-                                        Context.INPUT_METHOD_SERVICE);
-                        imm.showSoftInput(v, /* flags= */ 0);
-                    }
-                    mHasFocusedAtLeastOnce = true;
-                } else if (mHasFocusedAtLeastOnce) {
+                if (!hasFocus) {
                     // Validate the field when the user de-focuses it.
                     // Show no errors until the user has already tried to edit the field once.
                     updateDisplayedError(!isFieldValid(mEditorFieldModel));
-                }
-
-                if (mEditorFieldModel.get(TEXT_LENGTH_COUNTER_LIMIT) != LENGTH_COUNTER_LIMIT_NONE) {
-                    mInputLayout.setCounterEnabled(hasFocus);
                 }
             }
         });
@@ -154,13 +136,6 @@ class TextFieldView extends FrameLayout implements FieldView {
                 updateDisplayedError(false);
                 if (sObserverForTest != null) {
                     sObserverForTest.onEditorTextUpdate();
-                }
-                if (!hasMaximumLength(mEditorFieldModel)) return;
-                updateDisplayedError(true);
-                if (isValid()) {
-                    // Simulate editor action to select next selectable field.
-                    mEditorActionListener.onEditorAction(mInput, EditorInfo.IME_ACTION_NEXT,
-                            new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
                 }
             }
 
@@ -181,17 +156,9 @@ class TextFieldView extends FrameLayout implements FieldView {
             mInput.setThreshold(0);
         }
 
-        final int lengthCounter = mEditorFieldModel.get(TEXT_LENGTH_COUNTER_LIMIT);
-        if (lengthCounter != LENGTH_COUNTER_LIMIT_NONE) {
-            // Limit input length for field and counter.
-            mInput.setFilters(new InputFilter[] {new InputFilter.LengthFilter(lengthCounter)});
-            mInputLayout.setCounterMaxLength(lengthCounter);
-        }
-
-        mFormatter = formatter;
-        if (formatter != null) {
-            mInput.addTextChangedListener(formatter);
-            formatter.afterTextChanged(mInput.getText());
+        if (mEditorFieldModel.get(TEXT_FORMATTER) != null) {
+            mInput.addTextChangedListener(mEditorFieldModel.get(TEXT_FORMATTER));
+            mEditorFieldModel.get(TEXT_FORMATTER).afterTextChanged(mInput.getText());
         }
 
         switch (fieldModel.get(TEXT_INPUT_TYPE)) {
@@ -228,14 +195,21 @@ class TextFieldView extends FrameLayout implements FieldView {
                         | InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS);
                 break;
         }
+    }
 
-        // Request focus and show soft input keyboard based on the |focusAndShowKeyboard| parameter.
-        if (focusAndShowKeyboard) {
-            mInput.post(mInput::requestFocus);
-            // The keyboard will be shown in the onFocusChanged listener of mInput as the
-            // InputMethodManager instance requires the view to be focused for the showSoftInput
-            // to work.
+    void setDoneRunnable(@Nullable Runnable doneRunnable) {
+        mDoneRunnable = doneRunnable;
+    }
+
+    @Override
+    public void setShowRequiredIndicator(boolean showRequiredIndicator) {
+        // Build up the label. Required fields are indicated by appending a '*'.
+        String label = mEditorFieldModel.get(LABEL);
+        if (mEditorFieldModel.get(IS_REQUIRED) && showRequiredIndicator) {
+            label += REQUIRED_FIELD_INDICATOR;
         }
+        mInputLayout.setHint(label);
+        mInput.setContentDescription(label);
     }
 
     @Override
@@ -296,8 +270,8 @@ class TextFieldView extends FrameLayout implements FieldView {
     }
 
     public void removeTextChangedListeners() {
-        if (mFormatter != null) {
-            mInput.removeTextChangedListener(mFormatter);
+        if (mEditorFieldModel.get(TEXT_FORMATTER) != null) {
+            mInput.removeTextChangedListener(mEditorFieldModel.get(TEXT_FORMATTER));
         }
     }
 

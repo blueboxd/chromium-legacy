@@ -65,6 +65,9 @@ class TestAutofillDriverTemplate : public T {
       const std::u16string& value) override {}
   void RendererShouldClearFilledSection() override {}
   void RendererShouldClearPreviewedForm() override {}
+  void RendererShouldTriggerSuggestions(
+      const FieldGlobalId& field_id,
+      AutofillSuggestionTriggerSource trigger_source) override {}
   void RendererShouldFillFieldWithValue(const FieldGlobalId& field,
                                         const std::u16string& value) override {}
   void RendererShouldPreviewFieldWithValue(
@@ -103,6 +106,11 @@ class TestAutofillDriverTemplate : public T {
     }
     return result;
   }
+
+  void UndoAutofill(const FormData& form_data,
+                    const url::Origin& triggered_origin,
+                    const base::flat_map<FieldGlobalId, ServerFieldType>&
+                        field_type_map) override {}
 
   // Methods unique to TestAutofillDriver that tests can use to specialize
   // functionality.

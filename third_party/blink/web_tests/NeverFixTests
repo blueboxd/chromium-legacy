@@ -1,4 +1,4 @@
-# tags: [ Android Fuchsia Linux Mac Mac10.13 Mac10.14 Mac10.15 Mac11 Mac11-arm64 Mac12 Mac12-arm64 Mac13 Mac13-arm64 Win Win10.20h2 Win11 ]
+# tags: [ Android Fuchsia Linux Mac Mac10.15 Mac11 Mac11-arm64 Mac12 Mac12-arm64 Mac13 Mac13-arm64 Win Win10.20h2 Win11 ]
 # tags: [ Release Debug ]
 # results: [ Skip Pass ]
 
@@ -975,6 +975,10 @@ crbug.com/966283 external/wpt/css/css-overflow/clip-003.html [ Skip ]
 # run_web_tests.py; see https://crbug.com/359838.
 http/tests/ManualTests/* [ Skip ]
 
+# Tests skipped in automation because they require manual interaction with system
+# dialogs. Run these tests by opening the files manually in a browser.
+printing/manual/* [ Skip ]
+
 # Fails in debug mode, because in debug mode we recompute visual rects after
 # changes to subpixel offsets of composited layers to detect under-invalidation
 # in testing, whereas otherwise we do not do so if the composited layer has a
@@ -1734,8 +1738,6 @@ crbug.com/1267606 [ Linux ] wpt_internal/css/css-fonts/font-glyph-synthesis-mac.
 crbug.com/1267606 [ Win ] wpt_internal/css/css-fonts/font-glyph-synthesis-mac.html [ Skip ]
 crbug.com/1267606 [ Fuchsia ] wpt_internal/css/css-fonts/font-glyph-synthesis-mac.html [ Skip ]
 crbug.com/1267606 [ Android ] wpt_internal/css/css-fonts/font-glyph-synthesis-mac.html [ Skip ]
-crbug.com/1267606 [ Mac10.13 ] wpt_internal/css/css-fonts/font-glyph-synthesis-mac.html [ Skip ]
-crbug.com/1267606 [ Mac10.14 ] wpt_internal/css/css-fonts/font-glyph-synthesis-mac.html [ Skip ]
 crbug.com/1267606 [ Mac10.15 ] wpt_internal/css/css-fonts/font-glyph-synthesis-mac.html [ Skip ]
 crbug.com/1267606 [ Mac11 ] wpt_internal/css/css-fonts/font-glyph-synthesis-mac.html [ Skip ]
 crbug.com/1267606 [ Mac11-arm64 ] wpt_internal/css/css-fonts/font-glyph-synthesis-mac.html [ Skip ]
@@ -1838,6 +1840,9 @@ crbug.com/1378476 [ Mac11-arm64 ] fast/canvas-api/OffscreenCanvas-getContext-in-
 crbug.com/1378476 [ Mac13-arm64 ] fast/canvas-api/OffscreenCanvas-getContext.html [ Skip ]
 crbug.com/1378476 [ Mac12-arm64 ] fast/canvas-api/OffscreenCanvas-getContext.html [ Skip ]
 crbug.com/1378476 [ Mac11-arm64 ] fast/canvas-api/OffscreenCanvas-getContext.html [ Skip ]
+crbug.com/1378476 [ Mac11-arm64 ] fast/canvas-api/offscreencanvas.transferrable-webgl-exception.html [ Skip ]
+crbug.com/1378476 [ Mac12-arm64 ] fast/canvas-api/offscreencanvas.transferrable-webgl-exception.html [ Skip ]
+crbug.com/1378476 [ Mac13-arm64 ] fast/canvas-api/offscreencanvas.transferrable-webgl-exception.html [ Skip ]
 crbug.com/1378476 [ Mac13-arm64 ] fast/canvas/bug1280361.html [ Skip ]
 crbug.com/1378476 [ Mac12-arm64 ] fast/canvas/bug1280361.html [ Skip ]
 crbug.com/1378476 [ Mac11-arm64 ] fast/canvas/bug1280361.html [ Skip ]

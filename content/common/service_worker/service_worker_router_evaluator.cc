@@ -31,7 +31,13 @@ void RecordSetupError(ServiceWorkerRouterEvaluatorErrorEnums e) {
   base::UmaHistogramEnumeration("ServiceWorker.RouterEvaluator.Error", e);
 }
 
-std::string ConvertToRegex(const blink::UrlPattern& url_pattern) {
+void RecordMatchedSourceType(
+    const std::vector<blink::ServiceWorkerRouterSource>& sources) {
+  base::UmaHistogramEnumeration(
+      "ServiceWorker.RouterEvaluator.MatchedFirstSourceType", sources[0].type);
+}
+
+std::string ConvertToRegex(const blink::SafeUrlPattern& url_pattern) {
   liburlpattern::Options options = {.delimiter_list = "/",
                                     .prefix_list = "/",
                                     .sensitive = true,
@@ -41,7 +47,7 @@ std::string ConvertToRegex(const blink::UrlPattern& url_pattern) {
   return pattern.GenerateRegexString();
 }
 
-std::string ConvertToPattern(const blink::UrlPattern& url_pattern) {
+std::string ConvertToPattern(const blink::SafeUrlPattern& url_pattern) {
   liburlpattern::Options options = {.delimiter_list = "/",
                                     .prefix_list = "/",
                                     .sensitive = true,
@@ -60,10 +66,28 @@ bool IsValidSources(
   // TODO(crbug.com/1371756): support other sources in the future.
   // Currently, only network source is supported.
   for (const auto& s : sources) {
-    if (s.type != blink::ServiceWorkerRouterSource::SourceType::kNetwork ||
-        !s.network_source) {
-      RecordSetupError(ServiceWorkerRouterEvaluatorErrorEnums::kInvalidSource);
-      return false;
+    switch (s.type) {
+      case blink::ServiceWorkerRouterSource::SourceType::kNetwork:
+        if (!s.network_source) {
+          RecordSetupError(
+              ServiceWorkerRouterEvaluatorErrorEnums::kInvalidSource);
+          return false;
+        }
+        break;
+      case blink::ServiceWorkerRouterSource::SourceType::kRace:
+        if (!s.race_source) {
+          RecordSetupError(
+              ServiceWorkerRouterEvaluatorErrorEnums::kInvalidSource);
+          return false;
+        }
+        break;
+      case blink::ServiceWorkerRouterSource::SourceType::kFetchEvent:
+        if (!s.fetch_event_source) {
+          RecordSetupError(
+              ServiceWorkerRouterEvaluatorErrorEnums::kInvalidSource);
+          return false;
+        }
+        break;
     }
   }
   return true;
@@ -137,6 +161,7 @@ ServiceWorkerRouterEvaluator::Evaluate(
     if (rule->url_patterns.Match(request.url.path(), &vec) &&
         // ensure it matches all included patterns.
         vec.size() == rule->url_pattern_length) {
+      RecordMatchedSourceType(rule->sources);
       return rule->sources;
     }
   }
@@ -157,8 +182,18 @@ base::Value ServiceWorkerRouterEvaluator::ToValue() const {
       condition.Append(std::move(out_c));
     }
     for (const auto& s : r.sources) {
-      CHECK_EQ(s.type, blink::ServiceWorkerRouterSource::SourceType::kNetwork);
-      source.Append("network");
+      switch (s.type) {
+        case blink::ServiceWorkerRouterSource::SourceType::kNetwork:
+          source.Append("network");
+          break;
+        case blink::ServiceWorkerRouterSource::SourceType::kRace:
+          // TODO(crbug.com/1371756): we may need to update the name per target.
+          source.Append("race-network-and-fetch-handler");
+          break;
+        case blink::ServiceWorkerRouterSource::SourceType::kFetchEvent:
+          source.Append("fetch-event");
+          break;
+      }
     }
     rule.Set("condition", std::move(condition));
     rule.Set("source", std::move(source));

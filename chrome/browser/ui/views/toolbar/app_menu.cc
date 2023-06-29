@@ -238,9 +238,13 @@ class InMenuButtonBackground : public views::Background {
       if (features::IsChromeRefresh2023() &&
           views::IsViewClass<views::Button>(view)) {
         cc::PaintFlags flags;
-        flags.setColor(provider->GetColor(ui::kColorMenuButtonBackground));
+        flags.setColor(
+            provider->GetColor(state != views::Button::STATE_NORMAL
+                                   ? ui::kColorMenuButtonBackgroundSelected
+                                   : ui::kColorMenuButtonBackground));
         canvas->DrawRoundRect(gfx::RectF(bounds_rect),
                               params.menu_item.corner_radius, flags);
+        return;
       }
       if (state != views::Button::STATE_NORMAL) {
         view->GetNativeTheme()->Paint(
@@ -366,7 +370,8 @@ void AddChipToProfileMenuItem(Browser* browser,
     // MenuItemView::Layout().
     auto profile_chip =
         views::Builder<views::BoxLayoutView>()
-            .SetInsideBorderInsets(gfx::Insets::VH(config.item_top_margin, 0))
+            .SetInsideBorderInsets(
+                gfx::Insets::VH(config.item_vertical_margin, 0))
             .AddChildren(
                 views::Builder<views::Label>()
                     .SetText(local_name)
@@ -1318,11 +1323,8 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
         model->GetCommandIdAt(i) == IDC_ZOOM_MENU) {
       // ChromeOS adds extra vertical space for the menu buttons.
       const MenuConfig& config = views::MenuConfig::instance();
-      int top_margin = config.item_top_margin + config.separator_height / 2 + 4;
-      int bottom_margin =
-          config.item_bottom_margin + config.separator_height / 2 + 5;
-
-      item->SetMargins(top_margin, bottom_margin);
+      item->set_vertical_margin(config.item_vertical_margin * 2 +
+                                config.separator_height / 2);
     }
 #endif
     if (model->GetTypeAt(i) == MenuModel::TYPE_SUBMENU) {
@@ -1335,9 +1337,9 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
           constexpr int background_corner_radii = 12;
           // Profile row margins are different from the menu config item
           // margins.
-          int vertical_margin = ChromeLayoutProvider::Get()->GetDistanceMetric(
-              DISTANCE_CONTENT_LIST_VERTICAL_MULTI);
-          item->SetMargins(vertical_margin, vertical_margin);
+          item->set_vertical_margin(
+              ChromeLayoutProvider::Get()->GetDistanceMetric(
+                  DISTANCE_CONTENT_LIST_VERTICAL_MULTI));
           item->SetMenuItemBackground(MenuItemView::MenuItemBackground(
               0, background_horizontal_margin,
               ui::kColorAppMenuProfileRowBackground, background_corner_radii));
@@ -1350,7 +1352,7 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
             const MenuConfig& config = MenuConfig::instance();
             AddChipToProfileMenuItem(
                 browser_, item, profile_attributes->GetLocalProfileName(),
-                config.arrow_to_edge_padding + config.arrow_width,
+                config.arrow_to_edge_padding + views::kSubmenuArrowSize,
                 profile_menu_item_selected_subscription_list_);
           }
         }
@@ -1416,15 +1418,17 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
           std::u16string chip_label;
           std::u16string gaia_name = model->GetLabelAt(i);
           auto all_profile_entries =
-              g_browser_process->profile_manager()
-                  ->GetProfileAttributesStorage()
-                  .GetAllProfilesAttributesSortedByLocalProfileName();
-          for (ProfileAttributesEntry* profile_entry : all_profile_entries) {
-            if (GetProfileMenuDisplayName(profile_entry) == gaia_name) {
-              chip_label = profile_entry->GetLocalProfileName();
-              break;
-            }
+              GetAllOtherProfileEntriesForProfileSubMenu(browser_->profile());
+          size_t profile_index = (model->GetCommandIdAt(i) -
+                                  AppMenuModel::kMinOtherProfileCommandId) /
+                                 AppMenuModel::kNumUnboundedMenuTypes;
+          if (profile_index < all_profile_entries.size() &&
+              GetProfileMenuDisplayName(all_profile_entries[profile_index]) ==
+                  gaia_name) {
+            chip_label =
+                all_profile_entries[profile_index]->GetLocalProfileName();
           }
+
           if (!chip_label.empty()) {
             AddChipToProfileMenuItem(
                 browser_, item, chip_label, 0 /*horizontal_padding*/,

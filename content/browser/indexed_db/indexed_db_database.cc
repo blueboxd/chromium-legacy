@@ -240,10 +240,7 @@ void IndexedDBDatabase::RegisterAndScheduleTransaction(
   std::vector<PartitionedLockManager::PartitionedLockRequest> lock_requests =
       BuildLockRequestsFromTransaction(transaction);
 
-  if (blink::features::
-          IsAllowPageWithIDBConnectionAndTransactionInBFCacheEnabled()) {
-    RequireBlockingTransactionClientsToBeActive(transaction, lock_requests);
-  }
+  RequireBlockingTransactionClientsToBeActive(transaction, lock_requests);
 
   lock_manager_->AcquireLocks(
       std::move(lock_requests),
@@ -1755,17 +1752,14 @@ void IndexedDBDatabase::CallUpgradeTransactionStartedForTesting(
 
 Status IndexedDBDatabase::OpenInternal() {
   bool found = false;
-  Status s = metadata_coding_->ReadMetadataForDatabaseName(
-      backing_store_->db(), backing_store_->origin_identifier(), metadata_.name,
-      &metadata_, &found);
+  Status s = backing_store_->ReadMetadataForDatabaseName(metadata_.name,
+                                                         &metadata_, &found);
   DCHECK(found == (metadata_.id != kInvalidId))
       << "found = " << found << " id = " << metadata_.id;
   if (!s.ok() || found)
     return s;
 
-  return metadata_coding_->CreateDatabase(
-      backing_store_->db(), backing_store_->origin_identifier(), metadata_.name,
-      metadata_.version, &metadata_);
+  return backing_store_->CreateDatabase(metadata_);
 }
 
 std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
@@ -1818,24 +1812,19 @@ void IndexedDBDatabase::SendVersionChangeToAllConnections(int64_t old_version,
     // close the connection as part of the destruction.
     // No matter which path it follows, the `SendVersionChangeToAllConnections`
     // method is executed asynchronously.
-    if (base::FeatureList::IsEnabled(
-            blink::features::kAllowPageWithIDBConnectionInBFCache)) {
-      connection->DisallowInactiveClient(
-          storage::mojom::DisallowInactiveClientReason::kClientEventIsTriggered,
-          base::BindOnce(
-              [](base::WeakPtr<IndexedDBConnection> connection,
-                 int64_t old_version, int64_t new_version,
-                 bool was_client_active) {
-                if (connection && connection->IsConnected() &&
-                    was_client_active) {
-                  connection->callbacks()->OnVersionChange(old_version,
-                                                           new_version);
-                }
-              },
-              connection->GetWeakPtr(), old_version, new_version));
-    } else {
-      connection->callbacks()->OnVersionChange(old_version, new_version);
-    }
+    connection->DisallowInactiveClient(
+        storage::mojom::DisallowInactiveClientReason::kClientEventIsTriggered,
+        base::BindOnce(
+            [](base::WeakPtr<IndexedDBConnection> connection,
+               int64_t old_version, int64_t new_version,
+               bool was_client_active) {
+              if (connection && connection->IsConnected() &&
+                  was_client_active) {
+                connection->callbacks()->OnVersionChange(old_version,
+                                                         new_version);
+              }
+            },
+            connection->GetWeakPtr(), old_version, new_version));
   }
 }
 

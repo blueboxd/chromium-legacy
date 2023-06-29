@@ -18,14 +18,12 @@
 #import "ios/chrome/browser/ui/ntp/logo_animation_controller.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_focus_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
-#import "ios/chrome/browser/ui/thumb_strip/thumb_strip_supporting.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_height_delegate.h"
 #import "ios/chrome/browser/web/web_state_container_view_provider.h"
 
 @protocol ApplicationCommands;
 @class BookmarksCoordinator;
 @class BrowserContainerViewController;
-@protocol BrowserCoordinatorCommands;
 @class BubblePresenter;
 @protocol CRWResponderInputView;
 @protocol DefaultPromoNonModalPresentationDelegate;
@@ -53,7 +51,6 @@ class TabUsageRecorderBrowserAgent;
 class UrlLoadingBrowserAgent;
 class UrlLoadingNotifierBrowserAgent;
 @protocol VoiceSearchController;
-class WebNavigationBrowserAgent;
 class WebStateUpdateBrowserAgent;
 
 typedef struct {
@@ -72,7 +69,6 @@ typedef struct {
   id<HelpCommands> helpHandler;
   id<PopupMenuCommands> popupMenuCommandsHandler;
   id<ApplicationCommands> applicationCommandsHandler;
-  id<BrowserCoordinatorCommands> browserCoordinatorCommandsHandler;
   id<FindInPageCommands> findInPageCommandsHandler;
   LayoutGuideCenter* layoutGuideCenter;
   BOOL isOffTheRecord;
@@ -81,7 +77,6 @@ typedef struct {
   UrlLoadingNotifierBrowserAgent* urlLoadingNotifierBrowserAgent;
   id<VoiceSearchController> voiceSearchController;
   TabUsageRecorderBrowserAgent* tabUsageRecorderBrowserAgent;
-  WebNavigationBrowserAgent* webNavigationBrowserAgent;
   base::WeakPtr<WebStateList> webStateList;
   SafeAreaProvider* safeAreaProvider;
   WebStateUpdateBrowserAgent* webStateUpdateBrowserAgent;
@@ -96,7 +91,6 @@ typedef struct {
                         TabConsumer,
                         OmniboxFocusDelegate,
                         OmniboxPopupPresenterDelegate,
-                        ThumbStripSupporting,
                         ToolbarHeightDelegate,
                         WebStateContainerViewProvider,
                         BrowserCommands>

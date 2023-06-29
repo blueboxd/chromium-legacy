@@ -87,7 +87,7 @@ SpeculationCandidateToPrefetchUrlParams(
 PrefetchDocumentManager::PrefetchDocumentManager(RenderFrameHost* rfh)
     : DocumentUserData(rfh),
       WebContentsObserver(WebContents::FromRenderFrameHost(rfh)),
-      prefetch_eviction_callback_(base::DoNothing()) {}
+      prefetch_destruction_callback_(base::DoNothing()) {}
 
 PrefetchDocumentManager::~PrefetchDocumentManager() {
   // On destruction, removes any owned prefetches from |PrefetchService|. Other
@@ -411,7 +411,7 @@ void PrefetchDocumentManager::OnPrefetchSuccessful(
   referring_page_metrics_.prefetch_successful_count++;
   if (prefetch->GetPrefetchType().GetEagerness() ==
       blink::mojom::SpeculationEagerness::kEager) {
-    number_eager_prefetches_completed_++;
+    completed_eager_prefetches_.push_back(prefetch->GetWeakPtr());
   } else {
     completed_non_eager_prefetches_.push_back(prefetch->GetWeakPtr());
   }
@@ -425,14 +425,9 @@ bool PrefetchDocumentManager::CanPrefetchNow(PrefetchContainer* prefetch) {
   DCHECK(PrefetchNewLimitsEnabled());
   if (prefetch->GetPrefetchType().GetEagerness() ==
       blink::mojom::SpeculationEagerness::kEager) {
-    // TODO(crbug.com/1445086): Implement eviction policies.
-    return number_eager_prefetches_completed_ <
+    return completed_eager_prefetches_.size() <
            MaxNumberOfEagerPrefetchesPerPageForPrefetchNewLimits();
   } else {
-    base::EraseIf(completed_non_eager_prefetches_,
-                  [&](const base::WeakPtr<PrefetchContainer>& prefetch) {
-                    return !prefetch;
-                  });
     if (completed_non_eager_prefetches_.size() <
         MaxNumberOfNonEagerPrefetchesPerPageForPrefetchNewLimits()) {
       return true;
@@ -446,14 +441,31 @@ bool PrefetchDocumentManager::CanPrefetchNow(PrefetchContainer* prefetch) {
     // currently being used to serve a navigation. In that scenario, evicting
     // doesn't make sense.
     EvictPrefetch(oldest_prefetch);
-    completed_non_eager_prefetches_.pop_front();
     return true;
   }
 }
 
-void PrefetchDocumentManager::SetPrefetchEvictionCallback(
-    PrefetchEvictionCallback callback) {
-  prefetch_eviction_callback_ = std::move(callback);
+void PrefetchDocumentManager::SetPrefetchDestructionCallback(
+    PrefetchDestructionCallback callback) {
+  prefetch_destruction_callback_ = std::move(callback);
+}
+
+void PrefetchDocumentManager::PrefetchWillBeDestroyed(
+    PrefetchContainer* prefetch) {
+  prefetch_destruction_callback_.Run(prefetch->GetURL());
+  if (PrefetchNewLimitsEnabled()) {
+    std::vector<base::WeakPtr<PrefetchContainer>>& completed_prefetches =
+        prefetch->GetPrefetchType().GetEagerness() ==
+                blink::mojom::SpeculationEagerness::kEager
+            ? completed_eager_prefetches_
+            : completed_non_eager_prefetches_;
+    auto it = base::ranges::find(
+        completed_prefetches, prefetch->GetPrefetchContainerKey(),
+        [&](const auto& p) { return p->GetPrefetchContainerKey(); });
+    if (it != completed_prefetches.end()) {
+      completed_prefetches.erase(it);
+    }
+  }
 }
 
 void PrefetchDocumentManager::EvictPrefetch(
@@ -467,7 +479,6 @@ void PrefetchDocumentManager::EvictPrefetch(
     GetPrefetchService()->EvictPrefetch(prefetch->GetPrefetchContainerKey());
   }
   all_prefetches_.erase(url);
-  prefetch_eviction_callback_.Run(url);
 }
 
 DOCUMENT_USER_DATA_KEY_IMPL(PrefetchDocumentManager);

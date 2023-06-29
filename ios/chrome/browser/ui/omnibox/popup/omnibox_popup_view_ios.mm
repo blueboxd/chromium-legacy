@@ -15,6 +15,7 @@
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "components/omnibox/browser/autocomplete_match.h"
+#import "components/omnibox/browser/omnibox_controller.h"
 #import "components/omnibox/browser/omnibox_edit_model.h"
 #import "components/omnibox/browser/omnibox_popup_selection.h"
 #import "components/open_from_clipboard/clipboard_recent_content.h"
@@ -27,7 +28,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_suggestions_delegate.h"
-#import "ios/chrome/browser/ui/omnibox/web_omnibox_edit_model_delegate.h"
+#import "ios/chrome/browser/ui/omnibox/web_location_bar.h"
 #import "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/web/public/thread/web_thread.h"
 #import "net/url_request/url_request_context_getter.h"
@@ -39,25 +40,23 @@
 using base::UserMetricsAction;
 
 OmniboxPopupViewIOS::OmniboxPopupViewIOS(
-    OmniboxEditModel* edit_model,
-    WebOmniboxEditModelDelegate* edit_model_delegate,
+    OmniboxController* controller,
+    WebLocationBar* location_bar,
     OmniboxPopupViewSuggestionsDelegate* delegate)
-    : edit_model_(edit_model),
-      edit_model_delegate_(edit_model_delegate),
+    : OmniboxPopupView(controller),
+      location_bar_(location_bar),
       delegate_(delegate) {
   DCHECK(delegate);
-  DCHECK(edit_model);
-  edit_model->set_popup_view(this);
+  DCHECK(controller);
+  model()->set_popup_view(this);
 }
 
 OmniboxPopupViewIOS::~OmniboxPopupViewIOS() {
-  edit_model_->set_popup_view(nullptr);
+  model()->set_popup_view(nullptr);
 }
 
 void OmniboxPopupViewIOS::UpdatePopupAppearance() {
-  const AutocompleteResult& result = model()->result();
-
-  [mediator_ updateWithResults:result];
+  [mediator_ updateWithResults:controller()->result()];
 }
 
 bool OmniboxPopupViewIOS::IsOpen() const {
@@ -67,10 +66,6 @@ bool OmniboxPopupViewIOS::IsOpen() const {
 std::u16string OmniboxPopupViewIOS::GetAccessibleButtonTextForResult(
     size_t line) {
   return u"";
-}
-
-OmniboxEditModel* OmniboxPopupViewIOS::model() const {
-  return edit_model_;
 }
 
 #pragma mark - OmniboxPopupProvider
@@ -91,7 +86,7 @@ void OmniboxPopupViewIOS::SetSemanticContentAttribute(
 #pragma mark - OmniboxPopupViewControllerDelegate
 
 bool OmniboxPopupViewIOS::IsStarredMatch(const AutocompleteMatch& match) const {
-  return edit_model_->IsStarredMatch(match);
+  return model()->IsStarredMatch(match);
 }
 
 void OmniboxPopupViewIOS::OnMatchSelected(
@@ -100,7 +95,7 @@ void OmniboxPopupViewIOS::OnMatchSelected(
     WindowOpenDisposition disposition) {
   base::RecordAction(UserMetricsAction("MobileOmniboxUse"));
   NewTabPageTabHelper* NTPTabHelper =
-      NewTabPageTabHelper::FromWebState(edit_model_delegate_->GetWebState());
+      NewTabPageTabHelper::FromWebState(location_bar_->GetWebState());
   if (NTPTabHelper->IsActive()) {
     RecordHomeAction(IOSHomeActionType::kOmnibox,
                      NTPTabHelper->ShouldShowStartSurface());
@@ -144,7 +139,7 @@ void OmniboxPopupViewIOS::OnMatchSelectedForAppending(
 
 void OmniboxPopupViewIOS::OnMatchSelectedForDeletion(
     const AutocompleteMatch& match) {
-  model()->autocomplete_controller()->DeleteMatch(match);
+  controller()->autocomplete_controller()->DeleteMatch(match);
 }
 
 void OmniboxPopupViewIOS::OnScroll() {

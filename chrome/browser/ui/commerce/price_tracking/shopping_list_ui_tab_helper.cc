@@ -74,9 +74,13 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 
 constexpr char kImageFetcherUmaClient[] = "ShoppingList";
 
-constexpr base::TimeDelta kDelayPriceTrackingchip = base::Seconds(1);
+constexpr base::TimeDelta kDelayIconView = base::Seconds(1);
 
 bool ShouldDelayChipUpdate() {
+  if (base::FeatureList::IsEnabled(commerce::kPriceInsights)) {
+    return commerce::kPriceInsightsDelayChip.Get();
+  }
+
   return static_cast<commerce::PriceTrackingChipExperimentVariation>(
              commerce::kCommercePriceTrackingChipExperimentVariation.Get()) ==
          commerce::PriceTrackingChipExperimentVariation::kDelayChip;
@@ -128,6 +132,7 @@ void ShoppingListUiTabHelper::DidFinishNavigation(
   cluster_id_for_page_.reset();
   pending_tracking_state_.reset();
   is_first_load_for_nav_finished_ = false;
+  price_insights_info_.reset();
 
   MakeShoppingInsightsSidePanelUnavailable();
 
@@ -171,20 +176,55 @@ void ShoppingListUiTabHelper::DidStopLoading() {
 
 void ShoppingListUiTabHelper::TriggerUpdateForIconView() {
   if (!ShouldDelayChipUpdate()) {
-    UpdatePriceTrackingIconView();
+    if (shopping_service_->IsPriceInsightsEligible()) {
+      UpdatePriceInsightsIconView();
+    } else {
+      UpdatePriceTrackingIconView();
+    }
+  } else {
+    DelayUpdateForIconView();
+  }
+}
+
+void ShoppingListUiTabHelper::DelayUpdateForIconView() {
+  if (!is_first_load_for_nav_finished_) {
     return;
   }
 
-  if (last_fetched_image_.IsEmpty() || !is_first_load_for_nav_finished_) {
+  if (shopping_service_->IsPriceInsightsEligible()) {
+    content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+        ->PostDelayedTask(
+            FROM_HERE,
+            base::BindOnce(
+                &ShoppingListUiTabHelper::UpdatePriceInsightsIconView,
+                weak_ptr_factory_.GetWeakPtr()),
+            kDelayIconView);
+
+  } else {
+    if (last_fetched_image_.IsEmpty()) {
+      return;
+    }
+
+    content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+        ->PostDelayedTask(
+            FROM_HERE,
+            base::BindOnce(
+                &ShoppingListUiTabHelper::UpdatePriceTrackingIconView,
+                weak_ptr_factory_.GetWeakPtr()),
+            kDelayIconView);
+  }
+}
+
+void ShoppingListUiTabHelper::UpdatePriceInsightsIconView() {
+  DCHECK(web_contents());
+
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+
+  if (!browser || !browser->window()) {
     return;
   }
 
-  content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
-      ->PostDelayedTask(
-          FROM_HERE,
-          base::BindOnce(&ShoppingListUiTabHelper::UpdatePriceTrackingIconView,
-                         weak_ptr_factory_.GetWeakPtr()),
-          kDelayPriceTrackingchip);
+  browser->window()->UpdatePageActionIcon(PageActionIconType::kPriceInsights);
 }
 
 void ShoppingListUiTabHelper::OnSubscribe(
@@ -230,18 +270,24 @@ bool ShoppingListUiTabHelper::ShouldShowPriceTrackingIconView() {
 }
 
 bool ShoppingListUiTabHelper::ShouldShowPriceInsightsIconView() {
-  return shopping_service_ && shopping_service_->IsPriceInsightsEligible() &&
-         has_price_insights_info_;
+  bool should_show = shopping_service_ &&
+                     shopping_service_->IsPriceInsightsEligible() &&
+                     price_insights_info_.has_value();
+
+  return ShouldDelayChipUpdate()
+             ? should_show && is_first_load_for_nav_finished_
+             : should_show;
 }
 
 void ShoppingListUiTabHelper::HandleProductInfoResponse(
     const GURL& url,
     const absl::optional<ProductInfo>& info) {
-  if (url != web_contents()->GetLastCommittedURL())
+  if (url != web_contents()->GetLastCommittedURL() || !info.has_value()) {
     return;
+  }
 
   if (shopping_service_->IsShoppingListEligible() && CanTrackPrice(info) &&
-      info.has_value() && !info->image_url.is_empty()) {
+      !info->image_url.is_empty()) {
     cluster_id_for_page_.emplace(info->product_cluster_id.value());
     UpdatePriceTrackingStateFromSubscriptions();
 
@@ -255,11 +301,25 @@ void ShoppingListUiTabHelper::HandleProductInfoResponse(
                                           kImageFetcherUmaClient));
   }
 
-  if (shopping_service_->IsPriceInsightsEligible() && info.has_value()) {
-    // TODO(zhiyuancai): Also check whether we have price insights info for
-    // current url. And set the |has_price_insights_info_|.
-    MakeShoppingInsightsSidePanelAvailable();
+  if (shopping_service_->IsPriceInsightsEligible() &&
+      !info->product_cluster_title.empty()) {
+    shopping_service_->GetPriceInsightsInfoForUrl(
+        url, base::BindOnce(
+                 &ShoppingListUiTabHelper::HandlePriceInsightsInfoResponse,
+                 weak_ptr_factory_.GetWeakPtr()));
   }
+}
+
+void ShoppingListUiTabHelper::HandlePriceInsightsInfoResponse(
+    const GURL& url,
+    const absl::optional<PriceInsightsInfo>& info) {
+  if (url != web_contents()->GetLastCommittedURL() || !info.has_value()) {
+    return;
+  }
+
+  price_insights_info_.emplace(info.value());
+  MakeShoppingInsightsSidePanelAvailable();
+  TriggerUpdateForIconView();
 }
 
 void ShoppingListUiTabHelper::SetPriceTrackingState(
@@ -430,6 +490,10 @@ ShoppingListUiTabHelper::GetPendingTrackingStateForTesting() {
   return pending_tracking_state_;
 }
 
+const absl::optional<PriceInsightsInfo>&
+ShoppingListUiTabHelper::GetPriceInsightsInfo() {
+  return price_insights_info_;
+}
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ShoppingListUiTabHelper);
 
 }  // namespace commerce

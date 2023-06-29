@@ -50,35 +50,43 @@ bool OneTimePermissionProvider::SetWebsiteSetting(
     return false;
   }
 
-  base::AutoLock lock(value_map_.GetLock());
-  // This block handles transitions from Allow Once to Ask/Block by clearing
-  // the one time grant and letting the pref provider handle the permission as
-  // usual.
-  if (constraints.session_model() != content_settings::SessionModel::OneTime) {
-    value_map_.DeleteValue(primary_pattern, secondary_pattern,
-                           content_settings_type);
+  // Custom scope because NotifyObservers also requires value_map_'s exclusive
+  // lock.
+  {
+    base::AutoLock lock(value_map_.GetLock());
+
+    // This block handles transitions from Allow Once to Ask/Block by clearing
+    // the one time grant and letting the pref provider handle the permission as
+    // usual.
+    if (constraints.session_model() !=
+        content_settings::SessionModel::OneTime) {
+      value_map_.DeleteValue(primary_pattern, secondary_pattern,
+                             content_settings_type);
+
+      permissions::PermissionUmaUtil::RecordOneTimePermissionEvent(
+          content_settings_type,
+          permissions::OneTimePermissionEvent::REVOKED_MANUALLY);
+
+      return false;
+    }
+
+    DCHECK_EQ(content_settings::ValueToContentSetting(value),
+              CONTENT_SETTING_ALLOW);
+
+    content_settings::RuleMetaData metadata;
+    base::Time now = clock_->Now();
+    metadata.set_last_modified(now);
+    metadata.SetExpirationAndLifetime(now + base::Days(1), base::Days(1));
+    metadata.set_session_model(content_settings::SessionModel::OneTime);
+
+    value_map_.SetValue(primary_pattern, secondary_pattern,
+                        content_settings_type, std::move(value), metadata);
 
     permissions::PermissionUmaUtil::RecordOneTimePermissionEvent(
         content_settings_type,
-        permissions::OneTimePermissionEvent::REVOKED_MANUALLY);
-
-    return false;
+        permissions::OneTimePermissionEvent::GRANTED_ONE_TIME);
   }
-  DCHECK_EQ(content_settings::ValueToContentSetting(value),
-            CONTENT_SETTING_ALLOW);
-
-  content_settings::RuleMetaData metadata;
-  base::Time now = clock_->Now();
-  metadata.set_last_modified(now);
-  metadata.set_expiration(now + base::Days(1));
-  metadata.set_session_model(content_settings::SessionModel::OneTime);
-
-  value_map_.SetValue(primary_pattern, secondary_pattern, content_settings_type,
-                      std::move(value), metadata);
-
-  permissions::PermissionUmaUtil::RecordOneTimePermissionEvent(
-      content_settings_type,
-      permissions::OneTimePermissionEvent::GRANTED_ONE_TIME);
+  NotifyObservers(primary_pattern, secondary_pattern, content_settings_type);
 
   // We need to handle transitions from Allow to Allow Once gracefully.
   // In that case we add the Allow Once setting in this provider, but also
@@ -100,6 +108,13 @@ bool OneTimePermissionProvider::UpdateLastVisitTime(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type) {
   // LastVisit time is not tracked for one-time permissions.
+  return false;
+}
+
+bool OneTimePermissionProvider::RenewContentSetting(const GURL& primary_url,
+                                                    const GURL& secondary_url,
+                                                    ContentSettingsType type) {
+  // Setting renewal is not supported for one-time permissions.
   return false;
 }
 
@@ -187,10 +202,18 @@ void OneTimePermissionProvider::DeleteValuesMatchingGurl(
   }
   rule_iterator.reset();
 
-  base::AutoLock lock(value_map_.GetLock());
+  // Custom scope because NotifyObservers also requires value_map_'s exclusive
+  // lock.
+  {
+    base::AutoLock lock(value_map_.GetLock());
+    for (const auto& pattern : patterns_to_delete) {
+      value_map_.DeleteValue(pattern.primary_pattern, pattern.secondary_pattern,
+                             content_setting_type);
+    }
+  }
   for (const auto& pattern : patterns_to_delete) {
-    value_map_.DeleteValue(pattern.primary_pattern, pattern.secondary_pattern,
-                           content_setting_type);
+    NotifyObservers(pattern.primary_pattern, pattern.secondary_pattern,
+                    content_setting_type);
   }
 }
 

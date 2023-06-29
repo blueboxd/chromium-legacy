@@ -405,6 +405,8 @@ component("net") {
     "cert/symantec_certs.h",
     "cert/test_root_certs.cc",
     "cert/test_root_certs.h",
+    "cert/time_conversions.cc",
+    "cert/time_conversions.h",
     "cert/trial_comparison_cert_verifier_util.cc",
     "cert/trial_comparison_cert_verifier_util.h",
     "cert/x509_cert_types.cc",
@@ -613,8 +615,6 @@ component("net") {
     "http/http_byte_range.h",
     "http/http_cache.cc",
     "http/http_cache.h",
-    "http/http_cache_lookup_manager.cc",
-    "http/http_cache_lookup_manager.h",
     "http/http_cache_transaction.cc",
     "http/http_cache_transaction.h",
     "http/http_cache_writers.cc",
@@ -951,13 +951,10 @@ component("net") {
     "spdy/header_coalescer.h",
     "spdy/http2_priority_dependencies.cc",
     "spdy/http2_priority_dependencies.h",
-    "spdy/http2_push_promise_index.cc",
-    "spdy/http2_push_promise_index.h",
     "spdy/multiplexed_http_stream.cc",
     "spdy/multiplexed_http_stream.h",
     "spdy/multiplexed_session.cc",
     "spdy/multiplexed_session.h",
-    "spdy/server_push_delegate.h",
     "spdy/spdy_buffer.cc",
     "spdy/spdy_buffer.h",
     "spdy/spdy_buffer_producer.cc",
@@ -1804,10 +1801,6 @@ proto_library("isolation_info_proto") {
 
 component("extras") {
   sources = [
-    "extras/shared_dictionary/shared_dictionary_info.cc",
-    "extras/shared_dictionary/shared_dictionary_info.h",
-    "extras/shared_dictionary/shared_dictionary_isolation_key.cc",
-    "extras/shared_dictionary/shared_dictionary_isolation_key.h",
     "extras/sqlite/cookie_crypto_delegate.h",
     "extras/sqlite/sqlite_persistent_cookie_store.cc",
     "extras/sqlite/sqlite_persistent_cookie_store.h",
@@ -1823,6 +1816,7 @@ component("extras") {
     "//base",
     "//sql:sql",
   ]
+  public_deps = [ ":shared_dictionary" ]
 
   if (enable_reporting) {
     sources += [
@@ -1830,6 +1824,21 @@ component("extras") {
       "extras/sqlite/sqlite_persistent_reporting_and_nel_store.h",
     ]
   }
+}
+
+component("shared_dictionary") {
+  sources = [
+    "extras/shared_dictionary/shared_dictionary_info.cc",
+    "extras/shared_dictionary/shared_dictionary_info.h",
+    "extras/shared_dictionary/shared_dictionary_isolation_key.cc",
+    "extras/shared_dictionary/shared_dictionary_isolation_key.h",
+  ]
+  defines = [ "IS_NET_SHARED_DICTIONARY_IMPL" ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  deps = [
+    ":net",
+    "//base",
+  ]
 }
 
 static_library("preload_decoder") {
@@ -2344,16 +2353,6 @@ if (is_android) {
       "android/java/src/org/chromium/net/X509Util.java",
     ]
   }
-  generate_jni("net_test_jni_headers") {
-    testonly = true
-    sources = [
-      "android/javatests/src/org/chromium/net/AndroidKeyStoreTestUtil.java",
-      "android/javatests/src/org/chromium/net/AndroidProxyConfigServiceTestUtil.java",
-      "test/android/javatests/src/org/chromium/net/AndroidNetworkLibraryTestUtil.java",
-      "test/android/javatests/src/org/chromium/net/test/DummySpnegoAuthenticator.java",
-      "test/android/javatests/src/org/chromium/net/test/EmbeddedTestServerImpl.java",
-    ]
-  }
 }
 
 if (is_android || is_linux || is_chromeos) {
@@ -2550,6 +2549,7 @@ test("net_unittests") {
     "base/url_util_unittest.cc",
     "cert/caching_cert_verifier_unittest.cc",
     "cert/cert_and_ct_verifier_unittest.cc",
+    "cert/cert_database_unittest.cc",
     "cert/cert_verifier_unittest.cc",
     "cert/cert_verify_proc_builtin_unittest.cc",
     "cert/cert_verify_proc_unittest.cc",
@@ -2602,6 +2602,7 @@ test("net_unittests") {
     "cert/signed_certificate_timestamp_unittest.cc",
     "cert/symantec_certs_unittest.cc",
     "cert/test_root_certs_unittest.cc",
+    "cert/time_conversions_unittest.cc",
     "cert/x509_cert_types_unittest.cc",
     "cert/x509_certificate_unittest.cc",
     "cert/x509_util_unittest.cc",
@@ -2665,7 +2666,6 @@ test("net_unittests") {
     "http/http_auth_unittest.cc",
     "http/http_basic_state_unittest.cc",
     "http/http_byte_range_unittest.cc",
-    "http/http_cache_lookup_manager_unittest.cc",
     "http/http_cache_unittest.cc",
     "http/http_cache_writers_unittest.cc",
     "http/http_chunked_decoder_unittest.cc",
@@ -2789,7 +2789,6 @@ test("net_unittests") {
     "spdy/fuzzing/hpack_fuzz_util_test.cc",
     "spdy/header_coalescer_test.cc",
     "spdy/http2_priority_dependencies_unittest.cc",
-    "spdy/http2_push_promise_index_test.cc",
     "spdy/spdy_buffer_unittest.cc",
     "spdy/spdy_http_stream_unittest.cc",
     "spdy/spdy_http_utils_unittest.cc",
@@ -3210,12 +3209,15 @@ test("net_unittests") {
   if (is_android) {
     data_deps += [ "//net/tools/testserver:testserver_py" ]
     deps += [
-      ":net_test_jni_headers",
+      ":net_jni_headers",
       "//base:base_java_unittest_support",
       "//net/android:net_java",
       "//net/android:net_java_test_support",
-      "//net/android:net_java_test_support_provider",
-      "//net/android:net_javatests",
+      "//net/android:net_test_support_jni",
+      "//net/android:net_test_support_provider_java",
+      "//net/android:net_test_support_provider_jni",
+      "//net/android:net_tests_java",
+      "//net/android:net_tests_jni",
       "//net/android:net_unittests_apk_resources",
 
       # TODO(mmenke):  This depends on test_support_base, which depends on

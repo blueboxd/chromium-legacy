@@ -355,6 +355,28 @@ class WaylandTextInputDelegate : public TextInput::Delegate {
     wl_client_flush(client());
   }
 
+  bool HasImageInsertSupport() override {
+    if (!extended_text_input_) {
+      return false;
+    }
+
+    return wl_resource_get_version(extended_text_input_) >=
+           ZCR_EXTENDED_TEXT_INPUT_V1_INSERT_IMAGE_SINCE_VERSION;
+  }
+
+  void InsertImage(const GURL& src) override {
+    if (!extended_text_input_) {
+      return;
+    }
+
+    if (wl_resource_get_version(extended_text_input_) >=
+        ZCR_EXTENDED_TEXT_INPUT_V1_INSERT_IMAGE_SINCE_VERSION) {
+      zcr_extended_text_input_v1_send_insert_image(extended_text_input_,
+                                                   src.spec().c_str());
+      wl_client_flush(client());
+    }
+  }
+
   void SendPreeditStyle(base::StringPiece16 text,
                         const std::vector<ui::ImeTextSpan>& spans) {
     if (spans.empty())
@@ -420,6 +442,14 @@ class WaylandTextInputDelegate : public TextInput::Delegate {
             : ZCR_EXTENDED_TEXT_INPUT_V1_CONFIRM_PREEDIT_SELECTION_BEHAVIOR_AFTER_PREEDIT);
     wl_client_flush(client());
     return true;
+  }
+
+  bool SupportsConfirmPreedit() override {
+    // Note: until this is supported by crostini, crostini won't be able to add
+    // the new extension api.
+    return extended_text_input_ &&
+           wl_resource_get_version(extended_text_input_) >=
+               ZCR_EXTENDED_TEXT_INPUT_V1_CONFIRM_PREEDIT_SINCE_VERSION;
   }
 
   raw_ptr<wl_resource, ExperimentalAsh> text_input_;

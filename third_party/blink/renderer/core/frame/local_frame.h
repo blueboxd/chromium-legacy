@@ -218,18 +218,24 @@ class CORE_EXPORT LocalFrame final
   //   you pass ukm::kInvalidSourceId, a new ukm source id will be generated.
   // - `creator_base_url` is the base url of the initiator that created this
   //    frame.
+  // - If |coop_forbids_initial_empty_document_to_be_cross_origin_isolated| is
+  //   false, the frame cannot be crossOriginIsolated while it's still on the
+  //   initial empty document.
   //
   // Note: Usually, the initial empty document inherits its |policy_container|
   // and |storage_key| from the parent or the opener. The inheritance operation
   // is taken care of by the browser (if this LocalFrame was just created in
   // response to the creation of a RenderFrameHost) or by blink if this is a
   // synchronously created LocalFrame child.
-  void Init(Frame* opener,
-            const DocumentToken& document_token,
-            std::unique_ptr<PolicyContainer> policy_container,
-            const StorageKey& storage_key,
-            ukm::SourceId document_ukm_source_id,
-            const KURL& creator_base_url);
+  void Init(
+      Frame* opener,
+      const DocumentToken& document_token,
+      std::unique_ptr<PolicyContainer> policy_container,
+      const StorageKey& storage_key,
+      ukm::SourceId document_ukm_source_id,
+      const KURL& creator_base_url,
+      bool coop_forbids_initial_empty_document_to_be_cross_origin_isolated =
+          true);
   void SetView(LocalFrameView*);
   void CreateView(const gfx::Size&, const Color&);
 
@@ -381,7 +387,6 @@ class CORE_EXPORT LocalFrame final
   // If this frame doesn't need to fit into a page size, default values are
   // used.
   void StartPrinting(const gfx::SizeF& page_size = gfx::SizeF(),
-                     const gfx::SizeF& aspect_ratio = gfx::SizeF(),
                      float maximum_shrink_ratio = 0);
 
   void EndPrinting();
@@ -622,7 +627,14 @@ class CORE_EXPORT LocalFrame final
     return client_hints_preferences_;
   }
 
-  SmoothScrollSequencer& GetSmoothScrollSequencer();
+  // Creates a new scroll sequencer in preparation for starting a new scroll
+  // sequence. Returns the current scroll sequencer which can be reinstated if
+  // the new sequence shouldn't clobber it.
+  SmoothScrollSequencer* CreateNewSmoothScrollSequence();
+  void ReinstateSmoothScrollSequence(SmoothScrollSequencer*);
+  void FinishedScrollSequence();
+
+  SmoothScrollSequencer* GetSmoothScrollSequencer() const;
 
   mojom::blink::ReportingServiceProxy* GetReportingService();
 
@@ -889,6 +901,10 @@ class CORE_EXPORT LocalFrame final
   // Sets a ResourceCache hosted by another frame in a different renderer.
   void SetResourceCacheRemote(mojo::PendingRemote<mojom::blink::ResourceCache>);
 
+  bool CoopForbidsInitialEmptyDocumentToBeCrossOriginIsolated() const {
+    return coop_forbids_initial_empty_document_to_be_cross_origin_isolated_;
+  }
+
  private:
   friend class FrameNavigationDisabler;
   // LocalFrameMojoHandler is a part of LocalFrame.
@@ -926,11 +942,10 @@ class CORE_EXPORT LocalFrame final
 
   // Internal implementation for starting or ending printing.
   // |printing| is true when printing starts, false when printing ends.
-  // |page_size|, |aspect_ratio|, and |maximum_shrink_ratio| are only
-  // meaningful when we should use printing layout for this frame.
+  // |page_size| and |maximum_shrink_ratio| are only meaningful when we should
+  // use printing layout for this frame.
   void SetPrinting(bool printing,
                    const gfx::SizeF& page_size,
-                   const gfx::SizeF& aspect_ratio,
                    float maximum_shrink_ratio);
 
   // FrameScheduler::Delegate overrides:
@@ -1155,6 +1170,10 @@ class CORE_EXPORT LocalFrame final
 
   // Reduced accept language for top-level frame.
   AtomicString reduced_accept_language_;
+
+  // If this is true, the frame cannot be crossOriginIsolated while it's still
+  // on the initial empty document.
+  bool coop_forbids_initial_empty_document_to_be_cross_origin_isolated_ = true;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

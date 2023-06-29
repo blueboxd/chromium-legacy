@@ -41,8 +41,7 @@ class AppRecover : public App {
 
  private:
   ~AppRecover() override = default;
-  void Initialize() override;
-  void Uninitialize() override;
+  [[nodiscard]] int Initialize() override;
   void FirstTaskRun() override;
 
   std::vector<RegistrationRequest> RecordRegisteredApps() const;
@@ -56,12 +55,9 @@ class AppRecover : public App {
   scoped_refptr<GlobalPrefs> global_prefs_;
 };
 
-void AppRecover::Initialize() {
+int AppRecover::Initialize() {
   global_prefs_ = CreateGlobalPrefs(updater_scope());
-}
-
-void AppRecover::Uninitialize() {
-  global_prefs_ = nullptr;
+  return kErrorOk;
 }
 
 void AppRecover::FirstTaskRun() {

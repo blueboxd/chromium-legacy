@@ -30,6 +30,10 @@ namespace {
 // TODO(hansberry): Share this constant with BluetoothHelper.
 const size_t kMinNumBytesInServiceData = 2;
 
+constexpr base::TimeDelta kScanningDeviceFoundTimeout = base::Seconds(1);
+constexpr base::TimeDelta kScanningDeviceLostTimeout = base::Seconds(7);
+constexpr base::TimeDelta kScanningRssiSamplingPeriod = base::Seconds(1);
+
 }  // namespace
 
 // static
@@ -91,6 +95,26 @@ void BleScannerImpl::HandleScanRequestChange() {
   UpdateDiscoveryStatus();
 }
 
+void BleScannerImpl::AdapterPoweredChanged(device::BluetoothAdapter* adapter,
+                                           bool powered) {
+  DCHECK_EQ(adapter_.get(), adapter);
+  if (!floss::features::IsFlossEnabled()) {
+    // No-op for BlueZ.
+    return;
+  }
+
+  if (powered) {
+    PA_LOG(INFO) << "Update LE scan session due to power on.";
+    UpdateDiscoveryStatus();
+  } else {
+    // The BluetoothLowEnergyScanSession callbacks may never be called due to
+    // Floss being powered off. Reset the session anyway.
+    PA_LOG(INFO) << "Reset LE scan session due to power off.";
+    is_initializing_discovery_session_ = false;
+    le_scan_session_.reset();
+  }
+}
+
 void BleScannerImpl::DeviceAdvertisementReceived(
     device::BluetoothAdapter* adapter,
     device::BluetoothDevice* bluetooth_device,
@@ -143,11 +167,23 @@ void BleScannerImpl::EnsureDiscoverySessionActive() {
   is_initializing_discovery_session_ = true;
 
   if (floss::features::IsFlossEnabled()) {
-    // TODO(b/217274013): Filters are currently being ignored in Floss. When
-    // filters are implemented, a filter can be added for
-    // kAdvertisingServiceUuid.
+    device::BluetoothLowEnergyScanFilter::Pattern pattern(
+        /*start_position=*/0,
+        device::BluetoothLowEnergyScanFilter::AdvertisementDataType::
+            kServiceData,
+        kAdvertisingServiceUuidAsBytes);
+    auto filter = device::BluetoothLowEnergyScanFilter::Create(
+        device::BluetoothLowEnergyScanFilter::Range::kNear,
+        kScanningDeviceFoundTimeout, kScanningDeviceLostTimeout, {pattern},
+        kScanningRssiSamplingPeriod);
+    if (!filter) {
+      PA_LOG(ERROR)
+          << "Failed to start LE scanning due to failure to create filter.";
+      return;
+    }
+
     le_scan_session_ = adapter_->StartLowEnergyScanSession(
-        /*filter=*/nullptr, weak_ptr_factory_.GetWeakPtr());
+        std::move(filter), weak_ptr_factory_.GetWeakPtr());
     return;
   }
 

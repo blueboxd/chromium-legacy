@@ -24,7 +24,6 @@
 #include "ipcz/node_messages.h"
 #include "ipcz/operation_context.h"
 #include "ipcz/parcel.h"
-#include "ipcz/portal.h"
 #include "ipcz/remote_router_link.h"
 #include "ipcz/router.h"
 #include "ipcz/router_link.h"
@@ -545,7 +544,7 @@ bool NodeLink::OnAcceptParcel(msg::AcceptParcel& accept) {
           continue;
         }
 
-        objects[i] = MakeRefCounted<Portal>(node_, std::move(new_router));
+        objects[i] = std::move(new_router);
         new_routers.remove_prefix(1);
         break;
       }
@@ -856,7 +855,7 @@ void NodeLink::WaitForParcelFragmentToResolve(
     bool is_split_parcel) {
   // ParcelWrapper wraps a Parcel in a RefCounted object so the reference can
   // be captured by a copyable lambda below.
-  struct ParcelWrapper : public RefCounted {
+  struct ParcelWrapper : public RefCounted<ParcelWrapper> {
     explicit ParcelWrapper(Parcel parcel) : parcel(std::move(parcel)) {}
     Parcel parcel;
   };

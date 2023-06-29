@@ -3830,8 +3830,18 @@ bool AXObject::LastKnownIsIncludedInTreeValue() const {
 ax::mojom::blink::Role AXObject::DetermineAccessibilityRole() {
 #if DCHECK_IS_ON()
   base::AutoReset<bool> reentrancy_protector(&is_computing_role_, true);
-#endif
   DCHECK(!IsDetached());
+  // Check parent object to work around circularity issues during
+  // AXObject::Init (DetermineAccessibilityRole is called there but before
+  // the parent is set).
+  if (CachedParentObject()) {
+    DCHECK(GetDocument());
+    DCHECK(GetDocument()->Lifecycle().GetState() >=
+           DocumentLifecycle::kLayoutClean)
+        << "Unclean document at lifecycle "
+        << GetDocument()->Lifecycle().ToString();
+  }
+#endif
 
   return NativeRoleIgnoringAria();
 }
@@ -5546,8 +5556,10 @@ void AXObject::UpdateChildrenIfNecessary() {
   DCHECK(!AXObjectCache().HasBeenDisposed());
 #endif
 
-  if (!NeedsToUpdateChildren())
+  if (!NeedsToUpdateChildren() || !CanHaveChildren()) {
+    children_dirty_ = false;
     return;
+  }
 
 #if DCHECK_IS_ON()
   // Ensure there are no unexpected, preexisting children, before we add more.
@@ -5568,9 +5580,6 @@ void AXObject::UpdateChildrenIfNecessary() {
 }
 
 bool AXObject::NeedsToUpdateChildren() const {
-  DCHECK(!children_dirty_ || CanHaveChildren())
-      << "Needs to update children but cannot have children: " << GetNode()
-      << " " << GetLayoutObject();
   return children_dirty_;
 }
 
@@ -5578,8 +5587,9 @@ void AXObject::SetNeedsToUpdateChildren() const {
   DCHECK(!IsDetached()) << "Cannot update children on a detached node: "
                         << ToString(true, true);
   DCHECK(!AXObjectCache().HasBeenDisposed());
-  if (children_dirty_ || !CanHaveChildren())
+  if (children_dirty_) {
     return;
+  }
   children_dirty_ = true;
   ClearChildren();
   SetAncestorsHaveDirtyDescendants();

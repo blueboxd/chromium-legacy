@@ -87,7 +87,7 @@ class WebAppTabStripBrowserTest : public WebAppControllerBrowserTest {
     Profile* profile = browser()->profile();
     GURL start_url = embedded_test_server()->GetURL(kAppPath);
 
-    auto web_app_info = std::make_unique<WebAppInstallInfo>();
+    auto web_app_info = std::make_unique<web_app::WebAppInstallInfo>();
     web_app_info->start_url = start_url;
     web_app_info->scope = start_url.GetWithoutFilename();
     web_app_info->title = u"Test app";
@@ -113,8 +113,9 @@ class WebAppTabStripBrowserTest : public WebAppControllerBrowserTest {
   }
 
   SkColor GetTabColor(BrowserView* browser_view) {
-    return browser_view->tabstrip()->GetTabBackgroundColor(
-        TabActive::kActive, BrowserFrameActiveState::kActive);
+    return TabStyle::Get()->GetTabBackgroundColor(
+        TabStyle::TabSelectionState::kActive, true,
+        *browser_view->GetColorProvider());
   }
 
   WebAppRegistrar& registrar() {
@@ -182,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, PopOutTabOnInstall) {
         /*bypass_service_worker_check=*/false,
         base::BindLambdaForTesting(
             [](content::WebContents*,
-               std::unique_ptr<WebAppInstallInfo> web_app_info,
+               std::unique_ptr<web_app::WebAppInstallInfo> web_app_info,
                WebAppInstallationAcceptanceCallback acceptance_callback) {
               web_app_info->user_display_mode = mojom::UserDisplayMode::kTabbed;
               std::move(acceptance_callback)

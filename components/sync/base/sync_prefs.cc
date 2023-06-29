@@ -25,11 +25,16 @@
 
 namespace {
 
-// Whether MaybeMigratePrefsForReplacingSyncWithSignin() has run in this
-// profile. Should be cleaned up after
-// MaybeMigratePrefsForReplacingSyncWithSignin() itself is gone.
-constexpr char kReplacingSyncWithSigninMigrated[] =
-    "sync.replacing_sync_with_signin_migrated";
+// State of the migration done by
+// MaybeMigratePrefsForSyncToSigninPart1() and
+// MaybeMigratePrefsForSyncToSigninPart2(). Should be cleaned up
+// after those migration methods are gone.
+constexpr char kSyncToSigninMigrationState[] =
+    "sync.sync_to_signin_migration_state";
+
+constexpr int kNotMigrated = 0;
+constexpr int kMigratedPart1ButNot2 = 1;
+constexpr int kMigratedPart2AndFullyDone = 2;
 
 }  // namespace
 
@@ -79,14 +84,15 @@ void SyncPrefs::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::internal::kSyncAllOsTypes, true);
   registry->RegisterBooleanPref(prefs::internal::kSyncOsApps, false);
   registry->RegisterBooleanPref(prefs::internal::kSyncOsPreferences, false);
-  // The pref for Wi-Fi configurations is registered in the loop above.
+  registry->RegisterBooleanPref(prefs::internal::kSyncWifiConfigurations,
+                                false);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   registry->RegisterBooleanPref(prefs::internal::kSyncAppsEnabledByOs, false);
 #endif
 
-  registry->RegisterBooleanPref(kReplacingSyncWithSigninMigrated, false);
+  registry->RegisterIntegerPref(kSyncToSigninMigrationState, kNotMigrated);
 
   // The encryption bootstrap token represents a user-entered passphrase.
   registry->RegisterStringPref(prefs::internal::kSyncEncryptionBootstrapToken,
@@ -165,6 +171,10 @@ UserSelectableTypeSet SyncPrefs::GetSelectedTypes(
       for (UserSelectableType type : UserSelectableTypeSet::All()) {
         const char* pref_name = GetPrefNameForType(type);
         DCHECK(pref_name);
+        // TODO(crbug.com/1455963): Find a better solution than manually
+        // overriding the prefs' default values.
+        // TODO(crbug.com/1455963): This should return true by default only if
+        // a given type can actually run in transport mode.
         if (pref_service_->GetBoolean(pref_name) ||
             pref_service_->FindPreference(pref_name)->IsDefaultValue()) {
           // In transport-mode, individual types are considered enabled by
@@ -404,8 +414,6 @@ const char* SyncPrefs::GetPrefNameForType(UserSelectableType type) {
       return prefs::internal::kSyncReadingList;
     case UserSelectableType::kTabs:
       return prefs::internal::kSyncTabs;
-    case UserSelectableType::kWifiConfigurations:
-      return prefs::internal::kSyncWifiConfigurations;
     case UserSelectableType::kSavedTabGroups:
       return prefs::internal::kSyncSavedTabGroups;
   }
@@ -461,39 +469,48 @@ void SyncPrefs::ClearPassphrasePromptMutedProductVersion() {
       prefs::internal::kSyncPassphrasePromptMutedProductVersion);
 }
 
-void SyncPrefs::MaybeMigratePrefsForReplacingSyncWithSignin(
+void SyncPrefs::MaybeMigratePrefsForSyncToSigninPart1(
     SyncAccountState account_state) {
   if (!base::FeatureList::IsEnabled(kReplaceSyncPromosWithSignInPromos)) {
     // Ensure that the migration runs again when the feature gets enabled.
-    pref_service_->ClearPref(kReplacingSyncWithSigninMigrated);
+    pref_service_->ClearPref(kSyncToSigninMigrationState);
     return;
   }
 
   // Don't migrate again if this profile was previously migrated.
-  if (pref_service_->GetBoolean(kReplacingSyncWithSigninMigrated)) {
+  if (pref_service_->GetInteger(kSyncToSigninMigrationState) != kNotMigrated) {
     return;
   }
-  pref_service_->SetBoolean(kReplacingSyncWithSigninMigrated, true);
 
   switch (account_state) {
     case SyncAccountState::kNotSignedIn:
     case SyncAccountState::kSyncing: {
-      // Nothing to migrate for signed-out or syncing users.
+      // Nothing to migrate for signed-out or syncing users. Also make sure the
+      // second part of the migration does *not* run if a signed-out user does
+      // later sign in / turn on sync.
+      pref_service_->SetInteger(kSyncToSigninMigrationState,
+                                kMigratedPart2AndFullyDone);
       break;
     }
     case SyncAccountState::kSignedInNotSyncing: {
+      pref_service_->SetInteger(kSyncToSigninMigrationState,
+                                kMigratedPart1ButNot2);
       // For pre-existing signed-in users, some state needs to be migrated:
 
       // Settings aka preferences remains off by default.
       pref_service_->SetBoolean(
           GetPrefNameForType(UserSelectableType::kPreferences), false);
 
-      // Addresses remains enabled only if passwords is enabled (i.e. the user
-      // didn't opt out for passwords).
-      // TODO(crbug.com/1447020): Verify whether this is the intended behavior,
-      // and then add tests for it.
-      if (!pref_service_->GetBoolean(
-              GetPrefNameForType(UserSelectableType::kPasswords))) {
+      // Addresses remains enabled only if the user didn't opt out for
+      // passwords. Note that the pref being its default value (not explicitly
+      // set) is treated as "not opted out"; see similar logic in
+      // GetSelectedTypes().
+      // TODO(crbug.com/1455963): Find a better solution than manually
+      // overriding the pref's default value.
+      const char* kPasswordsPref =
+          GetPrefNameForType(UserSelectableType::kPasswords);
+      if (!pref_service_->GetBoolean(kPasswordsPref) &&
+          !pref_service_->FindPreference(kPasswordsPref)->IsDefaultValue()) {
         pref_service_->SetBoolean(
             GetPrefNameForType(UserSelectableType::kAutofill), false);
       }
@@ -512,6 +529,46 @@ void SyncPrefs::MaybeMigratePrefsForReplacingSyncWithSignin(
 
       break;
     }
+  }
+}
+
+void SyncPrefs::MaybeMigratePrefsForSyncToSigninPart2(
+    bool is_using_explicit_passphrase) {
+  // The migration pref shouldn't be set if the feature is disabled, but if it
+  // somehow happened, do *not* run the migration, and clear the pref so that
+  // the migration will get triggered again once the feature gets enabled again.
+  if (!base::FeatureList::IsEnabled(kReplaceSyncPromosWithSignInPromos)) {
+    pref_service_->ClearPref(kSyncToSigninMigrationState);
+    return;
+  }
+
+  // Only run part 2 of the migration if part 1 has run but part 2 hasn't yet.
+  // This ensures that it only runs once.
+  if (pref_service_->GetInteger(kSyncToSigninMigrationState) !=
+      kMigratedPart1ButNot2) {
+    return;
+  }
+  pref_service_->SetInteger(kSyncToSigninMigrationState,
+                            kMigratedPart2AndFullyDone);
+
+  // The actual migration: For explicit-passphrase users, addresses sync gets
+  // disabled by default.
+  if (is_using_explicit_passphrase) {
+    pref_service_->SetBoolean(GetPrefNameForType(UserSelectableType::kAutofill),
+                              false);
+  }
+}
+
+void SyncPrefs::MarkPartialSyncToSigninMigrationFullyDone() {
+  // If the first part of the migration has run, but the second part has not,
+  // then mark the migration as fully done - at this point (after signout)
+  // there's no more need for any migration.
+  // In all other cases (migration never even started, or completed fully),
+  // nothing to be done here.
+  if (pref_service_->GetInteger(kSyncToSigninMigrationState) ==
+      kMigratedPart1ButNot2) {
+    pref_service_->SetInteger(kSyncToSigninMigrationState,
+                              kMigratedPart2AndFullyDone);
   }
 }
 

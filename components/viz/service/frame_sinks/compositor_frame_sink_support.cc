@@ -17,9 +17,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/base/features.h"
-#include "components/power_scheduler/power_mode.h"
-#include "components/power_scheduler/power_mode_arbiter.h"
-#include "components/power_scheduler/power_mode_voter.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -71,14 +68,7 @@ CompositorFrameSinkSupport::CompositorFrameSinkSupport(
       frame_sink_id_(frame_sink_id),
       surface_resource_holder_(this),
       is_root_(is_root),
-      allow_copy_output_requests_(is_root),
-      // Don't track the root surface for PowerMode voting. All child surfaces
-      // are tracked individually instead, and tracking the root surface could
-      // override votes from the children.
-      power_mode_voter_(
-          is_root ? nullptr
-                  : power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
-                        "PowerModeVoter.Animation")) {
+      allow_copy_output_requests_(is_root) {
   // This may result in SetBeginFrameSource() being called.
   frame_sink_manager_->RegisterCompositorFrameSinkSupport(frame_sink_id_, this);
 }
@@ -897,7 +887,7 @@ void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
   }
 
   bool send_begin_frame_to_client =
-      client_ && ShouldSendBeginFrame(adjusted_args.frame_time);
+      client_ && ShouldSendBeginFrame(adjusted_args.frame_time, args.interval);
   if (send_begin_frame_to_client) {
     if (last_activated_surface_id_.is_valid())
       surface_manager_->SurfaceDamageExpected(last_activated_surface_id_,
@@ -989,25 +979,11 @@ void CompositorFrameSinkSupport::UpdateNeedsBeginFramesInternal() {
 void CompositorFrameSinkSupport::StartObservingBeginFrameSource() {
   added_frame_observer_ = true;
   begin_frame_source_->AddObserver(this);
-  if (power_mode_voter_) {
-    power_mode_voter_->VoteFor(
-        frame_sink_type_ == mojom::CompositorFrameSinkType::kMediaStream ||
-                frame_sink_type_ == mojom::CompositorFrameSinkType::kVideo
-            ? power_scheduler::PowerMode::kVideoPlayback
-            : power_scheduler::PowerMode::kAnimation);
-  }
 }
 
 void CompositorFrameSinkSupport::StopObservingBeginFrameSource() {
   added_frame_observer_ = false;
   begin_frame_source_->RemoveObserver(this);
-  if (power_mode_voter_) {
-    power_mode_voter_->ResetVoteAfterTimeout(
-        frame_sink_type_ == mojom::CompositorFrameSinkType::kMediaStream ||
-                frame_sink_type_ == mojom::CompositorFrameSinkType::kVideo
-            ? power_scheduler::PowerModeVoter::kVideoTimeout
-            : power_scheduler::PowerModeVoter::kAnimationTimeout);
-  }
 }
 
 const FrameSinkId& CompositorFrameSinkSupport::GetFrameSinkId() const {
@@ -1149,12 +1125,13 @@ int64_t CompositorFrameSinkSupport::ComputeTraceId() {
 }
 
 bool CompositorFrameSinkSupport::ShouldSendBeginFrame(
-    base::TimeTicks frame_time) {
+    base::TimeTicks frame_time,
+    base::TimeDelta vsync_interval) {
   // We should throttle OnBeginFrame() if it has been less than
   // |begin_frame_interval_| since the last one was sent because clients have
   // requested to update at such rate.
   const bool should_throttle_as_requested =
-      ShouldThrottleBeginFrameAsRequested(frame_time);
+      ShouldThrottleBeginFrameAsRequested(frame_time, vsync_interval);
   // We might throttle this OnBeginFrame() if it's been less than a second
   // since the last one was sent, either because clients are unresponsive or
   // have submitted too many undrawn frames.
@@ -1251,31 +1228,39 @@ bool CompositorFrameSinkSupport::ShouldAdjustBeginFrameArgs() const {
 }
 
 bool CompositorFrameSinkSupport::ShouldThrottleBeginFrameAsRequested(
-    base::TimeTicks frame_time) {
-  // It is not good enough to only check whether
-  // |time_since_last_frame| < |begin_frame_interval_|. There are 2 factors
-  // complicating this (examples assume a 30Hz throttled frame rate):
-  // 1) The precision of timing between frames is in microseconds, which
-  //    can result in error accumulation over several throttled frames. For
-  //    instance, on a 60Hz display, the first frame is produced at 0.016666
-  //    seconds, and the second at (0.016666 + 0.016666 = 0.033332) seconds.
-  //    base::Hertz(30) is 0.033333 seconds, so the second frame is considered
-  //    to have been produced too fast, and is therefore throttled.
-  // 2) Small system error in the frame timestamps (often on the order of a few
-  //    microseconds). For example, the first frame may be produced at 0.016662
-  //    seconds (instead of 0.016666), so the second frame's timestamp is
-  //    0.016662 + 0.016666 = 0.033328 and incorrectly gets throttled.
-  //
-  // To correct for this: Ceil the time since last frame to the nearest 100us.
-  // Building off the example above:
-  // Frame 1 time -> 0.016662 -> 0.0167 -> Throttle
-  // Frame 2 time -> 0.016662 + 0.016666 = 0.033328 -> 0.0334 -> Don't Throttle
-  static constexpr base::TimeDelta kFrameTimeQuantization =
-      base::Microseconds(100);
+    base::TimeTicks frame_time,
+    base::TimeDelta vsync_interval) {
+  if (!begin_frame_interval_.is_positive()) {
+    return false;
+  }
+  uint64_t remainder =
+      begin_frame_interval_.InMilliseconds() % vsync_interval.InMilliseconds();
+  if (remainder > 1) {
+    // We test against a remainder more than 1 because when we have 16.X ms
+    // + 16.X ms we can easily end up with 33.X which means added an extra unit
+    // in a perfect cadence so avoid that from being misflagged.
+
+    // This is a perfect cadence so we can throttle.
+    // Example: a 120 hz vsync / 60 fps is a perfect cadence of [2,2,2,2]
+    // We avoid non perfect cadences which means framerate is not a multiple
+    // of vsync rate. Because, throttling those cadences will cause
+    // framerate to be lowered more than the expected throttling, instead
+    // let clients receive their own begin frames at regular vsync periods
+    // and allow them impose their own custom cadence throttling
+    // For instance a 24 FPS content on a 60 HZ screen would yield a 2.5
+    // value. Which usually means [2,3,2,3] cadence, we do not throttle
+    // since throttling here would cause a [3,3,3,3] cadence effectively
+    // lowering the framerate of the content to 20 FPS.
+    return false;
+  }
   base::TimeDelta time_since_last_frame = frame_time - last_frame_time_;
-  return begin_frame_interval_.is_positive() &&
-         time_since_last_frame.CeilToMultiple(kFrameTimeQuantization) <
-             begin_frame_interval_;
+  if (time_since_last_frame.RoundToMultiple(vsync_interval) <
+      begin_frame_interval_.RoundToMultiple(vsync_interval)) {
+    // We will be past the deadline significantly next throttle check, so avoid
+    // throttling here.
+    return true;
+  }
+  return false;
 }
 
 void CompositorFrameSinkSupport::ProcessCompositorFrameTransitionDirective(

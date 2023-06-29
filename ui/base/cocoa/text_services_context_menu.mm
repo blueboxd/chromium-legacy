@@ -4,6 +4,7 @@
 
 #include "ui/base/cocoa/text_services_context_menu.h"
 
+#import <AVFAudio/AVFAudio.h>
 #import <AppKit/AppKit.h>
 
 #include <utility>
@@ -12,12 +13,15 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
-NSSpeechSynthesizer* SpeechSynthesizer() {
-  static NSSpeechSynthesizer* speech_synthesizer =
-      [[NSSpeechSynthesizer alloc] initWithVoice:nil];
-
+AVSpeechSynthesizer* SpeechSynthesizer() {
+  static AVSpeechSynthesizer* speech_synthesizer =
+      [[AVSpeechSynthesizer alloc] init];
   return speech_synthesizer;
 }
 
@@ -73,20 +77,24 @@ TextServicesContextMenu::TextServicesContextMenu(Delegate* delegate)
 // @end
 //
 // However, it is an explicit decision to not use these messages, and to keep an
-// independent `NSSpeechSynthesizer`, as Chromium tries to avoid the use of SPI
+// independent `AVSpeechSynthesizer`, as Chromium tries to avoid the use of SPI
 // when it's reasonably straightforward to do so. This does mean that speech
 // initiated within Chromium doesn't interoperate with speech initiated with
 // any native controls (if there are any left) via this submenu.
 
 void TextServicesContextMenu::SpeakText(const std::u16string& text) {
-  if (IsSpeaking())
-    [SpeechSynthesizer() stopSpeaking];
+  if (IsSpeaking()) {
+    StopSpeaking();
+  }
 
-  [SpeechSynthesizer() startSpeakingString:base::SysUTF16ToNSString(text)];
+  AVSpeechUtterance* utterance = [AVSpeechUtterance
+      speechUtteranceWithString:base::SysUTF16ToNSString(text)];
+
+  [SpeechSynthesizer() speakUtterance:utterance];
 }
 
 void TextServicesContextMenu::StopSpeaking() {
-  [SpeechSynthesizer() stopSpeaking];
+  [SpeechSynthesizer() stopSpeakingAtBoundary:AVSpeechBoundaryImmediate];
 }
 
 bool TextServicesContextMenu::IsSpeaking() {

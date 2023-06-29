@@ -55,7 +55,7 @@ using chrome_test_util::GoogleSyncSettingsButton;
 using chrome_test_util::IdentityCellMatcherForEmail;
 using chrome_test_util::SettingsAccountButton;
 using chrome_test_util::SettingsLink;
-using chrome_test_util::SettingsSignInAndEnableSyncRowMatcher;
+using chrome_test_util::SettingsSignInRowMatcher;
 using chrome_test_util::SignOutAccountsButton;
 
 namespace {
@@ -269,7 +269,7 @@ void OpenGoogleServicesSettings() {
   // triggered again when tearing down because the browser is signed out. Making
   // sure that sign-out is done and that the sign-in screen animation is done
   // before tearing down avoids the conflict.
-  [ChromeEarlGreyAppInterface signOutAndClearIdentities];
+  [ChromeEarlGreyAppInterface signOutAndClearIdentitiesWithCompletion:nil];
   [ChromeEarlGrey waitForMatcher:GetForcedSigninScreenMatcher()];
 
   [super tearDown];
@@ -710,8 +710,7 @@ void OpenGoogleServicesSettings() {
 
   // Open the regular sign-in prompt from settings.
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI
-      tapSettingsMenuButton:SettingsSignInAndEnableSyncRowMatcher()];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsSignInRowMatcher()];
 
   // Enable the forced sign-in policy.
   SetSigninEnterprisePolicyValue(BrowserSigninMode::kForced);
@@ -747,8 +746,7 @@ void OpenGoogleServicesSettings() {
 
   // Open the regular sign-in prompt from settings.
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI
-      tapSettingsMenuButton:SettingsSignInAndEnableSyncRowMatcher()];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsSignInRowMatcher()];
 
   // Enable the forced sign-in policy.
   SetSigninEnterprisePolicyValue(BrowserSigninMode::kForced);
@@ -826,8 +824,7 @@ void OpenGoogleServicesSettings() {
 
   // Open the regular sign-in prompt from settings.
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI
-      tapSettingsMenuButton:SettingsSignInAndEnableSyncRowMatcher()];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsSignInRowMatcher()];
 
   // Enable the forced sign-in policy.
   SetSigninEnterprisePolicyValue(BrowserSigninMode::kForced);
@@ -883,8 +880,7 @@ void OpenGoogleServicesSettings() {
 
   // Open the regular sign-in prompt from settings.
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI
-      tapSettingsMenuButton:SettingsSignInAndEnableSyncRowMatcher()];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsSignInRowMatcher()];
 
   // Enable the forced sign-in policy while the regular sign-in prompt is
   // opened.
@@ -941,8 +937,7 @@ void OpenGoogleServicesSettings() {
 
   // Open the regular sign-in prompt from settings.
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI
-      tapSettingsMenuButton:SettingsSignInAndEnableSyncRowMatcher()];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsSignInRowMatcher()];
 
   // Open advanced sync settings.
   [[EarlGrey selectElementWithMatcher:SettingsLink()] performAction:grey_tap()];

@@ -49,17 +49,28 @@ class DeviceCommandStartCrdSessionJob : public RemoteCommandJob {
       bool show_confirmation_dialog = false;
       bool curtain_local_user_session = false;
       bool allow_troubleshooting_tools = false;
+      bool show_troubleshooting_tools = false;
       bool allow_reconnections = false;
       bool allow_file_transfer = false;
     };
 
     virtual ~Delegate() = default;
 
-    // Check if there exists an active CRD session.
+    // Checks if an active CRD session exists.
     virtual bool HasActiveSession() const = 0;
 
-    // Run |callback| once active CRD session is terminated.
+    // Terminates the currently active CRD session, and runs `callback` once it
+    // is terminated.
     virtual void TerminateSession(base::OnceClosure callback) = 0;
+
+    //  Checks if there is a reconnectable session, and if so this will
+    // reconnect to it.
+    // A session is reconnectable when it was created with
+    // `SessionParameters::allow_reconnections` set.
+    // `done_callback` is invoked either when we conclude there is no
+    // reconnectable session, or when we the reconnectable session has been
+    // reestablished.
+    virtual void TryToReconnect(base::OnceClosure done_callback) = 0;
 
     // Attempts to start CRD host and get Auth Code.
     // `session_finished_callback` is invoked when an active crd session is
@@ -123,6 +134,7 @@ class DeviceCommandStartCrdSessionJob : public RemoteCommandJob {
   bool ShouldTerminateUponInput() const;
   bool ShouldAllowReconnections() const;
   bool ShouldAllowTroubleshootingTools() const;
+  bool ShouldShowTroubleshootingTools() const;
   bool ShouldAllowFileTransfer() const;
 
   ErrorCallback GetErrorCallback();

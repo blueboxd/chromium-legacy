@@ -16,6 +16,7 @@
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/extensions/file_manager/event_router.h"
@@ -39,8 +40,10 @@
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/ash/components/drivefs/sync_status_tracker.h"
 #include "components/drive/drive_api_util.h"
+#include "components/drive/drive_pref_names.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/file_system_core_util.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -281,22 +284,25 @@ extensions::api::file_manager_private::BulkPinStage DrivefsPinStageToJs(
   return extensions::api::file_manager_private::BULK_PIN_STAGE_NONE;
 }
 
-bool IsPinManagerAvailableAndSyncingForProfile(Profile* profile) {
-  if (!profile) {
+bool IsBulkPinningEnabledForProfile(Profile* profile) {
+  if (!profile || !profile->GetPrefs()) {
     return false;
+  }
+  return profile->GetPrefs()->GetBoolean(
+      drive::prefs::kDriveFsBulkPinningEnabled);
+}
+
+drivefs::pinning::PinManager* GetPinManager(Profile* profile) {
+  if (!profile) {
+    return nullptr;
   }
   drive::DriveIntegrationService* integration_service =
       drive::DriveIntegrationServiceFactory::FindForProfile(profile);
-  if (!integration_service || !integration_service->IsMounted() ||
-      !integration_service->GetPinManager()) {
-    return false;
+  if (!integration_service || !integration_service->IsMounted()) {
+    return nullptr;
   }
-  auto* const pin_manager = integration_service->GetPinManager();
-  if (pin_manager->GetProgress().stage !=
-      drivefs::pin_manager_types::mojom::Stage::kSyncing) {
-    return false;
-  }
-  return true;
+
+  return integration_service->GetPinManager();
 }
 
 bool IsPathUnderMyDrive(const base::FilePath& relative_path) {
@@ -442,10 +448,13 @@ void SingleEntryPropertiesGetterForDriveFs::OnGetFileInfo(
     properties_->available_when_metered = properties_->available_offline;
     properties_->pinned = metadata->pinned;
 
-    if (IsPinManagerAvailableAndSyncingForProfile(running_profile_) &&
+    if (IsBulkPinningEnabledForProfile(running_profile_) &&
         IsPathUnderMyDrive(relative_path_)) {
+      drivefs::pinning::PinManager* const pin_manager =
+          GetPinManager(running_profile_);
       if (metadata->type == drivefs::mojom::FileMetadata::Type::kDirectory &&
-          !metadata->shortcut_details) {
+          pin_manager &&
+          !pin_manager->IsUntrackedPath(file_system_url_.path())) {
         // Folders can't be pinned automatically to provide a way to intercept
         // items being added to these folders. However items in the folders will
         // be pinned, so to ensure the UI shows these folders as available
@@ -779,8 +788,12 @@ drive::EventLogger* GetLogger(Profile* profile) {
 
 std::vector<extensions::api::file_manager_private::MountableGuest>
 CreateMountableGuestList(Profile* profile) {
-  auto* registry =
-      guest_os::GuestOsService::GetForProfile(profile)->MountProviderRegistry();
+  auto* service = guest_os::GuestOsService::GetForProfile(profile);
+  if (!service) {
+    return {};
+  }
+
+  auto* registry = service->MountProviderRegistry();
   std::vector<file_manager_private::MountableGuest> guests;
   for (const auto id : registry->List()) {
     file_manager_private::MountableGuest guest;
@@ -831,6 +844,9 @@ extensions::api::file_manager_private::BulkPinProgress BulkPinProgressToJs(
   result.bytes_to_pin = progress.bytes_to_pin;
   result.pinned_bytes = progress.pinned_bytes;
   result.files_to_pin = progress.files_to_pin;
+  result.remaining_seconds = !progress.remaining_time.is_inf()
+                                 ? progress.remaining_time.InSecondsF()
+                                 : 0;
   return result;
 }
 

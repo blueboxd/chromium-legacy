@@ -273,13 +273,6 @@ void KeyframeEffect::AddKeyframeModel(
         }));
   }
 
-  // For a scroll timeline, we want KeyframeModel::CalculatePhase to return
-  // Phase::ACTIVE (and not Phase::AFTER) when we have scrolled to the maximum
-  // position. This differs from the behavior of time-linked animations.
-  if (animation_->IsScrollLinkedAnimation()) {
-    keyframe_model->set_active_at_boundary(true);
-  }
-
   gfx::KeyframeEffect::AddKeyframeModel(std::move(keyframe_model));
 
   if (has_bound_element_animations()) {
@@ -1038,7 +1031,10 @@ void KeyframeEffect::MarkFinishedKeyframeModels(
 
   bool keyframe_model_finished = false;
   for (auto& keyframe_model : keyframe_models()) {
-    if (!keyframe_model->is_finished() &&
+    // Scroll driven animations are never finished as the user may scroll back
+    // into the active range.
+    if (!animation_->IsScrollLinkedAnimation() &&
+        !keyframe_model->is_finished() &&
         keyframe_model->IsFinishedAt(monotonic_time)) {
       keyframe_model->SetRunState(gfx::KeyframeModel::FINISHED, monotonic_time);
       keyframe_model_finished = true;

@@ -87,19 +87,20 @@ class FilesPolicyDialog : public PolicyDialogBase {
   static void SetFactory(FilesPolicyDialogFactory* factory);
 
  protected:
+  // PolicyDialogBase overrides:
+  void SetupScrollView() override;
+  void AddConfidentialRow(const gfx::ImageSkia& icon,
+                          const std::u16string& title) override;
+
   DlpFileDestination destination_;
   dlp::FileAction action_;
+  // Number of files listed in the dialog.
+  size_t file_count_;
 
  private:
   // PolicyDialogBase overrides:
-  void AddGeneralInformation() override;
-  std::u16string GetOkButton() override;
-  std::u16string GetCancelButton() override;
-  std::u16string GetTitle() override;
-  std::u16string GetMessage() override;
-
-  // Number of files listed in the dialog.
-  size_t file_count_;
+  views::Label* AddTitle(const std::u16string& title) override;
+  views::Label* AddMessage(const std::u16string& message) override;
 
   base::WeakPtrFactory<FilesPolicyDialog> weak_factory_{this};
 };

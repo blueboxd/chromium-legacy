@@ -17,22 +17,43 @@ RuleMetaData::RuleMetaData() = default;
 
 void RuleMetaData::SetFromConstraints(
     const ContentSettingConstraints& constraints) {
-  expiration_ = constraints.expiration();
   session_model_ = constraints.session_model();
+  SetExpirationAndLifetime(constraints.expiration(), constraints.lifetime());
+}
+
+void RuleMetaData::SetExpirationAndLifetime(base::Time expiration,
+                                            base::TimeDelta lifetime) {
+  CHECK_EQ(lifetime.is_zero(), expiration.is_null());
+  CHECK_GE(lifetime, base::TimeDelta());
+  expiration_ = expiration;
+  lifetime_ = lifetime;
 }
 
 bool RuleMetaData::operator==(const RuleMetaData& other) const {
-  return std::tie(last_modified_, last_visited_, expiration_, session_model_) ==
-         std::tie(other.last_modified_, other.last_visited_, other.expiration_,
-                  other.session_model_);
+  return std::tie(last_modified_, last_visited_, expiration_, session_model_,
+                  lifetime_) == std::tie(other.last_modified_,
+                                         other.last_visited_, other.expiration_,
+                                         other.session_model_, other.lifetime_);
 }
 
 // static
 base::TimeDelta RuleMetaData::ComputeLifetime(base::TimeDelta lifetime,
                                               base::Time expiration) {
-  // The stored metadata may have included an expiration without a lifetime; but
-  // if it included a lifetime, it must also have included an expiration.
-  CHECK(lifetime.is_zero() || !expiration.is_null());
+  if (!lifetime.is_zero() && expiration.is_null()) {
+    // This is an invalid state, since:
+    // * old writes would have written a nonzero expiration and zero lifetime or
+    // zero expiration and zero lifetime;
+    // * new writes would write a nonzero expiration and nonzero lifetime or
+    // zero expiration and zero lifetime.
+    //
+    // Yet when we read from disk, we got a zero expiration and nonzero
+    // lifetime. This indicates disk corruption: the expiration field is either
+    // missing or mangled. We therefore defer to the expiration, and give up on
+    // the lifetime. This has the effect that temporary settings may become
+    // permanent in the event of disk corruption; but this has always been the
+    // case.
+    return base::TimeDelta();
+  }
 
   if (expiration.is_null()) {
     return base::TimeDelta();

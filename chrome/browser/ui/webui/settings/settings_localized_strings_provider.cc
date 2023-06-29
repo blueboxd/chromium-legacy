@@ -163,6 +163,11 @@
 #include "net/base/features.h"
 #endif
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "components/supervised_user/core/browser/supervised_user_service.h"
+#endif
+
 namespace settings {
 namespace {
 
@@ -243,6 +248,12 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #endif
 
   html_source->AddBoolean("isChildAccount", profile->IsChild());
+
+  html_source->AddBoolean(
+      "clearingCookiesKeepsSupervisedUsersSignedIn",
+      base::FeatureList::IsEnabled(
+          supervised_user::kClearingCookiesKeepsSupervisedUsersSignedIn));
+
 #if BUILDFLAG(IS_LINUX)
   bool allow_qt_theme = base::FeatureList::IsEnabled(ui::kAllowQt);
 #else
@@ -468,6 +479,8 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
     {"clearCookiesSummarySignedInMainProfile",
      IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_BASIC_MAIN_PROFILE},
 #endif
+    {"clearCookiesSummarySignedInSupervisedProfile",
+     IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_BASIC_SUPERVISED_PROFILE},
     {"clearCookiesCounter", IDS_DEL_COOKIES_COUNTER},
     {"clearPasswords", IDS_SETTINGS_CLEAR_PASSWORDS},
     {"clearFormData", IDS_SETTINGS_CLEAR_FORM_DATA},
@@ -701,8 +714,8 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
   html_source->AddBoolean(
-      "highEfficiencyDefaultHeuristicMode",
-      performance_manager::features::kHighEfficiencyDefaultHeuristicMode.Get());
+      "highEfficiencyShowRecommendedBadge",
+      performance_manager::features::kHighEfficiencyShowRecommendedBadge.Get());
 
   html_source->AddString(
       "tabDiscardTimerFiveMinutes",
@@ -781,8 +794,6 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE},
     {"displayInThisLanguage", IDS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE},
 #endif
-    {"offerToTranslateInThisLanguage",
-     IDS_SETTINGS_LANGUAGES_OFFER_TO_TRANSLATE_IN_THIS_LANGUAGE},
     {"offerToEnableTranslate",
      IDS_SETTINGS_LANGUAGES_OFFER_TO_ENABLE_TRANSLATE},
     {"offerToEnableTranslateSublabel",
@@ -2098,8 +2109,6 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_1},
       {"topicsPageLearnMoreBullet2",
        IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_2},
-      {"topicsPageLearnMoreBullet3",
-       IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_3},
       {"topicsPageCurrentTopicsDescriptionDisabled",
        IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION_DISABLED},
       {"topicsPageCurrentTopicsDescriptionEmpty",
@@ -2157,8 +2166,6 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_FLEDGE_PAGE_LEARN_MORE_BULLET_1},
       {"fledgePageLearnMoreBullet2",
        IDS_SETTINGS_FLEDGE_PAGE_LEARN_MORE_BULLET_2},
-      {"fledgePageLearnMoreBullet3",
-       IDS_SETTINGS_FLEDGE_PAGE_LEARN_MORE_BULLET_3},
       {"fledgePageCurrentSitesDescriptionLearnMoreA11yLabel",
        IDS_SETTINGS_FLEDGE_PAGE_CURRENT_SITES_DESCRIPTION_LEARN_MORE_A11Y_LABEL},
       {"adMeasurementPageTitle", IDS_SETTINGS_AD_MEASUREMENT_PAGE_TITLE},
@@ -2196,6 +2203,25 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_PRIVACY_SANDBOX_AD_MEASUREMENT_DIALOG_CONTROL_MEASUREMENT,
           base::ASCIIToUTF16(chrome::kChromeUIHistoryURL)));
+
+  // Topics and fledge link to help center articles in their learn more dialog.
+  html_source->AddString(
+      "topicsPageLearnMoreBullet3",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_3,
+          base::ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
+                                 GURL(chrome::kAdPrivacyLearnMoreURL),
+                                 g_browser_process->GetApplicationLocale())
+                                 .spec())));
+  html_source->AddString(
+      "fledgePageLearnMoreBullet3",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_FLEDGE_PAGE_LEARN_MORE_BULLET_3,
+          base::ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
+                                 GURL(chrome::kAdPrivacyLearnMoreURL),
+                                 g_browser_process->GetApplicationLocale())
+                                 .spec())));
+
   // Topics and fledge both link to the cookies setting page and cross-link
   // each other in the footers.
   html_source->AddString(
@@ -2521,6 +2547,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"addSite", IDS_SETTINGS_ADD_SITE},
     {"addSiteTitle", IDS_SETTINGS_ADD_SITE_TITLE},
+    {"addSitesTitle", IDS_SETTINGS_ADD_SITES_TITLE},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"androidSmsNote", IDS_SETTINGS_ANDROID_SMS_NOTE},
 #endif

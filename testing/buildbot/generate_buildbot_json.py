@@ -419,7 +419,6 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
       return os.path.join(args.pyl_files_dir, filename)
 
     args.waterfalls_pyl_path = absolute_file_path('waterfalls.pyl')
-    args.mixins_pyl_path = absolute_file_path('mixins.pyl')
     args.test_suites_pyl_path = absolute_file_path('test_suites.pyl')
     args.test_suite_exceptions_pyl_path = absolute_file_path(
         'test_suite_exceptions.pyl')
@@ -427,6 +426,12 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     args.variants_pyl_path = absolute_file_path('variants.pyl')
     args.autoshard_exceptions_json_path = absolute_file_path(
         'autoshard_exceptions.json')
+
+    if args.pyl_files_dir == THIS_DIR:
+      args.mixins_pyl_path = os.path.join(args.infra_config_dir, 'generated',
+                                          'testing', 'mixins.pyl')
+    else:
+      args.mixins_pyl_path = absolute_file_path('mixins.pyl')
 
     return args
 
@@ -721,6 +726,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     if 'hard_timeout' in swarming_dict:
       if swarming_dict['hard_timeout'] == 0: # pragma: no cover
         del swarming_dict['hard_timeout'] # pragma: no cover
+    del swarming_dict['can_use_on_swarming_builders']
 
   def update_and_cleanup_test(self, test, test_name, tester_name, tester_config,
                               waterfall):
@@ -733,7 +739,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     if modifications:
       test = self.dictionary_merge(test, modifications)
     if (swarming_dict := test.get('swarming')) is not None:
-      if swarming_dict.get('can_use_on_swarming_builders', False):
+      if swarming_dict.get('can_use_on_swarming_builders'):
         self.clean_swarming_dictionary(swarming_dict)
       else:
         del test['swarming']
@@ -744,6 +750,8 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         if d.get('os') == 'Android' and not d.get('device_os_type'):
           d['device_os_type'] = 'userdebug'
     self.replace_test_args(test, test_name, tester_name)
+    if 'args' in test and not test['args']:
+      test.pop('args')
 
     return test
 
@@ -850,8 +858,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     self.add_common_test_properties(result, tester_config)
     self.substitute_magic_args(result, tester_name, tester_config)
 
-    if (result.get('swarming', {}).get('can_use_on_swarming_builders')
-        and not result.get('merge')):
+    if 'swarming' in result and not result.get('merge'):
       if test_config.get('use_isolated_scripts_api', False):
         merge_script = 'standard_isolated_script_merge'
       else:
@@ -883,8 +890,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     self.add_common_test_properties(result, tester_config)
     self.substitute_magic_args(result, tester_name, tester_config)
 
-    if (result.get('swarming', {}).get('can_use_on_swarming_builders')
-        and not result.get('merge')):
+    if 'swarming' in result and not result.get('merge'):
       # TODO(https://crbug.com/958376): Consider adding the ability to not have
       # this default.
       result['merge'] = {
@@ -1426,15 +1432,22 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
   def apply_mixin(self, mixin, test, builder):
     """Applies a mixin to a test.
 
-    Mixins will not override an existing key. This is to ensure exceptions can
-    override a setting a mixin applies.
-
-    Swarming dimensions are handled in a special way. Instead of specifying
-    'dimension_sets', which is how normal test suites specify their dimensions,
-    you specify a 'dimensions' key, which maps to a dictionary. This dictionary
-    is then applied to every dimension set in the test.
-
+    A mixin is applied by copying all fields from the mixin into the
+    test with the following exceptions:
+    * For the various *args keys, the test's existing value (an empty
+      list if not present) will be extended with the mixin's value.
+    * The sub-keys of the swarming value will be copied to the test's
+      swarming value with the following exceptions:
+      * For the dimension_sets and named_caches sub-keys, the test's
+        existing value (an empty list if not present) will be extended
+        with the mixin's value.
+      * For the dimensions sub-key, after extending the test's
+        dimension_sets as specified above, each dimension set will be
+        updated with the value of the dimensions sub-key. If there are
+        no dimension sets, then one will be added that contains the
+        specified dimensions.
     """
+
     new_test = copy.deepcopy(test)
     mixin = copy.deepcopy(mixin)
     if 'swarming' in mixin:
@@ -1458,62 +1471,57 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         for dimension_set in new_test['swarming']['dimension_sets']:
           dimension_set.update(swarming_mixin['dimensions'])
         del swarming_mixin['dimensions']
+      if 'named_caches' in swarming_mixin:
+        new_test['swarming'].setdefault('named_caches', []).extend(
+            swarming_mixin['named_caches'])
+        del swarming_mixin['named_caches']
       # python dict update doesn't do recursion at all. Just hard code the
       # nested update we need (mixin['swarming'] shouldn't clobber
       # test['swarming'], but should update it).
       new_test['swarming'].update(swarming_mixin)
       del mixin['swarming']
 
-    if '$mixin_append' in mixin:
-      # Values specified under $mixin_append should be appended to existing
-      # lists, rather than replacing them.
-      mixin_append = mixin['$mixin_append']
-      del mixin['$mixin_append']
+    # Array so we can assign to it in a nested scope.
+    args_need_fixup = ['args' in mixin]
 
-      # Append swarming named cache and delete swarming key, since it's under
-      # another layer of dict.
-      if 'named_caches' in mixin_append.get('swarming', {}):
-        new_test['swarming'].setdefault('named_caches', [])
-        new_test['swarming']['named_caches'].extend(
-            mixin_append['swarming']['named_caches'])
-        if len(mixin_append['swarming']) > 1:
-          raise BBGenErr('Only named_caches is supported under swarming key in '
-                         '$mixin_append, but there are: %s' %
-                         sorted(mixin_append['swarming'].keys()))
-        del mixin_append['swarming']
-      for key in mixin_append:
-        new_test.setdefault(key, [])
-        if not isinstance(mixin_append[key], list):
-          raise BBGenErr(
-              'Key "' + key + '" in $mixin_append must be a list.')
-        if not isinstance(new_test[key], list):
-          raise BBGenErr(
-              'Cannot apply $mixin_append to non-list "' + key + '".')
-        new_test[key].extend(mixin_append[key])
+    for a in (
+        'args',
+        'precommit_args',
+        'non_precommit_args',
+        'desktop_args',
+        'lacros_args',
+        'linux_args',
+        'android_args',
+        'chromeos_args',
+        'mac_args',
+        'win_args',
+        'win64_args',
+    ):
+      if (value := mixin.pop(a, None)) is None:
+        continue
+      if not isinstance(value, list):
+        raise BBGenErr(f'"{a}" must be a list')
+      new_test.setdefault(a, []).extend(value)
 
-      args = new_test.get('args', [])
-      # Array so we can assign to it in a nested scope.
-      args_need_fixup = [False]
-      if 'args' in mixin_append:
+    args = new_test.get('args', [])
+
+    def add_conditional_args(key, fn):
+      val = new_test.pop(key, [])
+      if val and fn(builder):
+        args.extend(val)
         args_need_fixup[0] = True
 
-      def add_conditional_args(key, fn):
-        val = new_test.pop(key, [])
-        if val and fn(builder):
-          args.extend(val)
-          args_need_fixup[0] = True
+    add_conditional_args('desktop_args', lambda cfg: not self.is_android(cfg))
+    add_conditional_args('lacros_args', self.is_lacros)
+    add_conditional_args('linux_args', self.is_linux)
+    add_conditional_args('android_args', self.is_android)
+    add_conditional_args('chromeos_args', self.is_chromeos)
+    add_conditional_args('mac_args', self.is_mac)
+    add_conditional_args('win_args', self.is_win)
+    add_conditional_args('win64_args', self.is_win64)
 
-      add_conditional_args('desktop_args', lambda cfg: not self.is_android(cfg))
-      add_conditional_args('lacros_args', self.is_lacros)
-      add_conditional_args('linux_args', self.is_linux)
-      add_conditional_args('android_args', self.is_android)
-      add_conditional_args('chromeos_args', self.is_chromeos)
-      add_conditional_args('mac_args', self.is_mac)
-      add_conditional_args('win_args', self.is_win)
-      add_conditional_args('win64_args', self.is_win64)
-
-      if args_need_fixup[0]:
-        new_test['args'] = self.maybe_fixup_args_array(args)
+    if args_need_fixup[0]:
+      new_test['args'] = self.maybe_fixup_args_array(args)
 
     new_test.update(mixin)
     return new_test
@@ -1759,6 +1767,12 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     if missing_bots:
       raise BBGenErr('The following nonexistent machines were referenced in '
                      'the test suite exceptions: ' + str(missing_bots))
+
+    for name, mixin in self.mixins.items():
+      if '$mixin_append' in mixin:
+        raise BBGenErr(
+            f'$mixin_append is no longer supported (set in mixin "{name}"),'
+            ' args and named caches specified as normal will be appended')
 
     # All mixins must be referenced
     seen_mixins = set()
@@ -2093,7 +2107,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
   def _check_swarming_config(self, filename, builder, step_name, step_data):
     # TODO(crbug.com/1203436): Ensure all swarming tests specify cpu, not
     # just mac tests.
-    if step_data.get('swarming', {}).get('can_use_on_swarming_builders'):
+    if 'swarming' in step_data:
       dimension_sets = step_data['swarming'].get('dimension_sets')
       if not dimension_sets:
         raise BBGenErr('%s: %s / %s : os must be specified for all '

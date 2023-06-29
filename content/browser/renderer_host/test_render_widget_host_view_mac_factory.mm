@@ -7,6 +7,10 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/public/browser/render_widget_host.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace content {
 
 RenderWidgetHostViewBase* CreateRenderWidgetHostViewMacForTesting(
@@ -17,6 +21,12 @@ RenderWidgetHostViewBase* CreateRenderWidgetHostViewMacForTesting(
 BrowserCompositorMac* GetBrowserCompositorMacForTesting(
     const RenderWidgetHostView* rwhv) {
   return static_cast<const RenderWidgetHostViewMac*>(rwhv)->BrowserCompositor();
+}
+
+void SetScreenInfosForTesting(RenderWidgetHostView* rwhv,
+                              const display::ScreenInfos& screen_infos) {
+  return static_cast<RenderWidgetHostViewMac*>(rwhv)->OnScreenInfosChanged(
+      screen_infos);
 }
 
 }  // namespace content

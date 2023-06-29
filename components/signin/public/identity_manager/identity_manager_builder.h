@@ -69,8 +69,8 @@ struct IdentityManagerBuildParams {
   raw_ptr<SigninClient> signin_client = nullptr;
   std::unique_ptr<AccountCapabilitiesFetcherFactory>
       account_capabilities_fetcher_factory;
-  std::unique_ptr<ProfileOAuth2TokenService> token_service = nullptr;
-  std::unique_ptr<AccountTrackerService> account_tracker_service = nullptr;
+  std::unique_ptr<ProfileOAuth2TokenService> token_service;
+  std::unique_ptr<AccountTrackerService> account_tracker_service;
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
   bool delete_signin_cookies_on_exit = false;
@@ -85,8 +85,8 @@ struct IdentityManagerBuildParams {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
-  raw_ptr<account_manager::AccountManagerFacade> account_manager_facade =
-      nullptr;
+  raw_ptr<account_manager::AccountManagerFacade, DanglingUntriaged>
+      account_manager_facade = nullptr;
   bool is_regular_profile = false;
 #endif
 

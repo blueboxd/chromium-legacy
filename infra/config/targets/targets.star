@@ -569,8 +569,8 @@ targets.generated_script(
 )
 
 targets.generated_script(
-    name = "wpt_tests_isolate",
-    label = "//:wpt_tests_isolate",
+    name = "chrome_wpt",
+    label = "//:chrome_wpt",
     args = [
         "--results-directory",
         "${ISOLATED_OUTDIR}",
@@ -578,8 +578,8 @@ targets.generated_script(
 )
 
 targets.generated_script(
-    name = "wpt_tests_isolate_content_shell",
-    label = "//:wpt_tests_isolate_content_shell",
+    name = "content_shell_wpt",
+    label = "//:content_shell_wpt",
     args = [
         "--results-directory",
         "${ISOLATED_OUTDIR}",
@@ -587,8 +587,8 @@ targets.generated_script(
 )
 
 targets.generated_script(
-    name = "wpt_tests_ios",
-    label = "//ios/chrome/test/wpt:wpt_tests_ios",
+    name = "chrome_ios_wpt",
+    label = "//ios/chrome/test/wpt:chrome_ios_wpt",
     args = [
         "--results-directory",
         "${ISOLATED_OUTDIR}",
@@ -1740,6 +1740,11 @@ targets.console_test_launcher(
     label = "//chrome/browser/metrics/perf:profile_provider_unittest",
 )
 
+targets.console_test_launcher(
+    name = "pthreadpool_unittests",
+    label = "//third_party/pthreadpool:pthreadpool_unittests",
+)
+
 targets.compile_target(
     name = "push_apps_to_background_apk",
     label = "//tools/android/push_apps_to_background:push_apps_to_background_apk",
@@ -2318,11 +2323,6 @@ targets.generated_script(
     ],
 )
 
-targets.windowed_test_launcher(
-    name = "weblayer_browsertests",
-    label = "//weblayer/test:weblayer_browsertests",
-)
-
 targets.script(
     name = "webview_cts_tests",
     label = "//android_webview/test:webview_cts_tests",
@@ -2385,16 +2385,6 @@ targets.script(
         "--use-apk-under-test-flags-file",
         "-v",
     ],
-)
-
-targets.console_test_launcher(
-    name = "webengine_support_instrumentation_test_apk",
-    label = "//weblayer/browser/android/javatests:webengine_support_instrumentation_test_apk",
-)
-
-targets.junit_test(
-    name = "weblayer_junit_tests",
-    label = "//weblayer/browser/java:weblayer_junit_tests",
 )
 
 targets.console_test_launcher(

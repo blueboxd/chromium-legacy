@@ -117,7 +117,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   // There are two types of containing blocks:
   // 1) Default containing block (DCB)
   //    Containing block passed in NGOutOfFlowLayoutPart constructor.
-  //    It is the block element inside which this algorighm runs.
+  //    It is the block element inside which this algorithm runs.
   //    All OOF descendants not in inline containing block are placed in DCB.
   // 2) Inline containing block
   //    OOF descendants might be positioned wrt inline containing block.
@@ -212,6 +212,9 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
     DISALLOW_NEW();
 
    public:
+    // Absolutized inset property values. Not necessarily the insets of the box.
+    NGBoxStrut insets_for_get_computed_style;
+    // Offset to container's border box.
     LogicalOffset offset;
     // If |has_cached_layout_result| is true, this will hold the cached layout
     // result that should be returned. Otherwise, this will hold the initial

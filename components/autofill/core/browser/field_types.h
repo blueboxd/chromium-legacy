@@ -405,7 +405,14 @@ enum class FieldTypeGroup {
   kMaxValue = kIban,
 };
 
-using ServerFieldTypeSet = DenseSet<ServerFieldType, MAX_VALID_FIELD_TYPE>;
+template <>
+struct DenseSetTraits<ServerFieldType> {
+  static constexpr ServerFieldType kMinValue = NO_SERVER_DATA;
+  static constexpr ServerFieldType kMaxValue = MAX_VALID_FIELD_TYPE;
+  static constexpr bool kPacked = false;
+};
+
+using ServerFieldTypeSet = DenseSet<ServerFieldType>;
 
 std::ostream& operator<<(std::ostream& o, ServerFieldTypeSet field_type_set);
 
@@ -422,6 +429,14 @@ bool IsFillableFieldType(ServerFieldType field_type);
 // Returns a StringPiece describing |type|. As the StringPiece points to a
 // static string, you don't need to worry about memory deallocation.
 base::StringPiece FieldTypeToStringPiece(ServerFieldType type);
+
+// Returns a StringPiece describing `type`. The devtools UI uses this string to
+// give developers feedback about autofill's filling decision. Note that
+// different field types can map to the same string representation for
+// simplicity of the feedback. Returns an empty string if the type is not
+// supported.
+base::StringPiece FieldTypeToDeveloperRepresentationString(
+    ServerFieldType type);
 
 // Inverse map of FieldTypeToStringPiece. Checks that only valid ServerFieldType
 // string representations are being passed.

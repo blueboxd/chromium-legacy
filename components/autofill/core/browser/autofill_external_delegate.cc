@@ -80,7 +80,7 @@ void AutofillExternalDelegate::OnQuery(const FormData& form,
 void AutofillExternalDelegate::OnSuggestionsReturned(
     FieldGlobalId field_id,
     const std::vector<Suggestion>& input_suggestions,
-    AutoselectFirstSuggestion autoselect_first_suggestion,
+    AutofillSuggestionTriggerSource trigger_source,
     bool is_all_server_suggestions) {
   if (field_id != query_field_.global_id())
     return;
@@ -139,7 +139,9 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   if (query_field_.is_focusable && driver_->CanShowAutofillUi()) {
     AutofillClient::PopupOpenArgs open_args(
         element_bounds_, query_field_.text_direction, suggestions,
-        AutoselectFirstSuggestion(autoselect_first_suggestion));
+        AutoselectFirstSuggestion(
+            trigger_source ==
+            AutofillSuggestionTriggerSource::kTextFieldDidReceiveKeyDown));
     manager_->client()->ShowAutofillPopup(open_args, GetWeakPtr());
   }
 }
@@ -200,20 +202,25 @@ void AutofillExternalDelegate::DidSelectSuggestion(
   const Suggestion::BackendId backend_id =
       suggestion.GetPayload<Suggestion::BackendId>();
 
-  // Only preview the data if it is a profile or a virtual card.
-  if (suggestion.popup_item_id == PopupItemId::kAddressEntry ||
-      suggestion.popup_item_id == PopupItemId::kCreditCardEntry) {
-    FillAutofillFormData(suggestion.popup_item_id, backend_id, true,
-                         AutofillTriggerSource::kKeyboardAccessory);
-  } else if (suggestion.popup_item_id == PopupItemId::kAutocompleteEntry ||
-             suggestion.popup_item_id == PopupItemId::kIbanEntry ||
-             suggestion.popup_item_id == PopupItemId::kMerchantPromoCodeEntry) {
-    driver_->RendererShouldPreviewFieldWithValue(query_field_.global_id(),
-                                                 suggestion.main_text.value);
-  } else if (suggestion.popup_item_id == PopupItemId::kVirtualCreditCardEntry) {
-    manager_->FillOrPreviewVirtualCardInformation(
-        mojom::RendererFormDataAction::kPreview, backend_id.value(),
-        query_form_, query_field_, AutofillTriggerSource::kKeyboardAccessory);
+  switch (suggestion.popup_item_id) {
+    case PopupItemId::kAddressEntry:
+    case PopupItemId::kCreditCardEntry:
+      FillAutofillFormData(suggestion.popup_item_id, backend_id, true,
+                           AutofillTriggerSource::kKeyboardAccessory);
+      break;
+    case PopupItemId::kAutocompleteEntry:
+    case PopupItemId::kIbanEntry:
+    case PopupItemId::kMerchantPromoCodeEntry:
+      driver_->RendererShouldPreviewFieldWithValue(query_field_.global_id(),
+                                                   suggestion.main_text.value);
+      break;
+    case PopupItemId::kVirtualCreditCardEntry:
+      manager_->FillOrPreviewVirtualCardInformation(
+          mojom::RendererFormDataAction::kPreview, backend_id.value(),
+          query_form_, query_field_, AutofillTriggerSource::kKeyboardAccessory);
+      break;
+    default:
+      break;
   }
 }
 
@@ -226,9 +233,15 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const Suggestion& suggestion,
       manager_->ShowAutofillSettings(popup_type_);
       break;
     case PopupItemId::kClearForm:
-      // User selected 'Clear form'.
-      AutofillMetrics::LogAutofillFormCleared();
-      driver_->RendererShouldClearFilledSection();
+      // This serves as a clear form or undo autofill suggestion, depending on
+      // the state of the feature `kAutofillUndo`.
+      if (base::FeatureList::IsEnabled(features::kAutofillUndo)) {
+        manager_->UndoAutofill(query_form_, query_field_);
+      } else {
+        // User selected 'Clear form'.
+        AutofillMetrics::LogAutofillFormCleared();
+        driver_->RendererShouldClearFilledSection();
+      }
       break;
     case PopupItemId::kPasswordEntry:
     case PopupItemId::kUsernameEntry:
@@ -437,7 +450,9 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
   // form.  Append the 'Clear form' menu item.
   if (query_field_.is_autofilled) {
     std::u16string value =
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM);
+        base::FeatureList::IsEnabled(features::kAutofillUndo)
+            ? l10n_util::GetStringUTF16(IDS_AUTOFILL_UNDO_MENU_ITEM)
+            : l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM);
 #if BUILDFLAG(IS_ANDROID)
     if (IsKeyboardAccessoryEnabled())
       value = base::i18n::ToUpper(value);
@@ -445,7 +460,9 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
 
     suggestions->emplace_back(value);
     suggestions->back().popup_item_id = PopupItemId::kClearForm;
-    suggestions->back().icon = "clearIcon";
+    suggestions->back().icon =
+        base::FeatureList::IsEnabled(features::kAutofillUndo) ? "undoIcon"
+                                                              : "clearIcon";
     suggestions->back().acceptance_a11y_announcement =
         l10n_util::GetStringUTF16(IDS_AUTOFILL_A11Y_ANNOUNCE_CLEARED_FORM);
   }

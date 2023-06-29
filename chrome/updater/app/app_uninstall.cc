@@ -132,8 +132,7 @@ class AppUninstall : public App {
 
  private:
   ~AppUninstall() override = default;
-  void Initialize() override;
-  void Uninitialize() override;
+  [[nodiscard]] int Initialize() override;
   void FirstTaskRun() override;
 
   void UninstallAll(int reason);
@@ -148,22 +147,17 @@ class AppUninstall : public App {
   scoped_refptr<Configurator> config_;
 };
 
-void AppUninstall::Initialize() {
+int AppUninstall::Initialize() {
   setup_lock_ =
       ScopedLock::Create(kSetupMutex, updater_scope(), kWaitForSetupLock);
-
   global_prefs_ = CreateGlobalPrefs(updater_scope());
-
   if (global_prefs_) {
     persisted_data_ = base::MakeRefCounted<PersistedData>(
         updater_scope(), global_prefs_->GetPrefService());
     config_ = base::MakeRefCounted<Configurator>(global_prefs_,
                                                  CreateExternalConstants());
   }
-}
-
-void AppUninstall::Uninitialize() {
-  global_prefs_ = nullptr;
+  return kErrorOk;
 }
 
 void AppUninstall::UninstallAll(int reason) {

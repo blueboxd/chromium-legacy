@@ -69,7 +69,6 @@
 <translation id="1247519845643687288">最近用过的应用</translation>
 <translation id="1252999807265626933">正在通过“<ph name="POWER_SOURCE" />”充电</translation>
 <translation id="1255033239764210633">天气怎么样？</translation>
-<translation id="1267032506238418139">该快捷键发生了变化</translation>
 <translation id="1269405891096105529">在访客模式下，无法使用外围设备</translation>
 <translation id="1270290102613614947">屏幕键盘已停用</translation>
 <translation id="1272079795634619415">停止</translation>
@@ -140,7 +139,6 @@
 <translation id="1550406609415860283">有可用设备</translation>
 <translation id="1550523713251050646">点击即可查看更多选项</translation>
 <translation id="1555130319947370107">蓝色</translation>
-<translation id="1576511610858879060">您的 Chromebook 或蓝牙设备使用的是旧版蓝牙。请换个输入源以获得更好的音质。</translation>
 <translation id="1576623706766186887">开启放大镜时缩小</translation>
 <translation id="1586324912145647027">转至桌面 1 到 8</translation>
 <translation id="1589090746204042747">访问您在此次会话中的所有活动</translation>
@@ -217,7 +215,6 @@
 <translation id="1908992311423394684">新安装</translation>
 <translation id="1915307458270490472">中止</translation>
 <translation id="1918022425394817322">相机已对准右上角</translation>
-<translation id="1919743966458266018">用于打开任务管理器的快捷键已更改。请使用 <ph name="NEW_SHORTCUT" />，而不是 <ph name="OLD_SHORTCUT" />。</translation>
 <translation id="1923539912171292317">自动点击</translation>
 <translation id="1928739107511554905">要想获取此项更新，请在已连接该键盘的情况下使用触摸屏重新启动您的 Chromebook。</translation>
 <translation id="1948405482892809935">切换到下一个用户</translation>
@@ -359,6 +356,7 @@
 <translation id="2579264398927991698">固件更新</translation>
 <translation id="2582112259361606227">重启以进行更新</translation>
 <translation id="2586561057878260610">按 Ctrl + W 即可与“<ph name="DESK_NAME" />”合并。按 Ctrl + Shift + W 则可关闭桌面和窗口。</translation>
+<translation id="2586657967955657006">剪贴板</translation>
 <translation id="2595239820337756193">5 公里是多少英里</translation>
 <translation id="2596078834055697711">截取窗口屏幕截图</translation>
 <translation id="2598725286293895280">该桌面中含有不受支持的应用</translation>
@@ -912,6 +910,7 @@
         <ph name="NOTIFICATION_2" />；
         <ph name="NUM_OTHER_NOTIFICATION" /></translation>
 <translation id="4987738733603015246">桌面 16</translation>
+<translation id="4989163558385430922">查看全部</translation>
 <translation id="5003993274120026347">下一句</translation>
 <translation id="5004607513195820459">网络处于受管理状态</translation>
 <translation id="5009463889040999939">正在重命名配置文件。这可能需要几分钟的时间。</translation>
@@ -929,6 +928,7 @@
 <translation id="504465286040788597">上一个段落</translation>
 <translation id="5045550434625856497">密码不正确</translation>
 <translation id="5062496344832867502">RAM</translation>
+<translation id="5068762093486106012">如果您在静音状态下说话，会收到通知。音频只会留存在您的设备上。</translation>
 <translation id="5078796286268621944">PIN 不正确</translation>
 <translation id="5083553833479578423">启用更多 Google 助理功能。</translation>
 <translation id="5092436659250499817">开启/关闭键盘背光</translation>
@@ -959,6 +959,7 @@
 <translation id="5207949376430453814">突出显示文本插入符号</translation>
 <translation id="5208059991603368177">开启</translation>
 <translation id="5216991270656129561">保持关闭状态，直到<ph name="TIME" /></translation>
+<translation id="5221423477036820198">使用 Phone Hub 快速发送或回复手机消息。</translation>
 <translation id="5222676887888702881">退出</translation>
 <translation id="5229343007215035173">开启/关闭隐私保护屏幕</translation>
 <translation id="5234764350956374838">关闭</translation>
@@ -973,7 +974,6 @@
 <translation id="5283198616748585639">加 1 分钟</translation>
 <translation id="528468243742722775">结束</translation>
 <translation id="5286194356314741248">正在扫描</translation>
-<translation id="5293671101077843611">今日无活动</translation>
 <translation id="5297423144044956168">找不到任何移动设备</translation>
 <translation id="5297704307811127955">已关闭</translation>
 <translation id="5300589172476337783">显示</translation>
@@ -982,6 +982,7 @@
 <translation id="5308380583665731573">连接</translation>
 <translation id="5313326810920013265">蓝牙设置</translation>
 <translation id="5314219114274263156">已录制屏幕</translation>
+<translation id="5314489738835854379">反向浏览各个窗口</translation>
 <translation id="5316716239522500219">镜像显示器</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5319712128756744240">为新设备配对</translation>
@@ -1128,6 +1129,7 @@
 <translation id="5958529069007801266">受监管用户</translation>
 <translation id="5961960957587052807">轻微</translation>
 <translation id="5965524703725988602">开启/关闭深色主题。<ph name="STATE_TEXT" />。</translation>
+<translation id="5975235751479998104">正向浏览各个窗口</translation>
 <translation id="5976112937189445008">按 Enter 键即可录制窗口</translation>
 <translation id="5978382165065462689">正在通过远程协助共享您屏幕的控制权限。</translation>
 <translation id="5980301590375426705">退出访客模式</translation>
@@ -1179,6 +1181,7 @@
 <translation id="6165508094623778733">了解详情</translation>
 <translation id="6166852626429024716">搜索您的设备、应用、设置、网站…</translation>
 <translation id="6168318496333165060">打开“诊断”应用</translation>
+<translation id="6173151025443907148">如果已启用 Lacros，则不支持多用户登录。请在 Lacros 中改用另一份浏览器个人资料，或者停用 Lacros 并重试。</translation>
 <translation id="6179832488876878285">您可将自己的重要文件固定在此处。打开“文件”应用即可开始操作。</translation>
 <translation id="6182592640011875895">打开桌面</translation>
 <translation id="6185696379715117369">向上翻页</translation>
@@ -1271,6 +1274,7 @@
 <translation id="6597278316891651699">相机已对准左下角。与系统界面冲突。</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />，信号强度为 <ph name="SIGNAL_STRENGTH" />，由您的管理员管理</translation>
 <translation id="6612802754306526077">已选择录屏模式</translation>
+<translation id="6613765291890844037">存储空间：已用 <ph name="STORAGE_IN_USE_SIZE" /> | 总共 <ph name="STORAGE_TOTAL_SIZE" /></translation>
 <translation id="6614169507485700968">已开启隐私保护屏</translation>
 <translation id="6625718907317144388">由于防窥探功能已开启，因此系统隐藏了<ph name="APP_1_TITLE" />、<ph name="APP_2_TITLE" />和其他通知</translation>
 <translation id="6627638273713273709">搜索键+Shift+K</translation>
@@ -1338,6 +1342,7 @@
 <translation id="6891721121089053234">在 <ph name="DEVICE_TYPE" /> 上查看手机中的近期照片、媒体和应用</translation>
 <translation id="6896758677409633944">复制</translation>
 <translation id="6901883536534621389">尝试使用手势导航</translation>
+<translation id="6912841030378044227">聚焦于地址栏</translation>
 <translation id="6919251195245069855">无法识别您的智能卡，请重试。</translation>
 <translation id="6920245099716267363">开启/关闭热点。热点已开启，且已连接 1 部设备。</translation>
 <translation id="6931576957638141829">保存到</translation>
@@ -1534,6 +1539,7 @@
 <translation id="7866482334467279021">开启</translation>
 <translation id="7872786842639831132">关闭</translation>
 <translation id="7875575368831396199">您的 <ph name="DEVICE_TYPE" /> 上的蓝牙似乎未开启。请开启蓝牙以便使用 Phone Hub。</translation>
+<translation id="7876243839304621966">全部删除</translation>
 <translation id="7877557217297072640">{0,plural, =0{请立即将设备回滚到上一个版本}=1{请在 1 秒内将设备回滚到上一个版本}other{请在 # 秒内将设备回滚到上一个版本}}</translation>
 <translation id="7884446017008693258">热点设置</translation>
 <translation id="7884902759927478774">取消标签页拖动操作</translation>
@@ -1684,6 +1690,7 @@
 <translation id="8513108775083588393">自动屏幕旋转</translation>
 <translation id="851458219935658693">显示当前桌面中的窗口，已选中单选按钮</translation>
 <translation id="8517041960877371778">您的 <ph name="DEVICE_TYPE" /> 在开启时可能无法充电。</translation>
+<translation id="852060496139946719">{NUM_APPS,plural, =1{麦克风输入由“<ph name="APP_NAME" />”控制}other{麦克风输入由 # 个应用控制}}</translation>
 <translation id="8535393432370007982">撤消按颜色排序</translation>
 <translation id="8541078764854166027">相机取景</translation>
 <translation id="8542053257095774575">尚未保存任何桌面或模板</translation>
@@ -1747,12 +1754,10 @@
 <translation id="8834539327799336565">目前已连接</translation>
 <translation id="8841375032071747811">“返回”按钮</translation>
 <translation id="8843682306134542540">切换旋转锁定设置。<ph name="STATE_TEXT" /></translation>
-<translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8853703225951107899">仍然无法验证您的 PIN 码或密码。注意：如果您最近更改了密码，请使用旧密码。待您退出登录后，系统才会应用新密码。</translation>
 <translation id="8855885154700222542">全屏键</translation>
 <translation id="8858369206579825206">隐私控制</translation>
 <translation id="8860817004574502558">电池续航时间</translation>
-<translation id="8863602954531760927">已用 <ph name="STORAGE_IN_USE_SIZE" />，共有 <ph name="STORAGE_TOTAL_SIZE" /></translation>
 <translation id="8870509716567206129">应用不支持分屏。</translation>
 <translation id="8874184842967597500">未连接</translation>
 <translation id="8875021410787719674">在右下角、启动器、地址栏、书签栏、打开的网站以及下载内容之间移动</translation>
@@ -1808,7 +1813,6 @@
 <translation id="9089416786594320554">输入法</translation>
 <translation id="9091626656156419976">已移除显示器“<ph name="DISPLAY_NAME" />”</translation>
 <translation id="9098969848082897657">将手机设为静音</translation>
-<translation id="9105450214093926548">当 Lacros 浏览器正在运行时，不支持多用户登录。请在 Lacros 中改用另一浏览器配置文件，或者关闭 Lacros 并重试。</translation>
 <translation id="9120448753905017833">为了开始通过移动流量建立热点，系统已关闭 WLAN。这可能会产生移动流量费用。</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> 或 <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>
 <translation id="9126339866969410112">撤消上一次操作</translation>

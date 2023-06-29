@@ -144,23 +144,34 @@ public class AutofillPaymentMethodsFragment
                 mReauthenticatorBridge = ReauthenticatorBridge.create(
                         DeviceAuthRequester.PAYMENT_METHODS_REAUTH_IN_SETTINGS);
             }
-            // We don't show the Reauth toggle when Autofill credit card is disabled or the device
-            // doesn't have biometric auth.
-            if (PersonalDataManager.isAutofillCreditCardEnabled()
-                    && mReauthenticatorBridge.canUseAuthenticationWithBiometric()) {
-                ChromeSwitchPreference mandatoryReauthSwitch =
-                        new ChromeSwitchPreference(getStyledContext(), null);
-                mandatoryReauthSwitch.setTitle(
-                        R.string.autofill_settings_page_enable_payment_method_mandatory_reauth_label);
-                mandatoryReauthSwitch.setSummary(
-                        R.string.autofill_settings_page_enable_payment_method_mandatory_reauth_sublabel);
-                mandatoryReauthSwitch.setChecked(
-                        PersonalDataManager.isPaymentMethodsMandatoryReauthEnabled());
-                mandatoryReauthSwitch.setKey(PREF_MANDATORY_REAUTH);
-                mandatoryReauthSwitch.setOnPreferenceChangeListener(
-                        this::onMandatoryReauthSwitchToggled);
-                getPreferenceScreen().addPreference(mandatoryReauthSwitch);
-            }
+            ChromeSwitchPreference mandatoryReauthSwitch =
+                    new ChromeSwitchPreference(getStyledContext(), null);
+            mandatoryReauthSwitch.setTitle(
+                    R.string.autofill_settings_page_enable_payment_method_mandatory_reauth_label);
+            mandatoryReauthSwitch.setSummary(
+                    R.string.autofill_settings_page_enable_payment_method_mandatory_reauth_sublabel);
+            mandatoryReauthSwitch.setKey(PREF_MANDATORY_REAUTH);
+            // We always display the toggle, but the toggle is only enabled when Autofill credit
+            // card is enabled AND the device supports biometric auth or screen lock. If either of
+            // these is not met, we will grey out the toggle.
+            boolean enableReauthSwitch = PersonalDataManager.isAutofillCreditCardEnabled()
+                    && mReauthenticatorBridge.canUseAuthenticationWithBiometricOrScreenLock();
+            mandatoryReauthSwitch.setEnabled(enableReauthSwitch);
+            mandatoryReauthSwitch.setOnPreferenceChangeListener(
+                    this::onMandatoryReauthSwitchToggled);
+            getPreferenceScreen().addPreference(mandatoryReauthSwitch);
+
+            // Every {@link SwitchPreferenceCompat} on a {@link PreferenceScreen} has a pref that is
+            // automatically added to the {@link SharedPreferences}. When a switch is added, by
+            // default its checked state is reset to the saved pref value irrespective of whether or
+            // not the switch's checked state was set before adding the switch. Setting the checked
+            // state after adding the switch updates the underlying pref as well.
+            // If a user opts in to mandatory reauth during the checkout flow, since the switch's
+            // underlying pref is still false, the switch does not reflect the opt-in. Set switch's
+            // checked state after adding it to the screen so the underlying pref value is also
+            // updated and is in sync with the mandatory reauth user pref.
+            mandatoryReauthSwitch.setChecked(
+                    PersonalDataManager.isPaymentMethodsMandatoryReauthEnabled());
         }
 
         for (CreditCard card : PersonalDataManager.getInstance().getCreditCardsForSettings()) {
@@ -186,16 +197,8 @@ public class AutofillPaymentMethodsFragment
                     ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_CARD_ART_IMAGE)));
 
             if (card.getIsLocal()) {
-                if (ChromeFeatureList.isEnabled(
-                            ChromeFeatureList.AUTOFILL_ENABLE_PAYMENTS_MANDATORY_REAUTH)
-                        && PersonalDataManager.isPaymentMethodsMandatoryReauthEnabled()) {
-                    // When mandatory reauth is enabled, we require additional authentication before
-                    // user can view/edit local card.
-                    card_pref.setOnPreferenceClickListener(
-                            this::authenticateBeforeShowingLocalCardEditDialog);
-                } else {
-                    card_pref.setFragment(AutofillLocalCardEditor.class.getName());
-                }
+                card_pref.setOnPreferenceClickListener(
+                        this::showLocalCardEditPageAfterAuthenticationIfRequired);
             } else {
                 card_pref.setFragment(AutofillServerCardEditor.class.getName());
                 if (ChromeFeatureList.isEnabled(
@@ -317,22 +320,43 @@ public class AutofillPaymentMethodsFragment
     }
 
     /**
-     * Trigger additional authentication before user can view/edit local card. When authentication
-     * passes, we show local card edit dialog. Stays on this page if authentication fails/cancelled.
+     * If mandatory reauth is enabled, trigger device authentication before user can view/edit local
+     * card. Else show the local card edit page.
+     * @param preference The {@link Preference} for the local card.
+     * @return true if the click was handled, false otherwise.
      */
-    private boolean authenticateBeforeShowingLocalCardEditDialog(Preference preference) {
+    private boolean showLocalCardEditPageAfterAuthenticationIfRequired(Preference preference) {
+        // If mandatory reauth is not enabled, just show the local card edit page.
+        if (!ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.AUTOFILL_ENABLE_PAYMENTS_MANDATORY_REAUTH)
+                || !PersonalDataManager.isPaymentMethodsMandatoryReauthEnabled()) {
+            showLocalCardEditPage(preference);
+            return true;
+        }
+
         // mReauthenticatorBridge should be initiated already when determining whether to show the
         // mandatory reauth toggle.
         assert mReauthenticatorBridge != null;
+
+        // When mandatory reauth is enabled, offer device authentication challenge.
         mReauthenticatorBridge.reauthenticate(success -> {
+            // If authentication is successful, manually trigger the local card edit page. Else,
+            // stay on this page.
             if (success) {
-                // Manually trigger the local card edit dialog after user passes the authentication.
-                SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-                settingsLauncher.launchSettingsActivity(
-                        getActivity(), AutofillLocalCardEditor.class, preference.getExtras());
+                showLocalCardEditPage(preference);
             }
         }, /*useLastValidAuth=*/false);
         return true;
+    }
+
+    /**
+     * Show the local card edit page for the given local card.
+     * @param preference The {@link Preference} for the local card.
+     */
+    private void showLocalCardEditPage(Preference preference) {
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(
+                getActivity(), AutofillLocalCardEditor.class, preference.getExtras());
     }
 
     @Override

@@ -168,6 +168,9 @@ class TestInputMethodContextDelegate : public LinuxInputMethodContextDelegate {
   void OnSetAutocorrectRange(const gfx::Range& range) override {
     was_on_set_autocorrect_range_called_ = true;
   }
+  void OnInsertImage(const GURL& src) override {
+    was_on_insert_image_range_called_ = true;
+  }
   void OnPreeditEnd() override {}
   void OnPreeditStart() override {}
   void OnDeleteSurroundingText(size_t before, size_t after) override {
@@ -210,6 +213,10 @@ class TestInputMethodContextDelegate : public LinuxInputMethodContextDelegate {
     return was_on_set_autocorrect_range_called_;
   }
 
+  bool was_on_insert_image_called() const {
+    return was_on_insert_image_range_called_;
+  }
+
   const absl::optional<std::pair<size_t, size_t>>&
   last_on_delete_surrounding_text_args() const {
     return last_on_delete_surrounding_text_args_;
@@ -227,6 +234,7 @@ class TestInputMethodContextDelegate : public LinuxInputMethodContextDelegate {
   bool was_on_clear_grammar_fragments_called_ = false;
   bool was_on_add_grammar_fragment_called_ = false;
   bool was_on_set_autocorrect_range_called_ = false;
+  bool was_on_insert_image_range_called_ = false;
   absl::optional<std::pair<size_t, size_t>>
       last_on_delete_surrounding_text_args_;
   absl::optional<gfx::Rect> virtual_keyboard_bounds_;
@@ -315,7 +323,10 @@ INSTANTIATE_TEST_SUITE_P(
         .text_input_extension_version =
             wl::TestZcrTextInputExtensionV1::Version::kV7}));
 
-TEST_P(WaylandInputMethodContextOldServerTest, SetContentType) {
+TEST_P(WaylandInputMethodContextOldServerTest, SetInputType) {
+  connection_->window_manager()->SetKeyboardFocusedWindow(window_.get());
+  connection_->Flush();
+
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
     EXPECT_CALL(*server->text_input_extension_v1()->extended_text_input(),
                 DeprecatedSetInputType(
@@ -325,11 +336,17 @@ TEST_P(WaylandInputMethodContextOldServerTest, SetContentType) {
                     ZCR_EXTENDED_TEXT_INPUT_V1_LEARNING_MODE_ENABLED))
         .Times(1);
   });
-  input_method_context_->SetContentType(TEXT_INPUT_TYPE_URL,
-                                        TEXT_INPUT_MODE_DEFAULT,
-                                        TEXT_INPUT_FLAG_AUTOCOMPLETE_ON,
-                                        /*should_do_learning=*/true,
-                                        /*can_compose_inline=*/false);
+  LinuxInputMethodContext::TextInputClientAttributes attributes;
+  attributes.input_type = TEXT_INPUT_TYPE_URL;
+  attributes.input_mode = TEXT_INPUT_MODE_DEFAULT;
+  attributes.flags = TEXT_INPUT_FLAG_AUTOCOMPLETE_ON;
+  attributes.should_do_learning = true;
+  attributes.can_compose_inline = false;
+
+  input_method_context_->UpdateFocus(
+      /*has_client=*/true, TEXT_INPUT_TYPE_NONE, attributes,
+      TextInputClient::FOCUS_REASON_OTHER);
+
   connection_->Flush();
 
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
@@ -355,8 +372,9 @@ TEST_P(WaylandInputMethodContextTest, ActivateDeactivate) {
     EXPECT_CALL(*zwp_text_input, ShowInputPanel()).Times(0);
   });
 
-  input_method_context_->UpdateFocus(true, ui::TEXT_INPUT_TYPE_NONE,
-                                     ui::TEXT_INPUT_TYPE_TEXT,
+  LinuxInputMethodContext::TextInputClientAttributes attributes;
+  attributes.input_type = TEXT_INPUT_TYPE_TEXT;
+  input_method_context_->UpdateFocus(true, ui::TEXT_INPUT_TYPE_NONE, attributes,
                                      ui::TextInputClient::FOCUS_REASON_OTHER);
   connection_->Flush();
 
@@ -391,8 +409,8 @@ TEST_P(WaylandInputMethodContextTest, ActivateDeactivate) {
     EXPECT_CALL(*zwp_text_input, Deactivate()).Times(0);
   });
 
-  input_method_context_->UpdateFocus(true, ui::TEXT_INPUT_TYPE_TEXT,
-                                     ui::TEXT_INPUT_TYPE_NONE,
+  attributes.input_type = TEXT_INPUT_TYPE_NONE;
+  input_method_context_->UpdateFocus(true, ui::TEXT_INPUT_TYPE_TEXT, attributes,
                                      ui::TextInputClient::FOCUS_REASON_NONE);
   connection_->Flush();
 
@@ -420,8 +438,8 @@ TEST_P(WaylandInputMethodContextTest, ActivateDeactivate) {
     EXPECT_CALL(*zwp_text_input, ShowInputPanel());
   });
 
-  input_method_context_->UpdateFocus(true, ui::TEXT_INPUT_TYPE_NONE,
-                                     ui::TEXT_INPUT_TYPE_TEXT,
+  attributes.input_type = TEXT_INPUT_TYPE_TEXT;
+  input_method_context_->UpdateFocus(true, ui::TEXT_INPUT_TYPE_NONE, attributes,
                                      ui::TextInputClient::FOCUS_REASON_OTHER);
   connection_->Flush();
 
@@ -433,8 +451,8 @@ TEST_P(WaylandInputMethodContextTest, ActivateDeactivate) {
     EXPECT_CALL(*zwp_text_input, Deactivate());
   });
 
-  input_method_context_->UpdateFocus(true, ui::TEXT_INPUT_TYPE_TEXT,
-                                     ui::TEXT_INPUT_TYPE_NONE,
+  attributes.input_type = TEXT_INPUT_TYPE_NONE;
+  input_method_context_->UpdateFocus(true, ui::TEXT_INPUT_TYPE_TEXT, attributes,
                                      ui::TextInputClient::FOCUS_REASON_NONE);
   connection_->Flush();
 
@@ -1056,7 +1074,10 @@ TEST_P(WaylandInputMethodContextTest,
             gfx::Range(7));
 }
 
-TEST_P(WaylandInputMethodContextTest, SetContentType) {
+TEST_P(WaylandInputMethodContextTest, SetInputType) {
+  connection_->window_manager()->SetKeyboardFocusedWindow(window_.get());
+  connection_->Flush();
+
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
     EXPECT_CALL(
         *server->text_input_extension_v1()->extended_text_input(),
@@ -1068,11 +1089,16 @@ TEST_P(WaylandInputMethodContextTest, SetContentType) {
             ZCR_EXTENDED_TEXT_INPUT_V1_INLINE_COMPOSITION_SUPPORT_SUPPORTED))
         .Times(1);
   });
-  input_method_context_->SetContentType(TEXT_INPUT_TYPE_URL,
-                                        TEXT_INPUT_MODE_DEFAULT,
-                                        TEXT_INPUT_FLAG_AUTOCOMPLETE_ON,
-                                        /*should_do_learning=*/true,
-                                        /*can_compose_inline=*/true);
+  LinuxInputMethodContext::TextInputClientAttributes attributes;
+  attributes.input_type = TEXT_INPUT_TYPE_URL;
+  attributes.input_mode = TEXT_INPUT_MODE_DEFAULT;
+  attributes.flags = TEXT_INPUT_FLAG_AUTOCOMPLETE_ON;
+  attributes.should_do_learning = true;
+  attributes.can_compose_inline = true;
+
+  input_method_context_->UpdateFocus(
+      /*has_client=*/true, TEXT_INPUT_TYPE_NONE, attributes,
+      TextInputClient::FOCUS_REASON_OTHER);
   connection_->Flush();
 
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
@@ -1081,7 +1107,10 @@ TEST_P(WaylandInputMethodContextTest, SetContentType) {
   });
 }
 
-TEST_P(WaylandInputMethodContextTest, SetContentTypeWithoutLearning) {
+TEST_P(WaylandInputMethodContextTest, SetInputTypeWithoutLearning) {
+  connection_->window_manager()->SetKeyboardFocusedWindow(window_.get());
+  connection_->Flush();
+
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
     EXPECT_CALL(
         *server->text_input_extension_v1()->extended_text_input(),
@@ -1093,11 +1122,16 @@ TEST_P(WaylandInputMethodContextTest, SetContentTypeWithoutLearning) {
             ZCR_EXTENDED_TEXT_INPUT_V1_INLINE_COMPOSITION_SUPPORT_SUPPORTED))
         .Times(1);
   });
-  input_method_context_->SetContentType(TEXT_INPUT_TYPE_URL,
-                                        TEXT_INPUT_MODE_DEFAULT,
-                                        TEXT_INPUT_FLAG_AUTOCOMPLETE_ON,
-                                        /*should_do_learning=*/false,
-                                        /*can_compose_inline=*/true);
+  LinuxInputMethodContext::TextInputClientAttributes attributes;
+  attributes.input_type = TEXT_INPUT_TYPE_URL;
+  attributes.input_mode = TEXT_INPUT_MODE_DEFAULT;
+  attributes.flags = TEXT_INPUT_FLAG_AUTOCOMPLETE_ON;
+  attributes.should_do_learning = false;
+  attributes.can_compose_inline = true;
+
+  input_method_context_->UpdateFocus(
+      /*has_client=*/true, TEXT_INPUT_TYPE_NONE, attributes,
+      TextInputClient::FOCUS_REASON_OTHER);
   connection_->Flush();
 
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
@@ -1107,7 +1141,10 @@ TEST_P(WaylandInputMethodContextTest, SetContentTypeWithoutLearning) {
 }
 
 TEST_P(WaylandInputMethodContextTest,
-       SetContentTypeWithoutInlineCompositionSupport) {
+       SetInputTypeWithoutInlineCompositionSupport) {
+  connection_->window_manager()->SetKeyboardFocusedWindow(window_.get());
+  connection_->Flush();
+
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
     EXPECT_CALL(
         *server->text_input_extension_v1()->extended_text_input(),
@@ -1119,11 +1156,55 @@ TEST_P(WaylandInputMethodContextTest,
             ZCR_EXTENDED_TEXT_INPUT_V1_INLINE_COMPOSITION_SUPPORT_UNSUPPORTED))
         .Times(1);
   });
-  input_method_context_->SetContentType(TEXT_INPUT_TYPE_URL,
-                                        TEXT_INPUT_MODE_DEFAULT,
-                                        TEXT_INPUT_FLAG_AUTOCOMPLETE_ON,
-                                        /*should_do_learning=*/true,
-                                        /*can_compose_inline=*/false);
+  LinuxInputMethodContext::TextInputClientAttributes attributes;
+  attributes.input_type = TEXT_INPUT_TYPE_URL;
+  attributes.input_mode = TEXT_INPUT_MODE_DEFAULT;
+  attributes.flags = TEXT_INPUT_FLAG_AUTOCOMPLETE_ON;
+  attributes.should_do_learning = true;
+  attributes.can_compose_inline = false;
+
+  input_method_context_->UpdateFocus(
+      /*has_client=*/true, TEXT_INPUT_TYPE_NONE, attributes,
+      TextInputClient::FOCUS_REASON_OTHER);
+  connection_->Flush();
+
+  PostToServerAndWait([](wl::TestWaylandServerThread* server) {
+    Mock::VerifyAndClearExpectations(
+        server->text_input_extension_v1()->extended_text_input());
+  });
+}
+
+TEST_P(WaylandInputMethodContextTest, SetInputTypeAfterFocus) {
+  LinuxInputMethodContext::TextInputClientAttributes attributes;
+  attributes.input_type = TEXT_INPUT_TYPE_URL;
+  attributes.input_mode = TEXT_INPUT_MODE_DEFAULT;
+  attributes.flags = TEXT_INPUT_FLAG_AUTOCOMPLETE_ON;
+  attributes.should_do_learning = true;
+  attributes.can_compose_inline = false;
+
+  input_method_context_->UpdateFocus(
+      /*has_client=*/true, TEXT_INPUT_TYPE_NONE, attributes,
+      TextInputClient::FOCUS_REASON_OTHER);
+  connection_->Flush();
+
+  PostToServerAndWait([](wl::TestWaylandServerThread* server) {
+    Mock::VerifyAndClearExpectations(
+        server->text_input_extension_v1()->extended_text_input());
+  });
+
+  PostToServerAndWait([](wl::TestWaylandServerThread* server) {
+    EXPECT_CALL(
+        *server->text_input_extension_v1()->extended_text_input(),
+        SetInputType(
+            ZCR_EXTENDED_TEXT_INPUT_V1_INPUT_TYPE_URL,
+            ZCR_EXTENDED_TEXT_INPUT_V1_INPUT_MODE_DEFAULT,
+            ZCR_EXTENDED_TEXT_INPUT_V1_INPUT_FLAGS_AUTOCOMPLETE_ON,
+            ZCR_EXTENDED_TEXT_INPUT_V1_LEARNING_MODE_ENABLED,
+            ZCR_EXTENDED_TEXT_INPUT_V1_INLINE_COMPOSITION_SUPPORT_UNSUPPORTED))
+        .Times(1);
+  });
+
+  connection_->window_manager()->SetKeyboardFocusedWindow(window_.get());
   connection_->Flush();
 
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
@@ -1518,6 +1599,13 @@ TEST_P(WaylandInputMethodContextTest, OnAddGrammarFragments) {
       input_method_context_delegate_->was_on_add_grammar_fragment_called());
 }
 
+TEST_P(WaylandInputMethodContextTest, OnInsertImage) {
+  const GURL some_image_url = GURL("");
+  input_method_context_->OnInsertImage(some_image_url);
+  wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
+  EXPECT_TRUE(input_method_context_delegate_->was_on_insert_image_called());
+}
+
 TEST_P(WaylandInputMethodContextTest, OnSetAutocorrectRange) {
   input_method_context_->OnSetAutocorrectRange(gfx::Range(1, 5));
   wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
@@ -1538,12 +1626,15 @@ TEST_P(WaylandInputMethodContextTest,
   auto client2 = std::make_unique<MockTextInputClient>(TEXT_INPUT_TYPE_URL);
 
   input_method_context_->WillUpdateFocus(client1.get(), client2.get());
+  LinuxInputMethodContext::TextInputClientAttributes attributes;
+  attributes.input_type = client2->GetTextInputType();
   input_method_context_->UpdateFocus(true, client1->GetTextInputType(),
-                                     client2->GetTextInputType(),
+                                     attributes,
                                      ui::TextInputClient::FOCUS_REASON_OTHER);
   input_method_context_->WillUpdateFocus(client2.get(), nullptr);
+  attributes.input_type = TEXT_INPUT_TYPE_NONE;
   input_method_context_->UpdateFocus(false, client2->GetTextInputType(),
-                                     ui::TEXT_INPUT_TYPE_NONE,
+                                     attributes,
                                      ui::TextInputClient::FOCUS_REASON_NONE);
 
   // Clients should get further bounds updates.
@@ -1579,8 +1670,10 @@ TEST_P(WaylandInputMethodContextTest,
   auto client = std::make_unique<MockTextInputClient>(TEXT_INPUT_TYPE_TEXT);
 
   input_method_context_->WillUpdateFocus(client.get(), nullptr);
+  LinuxInputMethodContext::TextInputClientAttributes attributes;
+  attributes.input_type = TEXT_INPUT_TYPE_NONE;
   input_method_context_->UpdateFocus(false, client->GetTextInputType(),
-                                     ui::TEXT_INPUT_TYPE_NONE,
+                                     attributes,
                                      ui::TextInputClient::FOCUS_REASON_NONE);
 
   const gfx::Rect kBounds(10, 20, 300, 400);
@@ -1663,8 +1756,9 @@ TEST_P(WaylandInputMethodContextNoKeyboardTest, ActivateDeactivate) {
     EXPECT_CALL(*zwp_text_input, ShowInputPanel());
   });
 
-  input_method_context_->UpdateFocus(true, ui::TEXT_INPUT_TYPE_NONE,
-                                     ui::TEXT_INPUT_TYPE_TEXT,
+  LinuxInputMethodContext::TextInputClientAttributes attributes;
+  attributes.input_type = TEXT_INPUT_TYPE_TEXT;
+  input_method_context_->UpdateFocus(true, ui::TEXT_INPUT_TYPE_NONE, attributes,
                                      ui::TextInputClient::FOCUS_REASON_OTHER);
   connection_->Flush();
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
@@ -1675,8 +1769,9 @@ TEST_P(WaylandInputMethodContextNoKeyboardTest, ActivateDeactivate) {
     EXPECT_CALL(*zwp_text_input, Deactivate());
   });
 
+  attributes.input_type = TEXT_INPUT_TYPE_NONE;
   input_method_context_->UpdateFocus(false, ui::TEXT_INPUT_TYPE_TEXT,
-                                     ui::TEXT_INPUT_TYPE_NONE,
+                                     attributes,
                                      ui::TextInputClient::FOCUS_REASON_NONE);
   connection_->Flush();
 
@@ -1700,8 +1795,9 @@ TEST_P(WaylandInputMethodContextNoKeyboardTest, UpdateFocusBetweenTextFields) {
     EXPECT_CALL(*zwp_text_input, ShowInputPanel());
   });
 
-  input_method_context_->UpdateFocus(true, ui::TEXT_INPUT_TYPE_NONE,
-                                     ui::TEXT_INPUT_TYPE_TEXT,
+  LinuxInputMethodContext::TextInputClientAttributes attributes;
+  attributes.input_type = TEXT_INPUT_TYPE_TEXT;
+  input_method_context_->UpdateFocus(true, ui::TEXT_INPUT_TYPE_NONE, attributes,
                                      ui::TextInputClient::FOCUS_REASON_OTHER);
   connection_->Flush();
 
@@ -1717,8 +1813,9 @@ TEST_P(WaylandInputMethodContextNoKeyboardTest, UpdateFocusBetweenTextFields) {
     EXPECT_CALL(*zwp_text_input, ShowInputPanel()).Times(0);
   });
 
+  attributes.input_type = TEXT_INPUT_TYPE_TEXT;
   input_method_context_->UpdateFocus(false, ui::TEXT_INPUT_TYPE_TEXT,
-                                     ui::TEXT_INPUT_TYPE_TEXT,
+                                     attributes,
                                      ui::TextInputClient::FOCUS_REASON_OTHER);
   connection_->Flush();
 

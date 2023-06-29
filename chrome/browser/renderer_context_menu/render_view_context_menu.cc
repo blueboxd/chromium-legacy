@@ -281,13 +281,14 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/clipboard_history_controller.h"
-#include "ash/public/cpp/new_window_delegate.h"
 #include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/intent_helper/arc_intent_helper_mojo_ash.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
+#include "chrome/browser/ash/url_handler.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/ash/system_web_dialog_delegate.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
 #include "ui/aura/window.h"
@@ -370,8 +371,8 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_COPYIMAGE, 12},
        {IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB, 13},
        {IDC_CONTENT_CONTEXT_OPENAVNEWTAB, 14},
-       {IDC_CONTENT_CONTEXT_PLAYPAUSE, 15},
-       {IDC_CONTENT_CONTEXT_MUTE, 16},
+       // Removed: {IDC_CONTENT_CONTEXT_PLAYPAUSE, 15},
+       // Removed: {IDC_CONTENT_CONTEXT_MUTE, 16},
        {IDC_CONTENT_CONTEXT_LOOP, 17},
        {IDC_CONTENT_CONTEXT_CONTROLS, 18},
        {IDC_CONTENT_CONTEXT_ROTATECW, 19},
@@ -479,13 +480,14 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHWEB, 130},
        {IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS, 131},
        {IDC_CONTENT_CONTEXT_COPYVIDEOFRAME, 132},
+       {IDC_CONTENT_CONTEXT_SAVEPLUGINAS, 133},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 133}});
+       {0, 134}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -742,25 +744,6 @@ Browser* FindNormalBrowser(const Profile* profile) {
   }
   return nullptr;
 }
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-ash::NewWindowDelegate::Disposition GetDispositionForLacros(
-    WindowOpenDisposition disposition) {
-  switch (disposition) {
-    case WindowOpenDisposition::NEW_FOREGROUND_TAB:
-      return ash::NewWindowDelegate::Disposition::kNewForegroundTab;
-    case WindowOpenDisposition::NEW_WINDOW:
-      return ash::NewWindowDelegate::Disposition::kNewWindow;
-    case WindowOpenDisposition::OFF_THE_RECORD:
-      return ash::NewWindowDelegate::Disposition::kOffTheRecord;
-    case WindowOpenDisposition::SWITCH_TO_TAB:
-      return ash::NewWindowDelegate::Disposition::kSwitchToTab;
-    default:
-      // Others are currently not supported.
-      return ash::NewWindowDelegate::Disposition::kNewForegroundTab;
-  }
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 
@@ -1542,44 +1525,69 @@ void RenderViewContextMenu::AppendLinkItems() {
   if (!params_.link_url.is_empty()) {
     const bool in_app = IsInProgressiveWebApp();
 
+    bool show_open_in_new_tab = true;
     bool show_open_in_new_window = true;
     bool show_open_link_off_the_record = true;
 
+    if (in_app) {
+      show_open_in_new_window = false;
+    }
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    const bool in_system_web_dialog =
+        ash::SystemWebDialogDelegate::HasInstance(current_url_);
+
     Profile* profile = GetProfile();
     absl::optional<ash::SystemWebAppType> link_system_app_type =
         GetLinkSystemAppType(profile, params_.link_url);
+
     // Links to system web app can't be opened in incognito / off-the-record.
     show_open_link_off_the_record = !link_system_app_type;
 
-    if (system_app_ && link_system_app_type) {
-      // Show "Open in new tab" if this link points to the current app, and the
-      // app has a tab strip.
+    // Basically, we don't show "Open link in new tab" and "Open link in new
+    // window" items inside SWAs/SystemWebDialogs if that link is to SWAs
+    if ((system_app_ || in_system_web_dialog) && link_system_app_type) {
+      // We don't show "Open in new tab" if the current app doesn't have a tab
+      // strip.
       //
-      // We don't show "open in tab" for links to a different SWA, because two
-      // SWAs can't share the same browser window.
-      if (system_app_->GetType() == link_system_app_type &&
-          system_app_->ShouldHaveTabStrip()) {
-        menu_model_.AddItemWithStringId(
-            IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
-            IDS_CONTENT_CONTEXT_OPENLINKNEWTAB_INAPP);
+      // Even if the app has a tab strip, we don't show the item for
+      // links to a different SWA, because two SWAs can't share the same browser
+      // window.
+      if (in_system_web_dialog || !system_app_->ShouldHaveTabStrip() ||
+          system_app_->GetType() != link_system_app_type) {
+        show_open_in_new_tab = false;
       }
 
       // Don't show "open in new window", this is instead handled below in
       // |AppendOpenInWebAppLinkItems| (which includes app's name and icon).
       show_open_in_new_window = false;
     }
+
+    // If the current browser is a system app or a SystemWebDialog, hide "Open
+    // link in ..." items on button-like links i.e. links that have a href='#'.
+    // Since most of those links are used to do something in their JavaScript
+    // click handlers, opening '#' links in another browser tab/window makes
+    // little sense.
+    const bool button_like_link =
+        current_url_.EqualsIgnoringRef(params_.link_url) &&
+        params_.link_url.has_ref() && params_.link_url.ref().empty();
+    if ((system_app_ || in_system_web_dialog) && button_like_link) {
+      show_open_in_new_tab = false;
+      show_open_in_new_window = false;
+      show_open_link_off_the_record = false;
+    }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-    if (show_open_in_new_window) {
+    if (show_open_in_new_tab) {
       menu_model_.AddItemWithStringId(
           IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
           in_app ? IDS_CONTENT_CONTEXT_OPENLINKNEWTAB_INAPP
                  : IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
-      if (!in_app) {
-        menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW,
-                                        IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
-      }
+    }
+
+    if (show_open_in_new_window) {
+      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW,
+                                      IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
     }
 
     if (params_.link_url.is_valid()) {
@@ -1895,8 +1903,11 @@ void RenderViewContextMenu::AppendVideoItems() {
                                   IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
                                   IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYVIDEOFRAME,
-                                  IDS_CONTENT_CONTEXT_COPYVIDEOFRAME);
+  if (base::FeatureList::IsEnabled(media::kContextMenuCopyVideoFrame)) {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYVIDEOFRAME,
+                                    IDS_CONTENT_CONTEXT_COPYVIDEOFRAME);
+    menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
+  }
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
                                   IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
   menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_PICTUREINPICTURE,
@@ -1924,7 +1935,7 @@ void RenderViewContextMenu::AppendPluginItems() {
       AppendPageItems();
     }
   } else {
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEPLUGINAS,
                                     IDS_CONTENT_CONTEXT_SAVEPAGEAS);
     // The "Print" menu item should always be included for plugins. If
     // content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PRINT)
@@ -2546,19 +2557,9 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_COPYIMAGE:
       return params_.has_image_contents;
 
-    // Media control commands should all be disabled if the player is in an
-    // error state.
-    case IDC_CONTENT_CONTEXT_PLAYPAUSE:
-      return (params_.media_flags & ContextMenuData::kMediaInError) == 0;
-
     // Loop command should be disabled if the player is in an error state.
     case IDC_CONTENT_CONTEXT_LOOP:
       return (params_.media_flags & ContextMenuData::kMediaCanLoop) != 0 &&
-             (params_.media_flags & ContextMenuData::kMediaInError) == 0;
-
-    // Mute and unmute should also be disabled if the player has no audio.
-    case IDC_CONTENT_CONTEXT_MUTE:
-      return (params_.media_flags & ContextMenuData::kMediaHasAudio) != 0 &&
              (params_.media_flags & ContextMenuData::kMediaInError) == 0;
 
     case IDC_CONTENT_CONTEXT_CONTROLS:
@@ -2587,6 +2588,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return params_.src_url.is_valid();
 
     case IDC_CONTENT_CONTEXT_SAVEAVAS:
+    case IDC_CONTENT_CONTEXT_SAVEPLUGINAS:
       return IsSaveAsEnabled();
 
     case IDC_CONTENT_CONTEXT_OPENAVNEWTAB:
@@ -2774,10 +2776,7 @@ void RenderViewContextMenu::OpenURLWithExtraHeaders(
     const std::string& extra_headers,
     bool started_from_context_menu) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!crosapi::browser_util::IsAshWebBrowserEnabled()) {
-    ash::NewWindowDelegate::GetPrimary()->OpenUrl(
-        url, ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
-        GetDispositionForLacros(disposition));
+  if (ash::TryOpenUrl(params_.link_url, disposition)) {
     return;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -2829,11 +2828,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       WindowOpenDisposition new_tab_disposition =
           WindowOpenDisposition::NEW_BACKGROUND_TAB;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-      if (!crosapi::browser_util::IsAshWebBrowserEnabled()) {
-        ash::NewWindowDelegate::GetPrimary()->OpenUrl(
-            params_.link_url,
-            ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
-            GetDispositionForLacros(new_tab_disposition));
+      if (ash::TryOpenUrl(params_.link_url, new_tab_disposition)) {
         break;
       }
 #endif
@@ -2890,6 +2885,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_SAVEAVAS:
+    case IDC_CONTENT_CONTEXT_SAVEPLUGINAS:
     case IDC_CONTENT_CONTEXT_SAVEIMAGEAS:
       ExecSaveAs();
       break;
@@ -2961,14 +2957,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       OpenURL(params_.src_url, GetDocumentURL(params_),
               WindowOpenDisposition::NEW_BACKGROUND_TAB,
               ui::PAGE_TRANSITION_LINK);
-      break;
-
-    case IDC_CONTENT_CONTEXT_PLAYPAUSE:
-      ExecPlayPause();
-      break;
-
-    case IDC_CONTENT_CONTEXT_MUTE:
-      ExecMute();
       break;
 
     case IDC_CONTENT_CONTEXT_LOOP:
@@ -3970,30 +3958,6 @@ void RenderViewContextMenu::ExecLoadImage() {
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &chrome_render_frame);
   chrome_render_frame->RequestReloadImageForContextNode();
-}
-
-void RenderViewContextMenu::ExecPlayPause() {
-  bool play = !!(params_.media_flags & ContextMenuData::kMediaPaused);
-  if (play)
-    base::RecordAction(UserMetricsAction("MediaContextMenu_Play"));
-  else
-    base::RecordAction(UserMetricsAction("MediaContextMenu_Pause"));
-
-  MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
-                      blink::mojom::MediaPlayerAction(
-                          blink::mojom::MediaPlayerActionType::kPlay, play));
-}
-
-void RenderViewContextMenu::ExecMute() {
-  bool mute = !(params_.media_flags & ContextMenuData::kMediaMuted);
-  if (mute)
-    base::RecordAction(UserMetricsAction("MediaContextMenu_Mute"));
-  else
-    base::RecordAction(UserMetricsAction("MediaContextMenu_Unmute"));
-
-  MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
-                      blink::mojom::MediaPlayerAction(
-                          blink::mojom::MediaPlayerActionType::kMute, mute));
 }
 
 void RenderViewContextMenu::ExecLoop() {

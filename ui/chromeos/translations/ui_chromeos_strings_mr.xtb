@@ -41,6 +41,7 @@
 <translation id="1358735829858566124">फाइल किंवा डिरेक्टरी वापरण्यायोग्य नाही.</translation>
 <translation id="1363028406613469049">ट्रॅक</translation>
 <translation id="1378727793141957596">Google ड्राइव्ह मध्ये तुमचे स्वागत आहे!</translation>
+<translation id="1379156577998569384">तुमच्या माझे ड्राइव्ह फाइल या ऑफलाइन उपलब्ध आहेत</translation>
 <translation id="1379911846207762492">तुमच्याकडे इंटरनेट कनेक्शन नसल्यास, तुम्ही फाइल ॲक्सेस करण्यासाठी त्या ऑफलाइन उपलब्ध करू शकता.</translation>
 <translation id="1383876407941801731">शोधा</translation>
 <translation id="1388045380422025115">सर्व प्रकार</translation>
@@ -299,7 +300,6 @@
 <translation id="3479552764303398839">सध्या नाही</translation>
 <translation id="3486821258960016770">मंगोलियन</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> एरर.</translation>
-<translation id="3501954296166022751">तुमच्या Google Drive फाइल या ऑफलाइन उपलब्ध आहेत</translation>
 <translation id="3509680540198371098"><ph name="NETWORK_COUNT" /> पैकी <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />%, तपशील</translation>
 <translation id="3511705761158917664"><ph name="NUMBER_OF_ITEMS" /> आयटम सिंक करण्‍याची तयारी करत आहे...</translation>
 <translation id="3522708245912499433">पोर्तुगीज</translation>
@@ -351,6 +351,7 @@
 <translation id="3855472144336161447">जर्मन निओ 2</translation>
 <translation id="3858860766373142691">नाव</translation>
 <translation id="3866249974567520381">वर्णन</translation>
+<translation id="3866439285517092441">बॅटरी कमी आहे. तुम्ही पॉवरशी कनेक्ट केल्यावर सिंक पुन्हा सुरू होईल.</translation>
 <translation id="3899991606604168269">बहुभाषिक कीबोर्डसह फ्रेंच (कॅनडा)</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> वर कनेक्ट करीत आहे</translation>
 <translation id="3906232975181435906">मोबाइल प्रोफाइल इंस्टॉल करत आहे, <ph name="NETWORK_COUNT" /> पैकी <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" /></translation>
@@ -358,6 +359,7 @@
 <translation id="3943857333388298514">पेस्ट करा</translation>
 <translation id="3952872973865944257">तेलुगु फोनेटिक</translation>
 <translation id="3958548648197196644">किवी</translation>
+<translation id="397105322502079400">गणना करत आहे...</translation>
 <translation id="3971140002794351170">मोबाइल प्रोफाइल डाउनलोड करा, <ph name="NETWORK_COUNT" /> पैकी <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">इंग्रजी (यूके)</translation>
 <translation id="3975895378829046965">बंगाली फोनेटिक</translation>
@@ -368,6 +370,7 @@
 <translation id="4040753847560036377">चुकीचा PUK</translation>
 <translation id="4057991113334098539">सक्रिय करीत आहे...</translation>
 <translation id="4092890906744441904">आयरिश</translation>
+<translation id="4124731372776320263">१ Drive फाइल सिंक करत आहे</translation>
 <translation id="4124935795427217608">युनिकॉर्न</translation>
 <translation id="4131235941541910880">तुम्हाला नको असलेले आयटम हे ट्रॅश मध्ये हलवा</translation>
 <translation id="4134804435730168042"><ph name="NETWORK_COUNT" /> पैकी <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, डिव्हाइस सेटअप केल्यानंतर ॲक्टिव्हेट होते</translation>
@@ -564,6 +567,7 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="5422221874247253874">ॲक्सेस पॉइंट</translation>
 <translation id="5428105026674456456">स्पॅनिश</translation>
 <translation id="5438282218546237410"><ph name="SEARCH_TERM" /> साठी कोणतेही परिणाम नाहीत.</translation>
+<translation id="5447680084201416734">पुरेसे स्टोरेज नाही.</translation>
 <translation id="5449551289610225147">चुकीचा पासवर्ड</translation>
 <translation id="5459064203055649751">"<ph name="FILENAME" />" नावाची फाइल आधीपासून अस्तित्वात आहे. तुम्हाला ही तुम्ही हलवत आहात तिच्यासोबत बदलायची आहे का?</translation>
 <translation id="5463231940765244860">एंटर करा</translation>
@@ -579,6 +583,7 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="5524517123096967210">फाइल वाचली जाऊ शकली नाही.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> इमेज</translation>
 <translation id="5534520101572674276">आकार मोजत आहे</translation>
+<translation id="5536122250858122375">हा फाइल प्रकार सिंक केला जाऊ शकत नाही</translation>
 <translation id="554153475311314364">ग्रीक लिप्यंतरण</translation>
 <translation id="5554171655917412781"><ph name="SELECTED_FOLDERS_COUNT" /> फोल्डर निवडली</translation>
 <translation id="5580591966435005537">व्हर्च्युअल मशीन</translation>
@@ -691,6 +696,7 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="6423031066725912715">TCVN कीबोर्डसह व्हिएतनामी</translation>
 <translation id="6430271654280079150">तुमच्याकडे एक प्रयत्न शिल्लक आहे.</translation>
 <translation id="643243556292470964">हटवलेल्या फाइल आता ट्रॅशमध्ये हलवल्या जातात</translation>
+<translation id="6438480100790416671">स्टोरेज जागा तपासत आहे…</translation>
 <translation id="6485131920355264772">स्थान माहिती पुनर्प्राप्त करण्यात अयशस्वी</translation>
 <translation id="6495925982925244349"><ph name="NETWORK_COUNT" /> पैकी <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />%, तुमच्या अ‍ॅडमिनिस्ट्रेटरने व्यवस्थापित केलेले, तपशील</translation>
 <translation id="649877868557234318"><ph name="FILE_NAME" /> ही <ph name="FOLDER_NAME" /> मध्ये एक्स्ट्रॅक्ट करत आहे</translation>
@@ -738,6 +744,7 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="6874758081814639712">ताई ची करत असलेली व्यक्ती</translation>
 <translation id="6876155724392614295">सायकल</translation>
 <translation id="6878261347041253038">देवनागरी कीबोर्ड (Phonetic)</translation>
+<translation id="6882444584974399416">तुमच्या फाइल ऑफलाइन उपलब्ध ठेवण्यासाठी तुमच्या डिव्हाइसमध्ये पुरेशी स्टोरेज जागा नाही. नवीन फाइल यापुढे आपोआप सिंक केल्या जाणार नाहीत.</translation>
 <translation id="6885780034956018177">गोगलगाय</translation>
 <translation id="6896758677409633944">कॉपी करा</translation>
 <translation id="6898028766943174120">आणखी सब-फोल्डर...</translation>
@@ -890,10 +897,10 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="7972920761225148017">फ्रेंच (स्वित्झर्लंड)</translation>
 <translation id="7973962044839454485">अयोग्य वापरकर्तानावामुळे किंवा पासवर्डमुळे PPP ऑथेंटिकेशन अयशस्वी झाले</translation>
 <translation id="7980421588063892270">कोलमॅक कीबोर्डसह इंग्रजी (यूएस)</translation>
-<translation id="7985008041109611710"><ph name="NUMBER_OF_FILES_SYNCING" /> फाइल सिंक करत आहे</translation>
 <translation id="8000066093800657092">कोणतेही नेटवर्क नाही</translation>
 <translation id="8008366997883261463">कुत्रा</translation>
 <translation id="8028993641010258682">आकार</translation>
+<translation id="8034974485549318493">प्रारंभिक सेटअपसाठी, तुम्हाला इंटरनेटशी कनेक्ट करणे आवश्यक आहे, जेणेकरून फाइल सिंक होऊ शकतील.</translation>
 <translation id="803771048473350947">फाइल</translation>
 <translation id="8038111231936746805">(डीफॉल्ट)</translation>
 <translation id="8042602468072383151"><ph name="AUDIO_TYPE" /> ऑडिओ</translation>
@@ -913,6 +920,7 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="8154842056504218462">सर्व नोंदी निवडल्या आहेत.</translation>
 <translation id="8157684860301034423">ॲप माहिती पुन्हा मिळवता आली नाही.</translation>
 <translation id="8175731104491895765">फ्रेंच (बेल्जियम)</translation>
+<translation id="8175799081768705361"><ph name="NUMBER_OF_FILES_SYNCING" /> Drive फाइल सिंक करत आहे</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">डिव्हाइस मॉडेल</translation>
 <translation id="8223479393428528563">ऑफलाइन वापराकरिता या फाइल सेव्ह करण्यासाठी, परत ऑनलाइन व्‍हा, फाइलंवर राइट-क्लिक करा आणि <ph name="OFFLINE_CHECKBOX_NAME" /> पर्याय निवडा.</translation>
@@ -945,6 +953,7 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="8395901698320285466">परिमाण</translation>
 <translation id="8404498045299006085">सर्व ठेवा</translation>
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> नेटवर्क, कनेक्ट करत आहे</translation>
+<translation id="841387525767317275">या फोल्डरमधील फाइल ऑफलाइन उपलब्ध आहेत</translation>
 <translation id="8425213833346101688">बदल करा</translation>
 <translation id="8431909052837336408">सिम पिन बदला</translation>
 <translation id="8437209419043462667">यूएस</translation>
@@ -972,6 +981,7 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="8560515948038859357">कँटोनीज</translation>
 <translation id="8561206103590473338">हत्ती</translation>
 <translation id="8566466896628108558"><ph name="NETWORK_COUNT" /> पैकी <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />%, तुमच्या अ‍ॅडमिनिस्ट्रेटर ने ब्लॉक केलेले नेटवर्क, तपशील</translation>
+<translation id="8567555211227790801">तुम्ही सध्या ऑफलाइन आहात. तुम्ही इंटरनेटशी कनेक्ट केल्यावर सिंक पुन्हा सुरू होईल.</translation>
 <translation id="8568374623837201676">ही फाइल कायमची हटवायची आहे का?</translation>
 <translation id="8569764466147087991">उघडण्यासाठी फाइल निवडा</translation>
 <translation id="8577897833047451336">क्रोएशियन</translation>
@@ -1012,6 +1022,7 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="8919081441417203123">डॅनिश</translation>
 <translation id="8949925099261528566">कनेक्‍ट केले, इंटरनेट नाही</translation>
 <translation id="8965697826696209160">पुरेशी जागा नाही.</translation>
+<translation id="8970887620466824814">काहीतरी चूक झाली.</translation>
 <translation id="8971742885766657349">सिंक करत आहे - <ph name="PERCENT" />%</translation>
 <translation id="8997962250644902079">चीनी (पारंपरिक) पिनयिन</translation>
 <translation id="8998871447376656508">अपलोड पूर्ण करण्यासाठी तुमच्या Google Drive मध्ये पुरेशी मोकळी जागा नाही.</translation>
@@ -1046,7 +1057,6 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="9213073329713032541">इंस्टॉलेशनला यशस्वीरीत्या सुरुवात झाली.</translation>
 <translation id="9219103736887031265">इमेज</translation>
 <translation id="9219908252191632183">लुनार</translation>
-<translation id="937795003075802289">१ फाइल सिंक करत आहे</translation>
 <translation id="938470336146445890">कृपया वापरकर्ता सर्टिफिकेट इंस्टॉल करा.</translation>
 <translation id="939736085109172342">नवीन फोल्‍डर</translation>
 <translation id="943972244133411984">ने सुधारित केली</translation>

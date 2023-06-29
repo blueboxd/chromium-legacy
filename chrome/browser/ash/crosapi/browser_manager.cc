@@ -218,16 +218,20 @@ void PreloadLacrosFiles(const base::FilePath& lacros_dir) {
   // These files are the Lacros equivalent of Ash's files preloaded at boot by
   // ureadahead.
   static constexpr const char* kPreloadFiles[] = {
-      "WidevineCdm/manifest.json",
-      "chrome",
-      "chrome_100_percent.pak",
-      "chrome_200_percent.pak",
-      "chrome_crashpad_handler",
-      "icudtl.dat",
-      "icudtl.dat.hash",
-      "nacl_helper",
-      "resources.pak",
-      "snapshot_blob.bin",
+#if BUILDFLAG(ENABLE_WIDEVINE)
+    "WidevineCdm/manifest.json",
+#endif
+    "chrome",
+    "chrome_100_percent.pak",
+    "chrome_200_percent.pak",
+    "chrome_crashpad_handler",
+    "icudtl.dat",
+    "icudtl.dat.hash",
+#if BUILDFLAG(ENABLE_NACL)
+    "nacl_helper",
+#endif
+    "resources.pak",
+    "snapshot_blob.bin",
   };
 
   // Preload common files.
@@ -243,6 +247,7 @@ void PreloadLacrosFiles(const base::FilePath& lacros_dir) {
   PreloadFile(locale_path);
 
   // Preload Widevine for the right architecture.
+#if BUILDFLAG(ENABLE_WIDEVINE)
 #if defined(ARCH_CPU_ARM_FAMILY)
   base::FilePath libwidevine_path = lacros_dir.Append(
       "WidevineCdm/_platform_specific/cros_arm/libwidevinecdm.so");
@@ -251,6 +256,7 @@ void PreloadLacrosFiles(const base::FilePath& lacros_dir) {
       "WidevineCdm/_platform_specific/cros_x64/libwidevinecdm.so");
 #endif
   PreloadFile(libwidevine_path);
+#endif
 }
 
 ResourcesFileSharingMode ClearOrMoveSharedResourceFileInternal(
@@ -725,9 +731,10 @@ void BrowserManager::Launch() {
 void BrowserManager::OpenUrl(
     const GURL& url,
     crosapi::mojom::OpenUrlFrom from,
-    crosapi::mojom::OpenUrlParams::WindowOpenDisposition disposition) {
+    crosapi::mojom::OpenUrlParams::WindowOpenDisposition disposition,
+    NavigateParams::PathBehavior path_behavior) {
   PerformOrEnqueue(
-      BrowserAction::OpenUrl(url, disposition, from, NavigateParams::RESPECT));
+      BrowserAction::OpenUrl(url, disposition, from, path_behavior));
 }
 
 void BrowserManager::SwitchToTab(const GURL& url,
@@ -761,12 +768,60 @@ void BrowserManager::CreateBrowserWithRestoredData(
       first_non_pinned_tab_index, app_name, restore_window_id));
 }
 
-void BrowserManager::InitializeAndStartIfNeeded() {
-  // If we already tried to load Lacros but for some reason it wasn't available
-  // (for example, in some tests), then we should return here to avoid failure.
-  if (state_ == State::UNAVAILABLE) {
-    return;
+bool BrowserManager::EnsureLaunch() {
+  // This method can only ensure Lacros's launch if the user profile is already
+  // initialized.
+  auto* user = user_manager::UserManager::Get()->GetPrimaryUser();
+  if (!user || !user->is_profile_created()) {
+    return false;
   }
+
+  switch (state_) {
+    case State::NOT_INITIALIZED:
+    case State::RELOADING:
+      LOG(WARNING) << "Ensuring Lacros launch: initialize and start";
+      InitializeAndStartIfNeeded();
+      return true;
+
+    case State::PRE_LAUNCHED:
+      LOG(WARNING) << "Ensuring Lacros launch: resume pre-launched instance";
+      ResumeLaunch();
+      return true;
+
+    case State::RUNNING:
+      LOG(WARNING) << "Ensuring Lacros launch: already running";
+      return true;
+
+    case State::STOPPED:
+      if (IsKeepAliveEnabled() || !pending_actions_.IsEmpty()) {
+        LOG(WARNING) << "Ensuring Lacros launch: currently stopped, but will "
+                        "be restarted";
+      } else {
+        LOG(WARNING) << "Ensuring Lacros launch: currently stopped, starting";
+        StartIfNeeded();
+      }
+      return true;
+
+    case State::MOUNTING:
+    case State::CREATING_LOG_FILE:
+    case State::STARTING:
+      LOG(WARNING)
+          << "Ensuring Lacros launch: already in the process of starting";
+      return true;
+
+    case State::TERMINATING:
+      LOG(WARNING)
+          << "Ensuring Lacros launch: currently terminating, enqueueing launch";
+      PerformOrEnqueue(BrowserAction::GetActionForSessionStart());
+      return true;
+
+    case State::UNAVAILABLE:
+      LOG(WARNING) << "Can't ensure Lacros launch: unavailable";
+      return false;
+  }
+}
+
+void BrowserManager::InitializeAndStartIfNeeded() {
   DCHECK(state_ == State::NOT_INITIALIZED || state_ == State::RELOADING);
 
   // Ensure this isn't run multiple times.
@@ -1164,8 +1219,6 @@ void BrowserManager::StartWithLogFile(bool launching_at_login_screen,
     }
 
     argv.push_back(std::string("--vmodule=")
-                   // TODO(crbug.com/1423163): Remove after fix.
-                   + "command_storage_backend=1,session_service_commands=1"
                    // TODO(crbug.com/1371493): Remove after fix.
                    + ",wayland_window_drag_controller=1,wayland_data_source=1" +
                    ",tab_drag_controller=1");
@@ -1470,7 +1523,7 @@ void BrowserManager::OnSessionStateChanged() {
   if (state_ == State::PRE_LAUNCHED) {
     // Resume Lacros launch after login, if it was pre-launched.
     ResumeLaunch();
-  } else {
+  } else if (state_ == State::NOT_INITIALIZED) {
     // Otherwise, just start Lacros normally, if appropriate.
     InitializeAndStartIfNeeded();
   }
@@ -1567,10 +1620,8 @@ void BrowserManager::ResumeLaunch() {
   // executed in |InitializeAndStartIfNeeded| (we call |PrelaunchAtLoginScreen|
   // instead) and |StartWithLogFile|, because they required the user to be
   // logged in.
-  DCHECK_EQ(session_manager::SessionManager::Get()->session_state(),
-            session_manager::SessionState::ACTIVE);
-  DCHECK(user_manager::UserManager::Get()->IsUserLoggedIn());
   DCHECK_EQ(state_, State::PRE_LAUNCHED);
+  DCHECK(user_manager::UserManager::Get()->IsUserLoggedIn());
 
   // Ensure this isn't run multiple times.
   ash::SessionManagerClient::Get()->RemoveObserver(this);
@@ -1592,6 +1643,7 @@ void BrowserManager::ResumeLaunch() {
   // we need to reload and relaunch the correct version of Lacros.
   auto user_lacros_selection = browser_util::DetermineLacrosSelection();
   if (user_lacros_selection.has_value() &&
+      lacros_selection_ != LacrosSelection::kDeployedLocally &&
       lacros_selection_ != user_lacros_selection) {
     LOG(WARNING)
         << "Mismatching Lacros selection between login screen and user. "

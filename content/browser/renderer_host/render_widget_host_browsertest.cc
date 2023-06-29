@@ -11,7 +11,6 @@
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -23,6 +22,7 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -38,7 +38,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
@@ -649,33 +648,9 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostSitePerProcessTest,
 }
 #endif
 
-class RenderWidgetHostFullscreenScreenSizeBrowserTest
-    : public RenderWidgetHostBrowserTest,
-      public testing::WithParamInterface<bool> {
- public:
-  RenderWidgetHostFullscreenScreenSizeBrowserTest() {
-    scoped_feature_list_.InitWithFeatureState(
-        blink::features::kFullscreenScreenSizeMatchesDisplay,
-        FullscreenScreenSizeMatchesDisplayEnabled());
-  }
-  bool FullscreenScreenSizeMatchesDisplayEnabled() { return GetParam(); }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         RenderWidgetHostFullscreenScreenSizeBrowserTest,
-                         testing::Bool());
-
-// Tests `window.screen` dimensions in fullscreen. Note that Content Shell does
-// not resize the viewport to fill the screen in fullscreen on some platforms.
-// `window.screen` may provide viewport dimensions while the frame is fullscreen
-// as a speculative site compatibility measure, because web authors may assume
-// that screen dimensions match window.innerWidth/innerHeight while a page is
-// fullscreen, but that is not always true. crbug.com/1367416
-IN_PROC_BROWSER_TEST_P(RenderWidgetHostFullscreenScreenSizeBrowserTest,
-                       FullscreenSize) {
+// Tests that `window.screen` dimensions match the display, not the viewport,
+// while the frame is fullscreen. See crbug.com/1367416
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostBrowserTest, FullscreenSize) {
   // Check initial dimensions before entering fullscreen.
   ASSERT_FALSE(shell()->IsFullscreenForTabOrPending(web_contents()));
   ASSERT_FALSE(web_contents()->IsFullscreen());
@@ -692,15 +667,9 @@ IN_PROC_BROWSER_TEST_P(RenderWidgetHostFullscreenScreenSizeBrowserTest,
   )JS";
   ASSERT_TRUE(EvalJs(web_contents(), kEnterFullscreenScript).ExtractBool());
 
-  if (FullscreenScreenSizeMatchesDisplayEnabled()) {
-    // `window.screen` dimensions match the display size.
-    EXPECT_EQ(host()->GetScreenInfo().rect.size().ToString(),
-              EvalJs(web_contents(), "`${screen.width}x${screen.height}`"));
-  } else {
-    // `window.screen` dimensions match the potentially smaller viewport size.
-    EXPECT_EQ(view()->GetRequestedRendererSize().ToString(),
-              EvalJs(web_contents(), "`${screen.width}x${screen.height}`"));
-  }
+  // `window.screen` dimensions match the display size.
+  EXPECT_EQ(host()->GetScreenInfo().rect.size().ToString(),
+            EvalJs(web_contents(), "`${screen.width}x${screen.height}`"));
 
   // Check dimensions again after exiting fullscreen.
   constexpr char kExitFullscreenScript[] = R"JS(
@@ -896,7 +865,9 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostFoldableCSSTest,
       </style>
       <div id='target'></div>)HTML";
 
+  LoadStopObserver load_stop_observer(shell()->web_contents());
   EXPECT_TRUE(NavigateToURL(shell(), GURL(kTestPageURL)));
+  load_stop_observer.Wait();
 
   const gfx::Size root_view_size = view()->GetVisibleViewportSize();
   const int kDisplayFeatureLength = 10;
@@ -904,9 +875,11 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostFoldableCSSTest,
   DisplayFeature emulated_display_feature{
       DisplayFeature::Orientation::kVertical, offset,
       /* mask_length */ kDisplayFeatureLength};
-  MockDisplayFeature mock_display_feature(view());
-  mock_display_feature.SetDisplayFeature(&emulated_display_feature);
-  host()->SynchronizeVisualProperties();
+  {
+    MockDisplayFeature mock_display_feature(view());
+    mock_display_feature.SetDisplayFeature(&emulated_display_feature);
+    host()->SynchronizeVisualProperties();
+  }
 
   EXPECT_EQ(
       base::NumberToString(emulated_display_feature.offset) + "px",
@@ -914,9 +887,24 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostFoldableCSSTest,
 
   // Ensure that the environment variables have the correct values in the new
   // document that is created on reloading the page.
-  LoadStopObserver load_stop_observer(shell()->web_contents());
+  LoadStopObserver load_stop_observer2(shell()->web_contents());
+  TestNavigationManager navigation_manager(shell()->web_contents(),
+                                           GURL(kTestPageURL));
   shell()->Reload();
-  load_stop_observer.Wait();
+  EXPECT_TRUE(navigation_manager.WaitForResponse());
+  if (ShouldCreateNewHostForAllFrames()) {
+    // When RenderDocument is enabled, a new RenderWidgetHost will be created
+    // after the reload, so we need to call SynchronizeVisualProperties() again.
+    RenderWidgetHostImpl* target_rwh = static_cast<RenderWidgetHostImpl*>(
+        navigation_manager.GetNavigationHandle()
+            ->GetRenderFrameHost()
+            ->GetRenderWidgetHost());
+    MockDisplayFeature mock_display_feature(target_rwh->GetView());
+    mock_display_feature.SetDisplayFeature(&emulated_display_feature);
+    target_rwh->SynchronizeVisualProperties();
+  }
+  EXPECT_TRUE(navigation_manager.WaitForNavigationFinished());
+  load_stop_observer2.Wait();
 
   EXPECT_EQ(
       base::NumberToString(emulated_display_feature.offset) + "px",

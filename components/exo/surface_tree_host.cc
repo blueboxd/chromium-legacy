@@ -45,6 +45,7 @@
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/presentation_feedback.h"
@@ -142,14 +143,18 @@ void SurfaceTreeHost::SetRootSurface(Surface* root_surface) {
     // Force recreating resources when the surface is added to a tree again.
     root_surface_->SurfaceHierarchyResourcesLost();
     root_surface_ = nullptr;
+    previous_content_bounds_ = absl::nullopt;
   }
 
   if (root_surface) {
     root_surface_ = root_surface;
     root_surface_->SetSurfaceDelegate(this);
 
+    if (client_submits_surfaces_in_pixel_coordinates_) {
+      SetScaleFactorTransform(GetScaleFactor());
+    }
     // TODO(oshima): Investigate if we can set this to `host_window`.
-    root_surface->window()->SetProperty(
+    root_surface_->window()->SetProperty(
         ui::kAXConsiderInvisibleAndIgnoreChildren, true);
     host_window_->AddChild(root_surface_->window());
     UpdateHostWindowBounds();
@@ -322,10 +327,13 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
       std::move(presentation_callbacks);
 
   root_surface_->AppendSurfaceHierarchyContentsToFrame(
-      gfx::PointF(root_surface_origin_), GetScaleFactor(),
-      client_submits_surfaces_in_pixel_coordinates(),
+      gfx::PointF(root_surface_origin_),
       layer_tree_frame_sink_holder_->NeedsFullDamageForNextFrame(),
-      layer_tree_frame_sink_holder_->resource_manager(), &frame);
+      layer_tree_frame_sink_holder_->resource_manager(),
+      client_submits_surfaces_in_pixel_coordinates()
+          ? absl::nullopt
+          : absl::make_optional(GetScaleFactor()),
+      &frame);
 
   std::vector<GLbyte*> sync_tokens;
   // We track previously verified tokens and set them to be verified to avoid
@@ -395,19 +403,27 @@ void SurfaceTreeHost::UpdateHostWindowBounds() {
   aura::WindowOcclusionTracker::ScopedPause pause_occlusion;
 
   const gfx::Rect& bounds = root_surface_->surface_hierarchy_content_bounds();
-  if (bounds != host_window_->bounds()) {
-    host_window_->SetBounds({host_window_->bounds().origin(), bounds.size()});
+  if (previous_content_bounds_ != bounds) {
+    previous_content_bounds_ = bounds;
+    gfx::Size size = bounds.size();
+    if (client_submits_surfaces_in_pixel_coordinates_) {
+      size = gfx::ScaleToCeiledSize(size, 1.0f / GetScaleFactor());
+    }
+    gfx::Rect scaled_bounds(bounds.origin(), size);
+    if (scaled_bounds != host_window_->bounds()) {
+      // DP size has changed, set new bounds.
+      host_window_->SetBounds({host_window_->bounds().origin(), size});
+    } else {
+      // DP size has not changed, but pixel size has - allocate new surface id.
+      host_window_->AllocateLocalSurfaceId();
+    }
   }
 
   // TODO(yjliu): a) consolidate with ClientControlledShellSurface. b) use the
   // scale factor the buffer is created for to set the transform for
   // synchronization.
   if (client_submits_surfaces_in_pixel_coordinates_) {
-    gfx::Transform tr;
-    float scale = GetScaleFactor();
-    tr.Scale(1.0f / scale, 1.0f / scale);
-    if (host_window_->transform() != tr)
-      host_window_->SetTransform(tr);
+    SetScaleFactorTransform(GetScaleFactor());
   }
   const bool fills_bounds_opaquely =
       gfx::SizeF(bounds.size()) == root_surface_->content_size() &&
@@ -539,6 +555,16 @@ std::unique_ptr<LayerTreeFrameSinkHolder>
 SurfaceTreeHost::CreateLayerTreeFrameSinkHolder() {
   return std::make_unique<LayerTreeFrameSinkHolder>(
       this, host_window_->CreateLayerTreeFrameSink());
+}
+
+void SurfaceTreeHost::SetScaleFactorTransform(float scale_factor) {
+  DCHECK(client_submits_surfaces_in_pixel_coordinates_);
+
+  gfx::Transform tr;
+  tr.Scale(1.0f / scale_factor, 1.0f / scale_factor);
+  if (root_surface()->window()->transform() != tr) {
+    root_surface()->window()->SetTransform(tr);
+  }
 }
 
 }  // namespace exo

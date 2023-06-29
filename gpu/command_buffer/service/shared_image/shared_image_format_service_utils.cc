@@ -13,10 +13,45 @@
 #include "base/notreached.h"
 #include "build/buildflag.h"
 #include "components/viz/common/resources/resource_format.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 
 namespace gpu {
+
+// Wraps functions from shared_image_format_utils.h that are made private with
+// friending to prevent their existing client-side usage (which is an
+// anti-pattern) from growing within a class that
+// SharedImageFormatRestrictedSinglePlaneUtils can friend. (Note that if
+// SharedImageFormatRestrictedSinglePlaneUtils instead directly friended the
+// service-side calling functions, any client-side code could then also
+// directly call those service-side calling functions as well, defeating the
+// purpose).
+class SharedImageFormatRestrictedSinglePlaneUtilsAccessor {
+ public:
+  static GLenum ToGLDataFormat(viz::SharedImageFormat format) {
+    return viz::SharedImageFormatRestrictedSinglePlaneUtils::ToGLDataFormat(
+        format);
+  }
+  static GLenum ToGLDataType(viz::SharedImageFormat format) {
+    return viz::SharedImageFormatRestrictedSinglePlaneUtils::ToGLDataType(
+        format);
+  }
+
+  static unsigned int ToGLTextureStorageFormat(viz::SharedImageFormat format,
+                                               bool use_angle_rgbx_format) {
+    return viz::SharedImageFormatRestrictedSinglePlaneUtils::
+        ToGLTextureStorageFormat(format, use_angle_rgbx_format);
+  }
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  static bool HasVkFormat(viz::SharedImageFormat format) {
+    return viz::SharedImageFormatRestrictedSinglePlaneUtils::HasVkFormat(
+        format);
+  }
+  static VkFormat ToVkFormat(viz::SharedImageFormat format) {
+    return viz::SharedImageFormatRestrictedSinglePlaneUtils::ToVkFormat(format);
+  }
+#endif
+};
 
 gfx::BufferFormat ToBufferFormat(viz::SharedImageFormat format) {
   if (format.is_single_plane()) {
@@ -82,7 +117,8 @@ GLFormatDesc ToGLFormatDesc(viz::SharedImageFormat format,
 
 GLenum GLDataType(viz::SharedImageFormat format) {
   if (format.is_single_plane()) {
-    return viz::GLDataType(format.resource_format());
+    return SharedImageFormatRestrictedSinglePlaneUtilsAccessor::ToGLDataType(
+        format);
   }
 
   switch (format.channel_format()) {
@@ -100,7 +136,8 @@ GLenum GLDataType(viz::SharedImageFormat format) {
 GLenum GLDataFormat(viz::SharedImageFormat format, int plane_index) {
   DCHECK(format.IsValidPlaneIndex(plane_index));
   if (format.is_single_plane()) {
-    return viz::GLDataFormat(format.resource_format());
+    return SharedImageFormatRestrictedSinglePlaneUtilsAccessor::ToGLDataFormat(
+        format);
   }
 
   // For multiplanar formats without external sampler, GL formats are per plane.
@@ -154,8 +191,8 @@ GLenum TextureStorageFormat(viz::SharedImageFormat format,
                             int plane_index) {
   DCHECK(format.IsValidPlaneIndex(plane_index));
   if (format.is_single_plane()) {
-    return viz::TextureStorageFormat(format.resource_format(),
-                                     use_angle_rgbx_format);
+    return SharedImageFormatRestrictedSinglePlaneUtilsAccessor::
+        ToGLTextureStorageFormat(format, use_angle_rgbx_format);
   }
 
   // For multiplanar formats without external sampler, GL formats are per plane.
@@ -179,7 +216,8 @@ GLenum TextureStorageFormat(viz::SharedImageFormat format,
 #if BUILDFLAG(ENABLE_VULKAN)
 bool HasVkFormat(viz::SharedImageFormat format) {
   if (format.is_single_plane()) {
-    return viz::HasVkFormat(format.resource_format());
+    return SharedImageFormatRestrictedSinglePlaneUtilsAccessor::HasVkFormat(
+        format);
   } else if (format == viz::MultiPlaneFormat::kYV12 ||
              format == viz::MultiPlaneFormat::kNV12 ||
              format == viz::MultiPlaneFormat::kP010) {
@@ -193,7 +231,8 @@ VkFormat ToVkFormat(viz::SharedImageFormat format, int plane_index) {
   DCHECK(format.IsValidPlaneIndex(plane_index));
 
   if (format.is_single_plane()) {
-    return viz::ToVkFormat(format.resource_format());
+    return SharedImageFormatRestrictedSinglePlaneUtilsAccessor::ToVkFormat(
+        format);
   }
 
   // The following SharedImageFormat constants have PrefersExternalSampler()
@@ -218,46 +257,29 @@ VkFormat ToVkFormat(viz::SharedImageFormat format, int plane_index) {
 #endif
 
 wgpu::TextureFormat ToDawnFormat(viz::SharedImageFormat format) {
-  if (format.is_single_plane()) {
-    switch (format.resource_format()) {
-      case viz::ResourceFormat::RGBA_8888:
-      case viz::ResourceFormat::RGBX_8888:
-        return wgpu::TextureFormat::RGBA8Unorm;
-      case viz::ResourceFormat::BGRA_8888:
-      case viz::ResourceFormat::BGRX_8888:
-        return wgpu::TextureFormat::BGRA8Unorm;
-      case viz::ResourceFormat::RED_8:
-      case viz::ResourceFormat::ALPHA_8:
-      case viz::ResourceFormat::LUMINANCE_8:
-        return wgpu::TextureFormat::R8Unorm;
-      case viz::ResourceFormat::RG_88:
-        return wgpu::TextureFormat::RG8Unorm;
-      case viz::ResourceFormat::RGBA_F16:
-        return wgpu::TextureFormat::RGBA16Float;
-      case viz::ResourceFormat::RGBA_1010102:
-        return wgpu::TextureFormat::RGB10A2Unorm;
-      case viz::ResourceFormat::YUV_420_BIPLANAR:
-        return wgpu::TextureFormat::R8BG8Biplanar420Unorm;
-      // TODO(crbug.com/1175525): Add R8BG8A8Triplanar420Unorm format for dawn.
-      case viz::ResourceFormat::YUVA_420_TRIPLANAR:
-      case viz::ResourceFormat::RGBA_4444:
-      case viz::ResourceFormat::RGB_565:
-      case viz::ResourceFormat::BGR_565:
-      case viz::ResourceFormat::R16_EXT:
-      case viz::ResourceFormat::RG16_EXT:
-      case viz::ResourceFormat::BGRA_1010102:
-      case viz::ResourceFormat::YVU_420:
-      case viz::ResourceFormat::ETC1:
-      case viz::ResourceFormat::LUMINANCE_F16:
-      case viz::ResourceFormat::P010:
-        break;
-    }
-  }
-
-  // TODO(crbug.com/1445450): Add support for other multiplane formats.
-  if (format == viz::MultiPlaneFormat::kNV12) {
+  if (format == viz::SinglePlaneFormat::kRGBA_8888 ||
+      format == viz::SinglePlaneFormat::kRGBX_8888) {
+    return wgpu::TextureFormat::RGBA8Unorm;
+  } else if (format == viz::SinglePlaneFormat::kBGRA_8888 ||
+             format == viz::SinglePlaneFormat::kBGRX_8888) {
+    return wgpu::TextureFormat::BGRA8Unorm;
+  } else if (format == viz::SinglePlaneFormat::kR_8 ||
+             format == viz::SinglePlaneFormat::kALPHA_8 ||
+             format == viz::SinglePlaneFormat::kLUMINANCE_8) {
+    return wgpu::TextureFormat::R8Unorm;
+  } else if (format == viz::SinglePlaneFormat::kRG_88) {
+    return wgpu::TextureFormat::RG8Unorm;
+  } else if (format == viz::SinglePlaneFormat::kRGBA_F16) {
+    return wgpu::TextureFormat::RGBA16Float;
+  } else if (format == viz::SinglePlaneFormat::kRGBA_1010102) {
+    return wgpu::TextureFormat::RGB10A2Unorm;
+  } else if (format == viz::LegacyMultiPlaneFormat::kNV12 ||
+             format == viz::MultiPlaneFormat::kNV12) {
     return wgpu::TextureFormat::R8BG8Biplanar420Unorm;
   }
+
+  // TODO(crbug.com/1175525): Add R8BG8A8Triplanar420Unorm format for dawn.
+  // TODO(crbug.com/1445450): Add support for other multiplane formats.
 
   NOTREACHED();
   return wgpu::TextureFormat::Undefined;

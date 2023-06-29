@@ -54,6 +54,11 @@ void NearbyInternalsPresenceHandler::RegisterMessages() {
           &NearbyInternalsPresenceHandler::HandleStartPresenceScan,
           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "StopPresenceScan",
+      base::BindRepeating(
+          &NearbyInternalsPresenceHandler::HandleStopPresenceScan,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "SyncPresenceCredentials",
       base::BindRepeating(
           &NearbyInternalsPresenceHandler::HandleSyncPresenceCredentials,
@@ -82,13 +87,18 @@ void NearbyInternalsPresenceHandler::HandleStartPresenceScan(
     NS_LOG(VERBOSE) << __func__
                     << ": NearbyPresenceService was retrieved successfully";
     ash::nearby::presence::NearbyPresenceService::ScanFilter filter(
-        ash::nearby::presence::NearbyPresenceService::IdentityType::kPrivate,
+        ash::nearby::presence::NearbyPresenceService::IdentityType::kPublic,
         /*actions=*/{});
     service->StartScan(
         filter, /*scan_delegate=*/this,
         base::BindOnce(&NearbyInternalsPresenceHandler::OnScanStarted,
                        weak_ptr_factory_.GetWeakPtr()));
   }
+}
+
+void NearbyInternalsPresenceHandler::HandleStopPresenceScan(
+    const base::Value::List& args) {
+  scan_session_.reset();
 }
 
 void NearbyInternalsPresenceHandler::HandleSyncPresenceCredentials(

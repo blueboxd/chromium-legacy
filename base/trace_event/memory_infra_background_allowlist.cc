@@ -35,6 +35,7 @@ constexpr auto kDumpProviderAllowlist =
         "android::ResourceManagerImpl",
 #endif
         "AutocompleteController",
+        "AXPlatformNode",
         "BlinkGC",
         "BlinkObjectCounters",
         "BlobStorageContext",
@@ -49,6 +50,7 @@ constexpr auto kDumpProviderAllowlist =
         "DownloadService",
         "ExtensionFunctions",
         "FontCaches",
+        "FrameEvictionManager",
         "GrShaderCache",
         "HistoryReport",
         "cc::ResourcePool",
@@ -101,6 +103,7 @@ constexpr auto kAllocatorDumpNameAllowlist = base::MakeFixedFlatSet<
 #if BUILDFLAG(IS_ANDROID)
         base::android::MeminfoDumpProvider::kDumpName,
 #endif
+        "accessibility/ax_platform_node",
         "blink_gc/main/allocated_objects",
         "blink_gc/main/heap",
         "blink_gc/workers/heap/worker_0x?",
@@ -146,6 +149,7 @@ constexpr auto kAllocatorDumpNameAllowlist = base::MakeFixedFlatSet<
         "extensions/value_store/Extensions.Database.Value.Restore/0x?",
         "font_caches/font_platform_data_cache",
         "font_caches/shape_caches",
+        "frame_evictor",
         "gpu/discardable_cache/cache_0x?",
         "gpu/discardable_cache/cache_0x?/avg_image_size",
         "gpu/gl/buffers/context_group_0x?",

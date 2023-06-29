@@ -9,11 +9,11 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/span.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/unique_ids.h"
-#include "content/public/browser/global_routing_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
@@ -214,7 +214,7 @@ class FormForest {
     // empty FrameData is created when a parent form can Resolve() a child's
     // LocalFrameToken and no form from that child frame has been seen yet.
     // However, if |child_forms| is non-empty, then driver is non-null.
-    raw_ptr<AutofillDriver, DanglingUntriaged> driver = nullptr;
+    raw_ptr<AutofillDriver> driver = nullptr;
   };
 
   FormForest();
@@ -230,10 +230,8 @@ class FormForest {
     UpdateTreeOfRendererForm(&renderer_form, driver);
   }
 
-  // Returns the non-null browser form of a known |renderer_form|.
-  // Returns null if |renderer_form| is unknown browser form; this may change to
-  // undefined behavior in the future.
-  const FormData* GetBrowserForm(FormGlobalId renderer_form) const;
+  // Returns the browser form of a known |renderer_form|.
+  const FormData& GetBrowserForm(FormGlobalId renderer_form) const;
 
   struct RendererForms {
     RendererForms();
@@ -314,13 +312,8 @@ class FormForest {
   friend class FormForestTestApi;
 
   struct FrameAndForm {
-    constexpr explicit operator bool() {
-      DCHECK_EQ(!frame, !form);
-      return frame && form;
-    }
-
-    raw_ptr<FrameData, DanglingUntriaged> frame = nullptr;
-    raw_ptr<FormData, DanglingUntriaged> form = nullptr;
+    raw_ref<FrameData> frame;
+    raw_ref<FormData> form;
   };
 
   // Returns the FrameData known for |frame|, or creates a new one and returns
@@ -375,17 +368,7 @@ class FormForest {
   void UpdateTreeOfRendererForm(FormData* renderer_form,
                                 AutofillDriver* driver);
 
-  // The URL of a main frame managed by the FormForest.
-  // TODO(crbug.com/1240247): Remove and make Resolve() static.
-  std::string MainUrlForDebugging() const;
-
-  // The frame managed by the FormForest that was last passed to
-  // UpdateTreeOfRendererForm().
-  // TODO(crbug.com/1240247): Remove and make Resolve() static.
-  content::GlobalRenderFrameHostId some_rfh_for_debugging_;
-
   // The FrameData nodes of the forest.
-  // The members FrameData::frame_token must not be mutated.
   // Note that since the elements are (smart) pointers, they are not invalidated
   // when the set is resized (unlike pointers or references to the elements).
   base::flat_set<std::unique_ptr<FrameData>, FrameData::CompareByFrameToken>

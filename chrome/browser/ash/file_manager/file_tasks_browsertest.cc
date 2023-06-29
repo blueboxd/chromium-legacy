@@ -48,6 +48,7 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/chromeos/policy/dlp/mock_dlp_rules_manager.h"
+#include "chrome/browser/chromeos/upload_office_to_cloud/upload_office_to_cloud.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -503,7 +504,7 @@ IN_PROC_BROWSER_TEST_P(FileTasksBrowserTest, ProvidedFileSystemFileSource) {
 }
 
 IN_PROC_BROWSER_TEST_P(FileTasksBrowserTest, ExecuteWebApp) {
-  auto web_app_info = std::make_unique<WebAppInstallInfo>();
+  auto web_app_info = std::make_unique<web_app::WebAppInstallInfo>();
   web_app_info->start_url = GURL("https://www.example.com/");
   web_app_info->scope = GURL("https://www.example.com/");
   apps::FileHandler handler;
@@ -876,8 +877,8 @@ class NonManagedAccount : public TestAccountBrowserTest {
 // non-managed user is logged in and |kUploadOfficeToCloud| is enabled.
 IN_PROC_BROWSER_TEST_F(NonManagedAccount,
                        IsEligibleAndEnabledUploadOfficeToCloud) {
-  ASSERT_TRUE(ash::cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud(
-      browser()->profile()));
+  ASSERT_TRUE(
+      chromeos::IsEligibleAndEnabledUploadOfficeToCloud(browser()->profile()));
 }
 
 // Test that the office PWA file handler is hidden from the available file
@@ -937,8 +938,8 @@ class EnterpriseAccount : public TestAccountBrowserTest {
 // enterprise user is logged in and |kUploadOfficeToCloud| is enabled.
 IN_PROC_BROWSER_TEST_F(EnterpriseAccount,
                        IsEligibleAndEnabledUploadOfficeToCloud) {
-  ASSERT_FALSE(ash::cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud(
-      browser()->profile()));
+  ASSERT_FALSE(
+      chromeos::IsEligibleAndEnabledUploadOfficeToCloud(browser()->profile()));
 }
 
 class ChildAccount : public TestAccountBrowserTest {
@@ -955,8 +956,8 @@ class ChildAccount : public TestAccountBrowserTest {
 // Tests that a |IsEligibleAndEnabledUploadOfficeToCloud| returns false when a
 // child user is logged in and |kUploadOfficeToCloud| is enabled.
 IN_PROC_BROWSER_TEST_F(ChildAccount, IsEligibleAndEnabledUploadOfficeToCloud) {
-  ASSERT_FALSE(ash::cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud(
-      browser()->profile()));
+  ASSERT_FALSE(
+      chromeos::IsEligibleAndEnabledUploadOfficeToCloud(browser()->profile()));
 }
 
 class NonManagedAccountNoFlag : public TestAccountBrowserTest {
@@ -968,8 +969,8 @@ class NonManagedAccountNoFlag : public TestAccountBrowserTest {
 // non-managed user is logged in but |kUploadOfficeToCloud| is disabled.
 IN_PROC_BROWSER_TEST_F(NonManagedAccountNoFlag,
                        IsEligibleAndEnabledUploadOfficeToCloud) {
-  ASSERT_FALSE(ash::cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud(
-      browser()->profile()));
+  ASSERT_FALSE(
+      chromeos::IsEligibleAndEnabledUploadOfficeToCloud(browser()->profile()));
 }
 
 // TODO(cassycc): move this class to a more appropriate spot.
@@ -1294,8 +1295,9 @@ IN_PROC_BROWSER_TEST_F(DriveTest, FileNotInDriveOpensSetUpDialog) {
 
 // TODO(cassycc): move this class to a more appropriate spot
 // Fake provided file system implementation specific to the `OneDriveTest`.
-// Overrides the `GetActions` method so the `kOneDriveUrlActionId` and
-// `kUserEmailActionId` actions are hardcoded to return for the test file.
+// Overrides the `GetActions` method so the `kOneDriveUrlActionId` action is
+// hardcoded to return for the test file. ODFS metadata actions, e.g.
+// `kUserEmailActionId`, are hardcoded to return for the root directory.
 class FakeProvidedFileSystemOneDrive
     : public ash::file_system_provider::FakeProvidedFileSystem {
  public:
@@ -1309,13 +1311,17 @@ class FakeProvidedFileSystemOneDrive
       const std::vector<base::FilePath>& entry_paths,
       GetActionsCallback callback) override {
     ash::file_system_provider::Actions actions;
-    for (auto& path : entry_paths) {
-      if (path == test_path_custom_actions_) {
-        actions.push_back(
-            {ash::cloud_upload::kOneDriveUrlActionId, kODFSSampleUrl});
-        actions.push_back(
-            {ash::cloud_upload::kUserEmailActionId, kSampleUserEmail1});
-        break;
+    if (entry_paths.size() == 1 &&
+        entry_paths[0].value() == ash::cloud_upload::kODFSMetadataQueryPath) {
+      actions.push_back(
+          {ash::cloud_upload::kUserEmailActionId, kSampleUserEmail1});
+    } else {
+      for (auto& path : entry_paths) {
+        if (path == test_path_custom_actions_) {
+          actions.push_back(
+              {ash::cloud_upload::kOneDriveUrlActionId, kODFSSampleUrl});
+          break;
+        }
       }
     }
     std::move(callback).Run(actions, base::File::FILE_OK);

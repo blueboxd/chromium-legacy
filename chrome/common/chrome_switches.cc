@@ -143,10 +143,6 @@ const char kCredits[] = "credits";
 // devtools://devtools/bundled/<path>
 const char kCustomDevtoolsFrontend[] = "custom-devtools-frontend";
 
-// Enables a frame context menu item that toggles the frame in and out of glass
-// mode (Windows Vista and up only).
-const char kDebugEnableFrameToggle[] = "debug-enable-frame-toggle";
-
 // Adds debugging entries such as Inspect Element to context menus of packed
 // apps.
 const char kDebugPackedApps[] = "debug-packed-apps";
@@ -199,6 +195,9 @@ const char kDisableExtensionsExcept[] = "disable-extensions-except";
 
 // Disables lazy loading of images and frames.
 const char kDisableLazyLoading[] = "disable-lazy-loading";
+
+// Disables NaCl. If kEnableNaCl is also set, this switch takes precedence.
+const char kDisableNaCl[] = "disable-nacl";
 
 // Disables print preview (For testing, and for users who don't like us. :[ )
 const char kDisablePrintPreview[] = "disable-print-preview";
@@ -265,8 +264,8 @@ const char kEnableExtensionActivityLogTesting[] =
 const char kEnableHangoutServicesExtensionForTesting[] =
     "enable-hangout-services-extension-for-testing";
 
-// Runs the Native Client inside the renderer process and enables GPU plugin
-// (internally adds lEnableGpuPlugin to the command line).
+// Allows NaCl to run in all contexts (such as open web). Note that
+// kDisableNaCl disables NaCl in all contexts and takes precedence.
 const char kEnableNaCl[] = "enable-nacl";
 
 // Enables the network-related benchmarking extensions.
@@ -518,6 +517,10 @@ const char kSilentDebuggerExtensionAPI[] = "silent-debugger-extension-api";
 // Causes Chrome to launch without opening any windows by default. Useful if
 // one wishes to use Chrome as an ash server.
 const char kSilentLaunch[] = "silent-launch";
+
+// Sets the BrowsingDataLifetime policy to a very short value (shorter than
+// normally possible) for testing purposes.
+const char kSimulateBrowsingDataLifetime[] = "simulate-browsing-data-lifetime";
 
 // Simulates a critical update being available.
 const char kSimulateCriticalUpdate[] = "simulate-critical-update";

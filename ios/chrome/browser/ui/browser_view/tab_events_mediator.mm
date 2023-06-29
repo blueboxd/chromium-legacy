@@ -13,12 +13,16 @@
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ui/browser_view/tab_consumer.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
 #import "ios/chrome/browser/ui/tabs/switch_to_tab_animation_view.h"
+#import "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_snapshot_providing.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_type.h"
 #import "ios/chrome/browser/url_loading/new_tab_animation_tab_helper.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_observer_bridge.h"
+#import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
@@ -135,8 +139,7 @@
       // ActiveWebStateChangeReason::Activated.
       break;
     case WebStateListChange::Type::kDetach:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didDetachWebState:atIndex: to here.
+      // Do nothing when a WebState is detached.
       break;
     case WebStateListChange::Type::kMove:
       // Do nothing when a WebState is moved.
@@ -306,10 +309,38 @@
         _browserState->IsOffTheRecord(), currentWebState, URL, transitionType);
   }
 }
-
 - (void)willSwitchToTabWithURL:(GURL)URL
               newWebStateIndex:(NSInteger)newWebStateIndex {
-  [self.consumer switchtoTabWithNewWebStateIndex:newWebStateIndex];
+  base::WeakPtr<web::WebState> weakWebStateBeingActivated =
+      _webStateList->GetWebStateAt(newWebStateIndex)->GetWeakPtr();
+  web::WebState* webStateBeingActivated = weakWebStateBeingActivated.get();
+  if (!webStateBeingActivated) {
+    return;
+  }
+  SnapshotTabHelper* snapshotTabHelper =
+      SnapshotTabHelper::FromWebState(webStateBeingActivated);
+  BOOL willAddPlaceholder =
+      PagePlaceholderTabHelper::FromWebState(webStateBeingActivated)
+          ->will_add_placeholder_for_next_navigation();
+  NewTabPageTabHelper* NTPHelper =
+      NewTabPageTabHelper::FromWebState(webStateBeingActivated);
+  UIImage* topToolbarImage = [self.toolbarSnapshotProvider
+      toolbarSideSwipeSnapshotForWebState:webStateBeingActivated
+                          withToolbarType:ToolbarType::kPrimary];
+  UIImage* bottomToolbarImage = [self.toolbarSnapshotProvider
+      toolbarSideSwipeSnapshotForWebState:webStateBeingActivated
+                          withToolbarType:ToolbarType::kSecondary];
+  SwitchToTabAnimationPosition position =
+      newWebStateIndex > _webStateList->active_index()
+          ? SwitchToTabAnimationPositionAfter
+          : SwitchToTabAnimationPositionBefore;
+
+  [self.consumer switchToTabAnimationPosition:position
+                            snapshotTabHelper:snapshotTabHelper
+                           willAddPlaceholder:willAddPlaceholder
+                          newTabPageTabHelper:NTPHelper
+                              topToolbarImage:topToolbarImage
+                           bottomToolbarImage:bottomToolbarImage];
 }
 
 @end

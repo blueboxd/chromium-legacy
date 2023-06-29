@@ -393,24 +393,20 @@ template("webview_alternate_library") {
   }
 }
 
-if (defined(android_secondary_abi_toolchain)) {
+if (android_64bit_target_cpu && !skip_secondary_abi_for_cq) {
   # Note here that on a given system, the webview-only library needs the same
   # library name as the browser library, since the system webview factory will
   # differentiate only by ABI.
-  if (current_toolchain == android_secondary_abi_toolchain) {
+  webview_alternate_library("monochrome_64") {
     # This target is the 32-bit WebView library that pairs with a 64-bit
     # browser. It is suffixed with _64 because its name must match the 64-bit
     # browser library.
-    webview_alternate_library("monochrome_64") {
-    }
-  } else {
-    # Inverse of above, for the original 32-bit case.
-    webview_alternate_library("monochrome") {
-    }
+    enable_target = current_toolchain == android_secondary_abi_toolchain
   }
-} else {
-  # 32-bit WebView library used in 32-bit only builds of 64/32 targets.
-  webview_alternate_library("monochrome_64") {
+
+  # Inverse of above, for the original 32-bit case.
+  webview_alternate_library("monochrome") {
+    enable_target = current_toolchain != android_secondary_abi_toolchain
   }
 }
 
@@ -448,11 +444,8 @@ java_group("android_webview_java") {
 group("empty_group") {
 }
 
-generate_jni("common_jni_headers") {
-  sources = [
-    "java/src/org/chromium/android_webview/common/AwResource.java",
-    "java/src/org/chromium/android_webview/common/crash/AwCrashReporterClient.java",
-  ]
+generate_jni("common_jni") {
+  sources = [ "java/src/org/chromium/android_webview/common/AwResource.java" ]
 }
 
 generate_jni("browser_jni_headers") {
@@ -496,12 +489,6 @@ generate_jni("browser_jni_headers") {
     "java/src/org/chromium/android_webview/safe_browsing/AwSafeBrowsingSafeModeAction.java",
     "java/src/org/chromium/android_webview/variations/VariationsSeedLoader.java",
   ]
-
-  deps = [ ":cancellation_signal_android_jar_jni_headers" ]
-}
-
-generate_jar_jni("cancellation_signal_android_jar_jni_headers") {
-  classes = [ "android/os/CancellationSignal.class" ]
 }
 
 android_library("browser_java") {
@@ -661,13 +648,13 @@ android_library("browser_java") {
     "//ui/android:ui_no_recycler_view_java",
     "//url:gurl_java",
   ]
-  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
   if (enable_spellcheck) {
     deps += [ "//components/spellcheck/browser/android:java" ]
   }
 
   srcjar_deps = [
+    ":browser_jni_headers",
     "//android_webview/browser:browser_enums",
     "//components/safe_browsing/core/browser/db:sb_threat_values",
   ]
@@ -717,15 +704,19 @@ android_library("platform_service_bridge_upstream_implementation_java") {
   deps = [ ":common_platform_services_java" ]
 }
 
+generate_jni("crash_client_jni") {
+  sources = [ "java/src/org/chromium/android_webview/common/crash/AwCrashReporterClient.java" ]
+}
+
 android_library("crash_client_java") {
   sources = [ "java/src/org/chromium/android_webview/common/crash/AwCrashReporterClient.java" ]
+  srcjar_deps = [ ":crash_client_jni" ]
 
   deps = [
     "//base:base_java",
     "//base:jni_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
   ]
-  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
 java_cpp_strings("common_java_switches_srcjar") {
@@ -769,6 +760,7 @@ android_library("common_java") {
     "//components/feature_engagement/public:public_java",
     "//components/metrics:metrics_java",
     "//components/network_session_configurator/android:network_session_configurator_java",
+    "//components/permissions/android:core_java",
     "//components/variations:variations_java",
     "//components/viz:viz_java",
     "//content/public/android:content_java",
@@ -786,6 +778,7 @@ android_library("common_java") {
   srcjar_deps = [
     ":common_java_features_srcjar",
     ":common_java_switches_srcjar",
+    ":common_jni",
   ]
 }
 

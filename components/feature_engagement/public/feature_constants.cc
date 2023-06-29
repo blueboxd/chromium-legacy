@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 
 namespace feature_engagement {
@@ -48,6 +49,9 @@ BASE_FEATURE(kIPHDownloadToolbarButtonFeature,
 BASE_FEATURE(kIPHExtensionsMenuFeature,
              "IPH_ExtensionsMenu",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHExtensionsRequestAccessButtonFeature,
+             "IPH_ExtensionsRequestAccessFeature",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHFocusHelpBubbleScreenReaderPromoFeature,
              "IPH_FocusHelpBubbleScreenReaderPromo",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -84,6 +88,9 @@ BASE_FEATURE(kIPHPerformanceNewBadgeFeature,
 BASE_FEATURE(kIPHPowerBookmarksSidePanelFeature,
              "IPH_PowerBookmarksSidePanel",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHPriceInsightsPageActionIconLabelFeature,
+             "IPH_PriceInsightsPageActionIconLabelFeature",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHPriceTrackingChipFeature,
              "IPH_PriceTrackingChipFeature",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -429,9 +436,6 @@ BASE_FEATURE(kIPHBottomToolbarTipFeature,
 BASE_FEATURE(kIPHLongPressToolbarTipFeature,
              "IPH_LongPressToolbarTip",
              base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kIPHNewTabTipFeature,
-             "IPH_NewTabTip",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHNewIncognitoTabTipFeature,
              "IPH_NewIncognitoTabTip",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -501,6 +505,9 @@ BASE_FEATURE(kIPHiOSShareToolbarItemFeature,
 BASE_FEATURE(kIPHiOSDefaultBrowserVideoPromoTriggerFeature,
              "IPH_iOSDefaultBrowserVideoPromoTrigger",
              base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHiOSPromoPostRestoreDefaultBrowserFeature,
+             "IPH_iOSPromoPostRestoreDefaultBrowser",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
@@ -522,6 +529,42 @@ BASE_FEATURE(kIPHGoogleOneOfferNotificationFeature,
 BASE_FEATURE(kIPHLauncherSearchHelpUiFeature,
              "IPH_LauncherSearchHelpUi",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedOneFeature,
+             "IPH_ScalableIphTimerBasedOne",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedTwoFeature,
+             "IPH_ScalableIphTimerBasedTwo",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedThreeFeature,
+             "IPH_ScalableIphTimerBasedThree",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedFourFeature,
+             "IPH_ScalableIphTimerBasedFour",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedFiveFeature,
+             "IPH_ScalableIphTimerBasedFive",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedSixFeature,
+             "IPH_ScalableIphTimerBasedSix",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedSevenFeature,
+             "IPH_ScalableIphTimerBasedSeven",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedEightFeature,
+             "IPH_ScalableIphTimerBasedEight",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedNineFeature,
+             "IPH_ScalableIphTimerBasedNine",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHScalableIphTimerBasedTenFeature,
+             "IPH_ScalableIphTimerBasedTen",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
+
+#if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+BASE_FEATURE(kIPHiOSPasswordPromoDesktopFeature,
+             "IPH_iOSPasswordPromoDesktop",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif  // !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 }  // namespace feature_engagement

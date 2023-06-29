@@ -247,41 +247,6 @@ class PrerenderDevToolsProtocolTest : public DevToolsProtocolTest {
 
   WebContents* web_contents() const { return shell()->web_contents(); }
 
-  std::string AttachToTabTargetAndGetSessionId() {
-    AttachToTabTarget(shell()->web_contents());
-    shell()->web_contents()->SetDelegate(this);
-
-    {
-      base::Value::Dict params;
-      params.Set("discover", true);
-      SendCommandSync("Target.setDiscoverTargets", std::move(params));
-    }
-
-    std::string frame_target_id;
-    for (int targetCount = 1; true; targetCount++) {
-      base::Value::Dict result;
-      result = WaitForNotification("Target.targetCreated", true);
-      if (*result.FindStringByDottedPath("targetInfo.type") == "page") {
-        frame_target_id =
-            std::string(*result.FindStringByDottedPath("targetInfo.targetId"));
-        break;
-      }
-      CHECK_LT(targetCount, 2);
-    }
-
-    {
-      base::Value::Dict params;
-      params.Set("targetId", frame_target_id);
-      params.Set("flatten", true);
-      const base::Value::Dict* result =
-          SendCommandSync("Target.attachToTarget", std::move(params));
-      CHECK(result);
-      std::string session_id(*result->FindString("sessionId"));
-      CHECK(session_id != "");
-      return session_id;
-    }
-  }
-
  private:
   std::unique_ptr<test::PrerenderTestHelper> prerender_helper_;
 };
@@ -2680,41 +2645,6 @@ class DevToolsProtocolDeviceEmulationPrerenderTest
 
   WebContents* GetWebContents() const { return shell()->web_contents(); }
 
-  std::string AttachToTabTargetAndGetSessionId() {
-    AttachToTabTarget(shell()->web_contents());
-    shell()->web_contents()->SetDelegate(this);
-
-    {
-      base::Value::Dict params;
-      params.Set("discover", true);
-      SendCommandSync("Target.setDiscoverTargets", std::move(params));
-    }
-
-    std::string frame_target_id;
-    for (int targetCount = 1; true; targetCount++) {
-      base::Value::Dict result;
-      result = WaitForNotification("Target.targetCreated", true);
-      if (*result.FindStringByDottedPath("targetInfo.type") == "page") {
-        frame_target_id =
-            std::string(*result.FindStringByDottedPath("targetInfo.targetId"));
-        break;
-      }
-      CHECK_LT(targetCount, 2);
-    }
-
-    {
-      base::Value::Dict params;
-      params.Set("targetId", frame_target_id);
-      params.Set("flatten", true);
-      const base::Value::Dict* result =
-          SendCommandSync("Target.attachToTarget", std::move(params));
-      CHECK(result);
-      std::string session_id(*result->FindString("sessionId"));
-      CHECK(session_id != "");
-      return session_id;
-    }
-  }
-
  protected:
   test::PrerenderTestHelper prerender_helper_;
 };
@@ -2732,22 +2662,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolDeviceEmulationPrerenderTest,
 
   GURL test_url = embedded_test_server()->GetURL("/devtools/navigation.html");
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
-  std::string session_id = AttachToTabTargetAndGetSessionId();
+  Attach();
 
   const gfx::Size original_size = GetViewSize();
   const gfx::Size emulated_size =
       gfx::Size(original_size.width() - 50, original_size.height() - 50);
 
-  {
-    const gfx::Size size = emulated_size;
-    base::Value::Dict params;
-    params.Set("width", size.width());
-    params.Set("height", size.height());
-    params.Set("deviceScaleFactor", 0);
-    params.Set("mobile", false);
-    SendSessionCommand("Emulation.setDeviceMetricsOverride", std::move(params),
-                       session_id, true);
-  }
+  EmulateDeviceSize(emulated_size);
   EXPECT_EQ(emulated_size, GetViewSize());
 
   // Start a prerender and ensure frame size isn't changed.
@@ -2760,8 +2681,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolDeviceEmulationPrerenderTest,
   prerender_helper_.NavigatePrimaryPage(prerender_url);
   EXPECT_EQ(emulated_size, GetViewSize());
 
-  SendSessionCommand("Emulation.clearDeviceMetricsOverride",
-                     base::Value::Dict(), session_id, true);
+  SendCommandSync("Emulation.clearDeviceMetricsOverride");
   EXPECT_EQ(original_size, GetViewSize());
 }
 
@@ -3904,6 +3824,41 @@ IN_PROC_BROWSER_TEST_F(PrerenderDevToolsProtocolTest,
       PrerenderFinalStatus::kMojoBinderPolicy, 1);
 }
 
+IN_PROC_BROWSER_TEST_F(
+    PrerenderDevToolsProtocolTest,
+    PrerenderStatusUpdatedReportsFailureWithDisallowedMojoInterface) {
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderingUrl = GetUrl("/empty.html?prerender");
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // Make a prerendered page.
+  int host_id = AddPrerender(kPrerenderingUrl);
+  auto* prerender_render_frame_host = GetPrerenderedMainFrameHost(host_id);
+  Attach();
+  SendCommandSync("Preload.enable");
+
+  // Executing `navigator.getGamepads()` to start binding the GamepadMonitor
+  // interface, and this is expected to cause prerender cancellation because
+  // the API is disallowed.
+  ExecuteScriptAsyncWithoutUserGesture(prerender_render_frame_host,
+                                       "navigator.getGamepads()");
+
+  base::Value::Dict result;
+  while (true) {
+    result = WaitForNotification("Preload.prerenderStatusUpdated", true);
+    if (*result.FindString("status") == "Failure") {
+      break;
+    }
+  }
+
+  EXPECT_THAT(*result.FindString("disallowedMojoInterface"),
+              Eq("device.mojom.GamepadMonitor"));
+}
+
 IN_PROC_BROWSER_TEST_F(PrerenderDevToolsProtocolTest,
                        CheckReportedPrerenderFeatures) {
   AttachToBrowserTarget();
@@ -4021,9 +3976,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderHoldbackDevToolsProtocolTest,
   // Navigate to an initial page.
   ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
 
-  std::string session_id = AttachToTabTargetAndGetSessionId();
-  SendSessionCommand("Preload.enable", base::Value::Dict(), session_id, true);
-  SendSessionCommand("Runtime.enable", base::Value::Dict(), session_id, true);
+  Attach();
+  SendCommandSync("Preload.enable");
+  SendCommandSync("Runtime.enable");
 
   AddPrerender(kPrerenderingUrl);
 

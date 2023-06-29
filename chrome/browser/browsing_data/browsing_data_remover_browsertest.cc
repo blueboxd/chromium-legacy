@@ -14,6 +14,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_future.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/media/clear_key_cdm_test_helper.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -32,6 +34,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
@@ -46,6 +49,7 @@
 #include "content/public/browser/network_service_util.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
@@ -150,6 +154,13 @@ class BrowsingDataRemoverBrowserTest
   void SetUpOnMainThread() override {
     BrowsingDataRemoverBrowserTestBase::SetUpOnMainThread();
     host_resolver()->AddRule(kExampleHost, "127.0.0.1");
+
+    // Explicitly disable session restore. Otherwise tests that restart the
+    // browser can get tab data persisted across sessions when we thought we
+    // deleted it.
+    SessionStartupPref::SetStartupPref(
+        GetProfile()->GetPrefs(),
+        SessionStartupPref(SessionStartupPref::DEFAULT));
   }
   void RemoveAndWait(uint64_t remove_mask) {
     RemoveAndWait(remove_mask, TimeEnum::kDefault, TimeEnum::kMax);
@@ -334,9 +345,27 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Download) {
 
 // Test that the salt for media device IDs is reset when cookies are cleared.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, MediaDeviceIdSalt) {
-  std::string original_salt = GetBrowser()->profile()->GetMediaDeviceIDSalt();
+  content::RenderFrameHost* frame_host = GetBrowser()
+                                             ->tab_strip_model()
+                                             ->GetActiveWebContents()
+                                             ->GetPrimaryMainFrame();
+  url::Origin origin = frame_host->GetLastCommittedOrigin();
+  net::SiteForCookies site_for_cookies =
+      net::SiteForCookies::FromOrigin(origin);
+  blink::StorageKey storage_key = blink::StorageKey::CreateFirstParty(origin);
+
+  base::test::TestFuture<bool, const std::string&> future;
+  content::GetContentClientForTesting()->browser()->GetMediaDeviceIDSalt(
+      frame_host, site_for_cookies, storage_key, future.GetCallback());
+  std::string original_salt = future.Get<1>();
+
   RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_COOKIES);
-  std::string new_salt = GetBrowser()->profile()->GetMediaDeviceIDSalt();
+
+  future.Clear();
+  content::GetContentClientForTesting()->browser()->GetMediaDeviceIDSalt(
+      frame_host, site_for_cookies, storage_key, future.GetCallback());
+  std::string new_salt = future.Get<1>();
+
   EXPECT_NE(original_salt, new_salt);
 }
 
@@ -1488,6 +1517,10 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
 
 // Restart after creating the data to ensure that everything was written to
 // disk.
+//
+// This depends on session restore being explicitly disabled by the test harness
+// above. Otherwise, we'll restore the tabs, delete the data on disk, and the
+// still-open tabs can get re-persisted.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
                        PRE_StorageRemovedFromDisk) {
   EXPECT_EQ(1, GetSiteDataCount());

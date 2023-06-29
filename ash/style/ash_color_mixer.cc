@@ -15,6 +15,7 @@
 #include "ui/color/color_id.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider.h"
+#include "ui/color/color_provider_key.h"
 #include "ui/color/color_recipe.h"
 #include "ui/color/color_transform.h"
 #include "ui/gfx/color_palette.h"
@@ -40,7 +41,7 @@ constexpr int kSecondToneOpacity = SK_AlphaOPAQUE * 0.3f;
 constexpr int kDisabledColorOpacity = SK_AlphaOPAQUE * 0.38f;
 
 void AddShieldAndBaseColors(ui::ColorMixer& mixer,
-                            const ui::ColorProviderManager::Key& key) {
+                            const ui::ColorProviderKey& key) {
   if (chromeos::features::IsJellyEnabled()) {
     // Generally, shield and base colors are cros.sys.sys-base-elevated.  That
     // is cros.sys.surface3 @ 90%.  So, map all shield colors to surface3 and
@@ -64,7 +65,7 @@ void AddShieldAndBaseColors(ui::ColorMixer& mixer,
   }
 
   const bool use_dark_color =
-      key.color_mode == ui::ColorProviderManager::ColorMode::kDark;
+      key.color_mode == ui::ColorProviderKey::ColorMode::kDark;
 
   // Colors of the Shield and Base layers.
   const SkColor default_background_color =
@@ -90,10 +91,9 @@ void AddShieldAndBaseColors(ui::ColorMixer& mixer,
 }
 
 // Mappings of Controls Colors for Material 2.
-void AddControlsColors(ui::ColorMixer& mixer,
-                       const ui::ColorProviderManager::Key& key) {
+void AddControlsColors(ui::ColorMixer& mixer, const ui::ColorProviderKey& key) {
   const bool use_dark_color =
-      key.color_mode == ui::ColorProviderManager::ColorMode::kDark;
+      key.color_mode == ui::ColorProviderKey::ColorMode::kDark;
 
   // ControlsLayer colors
   mixer[kColorAshHairlineBorderColor] =
@@ -115,10 +115,9 @@ void AddControlsColors(ui::ColorMixer& mixer,
 }
 
 // Mappings the Content layer colors for Material 2.
-void AddContentColors(ui::ColorMixer& mixer,
-                      const ui::ColorProviderManager::Key& key) {
+void AddContentColors(ui::ColorMixer& mixer, const ui::ColorProviderKey& key) {
   const bool use_dark_color =
-      key.color_mode == ui::ColorProviderManager::ColorMode::kDark;
+      key.color_mode == ui::ColorProviderKey::ColorMode::kDark;
 
   // ContentLayer colors.
   mixer[kColorAshScrollBarColor] =
@@ -364,8 +363,7 @@ void RemapLegacySemanticColors(ui::ColorMixer& mixer) {
 
 // Adds the dynamic color palette tokens based on user_color. This is the base
 // palette so it is independent of ColorMode.
-void AddRefPalette(ui::ColorMixer& mixer,
-                   const ui::ColorProviderManager::Key& key) {
+void AddRefPalette(ui::ColorMixer& mixer, const ui::ColorProviderKey& key) {
   // TODO(skau): Currently these colors are mapped 1-1 with the ui ref color ids
   // for compatibility with the older generated CrOS ids. Uses of these CrOS ids
   // can eventually be migrated to use the equivalent ui ids.
@@ -385,6 +383,7 @@ void AddRefPalette(ui::ColorMixer& mixer,
 
   mixer[cros_tokens::kCrosRefSecondary0] = {ui::kColorRefSecondary0};
   mixer[cros_tokens::kCrosRefSecondary10] = {ui::kColorRefSecondary10};
+  mixer[cros_tokens::kCrosRefSecondary12] = {ui::kColorRefSecondary12};
   mixer[cros_tokens::kCrosRefSecondary15] = {ui::kColorRefSecondary15};
   mixer[cros_tokens::kCrosRefSecondary20] = {ui::kColorRefSecondary20};
   mixer[cros_tokens::kCrosRefSecondary30] = {ui::kColorRefSecondary30};
@@ -427,8 +426,10 @@ void AddRefPalette(ui::ColorMixer& mixer,
   mixer[cros_tokens::kCrosRefError100] = {ui::kColorRefError100};
 
   mixer[cros_tokens::kCrosRefNeutral0] = {ui::kColorRefNeutral0};
+  mixer[cros_tokens::kCrosRefNeutral8] = {ui::kColorRefNeutral8};
   mixer[cros_tokens::kCrosRefNeutral10] = {ui::kColorRefNeutral10};
   mixer[cros_tokens::kCrosRefNeutral20] = {ui::kColorRefNeutral20};
+  mixer[cros_tokens::kCrosRefNeutral25] = {ui::kColorRefNeutral25};
   mixer[cros_tokens::kCrosRefNeutral30] = {ui::kColorRefNeutral30};
   mixer[cros_tokens::kCrosRefNeutral40] = {ui::kColorRefNeutral40};
   mixer[cros_tokens::kCrosRefNeutral50] = {ui::kColorRefNeutral50};
@@ -571,12 +572,26 @@ void ReverseMapSysColors(ui::ColorMixer& mixer, bool dark_mode) {
       cros_tokens::kIllustrationElevationSecondaryColor};
 }
 
+// Maps colors used in Skottie images to their cros.sys values.
+void RemapIllustrationColors(ui::ColorMixer& mixer) {
+  mixer[ui::kColorNativeColor1] = {cros_tokens::kCrosSysIlloColor1};
+  mixer[ui::kColorNativeColor1Shade1] = {cros_tokens::kCrosSysIlloColor11};
+  mixer[ui::kColorNativeColor1Shade2] = {cros_tokens::kCrosSysIlloColor12};
+  mixer[ui::kColorNativeColor2] = {cros_tokens::kCrosSysIlloColor2};
+  mixer[ui::kColorNativeColor3] = {cros_tokens::kCrosSysIlloColor3};
+  mixer[ui::kColorNativeColor4] = {cros_tokens::kCrosSysIlloColor4};
+  mixer[ui::kColorNativeColor5] = {cros_tokens::kCrosSysIlloColor5};
+  mixer[ui::kColorNativeColor6] = {cros_tokens::kCrosSysIlloColor6};
+  mixer[ui::kColorNativeBaseColor] = {cros_tokens::kCrosSysIlloBase};
+  mixer[ui::kColorNativeSecondaryColor] = {cros_tokens::kCrosSysIlloSecondary};
+}
+
 }  // namespace
 
 void AddCrosStylesColorMixer(ui::ColorProvider* provider,
-                             const ui::ColorProviderManager::Key& key) {
+                             const ui::ColorProviderKey& key) {
   ui::ColorMixer& mixer = provider->AddMixer();
-  bool dark_mode = key.color_mode == ui::ColorProviderManager::ColorMode::kDark;
+  bool dark_mode = key.color_mode == ui::ColorProviderKey::ColorMode::kDark;
   if (chromeos::features::IsJellyEnabled()) {
     AddRefPalette(mixer, key);
   } else {
@@ -596,14 +611,15 @@ void AddCrosStylesColorMixer(ui::ColorProvider* provider,
 
   if (chromeos::features::IsJellyEnabled()) {
     RemapLegacySemanticColors(mixer);
+    RemapIllustrationColors(mixer);
   }
 }
 
 void AddAshColorMixer(ui::ColorProvider* provider,
-                      const ui::ColorProviderManager::Key& key) {
+                      const ui::ColorProviderKey& key) {
   ui::ColorMixer& mixer = provider->AddMixer();
   const bool use_dark_color =
-      key.color_mode == ui::ColorProviderManager::ColorMode::kDark;
+      key.color_mode == ui::ColorProviderKey::ColorMode::kDark;
 
   AddShieldAndBaseColors(mixer, key);
   AddControlsColors(mixer, key);

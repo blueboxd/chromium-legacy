@@ -19,6 +19,10 @@
   v4l2_fourcc('Q', '0', '8', 'C') /* Qualcomm 8-bit compressed */
 #endif
 
+#ifndef V4L2_PIX_FMT_INVALID
+#define V4L2_PIX_FMT_INVALID v4l2_fourcc('0', '0', '0', '0')
+#endif
+
 namespace gfx {
 class Size;
 }
@@ -33,6 +37,21 @@ using IoctlAsCallback = base::RepeatingCallback<int(int, void*)>;
 // TODO(b/279980150): correct types and argument order and use decltype.
 using MmapAsCallback =
     base::RepeatingCallback<void*(void*, unsigned int, int, int, unsigned int)>;
+
+// These values are logged to UMA. Entries should not be renumbered and numeric
+// values should never be reused. Please keep in sync with
+// "MediaIoctlRequests" in src/tools/metrics/histograms/enums.xml.
+enum class MediaIoctlRequests {
+  kMediaIocDeviceInfo = 0,
+  kMediaIocRequestAlloc = 1,
+  kMediaRequestIocQueue = 2,
+  kMediaRequestIocReinit = 3,
+  kMaxValue = kMediaRequestIocReinit,
+};
+
+// Records Media.V4L2VideoDecoder.MediaIoctlError UMA when errors happen with
+// media controller API ioctl requests.
+void RecordMediaIoctlUMA(MediaIoctlRequests function);
 
 // Returns a human readable description of |memory|.
 const char* V4L2MemoryToString(v4l2_memory memory);
@@ -83,6 +102,11 @@ void GetSupportedResolution(const IoctlAsCallback& ioctl_cb,
                             gfx::Size* min_resolution,
                             gfx::Size* max_resolution);
 
+// Translates a media::VideoCodecProfile to a supported pixel format
+// (e.g. V4L2_PIX_FMT_VP9) if those are supported by Chrome. It returns
+// V4L2_PIX_FMT_INVALID otherwise.
+uint32_t VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
+                                       bool slice_based);
 }  // namespace media
 
 #endif  // MEDIA_GPU_V4L2_V4L2_UTILS_H_

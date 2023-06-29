@@ -20,7 +20,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/system/sys_info.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/thread_annotations.h"
@@ -66,42 +65,6 @@ namespace {
 BASE_FEATURE(kForceSoftwareForLowResolutions,
              "ForceSoftwareForLowResolutions",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-#if BUILDFLAG(IS_CHROMEOS_ASH) && defined(ARCH_CPU_ARM_FAMILY)
-bool IsRK3399Board() {
-  const std::string board = base::SysInfo::GetLsbReleaseBoard();
-  const char* kRK3399Boards[] = {
-      "bob",
-      "kevin",
-      "rainier",
-      "scarlet",
-  };
-  for (const char* b : kRK3399Boards) {
-    if (board.find(b) == 0u) {  // if |board| starts with |b|.
-      return true;
-    }
-  }
-  return false;
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) && defined(ARCH_CPU_ARM_FAMILY)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-bool IsZeroCopyTabCaptureEnabled() {
-  // If you change this function, please change the code of the same function
-  // in
-  // https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_content.cc.
-#if defined(ARCH_CPU_ARM_FAMILY)
-  // The GL driver used on RK3399 has a problem to enable zero copy tab capture.
-  // See b/267966835.
-  // TODO(b/239503724): Remove this code when RK3399 reaches EOL.
-  static bool kIsRK3399Board = IsRK3399Board();
-  if (kIsRK3399Board) {
-    return false;
-  }
-#endif  // defined(ARCH_CPU_ARM_FAMILY)
-  return base::FeatureList::IsEnabled(blink::features::kZeroCopyTabCapture);
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 bool IsNV12GpuMemoryBufferVideoFrame(const webrtc::VideoFrame& input_image) {
   rtc::scoped_refptr<webrtc::VideoFrameBuffer> video_frame_buffer =
@@ -552,7 +515,7 @@ bool IsZeroCopyEnabled(webrtc::VideoContentType content_type) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     // The zero-copy capture is available for all sources in ChromeOS
     // Ash-chrome.
-    return IsZeroCopyTabCaptureEnabled();
+    return base::FeatureList::IsEnabled(blink::features::kZeroCopyTabCapture);
 #else
     // Currently, zero copy capture screenshare is available only for tabs.
     // Since it is impossible to determine the content source, tab, window or
@@ -888,7 +851,7 @@ void RTCVideoEncoder::Impl::NotifyEncoderInfoChange(
 void RTCVideoEncoder::Impl::Enqueue(FrameChunk frame_chunk,
                                     SignaledValue encode_event) {
   TRACE_EVENT1("webrtc", "RTCVideoEncoder::Impl::Enqueue", "timestamp",
-               frame_chunk.timestamp);
+               frame_chunk.timestamp_us);
   DVLOG(3) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -1096,11 +1059,13 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
 void RTCVideoEncoder::Impl::BitstreamBufferReady(
     int32_t bitstream_buffer_id,
     const media::BitstreamBufferMetadata& metadata) {
-  TRACE_EVENT0("webrtc", "RTCVideoEncoder::Impl::BitstreamBufferReady");
+  TRACE_EVENT2("webrtc", "RTCVideoEncoder::Impl::BitstreamBufferReady",
+               "timestamp", metadata.timestamp.InMicroseconds(),
+               "bitstream_buffer_id", bitstream_buffer_id);
   DVLOG(3) << __func__ << " bitstream_buffer_id=" << bitstream_buffer_id
            << ", payload_size=" << metadata.payload_size_bytes
            << ", key_frame=" << metadata.key_frame
-           << ", timestamp ms=" << metadata.timestamp.InMilliseconds();
+           << ", timestamp ms=" << metadata.timestamp.InMicroseconds();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (bitstream_buffer_id < 0 ||
@@ -1353,7 +1318,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrame(FrameChunk frame_chunk) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!input_buffers_free_.empty());
   TRACE_EVENT1("webrtc", "RTCVideoEncoder::Impl::EncodeOneFrame", "timestamp",
-               frame_chunk.timestamp);
+               frame_chunk.timestamp_us);
 
   if (!video_encoder_) {
     async_encode_event_.SetAndReset(WEBRTC_VIDEO_CODEC_ERROR);
@@ -1523,7 +1488,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrameWithNativeInput(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(input_buffers_.empty() && input_buffers_free_.empty());
   TRACE_EVENT1("webrtc", "RTCVideoEncoder::Impl::EncodeOneFrameWithNativeInput",
-               "timestamp", frame_chunk.timestamp);
+               "timestamp", frame_chunk.timestamp_us);
 
   if (!video_encoder_) {
     async_encode_event_.SetAndReset(WEBRTC_VIDEO_CODEC_ERROR);
@@ -1863,7 +1828,7 @@ int32_t RTCVideoEncoder::Encode(
     const std::vector<webrtc::VideoFrameType>* frame_types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(webrtc_sequence_checker_);
   TRACE_EVENT1("webrtc", "RTCVideoEncoder::Encode", "timestamp",
-               input_image.timestamp());
+               input_image.timestamp_us());
   DVLOG(3) << __func__;
   if (!impl_) {
     DVLOG(3) << "Encoder is not initialized";

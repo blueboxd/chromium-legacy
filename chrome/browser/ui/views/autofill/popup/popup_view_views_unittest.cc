@@ -213,6 +213,40 @@ TEST_F(PopupViewViewsTest, ShowHideTest) {
   view().Hide();
 }
 
+TEST_F(PopupViewViewsTest, CanShowDropdownInBounds) {
+  CreateAndShowView({PopupItemId::kAutocompleteEntry, PopupItemId::kSeparator,
+                     PopupItemId::kAutofillOptions});
+
+  const int kSingleItemPopupHeight = view().GetPreferredSize().height();
+  const int kElementY = 10;
+  const int kElementHeight = 15;
+  controller().set_element_bounds({10, kElementY, 100, kElementHeight});
+
+  EXPECT_FALSE(view().CanShowDropdownInBoundsForTesting({0, 0, 100, 35}));
+
+  // Test a smaller than the popup height (-10px) available space.
+  EXPECT_FALSE(view().CanShowDropdownInBoundsForTesting(
+      {0, 0, 100, kElementY + kElementHeight + kSingleItemPopupHeight - 10}));
+
+  // Test a larger than the popup height (+10px) available space.
+  EXPECT_TRUE(view().CanShowDropdownInBoundsForTesting(
+      {0, 0, 100, kElementY + kElementHeight + kSingleItemPopupHeight + 10}));
+
+  view().Hide();
+
+  // Repeat the same tests as for the single-suggestion popup above,
+  // the list is scrollable so that the same restrictions apply.
+  CreateAndShowView({PopupItemId::kAutocompleteEntry,
+                     PopupItemId::kAutocompleteEntry,
+                     PopupItemId::kAutocompleteEntry, PopupItemId::kSeparator,
+                     PopupItemId::kAutofillOptions});
+  EXPECT_FALSE(view().CanShowDropdownInBoundsForTesting({0, 0, 100, 35}));
+  EXPECT_FALSE(view().CanShowDropdownInBoundsForTesting(
+      {0, 0, 100, kElementY + kElementHeight + kSingleItemPopupHeight - 10}));
+  EXPECT_TRUE(view().CanShowDropdownInBoundsForTesting(
+      {0, 0, 100, kElementY + kElementHeight + kSingleItemPopupHeight + 10}));
+}
+
 // This is a regression test for crbug.com/1113255.
 TEST_F(PopupViewViewsTest, ShowViewWithOnlyFooterItemsShouldNotCrash) {
   // Set suggestions to have only a footer item.
@@ -360,7 +394,7 @@ TEST_F(PopupViewViewsTest, CursorUpDownForSelectableCells) {
             absl::make_optional<CellIndex>(1u, CellType::kContent));
 }
 
-TEST_F(PopupViewViewsTest, CursorLeftRightForAutocompleteEntries) {
+TEST_F(PopupViewViewsTest, CursorLeftRightDownForAutocompleteEntries) {
   base::test::ScopedFeatureList feature_list{
       features::kAutofillShowAutocompleteDeleteButton};
 
@@ -370,29 +404,19 @@ TEST_F(PopupViewViewsTest, CursorLeftRightForAutocompleteEntries) {
 
   view().SetSelectedCell(CellIndex{0, CellType::kContent});
 
-  // Pressing left does nothing because the left-most cell is already selected.
+  // Pressing left or right does nothing because the autocomplete cell is
+  // handling it itself.
   SimulateKeyPress(ui::VKEY_LEFT);
   EXPECT_EQ(view().GetSelectedCell(),
             absl::make_optional<CellIndex>(0u, CellType::kContent));
-
-  // Pressing right selects the control area.
   SimulateKeyPress(ui::VKEY_RIGHT);
   EXPECT_EQ(view().GetSelectedCell(),
-            absl::make_optional<CellIndex>(0u, CellType::kControl));
-
-  // Going down respects the currently selected column.
-  SimulateKeyPress(ui::VKEY_DOWN);
-  EXPECT_EQ(view().GetSelectedCell(),
-            absl::make_optional<CellIndex>(1u, CellType::kControl));
-
-  // Wrapping respects the currently selected column.
-  SimulateKeyPress(ui::VKEY_DOWN);
-  EXPECT_EQ(view().GetSelectedCell(),
-            absl::make_optional<CellIndex>(0u, CellType::kControl));
-
-  SimulateKeyPress(ui::VKEY_LEFT);
-  EXPECT_EQ(view().GetSelectedCell(),
             absl::make_optional<CellIndex>(0u, CellType::kContent));
+
+  // Going down selects the next cell.
+  SimulateKeyPress(ui::VKEY_DOWN);
+  EXPECT_EQ(view().GetSelectedCell(),
+            absl::make_optional<CellIndex>(1u, CellType::kContent));
 }
 
 TEST_F(PopupViewViewsTest, PageUpDownForSelectableCells) {

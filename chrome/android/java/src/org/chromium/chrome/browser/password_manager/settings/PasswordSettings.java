@@ -32,7 +32,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feedback.FragmentHelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.password_check.PasswordCheck;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
@@ -40,7 +39,6 @@ import org.chromium.chrome.browser.password_manager.PasswordCheckReferrer;
 import org.chromium.chrome.browser.password_manager.PasswordManagerHelper;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningCoordinator;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ProfileDependentSetting;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
@@ -68,9 +66,9 @@ import java.util.Locale;
  * to view saved passwords (just the username and URL), and to delete saved passwords.
  */
 public class PasswordSettings extends PreferenceFragmentCompat
-        implements PasswordManagerHandler.PasswordListObserver,
-                   Preference.OnPreferenceClickListener, SyncService.SyncStateChangedListener,
-                   FragmentHelpAndFeedbackLauncher, ProfileDependentSetting {
+        implements PasswordListObserver, Preference.OnPreferenceClickListener,
+                   SyncService.SyncStateChangedListener, FragmentHelpAndFeedbackLauncher,
+                   ProfileDependentSetting {
     @IntDef({TrustedVaultBannerState.NOT_SHOWN, TrustedVaultBannerState.OFFER_OPT_IN,
             TrustedVaultBannerState.OPTED_IN})
     @Retention(RetentionPolicy.SOURCE)
@@ -236,7 +234,7 @@ public class PasswordSettings extends PreferenceFragmentCompat
             RecordHistogram.recordEnumeratedHistogram(PASSWORD_EXPORT_EVENT_HISTOGRAM,
                     ExportFlow.PasswordExportEvent.EXPORT_OPTION_SELECTED,
                     ExportFlow.PasswordExportEvent.COUNT);
-            mExportFlow.startExporting();
+            mExportFlow.startExporting(true);
             return true;
         }
         if (SearchUtils.handleSearchNavigation(item, mSearchItem, mSearchQuery, getActivity())) {
@@ -402,12 +400,10 @@ public class PasswordSettings extends PreferenceFragmentCompat
             }
         }
 
-        if (!mNoPasswords
-                && ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_LOCAL_PWD_MIGRATION_WARNING)) {
-            PasswordMigrationWarningCoordinator passwordMigrationWarningCoordinator =
-                    new PasswordMigrationWarningCoordinator(getContext(), mBottomSheetController);
-            passwordMigrationWarningCoordinator.showWarning(mProfile);
+        if (!mNoPasswords) {
+            PasswordManagerHandlerProvider.getInstance()
+                    .getPasswordManagerHandler()
+                    .showMigrationWarning(getActivity(), mBottomSheetController);
         }
     }
 

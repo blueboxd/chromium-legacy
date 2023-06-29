@@ -34,6 +34,7 @@
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/prefetch_service_delegate.h"
+#include "content/public/browser/private_network_device_delegate.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/responsiveness_calculator_delegate.h"
 #include "content/public/browser/sms_fetcher.h"
@@ -518,6 +519,13 @@ bool ContentBrowserClient::IsInterestGroupAPIAllowed(
     InterestGroupApiOperation operation,
     const url::Origin& top_frame_origin,
     const url::Origin& api_origin) {
+  return false;
+}
+
+bool ContentBrowserClient::IsPrivacySandboxReportingDestinationAttested(
+    content::BrowserContext* browser_context,
+    const url::Origin& destination_origin,
+    content::PrivacySandboxInvokingAPI invoking_api) {
   return false;
 }
 
@@ -1083,6 +1091,11 @@ UsbDelegate* ContentBrowserClient::GetUsbDelegate() {
   return nullptr;
 }
 
+PrivateNetworkDeviceDelegate*
+ContentBrowserClient::GetPrivateNetworkDeviceDelegate() {
+  return nullptr;
+}
+
 FontAccessDelegate* ContentBrowserClient::GetFontAccessDelegate() {
   return nullptr;
 }
@@ -1286,12 +1299,12 @@ void ContentBrowserClient::BlockBluetoothScanning(
     const url::Origin& requesting_origin,
     const url::Origin& embedding_origin) {}
 
-bool ContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(
-    content::BrowserContext* browser_context,
-    const GURL& scope,
+void ContentBrowserClient::GetMediaDeviceIDSalt(
+    content::RenderFrameHost* rfh,
     const net::SiteForCookies& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin) {
-  return false;
+    const blink::StorageKey& storage_key,
+    base::OnceCallback<void(bool, const std::string&)> callback) {
+  std::move(callback).Run(false, rfh->GetBrowserContext()->UniqueId());
 }
 
 base::OnceClosure ContentBrowserClient::FetchRemoteSms(

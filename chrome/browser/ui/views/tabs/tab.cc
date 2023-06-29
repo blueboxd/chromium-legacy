@@ -137,7 +137,7 @@ class TabStyleHighlightPathGenerator : public views::HighlightPathGenerator {
   }
 
  private:
-  const raw_ptr<TabStyleViews, DanglingUntriaged> tab_style_views_;
+  const raw_ptr<TabStyleViews, DanglingAcrossTasks> tab_style_views_;
 };
 
 }  // namespace
@@ -1074,7 +1074,7 @@ int Tab::GetWidthOfLargestSelectableRegion() const {
 }
 
 void Tab::UpdateForegroundColors() {
-  TabStyle::TabColors colors = tab_style_views()->CalculateColors();
+  TabStyle::TabColors colors = tab_style_views()->CalculateTargetColors();
   title_->SetEnabledColor(colors.foreground_color);
   close_button_->SetColors(colors);
   alert_indicator_button_->OnParentTabButtonColorChanged();

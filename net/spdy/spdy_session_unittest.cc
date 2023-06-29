@@ -72,7 +72,6 @@
 
 using net::test::IsError;
 using net::test::IsOk;
-using net::test::TestServerPushDelegate;
 using testing::_;
 
 namespace net {
@@ -204,11 +203,7 @@ class SpdySessionTest : public PlatformTest, public WithTaskEnvironment {
   void CreateNetworkSession() {
     DCHECK(!http_session_);
     DCHECK(!spdy_session_pool_);
-    http_session_ =
-        SpdySessionDependencies::SpdyCreateSession(&session_deps_);
-    auto test_push_delegate = std::make_unique<TestServerPushDelegate>();
-    test_push_delegate_ = test_push_delegate.get();
-    http_session_->SetServerPushDelegate(std::move(test_push_delegate));
+    http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
     spdy_session_pool_ = http_session_->spdy_session_pool();
   }
 
@@ -356,16 +351,6 @@ class SpdySessionTest : public PlatformTest, public WithTaskEnvironment {
 
   size_t num_created_streams() { return session_->created_streams_.size(); }
 
-  size_t num_unclaimed_pushed_streams() {
-    return spdy_session_pool_->push_promise_index()->CountStreamsForSession(
-        session_.get());
-  }
-
-  bool has_unclaimed_pushed_stream_for_url(const GURL& url) {
-    return spdy_session_pool_->push_promise_index()->FindStream(
-               url, session_.get()) != kNoPushedStreamFound;
-  }
-
   uint32_t header_encoder_table_size() const {
     return session_->buffered_spdy_framer_->header_encoder_table_size();
   }
@@ -383,7 +368,6 @@ class SpdySessionTest : public PlatformTest, public WithTaskEnvironment {
   SpdySessionDependencies session_deps_;
   std::unique_ptr<HttpNetworkSession> http_session_;
   base::WeakPtr<SpdySession> session_;
-  raw_ptr<TestServerPushDelegate> test_push_delegate_ = nullptr;
   raw_ptr<SpdySessionPool> spdy_session_pool_ = nullptr;
   const GURL test_url_;
   const url::SchemeHostPort test_server_;
@@ -1952,7 +1936,6 @@ TEST_F(SpdySessionTest, NetLogOnSessionGoaway) {
   ASSERT_EQ(42,
             GetIntegerValueFromParams(entries[pos], "last_accepted_stream_id"));
   ASSERT_EQ(0, GetIntegerValueFromParams(entries[pos], "active_streams"));
-  ASSERT_EQ(0, GetIntegerValueFromParams(entries[pos], "unclaimed_streams"));
   ASSERT_EQ("11 (ENHANCE_YOUR_CALM)",
             GetStringValueFromParams(entries[pos], "error_code"));
   ASSERT_EQ("foo", GetStringValueFromParams(entries[pos], "debug_data"));

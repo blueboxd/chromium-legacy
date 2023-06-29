@@ -13,8 +13,12 @@ source_set("web_applications") {
     "commands/callback_command.h",
     "commands/clear_browsing_data_command.cc",
     "commands/clear_browsing_data_command.h",
+    "commands/dedupe_install_urls_command.cc",
+    "commands/dedupe_install_urls_command.h",
     "commands/externally_managed_install_command.cc",
     "commands/externally_managed_install_command.h",
+    "commands/fetch_install_info_from_install_url_command.cc",
+    "commands/fetch_install_info_from_install_url_command.h",
     "commands/fetch_installability_for_chrome_management.cc",
     "commands/fetch_installability_for_chrome_management.h",
     "commands/fetch_manifest_and_install_command.cc",
@@ -27,8 +31,6 @@ source_set("web_applications") {
     "commands/install_from_sync_command.h",
     "commands/install_placeholder_command.cc",
     "commands/install_placeholder_command.h",
-    "commands/install_preloaded_verified_app_command.cc",
-    "commands/install_preloaded_verified_app_command.h",
     "commands/manifest_update_check_command.cc",
     "commands/manifest_update_check_command.h",
     "commands/manifest_update_finalize_command.cc",
@@ -39,8 +41,8 @@ source_set("web_applications") {
     "commands/os_integration_synchronize_command.h",
     "commands/run_on_os_login_command.cc",
     "commands/run_on_os_login_command.h",
-    "commands/sub_app_install_command.cc",
-    "commands/sub_app_install_command.h",
+    "commands/uninstall_all_user_installed_web_apps_command.cc",
+    "commands/uninstall_all_user_installed_web_apps_command.h",
     "commands/update_file_handler_command.cc",
     "commands/update_file_handler_command.h",
     "commands/update_protocol_handler_approval_command.cc",
@@ -84,6 +86,8 @@ source_set("web_applications") {
     "isolated_web_apps/isolated_web_app_install_command_helper.h",
     "isolated_web_apps/isolated_web_app_location.cc",
     "isolated_web_apps/isolated_web_app_location.h",
+    "isolated_web_apps/isolated_web_app_prepare_and_store_update_command.cc",
+    "isolated_web_apps/isolated_web_app_prepare_and_store_update_command.h",
     "isolated_web_apps/isolated_web_app_reader_registry.cc",
     "isolated_web_apps/isolated_web_app_reader_registry.h",
     "isolated_web_apps/isolated_web_app_reader_registry_factory.cc",
@@ -284,6 +288,8 @@ source_set("web_applications") {
     sources += [
       "chromeos_web_app_experiments.cc",
       "chromeos_web_app_experiments.h",
+      "commands/install_preloaded_verified_app_command.cc",
+      "commands/install_preloaded_verified_app_command.h",
       "isolated_web_apps/isolated_web_app_downloader.cc",
       "isolated_web_apps/isolated_web_app_downloader.h",
       "isolated_web_apps/policy/isolated_web_app_external_install_options.cc",
@@ -572,7 +578,7 @@ source_set("web_applications_test_support") {
     "test/with_crosapi_param.cc",
     "test/with_crosapi_param.h",
   ]
-
+  public_deps = [ "//components/webapps/common:mojo_bindings" ]
   deps = [
     ":web_applications",
     "//base/test:test_support",
@@ -594,7 +600,6 @@ source_set("web_applications_test_support") {
     "//testing/gtest",
     "//ui/webui",
   ]
-
   if (is_chromeos_ash) {
     deps += [
       "//ash/constants",
@@ -609,7 +614,9 @@ source_set("web_applications_unit_tests") {
 
   sources = [
     "commands/clear_browsing_data_command_unittest.cc",
+    "commands/dedupe_install_urls_command_unittest.cc",
     "commands/externally_managed_install_command_unittest.cc",
+    "commands/fetch_install_info_from_install_url_command_unittest.cc",
     "commands/fetch_installability_for_chrome_management_unittest.cc",
     "commands/fetch_manifest_and_install_command_unittest.cc",
     "commands/install_app_locally_command_unittest.cc",
@@ -619,7 +626,7 @@ source_set("web_applications_unit_tests") {
     "commands/manifest_update_finalize_command_unittest.cc",
     "commands/os_integration_synchronize_command_unittest.cc",
     "commands/run_on_os_login_command_unittest.cc",
-    "commands/sub_app_install_command_unittest.cc",
+    "commands/uninstall_all_user_installed_web_apps_command_unittest.cc",
     "commands/update_file_handler_command_unittest.cc",
     "commands/web_app_uninstall_command_unittest.cc",
     "daily_metrics_helper_unittest.cc",
@@ -633,6 +640,7 @@ source_set("web_applications_unit_tests") {
     "isolated_web_apps/install_isolated_web_app_from_command_line_unittest.cc",
     "isolated_web_apps/isolated_web_app_dev_mode_unittest.cc",
     "isolated_web_apps/isolated_web_app_install_command_helper_unittest.cc",
+    "isolated_web_apps/isolated_web_app_prepare_and_store_update_command_unittest.cc",
     "isolated_web_apps/isolated_web_app_reader_registry_factory_unittest.cc",
     "isolated_web_apps/isolated_web_app_reader_registry_unittest.cc",
     "isolated_web_apps/isolated_web_app_response_reader_factory_unittest.cc",
@@ -809,7 +817,6 @@ source_set("web_applications_browser_tests") {
     "commands/fetch_manifest_and_install_command_browsertest.cc",
     "commands/install_from_info_command_browsertest.cc",
     "commands/install_from_sync_command_browsertest.cc",
-    "commands/install_preloaded_verified_app_command_browsertest.cc",
     "commands/navigate_and_trigger_install_dialog_command_browsertest.cc",
     "commands/update_protocol_handler_approval_command_browsertest.cc",
     "externally_managed_app_manager_browsertest.cc",
@@ -819,9 +826,9 @@ source_set("web_applications_browser_tests") {
     "isolated_web_apps/isolated_web_app_browsing_data_browsertest.cc",
     "isolated_web_apps/isolated_web_app_dev_tools_browsertest.cc",
     "isolated_web_apps/isolated_web_app_error_page_browsertest.cc",
+    "isolated_web_apps/isolated_web_app_prepare_and_store_update_command_browsertest.cc",
     "isolated_web_apps/isolated_web_app_url_loader_factory_browsertest.cc",
     "manifest_update_manager_browsertest.cc",
-    "ml_promotion_browsertest.cc",
     "policy/web_app_policy_manager_browsertest.cc",
     "preinstalled_web_app_manager_browsertest.cc",
     "preinstalled_web_apps_browsertest.cc",
@@ -833,6 +840,11 @@ source_set("web_applications_browser_tests") {
     "web_app_pref_migration_browsertest.cc",
     "web_contents/web_app_url_loader_browsertest.cc",
   ]
+
+  if (is_chromeos) {
+    sources +=
+        [ "commands/install_preloaded_verified_app_command_browsertest.cc" ]
+  }
 
   if (is_linux) {
     sources += [
@@ -860,6 +872,8 @@ source_set("web_applications_browser_tests") {
     "//chrome/browser/profiles:profile",
     "//chrome/test:test_support",
     "//chrome/test:test_support_ui",
+    "//components/segmentation_platform/public:public",
+    "//components/segmentation_platform/public:test_support",
     "//components/services/app_service/public/cpp:app_update",
     "//components/services/app_service/public/cpp:protocol_handling",
     "//components/site_engagement/content",

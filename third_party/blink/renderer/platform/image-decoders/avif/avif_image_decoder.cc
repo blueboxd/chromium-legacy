@@ -15,6 +15,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/timer/elapsed_timer.h"
@@ -25,12 +26,16 @@
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "media/video/half_float_maker.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/renderer/platform/graphics/rw_buffer.h"
 #include "third_party/blink/renderer/platform/image-decoders/fast_shared_buffer_reader.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_animation.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/libavif/src/include/avif/avif.h"
+#include "third_party/libavifinfo/src/avifinfo.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
+#include "third_party/skia/include/private/SkXmp.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/color_transform.h"
 #include "ui/gfx/half_float.h"
@@ -257,6 +262,105 @@ void YUVAToRGBA(const avifImage* image,
       rgba_dest++;
     }
   }
+}
+
+// Creates a copy of the given input (AVIF image data), with the primary item id
+// changed so that it now points to the gain map image.
+scoped_refptr<blink::SegmentReader> CreateGainmapSegmentReader(
+    const AvifInfoFeatures& features,
+    const blink::SegmentReader* input) {
+  const uint64_t primary_item_id_start = features.primary_item_id_location;
+  const uint64_t primary_item_id_end =
+      primary_item_id_start + features.primary_item_id_bytes;  // Exclusive.
+  const uint32_t new_id = features.gainmap_item_id;
+
+  // Copy the input data while changing the item id.
+  blink::RWBuffer rw_buffer;
+  size_t item_id_bytes_to_write = features.primary_item_id_bytes;
+  CHECK(item_id_bytes_to_write == 2 || item_id_bytes_to_write == 4);
+  size_t position = 0;
+  const char* segment;
+  while (size_t length = input->GetSomeData(segment, position)) {
+    // Check if the location of the primary item id overlaps with the current
+    // segment.
+    if (position + length > primary_item_id_start &&
+        position < primary_item_id_end) {
+      size_t pos_in_segment =
+          (primary_item_id_start > position)
+              ? (static_cast<size_t>(primary_item_id_start) - position)
+              : 0;
+      // Append the part of the segment before the id.
+      if (pos_in_segment > 0) {
+        rw_buffer.Append(segment, pos_in_segment);
+      }
+      // Write the id bytes (big endian).
+      while (item_id_bytes_to_write > 0 && pos_in_segment < length) {
+        const uint8_t to_write =
+            (new_id >> (8 * (item_id_bytes_to_write - 1))) & 0xff;
+        rw_buffer.Append(&to_write, 1);
+        item_id_bytes_to_write--;
+        pos_in_segment++;
+      }
+      // Append the part of the segment after the id.
+      if (pos_in_segment < length) {
+        rw_buffer.Append(segment + pos_in_segment, length - pos_in_segment);
+      }
+    } else {
+      rw_buffer.Append(segment, length);
+    }
+    position += length;
+  }
+  return blink::SegmentReader::CreateFromROBuffer(
+      rw_buffer.MakeROBufferSnapshot());
+}
+
+// Stream object for use with libavifinfo.
+struct AvifInfoSegmentReaderStream {
+  const blink::SegmentReader* reader = nullptr;
+  size_t num_read_bytes = 0;
+  uint8_t buffer[AVIFINFO_MAX_NUM_READ_BYTES];
+};
+
+// Stream reading function for use with libavifinfo.
+const uint8_t* AvifInfoSegmentReaderRead(void* void_stream, size_t num_bytes) {
+  AvifInfoSegmentReaderStream* stream =
+      reinterpret_cast<AvifInfoSegmentReaderStream*>(void_stream);
+
+  if ((stream->reader->size() <= stream->num_read_bytes) ||
+      (stream->reader->size() - stream->num_read_bytes) < num_bytes) {
+    return nullptr;  // Not enough data.
+  }
+
+  const char* data;
+  size_t data_size =
+      stream->reader->GetSomeData(data, /*position=*/stream->num_read_bytes);
+  if (data_size >= num_bytes) {
+    // Enough data was read in one go.
+    stream->num_read_bytes += num_bytes;
+    return reinterpret_cast<const uint8_t*>(data);
+  }
+
+  // Read multiple times and concatenate data chunks in a buffer.
+  CHECK_LE(num_bytes, size_t{AVIFINFO_MAX_NUM_READ_BYTES});
+  size_t buffer_pos = 0;
+  while (num_bytes != 0) {
+    data_size =
+        stream->reader->GetSomeData(data, /*position=*/stream->num_read_bytes);
+    CHECK_NE(data_size, 0u);
+    const size_t copy_size = std::min(data_size, num_bytes);
+    std::memcpy(stream->buffer + buffer_pos, data, copy_size);
+    buffer_pos += copy_size;
+    stream->num_read_bytes += copy_size;
+    num_bytes -= copy_size;
+  }
+
+  return stream->buffer;
+}
+
+void AvifInfoSegmentReaderSkip(void* void_stream, size_t num_bytes) {
+  AvifInfoSegmentReaderStream* stream =
+      reinterpret_cast<AvifInfoSegmentReaderStream*>(void_stream);
+  stream->num_read_bytes += num_bytes;
 }
 
 }  // namespace
@@ -730,7 +834,7 @@ avifResult AVIFImageDecoder::ReadFromSegmentReader(avifIO* io,
                                       : AVIF_RESULT_WAITING_ON_IO;
   }
 
-  // It is more convenient to work with a variable of the wtf_size_t type. Since
+  // It is more convenient to work with a variable of the size_t type. Since
   // offset <= io_data->reader->size() <= SIZE_MAX, this cast is safe.
   size_t position = static_cast<size_t>(offset);
   const size_t available_size = io_data->reader->size() - position;
@@ -991,6 +1095,7 @@ bool AVIFImageDecoder::UpdateDemuxer() {
   // If the image is cropped, pass the size of the cropped image (the clean
   // aperture) to SetSize().
   if (container->transformFlags & AVIF_TRANSFORM_CLAP) {
+    AVIFCleanApertureType clap_type;
     avifCropRect crop_rect;
     avifDiagnostics diag;
     avifBool valid_clap = avifCropRectConvertCleanApertureBox(
@@ -999,6 +1104,7 @@ bool AVIFImageDecoder::UpdateDemuxer() {
     if (!valid_clap) {
       DVLOG(1) << "Invalid 'clap' property: " << diag.error
                << "; showing the full image.";
+      clap_type = AVIFCleanApertureType::kInvalid;
       ignore_clap_ = true;
     } else if (crop_rect.x != 0 || crop_rect.y != 0) {
       // To help discourage the creation of files with privacy risks, also
@@ -1007,12 +1113,15 @@ bool AVIFImageDecoder::UpdateDemuxer() {
       // https://github.com/AOMediaCodec/av1-avif/issues/189.
       DVLOG(1) << "Origin of 'clap' property anchored to (" << crop_rect.x
                << ", " << crop_rect.y << "); showing the full image.";
+      clap_type = AVIFCleanApertureType::kNonzeroOrigin;
       ignore_clap_ = true;
     } else {
+      clap_type = AVIFCleanApertureType::kZeroOrigin;
       clap_origin_.SetPoint(crop_rect.x, crop_rect.y);
       width = crop_rect.width;
       height = crop_rect.height;
     }
+    clap_type_ = clap_type;
   }
   return SetSize(width, height);
 }
@@ -1051,6 +1160,12 @@ avifResult AVIFImageDecoder::DecodeImage(wtf_size_t index) {
   decoded_image_ = image;
   if ((image->transformFlags & AVIF_TRANSFORM_CLAP) && !ignore_clap_) {
     CropDecodedImage();
+  }
+
+  if (ret == AVIF_RESULT_OK && clap_type_.has_value()) {
+    base::UmaHistogramEnumeration("Blink.ImageDecoders.Avif.CleanAperture",
+                                  clap_type_.value());
+    clap_type_.reset();
   }
   return ret;
 }
@@ -1280,6 +1395,75 @@ void AVIFImageDecoder::ColorCorrectImage(int from_row,
       DCHECK(success);
     }
   }
+}
+
+bool AVIFImageDecoder::GetGainmapInfoAndData(
+    SkGainmapInfo& out_gainmap_info,
+    scoped_refptr<SegmentReader>& out_gainmap_data) const {
+  CHECK(base::FeatureList::IsEnabled(blink::features::kGainmapHdrImages));
+  if (!base::FeatureList::IsEnabled(features::kAvifGainmapHdrImages)) {
+    return false;
+  }
+
+  // We already know that the file is an AVIF file so there is no need to
+  // call AvifInfoIdentify(). Get the features directly.
+  AvifInfoSegmentReaderStream stream;
+  stream.reader = data_.get();
+
+  // Extract gainmap image.
+  AvifInfoFeatures features;
+  const AvifInfoStatus status = AvifInfoGetFeaturesStream(
+      &stream, AvifInfoSegmentReaderRead, AvifInfoSegmentReaderSkip, &features);
+  if (status != kAvifInfoOk || !features.has_gainmap) {
+    return false;
+  }
+  out_gainmap_data = CreateGainmapSegmentReader(features, data_.get());
+
+  // Parse gainmap image to get gainmap XMP.
+  AvifIOData gainmap_avif_io_data = {
+      .reader = out_gainmap_data.get(),
+      .all_data_received = IsAllDataReceived(),
+  };
+  avifIO gainmap_avif_io = {.destroy = nullptr,
+                            .read = ReadFromSegmentReader,
+                            .write = nullptr,
+                            .sizeHint = gainmap_avif_io_data.all_data_received
+                                            ? out_gainmap_data->size()
+                                            : kMaxAvifFileSize,
+                            .persistent = AVIF_FALSE,
+                            .data = &gainmap_avif_io_data};
+  auto decoder = std::unique_ptr<avifDecoder, void (*)(avifDecoder*)>(
+      avifDecoderCreate(), avifDecoderDestroy);
+  if (!decoder) {
+    return false;
+  }
+  avifDecoderSetIO(decoder.get(), &gainmap_avif_io);
+  const avifResult gainmap_parse_result = avifDecoderParse(decoder.get());
+  if (gainmap_parse_result == AVIF_RESULT_WAITING_ON_IO) {
+    return false;  // Not enough data.
+  }
+  if (gainmap_parse_result != AVIF_RESULT_OK) {
+    DVLOG(1) << "Failed to parse AVIF gainmap image";
+    return false;
+  }
+  if (decoder->image->xmp.size == 0) {
+    DVLOG(1) << "No XMP metadata found for AVIF gainmap image";
+    return false;
+  }
+
+  // Extract gainmap metadata from XMP.
+  sk_sp<SkData> xmp_sk_data = SkData::MakeWithoutCopy(decoder->image->xmp.data,
+                                                      decoder->image->xmp.size);
+  std::unique_ptr<SkXmp> xmp_sk = SkXmp::Make(xmp_sk_data);
+  if (!xmp_sk) {
+    DVLOG(1) << "Failed to parse AVIF gainmap XMP";
+    return false;
+  }
+  if (!xmp_sk->getGainmapInfoHDRGM(&out_gainmap_info)) {
+    DVLOG(1) << "Failed to parse AVIF gainmap XMP";
+    return false;
+  }
+  return true;
 }
 
 }  // namespace blink

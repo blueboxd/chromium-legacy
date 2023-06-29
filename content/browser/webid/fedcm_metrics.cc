@@ -279,6 +279,12 @@ void RecordPreventSilentAccess(RenderFrameHost& rfh,
   base::UmaHistogramEnumeration("Blink.FedCm.PreventSilentAccessFrameType",
                                 frame_type);
 
+  // Ensure the lifecycle state as GetPageUkmSourceId doesn't support the
+  // prerendering page. As FederatedAithRequest runs behind the
+  // BrowserInterfaceBinders, the service doesn't receive any request while
+  // prerendering, and the CHECK should always meet the condition.
+  CHECK(
+      !rfh.IsInLifecycleState(RenderFrameHost::LifecycleState::kPrerendering));
   ukm::builders::Blink_FedCm ukm_builder(rfh.GetPageUkmSourceId());
   ukm_builder.SetPreventSilentAccessFrameType(static_cast<int>(frame_type));
   ukm_builder.Record(ukm::UkmRecorder::Get());
@@ -305,6 +311,12 @@ void RecordIdpSignOutNetError(int response_code) {
   }
   base::UmaHistogramSparse("Blink.FedCm.SignInStatusSetToSignout.NetError",
                            -net_error);
+}
+
+void RecordAccountsResponseInvalidReason(
+    IdpNetworkRequestManager::AccountsResponseInvalidReason reason) {
+  base::UmaHistogramEnumeration(
+      "Blink.FedCm.Status.AccountsResponseInvalidReason", reason);
 }
 
 }  // namespace content

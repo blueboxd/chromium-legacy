@@ -237,6 +237,20 @@ std::vector<FieldGlobalId> ContentAutofillDriver::FillOrPreviewForm(
       });
 }
 
+void ContentAutofillDriver::UndoAutofill(
+    const FormData& data,
+    const url::Origin& triggered_origin,
+    const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map) {
+  return autofill_router().UndoAutofill(
+      this, data, triggered_origin, field_type_map,
+      [](ContentAutofillDriver* target, const FormData& data) {
+        if (!target->RendererIsAvailable()) {
+          return;
+        }
+        target->GetAutofillAgent()->UndoAutofill(data);
+      });
+}
+
 void ContentAutofillDriver::SendAutofillTypePredictionsToRenderer(
     const std::vector<FormStructure*>& forms) {
   std::vector<FormDataPredictions> type_predictions =
@@ -294,6 +308,20 @@ void ContentAutofillDriver::RendererShouldClearPreviewedForm() {
         if (!target->RendererIsAvailable())
           return;
         target->GetAutofillAgent()->ClearPreviewedForm();
+      });
+}
+
+void ContentAutofillDriver::RendererShouldTriggerSuggestions(
+    const FieldGlobalId& field,
+    AutofillSuggestionTriggerSource trigger_source) {
+  autofill_router().RendererShouldTriggerSuggestions(
+      this, field, trigger_source,
+      [](ContentAutofillDriver* target, const FieldRendererId& field,
+         AutofillSuggestionTriggerSource trigger_source) {
+        if (!target->RendererIsAvailable()) {
+          return;
+        }
+        target->GetAutofillAgent()->TriggerSuggestions(field, trigger_source);
       });
 }
 
@@ -578,15 +606,15 @@ void ContentAutofillDriver::DidEndTextFieldEditing() {
       });
 }
 
-void ContentAutofillDriver::SelectFieldOptionsDidChange(
+void ContentAutofillDriver::SelectOrSelectMenuFieldOptionsDidChange(
     const FormData& raw_form) {
   if (!bad_message::CheckFrameNotPrerendering(render_frame_host())) {
     return;
   }
-  autofill_router().SelectFieldOptionsDidChange(
+  autofill_router().SelectOrSelectMenuFieldOptionsDidChange(
       this, GetFormWithFrameAndFormMetaData(raw_form),
       [](ContentAutofillDriver* target, const FormData& form) {
-        target->autofill_manager_->OnSelectFieldOptionsDidChange(
+        target->autofill_manager_->OnSelectOrSelectMenuFieldOptionsDidChange(
             WithNewVersion(form));
       });
 }

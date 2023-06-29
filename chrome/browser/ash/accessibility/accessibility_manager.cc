@@ -11,6 +11,7 @@
 
 #include "ash/accessibility/autoclick/autoclick_controller.h"
 #include "ash/accessibility/sticky_keys/sticky_keys_controller.h"
+#include "ash/color_enhancement/color_enhancement_controller.h"
 #include "ash/constants/ash_constants.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
@@ -63,7 +64,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
@@ -382,16 +382,7 @@ AccessibilityManager* AccessibilityManager::Get() {
 
 // static
 void AccessibilityManager::ShowAccessibilityHelp() {
-  if (crosapi::browser_util::IsLacrosPrimaryBrowser()) {
-    crosapi::BrowserManager::Get()->SwitchToTab(
-        GURL(chrome::kChromeAccessibilityHelpURL),
-        /*path_behavior=*/NavigateParams::RESPECT);
-    return;
-  }
-
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetActiveUserProfile());
-  ShowSingletonTab(displayer.browser(),
+  ShowSingletonTab(ProfileManager::GetActiveUserProfile(),
                    GURL(chrome::kChromeAccessibilityHelpURL));
 }
 
@@ -565,7 +556,7 @@ bool AccessibilityManager::ShouldShowAccessibilityMenu() {
     }
     if (::features::
             AreExperimentalAccessibilityColorEnhancementSettingsEnabled() &&
-        prefs->GetBoolean(prefs::kAccessibilityColorFiltering)) {
+        prefs->GetBoolean(prefs::kAccessibilityColorCorrectionEnabled)) {
       return true;
     }
   }
@@ -1352,6 +1343,22 @@ void AccessibilityManager::OnSwitchAccessDisabled() {
   switch_access_loader_->Unload();
 }
 
+void AccessibilityManager::SetColorCorrectionEnabled(bool enabled) {
+  if (!profile_) {
+    return;
+  }
+
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetBoolean(prefs::kAccessibilityColorCorrectionEnabled,
+                           enabled);
+  pref_service->CommitPendingWrite();
+}
+
+bool AccessibilityManager::IsColorCorrectionEnabled() const {
+  return profile_ && profile_->GetPrefs()->GetBoolean(
+                         prefs::kAccessibilityColorCorrectionEnabled);
+}
+
 bool AccessibilityManager::IsBrailleDisplayConnected() const {
   return braille_display_connected_;
 }
@@ -1687,6 +1694,19 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
     base::UmaHistogramBoolean(
         "Accessibility.CrosCursorColor",
         prefs->GetBoolean(prefs::kAccessibilityCursorColorEnabled));
+
+    if (::features::
+            AreExperimentalAccessibilityColorEnhancementSettingsEnabled()) {
+      base::UmaHistogramBoolean("Accessibility.CrosColorCorrection",
+                                IsColorCorrectionEnabled());
+      base::UmaHistogramEnumeration(
+          "Accessibility.CrosColorCorrection.FilterType",
+          static_cast<ColorVisionCorrectionType>(prefs->GetInteger(
+              prefs::kAccessibilityColorVisionCorrectionType)));
+      base::UmaHistogramPercentage(
+          "Accessibility.CrosColorCorrection.FilterAmount",
+          prefs->GetInteger(prefs::kAccessibilityColorVisionCorrectionAmount));
+    }
   }
   base::UmaHistogramBoolean("Accessibility.CrosCaretHighlight",
                             IsCaretHighlightEnabled());

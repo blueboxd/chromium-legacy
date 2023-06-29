@@ -767,9 +767,8 @@ NET_ERROR(CONTENT_DECODING_INIT_FAILED, -371)
 // SpdyStream layer.
 NET_ERROR(HTTP2_RST_STREAM_NO_ERROR_RECEIVED, -372)
 
-// The pushed stream claimed by the request is no longer available.
-// TODO(https://crbug.com/1426477): Remove.
-NET_ERROR(HTTP2_PUSHED_STREAM_NOT_AVAILABLE, -373)
+// Obsolete. HTTP/2 push is removed.
+// NET_ERROR(HTTP2_PUSHED_STREAM_NOT_AVAILABLE, -373)
 
 // A pushed stream was claimed and later reset by the server. When this happens,
 // the request should be retried.
@@ -1032,3 +1031,9 @@ NET_ERROR(DNS_REQUEST_CANCELLED, -810)
 // The hostname resolution of HTTPS record was expected to be resolved with
 // alpn values of supported protocols, but did not.
 NET_ERROR(DNS_NO_MATCHING_SUPPORTED_ALPN, -811)
+
+// The compression dictionary cannot be loaded.
+NET_ERROR(DICTIONARY_LOAD_FAILED, -812)
+
+// The compression dictionary cannot be used as the origin check failed.
+NET_ERROR(DICTIONARY_ORIGIN_CHECK_FAILED, -813)

@@ -70,6 +70,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/color/color_provider.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -98,10 +99,9 @@ std::vector<std::string> GetSurveyEligibleModuleIds() {
 // custom background images, not just CWS themes.
 bool ShouldForceDarkForegroundColorsForLogo(const ThemeService* theme_service) {
   const auto* theme_supplier = theme_service->GetThemeSupplier();
-  if (!theme_supplier ||
-      theme_supplier->get_theme_type() !=
-          ui::ColorProviderManager::ThemeInitializerSupplier::ThemeType::
-              kExtension) {
+  if (!theme_supplier || theme_supplier->get_theme_type() !=
+                             ui::ColorProviderKey::ThemeInitializerSupplier::
+                                 ThemeType::kExtension) {
     return false;
   }
   static constexpr auto kPrideThemeExtensionIdsDarkForeground =
@@ -152,8 +152,15 @@ new_tab_page::mojom::ThemePtr MakeTheme(
                    ThemeProperties::NTP_LOGO_ALTERNATE) == 1) {
       theme->logo_color = color_provider.GetColor(kColorNewTabPageLogo);
     }
-    most_visited->background_color = color_provider.GetColor(
-        kColorNewTabPageMostVisitedTileBackgroundUnthemed);
+
+    // TODO(crbug.com/1375760): Post GM3 launch, we can remove the
+    // kColorNewTabPageMostVisitedTileBackgroundUnthemed color and related
+    // logic.
+    most_visited->background_color =
+        features::IsChromeWebuiRefresh2023()
+            ? color_provider.GetColor(kColorNewTabPageMostVisitedTileBackground)
+            : color_provider.GetColor(
+                  kColorNewTabPageMostVisitedTileBackgroundUnthemed);
   } else {
     text_color = color_provider.GetColor(kColorNewTabPageText);
     if (theme_provider->GetDisplayProperty(
@@ -453,7 +460,12 @@ NewTabPageHandler::NewTabPageHandler(
   ntp_custom_background_service_observation_.Observe(
       ntp_custom_background_service_.get());
   promo_service_observation_.Observe(promo_service_.get());
-  OnThemeChanged();
+  if (base::FeatureList::IsEnabled(
+          ntp_features::kNtpBackgroundImageErrorDetection)) {
+    ntp_custom_background_service_->VerifyCustomBackgroundImageURL();
+  } else {
+    OnThemeChanged();
+  }
 
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(

@@ -14,7 +14,7 @@ WebStateListObserverBridge::WebStateListObserverBridge(
 
 WebStateListObserverBridge::~WebStateListObserverBridge() {}
 
-void WebStateListObserverBridge::WebStateListChanged(
+void WebStateListObserverBridge::WebStateListDidChange(
     WebStateList* web_state_list,
     const WebStateListChange& change,
     const WebStateSelection& selection) {
@@ -25,9 +25,7 @@ void WebStateListObserverBridge::WebStateListChanged(
       // `reason` == ActiveWebStateChangeReason::Activated.
       break;
     case WebStateListChange::Type::kDetach:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didDetachWebState:atIndex: to here.
-      break;
+      [[fallthrough]];
     case WebStateListChange::Type::kMove:
       [[fallthrough]];
     case WebStateListChange::Type::kReplace:
@@ -57,20 +55,6 @@ void WebStateListObserverBridge::WillDetachWebStateAt(
 
   [observer_ webStateList:web_state_list
        willDetachWebState:web_state
-                  atIndex:index];
-}
-
-void WebStateListObserverBridge::WebStateDetachedAt(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index) {
-  const SEL selector = @selector(webStateList:didDetachWebState:atIndex:);
-  if (![observer_ respondsToSelector:selector]) {
-    return;
-  }
-
-  [observer_ webStateList:web_state_list
-        didDetachWebState:web_state
                   atIndex:index];
 }
 

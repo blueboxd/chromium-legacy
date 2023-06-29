@@ -35,8 +35,7 @@ class ExtensionsToolbarControls : public ToolbarIconContainerView {
     return extensions_button_;
   }
 
-  // Methods for testing.
-  ExtensionsRequestAccessButton* request_access_button_for_testing() const {
+  ExtensionsRequestAccessButton* request_access_button() const {
     return request_access_button_;
   }
 
@@ -54,6 +53,15 @@ class ExtensionsToolbarControls : public ToolbarIconContainerView {
       const std::vector<std::unique_ptr<ToolbarActionViewController>>& actions,
       extensions::PermissionsManager::UserSiteSetting site_setting,
       content::WebContents* web_contents);
+
+  // Hides the confirmation message in the request access button.
+  void ResetConfirmation();
+
+  // Returns whether the button is showing a confirmation message.
+  bool IsShowingConfirmation() const;
+
+  // Returns whether the button is showing a confirmation message for `origin`.
+  bool IsShowingConfirmationFor(const url::Origin& origin) const;
 
   // ToolbarIconContainerView:
   void UpdateAllIcons() override;

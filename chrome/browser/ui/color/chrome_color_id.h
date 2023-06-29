@@ -170,6 +170,8 @@
   E_CPONLY(kColorNewTabPageActionButtonBorderHovered) \
   E_CPONLY(kColorNewTabPageActionButtonForeground) \
   E_CPONLY(kColorNewTabPageActiveBackground) \
+  E_CPONLY(kColorNewTabPageAddShortcutBackground) \
+  E_CPONLY(kColorNewTabPageAddShortcutForeground) \
   E_CPONLY(kColorNewTabPageAttributionForeground) \
   E_CPONLY(kColorNewTabPageBackground) \
   E_CPONLY(kColorNewTabPageBackgroundOverride) \
@@ -247,6 +249,8 @@
   E_CPONLY(kColorOmniboxChipInkDropRipple) \
   E_CPONLY(kColorOmniboxKeywordSelected) \
   E_CPONLY(kColorOmniboxKeywordSeparator) \
+  E_CPONLY(kColorOmniboxIntentChipBackground) \
+  E_CPONLY(kColorOmniboxIntentChipIcon) \
   E_CPONLY(kColorOmniboxResultsBackground) \
   E_CPONLY(kColorOmniboxResultsBackgroundHovered) \
   E_CPONLY(kColorOmniboxResultsBackgroundSelected) \
@@ -299,6 +303,8 @@
   E_CPONLY(kColorPaymentsRequestBackArrowButtonIcon) \
   E_CPONLY(kColorPaymentsRequestBackArrowButtonIconDisabled) \
   E_CPONLY(kColorPaymentsRequestRowBackgroundHighlighted) \
+  /* Permission Prompt colors. */ \
+  E_CPONLY(kColorPermissionPromptRequestText) \
   /* Picture-in-Picture window colors. */ \
   E_CPONLY(kColorPipWindowBackToTabButtonBackground) \
   E_CPONLY(kColorPipWindowBackground) \
@@ -315,8 +321,9 @@
   E_CPONLY(kColorProfileMenuIconButton) \
   E_CPONLY(kColorProfileMenuIconButtonBackground) \
   E_CPONLY(kColorProfileMenuIconButtonBackgroundHovered) \
-  E_CPONLY(kColorProfileMenuSyncIcon) \
   E_CPONLY(kColorProfileMenuSyncErrorIcon) \
+  E_CPONLY(kColorProfileMenuSyncIcon) \
+  E_CPONLY(kColorProfileMenuSyncInfoBackground) \
   E_CPONLY(kColorProfileMenuSyncOffIcon) \
   E_CPONLY(kColorProfileMenuSyncPausedIcon) \
   /* Profiles colors. */ \
@@ -384,6 +391,15 @@
   E_CPONLY(kColorSidePanelCustomizeChromeColorPickerOptionBackground) \
   E_CPONLY(kColorSidePanelCustomizeChromeCustomOptionBackground) \
   E_CPONLY(kColorSidePanelCustomizeChromeCustomOptionForeground) \
+  E_CPONLY(kColorSidePanelCustomizeChromeMiniNtpActiveTab) \
+  E_CPONLY(kColorSidePanelCustomizeChromeMiniNtpArrowsAndRefreshButton) \
+  E_CPONLY(kColorSidePanelCustomizeChromeMiniNtpBackground) \
+  E_CPONLY(kColorSidePanelCustomizeChromeMiniNtpBorder) \
+  E_CPONLY(kColorSidePanelCustomizeChromeMiniNtpCaron) \
+  E_CPONLY(kColorSidePanelCustomizeChromeMiniNtpCaronContainer) \
+  E_CPONLY(kColorSidePanelCustomizeChromeMiniNtpChromeLogo) \
+  E_CPONLY(kColorSidePanelCustomizeChromeMiniNtpOmnibox) \
+  E_CPONLY(kColorSidePanelCustomizeChromeMiniNtpTabStripBackground) \
   E_CPONLY(kColorSidePanelCustomizeChromeThemeBackground) \
   E_CPONLY(kColorSidePanelCustomizeChromeThemeCheckmarkBackground) \
   E_CPONLY(kColorSidePanelCustomizeChromeThemeCheckmarkForeground) \
@@ -395,6 +411,8 @@
   E_CPONLY(kColorSidePanelDialogSecondaryForeground) \
   E_CPONLY(kColorSidePanelDivider) \
   E_CPONLY(kColorSidePanelEditFooterBorder) \
+  E_CPONLY(kColorSidePanelEntryIcon) \
+  E_CPONLY(kColorSidePanelEntryTitle) \
   E_CPONLY(kColorSidePanelFilterChipBorder) \
   E_CPONLY(kColorSidePanelFilterChipForeground) \
   E_CPONLY(kColorSidePanelFilterChipForegroundSelected) \
@@ -402,20 +420,26 @@
   E_CPONLY(kColorSidePanelFilterChipIconSelected) \
   E_CPONLY(kColorSidePanelFilterChipBackgroundHover) \
   E_CPONLY(kColorSidePanelFilterChipBackgroundSelected) \
+  E_CPONLY(kColorSidePanelHeaderButtonIcon) \
+  E_CPONLY(kColorSidePanelHeaderButtonIconDisabled) \
   E_CPONLY(kColorSidePanelMenuBackground) \
   E_CPONLY(kColorSidePanelMenuDisabled) \
   E_CPONLY(kColorSidePanelMenuDivider) \
   E_CPONLY(kColorSidePanelMenuForeground) \
   E_CPONLY(kColorSidePanelMenuIcon) \
+  E_CPONLY(kColorSidePanelResizeAreaHandle) \
   E_CPONLY(kColorSidePanelScrollbarThumb) \
   E_CPONLY(kColorSidePanelTextfieldBorder) \
+  E_CPONLY(kColorSidePanelToastBackground) \
+  E_CPONLY(kColorSidePanelToastButton) \
+  E_CPONLY(kColorSidePanelToastForeground) \
   /* Status bubble colors. */ \
   E_CPONLY(kColorStatusBubbleBackgroundFrameActive) \
   E_CPONLY(kColorStatusBubbleBackgroundFrameInactive) \
   E_CPONLY(kColorStatusBubbleForegroundFrameActive) \
   E_CPONLY(kColorStatusBubbleForegroundFrameInactive) \
   E_CPONLY(kColorStatusBubbleShadow) \
-  /* Tab alert colors. */ \
+  /* Tab alert colors in tab strip. */ \
   E_CPONLY(kColorTabAlertAudioPlayingActiveFrameActive) \
   E_CPONLY(kColorTabAlertAudioPlayingActiveFrameInactive) \
   E_CPONLY(kColorTabAlertAudioPlayingInactiveFrameActive) \
@@ -428,6 +452,10 @@
   E_CPONLY(kColorTabAlertPipPlayingActiveFrameInactive) \
   E_CPONLY(kColorTabAlertPipPlayingInactiveFrameActive) \
   E_CPONLY(kColorTabAlertPipPlayingInactiveFrameInactive) \
+  /* Tab alert colors in hover cards */ \
+  E_CPONLY(kColorTabAlertMediaRecordingIcon) \
+  E_CPONLY(kColorTabAlertPipPlayingIcon) \
+  E_CPONLY(kColorTabAlertAudioPlayingIcon) \
   /* Tab colors. */ \
   E_CPONLY(kColorTabBackgroundActiveFrameActive) \
   E_CPONLY(kColorTabBackgroundActiveFrameInactive) \
@@ -435,6 +463,8 @@
   E_CPONLY(kColorTabBackgroundInactiveFrameInactive) \
   E_CPONLY(kColorTabBackgroundHoverFrameActive) \
   E_CPONLY(kColorTabBackgroundHoverFrameInactive) \
+  E_CPONLY(kColorTabBackgroundSelectedFrameActive) \
+  E_CPONLY(kColorTabBackgroundSelectedFrameInactive) \
   E_CPONLY(kColorTabCloseButtonFocusRingActive) \
   E_CPONLY(kColorTabCloseButtonFocusRingInactive) \
   E_CPONLY(kColorTabFocusRingActive) \
@@ -565,6 +595,7 @@
   /* WebAuthn colors. */ \
   E_CPONLY(kColorWebAuthnBackArrowButtonIcon) \
   E_CPONLY(kColorWebAuthnBackArrowButtonIconDisabled) \
+  E_CPONLY(kColorWebAuthnIconColor) \
   E_CPONLY(kColorWebAuthnPinTextfieldBottomBorder) \
   E_CPONLY(kColorWebAuthnProgressRingBackground) \
   E_CPONLY(kColorWebAuthnProgressRingForeground) \

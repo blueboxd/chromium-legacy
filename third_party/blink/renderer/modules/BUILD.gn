@@ -216,6 +216,8 @@ source_set("modules_testing") {
   sources = [
     "accessibility/testing/internals_accessibility.cc",
     "accessibility/testing/internals_accessibility.h",
+    "credentialmanagement/testing/internals_fed_cm.cc",
+    "credentialmanagement/testing/internals_fed_cm.h",
     "mediastream/testing/internals_media_stream.cc",
     "mediastream/testing/internals_media_stream.h",
     "netinfo/testing/internals_net_info.cc",
@@ -231,7 +233,6 @@ source_set("modules_testing") {
     "peerconnection/testing/mock_peer_connection_interface.h",
     "peerconnection/testing/mock_rtp_receiver.h",
     "peerconnection/testing/mock_rtp_sender.h",
-    "peerconnection/testing/mock_transformable_audio_frame.h",
     "permissions/testing/internals_permission.cc",
     "permissions/testing/internals_permission.h",
     "service_worker/testing/internals_service_worker.cc",
@@ -624,6 +625,7 @@ source_set("unit_tests") {
     "webaudio/audio_node_input_test.cc",
     "webaudio/audio_worklet_global_scope_test.cc",
     "webaudio/audio_worklet_thread_test.cc",
+    "webaudio/biquad_dsp_kernel_test.cc",
     "webaudio/convolver_node_test.cc",
     "webaudio/dynamics_compressor_node_test.cc",
     "webaudio/script_processor_node_test.cc",
@@ -656,7 +658,6 @@ source_set("unit_tests") {
     "//third_party/blink/renderer:inside_blink",
     "//third_party/blink/renderer/core:blink_core_pch",
   ]
-  defines = [ "ALLOW_IMPLICIT_ATOMIC_STRING_CONVERSIONS" ]
 
   deps = [
     ":modules",

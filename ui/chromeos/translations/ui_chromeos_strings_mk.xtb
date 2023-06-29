@@ -299,7 +299,6 @@
 <translation id="3479552764303398839">Не сега</translation>
 <translation id="3486821258960016770">монголски</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> грешки.</translation>
-<translation id="3501954296166022751">Вашите датотеки на Google Drive се достапни офлајн</translation>
 <translation id="3509680540198371098">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" /> %, детали</translation>
 <translation id="3511705761158917664">Се подготвува синхронизација на <ph name="NUMBER_OF_ITEMS" /> ставки…</translation>
 <translation id="3522708245912499433">португалски</translation>
@@ -358,6 +357,7 @@
 <translation id="3943857333388298514">Залепи</translation>
 <translation id="3952872973865944257">фонетски телугу</translation>
 <translation id="3958548648197196644">Киви</translation>
+<translation id="397105322502079400">Се пресметува…</translation>
 <translation id="3971140002794351170">Преземи го профилот на мобилниот уред, мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">англиски (ОК)</translation>
 <translation id="3975895378829046965">фонетски бангла</translation>
@@ -563,6 +563,7 @@
 <translation id="5422221874247253874">Пристапна точка</translation>
 <translation id="5428105026674456456">шпански</translation>
 <translation id="5438282218546237410">Нема резултати за <ph name="SEARCH_TERM" />.</translation>
+<translation id="5447680084201416734">Нема доволно простор.</translation>
 <translation id="5449551289610225147">Погрешна лозинка</translation>
 <translation id="5459064203055649751">Веќе постои датотека со име „<ph name="FILENAME" />“. Дали сакате да ја замените со таа што ја преместувате?</translation>
 <translation id="5463231940765244860">Внеси</translation>
@@ -690,6 +691,7 @@
 <translation id="6423031066725912715">виетнамски со тастатура TCVN</translation>
 <translation id="6430271654280079150">Имате уште 1 обид.</translation>
 <translation id="643243556292470964">Избришаните датотеки сега се преместени во корпата</translation>
+<translation id="6438480100790416671">Се проверува просторот за складирање…</translation>
 <translation id="6485131920355264772">Не успеа да вчита информации за простор</translation>
 <translation id="6495925982925244349">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" /> %, управувана од администраторот, детали</translation>
 <translation id="649877868557234318">Се извлекува <ph name="FILE_NAME" /> во <ph name="FOLDER_NAME" /></translation>
@@ -889,10 +891,10 @@
 <translation id="7972920761225148017">француски (Швајцарија)</translation>
 <translation id="7973962044839454485">PPP автентикацијата не успеа поради неправилно корисничко име и лозинка</translation>
 <translation id="7980421588063892270">англиска (САД) со тастатура Colemak</translation>
-<translation id="7985008041109611710">Се синхронизираат <ph name="NUMBER_OF_FILES_SYNCING" /> датотеки</translation>
 <translation id="8000066093800657092">Нема мрежа</translation>
 <translation id="8008366997883261463">Џек расел териер</translation>
 <translation id="8028993641010258682">Големина</translation>
+<translation id="8034974485549318493">За почетното поставување, треба да се поврзете на интернет за да може да се синхронизираат датотеките.</translation>
 <translation id="803771048473350947">Датотека</translation>
 <translation id="8038111231936746805">(стандардно)</translation>
 <translation id="8042602468072383151">Аудио: <ph name="AUDIO_TYPE" /></translation>
@@ -1011,6 +1013,7 @@
 <translation id="8919081441417203123">дански</translation>
 <translation id="8949925099261528566">Поврзан, нема интернет</translation>
 <translation id="8965697826696209160">Нема доволно простор.</translation>
+<translation id="8970887620466824814">Нешто тргна наопаку.</translation>
 <translation id="8971742885766657349">Се синхронизира - <ph name="PERCENT" /> %</translation>
 <translation id="8997962250644902079">кинески (традиционален) пинјин</translation>
 <translation id="8998871447376656508">Нема доволно слободен простор на вашиот Google Drive за да се заврши прикачувањево.</translation>
@@ -1045,7 +1048,6 @@
 <translation id="9213073329713032541">Инсталирањето успешно започна.</translation>
 <translation id="9219103736887031265">Слики</translation>
 <translation id="9219908252191632183">Месечина</translation>
-<translation id="937795003075802289">Се синхронизира 1 датотека</translation>
 <translation id="938470336146445890">Инсталирајте сертификат на корисник.</translation>
 <translation id="939736085109172342">Нова папка</translation>
 <translation id="943972244133411984">Изменето од</translation>

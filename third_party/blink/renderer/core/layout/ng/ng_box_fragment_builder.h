@@ -184,6 +184,13 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
     return To<NGBlockNode>(node_);
   }
 
+  // Be sure to use the layout result that's relevant for propagation and block
+  // fragmentation considerations. This will normally just be the layout result
+  // that's passed to the function, but if this is a line box with a block
+  // inside (aka. block-in-inline), it will return the layout result for the
+  // block instead.
+  const NGLayoutResult& LayoutResultForPropagation(const NGLayoutResult&) const;
+
   // Add a break token for a child that doesn't yet have any fragments, because
   // its first fragment is to be produced in the next fragmentainer. This will
   // add a break token for the child, but no fragment. Break appeal should
@@ -648,11 +655,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
   const NGBreakToken* LastChildBreakToken() const {
     DCHECK(!child_break_tokens_.empty());
     return child_break_tokens_.back().Get();
-  }
-
-  void InsertLegacyPositionedObject(const NGBlockNode& positioned) const {
-    positioned.InsertIntoLegacyPositionedObjectsOf(
-        To<LayoutBlock>(layout_object_));
   }
 
   // Propagate the break-before/break-after of the child (if applicable).

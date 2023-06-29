@@ -29,10 +29,6 @@ BASE_FEATURE(kIOSPaymentsBottomSheet,
              "IOSPaymentsBottomSheet",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kExpandedTabStrip,
-             "ExpandedTabStrip",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kTestFeature, "TestFeature", base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSharedHighlightingIOS,
@@ -261,4 +257,19 @@ BASE_FEATURE(kOnlyAccessClipboardAsync,
 
 BASE_FEATURE(kHideSettingsSyncPromo,
              "HideSettingsSyncPromo",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kDefaultBrowserTriggerCriteriaExperiment,
+             "DefaultBrowserTriggerCriteriaExperiment",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const char kDefaultBrowserTriggerOnOmniboxCopyPaste[] =
+    "trigger_on_omnibox_copy_paste";
+
+BASE_FEATURE(kThemeColorInToolbar,
+             "ThemeColorInToolbar",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kTabGridRefactoring,
+             "TabGridRefactoring",
              base::FEATURE_DISABLED_BY_DEFAULT);

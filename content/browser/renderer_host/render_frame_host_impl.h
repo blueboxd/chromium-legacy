@@ -20,6 +20,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/debug/stack_trace.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
 #include "base/functional/function_ref.h"
@@ -113,6 +114,7 @@
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/fetch_api.mojom-forward.h"
 #include "services/network/public/mojom/mdns_responder.mojom.h"
+#include "services/network/public/mojom/shared_dictionary_access_observer.mojom.h"
 #include "services/network/public/mojom/trust_token_access_observer.mojom.h"
 #include "services/network/public/mojom/url_loader_network_service_observer.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -313,6 +315,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public ui::AXActionHandlerBase,
       public network::mojom::CookieAccessObserver,
       public network::mojom::TrustTokenAccessObserver,
+      public network::mojom::SharedDictionaryAccessObserver,
       public BucketContext {
  public:
   using JavaScriptDialogCallback =
@@ -2176,6 +2179,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   bool IsLastCrossDocumentNavigationStartedByUser() const override;
 
+  net::CookieSettingOverrides GetCookieSettingOverrides() override;
+
   bool is_fenced_frame_root_originating_from_opaque_url() const {
     return is_fenced_frame_root_originating_from_opaque_url_;
   }
@@ -2431,6 +2436,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::vector<blink::FencedFrame::ReportingDestination>& destinations,
       network::AttributionReportingRuntimeFeatures
           attribution_reporting_runtime_features) override;
+  void SendLegacyTechEvent(
+      const std::string& type,
+      blink::mojom::LegacyTechEventCodeLocationPtr code_location) override;
   void SendPrivateAggregationRequestsForFencedFrameEvent(
       const std::string& event_type) override;
   void CreatePortal(
@@ -2582,6 +2590,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   mojo::PendingRemote<network::mojom::TrustTokenAccessObserver>
   CreateTrustTokenAccessObserver();
 
+  mojo::PendingRemote<network::mojom::SharedDictionaryAccessObserver>
+  CreateSharedDictionaryAccessObserver();
+
   // network::mojom::CookieAccessObserver:
   void OnCookiesAccessed(std::vector<network::mojom::CookieAccessDetailsPtr>
                              details_vector) override;
@@ -2589,6 +2600,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // network::mojom::TrustTokenAccessObserver:
   void OnTrustTokensAccessed(
       network::mojom::TrustTokenAccessDetailsPtr details) override;
+
+  // network::mojom::SharedDictionaryAccessObserver:
+  void OnSharedDictionaryAccessed(
+      network::mojom::SharedDictionaryAccessDetailsPtr details) override;
 
   void GetSavableResourceLinksFromRenderer();
   void GetPendingBeaconHost(
@@ -2913,11 +2928,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // used on primary main frames.
   bool IsPageReadyToBeClosed();
 
-  // Checks Blink runtime-enabled features (BREF) to create and return
-  // a CookieSettingOverrides pertaining to the last committed document in the
-  // frame. Can only be called on a frame with a committed navigation.
-  net::CookieSettingOverrides GetCookieSettingOverrides();
-
   // When this returns true, the user has specified that third-party cookies
   // should remain enabled for this frame.
   // It does so by checking the Blink runtime-enabled feature (BREF) for
@@ -2958,6 +2968,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns if the RenderFrameHostImpl is loaded with the "Cache-Control:
   // no-store" header.
   bool LoadedWithCacheControlNoStoreHeader();
+
+  // When this is true, the document or its children cannot be
+  // crossOriginIsolated.
+  // Can only be called by a main frame.
+  bool CoopForbidsDocumentToBeCrossOriginIsolated() const;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -3306,6 +3321,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void Clone(mojo::PendingReceiver<network::mojom::TrustTokenAccessObserver>
                  observer) override;
 
+  // network::mojom::SharedDictionaryAccessObserver
+  void Clone(
+      mojo::PendingReceiver<network::mojom::SharedDictionaryAccessObserver>
+          observer) override;
+
   // Resets any waiting state of this RenderFrameHost that is no longer
   // relevant.
   void ResetWaitingState();
@@ -3407,7 +3427,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Returns true if the ExecuteJavaScript() API can be used on this host.
   // The checks do not apply to ExecuteJavaScriptInIsolatedWorld, nor to
-  // ExecuteJavaScriptForTests.  See also AssertNonSpeculativeFrame method.
+  // ExecuteJavaScriptForTests.  See also AssertFrameWasCommitted method.
   bool CanExecuteJavaScript();
 
   // Returns the AXTreeID of the parent when the current frame is a child frame
@@ -3901,7 +3921,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // RenderFrameHostImpl's methods that require the caller to "be careful" not
   // to call them on a speculative frame.  One such example is
   // JavaScriptExecuteRequestInIsolatedWorld.
-  void AssertNonSpeculativeFrame() const;
+  void AssertFrameWasCommitted() const;
 
   // Asserts that the BrowserContext (e.g. Profile in the //chrome layer) of
   // this frame hasn't started shutting down.  The owner of the BrowserContext
@@ -4920,7 +4940,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // in this RenderFrameHost.
   // Note: at the moment this set is not cleared when a new document is created
   // in this RenderFrameHost. This is done because the first observer is created
-  // before the navigation actually commits and because the old routing id-based
+  // before the navigation actually commits and because the old routing-id based
   // behaved in the same way as well.
   // This problem should go away with RenderDocumentHost in any case.
   // TODO(crbug.com/936696): Remove this warning after the RDH ships.
@@ -4930,11 +4950,21 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // document in this RenderFrameHost. Note: at the moment this set is not
   // cleared when a new document is created in this RenderFrameHost. This is
   // done because the first observer is created before the navigation actually
-  // commits and because the old routing id-based behaved in the same way as
+  // commits and because the old routing-id based behaved in the same way as
   // well. This problem should go away with RenderDocumentHost in any case.
   // TODO(crbug.com/936696): Remove this warning after the RDH ships.
   mojo::ReceiverSet<network::mojom::TrustTokenAccessObserver>
       trust_token_observers_;
+
+  // Observers listening to shared dictionary access notifications for the
+  // current document in this RenderFrameHost. Note: at the moment this set is
+  // not cleared when a new document is created in this RenderFrameHost. This is
+  // done because the first observer is created before the navigation actually
+  // commits and because the old routing-id based behaved in the same way as
+  // well. This problem should go away with RenderDocumentHost in any case.
+  // TODO(crbug.com/936696): Remove this warning after the RDH ships.
+  mojo::ReceiverSet<network::mojom::SharedDictionaryAccessObserver>
+      shared_dictionary_observers_;
 
   // Indicates whether this frame is an outer delegate frame for some other
   // RenderFrameHost. This will be a valid ID if so, and
@@ -5126,6 +5156,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // See: https://chromestatus.com/feature/6002307972464640
   absl::optional<blink::DocumentToken>
       fullscreen_document_on_document_element_ready_ = absl::nullopt;
+
+  // TODO(crbug.com/1425281): Temporary for debugging.
+  const base::debug::StackTrace create_rfh_stack_trace_;
+  absl::optional<base::debug::StackTrace> last_commit_navigation_stack_trace_;
 
   // WeakPtrFactories are the last members, to ensure they are destroyed before
   // all other fields of `this`.

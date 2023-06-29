@@ -370,7 +370,7 @@
     "META": {"sizes": {"includes": [20],}},
     "includes": [3500],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/settings/chromeos/resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/ash/settings/resources.grd": {
     "META": {"sizes": {"includes": [1000],}},
     "includes": [3520],
   },
@@ -485,7 +485,7 @@
     "includes": [4020],
   },
   "<(SHARED_INTERMEDIATE_DIR)/components/policy/resources/webui/resources.grd": {
-    "META": {"sizes": {"includes": [20]}},
+    "META": {"sizes": {"includes": [30]}},
     "includes": [4040],
   },
   "<(SHARED_INTERMEDIATE_DIR)/components/version_ui/resources/resources.grd": {

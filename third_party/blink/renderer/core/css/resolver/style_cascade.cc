@@ -346,14 +346,14 @@ StyleCascade::GetCascadedValues() const {
   }
 
   for (const auto& name : map_.GetCustomMap().Keys()) {
-    CascadePriority priority = map_.At(name);
+    CascadePriority priority = map_.At(CSSPropertyName(name));
     DCHECK(priority.HasOrigin());
     if (IsInterpolation(priority)) {
       continue;
     }
     const CSSValue* cascaded = ValueAt(match_result_, priority.GetPosition());
     DCHECK(cascaded);
-    result.Set(name, cascaded);
+    result.Set(CSSPropertyName(name), cascaded);
   }
 
   return result;
@@ -377,14 +377,16 @@ void StyleCascade::AnalyzeMatchResult() {
     ExpandCascade(
         properties, GetDocument(), index++,
         [this](CascadePriority cascade_priority,
-               const CSSProperty& css_property, const CSSPropertyName& name,
-               const CSSValue& css_value [[maybe_unused]],
-               uint16_t tree_order [[maybe_unused]]) {
-          if (css_property.IsSurrogate()) {
-            const CSSProperty& property = ResolveSurrogate(css_property);
-            map_.Add(property.GetCSSPropertyName(), cascade_priority);
+               const AtomicString& custom_property_name) {
+          map_.Add(custom_property_name, cascade_priority);
+        },
+        [this](CascadePriority cascade_priority, CSSPropertyID property_id) {
+          if (kSurrogateProperties.Has(property_id)) {
+            const CSSProperty& property =
+                ResolveSurrogate(CSSProperty::Get(property_id));
+            map_.Add(property.PropertyID(), cascade_priority);
           } else {
-            map_.Add(name, cascade_priority);
+            map_.Add(property_id, cascade_priority);
           }
         });
   }
@@ -401,17 +403,19 @@ void StyleCascade::AnalyzeInterpolations() {
 
       CSSPropertyRef ref(name, GetDocument());
       DCHECK(ref.IsValid());
-      const CSSProperty& property = ResolveSurrogate(ref.GetProperty());
 
-      map_.Add(property.GetCSSPropertyName(), priority);
+      if (name.IsCustomProperty()) {
+        map_.Add(name.ToAtomicString(), priority);
+      } else {
+        const CSSProperty& property = ResolveSurrogate(ref.GetProperty());
+        map_.Add(property.PropertyID(), priority);
 
-      // Since an interpolation for an unvisited property also causes an
-      // interpolation of the visited property, add the visited property to
-      // the map as well.
-      // TODO(crbug.com/1062217): Interpolate visited colors separately
-      if (kPropertiesWithVisited.Has(property.PropertyID())) {
+        // Since an interpolation for an unvisited property also causes an
+        // interpolation of the visited property, add the visited property to
+        // the map as well.
+        // TODO(crbug.com/1062217): Interpolate visited colors separately
         if (const CSSProperty* visited = property.GetVisitedProperty()) {
-          map_.Add(visited->GetCSSPropertyName(), priority);
+          map_.Add(visited->PropertyID(), priority);
         }
       }
     }
@@ -455,14 +459,10 @@ void StyleCascade::ApplyCascadeAffecting(CascadeResolver& resolver) {
 void StyleCascade::ApplyHighPriority(CascadeResolver& resolver) {
   uint64_t bits = map_.HighPriorityBits();
 
-  if (bits) {
-    int first = static_cast<int>(kFirstHighPriorityCSSProperty);
-    int last = static_cast<int>(kLastHighPriorityCSSProperty);
-    for (int i = first; i <= last; ++i) {
-      if (bits & (static_cast<uint64_t>(1) << i)) {
-        LookupAndApply(CSSProperty::Get(ConvertToCSSPropertyID(i)), resolver);
-      }
-    }
+  while (bits) {
+    int i = base::bits::CountTrailingZeroBits(bits);
+    bits &= bits - 1;  // Clear the lowest bit.
+    LookupAndApply(CSSProperty::Get(ConvertToCSSPropertyID(i)), resolver);
   }
 
   state_.UpdateFont();
@@ -591,7 +591,7 @@ void StyleCascade::ApplyMatchResult(CascadeResolver& resolver) {
       continue;
     }
 
-    CustomProperty property(name.ToAtomicString(), GetDocument());
+    CustomProperty property(name, GetDocument());
     if (resolver.Rejects(property)) {
       continue;
     }
@@ -660,17 +660,15 @@ void StyleCascade::ApplyInterpolation(
   // if its priority is higher.
   //
   // TODO(crbug.com/1062217): Interpolate visited colors separately
-  if (kPropertiesWithVisited.Has(property.PropertyID())) {
-    if (const CSSProperty* visited = property.GetVisitedProperty()) {
-      CascadePriority* visited_priority =
-          map_.Find(visited->GetCSSPropertyName());
-      if (visited_priority && priority < *visited_priority) {
-        DCHECK(visited_priority->IsImportant());
-        // Resetting generation to zero makes it possible to apply the
-        // visited property again.
-        *visited_priority = CascadePriority(*visited_priority, 0);
-        LookupAndApply(*visited, resolver);
-      }
+  if (const CSSProperty* visited = property.GetVisitedProperty()) {
+    CascadePriority* visited_priority =
+        map_.Find(visited->GetCSSPropertyName());
+    if (visited_priority && priority < *visited_priority) {
+      DCHECK(visited_priority->IsImportant());
+      // Resetting generation to zero makes it possible to apply the
+      // visited property again.
+      *visited_priority = CascadePriority(*visited_priority, 0);
+      LookupAndApply(*visited, resolver);
     }
   }
 }

@@ -694,15 +694,12 @@ void GetExceptionsForContentType(ContentSettingsType type,
                                  content::WebUI* web_ui,
                                  bool incognito,
                                  base::Value::List* exceptions) {
-  ContentSettingsForOneType all_settings;
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
 
-  map->GetSettingsForOneType(type, &all_settings);
-
   // Group settings by primary_pattern.
   AllPatternsSettings all_patterns_settings;
-  for (const auto& setting : all_settings) {
+  for (const auto& setting : map->GetSettingsForOneType(type)) {
     // Don't add default settings.
     if (setting.primary_pattern == ContentSettingsPattern::Wildcard() &&
         setting.secondary_pattern == ContentSettingsPattern::Wildcard() &&
@@ -744,17 +741,14 @@ void GetExceptionsForContentType(ContentSettingsType type,
         content_setting;
   }
 
-  ContentSettingsForOneType embargo_settings;
-  map->GetSettingsForOneType(ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA,
-                             &embargo_settings);
-
   permissions::PermissionDecisionAutoBlocker* auto_blocker =
       permissions::PermissionsClient::Get()->GetPermissionDecisionAutoBlocker(
           profile);
 
   std::set<ContentSettingsPattern> origins_under_embargo;
 
-  for (const auto& setting : embargo_settings) {
+  for (const auto& setting : map->GetSettingsForOneType(
+           ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA)) {
     // Off-the-record HostContentSettingsMap contains incognito content
     // settings as well as normal content settings. Here, we use the
     // incognito settings only.
@@ -853,13 +847,12 @@ ContentSetting GetContentSettingForOrigin(Profile* profile,
   // content settings, not just the permissions, plus all the possible sources,
   // and the calls to HostContentSettingsMap should be removed.
   content_settings::SettingInfo info;
-  const base::Value value =
-      map->GetWebsiteSetting(origin, origin, content_type, &info);
+  ContentSetting setting =
+      map->GetContentSetting(origin, origin, content_type, &info);
 
   // Retrieve the content setting.
   permissions::PermissionResult result(
-      content_settings::ValueToContentSetting(value),
-      permissions::PermissionStatusSource::UNSPECIFIED);
+      setting, permissions::PermissionStatusSource::UNSPECIFIED);
   if (permissions::PermissionDecisionAutoBlocker::IsEnabledForContentSetting(
           content_type)) {
     if (permissions::PermissionUtil::IsPermission(content_type)) {
@@ -899,8 +892,7 @@ ContentSetting GetContentSettingForOrigin(Profile* profile,
 std::vector<ContentSettingPatternSource>
 GetSingleOriginExceptionsForContentType(HostContentSettingsMap* map,
                                         ContentSettingsType content_type) {
-  ContentSettingsForOneType entries;
-  map->GetSettingsForOneType(content_type, &entries);
+  ContentSettingsForOneType entries = map->GetSettingsForOneType(content_type);
   // Exclude any entries that don't represent a single webby top-frame origin.
   base::EraseIf(entries, [](const ContentSettingPatternSource& e) {
     return !content_settings::PatternAppliesToSingleOrigin(

@@ -129,6 +129,7 @@ class ContentWebState : public WebState,
   void SetFindInteractionEnabled(bool enabled) final;
   id<CRWFindInteraction> GetFindInteraction() final API_AVAILABLE(ios(16));
   id GetActivityItem() API_AVAILABLE(ios(16.4)) final;
+  UIColor* GetThemeColor() final;
   void AddPolicyDecider(WebStatePolicyDecider* decider) override;
   void RemovePolicyDecider(WebStatePolicyDecider* decider) override;
   void DidChangeVisibleSecurityState() override;
@@ -183,6 +184,7 @@ class ContentWebState : public WebState,
   bool DoBrowserControlsShrinkRendererSize(
       content::WebContents* web_contents) override;
   bool OnlyExpandTopControlsAtPageTop() override;
+  void SetTopControlsGestureScrollInProgress(bool in_progress) override;
 
  private:
   WebStateDelegate* delegate_ = nullptr;
@@ -200,6 +202,8 @@ class ContentWebState : public WebState,
   std::unique_ptr<ContentNavigationManager> navigation_manager_;
   std::unique_ptr<ContentWebFramesManager> web_frames_manager_;
   FaviconStatus favicon_status_;
+  bool top_control_scroll_in_progress_ = false;
+  bool cached_shrink_controls_ = false;
 
   base::WeakPtrFactory<ContentWebState> weak_factory_{this};
 };

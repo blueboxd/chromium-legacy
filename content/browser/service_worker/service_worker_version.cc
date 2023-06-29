@@ -210,7 +210,9 @@ const char* FetchHandlerTypeToSuffix(
 // ServiceWokrerResourceRecord and return a single hash string.
 absl::optional<std::string> MergeResourceRecordSHA256ScriptChecksum(
     const GURL& main_script_url,
-    const ServiceWorkerScriptCacheMap& script_cache_map) {
+    const ServiceWorkerScriptCacheMap& script_cache_map,
+    absl::optional<blink::mojom::ServiceWorkerFetchHandlerType>
+        fetch_handler_type) {
   const std::unique_ptr<crypto::SecureHash> checksum =
       crypto::SecureHash::Create(crypto::SecureHash::SHA256);
   std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources =
@@ -243,8 +245,11 @@ absl::optional<std::string> MergeResourceRecordSHA256ScriptChecksum(
   checksum->Finish(result, crypto::kSHA256Length);
   const std::string encoded = base::HexEncode(result);
 
-  DVLOG(3) << "Updated ServiceWorker script checksum. script_url:"
-           << main_script_url.spec() << ", checksum:" << encoded;
+  if (fetch_handler_type) {
+    DVLOG(3) << "Updated ServiceWorker script checksum. script_url:"
+             << main_script_url.spec() << ", checksum:" << encoded
+             << ", fetch_handler_type:" << fetch_handler_type.value();
+  }
 
   return encoded;
 }
@@ -439,8 +444,7 @@ void ServiceWorkerVersion::RegisterStatusChangeCallback(
 ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   absl::optional<std::string> router_rules;
-  if (base::FeatureList::IsEnabled(features::kServiceWorkerStaticRouter) &&
-      router_evaluator_) {
+  if (router_evaluator_) {
     router_rules = router_evaluator_->ToString();
   }
   ServiceWorkerVersionInfo info(
@@ -1345,7 +1349,7 @@ void ServiceWorkerVersion::OnStarting() {
 
 void ServiceWorkerVersion::OnStarted(
     blink::mojom::ServiceWorkerStartStatus start_status,
-    FetchHandlerType fetch_handler_type) {
+    FetchHandlerType new_fetch_handler_type) {
   DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, running_status());
 
   // TODO(falken): This maps kAbruptCompletion to kErrorScriptEvaluated, which
@@ -1357,31 +1361,31 @@ void ServiceWorkerVersion::OnStarted(
       mojo::ConvertTo<blink::ServiceWorkerStatusCode>(start_status);
 
   if (status == blink::ServiceWorkerStatusCode::kOk) {
-    if (fetch_handler_type_ && fetch_handler_type_ != fetch_handler_type) {
+    if (fetch_handler_type_ && fetch_handler_type_ != new_fetch_handler_type) {
       context_->registry()->UpdateFetchHandlerType(
-          registration_id_, key_, fetch_handler_type,
+          registration_id_, key_, new_fetch_handler_type,
           // Ignore errors; bumping the update fetch handler type is
           // just best-effort.
           base::DoNothing());
       base::UmaHistogramEnumeration(
           "ServiceWorker.OnStarted.UpdatedFetchHandlerType",
-          fetch_handler_type);
+          new_fetch_handler_type);
       base::UmaHistogramEnumeration(
           base::StrCat(
               {"ServiceWorker.OnStarted.UpdatedFetchHandlerTypeBySourceType",
                FetchHandlerTypeToSuffix(*fetch_handler_type_)}),
-          fetch_handler_type);
+          new_fetch_handler_type);
     }
     if (!fetch_handler_type_) {
       // When the new service worker starts, the fetch handler type is unknown
       // until this point.
-      set_fetch_handler_type(fetch_handler_type);
+      set_fetch_handler_type(new_fetch_handler_type);
     } else {
       // Starting the installed service worker should not change the existence
       // of the fetch handler.
       DCHECK_EQ(*fetch_handler_type_ != FetchHandlerType::kNoHandler,
-                fetch_handler_type != FetchHandlerType::kNoHandler);
-      fetch_handler_type_ = fetch_handler_type;
+                new_fetch_handler_type != FetchHandlerType::kNoHandler);
+      fetch_handler_type_ = new_fetch_handler_type;
     }
   }
 
@@ -1391,8 +1395,8 @@ void ServiceWorkerVersion::OnStarted(
   // |sha256_script_checksum_| should be empty. Calculate the checksum string
   // with the script newly added/updated in |script_cache_map_|.
   if (!sha256_script_checksum_) {
-    sha256_script_checksum_ =
-        MergeResourceRecordSHA256ScriptChecksum(script_url_, script_cache_map_);
+    sha256_script_checksum_ = MergeResourceRecordSHA256ScriptChecksum(
+        script_url_, script_cache_map_, fetch_handler_type_);
   }
 
   // Fire all start callbacks.
@@ -1821,6 +1825,12 @@ void ServiceWorkerVersion::SkipWaiting(SkipWaitingCallback callback) {
 void ServiceWorkerVersion::RegisterRouter(
     const blink::ServiceWorkerRouterRules& rules,
     RegisterRouterCallback callback) {
+  if (!IsStaticRouterEnabled()) {
+    // This renderer should have called this only when the feature is enabled.
+    receiver_.ReportBadMessage(
+        "Unexpected router registration call during the feature is disabled.");
+    return;
+  }
   if (router_evaluator()) {
     // The renderer should have denied calling this twice.
     receiver_.ReportBadMessage("The ServiceWorker router rules are set twice.");
@@ -2880,12 +2890,13 @@ void ServiceWorkerVersion::SetResources(
   DCHECK_EQ(status_, NEW);
   DCHECK(!sha256_script_checksum_);
   script_cache_map_.SetResources(resources);
-  sha256_script_checksum_ =
-      MergeResourceRecordSHA256ScriptChecksum(script_url_, script_cache_map_);
+  sha256_script_checksum_ = MergeResourceRecordSHA256ScriptChecksum(
+      script_url_, script_cache_map_, fetch_handler_type_);
 }
 
 bool ServiceWorkerVersion::SetupRouterEvaluator(
     const blink::ServiceWorkerRouterRules& rules) {
+  CHECK(IsStaticRouterEnabled());
   CHECK(!router_evaluator_);
   router_evaluator_ = std::make_unique<ServiceWorkerRouterEvaluator>(rules);
   if (!router_evaluator_->IsValid()) {
@@ -2893,6 +2904,17 @@ bool ServiceWorkerVersion::SetupRouterEvaluator(
     return false;
   }
   return true;
+}
+
+bool ServiceWorkerVersion::IsStaticRouterEnabled() {
+  if (base::FeatureList::IsEnabled(features::kServiceWorkerStaticRouter)) {
+    return true;
+  }
+  if (origin_trial_tokens_ &&
+      origin_trial_tokens_->contains("ServiceWorkerStaticRouter")) {
+    return true;
+  }
+  return false;
 }
 
 base::WeakPtr<ServiceWorkerVersion> ServiceWorkerVersion::GetWeakPtr() {

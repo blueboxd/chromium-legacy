@@ -120,6 +120,11 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<
     AutomaticLazyFrameLoadingToEmbedLoadingStrategy>
     kAutomaticLazyFrameLoadingToEmbedLoadingStrategyParam;
 
+// Switch to enabling rendering of gainmap-based AVIF HDR images.
+// For this feature to work, kGainmapHdrImages must also be enabled.
+// Tracker: https://crbug.com/1451889
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAvifGainmapHdrImages);
+
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kBackForwardCacheDWCOnJavaScriptExecution);
 
@@ -189,11 +194,6 @@ constexpr int kBrowsingTopicsTaxonomyVersionDefault = 1;
 // inspector issue anyway.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCORSErrorsIssueOnly);
 
-// Permissions Policies support subdomain wildcards when the non-wildcard
-// portion of the domain is at least eTLD+1. If this flag is on, the eTLD+1
-// restriction is lifted and wildcards are supported in the port and scheme.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCSPWildcardsInPermissionsPolicies);
-
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCacheStorageCodeCacheHintHeader);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
     kCacheStorageCodeCacheHintHeaderName;
@@ -225,6 +225,7 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsDeviceMemory);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsDeviceMemory_DEPRECATED);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsDPR);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsDPR_DEPRECATED);
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsFormFactor);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsResourceWidth);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsResourceWidth_DEPRECATED);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsSaveData);
@@ -369,6 +370,11 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kEstablishGpuChannelAsync);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kEventTimingMatchPresentationIndex);
 
+// This feature (EventTimingReportAllEarlyEntriesOnPaintedPresentation) is
+// having an effect only when EventTimingMatchPresentationIndex is turned on.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kEventTimingReportAllEarlyEntriesOnPaintedPresentation);
+
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kExcludeLowEntropyImagesFromLCP);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<double>
     kMinimumEntropyForLCP;
@@ -376,10 +382,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<double>
 // Extend ScriptResource's lifetime to match its payload's lifetime.
 // See https://crbug.com/1393246.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kExtendScriptResourceLifetime);
-
-// If enabled, some paint property updates (e.g., transform changes) will be
-// applied directly instead of using the property tree builder.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFastPathPaintPropertyUpdates);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFencedFrames);
 
@@ -411,6 +413,8 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
 // Turning on kFledgeEnforceKAnonymity alone does nothing.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledgeConsiderKAnonymity);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledgeEnforceKAnonymity);
+
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledgePassRecencyToGenerateBid);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kForceWebContentsDarkMode);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<ForceDarkInversionMethod>
@@ -1150,9 +1154,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcInitializeEncoderOnFirstFrame);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcMetronome);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcMultiplexCodec);
 // Feature flag for batching sending of WebRTC RTP UDP packets.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcSendPacketBatch);
-// Combine WebRTC Network and Worker threads. More info at crbug.com/1373439.
-// TODO(dcheng): This seems likely to be a typo.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcSendPacketBatch);
 // If enabled, the WebRTC_* threads in peerconnection module will use
 // kResourceEfficient thread type.

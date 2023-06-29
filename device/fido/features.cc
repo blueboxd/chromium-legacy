@@ -48,10 +48,10 @@ BASE_FEATURE(kWebAuthCrosPlatformAuthenticator,
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_ANDROID)
-// Not yet enabled by default.
+// Enabled in M116. Remove in or after M119.
 BASE_FEATURE(kWebAuthnAndroidHybridClientUi,
              "WebAuthenticationAndroidHybridClientUi",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 BASE_FEATURE(kWebAuthnGoogleCorpRemoteDesktopClientPrivilege,
@@ -93,10 +93,10 @@ BASE_FEATURE(kWebAuthnICloudKeychain,
              "WebAuthenticationICloudKeychain",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Not yet enabled by default.
+// Enabled in M117. Remove in or after M120.
 BASE_FEATURE(kWebAuthnNewHybridUI,
              "WebAuthenticationNewHybridUI",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enabled in M116. Remove in or after M119.
 BASE_FEATURE(kWebAuthnPrelinkPlayServices,
@@ -106,6 +106,26 @@ BASE_FEATURE(kWebAuthnPrelinkPlayServices,
 // Enabled in M116. Remove in or after M119.
 BASE_FEATURE(kWebAuthnSkipSingleAccountMacOS,
              "WebAuthenticationSkipSingleAccountMacOS",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enabled in M116. Remove in or after M119.
+BASE_FEATURE(kWebAuthnWindowsUIv6,
+             "WebAuthenticationWindowsUIv6",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Not yet enabled by default.
+BASE_FEATURE(kWebAuthnListSyncedPasskeys,
+             "WebAuthenticationListSyncedPasskeys",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enabled in M117. Remove in or after M120.
+BASE_FEATURE(kWebAuthConditionalUIExperimentation,
+             "WebAuthenticationConditionalUIExperimentation",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enabled in M117. Remove in or after M120.
+BASE_FEATURE(kWebAuthnCableViaCredMan,
+             "WebAuthenticationCableViaCredMan",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace device

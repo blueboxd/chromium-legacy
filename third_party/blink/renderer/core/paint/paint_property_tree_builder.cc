@@ -2857,8 +2857,9 @@ void FragmentPaintPropertyTreeBuilder::SetNeedsPaintPropertyUpdateIfNeeded() {
   if (object_.GetFrameView()->RemovePendingOpacityUpdate(object_))
     object_.GetMutableForPainting().SetOnlyThisNeedsPaintPropertyUpdate();
 
-  if (box.Size() == box.PreviousSize())
+  if (box.Size() == box.PreviousSize()) {
     return;
+  }
 
   // The overflow clip paint property depends on the border box rect through
   // overflowClipRect(). The border box rect's size equals the frame rect's
@@ -3455,9 +3456,6 @@ void PaintPropertyTreeBuilder::UpdateForChildren() {
 
 bool PaintPropertyTreeBuilder::ScheduleDeferredTransformNodeUpdate(
     LayoutObject& object) {
-  if (!base::FeatureList::IsEnabled(features::kFastPathPaintPropertyUpdates))
-    return false;
-
   if (CanDoDeferredTransformNodeUpdate(object)) {
     object.GetFrameView()->AddPendingTransformUpdate(object);
     return true;
@@ -3467,8 +3465,6 @@ bool PaintPropertyTreeBuilder::ScheduleDeferredTransformNodeUpdate(
 
 bool PaintPropertyTreeBuilder::ScheduleDeferredOpacityNodeUpdate(
     LayoutObject& object) {
-  if (!base::FeatureList::IsEnabled(features::kFastPathPaintPropertyUpdates))
-    return false;
   if (CanDoDeferredOpacityNodeUpdate(object)) {
     object.GetFrameView()->AddPendingOpacityUpdate(object);
     return true;

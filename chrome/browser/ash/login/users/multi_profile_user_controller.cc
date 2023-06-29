@@ -8,7 +8,6 @@
 
 #include "ash/public/cpp/login_types.h"
 #include "base/functional/bind.h"
-#include "chrome/browser/ash/login/users/multi_profile_user_controller_delegate.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -50,17 +49,12 @@ const char MultiProfileUserController::kBehaviorUnrestricted[] = "unrestricted";
 const char MultiProfileUserController::kBehaviorPrimaryOnly[] = "primary-only";
 const char MultiProfileUserController::kBehaviorNotAllowed[] = "not-allowed";
 
-// Note: this policy value is not a real one an is only returned locally for
-// owner users instead of default one kBehaviorUnrestricted.
-const char MultiProfileUserController::kBehaviorOwnerPrimaryOnly[] =
-    "owner-primary-only";
-
 MultiProfileUserController::MultiProfileUserController(
-    MultiProfileUserControllerDelegate* delegate,
-    PrefService* local_state)
-    : delegate_(delegate), local_state_(local_state) {}
+    PrefService* local_state,
+    user_manager::UserManager* user_manager)
+    : local_state_(local_state), user_manager_(user_manager) {}
 
-MultiProfileUserController::~MultiProfileUserController() {}
+MultiProfileUserController::~MultiProfileUserController() = default;
 
 // static
 void MultiProfileUserController::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -80,13 +74,13 @@ void MultiProfileUserController::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 }
 
-// static
-MultiProfileUserController::UserAllowedInSessionReason
-MultiProfileUserController::GetPrimaryUserPolicy() {
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  CHECK(user_manager);
+void MultiProfileUserController::Shutdown() {
+  pref_watchers_.clear();
+}
 
-  const user_manager::User* user = user_manager->GetPrimaryUser();
+MultiProfileUserController::UserAllowedInSessionReason
+MultiProfileUserController::GetPrimaryUserPolicy() const {
+  const user_manager::User* user = user_manager_->GetPrimaryUser();
   if (!user)
     return ALLOWED;
 
@@ -110,8 +104,6 @@ MultiProfileUserBehavior MultiProfileUserController::UserBehaviorStringToEnum(
     return MultiProfileUserBehavior::PRIMARY_ONLY;
   if (behavior == kBehaviorNotAllowed)
     return MultiProfileUserBehavior::NOT_ALLOWED;
-  if (behavior == kBehaviorOwnerPrimaryOnly)
-    return MultiProfileUserBehavior::OWNER_PRIMARY_ONLY;
 
   return MultiProfileUserBehavior::UNRESTRICTED;
 }
@@ -119,10 +111,7 @@ MultiProfileUserBehavior MultiProfileUserController::UserBehaviorStringToEnum(
 bool MultiProfileUserController::IsUserAllowedInSession(
     const std::string& user_email,
     MultiProfileUserController::UserAllowedInSessionReason* reason) const {
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  CHECK(user_manager);
-
-  const user_manager::User* primary_user = user_manager->GetPrimaryUser();
+  const user_manager::User* primary_user = user_manager_->GetPrimaryUser();
   std::string primary_user_email;
   if (primary_user)
     primary_user_email = primary_user->GetAccountId().GetUserEmail();
@@ -186,13 +175,10 @@ void MultiProfileUserController::SetCachedValue(const std::string& user_email,
 }
 
 void MultiProfileUserController::CheckSessionUsers() {
-  const user_manager::UserList& users =
-      user_manager::UserManager::Get()->GetLoggedInUsers();
-  for (user_manager::UserList::const_iterator it = users.begin();
-       it != users.end(); ++it) {
-    if (!IsUserAllowedInSession((*it)->GetAccountId().GetUserEmail(),
-                                nullptr)) {
-      delegate_->OnUserNotAllowed((*it)->GetAccountId().GetUserEmail());
+  for (const user_manager::User* user : user_manager_->GetLoggedInUsers()) {
+    const std::string& user_email = user->GetAccountId().GetUserEmail();
+    if (!IsUserAllowedInSession(user_email, /*reason=*/nullptr)) {
+      user_manager_->NotifyUserNotAllowed(user_email);
       return;
     }
   }

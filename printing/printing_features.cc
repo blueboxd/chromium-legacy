@@ -14,6 +14,13 @@
 namespace printing {
 namespace features {
 
+#if BUILDFLAG(IS_CHROMEOS)
+// Enable support for borderless printing and media type.
+BASE_FEATURE(kEnableBorderlessPrinting,
+             "EnableBorderlessPrinting",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
 #if BUILDFLAG(IS_MAC)
 // Use the CUPS IPP printing backend instead of the original CUPS backend that
 // calls the deprecated PPD API.
@@ -92,10 +99,10 @@ BASE_FEATURE(kEnableCloudScanAfterPreview,
 
 // The naming mismatch below is intentional to preserve compatibility while
 // making code usage clearer. This is temporary and will be removed once
-// b/216105729 is officially fix and the local workflow is supported.
+// b/216105729 is officially fixed and the local workflow is supported.
 BASE_FEATURE(kEnableLocalScanAfterPreview,
              "EnablePrintScanAfterPreview",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
 
 }  // namespace features

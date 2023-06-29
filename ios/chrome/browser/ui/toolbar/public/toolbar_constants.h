@@ -23,7 +23,7 @@ extern const CGFloat kNTPBackgroundColorBrightnessIncognito;
 
 // Stackview constraints.
 extern const CGFloat kTopButtonsBottomMargin;
-extern const CGFloat kBottomButtonsBottomMargin;
+extern const CGFloat kBottomButtonsTopMargin;
 extern const CGFloat kAdaptiveToolbarMargin;
 extern const CGFloat kAdaptiveToolbarStackViewSpacing;
 
@@ -57,11 +57,15 @@ extern const CGFloat kDimmedToolbarSpotlightAlpha;
 extern const CGFloat kExpandedLocationBarHorizontalMargin;
 extern const CGFloat kContractedLocationBarHorizontalMargin;
 
-// Adaptive Location bar constants.
-extern const CGFloat kAdaptiveLocationBarBackgroundAlpha;
-extern const CGFloat kAdaptiveLocationBarBackgroundAlphaIncognito;
+// Top adaptive Location bar constants.
 extern const CGFloat kAdaptiveLocationBarVerticalMargin;
 extern const CGFloat kAdaptiveLocationBarVerticalMarginFullscreen;
+
+// Bottom adaptive location bar constants.
+extern const CGFloat kBottomAdaptiveLocationBarTopMargin;
+extern const CGFloat kBottomAdaptiveLocationBarBottomMargin;
+extern const CGFloat kBottomAdaptiveLocationBarVerticalMarginFullscreen;
+
 // Additional margin, which should grow only when the preferred content size is
 // non-default.
 extern const CGFloat kLocationBarVerticalMarginDynamicType;
@@ -93,10 +97,6 @@ extern NSString* const kToolbarShareButtonIdentifier;
 extern NSString* const kToolbarNewTabButtonIdentifier;
 // Accessibility identifier of the cancel omnibox edit button.
 extern NSString* const kToolbarCancelOmniboxEditButtonIdentifier;
-
-// Round corner radius for top-left and top-right corners when thumb strip is
-// visible.
-extern const CGFloat kTopCornerRadius;
 
 // Font size for the TabGrid button containing the tab count.
 extern const NSInteger kTabGridButtonFontSize;

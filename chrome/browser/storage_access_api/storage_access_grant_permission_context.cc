@@ -12,12 +12,14 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/dips/dips_service.h"
 #include "chrome/browser/first_party_sets/first_party_sets_policy_service.h"
 #include "chrome/browser/first_party_sets/first_party_sets_policy_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_constraints.h"
@@ -31,6 +33,8 @@
 #include "content/public/common/content_features.h"
 #include "net/base/features.h"
 #include "net/base/schemeful_site.h"
+#include "net/cookies/cookie_setting_override.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/first_party_sets/first_party_set_entry.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
 #include "net/first_party_sets/same_party_context.h"
@@ -99,6 +103,7 @@ content_settings::ContentSettingConstraints ComputeConstraints(
     case RequestOutcome::kDeniedByPrerequisites:
     case RequestOutcome::kReusedPreviousDecision:
     case RequestOutcome::kDeniedByTopLevelInteractionHeuristic:
+    case RequestOutcome::kAllowedByCookieSettings:
       NOTREACHED_NORETURN();
     case RequestOutcome::kGrantedByUser:
     case RequestOutcome::kDeniedByUser:
@@ -157,9 +162,30 @@ void StorageAccessGrantPermissionContext::DecidePermission(
     bool user_gesture,
     permissions::BrowserPermissionCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  CHECK(requesting_origin.is_valid());
+  CHECK(embedding_origin.is_valid());
+
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(id.global_render_frame_host_id());
+  CHECK(rfh);
+
+  // Return early without prompting users if cookie access is already allowed.
+  // This does not take previously granted SAA permission into account.
+  scoped_refptr<content_settings::CookieSettings> cookie_settings =
+      CookieSettingsFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context()));
+  net::CookieSettingOverrides overrides = rfh->GetCookieSettingOverrides();
+  overrides.Remove(net::CookieSettingOverride::kStorageAccessGrantEligible);
+  if (cookie_settings->IsFullCookieAccessAllowed(
+          requesting_origin, net::SiteForCookies(),
+          url::Origin::Create(embedding_origin), overrides)) {
+    RecordOutcomeSample(RequestOutcome::kAllowedByCookieSettings);
+    std::move(callback).Run(CONTENT_SETTING_ALLOW);
+    return;
+  }
+
   if (!user_gesture ||
-      !base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI) ||
-      !requesting_origin.is_valid() || !embedding_origin.is_valid()) {
+      !base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
     RecordOutcomeSample(RequestOutcome::kDeniedByPrerequisites);
     std::move(callback).Run(CONTENT_SETTING_BLOCK);
     return;
@@ -174,10 +200,6 @@ void StorageAccessGrantPermissionContext::DecidePermission(
                              user_gesture, std::move(callback));
     return;
   }
-
-  content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(id.global_render_frame_host_id());
-  CHECK(rfh);
 
   net::SchemefulSite embedding_site(embedding_origin);
 
@@ -267,10 +289,10 @@ void StorageAccessGrantPermissionContext::UseImplicitGrantOrPrompt(
 
   // Get all of our implicit grants and see which ones apply to our
   // |requesting_origin|.
-  ContentSettingsForOneType implicit_grants;
-  settings_map->GetSettingsForOneType(
-      ContentSettingsType::STORAGE_ACCESS, &implicit_grants,
-      content_settings::SessionModel::UserSession);
+  ContentSettingsForOneType implicit_grants =
+      settings_map->GetSettingsForOneType(
+          ContentSettingsType::STORAGE_ACCESS,
+          content_settings::SessionModel::UserSession);
 
   const int existing_implicit_grants = base::ranges::count_if(
       implicit_grants, [requesting_origin](const auto& entry) {
@@ -431,9 +453,8 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSetInternal(
       requesting_origin, embedding_origin, ContentSettingsType::STORAGE_ACCESS,
       content_setting, ComputeConstraints(outcome));
 
-  ContentSettingsForOneType grants;
-  settings_map->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS,
-                                      &grants);
+  ContentSettingsForOneType grants =
+      settings_map->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS);
 
   // TODO(https://crbug.com/989663): Ensure that this update of settings doesn't
   // cause a double update with

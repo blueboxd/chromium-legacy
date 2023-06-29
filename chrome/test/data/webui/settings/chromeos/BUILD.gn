@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chrome/browser/resources/settings/chromeos/os_settings.gni")
+import("//chrome/browser/resources/ash/settings/os_settings.gni")
 import("//chrome/test/data/webui/build_webui_tests.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
@@ -24,9 +24,8 @@ build_webui_tests("build") {
     "cellular_roaming_toggle_button_test.js",
     "crostini_extra_containers_subpage_test.js",
     "crostini_page_test.js",
-    "cups_printer_landing_page_tests.js",
     "cups_printer_page_tests.js",
-    "cups_printer_test_utils.js",
+    "cups_printer_test_utils.ts",
     "esim_install_error_dialog_test.js",
     "esim_remove_profile_dialog_test.js",
     "esim_rename_dialog_test.js",
@@ -125,6 +124,7 @@ build_webui_tests("build") {
     "device_page/fake_cros_audio_config_test.ts",
     "device_page/fake_input_device_settings_provider_test.ts",
     "device_page/input_device_mojo_interface_provider_test.ts",
+    "device_page/keyboard_six_pack_key_row_test.ts",
     "device_page/per_device_keyboard_remap_keys_test.ts",
     "device_page/per_device_keyboard_subsection_test.ts",
     "device_page/per_device_keyboard_test.ts",
@@ -156,13 +156,14 @@ build_webui_tests("build") {
     "internet_page/tether_connection_dialog_test.ts",
 
     "kerberos_page/kerberos_accounts_subpage_test.ts",
-    "kerberos_page/kerberos_add_account_dialog_test.js",
+    "kerberos_page/kerberos_add_account_dialog_test.ts",
     "kerberos_page/kerberos_page_test.ts",
     "kerberos_page/test_kerberos_accounts_browser_proxy.ts",
 
     "keyboard_shortcut_banner/keyboard_shortcut_banner_test.ts",
 
     "main_page_container/page_displayer_test.ts",
+    "main_page_container/route_navigation_test.js",
 
     "multidevice_page/multidevice_page_tests.js",
     "multidevice_page/multidevice_combined_setup_item_test.ts",
@@ -238,6 +239,7 @@ build_webui_tests("build") {
     "os_people_page/test_fingerprint_browser_proxy.ts",
     "os_people_page/personalization_options_test.ts",
 
+    "os_printing_page/cups_printer_landing_page_test.ts",
     "os_printing_page/cups_printers_entry_test.ts",
     "os_printing_page/os_printing_page_test.ts",
     "os_printing_page/printer_status_test.ts",
@@ -254,7 +256,7 @@ build_webui_tests("build") {
 
     "os_settings_menu/os_settings_menu_test.ts",
 
-    "os_settings_ui/os_settings_ui_about_page_test.js",
+    "os_settings_ui/os_settings_ui_about_page_test.ts",
     "os_settings_ui/os_settings_ui_menu_test.js",
     "os_settings_ui/os_settings_ui_page_availability_test.ts",
     "os_settings_ui/os_settings_ui_page_visibility_test.ts",
@@ -276,7 +278,7 @@ build_webui_tests("build") {
 
   ts_deps = [
     "//ash/webui/common/resources:build_ts",
-    "//chrome/browser/resources/settings/chromeos:build_ts",
+    "//chrome/browser/resources/ash/settings:build_ts",
     "//chrome/test/data/webui/chromeos:build_ts",
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources/cr_components/app_management:build_ts",
@@ -289,10 +291,10 @@ build_webui_tests("build") {
     # CrOS Settings browser tests should only import from one of the paths
     # below, so that tests work both in optimize_webui=true/false modes.
     "chrome://os-settings/os_settings.js|" + rebase_path(
-            "$root_gen_dir/chrome/browser/resources/settings/chromeos/tsc/os_settings.d.ts",
+            "$root_gen_dir/chrome/browser/resources/ash/settings/tsc/os_settings.d.ts",
             target_gen_dir),
     "chrome://os-settings/lazy_load.js|" + rebase_path(
-            "$root_gen_dir/chrome/browser/resources/settings/chromeos/tsc/lazy_load.d.ts",
+            "$root_gen_dir/chrome/browser/resources/ash/settings/tsc/lazy_load.d.ts",
             target_gen_dir),
     "chrome://webui-test/chromeos/*|" +
         rebase_path("$root_gen_dir/chrome/test/data/webui/chromeos/tsc/*",

@@ -200,6 +200,10 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
   std::unique_ptr<LayerTreeFrameSinkHolder> CreateLayerTreeFrameSinkHolder();
 
+  // Set the appropriate transform for the given scale factor.
+  // NOTE: This should only be done if the client submits in pixel coordinates.
+  void SetScaleFactorTransform(float scale_factor);
+
   raw_ptr<Surface, ExperimentalAsh> root_surface_ = nullptr;
 
   // Position of root surface relative to topmost, leftmost sub-surface. The
@@ -247,6 +251,8 @@ class SurfaceTreeHost : public SurfaceDelegate,
   std::set<gpu::SyncToken> prev_frame_verified_tokens_;
 
   bool bounds_is_dirty_ = true;
+
+  absl::optional<gfx::Rect> previous_content_bounds_;
 
   base::WeakPtrFactory<SurfaceTreeHost> weak_ptr_factory_{this};
 };

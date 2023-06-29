@@ -28,6 +28,12 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEmojiSuggestionEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEmojiSuggestionEnterpriseAllowed[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kManagedPhysicalKeyboardAutocorrectAllowed[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kManagedPhysicalKeyboardPredictiveWritingAllowed[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kEmojiPickerGifSupportEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kChargingSoundsEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLowBatterySoundEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAudioDevicesMute[];
@@ -210,13 +216,13 @@ extern const char kAccessibilityAutoclickMovementThreshold[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAccessibilityAutoclickMenuPosition[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kAccessibilityColorFiltering[];
+extern const char kAccessibilityColorCorrectionEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kAccessibilityColorFilteringHasBeenSetup[];
+extern const char kAccessibilityColorCorrectionHasBeenSetup[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAccessibilityColorVisionCorrectionAmount[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kAccessibilityColorVisionDeficiencyType[];
+extern const char kAccessibilityColorVisionCorrectionType[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAccessibilityCaretHighlightEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -737,6 +743,9 @@ extern const char kAshLoginSessionStartedTime[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAshLoginSessionStartedIsFirstSession[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kGlanceablesEnabled[];
 }  // namespace prefs
 }  // namespace ash
 

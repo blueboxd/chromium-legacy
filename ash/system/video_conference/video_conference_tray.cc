@@ -33,9 +33,11 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
+#include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/views/controls/highlight_path_generator.h"
 
 namespace ash {
 
@@ -65,7 +67,15 @@ class ToggleBubbleButton : public IconButton {
                    IDS_ASH_VIDEO_CONFERENCE_TOGGLE_BUBBLE_BUTTON_TOOLTIP,
                    /*is_togglable=*/true,
                    /*has_border=*/true),
-        tray_(tray) {}
+        tray_(tray) {
+    // Reduce the focus ring padding which is installed by default by
+    // `IconButton`. The default padding results in the focus ring being painted
+    // outside of the available bounds.
+    auto* focus_ring = views::FocusRing::Get(this);
+    focus_ring->SetPathGenerator(
+        std::make_unique<views::CircleHighlightPathGenerator>(
+            -gfx::Insets(focus_ring->GetHaloThickness() / 2)));
+  }
   ToggleBubbleButton(const ToggleBubbleButton&) = delete;
   ToggleBubbleButton& operator=(const ToggleBubbleButton&) = delete;
   ~ToggleBubbleButton() override = default;
@@ -108,6 +118,14 @@ VideoConferenceTrayButton::VideoConferenceTrayButton(
   SetToggledVectorIcon(*toggled_icon);
 
   SetAccessibleRole(ax::mojom::Role::kToggleButton);
+
+  // Reduce the focus ring padding which is installed by default by
+  // `IconButton`. The default padding results in the focus ring being painted
+  // outside of the available bounds.
+  auto* focus_ring = views::FocusRing::Get(this);
+  focus_ring->SetPathGenerator(
+      std::make_unique<views::CircleHighlightPathGenerator>(
+          -gfx::Insets(focus_ring->GetHaloThickness() / 2)));
 
   UpdateTooltip();
 }
@@ -303,6 +321,12 @@ void VideoConferenceTray::OnAnimationEnded() {
   VideoConferenceTrayController::Get()->MaybeShowSpeakOnMuteOptInNudge(this);
 }
 
+bool VideoConferenceTray::ShouldEnterPushedState(const ui::Event& event) {
+  // Never enter pushed state to avoid displaying unnecessary ink drop in
+  // `ButtonController::OnMousePressed()`.
+  return false;
+}
+
 void VideoConferenceTray::OnHasMediaAppStateChange() {
   SetVisiblePreferred(VideoConferenceTrayController::Get()->ShouldShowTray());
 }
@@ -367,6 +391,10 @@ void VideoConferenceTray::UpdateTrayAndIconsState() {
   bool is_capturing_screen = controller->IsCapturingScreen();
   screen_share_icon_->SetVisible(is_capturing_screen);
   screen_share_icon_->SetIsCapturing(is_capturing_screen);
+}
+
+IconButton* VideoConferenceTray::GetToggleBubbleButtonForTest() {
+  return toggle_bubble_button_;
 }
 
 void VideoConferenceTray::OnSessionStateChanged(

@@ -1065,8 +1065,9 @@ void AddDevicePowerStrings(content::WebUIDataSource* html_source) {
   };
   html_source->AddLocalizedStrings(kPowerStrings);
 
-  // TODO(b:216035280): create and link to real "learn more" webpage.
-  html_source->AddString("powerAdaptiveChargingLearnMoreUrl", u"about://blank");
+  html_source->AddString(
+      "powerAdaptiveChargingLearnMoreUrl",
+      u"https://support.google.com/chromebook/?p=settings_adaptive_charging");
 
   // TODO(b:278957245): create and link to real "learn more" webpage.
   html_source->AddString("powerBatterySaverLearnMoreUrl", "about://blank");
@@ -1726,6 +1727,24 @@ void DeviceSection::AddDevicePointersStrings(
       {"learnMoreLabel", IDS_SETTINGS_LEARN_MORE_LABEL},
       {"modifierKeysLabel", IDS_SETTINGS_MODIFIER_KEYS_LABEL},
       {"otherKeysLabel", IDS_SETTINGS_OTHER_KEYS_LABEL},
+      {"sixPackKeyLabelInsert", IDS_SETTINGS_SIX_PACK_KEY_INSERT},
+      {"sixPackKeyLabelHome", IDS_SETTINGS_SIX_PACK_KEY_HOME},
+      {"sixPackKeyLabelEnd", IDS_SETTINGS_SIX_PACK_KEY_END},
+      {"sixPackKeyLabelDelete", IDS_SETTINGS_SIX_PACK_KEY_DELETE},
+      {"sixPackKeyLabelPageUp", IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP},
+      {"sixPackKeyLabelPageDown", IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN},
+      {"sixPackKeyDeleteAlt", IDS_SETTINGS_SIX_PACK_KEY_DELETE_ALT},
+      {"sixPackKeyDeleteSearch", IDS_SETTINGS_SIX_PACK_KEY_DELETE_SEARCH},
+      {"sixPackKeyHomeAlt", IDS_SETTINGS_SIX_PACK_KEY_HOME_ALT},
+      {"sixPackKeyHomeSearch", IDS_SETTINGS_SIX_PACK_KEY_HOME_SEARCH},
+      {"sixPackKeyEndAlt", IDS_SETTINGS_SIX_PACK_KEY_END_ALT},
+      {"sixPackKeyEndSearch", IDS_SETTINGS_SIX_PACK_KEY_END_SEARCH},
+      {"sixPackKeyPageUpAlt", IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP_ALT},
+      {"sixPackKeyPageUpSearch", IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP_SEARCH},
+      {"sixPackKeyPageDownAlt", IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_ALT},
+      {"sixPackKeyPageDownSearch", IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_SEARCH},
+      {"sixPackKeyInsertSearch", IDS_SETTINGS_SIX_PACK_KEY_INSERT_SEARCH},
+      {"sixPackKeyOff", IDS_SETTINGS_SIX_PACK_KEY_OPTION_OFF},
   };
   html_source->AddLocalizedStrings(kPointersStrings);
 

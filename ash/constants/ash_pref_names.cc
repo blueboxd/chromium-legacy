@@ -32,6 +32,22 @@ const char kEmojiSuggestionEnabled[] =
 const char kEmojiSuggestionEnterpriseAllowed[] =
     "assistive_input.emoji_suggestion.enterprise_allowed";
 
+// A boolean pref used by an admin policy to enable/disable particular
+// features on the physical keyboard. See the policy at
+// PhysicalKeyboardAutocorrect.yml.
+const char kManagedPhysicalKeyboardAutocorrectAllowed[] =
+    "settings.ime.managed.physical_keyboard.autocorrect_enabled";
+
+// A boolean pref used by an admin policy to enable/disable particular
+// features on the physical keyboard. See the policy at
+// PhysicalKeyboardPredictiveWriting.yml.
+const char kManagedPhysicalKeyboardPredictiveWritingAllowed[] =
+    "settings.ime.managed.physical_keyboard.predictive_writing_enabled";
+
+// A boolean pref of whether GIF support is enabled in emoji picker.
+const char kEmojiPickerGifSupportEnabled[] =
+    "emoji_picker.gif_support_enabled";
+
 // Pref which stores a list of Embedded Universal Integrated Circuit Card
 // (EUICC) D-Bus paths which have had their installed profiles refreshed from
 // Hermes. Each path is stored as a string.
@@ -429,17 +445,17 @@ const char kAccessibilityAutoclickMovementThreshold[] =
 const char kAccessibilityAutoclickMenuPosition[] =
     "settings.a11y.autoclick_menu_position";
 // Whether to enable color filtering settings.
-const char kAccessibilityColorFiltering[] =
+const char kAccessibilityColorCorrectionEnabled[] =
     "settings.a11y.color_filtering.enabled";
 // Whether color filtering has been set up yet. It should be set up on first
 // use.
-const char kAccessibilityColorFilteringHasBeenSetup[] =
+const char kAccessibilityColorCorrectionHasBeenSetup[] =
     "settings.a11y.color_filtering.setup";
 // The amount of a color vision correction filter to apply.
 const char kAccessibilityColorVisionCorrectionAmount[] =
     "settings.a11y.color_filtering.color_vision_correction_amount";
 // The type of color vision correction to apply.
-const char kAccessibilityColorVisionDeficiencyType[] =
+const char kAccessibilityColorVisionCorrectionType[] =
     "settings.a11y.color_filtering.color_vision_deficiency_type";
 // A boolean pref which determines whether caret highlighting is enabled.
 const char kAccessibilityCaretHighlightEnabled[] =
@@ -1564,6 +1580,10 @@ const char kAshLoginSessionStartedIsFirstSession[] =
 // A boolean pref that controls whether input force respect ui gains is enabled.
 const char kInputForceRespectUiGainsEnabled[] =
     "ash.input_force_respect_ui_gains_enabled";
+
+// A boolean pref indicating whether the glanceables feature is allowed to be
+// used for managed device.
+const char kGlanceablesEnabled[] = "ash.glanceables_enabled";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

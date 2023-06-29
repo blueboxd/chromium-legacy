@@ -33,6 +33,7 @@
 #include "net/base/features.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/buildflags.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/common/switches.h"
@@ -222,26 +223,23 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      raw_ref(features::kDocumentPolicyNegotiation)},
     {wf::EnableFedCm, raw_ref(features::kFedCm), kSetOnlyIfOverridden},
     {wf::EnableFedCmAuthz, raw_ref(features::kFedCmAuthz), kDefault},
-    {wf::EnableFedCmAutoReauthn, raw_ref(features::kFedCmAutoReauthn),
-     kSetOnlyIfOverridden},
     {wf::EnableFedCmIdPRegistration, raw_ref(features::kFedCmIdPRegistration),
      kDefault},
-    {wf::EnableFedCmIframeSupport, raw_ref(features::kFedCmIframeSupport),
-     kSetOnlyIfOverridden},
-    {wf::EnableFedCmLoginHint, raw_ref(features::kFedCmLoginHint),
-     kSetOnlyIfOverridden},
+    {wf::EnableFedCmIdpSigninStatus,
+     raw_ref(features::kFedCmIdpSigninStatusEnabled), kSetOnlyIfOverridden},
     {wf::EnableGamepadMultitouch, raw_ref(features::kEnableGamepadMultitouch)},
     {wf::EnableSharedStorageAPI,
      raw_ref(features::kPrivacySandboxAdsAPIsOverride), kSetOnlyIfOverridden},
+    {wf::EnableSharedStorageAPI,
+     raw_ref(features::kPrivacySandboxAdsAPIsM1Override), kSetOnlyIfOverridden},
     {wf::EnableFedCmMultipleIdentityProviders,
      raw_ref(features::kFedCmMultipleIdentityProviders), kDefault},
-    {wf::EnableFedCmRpContext, raw_ref(features::kFedCmRpContext), kDefault},
-    {wf::EnableFedCmUserInfo, raw_ref(features::kFedCmUserInfo),
-     kSetOnlyIfOverridden},
     {wf::EnableFedCmSelectiveDisclosure,
      raw_ref(features::kFedCmSelectiveDisclosure), kDefault},
     {wf::EnableFencedFrames, raw_ref(features::kPrivacySandboxAdsAPIsOverride),
      kSetOnlyIfOverridden},
+    {wf::EnableFencedFrames,
+     raw_ref(features::kPrivacySandboxAdsAPIsM1Override), kSetOnlyIfOverridden},
     {wf::EnableSharedStorageAPI,
      raw_ref(features::kPrivacySandboxAdsAPIsOverride), kSetOnlyIfOverridden},
     {wf::EnableForcedColors, raw_ref(features::kForcedColors)},
@@ -334,59 +332,62 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
   // TODO(crbug/832393): Cleanup the inconsistency between custom WRF enabler
   // function and using feature string name with EnableFeatureFromString.
   const RuntimeFeatureToChromiumFeatureMap<const char*>
-      runtimeFeatureNameToChromiumFeatureMapping[] = {
-          {"AllowContentInitiatedDataUrlNavigations",
-           raw_ref(features::kAllowContentInitiatedDataUrlNavigations)},
-          {"AllowURNsInIframes", raw_ref(blink::features::kAllowURNsInIframes)},
-          {"AllowURNsInIframes",
-           raw_ref(features::kPrivacySandboxAdsAPIsOverride),
-           kSetOnlyIfOverridden},
-          {"AttributionReporting",
-           raw_ref(features::kPrivacySandboxAdsAPIsOverride),
-           kSetOnlyIfOverridden},
-          {"AttributionReportingCrossAppWeb",
-           raw_ref(features::kPrivacySandboxAdsAPIsOverride),
-           kSetOnlyIfOverridden},
-          {"AndroidDownloadableFontsMatching",
-           raw_ref(features::kAndroidDownloadableFontsMatching)},
-          {"Fledge", raw_ref(blink::features::kFledge), kSetOnlyIfOverridden},
-          {"Fledge", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
-           kSetOnlyIfOverridden},
-          {"FledgeBiddingAndAuctionServer",
-           raw_ref(features::kPrivacySandboxAdsAPIsOverride),
-           kSetOnlyIfOverridden},
-          {"FontSrcLocalMatching", raw_ref(features::kFontSrcLocalMatching)},
-          {"LegacyWindowsDWriteFontFallback",
-           raw_ref(features::kLegacyWindowsDWriteFontFallback)},
-          {"OriginIsolationHeader", raw_ref(features::kOriginIsolationHeader)},
-          {"PartitionedCookies", raw_ref(net::features::kPartitionedCookies)},
-          {"ReduceAcceptLanguage",
-           raw_ref(network::features::kReduceAcceptLanguage)},
-          {"StorageAccessAPI", raw_ref(features::kFirstPartySets)},
-          {"TopicsAPI", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
-           kSetOnlyIfOverridden},
-          {"TopicsXHR", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
-           kSetOnlyIfOverridden},
-          {"TopicsDocumentAPI",
-           raw_ref(features::kPrivacySandboxAdsAPIsOverride),
-           kSetOnlyIfOverridden},
-          {"TouchTextEditingRedesign",
-           raw_ref(features::kTouchTextEditingRedesign)},
-          {"TrustedTypesFromLiteral",
-           raw_ref(features::kTrustedTypesFromLiteral)},
-          {"WebAppTabStrip", raw_ref(features::kDesktopPWAsTabStrip)},
-          {"WebAppTabStripCustomizations",
-           raw_ref(blink::features::kDesktopPWAsTabStripCustomizations)},
-          {"WebEnvironmentIntegrity",
-           raw_ref(features::kWebEnvironmentIntegrity)},
-          {"WebSerialBluetooth",
-           raw_ref(features::kEnableBluetoothSerialPortProfileInSerialApi)},
-          {"WGIGamepadTriggerRumble",
-           raw_ref(features::kEnableWindowsGamingInputDataFetcher)},
-          {"MediaStreamTrackTransfer",
-           raw_ref(features::kMediaStreamTrackTransfer)},
-          {"PrivateNetworkAccessPermissionPrompt",
-           raw_ref(network::features::kPrivateNetworkAccessPermissionPrompt)}};
+      runtimeFeatureNameToChromiumFeatureMapping[] =
+  { {"AllowContentInitiatedDataUrlNavigations",
+     raw_ref(features::kAllowContentInitiatedDataUrlNavigations)},
+    {"AllowURNsInIframes", raw_ref(blink::features::kAllowURNsInIframes)},
+    {"AllowURNsInIframes", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
+     kSetOnlyIfOverridden},
+    {"AllowURNsInIframes", raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
+     kSetOnlyIfOverridden},
+    {"AttributionReporting", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
+     kSetOnlyIfOverridden},
+    {"AttributionReporting",
+     raw_ref(features::kPrivacySandboxAdsAPIsM1Override), kSetOnlyIfOverridden},
+    {"AttributionReportingCrossAppWeb",
+     raw_ref(features::kPrivacySandboxAdsAPIsOverride), kSetOnlyIfOverridden},
+    {"AndroidDownloadableFontsMatching",
+     raw_ref(features::kAndroidDownloadableFontsMatching)},
+    {"Fledge", raw_ref(blink::features::kFledge), kSetOnlyIfOverridden},
+    {"Fledge", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
+     kSetOnlyIfOverridden},
+    {"Fledge", raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
+     kSetOnlyIfOverridden},
+    {"FledgeBiddingAndAuctionServer",
+     raw_ref(features::kPrivacySandboxAdsAPIsOverride), kSetOnlyIfOverridden},
+#if BUILDFLAG(USE_FONTATIONS_BACKEND)
+    {"FontationsFontBackend", raw_ref(blink::features::kFontationsFontBackend)},
+#endif
+    {"FontSrcLocalMatching", raw_ref(features::kFontSrcLocalMatching)},
+    {"LegacyWindowsDWriteFontFallback",
+     raw_ref(features::kLegacyWindowsDWriteFontFallback)},
+    {"OriginIsolationHeader", raw_ref(features::kOriginIsolationHeader)},
+    {"PartitionedCookies", raw_ref(net::features::kPartitionedCookies)},
+    {"ReduceAcceptLanguage", raw_ref(network::features::kReduceAcceptLanguage)},
+    {"StorageAccessAPI", raw_ref(features::kFirstPartySets)},
+    {"TopicsAPI", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
+     kSetOnlyIfOverridden},
+    {"TopicsAPI", raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
+     kSetOnlyIfOverridden},
+    {"TopicsXHR", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
+     kSetOnlyIfOverridden},
+    {"TopicsDocumentAPI", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
+     kSetOnlyIfOverridden},
+    {"TopicsDocumentAPI", raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
+     kSetOnlyIfOverridden},
+    {"TouchTextEditingRedesign", raw_ref(features::kTouchTextEditingRedesign)},
+    {"TrustedTypesFromLiteral", raw_ref(features::kTrustedTypesFromLiteral)},
+    {"WebAppTabStrip", raw_ref(features::kDesktopPWAsTabStrip)},
+    {"WebAppTabStripCustomizations",
+     raw_ref(blink::features::kDesktopPWAsTabStripCustomizations)},
+    {"WebEnvironmentIntegrity", raw_ref(features::kWebEnvironmentIntegrity)},
+    {"WebSerialBluetooth",
+     raw_ref(features::kEnableBluetoothSerialPortProfileInSerialApi)},
+    {"WGIGamepadTriggerRumble",
+     raw_ref(features::kEnableWindowsGamingInputDataFetcher)},
+    {"MediaStreamTrackTransfer", raw_ref(features::kMediaStreamTrackTransfer)},
+    {"PrivateNetworkAccessPermissionPrompt",
+     raw_ref(network::features::kPrivateNetworkAccessPermissionPrompt)} };
   for (const auto& mapping : runtimeFeatureNameToChromiumFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(
         *mapping.chromium_feature, mapping.option, [&mapping](bool enabled) {
@@ -605,11 +606,6 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
             false)) {
       WebRuntimeFeatures::EnableFedCmIdpSignout(true);
     }
-    if (base::GetFieldTrialParamByFeatureAsBool(
-            features::kFedCm,
-            features::kFedCmIdpSigninStatusFieldTrialParamName, false)) {
-      WebRuntimeFeatures::EnableFedCmIdpSigninStatus(true);
-    }
   }
 
   if (base::FeatureList::IsEnabled(blink::features::kPendingBeaconAPI)) {
@@ -642,7 +638,9 @@ void ResolveInvalidConfigurations() {
 
   // Fenced frames, like Portals, cannot be enabled without the support of the
   // browser process.
-  if (base::FeatureList::IsEnabled(features::kPrivacySandboxAdsAPIsOverride) &&
+  if ((base::FeatureList::IsEnabled(features::kPrivacySandboxAdsAPIsOverride) ||
+       base::FeatureList::IsEnabled(
+           features::kPrivacySandboxAdsAPIsM1Override)) &&
       !base::FeatureList::IsEnabled(blink::features::kFencedFrames)) {
     LOG_IF(WARNING, WebRuntimeFeatures::IsFencedFramesEnabled())
         << "Fenced frames cannot be enabled in this configuration. Use --"

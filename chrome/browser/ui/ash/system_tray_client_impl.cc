@@ -38,7 +38,7 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/set_time_dialog.h"
 #include "chrome/browser/ash/system/system_clock.h"
-#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_metrics.h"
+#include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_metrics.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/extensions/vpn_provider/vpn_service_factory.h"
@@ -79,6 +79,7 @@
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
+
 using session_manager::SessionManager;
 using session_manager::SessionState;
 
@@ -172,21 +173,9 @@ bool IsAppInstalled(std::string app_id) {
 }
 
 void OpenInBrowser(const GURL& event_url) {
-  if (crosapi::browser_util::IsLacrosPrimaryBrowser()) {
-    auto* browser_manager = crosapi::BrowserManager::Get();
-    browser_manager->SwitchToTab(
-        event_url,
-        /*path_behavior=*/NavigateParams::IGNORE_AND_NAVIGATE);
-    return;
-  }
-
-  // Lacros is not the primary browser, so use this workaround.
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetActiveUserProfile());
-  NavigateParams params(
-      GetSingletonTabNavigateParams(displayer.browser(), event_url));
-  params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(displayer.browser(), &params);
+  ShowSingletonTabOverwritingNTP(ProfileManager::GetActiveUserProfile(),
+                                 event_url,
+                                 NavigateParams::IGNORE_AND_NAVIGATE);
 }
 
 ash::ManagementDeviceMode GetManagementDeviceMode(
@@ -381,6 +370,12 @@ void SystemTrayClientImpl::ShowSettings(int64_t display_id) {
       ProfileManager::GetActiveUserProfile(), display_id);
 }
 
+void SystemTrayClientImpl::ShowAccountSettings() {
+  // The "Accounts" section is called "People" for historical reasons.
+  ShowSettingsSubPageForActiveUser(
+      chromeos::settings::mojom::kPeopleSectionPath);
+}
+
 void SystemTrayClientImpl::ShowBluetoothSettings() {
   base::RecordAction(base::UserMetricsAction("ShowBluetoothSettingsPage"));
   ShowSettingsSubPageForActiveUser(
@@ -543,16 +538,8 @@ void SystemTrayClientImpl::ShowGestureEducationHelp() {
 }
 
 void SystemTrayClientImpl::ShowPaletteHelp() {
-  if (crosapi::browser_util::IsLacrosPrimaryBrowser()) {
-    crosapi::BrowserManager::Get()->SwitchToTab(
-        GURL(chrome::kChromePaletteHelpURL),
-        /*path_behavior=*/NavigateParams::RESPECT);
-    return;
-  }
-
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetActiveUserProfile());
-  ShowSingletonTab(displayer.browser(), GURL(chrome::kChromePaletteHelpURL));
+  ShowSingletonTab(ProfileManager::GetActiveUserProfile(),
+                   GURL(chrome::kChromePaletteHelpURL));
 }
 
 void SystemTrayClientImpl::ShowPaletteSettings() {

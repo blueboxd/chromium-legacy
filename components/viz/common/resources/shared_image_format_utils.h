@@ -7,10 +7,31 @@
 
 #include "components/viz/common/resources/shared_image_format.h"
 #include "components/viz/common/viz_resource_format_export.h"
+#include "gpu/vulkan/buildflags.h"
 #include "third_party/skia/include/core/SkColorType.h"
 #include "ui/gfx/buffer_types.h"
 
+#if BUILDFLAG(ENABLE_VULKAN)
+#include <vulkan/vulkan_core.h>
+#endif
+
+namespace gpu {
+class SharedImageFormatRestrictedSinglePlaneUtilsAccessor;
+}  // namespace gpu
+
+namespace cc {
+class PerfContextProvider;
+}
+
+namespace media {
+class VideoResourceUpdater;
+}
+
 namespace viz {
+
+class ContextProviderCommandBuffer;
+class TestContextProvider;
+class TestInProcessContextProvider;
 
 // Returns the closest SkColorType for a given single planar `format`.
 //
@@ -50,6 +71,35 @@ SinglePlaneSharedImageFormatToBufferFormat(SharedImageFormat format);
 
 VIZ_RESOURCE_FORMAT_EXPORT SharedImageFormat
 GetSharedImageFormat(gfx::BufferFormat format);
+
+// Utilities that conceptually belong only on the service side, but are
+// currently used by some clients. Usage is restricted to friended clients.
+class VIZ_RESOURCE_FORMAT_EXPORT SharedImageFormatRestrictedSinglePlaneUtils {
+ private:
+  friend class ContextProviderCommandBuffer;
+  friend class TestContextProvider;
+  friend class TestInProcessContextProvider;
+  friend class cc::PerfContextProvider;
+  friend class media::VideoResourceUpdater;
+  friend class gpu::SharedImageFormatRestrictedSinglePlaneUtilsAccessor;
+
+  // The following functions use unsigned int instead of GLenum, since including
+  // third_party/khronos/GLES2/gl2.h causes redefinition errors as
+  // macros/functions defined in it conflict with macros/functions defined in
+  // ui/gl/gl_bindings.h. See http://crbug.com/512833 for more information.
+  static unsigned int ToGLDataFormat(SharedImageFormat format);
+  static unsigned int ToGLDataType(SharedImageFormat format);
+
+  // |use_angle_rgbx_format| should be true when the
+  // GL_ANGLE_rgbx_internal_format extension is available.
+  static unsigned int ToGLTextureStorageFormat(SharedImageFormat format,
+                                               bool use_angle_rgbx_format);
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  static bool HasVkFormat(SharedImageFormat format);
+  static VkFormat ToVkFormat(SharedImageFormat format);
+#endif
+};
 
 }  // namespace viz
 

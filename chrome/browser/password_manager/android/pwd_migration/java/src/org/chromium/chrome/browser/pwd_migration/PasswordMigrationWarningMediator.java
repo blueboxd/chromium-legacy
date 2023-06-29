@@ -8,11 +8,15 @@ import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarning
 import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.CURRENT_SCREEN;
 import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.VISIBLE;
 
+import androidx.fragment.app.FragmentManager;
+
+import org.chromium.chrome.browser.password_manager.settings.PasswordListObserver;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.MigrationOption;
 import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.ScreenType;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.components.prefs.PrefService;
@@ -21,6 +25,8 @@ import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
+import org.chromium.components.sync.SyncService;
+import org.chromium.components.sync.UserSelectableType;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -28,20 +34,57 @@ import org.chromium.ui.modelutil.PropertyModel;
  * Contains the logic for the local passwords migration warning. It sets the state of the model and
  * reacts to events.
  */
-class PasswordMigrationWarningMediator implements PasswordMigrationWarningOnClickHandler {
+class PasswordMigrationWarningMediator
+        implements PasswordMigrationWarningOnClickHandler, PasswordListObserver {
     private PropertyModel mModel;
     private Profile mProfile;
+    private MigrationWarningOptionsHandler mOptionsHandler;
+    private boolean mPasswordsAvailable;
 
-    void initialize(PropertyModel model) {
+    public interface MigrationWarningOptionsHandler {
+        /**
+         * Launches the sync consent flow.
+         */
+        void startSyncConsentFlow();
+
+        /**
+         * Opens the sync settings to allow users to enable passwords sync.
+         */
+        void openSyncSettings();
+
+        /**
+         * Launches the password export flow.
+         *
+         * @param fragmentManager for the fragment that owns the export flow.
+         */
+        void startExportFlow(FragmentManager fragmentManager, boolean passwordsAvailable);
+
+        /**
+         * Resumes the password export flow.
+         */
+        void resumeExportFlow();
+
+        /**
+         * Notifies the {@link ExportFlow} that passwords are fetched.
+         */
+        void passwordsAvailable();
+    }
+
+    PasswordMigrationWarningMediator(
+            Profile profile, MigrationWarningOptionsHandler optionsHandler) {
+        mProfile = profile;
+        mOptionsHandler = optionsHandler;
+        mPasswordsAvailable = false;
+    }
+
+    void initializeModel(PropertyModel model) {
         mModel = model;
     }
 
-    void showWarning(int screenType, Profile profile) {
-        mProfile = profile;
-
+    void showWarning(int screenType) {
         mModel.set(VISIBLE, true);
         mModel.set(CURRENT_SCREEN, screenType);
-        mModel.set(ACCOUNT_DISPLAY_NAME, getAccountDisplayName(profile));
+        mModel.set(ACCOUNT_DISPLAY_NAME, getAccountDisplayName(mProfile));
     }
 
     void onDismissed(@StateChangeReason int reason) {
@@ -64,8 +107,13 @@ class PasswordMigrationWarningMediator implements PasswordMigrationWarningOnClic
     }
 
     @Override
-    public void onNext(@MigrationOption int selectedOption) {
-        mModel.set(VISIBLE, false);
+    public void onNext(@MigrationOption int selectedOption, FragmentManager fragmentManager) {
+        if (selectedOption == MigrationOption.SYNC_PASSWORDS) {
+            mModel.set(VISIBLE, false);
+            startSyncFlow();
+        } else {
+            mOptionsHandler.startExportFlow(fragmentManager, mPasswordsAvailable);
+        }
         // TODO(crbug.com/1445065): Launch the password Export flow.
     }
 
@@ -87,5 +135,27 @@ class PasswordMigrationWarningMediator implements PasswordMigrationWarningOnClic
         boolean canHaveEmailAddressDisplayed =
                 account.getAccountCapabilities().canHaveEmailAddressDisplayed() != Tribool.FALSE;
         return canHaveEmailAddressDisplayed ? account.getEmail() : account.getFullName();
+    }
+
+    private void startSyncFlow() {
+        SyncService syncService = SyncServiceFactory.getForProfile(mProfile);
+        if (syncService == null) return;
+        if (!syncService.isSyncFeatureEnabled()) {
+            mOptionsHandler.startSyncConsentFlow();
+            return;
+        }
+        assert !syncService.getSelectedTypes().contains(UserSelectableType.PASSWORDS);
+        mOptionsHandler.openSyncSettings();
+    }
+
+    @Override
+    public void passwordListAvailable(int count) {
+        mPasswordsAvailable = true;
+        mOptionsHandler.passwordsAvailable();
+    }
+
+    @Override
+    public void passwordExceptionListAvailable(int count) {
+        // This is unused.
     }
 }

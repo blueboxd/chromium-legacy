@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.jsdialog;
 
-import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isChecked;
@@ -85,7 +84,6 @@ public class JavascriptAppModalDialogTest {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1295498")
     @Feature({"Browser", "Main"})
     public void testBeforeUnloadDialog() throws TimeoutException, ExecutionException {
         sActivityTestRule.loadUrl(BEFORE_UNLOAD_URL);
@@ -144,7 +142,7 @@ public class JavascriptAppModalDialogTest {
         // Click leave and verify that the tab is closed.
         JavascriptAppModalDialog jsDialog = getCurrentDialog();
         Assert.assertNotNull("No dialog showing.", jsDialog);
-        onView(withText(R.string.leave)).perform(click());
+        onViewWaiting(withText(R.string.leave)).perform(click());
         TabUiTestHelper.verifyTabModelTabCount(activity, 1, 0);
     }
 
@@ -154,7 +152,6 @@ public class JavascriptAppModalDialogTest {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1295498")
     @Feature({"Browser", "Main"})
     public void testBeforeUnloadOnReloadDialog() throws TimeoutException, ExecutionException {
         sActivityTestRule.loadUrl(BEFORE_UNLOAD_URL);
@@ -186,7 +183,7 @@ public class JavascriptAppModalDialogTest {
         // Show a dialog once.
         JavascriptAppModalDialog jsDialog = getCurrentDialog();
         Assert.assertNotNull("No dialog showing.", jsDialog);
-        onView(withText(R.string.cancel)).perform(click());
+        onViewWaiting(withText(R.string.cancel)).perform(click());
         Assert.assertEquals(BEFORE_UNLOAD_URL,
                 sActivityTestRule.getActivity()
                         .getCurrentWebContents()
@@ -198,11 +195,11 @@ public class JavascriptAppModalDialogTest {
                 executeJavaScriptAndWaitForDialog("history.back();");
         jsDialog = getCurrentDialog();
         Assert.assertNotNull("No dialog showing.", jsDialog);
-        onView(withId(R.id.suppress_js_modal_dialogs))
+        onViewWaiting(withId(R.id.suppress_js_modal_dialogs))
                 .check(matches(isDisplayed()))
                 .perform(click())
                 .check(matches(isChecked()));
-        onView(withText(R.string.cancel)).perform(click());
+        onViewWaiting(withText(R.string.cancel)).perform(click());
         Assert.assertEquals(BEFORE_UNLOAD_URL,
                 sActivityTestRule.getActivity()
                         .getCurrentWebContents()

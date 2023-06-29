@@ -33,6 +33,9 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.view.WindowMetrics;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.webkit.URLUtil;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -328,6 +331,17 @@ public class MainActivity
                 new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, urlsDropdown);
         mEditUrl.setAdapter(adapter);
         mEditUrl.setOnClickListener(v -> mEditUrl.showDropDown());
+        mEditUrl.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                mEditUrl.clearFocus();
+                // Hide the keyboard
+                InputMethodManager imm =
+                        (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(mEditUrl.getWindowToken(), 0);
+                return true;
+            }
+            return false;
+        });
     }
 
     private void updateUrlsList() {
@@ -826,6 +840,7 @@ public class MainActivity
     }
 
     private void launchCct(String url, SharedPreferences.Editor editor) {
+        url = mayPrependUrl(url);
         CustomTabsSession session = getSession();
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder(session);
         prepareMenuItems(builder);
@@ -943,6 +958,14 @@ public class MainActivity
                 mSideSheetRoundedCornerCheckbox.isChecked() ? CHECKED : UNCHECKED);
         editor.putInt(SHARED_PREF_DECORATION, decorationType);
         editor.apply();
+    }
+
+    private String mayPrependUrl(String url) {
+        if (!URLUtil.isValidUrl(url)) {
+            url = "https://" + url;
+        }
+
+        return url;
     }
 
     private void prepareAesthetics(CustomTabsIntent.Builder builder, boolean isPcct) {

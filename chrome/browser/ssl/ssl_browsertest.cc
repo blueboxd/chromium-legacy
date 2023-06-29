@@ -17,6 +17,7 @@
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/escape.h"
@@ -863,7 +864,7 @@ class SSLUITestBase : public InProcessBrowserTest,
   }
 
   Browser* InstallAndOpenTestWebApp(const GURL& start_url) {
-    auto web_app_info = std::make_unique<WebAppInstallInfo>();
+    auto web_app_info = std::make_unique<web_app::WebAppInstallInfo>();
     web_app_info->start_url = start_url;
     web_app_info->scope = start_url.GetWithoutFilename();
     web_app_info->title = u"Test app";
@@ -5965,10 +5966,14 @@ class SSLUITestCustomCACerts : public SSLUITestNoCert {
   raw_ptr<Profile, DanglingUntriaged | ExperimentalAsh> profile_2_;
 
   // The NSSCertDatabase for |profile_1_|.
-  net::NSSCertDatabase* profile_1_cert_db_;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter
+  // for: #addr-of
+  RAW_PTR_EXCLUSION net::NSSCertDatabase* profile_1_cert_db_;
 
   // The NSSCertDatabase for |profile_2_|.
-  net::NSSCertDatabase* profile_2_cert_db_;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter
+  // for: #addr-of
+  RAW_PTR_EXCLUSION net::NSSCertDatabase* profile_2_cert_db_;
 
   // Policy provider for |profile_2_|. Overrides any other policy providers.
   testing::NiceMock<policy::MockConfigurationPolicyProvider>

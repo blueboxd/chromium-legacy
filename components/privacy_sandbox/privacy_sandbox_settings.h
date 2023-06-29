@@ -6,8 +6,8 @@
 #define COMPONENTS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_SETTINGS_H_
 
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/privacy_sandbox/canonical_topic.h"
-#include "components/privacy_sandbox/privacy_sandbox_attestations/privacy_sandbox_attestations.h"
+
+#include "base/time/time.h"
 
 class GURL;
 
@@ -16,6 +16,23 @@ class Origin;
 }
 
 namespace privacy_sandbox {
+
+class CanonicalTopic;
+
+// When a new enum value is added:
+// 1. Update kMaxValue to match it.
+// 2. Update `PrivacySandboxAttestationsGatedAPIProto` in
+//    `privacy_sandbox_attestations.proto`.
+// 3. Update `AllowAPI` in `privacy_sandbox_attestations_parser.cc`.
+enum class PrivacySandboxAttestationsGatedAPI {
+  kTopics,
+  kProtectedAudience,
+  kPrivateAggregation,
+  kAttributionReporting,
+  kSharedStorage,
+
+  kMaxValue = kSharedStorage,
+};
 
 // A service which acts as a intermediary between Privacy Sandbox APIs and the
 // preferences and content settings which define when they are allowed to be
@@ -145,6 +162,16 @@ class PrivacySandboxSettings : public KeyedService {
   virtual bool IsFledgeAllowed(const url::Origin& top_frame_origin,
                                const url::Origin& auction_party) const = 0;
 
+  // Determine whether |destination_origin| is allowed to receive events
+  // (reportEvent(), automatic beacons) reported by an API like Protected
+  // Audience or Shared Storage. This does not check if the API itself is
+  // allowed by the calling context, since the corresponding registerAdBeacon
+  // and selectUrl caller sites were also checked for attestation.
+  virtual bool IsEventReportingDestinationAttested(
+      const url::Origin& destination_origin,
+      privacy_sandbox::PrivacySandboxAttestationsGatedAPI invoking_api)
+      const = 0;
+
   // Determines whether Shared Storage is allowable in a particular context.
   // `top_frame_origin` can be the same as `accessing_origin` in the case of a
   // top-level document calling Shared Storage.
@@ -223,14 +250,6 @@ class PrivacySandboxSettings : public KeyedService {
 
   // Overrides the internal delegate for test purposes.
   virtual void SetDelegateForTesting(std::unique_ptr<Delegate> delegate) = 0;
-
-  // Overrides the privacy sandbox attestations map for testing.
-  virtual void SetPrivacySandboxAttestationsMapForTesting(
-      const PrivacySandboxAttestationsMap& attestations_map) = 0;
-
-  virtual void AddPrivacySandboxAttestationOverride(const GURL& url) = 0;
-  virtual const std::vector<net::SchemefulSite>
-  GetAttestationOverridesForTesting() const = 0;
 };
 
 }  // namespace privacy_sandbox

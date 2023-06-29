@@ -269,7 +269,8 @@ public class ImeAdapterImpl
             mWebContents.getStylusWritingHandler().updateEditorInfo(outAttrs);
         }
 
-        return StylusGestureHandler.maybeProxyInputConnection(inputConnection, this::handleGesture);
+        return StylusGestureHandler.maybeProxyInputConnection(
+                inputConnection, this::handleGesture, outAttrs);
     }
 
     private void handleGesture(OngoingGesture request) {
@@ -1070,8 +1071,7 @@ public class ImeAdapterImpl
         if (!ViewUtils.hasFocus(containerView)) ViewUtils.requestFocus(containerView);
 
         updateInputStateForStylusWriting();
-        return mWebContents.getStylusWritingHandler().requestStartStylusWriting(
-                getStylusWritingImeCallback());
+        return mWebContents.getStylusWritingHandler().requestStartStylusWriting();
     }
 
     @CalledByNative
@@ -1131,7 +1131,7 @@ public class ImeAdapterImpl
     }
 
     /** Lazily creates/returns a StylusWritingImeCallback object. */
-    private StylusWritingImeCallback getStylusWritingImeCallback() {
+    public StylusWritingImeCallback getStylusWritingImeCallback() {
         if (mStylusWritingImeCallback == null) {
             mStylusWritingImeCallback = new StylusWritingImeCallback() {
                 @Override

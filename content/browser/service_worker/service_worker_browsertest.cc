@@ -4809,10 +4809,11 @@ class ServiceWorkerBypassFetchHandlerTest
   ServiceWorkerBypassFetchHandlerTest() {
     feature_list_.InitWithFeaturesAndParameters(
         {{features::kServiceWorkerBypassFetchHandler,
+          {{"strategy", ShouldUseAllowListStrategy() ? "allowlist" : "optin"},
+           {"bypass_for", BypassFetchHandlerTargetStr()}}},
+         {features::kServiceWorkerBypassFetchHandlerHashStrings,
           {{"script_checksum_to_bypass",
-            ShouldUseValidChecksum() ? kValidChecksum : kInvalidChecksum},
-           {"strategy", ShouldUseAllowListStrategy() ? "allowlist" : "optin"},
-           {"bypass_for", BypassFetchHandlerTargetStr()}}}},
+            ShouldUseValidChecksum() ? kValidChecksum : kInvalidChecksum}}}},
         {});
   }
   ~ServiceWorkerBypassFetchHandlerTest() override = default;
@@ -5949,6 +5950,11 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerRaceNetworkRequestOriginTrialBrowserTest,
 // Test class for static routing API (crbug.com/1420517) browsertest.
 class ServiceWorkerStaticRouterBrowserTest : public ServiceWorkerBrowserTest {
  public:
+  enum class TestType {
+    kNetwork,
+    kRaceNetworkAndFetch,
+  };
+
   ServiceWorkerStaticRouterBrowserTest() {
     feature_list_.InitWithFeatures({features::kServiceWorkerStaticRouter}, {});
   }
@@ -5960,7 +5966,7 @@ class ServiceWorkerStaticRouterBrowserTest : public ServiceWorkerBrowserTest {
     return web_contents()->GetPrimaryMainFrame();
   }
 
-  void SetupAndRegisterServiceWorker() {
+  void SetupAndRegisterServiceWorker(TestType type) {
     RegisterRequestMonitorForRequestCount();
     RegisterRequestHandlerForTest();
     StartServerAndNavigateToSetup();
@@ -5971,16 +5977,21 @@ class ServiceWorkerStaticRouterBrowserTest : public ServiceWorkerBrowserTest {
     // Register a service worker.
     WorkerRunningStatusObserver observer1(public_context());
     ASSERT_TRUE(NavigateToURL(shell(), create_service_worker_url));
-    ASSERT_EQ("DONE", EvalJs(GetPrimaryMainFrame(),
-                             "register('/service_worker/static_router.js')"));
+    if (type == TestType::kNetwork) {
+      ASSERT_EQ("DONE", EvalJs(GetPrimaryMainFrame(),
+                               "register('/service_worker/static_router.js')"));
+    } else if (type == TestType::kRaceNetworkAndFetch) {
+      ASSERT_EQ("DONE",
+                EvalJs(GetPrimaryMainFrame(),
+                       "register('/service_worker/race_network_request.js')"));
+    }
     observer1.WaitUntilRunning();
-    scoped_refptr<ServiceWorkerVersion> version =
-        wrapper()->GetLiveVersion(observer1.version_id());
-    ASSERT_EQ(EmbeddedWorkerStatus::RUNNING, version->running_status());
+    active_version_ = wrapper()->GetLiveVersion(observer1.version_id());
+    ASSERT_EQ(EmbeddedWorkerStatus::RUNNING, active_version_->running_status());
 
     // Stop the current running service worker.
-    StopServiceWorker(version.get());
-    ASSERT_EQ(EmbeddedWorkerStatus::STOPPED, version->running_status());
+    StopServiceWorker(active_version_.get());
+    ASSERT_EQ(EmbeddedWorkerStatus::STOPPED, active_version_->running_status());
   }
 
   int GetRequestCount(const std::string& relative_url) const {
@@ -5990,6 +6001,14 @@ class ServiceWorkerStaticRouterBrowserTest : public ServiceWorkerBrowserTest {
     }
     return it->second.size();
   }
+
+  EvalJsResult GetInnerText() {
+    return EvalJs(GetPrimaryMainFrame(), "document.body.innerText;");
+  }
+
+  scoped_refptr<ServiceWorkerVersion> version() { return active_version_; }
+
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
  private:
   void RegisterRequestHandlerForTest() {
@@ -6007,6 +6026,17 @@ class ServiceWorkerStaticRouterBrowserTest : public ServiceWorkerBrowserTest {
                 "Response from the network");
             return http_response;
           }
+          if (base::Contains(request.GetURL().path(),
+                             "/service_worker/race_network_and_fetch")) {
+            auto http_response =
+                std::make_unique<net::test_server::BasicHttpResponse>();
+            http_response->set_code(net::HTTP_OK);
+            http_response->set_content_type("text/plain");
+            http_response->set_content(
+                "[ServiceWorkerStaticRouter] "
+                "Response from the race network");
+            return http_response;
+          }
           return nullptr;
         }));
   }
@@ -6022,11 +6052,50 @@ class ServiceWorkerStaticRouterBrowserTest : public ServiceWorkerBrowserTest {
   std::map<std::string, std::vector<net::test_server::HttpRequest>>
       request_log_;
   base::test::ScopedFeatureList feature_list_;
+  scoped_refptr<ServiceWorkerVersion> active_version_;
+  base::HistogramTester histogram_tester_;
 };
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerStaticRouterBrowserTest,
+                       MainResourceNetworkFetchHandler) {
+  SetupAndRegisterServiceWorker(TestType::kNetwork);
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+
+  const std::string relative_url = "/service_worker/fetch_handler";
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(relative_url)));
+  EXPECT_EQ("[ServiceWorkerStaticRouter] Response from the fetch handler",
+            GetInnerText());
+  // The result should be got from the fetch handler, and no network access is
+  // expected.
+  EXPECT_EQ(0, GetRequestCount(relative_url));
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerStaticRouterBrowserTest,
+                       MainResourceNetworkFallback) {
+  SetupAndRegisterServiceWorker(TestType::kNetwork);
+  WorkerRunningStatusObserver observer(public_context());
+  // ReloadBlockUntilNavigationsComplete(shell(), 1);
+  const std::string relative_url = "/service_worker/direct";
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(relative_url)));
+  EXPECT_EQ("[ServiceWorkerStaticRouter] Response from the network",
+            GetInnerText());
+  // The result should be got from the network.
+  EXPECT_EQ(1, GetRequestCount(relative_url));
+
+  // Ensure the ServiceWorker will start even if the navigation results in the
+  // fallback via Static Routing.
+  observer.WaitUntilRunning();
+  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version()->running_status());
+  histogram_tester().ExpectBucketCount(
+      "ServiceWorker.StartWorker.Purpose",
+      static_cast<int>(ServiceWorkerMetrics::EventType::STATIC_ROUTER), 1);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerStaticRouterBrowserTest,
                        SubresourceNetworkFetchHandler) {
-  SetupAndRegisterServiceWorker();
+  SetupAndRegisterServiceWorker(TestType::kNetwork);
   ReloadBlockUntilNavigationsComplete(shell(), 1);
   EXPECT_EQ("[ServiceWorkerStaticRouter] Response from the fetch handler",
             EvalJs(GetPrimaryMainFrame(),
@@ -6039,7 +6108,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerStaticRouterBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerStaticRouterBrowserTest,
                        SubresourceNetworkFallback) {
-  SetupAndRegisterServiceWorker();
+  SetupAndRegisterServiceWorker(TestType::kNetwork);
   ReloadBlockUntilNavigationsComplete(shell(), 1);
   EXPECT_EQ("[ServiceWorkerStaticRouter] Response from the network",
             EvalJs(GetPrimaryMainFrame(),
@@ -6049,4 +6118,172 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerStaticRouterBrowserTest,
   EXPECT_EQ(1, GetRequestCount("/service_worker/direct"));
 }
 
+IN_PROC_BROWSER_TEST_F(ServiceWorkerStaticRouterBrowserTest,
+                       MainResourceRaceNetworkAndFetch) {
+  SetupAndRegisterServiceWorker(TestType::kRaceNetworkAndFetch);
+  WorkerRunningStatusObserver observer(public_context());
+  // If the race happens, we expect the network access happens twice;
+  // the browser process directly fetch from the network, and the SW fetch
+  // handler calls fetch API to fetch from the network.  The latter one
+  // can be deduped, and enforcing clone to avoid the dedupe.
+  const std::string relative_url =
+      "/service_worker/race_network_and_fetch?sw_clone_pass_through";
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(relative_url)));
+  EXPECT_EQ("[ServiceWorkerStaticRouter] Response from the race network",
+            GetInnerText());
+
+  while (GetRequestCount(relative_url) != 2) {
+    base::RunLoop().RunUntilIdle();
+  }
+  EXPECT_EQ(2, GetRequestCount(relative_url));
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerStaticRouterBrowserTest,
+                       SubresourceRaceNetworkAndFetch) {
+  SetupAndRegisterServiceWorker(TestType::kRaceNetworkAndFetch);
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+  // If the race happens, we expect the network access happens twice;
+  // the browser process directly fetch from the network, and the SW fetch
+  // handler calls fetch API to fetch from the network.  The latter one
+  // can be deduped, and enforcing clone to avoid the dedupe.
+  const std::string relative_url =
+      "/service_worker/race_network_and_fetch?sw_clone_pass_through";
+  EXPECT_EQ(
+      "[ServiceWorkerStaticRouter] Response from the race network",
+      EvalJs(GetPrimaryMainFrame(), "fetch('" + relative_url +
+                                        "')"
+                                        ".then(response => response.text())"));
+
+  while (GetRequestCount(relative_url) != 2) {
+    base::RunLoop().RunUntilIdle();
+  }
+  EXPECT_EQ(2, GetRequestCount(relative_url));
+}
+
+// two fetches for clone.
+
+class ServiceWorkerStaticRouterOriginTrialBrowserTest
+    : public ServiceWorkerStaticRouterBrowserTest {
+ public:
+  ServiceWorkerStaticRouterOriginTrialBrowserTest() {
+    // Explicitly disable the feature to ensure the feature is enabled by the
+    // Origin Trial token.
+    feature_list_.InitWithFeatures({}, {features::kServiceWorkerStaticRouter});
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // The public key for the default privatey key used by the
+    // tools/origin_trials/generate_token.py tool.
+    static constexpr char kOriginTrialTestPublicKey[] =
+        "dRCs+TocuKkocNKa0AtZ4awrt9XKH2SQCI6o4FY6BNA=";
+    command_line->AppendSwitchASCII("origin-trial-public-key",
+                                    kOriginTrialTestPublicKey);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerStaticRouterOriginTrialBrowserTest,
+                       Fallback) {
+  embedded_test_server()->StartAcceptingConnections();
+
+  // The URL that was used to register the Origin Trial token.
+  static constexpr char kOriginUrl[] = "https://127.0.0.1:44444";
+  // Generated by running (in tools/origin_trials):
+  // tools/origin_trials/generate_token.py https://127.0.0.1:44444 \
+  // ServiceWorkerBypassFetchHandlerWithRaceNetworkRequest \
+  // --expire-timestamp=2000000000
+  static constexpr char kOriginTrialToken[] =
+      "AzX0kWd3mFeKWSeRT8ffvcxWodihqbB/WzApFm94qJPZmSbhO2a6fLLk1ilkzxf88qOOYI/"
+      "TYr+"
+      "K9VKvgI4w3QgAAABjeyJvcmlnaW4iOiAiaHR0cHM6Ly8xMjcuMC4wLjE6NDQ0NDQiLCAiZmV"
+      "hdHVyZSI6ICJTZXJ2aWNlV29ya2VyU3RhdGljUm91dGVyIiwgImV4cGlyeSI6IDIwMDAwMDA"
+      "wMDB9";
+
+  const GURL registation_url(
+      base::StrCat({kOriginUrl, "/create_service_worker.html"}));
+  const GURL network_fallback_url(
+      base::StrCat({kOriginUrl, "/service_worker/direct"}));
+  const GURL service_worker_url(
+      base::StrCat({kOriginUrl, "/static_router.js"}));
+
+  std::map<GURL, int /* number_of_invocations */> expected_request_urls = {
+      {registation_url, 1},
+      {network_fallback_url, 2},
+      {service_worker_url, 1},
+  };
+
+  base::RunLoop run_loop;
+
+  // The origin trial token is associated with an origin. We can't guarantee the
+  // EmbeddedTestServer to use a specific port. So the URLLoaderInterceptor is
+  // used instead.
+  URLLoaderInterceptor service_worker_loader(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        auto it = expected_request_urls.find(params->url_request.url);
+        if (it == expected_request_urls.end()) {
+          return false;
+        }
+
+        const std::string content_type =
+            base::EndsWith(params->url_request.url.path_piece(), ".js")
+                ? "text/javascript"
+                : "text/html";
+
+        const std::string origin_trial_token =
+            params->url_request.url == service_worker_url ? kOriginTrialToken
+                                                          : "";
+
+        const std::string headers = base::ReplaceStringPlaceholders(
+            "HTTP/1.1 200 OK\n"
+            "Content-type: $1\n"
+            "Origin-Trial: $2\n"
+            "\n",
+            {content_type, origin_trial_token}, {});
+
+        if (base::Contains(params->url_request.url.path(), "/direct")) {
+          const std::string body =
+              "[ServiceWorkerStaticRouter] Response from the network";
+          URLLoaderInterceptor::WriteResponse(
+              headers, body, params->client.get(),
+              absl::optional<net::SSLInfo>(), params->url_request.url);
+        } else {
+          URLLoaderInterceptor::WriteResponse(
+              "content/test/data/service_worker" +
+                  params->url_request.url.path(),
+              params->client.get(), &headers, absl::optional<net::SSLInfo>(),
+              params->url_request.url);
+        }
+
+        if (--it->second == 0) {
+          expected_request_urls.erase(it);
+        }
+        if (expected_request_urls.empty()) {
+          run_loop.Quit();
+        }
+        return true;
+      }));
+
+  // Register a service worker.
+  WorkerRunningStatusObserver observer(public_context());
+  EXPECT_TRUE(NavigateToURL(shell(), registation_url));
+  EXPECT_EQ("DONE",
+            EvalJs(GetPrimaryMainFrame(), "register('/static_router.js')"));
+  observer.WaitUntilRunning();
+  scoped_refptr<ServiceWorkerVersion> version =
+      wrapper()->GetLiveVersion(observer.version_id());
+  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version->running_status());
+
+  // The result should be got from the network, both for main resource and
+  // subresource.
+  EXPECT_TRUE(NavigateToURL(shell(), network_fallback_url));
+  EXPECT_EQ("[ServiceWorkerStaticRouter] Response from the network",
+            GetInnerText());
+  EXPECT_EQ("[ServiceWorkerStaticRouter] Response from the network",
+            EvalJs(GetPrimaryMainFrame(),
+                   "fetch('/service_worker/direct').then(response => "
+                   "response.text())"));
+}
 }  // namespace content

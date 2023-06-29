@@ -41,6 +41,7 @@
 <translation id="1358735829858566124">Datoteka ili direktorij nisu upotrebljivi.</translation>
 <translation id="1363028406613469049">Zvučni zapis</translation>
 <translation id="1378727793141957596">Dobro došli u Google disk!</translation>
+<translation id="1379156577998569384">Datoteke iz odjeljka Moj disk dostupne su offline</translation>
 <translation id="1379911846207762492">Datoteke možete učiniti dostupnima izvanmrežno radi pristupa kad nemate internetsku vezu.</translation>
 <translation id="1383876407941801731">Traži</translation>
 <translation id="1388045380422025115">Sve vrste</translation>
@@ -299,7 +300,6 @@
 <translation id="3479552764303398839">Ne sada</translation>
 <translation id="3486821258960016770">mongolski</translation>
 <translation id="3495304270784461826">Broj pogrešaka: <ph name="COUNT" />.</translation>
-<translation id="3501954296166022751">Datoteke Google diska dostupne su offline</translation>
 <translation id="3509680540198371098">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, pojedinosti</translation>
 <translation id="3511705761158917664">Priprema za sinkronizaciju sljedećeg broja stavki: <ph name="NUMBER_OF_ITEMS" />...</translation>
 <translation id="3522708245912499433">Portugalski</translation>
@@ -351,6 +351,7 @@
 <translation id="3855472144336161447">njemačka (Neo 2)</translation>
 <translation id="3858860766373142691">Naziv</translation>
 <translation id="3866249974567520381">Opis</translation>
+<translation id="3866439285517092441">Baterija je slaba. Sinkronizacija će se nastaviti kad se uređaj priključi na napajanje.</translation>
 <translation id="3899991606604168269">francuski (Kanada) s višejezičnom tipkovnicom</translation>
 <translation id="3901991538546252627">Povezivanje s mrežom <ph name="NAME" /></translation>
 <translation id="3906232975181435906">Instalira se mobilni profil, mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
@@ -358,6 +359,7 @@
 <translation id="3943857333388298514">Zalijepi</translation>
 <translation id="3952872973865944257">teluški fonetski</translation>
 <translation id="3958548648197196644">Kivi</translation>
+<translation id="397105322502079400">Izračun u tijeku…</translation>
 <translation id="3971140002794351170">Preuzmi mobilni profil, mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">engleski (UK)</translation>
 <translation id="3975895378829046965">bengalski fonetski</translation>
@@ -368,6 +370,7 @@
 <translation id="4040753847560036377">PUK nije točan</translation>
 <translation id="4057991113334098539">Aktivacija...</translation>
 <translation id="4092890906744441904">irski</translation>
+<translation id="4124731372776320263">Sinkronizira se 1 datoteka Diska</translation>
 <translation id="4124935795427217608">Jednorog</translation>
 <translation id="4131235941541910880">Nepotrebne stavke premjestite u otpad</translation>
 <translation id="4134804435730168042">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, aktivira se nakon postavljanja uređaja</translation>
@@ -564,6 +567,7 @@
 <translation id="5422221874247253874">Pristupna točka</translation>
 <translation id="5428105026674456456">Španjolski</translation>
 <translation id="5438282218546237410">Nema rezultata za <ph name="SEARCH_TERM" />.</translation>
+<translation id="5447680084201416734">Nema dovoljno prostora za pohranu.</translation>
 <translation id="5449551289610225147">Nevažeća zaporka</translation>
 <translation id="5459064203055649751">Datoteka s nazivom <ph name="FILENAME" /> već postoji. Želite li je zamijeniti onom koju premještate?</translation>
 <translation id="5463231940765244860">Unos PIN-a</translation>
@@ -579,6 +583,7 @@
 <translation id="5524517123096967210">Nije bilo moguće pročitati datoteku.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> slika</translation>
 <translation id="5534520101572674276">Veličina izračuna</translation>
+<translation id="5536122250858122375">Ova se vrsta datoteke ne može sinkronizirati</translation>
 <translation id="554153475311314364">transliteracija za grčki</translation>
 <translation id="5554171655917412781">Odabrano mapa: <ph name="SELECTED_FOLDERS_COUNT" /></translation>
 <translation id="5580591966435005537">virtualni uređaj</translation>
@@ -691,6 +696,7 @@
 <translation id="6423031066725912715">vijetnamski s tipkovnicom TCVN</translation>
 <translation id="6430271654280079150">Imate još jedan pokušaj.</translation>
 <translation id="643243556292470964">Izbrisane datoteke sad su premještene u otpad</translation>
+<translation id="6438480100790416671">Provjera prostora za pohranu…</translation>
 <translation id="6485131920355264772">Dohvaćanje informacija o prostoru nije uspjelo</translation>
 <translation id="6495925982925244349">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, upravlja administrator, pojedinosti</translation>
 <translation id="649877868557234318">Izdvajanje datoteke <ph name="FILE_NAME" /> u mapu <ph name="FOLDER_NAME" /></translation>
@@ -738,6 +744,7 @@
 <translation id="6874758081814639712">Osoba vježba tai chi</translation>
 <translation id="6876155724392614295">Voziti bicikl</translation>
 <translation id="6878261347041253038">tipkovnica za devanagari (fonetska)</translation>
+<translation id="6882444584974399416">Vaš uređaj nema dovoljno prostora za pohranu da bi vaše datoteke bile dostupne offline. Nove datoteke više se neće automatski sinkronizirati.</translation>
 <translation id="6885780034956018177">Puž</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
 <translation id="6898028766943174120">Više podmapa...</translation>
@@ -890,10 +897,10 @@
 <translation id="7972920761225148017">francuski (Švicarska)</translation>
 <translation id="7973962044839454485">PPP autentifikacija nije uspjela zbog netočnog korisničkog imena ili zaporke</translation>
 <translation id="7980421588063892270">engleski (SAD) s Colemak tipkovnicom</translation>
-<translation id="7985008041109611710">Sinkroniziranje <ph name="NUMBER_OF_FILES_SYNCING" /> datoteke/datoteka</translation>
 <translation id="8000066093800657092">Nema mreže</translation>
 <translation id="8008366997883261463">Jack Russell terijer</translation>
 <translation id="8028993641010258682">Veličina</translation>
+<translation id="8034974485549318493">Da biste pokrenuli postavljanje, trebate se povezati s internetom kako bi se datoteke mogle sinkronizirati.</translation>
 <translation id="803771048473350947">Datoteka</translation>
 <translation id="8038111231936746805">(zadano)</translation>
 <translation id="8042602468072383151"><ph name="AUDIO_TYPE" /> audiozapis</translation>
@@ -913,6 +920,7 @@
 <translation id="8154842056504218462">Odabrane su sve stavke.</translation>
 <translation id="8157684860301034423">Dohvaćanje informacija o aplikaciji nije uspjelo.</translation>
 <translation id="8175731104491895765">francuski (Belgija)</translation>
+<translation id="8175799081768705361">Sinkronizacija datoteka (njih <ph name="NUMBER_OF_FILES_SYNCING" />) na Disku</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">Model uređaja</translation>
 <translation id="8223479393428528563">Da biste spremili te datoteke za izvanmrežnu upotrebu, ponovo se povežite s internetom, kliknite datoteke desnom tipkom i odaberite opciju <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
@@ -945,6 +953,7 @@
 <translation id="8395901698320285466">Dimenzije</translation>
 <translation id="8404498045299006085">Zadrži sve</translation>
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> mreža, povezivanje</translation>
+<translation id="841387525767317275">Datoteke u ovoj mapi dostupne su offline</translation>
 <translation id="8425213833346101688">Promijeni</translation>
 <translation id="8431909052837336408">Promjena PIN-a za SIM</translation>
 <translation id="8437209419043462667">američka</translation>
@@ -972,6 +981,7 @@
 <translation id="8560515948038859357">kantonski</translation>
 <translation id="8561206103590473338">Slon</translation>
 <translation id="8566466896628108558">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, blokirao vaš administrator, pojedinosti</translation>
+<translation id="8567555211227790801">Trenutačno ste izvan mreže. Sinkronizacija će se nastaviti kad se povežete s internetom.</translation>
 <translation id="8568374623837201676">Želite li trajno izbrisati tu datoteku?</translation>
 <translation id="8569764466147087991">Odaberite datoteku za otvaranje</translation>
 <translation id="8577897833047451336">hrvatski</translation>
@@ -1012,6 +1022,7 @@
 <translation id="8919081441417203123">Danski</translation>
 <translation id="8949925099261528566">Povezano, bez interneta</translation>
 <translation id="8965697826696209160">Nema dovoljno prostora.</translation>
+<translation id="8970887620466824814">Nešto nije u redu.</translation>
 <translation id="8971742885766657349">Sinkronizacija – <ph name="PERCENT" />%</translation>
 <translation id="8997962250644902079">kineski (tradicionalni) pinyin</translation>
 <translation id="8998871447376656508">Nema dovoljno slobodnog prostora na Google disku da biste dovršili prijenos.</translation>
@@ -1046,7 +1057,6 @@
 <translation id="9213073329713032541">Instalacija je uspješno pokrenuta.</translation>
 <translation id="9219103736887031265">Slike</translation>
 <translation id="9219908252191632183">Površina Mjeseca</translation>
-<translation id="937795003075802289">Sinkroniziranje jedne datoteke</translation>
 <translation id="938470336146445890">Instalirajte korisnički certifikat.</translation>
 <translation id="939736085109172342">Nova mapa</translation>
 <translation id="943972244133411984">Izmijenio</translation>

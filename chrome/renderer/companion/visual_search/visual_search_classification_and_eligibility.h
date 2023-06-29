@@ -5,14 +5,19 @@
 #ifndef CHROME_RENDERER_COMPANION_VISUAL_SEARCH_VISUAL_SEARCH_CLASSIFICATION_AND_ELIGIBILITY_H_
 #define CHROME_RENDERER_COMPANION_VISUAL_SEARCH_VISUAL_SEARCH_CLASSIFICATION_AND_ELIGIBILITY_H_
 
-#include "chrome/common/companion/eligibility_spec.pb.h"
 #include "chrome/renderer/companion/visual_search/visual_search_eligibility.h"
+#include "components/optimization_guide/proto/visual_search_model_metadata.pb.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/tflite_support/src/tensorflow_lite_support/cc/task/vision/image_classifier.h"
 #include "ui/gfx/geometry/size_f.h"
 
 namespace companion::visual_search {
+
+using optimization_guide::proto::EligibilitySpec;
+using optimization_guide::proto::FeatureLibrary;
+using optimization_guide::proto::OrOfThresholdingRules;
+using optimization_guide::proto::ThresholdingRule;
 
 using ImageId = std::string;
 
@@ -28,7 +33,7 @@ class VisualClassificationAndEligibility {
   // module.
   // TODO: move this function outside of this class.
   static SingleImageGeometryFeatures ExtractFeaturesForEligibility(
-      const std::string& image_identifier,
+      const ImageId& image_identifier,
       blink::WebElement& element);
 
   // Create a VisualClassificationAndEligibility Object that can then be

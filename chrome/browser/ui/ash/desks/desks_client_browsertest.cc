@@ -18,6 +18,7 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/style/pill_button.h"
 #include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
@@ -262,7 +263,8 @@ void DeleteDeskTemplate(const base::Uuid& uuid) {
 
 web_app::AppId CreateSystemWebApp(Profile* profile,
                                   ash::SystemWebAppType app_type) {
-  DCHECK(app_type == ash::SystemWebAppType::SETTINGS ||
+  DCHECK(app_type == ash::SystemWebAppType::FILE_MANAGER ||
+         app_type == ash::SystemWebAppType::SETTINGS ||
          app_type == ash::SystemWebAppType::HELP);
   web_app::AppId app_id = *ash::GetAppIdForSystemWebApp(profile, app_type);
   apps::AppLaunchParams params(
@@ -279,6 +281,10 @@ web_app::AppId CreateSystemWebApp(Profile* profile,
           [&](apps::LaunchResult&& result) { launch_wait.Quit(); }));
   launch_wait.Run();
   return app_id;
+}
+
+web_app::AppId CreateFilesSystemWebApp(Profile* profile) {
+  return CreateSystemWebApp(profile, ash::SystemWebAppType::FILE_MANAGER);
 }
 
 web_app::AppId CreateSettingsSystemWebApp(Profile* profile) {
@@ -302,7 +308,7 @@ void ClickButton(const views::Button* button) {
 // If `wait_for_ui` is true, wait for the callback from the model to update the
 // UI.
 void ClickSaveDeskAsTemplateButton(bool wait_for_ui) {
-  views::Button* save_desk_as_template_button =
+  const views::Button* save_desk_as_template_button =
       ash::GetSaveDeskAsTemplateButton();
   DCHECK(save_desk_as_template_button);
   ClickButton(save_desk_as_template_button);
@@ -319,26 +325,28 @@ void ClickSaveDeskAsTemplateButton() {
 }
 
 void ClickSaveDeskForLaterButton() {
-  views::Button* save_desk_for_later_button = ash::GetSaveDeskForLaterButton();
+  const views::Button* save_desk_for_later_button =
+      ash::GetSaveDeskForLaterButton();
   DCHECK(save_desk_for_later_button);
   ClickButton(save_desk_for_later_button);
 }
 
 void ClickZeroStateTemplatesButton() {
-  views::Button* zero_state_templates_button = ash::GetZeroStateLibraryButton();
+  const views::Button* zero_state_templates_button =
+      ash::GetZeroStateLibraryButton();
   ASSERT_TRUE(zero_state_templates_button);
   ClickButton(zero_state_templates_button);
 }
 
 void ClickExpandedStateTemplatesButton() {
-  views::Button* expanded_state_templates_button =
+  const views::Button* expanded_state_templates_button =
       ash::GetExpandedStateLibraryButton();
   ASSERT_TRUE(expanded_state_templates_button);
   ClickButton(expanded_state_templates_button);
 }
 
 void ClickFirstTemplateItem() {
-  views::Button* template_item = ash::GetSavedDeskItemButton(/*index=*/0);
+  const views::Button* template_item = ash::GetSavedDeskItemButton(/*index=*/0);
   DCHECK(template_item);
   ClickButton(template_item);
 }
@@ -547,7 +555,7 @@ class DesksClientTest : public extensions::PlatformAppBrowserTest {
   }
 
   Browser* InstallAndLaunchPWA(const GURL& start_url, bool launch_in_browser) {
-    auto web_app_info = std::make_unique<WebAppInstallInfo>();
+    auto web_app_info = std::make_unique<web_app::WebAppInstallInfo>();
     web_app_info->start_url = start_url;
     web_app_info->scope = start_url.GetWithoutFilename();
     if (!launch_in_browser) {
@@ -849,14 +857,14 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchMultipleDeskTemplates) {
   // Remove "Test Desk Name (1)", which means the next created desk from
   // template will have that name. Then it will skip (2) since it already
   // exists, and create the next desk with (3).
-  RemoveDesk(desks_controller->desks()[2].get());
+  RemoveDesk(desks_controller->GetDeskAtIndex(2));
   check_launch_template_desk_name(std::u16string(kDeskName).append(u" (1)"));
   check_launch_template_desk_name(std::u16string(kDeskName).append(u" (3)"));
 
   // Same as above, but make sure that deleting the desk with the exact template
   // name still functions the same by only filling in whatever name is
   // available.
-  RemoveDesk(desks_controller->desks()[1].get());
+  RemoveDesk(desks_controller->GetDeskAtIndex(1));
   check_launch_template_desk_name(kDeskName);
   check_launch_template_desk_name(std::u16string(kDeskName).append(u" (4)"));
 }
@@ -1443,13 +1451,14 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, SystemUIBasic) {
 
   // Tests that since we have no saved desk right now, so the library button is
   // hidden.
-  views::Button* zero_state_templates_button = ash::GetZeroStateLibraryButton();
+  const views::Button* zero_state_templates_button =
+      ash::GetZeroStateLibraryButton();
   ASSERT_TRUE(zero_state_templates_button);
   EXPECT_FALSE(zero_state_templates_button->GetVisible());
 
   // Note that this button needs at least one window to show up. Browser tests
   // have an existing browser window, so no new window needs to be created.
-  views::Button* save_desk_as_template_button =
+  const views::Button* save_desk_as_template_button =
       ash::GetSaveDeskAsTemplateButton();
   ASSERT_TRUE(save_desk_as_template_button);
   ClickButton(save_desk_as_template_button);
@@ -1464,7 +1473,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, SystemUIBasic) {
   ASSERT_TRUE(expanded_state_templates_button);
   EXPECT_TRUE(expanded_state_templates_button->GetVisible());
 
-  views::Button* template_item = ash::GetSavedDeskItemButton(/*index=*/0);
+  const views::Button* template_item = ash::GetSavedDeskItemButton(/*index=*/0);
   EXPECT_TRUE(template_item);
 }
 
@@ -1596,7 +1605,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, SystemUILaunchSnappedWindow) {
     // Remove a desk first, otherwise we will run into an accessibility error
     // with `DeskPreviewView` upon entering overview.
     auto* desks_controller = ash::DesksController::Get();
-    RemoveDesk(desks_controller->desks()[1].get());
+    RemoveDesk(desks_controller->GetDeskAtIndex(1));
 
     // Enter overview and launch the same template.
     ash::ToggleOverview();
@@ -1675,16 +1684,23 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, SystemUICaptureIncognitoBrowserTest) {
   ash::WaitForOverviewEnterAnimation();
 
   // Incognito browsers are unsupported so a dialog will popup asking users if
-  // they are sure. Use a key press to accept the dialog instead of a click as
-  // dialog buttons think a click generated by the event generator is an
-  // accidentally click and therefore ignores it.
+  // they are sure.
   ClickSaveDeskAsTemplateButton(/*wait_for_ui=*/false);
-  views::Button* dialog_accept_button = ash::GetSavedDeskDialogAcceptButton();
+  const views::Button* dialog_accept_button =
+      ash::GetSavedDeskDialogAcceptButton();
   ASSERT_TRUE(dialog_accept_button);
-  aura::Window* root_window =
-      dialog_accept_button->GetWidget()->GetNativeWindow()->GetRootWindow();
-  ui::test::EventGenerator event_generator(root_window);
-  event_generator.PressAndReleaseKey(ui::VKEY_RETURN);
+  // MaterialNext uses PillButton instead of dialog buttons.
+  if (dialog_accept_button->GetClassName() == ash::PillButton::kViewClassName) {
+    ClickButton(dialog_accept_button);
+  } else {
+    // Use a key press to accept the dialog instead of a click as
+    // dialog buttons think a click generated by the event generator is an
+    // accidentally click and therefore ignores it.
+    aura::Window* root_window =
+        dialog_accept_button->GetWidget()->GetNativeWindow()->GetRootWindow();
+    ui::test::EventGenerator event_generator(root_window);
+    event_generator.PressAndReleaseKey(ui::VKEY_RETURN);
+  }
 
   std::vector<const ash::DeskTemplate*> templates = GetAllEntries();
   ASSERT_EQ(1u, templates.size());
@@ -2151,8 +2167,9 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest,
                        SystemUIDeskTemplateWindowAndTabCountHistogram) {
   base::HistogramTester histogram_tester;
 
-  // Create the settings app, which is a system web app.
-  CreateSettingsSystemWebApp(browser()->profile());
+  // Create the two file manager (system web app) windows.
+  CreateFilesSystemWebApp(browser()->profile());
+  CreateFilesSystemWebApp(browser()->profile());
 
   CreateBrowser({GURL(kExampleUrl1), GURL(kExampleUrl2)});
   CreateBrowser({GURL(kExampleUrl1), GURL(kExampleUrl2), GURL(kExampleUrl3)});
@@ -2163,11 +2180,16 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest,
   ClickSaveDeskAsTemplateButton();
 
   // NOTE: there is an existing browser with 1 tab created by BrowserMain().
-  histogram_tester.ExpectBucketCount(ash::kTemplateWindowCountHistogramName, 4,
+  // Window count: 2 files app windows + 2 created browsers + 1 existing browser
+  //               = 5.
+  // Tab count: 5 tabs on the created browsers + 1 tab on the existing browser
+  //            = 6.
+  // Total count: 2 files app windows + 6 tabs = 8.
+  histogram_tester.ExpectBucketCount(ash::kTemplateWindowCountHistogramName, 5,
                                      1);
   histogram_tester.ExpectBucketCount(ash::kTemplateTabCountHistogramName, 6, 1);
   histogram_tester.ExpectBucketCount(
-      ash::kTemplateWindowAndTabCountHistogramName, 7, 1);
+      ash::kTemplateWindowAndTabCountHistogramName, 8, 1);
 }
 
 // Tests that the template count histogram is recorded properly.
@@ -2188,8 +2210,8 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest,
     // Change desk name to avoid duplication on template name. Having duplicate
     // names invokes a workflow that involves showing and accepting the replace
     // dialog, which is unnecessary for this test.
-    desks_controller->desks()[active_desk_index]->SetName(
-        base::UTF8ToUTF16(base::NumberToString(i)), true);
+    desks_controller->GetDeskAtIndex(active_desk_index)
+        ->SetName(base::UTF8ToUTF16(base::NumberToString(i)), true);
 
     // Exit and renenter overview to save the next template. Once we are viewing
     // the grid we can't go back to regular overview unless we exit overview or
@@ -2202,13 +2224,15 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest,
     }
   }
 
-  views::Button* delete_button = ash::GetSavedDeskItemDeleteButton(/*index=*/0);
+  const views::Button* delete_button =
+      ash::GetSavedDeskItemDeleteButton(/*index=*/0);
   ClickButton(delete_button);
 
   // Confirm deleting a template. Use a key press to accept the dialog instead
   // of a click as dialog buttons think a click generated by the event generator
   // is an accidentally click and therefore ignores it.
-  views::Button* dialog_accept_button = ash::GetSavedDeskDialogAcceptButton();
+  const views::Button* dialog_accept_button =
+      ash::GetSavedDeskDialogAcceptButton();
   ASSERT_TRUE(dialog_accept_button);
   aura::Window* root_window =
       dialog_accept_button->GetWidget()->GetNativeWindow()->GetRootWindow();
@@ -2296,7 +2320,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, SystemUILaunchMultipleDeskTemplates) {
   auto* desks_controller = ash::DesksController::Get();
 
   ASSERT_EQ(0, desks_controller->GetActiveDeskIndex());
-  desks_controller->desks()[0]->SetName(kDeskName, true);
+  desks_controller->GetDeskAtIndex(0)->SetName(kDeskName, true);
 
   // Save a template.
   ash::ToggleOverview();
@@ -2324,7 +2348,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, SystemUILaunchMultipleDeskTemplates) {
 
   // Launching a desk from the template creates a desk with the same name as
   // the template.
-  desks_controller->desks()[0]->SetName(u"Desk", true);
+  desks_controller->GetDeskAtIndex(0)->SetName(u"Desk", true);
   check_launch_template_desk_name(kDeskName);
 
   // Launch more desks from the template and verify that the newly create desks
@@ -2335,14 +2359,14 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, SystemUILaunchMultipleDeskTemplates) {
   // Remove "Test Desk Name (1)", which means the next created desk from
   // template will have that name. Then it will skip (2) since it already
   // exists, and create the next desk with (3).
-  RemoveDesk(desks_controller->desks()[2].get());
+  RemoveDesk(desks_controller->GetDeskAtIndex(2));
   check_launch_template_desk_name(std::u16string(kDeskName).append(u"(1)"));
   check_launch_template_desk_name(std::u16string(kDeskName).append(u"(3)"));
 
   // Same as above, but make sure that deleting the desk with the exact template
   // name still functions the same by only filling in whatever name is
   // available.
-  RemoveDesk(desks_controller->desks()[1].get());
+  RemoveDesk(desks_controller->GetDeskAtIndex(1));
   check_launch_template_desk_name(kDeskName);
   check_launch_template_desk_name(std::u16string(kDeskName).append(u"(4)"));
 }
@@ -2784,7 +2808,8 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, FloatingWorkspaceOnSavedDesksUI) {
 
   // Tests that since we have no saved desk right now, so the library button is
   // hidden.
-  views::Button* zero_state_templates_button = ash::GetZeroStateLibraryButton();
+  const views::Button* zero_state_templates_button =
+      ash::GetZeroStateLibraryButton();
   ASSERT_TRUE(zero_state_templates_button);
   EXPECT_FALSE(zero_state_templates_button->GetVisible());
 }

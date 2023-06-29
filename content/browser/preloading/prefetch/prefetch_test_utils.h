@@ -18,9 +18,12 @@ class RunLoop;
 
 namespace content {
 
-std::unique_ptr<PrefetchStreamingURLLoader>
-MakeServableStreamingURLLoaderForTest(network::mojom::URLResponseHeadPtr head,
-                                      const std::string body);
+class PrefetchContainer;
+
+void MakeServableStreamingURLLoaderForTest(
+    PrefetchContainer* prefetch_container,
+    network::mojom::URLResponseHeadPtr head,
+    const std::string body);
 
 PrefetchStreamingURLLoader::OnPrefetchRedirectCallback
 CreatePrefetchRedirectCallbackForTest(
@@ -28,12 +31,14 @@ CreatePrefetchRedirectCallbackForTest(
     net::RedirectInfo* out_redirect_info,
     network::mojom::URLResponseHeadPtr* out_redirect_head);
 
-std::unique_ptr<PrefetchStreamingURLLoader>
-MakeServableStreamingURLLoaderWithRedirectForTest(const GURL& original_url,
-                                                  const GURL& redirect_url);
+void MakeServableStreamingURLLoaderWithRedirectForTest(
+    PrefetchContainer* prefetch_container,
+    const GURL& original_url,
+    const GURL& redirect_url);
 
-std::vector<std::unique_ptr<PrefetchStreamingURLLoader>>
+std::vector<base::WeakPtr<PrefetchStreamingURLLoader>>
 MakeServableStreamingURLLoadersWithNetworkTransitionRedirectForTest(
+    PrefetchContainer* prefetch_container,
     const GURL& original_url,
     const GURL& redirect_url);
 

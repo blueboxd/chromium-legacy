@@ -44,6 +44,7 @@ class AccountsMutatorImpl : public AccountsMutator {
       const std::string& email,
       const std::string& refresh_token,
       bool is_under_advanced_protection,
+      signin_metrics::AccessPoint access_point,
       signin_metrics::SourceForRefreshTokenOperation source
 #if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
       ,
@@ -72,9 +73,9 @@ class AccountsMutatorImpl : public AccountsMutator {
 #endif
 
  private:
-  raw_ptr<ProfileOAuth2TokenService, DanglingUntriaged> token_service_;
-  raw_ptr<AccountTrackerService, DanglingUntriaged> account_tracker_service_;
-  raw_ptr<PrimaryAccountManager, DanglingUntriaged> primary_account_manager_;
+  raw_ptr<ProfileOAuth2TokenService, DanglingAcrossTasks> token_service_;
+  raw_ptr<AccountTrackerService, DanglingAcrossTasks> account_tracker_service_;
+  raw_ptr<PrimaryAccountManager, DanglingAcrossTasks> primary_account_manager_;
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   raw_ptr<PrefService> pref_service_;
 #endif

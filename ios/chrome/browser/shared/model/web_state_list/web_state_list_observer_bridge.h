@@ -26,12 +26,6 @@
     willDetachWebState:(web::WebState*)webState
                atIndex:(int)atIndex;
 
-// Invoked after the WebState at the specified index has been detached. The
-// WebState is still valid but is no longer in the WebStateList.
-- (void)webStateList:(WebStateList*)webStateList
-    didDetachWebState:(web::WebState*)webState
-              atIndex:(int)atIndex;
-
 // Invoked before the specified WebState is destroyed via the WebStateList.
 // The WebState is still valid but is no longer in the WebStateList. If the
 // WebState is closed due to user action, `userAction` will be true.
@@ -87,15 +81,12 @@ class WebStateListObserverBridge final : public WebStateListObserver {
 
  private:
   // WebStateListObserver implementation.
-  void WebStateListChanged(WebStateList* web_state_list,
-                           const WebStateListChange& change,
-                           const WebStateSelection& selection) override;
+  void WebStateListDidChange(WebStateList* web_state_list,
+                             const WebStateListChange& change,
+                             const WebStateSelection& selection) override;
   void WillDetachWebStateAt(WebStateList* web_state_list,
                             web::WebState* web_state,
                             int index) final;
-  void WebStateDetachedAt(WebStateList* web_state_list,
-                          web::WebState* web_state,
-                          int index) final;
   void WillCloseWebStateAt(WebStateList* web_state_list,
                            web::WebState* web_state,
                            int index,

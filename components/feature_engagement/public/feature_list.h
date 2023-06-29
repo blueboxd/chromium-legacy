@@ -213,7 +213,6 @@ DEFINE_VARIATION_PARAM(kIPHRestoreTabsOnFREFeature, "IPH_RestoreTabsOnFRE");
 DEFINE_VARIATION_PARAM(kIPHBottomToolbarTipFeature, "IPH_BottomToolbarTip");
 DEFINE_VARIATION_PARAM(kIPHLongPressToolbarTipFeature,
                        "IPH_LongPressToolbarTip");
-DEFINE_VARIATION_PARAM(kIPHNewTabTipFeature, "IPH_NewTabTip");
 DEFINE_VARIATION_PARAM(kIPHNewIncognitoTabTipFeature, "IPH_NewIncognitoTabTip");
 DEFINE_VARIATION_PARAM(kIPHBadgedReadingListFeature, "IPH_BadgedReadingList");
 DEFINE_VARIATION_PARAM(kIPHWhatsNewFeature, "IPH_WhatsNew");
@@ -253,6 +252,8 @@ DEFINE_VARIATION_PARAM(kIPHiOSShareToolbarItemFeature,
                        "IPH_iOSShareToolbarItemFeature");
 DEFINE_VARIATION_PARAM(kIPHiOSDefaultBrowserVideoPromoTriggerFeature,
                        "IPH_iOSDefaultBrowserVideoPromoTriggerFeature");
+DEFINE_VARIATION_PARAM(kIPHiOSPromoPostRestoreDefaultBrowserFeature,
+                       "IPH_iOSPromoPostDefaultBrowserRestore");
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
@@ -271,6 +272,8 @@ DEFINE_VARIATION_PARAM(kIPHDownloadToolbarButtonFeature,
                        "IPH_DownloadToolbarButton");
 DEFINE_VARIATION_PARAM(kIPHExtensionsMenuFeature, "IPH_ExtensionsMenu");
 DEFINE_VARIATION_PARAM(kIPHFocusModeFeature, "IPH_FocusMode");
+DEFINE_VARIATION_PARAM(kIPHExtensionsRequestAccessButtonFeature,
+                       "IPH_ExtensionsRequestAccessFeature");
 DEFINE_VARIATION_PARAM(kIPHGlobalMediaControls, "IPH_GlobalMediaControls");
 DEFINE_VARIATION_PARAM(kIPHGMCCastStartStopFeature, "IPH_GMCCastStartStop");
 DEFINE_VARIATION_PARAM(kIPHHighEfficiencyModeFeature, "IPH_HighEfficiencyMode");
@@ -289,6 +292,8 @@ DEFINE_VARIATION_PARAM(kIPHPerformanceNewBadgeFeature,
                        "IPH_PerformanceNewBadge");
 DEFINE_VARIATION_PARAM(kIPHPowerBookmarksSidePanelFeature,
                        "IPH_PowerBookmarksSidePanel");
+DEFINE_VARIATION_PARAM(kIPHPriceInsightsPageActionIconLabelFeature,
+                       "IPH_PriceInsightsPageActionIconLabelFeature");
 DEFINE_VARIATION_PARAM(kIPHPriceTrackingChipFeature,
                        "IPH_PriceTrackingChipFeature");
 DEFINE_VARIATION_PARAM(kIPHPriceTrackingPageActionIconLabelFeature,
@@ -336,7 +341,32 @@ DEFINE_VARIATION_PARAM(kIPHGoogleOneOfferNotificationFeature,
                        "IPH_GoogleOneOfferNotification");
 DEFINE_VARIATION_PARAM(kIPHLauncherSearchHelpUiFeature,
                        "IPH_LauncherSearchHelpUi");
+DEFINE_VARIATION_PARAM(kIPHScalableIphTimerBasedOneFeature,
+                       "IPH_ScalableIphTimerBasedOne");
+DEFINE_VARIATION_PARAM(kIPHScalableIphTimerBasedTwoFeature,
+                       "IPH_ScalableIphTimerBasedTwo");
+DEFINE_VARIATION_PARAM(kIPHScalableIphTimerBasedThreeFeature,
+                       "IPH_ScalableIphTimerBasedThree");
+DEFINE_VARIATION_PARAM(kIPHScalableIphTimerBasedFourFeature,
+                       "IPH_ScalableIphTimerBasedFour");
+DEFINE_VARIATION_PARAM(kIPHScalableIphTimerBasedFiveFeature,
+                       "IPH_ScalableIphTimerBasedFive");
+DEFINE_VARIATION_PARAM(kIPHScalableIphTimerBasedSixFeature,
+                       "IPH_ScalableIphTimerBasedSix");
+DEFINE_VARIATION_PARAM(kIPHScalableIphTimerBasedSevenFeature,
+                       "IPH_ScalableIphTimerBasedSeven");
+DEFINE_VARIATION_PARAM(kIPHScalableIphTimerBasedEightFeature,
+                       "IPH_ScalableIphTimerBasedEight");
+DEFINE_VARIATION_PARAM(kIPHScalableIphTimerBasedNineFeature,
+                       "IPH_ScalableIphTimerBasedNine");
+DEFINE_VARIATION_PARAM(kIPHScalableIphTimerBasedTenFeature,
+                       "IPH_ScalableIphTimerBasedTen");
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+DEFINE_VARIATION_PARAM(kIPHiOSPasswordPromoDesktopFeature,
+                       "IPH_iOSPasswordPromoDesktop");
+#endif  // !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 }  // namespace
 
@@ -433,7 +463,6 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
 #elif BUILDFLAG(IS_IOS)
         VARIATION_ENTRY(kIPHBottomToolbarTipFeature),
         VARIATION_ENTRY(kIPHLongPressToolbarTipFeature),
-        VARIATION_ENTRY(kIPHNewTabTipFeature),
         VARIATION_ENTRY(kIPHNewIncognitoTabTipFeature),
         VARIATION_ENTRY(kIPHBadgedReadingListFeature),
         VARIATION_ENTRY(kIPHReadingListMessagesFeature),
@@ -456,6 +485,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHiOSTabGridToolbarItemFeature),
         VARIATION_ENTRY(kIPHiOSHistoryOnOverflowMenuFeature),
         VARIATION_ENTRY(kIPHiOSShareToolbarItemFeature),
+        VARIATION_ENTRY(kIPHiOSPromoPostRestoreDefaultBrowserFeature),
 #elif BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
         VARIATION_ENTRY(kIPHAutofillFeedbackNewBadgeFeature),
@@ -466,6 +496,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHDesktopTabGroupsNewGroupFeature),
         VARIATION_ENTRY(kIPHDownloadToolbarButtonFeature),
         VARIATION_ENTRY(kIPHExtensionsMenuFeature),
+        VARIATION_ENTRY(kIPHExtensionsRequestAccessButtonFeature),
         VARIATION_ENTRY(kIPHFocusModeFeature),
         VARIATION_ENTRY(kIPHGlobalMediaControls),
         VARIATION_ENTRY(kIPHGMCCastStartStopFeature),
@@ -478,6 +509,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHPasswordManagerShortcutFeature),
         VARIATION_ENTRY(kIPHPerformanceNewBadgeFeature),
         VARIATION_ENTRY(kIPHPowerBookmarksSidePanelFeature),
+        VARIATION_ENTRY(kIPHPriceInsightsPageActionIconLabelFeature),
         VARIATION_ENTRY(kIPHPriceTrackingChipFeature),
         VARIATION_ENTRY(kIPHPriceTrackingPageActionIconLabelFeature),
         VARIATION_ENTRY(kIPHReadingListDiscoveryFeature),
@@ -510,7 +542,21 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
 #if BUILDFLAG(IS_CHROMEOS_ASH)
         VARIATION_ENTRY(kIPHGoogleOneOfferNotificationFeature),
         VARIATION_ENTRY(kIPHLauncherSearchHelpUiFeature),
+        VARIATION_ENTRY(kIPHScalableIphTimerBasedOneFeature),
+        VARIATION_ENTRY(kIPHScalableIphTimerBasedTwoFeature),
+        VARIATION_ENTRY(kIPHScalableIphTimerBasedThreeFeature),
+        VARIATION_ENTRY(kIPHScalableIphTimerBasedFourFeature),
+        VARIATION_ENTRY(kIPHScalableIphTimerBasedFiveFeature),
+        VARIATION_ENTRY(kIPHScalableIphTimerBasedSixFeature),
+        VARIATION_ENTRY(kIPHScalableIphTimerBasedSevenFeature),
+        VARIATION_ENTRY(kIPHScalableIphTimerBasedEightFeature),
+        VARIATION_ENTRY(kIPHScalableIphTimerBasedNineFeature),
+        VARIATION_ENTRY(kIPHScalableIphTimerBasedTenFeature),
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+        VARIATION_ENTRY(kIPHiOSPasswordPromoDesktopFeature),
+#endif  // !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 };
 
 #undef DEFINE_VARIATION_PARAM

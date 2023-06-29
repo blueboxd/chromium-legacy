@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/cart/commerce_hint_service.h"
+#include "chrome/browser/chromeos/upload_office_to_cloud/upload_office_to_cloud.h"
 #include "chrome/browser/companion/core/features.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/history_clusters/history_clusters_service_factory.h"
@@ -55,6 +56,7 @@
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/services/speech/buildflags/buildflags.h"
 #include "components/browsing_topics/mojom/browsing_topics_internals.mojom.h"
 #include "components/commerce/content/browser/commerce_internals_ui.h"
@@ -142,8 +144,10 @@
 #include "chrome/browser/ui/webui/feed_internals/feed_internals_ui.h"
 #include "chrome/common/offline_page_auto_fetcher.mojom.h"
 #include "components/commerce/core/commerce_feature_list.h"
+#include "components/environment_integrity/android/android_environment_integrity_service.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/digital_goods/digital_goods.mojom.h"
+#include "third_party/blink/public/mojom/environment_integrity/environment_integrity_service.mojom.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #else
 #include "chrome/browser/badging/badge_manager.h"
@@ -296,6 +300,8 @@
 #include "chrome/browser/ui/webui/ash/crostini_upgrader/crostini_upgrader_ui.h"
 #include "chrome/browser/ui/webui/ash/emoji/emoji_picker.mojom.h"
 #include "chrome/browser/ui/webui/ash/emoji/emoji_ui.h"
+#include "chrome/browser/ui/webui/ash/emoji/new_window_proxy.h"
+#include "chrome/browser/ui/webui/ash/emoji/new_window_proxy.mojom.h"
 #include "chrome/browser/ui/webui/ash/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/ash/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/ash/launcher_internals/launcher_internals.mojom.h"
@@ -770,6 +776,23 @@ void BindMediaFoundationPreferences(
 }
 #endif  // BUILDFLAG(IS_WIN)
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void BindNewWindowProxy(
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<new_window_proxy::mojom::NewWindowProxy> receiver) {
+  DCHECK(render_frame_host);
+
+  auto* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+
+  if (web_contents->GetVisibleURL().spec() != chrome::kChromeUIEmojiPickerURL) {
+    return;
+  }
+
+  new ash::NewWindowProxy(std::move(receiver));
+}
+#endif
+
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 void BindScreenAIAnnotator(
     content::RenderFrameHost* frame_host,
@@ -854,6 +877,10 @@ void PopulateChromeFrameBinders(
   }
   map->Add<blink::mojom::ShareService>(base::BindRepeating(
       &ForwardToJavaWebContents<blink::mojom::ShareService>));
+  if (base::FeatureList::IsEnabled(features::kWebEnvironmentIntegrity)) {
+    map->Add<blink::mojom::EnvironmentIntegrityService>(base::BindRepeating(
+        &environment_integrity::AndroidEnvironmentIntegrityService::Create));
+  }
 
 #if BUILDFLAG(ENABLE_UNHANDLED_TAP)
   map->Add<blink::mojom::UnhandledTapNotifier>(
@@ -1041,7 +1068,8 @@ void PopulateChromeWebUIFrameBinders(
       ash::multidevice_setup::MultiDeviceSetupDialogUI,
 #endif
       NewTabPageUI, OmniboxPopupUI, BookmarksSidePanelUI, CustomizeChromeUI,
-      InternalsUI, ReadingListUI, TabSearchUI, WebuiGalleryUI>(map);
+      InternalsUI, ReadingListUI, TabSearchUI, WebuiGalleryUI,
+      HistoryClustersSidePanelUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       new_tab_page::mojom::PageHandlerFactory, NewTabPageUI>(map);
@@ -1299,6 +1327,10 @@ void PopulateChromeWebUIFrameBinders(
       ash::printing::printing_manager::PrintManagementUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
+      chromeos::printing::printing_manager::mojom::PrintManagementHandler,
+      ash::printing::printing_manager::PrintManagementUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
       ash::help_app::mojom::PageHandlerFactory, ash::HelpAppUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
@@ -1454,13 +1486,13 @@ void PopulateChromeWebUIFrameBinders(
 
   Profile* profile =
       Profile::FromBrowserContext(render_frame_host->GetBrowserContext());
-  if (ash::cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud(profile)) {
+  if (chromeos::IsEligibleAndEnabledUploadOfficeToCloud(profile)) {
     RegisterWebUIControllerInterfaceBinder<
         ash::cloud_upload::mojom::PageHandlerFactory,
         ash::cloud_upload::CloudUploadUI>(map);
   }
 
-  if (ash::cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud(profile)) {
+  if (chromeos::IsEligibleAndEnabledUploadOfficeToCloud(profile)) {
     RegisterWebUIControllerInterfaceBinder<
         ash::office_fallback::mojom::PageHandlerFactory,
         ash::office_fallback::OfficeFallbackUI>(map);
@@ -1532,6 +1564,14 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<::mojom::WebAppInternalsHandler,
                                          WebAppInternalsUI>(map);
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // This MOJO API is currently only used by chrome://emoji-picker. Please check
+  // the allow-list logic in BindNewWindowProxy if you plan to use it in another
+  // Web UI.
+  map->Add<new_window_proxy::mojom::NewWindowProxy>(
+      base::BindRepeating(&BindNewWindowProxy));
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void PopulateChromeWebUIFrameInterfaceBrokers(

@@ -9,8 +9,8 @@
 
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/service_worker/service_worker_router_rule.h"
+#include "third_party/blink/public/mojom/safe_url_pattern.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_router_rule.mojom.h"
-#include "third_party/blink/public/mojom/url_pattern.mojom.h"
 
 namespace mojo {
 
@@ -21,7 +21,7 @@ struct BLINK_COMMON_EXPORT
   static blink::mojom::ServiceWorkerRouterConditionDataView::Tag GetTag(
       const blink::ServiceWorkerRouterCondition& data);
 
-  static const blink::UrlPattern& url_pattern(
+  static const blink::SafeUrlPattern& url_pattern(
       const blink::ServiceWorkerRouterCondition& data) {
     return *data.url_pattern;
   }
@@ -42,6 +42,27 @@ struct BLINK_COMMON_EXPORT
 
 template <>
 struct BLINK_COMMON_EXPORT
+    StructTraits<blink::mojom::ServiceWorkerRouterRaceSourceDataView,
+                 blink::ServiceWorkerRouterRaceSource> {
+  static bool Read(blink::mojom::ServiceWorkerRouterRaceSourceDataView data,
+                   blink::ServiceWorkerRouterRaceSource* out) {
+    return true;
+  }
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
+    StructTraits<blink::mojom::ServiceWorkerRouterFetchEventSourceDataView,
+                 blink::ServiceWorkerRouterFetchEventSource> {
+  static bool Read(
+      blink::mojom::ServiceWorkerRouterFetchEventSourceDataView data,
+      blink::ServiceWorkerRouterFetchEventSource* out) {
+    return true;
+  }
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
     UnionTraits<blink::mojom::ServiceWorkerRouterSourceDataView,
                 blink::ServiceWorkerRouterSource> {
   static blink::mojom::ServiceWorkerRouterSourceDataView::Tag GetTag(
@@ -50,6 +71,16 @@ struct BLINK_COMMON_EXPORT
   static const blink::ServiceWorkerRouterNetworkSource& network_source(
       const blink::ServiceWorkerRouterSource& data) {
     return *data.network_source;
+  }
+
+  static const blink::ServiceWorkerRouterRaceSource& race_source(
+      const blink::ServiceWorkerRouterSource& data) {
+    return *data.race_source;
+  }
+
+  static const blink::ServiceWorkerRouterFetchEventSource& fetch_event_source(
+      const blink::ServiceWorkerRouterSource& data) {
+    return *data.fetch_event_source;
   }
 
   static bool Read(blink::mojom::ServiceWorkerRouterSourceDataView data,

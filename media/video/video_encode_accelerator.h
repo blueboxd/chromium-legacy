@@ -20,6 +20,7 @@
 #include "media/base/svc_scalability_mode.h"
 #include "media/base/video_bitrate_allocation.h"
 #include "media/base/video_codecs.h"
+#include "media/base/video_encoder.h"
 #include "media/base/video_types.h"
 #include "media/video/video_encoder_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -150,6 +151,7 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
     kNoMode = 0,  // for uninitialized profiles only
     kConstantMode = 0b0001,
     kVariableMode = 0b0010,
+    kExternalMode = 0b0100,
   };
 
   // Specification of an encoding profile supported by an encoder.
@@ -375,6 +377,13 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
   //  |frame| is the VideoFrame that is to be encoded.
   //  |force_keyframe| forces the encoding of a keyframe for this frame.
   virtual void Encode(scoped_refptr<VideoFrame> frame, bool force_keyframe) = 0;
+
+  // Encodes the given frame.
+  // Parameters:
+  //  |frame| is the VideoFrame that is to be encoded.
+  //  |options| provides extra details for encoding |frame|.
+  virtual void Encode(scoped_refptr<VideoFrame> frame,
+                      const VideoEncoder::EncodeOptions& options);
 
   // Send a bitstream buffer to the encoder to be used for storing future
   // encoded output.  Each call here with a given |buffer| will cause the buffer

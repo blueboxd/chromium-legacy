@@ -54,6 +54,12 @@ class TestCase(fake_filesystem_unittest.TestCase):
     """
     contents = fakebb.generate_outputs()
     with fake_filesystem_unittest.Pause(self.fs):
+      try:
+        os.mkdir(self.output_dir)
+      except FileExistsError:
+        if not os.path.isdir(self.output_dir):
+          raise
+
       fakebb.write_json_result(contents)
 
 
@@ -1720,12 +1726,11 @@ GN_ISOLATE_MAP_USING_IMPLICIT_NAME="""\
 class UnitTest(TestCase):
   def test_base_generator(self):
     # Only needed for complete code coverage.
-    self.assertRaises(NotImplementedError,
-                      generate_buildbot_json.BaseGenerator(None).generate,
-                      None, None, None, None)
-    self.assertRaises(NotImplementedError,
-                      generate_buildbot_json.BaseGenerator(None).sort,
-                      None)
+    with self.assertRaises(NotImplementedError):
+      generate_buildbot_json.BaseGenerator(None).generate(
+          None, None, None, None)
+    with self.assertRaises(NotImplementedError):
+      generate_buildbot_json.BaseGenerator(None).sort(None)
 
   def test_good_test_suites_are_ok(self):
     fbb = FakeBBGen(self.args, FOO_GTESTS_WATERFALL, FOO_TEST_SUITE,
@@ -2582,6 +2587,41 @@ FOO_TEST_SUITE_WITH_MIXIN = """\
 }
 """
 
+MIXIN_ARGS = """\
+{
+  'builder_mixin': {
+    'args': [],
+  },
+}
+"""
+
+MIXIN_ARGS_NOT_LIST = """\
+{
+  'builder_mixin': {
+    'args': 'I am not a list',
+  },
+}
+"""
+
+MIXIN_LINUX_ARGS = """\
+{
+  'builder_mixin': {
+    'args': [ '--mixin-argument' ],
+    'linux_args': [ '--linux-mixin-argument' ],
+  },
+}
+"""
+
+MIXIN_APPEND = """\
+{
+  'builder_mixin': {
+    '$mixin_append': {
+      'args': [ '--mixin-argument' ],
+    },
+  },
+}
+"""
+
 # These mixins are invalid; if passed to check_input_file_consistency, they will
 # fail. These are used for output file consistency checks.
 SWARMING_MIXINS = """\
@@ -2614,67 +2654,16 @@ SWARMING_MIXINS = """\
 }
 """
 
-SWARMING_MIXINS_APPEND = """\
+SWARMING_NAMED_CACHES = """\
 {
   'builder_mixin': {
-    '$mixin_append': {
-      'args': [ '--mixin-argument' ],
-      'linux_args': [ '--linux-mixin-argument' ],
-    },
-  },
-}
-"""
-
-SWARMING_MIXINS_APPEND_NOT_LIST = """\
-{
-  'builder_mixin': {
-    '$mixin_append': {
-      'args': 'I am not a list',
-    },
-  },
-}
-"""
-
-SWARMING_MIXINS_APPEND_TO_SWARMING = """\
-{
-  'builder_mixin': {
-    '$mixin_append': {
-      'swarming': [ 'swarming!' ],
-    },
-  },
-}
-"""
-
-SWARMING_MIXINS_APPEND_NAMED_CACHES = """\
-{
-  'builder_mixin': {
-    '$mixin_append': {
-      'swarming': {
-        'named_caches': [
-          {
-            'name': 'cache',
-            'file': 'cache_file',
-          },
-        ]
-      },
-    },
-  },
-}
-"""
-
-SWARMING_MIXINS_APPEND_OTHER_KEYS_WITH_NAMED_CACHES = """\
-{
-  'builder_mixin': {
-    '$mixin_append': {
-      'swarming': {
-        'named_caches': [
-          {
-            'name': 'cache',
-            'file': 'cache_file',
-          },
-        ],
-        'other_key': 'some value',
-      },
+    'swarming': {
+      'named_caches': [
+        {
+          'name': 'cache',
+          'file': 'cache_file',
+        },
+      ],
     },
   },
 }
@@ -2959,67 +2948,53 @@ class MixinTests(TestCase):
         '<snip>',
     ])
 
-  def test_mixin_append_args(self):
+  def test_mixin_append(self):
     fbb = FakeBBGen(self.args,
                     FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
                     FOO_TEST_SUITE_WITH_ARGS,
                     LUCI_MILO_CFG,
-                    mixins=SWARMING_MIXINS_APPEND)
-    fbb.check_output_file_consistency(verbose=True)
+                    mixins=MIXIN_APPEND)
+    with self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
+                                r'.*\$mixin_append is no longer supported.*'):
+      fbb.check_input_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
-  def test_mixin_append_linux_args(self):
-    fbb = FakeBBGen(self.args,
-                    FOO_LINUX_GTESTS_BUILDER_MIXIN_WATERFALL,
-                    FOO_TEST_SUITE_WITH_ARGS,
-                    LUCI_MILO_CFG,
-                    mixins=SWARMING_MIXINS_APPEND)
-    fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_mixin_append_swarming_named_caches(self):
+  def test_swarming_named_caches(self):
     fbb = FakeBBGen(self.args,
                     FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
                     FOO_TEST_SUITE_WITH_SWARMING_NAMED_CACHES,
                     LUCI_MILO_CFG,
-                    mixins=SWARMING_MIXINS_APPEND_NAMED_CACHES)
+                    mixins=SWARMING_NAMED_CACHES)
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
-  def test_mixin_append_swarming_error(self):
+  def test_args_field_not_list(self):
     fbb = FakeBBGen(self.args,
                     FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
                     FOO_TEST_SUITE_WITH_ARGS,
                     LUCI_MILO_CFG,
-                    mixins=SWARMING_MIXINS_APPEND_OTHER_KEYS_WITH_NAMED_CACHES)
-    with self.assertRaisesRegex(
-        generate_buildbot_json.BBGenErr,
-        'Only named_caches is supported under swarming key in '
-        '\$mixin_append, but there are: \[\'named_caches\', \'other_key\'\]'):
-      fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_mixin_append_mixin_field_not_list(self):
-    fbb = FakeBBGen(self.args,
-                    FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
-                    FOO_TEST_SUITE_WITH_ARGS,
-                    LUCI_MILO_CFG,
-                    mixins=SWARMING_MIXINS_APPEND_NOT_LIST)
+                    mixins=MIXIN_ARGS_NOT_LIST)
     with self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
-                                'Key "args" in \$mixin_append must be a list.'):
+                                '"args" must be a list'):
       fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
-  def test_mixin_append_test_field_not_list(self):
+  def test_args_field_merging(self):
     fbb = FakeBBGen(self.args,
                     FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
-                    FOO_TEST_SUITE,
+                    FOO_TEST_SUITE_WITH_ARGS,
                     LUCI_MILO_CFG,
-                    mixins=SWARMING_MIXINS_APPEND_TO_SWARMING)
-    with self.assertRaisesRegex(
-        generate_buildbot_json.BBGenErr,
-        'Cannot apply \$mixin_append to non-list "swarming".'):
-      fbb.check_output_file_consistency(verbose=True)
+                    mixins=MIXIN_ARGS)
+    fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_linux_args_field_merging(self):
+    fbb = FakeBBGen(self.args,
+                    FOO_LINUX_GTESTS_BUILDER_MIXIN_WATERFALL,
+                    FOO_TEST_SUITE_WITH_ARGS,
+                    LUCI_MILO_CFG,
+                    mixins=MIXIN_LINUX_ARGS)
+    fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
   def test_remove_mixin_builder_remove_waterfall(self):
@@ -3118,139 +3093,115 @@ TEST_SUITE_WITH_PARAMS = """\
 }
 """
 TEST_QUERY_BOTS_OUTPUT = {
-  "Fake Android M Tester": {
-    "gtest_tests": [
-      {
-        "test": "foo_test",
-      }
-    ]
-  },
-  "Fake Android L Tester": {
-    "gtest_tests": [
-      {
-        "test": "foo_test",
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "dimension_sets":[
-            {
-              "device_os": "LMY41U",
-              "device_os_type": "user",
-              "device_type": "hammerhead",
-              'os': 'Android'
+    "Fake Android M Tester": {
+        "gtest_tests": [{
+            "test": "foo_test",
+        }]
+    },
+    "Fake Android L Tester": {
+        "gtest_tests": [{
+            "test":
+            "foo_test",
+            "args": [
+                "--gs-results-bucket=chromium-result-details",
+                "--recover-devices"
+            ],
+            "merge": {
+                "script": "//testing/merge_scripts/standard_gtest_merge.py"
+            },
+            "swarming": {
+                "dimension_sets": [{
+                    "device_os": "LMY41U",
+                    "device_os_type": "user",
+                    "device_type": "hammerhead",
+                    'os': 'Android'
+                }]
             }
-          ],
-          "can_use_on_swarming_builders": True
-        }
-      }
-    ]
-  },
-  "Fake Android K Tester": {
-    "additional_compile_targets": ["bar_test"],
-    "gtest_tests": [
-      {
-        "test": "foo_test",
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "dimension_sets": [
-            {
-              "device_os": "KTU84P",
-              "device_os_type": "userdebug",
-              "device_type": "hammerhead",
-              "os": "Android",
+        }]
+    },
+    "Fake Android K Tester": {
+        "additional_compile_targets": ["bar_test"],
+        "gtest_tests": [{
+            "test":
+            "foo_test",
+            "args": [
+                "--gs-results-bucket=chromium-result-details",
+                "--recover-devices"
+            ],
+            "merge": {
+                "script": "//testing/merge_scripts/standard_gtest_merge.py"
+            },
+            "swarming": {
+                "dimension_sets": [{
+                    "device_os": "KTU84P",
+                    "device_os_type": "userdebug",
+                    "device_type": "hammerhead",
+                    "os": "Android",
+                }],
+                "output_links": [{
+                    "link": [
+                        "https://luci-logdog.appspot.com/v/?s",
+                        "=android%2Fswarming%2Flogcats%2F",
+                        "${TASK_ID}%2F%2B%2Funified_logcats"
+                    ],
+                    "name":
+                    "shard #${SHARD_INDEX} logcats"
+                }]
             }
-          ],
-          "can_use_on_swarming_builders": True,
-          "output_links": [
-            {
-              "link": ["https://luci-logdog.appspot.com/v/?s",
-              "=android%2Fswarming%2Flogcats%2F",
-              "${TASK_ID}%2F%2B%2Funified_logcats"],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ]
-        }
-      }
-    ]
-  },
-  "Android Builder": {
-    "additional_compile_targets": ["bar_test"]
-  }
+        }]
+    },
+    "Android Builder": {
+        "additional_compile_targets": ["bar_test"]
+    }
 }
 TEST_QUERY_BOTS_TESTS_OUTPUT = {
-  "Fake Android M Tester": [
-    {
-      "test": "foo_test",
-    }
-  ],
-  "Fake Android L Tester": [
-    {
-      "test": "foo_test",
-      "args": [
-        "--gs-results-bucket=chromium-result-details",
-        "--recover-devices"
-      ],
-      "merge": {
-        "script": "//testing/merge_scripts/standard_gtest_merge.py"
-      },
-      "swarming": {
-        "dimension_sets": [
-          {
-            "device_os": "LMY41U",
-            "device_os_type": "user",
-            "device_type": "hammerhead",
-            "os": "Android"
-          }
-        ],
-        "can_use_on_swarming_builders": True
-      }
-    }
-  ],
-  "Android Builder": [],
-  "Fake Android K Tester": [
-    {
-      "test": "foo_test",
-      "args": [
-        "--gs-results-bucket=chromium-result-details",
-        "--recover-devices"
-      ],
-      "merge": {
-        "script": "//testing/merge_scripts/standard_gtest_merge.py"
-      },
-      "swarming": {
-        "dimension_sets": [
-          {
-            "device_os": "KTU84P",
-            "device_os_type": "userdebug",
-            "device_type": "hammerhead",
-            "os": "Android"
-          }
-        ],
-        "can_use_on_swarming_builders": True,
-        "output_links": [
-          {
-            "link": [
-              "https://luci-logdog.appspot.com/v/?s",
-              "=android%2Fswarming%2Flogcats%2F",
-              "${TASK_ID}%2F%2B%2Funified_logcats"
-            ],
-            "name": "shard #${SHARD_INDEX} logcats"
-          }
-        ]
-      }
-    }
-  ]
+    "Fake Android M Tester": [{
+        "test": "foo_test",
+    }],
+    "Fake Android L Tester": [{
+        "test":
+        "foo_test",
+        "args":
+        ["--gs-results-bucket=chromium-result-details", "--recover-devices"],
+        "merge": {
+            "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+            "dimension_sets": [{
+                "device_os": "LMY41U",
+                "device_os_type": "user",
+                "device_type": "hammerhead",
+                "os": "Android"
+            }]
+        }
+    }],
+    "Android Builder": [],
+    "Fake Android K Tester": [{
+        "test":
+        "foo_test",
+        "args":
+        ["--gs-results-bucket=chromium-result-details", "--recover-devices"],
+        "merge": {
+            "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+            "dimension_sets": [{
+                "device_os": "KTU84P",
+                "device_os_type": "userdebug",
+                "device_type": "hammerhead",
+                "os": "Android"
+            }],
+            "output_links": [{
+                "link": [
+                    "https://luci-logdog.appspot.com/v/?s",
+                    "=android%2Fswarming%2Flogcats%2F",
+                    "${TASK_ID}%2F%2B%2Funified_logcats"
+                ],
+                "name":
+                "shard #${SHARD_INDEX} logcats"
+            }]
+        }
+    }]
 }
 
 TEST_QUERY_BOT_OUTPUT = {
@@ -3274,7 +3225,6 @@ TEST_QUERY_BOT_OUTPUT = {
             "os": "Android"
           }
         ],
-        "can_use_on_swarming_builders": True,
         "output_links": [
           {
             "link": ["https://luci-logdog.appspot.com/v/?s",
@@ -3288,29 +3238,23 @@ TEST_QUERY_BOT_OUTPUT = {
     }
   ]
 }
-TEST_QUERY_BOT_TESTS_OUTPUT = [
-  {
-    "test": "foo_test",
-    "args": [
-      "--gs-results-bucket=chromium-result-details",
-      "--recover-devices"
-    ],
+TEST_QUERY_BOT_TESTS_OUTPUT = [{
+    "test":
+    "foo_test",
+    "args":
+    ["--gs-results-bucket=chromium-result-details", "--recover-devices"],
     "merge": {
-      "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        "script": "//testing/merge_scripts/standard_gtest_merge.py"
     },
     "swarming": {
-      "dimension_sets": [
-        {
-          "device_os": "LMY41U",
-          "device_os_type": "user",
-          "device_type": "hammerhead",
-          "os": "Android"
-        }
-      ],
-      "can_use_on_swarming_builders": True
+        "dimension_sets": [{
+            "device_os": "LMY41U",
+            "device_os_type": "user",
+            "device_type": "hammerhead",
+            "os": "Android"
+        }]
     }
-  }
-]
+}]
 
 TEST_QUERY_TESTS_OUTPUT = {
     "bar_test": {
@@ -4811,9 +4755,7 @@ NO_DIMENSIONS_GTESTS_WATERFALL = """\
     'name': 'chromium.test',
     'machines': {
       'Mac': {
-        'swarming': {
-          'can_use_on_swarming_builders': True,
-        },
+        'swarming': {},
         'test_suites': {
           'gtest_tests': 'foo_tests',
         },
@@ -4885,30 +4827,27 @@ class SwarmingTests(TestCase):
     fbb = FakeBBGen(self.args, NO_DIMENSIONS_GTESTS_WATERFALL, MAC_TEST_SUITE,
                     MAC_LUCI_MILO_CFG)
     fbb.check_input_file_consistency(verbose=True)
-    self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
-                           'os must be specified for all swarmed tests',
-                           fbb.check_output_file_consistency,
-                           verbose=True)
+    with self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
+                                'os must be specified for all swarmed tests'):
+      fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
   def test_builder_with_no_os_dimension_fails(self):
     fbb = FakeBBGen(self.args, NO_OS_GTESTS_WATERFALL, MAC_TEST_SUITE,
                     MAC_LUCI_MILO_CFG)
     fbb.check_input_file_consistency(verbose=True)
-    self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
-                           'os must be specified for all swarmed tests',
-                           fbb.check_output_file_consistency,
-                           verbose=True)
+    with self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
+                                'os must be specified for all swarmed tests'):
+      fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
   def test_mac_builder_with_no_cpu_dimension_in_isolated_script_fails(self):
     fbb = FakeBBGen(self.args, MAC_ISOLATED_SCRIPTS_WATERFALL, MAC_TEST_SUITE,
                     MAC_LUCI_MILO_CFG)
     fbb.check_input_file_consistency(verbose=True)
-    self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
-                           'cpu must be specified for mac',
-                           fbb.check_output_file_consistency,
-                           verbose=True)
+    with self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
+                                'cpu must be specified for mac'):
+      fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
 

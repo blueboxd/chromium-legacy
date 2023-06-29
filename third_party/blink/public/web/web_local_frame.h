@@ -142,7 +142,9 @@ class BLINK_EXPORT WebLocalFrame : public WebFrame {
       WebFrame* opener = nullptr,
       const WebString& name = WebString(),
       network::mojom::WebSandboxFlags = network::mojom::WebSandboxFlags::kNone,
-      const WebURL& base_url = WebURL());
+      const WebURL& base_url = WebURL(),
+      bool coop_forbids_initial_empty_document_to_be_cross_origin_isolated =
+          true);
 
   // Used to create a provisional local frame. Currently, it's possible for a
   // provisional navigation not to commit (i.e. it might turn into a download),
@@ -770,11 +772,6 @@ class BLINK_EXPORT WebLocalFrame : public WebFrame {
   // gives the document an opportunity to load any new resources needed for
   // printing. It returns whether any resources will need to load.
   virtual bool WillPrintSoon() = 0;
-
-  // Returns the page shrinking factor calculated by webkit (usually
-  // between 1/1.33 and 1/2). Returns 0 if the page number is invalid or
-  // not in printing mode.
-  virtual float GetPrintPageShrink(uint32_t page) = 0;
 
   // Prints one page.
   virtual void PrintPage(uint32_t page_to_print, cc::PaintCanvas*) = 0;

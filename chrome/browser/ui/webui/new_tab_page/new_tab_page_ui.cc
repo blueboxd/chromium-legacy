@@ -394,17 +394,6 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       {"modulesDriveTitle", IDS_NTP_MODULES_DRIVE_TITLE},
       {"modulesDriveInfo", IDS_NTP_MODULES_DRIVE_INFO},
       {"modulesDummyTitle", IDS_NTP_MODULES_DUMMY_TITLE},
-      {"modulesDummy2Title", IDS_NTP_MODULES_DUMMY2_TITLE},
-      {"modulesDummy3Title", IDS_NTP_MODULES_DUMMY2_TITLE},
-      {"modulesDummy4Title", IDS_NTP_MODULES_DUMMY2_TITLE},
-      {"modulesDummy5Title", IDS_NTP_MODULES_DUMMY2_TITLE},
-      {"modulesDummy6Title", IDS_NTP_MODULES_DUMMY2_TITLE},
-      {"modulesDummy7Title", IDS_NTP_MODULES_DUMMY2_TITLE},
-      {"modulesDummy8Title", IDS_NTP_MODULES_DUMMY2_TITLE},
-      {"modulesDummy9Title", IDS_NTP_MODULES_DUMMY2_TITLE},
-      {"modulesDummy10Title", IDS_NTP_MODULES_DUMMY2_TITLE},
-      {"modulesDummy11Title", IDS_NTP_MODULES_DUMMY2_TITLE},
-      {"modulesDummy12Title", IDS_NTP_MODULES_DUMMY2_TITLE},
       {"modulesFeedTitle", IDS_NTP_MODULES_FEED_TITLE},
       {"modulesKaleidoscopeTitle", IDS_NTP_MODULES_KALEIDOSCOPE_TITLE},
       {"modulesPhotosInfo", IDS_NTP_MODULES_PHOTOS_INFO},
@@ -570,6 +559,8 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
           base::FeatureList::IsEnabled(
               ntp_features::kNtpChromeCartInHistoryClusterModule));
 
+  webui::SetupChromeRefresh2023(source);
+
   RealboxHandler::SetupWebUIDataSource(source, profile);
 
   webui::SetupWebUIDataSource(
@@ -658,7 +649,15 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
 
   // Populates the load time data with basic info.
   OnColorProviderChanged();
-  OnCustomBackgroundImageUpdated();
+  if (base::FeatureList::IsEnabled(
+          ntp_features::kNtpBackgroundImageErrorDetection)) {
+    // The frontend expects a value for |backgroundImageUrl| at startup. We
+    // initialize it here then update the value after we verify the URL
+    // works using NtpCustomBackgroundService::VerifyCustomBackgroundImageURL.
+    source->AddString("backgroundImageUrl", "");
+  } else {
+    OnCustomBackgroundImageUpdated();
+  }
   OnLoad();
 }
 

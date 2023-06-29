@@ -103,8 +103,6 @@ extern const base::FeatureParam<base::TimeDelta>
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kReduceAcceptLanguageOriginTrial);
 
-COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kDisableResourceScheduler);
-
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kPrivateNetworkAccessPreflightShortTimeout);
 
@@ -137,9 +135,6 @@ BASE_DECLARE_FEATURE(kPrefetchNoVarySearch);
 // make use of TaskEnvironment::FastForward with very long delays (days) which
 // interacts poorly with this metric that is recorded every 30s.
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kGetCookiesStringUma);
-
-// Decrease Mojo calls from network service to browser.
-COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kLessChattyNetworkService);
 
 #if BUILDFLAG(IS_ANDROID)
 // Create empty network service out of process only if canonical network service

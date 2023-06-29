@@ -69,12 +69,15 @@ std::unique_ptr<quic::ProofVerifier> CreateProofVerifier(
     URLRequestContext* context,
     const WebTransportParameters& parameters) {
   if (parameters.server_certificate_fingerprints.empty()) {
+    std::set<std::string> hostnames_to_allow_unknown_roots = HostsFromOrigins(
+        context->quic_context()->params()->origins_to_force_quic_on);
+    if (context->quic_context()->params()->webtransport_developer_mode) {
+      hostnames_to_allow_unknown_roots.insert("");
+    }
     return std::make_unique<ProofVerifierChromium>(
         context->cert_verifier(), context->ct_policy_enforcer(),
         context->transport_security_state(), context->sct_auditing_delegate(),
-        HostsFromOrigins(
-            context->quic_context()->params()->origins_to_force_quic_on),
-        anonymization_key);
+        std::move(hostnames_to_allow_unknown_roots), anonymization_key);
   }
 
   auto verifier =
@@ -183,7 +186,12 @@ class DedicatedWebTransportHttp3ClientSession
     return true;
   }
 
-  bool ShouldNegotiateWebTransport() override { return true; }
+  quic::WebTransportHttp3VersionSet LocallySupportedWebTransportVersions()
+      const override {
+    return quic::WebTransportHttp3VersionSet(
+        {quic::WebTransportHttp3Version::kDraft02});
+  }
+
   quic::HttpDatagramSupport LocalHttpDatagramSupport() override {
     return quic::HttpDatagramSupport::kRfcAndDraft04;
   }
@@ -310,6 +318,7 @@ DedicatedWebTransportHttp3Client::DedicatedWebTransportHttp3Client(
       crypto_config_(
           CreateProofVerifier(anonymization_key_, context, parameters),
           /* session_cache */ nullptr) {
+  ConfigureQuicCryptoClientConfig(crypto_config_);
   net_log_.BeginEvent(
       NetLogEventType::QUIC_SESSION_WEBTRANSPORT_CLIENT_ALIVE, [&] {
         base::Value::Dict dict;

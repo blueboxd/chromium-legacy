@@ -5,6 +5,8 @@
 #include "ash/system/unified/glanceable_tray_bubble_view.h"
 
 #include "ash/shelf/shelf.h"
+#include "ash/system/time/calendar_view.h"
+#include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
@@ -20,7 +22,13 @@ namespace ash {
 GlanceableTrayBubbleView::GlanceableTrayBubbleView(
     const InitParams& init_params,
     Shelf* shelf)
-    : TrayBubbleView(init_params), shelf_(shelf) {}
+    : TrayBubbleView(init_params),
+      shelf_(shelf),
+      detailed_view_delegate_(
+          std::make_unique<DetailedViewDelegate>(/*tray_controller=*/nullptr)) {
+}
+
+GlanceableTrayBubbleView::~GlanceableTrayBubbleView() = default;
 
 void GlanceableTrayBubbleView::UpdateBubble() {
   scroll_view_ = AddChildView(std::make_unique<views::ScrollView>(
@@ -42,17 +50,27 @@ void GlanceableTrayBubbleView::UpdateBubble() {
   // TODO(b:277268122): set real contents for glanceables view.
   if (!tasks_bubble_view_) {
     tasks_bubble_view_ = child_glanceable_container->AddChildView(
-        std::make_unique<TasksBubbleView>());
+        std::make_unique<TasksBubbleView>(detailed_view_delegate_.get()));
   }
 
   // TODO(b:283370562): only add teacher/student classroom glanceables when
   // the user is enrolled in courses.
   if (!classroom_bubble_view_) {
     classroom_bubble_view_ = child_glanceable_container->AddChildView(
-        std::make_unique<ClassroomBubbleView>());
+        std::make_unique<ClassroomBubbleView>(detailed_view_delegate_.get()));
     // Add spacing between the classroom bubble and the previous bubble.
     classroom_bubble_view_->SetProperty(views::kMarginsKey,
                                         gfx::Insets::TLBR(8, 0, 0, 0));
+  }
+
+  if (!calendar_view_) {
+    calendar_view_ = child_glanceable_container->AddChildView(
+        std::make_unique<CalendarView>(detailed_view_delegate_.get()));
+    // TODO(b:277268122): Update with glanceable spec.
+    calendar_view_->SetPreferredSize(gfx::Size(kRevampedTrayMenuWidth, 400));
+    // Add spacing between the calendar bubble and the previous bubble.
+    calendar_view_->SetProperty(views::kMarginsKey,
+                                gfx::Insets::TLBR(8, 0, 0, 0));
   }
 
   scroll_view_->SetContents(std::move(child_glanceable_container));

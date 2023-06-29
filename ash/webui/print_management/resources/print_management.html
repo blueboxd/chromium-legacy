@@ -43,6 +43,7 @@
   }
 
   #clearAllContainer {
+    column-gap: 8px;
     display: flex;
   }
 
@@ -122,13 +123,18 @@
       <cr-button id="clearAllButton" on-click="onClearHistoryClicked"
           disabled="[[shouldDisableClearAllButton]]"
           hidden="[[!showClearAllButton]]">
-        <iron-icon id="deleteIcon" icon="print-management:delete"></iron-icon>
+        <iron-icon id="deleteIcon" icon="print-management:delete"
+            slot="prefix-icon">
+        </iron-icon>
         [[i18n('clearAllHistoryLabel')]]
       </cr-button>
       <cr-button id="managePrinters" hidden="[[!shouldShowManagePrinterButton(
-        ongoingPrintJobs.length, printJobs.length)]]">
+          ongoingPrintJobs.length, printJobs.length)]]"
+          on-click="onManagePrintersClicked">
+        <iron-icon id="openInNewIcon" icon="print-management:open-in-new"
+            slot="suffix-icon">
+        </iron-icon>
         [[i18n('headerManagePrintersButtonLabel')]]
-        <iron-icon id="openInNewIcon" icon="print-management:open-in-new"></iron-icon>
       </cr-button>
     </div>
   </div>

@@ -108,22 +108,20 @@ class SidePanelBorder : public views::Border {
           /*translate_view_coordinates=*/true);
     }
 
-    if (!features::IsChromeRefresh2023()) {
-      // Paint the inner border around SidePanel content.
-      const float stroke_thickness = views::Separator::kThickness * dsf;
+    // Paint the inner border around SidePanel content.
+    const float stroke_thickness = views::Separator::kThickness * dsf;
 
-      cc::PaintFlags flags;
-      flags.setStrokeWidth(stroke_thickness);
-      flags.setColor(view.GetColorProvider()->GetColor(
-          kColorSidePanelContentAreaSeparator));
-      flags.setStyle(cc::PaintFlags::kStroke_Style);
-      flags.setAntiAlias(true);
+    cc::PaintFlags flags;
+    flags.setStrokeWidth(stroke_thickness);
+    flags.setColor(
+        view.GetColorProvider()->GetColor(kColorSidePanelContentAreaSeparator));
+    flags.setStyle(cc::PaintFlags::kStroke_Style);
+    flags.setAntiAlias(true);
 
-      // Outset half of the stroke thickness so that it's painted fully on the
-      // outside of the clipping region.
-      clip_bounds.Inset(gfx::Insets(-stroke_thickness / 2));
-      canvas->DrawRoundRect(clip_bounds, corner_radius, flags);
-    }
+    // Outset half of the stroke thickness so that it's painted fully on the
+    // outside of the clipping region.
+    clip_bounds.Inset(gfx::Insets(-stroke_thickness / 2));
+    canvas->DrawRoundRect(clip_bounds, corner_radius, flags);
   }
 
   gfx::Insets GetInsets() const override {
@@ -282,6 +280,12 @@ void SidePanel::OnChildViewAdded(View* observed_view, View* child) {
   // Reorder `resize_area_` to be last so that it gets painted on top of
   // `border_view_`, for displaying the resize handle.
   ReorderChildView(resize_area_, children().size());
+
+  if (header_view_) {
+    // The header view should come before all other side panel children except
+    // the resize area in focus order.
+    header_view_->InsertBeforeInFocusList(GetChildrenFocusList().front());
+  }
   // The resize area should come before all other side panel children in focus
   // order.
   resize_area_->InsertBeforeInFocusList(GetChildrenFocusList().front());

@@ -140,6 +140,10 @@
       permissions_policy_name: "ch-ua-bitness",
     },
     {
+      name: "ClientHintUAFormFactor",
+      permissions_policy_name: "ch-ua-form-factor",
+    },
+    {
       name: "ClientHintUAPlatform",
       permissions_policy_name: "ch-ua-platform",
       feature_default: "EnableForAll",
@@ -260,7 +264,6 @@
     {
       name: "IdentityCredentialsGet",
       permissions_policy_name: "identity-credentials-get",
-      depends_on: ["FedCmIframeSupport"],
     },
     {
       name: "IdleDetection",

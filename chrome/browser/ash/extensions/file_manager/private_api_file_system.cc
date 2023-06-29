@@ -938,6 +938,12 @@ FileManagerPrivateInternalGetDisallowedTransfersFunction::Run() {
     return RespondNow(Error("File URL was invalid"));
   }
 
+  // If the new UX flow is enabled, return an empty list so the copy/move
+  // operation can start.
+  if (policy::DlpFilesController::kNewFilesPolicyUXEnabled) {
+    return RespondNow(WithArguments(base::Value::List()));
+  }
+
   policy::DlpFilesControllerAsh* files_controller =
       static_cast<policy::DlpFilesControllerAsh*>(
           rules_manager->GetDlpFilesController());
@@ -1567,13 +1573,30 @@ FileManagerPrivateInternalStartIOTaskFunction::Run() {
     return RespondNow(Error("Cannot find VolumeManager"));
   }
 
+  storage::ExternalMountPoints* mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+
   std::vector<storage::FileSystemURL> source_urls;
   for (const std::string& url : params->urls) {
+    GURL gurl(url);
     storage::FileSystemURL cracked_url =
-        file_system_context->CrackURLInFirstPartyContext(GURL(url));
+        file_system_context->CrackURLInFirstPartyContext(gurl);
     if (!cracked_url.is_valid()) {
       return RespondNow(Error("Invalid source URL *", Redact(url)));
     }
+    base::FilePath virtual_path;
+    const bool result =
+        file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
+            profile, gurl, cracked_url.path(), &virtual_path);
+    if (!result) {
+      LOG(WARNING) << "Failed to convert file_system_url to relative file "
+                      "system path, type: "
+                   << cracked_url.type();
+      continue;
+    }
+    cracked_url = mount_points->CreateCrackedFileSystemURL(
+        cracked_url.storage_key(), storage::kFileSystemTypeExternal,
+        virtual_path);
     source_urls.push_back(std::move(cracked_url));
   }
 

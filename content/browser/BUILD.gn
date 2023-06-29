@@ -97,7 +97,6 @@ source_set("browser") {
     "//components/payments/content/icon",
     "//components/payments/mojom",
     "//components/power_monitor",
-    "//components/power_scheduler",
     "//components/services/filesystem:lib",
     "//components/services/quarantine:quarantine",
     "//components/services/screen_ai/buildflags",
@@ -789,6 +788,8 @@ source_set("browser") {
     "devtools/forwarding_agent_host.h",
     "devtools/frame_auto_attacher.cc",
     "devtools/frame_auto_attacher.h",
+    "devtools/mojom_devtools_agent_host.cc",
+    "devtools/mojom_devtools_agent_host.h",
     "devtools/network_service_devtools_observer.cc",
     "devtools/network_service_devtools_observer.h",
     "devtools/protocol/audits_handler.cc",
@@ -907,8 +908,6 @@ source_set("browser") {
     "download/save_package_serialization_handler.h",
     "download/save_types.cc",
     "download/save_types.h",
-    "environment_integrity/environment_integrity_service_impl.cc",
-    "environment_integrity/environment_integrity_service_impl.h",
     "eye_dropper_chooser_impl.cc",
     "eye_dropper_chooser_impl.h",
     "feature_observer.cc",
@@ -2182,6 +2181,8 @@ source_set("browser") {
     "tracing/tracing_controller_impl.cc",
     "tracing/tracing_controller_impl.h",
     "tracing/tracing_controller_impl_data_endpoint.cc",
+    "tracing/tracing_scenario.cc",
+    "tracing/tracing_scenario.h",
     "tracing/tracing_service_controller.cc",
     "tracing/tracing_service_controller.h",
     "ukm_internals_ui.cc",
@@ -2635,6 +2636,7 @@ source_set("browser") {
     ]
     frameworks += [
       "AppKit.framework",
+      "AVFAudio.framework",
       "Carbon.framework",
       "CoreGraphics.framework",
       "QuartzCore.framework",
@@ -2711,6 +2713,8 @@ source_set("browser") {
         "media/capture/mouse_cursor_overlay_controller_mac.mm",
         "media/capture/screen_capture_kit_device_mac.h",
         "media/capture/screen_capture_kit_device_mac.mm",
+        "media/capture/screen_capture_kit_fullscreen_module.h",
+        "media/capture/screen_capture_kit_fullscreen_module.mm",
         "media/capture/views_widget_video_capture_device_mac.cc",
         "media/capture/views_widget_video_capture_device_mac.h",
       ]
@@ -2812,7 +2816,7 @@ source_set("browser") {
     ]
   }
 
-  if (is_android || is_linux || is_chromeos) {
+  if (is_android || is_linux) {
     deps += [ "//content/browser/system_dns_resolution" ]
   }
 
@@ -3234,6 +3238,8 @@ source_set("browser") {
       "webauth/virtual_fido_discovery_factory.h",
 
       # The Document Picture-in-Picture API is not implemented on Android.
+      "picture_in_picture/document_picture_in_picture_navigation_throttle.cc",
+      "picture_in_picture/document_picture_in_picture_navigation_throttle.h",
       "picture_in_picture/document_picture_in_picture_window_controller_impl.cc",
       "picture_in_picture/document_picture_in_picture_window_controller_impl.h",
     ]

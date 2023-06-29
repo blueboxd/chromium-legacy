@@ -14,8 +14,12 @@ component("auth_panel") {
     "//ui/views",
   ]
   sources = [
+    "auth_factor_store.cc",
+    "auth_factor_store.h",
     "auth_panel.cc",
     "auth_panel.h",
+    "auth_panel_event_dispatcher.cc",
+    "auth_panel_event_dispatcher.h",
     "factor_auth_view.h",
     "factor_auth_view_factory.cc",
     "factor_auth_view_factory.h",

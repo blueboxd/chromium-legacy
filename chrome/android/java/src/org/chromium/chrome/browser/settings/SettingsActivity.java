@@ -30,7 +30,7 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.chrome.R;
@@ -75,6 +75,7 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.Snackbar
 import org.chromium.components.browser_ui.accessibility.AccessibilitySettings;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerFactory;
+import org.chromium.components.browser_ui.bottomsheet.ManagedBottomSheetController;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.components.browser_ui.settings.CustomDividerFragment;
 import org.chromium.components.browser_ui.settings.FragmentSettingsLauncher;
@@ -122,7 +123,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
 
     private ScrimCoordinator mScrim;
 
-    private BottomSheetController mBottomSheetController;
+    private ManagedBottomSheetController mBottomSheetController;
 
     private OneshotSupplierImpl<BottomSheetController> mBottomSheetControllerSupplier =
             new OneshotSupplierImpl<>();
@@ -403,6 +404,14 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
     }
 
     private void initBackPressHandler() {
+        // Handlers registered last will be called first.
+        registerMainFragmentBackPressHandler();
+        if (ChromeFeatureList.sPrivacyGuidePostMVP.isEnabled()) {
+            registerBottomSheetBackPressHandler();
+        }
+    }
+
+    private void registerMainFragmentBackPressHandler() {
         Fragment activeFragment = getMainFragment();
         if (BackPressManager.isSecondaryActivityEnabled()) {
             if (activeFragment instanceof BackPressHandler) {
@@ -415,6 +424,22 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
                     getOnBackPressedDispatcher(),
                     (BackPressHelper.ObsoleteBackPressedHandler) activeFragment,
                     SecondaryActivity.SETTINGS);
+        }
+    }
+
+    private void registerBottomSheetBackPressHandler() {
+        if (mBottomSheetController == null) return;
+
+        BackPressHandler bottomSheetBackPressHandler =
+                mBottomSheetController.getBottomSheetBackPressHandler();
+        if (bottomSheetBackPressHandler != null) {
+            if (BackPressManager.isSecondaryActivityEnabled()) {
+                BackPressHelper.create(this, getOnBackPressedDispatcher(),
+                        bottomSheetBackPressHandler, SecondaryActivity.SETTINGS);
+            } else {
+                BackPressHelper.create(this, getOnBackPressedDispatcher(),
+                        mBottomSheetController::handleBackPress, SecondaryActivity.SETTINGS);
+            }
         }
     }
 
@@ -553,21 +578,20 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
      */
     private void setStatusBarColor() {
         // On P+, the status bar color is set via the XML theme.
-        if ((!DeviceFormFactor.isNonMultiDisplayContextOnTablet(this)
-                    && VERSION.SDK_INT >= Build.VERSION_CODES.P)
-                || (DeviceFormFactor.isNonMultiDisplayContextOnTablet(this)
-                        && !ChromeFeatureList.sTabStripRedesign.isEnabled()
-                        && VERSION.SDK_INT >= Build.VERSION_CODES.P)) {
+        if (VERSION.SDK_INT >= Build.VERSION_CODES.P && !BuildInfo.getInstance().isAutomotive
+                && (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(this)
+                        || (DeviceFormFactor.isNonMultiDisplayContextOnTablet(this)
+                                && !ChromeFeatureList.sTabStripRedesign.isEnabled()))) {
             return;
         }
 
         if (UiUtils.isSystemUiThemingDisabled()) return;
 
         // Use transparent color, so the AppBarLayout can color the status bar on scroll.
-        ApiCompatibilityUtils.setStatusBarColor(getWindow(), Color.TRANSPARENT);
+        UiUtils.setStatusBarColor(getWindow(), Color.TRANSPARENT);
 
         // Set status bar icon color according to background color.
-        ApiCompatibilityUtils.setStatusBarIconColor(getWindow().getDecorView().getRootView(),
+        UiUtils.setStatusBarIconColor(getWindow().getDecorView().getRootView(),
                 getResources().getBoolean(R.bool.window_light_status_bar));
     }
 

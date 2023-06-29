@@ -10,6 +10,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/session/session_observer.h"
+#include "ash/public/cpp/tablet_mode.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/user_education/user_education_feature_controller.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -20,13 +22,15 @@ namespace ash {
 
 class SessionController;
 class WelcomeTourControllerObserver;
+class WelcomeTourNotificationBlocker;
 class WelcomeTourScrim;
 
 // Controller responsible for the Welcome Tour feature tutorial. Note that the
 // `WelcomeTourController` is owned by the `UserEducationController` and exists
 // if and only if the Welcome Tour feature is enabled.
 class ASH_EXPORT WelcomeTourController : public UserEducationFeatureController,
-                                         public SessionObserver {
+                                         public SessionObserver,
+                                         public TabletModeObserver {
  public:
   WelcomeTourController();
   WelcomeTourController(const WelcomeTourController&) = delete;
@@ -54,6 +58,10 @@ class ASH_EXPORT WelcomeTourController : public UserEducationFeatureController,
   void OnChromeTerminating() override;
   void OnSessionStateChanged(session_manager::SessionState) override;
 
+  // TabletModeObserver:
+  void OnTabletControllerDestroyed() override;
+  void OnTabletModeStarting() override;
+
   // Shows the Welcome Tour dialog iff the primary user session is active.
   void MaybeShowDialog();
 
@@ -62,9 +70,14 @@ class ASH_EXPORT WelcomeTourController : public UserEducationFeatureController,
   void StartTutorial();
 
   // Invoked when the Welcome Tour is started/ended. The latter is called
-  // regardless of whether the tour was completed or aborted.
+  // regardless of whether the tour was `completed` or aborted.
   void OnWelcomeTourStarted();
-  void OnWelcomeTourEnded();
+  void OnWelcomeTourEnded(bool completed);
+
+  // Blocks all notifications while the Welcome Tour is in progress. Any
+  // notifications received during the tour will appear in the Notification
+  // Center after the tour is over.
+  std::unique_ptr<WelcomeTourNotificationBlocker> notification_blocker_;
 
   // Used to apply a scrim to the help bubble container on all root windows
   // while the Welcome Tour is in progress. Exists only while the Welcome Tour
@@ -79,8 +92,14 @@ class ASH_EXPORT WelcomeTourController : public UserEducationFeatureController,
   base::ScopedObservation<SessionController, SessionObserver>
       session_observation_{this};
 
-  // It is theoretically possible for the Welcome Tour dialog/tutorial to
-  // outlive `this` controller during the destruction sequence.
+  // Tablet mode is observed from when the dialog shows until the tour ends or
+  // is canceled, and will trigger an abort if the device switches to tablet
+  // mode.
+  base::ScopedObservation<TabletMode, TabletModeObserver>
+      tablet_mode_observation_{this};
+
+  // It is theoretically possible for the Welcome Tour tutorial to outlive
+  // `this` controller during the destruction sequence.
   base::WeakPtrFactory<WelcomeTourController> weak_ptr_factory_{this};
 };
 

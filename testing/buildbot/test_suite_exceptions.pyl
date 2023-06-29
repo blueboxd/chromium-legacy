@@ -123,7 +123,9 @@
               'device_type': 'sailfish',
             },
           ],
-          'shards': 4,
+          # TODO(crbug/1456515): Temporarily increase the shard by 1 for the surging number of tests.
+          # Recover to original number of shards(4) after the bug is fixed.
+          'shards': 5,
         },
       },
       'android-pie-x86-rel': {
@@ -146,6 +148,22 @@
         },
       },
     },
+  },
+  'android_browsertests_no_fieldtrial': {
+    'modifications': {
+      'android-12-x64-rel': {
+        # TODO(crbug.com/1225851): Remove experiment and ci_only
+        # once the test suite is stable.
+        'experiment_percentage': 100,
+        'args': [
+          # https://crbug.com/1289764
+          '--gtest_filter=-All/ChromeBrowsingDataLifetimeManagerScheduledRemovalTest.History/*',
+        ],
+      }
+    },
+    'remove_from': [
+      'android-12l-x64-fyi-dbg',
+    ],
   },
   'android_sync_integration_tests': {
    'modifications': {
@@ -336,16 +354,6 @@
         ],
         'swarming': {
           'shards': 12,
-        },
-      },
-      'Mac10.13 Tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': None,
-            },
-          ],
-          'shards': 10,
         },
       },
       'Mac10.15 Tests': {
@@ -710,16 +718,6 @@
           'shards': 18,
         },
       },
-      'Mac10.13 Tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': None,
-            },
-          ],
-          'shards': 15,
-        },
-      },
       'Mac10.15 Tests': {
         'swarming': {
           'dimension_sets': [
@@ -1041,7 +1039,6 @@
       'ToTLinuxTSan',  # https://crbug.com/368525
       # TODO(crbug.com/1171053): Enable the suite in 'Mac10.15 Tests' once it's
       # off CQ.
-      'Mac10.13 Tests', # https://crbug.com/1042757
       'Mac13 Tests (dbg)', # https://crbug.com/1201386
       'mac-code-coverage', # https://crbug.com/1201386
       'mac11-arm64-rel-tests', # https://crbug.com/1406364
@@ -1093,7 +1090,7 @@
         # These are very slow on the ASAN trybot for some reason.
         # crbug.com/1257927
         'swarming': {
-          'shards': 60,
+          'shards': 65,
         },
       },
       'Linux ChromiumOS MSan Tests': {
@@ -1145,11 +1142,6 @@
       'Mac Builder Next': {
         'swarming': {
           'shards': 20,  # crbug.com/1419045
-        },
-      },
-      'Mac10.14 Tests': {
-        'swarming': {
-          'shards': 25,  # crbug.com/1455542
         },
       },
       'Mac10.15 Tests': {
@@ -1246,7 +1238,7 @@
       },
       'linux-chromeos-dbg': {
         'swarming': {
-          'shards': 60,
+          'shards': 80,
         },
       },
       'linux-chromeos-rel': {
@@ -1377,6 +1369,19 @@
       'Win11 Tests x64',
     ],
   },
+  'capture_unittests': {
+    'modifications': {
+      'WebRTC Chromium Linux Tester': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Ubuntu-22.04|Ubuntu-18.04',
+            },
+          ],
+        },
+      },
+    },
+  },
   'cc_unittests': {
     'modifications': {
       'Linux TSan Tests': {
@@ -1447,6 +1452,7 @@
         'args': [
           # This bot sets symbol_level=2, which doesn't fit inside a normal VM.
           '--strip-chrome',
+          '--tast-shard-method=hash',
         ],
       },
       'chromeos-betty-pi-arc-chrome': {
@@ -1776,12 +1782,6 @@
         },
       },
       'Linux TSan Tests': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
-      # https://crbug.com/1344223
-      'Mac10.13 Tests': {
         'swarming': {
           'shards': 2,
         },
@@ -2293,6 +2293,12 @@
       },
     },
   },
+  'context_lost_passthrough_tests': {
+    'remove_from': [
+      # crbug.com/1458020 for Mac Retina ASAN removal
+      'Mac FYI Retina ASAN (AMD)',
+    ],
+  },
   'context_lost_validating_tests': {
     # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
     # exception once there is enough capacity to run these tests.
@@ -2301,36 +2307,42 @@
     ],
   },
   'cr23_browser_tests': {
-    'cr23-linux-rel': {
-      'experiment_percentage': None,
-    },
-    'cr23-mac-rel': {
-      'experiment_percentage': None,
-    },
-    'cr23-win-rel': {
-      'experiment_percentage': None,
-    },
+    'modifications': {
+      'linux-cr23-rel': {
+        'experiment_percentage': None,
+      },
+      'mac-cr23-rel': {
+        'experiment_percentage': None,
+      },
+      'win-cr23-rel': {
+        'experiment_percentage': None,
+      },
+    }
   },
   'cr23_interactive_ui_tests': {
-    'cr23-linux-rel': {
-      'experiment_percentage': None,
-    },
-    'cr23-mac-rel': {
-      'experiment_percentage': None,
-    },
-    'cr23-win-rel': {
-      'experiment_percentage': None,
+    'modifications': {
+      'linux-cr23-rel': {
+        'experiment_percentage': None,
+      },
+      'mac-cr23-rel': {
+        'experiment_percentage': None,
+      },
+      'win-cr23-rel': {
+        'experiment_percentage': None,
+      },
     },
   },
   'cr23_views_unittests': {
-    'cr23-linux-rel': {
-      'experiment_percentage': None,
-    },
-    'cr23-mac-rel': {
-      'experiment_percentage': None,
-    },
-    'cr23-win-rel': {
-      'experiment_percentage': None,
+    'modifications': {
+      'linux-cr23-rel': {
+        'experiment_percentage': None,
+      },
+      'mac-cr23-rel': {
+        'experiment_percentage': None,
+      },
+      'win-cr23-rel': {
+        'experiment_percentage': None,
+      },
     },
   },
   'crashpad_tests': {
@@ -2789,6 +2801,8 @@
       # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
       # exception once there is enough capacity to run these tests.
       'Android FYI Release (Pixel 2)',
+      # crbug.com/1458020 for Mac Retina ASAN removal
+      'Mac FYI Retina ASAN (AMD)',
     ],
   },
   'gpu_pytype': {
@@ -2820,6 +2834,8 @@
       # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
       # exception once there is enough capacity to run these tests.
       'Android FYI Release (Pixel 2)',
+      # crbug.com/1458020 for Mac Retina ASAN removal
+      'Mac FYI Retina ASAN (AMD)',
     ],
   },
   'headless_browsertests': {
@@ -2841,6 +2857,8 @@
       'Android V8 FYI Release (Nexus 5X)',
       'Linux V8 FYI Release (NVIDIA)',
       'Linux V8 FYI Release - pointer compression (NVIDIA)',
+      # crbug.com/1458020 for Mac Retina ASAN removal
+      'Mac FYI Retina ASAN (AMD)',
       'Mac V8 FYI Release (Intel)',
       'Win V8 FYI Release (NVIDIA)',
     ],
@@ -3143,6 +3161,10 @@
         ],
       },
     },
+    'remove_from': [
+      # crbug.com/1458020 for Mac Retina ASAN removal
+      'Mac FYI Retina ASAN (AMD)',
+    ],
     'replacements': {
       # The V8 builders pass the V8 revision for ${got_revision}, so instead
       # use ${got_cr_revision}, which is only set on the V8 bots.
@@ -3272,6 +3294,12 @@
       },
     },
   },
+  'mediapipe_passthrough_tests': {
+    'remove_from': [
+      # crbug.com/1458020 for Mac Retina ASAN removal
+      'Mac FYI Retina ASAN (AMD)',
+    ],
+  },
   'mediapipe_validating_tests': {
     'remove_from': [
       # TODO(crbug.com/1372213): Remove these once tests are stable.
@@ -3324,6 +3352,7 @@
       'linux-exp-tsan-fyi-rel',  # The TSan bot sets enable_nacl=false
       'Mac ASan 64 Tests (1)',  # The mac asan bot sets enable_nacl=false
       'win-arm64-rel',  # Not available on arm64.
+      'linux-arm64-rel-cft',  # Not available on arm64.
     ],
   },
   'net_unittests': {
@@ -3632,6 +3661,10 @@
         ],
       },
     },
+    'remove_from': [
+      # crbug.com/1458020 for Mac Retina ASAN removal
+      'Mac FYI Retina ASAN (AMD)',
+    ],
     'replacements': {
       # The V8 builders pass the V8 revision for ${got_revision}, so instead
       # use ${got_cr_revision}, which is only set on the V8 bots.
@@ -3722,29 +3755,32 @@
       'win-arm64-rel',  # Not available on arm64.
     ],
   },
+  'pthreadpool_unittests': {
+    'remove_from': [
+      # pthreadpool is not built for ChromeOS currently.
+      'linux-chromeos-dbg',
+      'linux-chromeos-rel',
+      'linux-lacros-tester-rel',
+    ],
+  },
+  'remoting_unittests': {
+    'remove_from': [
+      # Not available on Linux ARM64
+      'linux-arm64-rel-cft',
+    ],
+  },
   'sandbox_linux_unittests': {
-    'modifications': {
-      # If you change this, make similar changes in android-x86-code-coverage below
-      'android-nougat-x86-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter',
-        ]
-      },
-      'android-pie-x86-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter',
-        ]
-      },
-      # Keep this same as android-nougat-x86-rel above
-      'android-x86-code-coverage': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter',
-        ]
-      },
-    },
     'remove_from': [
       'android-asan',  # https://crbug.com/962650
     ],
+    'modifications': {
+      'linux-ubsan-vptr': {
+        'args': [
+          # TODO(crbug.com/1456464): Remove this.
+          '--gtest_filter=-SandboxBPF.ApplyBasicAllowlistPolicy:SandboxBPF.SyntheticPolicy:SandboxBPF.UnsafeTrapWithCond',
+        ],
+      },
+    },
   },
   'screenshot_sync_passthrough_tests': {
     'modifications': {
@@ -3765,6 +3801,10 @@
         ],
       },
     },
+    'remove_from': [
+      # crbug.com/1458020 for Mac Retina ASAN removal
+      'Mac FYI Retina ASAN (AMD)',
+    ],
   },
   'screenshot_sync_validating_tests': {
     'modifications': {
@@ -4095,7 +4135,6 @@
     'remove_from': [
       'android-pie-arm64-rel',
       # crbug.com/936540
-      'Mac10.13 Tests',
       'Mac10.15 Tests',
       # TODO crbug.com/1277277
       'Mac13 Tests (dbg)',
@@ -4158,6 +4197,10 @@
         },
       },
     },
+    'remove_from': [
+      # crbug.com/1458020 for Mac Retina ASAN removal
+      'Mac FYI Retina ASAN (AMD)',
+    ],
   },
   'unit_tests': {
     'remove_from': [
@@ -4195,6 +4238,11 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.unit_tests_wayland.filter',
         ],
+      },
+      'Mac13 Tests': {
+        'swarming': {
+          'shards': 2,
+        },
       },
       'Mac13 Tests (dbg)': {
         'swarming': {
@@ -4363,6 +4411,8 @@
   'vr_common_unittests': {
     'remove_from': [
       'android-pie-x86-rel',
+      # Not available on Linux ARM64
+      'linux-arm64-rel-cft',
     ],
   },
   'vulkan_pixel_skia_gold_test': {
@@ -4405,29 +4455,17 @@
       },
     },
   },
+  'webcodecs_tests': {
+    'remove_from': [
+      # crbug.com/1458020 for Mac Retina ASAN removal
+      'Mac FYI Retina ASAN (AMD)',
+    ],
+  },
   'webdriver_tests_suite': {
     'remove_from': [
       'Linux Tests',  # https://crbug.com/929689, https://crbug.com/936557
       'linux-rel-cft',
     ],
-  },
-  'webengine_support_instrumentation_test_apk': {
-    'modifications': {
-      'android-12-x64-rel': {
-        'ci_only': True,
-      },
-      # If you change this, make similar changes in android-x86-code-coverage below
-      'android-nougat-x86-rel': {
-        'ci_only': True,
-      },
-      'android-pie-arm64-rel': {
-        'ci_only': True,
-      },
-      # Keep this same as android-nougat-x86-rel above
-      'android-x86-code-coverage': {
-        'ci_only': True,
-      },
-    },
   },
   'webgl2_conformance_d3d11_passthrough_tests': {
     'remove_from': [
@@ -4490,6 +4528,7 @@
       'Mac FYI Retina ASAN (AMD)',
       # Not enough capacity.
       'Mac FYI Retina Release (NVIDIA)',
+      'Mac FYI Experimental Retina Release (NVIDIA)',
       # Removed from V8 builders since WebGL 1 should provide reasonable
       # upstream test coverage without the capacity hit from WebGL 2.
       'Mac V8 FYI Release (Intel)',
@@ -4596,6 +4635,7 @@
       'Mac FYI Retina ASAN (AMD)',
       # crbug.com/1158857: re-enable when switching to Metal by default.
       'Mac FYI Retina Release (NVIDIA)',
+      'Mac FYI Experimental Retina Release (NVIDIA)',
     ],
     'modifications': {
       'Mac FYI ASAN (Intel)': {

@@ -638,17 +638,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Blink.Clipboard.HasTransientUserActivation" enum="Boolean"
-    expires_after="2023-08-01">
-  <owner>asully@chromium.org</owner>
-  <owner>snianu@microsoft.com</owner>
-  <owner>chrome-owp-storage@google.com</owner>
-  <summary>
-    Records if a transient user activation is present or not when the web
-    authors execute the async clipboard read/write call.
-  </summary>
-</histogram>
-
 <histogram name="Blink.ColorGamut.Destination" enum="Gamut" expires_after="M85">
   <owner>brianosman@chromium.org</owner>
   <owner>mcasas@google.com</owner>
@@ -749,7 +738,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.ContentDocumentUpdate.UpdateTime"
-    units="microseconds" expires_after="2023-10-22">
+    units="microseconds" expires_after="2023-12-24">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -857,7 +846,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.CullRect.UpdateTime" units="microseconds"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>pdr@chromium.org</owner>
   <owner>wangxianzhu@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
@@ -868,8 +857,24 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Blink.DecodedImage.AvifDensity.KiBWeighted2"
+    units="0.01 bits per pixel" expires_after="2023-11-30">
+  <owner>wtc@google.com</owner>
+  <owner>jzern@google.com</owner>
+  <owner>
+    src/third_party/blink/renderer/platform/image-decoders/avif/OWNERS
+  </owner>
+  <summary>
+    The compressed image size in KiB per image density measured in 0.01 bits per
+    pixel. This is logged once per image load after the whole image is loaded
+    and only for 8-bit AVIF still images with at least 100 pixels on the
+    smallest dimension (width or height). The reported count for a sample
+    represents the image size rounded to the nearest KiB.
+  </summary>
+</histogram>
+
 <histogram name="Blink.DecodedImage.JpegDensity.KiBWeighted"
-    units="0.01 bits per pixel" expires_after="2023-10-22">
+    units="0.01 bits per pixel" expires_after="2023-12-24">
   <owner>jyrki@google.com</owner>
   <owner>compression-dev@google.com</owner>
   <summary>
@@ -934,6 +939,24 @@ chromium-metrics-reviews@google.com.
     The EffectiveZoom as reported by ComputedStyle in a Blink renderer. The
     value is reported each time the effective zoom is set to a new value. The
     maximum zoom reported is 400% to keep the histogram of reasonable size.
+  </summary>
+</histogram>
+
+<histogram name="Blink.EnvironmentIntegrity.Latency" units="ms"
+    expires_after="2024-05-31">
+  <owner>sergeyka@google.com</owner>
+  <owner>ryankalla@google.com</owner>
+  <summary>
+    The latency of resolved calls to the navigator.getWebEnvironmentIntegrity()
+  </summary>
+</histogram>
+
+<histogram name="Blink.EnvironmentIntegrity.Result"
+    enum="EnvironmentIntegrityResult" expires_after="2024-05-31">
+  <owner>sergeyka@google.com</owner>
+  <owner>ryankalla@google.com</owner>
+  <summary>
+    The results of all calls to navigator.getWebEnvironmentIntegrity()
   </summary>
 </histogram>
 
@@ -1153,6 +1176,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Blink.FedCm.IdpSigninStatus.PopupWindowResult"
+    enum="FedCmPopupWindowResult" expires_after="M125">
+  <owner>tanzachary@chromium.org</owner>
+  <owner>web-identity-eng@google.com</owner>
+  <summary>
+    Records the outcome of the IDP sign-in pop-up window. Recorded once per
+    pop-up window triggered by the user.
+  </summary>
+</histogram>
+
 <histogram name="Blink.FedCm.IdpSigninStatus.ShowPopupWindowResult"
     enum="FedCmShowPopupWindowResult" expires_after="M125">
   <owner>tanzachary@chromium.org</owner>
@@ -1188,7 +1221,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.FedCm.IsSignInUser" enum="Boolean"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -1261,8 +1294,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Blink.FedCm.Status.AccountsResponseInvalidReason"
+    enum="FedCmAccountsResponseInvalidReason" expires_after="2023-11-19">
+  <owner>yigu@chromium.org</owner>
+  <owner>web-identity-eng@google.com</owner>
+  <summary>
+    Records the reason why there is no valid account in the response. Recorded
+    at most once per accounts fetch when the response is received.
+  </summary>
+</histogram>
+
 <histogram name="Blink.FedCm.Status.Csp" enum="FedCmCspStatus"
-    expires_after="M120">
+    expires_after="2023-12-17">
   <owner>cbiesinger@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>Records the result of CSP checks in the FedCM API.</summary>
@@ -1321,8 +1364,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Blink.FedCm.Timing.AccountsDialogShownDuration" units="ms"
+    expires_after="M125">
+  <owner>tanzachary@chromium.org</owner>
+  <owner>web-identity-eng@google.com</owner>
+  <summary>
+    Records the duration from when an accounts dialog is shown to when it is
+    dismissed for any reason. This duration includes the time when the accounts
+    dialog is inactive e.g. user navigates to a different tab. Samples are at
+    most 10 minutes. Records a sample when an accounts dialog is shown.
+  </summary>
+</histogram>
+
 <histogram name="Blink.FedCm.Timing.CancelOnDialog" units="ms"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -1336,7 +1391,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.FedCm.Timing.ContinueOnDialog" units="ms"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -1354,6 +1409,19 @@ chromium-metrics-reviews@google.com.
     Records the time from when the user presses the Continue button to when the
     token response is received. Only records a sample when the token response is
     received.
+  </summary>
+</histogram>
+
+<histogram name="Blink.FedCm.Timing.MismatchDialogShownDuration" units="ms"
+    expires_after="M125">
+  <owner>tanzachary@chromium.org</owner>
+  <owner>web-identity-eng@google.com</owner>
+  <summary>
+    Records the duration from when a mismatch dialog is shown to when it is
+    dismissed for any reason or user triggers IDP sign-in pop-up window. This
+    duration includes the time when the mismatch dialog is inactive e.g. user
+    navigates to a different tab. Samples are at most 10 minutes. Records a
+    sample when a mismatch dialog is shown.
   </summary>
 </histogram>
 
@@ -1383,7 +1451,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.FedCm.Timing.TurnaroundTime" units="ms"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -2042,6 +2110,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Blink.ImageDecoders.Avif.CleanAperture"
+    enum="AVIFCleanApertureType" expires_after="2023-11-30">
+  <owner>wtc@google.com</owner>
+  <owner>jzern@google.com</owner>
+  <owner>
+    src/third_party/blink/renderer/platform/image-decoders/avif/OWNERS
+  </owner>
+  <summary>
+    If an AVIF image has a clean aperture ('clap') property, record what kind of
+    clean aperture it is when one frame of the image is decoded fully. The
+    histogram is intended to check whether clean aperture properties with a
+    nonzero origin are common.
+  </summary>
+</histogram>
+
 <histogram name="Blink.ImageDecoders.ImageHasMultipleGeneratorClientIds"
     enum="ImageHasMultipleGeneratorClientIds" expires_after="2023-09-10">
   <owner>vmpstr@chromium.org</owner>
@@ -2356,7 +2439,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Layout.UpdateLayerPositionsAfterLayout"
-    units="microseconds" expires_after="2023-10-15">
+    units="microseconds" expires_after="2023-12-17">
   <owner>pdr@chromium.org</owner>
   <owner>ikilpatrick@chromium.org</owner>
   <owner>layout-dev@chromium.org</owner>
@@ -2616,7 +2699,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.MemoryCache.RevalidationPolicy.AsyncScript"
-    enum="RevalidationPolicy" expires_after="2023-10-15">
+    enum="RevalidationPolicy" expires_after="2023-12-17">
   <owner>hiroshige@chromium.org</owner>
   <owner>lizeb@chromium.org</owner>
   <owner>gjc@chromium.org</owner>
@@ -3257,7 +3340,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.Style.UpdateTime" units="microseconds"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -3281,7 +3364,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.SVGImage.DataChanged" units="microseconds"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -3447,7 +3530,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.UseCounter.FeaturePolicy.Header"
-    enum="FeaturePolicyFeature" expires_after="2023-10-22">
+    enum="FeaturePolicyFeature" expires_after="2023-12-24">
   <owner>iclelland@chromium.org</owner>
   <owner>feature-control@chromium.org</owner>
   <summary>
@@ -3651,7 +3734,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.UseCounter.PermissionsPolicy.Allow2"
-    enum="FeaturePolicyFeature" expires_after="2023-10-22">
+    enum="FeaturePolicyFeature" expires_after="2023-12-24">
   <owner>iclelland@chromium.org</owner>
   <owner>feature-control@chromium.org</owner>
   <summary>
@@ -3741,7 +3824,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.VisibleLoadTime.LazyLoadImages" units="ms"
-    expires_after="2023-12-10">
+    expires_after="2023-12-24">
   <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>

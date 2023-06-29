@@ -54,6 +54,7 @@
 #include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/ash/fileapi/file_system_backend.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_files_utils.h"
+#include "chrome/browser/chromeos/upload_office_to_cloud/upload_office_to_cloud.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -69,6 +70,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/drive/drive_api_util.h"
+#include "components/drive/drive_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -372,7 +374,7 @@ void PostProcessFoundTasks(Profile* profile,
   disabled_actions.emplace("view-pdf");
 #endif  // !BUILDFLAG(ENABLE_PDF)
 
-  if (!ash::cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud(profile)) {
+  if (!chromeos::IsEligibleAndEnabledUploadOfficeToCloud(profile)) {
     disabled_actions.emplace(kActionIdWebDriveOfficeWord);
     disabled_actions.emplace(kActionIdWebDriveOfficeExcel);
     disabled_actions.emplace(kActionIdWebDriveOfficePowerPoint);
@@ -558,10 +560,17 @@ void RecordDriveOfflineUMAs(Profile* profile,
 
   for (const FileSystemURL& file_url : file_urls) {
     if (file_url.type() == storage::kFileSystemTypeDriveFs) {
+      ViewFileType type = GetViewFileType(file_url.path());
       integration_service->GetMetadata(
           file_url.path(),
-          base::BindOnce(&RecordDriveOfflineUMAsGotMetadata, profile,
-                         GetViewFileType(file_url.path())));
+          base::BindOnce(&RecordDriveOfflineUMAsGotMetadata, profile, type));
+      if (!integration_service->IsOnline() &&
+          drive::util::IsDriveFsBulkPinningEnabled(profile) &&
+          profile->GetPrefs()->GetBoolean(
+              drive::prefs::kDriveFsBulkPinningEnabled)) {
+        base::UmaHistogramEnumeration(
+            "FileBrowser.GoogleDrive.BulkPinning.OfflineOpen", type);
+      }
     }
   }
 }

@@ -31,7 +31,6 @@
 #include "chrome/browser/gpu/gpu_mode_manager.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/login_detection/login_detection_prefs.h"
-#include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/media/media_storage_id_salt.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
@@ -117,6 +116,7 @@
 #include "components/language/core/browser/language_prefs.h"
 #include "components/lens/buildflags.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
+#include "components/media_device_salt/media_device_id_salt.h"
 #include "components/metrics/demographics/user_demographics.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/network_time/network_time_tracker.h"
@@ -223,7 +223,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
+#include "components/supervised_user/core/browser/child_account_service.h"
 #include "components/supervised_user/core/browser/supervised_user_service.h"
 #endif
 
@@ -232,6 +232,7 @@
 #include "components/feed/core/shared_prefs/pref_names.h"
 
 #if BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/accessibility/accessibility_prefs/android/accessibility_prefs_controller.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
 #include "chrome/browser/android/ntp/recent_tabs_page_prefs.h"
 #include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
@@ -286,6 +287,10 @@
 #include "components/permissions/permission_hats_trigger_helper.h"
 #include "components/user_notes/user_notes_prefs.h"
 #endif  // BUILDFLAG(IS_ANDROID)
+
+#if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "chrome/browser/promos/promos_utils.h"
+#endif  // !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/apps/intent_helper/supported_links_infobar_prefs_service.h"
@@ -398,7 +403,7 @@
 #include "chrome/browser/ash/settings/device_settings_cache.h"
 #include "chrome/browser/ash/system/automatic_reboot_manager.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
-#include "chrome/browser/ash/web_applications/help_app/help_app_notification_controller.h"
+#include "chrome/browser/ash/system_web_apps/apps/help_app/help_app_notification_controller.h"
 #include "chrome/browser/device_identity/chromeos/device_oauth2_token_store_chromeos.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
@@ -891,6 +896,12 @@ const char kShouldShowSidePanelBookmarkTab[] =
     "should_show_side_panel_bookmark_tab";
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+// Deprecated 06/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const char kGaiaLastOnlineSignInTime[] = "gaia.last_online_sign_in_time";
+const char kSAMLLastGAIASignInTime[] = "saml.last_gaia_sign_in_time";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 #if BUILDFLAG(ENABLE_FEED_V2)
 const char kVideoPreviewsType[] = "ntp_snippets.video_previews_type";
 #endif  // BUILDFLAG(ENABLE_FEED_V2)
@@ -1282,6 +1293,12 @@ void RegisterProfilePrefsForMigration(
 #if BUILDFLAG(ENABLE_FEED_V2)
   registry->RegisterIntegerPref(kVideoPreviewsType, 1);
 #endif  // BUILDFLAG(ENABLE_FEED_V2)
+
+// Deprecated 06/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterTimePref(kGaiaLastOnlineSignInTime, base::Time());
+  registry->RegisterTimePref(kSAMLLastGAIASignInTime, base::Time());
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 }  // namespace
@@ -1290,6 +1307,10 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   // Call outs to individual subsystems that register Local State (browser-wide)
   // prefs en masse. See RegisterProfilePrefs for per-profile prefs. Please
   // keep this list alphabetized.
+#if BUILDFLAG(IS_ANDROID)
+  accessibility::AccessibilityPrefsController::RegisterLocalStatePrefs(
+      registry);
+#endif
   browser_shutdown::RegisterPrefs(registry);
   BrowserProcessImpl::RegisterPrefs(registry);
   ChromeContentBrowserClient::RegisterLocalStatePrefs(registry);
@@ -1564,7 +1585,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   login_detection::prefs::RegisterProfilePrefs(registry);
   lookalikes::RegisterProfilePrefs(registry);
   MediaCaptureDevicesDispatcher::RegisterProfilePrefs(registry);
-  MediaDeviceIDSalt::RegisterProfilePrefs(registry);
+  media_device_salt::MediaDeviceIDSalt::RegisterProfilePrefs(registry);
   MediaEngagementService::RegisterProfilePrefs(registry);
   MediaStorageIdSalt::RegisterProfilePrefs(registry);
   metrics::RegisterDemographicsProfilePrefs(registry);
@@ -1616,6 +1637,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   omnibox::RegisterProfilePrefs(registry);
   ZeroSuggestProvider::RegisterProfilePrefs(registry);
 
+#if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  promos_utils::RegisterProfilePrefs(registry);
+#endif  // !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   RegisterSessionServiceLogProfilePrefs(registry);
   SessionDataService::RegisterProfilePrefs(registry);
@@ -1656,7 +1681,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  ChildAccountService::RegisterProfilePrefs(registry);
+  supervised_user::ChildAccountService::RegisterProfilePrefs(registry);
   supervised_user::SupervisedUserService::RegisterProfilePrefs(registry);
 #endif
 
@@ -2398,6 +2423,12 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #if BUILDFLAG(ENABLE_FEED_V2)
   profile_prefs->ClearPref(kVideoPreviewsType);
 #endif  // BUILDFLAG(ENABLE_FEED_V2)
+
+  // Added 06/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  profile_prefs->ClearPref(kGaiaLastOnlineSignInTime);
+  profile_prefs->ClearPref(kSAMLLastGAIASignInTime);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

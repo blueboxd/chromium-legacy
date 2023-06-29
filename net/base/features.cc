@@ -231,6 +231,10 @@ BASE_FEATURE(kSamePartyAttributeEnabled,
              "SamePartyAttributeEnabled",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kWaitForFirstPartySetsInit,
+             "WaitForFirstPartySetsInit",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kPartitionedCookies,
              "PartitionedCookies",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -352,6 +356,10 @@ inline constexpr auto kMigrateSessionsOnNetworkChangeV2Default =
 BASE_FEATURE(kMigrateSessionsOnNetworkChangeV2,
              "MigrateSessionsOnNetworkChangeV2",
              kMigrateSessionsOnNetworkChangeV2Default);
+
+BASE_FEATURE(kDisableBlackholeOnNoNewNetwork,
+             "DisableBlackHoleOnNoNewNetwork",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_LINUX)
 BASE_FEATURE(kAddressTrackerLinuxIsProxied,

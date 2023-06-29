@@ -826,6 +826,11 @@ const char kHatsBorealisGamesSurveyIsSelected[] =
 const char kHatsBorealisGamesSurveyCycleEndTs[] =
     "hats_borealis_games_end_timestamp";
 
+// An base::Time pref. This is the timestamp that indicates the end of the
+// most recent Borealis games survey interaction.
+const char kHatsBorealisGamesLastInteractionTimestamp[] =
+    "hats_borealis_games_last_interaction_timestamp";
+
 // A boolean pref. Indicates if we've already shown a notification to inform the
 // current user about the quick unlock feature.
 const char kPinUnlockFeatureNotificationShown[] =
@@ -1147,18 +1152,6 @@ const char kTotalUniqueOsSettingsChanged[] =
 // days have passed since the user completed OOBE.
 const char kHasResetFirst7DaysSettingsUsedCount[] =
     "settings.has_reset_first_seven_days_settings_used_count";
-
-// A boolean representing whether the user has revoked their consent
-// for UMA at least one time in the lifetime of the device.
-//
-// If the value is true, the user has revoked consent for recording their
-// metrics at least once in the device's lifetime. This is the final value of
-// this pref, ie. once the pref is set to true, the value will never change
-// again. Even if the user grants consent again, we will not record their metric
-// in the histogram
-// "ChromeOS.Settings.NumUniqueSettingsChanged.DeviceLifetime.{Time}".
-const char kHasEverRevokedMetricsConsent[] =
-    "settings.has_ever_revoked_metrics_consent";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -1237,6 +1230,9 @@ const char kBrowserColorScheme[] = "browser.theme.color_scheme";
 // SkColor used to theme the browser for Chrome Refresh. The value
 // SK_ColorTRANSPARENT means the user color has not been set.
 const char kUserColor[] = "browser.theme.user_color";
+
+// Enum tracking the color variant preference for the browser.
+extern const char kBrowserColorVariant[] = "browser.theme.color_variant";
 
 // Boolean pref tracking whether the grayscale theme has been enabled.
 const char kGrayscaleThemeEnabled[] = "browser.theme.is_grayscale";
@@ -1399,6 +1395,9 @@ const char kImportDialogBookmarks[] = "import_dialog_bookmarks";
 const char kImportDialogHistory[] = "import_dialog_history";
 const char kImportDialogSavedPasswords[] = "import_dialog_saved_passwords";
 const char kImportDialogSearchEngine[] = "import_dialog_search_engine";
+
+// Boolean controlling whether native client is force allowed by policy.
+const char kNativeClientForceAllowed[] = "native_client_force_allowed";
 
 // Profile avatar and name
 const char kProfileAvatarIndex[] = "profile.avatar_index";
@@ -2208,9 +2207,6 @@ const char kDefaultAudioCaptureDevice[] = "media.default_audio_capture_device";
 
 // The default video capture device used by the Media content setting.
 const char kDefaultVideoCaptureDevice[] = "media.default_video_capture_Device";
-
-// The salt used for creating random MediaSource IDs.
-const char kMediaDeviceIdSalt[] = "media.device_id_salt";
 
 // The salt used for creating Storage IDs. The Storage ID is used by encrypted
 // media to bind persistent licenses to the device which is authorized to play

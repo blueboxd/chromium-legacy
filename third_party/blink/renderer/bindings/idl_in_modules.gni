@@ -413,6 +413,7 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/mediasession/media_position_state.idl",
           "//third_party/blink/renderer/modules/mediasession/media_session.idl",
           "//third_party/blink/renderer/modules/mediasession/media_session_action_details.idl",
+          "//third_party/blink/renderer/modules/mediasession/media_session_picture_in_picture_action_details.idl",
           "//third_party/blink/renderer/modules/mediasession/media_session_seek_to_action_details.idl",
           "//third_party/blink/renderer/modules/mediasession/navigator_media_session.idl",
           "//third_party/blink/renderer/modules/mediasource/audio_track_source_buffer.idl",
@@ -1306,6 +1307,7 @@ if (target_os != "android") {
 static_idl_files_in_modules_for_testing = get_path_info(
         [
           "//third_party/blink/renderer/modules/accessibility/testing/internals_accessibility.idl",
+          "//third_party/blink/renderer/modules/credentialmanagement/testing/internals_fed_cm.idl",
           "//third_party/blink/renderer/modules/mediastream/testing/internals_media_stream.idl",
           "//third_party/blink/renderer/modules/netinfo/testing/internals_net_info.idl",
           "//third_party/blink/renderer/modules/peerconnection/testing/internals_rtc_certificate.idl",

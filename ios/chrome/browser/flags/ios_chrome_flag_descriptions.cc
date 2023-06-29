@@ -293,6 +293,18 @@ const char kDefaultBrowserPromoForceShowPromoDescription[] =
     "IPH_iOSPromoDefaultBrowser, or disable kPromosManagerUsesFET and enable "
     "Force Promo (Default Browser) in the system settings experimental flags.";
 
+const char kDefaultBrowserTriggerCriteriaExperimentName[] =
+    "Show default browser promo trigger criteria experiment";
+const char kDefaultBrowserTriggerCriteriaExperimentDescription[] =
+    "When enabled, default browser promo will be displayed to user without "
+    "matching all the trigger criteria.";
+
+const char kDefaultBrowserTriggerOnOmniboxCopyPasteName[] =
+    "Trigger promo on omnibox copy-paste";
+const char kDefaultBrowserTriggerOnOmniboxCopyPasteDescription[] =
+    "When enabled promo will be displayed on omnibox copy-paste event instead "
+    "of on chrome launch";
+
 const char kDefaultBrowserVideoPromoName[] =
     "Enable default browser video promo";
 const char kDefaultBrowserVideoPromoDescription[] =
@@ -371,12 +383,6 @@ const char kEnableEmailInBookmarksReadingListSnackbarDescription[] =
 const char kEnableFeedAblationName[] = "Enables Feed Ablation";
 const char kEnableFeedAblationDescription[] =
     "If Enabled the Feed will be removed from the NTP";
-
-const char kEnableFeedBottomSignInPromoName[] =
-    "Enable Feed bottom sign-in promotion";
-const char kEnableFeedBottomSignInPromoDescription[] =
-    "Display a sign-in promotion card at the bottom of the Discover Feed for "
-    "signed out users.";
 
 const char kEnableFeedCardMenuSignInPromoName[] =
     "Enable Feed card menu sign-in promotion";
@@ -484,11 +490,6 @@ const char kTailoredSecurityIntegrationName[] =
 const char kTailoredSecurityIntegrationDescription[] =
     "Enable integration between account level enhanced safe browsing and "
     "chrome enhanced safe browsing";
-
-const char kExpandedTabStripName[] = "Enable expanded tabstrip";
-const char kExpandedTabStripDescription[] =
-    "Enables the new expanded tabstrip. Activated by swiping down the tabstrip"
-    " or the toolbar";
 
 const char kFeedBackgroundRefreshName[] = "Enable feed background refresh";
 const char kFeedBackgroundRefreshDescription[] =
@@ -646,6 +647,10 @@ const char kIOSSharedHighlightingV2Name[] = "Text Fragments UI improvements";
 const char kIOSSharedHighlightingV2Description[] =
     "Enables improvements to text fragments UI, including a menu for removing "
     "or resharing a highlight.";
+
+const char kIPHForSafariSwitcherName[] = "IPH for Safari Switcher";
+const char kIPHForSafariSwitcherDescription[] =
+    "Enables displaying IPH for users who are considered Safari Switcher";
 
 const char kLockBottomToolbarName[] = "Lock bottom toolbar";
 const char kLockBottomToolbarDescription[] =
@@ -937,6 +942,11 @@ const char kSafeBrowsingRealTimeLookupDescription[] =
     "When enabled, navigation URLs are checked using real-time queries to Safe "
     "Browsing servers, subject to an opt-in preference.";
 
+const char kSafetyCheckMagicStackName[] = "Enable Safety Check (Magic Stack)";
+const char kSafetyCheckMagicStackDescription[] =
+    "When enabled, the Safety Check module will be displayed in the Magic "
+    "Stack.";
+
 const char kScreenTimeIntegrationName[] = "Enables ScreenTime Integration";
 const char kScreenTimeIntegrationDescription[] =
     "Enables integration with ScreenTime in iOS 14.0 and above.";
@@ -1025,10 +1035,9 @@ const char kTFLiteLanguageDetectionIgnoreDescription[] =
     "Computes the TFLite language detection but ignore the result and uses the "
     "CLD3 detection instead.";
 
-const char kToolbarContainerName[] = "Use Toolbar Containers";
-const char kToolbarContainerDescription[] =
-    "When enabled, the toolbars and their fullscreen animations will be "
-    "managed by the toolbar container coordinator rather than BVC.";
+const char kThemeColorInToolbarName[] = "Use page's theme color";
+const char kThemeColorInToolbarDescription[] =
+    "When enabled, the omnibox background color is the page's theme color";
 
 const char kEnableLensInHomeScreenWidgetName[] =
     "Enable Google Lens in the Home Screen Widget";
@@ -1077,6 +1086,11 @@ const char kTabGridRecencySortName[] = "Change TabGrid sorting";
 const char kTabGridRecencySortDescription[] =
     "When enabled, the tabs in the Tab Grid are sorted differently.";
 
+const char kTabGridRefactoringName[] = "Enable tab grid refactoring";
+const char kTabGridRefactoringDescription[] =
+    "When enabled, the Tab Grid use the refactored version, it should not have "
+    "any visual difference nor different feature with the legacy one.";
+
 const char kTabGridNewTransitionsName[] = "Enable new TabGrid transitions";
 const char kTabGridNewTransitionsDescription[] =
     "When enabled, the new Tab Grid to Browser (and vice versa) transitions"
@@ -1088,6 +1102,11 @@ const char kTabInactivityThresholdDescription[] =
     "and set aside in the Inactive Tabs section of the TabGrid."
     "IMPORTANT: If you ever used the in-app settings for Inactive Tabs, this "
     "flag is never read again.";
+
+const char kTabPickupThresholdName[] = "Enable and change tab pickup threshold";
+const char kTabPickupThresholdDescription[] =
+    "When enabled, an infobar will be displayed when the latest tab used from "
+    "another device is yougner than the threshold.";
 
 const char kUseLoadSimulatedRequestForOfflinePageName[] =
     "Use loadSimulatedRequest:responseHTMLString: when displaying offline "

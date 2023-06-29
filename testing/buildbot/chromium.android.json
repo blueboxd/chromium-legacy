@@ -27,7 +27,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "N2G48C",
@@ -71,7 +70,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "N2G48C",
@@ -115,7 +113,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
@@ -169,7 +166,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
@@ -221,7 +217,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "N2G48C",
@@ -268,7 +263,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "N2G48C",
@@ -313,7 +307,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "N2G48C",
@@ -359,7 +352,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "N2G48C",
@@ -407,7 +399,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "OPM4.171019.021.P2",
@@ -452,7 +443,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "OPM4.171019.021.P2",
@@ -497,7 +487,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
@@ -552,7 +541,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
@@ -605,7 +593,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "OPM4.171019.021.P2",
@@ -653,7 +640,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "OPM4.171019.021.P2",
@@ -699,7 +685,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "OPM4.171019.021.P2",
@@ -746,7 +731,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "OPM4.171019.021.P2",
@@ -795,7 +779,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -839,7 +822,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -883,7 +865,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
@@ -937,7 +918,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
@@ -989,7 +969,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -1036,7 +1015,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -1081,7 +1059,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -1127,7 +1104,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -1271,12 +1247,6 @@
         "name": "webapk_shell_apk_junit_tests",
         "test": "webapk_shell_apk_junit_tests",
         "test_id_prefix": "ninja://chrome/android/webapk/shell_apk:webapk_shell_apk_junit_tests/"
-      },
-      {
-        "experiment_percentage": 100,
-        "name": "weblayer_junit_tests",
-        "test": "weblayer_junit_tests",
-        "test_id_prefix": "ninja://weblayer/browser/java:weblayer_junit_tests/"
       }
     ]
   },
@@ -1340,7 +1310,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "android_devices": "1",
@@ -1378,7 +1347,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "android_devices": "1",
@@ -1424,7 +1392,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "android_devices": "1",
@@ -1466,7 +1433,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "android_devices": "1",
@@ -1500,7 +1466,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "android_devices": "1",
@@ -1534,7 +1499,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "android_devices": "1",
@@ -1568,7 +1532,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "android_devices": "1",
@@ -1602,7 +1565,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "android_devices": "1",
@@ -1640,7 +1602,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "OPR3.170623.008",
@@ -1690,7 +1651,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "OPR3.170623.008",
@@ -1738,7 +1698,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "OPR3.170623.008",
@@ -1793,7 +1752,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "OPR3.170623.008",
@@ -1844,7 +1802,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "OPR3.170623.008",
@@ -1893,7 +1850,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "OPR3.170623.008",
@@ -1936,7 +1892,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "OPR3.170623.008",
@@ -1979,7 +1934,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "OPR3.170623.008",
@@ -2022,7 +1976,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "OPR3.170623.008",
@@ -2065,7 +2018,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "OPR3.170623.008",
@@ -2109,7 +2061,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "OPR3.170623.008",
@@ -2165,7 +2116,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "QP1A.190711.020",
@@ -2221,7 +2171,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "QP1A.190711.020",
@@ -2273,7 +2222,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "QP1A.190711.020",
@@ -2317,7 +2265,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "QP1A.190711.020",
@@ -2361,7 +2308,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "QP1A.190711.020",
@@ -2405,7 +2351,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "QP1A.190711.020",
@@ -2454,7 +2399,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -2514,7 +2458,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -2575,7 +2518,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -2634,7 +2576,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -2686,7 +2627,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -2736,7 +2676,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -2795,7 +2734,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -2854,7 +2792,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -2913,7 +2850,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -2973,7 +2909,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -3033,7 +2968,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -3092,7 +3026,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -3152,7 +3085,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -3211,7 +3143,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -3271,7 +3202,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -3330,7 +3260,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -3400,7 +3329,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -3468,7 +3396,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -3533,7 +3460,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -3593,7 +3519,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -3654,7 +3579,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -3716,7 +3640,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -3778,7 +3701,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -3838,7 +3760,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -3899,7 +3820,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -3958,7 +3878,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -4017,7 +3936,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -4076,7 +3994,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -4136,7 +4053,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -4195,7 +4111,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -4254,7 +4169,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -4313,7 +4227,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -4372,7 +4285,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -4434,7 +4346,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -4493,7 +4404,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -4552,7 +4462,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -4611,7 +4520,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -4670,7 +4578,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -4729,7 +4636,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -4788,7 +4694,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -4848,7 +4753,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -4907,7 +4811,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -4966,7 +4869,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -5026,7 +4928,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -5085,7 +4986,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -5144,7 +5044,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -5203,7 +5102,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -5262,7 +5160,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -5322,7 +5219,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -5382,7 +5278,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -5441,7 +5336,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -5500,7 +5394,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -5559,7 +5452,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -5618,7 +5510,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -5677,7 +5568,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -5736,7 +5626,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -5795,7 +5684,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -5854,7 +5742,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -5913,7 +5800,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -5972,7 +5858,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -6032,7 +5917,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -6091,7 +5975,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -6134,124 +6017,6 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android30.textpb"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "webengine_support_instrumentation_test_apk"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cores": "4",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "generic_android30",
-              "path": ".android_emulator/generic_android30"
-            }
-          ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android30"
-              }
-            ]
-          },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "webengine_support_instrumentation_test_apk",
-        "test_id_prefix": "ninja://weblayer/browser/android/javatests:webengine_support_instrumentation_test_apk/"
-      },
-      {
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android30.textpb"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "weblayer_browsertests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cores": "4",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "generic_android30",
-              "path": ".android_emulator/generic_android30"
-            }
-          ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android30"
-              }
-            ]
-          },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "weblayer_browsertests",
-        "test_id_prefix": "ninja://weblayer/test:weblayer_browsertests/"
-      },
-      {
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android30.textpb",
           "--gtest_filter=-org.chromium.net.NetworkChangeNotifierTest.testNetworkChangeNotifierJavaObservers"
         ],
@@ -6269,7 +6034,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -6330,7 +6094,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
@@ -6402,7 +6165,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
@@ -6469,7 +6231,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -6528,7 +6289,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -6593,7 +6353,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -6657,7 +6416,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -6699,6 +6457,72 @@
       },
       {
         "args": [
+          "--disable-field-trial-config",
+          "--use-persistent-shell",
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb",
+          "--gtest_filter=-All/ChromeBrowsingDataLifetimeManagerScheduledRemovalTest.History/*"
+        ],
+        "ci_only": true,
+        "experiment_percentage": 100,
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "android_browsertests_no_fieldtrial"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "name": "android_browsertests_no_fieldtrial",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "dimension_sets": [
+            {
+              "cores": "8",
+              "cpu": "x86-64",
+              "device_os": null,
+              "device_type": null,
+              "os": "Ubuntu-22.04",
+              "pool": "chromium.tests.avd"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "generic_android31",
+              "path": ".android_emulator/generic_android31"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "generic_android31"
+              }
+            ]
+          },
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 3
+        },
+        "test": "android_browsertests",
+        "test_id_prefix": "ninja://chrome/test:android_browsertests/"
+      },
+      {
+        "args": [
           "--test-launcher-batch-limit=1",
           "--use-persistent-shell",
           "--gs-results-bucket=chromium-result-details",
@@ -6720,7 +6544,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -6782,7 +6605,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -6836,7 +6658,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -6889,7 +6710,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -6950,7 +6770,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -7011,7 +6830,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -7072,7 +6890,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -7134,7 +6951,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -7196,7 +7012,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -7257,7 +7072,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -7319,7 +7133,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -7380,7 +7193,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -7442,7 +7254,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -7506,7 +7317,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -7567,7 +7377,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -7639,7 +7448,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -7709,7 +7517,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -7778,7 +7585,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -7840,7 +7646,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -7902,7 +7707,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -7967,7 +7771,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -8031,7 +7834,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -8093,7 +7895,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -8156,7 +7957,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -8217,7 +8017,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -8279,7 +8078,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -8340,7 +8138,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -8402,7 +8199,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -8463,7 +8259,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -8524,7 +8319,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -8585,7 +8379,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -8646,7 +8439,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -8710,7 +8502,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -8772,7 +8563,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -8833,7 +8623,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -8894,7 +8683,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -8955,7 +8743,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -9016,7 +8803,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -9077,7 +8863,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -9139,7 +8924,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -9200,7 +8984,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -9261,7 +9044,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -9323,7 +9105,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -9384,7 +9165,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -9445,7 +9225,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -9506,7 +9285,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -9567,7 +9345,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -9630,7 +9407,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -9691,7 +9467,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -9753,7 +9528,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -9788,7 +9562,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 3
+          "shards": 2
         },
         "test": "services_unittests",
         "test_id_prefix": "ninja://services:services_unittests/"
@@ -9815,7 +9589,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -9876,7 +9649,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -9937,7 +9709,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -9998,7 +9769,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -10059,7 +9829,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -10120,7 +9889,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -10181,7 +9949,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -10242,7 +10009,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -10303,7 +10069,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -10364,7 +10129,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -10426,7 +10190,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -10487,7 +10250,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -10533,130 +10295,6 @@
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
         ],
-        "ci_only": true,
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "webengine_support_instrumentation_test_apk"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "generic_android31",
-              "path": ".android_emulator/generic_android31"
-            }
-          ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android31"
-              }
-            ]
-          },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "webengine_support_instrumentation_test_apk",
-        "test_id_prefix": "ninja://weblayer/browser/android/javatests:webengine_support_instrumentation_test_apk/"
-      },
-      {
-        "args": [
-          "--use-persistent-shell",
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
-        ],
-        "ci_only": true,
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "weblayer_browsertests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "generic_android31",
-              "path": ".android_emulator/generic_android31"
-            }
-          ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android31"
-              }
-            ]
-          },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "weblayer_browsertests",
-        "test_id_prefix": "ninja://weblayer/test:weblayer_browsertests/"
-      },
-      {
-        "args": [
-          "--use-persistent-shell",
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
-        ],
         "isolate_profile_data": true,
         "merge": {
           "args": [
@@ -10672,7 +10310,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -10735,7 +10372,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
@@ -10777,7 +10413,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 3
+          "shards": 2
         },
         "test": "webview_trichrome_64_cts_tests",
         "test_id_prefix": "ninja://android_webview/test:webview_trichrome_64_cts_tests/",
@@ -10809,7 +10445,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
@@ -10859,6 +10494,77 @@
       },
       {
         "args": [
+          "--disable-field-trial-config",
+          "--use-persistent-shell",
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
+        ],
+        "ci_only": true,
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "webview_trichrome_64_cts_tests_no_field_trial"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "name": "webview_trichrome_64_cts_tests_no_field_trial",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "cipd_packages": [
+            {
+              "cipd_package": "chromium/android_webview/tools/cts_archive",
+              "location": "android_webview/tools/cts_archive",
+              "revision": "D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cores": "8",
+              "cpu": "x86-64",
+              "device_os": null,
+              "device_type": null,
+              "os": "Ubuntu-22.04",
+              "pool": "chromium.tests.avd"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "generic_android31",
+              "path": ".android_emulator/generic_android31"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "generic_android31"
+              }
+            ]
+          },
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
+        },
+        "test": "webview_trichrome_64_cts_tests",
+        "test_id_prefix": "ninja://android_webview/test:webview_trichrome_64_cts_tests/"
+      },
+      {
+        "args": [
           "--use-persistent-shell",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -10879,7 +10585,69 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "8",
+              "cpu": "x86-64",
+              "device_os": null,
+              "device_type": null,
+              "os": "Ubuntu-22.04",
+              "pool": "chromium.tests.avd"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "generic_android31",
+              "path": ".android_emulator/generic_android31"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "generic_android31"
+              }
+            ]
+          },
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "webview_ui_test_app_test_apk",
+        "test_id_prefix": "ninja://android_webview/tools/automated_ui_tests:webview_ui_test_app_test_apk/"
+      },
+      {
+        "args": [
+          "--disable-field-trial-config",
+          "--use-persistent-shell",
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
+        ],
+        "ci_only": true,
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "webview_ui_test_app_test_apk_no_field_trial"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "name": "webview_ui_test_app_test_apk_no_field_trial",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
           "dimension_sets": [
             {
               "cores": "8",
@@ -10940,7 +10708,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -11001,7 +10768,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -11058,7 +10824,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -11110,7 +10875,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -11170,7 +10934,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -11231,7 +10994,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -11290,7 +11052,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -11342,7 +11103,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -11393,7 +11153,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -11452,7 +11211,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -11511,7 +11269,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -11570,7 +11327,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -11630,7 +11386,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -11690,7 +11445,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -11749,7 +11503,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -11809,7 +11562,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -11868,7 +11620,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -11927,7 +11678,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -11986,7 +11736,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -12055,7 +11804,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -12123,7 +11871,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -12189,7 +11936,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -12249,7 +11995,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -12308,7 +12053,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -12369,7 +12113,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -12429,7 +12172,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -12490,7 +12232,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -12549,7 +12290,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -12609,7 +12349,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -12668,7 +12407,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -12728,7 +12466,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -12787,7 +12524,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -12846,7 +12582,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -12905,7 +12640,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -12964,7 +12698,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -13026,7 +12759,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -13085,7 +12817,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -13144,7 +12875,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -13203,7 +12933,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -13262,7 +12991,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -13321,7 +13049,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -13380,7 +13107,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -13440,7 +13166,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -13499,7 +13224,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -13558,7 +13282,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -13618,7 +13341,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -13677,7 +13399,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -13736,7 +13457,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -13795,7 +13515,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -13854,7 +13573,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -13915,7 +13633,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -13974,7 +13691,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -14033,7 +13749,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -14092,7 +13807,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -14151,7 +13865,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -14210,7 +13923,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -14269,7 +13981,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -14328,7 +14039,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -14387,7 +14097,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -14446,7 +14155,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -14505,7 +14213,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -14564,7 +14271,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -14623,7 +14329,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -14683,7 +14388,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -14742,7 +14446,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -14785,124 +14488,6 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android32_foldable.textpb"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "webengine_support_instrumentation_test_apk"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "generic_android32_foldable",
-              "path": ".android_emulator/generic_android32_foldable"
-            }
-          ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable"
-              }
-            ]
-          },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "webengine_support_instrumentation_test_apk",
-        "test_id_prefix": "ninja://weblayer/browser/android/javatests:webengine_support_instrumentation_test_apk/"
-      },
-      {
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android32_foldable.textpb"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "weblayer_browsertests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "generic_android32_foldable",
-              "path": ".android_emulator/generic_android32_foldable"
-            }
-          ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable"
-              }
-            ]
-          },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "weblayer_browsertests",
-        "test_id_prefix": "ninja://weblayer/test:weblayer_browsertests/"
-      },
-      {
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android32_foldable.textpb",
           "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12l.webview_instrumentation_test_apk.filter"
         ],
@@ -14920,7 +14505,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -14980,7 +14564,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -15039,7 +14622,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -15098,7 +14680,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -15161,7 +14742,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -15221,7 +14801,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -15282,7 +14861,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -15341,7 +14919,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -15393,7 +14970,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -15444,7 +15020,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -15503,7 +15078,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -15562,7 +15136,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -15621,7 +15194,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -15681,7 +15253,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -15741,7 +15312,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -15800,7 +15370,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -15860,7 +15429,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -15919,7 +15487,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -15978,7 +15545,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -16037,7 +15603,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -16104,7 +15669,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -16172,7 +15736,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -16238,7 +15801,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -16298,7 +15860,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -16357,7 +15918,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -16418,7 +15978,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -16479,7 +16038,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -16539,7 +16097,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -16600,7 +16157,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -16659,7 +16215,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -16719,7 +16274,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -16778,7 +16332,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -16838,7 +16391,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -16897,7 +16449,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -16956,7 +16507,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -17015,7 +16565,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -17074,7 +16623,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -17136,7 +16684,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -17195,7 +16742,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -17254,7 +16800,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -17313,7 +16858,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -17372,7 +16916,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -17431,7 +16974,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -17490,7 +17032,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -17550,7 +17091,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -17609,7 +17149,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -17668,7 +17207,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -17728,7 +17266,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -17787,7 +17324,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -17846,7 +17382,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -17905,7 +17440,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -17964,7 +17498,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -18025,7 +17558,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -18084,7 +17616,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -18143,7 +17674,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -18202,7 +17732,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -18261,7 +17790,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -18320,7 +17848,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -18379,7 +17906,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -18438,7 +17964,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -18497,7 +18022,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -18556,7 +18080,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -18615,7 +18138,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -18674,7 +18196,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -18733,7 +18254,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -18793,7 +18313,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -18852,7 +18371,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -18912,7 +18430,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -18973,7 +18490,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
@@ -19045,7 +18561,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
@@ -19115,7 +18630,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
@@ -19182,7 +18696,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -19241,7 +18754,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -19300,7 +18812,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -19365,7 +18876,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -19409,7 +18919,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -19455,7 +18964,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -19499,7 +19007,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -19536,7 +19043,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -19571,7 +19077,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -19615,7 +19120,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -19659,7 +19163,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -19703,7 +19206,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -19748,7 +19250,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -19793,7 +19294,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -19837,7 +19337,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -19882,7 +19381,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -19926,7 +19424,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -19970,7 +19467,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20014,7 +19510,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20064,7 +19559,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20111,7 +19605,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20162,7 +19655,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20207,7 +19699,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20251,7 +19742,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20296,7 +19786,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20341,7 +19830,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20386,7 +19874,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20431,7 +19918,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20475,7 +19961,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20519,7 +20004,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20563,7 +20047,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20608,7 +20091,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20652,7 +20134,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20696,7 +20177,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20740,7 +20220,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20785,7 +20264,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20832,7 +20310,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20876,7 +20353,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20920,7 +20396,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -20964,7 +20439,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21008,7 +20482,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21052,7 +20525,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21096,7 +20568,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21141,7 +20612,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21185,7 +20655,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21229,7 +20698,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21273,7 +20741,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21317,7 +20784,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21361,7 +20827,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21405,7 +20870,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21449,7 +20913,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21494,7 +20957,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21538,7 +21000,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21582,7 +21043,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21626,7 +21086,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21670,7 +21129,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21714,7 +21172,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21758,7 +21215,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21802,7 +21258,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21846,7 +21301,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21890,7 +21344,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21935,7 +21388,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -21979,7 +21431,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -22023,7 +21474,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -22067,7 +21517,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -22102,94 +21551,6 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "webengine_support_instrumentation_test_apk"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google",
-              "device_os_type": "userdebug",
-              "device_type": "walleye",
-              "os": "Android"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "webengine_support_instrumentation_test_apk",
-        "test_id_prefix": "ninja://weblayer/browser/android/javatests:webengine_support_instrumentation_test_apk/"
-      },
-      {
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "weblayer_browsertests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google",
-              "device_os_type": "userdebug",
-              "device_type": "walleye",
-              "os": "Android"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "weblayer_browsertests",
-        "test_id_prefix": "ninja://weblayer/test:weblayer_browsertests/"
-      },
-      {
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
             "webview_instrumentation_test_apk"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
@@ -22199,7 +21560,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -22244,7 +21604,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -22288,7 +21647,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -22512,16 +21870,6 @@
         },
         "test": "webapk_shell_apk_junit_tests",
         "test_id_prefix": "ninja://chrome/android/webapk/shell_apk:webapk_shell_apk_junit_tests/"
-      },
-      {
-        "experiment_percentage": 100,
-        "name": "weblayer_junit_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "test": "weblayer_junit_tests",
-        "test_id_prefix": "ninja://weblayer/browser/java:weblayer_junit_tests/"
       }
     ]
   },
@@ -22549,7 +21897,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -22618,7 +21965,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -22686,7 +22032,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -22748,7 +22093,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -22811,7 +22155,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -22872,7 +22215,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -22935,7 +22277,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -23002,11 +22343,10 @@
           "result_format": "single"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-18.04"
+              "os": "Ubuntu-22.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -23032,11 +22372,10 @@
           "result_format": "single"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-18.04"
+              "os": "Ubuntu-22.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -23054,11 +22393,10 @@
           "result_format": "single"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-18.04"
+              "os": "Ubuntu-22.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -23092,11 +22430,10 @@
           "result_format": "single"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-18.04"
+              "os": "Ubuntu-22.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -23130,11 +22467,10 @@
           "result_format": "single"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-18.04"
+              "os": "Ubuntu-22.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -23152,11 +22488,10 @@
           "result_format": "single"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-18.04"
+              "os": "Ubuntu-22.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -23190,7 +22525,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
@@ -23233,7 +22567,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
@@ -23276,7 +22609,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
@@ -23319,7 +22651,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
@@ -23362,7 +22693,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
@@ -23405,7 +22735,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
@@ -23448,7 +22777,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
@@ -23500,11 +22828,10 @@
           "result_format": "single"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-18.04"
+              "os": "Ubuntu-22.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -23535,7 +22862,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -23594,7 +22920,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -23653,7 +22978,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -23712,7 +23036,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -23771,7 +23094,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -23830,7 +23152,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -23890,7 +23211,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -23954,7 +23274,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -24013,7 +23332,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -24072,7 +23390,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -24131,7 +23448,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -24190,7 +23506,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -24249,7 +23564,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -24308,7 +23622,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -24372,7 +23685,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -24431,7 +23743,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -24490,7 +23801,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -24549,7 +23859,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -24608,7 +23917,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -24667,7 +23975,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -24727,7 +24034,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -24791,7 +24097,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -24850,7 +24155,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -24909,7 +24213,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -24968,7 +24271,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -25027,7 +24329,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -25086,7 +24387,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -25145,7 +24445,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -25209,7 +24508,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -25268,7 +24566,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -25327,7 +24624,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -25386,7 +24682,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -25445,7 +24740,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -25504,7 +24798,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -25564,7 +24857,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -25628,7 +24920,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -25687,7 +24978,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -25746,7 +25036,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -25805,7 +25094,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -25864,7 +25152,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -25923,7 +25210,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -25983,7 +25269,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -26050,11 +25335,10 @@
           "result_format": "single"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-18.04"
+              "os": "Ubuntu-22.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -26072,11 +25356,10 @@
           "result_format": "single"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-18.04"
+              "os": "Ubuntu-22.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -26107,7 +25390,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -26166,7 +25448,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -26225,7 +25506,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -26284,7 +25564,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -26343,7 +25622,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -26402,7 +25680,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -26462,7 +25739,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -26531,7 +25807,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -26593,7 +25868,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -26657,7 +25931,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -26719,7 +25992,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -26773,7 +26045,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -26825,7 +26096,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -26886,7 +26156,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -26947,7 +26216,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -27009,7 +26277,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -27071,7 +26338,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -27133,7 +26399,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -27194,7 +26459,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -27256,7 +26520,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -27317,7 +26580,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -27378,7 +26640,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -27445,7 +26706,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -27506,7 +26766,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -27575,7 +26834,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -27645,7 +26903,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -27712,7 +26969,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -27774,7 +27030,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -27836,7 +27091,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -27899,7 +27153,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -27962,7 +27215,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -28024,7 +27276,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -28086,7 +27337,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -28147,7 +27397,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -28208,7 +27457,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -28269,7 +27517,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -28331,7 +27578,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -28392,7 +27638,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -28453,7 +27698,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -28514,7 +27758,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -28575,7 +27818,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -28639,7 +27881,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -28700,7 +27941,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -28761,7 +28001,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -28822,7 +28061,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -28883,7 +28121,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -28944,7 +28181,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -29005,7 +28241,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -29066,7 +28301,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -29127,7 +28361,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -29188,7 +28421,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -29249,7 +28481,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -29310,7 +28541,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -29371,7 +28601,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -29432,7 +28661,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -29493,7 +28721,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -29554,7 +28781,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -29617,7 +28843,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -29661,8 +28886,7 @@
           "--use-persistent-shell",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android24.textpb",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter"
+          "--avd-config=../../tools/android/avd/proto/generic_android24.textpb"
         ],
         "isolate_profile_data": true,
         "merge": {
@@ -29679,7 +28903,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -29742,7 +28965,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -29804,7 +29026,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -29865,7 +29086,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -29926,7 +29146,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -29987,7 +29206,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -30048,7 +29266,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -30109,7 +29326,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -30170,7 +29386,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -30231,7 +29446,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -30292,7 +29506,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -30354,7 +29567,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -30415,7 +29627,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -30459,130 +29670,6 @@
           "--use-persistent-shell",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android24.textpb"
-        ],
-        "ci_only": true,
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "webengine_support_instrumentation_test_apk"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cores": "4",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "generic_android24",
-              "path": ".android_emulator/generic_android24"
-            }
-          ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android24"
-              }
-            ]
-          },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "webengine_support_instrumentation_test_apk",
-        "test_id_prefix": "ninja://weblayer/browser/android/javatests:webengine_support_instrumentation_test_apk/"
-      },
-      {
-        "args": [
-          "--use-persistent-shell",
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android24.textpb"
-        ],
-        "ci_only": true,
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "weblayer_browsertests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cores": "4",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "generic_android24",
-              "path": ".android_emulator/generic_android24"
-            }
-          ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android24"
-              }
-            ]
-          },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "weblayer_browsertests",
-        "test_id_prefix": "ninja://weblayer/test:weblayer_browsertests/"
-      },
-      {
-        "args": [
-          "--use-persistent-shell",
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android24.textpb",
           "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.webview_cts_tests.filter"
         ],
@@ -30601,7 +29688,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
@@ -30671,7 +29757,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -30733,7 +29818,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -30794,7 +29878,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -30855,7 +29938,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -30911,7 +29993,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -30940,7 +30021,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -30969,7 +30049,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -30998,7 +30077,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -31027,7 +30105,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -31056,7 +30133,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -31090,7 +30166,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -31133,7 +30208,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -31162,7 +30236,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -31191,7 +30264,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -31220,7 +30292,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -31249,7 +30320,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -31278,7 +30348,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -31308,7 +30377,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -31353,7 +30421,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -31382,7 +30449,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -31411,7 +30477,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -31440,7 +30505,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -31469,7 +30533,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -31506,7 +30569,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -31556,7 +30618,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -31603,7 +30664,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -31648,7 +30708,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -31677,7 +30736,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -31706,7 +30764,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -31735,7 +30792,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -31764,7 +30820,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -31815,7 +30870,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -31863,7 +30917,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -31919,7 +30972,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -31971,7 +31023,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -32015,7 +31066,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -32059,7 +31109,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -32103,7 +31152,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -32147,7 +31195,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -32191,7 +31238,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -32242,7 +31288,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -32263,7 +31308,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 5
         },
         "test": "android_browsertests",
         "test_id_prefix": "ninja://chrome/test:android_browsertests/"
@@ -32289,7 +31334,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -32335,7 +31379,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -32381,7 +31424,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -32436,7 +31478,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -32489,7 +31530,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -32537,7 +31577,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -32584,7 +31623,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -32630,7 +31668,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -32676,7 +31713,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -32722,7 +31758,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -32753,100 +31788,6 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
-        "ci_only": true,
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "webengine_support_instrumentation_test_apk"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google",
-              "device_os_type": "userdebug",
-              "device_type": "walleye",
-              "os": "Android"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "webengine_support_instrumentation_test_apk",
-        "test_id_prefix": "ninja://weblayer/browser/android/javatests:webengine_support_instrumentation_test_apk/"
-      },
-      {
-        "args": [
-          "--use-persistent-shell",
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "ci_only": true,
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "weblayer_browsertests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google",
-              "device_os_type": "userdebug",
-              "device_type": "walleye",
-              "os": "Android"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "weblayer_browsertests",
-        "test_id_prefix": "ninja://weblayer/test:weblayer_browsertests/"
-      },
-      {
-        "args": [
-          "--use-persistent-shell",
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
         "isolate_profile_data": true,
         "merge": {
           "args": [
@@ -32862,7 +31803,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
@@ -32918,7 +31858,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -32965,7 +31904,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
@@ -33025,7 +31963,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -33085,7 +32022,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -33146,7 +32082,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -33205,7 +32140,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -33257,7 +32191,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -33307,7 +32240,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -33366,7 +32298,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -33425,7 +32356,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -33484,7 +32414,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -33544,7 +32473,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -33604,7 +32532,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -33663,7 +32590,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -33723,7 +32649,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -33782,7 +32707,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -33842,7 +32766,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -33901,7 +32824,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -33968,7 +32890,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "8",
@@ -34036,7 +32957,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -34101,7 +33021,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -34161,7 +33080,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -34220,7 +33138,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -34281,7 +33198,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -34342,7 +33258,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -34402,7 +33317,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -34462,7 +33376,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -34521,7 +33434,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -34580,7 +33492,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -34639,7 +33550,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -34699,7 +33609,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -34758,7 +33667,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -34817,7 +33725,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -34876,7 +33783,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -34935,7 +33841,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -34997,7 +33902,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -35056,7 +33960,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -35115,7 +34018,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -35174,7 +34076,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -35233,7 +34134,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -35292,7 +34192,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -35351,7 +34250,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -35411,7 +34309,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -35470,7 +34367,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -35529,7 +34425,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -35588,7 +34483,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -35647,7 +34541,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -35706,7 +34599,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -35765,7 +34657,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -35824,7 +34715,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -35883,7 +34773,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -35943,7 +34832,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -35987,8 +34875,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter"
+          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
         ],
         "merge": {
           "args": [
@@ -36004,7 +34891,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -36063,7 +34949,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -36122,7 +35007,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -36181,7 +35065,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -36240,7 +35123,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -36299,7 +35181,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -36358,7 +35239,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -36417,7 +35297,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -36476,7 +35355,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -36535,7 +35413,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -36594,7 +35471,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -36654,7 +35530,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -36713,7 +35588,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -36763,124 +35637,6 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "webengine_support_instrumentation_test_apk"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cores": "4",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "generic_android28",
-              "path": ".android_emulator/generic_android28"
-            }
-          ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android28"
-              }
-            ]
-          },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "webengine_support_instrumentation_test_apk",
-        "test_id_prefix": "ninja://weblayer/browser/android/javatests:webengine_support_instrumentation_test_apk/"
-      },
-      {
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "weblayer_browsertests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cores": "4",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "generic_android28",
-              "path": ".android_emulator/generic_android28"
-            }
-          ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android28"
-              }
-            ]
-          },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "weblayer_browsertests",
-        "test_id_prefix": "ninja://weblayer/test:weblayer_browsertests/"
-      },
-      {
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
             "webview_cts_tests"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
@@ -36890,7 +35646,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
@@ -36958,7 +35713,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -37018,7 +35772,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -37077,7 +35830,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -37136,7 +35888,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cores": "4",
@@ -37213,7 +35964,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
@@ -37285,7 +36035,6 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",

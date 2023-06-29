@@ -10,6 +10,7 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/notreached.h"
 #import "components/google/core/common/google_util.h"
+#import "components/signin/public/base/signin_metrics.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_service_utils.h"
 #import "components/sync/service/sync_user_settings.h"
@@ -22,6 +23,7 @@
 #import "ios/chrome/browser/shared/public/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/shared/public/commands/show_signin_command.h"
 #import "ios/chrome/browser/shared/ui/symbols/chrome_icon.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -34,6 +36,7 @@
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/signout_action_sheet_coordinator.h"
+#import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_mediator.h"
@@ -80,6 +83,8 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
 @implementation ManageSyncSettingsCoordinator {
   // Dismiss callback for Web and app setting details view.
   DismissViewCallback _dismissWebAndAppSettingDetailsController;
+  // Dismiss callback for account details view.
+  DismissViewCallback _dismissAccountDetailsController;
   // The account sync state.
   SyncSettingsAccountState _accountState;
 }
@@ -169,6 +174,8 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
   syncSetupService->CommitSyncChanges();
 
   _syncObserver.reset();
+  [self.signoutActionSheetCoordinator stop];
+  _signoutActionSheetCoordinator = nil;
 }
 
 #pragma mark - Properties
@@ -191,6 +198,9 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
     if (!_dismissWebAndAppSettingDetailsController.is_null()) {
       std::move(_dismissWebAndAppSettingDetailsController)
           .Run(/*animated*/ false);
+    }
+    if (!_dismissAccountDetailsController.is_null()) {
+      std::move(_dismissAccountDetailsController).Run(/*animated=*/false);
     }
     [self.baseNavigationController popToViewController:self.viewController
                                               animated:NO];
@@ -263,6 +273,7 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
 
   self.signOutFlowInProgress = YES;
   [self.viewController preventUserInteraction];
+  signin_metrics::RecordSignoutUserAction(/*force_clear_data=*/false);
   __weak ManageSyncSettingsCoordinator* weakSelf = self;
   ProceduralBlock signOutCompletion = ^() {
     __strong ManageSyncSettingsCoordinator* strongSelf = weakSelf;
@@ -271,12 +282,34 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
     }
     [strongSelf.viewController allowUserInteraction];
     strongSelf.signOutFlowInProgress = NO;
-    base::RecordAction(base::UserMetricsAction("Signin_Signout"));
+    [self.delegate showSignOutToast];
     [strongSelf closeManageSyncSettings];
   };
   self.authService->SignOut(
       signin_metrics::ProfileSignout::kUserClickedSignoutSettings,
       /*force_clear_browsing_data=*/NO, signOutCompletion);
+}
+
+- (void)showAccountsPage {
+  AccountsTableViewController* accountsTableViewController =
+      [[AccountsTableViewController alloc] initWithBrowser:self.browser
+                                 closeSettingsOnAddAccount:NO];
+
+  accountsTableViewController.applicationCommandsHandler = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), ApplicationCommands);
+  [self.baseNavigationController pushViewController:accountsTableViewController
+                                           animated:YES];
+}
+
+- (void)showManageYourGoogleAccount {
+  _dismissAccountDetailsController =
+      GetApplicationContext()
+          ->GetSystemIdentityManager()
+          ->PresentAccountDetailsController(
+              self.authService->GetPrimaryIdentity(
+                  signin::ConsentLevel::kSignin),
+              self.viewController,
+              /*animated=*/YES);
 }
 
 #pragma mark - SignoutActionSheetCoordinatorDelegate
@@ -340,22 +373,19 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
                                                                         kSettings];
 }
 
-- (void)openReauthDialogAsSyncIsInAuthError {
-  AuthenticationService* authService = self.authService;
-  id<SystemIdentity> identity =
-      authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
-  if (authService->HasCachedMDMErrorForIdentity(identity)) {
-    authService->ShowMDMErrorDialogForIdentity(identity);
-    return;
-  }
-  // Sync enters in a permanent auth error state when fetching an access token
-  // fails with invalid credentials. This corresponds to Gaia responding with an
-  // "invalid grant" error. The current implementation of the iOS SSOAuth
-  // library user by Chrome removes the identity from the device when receiving
-  // an "invalid grant" response, which leads to the account being also signed
-  // out of Chrome. So the sync permanent auth error is a transient state on
-  // iOS. The decision was to avoid handling this error in the UI, which means
-  // that the reauth dialog is not actually presented on iOS.
+- (void)openMDMErrodDialogWithSystemIdentity:(id<SystemIdentity>)identity {
+  self.authService->ShowMDMErrorDialogForIdentity(identity);
+}
+
+- (void)openPrimaryAccountReauthDialog {
+  id<ApplicationCommands> applicationCommands =
+      static_cast<id<ApplicationCommands>>(
+          self.browser->GetCommandDispatcher());
+  ShowSigninCommand* signinCommand = [[ShowSigninCommand alloc]
+      initWithOperation:AuthenticationOperationPrimaryAccountReauth
+            accessPoint:AccessPoint::ACCESS_POINT_SETTINGS];
+  [applicationCommands showSignin:signinCommand
+               baseViewController:self.viewController];
 }
 
 #pragma mark - SyncObserverModelBridge

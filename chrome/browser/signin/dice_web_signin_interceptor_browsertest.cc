@@ -456,6 +456,7 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorBrowserTest, SwitchAlreadyOpen) {
   other_identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
       account_info.gaia, account_info.email, "dummy_refresh_token",
       /*is_under_advanced_protection=*/false,
+      signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   other_identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(
       account_info.account_id, signin::ConsentLevel::kSync);
@@ -574,7 +575,7 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorBrowserTest,
   // Install web app
   Profile* profile = browser()->profile();
   const GURL kWebAppURL("http://www.webapp.com");
-  auto web_app_info = std::make_unique<WebAppInstallInfo>();
+  auto web_app_info = std::make_unique<web_app::WebAppInstallInfo>();
   web_app_info->start_url = kWebAppURL;
   web_app_info->scope = kWebAppURL.GetWithoutFilename();
   web_app_info->user_display_mode =
@@ -1355,6 +1356,7 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptorEnterpriseBrowserTest,
   other_identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
       account_info.gaia, account_info.email, "dummy_refresh_token",
       /*is_under_advanced_protection=*/false,
+      signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   other_identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(
       account_info.account_id, signin::ConsentLevel::kSync);

@@ -117,12 +117,15 @@ class HostContentSettingsMap : public content_settings::Observer,
   // that certain internal schemes are allowlisted. For |CONTENT_TYPE_COOKIES|,
   // |CookieSettings| should be used instead. For content types that can't be
   // converted to a |ContentSetting|, |GetContentSettingValue| should be called.
-  // If there is no content setting, returns CONTENT_SETTING_DEFAULT.
+  // If there is no content setting, returns CONTENT_SETTING_DEFAULT. |info| is
+  // populated as explained in |GetWebsiteSetting()|.
   //
   // May be called on any thread.
-  ContentSetting GetContentSetting(const GURL& primary_url,
-                                   const GURL& secondary_url,
-                                   ContentSettingsType content_type) const;
+  ContentSetting GetContentSetting(
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsType content_type,
+      content_settings::SettingInfo* info = nullptr) const;
 
   // This is the same as GetContentSetting() but ignores providers which are not
   // user-controllable (e.g. policy and extensions).
@@ -150,18 +153,18 @@ class HostContentSettingsMap : public content_settings::Observer,
 
   // For a given content type, returns all patterns with a non-default setting,
   // mapped to their actual settings, in the precedence order of the rules.
-  // |settings| must be a non-NULL outparam. |session_model| can be
-  // specified to limit the type of setting results returned. Any entries in
-  // |settings| are guaranteed to be unexpired at the time they are retrieved
-  // from their respective providers and incognito inheritance behavior is
-  // applied. If |settings| are not used immediately the validity of each entry
-  // should be checked using IsExpired().
+  // |session_model| can be specified to limit the type of setting results
+  // returned. Any entries in the returned value are guaranteed to be unexpired
+  // at the time they are retrieved from their respective providers and
+  // incognito inheritance behavior is applied. If the returned settings are not
+  // used immediately the validity of each entry should be checked using
+  // IsExpired().
   //
   // This may be called on any thread.
-  void GetSettingsForOneType(ContentSettingsType content_type,
-                             ContentSettingsForOneType* settings,
-                             absl::optional<content_settings::SessionModel>
-                                 session_model = absl::nullopt) const;
+  ContentSettingsForOneType GetSettingsForOneType(
+      ContentSettingsType content_type,
+      absl::optional<content_settings::SessionModel> session_model =
+          absl::nullopt) const;
 
   // Sets the default setting for a particular content type. This method must
   // not be invoked on an incognito map.
@@ -269,6 +272,12 @@ class HostContentSettingsMap : public content_settings::Observer,
   void UpdateLastVisitedTime(const ContentSettingsPattern& primary_pattern,
                              const ContentSettingsPattern& secondary_pattern,
                              ContentSettingsType type);
+
+  // Updates the expiration to `lifetime + now()`. Returns true if any setting
+  // was matched and updated.
+  bool RenewContentSetting(const GURL& primary_url,
+                           const GURL& secondary_url,
+                           ContentSettingsType type);
 
   // Clears all host-specific settings for one content type.
   //

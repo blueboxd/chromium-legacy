@@ -69,8 +69,10 @@ void NearbyPresence::StartScan(mojom::ScanRequestPtr scan_request,
                                StartScanCallback callback) {
   auto presence_scan_request = ::nearby::presence::ScanRequest();
   presence_scan_request.account_name = scan_request->account_name;
-  presence_scan_request.identity_types.push_back(
-      ::nearby::internal::IdentityType::IDENTITY_TYPE_PUBLIC);
+  for (auto identity_type : scan_request->identity_types) {
+    presence_scan_request.identity_types.push_back(
+        ConvertMojomIdentityType(identity_type));
+  }
   uint64_t session_id;
   auto id = id_++;
   auto session_id_or_status = presence_client_->StartScan(
@@ -225,6 +227,7 @@ void NearbyPresence::UpdateLocalDeviceMetadataAndGenerateCredentials(
 }
 
 void NearbyPresence::OnScanSessionDisconnect(uint64_t scan_session_id) {
+  NS_LOG(VERBOSE) << __func__;
   presence_client_->StopScan(scan_session_id);
   session_id_to_scan_session_map_.erase(scan_session_id);
   session_id_to_results_callback_map_.erase(scan_session_id);

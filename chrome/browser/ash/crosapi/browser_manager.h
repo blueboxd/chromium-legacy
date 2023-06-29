@@ -14,6 +14,7 @@
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -200,7 +201,8 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   void OpenUrl(
       const GURL& url,
       crosapi::mojom::OpenUrlFrom from,
-      crosapi::mojom::OpenUrlParams::WindowOpenDisposition disposition);
+      crosapi::mojom::OpenUrlParams::WindowOpenDisposition disposition,
+      NavigateParams::PathBehavior path_behavior = NavigateParams::RESPECT);
 
   // If there's already a tab opening the URL in lacros-chrome, in some window
   // of the primary profile, activate the tab. Otherwise, opens a tab for
@@ -235,13 +237,13 @@ class BrowserManager : public session_manager::SessionManagerObserver,
       const std::string& app_name,
       int32_t restore_window_id);
 
-  // Initialize resources and start Lacros. This class provides two approaches
-  // to fulfill different requirements.
-  // - For most sessions, Lacros will be started automatically once
-  // `SessionState` is changed to active.
-  // - For Kiosk sessions, Lacros needs to be started earlier because all
-  // extensions and browser window should be well prepared before the user
-  // enters the session. This method should be called at the appropriate time.
+  // Ensures Lacros launches.
+  // Returns true if Lacros could be launched, resumed, or is already in the
+  // process of launching. Returns false if Lacros could not be launched.
+  // NOTE: this method requires the user profile to be already initialized.
+  bool EnsureLaunch();
+
+  // Initialize resources and start Lacros.
   //
   // NOTE: If InitializeAndStartIfNeeded finds Lacros disabled, it unloads
   // Lacros via BrowserLoader::Unload, which also deletes the user data
@@ -474,7 +476,9 @@ class BrowserManager : public session_manager::SessionManagerObserver,
     // ID managed in BrowserServiceHostAsh, which is tied to the |service|.
     mojo::RemoteSetElementId mojo_id;
     // BrowserService proxy connected to lacros-chrome.
-    mojom::BrowserService* service;
+    // This field is not a raw_ptr<> because it was filtered by the rewriter
+    // for: #union
+    RAW_PTR_EXCLUSION mojom::BrowserService* service;
     // Supported interface version of the BrowserService in Lacros-chrome.
     uint32_t interface_version;
   };

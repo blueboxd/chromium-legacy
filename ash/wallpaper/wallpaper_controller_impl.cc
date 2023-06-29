@@ -33,6 +33,8 @@
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/system/scheduled_feature/scheduled_feature.h"
 #include "ash/wallpaper/online_wallpaper_manager.h"
+#include "ash/wallpaper/views/wallpaper_view.h"
+#include "ash/wallpaper/views/wallpaper_widget_controller.h"
 #include "ash/wallpaper/wallpaper_blur_manager.h"
 #include "ash/wallpaper/wallpaper_constants.h"
 #include "ash/wallpaper/wallpaper_drag_drop_delegate.h"
@@ -45,8 +47,6 @@
 #include "ash/wallpaper/wallpaper_utils/wallpaper_file_utils.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resolution.h"
-#include "ash/wallpaper/wallpaper_view.h"
-#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wallpaper/wallpaper_window_state_manager.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -1629,7 +1629,7 @@ void WallpaperControllerImpl::OnCheckpointChanged(
   }
   AccountId account_id = GetActiveAccountId();
   WallpaperInfo info;
-  if (!pref_manager_->GetLocalWallpaperInfo(account_id, &info)) {
+  if (!pref_manager_->GetUserWallpaperInfo(account_id, &info)) {
     return;
   }
   if (!IsOnlineWallpaper(info.type)) {
@@ -1696,10 +1696,10 @@ void WallpaperControllerImpl::OnActiveUserPrefServiceChanged(
         pref_manager_->GetSyncedWallpaperInfo(account_id, &synced_info);
     bool has_local_info =
         pref_manager_->GetLocalWallpaperInfo(account_id, &local_info);
-    session_manager::SessionState session_state =
-        Shell::Get()->session_controller()->GetSessionState();
-    if (session_state == session_manager::SessionState::OOBE &&
-        !has_synced_info && has_local_info &&
+    DVLOG(1) << " has_synced_info=" << has_synced_info
+             << " has_local_info=" << has_local_info
+             << " is_oobe_state=" << IsOobeState();
+    if (IsOobeState() && !has_synced_info && has_local_info &&
         local_info.type == WallpaperType::kDefault &&
         features::IsTimeOfDayWallpaperEnabled()) {
       // Sets the time of day wallpaper as the default wallpaper on active user
@@ -2618,18 +2618,11 @@ bool WallpaperControllerImpl::ShouldCalculateColors() const {
   if (image.isNull()) {
     return false;
   }
-
+  if (IsOobeState()) {
+    return true;
+  }
   session_manager::SessionState session_state =
       Shell::Get()->session_controller()->GetSessionState();
-  // Default OOBE flow
-  if (session_state == session_manager::SessionState::OOBE) {
-    return true;
-  }
-  // OOBE enterprise enrollment -> add person flow
-  if (session_state == session_manager::SessionState::LOGIN_PRIMARY &&
-      oobe_state_ != OobeDialogState::HIDDEN) {
-    return true;
-  }
   // Active session
   if (session_state == session_manager::SessionState::ACTIVE) {
     return true;
@@ -2835,7 +2828,9 @@ void WallpaperControllerImpl::SyncLocalAndRemotePrefs(
     SaveWallpaperToDriveFsAndSyncInfo(account_id, source);
     return;
   }
-  if (!WallpaperPrefManager::ShouldSyncIn(synced_info, local_info)) {
+
+  if (!WallpaperPrefManager::ShouldSyncIn(synced_info, local_info,
+                                          IsOobeState())) {
     return;
   }
   HandleWallpaperInfoSyncedIn(account_id, synced_info);
@@ -3068,14 +3063,6 @@ void WallpaperControllerImpl::OnDriveFsWallpaperChange(
   }
 }
 
-PrefService* WallpaperControllerImpl::GetUserPrefServiceSyncable(
-    const AccountId& account_id) const {
-  if (!wallpaper_controller_client_->IsWallpaperSyncEnabled(account_id))
-    return nullptr;
-  return Shell::Get()->session_controller()->GetUserPrefServiceForUser(
-      account_id);
-}
-
 void WallpaperControllerImpl::HandleDailyWallpaperInfoSyncedIn(
     const AccountId& account_id,
     const WallpaperInfo& info) {
@@ -3157,6 +3144,21 @@ void WallpaperControllerImpl::CleanUpBeforeSettingUserWallpaperInfo(
     sequenced_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&DeleteGooglePhotosCache, account_id));
   }
+}
+
+bool WallpaperControllerImpl::IsOobeState() const {
+  session_manager::SessionState session_state =
+      Shell::Get()->session_controller()->GetSessionState();
+  // Default OOBE flow
+  const bool is_default_oobe_flow =
+      session_state == session_manager::SessionState::OOBE;
+  // OOBE enterprise enrollment -> add person flow
+  const bool is_add_person_flow =
+      session_state == session_manager::SessionState::LOGIN_PRIMARY &&
+      oobe_state_ != OobeDialogState::HIDDEN;
+  DVLOG(1) << __func__ << " is_default_oobe_flow=" << is_default_oobe_flow
+           << " is_add_person_flow" << is_add_person_flow;
+  return is_default_oobe_flow || is_add_person_flow;
 }
 
 }  // namespace ash

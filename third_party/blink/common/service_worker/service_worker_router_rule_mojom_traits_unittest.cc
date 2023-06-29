@@ -33,7 +33,7 @@ TEST(ServiceWorkerRouterRulesTest, SimpleRoundTrip) {
       blink::ServiceWorkerRouterCondition condition;
       condition.type =
           blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
-      blink::UrlPattern url_pattern;
+      blink::SafeUrlPattern url_pattern;
       auto parse_result = liburlpattern::Parse(
           "/test/*",
           [](base::StringPiece input) { return std::string(input); });
@@ -46,6 +46,18 @@ TEST(ServiceWorkerRouterRulesTest, SimpleRoundTrip) {
       blink::ServiceWorkerRouterSource source;
       source.type = blink::ServiceWorkerRouterSource::SourceType::kNetwork;
       source.network_source.emplace();
+      rule.sources.push_back(source);
+    }
+    {
+      blink::ServiceWorkerRouterSource source;
+      source.type = blink::ServiceWorkerRouterSource::SourceType::kRace;
+      source.race_source.emplace();
+      rule.sources.push_back(source);
+    }
+    {
+      blink::ServiceWorkerRouterSource source;
+      source.type = blink::ServiceWorkerRouterSource::SourceType::kFetchEvent;
+      source.fetch_event_source.emplace();
       rule.sources.push_back(source);
     }
     rules.rules.push_back(rule);

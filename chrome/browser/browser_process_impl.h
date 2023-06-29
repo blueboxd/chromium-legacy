@@ -42,6 +42,7 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/application_status_listener.h"
+#include "chrome/browser/accessibility/accessibility_prefs/android/accessibility_prefs_controller.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
 class BatteryMetrics;
@@ -268,12 +269,18 @@ class BrowserProcessImpl : public BrowserProcess,
   const std::unique_ptr<PrefService> local_state_;
 
   // |metrics_services_manager_| owns this.
-  raw_ptr<ChromeMetricsServicesManagerClient, DanglingUntriaged>
+  raw_ptr<ChromeMetricsServicesManagerClient, DanglingAcrossTasks>
       metrics_services_manager_client_ = nullptr;
 
   // Must be destroyed before |local_state_|.
   std::unique_ptr<metrics_services_manager::MetricsServicesManager>
       metrics_services_manager_;
+
+#if BUILDFLAG(IS_ANDROID)
+  // Must be destroyed before |local_state_|.
+  std::unique_ptr<accessibility::AccessibilityPrefsController>
+      accessibility_prefs_controller_;
+#endif
 
   std::unique_ptr<network::NetworkQualityTracker> network_quality_tracker_;
 

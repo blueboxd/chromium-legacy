@@ -46,9 +46,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/download/public/common/download_stats.h"
-#include "components/power_scheduler/power_mode.h"
-#include "components/power_scheduler/power_mode_arbiter.h"
-#include "components/power_scheduler/power_mode_voter.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
@@ -177,6 +174,7 @@
 #include "ui/base/ime/mojom/virtual_keyboard_types.mojom.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/color/color_provider_key.h"
 #include "ui/color/color_provider_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
@@ -499,7 +497,7 @@ class DefaultColorProviderSource : public ui::ColorProviderSource,
 
  protected:
   // ui::ColorProviderSource:
-  ui::ColorProviderManager::Key GetColorProviderKey() const override {
+  ui::ColorProviderKey GetColorProviderKey() const override {
     return ui::NativeTheme::GetInstanceForWeb()->GetColorProviderKey(nullptr);
   }
 
@@ -1028,10 +1026,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
           std::make_unique<MediaWebContentsObserver>(this)),
       is_overlay_content_(false),
       showing_context_menu_(false),
-      prerender_host_registry_(std::make_unique<PrerenderHostRegistry>(*this)),
-      audible_power_mode_voter_(
-          power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
-              "PowerModeVoter.Audible")) {
+      prerender_host_registry_(std::make_unique<PrerenderHostRegistry>(*this)) {
   TRACE_EVENT0("content", "WebContentsImpl::WebContentsImpl");
   WebContentsOfBrowserContext::Attach(*this);
 #if BUILDFLAG(ENABLE_PPAPI)
@@ -1723,7 +1718,7 @@ void WebContentsImpl::SetColorProviderSource(ui::ColorProviderSource* source) {
   ColorProviderSourceObserver::Observe(source);
 }
 
-ui::ColorProviderManager::ColorMode WebContentsImpl::GetColorMode() const {
+ui::ColorProviderKey::ColorMode WebContentsImpl::GetColorMode() const {
   // A ColorProviderSource should always be set.
   auto* source = GetColorProviderSource();
   CHECK(source);
@@ -2411,10 +2406,6 @@ void WebContentsImpl::OnAudioStateChanged() {
   // Update internal state.
   is_currently_audible_ = is_currently_audible;
   was_ever_audible_ = was_ever_audible_ || is_currently_audible_;
-
-  audible_power_mode_voter_->VoteFor(is_currently_audible_
-                                         ? power_scheduler::PowerMode::kAudible
-                                         : power_scheduler::PowerMode::kIdle);
 
   ExecutePageBroadcastMethod(base::BindRepeating(
       [](bool is_currently_audible, RenderViewHostImpl* rvh) {
@@ -3162,6 +3153,32 @@ void WebContentsImpl::OnTrustTokensAccessed(
   void (WebContentsObserver::*func)(RenderFrameHost*,
                                     const TrustTokenAccessDetails&) =
       &WebContentsObserver::OnTrustTokensAccessed;
+  observers_.NotifyObservers(func, rfh, details);
+}
+
+void WebContentsImpl::OnSharedDictionaryAccessed(
+    NavigationHandle* navigation,
+    const network::mojom::SharedDictionaryAccessDetails& details) {
+  OPTIONAL_TRACE_EVENT1("content",
+                        "WebContentsImpl::OnSharedDictionaryAccessed",
+                        "navigation_handle", navigation);
+  // Use a variable to select between overloads.
+  void (WebContentsObserver::*func)(
+      NavigationHandle*, const network::mojom::SharedDictionaryAccessDetails&) =
+      &WebContentsObserver::OnSharedDictionaryAccessed;
+  observers_.NotifyObservers(func, navigation, details);
+}
+
+void WebContentsImpl::OnSharedDictionaryAccessed(
+    RenderFrameHostImpl* rfh,
+    const network::mojom::SharedDictionaryAccessDetails& details) {
+  OPTIONAL_TRACE_EVENT1("content",
+                        "WebContentsImpl::OnSharedDictionaryAccessed",
+                        "render_frame_host", rfh);
+  // Use a variable to select between overloads.
+  void (WebContentsObserver::*func)(
+      RenderFrameHost*, const network::mojom::SharedDictionaryAccessDetails&) =
+      &WebContentsObserver::OnSharedDictionaryAccessed;
   observers_.NotifyObservers(func, rfh, details);
 }
 
@@ -5259,8 +5276,6 @@ void WebContentsImpl::OnSavePage() {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::OnSavePage");
   // If we can not save the page, try to download it.
   if (!IsSavable()) {
-    download::RecordSavePackageEvent(
-        download::SAVE_PACKAGE_DOWNLOAD_ON_NON_HTML);
     SaveFrame(GetLastCommittedURL(), Referrer(), GetPrimaryMainFrame());
     return;
   }

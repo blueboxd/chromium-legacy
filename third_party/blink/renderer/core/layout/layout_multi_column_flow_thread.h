@@ -216,8 +216,8 @@ class CORE_EXPORT LayoutMultiColumnFlowThread final
 
   LayoutPoint FlowThreadPointToVisualPoint(
       const LayoutPoint& flow_thread_point) const final;
-  LayoutPoint VisualPointToFlowThreadPoint(
-      const LayoutPoint& visual_point) const final;
+  PhysicalOffset VisualPointToFlowThreadPoint(
+      const PhysicalOffset& visual_point) const final;
 
   LayoutMultiColumnSet* ColumnSetAtBlockOffset(LayoutUnit,
                                                PageBoundaryRule) const final;
@@ -269,7 +269,7 @@ class CORE_EXPORT LayoutMultiColumnFlowThread final
   explicit LayoutMultiColumnFlowThread();
 
   LayoutPoint Location() const override;
-  LayoutSize Size() const override;
+  PhysicalSize Size() const override;
 
  private:
   void CalculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const;

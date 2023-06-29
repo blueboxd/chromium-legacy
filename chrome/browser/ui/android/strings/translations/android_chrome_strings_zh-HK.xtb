@@ -61,6 +61,7 @@
 <translation id="1283039547216852943">輕按即可展開</translation>
 <translation id="1289059016768036948">系統將會要求您登入 Google 帳戶</translation>
 <translation id="1291207594882862231">清除記錄、Cookie、網站資料、快取…</translation>
+<translation id="1293898515599432175">密碼將從 Chrome <ph name="CHROME_CHANNEL" />的「Google 密碼管理工具」中刪除。您可保留剛剛下載的密碼檔案。</translation>
 <translation id="129553762522093515">最近關閉的分頁</translation>
 <translation id="1298077576058087471">節省高達 60% 數據用量，立即閱讀今天新聞</translation>
 <translation id="1303339473099049190">找不到該密碼。請檢查您輸入的內容，然後再試一次。</translation>
@@ -128,7 +129,6 @@
 <translation id="164269334534774161">您正在查看此網頁的離線版本 (建立時間：<ph name="CREATION_TIME" />)</translation>
 <translation id="1644574205037202324">記錄</translation>
 <translation id="1657932388559784161">閂咗頁面分析資料頁底面板</translation>
-<translation id="1668122540633280551">選擇 Chrome 首頁自動播放預覽影片的方式。</translation>
 <translation id="1670399744444387456">基本設定</translation>
 <translation id="1671236975893690980">正在等待下載…</translation>
 <translation id="1672586136351118594">不要再顯示</translation>
@@ -240,6 +240,7 @@
 <translation id="2349710944427398404">Chrome 使用的資料總量，包括帳戶、書籤和已儲存的設定</translation>
 <translation id="235789365079050412">Google 私隱權政策</translation>
 <translation id="2359808026110333948">繼續</translation>
+<translation id="2362083820973145409">已使用<ph name="USER_NAME" />的身分登入。<ph name="USER_EMAIL" />。開啟設定。</translation>
 <translation id="2386938421315164605">隱藏和取消隱藏主題</translation>
 <translation id="2390510615457643724">要再次下載「<ph name="FILE_NAME" />」(<ph name="FILE_SIZE" />) 嗎？</translation>
 <translation id="2394602618534698961">您下載的檔案會在這裡顯示</translation>
@@ -271,7 +272,6 @@
 <translation id="2536728043171574184">正在瀏覽此網頁的離線版本</translation>
 <translation id="2546283357679194313">Cookie 和網站數據</translation>
 <translation id="2558569818338050235">您的瀏覽記錄會影響系統顯示的廣告</translation>
-<translation id="2561519700418191927">影片預覽</translation>
 <translation id="2567385386134582609">圖片</translation>
 <translation id="2567545343356994513">對危險網站、下載檔案及擴充程式提供更快速的主動式保護功能</translation>
 <translation id="2569733278091928697">您將能輕鬆管理媒體控制項、無痕工作階段、下載項目等等</translation>
@@ -389,7 +389,6 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="3070005020161560471">自動翻譯</translation>
 <translation id="3072980200212375806">「<ph name="APP_NAME" />」將在 Chrome 中開啟。繼續即表示您同意《<ph name="BEGIN_LINK1" />Google 服務條款<ph name="END_LINK1" />》以及 <ph name="BEGIN_LINK2" />Google Chrome 和 Chrome OS 的《附加服務條款》<ph name="END_LINK2" />。須同時受《<ph name="BEGIN_LINK3" />私隱權政策<ph name="END_LINK3" />》約束。</translation>
 <translation id="3080525922482950719">您可儲存網頁，以便稍後或離線閱讀</translation>
-<translation id="3083194063661536258">已登出。按鈕。開啟對話框即可登入並開啟同步功能。</translation>
 <translation id="3091010850649238832">顯示剪貼簿內容</translation>
 <translation id="3098745985164956033">部分圖片會傳送至 Google，以便為您提供更完善的說明</translation>
 <translation id="3114507951000454849">閱讀今天的新聞 <ph name="NEWS_ICON" /></translation>
@@ -408,7 +407,6 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="3214996641768123781">在您登入後，<ph name="BEGIN_LINK1" />搜尋記錄<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />其他形式的活動<ph name="END_LINK2" />可能會儲存至您的 Google 帳戶。您可以隨時刪除這些資料。</translation>
 <translation id="321773570071367578">如果您忘記密碼短語，或希望變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="3220943972464248773">如要同步密碼，請驗證您的身分</translation>
-<translation id="3223522355830797639">銀行希望確認您的身分。</translation>
 <translation id="3227557059438308877">以 Google Chrome 作為安全密鑰</translation>
 <translation id="3232754137068452469">網絡應用程式</translation>
 <translation id="3234978181857588512">儲存至裝置</translation>
@@ -510,9 +508,9 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="3775705724665058594">傳送至您的裝置</translation>
 <translation id="3791957072666773229">{TAB_COUNT,plural, =1{1 個分頁}other{# 個分頁}}</translation>
 <translation id="3795154175078851242">複製圖片和連結</translation>
-<translation id="3803784507854318295">管理自動播放方式</translation>
 <translation id="3810838688059735925">影片</translation>
 <translation id="3810973564298564668">管理</translation>
+<translation id="381861209280417772">刪除密碼</translation>
 <translation id="3819178904835489326">已刪除 <ph name="NUMBER_OF_DOWNLOADS" /> 個下載項目</translation>
 <translation id="3819183753496523827">您已離線。請檢查您的互聯網連線，然後再試一次。</translation>
 <translation id="3830886834687455630">需要更新 Google Play 服務才能檢查密碼</translation>
@@ -563,7 +561,6 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="4095146165863963773">要刪除應用程式資料嗎？</translation>
 <translation id="4096227151372679484">書籤儲存流程宜家顯示喺畫面下半部</translation>
 <translation id="4101475238162928417">進行同步處理，取得您在其他裝置上的密碼、書籤和其他資料</translation>
-<translation id="410351446219883937">自動播放</translation>
 <translation id="4106587138345390261">Chrome 正在探索新功能，讓網站能在使用較少資料的情況下提供相同的瀏覽體驗</translation>
 <translation id="4108314971463891922">追蹤</translation>
 <translation id="4108998448622696017">偵測並在危險事件發生時發出警告。</translation>
@@ -598,6 +595,7 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="4249955472157341256">按最新項目排序</translation>
 <translation id="4250229828105606438">螢幕截圖</translation>
 <translation id="4256782883801055595">開放原始碼授權</translation>
+<translation id="4257230861809842349">要從「Google 密碼管理工具」中刪除密碼嗎？</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />需要使用什麼資料：<ph name="END_BOLD" />您的瀏覽記錄，亦即您在此裝置上使用 Chrome 瀏覽過的網站記錄。</translation>
 <translation id="4269820728363426813">複製連結網址</translation>
 <translation id="4283102315569707115">要讓系統根據預設顯示電腦版網站嗎？</translation>
@@ -634,7 +632,6 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="4484496141267039529">沒有連線，請稍後再試。</translation>
 <translation id="4487967297491345095">所有 Chrome 的應用程式資料將會永久刪除，包括所有檔案、設定、帳戶、資料庫等。</translation>
 <translation id="449126573531210296">使用您的 Google 帳戶為已同步處理的密碼加密</translation>
-<translation id="4504667196171871375">使用 Wi-Fi 和流動數據時</translation>
 <translation id="4508528996305412043">資訊提供卡選單開咗</translation>
 <translation id="4509501256689523862">瀏覽時是否看到個人化廣告，取決於此設定、<ph name="BEGIN_LINK_1" />廣告主題<ph name="END_LINK_1" />、<ph name="BEGIN_LINK_2" />Cookie 設定<ph name="END_LINK_2" />、網站是否顯示個人化廣告</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# 天前}other{# 天前}}</translation>
@@ -853,7 +850,6 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="562289928968387744">管理回應</translation>
 <translation id="5626134646977739690">名稱：</translation>
 <translation id="5628604359369369630">未讀 - 可離線閱讀</translation>
-<translation id="5635091213277904818">Chrome 會自動刪除超過 30 日的網站。再次瀏覽的網站可能會再度出現在清單中。您亦可封鎖網站，讓該網站無法為您建議廣告。</translation>
 <translation id="5641456720590409793"><ph name="BEGIN_LINK1" />搜尋記錄<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />其他形式的活動<ph name="END_LINK2" />可能會儲存至您的 Google 帳戶</translation>
 <translation id="564667659802381754">私隱權指南 <ph name="BEGIN_NEW" />新功能<ph name="END_NEW" /></translation>
 <translation id="5648166631817621825">最近 7 天</translation>
@@ -863,6 +859,7 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="5665379678064389456">在「<ph name="APP_NAME" />」中建立活動</translation>
 <translation id="5683547024293500885">Chrome 無法檢查更新</translation>
 <translation id="5686790454216892815">檔案名稱過長</translation>
+<translation id="5687606994963670306">Chrome 會自動刪除超過 30 日的網站。再次瀏覽的網站可能會再度出現在清單中。您亦可封鎖網站，讓該網站無法為您建議廣告。進一步瞭解如何<ph name="BEGIN_LINK" />在 Chrome 中管理廣告私隱權。<ph name="END_LINK" /></translation>
 <translation id="569435661099256888">您可查看瀏覽過的網頁，或從記錄移除網頁</translation>
 <translation id="569536719314091526">透過「更多選項」掣，將呢個網頁翻譯成任何語言</translation>
 <translation id="5696597120588531049">Chrome 能確保系統安全，避免發生資料外洩或瀏覽不安全網站等問題</translation>
@@ -876,6 +873,7 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="5752232708629533680">只分享 GIF</translation>
 <translation id="5753139477036638699">您可使用語音在 Chrome 中搜尋</translation>
 <translation id="5754350196967618083">無法重新整理「探索」</translation>
+<translation id="5755162682436943950">已登出。開啟對話框即可登入並開啟同步功能。</translation>
 <translation id="5763382633136178763">無痕式分頁</translation>
 <translation id="5763514718066511291">輕按即可複製此應用程式的網址</translation>
 <translation id="5765517223145864268">請分享您的使用體驗。您亦可<ph name="BEGIN_LINK" />變更設定<ph name="END_LINK" />。</translation>
@@ -935,7 +933,6 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="6040143037577758943">關閉</translation>
 <translation id="604124094241169006">自動</translation>
 <translation id="6042308850641462728">更多選項</translation>
-<translation id="6049046116080614938">已使用<ph name="USER_NAME" />的身分登入。<ph name="USER_EMAIL" />。按鈕。開啟設定。</translation>
 <translation id="604996488070107836">發生不明錯誤，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6059830886158432458">請在這裡控制您的報導和活動</translation>
@@ -1157,6 +1154,7 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="7146622961999026732">這些網站和應用程式似乎對您很重要：</translation>
 <translation id="7149893636342594995">最近 24 小時</translation>
 <translation id="7155317020660659215">如要掃瞄 QR 碼，請將設定變更為允許 Chrome 使用攝錄機</translation>
+<translation id="7168323970702333693">已使用<ph name="USER_NAME" />的身分登入。開啟設定。</translation>
 <translation id="7173114856073700355">開啟設定</translation>
 <translation id="7177466738963138057">您稍後可在「設定」中作出變更</translation>
 <translation id="7177873915659574692">無法建立 QR 碼。網址超過 <ph name="CHARACTER_LIMIT" /> 個字元。</translation>
@@ -1177,6 +1175,7 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="7260367682327802201">Android 裝置可能會有類似的設定。如果 Chrome 和 Android 裝置已開啟廣告評估設定，廣告商或者就能在您瀏覽的網站和使用的應用程式上評估廣告成效。</translation>
 <translation id="727288900855680735">要將 <ph name="ONE_TIME_CODE" /> 提交至 <ph name="ORIGIN" /> 嗎？</translation>
 <translation id="7274013316676448362">已封鎖的網站</translation>
+<translation id="7276100255011548441">Chrome 會自動刪除超過 4 星期的主題。在您瀏覽同時，清單中可能會再次出現特定主題。您亦可封鎖不希望 Chrome 與網站分享的主題。進一步瞭解如何<ph name="BEGIN_LINK" />在 Chrome 中管理廣告私隱權。<ph name="END_LINK" /></translation>
 <translation id="7286703216224610554">只分享反應</translation>
 <translation id="7290209999329137901">無法重新命名</translation>
 <translation id="7291910923717764901">已為此頁面新增圖片描述</translation>
@@ -1313,14 +1312,12 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="7944772052836377867">同步功能需要驗證您的身分</translation>
 <translation id="7947953824732555851">接受並登入</translation>
 <translation id="7957413488482743710">虛擬卡會隱藏您的實體卡，保護您免受潛在欺詐行為的威脅。<ph name="BEGIN_LINK1" />進一步瞭解虛擬卡<ph name="END_LINK1" /></translation>
-<translation id="7961015016161918242">從來沒有</translation>
 <translation id="7961926449547174351">您已停用儲存空間存取權，請前往「設定」頁面啟用該權限。</translation>
 <translation id="7963646190083259054">供應商：</translation>
 <translation id="7965838025086216108">您可在任何裝置上使用已儲存的密碼。密碼已儲存至 <ph name="ACCOUNT" /> 的「Google 密碼管理工具」。</translation>
 <translation id="7968014550143838305">已加入閱讀清單</translation>
 <translation id="7971136598759319605">曾於 1 天前在線</translation>
 <translation id="7975379999046275268">預覽網頁<ph name="BEGIN_NEW" />新功能<ph name="END_NEW" /></translation>
-<translation id="7981085434646346979">已使用<ph name="USER_NAME" />的身分登入。按鈕。開啟設定。</translation>
 <translation id="7986497153528221272">如要查看密碼，請先在裝置上設定螢幕鎖定</translation>
 <translation id="7995059495660416932">目前沒有內容，請耐心等候</translation>
 <translation id="799576009106109668">系統會根據您目前瀏覽的網頁主動載入內容，助您加快瀏覽速度</translation>
@@ -1520,7 +1517,6 @@ Private State Token 能夠改善網絡上的私隱，而且系統無法透過信
 <translation id="8968085728801125376">{TAB_COUNT,plural, =1{即將關閉 <ph name="INCOGNITO_TAB_COUNT" /> 個無痕式分頁和另外 <ph name="TAB_COUNT_ONE" /> 個分頁}other{即將關閉 <ph name="INCOGNITO_TAB_COUNT" /> 個無痕式分頁和另外 <ph name="TAB_COUNT_MANY" /> 個分頁}}</translation>
 <translation id="8970887620466824814">發生錯誤。</translation>
 <translation id="8972098258593396643">要下載至預設資料夾嗎？</translation>
-<translation id="8987641763863173640">管理影片預覽設定</translation>
 <translation id="8987736167266086032">從上次離開的地方繼續瀏覽</translation>
 <translation id="8989968390305463310">您的瀏覽記錄會影響系統顯示的廣告，以及下列由系統推測的興趣。為保障您的私隱，Chrome 每個月都會自動刪除您的興趣。除非您移除興趣，否則系統會重新整理興趣。</translation>
 <translation id="8993760627012879038">在無痕模式中開啟新分頁</translation>

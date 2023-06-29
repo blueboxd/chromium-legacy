@@ -5,17 +5,18 @@
 
 import argparse
 import contextlib
+import fnmatch
 import functools
-import glob
 import json
 import logging
 import os
 import optparse
+import posixpath
 import re
 import signal
 import sys
 from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import FrozenSet, List, Optional, Tuple
 
 from blinkpy.common import exit_codes
 from blinkpy.common import path_finder
@@ -182,7 +183,7 @@ class WPTAdapter:
         self._set_up_runner_output_options(runner_options)
         self._set_up_runner_sharding_options(runner_options)
         self._set_up_runner_config_options(runner_options)
-        # self._set_up_runner_debugging_options()
+        self._set_up_runner_debugging_options(runner_options)
         self._set_up_runner_tests(runner_options)
 
         for name, value in self.product.product_specific_options().items():
@@ -310,14 +311,16 @@ class WPTAdapter:
         # browser at Wptrunner side.
         runner_options.rerun = self.options.repeat_each
 
-    # TODO: Wptrunner's pause_after_test feature could be useful. Need to figure out
-    # the correct CLI for that.
-    # def _set_up_runner_debugging_options(self):
-    #     self.port.set_option_default('use_xvfb', self.port.get_option('headless'))
-    #     if not options.headless and options.processes is None:
-    #         logger.info('Not headless; default to 1 worker to avoid '
-    #                     'opening too many windows')
-    #         options.processes = 1
+    def _set_up_runner_debugging_options(self, runner_options):
+        self.port.set_option_default('use_xvfb',
+                                     self.port.get_option('headless'))
+        if not self.options.headless:
+            logger.info('Not headless; default to 1 worker to avoid '
+                        'opening too many windows')
+            runner_options.headless = False
+            # Force `--pause-after-test`, since it doesn't make sense to run
+            # tests headfully without giving a chance for interaction.
+            runner_options.pause_after_test = True
 
     def _set_up_runner_tests(self, runner_options):
         if self.options.gtest_filter:
@@ -349,14 +352,24 @@ class WPTAdapter:
                     'Tests explicitly specified; '
                     'not running tests from %s', smoke_file_short_path)
 
+        # The `chromium_tests` recipe passes `--isolated-script-test-filter` to
+        # retry failed tests without the patch. Because the patch may have added
+        # the failed tests (common for imported tests),
+        #  1. `run_wpt_tests.py --isolated-script-test-filter` must tolerate
+        #     test IDs that don't exist.
+        #  2. When all tests retried don't exist without the patch, wptrunner
+        #     must run zero tests and exit successfully instead of interpreting
+        #     the lack of explicit tests as running all tests.
+        if self.options.zero_tests_executed_ok and (
+                _has_explicit_tests(runner_options)
+                or self.options.isolated_script_test_filter):
+            runner_options.default_exclude = True
+
         runner_options.exclude.extend([
             # Exclude webdriver tests for now. The CI runs them separately.
             'webdriver',
             'infrastructure/webdriver',
         ])
-
-        if self.options.zero_tests_executed_ok and runner_options.include:
-            runner_options.default_exclude = True
 
     def _load_smoke_tests(self):
         """Read the smoke tests file and append its tests to the test list.
@@ -495,7 +508,8 @@ class WPTAdapter:
             self.finder.strip_wpt_path(test_id) for test_id in value.split(':')
         ]
 
-    def _resolve_tests(self, test_filter: str) -> Tuple[List[str], List[str]]:
+    def _resolve_tests(self, all_tests: FrozenSet[str],
+                       test_filter: str) -> Tuple[List[str], List[str]]:
         """Resolve an isolated script-style filter string into lists of tests.
 
         Arguments:
@@ -512,21 +526,25 @@ class WPTAdapter:
             test_group = included_tests
             if pattern.startswith('-'):
                 test_group, pattern = excluded_tests, pattern[1:]
-            if self.finder.is_wpt_internal_path(pattern):
-                pattern_on_disk = self.finder.path_from_web_tests(pattern)
-            else:
-                pattern_on_disk = self.finder.path_from_wpt_tests(pattern)
-            test_group.extend(glob.glob(pattern_on_disk))
+            # '?' is a significant token to `fnmatch`. Escape them to treat them
+            # into literals.
+            pattern = self.finder.strip_wpt_path(pattern).replace('?', '[?]')
+            test_group.extend(test_id for test_id in all_tests
+                              if fnmatch.fnmatch(test_id, pattern))
 
         return included_tests, excluded_tests
 
     def _parse_isolated_script_test_filter(self, values):
         include, exclude = [], []
+        all_tests = set(self.port.wpt_manifest('external/wpt').all_urls())
+        for url in self.port.wpt_manifest('wpt_internal').all_urls():
+            all_tests.add(posixpath.join('wpt_internal', url))
         if isinstance(values, str):
             values = [values]
         if isinstance(values, list):
             for test_filter in values:
-                extra_include, extra_exclude = self._resolve_tests(test_filter)
+                extra_include, extra_exclude = self._resolve_tests(
+                    all_tests, test_filter)
                 include.extend(extra_include)
                 exclude.extend(extra_exclude)
         return include, exclude
@@ -605,6 +623,10 @@ def parse_arguments(argv):
     params = vars(parser.parse_args(argv))
     args = params.pop('tests')
     options = optparse.Values(params)
+    # Directly tie Xvfb usage to headless mode. Xvfb can supercede a real X
+    # server and therefore should never be started in `--no-headless` mode.
+    # Conversely, the default headless mode should always start Xvfb.
+    options.use_xvfb = options.headless
     return (options, args)
 
 

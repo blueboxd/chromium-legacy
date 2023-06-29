@@ -20,6 +20,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/time/time.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/drive/file_errors.h"
@@ -30,6 +31,7 @@ namespace {
 
 using ash::SpacedClient;
 using base::SequencedTaskRunner;
+using base::StringPiece;
 using base::TimeDelta;
 using base::UmaHistogramBoolean;
 using mojom::FileMetadata;
@@ -92,7 +94,7 @@ ostream& operator<<(ostream& out, Quoter<T> q) {
   // Does the string start with 'k'?
   if (!s.empty() && s.front() == 'k') {
     // Skip the 'k' prefix.
-    return out << base::StringPiece(s).substr(1);
+    return out << StringPiece(s).substr(1);
   }
 
   // No 'k' prefix. Print between parentheses.
@@ -100,22 +102,26 @@ ostream& operator<<(ostream& out, Quoter<T> q) {
 }
 
 ostream& operator<<(ostream& out, Quoter<TimeDelta> q) {
-  const int64_t ms = q.value->InMilliseconds();
-  if (ms < 1000) {
-    return out << ms << " ms";
+  if (q.value->is_inf()) {
+    return out << "🤔";
   }
 
-  const double seconds = ms / 1000.0;
+  const double ms = q.value->InMillisecondsF();
+  if (ms < 1000) {
+    return out << base::StringPrintf("%.0f ms", ms);
+  }
+
+  const double seconds = ms / 1000;
   if (seconds < 60) {
     return out << base::StringPrintf("%.1f seconds", seconds);
   }
 
-  const double minutes = seconds / 60.0;
+  const double minutes = seconds / 60;
   if (minutes < 60) {
     return out << base::StringPrintf("%.1f minutes", minutes);
   }
 
-  const double hours = minutes / 60.0;
+  const double hours = minutes / 60;
   return out << base::StringPrintf("%.1f hours", hours);
 }
 
@@ -226,7 +232,19 @@ int64_t GetSize(const FileMetadata& metadata) {
                                                       : metadata.size;
 }
 
+Path AppendAbsoluteToMountPath(const Path& mount_path, StringPiece path) {
+  DCHECK(!path.empty());
+  DCHECK_EQ(path.front(), '/');
+  path.remove_prefix(1);
+  return mount_path.Append(path);
+}
+
 }  // namespace
+
+void RecordBulkPinningEnabledSource(BulkPinningEnabledSource source) {
+  base::UmaHistogramEnumeration(
+      "FileBrowser.GoogleDrive.BulkPinning.Enabled.Source", source);
+}
 
 std::ostream& NiceNum(std::ostream& out) {
   out.imbue(NiceNumLocale());
@@ -424,6 +442,8 @@ bool PinManager::Add(const FileMetadata& md, const Path& path) {
     progress_.bytes_to_pin = 0;
     progress_.pinned_files = 0;
     progress_.pinned_bytes = 0;
+    progress_.remaining_time = TimeDelta();
+    speedometer_.SetTotalBytes(0);
   }
 
   const auto [it, ok] =
@@ -624,9 +644,6 @@ PinManager::~PinManager() {
   DCHECK(!InProgress(progress_.stage))
       << "Pin manager is " << Quote(progress_.stage);
 
-  for (Observer& observer : observers_) {
-    observer.OnDrop();
-  }
   observers_.Clear();
 }
 
@@ -765,6 +782,16 @@ void PinManager::BatterySaverModeStateChanged(
     VLOG(1) << "Restarting from battery saver";
     Start();
   }
+}
+
+bool PinManager::IsUntrackedPath(const Path& path) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  return base::ranges::any_of(
+      untracked_shortcut_paths_.cbegin(), untracked_shortcut_paths_.cend(),
+      [&path](const Path& untracked_path) {
+        return untracked_path == path || untracked_path.IsParent(path);
+      });
 }
 
 void PinManager::ListItems(const Id dir_id, Path dir_path) {
@@ -925,6 +952,14 @@ void PinManager::HandleQueryItem(Id dir_id,
       VLOG(1) << "Skipped shortcut " << id << " " << Quote(path) << " to "
               << Quote(md.type) << " "
               << Id(md.shortcut_details->target_stable_id);
+
+      absl::optional<Path> target_path = md.shortcut_details->target_path;
+      if (target_path.has_value() &&
+          !mount_path_.Append("root").IsParent(target_path.value())) {
+        // The shortcut's target directory resides outside of My drive.
+        untracked_shortcut_paths_.emplace(
+            AppendAbsoluteToMountPath(mount_path_, path.value()));
+      }
       return;
     }
 
@@ -1239,7 +1274,7 @@ void PinManager::OnFilePinned(const Id id,
 void PinManager::OnSyncingStatusUpdate(const mojom::SyncingStatus& status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (should_use_on_item_progress_) {
+  if (use_on_item_progress_) {
     return;
   }
 
@@ -1320,7 +1355,7 @@ bool PinManager::OnSyncingEvent(mojom::ItemEvent& event) {
 void PinManager::OnItemProgress(const mojom::ProgressEvent& event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!should_use_on_item_progress_) {
+  if (!use_on_item_progress_) {
     return;
   }
 
@@ -1341,7 +1376,7 @@ void PinManager::OnItemProgress(const mojom::ProgressEvent& event) {
     Update(id, relative_path, event.progress);
   } else if (event.progress == 100) {
     if (!Remove(id, relative_path)) {
-      LOG(ERROR) << "Failed removing finished event " << Quote(event);
+      // Item is not being tracked.
       return;
     }
     VLOG(2) << "Synced " << id << " " << Quote(relative_path);
@@ -1479,6 +1514,14 @@ void PinManager::OnError(const mojom::DriveError& error) {
 
 void PinManager::NotifyProgress() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (progress_.pinned_bytes > 0) {
+    speedometer_.SetTotalBytes(progress_.bytes_to_pin);
+    if (speedometer_.Update(progress_.pinned_bytes)) {
+      progress_.remaining_time = speedometer_.GetRemainingTime();
+    }
+  }
+
   for (Observer& observer : observers_) {
     observer.OnProgress(progress_);
   }

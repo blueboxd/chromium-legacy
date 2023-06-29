@@ -10,13 +10,14 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/run_loop.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
+#include "chrome/browser/ash/bruschetta/bruschetta_download.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_download_client.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_installer.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_pref_names.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_service.h"
-#include "chrome/browser/ash/bruschetta/bruschetta_service_factory.h"
 #include "chrome/browser/ash/guest_os/dbus_test_helper.h"
 #include "chrome/browser/download/background_download_service_factory.h"
 #include "chrome/browser/profiles/profile_key.h"
@@ -69,6 +70,21 @@ class MockObserver : public BruschettaInstaller::Observer {
               (BruschettaInstaller::State state),
               (override));
   MOCK_METHOD(void, Error, (BruschettaInstallResult), (override));
+};
+
+class StubDownload : public BruschettaDownload {
+ public:
+  StubDownload(base::FilePath path, std::string hash)
+      : path_(std::move(path)), hash_(std::move(hash)) {}
+  ~StubDownload() override = default;
+  void StartDownload(
+      Profile* profile,
+      GURL url,
+      base::OnceCallback<void(base::FilePath, std::string)> callback) override {
+    std::move(callback).Run(path_, hash_);
+  }
+  base::FilePath path_;
+  std::string hash_;
 };
 
 class BruschettaInstallerTest : public testing::TestWithParam<int>,
@@ -128,13 +144,23 @@ class BruschettaInstallerTest : public testing::TestWithParam<int>,
 
     ash::disks::DiskMountManager::InitializeForTesting(&*disk_mount_manager_);
 
-    BruschettaServiceFactory::EnableForTesting(&profile_);
-
     installer_ = std::make_unique<BruschettaInstallerImpl>(
         &profile_, base::BindOnce(&BruschettaInstallerTest::CloseCallback,
                                   base::Unretained(this)));
 
     installer_->AddObserver(&observer_);
+    ConfigureDownloadFactory(base::FilePath(), "");
+  }
+
+  // Configures the Bruschetta installer to use a fake downloader which
+  // immediately completes returning |path| and |hash|.
+  void ConfigureDownloadFactory(base::FilePath path, std::string hash) {
+    installer_->SetDownloadFactoryForTesting(base::BindLambdaForTesting(
+        [path = std::move(path), hash = std::move(hash)]() {
+          std::unique_ptr<BruschettaDownload> d =
+              std::make_unique<StubDownload>(std::move(path), std::move(hash));
+          return d;
+        }));
   }
 
   void TearDown() override {
@@ -177,16 +203,14 @@ class BruschettaInstallerTest : public testing::TestWithParam<int>,
   }
 
   auto DownloadErrorCallback(bool fail_at_start) {
-    return [this, fail_at_start]() {
-      download_service_->SetFailedDownload(
-          installer_->GetDownloadGuid().AsLowercaseString(), fail_at_start);
-    };
+    return [this]() { ConfigureDownloadFactory(base::FilePath(), ""); };
   }
 
   auto DownloadBadHashCallback() {
     return [this]() {
-      download_service_->SetHash256(kBadHash);
-      download_service_->SetFailedDownload("", false);
+      base::FilePath path;
+      base::CreateTemporaryFile(&path);
+      ConfigureDownloadFactory(path, kBadHash);
     };
   }
 
@@ -194,9 +218,7 @@ class BruschettaInstallerTest : public testing::TestWithParam<int>,
     return [this]() {
       base::FilePath path;
       base::CreateTemporaryFile(&path);
-      download_service_->SetHash256(kVmConfigHash);
-      download_service_->SetFilePath(path);
-      download_service_->SetFailedDownload("", false);
+      ConfigureDownloadFactory(path, kVmConfigHash);
     };
   }
 
@@ -554,7 +576,7 @@ class BruschettaInstallerTest : public testing::TestWithParam<int>,
       prefs_not_installable_;
 
   TestingProfile profile_;
-  std::unique_ptr<BruschettaInstaller> installer_;
+  std::unique_ptr<BruschettaInstallerImpl> installer_;
 
   MockObserver observer_;
   // Pointer owned by DiskMountManager

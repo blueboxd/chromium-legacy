@@ -132,6 +132,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Browser.ERP.AppInstallTrackerDiskConsumption" units="bytes"
+    expires_after="2023-11-08">
+  <owner>vshenvi@google.com</owner>
+  <owner>cros-reporting-team@google.com</owner>
+  <summary>
+    Recorded when the AppEventsObserver::AppInstallTracker starts tracking new
+    app installs or uninstalls. This represents the total disk space consumed by
+    the component in the user pref store before encryption.
+  </summary>
+</histogram>
+
 <histogram name="Browser.ERP.EventEnqueueResult"
     enum="EnterpriseCloudReportingStatusCode" expires_after="2023-11-17">
   <owner>lbaraz@chromium.org</owner>
@@ -182,15 +193,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Browser.ERP.RecordsPerUpload" units="records"
-    expires_after="2024-01-31">
+<histogram name="Browser.ERP.RecordsPerUploadFrom{ManagementStatus}Device"
+    units="records" expires_after="2024-01-31">
   <owner>jrhilke@chromium.org</owner>
   <owner>lbaraz@chromium.org</owner>
   <owner>cros-reporting-team@google.com</owner>
   <summary>
     Recorded when uploading records to the reporting server. Counts the number
-    of records batched into a single upload request.
+    of records batched into a single upload request from a {ManagementStatus}
+    device. Uploads containing zero records will not be included as those are
+    just encryption key requests.
   </summary>
+  <token key="ManagementStatus">
+    <variant name="Managed" summary="managed"/>
+    <variant name="Unmanaged" summary="unmanaged"/>
+  </token>
 </histogram>
 
 <histogram name="Browser.ERP.ResponsePayloadSize" units="bytes"
@@ -242,14 +259,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Browser.ERP.UploadEncryptedReport"
+<histogram name="Browser.ERP.{ManagementStatus}UploadEncryptedReport"
     enum="EnterpriseDMServerRequestSuccess" expires_after="2024-03-01">
-  <owner>anasr@google.com</owner>
-  <owner>cros-reporting-team@google.com</owner>
+  <owner>jrhilke@google.com</owner>
+  <owner>src/components/reporting/OWNERS</owner>
   <summary>
-    Status of a completed ERP upload request, either successful, with a failure
-    or with a server error.
+    Status of a completed ERP upload request from a {ManagementStatus}. Either
+    successful, with a failure or with a server error. Recorded when a response
+    from the server is received.
   </summary>
+  <token key="ManagementStatus">
+    <variant name="Managed" summary="managed"/>
+    <variant name="Unmanaged" summary="unmanaged"/>
+  </token>
 </histogram>
 
 <histogram name="Browser.ERP.{Param}PayloadSizePerHour" units="KiB"
@@ -986,7 +1008,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.AlternativeBrowser" enum="BrowserType"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -998,7 +1020,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.CacheFile.MkDirSuccess" enum="BooleanSuccess"
-    expires_after="2023-10-16">
+    expires_after="2023-12-17">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -1008,7 +1030,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.CacheFile.MkTempSuccess" enum="BooleanSuccess"
-    expires_after="2023-10-16">
+    expires_after="2023-12-17">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -1019,7 +1041,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.CacheFile.MoveSuccess" enum="BooleanSuccess"
-    expires_after="2023-10-16">
+    expires_after="2023-12-17">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -1206,6 +1228,13 @@ chromium-metrics-reviews@google.com.
     be hidden, but recorded here as visible. Reliably triggering and detecting
     this combination is tricky so it isn't done. Only recorded on Android.
   </summary>
+</histogram>
+
+<histogram name="SidePanel.ComboboxMenuShown" enum="Boolean"
+    expires_after="2023-10-08">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <summary>Records true when the side panel combobox is opened.</summary>
 </histogram>
 
 <histogram name="SidePanel.OpenDuration" units="ms" expires_after="2023-12-10">

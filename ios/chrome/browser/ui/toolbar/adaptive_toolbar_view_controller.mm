@@ -59,7 +59,10 @@ const CGFloat kFullscreenProgressFullyExpanded = 1.0;
 @property(nonatomic, assign) CGFloat previousFullscreenProgress;
 @end
 
-@implementation AdaptiveToolbarViewController
+@implementation AdaptiveToolbarViewController {
+  // The page's theme color.
+  UIColor* _themeColor;
+}
 
 @dynamic view;
 @synthesize buttonFactory = _buttonFactory;
@@ -208,11 +211,15 @@ const CGFloat kFullscreenProgressFullyExpanded = 1.0;
     [locationBarViewController didMoveToParentViewController:self];
     [self.view setLocationBarView:locationBarViewController.view];
     self.view.locationBarContainer.hidden = NO;
+    // Update the constraint of the location bar view to make sure the text is
+    // centered.
+    [locationBarViewController.view updateConstraintsIfNeeded];
   } else {
     CHECK(IsBottomOmniboxSteadyStateEnabled());
     [self.view setLocationBarView:nil];
     self.view.locationBarContainer.hidden = YES;
   }
+  [self updateProgressBarVisibility];
 }
 
 #pragma mark - ToolbarConsumer
@@ -303,6 +310,11 @@ const CGFloat kFullscreenProgressFullyExpanded = 1.0;
   _isNTP = isNTP;
 }
 
+- (void)setPageThemeColor:(UIColor*)themeColor {
+  _themeColor = themeColor;
+  [self updateForFullscreenProgress:self.previousFullscreenProgress];
+}
+
 #pragma mark - NewTabPageControllerDelegate
 
 - (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {
@@ -318,8 +330,9 @@ const CGFloat kFullscreenProgressFullyExpanded = 1.0;
 
   [self updateLocationBarHeightForFullscreenProgress:progress];
   self.view.locationBarContainer.backgroundColor =
-      [self.buttonFactory.toolbarConfiguration
-          locationBarBackgroundColorWithVisibility:alphaValue];
+      _themeColor ? _themeColor
+                  : [self.buttonFactory.toolbarConfiguration
+                        locationBarBackgroundColorWithVisibility:alphaValue];
 
   self.view.collapsedToolbarButton.hidden = progress > 0.05;
 }
@@ -350,6 +363,10 @@ const CGFloat kFullscreenProgressFullyExpanded = 1.0;
                           completion:^(BOOL finished) {
                             [weakSelf updateProgressBarVisibility];
                           }];
+}
+
+- (BOOL)hasOmnibox {
+  return self.locationBarViewController != nil;
 }
 
 #pragma mark - PopupMenuUIUpdating
@@ -388,6 +405,13 @@ const CGFloat kFullscreenProgressFullyExpanded = 1.0;
 // is expected.
 - (void)updateProgressBarVisibility {
   __weak __typeof(self) weakSelf = self;
+
+  BOOL hasOmnibox = self.locationBarViewController != nil;
+  if (!hasOmnibox) {
+    self.view.progressBar.hidden = YES;
+    return;
+  }
+
   if (self.loading && self.view.progressBar.hidden) {
     [self.view.progressBar setHidden:NO
                             animated:YES

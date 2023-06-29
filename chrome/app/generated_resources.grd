@@ -2817,7 +2817,7 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_OPEN_UPDATED"
                desc="Label for the button prompting to bypass Deep Scanning">
-        Open anyway
+        Download anyway
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_OPEN_NOW"
                desc="Label for the button prompting to open a download while deep scanning is in progress">
@@ -2959,15 +2959,11 @@ are declared in tools/grit/grit_rule.gni.
                desc="Subpage summary of warning for a file where we recommend sending the file for deep scanning.">
         This file might be a virus or malware.
 
-You can send it to Google to check if it's unsafe. Scans usually take a few seconds.
-      </message>
-      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_DEEP_SCANNING_LINK_WRAPPER"
-        desc="Additional text describing the process of deep scanning a download">
-        Analysis done by <ph name="LINK">$1<ex>Google Safe Browsing</ex></ph>
+You can send it to Google Safe Browsing to check if it's unsafe. Scans usually take a few seconds.
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_DEEP_SCANNING_LINK"
-        desc="Text of link within IDS_DOWNLOAD_BUBBLE_SUBPAGE_DEEP_SCANNING_LINK_WRAPPER">
-        Google Safe Browsing
+        desc="Additional text describing the process of deep scanning a download">
+        Learn more about malware scans
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING"
         desc="Subpage summary when download deep scanning is in progress">
@@ -2976,6 +2972,10 @@ You can send it to Google to check if it's unsafe. Scans usually take a few seco
       <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_SECONDARY"
         desc="Subpage secondary text when download deep scanning is in progress">
         Scanning for malware...
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_ENTERPRISE_SECONDARY"
+        desc="Subpage secondary text when download deep scanning is in progress">
+        Checking with your organization's security policies...
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_DISCARD"
         desc="Subpage button to discard a file when download deep scanning is in progress">
@@ -3651,7 +3651,7 @@ You can send it to Google to check if it's unsafe. Scans usually take a few seco
       </message>
       <!-- TODO(crbug.com/1433644): Add final string. -->
       <message name="IDS_STORAGE_ACCESS_PERMISSION_BUBBLE_MESSAGE" desc="Text displayed in the omnibox bubble for the StorageAccess permission." translateable="false">
-        These embedded sites can use info they’ve saved about you as you browse <ph name="HOST">$1<ex>example.com</ex></ph>.
+        These sites can use info they’ve saved about you as you browse <ph name="HOST">$1<ex>example.com</ex></ph>.
       </message>
 
 
@@ -3691,6 +3691,14 @@ You can send it to Google to check if it's unsafe. Scans usually take a few seco
       </message>
       <message name="IDS_COOKIE_CONTROLS_HELP" desc="Tooltip shown in the dialog that is shown when cookie blocking is enabled.">
         Cookies are files created by websites. There are two types of cookies: First-party cookies are created by the site you visit. The site is shown on the address bar. Third-party cookies are created by other sites. These sites own some of the content, like ads or images, that you see on the website you visit.
+      </message>
+
+      <!-- User Bypass Bubble -->
+      <message name="IDS_COOKIE_CONTROLS_BUBBLE_COOKIES_BLOCKED_TITLE" translateable="false"  desc="">
+        Third-party cookies blocked
+      </message>
+      <message name="IDS_COOKIE_CONTROLS_BUBBLE_COOKIES_ALLOWED_TITLE" translateable="false"  desc="">
+        Third-party cookies allowed
       </message>
 
       <!-- Win certificate selector dialog strings.  -->
@@ -5383,6 +5391,9 @@ You can send it to Google to check if it's unsafe. Scans usually take a few seco
         <message name="IDS_EXTENSIONS_REQUEST_ACCESS_BUTTON" desc="The text of the request acces button that appears on the toolbar when an extension requests access to the site">
           Allow <ph name="EXTENSIONS_REQUESTING_ACCESS_COUNT">$1<ex>3</ex></ph>?
         </message>
+        <message name="IDS_EXTENSIONS_REQUEST_ACCESS_BUTTON_DISMISSED_TEXT" desc="The text of the button that appears on the toolbar after the user grants access to an extension that requested access to the current site.">
+          Allowed
+        </message>
         <message name="IDS_EXTENSIONS_REQUEST_ACCESS_BUTTON_TOOLTIP_SINGLE_EXTENSION" desc="The tooltip text of the request access button that appears on the toolbar when an extension requests access to the site">
           Click to allow "<ph name="EXTENSIONS_REQUESTING_ACCESS">$1<ex>Extension A</ex></ph>" on <ph name="ORIGIN">$2<ex>google.com</ex></ph>
         </message>
@@ -5590,6 +5601,10 @@ You can send it to Google to check if it's unsafe. Scans usually take a few seco
       </message>
       <message name="IDS_EXTENSION_COMMANDS_GENERIC_ACTIVATE" desc="The generic 'activate extension' text used as description for some commands.">
         Activate the extension
+      </message>
+
+      <message name="IDS_EXTENSIONS_SUPERVISED_USER_PARENTAL_PERMISSION_FAILURE" desc="The error information displayed in extra details if the parent permission request flow fails unexpectedly when a supervised user attempts to install or enable an extension. Note that this does not include the case where a parent fails to enter their password.">
+        Parent permission request failed.
       </message>
 
       <message name="IDS_EXTENSION_PACK_DIALOG_HEADING" desc="The heading of the pack extension dialog.">
@@ -6381,10 +6396,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PASSWORD_MANAGER_CONFIRM_SAVED_TITLE" desc="The title text used in the passwords bubble after the user has saved a password.">
         Password saved
-      </message>
-      <!-- TODO(crbug.com/1345766): Add final string and make it translateable. -->
-      <message name="IDS_PASSWORD_WEAKNESS_INDICATOR" translateable="false" desc="Autofill dropdown text describing password strength.">
-        Weak password entered
       </message>
 
       <if expr="not use_titlecase">
@@ -7242,6 +7253,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_CUSTOMIZE_DEFAULT_LABEL" desc="The label for the Default theme in the customization menu on the New Tab Page">
         Default color
       </message>
+      <message name="IDS_NTP_CUSTOMIZE_GREY_DEFAULT_LABEL" desc="The label for the Grey version of the Default theme in the customization menu on the New Tab Page">
+        Grey default color
+      </message>
       <message name="IDS_NTP_CUSTOMIZE_MAIN_COLOR_LABEL" desc="The label for the main color theme in the customization menu on the New Tab Page">
         Color based on theme
       </message>
@@ -7310,6 +7324,36 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_NTP_COLORS_DARK_PURPLE" desc="A color option in the customization menu on the New Tab Page.">
         Dark purple
+      </message>
+      <message name="IDS_NTP_COLORS_BLUE" desc="A color option in the customization menu on the New Tab Page.">
+        Blue
+      </message>
+      <message name="IDS_NTP_COLORS_GREY" desc="A color option in the customization menu on the New Tab Page.">
+        Grey
+      </message>
+      <message name="IDS_NTP_COLORS_AQUA" desc="A color option in the customization menu on the New Tab Page.">
+        Aqua
+      </message>
+      <message name="IDS_NTP_COLORS_GREEN" desc="A color option in the customization menu on the New Tab Page.">
+        Green
+      </message>
+      <message name="IDS_NTP_COLORS_VIRIDIAN" desc="A color option in the customization menu on the New Tab Page.">
+        Viridian
+      </message>
+      <message name="IDS_NTP_COLORS_CITRON" desc="A color option in the customization menu on the New Tab Page.">
+        Citron
+      </message>
+      <message name="IDS_NTP_COLORS_APRICOT" desc="A color option in the customization menu on the New Tab Page.">
+        Apricot
+      </message>
+      <message name="IDS_NTP_COLORS_ROSE" desc="A color option in the customization menu on the New Tab Page.">
+        Rose
+      </message>
+      <message name="IDS_NTP_COLORS_FUCHSIA" desc="A color option in the customization menu on the New Tab Page.">
+        Fuchsia
+      </message>
+      <message name="IDS_NTP_COLORS_VIOLET" desc="A color option in the customization menu on the New Tab Page.">
+        Violet
       </message>
       <message name="IDS_NTP_UNDO_DISMISS_PROMO_BUTTON_TOAST" desc="Undo toast for dismissing middle slot promo on New Tab Page.">
         You won't see this specific message again
@@ -7453,9 +7497,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_NTP_MODULES_DUMMY_TITLE" translateable="false" desc="Title shown in the header of the dummy module and various other UIs.">
         Super Duper Module
-      </message>
-      <message name="IDS_NTP_MODULES_DUMMY2_TITLE" translateable="false" desc="Title shown in the header of the dummy 2 module and various other UIs.">
-        Even Better Module
       </message>
       <message name="IDS_NTP_MODULES_DRIVE_TITLE" desc="Title shown in the header of the drive module and various other UIs.">
         From your Google Drive
@@ -7821,6 +7862,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_SIDE_PANEL_COMPANION_PROMO" desc="Text shown on promotional UI appearing next to the pinned companion button, which excourages users to try the feature.">
         Get additional useful info as you explore this page
+      </message>
+      <message name="IDS_SIDE_PANEL_COMPANION_ERROR_PAGE_FIRST_LINE" desc="Text shown on the side panel for the companion feature when there is a network or other navigation error. The texts informs the user the panel can not be loaded.">
+        Can't load this panel right now
+      </message>
+      <message name="IDS_SIDE_PANEL_COMPANION_ERROR_PAGE_SECOND_LINE" desc="Text shown on the side panel for the companion feature when there is a network or other navigation error. The text suggests trying again later.">
+        Please try again later
       </message>
       <message name="IDS_SIDE_PANEL_CUSTOMIZE_CHROME_TITLE" desc="The name of the Customize Chrome feature in the side panel combo box.">
         Customize Chrome
@@ -8556,6 +8603,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CHROME_TIP" desc="Accessible name used by a screen reader for the in-product-help or tutorial bubble icon." is_accessibility_with_no_ui="true">
         Chrome tip
       </message>
+      <message name="IDS_EXTENSIONS_MENU_IPH_ENTRY_POINT_TITLE" desc="">
+        See what extensions can read or change a site
+      </message>
+      <message name="IDS_EXTENSIONS_MENU_IPH_ENTRY_POINT_BODY" desc="">
+        From here, you can see and manage extension permissions for the site you're on
+      </message>
+      <message name="IDS_EXTENSIONS_REQUEST_ACCESS_BUTTON_IPH_ENTRY_POINT_TITLE" desc="Title text shown on promotional UI appearing when the request access button in the toolbar is visible.">
+        {NUM_EXTENSIONS, plural,
+          =1 {Choose if this extension can read or change this site}
+          other {Choose if these extensions can read or change this site}}
+      </message>
+      <message name="IDS_EXTENSIONS_REQUEST_ACCESS_BUTTON_IPH_ENTRY_POINT_BODY" desc="Body text shown on promotional UI appearing when the request access button in the toolbar is visible.">
+        {NUM_EXTENSIONS, plural,
+          =1 {To manage it, open Extensions}
+          other {To manage them, open Extensions}}
+      </message>
       <message name="IDS_GLOBAL_MEDIA_CONTROLS_PROMO" desc="Text shown on promotional UI appearing next to the global media controls toolbar button.">
         New! Control your music, videos, and more.
       </message>
@@ -8737,6 +8800,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Password Manager Tutorial Strings -->
+      <message name="IDS_TUTORIAL_PASSWORD_MANAGER_OPEN_MENU" desc="The description of the 'open menu' step in password manager tutorial">
+        Open the menu
+      </message>
       <message name="IDS_TUTORIAL_PASSWORD_MANAGER_SELECT_SETTINGS" desc="The description of the 'select settings' step in password manager tutorial">
         Click “Settings”
       </message>
@@ -9271,6 +9337,14 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         (Chrome error pages)
       </message>
 
+      <!-- TODO(crbug.com/1433644): Add final string. -->
+      <message name="IDS_STORAGE_ACCESS_MANAGE_TEXT" translateable="false" desc="The text on the button to manage the StorageAcccess permission. The StorageAccess API is called 'Embedded content' in user visible UIs">
+        Embedded content settings
+      </message>
+      <message name="IDS_STORAGE_ACCESS_MANAGE_TOOLTIP"  translateable="false" desc="The tooltip on the button to manage the StorageAcccess permission. The StorageAccess API is called 'Embedded content' in user visible UIs">
+        Go to embedded content settings
+      </message>
+
       <!-- Automatic updates -->
       <if expr="is_macosx">
         <message name="IDS_PROMOTE_INFOBAR_TEXT" desc="The text to show in the automatic update setup infobar.  Mac-only.">
@@ -9780,6 +9854,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         <message name="IDS_TAB_GROUP_HEADER_CXMENU_SAVE_GROUP" desc="The label of the tab group header context menu item for saving the current group.">
           Save group
         </message>
+        <message name="IDS_TAB_GROUP_HEADER_CXMENU_UNSAVE_GROUP" desc="The label of the tab group header context menu item for unsaving the current group.">
+          Unsave group
+        </message>
         <message name="IDS_TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP" desc="The label of the tab group header context menu item for adding a new tab into the current group.">
           New tab in group
         </message>
@@ -9808,6 +9885,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
       <if expr="use_titlecase">
         <message name="IDS_TAB_GROUP_HEADER_CXMENU_SAVE_GROUP" desc="In Title Case: The label of the tab group header context menu item for saving the current group.">
           Save Group
+        </message>
+        <message name="IDS_TAB_GROUP_HEADER_CXMENU_UNSAVE_GROUP" desc="The label of the tab group header context menu item for unsaving the current group.">
+          Unsave Group
         </message>
         <message name="IDS_TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP" desc="In Title Case: The label of the tab group header context menu item for adding a new tab into the current group.">
           New Tab in Group
@@ -13018,6 +13098,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_APP_LIST_CROSTINI_DEFAULT_FOLDER_NAME" desc="The default name for the Linux (Crostini) apps folder in the App Launcher">
           Linux apps
         </message>
+        <message name="IDS_APP_LIST_BRUSCHETTA_DEFAULT_FOLDER_NAME" desc="The default name for the Bruschetta apps folder in the App Launcher">
+          Bruschetta apps
+        </message>
       </if>
 
       <!-- Translated apps strings -->
@@ -13061,6 +13144,18 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_SCREEN_WITH_MUTE_WARNING" desc="Text for the checkbox on the window picker dialog which is displayed when attempting to share a screen, if local audio playback will be suppressed while capturing audio. In that case, when checked, system audio will be shared, and the local audio playback suppressed; otherwise only video will be shared, and local audio playback will not be suppressed.">
         Also share system audio. This device will be muted to prevent feedback.
+      </message>
+      <message name="IDS_DESKTOP_MEDIA_PICKER_ALSO_SHARE_SYSTEM_AUDIO" desc="Text for the audio toggle in the window picker dialog which is displayed when attempting to share a screen.">
+        Also share system audio
+      </message>
+      <message name="IDS_DESKTOP_MEDIA_PICKER_ALSO_SHARE_TAB_AUDIO" desc="Text for the audio toggle in the window picker dialog which is displayed when attempting to share a tab.">
+        Also share tab audio
+      </message>
+      <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_HINT_TAB" desc="Text for the audio-sharing label in the window picker dialog, which is displayed when attempting to share a window or the screen, and audio is only supported for tabs.">
+        To share audio, share a tab instead
+      </message>
+      <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_HINT_TAB_OR_SCREEN" desc="Text for the audio-sharing label in the window picker dialog, which is displayed when attempting to share a window, and audio is only supported for tabs and screens.">
+        To share audio, share a tab or screen instead
       </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_SCREEN" desc="Text for the button on the window picker dialog, clicking which takes one to full screen sharing" meaning="Refers to the device's entire screen. Short for 'share the entire screen'.">
         Entire Screen
@@ -13284,7 +13379,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <ph name="WINDOW_TITLE">$1<ex>Google Hangouts</ex></ph> - Inactive tab
       </message>
       <message name="IDS_TAB_AX_MEMORY_SAVINGS" desc="Accessibility label text of how much memory was saved by the inactive tab'">
-        <ph name="WINDOW_TITLE">$1<ex>Google Hangouts</ex></ph> - Saved <ph name="MEMORY_VALUE">$2<ex>175MB</ex></ph>
+        <ph name="WINDOW_TITLE">$1<ex>Google Hangouts</ex></ph> - <ph name="MEMORY_VALUE">$2<ex>175MB</ex></ph> freed up
       </message>
       <message name="IDS_TAB_AX_MEMORY_USAGE" desc="Accessibility label text of how much memory is used by the tab'">
         <ph name="WINDOW_TITLE">$1<ex>Google Hangouts</ex></ph> - Memory usage - <ph name="MEMORY_VALUE">$2<ex>175MB</ex></ph>

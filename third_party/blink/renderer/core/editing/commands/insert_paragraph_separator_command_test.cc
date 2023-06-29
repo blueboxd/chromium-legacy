@@ -116,7 +116,8 @@ TEST_F(InsertParagraphSeparatorCommandTest, CrashWithObjectWithFloat) {
       SetSelectionOptions());
   base::RunLoop().RunUntilIdle();  // prepare <object> fallback content
 
-  Element& object_element = *GetDocument().QuerySelector("object");
+  Element& object_element =
+      *GetDocument().QuerySelector(AtomicString("object"));
   object_element.appendChild(Text::Create(GetDocument(), "XYZ"));
 
   auto* command =
@@ -127,6 +128,27 @@ TEST_F(InsertParagraphSeparatorCommandTest, CrashWithObjectWithFloat) {
       "<object><b><br></b></object>"
       "<object><b>|ABC</b>XYZ</object>",
       GetSelectionTextFromBody());
+}
+
+// crbug.com/1420675
+TEST_F(InsertParagraphSeparatorCommandTest, PhrasingContent) {
+  const char* html = R"HTML("
+    <span contenteditable>
+      <div>
+        <span>a|</span>
+      </div>
+    </span>)HTML";
+  const char* expected_html = R"HTML("
+    <span contenteditable>
+      <div>
+        <span>a<br>|<br></span>
+      </div>
+    </span>)HTML";
+  Selection().SetSelection(SetSelectionTextToBody(html), SetSelectionOptions());
+  auto* command =
+      MakeGarbageCollected<InsertParagraphSeparatorCommand>(GetDocument());
+  EXPECT_TRUE(command->Apply());
+  EXPECT_EQ(expected_html, GetSelectionTextFromBody());
 }
 
 }  // namespace blink

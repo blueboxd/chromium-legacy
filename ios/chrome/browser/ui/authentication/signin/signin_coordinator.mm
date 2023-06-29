@@ -125,21 +125,39 @@ using signin_metrics::PromoAction;
                          browser:browser
                      accessPoint:accessPoint
                      promoAction:PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO
-                    signinIntent:AddAccountSigninIntentAddSecondaryAccount];
+                    signinIntent:AddAccountSigninIntent::kAddAccount];
 }
 
 + (instancetype)
-    reAuthenticationCoordinatorWithBaseViewController:
+    primaryAccountReauthCoordinatorWithBaseViewController:
         (UIViewController*)viewController
-                                              browser:(Browser*)browser
-                                          accessPoint:(AccessPoint)accessPoint
-                                          promoAction:(PromoAction)promoAction {
+                                                  browser:(Browser*)browser
+                                              accessPoint:
+                                                  (AccessPoint)accessPoint
+                                              promoAction:
+                                                  (PromoAction)promoAction {
   return [[AddAccountSigninCoordinator alloc]
       initWithBaseViewController:viewController
                          browser:browser
                      accessPoint:accessPoint
                      promoAction:promoAction
-                    signinIntent:AddAccountSigninIntentReauthPrimaryAccount];
+                    signinIntent:AddAccountSigninIntent::kPrimaryAccountReauth];
+}
+
++ (instancetype)
+    signinAndSyncReauthCoordinatorWithBaseViewController:
+        (UIViewController*)viewController
+                                                 browser:(Browser*)browser
+                                             accessPoint:
+                                                 (AccessPoint)accessPoint
+                                             promoAction:
+                                                 (PromoAction)promoAction {
+  return [[AddAccountSigninCoordinator alloc]
+      initWithBaseViewController:viewController
+                         browser:browser
+                     accessPoint:accessPoint
+                     promoAction:promoAction
+                    signinIntent:AddAccountSigninIntent::kSigninAndSyncReauth];
 }
 
 + (instancetype)
@@ -263,7 +281,7 @@ using signin_metrics::PromoAction;
             (SigninCoordinatorResult)signinResult
                                completionInfo:
                                    (SigninCompletionInfo*)completionInfo {
-  // `identity` is set, only and only if the sign-in is successful.
+  // `identity` is set, if and only if the sign-in is successful.
   DCHECK(((signinResult == SigninCoordinatorResultSuccess) &&
           completionInfo.identity) ||
          ((signinResult != SigninCoordinatorResultSuccess) &&

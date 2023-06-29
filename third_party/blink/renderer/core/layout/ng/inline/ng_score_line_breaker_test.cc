@@ -69,7 +69,7 @@ class NGScoreLineBreakerTest : public RenderingTest {
     Vector<float> scores;
     optimizer.SetScoresOutForTesting(&scores);
     NGLeadingFloats empty_leading_floats;
-    NGScoreLineBreakContext context;
+    NGScoreLineBreakContextOf<kMaxLinesForOptimal> context;
     optimizer.OptimalBreakPoints(empty_leading_floats, context);
     return scores;
   }
@@ -99,7 +99,7 @@ TEST_F(NGScoreLineBreakerTest, LastLines) {
   const LayoutUnit width = FragmentWidth(node);
   NGConstraintSpace space = ConstraintSpaceForAvailableSize(width);
   NGLineWidths line_widths(width);
-  NGScoreLineBreakContext context;
+  NGScoreLineBreakContextOf<kMaxLinesForOptimal> context;
   NGLineInfoList& line_info_list = context.LineInfoList();
   const NGInlineBreakToken* break_token = nullptr;
   NGExclusionSpace exclusion_space;
@@ -107,10 +107,10 @@ TEST_F(NGScoreLineBreakerTest, LastLines) {
                                &exclusion_space);
 
   // Run the optimizer from the beginning of the `target`. This should cache
-  // `NGLineInfoList::kCapacity` lines.
+  // `optimizer.MaxLines()` lines.
   NGLeadingFloats empty_leading_floats;
   optimizer.OptimalBreakPoints(empty_leading_floats, context);
-  EXPECT_EQ(line_info_list.Size(), NGLineInfoList::kCapacity);
+  EXPECT_EQ(line_info_list.Size(), optimizer.MaxLines());
   TestLinesAreContiguous(line_info_list);
 
   // Then continue until `NGScoreLineBreaker` consumes all lines in the block.
@@ -120,17 +120,17 @@ TEST_F(NGScoreLineBreakerTest, LastLines) {
     bool is_cached = false;
     const NGLineInfo& line_info0 = line_info_list.Get(break_token, is_cached);
     EXPECT_TRUE(is_cached);
-    EXPECT_EQ(line_info_list.Size(), NGLineInfoList::kCapacity - 1);
+    EXPECT_EQ(line_info_list.Size(), optimizer.MaxLines() - 1);
     break_token = line_info0.BreakToken();
     // Running again should cache one more line.
     optimizer.OptimalBreakPoints(empty_leading_floats, context);
-    EXPECT_EQ(line_info_list.Size(), NGLineInfoList::kCapacity);
+    EXPECT_EQ(line_info_list.Size(), optimizer.MaxLines());
     TestLinesAreContiguous(line_info_list);
   }
   // All is done. The `BreakToken` should be null, and there should be 6 lines.
   EXPECT_FALSE(line_info_list.Back().BreakToken());
   constexpr wtf_size_t target_num_lines = 6;
-  EXPECT_EQ(count, target_num_lines - NGLineInfoList::kCapacity);
+  EXPECT_EQ(count, target_num_lines - optimizer.MaxLines());
 }
 
 TEST_F(NGScoreLineBreakerTest, BalanceMaxLinesExceeded) {
@@ -197,7 +197,7 @@ TEST_P(BlockInInlineTest, BeforeAfter) {
   const LayoutUnit width = FragmentWidth(node);
   NGConstraintSpace space = ConstraintSpaceForAvailableSize(width);
   NGLineWidths line_widths(width);
-  NGScoreLineBreakContext context;
+  NGScoreLineBreakContextOf<kMaxLinesForOptimal> context;
   NGLineInfoList& line_info_list = context.LineInfoList();
   NGLineBreakPoints& break_points = context.LineBreakPoints();
   NGExclusionSpace exclusion_space;
@@ -255,7 +255,7 @@ TEST_F(NGScoreLineBreakerTest, ForcedBreak) {
   const LayoutUnit width = FragmentWidth(node);
   NGConstraintSpace space = ConstraintSpaceForAvailableSize(width);
   NGLineWidths line_widths(width);
-  NGScoreLineBreakContext context;
+  NGScoreLineBreakContextOf<kMaxLinesForOptimal> context;
   NGLineInfoList& line_info_list = context.LineInfoList();
   NGLineBreakPoints& break_points = context.LineBreakPoints();
   const NGInlineBreakToken* break_token = nullptr;
@@ -346,7 +346,7 @@ struct DisabledByLineBreakerData {
     )HTML"},
     // `break-sapces` is not supported.
     {true, R"HTML(
-      <div id="target" style="white-space: break-spaces">0123 5678 1234 6789 23 567 90 45</div>
+      <div id="target" style="white-space: break-spaces; text-wrap: pretty">0123 5678 1234 6789 23 567 90 45</div>
     )HTML"},
     // `box-decoration-break: clone` is not supported.
     {true, R"HTML(
@@ -367,6 +367,7 @@ INSTANTIATE_TEST_SUITE_P(NGScoreLineBreakerTest,
                          testing::ValuesIn(disabled_by_line_breaker_data));
 
 TEST_P(DisabledByLineBreakerTest, Data) {
+  ScopedCSSTextWrapPrettyForTest enable(true);
   const auto& data = GetParam();
   LoadAhem();
   SetBodyInnerHTML(String(R"HTML(
@@ -376,14 +377,20 @@ TEST_P(DisabledByLineBreakerTest, Data) {
       font-family: Ahem;
       font-size: 10px;
       width: 10ch;
+      text-wrap: pretty;
     }
     </style>
   )HTML") + data.html);
+  EXPECT_NE(data.disabled,
+            GetDocument().IsUseCounted(WebFeature::kTextWrapPretty));
+  EXPECT_EQ(data.disabled,
+            GetDocument().IsUseCounted(WebFeature::kTextWrapPrettyFail));
+
   const NGInlineNode node = GetInlineNodeByElementId("target");
   const LayoutUnit width = FragmentWidth(node);
   NGConstraintSpace space = ConstraintSpaceForAvailableSize(width);
   NGLineWidths line_widths(width);
-  NGScoreLineBreakContext context;
+  NGScoreLineBreakContextOf<kMaxLinesForOptimal> context;
   const NGInlineBreakToken* break_token = nullptr;
   NGExclusionSpace exclusion_space;
   NGScoreLineBreaker optimizer(node, space, line_widths, break_token,
@@ -396,6 +403,34 @@ TEST_P(DisabledByLineBreakerTest, Data) {
   } else {
     EXPECT_NE(context.LineBreakPoints().size(), 0u);
   }
+}
+
+// Test when `NGInlineLayoutAlgorithm::Layout` runs `NGLineBreaker` twice for
+// the same line, to retry line breaking due to float placements.
+TEST_F(NGScoreLineBreakerTest, FloatRetry) {
+  ScopedCSSTextWrapPrettyForTest enable(true);
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    .container {
+      font-size: 16px;
+      text-wrap: pretty;
+      width: 110px;
+    }
+    .float {
+      float: right;
+      width: 50px;
+      height: 50px;
+    }
+    </style>
+    <div class="container">
+      <div class="float"></div>
+      Blah.
+      <div class="float"></div>
+      Blah blah blah.
+    </div>
+  )HTML");
+  // Test pass if it doesn't crash.
 }
 
 TEST_F(NGScoreLineBreakerTest, Zoom) {
@@ -433,6 +468,24 @@ TEST_F(NGScoreLineBreakerTest, Zoom) {
     }
     EXPECT_EQ(zoomed_score, scores2[i]) << i;
   }
+}
+
+TEST_F(NGScoreLineBreakerTest, UseCountNotCountedForWrap) {
+  ScopedCSSTextWrapPrettyForTest enable(true);
+  SetBodyInnerHTML(R"HTML(
+    <div>012</div>
+  )HTML");
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kTextWrapPretty));
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kTextWrapPrettyFail));
+}
+
+TEST_F(NGScoreLineBreakerTest, UseCountNotCountedForBalance) {
+  ScopedCSSTextWrapPrettyForTest enable(true);
+  SetBodyInnerHTML(R"HTML(
+    <div style="text-wrap: balance>012</div>
+  )HTML");
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kTextWrapPretty));
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kTextWrapPrettyFail));
 }
 
 }  // namespace blink

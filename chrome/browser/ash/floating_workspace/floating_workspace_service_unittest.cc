@@ -245,10 +245,13 @@ class TestFloatingWorkSpaceService : public FloatingWorkspaceService {
     previously_captured_desk_template_ = std::move(desk_template);
   }
 
-  const sync_sessions::SyncedSession* restored_session_ = nullptr;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter
+  // for: #addr-of
+  RAW_PTR_EXCLUSION const sync_sessions::SyncedSession* restored_session_ =
+      nullptr;
   raw_ptr<const DeskTemplate, ExperimentalAsh>
       restored_floating_workspace_template_ = nullptr;
-  DeskTemplate* uploaded_desk_template_ = nullptr;
+  raw_ptr<DeskTemplate, ExperimentalAsh> uploaded_desk_template_ = nullptr;
   std::unique_ptr<MockOpenTabsUIDelegate> mock_open_tabs_;
   std::unique_ptr<MockDesksClient> mock_desks_client_;
 };

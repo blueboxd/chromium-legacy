@@ -41,6 +41,7 @@
 <translation id="1358735829858566124">Fișierul sau directorul nu este utilizabil.</translation>
 <translation id="1363028406613469049">Melodia</translation>
 <translation id="1378727793141957596">Bun venit la Disc Google!</translation>
+<translation id="1379156577998569384">Fișierele din Contul meu Drive sunt disponibile offline</translation>
 <translation id="1379911846207762492">Poți face fișiere disponibile offline pentru a le accesa când nu ai conexiune la internet.</translation>
 <translation id="1383876407941801731">Caută</translation>
 <translation id="1388045380422025115">Toate tipurile</translation>
@@ -299,7 +300,6 @@
 <translation id="3479552764303398839">Nu acum</translation>
 <translation id="3486821258960016770">Mongolă</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> erori.</translation>
-<translation id="3501954296166022751">Fișierele din Google Drive sunt disponibile offline</translation>
 <translation id="3509680540198371098">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" /> %, detalii</translation>
 <translation id="3511705761158917664">Se pregătește sincronizarea pentru <ph name="NUMBER_OF_ITEMS" /> elemente...</translation>
 <translation id="3522708245912499433">Portugheză</translation>
@@ -351,6 +351,7 @@
 <translation id="3855472144336161447">Germană Neo 2</translation>
 <translation id="3858860766373142691">Nume</translation>
 <translation id="3866249974567520381">Descriere</translation>
+<translation id="3866439285517092441">Bateria este aproape descărcată. Sincronizarea va fi reluată când te conectezi la o sursă de alimentare.</translation>
 <translation id="3899991606604168269">Franceză (Canada) cu tastatură multilingvă</translation>
 <translation id="3901991538546252627">Se conectează la <ph name="NAME" /></translation>
 <translation id="3906232975181435906">Se instalează profilul mobil, rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
@@ -358,6 +359,7 @@
 <translation id="3943857333388298514">Inserează</translation>
 <translation id="3952872973865944257">Telugu fonetică</translation>
 <translation id="3958548648197196644">Kiwi</translation>
+<translation id="397105322502079400">Se calculează...</translation>
 <translation id="3971140002794351170">Descarcă profilul mobil, Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Engleză (Regatul Unit)</translation>
 <translation id="3975895378829046965">Bengaleză fonetică</translation>
@@ -368,6 +370,7 @@
 <translation id="4040753847560036377">Cod PUK incorect</translation>
 <translation id="4057991113334098539">Activare...</translation>
 <translation id="4092890906744441904">Irlandeză</translation>
+<translation id="4124731372776320263">Se sincronizează un fișier Drive</translation>
 <translation id="4124935795427217608">Unicorn</translation>
 <translation id="4131235941541910880">Mută elementele de care nu ai nevoie în coșul de gunoi</translation>
 <translation id="4134804435730168042">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, Activează după configurarea dispozitivului</translation>
@@ -564,6 +567,7 @@
 <translation id="5422221874247253874">Punct de acces</translation>
 <translation id="5428105026674456456">Spaniolă</translation>
 <translation id="5438282218546237410">Nu există rezultate pentru <ph name="SEARCH_TERM" />.</translation>
+<translation id="5447680084201416734">Nu există suficient spațiu de stocare.</translation>
 <translation id="5449551289610225147">Parolă nevalidă</translation>
 <translation id="5459064203055649751">Fișierul cu numele <ph name="FILENAME" /> există deja. Vrei să-l înlocuiești cu cel pe care îl muți?</translation>
 <translation id="5463231940765244860">Introdu</translation>
@@ -579,6 +583,7 @@
 <translation id="5524517123096967210">Fișierul nu a putut fi citit.</translation>
 <translation id="5533102081734025921">Imagine <ph name="IMAGE_TYPE" /></translation>
 <translation id="5534520101572674276">Se calculează dimensiunea</translation>
+<translation id="5536122250858122375">Acest tip de fișier nu poate fi sincronizat</translation>
 <translation id="554153475311314364">Greacă, transliterație</translation>
 <translation id="5554171655917412781"><ph name="SELECTED_FOLDERS_COUNT" /> dosare selectate</translation>
 <translation id="5580591966435005537">mașina virtuală</translation>
@@ -691,6 +696,7 @@
 <translation id="6423031066725912715">Tastatură vietnameză TCVN</translation>
 <translation id="6430271654280079150">Mai ai o încercare.</translation>
 <translation id="643243556292470964">Fișierele șterse au fost mutate în coșul de gunoi</translation>
+<translation id="6438480100790416671">Se verifică spațiul de stocare…</translation>
 <translation id="6485131920355264772">Nu s-au putut prelua informațiile despre spațiu</translation>
 <translation id="6495925982925244349">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" /> %, gestionată de administratorul tău, detalii</translation>
 <translation id="649877868557234318">Se extrage <ph name="FILE_NAME" /> în <ph name="FOLDER_NAME" /></translation>
@@ -738,6 +744,7 @@
 <translation id="6874758081814639712">Persoană care practică tai chi</translation>
 <translation id="6876155724392614295">Bicicletă</translation>
 <translation id="6878261347041253038">Tastatură devanagari (Fonetică)</translation>
+<translation id="6882444584974399416">Dispozitivul nu are suficient spațiu de stocare pentru ca fișierele să fie disponibile offline. Fișierele noi nu vor mai fi sincronizate automat.</translation>
 <translation id="6885780034956018177">Melc</translation>
 <translation id="6896758677409633944">Copiază</translation>
 <translation id="6898028766943174120">Mai multe subdosare...</translation>
@@ -890,10 +897,10 @@
 <translation id="7972920761225148017">Franceză (Elveția)</translation>
 <translation id="7973962044839454485">Autentificarea PPP nu a reușit, din cauza unui nume de utilizator sau a unei parole greșite</translation>
 <translation id="7980421588063892270">Engleză (S.U.A.) cu tastatură Colemak</translation>
-<translation id="7985008041109611710">Se sincronizează <ph name="NUMBER_OF_FILES_SYNCING" /> fișiere</translation>
 <translation id="8000066093800657092">Nicio rețea</translation>
 <translation id="8008366997883261463">Terier</translation>
 <translation id="8028993641010258682">Dimensiune</translation>
+<translation id="8034974485549318493">Pentru configurarea inițială, trebuie să te conectezi la internet pentru ca fișierele să se poată sincroniza.</translation>
 <translation id="803771048473350947">Fișier</translation>
 <translation id="8038111231936746805">(prestabilit)</translation>
 <translation id="8042602468072383151">Fișier audio <ph name="AUDIO_TYPE" /></translation>
@@ -913,6 +920,7 @@
 <translation id="8154842056504218462">S-au selectat toate intrările.</translation>
 <translation id="8157684860301034423">Nu s-au putut prelua informațiile despre aplicație.</translation>
 <translation id="8175731104491895765">Franceză (Belgia)</translation>
+<translation id="8175799081768705361">Se sincronizează <ph name="NUMBER_OF_FILES_SYNCING" /> fișiere Drive</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">Modelul dispozitivului</translation>
 <translation id="8223479393428528563">Pentru a salva aceste fișiere pentru utilizare offline, revino online, dă clic dreapta pe fișiere și selectează opțiunea <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
@@ -945,6 +953,7 @@
 <translation id="8395901698320285466">Dimensiuni</translation>
 <translation id="8404498045299006085">Păstrează tot</translation>
 <translation id="8408068190360279472">Rețea <ph name="NETWORK_TYPE" />, se stabilește conexiunea</translation>
+<translation id="841387525767317275">Fișierele din acest dosar sunt disponibile offline</translation>
 <translation id="8425213833346101688">Modificați</translation>
 <translation id="8431909052837336408">Schimbă codul PIN pentru SIM</translation>
 <translation id="8437209419043462667">S.U.A.</translation>
@@ -972,6 +981,7 @@
 <translation id="8560515948038859357">Cantoneză</translation>
 <translation id="8561206103590473338">Elefant</translation>
 <translation id="8566466896628108558">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, Puterea semnalului: <ph name="SIGNAL_STRENGTH" /> %, Blocată de administrator, Detalii</translation>
+<translation id="8567555211227790801">Ești în modul offline. Sincronizarea va fi reluată când te conectezi la internet.</translation>
 <translation id="8568374623837201676">Ștergi definitiv fișierul?</translation>
 <translation id="8569764466147087991">Selectează un fișier pentru a-l deschide</translation>
 <translation id="8577897833047451336">Croată</translation>
@@ -1012,6 +1022,7 @@
 <translation id="8919081441417203123">Daneză</translation>
 <translation id="8949925099261528566">Conectat, fără internet</translation>
 <translation id="8965697826696209160">Nu există spațiu suficient.</translation>
+<translation id="8970887620466824814">A apărut o eroare.</translation>
 <translation id="8971742885766657349">Se sincronizează – <ph name="PERCENT" /> %</translation>
 <translation id="8997962250644902079">Chineză (tradițională) Pinyin</translation>
 <translation id="8998871447376656508">Nu există spațiu liber suficient în Google Drive pentru a finaliza încărcarea.</translation>
@@ -1046,7 +1057,6 @@
 <translation id="9213073329713032541">Instalarea a început.</translation>
 <translation id="9219103736887031265">Imagini</translation>
 <translation id="9219908252191632183">Peisaj lunar</translation>
-<translation id="937795003075802289">Se sincronizează un fișier</translation>
 <translation id="938470336146445890">Instalează un certificat de utilizator.</translation>
 <translation id="939736085109172342">Dosar nou</translation>
 <translation id="943972244133411984">Modificat de</translation>

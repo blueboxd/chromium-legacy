@@ -127,9 +127,6 @@ enum class NetworkSandboxState {
   kMaxValue = kDisabledBecauseOfFailedLaunch
 };
 
-// The temporary header name expected by the envoy proxy configuration.
-const char kIPAnonymizationProxyPassword[] = "password";
-
 // The global instance of the SystemNetworkContextManager.
 SystemNetworkContextManager* g_system_network_context_manager = nullptr;
 
@@ -777,48 +774,6 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
   if (IsCertificateTransparencyEnabled()) {
     network_context_params->enforce_chrome_ct_policy = true;
   }
-
-  // If a custom proxy for IP protection is specified by either command line
-  // switch or Finch experiment flag, set the proxy rules
-  if (command_line.HasSwitch(network::switches::kIPAnonymizationProxyServer) ||
-      base::FeatureList::IsEnabled(net::features::kEnableIpProtectionProxy)) {
-    auto proxy_config = network::mojom::CustomProxyConfig::New();
-    proxy_config->rules.type =
-        net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
-
-    // Command line input takes precedence over flag configuration
-    std::string ip_protection_proxy_server =
-        command_line.HasSwitch(network::switches::kIPAnonymizationProxyServer)
-            ? command_line.GetSwitchValueASCII(
-                  network::switches::kIPAnonymizationProxyServer)
-            : net::features::kIpPrivacyProxyServer.Get();
-
-    proxy_config->rules.ParseFromString(ip_protection_proxy_server);
-
-    // Get allowlist hosts, command line input takes precedence over flag
-    // configuration
-    std::string ip_protection_proxy_allow_list =
-        command_line.HasSwitch(network::switches::kIPAnonymizationProxyServer)
-            ? command_line.GetSwitchValueASCII(
-                  network::switches::kIPAnonymizationProxyAllowList)
-            : net::features::kIpPrivacyProxyAllowlist.Get();
-
-    proxy_config->rules.reverse_bypass = true;
-    proxy_config->rules.bypass_rules.ParseFromString(
-        ip_protection_proxy_allow_list);
-
-    proxy_config->should_replace_direct = true;
-    proxy_config->should_override_existing_config = false;
-    proxy_config->allow_non_idempotent_methods = true;
-    proxy_config->connect_tunnel_headers.SetHeader(
-        kIPAnonymizationProxyPassword,
-        command_line.GetSwitchValueASCII(
-            network::switches::kIPAnonymizationProxyPassword));
-
-    // Set initial custom proxy configuration
-    network_context_params->initial_custom_proxy_config =
-        std::move(proxy_config);
-  }
 }
 
 network::mojom::NetworkContextParamsPtr
@@ -900,23 +855,23 @@ void SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
 bool SystemNetworkContextManager::IsCertificateTransparencyEnabled() {
   if (certificate_transparency_enabled_for_testing_.has_value())
     return certificate_transparency_enabled_for_testing_.value();
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OFFICIAL_BUILD)
-// TODO(carlosil): Figure out if we can/should remove the OFFICIAL_BUILD and
-// GOOGLE_CHROME_BRANDING checks now that enforcement does not rely on build
-// dates, and allow embedders to enforce.
-//    Certificate Transparency is only enabled if:
-//   - base::GetBuildTime() is deterministic to the source (OFFICIAL_BUILD)
-//   - The build in reliably updatable (GOOGLE_CHROME_BRANDING)
+#if defined(OFFICIAL_BUILD)
+// TODO(carlosil): Figure out if we can/should remove the OFFICIAL_BUILD
+// check now that enforcement does not rely on build dates.
+//    Certificate Transparency is enabled:
+//   - by default for Chrome-branded builds
+//   - on an opt-in basis for other builds and embedders, controlled with the
+//     kCertificateTransparencyAskBeforeEnabling flag
 #if BUILDFLAG(IS_ANDROID)
-  // On Android, enforcement is currently controlled via a feature flag.
   return base::FeatureList::IsEnabled(
       features::kCertificateTransparencyAndroid);
 #else
-  return true;
+  return base::FeatureList::IsEnabled(
+      features::kCertificateTransparencyAskBeforeEnabling);
 #endif  // BUILDFLAG(IS_ANDROID)
 #else
   return false;
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OFFICIAL_BUILD)
+#endif  // defined(OFFICIAL_BUILD)
 }
 
 #if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)

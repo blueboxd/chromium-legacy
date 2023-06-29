@@ -519,6 +519,12 @@ class MockAutofillDriver : public TestAutofillDriver {
                (const base::flat_map<FieldGlobalId, ServerFieldType>&)),
               (override));
   MOCK_METHOD(void,
+              UndoAutofill,
+              (const FormData& data,
+               const url::Origin& triggered_origin,
+               (const base::flat_map<FieldGlobalId, ServerFieldType>&)),
+              (override));
+  MOCK_METHOD(void,
               SendAutofillTypePredictionsToRenderer,
               (const std::vector<FormStructure*>& forms),
               (override));
@@ -759,7 +765,8 @@ class BrowserAutofillManagerTest : public testing::Test {
         [](const auto& result) { return Suggestion(result); });
 
     browser_autofill_manager_->OnSuggestionsReturned(
-        field_id, AutoselectFirstSuggestion(false), suggestions);
+        field_id, AutofillSuggestionTriggerSource::kFormControlElementClicked,
+        suggestions);
   }
 
   void FormsSeen(const std::vector<FormData>& forms) {
@@ -959,7 +966,7 @@ class BrowserAutofillManagerTest : public testing::Test {
     external_delegate_->CheckSuggestions(field_id, 3, &suggestion_vector[0]);
   }
 
-  void ResetBrowserAutofillManager(TestAutofillClient* client) {
+  void ResetBrowserAutofillManager() {
     // |browser_autofill_manager_| owns the |single_field_form_fill_router_| and
     // clears it upon being recreated. Clear it first and then give it a new
     // SingleFieldFormFillRouter to avoid referencing deleted memory.
@@ -1921,20 +1928,13 @@ TEST_F(BrowserAutofillManagerTest,
       Suggestion("Elvis", "3734 Elvis Presley Blvd.", "",
                  PopupItemId::kAddressEntry)};
 
-  {
-    browser_autofill_manager_->OnSuggestionsReturned(
-        field_id, AutoselectFirstSuggestion(false), suggestions);
+  browser_autofill_manager_->OnSuggestionsReturned(
+      field_id, AutofillSuggestionTriggerSource::kFormControlElementClicked,
+      suggestions);
 
-    EXPECT_FALSE(external_delegate_->autoselect_first_suggestion());
-    CheckSuggestions(field_id, suggestions[0], suggestions[1]);
-  }
-  {
-    browser_autofill_manager_->OnSuggestionsReturned(
-        field_id, AutoselectFirstSuggestion(true), suggestions);
-
-    EXPECT_TRUE(external_delegate_->autoselect_first_suggestion());
-    CheckSuggestions(field_id, suggestions[0], suggestions[1]);
-  }
+  EXPECT_EQ(external_delegate_->trigger_source(),
+            AutofillSuggestionTriggerSource::kFormControlElementClicked);
+  CheckSuggestions(field_id, suggestions[0], suggestions[1]);
 }
 
 // Test that we return all credit card profile suggestions when all form fields
@@ -2886,6 +2886,26 @@ TEST_F(BrowserAutofillManagerTest, DoNotFillIfFormFieldChanged) {
   EXPECT_THAT(skipped_fields, Each(HasValue(u"")));
 }
 
+TEST_F(BrowserAutofillManagerTest, UndoAutofillCallsDriver) {
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  FormsSeen({form});
+  FormStructure* form_structure;
+  AutofillField* autofill_field;
+  std::vector<FieldGlobalId> safe_fields{form.fields.front().global_id()};
+  ASSERT_TRUE(browser_autofill_manager_->GetCachedFormAndField(
+      form, form.fields.front(), &form_structure, &autofill_field));
+  EXPECT_CALL(*autofill_driver_, FillOrPreviewForm)
+      .WillOnce(Return(safe_fields));
+  browser_autofill_manager_->FillOrPreviewDataModelFormForTest(
+      mojom::RendererFormDataAction::kFill, form, form.fields.front(),
+      personal_data().GetProfiles().front(), /*optional_cvc=*/nullptr,
+      form_structure, autofill_field);
+
+  EXPECT_CALL(*autofill_driver_, UndoAutofill(_, _, _));
+  browser_autofill_manager_->UndoAutofill(form, form.fields.front());
+}
+
 TEST_F(BrowserAutofillManagerTest,
        FillOrPreviewDataModelFormCallsDidFillOrPreviewForm) {
   FormData form =
@@ -3641,6 +3661,49 @@ TEST_F(BrowserAutofillManagerTest, DontFillAutocompleteUnrecognizedFields) {
   TestAddressFillData fill_data = kElvisAddressFillData;
   fill_data.middle = "";
   ExpectFilledForm(filled_form, fill_data, /*card_fill_data=*/absl::nullopt);
+}
+
+// Tests that when `kAutofillPredictionsForAutocompleteUnrecognized` is enabled,
+// fields with unrecognized autocomplete attribute don't contribute to key
+// metrics.
+TEST_F(BrowserAutofillManagerTest, AutocompleteUnrecognizedFields_KeyMetrics) {
+  base::test::ScopedFeatureList feature(
+      features::kAutofillPredictionsForAutocompleteUnrecognized);
+
+  // Create an address form where field 1 has an unrecognized autocomplete
+  // attribute.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  ASSERT_GE(form.fields.size(), 2u);
+  form.fields[1].parsed_autocomplete =
+      AutocompleteParsingResult{.field_type = HtmlFieldType::kUnrecognized};
+
+  // Interact with an ac != unrecognized field: Expect key metrics to be
+  // emitted. Note that "interacting" means querying suggestions, usually
+  // caused by clicking into a field.
+  {
+    FormsSeen({form});
+    GetAutofillSuggestions(form, form.fields[0]);
+    FormSubmitted(form);
+
+    base::HistogramTester histogram_tester;
+    browser_autofill_manager_->Reset();
+    histogram_tester.ExpectTotalCount(
+        "Autofill.KeyMetrics.FillingAssistance.Address", 1);
+  }
+
+  // Interact with an ac = unrecognized field: Expect no key metric to be
+  // emitted.
+  {
+    FormsSeen({form});
+    GetAutofillSuggestions(form, form.fields[1]);
+    FormSubmitted(form);
+
+    base::HistogramTester histogram_tester;
+    browser_autofill_manager_->Reset();
+    histogram_tester.ExpectTotalCount(
+        "Autofill.KeyMetrics.FillingAssistance.Address", 0);
+  }
 }
 
 TEST_F(BrowserAutofillManagerTest, WillFillCreditCardNumber) {
@@ -6544,14 +6607,14 @@ TEST_F(BrowserAutofillManagerTest,
 // field, single field form fill suggestions are queried.
 TEST_F(BrowserAutofillManagerTest,
        SingleFieldFormFillSuggestions_CreditCardNameFieldShouldAutocomplete) {
-  TestAutofillClient client;
   // Since we are testing a form that submits over HTTP, we also need to set
   // the main frame to HTTP in the client, otherwise mixed form warnings will
   // trigger and autofill will be disabled.
   GURL::Replacements replacements;
   replacements.SetSchemeStr(url::kHttpScheme);
-  client.set_form_origin(client.form_origin().ReplaceComponents(replacements));
-  ResetBrowserAutofillManager(&client);
+  autofill_client_.set_form_origin(
+      autofill_client_.form_origin().ReplaceComponents(replacements));
+  ResetBrowserAutofillManager();
   browser_autofill_manager_->SetAutofillProfileEnabled(autofill_client_, false);
   browser_autofill_manager_->SetAutofillCreditCardEnabled(autofill_client_,
                                                           false);
@@ -6579,14 +6642,14 @@ TEST_F(BrowserAutofillManagerTest,
 // field, single field form fill suggestions are not queried.
 TEST_F(BrowserAutofillManagerTest,
        SingleFieldFormFillSuggestions_CreditCardNumberShouldNotAutocomplete) {
-  TestAutofillClient client;
   // Since we are testing a form that submits over HTTP, we also need to set
   // the main frame to HTTP in the client, otherwise mixed form warnings will
   // trigger and autofill will be disabled.
   GURL::Replacements replacements;
   replacements.SetSchemeStr(url::kHttpScheme);
-  client.set_form_origin(client.form_origin().ReplaceComponents(replacements));
-  ResetBrowserAutofillManager(&client);
+  autofill_client_.set_form_origin(
+      autofill_client_.form_origin().ReplaceComponents(replacements));
+  ResetBrowserAutofillManager();
   browser_autofill_manager_->SetAutofillProfileEnabled(autofill_client_, false);
   browser_autofill_manager_->SetAutofillCreditCardEnabled(autofill_client_,
                                                           false);

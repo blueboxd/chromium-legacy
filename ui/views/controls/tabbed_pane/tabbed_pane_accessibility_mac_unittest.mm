@@ -8,7 +8,6 @@
 
 #import "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #import "testing/gtest_mac.h"
 #include "ui/gfx/geometry/point.h"
@@ -16,6 +15,10 @@
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace views::test {
 
@@ -44,7 +47,7 @@ id GetLegacyA11yAttributeValue(id obj, NSString* attribute) {
 
 class TabbedPaneAccessibilityMacTest : public WidgetTest {
  public:
-  TabbedPaneAccessibilityMacTest() = default;
+  TabbedPaneAccessibilityMacTest() : widget_(nullptr), tabbed_pane_(nullptr) {}
 
   TabbedPaneAccessibilityMacTest(const TabbedPaneAccessibilityMacTest&) =
       delete;
@@ -91,18 +94,18 @@ class TabbedPaneAccessibilityMacTest : public WidgetTest {
   }
 
  protected:
-  raw_ptr<Widget> widget_ = nullptr;
-  raw_ptr<TabbedPane> tabbed_pane_ = nullptr;
+  raw_ptr<Widget, DanglingUntriaged> widget_ = nullptr;
+  raw_ptr<TabbedPane, DanglingUntriaged> tabbed_pane_ = nullptr;
 };
 
 // Test the Tab's a11y information compared to a Cocoa NSTabViewItem.
 TEST_F(TabbedPaneAccessibilityMacTest, AttributesMatchAppKit) {
   // Create a Cocoa NSTabView to test against and select the first tab.
-  base::scoped_nsobject<NSTabView> cocoa_tab_group(
-      [[NSTabView alloc] initWithFrame:NSMakeRect(50, 50, 100, 100)]);
+  NSTabView* cocoa_tab_group =
+      [[NSTabView alloc] initWithFrame:NSMakeRect(50, 50, 100, 100)];
   NSArray* cocoa_tabs = @[
-    [[[NSTabViewItem alloc] init] autorelease],
-    [[[NSTabViewItem alloc] init] autorelease],
+    [[NSTabViewItem alloc] init],
+    [[NSTabViewItem alloc] init],
   ];
   for (size_t i = 0; i < [cocoa_tabs count]; ++i) {
     [cocoa_tabs[i] setLabel:[NSString stringWithFormat:@"Tab %zu", i + 1]];

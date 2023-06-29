@@ -33,6 +33,8 @@
 #include "components/policy/core/common/mock_policy_service.h"
 #include "components/policy/policy_constants.h"
 #include "components/privacy_sandbox/mock_privacy_sandbox_settings.h"
+#include "components/privacy_sandbox/privacy_sandbox_attestations/privacy_sandbox_attestations.h"
+#include "components/privacy_sandbox/privacy_sandbox_attestations/scoped_privacy_sandbox_attestations.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/privacy_sandbox/privacy_sandbox_settings_impl.h"
@@ -793,7 +795,7 @@ std::vector<int> GetTopicsSettingsStringIdentifiers(bool did_consent,
             IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_HEADING,
             IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_1,
             IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_2,
-            IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_3,
+            IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_3_CANONICAL,
             IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_HEADING,
             IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION_EMPTY,
             IDS_SETTINGS_TOPICS_PAGE_FOOTER_CANONICAL};
@@ -807,7 +809,7 @@ std::vector<int> GetTopicsSettingsStringIdentifiers(bool did_consent,
             IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_HEADING,
             IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_1,
             IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_2,
-            IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_3,
+            IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_3_CANONICAL,
             IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_HEADING,
             IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION,
             IDS_SETTINGS_TOPICS_PAGE_FOOTER_CANONICAL};
@@ -820,7 +822,7 @@ std::vector<int> GetTopicsSettingsStringIdentifiers(bool did_consent,
             IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_HEADING,
             IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_1,
             IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_2,
-            IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_3,
+            IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_3_CANONICAL,
             IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_HEADING,
             IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION,
             IDS_SETTINGS_TOPICS_PAGE_FOOTER_CANONICAL};
@@ -833,7 +835,7 @@ std::vector<int> GetTopicsSettingsStringIdentifiers(bool did_consent,
             IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_HEADING,
             IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_1,
             IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_2,
-            IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_3,
+            IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_3_CANONICAL,
             IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_HEADING,
             IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION_EMPTY,
             IDS_SETTINGS_TOPICS_PAGE_FOOTER_CANONICAL};
@@ -847,7 +849,7 @@ std::vector<int> GetTopicsSettingsStringIdentifiers(bool did_consent,
             IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_HEADING,
             IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_1,
             IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_2,
-            IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_3,
+            IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_3_CANONICAL,
             IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_HEADING,
             IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION,
             IDS_SETTINGS_TOPICS_PAGE_FOOTER_CANONICAL};
@@ -861,7 +863,7 @@ std::vector<int> GetTopicsSettingsStringIdentifiers(bool did_consent,
             IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_HEADING,
             IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_1,
             IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_2,
-            IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_3,
+            IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_BULLET_3_CANONICAL,
             IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_HEADING,
             IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION_EMPTY,
             IDS_SETTINGS_TOPICS_PAGE_FOOTER_CANONICAL};
@@ -890,7 +892,9 @@ class PrivacySandboxServiceTest : public testing::Test {
  public:
   PrivacySandboxServiceTest()
       : browser_task_environment_(
-            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+        scoped_attestations_(
+            privacy_sandbox::PrivacySandboxAttestations::CreateForTesting()) {}
 
   void SetUp() override {
     InitializeFeaturesBeforeStart();
@@ -1018,6 +1022,7 @@ class PrivacySandboxServiceTest : public testing::Test {
 #endif
   std::unique_ptr<privacy_sandbox::PrivacySandboxSettings>
       privacy_sandbox_settings_;
+  privacy_sandbox::ScopedPrivacySandboxAttestations scoped_attestations_;
 
   std::unique_ptr<PrivacySandboxService> privacy_sandbox_service_;
 };

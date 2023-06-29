@@ -5,7 +5,9 @@
 #include "ash/user_education/welcome_tour/welcome_tour_controller.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/ash_element_identifiers.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -15,7 +17,9 @@
 #include "ash/user_education/user_education_util.h"
 #include "ash/user_education/welcome_tour/welcome_tour_controller_observer.h"
 #include "ash/user_education/welcome_tour/welcome_tour_dialog.h"
+#include "ash/user_education/welcome_tour/welcome_tour_notification_blocker.h"
 #include "ash/user_education/welcome_tour/welcome_tour_scrim.h"
+#include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "base/check_op.h"
 #include "base/functional/bind.h"
 #include "components/user_education/common/help_bubble.h"
@@ -23,6 +27,8 @@
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/interaction/element_tracker.h"
 #include "ui/base/interaction/interaction_sequence.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/view.h"
@@ -121,6 +127,7 @@ WelcomeTourController::GetTutorialDescriptions() {
   // Step 1: Shelf.
   tutorial_description.steps.emplace_back(
       user_education::TutorialDescription::BubbleStep(kShelfViewElementId)
+          .SetBubbleArrow(user_education::HelpBubbleArrow::kTopRight)
           .SetBubbleBodyText(IDS_ASH_WELCOME_TOUR_SHELF_BUBBLE_BODY_TEXT)
           .SetExtendedProperties(user_education_util::CreateExtendedProperties(
               HelpBubbleId::kWelcomeTourShelf))
@@ -141,6 +148,7 @@ WelcomeTourController::GetTutorialDescriptions() {
   tutorial_description.steps.emplace_back(
       user_education::TutorialDescription::BubbleStep(
           kUnifiedSystemTrayElementName)
+          .SetBubbleArrow(user_education::HelpBubbleArrow::kTopRight)
           .SetBubbleBodyText(IDS_ASH_WELCOME_TOUR_STATUS_AREA_BUBBLE_BODY_TEXT)
           .SetExtendedProperties(user_education_util::CreateExtendedProperties(
               HelpBubbleId::kWelcomeTourStatusArea))
@@ -161,6 +169,7 @@ WelcomeTourController::GetTutorialDescriptions() {
   // Step 3: Home button.
   tutorial_description.steps.emplace_back(
       user_education::TutorialDescription::BubbleStep(kHomeButtonElementName)
+          .SetBubbleArrow(user_education::HelpBubbleArrow::kTopRight)
           .SetBubbleBodyText(IDS_ASH_WELCOME_TOUR_HOME_BUTTON_BUBBLE_BODY_TEXT)
           .SetExtendedProperties(user_education_util::CreateExtendedProperties(
               HelpBubbleId::kWelcomeTourHomeButton))
@@ -175,6 +184,7 @@ WelcomeTourController::GetTutorialDescriptions() {
   // Step 4: Search box.
   tutorial_description.steps.emplace_back(
       user_education::TutorialDescription::BubbleStep(kSearchBoxViewElementId)
+          .SetBubbleArrow(user_education::HelpBubbleArrow::kTopRight)
           .SetBubbleBodyText(IDS_ASH_WELCOME_TOUR_SEARCH_BOX_BUBBLE_BODY_TEXT)
           .SetExtendedProperties(user_education_util::CreateExtendedProperties(
               HelpBubbleId::kWelcomeTourSearchBox))
@@ -191,6 +201,7 @@ WelcomeTourController::GetTutorialDescriptions() {
   // Step 5: Settings app.
   tutorial_description.steps.emplace_back(
       user_education::TutorialDescription::BubbleStep(kSettingsAppElementId)
+          .SetBubbleArrow(user_education::HelpBubbleArrow::kTopRight)
           .SetBubbleBodyText(IDS_ASH_WELCOME_TOUR_SETTINGS_APP_BUBBLE_BODY_TEXT)
           .SetExtendedProperties(user_education_util::CreateExtendedProperties(
               HelpBubbleId::kWelcomeTourSettingsApp))
@@ -207,10 +218,14 @@ WelcomeTourController::GetTutorialDescriptions() {
   // Step 6: Explore app.
   tutorial_description.steps.emplace_back(
       user_education::TutorialDescription::BubbleStep(kExploreAppElementId)
+          .SetBubbleArrow(user_education::HelpBubbleArrow::kTopRight)
           .SetBubbleBodyText(IDS_ASH_WELCOME_TOUR_EXPLORE_APP_BUBBLE_BODY_TEXT)
           .SetExtendedProperties(user_education_util::CreateExtendedProperties(
               HelpBubbleId::kWelcomeTourExploreApp))
           .InSameContext());
+
+  // Step 7: Explore app window.
+  // Implemented in `WelcomeTourController::OnWelcomeTourEnded()`.
 
   return tutorial_descriptions_by_id;
 }
@@ -229,6 +244,25 @@ void WelcomeTourController::OnSessionStateChanged(
   MaybeShowDialog();
 }
 
+void WelcomeTourController::OnTabletControllerDestroyed() {
+  tablet_mode_observation_.Reset();
+}
+
+void WelcomeTourController::OnTabletModeStarting() {
+  auto* dialog = WelcomeTourDialog::Get();
+  auto* widget = dialog ? dialog->GetWidget() : nullptr;
+
+  if (widget && !widget->IsClosed()) {
+    // If the dialog's widget is not closed, then the tutorial hasn't started,
+    // so just close the dialog.
+    widget->Close();
+  } else {
+    // If the dialog is closed, and this event has been reached, then we can be
+    // certain the Welcome Tour is the active tutorial, so it is safe to abort.
+    UserEducationController::Get()->AbortTutorial(UserEducationPrivateApiKey());
+  }
+}
+
 void WelcomeTourController::MaybeShowDialog() {
   // NOTE: User education in Ash is currently only supported for the primary
   // user profile. This is a self-imposed restriction.
@@ -236,19 +270,27 @@ void WelcomeTourController::MaybeShowDialog() {
     return;
   }
 
-  // We can stop observations since we only observe sessions in order to show
-  // the dialog when the primary user session is activated for the first time.
+  // We can stop observations since we only observe sessions in order to start
+  // the tutorial when the primary user session is activated for the first time.
   session_observation_.Reset();
+
+  // Welcome Tour is not supported in tablet mode.
+  if (TabletMode::IsInTabletMode()) {
+    return;
+  }
+
+  // Begin observing `TabletMode` so we can abort if it starts.
+  tablet_mode_observation_.Observe(TabletMode::Get());
 
   WelcomeTourDialog::CreateAndShow(
       /*accept_callback=*/base::BindOnce(&WelcomeTourController::StartTutorial,
                                          weak_ptr_factory_.GetWeakPtr()),
       /*cancel_callback=*/
       base::BindOnce(&WelcomeTourController::OnWelcomeTourEnded,
-                     weak_ptr_factory_.GetWeakPtr()),
+                     weak_ptr_factory_.GetWeakPtr(), /*completed=*/false),
       /*close_callback=*/
       base::BindOnce(&WelcomeTourController::OnWelcomeTourEnded,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), /*completed=*/false));
 
   // `WelcomeTourDialog` is part of the Welcome Tour. Therefore, when the dialog
   // shows, the tour has indeed been started.
@@ -263,10 +305,10 @@ void WelcomeTourController::StartTutorial() {
       GetInitialElementContext(),
       /*completed_callback=*/
       base::BindOnce(&WelcomeTourController::OnWelcomeTourEnded,
-                     weak_ptr_factory_.GetWeakPtr()),
+                     weak_ptr_factory_.GetWeakPtr(), /*completed=*/true),
       /*aborted_callback=*/
       base::BindOnce(&WelcomeTourController::OnWelcomeTourEnded,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), /*completed=*/false));
 }
 
 // TODO(http://b/277091006): Stabilize app launches.
@@ -275,25 +317,34 @@ void WelcomeTourController::StartTutorial() {
 // TODO(http://b/277091733): Stabilize continue section in launcher.
 // TODO(http://b/277091715): Stabilize pods in shelf.
 // TODO(http://b/277091619): Stabilize wallpaper.
-// TODO(http://b/277091643): Stabilize notifications.
 // TODO(http://b/277091624): Stabilize nudges/toasts.
 void WelcomeTourController::OnWelcomeTourStarted() {
+  notification_blocker_ = std::make_unique<WelcomeTourNotificationBlocker>();
   scrim_ = std::make_unique<WelcomeTourScrim>();
 
   for (auto& observer : observer_list_) {
     observer.OnWelcomeTourStarted();
   }
 }
+
 // TODO(http://b/277091006): Restore app launches.
 // TODO(http://b/277091067): Restore apps in launcher.
 // TODO(http://b/277091443): Restore apps in shelf.
 // TODO(http://b/277091733): Restore continue section in launcher.
 // TODO(http://b/277091715): Restore pods in shelf.
 // TODO(http://b/277091619): Restore wallpaper.
-// TODO(http://b/277091643): Restore notifications.
 // TODO(http://b/277091624): Restore nudges/toasts.
-void WelcomeTourController::OnWelcomeTourEnded() {
+void WelcomeTourController::OnWelcomeTourEnded(bool completed) {
+  if (completed) {
+    UserEducationController::Get()->LaunchSystemWebAppAsync(
+        UserEducationPrivateApiKey(), ash::SystemWebAppType::HELP,
+        display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  }
+
+  notification_blocker_.reset();
   scrim_.reset();
+
+  tablet_mode_observation_.Reset();
 
   for (auto& observer : observer_list_) {
     observer.OnWelcomeTourEnded();

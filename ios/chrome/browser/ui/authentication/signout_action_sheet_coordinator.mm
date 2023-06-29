@@ -9,6 +9,7 @@
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
 #import "base/strings/utf_string_conversions.h"
+#import "components/signin/public/base/signin_metrics.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -90,6 +91,10 @@ typedef NS_ENUM(NSUInteger, SignedInUserState) {
 - (void)stop {
   [self.actionSheetCoordinator stop];
   self.actionSheetCoordinator = nil;
+}
+
+- (void)dealloc {
+  DCHECK(!self.actionSheetCoordinator);
 }
 
 #pragma mark - ActionSheetCoordinator properties
@@ -318,11 +323,7 @@ typedef NS_ENUM(NSUInteger, SignedInUserState) {
     UMA_HISTOGRAM_BOOLEAN("Signin.UserRequestedWipeDataOnSignout",
                           forceClearData);
   }
-  if (forceClearData) {
-    base::RecordAction(base::UserMetricsAction("Signin_SignoutClearData"));
-  } else {
-    base::RecordAction(base::UserMetricsAction("Signin_Signout"));
-  }
+  signin_metrics::RecordSignoutUserAction(forceClearData);
 }
 
 @end

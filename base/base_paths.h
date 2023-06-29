@@ -12,8 +12,10 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "base/base_paths_win.h"
-#elif BUILDFLAG(IS_APPLE)
+#elif BUILDFLAG(IS_MAC)
 #include "base/base_paths_mac.h"
+#elif BUILDFLAG(IS_IOS)
+#include "base/base_paths_ios.h"
 #elif BUILDFLAG(IS_ANDROID)
 #include "base/base_paths_android.h"
 #endif
@@ -29,7 +31,7 @@ enum BasePathKey {
 
   // The following refer to the current application.
   FILE_EXE,  // Path and filename of the current executable.
-#if !BUILDFLAG(IS_FUCHSIA)
+#if !BUILDFLAG(IS_FUCHSIA) && !BUILDFLAG(IS_IOS)
   // Prefer keys (e.g., DIR_ASSETS) that are specific to the use case as the
   // module location may not work as expected on some platforms. For this
   // reason, this key is not defined on Fuchsia. See crbug.com/1263691 for
@@ -40,7 +42,7 @@ enum BasePathKey {
                 // example).
 #endif
   DIR_EXE,  // Directory containing FILE_EXE.
-#if !BUILDFLAG(IS_FUCHSIA)
+#if !BUILDFLAG(IS_FUCHSIA) && !BUILDFLAG(IS_IOS)
   // Prefer keys (e.g., DIR_ASSETS) that are specific to the use case as the
   // module location may not work as expected on some platforms. For this
   // reason, this key is not defined on Fuchsia. See crbug.com/1263691 for
@@ -54,7 +56,9 @@ enum BasePathKey {
   DIR_HOME,          // User's root home directory. On Windows this will look
                      // like "C:\Users\<user>"  which isn't necessarily a great
                      // place to put files.
+#if !BUILDFLAG(IS_IOS)
   DIR_USER_DESKTOP,  // The current user's Desktop.
+#endif
 
   // The following refer to the applications current environment.
   DIR_CURRENT,  // Current directory.

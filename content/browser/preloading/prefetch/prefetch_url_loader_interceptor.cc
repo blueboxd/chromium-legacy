@@ -46,10 +46,6 @@ std::unique_ptr<PrefetchURLLoaderInterceptor>
 PrefetchURLLoaderInterceptor::MaybeCreateInterceptor(
     int frame_tree_node_id,
     const GlobalRenderFrameHostId& referring_render_frame_host_id) {
-  if (!base::FeatureList::IsEnabled(features::kPrefetchUseContentRefactor)) {
-    return nullptr;
-  }
-
   if (!referring_render_frame_host_id) {
     // This is expected to occur only in unit tests.
     return nullptr;
@@ -129,41 +125,23 @@ void PrefetchURLLoaderInterceptor::OnGetPrefetchComplete(
     return;
   }
 
-  // Set up a URL loader factory to "create" the streaming URL loader from the
-  // prefetch. After this point, the streaming URL loader will manager its own
-  // lifetime, and will delete itself once the prefetch response is completed
-  // and served.
-  DCHECK(prefetch_container->GetFirstStreamingURLLoader());
-  scoped_refptr<network::SingleRequestURLLoaderFactory>
-      single_request_url_loader_factory;
-  if (prefetch_container->GetFirstStreamingURLLoader()
-          ->IsReadyToServeLastEvents()) {
-    std::unique_ptr<PrefetchStreamingURLLoader> prefetch_streaming_url_loader =
-        prefetch_container->ReleaseFirstStreamingURLLoader();
-    auto* raw_prefetch_streaming_url_loader =
-        prefetch_streaming_url_loader.get();
+  PrefetchResponseReader::RequestHandler request_handler =
+      prefetch_container->CreateRequestHandler();
 
-    single_request_url_loader_factory =
-        base::MakeRefCounted<network::SingleRequestURLLoaderFactory>(
-            raw_prefetch_streaming_url_loader->ServingFinalResponseHandler(
-                std::move(prefetch_streaming_url_loader)));
-  } else {
-    single_request_url_loader_factory =
-        base::MakeRefCounted<network::SingleRequestURLLoaderFactory>(
-            prefetch_container->GetFirstStreamingURLLoader()
-                ->ServingRedirectHandler());
-  }
+  scoped_refptr<network::SingleRequestURLLoaderFactory>
+      single_request_url_loader_factory =
+          base::MakeRefCounted<network::SingleRequestURLLoaderFactory>(
+              std::move(request_handler));
 
   // If |prefetch_container| is done serving the prefetch, clear out
   // |redirect_prefetch_container_|, but otherwise cache it in
   // |redirect_prefetch_container_|.
-  if (!prefetch_container->GetFirstStreamingURLLoader()) {
+  if (prefetch_container->GetReader().IsEnd()) {
     if (redirect_prefetch_container_) {
       RecordWasFullRedirectChainServedHistogram(true);
     }
     redirect_prefetch_container_ = nullptr;
   } else {
-    prefetch_container->GetReader().AdvanceCurrentURLToServe();
     redirect_prefetch_container_ = prefetch_container;
   }
 

@@ -58,6 +58,12 @@ class MockPrivacySandboxSettings
               IsFledgeAllowed,
               (const url::Origin&, const url::Origin&),
               (override, const));
+  MOCK_METHOD(
+      bool,
+      IsEventReportingDestinationAttested,
+      (const url::Origin&,
+       privacy_sandbox::PrivacySandboxAttestationsGatedAPI invoking_api),
+      (override, const));
   MOCK_METHOD(bool,
               IsSharedStorageAllowed,
               (const url::Origin&, const url::Origin&),
@@ -88,18 +94,6 @@ class MockPrivacySandboxSettings
               SetDelegateForTesting,
               (std::unique_ptr<Delegate>),
               (override));
-  MOCK_METHOD(void,
-              SetPrivacySandboxAttestationsMapForTesting,
-              (const privacy_sandbox::PrivacySandboxAttestationsMap&),
-              (override));
-  MOCK_METHOD(void,
-              AddPrivacySandboxAttestationOverride,
-              (const GURL&),
-              (override));
-  MOCK_METHOD(const std::vector<net::SchemefulSite>,
-              GetAttestationOverridesForTesting,
-              (),
-              (const override));
 };
 
 }  // namespace privacy_sandbox_test_util

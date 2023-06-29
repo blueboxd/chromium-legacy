@@ -71,6 +71,11 @@ IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
                             task_runner) {}
 IndexedDBFakeBackingStore::~IndexedDBFakeBackingStore() = default;
 
+leveldb::Status IndexedDBFakeBackingStore::CreateDatabase(
+    blink::IndexedDBDatabaseMetadata& metadata) {
+  return leveldb::Status::OK();
+}
+
 leveldb::Status IndexedDBFakeBackingStore::DeleteDatabase(
     const std::u16string& name,
     TransactionalLevelDBTransaction* transaction) {
@@ -121,6 +126,13 @@ leveldb::Status IndexedDBFakeBackingStore::KeyExistsInObjectStore(
     int64_t object_store_id,
     const IndexedDBKey&,
     RecordIdentifier* found_record_identifier,
+    bool* found) {
+  return leveldb::Status::OK();
+}
+
+leveldb::Status IndexedDBFakeBackingStore::ReadMetadataForDatabaseName(
+    const std::u16string& name,
+    blink::IndexedDBDatabaseMetadata* metadata,
     bool* found) {
   return leveldb::Status::OK();
 }

@@ -95,10 +95,16 @@ namespace content {
 
 namespace {
 
-// Default page dimensions for WPT print reftests (5x3 inches at 72 DPI
-// with 0.5 inch margins).
-const int kWPTPrintWidth = 4 * 72;
-const int kWPTPrintHeight = 2 * 72;
+// TODO(https://github.com/web-platform-tests/wpt/issues/40788): According to
+// http://web-platform-tests.org/writing-tests/print-reftests.html the default
+// page size for print reftests is 5 by 3 inches. But that doesn't match the
+// expectations of existing tests. The WPT test
+// infrastructure/reftest/reftest_match-print.html assumes that the page height
+// is 2in, not 3in. Apparently, there's a secret margin of 0.5 inches being
+// assumed, or something. So use 4 by 2 inches. There are 96 CSS pixels per
+// inch, so multiply by that.
+const int kWPTPrintWidth = 4 * 96;
+const int kWPTPrintHeight = 2 * 96;
 
 // A V8 callback with bound arguments, and the ability to pass additional
 // arguments at time of calling Run().

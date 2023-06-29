@@ -96,9 +96,10 @@ AppInstall::AppInstall(SplashScreen::Maker splash_screen_maker,
 
 AppInstall::~AppInstall() = default;
 
-void AppInstall::Initialize() {
+int AppInstall::Initialize() {
   setup_lock_ =
       ScopedLock::Create(kSetupMutex, updater_scope(), kWaitForSetupLock);
+  return kErrorOk;
 }
 
 void AppInstall::FirstTaskRun() {
@@ -119,8 +120,7 @@ void AppInstall::FirstTaskRun() {
     return;
   }
 
-  const TagParsingResult tag_parsing_result =
-      GetTagArgsForCommandLine(GetCommandLineLegacyCompatible());
+  const TagParsingResult tag_parsing_result(GetTagArgs());
 
   // A tag parsing error is handled as an fatal error.
   if (tag_parsing_result.error != tagging::ErrorCode::kSuccess) {
@@ -153,13 +153,11 @@ void AppInstall::FirstTaskRun() {
 
 void AppInstall::GetVersionDone(const base::Version& version) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  VLOG_IF(1, (version.IsValid()))
-      << "Found active version: " << version.GetString();
+  VLOG_IF(1, version.IsValid()) << "Active version: " << version.GetString();
   if (version.IsValid() && version >= base::Version(kUpdaterVersion)) {
     splash_screen_->Dismiss(base::BindOnce(&AppInstall::MaybeInstallApp, this));
     return;
   }
-
   InstallCandidate(
       updater_scope(),
       base::BindOnce(

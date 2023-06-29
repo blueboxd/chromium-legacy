@@ -349,6 +349,10 @@ const CGFloat kLineSpacingBetweenErrorAndFooter = 12.0f;
   }
 }
 
+- (void)showMigrateToAccountButton {
+  // TODO(crbug.com/1407666): Show the button section.
+}
+
 #pragma mark - Actions
 
 - (void)didTapSaveButton {
@@ -739,6 +743,7 @@ const CGFloat kLineSpacingBetweenErrorAndFooter = 12.0f;
 
 // Returns the footer message.
 - (NSString*)footerMessage {
+  CHECK([_userEmail length] > 0);
   return l10n_util::GetNSStringF(
       IDS_IOS_SETTINGS_AUTOFILL_ACCOUNT_ADDRESS_FOOTER_TEXT,
       base::SysNSStringToUTF16(_userEmail));
@@ -752,11 +757,8 @@ const CGFloat kLineSpacingBetweenErrorAndFooter = 12.0f;
       IDS_IOS_SETTINGS_EDIT_AUTOFILL_ADDRESS_REQUIREMENT_ERROR,
       (int)[self.requiredFieldsWithEmptyValue count]);
 
-  NSString* finalErrorString = error;
-  if (_userEmail != nil) {
-    finalErrorString =
-        [NSString stringWithFormat:@"%@\n%@", error, [self footerMessage]];
-  }
+  NSString* finalErrorString =
+      [NSString stringWithFormat:@"%@\n%@", error, [self footerMessage]];
 
   NSMutableParagraphStyle* paragraphStyle =
       [[NSMutableParagraphStyle alloc] init];

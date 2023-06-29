@@ -19,7 +19,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wallpaper/wallpaper_widget_controller.h"
+#include "ash/wallpaper/views/wallpaper_widget_controller.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/overview/overview_observer.h"
@@ -675,8 +675,8 @@ TEST_F(OverviewControllerTest, OverviewEnterExitWhileDeskAnimation) {
   auto* desks_controller = DesksController::Get();
   desks_controller->NewDesk(DesksCreationRemovalSource::kKeyboard);
   ASSERT_EQ(2u, desks_controller->desks().size());
-  const Desk* desk1 = desks_controller->desks()[0].get();
-  const Desk* desk2 = desks_controller->desks()[1].get();
+  const Desk* desk1 = desks_controller->GetDeskAtIndex(0);
+  const Desk* desk2 = desks_controller->GetDeskAtIndex(1);
 
   ui::ScopedAnimationDurationScaleMode non_zero(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);

@@ -20,7 +20,7 @@ constexpr SkAlpha kWebUiTabStripTabSeparatorAlpha = 0.16 * 255;
 }  // namespace
 
 void AddMaterialTabStripColorMixer(ui::ColorProvider* provider,
-                                   const ui::ColorProviderManager::Key& key) {
+                                   const ui::ColorProviderKey& key) {
   if (!ShouldApplyChromeMaterialOverrides(key)) {
     return;
   }
@@ -45,6 +45,12 @@ void AddMaterialTabStripColorMixer(ui::ColorProvider* provider,
   mixer[kColorTabBackgroundHoverFrameActive] = {ui::kColorSysStateHeaderHover};
   mixer[kColorTabBackgroundHoverFrameInactive] = {
       ui::kColorSysStateHoverOnSubtle};
+
+  mixer[kColorTabBackgroundSelectedFrameActive] = {ui::GetResultingPaintColor(
+      ui::kColorSysStateRippleNeutralOnSubtle, ui::kColorSysStateHeaderHover)};
+  mixer[kColorTabBackgroundSelectedFrameInactive] = {
+      ui::GetResultingPaintColor(ui::kColorSysStateRippleNeutralOnSubtle,
+                                 ui::kColorSysStateHoverOnSubtle)};
 
   /* WebUI Tab Strip colors. */
   mixer[kColorWebUiTabStripBackground] = {ui::kColorSysHeader};

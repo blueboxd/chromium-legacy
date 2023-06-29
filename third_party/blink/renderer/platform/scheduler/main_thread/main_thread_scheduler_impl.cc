@@ -28,9 +28,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
-#include "components/power_scheduler/power_mode.h"
-#include "components/power_scheduler/power_mode_arbiter.h"
-#include "components/power_scheduler/power_mode_voter.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -486,9 +483,6 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
           &main_thread_scheduler_impl->tracing_controller_,
           RenderingPrioritizationStateToString),
       last_frame_time(now),
-      audible_power_mode_voter(
-          power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
-              "PowerModeVoter.Audible")),
       agent_group_schedulers(
           MakeGarbageCollected<
               HeapHashSet<WeakMember<AgentGroupSchedulerImpl>>>()) {}
@@ -853,13 +847,6 @@ MainThreadSchedulerImpl::NewThrottleableTaskQueueForTest(
                           .SetCanRunWhenVirtualTimePaused(false));
 }
 
-scoped_refptr<base::sequence_manager::TaskQueue>
-MainThreadSchedulerImpl::NewTaskQueueForTest() {
-  return sequence_manager_->CreateTaskQueue(
-      base::sequence_manager::TaskQueue::Spec(
-          base::sequence_manager::QueueName::TEST_TQ));
-}
-
 void MainThreadSchedulerImpl::OnShutdownTaskQueue(
     const scoped_refptr<MainThreadTaskQueue>& task_queue) {
   if (was_shutdown_) {
@@ -1094,10 +1081,6 @@ void MainThreadSchedulerImpl::OnAudioStateChanged() {
     return;
 
   main_thread_only().is_audio_playing = is_audio_playing;
-
-  main_thread_only().audible_power_mode_voter->VoteFor(
-      is_audio_playing ? power_scheduler::PowerMode::kAudible
-                       : power_scheduler::PowerMode::kIdle);
 }
 
 std::unique_ptr<MainThreadScheduler::RendererPauseHandle>
@@ -2406,11 +2389,9 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
   if (queue) {
     queue->OnTaskRunTimeReported(task_timing);
 
-    if (RuntimeEnabledFeatures::LongAnimationFrameMonitoringEnabled()) {
-      if (FrameSchedulerImpl* frame_scheduler = queue->GetFrameScheduler()) {
-        frame_scheduler->OnTaskCompleted(task_timing,
-                                         task.GetDesiredExecutionTime());
-      }
+    if (FrameSchedulerImpl* frame_scheduler = queue->GetFrameScheduler()) {
+      frame_scheduler->OnTaskCompleted(task_timing,
+                                       task.GetDesiredExecutionTime());
     }
   }
 

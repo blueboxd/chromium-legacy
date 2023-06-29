@@ -18,6 +18,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
@@ -90,7 +91,8 @@ TEST_F(AnchoredNudgeManagerImplTest, ShowNudge_SingleNudge) {
   anchored_nudge_manager()->Show(nudge_data);
 
   // Ensure the nudge is visible and has set the provided contents.
-  auto nudge = GetShownNudges()[id];
+  raw_ptr<AnchoredNudge, DanglingUntriaged> nudge =
+      raw_ptr<AnchoredNudge, DanglingUntriaged>(GetShownNudges()[id]);
   ASSERT_TRUE(nudge);
   EXPECT_TRUE(nudge->GetVisible());
   EXPECT_EQ(text, nudge->GetBodyText());
@@ -161,7 +163,8 @@ TEST_F(AnchoredNudgeManagerImplTest, ShowNudge_WithButtons) {
   anchored_nudge_manager()->Show(nudge_data);
 
   // Ensure the nudge is visible and has set the provided contents.
-  auto nudge = GetShownNudges()[id];
+  raw_ptr<AnchoredNudge, DanglingUntriaged> nudge =
+      raw_ptr<AnchoredNudge, DanglingUntriaged>(GetShownNudges()[id]);
   EXPECT_TRUE(nudge);
   EXPECT_EQ(dismiss_text, nudge->GetDismissButton()->GetText());
 
@@ -243,7 +246,8 @@ TEST_F(AnchoredNudgeManagerImplTest, ShowNudge_NudgeWithIdAlreadyExists) {
 
   // Show a nudge with some initial contents.
   anchored_nudge_manager()->Show(nudge_data);
-  auto nudge = GetShownNudges()[id];
+  raw_ptr<AnchoredNudge, DanglingUntriaged> nudge =
+      raw_ptr<AnchoredNudge, DanglingUntriaged>(GetShownNudges()[id]);
   EXPECT_EQ(text, nudge->GetBodyText());
   EXPECT_EQ(anchor_view, nudge->GetAnchorView());
 
@@ -292,6 +296,110 @@ TEST_F(AnchoredNudgeManagerImplTest, ShowNudge_AnchorViewWithoutWidget) {
 
   // Anchor view does not have a widget, the nudge should not be created.
   EXPECT_FALSE(GetShownNudges()[id]);
+}
+
+// Tests that a nudge sets the appropriate arrow when it's set to be anchored to
+// the shelf, and updates its arrow whenever the shelf alignment changes.
+TEST_F(AnchoredNudgeManagerImplTest, NudgeAnchoredToShelf) {
+  std::unique_ptr<views::Widget> widget = CreateFramelessTestWidget();
+
+  // Set up nudge data contents.
+  const std::string id = "id";
+  auto* anchor_view = widget->SetContentsView(std::make_unique<views::View>());
+  auto nudge_data = CreateBaseNudgeData(id, anchor_view);
+
+  // Make the nudge set its arrow based on the shelf's position.
+  nudge_data.anchored_to_shelf = true;
+
+  // Set shelf alignment to the left.
+  Shelf* shelf = GetPrimaryShelf();
+  EXPECT_EQ(ShelfAlignment::kBottom, shelf->alignment());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  shelf->SetAlignment(ShelfAlignment::kLeft);
+
+  // Show a nudge, expect its arrow to be aligned with left shelf.
+  anchored_nudge_manager()->Show(nudge_data);
+  EXPECT_TRUE(GetShownNudges()[id]);
+  EXPECT_EQ(views::BubbleBorder::Arrow::LEFT_CENTER,
+            GetShownNudges()[id]->arrow());
+
+  // Cancel the nudge, and show a new nudge with bottom shelf alignment.
+  anchored_nudge_manager()->Cancel(id);
+  shelf->SetAlignment(ShelfAlignment::kBottom);
+  anchored_nudge_manager()->Show(nudge_data);
+  EXPECT_EQ(views::BubbleBorder::Arrow::BOTTOM_CENTER,
+            GetShownNudges()[id]->arrow());
+
+  // Change the shelf alignment to the right while the nudge is still open,
+  // nudge arrow should be updated.
+  shelf->SetAlignment(ShelfAlignment::kRight);
+  EXPECT_EQ(views::BubbleBorder::Arrow::RIGHT_CENTER,
+            GetShownNudges()[id]->arrow());
+}
+
+// Tests that a nudge that is anchored to the shelf is not affected by shelf
+// alignment changes of a display where the nudge does not exist.
+TEST_F(AnchoredNudgeManagerImplTest,
+       NudgeAnchoredToShelf_WithASecondaryDisplay) {
+  // Add a secondary display.
+  UpdateDisplay("800x700,800x700");
+  RootWindowController* const secondary_root_window_controller =
+      Shell::GetRootWindowControllerWithDisplayId(GetSecondaryDisplay().id());
+  Shelf* shelf = GetPrimaryShelf();
+
+  // Set up nudge data contents.
+  const std::string id = "id";
+  auto* anchor_view = shelf->status_area_widget()->unified_system_tray();
+  auto nudge_data = CreateBaseNudgeData(id, anchor_view);
+
+  // Make the nudge set its arrow based on the shelf's position.
+  nudge_data.anchored_to_shelf = true;
+
+  // Set shelf alignment to the left.
+  shelf->SetAlignment(ShelfAlignment::kLeft);
+
+  // Show a nudge, expect its arrow to be aligned with left shelf.
+  anchored_nudge_manager()->Show(nudge_data);
+  EXPECT_TRUE(GetShownNudges()[id]);
+  EXPECT_EQ(views::BubbleBorder::Arrow::LEFT_CENTER,
+            GetShownNudges()[id]->arrow());
+
+  // Test that changing the shelf alignment on the secondary display does not
+  // affect the nudge's arrow, since the nudge lives in the primary display.
+  secondary_root_window_controller->shelf()->SetAlignment(
+      ShelfAlignment::kBottom);
+  EXPECT_EQ(views::BubbleBorder::Arrow::LEFT_CENTER,
+            GetShownNudges()[id]->arrow());
+}
+
+// Tests that a nudge that is anchored to the shelf maintains the shelf visible
+// while the nudge is being shown and the shelf is on auto-hide.
+TEST_F(AnchoredNudgeManagerImplTest, NudgeAnchoredToShelf_ShelfDoesNotHide) {
+  std::unique_ptr<views::Widget> widget = CreateFramelessTestWidget();
+
+  // Set up nudge data contents.
+  const std::string id = "id";
+  auto* anchor_view = widget->SetContentsView(std::make_unique<views::View>());
+  auto nudge_data = CreateBaseNudgeData(id, anchor_view);
+
+  // Make the nudge maintain the shelf visible while it is showing.
+  nudge_data.anchored_to_shelf = true;
+
+  // Verify `shelf` is initially visible.
+  Shelf* shelf = GetPrimaryShelf();
+  EXPECT_TRUE(shelf->IsVisible());
+
+  // Set `shelf` to always auto-hide, it should not be visible.
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+  EXPECT_FALSE(shelf->IsVisible());
+
+  // Show the nudge, `shelf` should be made visible while nudge is showing.
+  anchored_nudge_manager()->Show(nudge_data);
+  EXPECT_TRUE(shelf->IsVisible());
+
+  // Cancel the nudge, `shelf` should be hidden again.
+  anchored_nudge_manager()->Cancel(id);
+  EXPECT_FALSE(shelf->IsVisible());
 }
 
 // Tests that a nudge closes if its anchor view is made invisible.

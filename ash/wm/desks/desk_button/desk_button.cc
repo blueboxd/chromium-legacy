@@ -129,6 +129,7 @@ DeskButton::DeskButton(DeskButtonWidget* desk_button_widget)
   CHECK(!is_expanded_);
 
   desk_name_label_->SetText(abbreviated_desk_name_);
+  desk_name_label_->SetHandlesTooltips(false);
   desk_name_label_->SetHorizontalAlignment(
       gfx::HorizontalAlignment::ALIGN_CENTER);
   desk_name_label_->SetProperty(
@@ -158,6 +159,9 @@ void DeskButton::SetActivation(bool is_activated) {
 
   is_activated_ = is_activated;
 
+  UpdateShelfAutoHideDisabler(disable_shelf_auto_hide_activation_,
+                              !is_activated_);
+
   if (!force_expanded_state_) {
     if (!is_activated_ && is_hovered_) {
       desk_button_widget_->SetExpanded(true);
@@ -174,6 +178,21 @@ void DeskButton::SetActivation(bool is_activated) {
                     : cros_tokens::kCrosSysOnSurface));
 
   MaybeUpdateDeskSwitchButtonVisibility();
+}
+
+std::u16string DeskButton::GetTitleForView(const views::View* view) {
+  if (view == this) {
+    return desk_name_;
+  }
+
+  DesksController* desks_controller = DesksController::Get();
+  const size_t active_desk_index = desks_controller->GetActiveDeskIndex();
+
+  return view == prev_desk_button_
+             ? desks_controller->GetDeskAtIndex(active_desk_index - 1)->name()
+         : view == next_desk_button_
+             ? desks_controller->GetDeskAtIndex(active_desk_index + 1)->name()
+             : std::u16string();
 }
 
 const std::u16string& DeskButton::GetTextForTest() const {
@@ -195,13 +214,15 @@ void DeskButton::OnMouseEntered(const ui::MouseEvent& event) {
 
   is_hovered_ = true;
 
+  UpdateShelfAutoHideDisabler(disable_shelf_auto_hide_hover_, !is_hovered_);
+
   if (is_activated_) {
     return;
   }
 
   if (!is_expanded_ && !force_expanded_state_) {
-    // TODO(b/272383056): Would be better to have the widget register a callback
-    // like "preferred_expanded_state_changed".
+    // TODO(b/272383056): Would be better to have the widget register a
+    // callback like "preferred_expanded_state_changed".
     desk_button_widget_->SetExpanded(true);
   }
 
@@ -215,13 +236,15 @@ void DeskButton::OnMouseExited(const ui::MouseEvent& event) {
 
   is_hovered_ = false;
 
+  UpdateShelfAutoHideDisabler(disable_shelf_auto_hide_hover_, !is_hovered_);
+
   if (is_activated_) {
     return;
   }
 
   if (is_expanded_ && !force_expanded_state_) {
-    // TODO(b/272383056): Would be better to have the widget register a callback
-    // like "preferred_expanded_state_changed".
+    // TODO(b/272383056): Would be better to have the widget register a
+    // callback like "preferred_expanded_state_changed".
     desk_button_widget_->SetExpanded(false);
   }
 
@@ -323,6 +346,22 @@ void DeskButton::MaybeUpdateDeskSwitchButtonVisibility() {
                                 can_show_prev_desk_button);
   next_desk_button_->SetVisible(can_show_desk_switch_buttons &&
                                 can_show_next_desk_button);
+}
+
+void DeskButton::UpdateShelfAutoHideDisabler(
+    absl::optional<Shelf::ScopedDisableAutoHide>& disabler,
+    bool should_enable_shelf_auto_hide) {
+  // If shelf is not set to always hide, no need to disable.
+  if (desk_button_widget_->shelf()->auto_hide_behavior() !=
+      ShelfAutoHideBehavior::kAlways) {
+    return;
+  }
+
+  if (should_enable_shelf_auto_hide) {
+    disabler.reset();
+  } else {
+    disabler.emplace(desk_button_widget_->shelf());
+  }
 }
 
 BEGIN_METADATA(DeskButton, Button)

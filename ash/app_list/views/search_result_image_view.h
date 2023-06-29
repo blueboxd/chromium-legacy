@@ -5,9 +5,6 @@
 #ifndef ASH_APP_LIST_VIEWS_SEARCH_RESULT_IMAGE_VIEW_H_
 #define ASH_APP_LIST_VIEWS_SEARCH_RESULT_IMAGE_VIEW_H_
 
-#include <memory>
-#include <string>
-
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/app_list/views/search_result_base_view.h"
 #include "base/memory/raw_ptr.h"
@@ -24,8 +21,7 @@ class SearchResultImageListView;
 class ASH_EXPORT SearchResultImageView : public SearchResultBaseView {
  public:
   METADATA_HEADER(SearchResultImageView);
-  explicit SearchResultImageView(SearchResultImageListView* list_view,
-                                 std::string dummy_result_id);
+  explicit SearchResultImageView(SearchResultImageListView* list_view);
   SearchResultImageView(const SearchResultImageView&) = delete;
   SearchResultImageView& operator=(const SearchResultImageView&) = delete;
   ~SearchResultImageView() override;
@@ -36,6 +32,10 @@ class ASH_EXPORT SearchResultImageView : public SearchResultBaseView {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
+  gfx::Size CalculatePreferredSize() const override;
+
+  // Updates `preferred_width_`.
+  void ConfigureLayoutForAvailableWidth(int width);
 
   // SearchResultBaseView overrides:
   void OnResultChanged() override;
@@ -51,6 +51,11 @@ class ASH_EXPORT SearchResultImageView : public SearchResultBaseView {
 
   // Parent list view. Owned by views hierarchy.
   raw_ptr<SearchResultImageListView, ExperimentalAsh> const list_view_;
+
+  // The preferred width of the image view which is used to calculate the
+  // preferred size. This is set by the parent container view so that the image
+  // views share the space equally.
+  int preferred_width_ = 0;
 };
 
 }  // namespace ash

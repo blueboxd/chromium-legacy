@@ -311,7 +311,11 @@ using ReauthenticationEvent::kSuccess;
 
 - (void)loadFaviconWithBlockHandler:
     (FaviconLoader::FaviconAttributesCompletionBlock)faviconLoadedBlock {
-  CHECK(_faviconLoader);
+  if (!_faviconLoader) {
+    // Mediator is disconnecting (bottom sheet is being closed). No need to
+    // fetch for the favicon anymore.
+    return;
+  }
   if (!_URL.is_empty()) {
     _faviconLoader->FaviconForPageUrl(
         _URL, kDesiredMediumFaviconSizePt, kMinFaviconSizePt,
@@ -342,7 +346,7 @@ using ReauthenticationEvent::kSuccess;
       break;
     case WebStateListChange::Type::kReplace: {
       if (selection.index == webStateList->active_index()) {
-        [self onWebStateLost];
+        [self onWebStateChange];
       }
       break;
     }
@@ -358,7 +362,7 @@ using ReauthenticationEvent::kSuccess;
                     atIndex:(int)atIndex
                      reason:(ActiveWebStateChangeReason)reason {
   DCHECK_EQ(_webStateList, webStateList);
-  [self onWebStateLost];
+  [self onWebStateChange];
 }
 
 - (void)webStateListDestroyed:(WebStateList*)webStateList {
@@ -366,22 +370,17 @@ using ReauthenticationEvent::kSuccess;
   _forwarder = nullptr;
   _observer = nullptr;
   _webStateList = nullptr;
-  [self onWebStateLost];
+  [self onWebStateChange];
 }
 
 #pragma mark - CRWWebStateObserver
 
 - (void)webStateDestroyed:(web::WebState*)webState {
-  [self onWebStateLost];
-}
-
-- (void)webState:(web::WebState*)webState
-    didFinishNavigation:(web::NavigationContext*)navigation {
-  [self onWebStateLost];
+  [self onWebStateChange];
 }
 
 - (void)renderProcessGoneForWebState:(web::WebState*)webState {
-  [self onWebStateLost];
+  [self onWebStateChange];
 }
 
 #pragma mark - PasswordFetcherDelegate
@@ -399,7 +398,7 @@ using ReauthenticationEvent::kSuccess;
 
 #pragma mark - Private
 
-- (void)onWebStateLost {
+- (void)onWebStateChange {
   _needsRefocus = false;
   _disableBottomSheetOnExit = false;
   [self.consumer dismiss];

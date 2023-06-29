@@ -262,6 +262,7 @@ void URLRequestHttpJob::Start() {
       request_->isolation_info().network_anonymization_key();
   request_info_.possibly_top_frame_origin =
       request_->isolation_info().top_frame_origin();
+  request_info_.frame_origin = request_->isolation_info().frame_origin();
   request_info_.is_subframe_document_resource =
       request_->isolation_info().request_type() ==
       net::IsolationInfo::RequestType::kSubFrame;
@@ -586,6 +587,10 @@ void URLRequestHttpJob::StartTransactionInternal() {
       transaction_->SetEarlyResponseHeadersCallback(
           early_response_headers_callback_);
       transaction_->SetResponseHeadersCallback(response_headers_callback_);
+      if (is_shared_dictionary_read_allowed_callback_) {
+        transaction_->SetIsSharedDictionaryReadAllowedCallback(
+            is_shared_dictionary_read_allowed_callback_);
+      }
 
       if (!throttling_entry_.get() ||
           !throttling_entry_->ShouldRejectRequest(*request_)) {
@@ -1589,6 +1594,13 @@ void URLRequestHttpJob::SetEarlyResponseHeadersCallback(
   DCHECK(!transaction_);
   DCHECK(!early_response_headers_callback_);
   early_response_headers_callback_ = std::move(callback);
+}
+
+void URLRequestHttpJob::SetIsSharedDictionaryReadAllowedCallback(
+    base::RepeatingCallback<bool()> callback) {
+  DCHECK(!transaction_);
+  DCHECK(!is_shared_dictionary_read_allowed_callback_);
+  is_shared_dictionary_read_allowed_callback_ = std::move(callback);
 }
 
 void URLRequestHttpJob::SetResponseHeadersCallback(

@@ -183,11 +183,10 @@ TEST_P(V4L2MinigbmTest, AllocateAndCompareWithMinigbm) {
   const auto video_codec_profile = std::get<0>(GetParam());
   const gfx::Size resolution = std::get<1>(GetParam());
 
-  scoped_refptr<V4L2Device> device = V4L2Device::Create();
-  ASSERT_TRUE(device);
+  scoped_refptr<V4L2Device> device(new V4L2Device());
 
-  const auto fourcc_stateful = V4L2Device::VideoCodecProfileToV4L2PixFmt(
-      video_codec_profile, /*slice_based=*/false);
+  const auto fourcc_stateful =
+      VideoCodecProfileToV4L2PixFmt(video_codec_profile, /*slice_based=*/false);
   const bool is_stateful =
       device->Open(V4L2Device::Type::kDecoder, fourcc_stateful);
 

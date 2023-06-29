@@ -428,6 +428,11 @@ BASE_FEATURE(kCdmProcessSiteIsolation,
              "CdmProcessSiteIsolation",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables the "Copy Video Frame" context menu item.
+BASE_FEATURE(kContextMenuCopyVideoFrame,
+             "ContextMenuCopyVideoFrame",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
 // If echo cancellation for a mic signal is requested, mix and cancel all audio
 // playback going to a specific output device in the audio service.
@@ -505,7 +510,7 @@ BASE_FEATURE(kCrOSEnforceSystemAecAgc,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kCrOSEnforceSystemAec,
              "CrOSEnforceSystemAec",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCrOSDspBasedAecDeactivatedGroups,
              "CrOSDspBasedAecDeactivatedGroups",
@@ -1325,6 +1330,21 @@ BASE_FEATURE(kUseTaskRunnerForMojoVEAService,
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 );
+
+// Feature flag to run the MojoAudioDecoderService in a sequence different than
+// the other mojo media services. On some Android devices, MediaCodec may block
+// the thread which leads to frequent audio decoder underrun in renderer.
+// Running the audio decoder in a separate sequence can improve the performance.
+// Note: running audio decoder in a separate thread/sequence will cause
+// multithread access to mojo media services. For Android audio decoder, the
+// thread safety is easier to guarantee because:
+//   1. The audio decoder and most of the other mojo media services don't cross
+//   reference each other.
+//   2. The only exception is CDM so we use a lock inside MojoCdmServiceContext
+//   for thread safety.
+BASE_FEATURE(kUseTaskRunnerForMojoAudioDecoderService,
+             "UseTaskRunnerForMojoAudioDecoderService",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 std::string GetEffectiveAutoplayPolicy(const base::CommandLine& command_line) {
   // Return the autoplay policy set in the command line, if any.

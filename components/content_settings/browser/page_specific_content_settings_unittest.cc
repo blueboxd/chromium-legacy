@@ -65,12 +65,6 @@ class MockPageSpecificContentSettingsDelegate
   MOCK_METHOD(void, UpdateLocationBar, ());
   MOCK_METHOD(void, OnContentAllowed, (ContentSettingsType type));
   MOCK_METHOD(void, OnContentBlocked, (ContentSettingsType type));
-  MOCK_METHOD(void,
-              OnCookieAccessAllowed,
-              (const net::CookieList& accessed_cookies, content::Page& page));
-  MOCK_METHOD(void,
-              OnStorageAccessAllowed,
-              (StorageType, const url::Origin&, content::Page&));
 };
 
 }  // namespace
@@ -310,6 +304,75 @@ TEST_F(PageSpecificContentSettingsTest, AllowedContent) {
                                   origin,
                                   {*cookie2},
                                   true});
+  ASSERT_TRUE(content_settings->IsContentAllowed(ContentSettingsType::COOKIES));
+  ASSERT_TRUE(content_settings->IsContentBlocked(ContentSettingsType::COOKIES));
+}
+
+TEST_F(PageSpecificContentSettingsTest, InterestGroupJoin) {
+  NavigateAndCommit(GURL("http://google.com"));
+  PageSpecificContentSettings* content_settings =
+      PageSpecificContentSettings::GetForFrame(
+          web_contents()->GetPrimaryMainFrame());
+
+  ASSERT_FALSE(
+      content_settings->IsContentAllowed(ContentSettingsType::COOKIES));
+  ASSERT_FALSE(
+      content_settings->IsContentBlocked(ContentSettingsType::COOKIES));
+
+  // Check that a blocking an interest join does not result in a blocked cookie
+  // report.
+  auto api_origin = url::Origin::Create(GURL("https://embedded.com"));
+  content_settings->OnInterestGroupJoined(api_origin,
+                                          /*blocked_by_policy=*/true);
+
+  ASSERT_FALSE(
+      content_settings->IsContentAllowed(ContentSettingsType::COOKIES));
+  ASSERT_FALSE(
+      content_settings->IsContentBlocked(ContentSettingsType::COOKIES));
+
+  // But that a successful join results in cookie access.
+  content_settings->OnInterestGroupJoined(api_origin,
+                                          /*blocked_by_policy=*/false);
+  ASSERT_TRUE(content_settings->IsContentAllowed(ContentSettingsType::COOKIES));
+  ASSERT_FALSE(
+      content_settings->IsContentBlocked(ContentSettingsType::COOKIES));
+}
+
+TEST_F(PageSpecificContentSettingsTest, BrowsingDataAccessed) {
+  NavigateAndCommit(GURL("http://google.com"));
+  PageSpecificContentSettings* content_settings =
+      PageSpecificContentSettings::GetForFrame(
+          web_contents()->GetPrimaryMainFrame());
+
+  ASSERT_FALSE(
+      content_settings->IsContentAllowed(ContentSettingsType::COOKIES));
+  ASSERT_FALSE(
+      content_settings->IsContentBlocked(ContentSettingsType::COOKIES));
+
+  // Only some browsing data types should be reported as blocked cookies.
+  auto origin = url::Origin::Create(GURL("https://embedded.com"));
+  content_settings->OnBrowsingDataAccessed(
+      origin, BrowsingDataModel::StorageType::kTrustTokens,
+      /*blocked=*/true);
+
+  ASSERT_FALSE(
+      content_settings->IsContentAllowed(ContentSettingsType::COOKIES));
+  ASSERT_FALSE(
+      content_settings->IsContentBlocked(ContentSettingsType::COOKIES));
+
+  auto storage_key = blink::StorageKey::CreateFirstParty(origin);
+  content_settings->OnBrowsingDataAccessed(
+      storage_key, BrowsingDataModel::StorageType::kLocalStorage,
+      /*blocked=*/true);
+
+  ASSERT_FALSE(
+      content_settings->IsContentAllowed(ContentSettingsType::COOKIES));
+  ASSERT_TRUE(content_settings->IsContentBlocked(ContentSettingsType::COOKIES));
+
+  // But allowed accesses should be reported.
+  content_settings->OnBrowsingDataAccessed(
+      origin, BrowsingDataModel::StorageType::kTrustTokens,
+      /*blocked=*/false);
   ASSERT_TRUE(content_settings->IsContentAllowed(ContentSettingsType::COOKIES));
   ASSERT_TRUE(content_settings->IsContentBlocked(ContentSettingsType::COOKIES));
 }
@@ -778,10 +841,9 @@ TEST_F(PageSpecificContentSettingsWithPrerenderTest,
       PageSpecificContentSettings::GetForFrame(prerender_frame);
   ASSERT_NE(pscs, nullptr);
 
-  EXPECT_CALL(*mock_delegate, OnCookieAccessAllowed).Times(0);
-  EXPECT_CALL(*mock_delegate, OnStorageAccessAllowed).Times(0);
+  EXPECT_CALL(*mock_delegate, OnContentAllowed).Times(0);
+  EXPECT_CALL(*mock_delegate, OnContentBlocked).Times(0);
 
-  const bool blocked_by_policy = false;
   const GURL url = GURL("http://google.com");
   const url::Origin origin = url::Origin::Create(url);
   auto cookie = net::CanonicalCookie::Create(
@@ -791,29 +853,13 @@ TEST_F(PageSpecificContentSettingsWithPrerenderTest,
                            url,
                            url,
                            {*cookie},
-                           blocked_by_policy});
-  pscs->OnStorageAccessed(StorageType::INDEXED_DB, url, blocked_by_policy,
-                          prerender_frame);
-  pscs->OnStorageAccessed(StorageType::LOCAL_STORAGE, url, blocked_by_policy,
-                          prerender_frame);
-  pscs->OnStorageAccessed(StorageType::DATABASE, url, blocked_by_policy,
-                          prerender_frame);
+                           /*blocked_by_policy=*/false});
+  pscs->OnStorageAccessed(StorageType::INDEXED_DB, url,
+                          /*blocked_by_policy=*/true, prerender_frame);
 
-  content::Page& prerender_page = prerender_frame->GetPage();
-  EXPECT_CALL(*mock_delegate,
-              OnCookieAccessAllowed(testing::_, testing::Ref(prerender_page)))
+  EXPECT_CALL(*mock_delegate, OnContentAllowed(ContentSettingsType::COOKIES))
       .Times(1);
-  EXPECT_CALL(*mock_delegate,
-              OnStorageAccessAllowed(StorageType::INDEXED_DB, origin,
-                                     testing::Ref(prerender_page)))
-      .Times(1);
-  EXPECT_CALL(*mock_delegate,
-              OnStorageAccessAllowed(StorageType::LOCAL_STORAGE, origin,
-                                     testing::Ref(prerender_page)))
-      .Times(1);
-  EXPECT_CALL(*mock_delegate,
-              OnStorageAccessAllowed(StorageType::DATABASE, origin,
-                                     testing::Ref(prerender_page)))
+  EXPECT_CALL(*mock_delegate, OnContentBlocked(ContentSettingsType::COOKIES))
       .Times(1);
   std::unique_ptr<content::NavigationSimulator> navigation =
       content::NavigationSimulator::CreateRendererInitiated(
@@ -968,24 +1014,11 @@ TEST_F(PageSpecificContentSettingsWithFencedFrameTest, DelegateUpdatesSent) {
       PageSpecificContentSettings::GetForFrame(fenced_frame_root);
   ASSERT_NE(ff_pscs, nullptr);
 
-  content::Page& ff_page = fenced_frame_root->GetPage();
-  EXPECT_CALL(*mock_delegate,
-              OnCookieAccessAllowed(testing::_, testing::Ref(ff_page)))
+  EXPECT_CALL(*mock_delegate, OnContentAllowed(ContentSettingsType::COOKIES))
       .Times(1);
-  EXPECT_CALL(*mock_delegate,
-              OnStorageAccessAllowed(StorageType::INDEXED_DB, ff_origin,
-                                     testing::Ref(ff_page)))
-      .Times(1);
-  EXPECT_CALL(*mock_delegate,
-              OnStorageAccessAllowed(StorageType::LOCAL_STORAGE, ff_origin,
-                                     testing::Ref(ff_page)))
-      .Times(1);
-  EXPECT_CALL(*mock_delegate,
-              OnStorageAccessAllowed(StorageType::DATABASE, ff_origin,
-                                     testing::Ref(ff_page)))
+  EXPECT_CALL(*mock_delegate, OnContentBlocked(ContentSettingsType::COOKIES))
       .Times(1);
 
-  const bool blocked_by_policy = false;
   auto cookie = net::CanonicalCookie::Create(
       ff_url, "k=v", base::Time::Now(), absl::nullopt /* server_time */,
       absl::nullopt /* cookie_partition_key */);
@@ -993,13 +1026,9 @@ TEST_F(PageSpecificContentSettingsWithFencedFrameTest, DelegateUpdatesSent) {
                               ff_url,
                               ff_url,
                               {*cookie},
-                              blocked_by_policy});
-  ff_pscs->OnStorageAccessed(StorageType::INDEXED_DB, ff_url, blocked_by_policy,
-                             fenced_frame_root);
-  ff_pscs->OnStorageAccessed(StorageType::LOCAL_STORAGE, ff_url,
-                             blocked_by_policy, fenced_frame_root);
-  ff_pscs->OnStorageAccessed(StorageType::DATABASE, ff_url, blocked_by_policy,
-                             fenced_frame_root);
+                              /*blocked_by_policy=*/false});
+  ff_pscs->OnStorageAccessed(StorageType::INDEXED_DB, ff_url,
+                             /*blocked_by_policy=*/true, fenced_frame_root);
 }
 
 TEST_F(PageSpecificContentSettingsWithFencedFrameTest,

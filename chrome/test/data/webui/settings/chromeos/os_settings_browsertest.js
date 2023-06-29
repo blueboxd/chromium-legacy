@@ -182,10 +182,11 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
 
 [['AboutPage', 'os_about_page_tests.js'],
  ['ApnDetailDialog', 'apn_detail_dialog_tests.js'],
- [
-   'ApnSubpage', 'apn_subpage_tests.js',
-   {enabled: ['ash::features::kApnRevamp']}
- ],
+ // TODO(crbug.com/1455866): Enable the ApnSubpage test.
+ // [
+ //   'ApnSubpage', 'apn_subpage_tests.js',
+ //   {enabled: ['ash::features::kApnRevamp']}
+ // ],
  ['AppsPage', 'apps_page_test.js'],
  ['AppNotificationsSubpage', 'app_notifications_subpage_tests.js'],
  ['AppManagementFileHandlingItem', 'app_management/file_handling_item_test.js'],
@@ -193,10 +194,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  ['AppManagementToggleRow', 'app_management/toggle_row_test.js'],
  ['CellularNetworksList', 'cellular_networks_list_test.js'],
  ['CellularRoamingToggleButton', 'cellular_roaming_toggle_button_test.js'],
- [
-   'CupsPrinterLandingPage', 'cups_printer_landing_page_tests.js',
-   {enabled: ['ash::features::kPrinterSettingsPrinterStatus']}
- ],
  [
    'CupsPrinterPage', 'cups_printer_page_tests.js',
    {enabled: ['ash::features::kPrinterSettingsRevamp']}
@@ -215,6 +212,11 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  [
    'DevicePageInputDeviceMojoInterfaceProvider',
    'device_page/input_device_mojo_interface_provider_test.js',
+   {enabled: ['ash::features::kInputDeviceSettingsSplit']}
+ ],
+ [
+   'DevicePageKeyboardSixPackKeyRow',
+   'device_page/keyboard_six_pack_key_row_test.js',
    {enabled: ['ash::features::kInputDeviceSettingsSplit']}
  ],
  [
@@ -278,8 +280,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  [
    'InternetPage', 'internet_page_tests.js', {
      enabled: [
-       'ash::features::kApnRevamp', 'ash::features::kPasspointSettings',
-       'ash::features::kPasspointARCSupport'
+       'ash::features::kApnRevamp',
+       'ash::features::kHotspot',
+       'ash::features::kPasspointSettings',
+       'ash::features::kPasspointARCSupport',
      ]
    }
  ],
@@ -367,6 +371,15 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  [
    'MainPageContainerPageDisplayer',
    'main_page_container/page_displayer_test.js',
+ ],
+ [
+   'MainPageContainerRouteNavigation',
+   'main_page_container/route_navigation_test.js',
+   {
+     enabled: [
+       'ash::features::kOsSettingsRevampWayfinding',
+     ],
+   },
  ],
  ['ManageUsersSubpage', 'manage_users_subpage_tests.js'],
  // TODO(b/208932892): Re-enable once flakiness is fixed.
@@ -596,6 +609,11 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  ],
  ['OsPrintingPage', 'os_printing_page/os_printing_page_test.js'],
  [
+   'OsPrintingPageCupsPrinterLandingPage',
+   'os_printing_page/cups_printer_landing_page_test.js',
+   {enabled: ['ash::features::kPrinterSettingsPrinterStatus']}
+ ],
+ [
    'OsPrintingPageCupsPrintersEntry',
    'os_printing_page/cups_printers_entry_test.js', {
      enabled: [
@@ -627,7 +645,11 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  ['OsSettingsHatsUi', 'os_settings_ui/os_settings_hats_ui_test.js'],
  ['OsSettingsMenu', 'os_settings_menu/os_settings_menu_test.js'],
  ['OsSettingsUi', 'os_settings_ui/os_settings_ui_test.js'],
- ['OsSettingsUiAboutPage', 'os_settings_ui/os_settings_ui_about_page_test.js'],
+ [
+   'OsSettingsUiAboutPage',
+   'os_settings_ui/os_settings_ui_about_page_test.js',
+   {disabled: ['ash::features::kOsSettingsRevampWayfinding']},
+ ],
  ['OsSettingsUiMenu', 'os_settings_ui/os_settings_ui_menu_test.js'],
  [
    'OsSettingsUiPageAvailability',
@@ -671,7 +693,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  [
    'SelectToSpeakSubpage',
    'select_to_speak_subpage_tests.js',
-   {enabled: ['features::kAccessibilitySelectToSpeakPageMigration']},
  ],
  ['SettingsTrafficCounters', 'settings_traffic_counters_test.js'],
  ['SwitchAccessSetupGuideDialog', 'switch_access_setup_guide_dialog_test.js'],

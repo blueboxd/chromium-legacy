@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
+#import "ios/chrome/browser/ui/lens/lens_availability.h"
 #import "ios/chrome/browser/ui/menu/browser_action_factory.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_consumer.h"
 #import "ios/chrome/browser/url_loading/image_search_param_generator.h"
@@ -31,6 +32,7 @@
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/grit/ios_strings.h"
+#import "ios/public/provider/chrome/browser/lens/lens_api.h"
 #import "ios/public/provider/chrome/browser/voice_search/voice_search_api.h"
 #import "ios/web/public/favicon/favicon_status.h"
 #import "ios/web/public/navigation/navigation_item.h"
@@ -62,7 +64,6 @@
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
   std::unique_ptr<OverlayPresenterObserverBridge> _overlayObserver;
-  BOOL _inBatchOperation;
 }
 
 - (instancetype)init {
@@ -159,6 +160,7 @@
 - (void)didChangeWebStateList:(WebStateList*)webStateList
                        change:(const WebStateListChange&)change
                     selection:(const WebStateSelection&)selection {
+  DCHECK_EQ(_webStateList, webStateList);
   switch (change.type()) {
     case WebStateListChange::Type::kSelectionOnly:
       // TODO(crbug.com/1442546): Move the implementation from
@@ -166,10 +168,14 @@
       // here. Note that here is reachable only when `reason` ==
       // ActiveWebStateChangeReason::Activated.
       break;
-    case WebStateListChange::Type::kDetach:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didDetachWebState:atIndex: to here.
+    case WebStateListChange::Type::kDetach: {
+      if (webStateList->IsBatchInProgress()) {
+        return;
+      }
+
+      [self.consumer setTabCount:_webStateList->count() addedInBackground:NO];
       break;
+    }
     case WebStateListChange::Type::kMove:
       // Do nothing when a WebState is moved.
       break;
@@ -177,26 +183,15 @@
       // Do nothing when a WebState is replaced.
       break;
     case WebStateListChange::Type::kInsert: {
-      DCHECK_EQ(_webStateList, webStateList);
-      if (_inBatchOperation) {
+      if (webStateList->IsBatchInProgress()) {
         return;
       }
 
       [self.consumer setTabCount:_webStateList->count()
                addedInBackground:!selection.activating];
+      break;
     }
   }
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didDetachWebState:(web::WebState*)webState
-              atIndex:(int)index {
-  DCHECK_EQ(_webStateList, webStateList);
-  if (_inBatchOperation) {
-    return;
-  }
-
-  [self.consumer setTabCount:_webStateList->count() addedInBackground:NO];
 }
 
 - (void)webStateList:(WebStateList*)webStateList
@@ -208,16 +203,8 @@
   self.webState = newWebState;
 }
 
-- (void)webStateListWillBeginBatchOperation:(WebStateList*)webStateList {
-  DCHECK_EQ(_webStateList, webStateList);
-  DCHECK(!_inBatchOperation);
-  _inBatchOperation = YES;
-}
-
 - (void)webStateListBatchOperationEnded:(WebStateList*)webStateList {
   DCHECK_EQ(_webStateList, webStateList);
-  DCHECK(_inBatchOperation);
-  _inBatchOperation = NO;
   [self.consumer setTabCount:_webStateList->count() addedInBackground:NO];
 }
 
@@ -340,6 +327,9 @@
         setLoadingProgressFraction:self.webState->GetLoadingProgress()];
   }
   [self updateShareMenuForWebState:self.webState];
+  if (base::FeatureList::IsEnabled(kThemeColorInToolbar)) {
+    [self.consumer setPageThemeColor:self.webState->GetThemeColor()];
+  }
 }
 
 /// Updates the consumer with the new forward and back states.
@@ -434,14 +424,23 @@
 
 /// Returns the menu for the new tab button.
 - (UIMenu*)menuForNewTabButton {
-  UIAction* QRCodeSearch = [self.actionFactory actionToShowQRScanner];
   UIAction* voiceSearch = [self.actionFactory actionToStartVoiceSearch];
   UIAction* newSearch = [self.actionFactory actionToStartNewSearch];
   UIAction* newIncognitoSearch =
       [self.actionFactory actionToStartNewIncognitoSearch];
+  UIAction* cameraSearch;
 
-  NSArray* staticActions =
-      @[ newSearch, newIncognitoSearch, voiceSearch, QRCodeSearch ];
+  const bool useLens =
+      lens_availability::CheckAndLogAvailabilityForLensEntryPoint(
+          LensEntrypoint::PlusButton, [self isGoogleDefaultSearchEngine]);
+  NSArray* staticActions;
+  if (useLens) {
+    cameraSearch = [self.actionFactory
+        actionToSearchWithLensWithEntryPoint:LensEntrypoint::PlusButton];
+  } else {
+    cameraSearch = [self.actionFactory actionToShowQRScanner];
+  }
+  staticActions = @[ newSearch, newIncognitoSearch, voiceSearch, cameraSearch ];
 
   UIMenuElement* clipboardAction = [self menuElementForPasteboard];
 
@@ -503,6 +502,17 @@
   int index = self.webState->GetNavigationManager()->GetIndexOfItem(item);
   DCHECK_NE(index, -1);
   self.webState->GetNavigationManager()->GoToIndex(index);
+}
+
+- (BOOL)isGoogleDefaultSearchEngine {
+  DCHECK(self.templateURLService);
+  const TemplateURL* defaultURL =
+      self.templateURLService->GetDefaultSearchProvider();
+  BOOL isGoogleDefaultSearchProvider =
+      defaultURL &&
+      defaultURL->GetEngineType(self.templateURLService->search_terms_data()) ==
+          SEARCH_ENGINE_GOOGLE;
+  return isGoogleDefaultSearchProvider;
 }
 
 @end

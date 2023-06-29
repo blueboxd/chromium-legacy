@@ -27,6 +27,7 @@
 #include "net/base/load_states.h"
 #include "net/base/network_delegate.h"
 #include "net/base/transport_info.h"
+#include "net/base/upload_progress.h"
 #include "net/cookies/cookie_setting_override.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
@@ -53,6 +54,7 @@
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "services/network/resource_scheduler/resource_scheduler.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
+#include "services/network/shared_dictionary/shared_dictionary_access_checker.h"
 #include "services/network/trust_tokens/pending_trust_token_store.h"
 #include "services/network/trust_tokens/trust_token_request_helper.h"
 #include "services/network/trust_tokens/trust_token_request_helper_factory.h"
@@ -126,6 +128,24 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
     base::WeakPtr<mojom::URLLoaderClient> sync_client_;
   };
 
+  // A subset of the fields in mojom::LoadInfo.
+  struct PartialLoadInfo final {
+    PartialLoadInfo() = default;
+    PartialLoadInfo(net::LoadStateWithParam load_state,
+                    net::UploadProgress upload_progress);
+
+    // Avoid accidentally copying this object as `load_state` contains a string.
+    PartialLoadInfo(const PartialLoadInfo&) = delete;
+    PartialLoadInfo& operator=(const PartialLoadInfo&) = delete;
+
+    // Moving it is good.
+    PartialLoadInfo(PartialLoadInfo&&) = default;
+    PartialLoadInfo& operator=(PartialLoadInfo&&) = default;
+
+    net::LoadStateWithParam load_state;
+    net::UploadProgress upload_progress;
+  };
+
   // |delete_callback| tells the URLLoader's owner to destroy the URLLoader.
   //
   // |trust_token_helper_factory| must be non-null exactly when the request has
@@ -159,6 +179,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder,
       std::unique_ptr<TrustTokenRequestHelperFactory>
           trust_token_helper_factory,
+      std::unique_ptr<SharedDictionaryAccessChecker> shared_dictionary_checker,
       mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer,
       mojo::PendingRemote<mojom::TrustTokenAccessObserver> trust_token_observer,
       mojo::PendingRemote<mojom::URLLoaderNetworkServiceObserver>
@@ -269,7 +290,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   void SetEnableReportingRawHeaders(bool enable);
 
-  mojom::LoadInfoPtr CreateLoadInfo();
+  // Returns a subset of the info in mojom::LoadInfo. This is sufficient to make
+  // a decision on whether to call CreateLoadInfo() for this loader.
+  PartialLoadInfo GetPartialLoadInfo() const;
+
+  // Returns a mojom::LoadInfo, reusing the data returned by
+  // GetPartialLoadInfo().
+  mojom::LoadInfoPtr CreateLoadInfo(const PartialLoadInfo& partial_load_info);
 
   // Gets the URLLoader associated with this request.
   static URLLoader* ForRequest(const net::URLRequest& request);
@@ -417,6 +444,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   void SetRawResponseHeaders(scoped_refptr<const net::HttpResponseHeaders>);
   void NotifyEarlyResponse(scoped_refptr<const net::HttpResponseHeaders>);
   void SetRawRequestHeadersAndNotify(net::HttpRawRequestHeaders);
+  bool IsSharedDictionaryReadAllowed();
   void DispatchOnRawRequest(
       std::vector<network::mojom::HttpRawHeaderPairPtr> headers);
   bool DispatchOnRawResponse();
@@ -546,10 +574,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   mojo::ScopedDataPipeConsumerHandle consumer_handle_;
 
   // Sniffing state and CORB state.
-  std::unique_ptr<corb::ResponseAnalyzer> corb_analyzer_;
   bool is_more_corb_sniffing_needed_ = false;
   bool is_more_mime_sniffing_needed_ = false;
   const raw_ref<corb::PerFactoryState> per_factory_corb_state_;
+  // `corb_analyzer_` must be destructed before `per_factory_corb_state_`.
+  std::unique_ptr<corb::ResponseAnalyzer> corb_analyzer_;
 
   std::unique_ptr<ResourceScheduler::ScheduledResourceRequest>
       resource_scheduler_request_handle_;
@@ -633,6 +662,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // codes, like kFailedPrecondition (outbound) and kBadResponse (inbound) are
   // specific to one direction.
   absl::optional<mojom::TrustTokenOperationStatus> trust_token_status_;
+
+  // This is used to determine whether it is allowed to use a dictionary when
+  // there is a matching shared dictionary for the request.
+  std::unique_ptr<SharedDictionaryAccessChecker> shared_dictionary_checker_;
 
   // Request helper responsible for orchestrating Attribution operations
   // (https://github.com/WICG/attribution-reporting-api). Only set if the

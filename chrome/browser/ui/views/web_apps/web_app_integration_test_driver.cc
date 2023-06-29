@@ -46,6 +46,8 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_test.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/web_app_startup_utils.h"
@@ -112,6 +114,7 @@
 #include "components/webapps/browser/uninstall_result_code.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -126,6 +129,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -1101,6 +1105,34 @@ void WebAppIntegrationTestDriver::EnableRunOnOsLoginFromAppHome(Site site) {
   app_home_page_handler.SetRunOnOsLoginMode(
       app_id, web_app::RunOnOsLoginMode::kWindowed);
 #endif
+  AfterStateChangeAction();
+}
+
+void WebAppIntegrationTestDriver::EnterFullScreenApp() {
+  if (!BeforeStateChangeAction(__FUNCTION__)) {
+    return;
+  }
+  FullscreenNotificationObserver fullscreen_observer(app_browser());
+  FullscreenController* fullscreen_controller =
+      app_browser()->exclusive_access_manager()->fullscreen_controller();
+  ASSERT_FALSE(fullscreen_controller->IsFullscreenForBrowser());
+  fullscreen_controller->ToggleBrowserFullscreenMode();
+  fullscreen_observer.Wait();
+  ASSERT_TRUE(fullscreen_controller->IsFullscreenForBrowser());
+  AfterStateChangeAction();
+}
+
+void WebAppIntegrationTestDriver::ExitFullScreenApp() {
+  if (!BeforeStateChangeAction(__FUNCTION__)) {
+    return;
+  }
+  FullscreenNotificationObserver fullscreen_observer(app_browser());
+  FullscreenController* fullscreen_controller =
+      app_browser()->exclusive_access_manager()->fullscreen_controller();
+  ASSERT_TRUE(fullscreen_controller->IsFullscreenForBrowser());
+  fullscreen_controller->ToggleBrowserFullscreenMode();
+  fullscreen_observer.Wait();
+  ASSERT_FALSE(fullscreen_controller->IsFullscreenForBrowser());
   AfterStateChangeAction();
 }
 
@@ -2649,6 +2681,26 @@ void WebAppIntegrationTestDriver::CheckAppNavigationIsStartUrl() {
   AfterStateCheckAction();
 }
 
+void WebAppIntegrationTestDriver::CheckAppToolbarVisible() {
+  if (!BeforeStateCheckAction(__FUNCTION__)) {
+    return;
+  }
+  ASSERT_TRUE(app_browser());
+  BrowserView* app_view = BrowserView::GetBrowserViewForBrowser(app_browser());
+  ASSERT_TRUE(app_view->web_app_frame_toolbar_for_testing()->GetVisible());
+  AfterStateCheckAction();
+}
+
+void WebAppIntegrationTestDriver::CheckAppToolbarNotVisible() {
+  if (!BeforeStateCheckAction(__FUNCTION__)) {
+    return;
+  }
+  ASSERT_TRUE(app_browser());
+  BrowserView* app_view = BrowserView::GetBrowserViewForBrowser(app_browser());
+  ASSERT_FALSE(app_view->web_app_frame_toolbar_for_testing()->GetVisible());
+  AfterStateCheckAction();
+}
+
 void WebAppIntegrationTestDriver::CheckBrowserNavigation(Site site) {
   if (!BeforeStateCheckAction(__FUNCTION__)) {
     return;
@@ -2926,10 +2978,12 @@ void WebAppIntegrationTestDriver::CheckInstallIconShown() {
   if (!BeforeStateCheckAction(__FUNCTION__)) {
     return;
   }
-  auto* app_banner_manager =
-      webapps::TestAppBannerManagerDesktop::FromWebContents(
-          GetCurrentTab(browser()));
-  app_banner_manager->WaitForInstallableCheck();
+  content::WebContents* web_contents = GetCurrentTab(browser());
+  if (webapps::AppBannerManagerDesktop::FromWebContents(web_contents)) {
+    auto* app_banner_manager =
+        webapps::TestAppBannerManagerDesktop::FromWebContents(web_contents);
+    app_banner_manager->WaitForInstallableCheck();
+  }
   EXPECT_TRUE(pwa_install_view()->GetVisible());
   AfterStateCheckAction();
 }
@@ -2940,10 +2994,12 @@ void WebAppIntegrationTestDriver::CheckInstallIconNotShown() {
   if (!BeforeStateCheckAction(__FUNCTION__)) {
     return;
   }
-  auto* app_banner_manager =
-      webapps::TestAppBannerManagerDesktop::FromWebContents(
-          GetCurrentTab(browser()));
-  app_banner_manager->WaitForInstallableCheck();
+  content::WebContents* web_contents = GetCurrentTab(browser());
+  if (webapps::AppBannerManagerDesktop::FromWebContents(web_contents)) {
+    auto* app_banner_manager =
+        webapps::TestAppBannerManagerDesktop::FromWebContents(web_contents);
+    app_banner_manager->WaitForInstallableCheck();
+  }
   EXPECT_FALSE(pwa_install_view()->GetVisible());
   AfterStateCheckAction();
 }

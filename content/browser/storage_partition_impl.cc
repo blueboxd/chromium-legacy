@@ -111,6 +111,7 @@
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_result.h"
 #include "content/public/browser/private_aggregation_data_model.h"
+#include "content/public/browser/private_network_device_delegate.h"
 #include "content/public/browser/service_process_host.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
@@ -131,10 +132,13 @@
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/shared_dictionary_access_observer.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
+#include "services/network/public/mojom/url_loader_network_service_observer.mojom.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -145,6 +149,7 @@
 #include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-shared.h"
+#include "third_party/blink/public/mojom/private_network_device/private_network_device.mojom.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/scheme_host_port.h"
 
@@ -1184,6 +1189,49 @@ class StoragePartitionImpl::ServiceWorkerTrustTokenAccessObserver
   raw_ptr<StoragePartitionImpl> storage_partition_;
 };
 
+class StoragePartitionImpl::ServiceWorkerSharedDictionaryAccessObserver
+    : public network::mojom::SharedDictionaryAccessObserver {
+ public:
+  explicit ServiceWorkerSharedDictionaryAccessObserver(
+      StoragePartitionImpl* storage_partition)
+      : storage_partition_(storage_partition) {}
+
+ private:
+  void Clone(
+      mojo::PendingReceiver<network::mojom::SharedDictionaryAccessObserver>
+          observer) override {
+    storage_partition_->service_worker_shared_dictionary_observers_.Add(
+        std::make_unique<ServiceWorkerSharedDictionaryAccessObserver>(
+            storage_partition_),
+        std::move(observer));
+  }
+
+  void OnSharedDictionaryAccessed(
+      network::mojom::SharedDictionaryAccessDetailsPtr details) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context =
+        storage_partition_->GetServiceWorkerContext();
+
+    std::vector<GlobalRenderFrameHostId> destinations =
+        *service_worker_context->GetWindowClientFrameRoutingIds(
+            blink::StorageKey::CreateFirstParty(
+                details->isolation_key.frame_origin()));
+    if (destinations.empty()) {
+      return;
+    }
+
+    for (GlobalRenderFrameHostId frame_id : destinations) {
+      if (RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(frame_id)) {
+        rfh->OnSharedDictionaryAccessed(mojo::Clone(details));
+      }
+    }
+  }
+
+  // `storage_partition_` owns this object via UniqueReceiverSet
+  // (service_worker_shared_dictionary_observers_).
+  raw_ptr<StoragePartitionImpl> storage_partition_;
+};
+
 StoragePartitionImpl::StoragePartitionImpl(
     BrowserContext* browser_context,
     const StoragePartitionConfig& config,
@@ -2028,9 +2076,13 @@ void StoragePartitionImpl::OnAuthRequired(
                   url::SchemeHostPort(last_committed_url.scheme(),
                                       last_committed_url.host(),
                                       last_committed_url.IntPort())) {
-            rfh->EvictFromBackForwardCacheWithReason(
-                BackForwardCacheMetrics::NotRestoredReason::
-                    kCacheControlNoStore);
+            BackForwardCacheCanStoreDocumentResult flattened_reasons;
+            flattened_reasons.No(BackForwardCacheMetrics::NotRestoredReason::
+                                     kCacheControlNoStore);
+            flattened_reasons.No(
+                BackForwardCacheMetrics::NotRestoredReason::kHTTPAuthRequired);
+            rfh->EvictFromBackForwardCacheWithFlattenedReasons(
+                flattened_reasons);
           }
         }
       }
@@ -2041,6 +2093,51 @@ void StoragePartitionImpl::OnAuthRequired(
       process_id, request_id, url, *is_primary_main_frame, first_auth_attempt,
       auth_info, head_headers, std::move(auth_challenge_responder),
       web_contents_getter);
+}
+
+void StoragePartitionImpl::OnPrivateNetworkAccessPermissionRequired(
+    const GURL& url,
+    const net::IPAddress& ip_address,
+    const std::string& private_network_device_id,
+    const std::string& private_network_device_name,
+    OnPrivateNetworkAccessPermissionRequiredCallback callback) {
+  if (!base::FeatureList::IsEnabled(
+          network::features::kPrivateNetworkAccessPermissionPrompt)) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  if (url_loader_network_observers_.empty()) {
+    std::move(callback).Run(false);
+    return;
+  }
+  const URLLoaderNetworkContext& context =
+      url_loader_network_observers_.current_context();
+
+  if (context.type() !=
+          URLLoaderNetworkContext::Type::kRenderFrameHostContext ||
+      !context.navigation_or_document()) {
+    std::move(callback).Run(false);
+    return;
+  }
+  RenderFrameHost* render_frame_host =
+      context.navigation_or_document()->GetDocument();
+  if (!render_frame_host) {
+    std::move(callback).Run(false);
+    return;
+  }
+  auto device = blink::mojom::PrivateNetworkDevice::New(
+      private_network_device_id, private_network_device_name, ip_address);
+
+  PrivateNetworkDeviceDelegate* delegate =
+      GetContentClient()->browser()->GetPrivateNetworkDeviceDelegate();
+  if (!delegate) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  delegate->RequestPermission(*render_frame_host, std::move(device),
+                              std::move(callback));
 }
 
 void StoragePartitionImpl::OnCertificateRequested(
@@ -3162,7 +3259,13 @@ void StoragePartitionImpl::InitNetworkContext() {
           blink::features::kCompressionDictionaryTransportBackend)) {
     context_params->shared_dictionary_enabled = true;
     if (!is_in_memory()) {
-      context_params->shared_dictionary_directory =
+      // Some callers may already initialize NetworkContextFilePaths, and we
+      // don't want to overwrite them.
+      if (!context_params->file_paths) {
+        context_params->file_paths =
+            network::mojom::NetworkContextFilePaths::New();
+      }
+      context_params->file_paths->shared_dictionary_directory =
           partition_path_.Append(FILE_PATH_LITERAL("Shared Dictionary"));
     }
     if (context_params->shared_dictionary_cache_max_size == 0u) {
@@ -3258,6 +3361,15 @@ StoragePartitionImpl::CreateTrustTokenAccessObserverForServiceWorker() {
   mojo::PendingRemote<network::mojom::TrustTokenAccessObserver> remote;
   service_worker_trust_token_observers_.Add(
       std::make_unique<ServiceWorkerTrustTokenAccessObserver>(this),
+      remote.InitWithNewPipeAndPassReceiver());
+  return remote;
+}
+
+mojo::PendingRemote<network::mojom::SharedDictionaryAccessObserver>
+StoragePartitionImpl::CreateSharedDictionaryAccessObserverForServiceWorker() {
+  mojo::PendingRemote<network::mojom::SharedDictionaryAccessObserver> remote;
+  service_worker_shared_dictionary_observers_.Add(
+      std::make_unique<ServiceWorkerSharedDictionaryAccessObserver>(this),
       remote.InitWithNewPipeAndPassReceiver());
   return remote;
 }

@@ -124,6 +124,7 @@
 #include "services/network/session_cleanup_cookie_store.h"
 #include "services/network/shared_dictionary/shared_dictionary_constants.h"
 #include "services/network/shared_dictionary/shared_dictionary_manager.h"
+#include "services/network/shared_dictionary/shared_dictionary_network_transaction_factory.h"
 #include "services/network/ssl_config_service_mojo.h"
 #include "services/network/throttling/network_conditions.h"
 #include "services/network/throttling/throttling_controller.h"
@@ -487,19 +488,20 @@ NetworkContext::NetworkContext(
 
 #if BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)
   if (params_->file_paths) {
+    if (params_->file_paths->http_cache_directory) {
+      EnsureMounted(&*params_->file_paths->http_cache_directory);
+    }
+    if (params_->file_paths->shared_dictionary_directory) {
+      EnsureMounted(&*params_->file_paths->shared_dictionary_directory);
+    }
     EnsureMounted(&params_->file_paths->data_directory);
-  }
-  if (params_->http_cache_directory) {
-    EnsureMounted(&*params_->http_cache_directory);
-  }
-  if (params_->shared_dictionary_directory) {
-    EnsureMounted(&*params_->shared_dictionary_directory);
   }
 #endif  // BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)
 
   if (params_->shared_dictionary_enabled) {
-    if (params_->shared_dictionary_directory &&
-        !params_->shared_dictionary_directory->path().empty()) {
+    if (params_->file_paths &&
+        params_->file_paths->shared_dictionary_directory &&
+        !params_->file_paths->shared_dictionary_directory->path().empty()) {
 #if BUILDFLAG(IS_ANDROID)
       app_status_listeners_.push_back(
           std::make_unique<NetworkContextApplicationStatusListener>());
@@ -507,9 +509,9 @@ NetworkContext::NetworkContext(
       // TODO(crbug.com/1413922): Set `file_operations_factory` to support
       // sandboxed network service on Android.
       shared_dictionary_manager_ = SharedDictionaryManager::CreateOnDisk(
-          params_->shared_dictionary_directory->path().Append(
+          params_->file_paths->shared_dictionary_directory->path().Append(
               FILE_PATH_LITERAL("db")),
-          params_->shared_dictionary_directory->path().Append(
+          params_->file_paths->shared_dictionary_directory->path().Append(
               FILE_PATH_LITERAL("cache")),
           params_->shared_dictionary_cache_max_size,
           shared_dictionary::kDictionaryMaxCountPerNetworkContext,
@@ -759,15 +761,12 @@ void NetworkContext::SetClient(
 void NetworkContext::CreateURLLoaderFactory(
     mojo::PendingReceiver<mojom::URLLoaderFactory> receiver,
     mojom::URLLoaderFactoryParamsPtr params) {
-  scoped_refptr<ResourceSchedulerClient> resource_scheduler_client;
-  if (!base::FeatureList::IsEnabled(features::kDisableResourceScheduler)) {
-    resource_scheduler_client = base::MakeRefCounted<ResourceSchedulerClient>(
-        current_resource_scheduler_client_id_,
-        IsBrowserInitiated(params->process_id == mojom::kBrowserProcessId),
-        resource_scheduler_.get(),
-        url_request_context_->network_quality_estimator());
-    current_resource_scheduler_client_id_.Increment();
-  }
+  scoped_refptr<ResourceSchedulerClient> resource_scheduler_client =
+      base::MakeRefCounted<ResourceSchedulerClient>(
+          ResourceScheduler::ClientId::Create(),
+          IsBrowserInitiated(params->process_id == mojom::kBrowserProcessId),
+          resource_scheduler_.get(),
+          url_request_context_->network_quality_estimator());
   CreateURLLoaderFactory(std::move(receiver), std::move(params),
                          std::move(resource_scheduler_client));
 }
@@ -2330,7 +2329,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
         std::make_unique<NetworkServiceProxyDelegate>(
             std::move(params_->initial_custom_proxy_config),
             std::move(params_->custom_proxy_config_client_receiver),
-            std::move(params_->custom_proxy_connection_observer_remote));
+            std::move(params_->custom_proxy_connection_observer_remote),
+            network_service_->network_service_proxy_allow_list());
     proxy_delegate_ = proxy_delegate.get();
     builder.set_proxy_delegate(std::move(proxy_delegate));
   }
@@ -2415,11 +2415,15 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   } else {
     net::URLRequestContextBuilder::HttpCacheParams cache_params;
     cache_params.max_size = params_->http_cache_max_size;
-    if (!params_->http_cache_directory) {
+    // Checking both to see if there are any file paths at all, and if there is
+    // specifically an http_cache_directory filepath in order to avoid a
+    // potential nullptr dereference if we just checked that
+    // `params_->file_paths->http_cache_directory' existed.
+    if (!params_->file_paths || !params_->file_paths->http_cache_directory) {
       cache_params.type =
           net::URLRequestContextBuilder::HttpCacheParams::IN_MEMORY;
     } else {
-      cache_params.path = params_->http_cache_directory->path();
+      cache_params.path = params_->file_paths->http_cache_directory->path();
       cache_params.type = network_session_configurator::ChooseCacheType();
       if (params_->http_cache_file_operations_factory) {
         cache_params.file_operations_factory =
@@ -2562,11 +2566,25 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   builder.set_http_network_session_params(session_params);
   builder.set_quic_context(std::move(quic_context));
 
-  builder.SetCreateHttpTransactionFactoryCallback(
-      base::BindOnce([](net::HttpNetworkSession* session)
-                         -> std::unique_ptr<net::HttpTransactionFactory> {
-        return std::make_unique<ThrottlingNetworkTransactionFactory>(session);
-      }));
+  if (params_->shared_dictionary_enabled) {
+    CHECK(GetSharedDictionaryManager());
+    builder.SetCreateHttpTransactionFactoryCallback(base::BindOnce(
+        [](base::WeakPtr<NetworkContext> context,
+           net::HttpNetworkSession* session)
+            -> std::unique_ptr<net::HttpTransactionFactory> {
+          CHECK(context);
+          return std::make_unique<SharedDictionaryNetworkTransactionFactory>(
+              *context->GetSharedDictionaryManager(),
+              std::make_unique<ThrottlingNetworkTransactionFactory>(session));
+        },
+        weak_factory_.GetWeakPtr()));
+  } else {
+    builder.SetCreateHttpTransactionFactoryCallback(
+        base::BindOnce([](net::HttpNetworkSession* session)
+                           -> std::unique_ptr<net::HttpTransactionFactory> {
+          return std::make_unique<ThrottlingNetworkTransactionFactory>(session);
+        }));
+  }
 
   builder.set_host_mapping_rules(
       command_line->GetSwitchValueASCII(switches::kHostResolverRules));

@@ -20,7 +20,7 @@ BASE_FEATURE(kAllowWindowDragUsingSystemDragDrop,
 #if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kDesktopPWAsAppHomePage,
              "DesktopPWAsAppHomePage",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
 
 // Enables Chrome Labs menu in the toolbar. See https://crbug.com/1145666
@@ -73,38 +73,6 @@ BASE_FEATURE(kEvDetailsInPageInfo,
 BASE_FEATURE(kGetTheMostOutOfChrome,
              "GetTheMostOutOfChrome",
              base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
-#if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-// This feature controls whether the user can be shown the Chrome for iOS promo
-// when saving/updating their passwords.
-BASE_FEATURE(kIOSPromoPasswordBubble,
-             "IOSPromoPasswordBubble",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// This array lists the different activation params that can be passed in the
-// experiment config, with their corresponding string.
-constexpr base::FeatureParam<IOSPromoPasswordBubbleActivation>::Option
-    kIOSPromoPasswordBubbleActivationOptions[] = {
-        {IOSPromoPasswordBubbleActivation::kContextualDirect,
-         "contextual-direct"},
-        {IOSPromoPasswordBubbleActivation::kContextualIndirect,
-         "contextual-indirect"},
-        {IOSPromoPasswordBubbleActivation::kNonContextualDirect,
-         "non-contextual-direct"},
-        {IOSPromoPasswordBubbleActivation::kNonContextualIndirect,
-         "non-contextual-indirect"},
-        {IOSPromoPasswordBubbleActivation::kAlwaysShowWithPasswordBubbleDirect,
-         "always-show-direct"},
-        {IOSPromoPasswordBubbleActivation::
-             kAlwaysShowWithPasswordBubbleIndirect,
-         "always-show-indirect"}};
-
-constexpr base::FeatureParam<IOSPromoPasswordBubbleActivation>
-    kIOSPromoPasswordBubbleActivationParam{
-        &kIOSPromoPasswordBubble, "activation",
-        IOSPromoPasswordBubbleActivation::kContextualDirect,
-        &kIOSPromoPasswordBubbleActivationOptions};
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -212,7 +180,7 @@ BASE_FEATURE(kTabGroupsSave,
 // Enables configuring tab hover card image previews in the settings.
 BASE_FEATURE(kTabHoverCardImageSettings,
              "TabHoverCardImageSettings",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables preview images in tab-hover cards.
 // https://crbug.com/928954
@@ -385,8 +353,9 @@ int GetLocationPermissionsExperimentLabelPromptLimit() {
 #endif
 
 // Reduce resource usage when view is hidden by not rendering loading animation.
+// TODO(crbug.com/1322081): Clean up the feature in M117.
 BASE_FEATURE(kStopLoadingAnimationForHiddenWindow,
              "StopLoadingAnimationForHiddenWindow",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features

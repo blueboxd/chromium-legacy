@@ -253,21 +253,21 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
       // Clear our positioned objects list. Our absolute and fixed positioned
       // descendants will be inserted into our containing block's positioned
       // objects list during layout.
-      block->RemovePositionedObjects(nullptr, kNewContainingBlock);
+      block->RemovePositionedObjects(nullptr);
     }
     if (!could_contain_absolute && can_contain_absolute) {
       // Remove our absolute positioned descendants from their current
       // containing block.
       // They will be inserted into our positioned objects list during layout.
       if (LayoutBlock* cb = block->ContainingBlockForAbsolutePosition())
-        cb->RemovePositionedObjects(this, kNewContainingBlock);
+        cb->RemovePositionedObjects(this);
     }
     if (!could_contain_fixed && can_contain_fixed) {
       // Remove our fixed positioned descendants from their current containing
       // block.
       // They will be inserted into our positioned objects list during layout.
       if (LayoutBlock* cb = block->ContainingBlockForFixedPosition())
-        cb->RemovePositionedObjects(this, kNewContainingBlock);
+        cb->RemovePositionedObjects(this);
     }
   }
 
@@ -683,6 +683,9 @@ bool LayoutBoxModelObject::UpdateStickyPositionConstraints() {
   PhysicalRect sticky_box_rect;
   if (IsLayoutInline()) {
     sticky_box_rect = To<LayoutInline>(this)->PhysicalLinesBoundingBox();
+  } else if (RuntimeEnabledFeatures::LayoutNGNoLocationEnabled()) {
+    const LayoutBox& box = To<LayoutBox>(*this);
+    sticky_box_rect = PhysicalRect(box.PhysicalLocation(), box.Size());
   } else {
     sticky_box_rect =
         sticky_container->FlipForWritingMode(To<LayoutBox>(this)->FrameRect());
@@ -955,12 +958,6 @@ void LayoutBoxModelObject::MoveChildTo(
     LayoutObject* before_child,
     bool full_remove_insert) {
   NOT_DESTROYED();
-  // We assume that callers have cleared their positioned objects list for child
-  // moves (!fullRemoveInsert) so the positioned layoutObject maps don't become
-  // stale. It would be too slow to do the map lookup on each call.
-  DCHECK(!full_remove_insert || !IsLayoutBlock() ||
-         !To<LayoutBlock>(this)->HasPositionedObjects());
-
   DCHECK_EQ(this, child->Parent());
   DCHECK(!before_child || to_box_model_object == before_child->Parent());
 
@@ -985,13 +982,6 @@ void LayoutBoxModelObject::MoveChildrenTo(
     LayoutObject* before_child,
     bool full_remove_insert) {
   NOT_DESTROYED();
-  // This condition is rarely hit since this function is usually called on
-  // anonymous blocks which can no longer carry positioned objects (see r120761)
-  // or when fullRemoveInsert is false.
-  auto* block = DynamicTo<LayoutBlock>(this);
-  if (full_remove_insert && block) {
-    block->RemovePositionedObjects(nullptr);
-  }
 
   DCHECK(!before_child || to_box_model_object == before_child->Parent());
   for (LayoutObject* child = start_child; child && child != end_child;) {

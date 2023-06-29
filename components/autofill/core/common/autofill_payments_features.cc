@@ -41,6 +41,12 @@ BASE_FEATURE(kAutofillEnableCardArtImage,
              "AutofillEnableCardArtImage",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, server will return card art images of the exact required
+// dimension.
+BASE_FEATURE(kAutofillEnableCardArtServerSideStretching,
+             "AutofillEnableCardArtServerSideStretching",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // When enabled, card product name (instead of issuer network) will be shown in
 // Payments Autofill UI.
 BASE_FEATURE(kAutofillEnableCardProductName,
@@ -275,7 +281,7 @@ BASE_FEATURE(kAutofillUpstreamUseAlternateSecureDataType,
 // When enabled, we use the Elo regex to match the BIN ranges.
 BASE_FEATURE(kAutofillUseEloRegexForBinMatching,
              "AutofillUseEloRegexForBinMatching",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // The delay required since the last strike before offering another virtual card
 // enrollment attempt.

@@ -388,7 +388,6 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
   num_written_frames_ = endpoint_buffer_size_frames_;
   last_position_ = 0;
   last_qpc_position_ = 0;
-  last_timestamp_ = base::TimeTicks();
 
   // Recreate `peak_detector_` everytime we create a new `render_thread_`, to
   // avoid ThreadChecker DCHECKs.
@@ -601,7 +600,8 @@ void WASAPIAudioOutputStream::Run() {
 }
 
 bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
-  TRACE_EVENT0("audio", "RenderAudioFromSource");
+  TRACE_EVENT2("audio", "RenderAudioFromSource", "device_frequency",
+               device_frequency, "buffer_size", endpoint_buffer_size_frames_);
 
   const base::TimeDelta buffer_duration =
       media::AudioTimestampHelper::FramesToTime(packet_size_frames_,
@@ -627,6 +627,10 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
                  << ErrorToString(hr).c_str() << "])";
       return false;
     }
+    if (!num_queued_frames) {
+      TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("audio"), "buffer empty",
+                           TRACE_EVENT_SCOPE_THREAD);
+    }
   } else {
     // While the stream is running, the system alternately sends one
     // buffer or the other to the client. This form of double buffering
@@ -639,6 +643,9 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
     // directly on the buffer size.
     num_available_frames = endpoint_buffer_size_frames_;
   }
+
+  TRACE_COUNTER_ID1(TRACE_DISABLED_BY_DEFAULT("audio"), "IAudioClient frames",
+                    this, num_available_frames);
 
   // Check if there is enough available space to fit the packet size
   // specified by the client.  If not, wait until a future callback.
@@ -662,6 +669,8 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
   // See http://crbug.com/524947.
   const size_t num_packets = num_available_frames / packet_size_frames_;
   for (size_t n = 0; n < num_packets; ++n) {
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("audio"), "Write packet",
+                 "num_written_frames_", num_written_frames_);
     // Grab all available space in the rendering endpoint buffer
     // into which the client can write a data packet.
     hr = audio_render_client_->GetBuffer(packet_size_frames_, &audio_data);
@@ -683,7 +692,9 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
     // a RT thread.
     hr = audio_clock_->GetPosition(&position, &qpc_position);
     if (SUCCEEDED(hr)) {
-      base::TimeTicks current_timestamp = base::TimeTicks::Now();
+      TRACE_EVENT_BEGIN2(TRACE_DISABLED_BY_DEFAULT("audio"),
+                         "IAudioClock position", "position", position,
+                         "qpc_position", qpc_position);
       // Check for glitches. Records a glitch whenever the stream's position has
       // moved forward significantly less than the performance counter has. The
       // threshold is set to half the buffer size, to limit false positives.
@@ -693,7 +704,6 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
       // the data begins playing through the device.
       if (last_position_ != 0) {
         CHECK(last_qpc_position_);
-        CHECK_GT(last_timestamp_, base::TimeTicks());
 
         // The device position is the offset from the start of the stream to the
         // current position in the stream. The units in which this offset is
@@ -707,15 +717,6 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
         // only says that the device frequency reported by successive calls to
         // GetFrequency never changes during the lifetime of a stream "in
         // Windows Vista".
-        {
-            // TODO(olka): Exploratory check. Run it for a couple of days on
-            // Canary/Dev and remove.
-            UINT64 device_frequency_now = 0;
-            hr = audio_clock_->GetFrequency(&device_frequency_now);
-            if (SUCCEEDED(hr)) {
-                CHECK_EQ(device_frequency, device_frequency_now);
-            }
-        }
         CHECK_GE(position, last_position_);
         base::TimeDelta position_time_increase =
             media::AudioTimestampHelper::FramesToTime(position - last_position_,
@@ -725,29 +726,22 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
         // IAudioClock::GetPosition() documentation. Presumably monotonically
         // increasing, but there are known cases when it can jump backward due
         // to driver bugs, etc.
-
-        // TODO(olka): Exploratory check. Run it for a couple of days on
-        // Canary/Dev and remove.
-        CHECK_GE(qpc_position, last_qpc_position_);
-
         base::TimeDelta qpc_position_time_increase =
             qpc_position < last_qpc_position_
                 ? base::TimeDelta()
                 : base::Microseconds((qpc_position - last_qpc_position_) / 10);
-        base::TimeDelta timestamp_increase =
-            current_timestamp - last_timestamp_;
 
+        TRACE_EVENT_BEGIN2(TRACE_DISABLED_BY_DEFAULT("audio"), "gap estimation",
+                           "qpc_position_time_increase ms",
+                           qpc_position_time_increase.InMilliseconds(),
+                           "position_time_increase ms",
+                           position_time_increase.InMilliseconds());
         // We probably should not trust qpc_position being reported in 100 ns
         // intervals in some cases, in a remote desktop situation, for example.
         // Let's see how qpc-based time compares to base::TimeTicks. Even if we
         // are using a low resolution timers (~15 ms precision), the difference
         // between the two should be well under 40 ms. But let's be
         // concervative.
-        // TODO(olka): Exploratory check. Run it for a couple of days on
-        // Canary/Dev and remove.
-        CHECK_LT((timestamp_increase - qpc_position_time_increase).magnitude(),
-                 base::Milliseconds(100));
-
         // |gap_duration| can be positive or negative. Negative means a bigger
         // chunk of the buffer was consumed. Too big (how big?) positive means
         // no audio was played for a while, which potentially resulted in a
@@ -761,14 +755,16 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
         glitch_reporter_.UpdateStats(is_glitch ? gap_duration
                                                : base::TimeDelta());
         if (is_glitch) {
-            glitch_info_accumulator.Add(AudioGlitchInfo::SingleBoundedGlitch(
-                gap_duration, AudioGlitchInfo::Direction::kRender));
+          TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("audio"), "glitch",
+                               TRACE_EVENT_SCOPE_THREAD);
+          glitch_info_accumulator.Add(AudioGlitchInfo::SingleBoundedGlitch(
+              gap_duration, AudioGlitchInfo::Direction::kRender));
         }
+        TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("audio"), "gap estimation");
       }
 
       last_position_ = position;
       last_qpc_position_ = qpc_position;
-      last_timestamp_ = current_timestamp;
 
       // Number of frames already played out through the speaker (estimation).
       const uint64_t played_out_frames =
@@ -787,14 +783,13 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
       delay = media::AudioTimestampHelper::FramesToTime(
           delay_frames, format_.Format.nSamplesPerSec);
 
-      // TODO(olka): Exploratory check. Run it for a couple of days on
-      // Canary/Dev and remove.
-      CHECK_LE(delay, base::Seconds(10));
-
       // Note: the obtained |qpc_position| value is in 100ns intervals and from
       // the same time origin as QPC. We can simply convert it into us dividing
       // by 10.0 since 10x100ns = 1us.
       delay_timestamp += base::Microseconds(qpc_position * 0.1);
+      TRACE_EVENT_END2(TRACE_DISABLED_BY_DEFAULT("audio"),
+                       "IAudioClock position", "played_out_frames",
+                       played_out_frames, "delay ms", delay.InMilliseconds());
     } else {
       RecordAudioFailure(kRenderFailureHistogram, hr);
       LOG(ERROR) << "WAOS::" << __func__

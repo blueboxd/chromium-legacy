@@ -503,18 +503,9 @@ void OnFrameTreeNodeDestroyed(FrameTreeNode& frame_tree_node) {
 }
 
 bool IsPrerenderAllowed(FrameTree& frame_tree) {
-  FrameTreeNode* ftn = frame_tree.root();
-
-  auto* render_frame_agent_host = static_cast<RenderFrameDevToolsAgentHost*>(
-      RenderFrameDevToolsAgentHost::GetFor(ftn));
-  if (render_frame_agent_host &&
-      render_frame_agent_host->HasSessionsWithoutTabTargetSupport()) {
-    return false;
-  }
-
   bool is_allowed = true;
-  DispatchToAgents(ftn, &protocol::PageHandler::IsPrerenderingAllowed,
-                   is_allowed);
+  DispatchToAgents(frame_tree.root(),
+                   &protocol::PageHandler::IsPrerenderingAllowed, is_allowed);
   return is_allowed;
 }
 
@@ -558,7 +549,8 @@ void DidUpdatePrefetchStatus(
     const base::UnguessableToken& initiator_devtools_navigation_token,
     const GURL& prefetch_url,
     PreloadingTriggeringOutcome status,
-    PrefetchStatus prefetch_status) {
+    PrefetchStatus prefetch_status,
+    const std::string& request_id) {
   if (!ftn) {
     return;
   }
@@ -567,7 +559,7 @@ void DidUpdatePrefetchStatus(
       ftn->current_frame_host()->devtools_frame_token().ToString();
   DispatchToAgents(ftn, &protocol::PreloadHandler::DidUpdatePrefetchStatus,
                    initiator_devtools_navigation_token, initiating_frame_id,
-                   prefetch_url, status, prefetch_status);
+                   prefetch_url, status, prefetch_status, request_id);
 }
 
 void DidUpdatePrerenderStatus(
@@ -575,7 +567,8 @@ void DidUpdatePrerenderStatus(
     const base::UnguessableToken& initiator_devtools_navigation_token,
     const GURL& prerender_url,
     PreloadingTriggeringOutcome status,
-    absl::optional<PrerenderFinalStatus> prerender_status) {
+    absl::optional<PrerenderFinalStatus> prerender_status,
+    absl::optional<std::string> disallowed_mojo_interface) {
   auto* ftn = FrameTreeNode::GloballyFindByID(initiator_frame_tree_node_id);
   // ftn will be null if this is browser-initiated, which has no initiator.
   if (!ftn) {
@@ -584,7 +577,7 @@ void DidUpdatePrerenderStatus(
 
   DispatchToAgents(ftn, &protocol::PreloadHandler::DidUpdatePrerenderStatus,
                    initiator_devtools_navigation_token, prerender_url, status,
-                   prerender_status);
+                   prerender_status, disallowed_mojo_interface);
 }
 
 namespace {
@@ -926,6 +919,29 @@ bool ShouldWaitForDebuggerInWindowOpen() {
   return false;
 }
 
+namespace {
+// This is a helper function used in ApplyNetworkRequestOverrides and
+// ApplyUserAgentMetadataOverrides to help correctly set network request header
+// overrides. It behaves the same as RenderFrameDevToolsAgentHost::GetFor for
+// all FrameTreeNodes except those that are prerendering. For prerendering
+// FrameTreeNodes, it returns the DevToolsAgentHost of the primary main frame,
+// even if it has a DTAH of its own. The network header overrides are applied
+// too early, before the correct values sent by the client are propagated to the
+// prerender's DTAH's handlers. As a result, we use the values that were
+// previously set for the primary main frame.
+DevToolsAgentHostImpl* GetDevToolsAgentHostForNetworkOverrides(
+    FrameTreeNode* frame_tree_node) {
+  if (frame_tree_node->frame_tree().is_prerendering()) {
+    return RenderFrameDevToolsAgentHost::GetFor(
+        WebContentsImpl::FromFrameTreeNode(frame_tree_node)
+            ->GetPrimaryMainFrame()
+            ->frame_tree_node());
+  }
+  return RenderFrameDevToolsAgentHost::GetFor(frame_tree_node);
+}
+
+}  // namespace
+
 void ApplyNetworkRequestOverrides(
     FrameTreeNode* frame_tree_node,
     blink::mojom::BeginNavigationParams* begin_params,
@@ -938,18 +954,7 @@ void ApplyNetworkRequestOverrides(
   *devtools_accept_language_overridden = false;
   bool disable_cache = false;
   DevToolsAgentHostImpl* agent_host =
-      RenderFrameDevToolsAgentHost::GetFor(frame_tree_node);
-  // Prerendered pages will only have have DevTools attached if the client opted
-  // into supporting the tab target. For legacy clients, we will apply relevant
-  // network override from the associated main frame target.
-  if (frame_tree_node->frame_tree().is_prerendering()) {
-    if (!agent_host) {
-      agent_host = RenderFrameDevToolsAgentHost::GetFor(
-          WebContentsImpl::FromFrameTreeNode(frame_tree_node)
-              ->GetPrimaryMainFrame()
-              ->frame_tree_node());
-    }
-  }
+      GetDevToolsAgentHostForNetworkOverrides(frame_tree_node);
   if (!agent_host)
     return;
   net::HttpRequestHeaders headers;
@@ -985,19 +990,7 @@ bool ApplyUserAgentMetadataOverrides(
     FrameTreeNode* frame_tree_node,
     absl::optional<blink::UserAgentMetadata>* override_out) {
   DevToolsAgentHostImpl* agent_host =
-      RenderFrameDevToolsAgentHost::GetFor(frame_tree_node);
-  // If DevToolsTabTarget is not enabled, Prerendered pages do not have DevTools
-  // attached but it's important for developers that they get the UA override of
-  // the visible DevTools for testing mobile sites. Use the DevTools agent of
-  // the primary main frame of the WebContents.
-  // TODO(https://crbug.com/1221419): The real fix may be to make a separate
-  // target for the prerendered page.
-  if (frame_tree_node->frame_tree().is_prerendering() && !agent_host) {
-    agent_host = RenderFrameDevToolsAgentHost::GetFor(
-        WebContentsImpl::FromFrameTreeNode(frame_tree_node)
-            ->GetPrimaryMainFrame()
-            ->frame_tree_node());
-  }
+      GetDevToolsAgentHostForNetworkOverrides(frame_tree_node);
   if (!agent_host)
     return false;
 
@@ -1366,12 +1359,13 @@ void FencedFrameCreated(
 }
 
 void WillStartDragging(FrameTreeNode* main_frame_tree_node,
+                       const content::DropData& drop_data,
                        const blink::mojom::DragDataPtr drag_data,
                        blink::DragOperationsMask drag_operations_mask,
                        bool* intercepted) {
   DCHECK(main_frame_tree_node->frame_tree().root() == main_frame_tree_node);
   DispatchToAgents(main_frame_tree_node, &protocol::InputHandler::StartDragging,
-                   *drag_data, drag_operations_mask, intercepted);
+                   drop_data, *drag_data, drag_operations_mask, intercepted);
 }
 
 void DragEnded(FrameTreeNode& node) {

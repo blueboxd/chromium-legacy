@@ -11,6 +11,7 @@
 <translation id="1511320244449497906">Jy is aangemeld en sinkroniseer tans jou data met ’n rekening wat deur <ph name="DOMAIN" /> bestuur word. Die administrateur kan nou gebruikerbeleide spesifiek vir dié rekening stel, wat die gedrag van Chrome kan verander.</translation>
 <translation id="1554731936187952550">Jy het Chrome se sterkste sekuriteit teen skadelike webwerwe</translation>
 <translation id="1682483655351012182">Sinkroniseer jou Chrome-data</translation>
+<translation id="1733654336159102143">Sluit jou Incognito wanneer jy Chrome verlaat of na ’n ander app toe oorskakel.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1843217788865538014">Gebruik Chrome outomaties wanneer jy op skakels in boodskappe, dokumente en ander apps tik.</translation>
 <translation id="1917964099031477364">Hierdie rekening en enige ongstoorde data sal uit Chrome en ander Google-programme op hierdie toestel verwyder word.</translation>
@@ -34,6 +35,7 @@
 <translation id="2695886661449553974">Chrome kon nie vir opdaterings kyk nie. Probeer later weer.</translation>
 <translation id="2732745070297234559">Chrome kon nie alle wagwoorde nagaan nie. Probeer môre weer.</translation>
 <translation id="2736805085127235148">Chrome-kennisgewings is tans in jou toestelinstellings afgeskakel.</translation>
+<translation id="2754286486056173475">Skep kalendergeleenthede op Chrome</translation>
 <translation id="2767464022270041271">Geen gestoorde wagwoorde nie. Google Wagwoordbestuurder kan jou wagwoorde nagaan wanneer jy hulle stoor.</translation>
 <translation id="2840432500933227975">Maak Chrome-instellings in iOS oop, en tik dan op “Blaaierverstekapp” en kies Chrome.</translation>
 <translation id="2869959624320573933">Meld by Chrome aan</translation>
@@ -48,6 +50,8 @@
 <translation id="3503014945441706099">Kry Verbeterde Veiligblaai ook vir hierdie Chrome-profiel</translation>
 <translation id="3522659714780527202">Skakel sinkronisering aan om jou oortjies te sien van waar ook al jy Chrome gebruik</translation>
 <translation id="3533694711092285624">Geen gestoorde wagwoorde nie. Chrome kan jou wagwoorde nagaan wanneer jy hulle stoor.</translation>
+<translation id="3594076341410558780">Versteek “Benut Chrome ten beste”</translation>
+<translation id="3611867725106943284">Tik op “Bekyk met Google Maps op Chrome”</translation>
 <translation id="3655656110921623717">Dit beteken dat Chrome elke keer die mobiele werf sal versoek.</translation>
 <translation id="3720541637541300822">Sluit Incognito-oortjies wanneer jy Chrome toemaak</translation>
 <translation id="3827545470516145620">Jy kry tans standaardsekuriteitbeskerming op hierdie toestel</translation>
@@ -66,8 +70,10 @@
 <translation id="4636900170638246267">Meld by hierdie werf en Chrome aan.</translation>
 <translation id="4698415050768537821">Chrome kon nie alle wagwoorde nagaan nie. Probeer môre weer of <ph name="BEGIN_LINK" />gaan wagwoorde in jou Google-rekening na<ph name="END_LINK" />.</translation>
 <translation id="4819268619367838612">Chrome stuur gebruik- en omvaldata na Google toe om te help om die program beter te maak. <ph name="BEGIN_LINK" />Bestuur<ph name="END_LINK" /></translation>
+<translation id="4830799082179398588">Maak Chrome jou verstekblaaier?</translation>
 <translation id="484033449593719797">Nie op Chrome Beta gesteun nie</translation>
 <translation id="4840404732697892756">Google Wagwoordbestuurder kan jou wagwoorde nagaan wanneer jy met jou Google-rekening aanmeld.</translation>
+<translation id="4903674399067644695">Hierdie kaart wys vir jou voorstelle oor hoe jy Chrome ten beste kan benut.</translation>
 <translation id="5030102366287574140">Chrome kan help om jou teen dataskendings, onveilige webwerwe en meer te beskerm.</translation>
 <translation id="5108659628347594808">Maak Chrome beter</translation>
 <translation id="5119391094379141756">Kies Chrome</translation>
@@ -99,6 +105,7 @@
 <translation id="6676840375528380067">Vee jou Chrome-data op hierdie toestel uit?</translation>
 <translation id="6709398533399187136">Jou wagwoord is in 'n dataskending blootgestel. Google Wagwoordbestuurder beveel aan dat jy dit nou verander.</translation>
 <translation id="6822673484890854830">Chrome kon nie alle wagwoorde nagaan nie. Probeer later weer.</translation>
+<translation id="6896070677477855330">Skakel “Sluit Incognito-oortjies wanneer jy Chrome toemaak” aan.</translation>
 <translation id="6964931465519938134">Jy kan Chrome nou enige tyd gebruik wanneer jy op skakels in boodskappe, dokumente en ander programme tik.</translation>
 <translation id="6975725306479268850">Kies Chrome vir Outovul</translation>
 <translation id="7059914902409643750">Maak Chrome jou eie</translation>
@@ -111,6 +118,7 @@
 <translation id="7261678641327190792">Chrome kan nie jou wagwoorde nagaan nie</translation>
 <translation id="7272930098487145294">Om prente te stoor, moet jy op Instellings tik om Chrome toe te laat om foto's by te voeg</translation>
 <translation id="7275945473750112644">Jou rekening word deur <ph name="HOSTED_DOMAIN" /> bestuur, en daarom sal jou Chrome-data van hierdie toestel af uitgevee word</translation>
+<translation id="7394108421562933108">Maps in Chrome</translation>
 <translation id="7400722733683201933">Meer oor Google Chrome</translation>
 <translation id="7501046334262221972">Maak Instellings oop om Chrome jou verstekblaaier te maak. Tik op Verstekblaaierprogram en kies dan Chrome.</translation>
 <translation id="756809126120519699">Het Chrome-data uitgevee</translation>
@@ -140,6 +148,7 @@
 <translation id="8765470054473112089">Wanneer jy iets in die adresbalk of soekkassie tik, stuur Chrome wat jy tik na jou versteksoekenjin toe om beter voorstelle te kry. Dit is af in Incognito.</translation>
 <translation id="8772179140489533211">Wys porboodskappe om by Chrome aan te meld.</translation>
 <translation id="8788269841521769222">Jy hoef nie hierdie wagwoord te onthou nie. Dit sal vir <ph name="EMAIL" /> in Google Wagwoordbestuurder gestoor word</translation>
+<translation id="880967149107462122">Gaan na Chrome-instellings</translation>
 <translation id="8857676124663337448">Google Wagwoordbestuurder kon nie alle wagwoorde nagaan nie. Probeer môre weer.</translation>
 <translation id="8897749957032330183">Wagwoorde word op hierdie toestel in Google Wagwoordbestuurder gestoor.</translation>
 <translation id="8969290730818637510">Wanneer dit aan is:

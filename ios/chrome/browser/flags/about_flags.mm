@@ -76,6 +76,7 @@
 #import "ios/chrome/browser/flags/chrome_switches.h"
 #import "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #import "ios/chrome/browser/follow/follow_features.h"
+#import "ios/chrome/browser/iph_for_new_chrome_user/features.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_constants.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_switch.h"
@@ -86,6 +87,7 @@
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/tabs/inactive_tabs/features.h"
+#import "ios/chrome/browser/tabs/tab_pickup/features.h"
 #import "ios/chrome/browser/text_selection/text_selection_util.h"
 #import "ios/chrome/browser/ui/app_store_rating/features.h"
 #import "ios/chrome/browser/ui/autofill/features.h"
@@ -231,6 +233,17 @@ const FeatureEntry::FeatureVariation kDefaultBrowserVideoPromoVariations[] = {
 };
 
 const FeatureEntry::FeatureParam
+    kDefaultBrowserTriggerCriteriaExperimentParamOptions[] = {
+        {kDefaultBrowserTriggerOnOmniboxCopyPaste, "true"}};
+const FeatureEntry::FeatureVariation
+    kDefaultBrowserTriggerCriteriaExperimentParams[] = {
+        {"Trigger on omnibox copy-paste",
+         kDefaultBrowserTriggerCriteriaExperimentParamOptions,
+         std::size(kDefaultBrowserTriggerCriteriaExperimentParamOptions),
+         nullptr},
+};
+
+const FeatureEntry::FeatureParam
     kAutofillUseMobileLabelDisambiguationShowAll[] = {
         {autofill::features::kAutofillUseMobileLabelDisambiguationParameterName,
          autofill::features::
@@ -251,18 +264,14 @@ const FeatureEntry::FeatureVariation
 // Uses int values from SigninPromoViewStyle enum.
 const FeatureEntry::FeatureParam kDiscoverFeedTopSyncPromoStandard[] = {
     {kDiscoverFeedTopSyncPromoStyle, "0"}};
-const FeatureEntry::FeatureParam kDiscoverFeedTopSyncPromoCompactTitled[] = {
-    {kDiscoverFeedTopSyncPromoStyle, "1"}};
 const FeatureEntry::FeatureParam kDiscoverFeedTopSyncPromoCompactHorizontal[] =
-    {{kDiscoverFeedTopSyncPromoStyle, "2"}};
+    {{kDiscoverFeedTopSyncPromoStyle, "1"}};
 const FeatureEntry::FeatureParam kDiscoverFeedTopSyncPromoCompactVertical[] = {
-    {kDiscoverFeedTopSyncPromoStyle, "3"}};
+    {kDiscoverFeedTopSyncPromoStyle, "2"}};
 
 const FeatureEntry::FeatureVariation kDiscoverFeedTopSyncPromoVariations[] = {
     {"Standard", kDiscoverFeedTopSyncPromoStandard,
      std::size(kDiscoverFeedTopSyncPromoStandard), nullptr},
-    {"Compact Titled (Unpersonalized)", kDiscoverFeedTopSyncPromoCompactTitled,
-     std::size(kDiscoverFeedTopSyncPromoCompactTitled), nullptr},
     {"Compact Horizontal", kDiscoverFeedTopSyncPromoCompactHorizontal,
      std::size(kDiscoverFeedTopSyncPromoCompactHorizontal), nullptr},
     {"Compact Vertical", kDiscoverFeedTopSyncPromoCompactVertical,
@@ -605,6 +614,22 @@ const FeatureEntry::FeatureVariation kTabInactivityThresholdVariations[] = {
      std::size(kTabInactivityThresholdOneMinuteDemo), nullptr},
 };
 
+const FeatureEntry::FeatureParam kTabPickupThresholdTenMinutes[] = {
+    {kTabPickupThresholdParameterName, kTabPickupThresholdTenMinutesParam}};
+const FeatureEntry::FeatureParam kTabPickupThresholdOneHour[] = {
+    {kTabPickupThresholdParameterName, kTabPickupThresholdOneHourParam}};
+const FeatureEntry::FeatureParam kTabPickupThresholdTwoHours[] = {
+    {kTabPickupThresholdParameterName, kTabPickupThresholdTwoHoursParam}};
+
+const FeatureEntry::FeatureVariation kTabPickupThresholdVariations[] = {
+    {"Ten Minutes", kTabPickupThresholdTenMinutes,
+     std::size(kTabInactivityThresholdOneWeek), nullptr},
+    {"One Hour", kTabPickupThresholdOneHour,
+     std::size(kTabInactivityThresholdTwoWeeks), nullptr},
+    {"Two Hours", kTabPickupThresholdTwoHours,
+     std::size(kTabInactivityThresholdThreeWeeks), nullptr},
+};
+
 const FeatureEntry::FeatureParam
     kCredentialProviderExtensionPromoOnPasswordSaved[] = {
         {kCredentialProviderExtensionPromoOnPasswordSavedParam, "true"}};
@@ -637,9 +662,13 @@ const FeatureEntry::FeatureVariation
 
 const FeatureEntry::FeatureParam kIOSEditMenuPartialTranslateNoIncognito[] = {
     {kIOSEditMenuPartialTranslateNoIncognitoParam, "true"}};
+const FeatureEntry::FeatureParam kIOSEditMenuPartialTranslateWithIncognito[] = {
+    {kIOSEditMenuPartialTranslateNoIncognitoParam, "false"}};
 const FeatureEntry::FeatureVariation kIOSEditMenuPartialTranslateVariations[] =
     {{"Disable on incognito", kIOSEditMenuPartialTranslateNoIncognito,
-      std::size(kIOSEditMenuPartialTranslateNoIncognito), nullptr}};
+      std::size(kIOSEditMenuPartialTranslateNoIncognito), nullptr},
+     {"Enable on incognito", kIOSEditMenuPartialTranslateWithIncognito,
+      std::size(kIOSEditMenuPartialTranslateWithIncognito), nullptr}};
 
 const FeatureEntry::FeatureParam kAddToHomeScreenDisableIncognito[] = {
     {kAddToHomeScreenDisableIncognitoParam, "true"}};
@@ -688,11 +717,16 @@ const FeatureEntry::Choice kReplaceSyncPromosWithSignInPromosChoices[] = {
     {"Base only", "enable-features", "ReplaceSyncPromosWithSignInPromos"},
     {"Everything (bookmarks, reading list, etc)", "enable-features",
      "ReplaceSyncPromosWithSignInPromos,"
+     "SyncEnableContactInfoDataType,"
      "SyncEnableContactInfoDataTypeInTransportMode,"
      "EnablePasswordsAccountStorage,"
      "EnableBookmarksAccountStorage,"
+     "EnablePreferencesAccountStorage,"
      "ReadingListEnableDualReadingListModel,"
-     "ReadingListEnableSyncTransportModeUponSignIn"},
+     "ReadingListEnableSyncTransportModeUponSignIn,"
+     "ConsistencyNewAccountInterface,"
+     "AutofillAccountProfileStorage,"
+     "SyncEnableHistoryDataType"},
 };
 
 // To add a new entry, add to the end of kFeatureEntries. There are four
@@ -824,9 +858,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kRestoreSessionFromCacheName,
      flag_descriptions::kRestoreSessionFromCacheDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::kRestoreSessionFromCache)},
-    {"expanded-tab-strip", flag_descriptions::kExpandedTabStripName,
-     flag_descriptions::kExpandedTabStripDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kExpandedTabStrip)},
     {"shared-highlighting-ios", flag_descriptions::kSharedHighlightingIOSName,
      flag_descriptions::kSharedHighlightingIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSharedHighlightingIOS)},
@@ -1101,10 +1132,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"enable-feed-ablation", flag_descriptions::kEnableFeedAblationName,
      flag_descriptions::kEnableFeedAblationDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEnableFeedAblation)},
-    {"enable-feed-bottom-sign-in-promo",
-     flag_descriptions::kEnableFeedBottomSignInPromoName,
-     flag_descriptions::kEnableFeedBottomSignInPromoDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableFeedBottomSignInPromo)},
     {"enable-feed-card-menu-sign-in-promo",
      flag_descriptions::kEnableFeedCardMenuSignInPromoName,
      flag_descriptions::kEnableFeedCardMenuSignInPromoDescription,
@@ -1217,6 +1244,14 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDefaultBrowserPromoForceShowPromoDescription,
      flags_ui::kOsIos,
      MULTI_VALUE_TYPE(kDefaultBrowserPromoForceShowPromoChoices)},
+    {"default-browser-promo-trigger-criteria-experiment",
+     flag_descriptions::kDefaultBrowserTriggerCriteriaExperimentName,
+     flag_descriptions::kDefaultBrowserTriggerCriteriaExperimentDescription,
+     flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         kDefaultBrowserTriggerCriteriaExperiment,
+         kDefaultBrowserTriggerCriteriaExperimentParams,
+         "DefaultBrowserTriggerCriteriaExperimentParams")},
 #if BUILDFLAG(IOS_BACKGROUND_MODE_ENABLED)
     {"feed-background-refresh-ios",
      flag_descriptions::kFeedBackgroundRefreshName,
@@ -1602,7 +1637,26 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReplaceSyncPromosWithSignInPromosName,
      flag_descriptions::kReplaceSyncPromosWithSignInPromosDescription,
      flags_ui::kOsIos,
-     MULTI_VALUE_TYPE(kReplaceSyncPromosWithSignInPromosChoices)}};
+     MULTI_VALUE_TYPE(kReplaceSyncPromosWithSignInPromosChoices)},
+    {"toolbar-theme-color", flag_descriptions::kThemeColorInToolbarName,
+     flag_descriptions::kThemeColorInToolbarDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kThemeColorInToolbar)},
+    {"tab-grid-refactoring", flag_descriptions::kTabGridRefactoringName,
+     flag_descriptions::kTabGridRefactoringDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kTabGridRefactoring)},
+    {"tab-pickup-threshold", flag_descriptions::kTabPickupThresholdName,
+     flag_descriptions::kTabPickupThresholdDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kTabPickupThreshold,
+                                    kTabPickupThresholdVariations,
+                                    "TabPickupThreshold")},
+    {"ios-iph-for-safari-switcher",
+     flag_descriptions::kIPHForSafariSwitcherName,
+     flag_descriptions::kIPHForSafariSwitcherDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kIPHForSafariSwitcher)},
+    {"safety-check-magic-stack", flag_descriptions::kSafetyCheckMagicStackName,
+     flag_descriptions::kSafetyCheckMagicStackDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kSafetyCheckMagicStack)},
+};
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
   return false;

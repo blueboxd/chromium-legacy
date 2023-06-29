@@ -16,6 +16,10 @@
     }
   }
 
+  :host([drop-position='into']) power-bookmark-row {
+    background: var(--cr-hover-background-color);
+  }
+
   cr-icon-button {
     --cr-icon-button-icon-size: 16px;
     --cr-icon-button-size: 24px;
@@ -44,7 +48,6 @@
 
   :host-context([chrome-refresh-2023]) cr-toolbar-search-field {
     margin: var(--sp-body-padding);
-    margin-block-end: 0;
   }
 
   hr {
@@ -136,7 +139,7 @@
   }
 
   :host-context([chrome-refresh-2023]) .label-row {
-    margin: var(--sp-card-gap) var(--sp-body-padding);
+    margin: 4px var(--sp-body-padding) var(--sp-card-gap);
   }
 
   cr-toolbar-selection-overlay {
@@ -184,7 +187,8 @@
       disabled="[[editing_]]" hidden="[[guestMode_]]"
       on-blur="onSearchBlurred_">
   </cr-toolbar-search-field>
-  <div class="label-row" hidden="[[guestMode_]]"
+  <div class="label-row"
+      hidden="[[shouldHideFilterChips_(guestMode_, labels_)]]"
       header-hidden$="[[shouldHideHeader_(
           labels_.*, searchQuery_, shownBookmarks_)]]">
     <template is="dom-repeat" items="[[labels_]]">
@@ -227,13 +231,13 @@
           title="$i18n{tooltipNewFolder}"
           aria-label="$i18n{createNewFolderA11yLabel}"
           on-click="onAddNewFolderClicked_"></cr-icon-button>
-      <cr-icon-button slot="buttons" class="icon-edit"
+      <cr-icon-button slot="buttons" iron-icon="cr:more-vert"
           disabled="[[!shownBookmarks_.length]]"
-          title="$i18n{tooltipEdit}"
-          aria-label="$i18n{editBookmarkListA11yLabel}"
-          aria-pressed="[[editing_]]"
+          title="$i18n{tooltipMore}"
+          aria-label="$i18n{tooltipMore}"
           aria-disabled="[[!shownBookmarks_.length]]"
-          on-click="onBulkEditClicked_"></cr-icon-button>
+          on-click="onShowEditMenuClicked_">
+      </cr-icon-button>
     </sp-heading>
 
     <div class="sp-scroller"
@@ -278,8 +282,7 @@
                             item, item.*, imageUrls_.*)]]"
               force-hover="[[getBookmarkForceHover_(
                             item, contextMenuBookmark_)]]"
-              draggable="[[canDrag_(editing_, renamingId_, searchQuery_,
-                           labels_.*)]]">
+              draggable="[[canDrag_]]">
             <template is="dom-if" restamp
                 if="[[isPriceTracked(item, trackedProductInfos_.*)]]">
               <sp-list-item-badge slot="badges"
@@ -341,7 +344,7 @@
         <cr-icon-button iron-icon="cr:more-vert"
             disabled="[[!selectedBookmarks_.length]]"
             title="$i18n{tooltipMore}" aria-label="$i18n{tooltipMore}"
-            on-click="onEditMenuClicked_">
+            on-click="onBulkEditMenuClicked_">
         </cr-icon-button>
       </div>
     </cr-toolbar-selection-overlay>
@@ -357,6 +360,13 @@
       [[getSortMenuItemLowerLabel_(item)]]
     </button>
   </template>
+</cr-action-menu>
+
+<cr-action-menu id="editMenu">
+  <button class="dropdown-item" on-click="onBulkEditClicked_">
+    <iron-icon icon="bookmarks:edit"></iron-icon>
+    $i18n{tooltipEdit}
+  </button>
   <hr>
   <button id="visualView" class="dropdown-item" on-click="onVisualViewClicked_">
     <iron-icon icon="cr:check" invisible$="[[compact_]]"></iron-icon>

@@ -159,7 +159,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Audio.AgcClippingAdjustmentAllowed" enum="Boolean"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>hlundin@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
   <summary>
@@ -294,7 +294,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Audio.AudioInterruptionMs" units="ms"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>hlundin@chromium.org</owner>
   <owner>ivoc@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
@@ -539,7 +539,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="WebRTC.Audio.EchoCanceller.ProcessingPersistentMultichannelContent"
-    enum="Boolean" expires_after="2023-10-22">
+    enum="Boolean" expires_after="2023-12-24">
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
@@ -706,7 +706,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.AudioInputSampleRate" enum="AudioSampleRate"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>saza@chromium.org</owner>
   <owner>olka@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
@@ -1021,7 +1021,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.DesktopCapture.Win.DesktopCapturerImpl"
-    enum="WebRtcDesktopCapturerImpl" expires_after="2023-10-22">
+    enum="WebRtcDesktopCapturerImpl" expires_after="2023-12-24">
   <owner>alcooper@chromium.org</owner>
   <owner>auorion@microsoft.com</owner>
   <owner>edgecapabilitiesdev@microsoft.com</owner>
@@ -1194,12 +1194,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.CandidatePairType{IPProtocolType}"
-    enum="IceCandidatePairTypes" expires_after="2020-04-05">
-  <owner>qingsi@google.com</owner>
-  <owner>jeroendb@google.com</owner>
+    enum="IceCandidatePairTypes" expires_after="2024-06-15">
+  <owner>hta@chromium.org</owner>
+  <owner>webrtc-dev@chromium.org</owner>
+  <owner>phancke@microsoft.com</owner>
   <summary>
     Counters of various ICE Endpoint types. These values are logged for the
-    first selected candidate pair of a PeerConnection. {IPProtocolType}
+    first selected candidate pair of a PeerConnection. {IPProtocolType} Warning:
+    this histogram was expired from 2020-04-05 to 2023-06-16; data may be
+    missing.
   </summary>
   <token key="IPProtocolType" variants="IPProtocolType">
     <variant name=""/>
@@ -1331,12 +1334,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.IPMetrics" enum="PeerConnectionCounters"
-    expires_after="M81">
-  <owner>qingsi@google.com</owner>
-  <owner>jeroendb@google.com</owner>
+    expires_after="2024-06-15">
+  <owner>hta@chromium.org</owner>
+  <owner>webrtc-dev@chromium.org</owner>
+  <owner>phancke@microsoft.com</owner>
   <summary>
     Counters on IPv4 and IPv6 usage in PeerConnection. These values are logged
-    once per PeerConnection.
+    once per PeerConnection. Warning: this histogram was expired from M81 to
+    2023-06-16; data may be missing.
   </summary>
 </histogram>
 
@@ -1451,7 +1456,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.RtcpMux" enum="PeerConnectionRtcpMux"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>hta@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>
   <summary>
@@ -1655,7 +1660,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.SpeedLimit" units="%"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>handellm@google.com</owner>
   <owner>hbos@chromium.org</owner>
   <summary>
@@ -1730,7 +1735,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.ThermalThrottling" units="boolean"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>handellm@google.com</owner>
   <owner>hbos@chromium.org</owner>
   <summary>
@@ -1740,7 +1745,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.ThermalThrottlingEpisodes" units="count"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>handellm@google.com</owner>
   <owner>hbos@chromium.org</owner>
   <summary>
@@ -2068,7 +2073,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.UserMediaRequest.NoResultState"
-    enum="MediaStreamRequestState" expires_after="2023-10-23">
+    enum="MediaStreamRequestState" expires_after="2023-12-24">
   <owner>andresp@chromium.org</owner>
   <owner>toprice@chromium.org</owner>
   <owner>agpalak@chromium.org</owner>

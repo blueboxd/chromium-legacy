@@ -347,12 +347,16 @@ LocalFrame* LocalFrame::FromFrameToken(const LocalFrameToken& frame_token) {
   return it == local_frames_map.end() ? nullptr : it->value.Get();
 }
 
-void LocalFrame::Init(Frame* opener,
-                      const DocumentToken& document_token,
-                      std::unique_ptr<PolicyContainer> policy_container,
-                      const StorageKey& storage_key,
-                      ukm::SourceId document_ukm_source_id,
-                      const KURL& creator_base_url) {
+void LocalFrame::Init(
+    Frame* opener,
+    const DocumentToken& document_token,
+    std::unique_ptr<PolicyContainer> policy_container,
+    const StorageKey& storage_key,
+    ukm::SourceId document_ukm_source_id,
+    const KURL& creator_base_url,
+    bool coop_forbids_initial_empty_document_to_be_cross_origin_isolated) {
+  coop_forbids_initial_empty_document_to_be_cross_origin_isolated_ =
+      coop_forbids_initial_empty_document_to_be_cross_origin_isolated;
   if (!policy_container)
     policy_container = PolicyContainer::CreateEmpty();
 
@@ -857,6 +861,8 @@ void LocalFrame::DidAttachDocument() {
   Selection().DidAttachDocument(document);
   notified_color_scheme_ = false;
 
+  smooth_scroll_sequencer_.Clear();
+
 #if !BUILDFLAG(IS_ANDROID)
   // For PWAs with display_override "window-controls-overlay", titlebar area
   // rect bounds sent from the browser need to persist on navigation to keep the
@@ -1248,20 +1254,18 @@ scoped_refptr<InspectorTaskRunner> LocalFrame::GetInspectorTaskRunner() {
 }
 
 void LocalFrame::StartPrinting(const gfx::SizeF& page_size,
-                               const gfx::SizeF& aspect_ratio,
                                float maximum_shrink_ratio) {
   DCHECK(!saved_scroll_offsets_);
-  SetPrinting(true, page_size, aspect_ratio, maximum_shrink_ratio);
+  SetPrinting(true, page_size, maximum_shrink_ratio);
 }
 
 void LocalFrame::EndPrinting() {
   RestoreScrollOffsets();
-  SetPrinting(false, gfx::SizeF(), gfx::SizeF(), 0);
+  SetPrinting(false, gfx::SizeF(), 0);
 }
 
 void LocalFrame::SetPrinting(bool printing,
                              const gfx::SizeF& page_size,
-                             const gfx::SizeF& aspect_ratio,
                              float maximum_shrink_ratio) {
   // In setting printing, we should not validate resources already cached for
   // the document.  See https://bugs.webkit.org/show_bug.cgi?id=43704
@@ -1276,8 +1280,7 @@ void LocalFrame::SetPrinting(bool printing,
     text_autosizer->UpdatePageInfo();
 
   if (ShouldUsePrintingLayout()) {
-    View()->ForceLayoutForPagination(page_size, aspect_ratio,
-                                     maximum_shrink_ratio);
+    View()->ForceLayoutForPagination(page_size, maximum_shrink_ratio);
   } else {
     if (LayoutView* layout_view = View()->GetLayoutView()) {
       layout_view->SetIntrinsicLogicalWidthsDirty();
@@ -2410,12 +2413,39 @@ void LocalFrame::AnimateSnapFling(base::TimeTicks monotonic_time) {
   GetEventHandler().AnimateSnapFling(monotonic_time);
 }
 
-SmoothScrollSequencer& LocalFrame::GetSmoothScrollSequencer() {
+SmoothScrollSequencer* LocalFrame::CreateNewSmoothScrollSequence() {
+  if (!IsLocalRoot()) {
+    return LocalFrameRoot().CreateNewSmoothScrollSequence();
+  }
+
+  SmoothScrollSequencer* old_sequencer = smooth_scroll_sequencer_;
+  smooth_scroll_sequencer_ = MakeGarbageCollected<SmoothScrollSequencer>(*this);
+  return old_sequencer;
+}
+
+void LocalFrame::ReinstateSmoothScrollSequence(
+    SmoothScrollSequencer* sequencer) {
+  if (!IsLocalRoot()) {
+    LocalFrameRoot().ReinstateSmoothScrollSequence(sequencer);
+    return;
+  }
+
+  smooth_scroll_sequencer_ = sequencer;
+}
+
+void LocalFrame::FinishedScrollSequence() {
+  if (!IsLocalRoot()) {
+    LocalFrameRoot().FinishedScrollSequence();
+    return;
+  }
+
+  smooth_scroll_sequencer_.Clear();
+}
+
+SmoothScrollSequencer* LocalFrame::GetSmoothScrollSequencer() const {
   if (!IsLocalRoot())
     return LocalFrameRoot().GetSmoothScrollSequencer();
-  if (!smooth_scroll_sequencer_)
-    smooth_scroll_sequencer_ = MakeGarbageCollected<SmoothScrollSequencer>();
-  return *smooth_scroll_sequencer_;
+  return smooth_scroll_sequencer_;
 }
 
 ukm::UkmRecorder* LocalFrame::GetUkmRecorder() {
@@ -2749,6 +2779,7 @@ void LocalFrame::RequestExecuteScript(
     mojom::blink::PromiseResultOption promise_behavior) {
   scoped_refptr<DOMWrapperWorld> world;
   ExecuteScriptPolicy execute_script_policy;
+  CHECK(!IsProvisional());
   if (world_id == DOMWrapperWorld::kMainWorldId) {
     world = &DOMWrapperWorld::MainWorld();
     execute_script_policy =
@@ -2771,10 +2802,12 @@ void LocalFrame::RequestExecuteScript(
   script_sources.Append(sources.data(),
                         base::checked_cast<wtf_size_t>(sources.size()));
 
+  ScriptState* script_state = ToScriptState(this, *world);
+  CHECK(script_state);
   PausableScriptExecutor::CreateAndRun(
-      ToScriptState(DomWindow(), *world), std::move(script_sources),
-      execute_script_policy, user_gesture, evaluation_timing, blocking_option,
-      want_result_option, promise_behavior, std::move(callback));
+      script_state, std::move(script_sources), execute_script_policy,
+      user_gesture, evaluation_timing, blocking_option, want_result_option,
+      promise_behavior, std::move(callback));
 }
 
 void LocalFrame::SetEvictCachedSessionStorageOnFreezeOrUnload() {
@@ -3185,15 +3218,6 @@ void LocalFrame::MediaPlayerActionAtViewportPoint(
 
   auto* media_element = To<HTMLMediaElement>(node);
   switch (type) {
-    case mojom::blink::MediaPlayerActionType::kPlay:
-      if (enable)
-        media_element->Play();
-      else
-        media_element->pause();
-      break;
-    case mojom::blink::MediaPlayerActionType::kMute:
-      media_element->setMuted(enable);
-      break;
     case mojom::blink::MediaPlayerActionType::kLoop:
       media_element->SetLoop(enable);
       break;

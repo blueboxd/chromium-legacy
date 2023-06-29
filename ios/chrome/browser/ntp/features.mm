@@ -62,13 +62,9 @@ BASE_FEATURE(kCreateDiscoverFeedServiceEarly,
              "CreateDiscoverFeedServiceEarly",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableFeedBottomSignInPromo,
-             "EnableFeedBottomSignInPromo",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kEnableFeedCardMenuSignInPromo,
              "EnableFeedCardMenuSignInPromo",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableFeedAblation,
              "EnableFeedAblation",
@@ -332,10 +328,6 @@ bool IsFeedUseInteractivityInvalidationForForegroundRefreshesEnabled() {
       kEnableFeedInvisibleForegroundRefresh,
       kEnableFeedUseInteractivityInvalidationForForegroundRefreshes,
       /*default=*/false);
-}
-
-bool IsFeedBottomSignInPromoEnabled() {
-  return base::FeatureList::IsEnabled(kEnableFeedBottomSignInPromo);
 }
 
 bool IsFeedCardMenuSignInPromoEnabled() {

@@ -11,6 +11,7 @@
 <translation id="1511320244449497906">Saioa hasita daukazu, eta <ph name="DOMAIN" /> domeinuak kudeatutako kontu batekin sinkronizatzen dituzu datuak. Orain, kontu horretarako erabiltzaile-gidalerro zehatzak ezar ditzake domeinu horren administratzaileak, eta gidalerro horiek Chrome-ren portaera alda dezakete.</translation>
 <translation id="1554731936187952550">Chrome-ren segurtasun-aukerarik sendoena darabilzu webgune kaltegarrien aurka</translation>
 <translation id="1682483655351012182">Sinkronizatu Chrome-ko datuak</translation>
+<translation id="1733654336159102143">Blokeatu ezkutuko moduko fitxak Chrome-tik irtetean edo beste aplikazio batera aldatzean.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1843217788865538014">Erabili automatikoki Chrome mezu, dokumentu edo aplikazioetako estekak sakatzean.</translation>
 <translation id="1917964099031477364">Kontu hau eta gorde gabeko datuak kendu egingo dira Chromium-etik eta gailuko Google-ren beste aplikazio batzuetatik.</translation>
@@ -34,6 +35,7 @@
 <translation id="2695886661449553974">Chrome-k ezin izan ditu bilatu eguneratzeak. Saiatu berriro geroago.</translation>
 <translation id="2732745070297234559">Chrome-k ezin izan ditu egiaztatu pasahitz guztiak. Saiatu berriro bihar.</translation>
 <translation id="2736805085127235148">Chrome-ren jakinarazpenak desaktibatuta daude une honetan gailuaren ezarpenetan.</translation>
+<translation id="2754286486056173475">Sortu Calendar-eko gertaerak Chrome-n</translation>
 <translation id="2767464022270041271">Ez dago pasahitzik gordeta. Gordetako pasahitzak egiaztatzeko gai da Google-ren Pasahitz-kudeatzailea.</translation>
 <translation id="2840432500933227975">Ireki Chrome-ren ezarpenak iOS-en, sakatu "Browser Default APP" (arakatzaile-aplikazio lehenetsia) eta hautatu Chrome.</translation>
 <translation id="2869959624320573933">Hasi saioa Chrome-n</translation>
@@ -48,6 +50,8 @@
 <translation id="3503014945441706099">Lortu Arakatze seguru hobetua Chrome-ko profil honetan ere</translation>
 <translation id="3522659714780527202">Chrome erabiltzen duzun gailu guztietan zure fitxak eskura izateko, aktibatu sinkronizazioa</translation>
 <translation id="3533694711092285624">Ez dago pasahitzik gordeta. Chrome-k pasahitzak egiazta ditzake gorde ondoren.</translation>
+<translation id="3594076341410558780">Ezkutatu "Atera ahalik eta etekin handiena Chrome-ri"</translation>
+<translation id="3611867725106943284">Sakatu "Ikusi Google Maps-ekin Chrome-n"</translation>
 <translation id="3655656110921623717">Ondorioz, Chrome-k beti eskatuko du mugikorretarako webgunea.</translation>
 <translation id="3720541637541300822">Blokeatu ezkutuko moduko fitxak Chrome ixten duzunean</translation>
 <translation id="3827545470516145620">Babes estandarra darabilzu gailu honetan</translation>
@@ -66,8 +70,10 @@
 <translation id="4636900170638246267">Hasi saioa webgune honetan eta Chrome-n.</translation>
 <translation id="4698415050768537821">Chrome-k ezin izan ditu egiaztatu pasahitz guztiak. Saiatu berriro bihar edo <ph name="BEGIN_LINK" />egiaztatu pasahitzak Google-ko kontuan<ph name="END_LINK" />.</translation>
 <translation id="4819268619367838612">Aplikazioa hobetzeko, erabilera-datuak eta hutsegite-txostenak bidaltzen dizkio Chrome-k Google-ri. <ph name="BEGIN_LINK" />Kudeatu<ph name="END_LINK" /></translation>
+<translation id="4830799082179398588">Chrome arakatzaile lehenetsi bihurtu nahi duzu?</translation>
 <translation id="484033449593719797">Ez da bateragarria Chrome Beta-rekin</translation>
 <translation id="4840404732697892756">Saioa Google-ko kontu batekin hasten baduzu, pasahitzak egiaztatzeko gai izango da Google-ren Pasahitz-kudeatzailea.</translation>
+<translation id="4903674399067644695">Txartel horretan, Chrome-ri ahalik eta etekin handiena ateratzeko iradokizunak agertzen dira.</translation>
 <translation id="5030102366287574140">Datuen isilpekotasunaren urratzeen, seguruak ez diren webguneen eta abarren aurrean babes zaitzake Chrome-k.</translation>
 <translation id="5108659628347594808">Hobetu Chrome</translation>
 <translation id="5119391094379141756">Hautatu Chrome.</translation>
@@ -99,6 +105,7 @@
 <translation id="6676840375528380067">Gailu honetan dituzun Chrome-ko datuak garbitu nahi dituzu?</translation>
 <translation id="6709398533399187136">Pasahitza arriskuan jarri da, datuen isilpekotasuna urratu delako. Google-ren Pasahitz-kudeatzailea zerbitzuak hura orain aldatzea gomendatzen du.</translation>
 <translation id="6822673484890854830">Chrome-k ezin izan ditu egiaztatu pasahitz guztiak. Saiatu berriro geroago.</translation>
+<translation id="6896070677477855330">Aktibatu "Blokeatu ezkutuko moduko fitxak Chrome ixten duzunean".</translation>
 <translation id="6964931465519938134">Orain, mezuetan, dokumentuetan eta aplikazioetan estekak sakatzen dituzunean, Chrome erabili ahalko duzu.</translation>
 <translation id="6975725306479268850">Aukeratu Chrome betetze automatikorako</translation>
 <translation id="7059914902409643750">Pertsonalizatu Chrome</translation>
@@ -111,6 +118,7 @@
 <translation id="7261678641327190792">Chrome-k ezin ditu egiaztatu pasahitzak</translation>
 <translation id="7272930098487145294">Irudiak gordetzeko, sakatu Ezarpenak eta eman argazkiak gehitzeko baimena Chrome-ri</translation>
 <translation id="7275945473750112644">Kontua <ph name="HOSTED_DOMAIN" /> domeinuak kudeatzen duenez, Chrome-ko datuak garbitu egingo dira gailu honetatik</translation>
+<translation id="7394108421562933108">Maps Chrome-n</translation>
 <translation id="7400722733683201933">Google Chrome arakatzaileari buruz</translation>
 <translation id="7501046334262221972">Chrome arakatzaile lehenetsi gisa ezartzeko, ireki Ezarpenak. Sakatu Arakatzaile lehenetsia eta, gero, hautatu Chrome.</translation>
 <translation id="756809126120519699">Garbitu dira Chrome-ko datuak</translation>
@@ -140,6 +148,7 @@
 <translation id="8765470054473112089">Helbide-barran edo bilaketa-koadroan zerbait idazten duzunean, Chrome-k bilatzaile lehenetsira bidaltzen du, iradokizun hobeak lortzeko. Ezkutuko moduan, aukera hori desaktibatuta dago.</translation>
 <translation id="8772179140489533211">Chrome-n saioa hasteko onarpen-mezuak erakusten ditu.</translation>
 <translation id="8788269841521769222">Ez duzu pasahitza gogoratu beharko. <ph name="EMAIL" /> kontuko Google-ren Pasahitz-kudeatzailea zerbitzuan gordeko da.</translation>
+<translation id="880967149107462122">Joan Chrome-ren ezarpenetara</translation>
 <translation id="8857676124663337448">Google-ren Pasahitz-kudeatzailea zerbitzuak ezin izan ditu egiaztatu pasahitz guztiak. Saiatu berriro bihar.</translation>
 <translation id="8897749957032330183">Pasahitzak gailu honetan gordetzen dira, Google-ren Pasahitz-kudeatzailea zerbitzuan.</translation>
 <translation id="8969290730818637510">Aktibatuta dagoenean:

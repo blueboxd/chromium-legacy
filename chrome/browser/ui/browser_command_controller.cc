@@ -123,12 +123,6 @@
 #include "components/user_manager/user_manager.h"
 #endif
 
-// TODO(crbug.com/1424800): Remove once the restore issue has been resolved.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#undef ENABLED_VLOG_LEVEL
-#define ENABLED_VLOG_LEVEL 1
-#endif
-
 #if BUILDFLAG(IS_LINUX)
 #include "ui/linux/linux_ui.h"
 #endif
@@ -250,8 +244,6 @@ BrowserCommandController::BrowserCommandController(Browser* browser)
   if (tab_restore_service) {
     tab_restore_service->AddObserver(this);
     if (!tab_restore_service->IsLoaded()) {
-      VLOG(1) << "BrowserCommandController::BrowserCommandController, loading "
-                 "tabs from last session.";
       tab_restore_service->LoadTabsFromLastSession();
     }
   }
@@ -1192,7 +1184,6 @@ void BrowserCommandController::InitCommandState() {
       IDC_DUPLICATE_TAB, !browser_->is_type_picture_in_picture());
   UpdateTabRestoreCommandState();
   command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
-  command_updater_.UpdateCommandEnabled(IDC_DEBUG_FRAME_TOGGLE, true);
   command_updater_.UpdateCommandEnabled(IDC_NAME_WINDOW, true);
 #if BUILDFLAG(IS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(

@@ -137,24 +137,22 @@ static inline void UpdateObjectBoundingBox(
 }
 
 static bool HasValidBoundingBoxForContainer(const LayoutObject& object) {
-  if (object.IsSVGShape())
-    return !To<LayoutSVGShape>(object).IsShapeEmpty();
-
-  if (const auto* ng_text = DynamicTo<LayoutNGSVGText>(object))
+  if (auto* svg_shape = DynamicTo<LayoutSVGShape>(object)) {
+    return !svg_shape->IsShapeEmpty();
+  }
+  if (auto* ng_text = DynamicTo<LayoutNGSVGText>(object)) {
     return ng_text->IsObjectBoundingBoxValid();
-
+  }
   if (auto* svg_container = DynamicTo<LayoutSVGContainer>(object)) {
     return svg_container->IsObjectBoundingBoxValid() &&
            !svg_container->IsSVGHiddenContainer();
   }
-
   if (auto* foreign_object = DynamicTo<LayoutNGSVGForeignObject>(object)) {
     return foreign_object->IsObjectBoundingBoxValid();
   }
-
-  if (object.IsSVGImage())
-    return To<LayoutSVGImage>(object).IsObjectBoundingBoxValid();
-
+  if (auto* svg_image = DynamicTo<LayoutSVGImage>(object)) {
+    return svg_image->IsObjectBoundingBoxValid();
+  }
   return false;
 }
 
@@ -173,7 +171,7 @@ bool SVGContentContainer::UpdateBoundingBoxes(bool& object_bounding_box_valid) {
   object_bounding_box_valid = false;
 
   gfx::RectF object_bounding_box;
-  gfx::RectF stroke_bounding_box;
+  gfx::RectF decorated_bounding_box;
   for (LayoutObject* current = children_.FirstChild(); current;
        current = current->NextSibling()) {
     // Don't include elements that are not rendered.
@@ -183,14 +181,15 @@ bool SVGContentContainer::UpdateBoundingBoxes(bool& object_bounding_box_valid) {
     UpdateObjectBoundingBox(
         object_bounding_box, object_bounding_box_valid,
         transform.MapRect(ObjectBoundsForPropagation(*current)));
-    stroke_bounding_box.Union(transform.MapRect(current->StrokeBoundingBox()));
+    decorated_bounding_box.Union(
+        transform.MapRect(current->DecoratedBoundingBox()));
   }
 
   bool changed = false;
   changed |= object_bounding_box_ != object_bounding_box;
   object_bounding_box_ = object_bounding_box;
-  changed |= stroke_bounding_box_ != stroke_bounding_box;
-  stroke_bounding_box_ = stroke_bounding_box;
+  changed |= decorated_bounding_box_ != decorated_bounding_box;
+  decorated_bounding_box_ = decorated_bounding_box;
   return changed;
 }
 

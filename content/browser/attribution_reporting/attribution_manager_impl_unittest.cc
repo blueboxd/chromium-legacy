@@ -45,6 +45,7 @@
 #include "content/browser/attribution_reporting/attribution_os_level_manager.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_report_sender.h"
+#include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
 #include "content/browser/attribution_reporting/attribution_storage.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
@@ -84,6 +85,7 @@ namespace content {
 namespace {
 
 using ::attribution_reporting::SuitableOrigin;
+using ::attribution_reporting::mojom::OsRegistrationResult;
 
 using ::testing::_;
 using ::testing::AllOf;
@@ -126,6 +128,9 @@ constexpr char kPendingAndBrowserWentOfflineTimeSinceCreation[] =
 constexpr char kPendingAndBrowserWentOfflineTimeUntilReportTime[] =
     "Conversions.AggregatableReport.PendingAndBrowserWentOffline."
     "TimeUntilReportTime";
+
+constexpr char kSentVerboseDebugReportTypeMetric[] =
+    "Conversions.SentVerboseDebugReportType";
 
 auto InvokeReportSentCallback(SendResult::Status status) {
   return [=](AttributionReport report, bool is_debug_report,
@@ -1151,10 +1156,13 @@ TEST_F(AttributionManagerImplTest, HandleOsSource) {
                      AttributionInputEvent()),
       kFrameId);
 
-  histograms.ExpectBucketCount("Conversions.AttributionOsRegistrationResult",
-                               true, 1);
-  histograms.ExpectBucketCount("Conversions.AttributionOsRegistrationResult",
-                               false, 1);
+  EXPECT_THAT(
+      histograms.GetAllSamples("Conversions.OsRegistrationResult.Source"),
+      ElementsAre(
+          base::Bucket(OsRegistrationResult::kPassedToOs, 1),
+          base::Bucket(OsRegistrationResult::kInvalidRegistrationUrl, 1),
+          base::Bucket(OsRegistrationResult::kProhibitedByBrowserPolicy, 1),
+          base::Bucket(OsRegistrationResult::kRejectedByOs, 1)));
 }
 
 TEST_F(AttributionManagerImplTest, HandleOsTrigger) {
@@ -1234,10 +1242,13 @@ TEST_F(AttributionManagerImplTest, HandleOsTrigger) {
                      /*input_event=*/absl::nullopt),
       kFrameId);
 
-  histograms.ExpectBucketCount("Conversions.AttributionOsRegistrationResult",
-                               true, 1);
-  histograms.ExpectBucketCount("Conversions.AttributionOsRegistrationResult",
-                               false, 1);
+  EXPECT_THAT(
+      histograms.GetAllSamples("Conversions.OsRegistrationResult.Trigger"),
+      ElementsAre(
+          base::Bucket(OsRegistrationResult::kPassedToOs, 1),
+          base::Bucket(OsRegistrationResult::kInvalidRegistrationUrl, 1),
+          base::Bucket(OsRegistrationResult::kProhibitedByBrowserPolicy, 1),
+          base::Bucket(OsRegistrationResult::kRejectedByOs, 1)));
 }
 
 TEST_F(AttributionManagerImplTest, ConversionsSentFromUI_ReportedImmediately) {
@@ -2683,6 +2694,8 @@ TEST_F(AttributionManagerImplTest, TooManyEventsInQueue) {
 }
 
 TEST_F(AttributionManagerImplTest, TriggerVerboseDebugReport_ReportSent) {
+  base::HistogramTester histograms;
+
   const auto reporting_origin = *SuitableOrigin::Deserialize("https://r1.test");
   cookie_checker_->AddOriginWithDebugCookieSet(reporting_origin);
 
@@ -2738,6 +2751,8 @@ TEST_F(AttributionManagerImplTest, TriggerVerboseDebugReport_ReportSent) {
 
   checkpoint.Call(1);
 
+  histograms.ExpectTotalCount(kSentVerboseDebugReportTypeMetric, 0);
+
   {
     // Trigger registered outside a fenced frame tree failed with debug
     // reporting and debug cookie is set, and feature on.
@@ -2752,6 +2767,9 @@ TEST_F(AttributionManagerImplTest, TriggerVerboseDebugReport_ReportSent) {
         kFrameId);
     task_environment_.RunUntilIdle();
   }
+
+  // kTriggerNoMatchingSource = 6
+  histograms.ExpectUniqueSample(kSentVerboseDebugReportTypeMetric, 6, 1);
 }
 
 TEST_F(AttributionManagerImplTest,
@@ -2917,6 +2935,8 @@ class AttributionManagerImplDebugReportTest
 };
 
 TEST_F(AttributionManagerImplDebugReportTest, VerboseDebugReport_ReportSent) {
+  base::HistogramTester histograms;
+
   absl::optional<AttributionDebugReport> sent_report;
 
   Checkpoint checkpoint;
@@ -2981,6 +3001,8 @@ TEST_F(AttributionManagerImplDebugReportTest, VerboseDebugReport_ReportSent) {
 
   checkpoint.Call(1);
 
+  histograms.ExpectTotalCount(kSentVerboseDebugReportTypeMetric, 0);
+
   {
     // Source registered outside a fenced frame failed with debug reporting, and
     // feature on.
@@ -3006,6 +3028,9 @@ TEST_F(AttributionManagerImplDebugReportTest, VerboseDebugReport_ReportSent) {
     ASSERT_TRUE(report_data);
     EXPECT_TRUE(report_data->Find("source_site"));
   }
+
+  // kSourceDestinationLimit = 0
+  histograms.ExpectUniqueSample(kSentVerboseDebugReportTypeMetric, 0, 1);
 }
 
 TEST_F(AttributionManagerImplDebugReportTest,

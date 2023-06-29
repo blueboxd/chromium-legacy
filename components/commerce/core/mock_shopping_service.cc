@@ -45,6 +45,7 @@ MockShoppingService::MockShoppingService()
   SetGetAllShoppingBookmarksValue(
       std::vector<const bookmarks::BookmarkNode*>());
   SetIsPriceInsightsEligible(true);
+  SetResponseForGetPriceInsightsInfoForUrl(absl::nullopt);
 }
 
 MockShoppingService::~MockShoppingService() = default;
@@ -60,6 +61,18 @@ void MockShoppingService::SetResponseForGetProductInfoForUrl(
 
   ON_CALL(*this, GetAvailableProductInfoForUrl)
       .WillByDefault(testing::Return(product_info));
+}
+
+void MockShoppingService::SetResponseForGetPriceInsightsInfoForUrl(
+    absl::optional<commerce::PriceInsightsInfo> price_insights_info) {
+  ON_CALL(*this, GetPriceInsightsInfoForUrl)
+      .WillByDefault(
+          [price_insights_info](const GURL& url,
+                                commerce::PriceInsightsInfoCallback callback) {
+            base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+                FROM_HERE,
+                base::BindOnce(std::move(callback), url, price_insights_info));
+          });
 }
 
 void MockShoppingService::SetResponsesForGetUpdatedProductInfoForBookmarks(

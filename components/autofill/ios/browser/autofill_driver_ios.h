@@ -59,11 +59,18 @@ class AutofillDriverIOS : public AutofillDriver,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map)
       override;
+  void UndoAutofill(const FormData& data,
+                    const url::Origin& triggered_origin,
+                    const base::flat_map<FieldGlobalId, ServerFieldType>&
+                        field_type_map) override;
   void HandleParsedForms(const std::vector<FormData>& forms) override;
   void SendAutofillTypePredictionsToRenderer(
       const std::vector<FormStructure*>& forms) override;
   void RendererShouldClearFilledSection() override;
   void RendererShouldClearPreviewedForm() override;
+  void RendererShouldTriggerSuggestions(
+      const FieldGlobalId& field_id,
+      AutofillSuggestionTriggerSource trigger_source) override;
   void RendererShouldAcceptDataListSuggestion(
       const FieldGlobalId& field,
       const std::u16string& value) override;

@@ -243,6 +243,15 @@ extern const char kDefaultBrowserRefactoringPromoManagerDescription[];
 extern const char kDefaultBrowserPromoForceShowPromoName[];
 extern const char kDefaultBrowserPromoForceShowPromoDescription[];
 
+// Title and description for default browser promo trigger criteria experiment.
+extern const char kDefaultBrowserTriggerCriteriaExperimentName[];
+extern const char kDefaultBrowserTriggerCriteriaExperimentDescription[];
+
+// Title and description for default browser promo trigger criteria experiment
+// param.
+extern const char kDefaultBrowserTriggerOnOmniboxCopyPasteName[];
+extern const char kDefaultBrowserTriggerOnOmniboxCopyPasteDescription[];
+
 // Title and description for the flag to enable the flag that skips the
 // triggering criteria default browser promo skip.
 extern const char kDefaultBrowserVideoPromoName[];
@@ -285,11 +294,6 @@ extern const char kEnableEmailInBookmarksReadingListSnackbarDescription[];
 // Title and description for the flag to modify the feed header settings.
 extern const char kEnableFeedHeaderSettingsName[];
 extern const char kEnableFeedHeaderSettingsDescription[];
-
-// Title and description for the flag to enable the sign-in promotion at the
-// bottom of the discover feed.
-extern const char kEnableFeedBottomSignInPromoName[];
-extern const char kEnableFeedBottomSignInPromoDescription[];
 
 // Title and description for the flag to enable the sign-in promotion triggered
 // by the discover feed card menu.
@@ -410,10 +414,6 @@ extern const char kEnableVariationsGoogleGroupFilteringDescription[];
 // Chrome iOS.
 extern const char kEnableWebChannelsName[];
 extern const char kEnableWebChannelsDescription[];
-
-// Title and description for the flag to enable an expanded tab strip.
-extern const char kExpandedTabStripName[];
-extern const char kExpandedTabStripDescription[];
 
 // Title and description for the flag to enable feed background refresh.
 extern const char kFeedBackgroundRefreshName[];
@@ -557,6 +557,10 @@ extern const char kIOSSharedHighlightingAmpDescription[];
 // the text fragments UI.
 extern const char kIOSSharedHighlightingV2Name[];
 extern const char kIOSSharedHighlightingV2Description[];
+
+// Title and description for the flag to enable IPH for safari switcher.
+extern const char kIPHForSafariSwitcherName[];
+extern const char kIPHForSafariSwitcherDescription[];
 
 // Title and description for the flag to lock the bottom toolbar into place.
 extern const char kLockBottomToolbarName[];
@@ -816,6 +820,11 @@ extern const char kSafeBrowsingAvailableDescription[];
 extern const char kSafeBrowsingRealTimeLookupName[];
 extern const char kSafeBrowsingRealTimeLookupDescription[];
 
+// Title and description for the flag to enable the Safety Check module in the
+// Magic Stack.
+extern const char kSafetyCheckMagicStackName[];
+extern const char kSafetyCheckMagicStackDescription[];
+
 // Title and description for the flag to enable integration with the ScreenTime
 // system.
 extern const char kScreenTimeIntegrationName[];
@@ -894,10 +903,10 @@ extern const char kTFLiteLanguageDetectionDescription[];
 extern const char kTFLiteLanguageDetectionIgnoreName[];
 extern const char kTFLiteLanguageDetectionIgnoreDescription[];
 
-// Title and description for the flag to enable the toolbar container
-// implementation.
-extern const char kToolbarContainerName[];
-extern const char kToolbarContainerDescription[];
+// Title and description for the flag to use the page's theme color in the
+// toolbar.
+extern const char kThemeColorInToolbarName[];
+extern const char kThemeColorInToolbarDescription[];
 
 // Title and description for the flag to enable using Lens to search using
 // the device camera from the home screen widget.
@@ -937,6 +946,10 @@ extern const char kSFSymbolsFollowUpDescription[];
 extern const char kTabGridRecencySortName[];
 extern const char kTabGridRecencySortDescription[];
 
+// Title and description for the tab grid refactoring flag.
+extern const char kTabGridRefactoringName[];
+extern const char kTabGridRefactoringDescription[];
+
 // Title and description for the flag to enable the new transitions in the
 // TabGrid.
 extern const char kTabGridNewTransitionsName[];
@@ -946,6 +959,10 @@ extern const char kTabGridNewTransitionsDescription[];
 // TabGrid.
 extern const char kTabInactivityThresholdName[];
 extern const char kTabInactivityThresholdDescription[];
+
+// Title and description for the flag to enable tab pickup.
+extern const char kTabPickupThresholdName[];
+extern const char kTabPickupThresholdDescription[];
 
 // Title and description for the flag to enable using the
 // loadSimulatedRequest:responseHTMLString: API for displaying error pages in

@@ -69,8 +69,8 @@
 #include "third_party/blink/public/common/permissions_policy/origin_with_possible_wildcards.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/permissions_policy/policy_helper_public.h"
+#include "third_party/blink/public/common/safe_url_pattern.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
-#include "third_party/blink/public/common/url_pattern.h"
 #include "third_party/blink/public/mojom/manifest/capture_links.mojom-shared.h"
 #include "third_party/liburlpattern/pattern.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -394,11 +394,12 @@ std::vector<blink::Manifest::ImageResource> CreateRandomHomeTabIcons(
   return icons;
 }
 
-std::vector<blink::UrlPattern> CreateRandomScopePatterns(RandomHelper& random) {
-  std::vector<blink::UrlPattern> scope_patterns;
+std::vector<blink::SafeUrlPattern> CreateRandomScopePatterns(
+    RandomHelper& random) {
+  std::vector<blink::SafeUrlPattern> scope_patterns;
 
   for (int i = random.next_uint(4) + 1; i >= 0; --i) {
-    blink::UrlPattern url_pattern;
+    blink::SafeUrlPattern url_pattern;
 
     for (int j = random.next_uint(4) + 1; j >= 0; --j) {
       liburlpattern::Part part;
@@ -748,12 +749,17 @@ std::unique_ptr<WebApp> CreateRandomWebApp(CreateRandomWebAppParams params) {
   }
   app->SetAdditionalSearchTerms(std::move(additional_search_terms));
 
-  int num_shortcut_menus = static_cast<int>(random.next_uint(4)) + 1;
+  int num_shortcut_items = static_cast<int>(random.next_uint(4)) + 1;
   auto item_infos =
-      CreateRandomShortcutsMenuItemInfos(scope, num_shortcut_menus, random);
+      CreateRandomShortcutsMenuItemInfos(scope, num_shortcut_items, random);
   auto icons_sizes =
-      CreateRandomDownloadedShortcutsMenuIconsSizes(num_shortcut_menus, random);
-  app->SetShortcutsMenuInfo(std::move(item_infos), std::move(icons_sizes));
+      CreateRandomDownloadedShortcutsMenuIconsSizes(num_shortcut_items, random);
+  CHECK_EQ(item_infos.size(), icons_sizes.size());
+  for (int i = 0; i < num_shortcut_items; ++i) {
+    item_infos[i].downloaded_icon_sizes = std::move(icons_sizes[i]);
+  }
+  icons_sizes.clear();
+  app->SetShortcutsMenuInfo(std::move(item_infos));
 
   app->SetManifestUrl(
       params.base_url.Resolve("/manifest" + seed_str + ".json"));

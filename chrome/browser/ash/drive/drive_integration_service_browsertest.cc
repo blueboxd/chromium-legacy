@@ -384,8 +384,10 @@ class DriveIntegrationBrowserTestWithBulkPinningEnabled
     : public DriveIntegrationServiceBrowserTest {
  public:
   DriveIntegrationBrowserTestWithBulkPinningEnabled() {
-    scoped_feature_list_.InitWithFeatures({ash::features::kDriveFsBulkPinning},
-                                          {});
+    scoped_feature_list_.InitWithFeatures(
+        {ash::features::kDriveFsBulkPinning,
+         ash::features::kFeatureManagementDriveFsBulkPinning},
+        {});
   }
 
  private:

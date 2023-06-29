@@ -964,9 +964,11 @@ if (is_win) {
     testonly = true
 
     deps = [
+      ":blink_wpt_tests",
       ":chrome_official_builder_no_unittests",
       "//base:base_unittests",
       "//chrome/test:browser_tests",
+      "//chrome/test:interactive_ui_tests",
       "//ipc:ipc_tests",
       "//media:media_unittests",
       "//media/midi:midi_unittests",
@@ -1124,7 +1126,7 @@ if (!is_ios && !is_cronet_build) {
         data_deps += [ "//build/win:copy_cdb_to_output" ]
       }
     }
-    script_test("wpt_tests_isolate") {
+    script_test("chrome_wpt") {
       script = "//third_party/blink/tools/run_wpt_tests.py"
       args = [
         "--product=chrome",
@@ -1137,7 +1139,7 @@ if (!is_ios && !is_cronet_build) {
         "//third_party/blink/tools:wpt_tests_isolate",
       ]
     }
-    script_test("wpt_tests_isolate_content_shell") {
+    script_test("content_shell_wpt") {
       script = "//third_party/blink/tools/run_wpt_tests.py"
       args = [
         "--no-show-results",
@@ -1438,8 +1440,6 @@ if (!is_ios && !is_cronet_build) {
       data += [
         "//third_party/blink/web_tests/SmokeTests/Mac.txt",
         "//third_party/blink/web_tests/platform/mac/",
-        "//third_party/blink/web_tests/platform/mac-mac10.13/",
-        "//third_party/blink/web_tests/platform/mac-mac10.14/",
         "//third_party/blink/web_tests/platform/mac-mac10.15/",
         "//third_party/blink/web_tests/platform/mac-mac11/",
         "//third_party/blink/web_tests/platform/mac-mac11-arm64/",
@@ -1513,8 +1513,6 @@ if (!is_ios && !is_cronet_build) {
       data += [
         "//third_party/blink/web_tests/SmokeTests/Mac.txt",
         "//third_party/blink/web_tests/platform/mac/",
-        "//third_party/blink/web_tests/platform/mac-mac10.13/",
-        "//third_party/blink/web_tests/platform/mac-mac10.14/",
         "//third_party/blink/web_tests/platform/mac-mac10.15/",
         "//third_party/blink/web_tests/platform/mac-mac11-arm64/",
       ]
@@ -1634,6 +1632,7 @@ if (!is_ios && !is_cronet_build) {
       "//third_party/blink/web_tests/VirtualTestSuites",
       "//third_party/blink/web_tests/W3CImportExpectations",
       "//third_party/blink/web_tests/SmokeTests/SingleThreadedTests",
+      "//third_party/blink/web_tests/paint/invalidation/repaint-overlay/",
       "//third_party/catapult/common/py_utils/",
       "//third_party/catapult/devil/",
       "//third_party/catapult/dependency_manager/",

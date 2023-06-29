@@ -12,10 +12,10 @@
 #include "base/scoped_observation.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/content_settings/core/common/cookie_controls_breakage_confidence_level.h"
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "components/content_settings/core/common/cookie_controls_status.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 class WebContents;
@@ -63,7 +63,7 @@ class CookieControlsController
   struct Status {
     CookieControlsStatus status;
     CookieControlsEnforcement enforcement;
-    absl::optional<base::Time> expiration;
+    base::Time expiration;
   };
 
   // The observed WebContents changes during the lifetime of the
@@ -94,6 +94,16 @@ class CookieControlsController
 
   // Determine the CookieControlsStatus based on |web_contents|.
   Status GetStatus(content::WebContents* web_contents);
+
+  // Determine the confidence of site being broken and user needing to use
+  // cookie controls. It affects the prominence of UI entry points. It takes
+  // into account blocked third-party cookie access, exceptions
+  // lifecycle, site engagement index and recent user activity (like frequent
+  // page reloads).
+  CookieControlsBreakageConfidenceLevel GetConfidenceLevel(
+      CookieControlsStatus status,
+      int allowed_sites,
+      int blocked_site);
 
   // Updates the blocked cookie count of |icon_|.
   void PresentBlockedCookieCounter();

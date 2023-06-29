@@ -41,6 +41,14 @@ base::Value::List ToListValue(const std::vector<std::string>& permissions) {
 
 }  // namespace
 
+ExtensionsToolbarUnitTest::ExtensionsToolbarUnitTest() = default;
+
+ExtensionsToolbarUnitTest::ExtensionsToolbarUnitTest(
+    base::test::TaskEnvironment::TimeSource time_source)
+    : TestWithBrowserView(time_source) {}
+
+ExtensionsToolbarUnitTest::~ExtensionsToolbarUnitTest() = default;
+
 void ExtensionsToolbarUnitTest::SetUp() {
   TestWithBrowserView::SetUp();
 
@@ -54,9 +62,17 @@ void ExtensionsToolbarUnitTest::SetUp() {
       extensions::ExtensionSystem::Get(profile())->extension_service();
 
   permissions_manager_ = PermissionsManager::Get(profile());
+  permissions_helper_ = std::make_unique<SitePermissionsHelper>(profile());
 
   // Shorten delay on animations so tests run faster.
   views::test::ReduceAnimationDuration(extensions_container());
+}
+
+void ExtensionsToolbarUnitTest::TearDown() {
+  // Avoid dangling pointer to profile.
+  permissions_helper_.reset(nullptr);
+
+  TestWithBrowserView::TearDown();
 }
 
 scoped_refptr<const extensions::Extension>
@@ -165,8 +181,7 @@ void ExtensionsToolbarUnitTest::UpdateUserSiteAccess(
     PermissionsManager::UserSiteAccess site_access) {
   extensions::PermissionsManagerWaiter waiter(
       PermissionsManager::Get(browser()->profile()));
-  SitePermissionsHelper(browser()->profile())
-      .UpdateSiteAccess(extension, web_contents, site_access);
+  permissions_helper_->UpdateSiteAccess(extension, web_contents, site_access);
   waiter.WaitForExtensionPermissionsUpdate();
 }
 
@@ -188,6 +203,13 @@ PermissionsManager::UserSiteAccess ExtensionsToolbarUnitTest::GetUserSiteAccess(
     const extensions::Extension& extension,
     const GURL& url) const {
   return permissions_manager_->GetUserSiteAccess(extension, url);
+}
+
+SitePermissionsHelper::SiteInteraction
+ExtensionsToolbarUnitTest::GetSiteInteraction(
+    const extensions::Extension& extension,
+    content::WebContents* web_contents) const {
+  return permissions_helper_->GetSiteInteraction(extension, web_contents);
 }
 
 std::vector<ToolbarActionView*>

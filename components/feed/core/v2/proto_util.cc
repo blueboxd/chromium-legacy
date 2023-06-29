@@ -146,6 +146,9 @@ feedwire::Request CreateFeedQueryRequest(
   for (auto capability : GetFeedConfig().experimental_capabilities)
     feed_request.add_client_capability(capability);
 
+  if (base::FeatureList::IsEnabled(kFeedBottomSyncStringRemoval)) {
+    feed_request.add_client_capability(Capability::SYNC_STRING_REMOVAL);
+  }
   if (base::FeatureList::IsEnabled(kInterestFeedV2Hearts)) {
     feed_request.add_client_capability(Capability::HEART);
   }

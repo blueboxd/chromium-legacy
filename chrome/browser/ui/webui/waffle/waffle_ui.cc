@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/functional/callback_forward.h"
 #include "base/json/json_writer.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/webui/waffle/waffle_handler.h"
@@ -35,6 +36,7 @@ std::string GetChoiceListJSON(Profile* profile) {
 
   for (const auto& choice : choices) {
     base::Value::Dict choice_value;
+    choice_value.Set("id", base::NumberToString(choice->prepopulate_id));
     choice_value.Set("name", choice->short_name());
     choice_value_list.Append(std::move(choice_value));
   }
@@ -85,7 +87,8 @@ void WaffleUI::BindInterface(
   page_factory_receiver_.Bind(std::move(receiver));
 }
 
-void WaffleUI::Initialize(base::OnceClosure display_dialog_callback) {
+void WaffleUI::Initialize(
+    base::OnceCallback<void(int)> display_dialog_callback) {
   CHECK(display_dialog_callback);
   display_dialog_callback_ = std::move(display_dialog_callback);
 }

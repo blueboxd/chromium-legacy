@@ -30,7 +30,6 @@
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os_type": "userdebug",
@@ -72,7 +71,6 @@
         },
         "name": "content_browsertests_sequential",
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os_type": "userdebug",
@@ -116,7 +114,6 @@
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os_type": "userdebug",
@@ -158,7 +155,6 @@
         },
         "name": "content_browsertests_sequential",
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "device_os_type": "userdebug",
@@ -208,11 +204,10 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-18.04"
+              "os": "Ubuntu-22.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -231,11 +226,10 @@
         },
         "name": "browser_tests_functional",
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-18.04"
+              "os": "Ubuntu-22.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -251,11 +245,10 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-18.04"
+              "os": "Ubuntu-22.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -274,11 +267,10 @@
         },
         "name": "content_browsertests_sequential",
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-18.04"
+              "os": "Ubuntu-22.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -298,11 +290,10 @@
         },
         "name": "content_browsertests_stress",
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-18.04"
+              "os": "Ubuntu-22.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -318,11 +309,10 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-18.04"
+              "os": "Ubuntu-22.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -338,11 +328,10 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-18.04"
+              "os": "Ubuntu-22.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -377,7 +366,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -400,7 +388,6 @@
         },
         "name": "browser_tests_functional",
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -420,7 +407,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -443,7 +429,6 @@
         },
         "name": "content_browsertests_sequential",
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -467,7 +452,6 @@
         },
         "name": "content_browsertests_stress",
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -487,7 +471,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -507,7 +490,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -546,7 +528,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -569,7 +550,6 @@
         },
         "name": "browser_tests_functional",
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -589,7 +569,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -612,7 +591,6 @@
         },
         "name": "content_browsertests_sequential",
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -636,7 +614,6 @@
         },
         "name": "content_browsertests_stress",
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -656,7 +633,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -676,7 +652,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -715,12 +690,11 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:0ecab437ae2532a879b1203efc48f54bc6cadb77"
+              "revision": "git_revision:278fb59d5eb5d2d2da6175c0f97103bffad579b1"
             }
           ],
           "dimension_sets": [
@@ -766,12 +740,11 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:0ecab437ae2532a879b1203efc48f54bc6cadb77"
+              "revision": "git_revision:278fb59d5eb5d2d2da6175c0f97103bffad579b1"
             }
           ],
           "dimension_sets": [

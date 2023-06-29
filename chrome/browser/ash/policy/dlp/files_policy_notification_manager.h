@@ -9,6 +9,7 @@
 #include <queue>
 
 #include "base/functional/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/io_task_controller.h"
 #include "chrome/browser/ash/policy/dlp/dialogs/files_policy_dialog.h"
@@ -87,12 +88,19 @@ class FilesPolicyNotificationManager
   void ShowDialog(file_manager::io_task::IOTaskId task_id,
                   FilesDialogType type);
 
+  // Shows a DLP warning timeout notification for `action`. `notification_id`
+  // should have value for IO tasks. When it  doesn't have a value, i.e. for non
+  // IO tasks, computes a new unique id for the notification.
+  void ShowDlpWarningTimeoutNotification(
+      dlp::FileAction action,
+      absl::optional<std::string> notification_id = absl::nullopt);
+
   // Returns whether IO task is being tracked.
   bool HasIOTask(file_manager::io_task::IOTaskId task_id) const;
 
   // Runs warning callback for the corresponding IOTask with should_proceed set
   // to true.
-  void ResumeIOTask(file_manager::io_task::IOTaskId task_id);
+  void OnIOTaskResumed(file_manager::io_task::IOTaskId task_id);
 
   std::map<DlpConfidentialFile, Policy> GetIOTaskBlockedFilesForTesting(
       file_manager::io_task::IOTaskId task_id) const;
@@ -326,7 +334,7 @@ class FilesPolicyNotificationManager
   base::OnceCallback<void(gfx::NativeWindow)> pending_callback_;
 
   // Context for which the FPNM is created.
-  content::BrowserContext* context_;
+  raw_ptr<content::BrowserContext, ExperimentalAsh> context_;
 
   // A map from tracked IO tasks ids to their info.
   std::map<file_manager::io_task::IOTaskId, FileTaskInfo> io_tasks_;

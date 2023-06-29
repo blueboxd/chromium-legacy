@@ -140,7 +140,9 @@ class InteractiveTestApi {
 
   // Performs a check and fails the test if `check_callback` returns false.
   template <typename C, typename = internal::RequireSignature<C, bool()>>
-  [[nodiscard]] static StepBuilder Check(C&& check_callback);
+  [[nodiscard]] static StepBuilder Check(
+      C&& check_callback,
+      std::string check_description = internal::kNoCheckDescriptionSpecified);
 
   // Calls `function` and applies `matcher` to the result. If the matcher does
   // not match, an appropriate error message is printed and the test fails.
@@ -150,7 +152,10 @@ class InteractiveTestApi {
             typename M,
             typename R = internal::ReturnTypeOf<C>,
             typename = internal::RequireSignature<C, R()>>
-  [[nodiscard]] static StepBuilder CheckResult(C&& function, M&& matcher);
+  [[nodiscard]] static StepBuilder CheckResult(
+      C&& function,
+      M&& matcher,
+      std::string check_description = internal::kNoCheckDescriptionSpecified);
 
   // Checks that `check` returns true for element `element`. Will fail the test
   // sequence if `check` returns false - the callback should log any specific
@@ -233,8 +238,7 @@ class InteractiveTestApi {
   // previous step was responding to elements being added, the
   // `element_to_check` may not have had its shown event called yet.
   [[nodiscard]] static MultiStep EnsureNotPresent(
-      ElementIdentifier element_to_check,
-      bool in_any_context = false);
+      ElementIdentifier element_to_check);
 
   // Opposite of EnsureNotPresent. Flushes the current message queue and then
   // checks that the specified element is [still] present. Equivalent to:
@@ -242,13 +246,8 @@ class InteractiveTestApi {
   //   FlushEvents(),
   //   WithElement(element_to_check, base::DoNothing())
   // ```
-  //
-  // Like EnsureNotPresent(), is not compatible with InAnyContext(); set
-  // `in_any_context` to true instead. Otherwise, you can still wrap this call
-  // in an InContext() or InSameContext().
   [[nodiscard]] static MultiStep EnsurePresent(
-      ElementSpecifier element_to_check,
-      bool in_any_context = false);
+      ElementSpecifier element_to_check);
 
   // Ensures that the next step does not piggyback on the previous step(s), but
   // rather, executes on a fresh message loop. Normally, steps will continue to
@@ -266,9 +265,6 @@ class InteractiveTestApi {
   //
   //    InAnyContext(PressButton(kElementIdentifier))
   // ```
-  //
-  // Note: does not work with EnsureNotPresent; use the `in_any_context`
-  // parameter. Also does not work with all event types (yet).
   //
   // TODO(dfried): consider if we should have a version that takes variadic
   // arguments and applies "in any context" to all of them?
@@ -720,9 +716,12 @@ InteractiveTestApi::StepBuilder InteractiveTestApi::Log(Args... args) {
 
 // static
 template <typename C, typename>
-InteractiveTestApi::StepBuilder InteractiveTestApi::Check(C&& check_callback) {
+InteractiveTestApi::StepBuilder InteractiveTestApi::Check(
+    C&& check_callback,
+    std::string check_description) {
   StepBuilder builder;
-  builder.SetDescription("Check()");
+  builder.SetDescription(
+      base::StringPrintf("Check(\"%s\")", check_description.c_str()));
   builder.SetElementID(internal::kInteractiveTestPivotElementId);
   builder.SetStartCallback(base::BindOnce(
       [](base::OnceCallback<bool()> check_callback, InteractionSequence* seq,
@@ -738,8 +737,10 @@ InteractiveTestApi::StepBuilder InteractiveTestApi::Check(C&& check_callback) {
 
 // static
 template <typename C, typename M, typename R, typename>
-InteractionSequence::StepBuilder InteractiveTestApi::CheckResult(C&& function,
-                                                                 M&& matcher) {
+InteractionSequence::StepBuilder InteractiveTestApi::CheckResult(
+    C&& function,
+    M&& matcher,
+    std::string check_description) {
   return std::move(Check(base::BindOnce(
                              [](base::OnceCallback<R()> function,
                                 testing::Matcher<R> matcher) {
@@ -749,7 +750,8 @@ InteractionSequence::StepBuilder InteractiveTestApi::CheckResult(C&& function,
                              },
                              internal::MaybeBind(std::forward<C>(function)),
                              testing::Matcher<R>(std::forward<M>(matcher))))
-                       .SetDescription("CheckResult()"));
+                       .SetDescription(base::StringPrintf(
+                           "CheckResult(\"%s\")", check_description.c_str())));
 }
 
 // static

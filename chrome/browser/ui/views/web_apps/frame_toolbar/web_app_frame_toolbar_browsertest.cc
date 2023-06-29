@@ -58,6 +58,7 @@
 #include "components/infobars/content/content_infobar_manager.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_zoom.h"
@@ -833,7 +834,7 @@ class WebAppFrameToolbarBrowserTest_WindowControlsOverlay
 
     std::vector<blink::mojom::DisplayMode> display_overrides;
     display_overrides.push_back(web_app::DisplayMode::kWindowControlsOverlay);
-    auto web_app_info = std::make_unique<WebAppInstallInfo>();
+    auto web_app_info = std::make_unique<web_app::WebAppInstallInfo>();
     web_app_info->start_url = start_url;
     web_app_info->scope = start_url.GetWithoutFilename();
     web_app_info->title = u"A window-controls-overlay app";

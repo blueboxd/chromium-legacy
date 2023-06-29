@@ -583,6 +583,13 @@ void FederatedAuthRequestImpl::RequestToken(
   }
 
   if (!fedcm_metrics_) {
+    // Ensure the lifecycle state as GetPageUkmSourceId doesn't support the
+    // prerendering page. As FederatedAithRequest runs behind the
+    // BrowserInterfaceBinders, the service doesn't receive any request while
+    // prerendering, and the CHECK should always meet the condition.
+    CHECK(!render_frame_host().IsInLifecycleState(
+        RenderFrameHost::LifecycleState::kPrerendering));
+
     // TODO(crbug.com/1307709): Handle FedCmMetrics for multiple IDPs.
     fedcm_metrics_ = CreateFedCmMetrics(
         idp_get_params_ptrs[0]->providers[0]->get_federated()->config_url,
@@ -703,9 +710,7 @@ void FederatedAuthRequestImpl::RequestToken(
   for (auto& idp_get_params_ptr : idp_get_params_ptrs) {
     for (auto& idp_ptr : idp_get_params_ptr->providers) {
       idp_order_.push_back(idp_ptr->get_federated()->config_url);
-      blink::mojom::RpContext rp_context =
-          IsFedCmRpContextEnabled() ? idp_get_params_ptr->context
-                                    : blink::mojom::RpContext::kSignIn;
+      blink::mojom::RpContext rp_context = idp_get_params_ptr->context;
       const GURL& idp_config_url = idp_ptr->get_federated()->config_url;
       token_request_get_infos_.emplace(
           idp_config_url, IdentityProviderGetInfo(
@@ -719,12 +724,6 @@ void FederatedAuthRequestImpl::RequestToken(
 void FederatedAuthRequestImpl::RequestUserInfo(
     blink::mojom::IdentityProviderConfigPtr provider,
     RequestUserInfoCallback callback) {
-  if (!IsFedCmUserInfoEnabled()) {
-    // This could happen with a compromised renderer. Exit early such that we
-    // don't proceed when the flag is off or crash the browser.
-    std::move(callback).Run(RequestUserInfoStatus::kError, absl::nullopt);
-    return;
-  }
   if (!render_frame_host().GetPage().IsPrimary()) {
     mojo::ReportBadMessage(
         "FedCM should not be allowed in nested frame trees.");
@@ -732,6 +731,12 @@ void FederatedAuthRequestImpl::RequestUserInfo(
   }
 
   if (!fedcm_metrics_) {
+    // Ensure the lifecycle state as GetPageUkmSourceId doesn't support the
+    // prerendering page. As FederatedAithRequest runs behind the
+    // BrowserInterfaceBinders, the service doesn't receive any request while
+    // prerendering, and the CHECK should always meet the condition.
+    CHECK(!render_frame_host().IsInLifecycleState(
+        RenderFrameHost::LifecycleState::kPrerendering));
     fedcm_metrics_ = CreateFedCmMetrics(
         provider->config_url, render_frame_host().GetPageUkmSourceId(),
         /*is_disabled=*/false);
@@ -1140,8 +1145,7 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
 
   // TODO(crbug.com/1383384): Handle auto_reauthn_ for multi IDP.
   bool auto_reauthn_enabled =
-      mediation_requirement_ != MediationRequirement::kRequired &&
-      IsFedCmAutoReauthnEnabled();
+      mediation_requirement_ != MediationRequirement::kRequired;
 
   auto_reauthn_ = auto_reauthn_enabled;
   bool is_auto_reauthn_setting_enabled = false;
@@ -1328,7 +1332,7 @@ void FederatedAuthRequestImpl::HandleAccountsFetchFailure(
   request_dialog_controller_->ShowFailureDialog(
       rp_web_contents, GetTopFrameOriginForDisplay(GetEmbeddingOrigin()),
       iframe_for_display, FormatOriginForDisplay(idp_origin),
-      idp_info->metadata,
+      idp_info->rp_context, idp_info->metadata,
       base::BindOnce(&FederatedAuthRequestImpl::OnDismissFailureDialog,
                      weak_ptr_factory_.GetWeakPtr(),
                      FederatedAuthRequestResult::kError,
@@ -1401,21 +1405,19 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
       return;
     }
     case IdpNetworkRequestManager::ParseStatus::kSuccess: {
-      if (IsFedCmLoginHintEnabled()) {
-        FilterAccountsWithLoginHint(idp_info->provider->login_hint, accounts);
-        if (accounts.empty()) {
-          render_frame_host().AddMessageToConsole(
-              blink::mojom::ConsoleMessageLevel::kError,
-              "Accounts were received, but none matched the loginHint.");
-          // If there are no accounts after filtering based on the login hint,
-          // treat this exactly the same as if we had received an empty accounts
-          // list, i.e. IdpNetworkRequestManager::ParseStatus::kEmptyListError.
-          HandleAccountsFetchFailure(
-              std::move(idp_info), old_idp_signin_status,
-              FederatedAuthRequestResult::kErrorFetchingAccountsListEmpty,
-              TokenStatus::kAccountsListEmpty);
-          return;
-        }
+      FilterAccountsWithLoginHint(idp_info->provider->login_hint, accounts);
+      if (accounts.empty()) {
+        render_frame_host().AddMessageToConsole(
+            blink::mojom::ConsoleMessageLevel::kError,
+            "Accounts were received, but none matched the loginHint.");
+        // If there are no accounts after filtering based on the login hint,
+        // treat this exactly the same as if we had received an empty accounts
+        // list, i.e. IdpNetworkRequestManager::ParseStatus::kEmptyListError.
+        HandleAccountsFetchFailure(
+            std::move(idp_info), old_idp_signin_status,
+            FederatedAuthRequestResult::kErrorFetchingAccountsListEmpty,
+            TokenStatus::kAccountsListEmpty);
+        return;
       }
       ComputeLoginStateAndReorderAccounts(idp_info->provider, accounts);
 
@@ -2032,6 +2034,9 @@ void FederatedAuthRequestImpl::NotifyClose() {
 }
 
 bool FederatedAuthRequestImpl::NotifyResolve(const std::string& token) {
+  // Close the pop-up window post user permission.
+  NotifyClose();
+
   // TODO(crbug.com/1429083): handle the multi-idp case when there are
   // more than one config_urls hanging.
   CompleteRequest(FederatedAuthRequestResult::kSuccess, TokenStatus::kSuccess,
@@ -2104,8 +2109,7 @@ bool FederatedAuthRequestImpl::GetSingleReturningAccount(
 
 bool FederatedAuthRequestImpl::ShouldFailBeforeFetchingAccounts(
     const GURL& config_url) {
-  if (mediation_requirement_ != MediationRequirement::kSilent ||
-      !IsFedCmAutoReauthnEnabled()) {
+  if (mediation_requirement_ != MediationRequirement::kSilent) {
     return false;
   }
 

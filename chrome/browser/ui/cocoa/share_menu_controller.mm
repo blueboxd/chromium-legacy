@@ -200,29 +200,18 @@ bool CanShare() {
     NSURL* url = net::NSURLWithGURL(contents->GetLastCommittedURL());
     NSString* title = base::SysUTF16ToNSString(contents->GetTitle());
 
-    NSSharingService* service =
-        base::mac::ObjCCastStrict<NSSharingService>([sender representedObject]);
-    [service setDelegate:self];
-    [service setSubject:title];
-
-    NSArray* itemsToShare;
-    if ([[service name] isEqual:NSSharingServiceNamePostOnTwitter]) {
-      // The Twitter share service expects the title as an additional share item.
-      // This is the same approach system apps use.
-      itemsToShare = @[ url, title ];
-    } else {
-      itemsToShare = @[ url ];
-    }
-  
+    NSArray* itemsToShare = @[ url ];
     if ([[service name] isEqual:kRemindersSharingServiceName]) {
       _activity = [[NSUserActivity alloc]
-          initWithActivityType:*NSUserActivityTypeBrowsingWebStr];
+          initWithActivityType:NSUserActivityTypeBrowsingWeb];
       // webpageURL must be http or https or an exception is thrown.
       if ([url.scheme hasPrefix:@"http"]) {
         [_activity setWebpageURL:url];
       }
-      [service performWithItems:itemsToShare];
+      [_activity setTitle:title];
+      [_activity becomeCurrent];
     }
+    [service performWithItems:itemsToShare];
   }
 }
 

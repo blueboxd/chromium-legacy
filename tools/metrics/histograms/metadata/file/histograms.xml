@@ -64,7 +64,12 @@ chromium-metrics-reviews@google.com.
   <variant name="GetAccessTokenFromCode"/>
   <variant name="GetAccessTokenFromRefreshToken"/>
   <variant name="GetAuthCode"/>
-  <variant name="GetDelta"/>
+  <variant name="GetDelta"
+      summary="delta HTTP call fetching a single results page"/>
+  <variant name="GetDeltaAllIncremental"
+      summary="incremental delta fetch (sum of all result pages)"/>
+  <variant name="GetDeltaAllInitial"
+      summary="initial delta fetch (sum of all result pages)"/>
   <variant name="GetDrive"/>
   <variant name="GetEntry"/>
   <variant name="GetProfile"/>
@@ -291,7 +296,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.DirectoryScan" units="ms"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -333,7 +338,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Downloads.DirectoryPercentageOfDiskUsage"
-    units="%" expires_after="2023-10-22">
+    units="%" expires_after="2023-12-24">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -344,7 +349,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Downloads.DirectorySizeMiB" units="MiB"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -463,7 +468,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.FileSystemProviderMounted"
-    enum="FileSystemProviderMountType" expires_after="2023-10-15">
+    enum="FileSystemProviderMountType" expires_after="2023-12-17">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -513,7 +518,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.FormatFileSystemType"
-    enum="FileManagerFormatFileSystemType" expires_after="2023-10-15">
+    enum="FileManagerFormatFileSystemType" expires_after="2023-12-17">
   <owner>austinct@chromium.org</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -546,6 +551,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="FileBrowser.GoogleDrive.BulkPinning.Enabled.Source"
+    enum="FileManagerGoogleDriveBulkPinningEnabledSource"
+    expires_after="2024-07-01">
+  <owner>joelhockey@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Chrome OS File Browser: Records which UI surface was used to enable bulk
+    pinning each time it is enabled.
+  </summary>
+</histogram>
+
 <histogram name="FileBrowser.GoogleDrive.BulkPinning.Listing.Error"
     enum="GoogleDrive.BulkPinning.Stage" expires_after="2024-06-01">
   <owner>simmonsjosh@google.com</owner>
@@ -553,6 +569,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     The final error state that the Google Drive bulk-pinning feature reached
     while listing files.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.GoogleDrive.BulkPinning.OfflineOpen"
+    enum="ViewFileType" expires_after="2024-07-01">
+  <owner>joelhockey@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Chrome OS File Browser: File types that a user attempts to open for users
+    who have bulk pinning enabled when their device is offline, recorded when a
+    Drive file is opened.
   </summary>
 </histogram>
 
@@ -709,7 +736,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Location.OnEntrySelected.TopLevel"
-    enum="FileManagerRootType" expires_after="2023-10-22">
+    enum="FileManagerRootType" expires_after="2023-12-24">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -935,6 +962,21 @@ chromium-metrics-reviews@google.com.
   <token key="API-FSP" variants="API-FSP"/>
 </histogram>
 
+<histogram name="FileBrowser.OfficeFiles.ODFS.GraphAPI.DeltaSize.{Case}"
+    units="count" expires_after="M124">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Chrome OS File Browser: number of entries returned in one Graph API delta
+    call (this includes multiple requests to fetch all result pages of one delta
+    request).
+  </summary>
+  <token key="Case">
+    <variant name="Incremental"/>
+    <variant name="Initial"/>
+  </token>
+</histogram>
+
 <histogram
     name="FileBrowser.OfficeFiles.ODFS.GraphAPI.ResponseCode.{GraphAPIMethod}"
     enum="OfficeGraphAPIResult" expires_after="M124">
@@ -1074,7 +1116,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.OfficeFiles.UseOutsideDrive"
-    enum="OfficeFilesUseOutsideDriveHook" expires_after="2023-10-22">
+    enum="OfficeFilesUseOutsideDriveHook" expires_after="2023-12-24">
   <owner>cassycc@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1085,7 +1127,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.OpenFiles.RootType" enum="FileManagerRootType"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1132,7 +1174,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Recent.FilterByType"
-    enum="FileManagerRecentFilterType" expires_after="2023-10-22">
+    enum="FileManagerRecentFilterType" expires_after="2023-12-24">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1370,7 +1412,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ViewingRootType" enum="FileManagerRootType"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1380,7 +1422,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ViewingRootType.Offline"
-    enum="FileManagerRootType" expires_after="2023-10-15">
+    enum="FileManagerRootType" expires_after="2023-12-17">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1391,7 +1433,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ViewingRootType.Online" enum="FileManagerRootType"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1412,7 +1454,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ViewingTaskType.Offline"
-    enum="FileManagerTaskType" expires_after="2023-10-15">
+    enum="FileManagerTaskType" expires_after="2023-12-17">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1423,7 +1465,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ViewingTaskType.Online" enum="FileManagerTaskType"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1434,7 +1476,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.VolumeType" enum="FileManagerVolumeType"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1494,7 +1536,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Unzipper.DetectEncoding.Result" enum="ContentEncoding"
-    expires_after="M120">
+    expires_after="2023-12-17">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1502,7 +1544,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Unzipper.DetectEncoding.Time" units="ms" expires_after="M120">
+<histogram name="Unzipper.DetectEncoding.Time" units="ms"
+    expires_after="2023-12-17">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Time to detect ZIP file path encoding.</summary>

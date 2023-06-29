@@ -8,7 +8,9 @@
 
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/sequenced_task_runner.h"
+#include "chrome/browser/signin/dice_response_handler.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -47,18 +49,18 @@ class AccountSelectionInProgressHandleInternal
 };
 }  // namespace
 
-SigninManager::SigninManager(PrefService* prefs,
-                             signin::IdentityManager* identity_manager,
-                             SigninClient* client)
+SigninManager::SigninManager(PrefService& prefs,
+                             signin::IdentityManager& identity_manager,
+                             SigninClient& client)
     : prefs_(prefs),
       signin_client_(client),
       identity_manager_(identity_manager) {
   signin_allowed_.Init(
-      prefs::kSigninAllowed, prefs_,
+      prefs::kSigninAllowed, &prefs_.get(),
       base::BindRepeating(&SigninManager::OnSigninAllowedPrefChanged,
                           base::Unretained(this)));
   UpdateUnconsentedPrimaryAccount();
-  identity_manager_observation_.Observe(identity_manager_);
+  identity_manager_observation_.Observe(&identity_manager_.get());
 }
 
 SigninManager::~SigninManager() = default;
@@ -74,7 +76,7 @@ void SigninManager::StartLacrosSigninFlow(
   signin_helper_lacros_.reset();
 
   signin_helper_lacros_ = std::make_unique<SigninHelperLacros>(
-      profile_path, account_profile_mapper, identity_manager_,
+      profile_path, account_profile_mapper, &identity_manager_.get(),
       consistency_cookie_manager, source,
       // Using `base::Unretained()` is fine because this owns the helper.
       base::BindOnce(&SigninManager::OnSigninHelperLacrosComplete,
@@ -111,10 +113,20 @@ void SigninManager::UpdateUnconsentedPrimaryAccount() {
             signin::ConsentLevel::kSignin) != account) {
       DCHECK(
           !identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync));
+      // The access point is the same as the access point that added the
+      // account. If it is unknown, report `ACCESS_POINT_DESKTOP_SIGNIN_MANAGER`
+      // instead.
+      signin_metrics::AccessPoint access_point =
+          identity_manager_->FindExtendedAccountInfo(account).access_point;
+      if (access_point == signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN) {
+        access_point =
+            signin_metrics::AccessPoint::ACCESS_POINT_DESKTOP_SIGNIN_MANAGER;
+      }
+      base::UmaHistogramEnumeration(
+          "Signin.SigninManager.SigninAccessPoint", access_point,
+          signin_metrics::AccessPoint::ACCESS_POINT_MAX);
       identity_manager_->GetPrimaryAccountMutator()->SetPrimaryAccount(
-          account.account_id, signin::ConsentLevel::kSignin,
-          // TODO(crbug.com/1261772): Attribute this to actual access points.
-          signin_metrics::AccessPoint::ACCESS_POINT_DESKTOP_SIGNIN_MANAGER);
+          account.account_id, signin::ConsentLevel::kSignin, access_point);
     }
   } else if (identity_manager_->HasPrimaryAccount(
                  signin::ConsentLevel::kSignin)) {
@@ -191,8 +203,9 @@ CoreAccountInfo SigninManager::ComputeUnconsentedPrimaryAccountInfo() const {
   //
   // It was considered simpler to keep the logic to update the unconsented
   // primary account in a single place.
-  if (!signin_allowed_.GetValue())
+  if (!signin_allowed_.GetValue()) {
     return CoreAccountInfo();
+  }
 
   signin::AccountsInCookieJarInfo cookie_info =
       identity_manager_->GetAccountsInCookieJar();
@@ -216,8 +229,9 @@ CoreAccountInfo SigninManager::ComputeUnconsentedPrimaryAccountInfo() const {
                                                           : CoreAccountInfo();
   }
 
-  if (!identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin))
+  if (!identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
     return CoreAccountInfo();
+  }
 
   // If cookies or tokens are not loaded, it is not possible to fully compute
   // the unconsented primary account. However, if the current unconsented
@@ -231,8 +245,9 @@ CoreAccountInfo SigninManager::ComputeUnconsentedPrimaryAccountInfo() const {
 bool SigninManager::IsValidUnconsentedPrimaryAccount(
     const CoreAccountInfo& account) const {
   DCHECK(identity_manager_->AreRefreshTokensLoaded());
-  if (account.IsEmpty())
+  if (account.IsEmpty()) {
     return false;
+  }
 
   const CoreAccountId& account_id = account.account_id;
   return identity_manager_->HasAccountWithRefreshToken(account_id) &&
@@ -244,7 +259,6 @@ void SigninManager::Shutdown() {
   // Unsubscribe to all notifications to stop calling the identity manager.
   signin_allowed_.Destroy();
   identity_manager_observation_.Reset();
-  identity_manager_ = nullptr;
 }
 
 // Lacros does not use cookies to compute the unconsented primary account.
@@ -300,8 +314,9 @@ void SigninManager::OnErrorStateOfRefreshTokenUpdatedForAccount(
     should_update = (account_info == current_account);
   }
 
-  if (should_update)
+  if (should_update) {
     UpdateUnconsentedPrimaryAccount();
+  }
 }
 
 void SigninManager::OnSigninAllowedPrefChanged() {

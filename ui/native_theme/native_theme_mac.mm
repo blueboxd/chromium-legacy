@@ -34,14 +34,11 @@
 namespace {
 
 bool IsDarkMode() {
-  if (@available(macOS 10.14, *)) {
-    NSAppearanceName appearance =
-        [NSApp.effectiveAppearance bestMatchFromAppearancesWithNames:@[
-          NSAppearanceNameAqua, NSAppearanceNameDarkAqua
-        ]];
-    return [appearance isEqual:NSAppearanceNameDarkAqua];
-  }
-  return false;
+  NSAppearanceName appearance =
+      [NSApp.effectiveAppearance bestMatchFromAppearancesWithNames:@[
+        NSAppearanceNameAqua, NSAppearanceNameDarkAqua
+      ]];
+  return [appearance isEqual:NSAppearanceNameDarkAqua];
 }
 
 bool IsHighContrast() {
@@ -72,20 +69,16 @@ bool IsHighContrast() {
   self = [super init];
   if (self) {
     _handler = handler;
-    if (@available(macOS 10.14, *)) {
-      [NSApp addObserver:self
-              forKeyPath:@"effectiveAppearance"
-                 options:0
-                 context:nullptr];
-    }
+    [NSApp addObserver:self
+            forKeyPath:@"effectiveAppearance"
+               options:0
+               context:nullptr];
   }
   return self;
 }
 
 - (void)dealloc {
-  if (@available(macOS 10.14, *)) {
-    [NSApp removeObserver:self forKeyPath:@"effectiveAppearance"];
-  }
+  [NSApp removeObserver:self forKeyPath:@"effectiveAppearance"];
 }
 
 - (void)observeValueForKeyPath:(NSString*)forKeyPath
@@ -128,10 +121,7 @@ NativeTheme* NativeTheme::GetInstanceForDarkUI() {
 
 // static
 bool NativeTheme::SystemDarkModeSupported() {
-  if (@available(macOS 10.14, *)) {
-    return true;
-  }
-  return false;
+  return true;
 }
 
 // static
@@ -291,11 +281,19 @@ void NativeThemeMac::PaintScrollBarTrackGradient(
   }
 
   // And draw.
-  cc::PaintFlags gradient;
-  gradient.setShader(cc::PaintShader::MakeLinearGradient(
-      gradient_bounds.data(), gradient_colors.data(), nullptr,
-      gradient_colors.size(), SkTileMode::kClamp));
-  paint_canvas.DrawRect(rect, gradient);
+  cc::PaintFlags flags;
+  absl::optional<SkColor> track_color =
+      GetScrollbarColor(ScrollbarPart::kTrack, color_scheme, extra_params);
+  if (track_color.has_value()) {
+    flags.setAntiAlias(true);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setColor(track_color.value());
+  } else {
+    flags.setShader(cc::PaintShader::MakeLinearGradient(
+        gradient_bounds.data(), gradient_colors.data(), nullptr,
+        gradient_colors.size(), SkTileMode::kClamp));
+  }
+  paint_canvas.DrawRect(rect, flags);
 }
 
 void NativeThemeMac::PaintScrollbarTrackInnerBorder(
@@ -431,6 +429,9 @@ absl::optional<SkColor> NativeThemeMac::GetScrollbarColor(
   // colors.
   bool dark_mode = color_scheme == ColorScheme::kDark;
   if (part == ScrollbarPart::kThumb) {
+    if (extra_params.thumb_color.has_value()) {
+      return extra_params.thumb_color.value();
+    }
     if (extra_params.is_overlay)
       return dark_mode ? SkColorSetARGB(0x80, 0xFF, 0xFF, 0xFF)
                        : SkColorSetARGB(0x80, 0, 0, 0);
@@ -442,6 +443,10 @@ absl::optional<SkColor> NativeThemeMac::GetScrollbarColor(
     return extra_params.is_hovering ? SkColorSetARGB(0x80, 0, 0, 0)
                                     : SkColorSetARGB(0x3A, 0, 0, 0);
   } else if (part == ScrollbarPart::kTrackInnerBorder) {
+    if (extra_params.track_color.has_value()) {
+      return extra_params.track_color.value();
+    }
+
     if (extra_params.is_overlay)
       return dark_mode ? SkColorSetARGB(0x33, 0xE5, 0xE5, 0xE5)
                        : SkColorSetARGB(0xF9, 0xDF, 0xDF, 0xDF);
@@ -449,12 +454,19 @@ absl::optional<SkColor> NativeThemeMac::GetScrollbarColor(
     return dark_mode ? SkColorSetRGB(0x3D, 0x3D, 0x3D)
                      : SkColorSetRGB(0xE8, 0xE8, 0xE8);
   } else if (part == ScrollbarPart::kTrackOuterBorder) {
+    if (extra_params.track_color.has_value()) {
+      return extra_params.track_color.value();
+    }
     if (extra_params.is_overlay)
       return dark_mode ? SkColorSetARGB(0x28, 0xD8, 0xD8, 0xD8)
                        : SkColorSetARGB(0xC6, 0xE8, 0xE8, 0xE8);
 
     return dark_mode ? SkColorSetRGB(0x51, 0x51, 0x51)
                      : SkColorSetRGB(0xED, 0xED, 0xED);
+  } else if (part == ScrollbarPart::kTrack) {
+    if (extra_params.track_color.has_value()) {
+      return extra_params.track_color.value();
+    }
   }
 
   return absl::nullopt;

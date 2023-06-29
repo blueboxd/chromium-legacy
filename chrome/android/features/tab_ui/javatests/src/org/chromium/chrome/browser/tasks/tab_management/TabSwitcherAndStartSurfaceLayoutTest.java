@@ -998,6 +998,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true" +
             "/baseline_close_tab_suggestions/true/min_time_between_prefetches/0/"
         + "thumbnail_aspect_ratio/1.0/soft-cleanup-delay/2000/cleanup-delay/10000"})
+    @DisabledTest(message = "https://crbug.com/1458026 for RefactorDisabled")
     public void testTabSuggestionMessageCard_dismiss(boolean isStartSurfaceRefactorEnable)
             throws InterruptedException {
         // clang-format on
@@ -1467,8 +1468,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS})
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
             ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
-            ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<study"})
-    @DisabledTest(message = "https://crbug.com/1130212")
+            ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study"})
     public void testCloseTabViaCloseButton(boolean isStartSurfaceRefactorEnabled) throws Exception {
         // clang-format on
         mActivityTestRule.getActivity().getSnackbarManager().disableForTesting();
@@ -1486,7 +1486,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
-            ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<study"})
+            ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study"})
     @DisabledTest(message = "Flaky - https://crbug.com/1124041, crbug.com/1061178")
     public void testSwipeToDismiss_GTS(boolean isStartSurfaceRefactorEnabled) {
         // clang-format on
@@ -1960,8 +1960,6 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         // Verify no selection action occurred to switch the selected tab in the tab model
         Criteria.checkThat(
                 mActivityTestRule.getActivity().getCurrentTabModel().index(), Matchers.is(1));
-
-        TabUiFeatureUtilities.setTabSelectionEditorLongPressEntryEnabledForTesting(false);
     }
 
     @Test
@@ -1985,8 +1983,6 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
 
         TabSelectionEditorTestingRobot mSelectionEditorRobot = new TabSelectionEditorTestingRobot();
         mSelectionEditorRobot.resultRobot.verifyTabSelectionEditorIsVisible();
-
-        TabUiFeatureUtilities.setTabSelectionEditorLongPressEntryEnabledForTesting(false);
     }
 
     @Test
@@ -2017,8 +2013,6 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         // verify clicking the tab worked.
         Criteria.checkThat(
                 mActivityTestRule.getActivity().getCurrentTabModel().index(), Matchers.is(0));
-
-        TabUiFeatureUtilities.setTabSelectionEditorLongPressEntryEnabledForTesting(false);
     }
 
     @Test

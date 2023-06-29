@@ -246,7 +246,8 @@ ui::Cursor GetCursorForFullscreenOrWindowCapture(bool capture_image) {
   ui::Cursor cursor = ui::Cursor::NewCustom(
       std::move(bitmap), std::move(hotspot), device_scale_factor);
   cursor.SetPlatformCursor(ui::CursorFactory::GetInstance()->CreateImageCursor(
-      cursor.type(), cursor.custom_bitmap(), cursor.custom_hotspot()));
+      cursor.type(), cursor.custom_bitmap(), cursor.custom_hotspot(),
+      cursor.image_scale_factor()));
 
   return cursor;
 }
@@ -883,6 +884,11 @@ bool CaptureModeSession::IsInCountDownAnimation() const {
 
   DCHECK(capture_label_view_);
   return capture_label_view_->IsInCountDownAnimation();
+}
+
+bool CaptureModeSession::IsBarAnchoredToWindow() const {
+  return capture_window_observer_ &&
+         capture_window_observer_->bar_anchored_to_window();
 }
 
 void CaptureModeSession::OnCaptureFolderMayHaveChanged() {

@@ -12,6 +12,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
+#include "base/token.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -973,8 +974,8 @@ void CopyRequestTestCallback(bool* called,
 TEST_F(CompositorFrameSinkSupportTest, CopyRequestOnSubtree) {
   const SurfaceId surface_id(support_->frame_sink_id(), local_surface_id_);
 
-  constexpr SubtreeCaptureId kSubtreeId1(22);
-  constexpr SubtreeCaptureId kSubtreeId2(44);
+  constexpr SubtreeCaptureId kSubtreeId1(base::Token(0, 22u));
+  constexpr SubtreeCaptureId kSubtreeId2(base::Token(0, 44u));
 
   {
     auto frame = CompositorFrameBuilder()
@@ -1725,7 +1726,10 @@ TEST_P(ThrottledBeginFrameCompositorFrameSinkSupportTest, BeginFrameInterval) {
   SurfaceId id(kAnotherArbitraryFrameSinkId, local_surface_id_);
   support->SetBeginFrameSource(&begin_frame_source);
   support->SetNeedsBeginFrame(true);
-  constexpr int fps = 5;
+
+  // We only throttle multiples of the refresh rate.
+  constexpr int fps = BeginFrameArgs::DefaultInterval().ToHz() / 2;
+
   constexpr base::TimeDelta throttled_interval = base::Seconds(1) / fps;
   support->ThrottleBeginFrame(throttled_interval);
 
@@ -1781,9 +1785,8 @@ TEST_P(ThrottledBeginFrameCompositorFrameSinkSupportTest, BeginFrameInterval) {
     }
     frame_time += interval;
   }
-  // In total 11 frames should have been sent (5fps x 2 seconds) + 1 frame at
-  // time 0.
-  EXPECT_EQ(sent_frames, 11);
+  // In total fps x 2 seconds + 1 frame at time 0.
+  EXPECT_EQ(sent_frames, 2 * fps + 1);
   support->SetNeedsBeginFrame(false);
 }
 
@@ -1969,7 +1972,7 @@ TEST_F(CompositorFrameSinkSupportTest, GetCopyOutputRequestRegion) {
 
   // Render pass with subtree size.
   const SurfaceId surface_id(support_->frame_sink_id(), local_surface_id_);
-  constexpr SubtreeCaptureId kSubtreeId1(22);
+  constexpr SubtreeCaptureId kSubtreeId1(base::Token(0, 22u));
 
   auto frame = CompositorFrameBuilder()
                    .AddDefaultRenderPass()
@@ -1984,7 +1987,7 @@ TEST_F(CompositorFrameSinkSupportTest, GetCopyOutputRequestRegion) {
             support_->GetCopyOutputRequestRegion(kSubtreeId1));
 
   // Render pass but no subtree size, just a frame size in pixels.
-  constexpr SubtreeCaptureId kSubtreeId2(7);
+  constexpr SubtreeCaptureId kSubtreeId2(base::Token(0, 7u));
   auto frame_with_output_size =
       CompositorFrameBuilder()
           .AddDefaultRenderPass()

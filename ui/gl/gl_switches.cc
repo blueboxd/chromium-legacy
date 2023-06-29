@@ -216,12 +216,16 @@ BASE_FEATURE(kDirectCompositionLetterboxVideoOptimization,
 // internal rendering to be on the low power GPU.
 BASE_FEATURE(kEGLDualGPURendering,
              "EGLDualGPURendering",
+#if BUILDFLAG(IS_MAC)
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else
              base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 // Allow overlay swapchain to use Intel video processor for super resolution.
 BASE_FEATURE(kIntelVpSuperResolution,
              "IntelVpSuperResolution",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Allow overlay swapchain to use NVIDIA video processor for super resolution.
 BASE_FEATURE(kNvidiaVpSuperResolution,

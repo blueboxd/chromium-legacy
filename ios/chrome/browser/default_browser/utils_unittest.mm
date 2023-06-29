@@ -8,6 +8,7 @@
 #import "base/test/scoped_feature_list.h"
 #import "base/time/time.h"
 #import "ios/chrome/browser/default_browser/utils_test_support.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #import "testing/platform_test.h"
@@ -24,6 +25,9 @@ constexpr base::TimeDelta kLessThan7Days = base::Days(7) - base::Minutes(1);
 
 // More than 7 days.
 constexpr base::TimeDelta kMoreThan7Days = base::Days(7) + base::Minutes(1);
+
+// More than 14 days.
+constexpr base::TimeDelta kMoreThan14Days = base::Days(14) + base::Minutes(1);
 
 // Less than 6 hours.
 constexpr base::TimeDelta kLessThan6Hours = base::Hours(6) - base::Minutes(1);
@@ -217,4 +221,141 @@ TEST_F(DefaultBrowserUtilsTest, ManualRecentTimestampForKeyOver6Hours) {
   EXPECT_FALSE(HasRecentTimestampForKey(kTestTimestampKey));
 }
 
+// Test `CalculatePromoStatistics` when feature flag is disabled.
+TEST_F(DefaultBrowserUtilsTest, CalculatePromoStatisticsTest_FlagDisabled) {
+  feature_list_.InitWithFeatures({},
+                                 {kDefaultBrowserTriggerCriteriaExperiment});
+  {
+    PromoStatistics* promo_stats = CalculatePromoStatistics();
+    EXPECT_EQ(0, promo_stats.promoDisplayCount);
+    EXPECT_EQ(0, promo_stats.numDaysSinceLastPromo);
+    EXPECT_EQ(0, promo_stats.chromeColdStartCount);
+    EXPECT_EQ(0, promo_stats.chromeWarmStartCount);
+    EXPECT_EQ(0, promo_stats.chromeIndirectStartCount);
+  }
+
+  LogDefaultBrowserPromoDisplayed();
+  LogUserInteractionWithFullscreenPromo();
+  LogBrowserLaunched(true);
+  LogBrowserLaunched(false);
+  LogBrowserIndirectlylaunched();
+
+  {
+    PromoStatistics* promo_stats = CalculatePromoStatistics();
+    EXPECT_EQ(0, promo_stats.promoDisplayCount);
+    EXPECT_EQ(0, promo_stats.numDaysSinceLastPromo);
+    EXPECT_EQ(0, promo_stats.chromeColdStartCount);
+    EXPECT_EQ(0, promo_stats.chromeWarmStartCount);
+    EXPECT_EQ(0, promo_stats.chromeIndirectStartCount);
+  }
+}
+
+// Test `CalculatePromoStatistics` when feature flag is enabled.
+TEST_F(DefaultBrowserUtilsTest, CalculatePromoStatisticsTest_FlagEnabled) {
+  feature_list_.InitWithFeatures({kDefaultBrowserTriggerCriteriaExperiment},
+                                 {});
+  {
+    PromoStatistics* promo_stats = CalculatePromoStatistics();
+    EXPECT_EQ(0, promo_stats.promoDisplayCount);
+    EXPECT_EQ(0, promo_stats.numDaysSinceLastPromo);
+  }
+
+  NSTimeInterval secondsPerDay = 24 * 60 * 60;
+  NSDate* yesterday =
+      [[NSDate alloc] initWithTimeIntervalSinceNow:-secondsPerDay];
+  SetObjectInStorageForKey(kLastTimeUserInteractedWithPromo, yesterday);
+
+  LogDefaultBrowserPromoDisplayed();
+
+  {
+    PromoStatistics* promo_stats = CalculatePromoStatistics();
+    EXPECT_EQ(1, promo_stats.promoDisplayCount);
+    EXPECT_EQ(1, promo_stats.numDaysSinceLastPromo);
+  }
+
+  LogDefaultBrowserPromoDisplayed();
+  LogUserInteractionWithFullscreenPromo();
+
+  {
+    PromoStatistics* promo_stats = CalculatePromoStatistics();
+    EXPECT_EQ(2, promo_stats.promoDisplayCount);
+    EXPECT_EQ(0, promo_stats.numDaysSinceLastPromo);
+  }
+}
+
+// Test `CalculatePromoStatistics` for chrome open metrics.
+TEST_F(DefaultBrowserUtilsTest, CalculatePromoStatisticsTest_ChromeOpen) {
+  feature_list_.InitWithFeatures({kDefaultBrowserTriggerCriteriaExperiment},
+                                 {});
+  {
+    PromoStatistics* promo_stats = CalculatePromoStatistics();
+    EXPECT_EQ(0, promo_stats.chromeColdStartCount);
+    EXPECT_EQ(0, promo_stats.chromeWarmStartCount);
+    EXPECT_EQ(0, promo_stats.chromeIndirectStartCount);
+  }
+
+  // Adding timestamps that are older than 14 days should not change the promo
+  // stats.
+  NSDate* moreThan14DaysAgo = [[NSDate alloc]
+      initWithTimeIntervalSinceNow:-kMoreThan14Days.InSecondsF()];
+  SetObjectIntoStorageForKey(kAllTimestampsAppLaunchColdStart,
+                             @[ moreThan14DaysAgo ]);
+  SetObjectIntoStorageForKey(kAllTimestampsAppLaunchWarmStart,
+                             @[ moreThan14DaysAgo ]);
+  SetObjectIntoStorageForKey(kAllTimestampsAppLaunchIndirectStart,
+                             @[ moreThan14DaysAgo ]);
+  {
+    PromoStatistics* promo_stats = CalculatePromoStatistics();
+    EXPECT_EQ(0, promo_stats.chromeColdStartCount);
+    EXPECT_EQ(0, promo_stats.chromeWarmStartCount);
+    EXPECT_EQ(0, promo_stats.chromeIndirectStartCount);
+  }
+
+  // Adding timestamps that are between 7 - 14 days should be counted.
+  NSDate* moreThan7DaysAgo = [[NSDate alloc]
+      initWithTimeIntervalSinceNow:-kMoreThan7Days.InSecondsF()];
+
+  SetObjectIntoStorageForKey(kAllTimestampsAppLaunchColdStart,
+                             @[ moreThan7DaysAgo, moreThan14DaysAgo ]);
+  SetObjectIntoStorageForKey(kAllTimestampsAppLaunchWarmStart,
+                             @[ moreThan7DaysAgo, moreThan14DaysAgo ]);
+  SetObjectIntoStorageForKey(kAllTimestampsAppLaunchIndirectStart,
+                             @[ moreThan7DaysAgo, moreThan14DaysAgo ]);
+  {
+    PromoStatistics* promo_stats = CalculatePromoStatistics();
+    EXPECT_EQ(1, promo_stats.chromeColdStartCount);
+    EXPECT_EQ(1, promo_stats.chromeWarmStartCount);
+    EXPECT_EQ(1, promo_stats.chromeIndirectStartCount);
+  }
+
+  LogBrowserLaunched(true);
+
+  {
+    PromoStatistics* promo_stats = CalculatePromoStatistics();
+    EXPECT_EQ(2, promo_stats.chromeColdStartCount);
+    EXPECT_EQ(1, promo_stats.chromeWarmStartCount);
+    EXPECT_EQ(1, promo_stats.chromeIndirectStartCount);
+  }
+
+  LogBrowserLaunched(true);
+  LogBrowserLaunched(false);
+
+  {
+    PromoStatistics* promo_stats = CalculatePromoStatistics();
+    EXPECT_EQ(3, promo_stats.chromeColdStartCount);
+    EXPECT_EQ(2, promo_stats.chromeWarmStartCount);
+    EXPECT_EQ(1, promo_stats.chromeIndirectStartCount);
+  }
+
+  LogBrowserLaunched(true);
+  LogBrowserLaunched(false);
+  LogBrowserIndirectlylaunched();
+
+  {
+    PromoStatistics* promo_stats = CalculatePromoStatistics();
+    EXPECT_EQ(4, promo_stats.chromeColdStartCount);
+    EXPECT_EQ(3, promo_stats.chromeWarmStartCount);
+    EXPECT_EQ(2, promo_stats.chromeIndirectStartCount);
+  }
+}
 }  // namespace

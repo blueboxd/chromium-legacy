@@ -111,6 +111,7 @@
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/page_transition_types.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -446,6 +447,10 @@ class BackgroundColorChangeSystemWebAppBrowserTest
           /*prefer_manifest_background_color=*/bool> {
  public:
   BackgroundColorChangeSystemWebAppBrowserTest() {
+    // TODO(b/284501548): Delete this test when Jelly is fully enabled.
+    // UseSystemTheme() supersedes this behavior.
+    features_.InitAndDisableFeature(chromeos::features::kJelly);
+
     static_cast<ash::UnittestingSystemAppDelegate*>(
         system_web_app_installation_->GetDelegate())
         ->SetPreferManifestBackgroundColor(PreferManifestBackgroundColor());
@@ -454,6 +459,9 @@ class BackgroundColorChangeSystemWebAppBrowserTest
   // Returns whether the web app under test prefers manifest background colors
   // over web contents background colors.
   bool PreferManifestBackgroundColor() const { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList features_;
 };
 
 class DynamicColorSystemWebAppBrowserTest
@@ -512,10 +520,14 @@ IN_PROC_BROWSER_TEST_P(BackgroundColorChangeSystemWebAppBrowserTest,
     EXPECT_TRUE(content::ExecJs(
         web_contents, "document.body.style.backgroundColor = 'cyan';"));
     waiter.Wait();
-    EXPECT_EQ(app_browser->app_controller()->GetBackgroundColor().value(),
-              PreferManifestBackgroundColor()
-                  ? (is_dark_mode_state ? SK_ColorBLACK : SK_ColorWHITE)
-                  : SK_ColorCYAN);
+    if (PreferManifestBackgroundColor()) {
+      EXPECT_EQ(app_browser->app_controller()->GetBackgroundColor().value(),
+                (is_dark_mode_state ? SK_ColorBLACK : SK_ColorWHITE));
+    } else {
+      auto background_opt = app_browser->app_controller()->GetBackgroundColor();
+      ASSERT_TRUE(background_opt);
+      EXPECT_EQ(background_opt.value(), SK_ColorCYAN);
+    }
     SkColor download_shelf_color;
     app_browser->app_controller()->GetThemeSupplier()->GetColor(
         ThemeProperties::COLOR_TOOLBAR, &download_shelf_color);
@@ -1831,7 +1843,19 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, InstallToShelfContainsAppName) {
   size_t index = 0;
   EXPECT_TRUE(app_menu_model->GetModelAndIndexForCommandId(IDC_INSTALL_PWA,
                                                            &model, &index));
-  EXPECT_EQ(app_menu_model.get(), model);
+  if (features::IsChromeRefresh2023()) {
+    // PWA install entry is in the Save and Share submenu in CR2023.
+    ui::MenuModel* save_and_share_submenu = app_menu_model.get();
+    size_t save_and_share_index = 0;
+    EXPECT_TRUE(app_menu_model->GetModelAndIndexForCommandId(
+        IDC_SAVE_AND_SHARE_MENU, &save_and_share_submenu,
+        &save_and_share_index));
+    save_and_share_submenu =
+        save_and_share_submenu->GetSubmenuModelAt(save_and_share_index);
+    EXPECT_EQ(save_and_share_submenu, model);
+  } else {
+    EXPECT_EQ(app_menu_model.get(), model);
+  }
   const std::u16string label = model->GetLabelAt(index);
   EXPECT_NE(std::u16string::npos, label.find(u"Manifest test"));
 }

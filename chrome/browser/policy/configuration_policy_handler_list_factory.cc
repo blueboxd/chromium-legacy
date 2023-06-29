@@ -125,6 +125,7 @@
 #include "chrome/browser/first_run/android/first_run_prefs.h"
 #include "chrome/browser/lens/android/lens_prefs.h"
 #include "chrome/browser/search/contextual_search_policy_handler_android.h"
+#include "ui/accessibility/accessibility_prefs.h"
 #else  // BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/download/default_download_dir_policy_handler.h"
 #include "chrome/browser/download/download_auto_open_policy_handler.h"
@@ -254,6 +255,13 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kEditBookmarksEnabled,
     bookmarks::prefs::kEditBookmarksEnabled,
     base::Value::Type::BOOLEAN },
+// We avoid checking for BUILDFLAG(ENABLE_NACL) since we may want the policy to
+// exist (deprecated) even if NACL is no longer being built.
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
+  { key::kNativeClientForceAllowed,
+    prefs::kNativeClientForceAllowed,
+    base::Value::Type::BOOLEAN },
+#endif
   { key::kPasswordManagerEnabled,
     password_manager::prefs::kCredentialsEnableService,
     base::Value::Type::BOOLEAN },
@@ -324,6 +332,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN},
 // Policies for all platforms - End
 #if BUILDFLAG(IS_ANDROID)
+  { key::kAccessibilityPerformanceFilteringAllowed,
+    prefs::kAccessibilityPerformanceFilteringAllowed,
+    base::Value::Type::BOOLEAN },
   { key::kAuthAndroidNegotiateAccountType,
     prefs::kAuthAndroidNegotiateAccountType,
     base::Value::Type::STRING },
@@ -911,6 +922,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kEmojiSuggestionEnabled,
     ash::prefs::kEmojiSuggestionEnterpriseAllowed,
     base::Value::Type::BOOLEAN },
+  { key::kEmojiPickerGifSupportEnabled,
+    ash::prefs::kEmojiPickerGifSupportEnabled,
+    base::Value::Type::BOOLEAN },
   { key::kExternalStorageDisabled,
     disks::prefs::kExternalStorageDisabled,
     base::Value::Type::BOOLEAN },
@@ -1007,8 +1021,17 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kVirtualKeyboardFeatures,
     ash::prefs::kAccessibilityVirtualKeyboardFeatures,
     base::Value::Type::DICT },
+  { key::kPhysicalKeyboardAutocorrect,
+    ash::prefs::kManagedPhysicalKeyboardAutocorrectAllowed,
+    base::Value::Type::BOOLEAN },
+  { key::kPhysicalKeyboardPredictiveWriting,
+    ash::prefs::kManagedPhysicalKeyboardPredictiveWritingAllowed,
+    base::Value::Type::BOOLEAN },
   { key::kStickyKeysEnabled,
     ash::prefs::kAccessibilityStickyKeysEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kColorCorrectionEnabled,
+    ash::prefs::kAccessibilityColorCorrectionEnabled,
     base::Value::Type::BOOLEAN },
   { key::kFullscreenAlertEnabled,
     ash::prefs::kFullscreenAlertEnabled,
@@ -1445,6 +1468,15 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::LIST },
   { key::kReportAppUsageCollectionRateMs,
     ash::reporting::kReportAppUsageCollectionRateMs,
+    base::Value::Type::INTEGER },
+  { key::kChargingSoundsEnabled,
+    ash::prefs::kChargingSoundsEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kLowBatterySoundEnabled,
+    ash::prefs::kLowBatterySoundEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kArcVmDataMigrationStrategy,
+    arc::prefs::kArcVmDataMigrationStrategy,
     base::Value::Type::INTEGER },
 #endif // BUILDFLAG(IS_CHROMEOS_ASH)
 

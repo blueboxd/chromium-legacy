@@ -351,8 +351,7 @@ bool LocalDOMWindow::IsCrossSiteSubframeIncludingScheme() const {
 }
 
 LocalDOMWindow* LocalDOMWindow::From(const ScriptState* script_state) {
-  v8::HandleScope scope(script_state->GetIsolate());
-  return blink::ToLocalDOMWindow(script_state->GetContext());
+  return blink::ToLocalDOMWindow(script_state);
 }
 
 mojom::blink::V8CacheOptions LocalDOMWindow::GetV8CacheOptions() const {
@@ -1087,9 +1086,7 @@ Screen* LocalDOMWindow::screen() {
     int64_t display_id =
         frame ? frame->GetChromeClient().GetScreenInfo(*frame).display_id
               : Screen::kInvalidDisplayId;
-    screen_ = MakeGarbageCollected<Screen>(
-        this, display_id, /*use_size_override=*/
-        !RuntimeEnabledFeatures::FullscreenScreenSizeMatchesDisplayEnabled());
+    screen_ = MakeGarbageCollected<Screen>(this, display_id);
   }
   return screen_.Get();
 }
@@ -2371,11 +2368,17 @@ void LocalDOMWindow::Trace(Visitor* visitor) const {
   ExecutionContext::Trace(visitor);
   Supplementable<LocalDOMWindow>::Trace(visitor);
 }
-
 bool LocalDOMWindow::CrossOriginIsolatedCapability() const {
   return Agent::IsCrossOriginIsolated() &&
          IsFeatureEnabled(
-             mojom::blink::PermissionsPolicyFeature::kCrossOriginIsolated);
+             mojom::blink::PermissionsPolicyFeature::kCrossOriginIsolated) &&
+         GetFrame() &&
+         !(GetFrame()->Loader().IsOnInitialEmptyDocument()
+               ? GetFrame()
+                     ->CoopForbidsInitialEmptyDocumentToBeCrossOriginIsolated()
+               : GetFrame()
+                     ->Loader()
+                     .CoopForbidsDocumentToBeCrossOriginIsolated());
 }
 
 bool LocalDOMWindow::IsIsolatedContext() const {
@@ -2500,6 +2503,11 @@ bool LocalDOMWindow::HadActivationlessPaymentRequest() const {
 
 void LocalDOMWindow::SetHadActivationlessPaymentRequest() {
   had_activationless_payment_request_ = true;
+}
+
+void LocalDOMWindow::minimize() {
+  // TODO(isandrk): API is WIP. Explainer link:
+  // https://github.com/ivansandrk/additional-windowing-controls/blob/main/awc-explainer.md
 }
 
 void LocalDOMWindow::GenerateNewNavigationId() {

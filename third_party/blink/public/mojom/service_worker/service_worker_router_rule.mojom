@@ -4,14 +4,14 @@
 
 module blink.mojom;
 
-import "third_party/blink/public/mojom/url_pattern.mojom";
+import "third_party/blink/public/mojom/safe_url_pattern.mojom";
 
 // This represents a condition of the router rule.
 // https://github.com/yoshisatoyanagisawa/service-worker-static-routing-api
 // TODO(crbug.com/1371756): implement other conditions in the full picture.
 union ServiceWorkerRouterCondition {
   // URLPattern to be used for matching.
-  UrlPattern url_pattern;
+  SafeUrlPattern url_pattern;
 };
 
 // This is used for specifying the source is network.
@@ -20,11 +20,27 @@ union ServiceWorkerRouterCondition {
 struct ServiceWorkerRouterNetworkSource {
 };
 
+// This source is used when the browser should allow a network source and
+// the fetch handler to race, allowing the first one to respond to service
+// the request.
+// https://github.com/yoshisatoyanagisawa/service-worker-static-routing-api
+// TODO(crbug.com/1371756): implement fields in the full picture.
+struct ServiceWorkerRouterRaceSource {
+};
+
+// This is used for explicitly running the fetch event listeners.
+// https://github.com/yoshisatoyanagisawa/service-worker-static-routing-api
+// TODO(crbug.com/1371756): implement fields in the full picture.
+struct ServiceWorkerRouterFetchEventSource {
+};
+
 // This represents a source of the router rule.
 // https://github.com/yoshisatoyanagisawa/service-worker-static-routing-api
 // TODO(crbug.com/1371756): implement other sources in the full picture.
 union ServiceWorkerRouterSource {
   ServiceWorkerRouterNetworkSource network_source;
+  ServiceWorkerRouterRaceSource race_source;
+  ServiceWorkerRouterFetchEventSource fetch_event_source;
 };
 
 // This represents a ServiceWorker static routing API's router rule.

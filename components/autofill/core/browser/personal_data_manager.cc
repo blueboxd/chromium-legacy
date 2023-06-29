@@ -38,6 +38,7 @@
 #include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/data_model/credit_card_art_image.h"
 #include "components/autofill/core/browser/data_model/phone_number.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/geo/address_i18n.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
@@ -1120,7 +1121,7 @@ void PersonalDataManager::ClearAllServerData() {
   // off (meaning this class won't even query for the server data) so don't
   // check the server_credit_cards_/profiles_ before posting to the DB.
 
-  // TODO(crbug.com/864519): Move this nullcheck logic to the database helper.
+  // TODO(crbug.com/864519): Move this null check logic to the database helper.
   // The server database can be null for a limited amount of time before the
   // sync service gets initialized. Not clearing it does not matter in that case
   // since it will not have been created yet (nothing to clear).
@@ -1177,7 +1178,7 @@ void PersonalDataManager::
         const std::string& guid) {
   RemoveProfileFromDB(guid);
 
-  // Reset the billing_address_id of any card that refered to this profile.
+  // Reset the billing_address_id of any card that referred to this profile.
   for (CreditCard* credit_card : GetCreditCards()) {
     if (credit_card->billing_address_id() == guid) {
       credit_card->set_billing_address_id("");
@@ -1393,6 +1394,22 @@ PersonalDataManager::GetActiveAutofillPromoCodeOffersForOrigin(
   return promo_code_offers_for_origin;
 }
 
+GURL PersonalDataManager::GetCardArtURL(const CreditCard& credit_card) const {
+  if (credit_card.record_type() == CreditCard::MASKED_SERVER_CARD) {
+    return credit_card.card_art_url();
+  }
+
+  if (credit_card.record_type() == CreditCard::LOCAL_CARD) {
+    const CreditCard* server_duplicate_card =
+        GetServerCardForLocalCard(&credit_card);
+    if (server_duplicate_card) {
+      return server_duplicate_card->card_art_url();
+    }
+  }
+
+  return GURL();
+}
+
 gfx::Image* PersonalDataManager::GetCreditCardArtImageForUrl(
     const GURL& card_art_url) const {
   gfx::Image* cached_image = GetCachedCardArtImageForUrl(card_art_url);
@@ -1469,9 +1486,9 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   if (IsInAutofillSuggestionsDisabledExperiment())
     return std::vector<Suggestion>();
 
-  const AutofillProfileComparator comparator(app_locale_);
   std::u16string field_contents_canon =
-      comparator.NormalizeForComparison(field_contents);
+      suggestion_selection::NormalizeForComparisonForType(
+          field_contents, type.GetStorableType());
 
   // Get the profiles to suggest, which are already sorted.
   std::vector<AutofillProfile*> sorted_profiles = GetProfilesToSuggest();
@@ -1488,9 +1505,10 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   std::vector<AutofillProfile*> matched_profiles;
   std::vector<Suggestion> suggestions =
       suggestion_selection::GetPrefixMatchedSuggestions(
-          type, field_contents, field_contents_canon, comparator,
+          type, field_contents, field_contents_canon, app_locale_,
           field_is_autofilled, sorted_profiles, &matched_profiles);
 
+  const AutofillProfileComparator comparator(app_locale_);
   // Don't show two suggestions if one is a subset of the other.
   // Duplicates across sources are resolved in favour of `kAccount` profiles.
   std::vector<AutofillProfile*> unique_matched_profiles;
@@ -1761,6 +1779,26 @@ bool PersonalDataManager::IsCardPresentAsBothLocalAndServerCards(
     }
   }
   return false;
+}
+
+const CreditCard* PersonalDataManager::GetServerCardForLocalCard(
+    const CreditCard* local_card) const {
+  DCHECK(local_card);
+  if (local_card->record_type() != CreditCard::LOCAL_CARD) {
+    return nullptr;
+  }
+
+  std::vector<CreditCard*> server_cards = GetServerCreditCards();
+  auto it =
+      base::ranges::find_if(server_cards, [&](const CreditCard* server_card) {
+        return local_card->IsLocalOrServerDuplicateOf(*server_card);
+      });
+
+  if (it != server_cards.end()) {
+    return *it;
+  }
+
+  return nullptr;
 }
 
 void PersonalDataManager::SetProfilesForAllSources(
@@ -2528,8 +2566,8 @@ void PersonalDataManager::AddProfileToDB(const AutofillProfile& profile,
       return;
     }
   }
-  ongoing_profile_changes_[profile.guid()].push_back(
-      AutofillProfileDeepChange(AutofillProfileChange::ADD, profile));
+  ongoing_profile_changes_[profile.guid()].emplace_back(
+      AutofillProfileChange::ADD, profile);
   if (enforced)
     ongoing_profile_changes_[profile.guid()].back().set_enforced();
   HandleNextProfileChange(profile.guid());
@@ -2548,8 +2586,8 @@ void PersonalDataManager::UpdateProfileInDB(const AutofillProfile& profile,
     }
   }
 
-  ongoing_profile_changes_[profile.guid()].push_back(
-      AutofillProfileDeepChange(AutofillProfileChange::UPDATE, profile));
+  ongoing_profile_changes_[profile.guid()].emplace_back(
+      AutofillProfileChange::UPDATE, profile);
   if (enforced)
     ongoing_profile_changes_[profile.guid()].back().set_enforced();
   HandleNextProfileChange(profile.guid());

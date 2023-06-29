@@ -31,8 +31,9 @@ class CORE_EXPORT StyleScope final : public GarbageCollected<StyleScope> {
   // https://drafts.csswg.org/css-nesting-1/#nesting-at-scope
   StyleScope(StyleRule* from, CSSSelectorList* to);
   // Construct a StyleScope with implicit roots at the parent nodes of the
-  // stylesheet's owner nodes.
-  explicit StyleScope(StyleSheetContents* contents);
+  // stylesheet's owner nodes. Note that StyleScopes with implicit roots
+  // can still have limits.
+  explicit StyleScope(StyleSheetContents* contents, CSSSelectorList* to);
   StyleScope(const StyleScope&);
   static StyleScope* Parse(CSSParserTokenRange prelude,
                            const CSSParserContext* context,
@@ -58,10 +59,6 @@ class CORE_EXPORT StyleScope final : public GarbageCollected<StyleScope> {
   // True if this StyleScope has an implicit root at the specified element.
   // This is used to find the roots for prelude-less @scope rules.
   bool HasImplicitRoot(Element*) const;
-
-  // Specificity of the <scope-start> selector (::From()), plus the
-  // specificity of the parent scope (if any).
-  unsigned Specificity() const;
 
  private:
   // If `contents_` is not nullptr, then this is a prelude-less @scope rule

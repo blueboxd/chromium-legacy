@@ -4,10 +4,13 @@
 
 #include "components/safe_browsing/core/browser/ping_manager.h"
 
+#include <memory>
 #include <utility>
 
+#include "base/base64url.h"
 #include "base/check.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
@@ -16,6 +19,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
 #include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/browser/safe_browsing_hats_delegate.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/safe_browsing/core/common/utils.h"
@@ -94,11 +98,13 @@ PingManager* PingManager::Create(
     base::RepeatingCallback<ChromeUserPopulation()>
         get_user_population_callback,
     base::RepeatingCallback<ChromeUserPopulation::PageLoadToken(GURL)>
-        get_page_load_token_callback) {
+        get_page_load_token_callback,
+    std::unique_ptr<SafeBrowsingHatsDelegate> hats_delegate) {
   return new PingManager(config, url_loader_factory, std::move(token_fetcher),
                          get_should_fetch_access_token, webui_delegate,
                          ui_task_runner, get_user_population_callback,
-                         get_page_load_token_callback);
+                         get_page_load_token_callback,
+                         std::move(hats_delegate));
 }
 
 PingManager::PingManager(
@@ -111,7 +117,8 @@ PingManager::PingManager(
     base::RepeatingCallback<ChromeUserPopulation()>
         get_user_population_callback,
     base::RepeatingCallback<ChromeUserPopulation::PageLoadToken(GURL)>
-        get_page_load_token_callback)
+        get_page_load_token_callback,
+    std::unique_ptr<SafeBrowsingHatsDelegate> hats_delegate)
     : config_(config),
       url_loader_factory_(url_loader_factory),
       token_fetcher_(std::move(token_fetcher)),
@@ -119,7 +126,8 @@ PingManager::PingManager(
       webui_delegate_(webui_delegate),
       ui_task_runner_(ui_task_runner),
       get_user_population_callback_(get_user_population_callback),
-      get_page_load_token_callback_(get_page_load_token_callback) {}
+      get_page_load_token_callback_(get_page_load_token_callback),
+      hats_delegate_(std::move(hats_delegate)) {}
 
 PingManager::~PingManager() {}
 
@@ -150,6 +158,9 @@ void PingManager::OnThreatDetailsReportURLLoaderComplete(
 // Sends a SafeBrowsing "hit" report.
 void PingManager::ReportSafeBrowsingHit(
     std::unique_ptr<safe_browsing::HitReport> hit_report) {
+  base::UmaHistogramBoolean("SafeBrowsing.HitReport.IsSubresource",
+                            hit_report->is_subresource);
+
   auto resource_request = std::make_unique<network::ResourceRequest>();
   SanitizeHitReport(hit_report.get());
   GURL report_url = SafeBrowsingHitUrl(hit_report.get());
@@ -187,6 +198,7 @@ PingManager::ReportThreatDetailsResult PingManager::ReportThreatDetails(
     std::unique_ptr<ClientSafeBrowsingReportRequest> report,
     bool attach_default_data) {
   SanitizeThreatDetailsReport(report.get());
+  std::string token_value = "";
   if (attach_default_data) {
     if (!get_user_population_callback_.is_null()) {
       *report->mutable_population() = get_user_population_callback_.Run();
@@ -197,6 +209,9 @@ PingManager::ReportThreatDetailsResult PingManager::ReportThreatDetails(
       base::UmaHistogramBoolean(
           "SafeBrowsing.ClientSafeBrowsingReport.IsPageLoadTokenNull",
           !token.has_token_value());
+      base::Base64UrlEncode(token.token_value(),
+                            base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                            &token_value);
       report->mutable_population()->mutable_page_load_tokens()->Add()->Swap(
           &token);
     }
@@ -210,6 +225,16 @@ PingManager::ReportThreatDetailsResult PingManager::ReportThreatDetails(
   if (serialized_report.empty()) {
     DLOG(ERROR) << "The threat report is empty.";
     return ReportThreatDetailsResult::EMPTY_REPORT;
+  }
+  if (base::FeatureList::IsEnabled(kRedWarningSurvey)) {
+    if (hats_delegate_ &&
+        SafeBrowsingHatsDelegate::IsSurveyCandidate(
+            report->type(), kRedWarningSurveyReportTypeFilter.Get(),
+            report->did_proceed(), kRedWarningSurveyDidProceedFilter.Get())) {
+      hats_delegate_->LaunchRedWarningSurvey(base::DoNothing(),
+                                             base::DoNothing(),
+                                             {{kUserActivityId, token_value}});
+    }
   }
 
   if (attach_default_data && get_should_fetch_access_token_.Run()) {
@@ -387,6 +412,11 @@ void PingManager::SetURLLoaderFactoryForTesting(
 void PingManager::SetTokenFetcherForTesting(
     std::unique_ptr<SafeBrowsingTokenFetcher> token_fetcher) {
   token_fetcher_ = std::move(token_fetcher);
+}
+
+void PingManager::SetHatsDelegateForTesting(
+    std::unique_ptr<SafeBrowsingHatsDelegate> hats_delegate) {
+  hats_delegate_ = std::move(hats_delegate);
 }
 
 base::WeakPtr<PingManager> PingManager::GetWeakPtr() {

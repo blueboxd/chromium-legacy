@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/layout_ng_grid.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_anchor_query.h"
 #include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/style_intrinsic_length.h"
@@ -71,6 +70,9 @@
 namespace blink {
 
 namespace {
+
+const double kFinalStatePercentage = 100.0;
+const double kMiddleStatePercentage = 50.0;
 
 CSSValue* ConvertFontPaletteToCSSValue(const blink::FontPalette* palette) {
   switch (palette->GetPaletteNameKind()) {
@@ -111,8 +113,27 @@ CSSValue* ConvertFontPaletteToCSSValue(const blink::FontPalette* palette) {
       }
       result->Append(*color_space_css_value_list);
 
+      double start_percentage_ = palette->GetStartPercentage();
+      double end_percentage_ = palette->GetEndPercentage();
+
+      CSSValueList* start_palette_with_percentage =
+          CSSValueList::CreateSpaceSeparated();
       CSSValue* start = ConvertFontPaletteToCSSValue(palette->GetStart().get());
-      result->Append(*start);
+      start_palette_with_percentage->Append(*start);
+      // Percentages in the palette-mix() function should be serialized the same
+      // way they are serialized in color-mix() function. If the first
+      // percentage is equal 50% and the two specified percentages add to 100%,
+      // we should skip the first percentage in the serialization. Second
+      // percentage should be skipped if it equals to 50%, or the two specified
+      // percentages add to 100%. Compare:
+      // https://drafts.csswg.org/css-color-5/#serial-color-mix.
+      if (start_percentage_ + end_percentage_ != kFinalStatePercentage ||
+          start_percentage_ != kMiddleStatePercentage) {
+        CSSValue* param = CSSNumericLiteralValue::Create(
+            start_percentage_, CSSPrimitiveValue::UnitType::kPercentage);
+        start_palette_with_percentage->Append(*param);
+      }
+      result->Append(*start_palette_with_percentage);
 
       CSSValueList* end_palette_with_percentage =
           CSSValueList::CreateSpaceSeparated();
@@ -121,11 +142,11 @@ CSSValue* ConvertFontPaletteToCSSValue(const blink::FontPalette* palette) {
         return start;
       }
       end_palette_with_percentage->Append(*end);
-
-      CSSValue* param = CSSNumericLiteralValue::Create(
-          palette->GetPercentage() * 100,
-          CSSPrimitiveValue::UnitType::kPercentage);
-      end_palette_with_percentage->Append(*param);
+      if (start_percentage_ + end_percentage_ != kFinalStatePercentage) {
+        CSSValue* param = CSSNumericLiteralValue::Create(
+            end_percentage_, CSSPrimitiveValue::UnitType::kPercentage);
+        end_palette_with_percentage->Append(*param);
+      }
       result->Append(*end_palette_with_percentage);
 
       return result;
@@ -643,29 +664,53 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
     const ComputedStyle& style,
     const CSSProperty& property,
     const LayoutObject* layout_object) {
+  if (RuntimeEnabledFeatures::GetComputedStyleOutOfFlowInsetsFixEnabled() &&
+      layout_object && layout_object->IsOutOfFlowPositioned()) {
+    CHECK(layout_object->IsBox());
+    // LayoutBox::OutOfFlowInsetsForGetComputedStyle() are relative to the
+    // container's writing direction. Convert it to physical.
+    const LayoutBox* box = To<LayoutBox>(layout_object);
+    const NGPhysicalBoxStrut& insets =
+        box->OutOfFlowInsetsForGetComputedStyle().ConvertToPhysical(
+            box->ContainingBlock()->StyleRef().GetWritingDirection());
+    LayoutUnit offset;
+    switch (property.PropertyID()) {
+      case CSSPropertyID::kLeft:
+        offset = insets.left;
+        break;
+      case CSSPropertyID::kTop:
+        offset = insets.top;
+        break;
+      case CSSPropertyID::kRight:
+        offset = insets.right;
+        break;
+      case CSSPropertyID::kBottom:
+        offset = insets.bottom;
+        break;
+      default:
+        NOTREACHED();
+    }
+    return ZoomAdjustedPixelValue(offset, style);
+  }
+
   std::pair<const Length*, const Length*> positions;
   bool is_horizontal_property;
-  bool is_right_or_bottom;
   switch (property.PropertyID()) {
     case CSSPropertyID::kLeft:
       positions = std::make_pair(&style.UsedLeft(), &style.UsedRight());
       is_horizontal_property = true;
-      is_right_or_bottom = false;
       break;
     case CSSPropertyID::kRight:
       positions = std::make_pair(&style.UsedRight(), &style.UsedLeft());
       is_horizontal_property = true;
-      is_right_or_bottom = true;
       break;
     case CSSPropertyID::kTop:
       positions = std::make_pair(&style.UsedTop(), &style.UsedBottom());
       is_horizontal_property = false;
-      is_right_or_bottom = false;
       break;
     case CSSPropertyID::kBottom:
       positions = std::make_pair(&style.UsedBottom(), &style.UsedTop());
       is_horizontal_property = false;
-      is_right_or_bottom = true;
       break;
     default:
       NOTREACHED();
@@ -695,18 +740,8 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
               : box->ContainingBlockLogicalHeightForGetComputedStyle();
     }
 
-    absl::optional<NGAnchorEvaluatorImpl> anchor_evaluator_storage;
-    NGAnchorEvaluatorImpl* anchor_evaluator = nullptr;
-    if (offset.HasAnchorQueries() && layout_object->IsOutOfFlowPositioned()) {
-      anchor_evaluator_storage.emplace(
-          NGAnchorEvaluatorImpl::BuildFromLayoutResult(*layout_object));
-      anchor_evaluator = &anchor_evaluator_storage.value();
-      anchor_evaluator->SetAxis(!is_horizontal_property, is_right_or_bottom,
-                                containing_block_size);
-    }
-
-    return ZoomAdjustedPixelValue(
-        ValueForLength(offset, containing_block_size, anchor_evaluator), style);
+    return ZoomAdjustedPixelValue(ValueForLength(offset, containing_block_size),
+                                  style);
   }
 
   if (offset.IsAuto() && layout_object) {
@@ -743,33 +778,41 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
     }
 
     if (layout_object->IsOutOfFlowPositioned() && layout_object->IsBox()) {
+      CHECK(
+          !RuntimeEnabledFeatures::GetComputedStyleOutOfFlowInsetsFixEnabled());
       // For fixed and absolute positioned elements, the top, left, bottom, and
       // right are defined relative to the corresponding sides of the containing
       // block.
       LayoutBlock* container = layout_object->ContainingBlock();
 
-      // clientOffset is the distance from this object's border edge to the
+      // client_offset is the distance from this object's border edge to the
       // container's padding edge. Thus it includes margins which we subtract
       // below.
-      const LayoutSize client_offset =
-          box->LocationOffset() -
-          LayoutSize(container->ClientLeft(), container->ClientTop());
+      const PhysicalOffset client_offset =
+          RuntimeEnabledFeatures::LayoutNGNoLocationEnabled()
+              ? box->PhysicalLocation() -
+                    PhysicalOffset(container->ClientLeft(),
+                                   container->ClientTop())
+              : PhysicalOffset(box->LocationOffset() -
+                               LayoutSize(container->ClientLeft(),
+                                          container->ClientTop()));
+
       LayoutUnit position;
 
       switch (property.PropertyID()) {
         case CSSPropertyID::kLeft:
-          position = client_offset.Width() - box->MarginLeft();
+          position = client_offset.left - box->MarginLeft();
           break;
         case CSSPropertyID::kTop:
-          position = client_offset.Height() - box->MarginTop();
+          position = client_offset.top - box->MarginTop();
           break;
         case CSSPropertyID::kRight:
           position = container->ClientWidth() - box->MarginRight() -
-                     (box->OffsetWidth() + client_offset.Width());
+                     (box->OffsetWidth() + client_offset.left);
           break;
         case CSSPropertyID::kBottom:
           position = container->ClientHeight() - box->MarginBottom() -
-                     (box->OffsetHeight() + client_offset.Height());
+                     (box->OffsetHeight() + client_offset.top);
           break;
         default:
           NOTREACHED();
@@ -956,17 +999,25 @@ CSSValue* ComputedStyleUtils::ValueForFontSizeAdjust(
 
   FontSizeAdjust font_size_adjust = style.FontSizeAdjust();
   if (font_size_adjust.GetMetric() == FontSizeAdjust::Metric::kExHeight) {
+    if (font_size_adjust.IsFromFont()) {
+      return CSSIdentifierValue::Create(CSSValueID::kFromFont);
+    }
     return CSSNumericLiteralValue::Create(style.FontSizeAdjust().Value(),
                                           CSSPrimitiveValue::UnitType::kNumber);
   }
 
   CSSIdentifierValue* metric =
       CSSIdentifierValue::Create(font_size_adjust.GetMetric());
-  CSSPrimitiveValue* value = CSSNumericLiteralValue::Create(
-      style.FontSizeAdjust().Value(), CSSPrimitiveValue::UnitType::kNumber);
-
-  return MakeGarbageCollected<CSSValuePair>(metric, value,
-                                            CSSValuePair::kKeepIdenticalValues);
+  if (font_size_adjust.IsFromFont()) {
+    return MakeGarbageCollected<CSSValuePair>(
+        metric, CSSIdentifierValue::Create(CSSValueID::kFromFont),
+        CSSValuePair::kKeepIdenticalValues);
+  }
+  return MakeGarbageCollected<CSSValuePair>(
+      metric,
+      CSSNumericLiteralValue::Create(style.FontSizeAdjust().Value(),
+                                     CSSPrimitiveValue::UnitType::kNumber),
+      CSSValuePair::kKeepIdenticalValues);
 }
 
 CSSPrimitiveValue* ComputedStyleUtils::ValueForFontStretch(
@@ -1131,8 +1182,6 @@ CSSValue* ComputedStyleUtils::ValueForFontVariantAlternates(
   if (!variant_alternates || variant_alternates->IsNormal()) {
     return CSSIdentifierValue::Create(CSSValueID::kNormal);
   }
-
-  DCHECK(RuntimeEnabledFeatures::FontVariantAlternatesEnabled());
 
   auto make_single_ident_list = [](const AtomicString& alias) {
     CSSValueList* aliases_list = CSSValueList::CreateCommaSeparated();
@@ -1412,11 +1461,9 @@ CSSValue* ComputedStyleUtils::ValueForFont(const ComputedStyle& style) {
       !base::ValuesEquivalent(variation_settings,
                               static_cast<CSSValue*>(CSSIdentifierValue::Create(
                                   CSSValueID::kNormal))) ||
-      (RuntimeEnabledFeatures::FontVariantAlternatesEnabled() &&
-       !base::ValuesEquivalent(
-           variant_alternative,
-           static_cast<CSSValue*>(
-               CSSIdentifierValue::Create(CSSValueID::kNormal))))) {
+      !base::ValuesEquivalent(variant_alternative,
+                              static_cast<CSSValue*>(CSSIdentifierValue::Create(
+                                  CSSValueID::kNormal)))) {
     return nullptr;
   }
 
@@ -1989,16 +2036,27 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
     is_track_list_empty = positions.size() == 1;
   }
 
-  const bool is_subgrid = computed_grid_track_list.IsSubgriddedAxis();
+  const bool is_subgrid_specified = computed_grid_track_list.IsSubgriddedAxis();
+  const bool is_subgrid_valid =
+      grid ? grid->CachedPlacementData().line_resolver.SubgridSpanSize(
+                 direction) != kNotFound
+           : false;
+  const bool is_subgrid = is_subgrid_specified && is_subgrid_valid;
 
-  // Even if the track list is empty or it's not actually a grid/subgrid in
-  // layout, if the author specified `subgrid`, the computed value should always
-  // begin with `subgrid` and cannot be `none`.
+  // Standalone grids with empty track lists should compute to `none`, but
+  // this is not the case for subgrids. Subgrids need to account for the
+  // following: "If there is no parent grid, this value is equivalent to the
+  // initial value, `none`, and the grid container is not a subgrid."
+  // https://www.w3.org/TR/css-grid-2/#subgrid-listing
+  //
+  // Interestingly, specifying `subgrid` on a non-grid *will* compute to
+  // `subgrid` syntax.
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (is_subgrid) {
+  if (is_subgrid || (is_subgrid_specified && !grid)) {
     list->Append(
         *MakeGarbageCollected<CSSIdentifierValue>(CSSValueID::kSubgrid));
-  } else if (is_track_list_empty) {
+  } else if ((!is_subgrid_specified && is_track_list_empty) ||
+             (grid && is_subgrid_specified && !is_subgrid_valid)) {
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   }
 
@@ -2051,8 +2109,8 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
   // Otherwise, the resolved value is the computed value, preserving repeat().
   OrderedNamedLinesCollector collector(
       computed_grid_track_list.ordered_named_grid_lines,
-      computed_grid_track_list.auto_repeat_ordered_named_grid_lines, is_subgrid,
-      !!grid);
+      computed_grid_track_list.auto_repeat_ordered_named_grid_lines,
+      is_subgrid_specified, !!grid);
   PopulateGridTrackListForNonGrid(list, collector, ng_track_list, style);
   return list;
 }
@@ -2567,15 +2625,11 @@ CSSValue* ComputedStyleUtils::ValueForAnimationTimelineList(
 
 CSSValue* ComputedStyleUtils::SingleValueForTimelineShorthand(
     const ScopedCSSName* name,
-    TimelineAxis axis,
-    TimelineAttachment attachment) {
+    TimelineAxis axis) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   list->Append(*ValueForCustomIdentOrNone(name));
   if (axis != TimelineAxis::kBlock) {
     list->Append(*CSSIdentifierValue::Create(axis));
-  }
-  if (attachment != TimelineAttachment::kLocal) {
-    list->Append(*CSSIdentifierValue::Create(attachment));
   }
   return list;
 }
@@ -3840,21 +3894,21 @@ const CSSValue* ComputedStyleUtils::ValueForStyleAutoColor(
 
 CSSValue* ComputedStyleUtils::ValueForIntrinsicLength(
     const ComputedStyle& style,
-    const absl::optional<StyleIntrinsicLength>& intrinsic_length) {
-  CSSValue* length = nullptr;
-  if (intrinsic_length) {
-    length = ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-        intrinsic_length->GetLength(), style);
-  }
-
-  if (!intrinsic_length) {
+    const StyleIntrinsicLength& intrinsic_length) {
+  if (intrinsic_length.IsNoOp()) {
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   }
+
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (intrinsic_length->HasAuto()) {
+  if (intrinsic_length.HasAuto()) {
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kAuto));
   }
-  list->Append(*length);
+
+  if (const absl::optional<LayoutUnit>& length = intrinsic_length.GetLength()) {
+    list->Append(*ZoomAdjustedPixelValue(*length, style));
+  } else {
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kNone));
+  }
   return list;
 }
 

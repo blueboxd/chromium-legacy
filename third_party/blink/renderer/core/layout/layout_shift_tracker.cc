@@ -49,16 +49,16 @@ const float kMovementThreshold = 3.0;  // CSS pixels.
 // See https://wicg.github.io/layout-instability/#starting-point.
 gfx::PointF StartingPoint(const PhysicalOffset& paint_offset,
                           const LayoutBox& box,
-                          const LayoutSize& size) {
+                          const PhysicalSize& size) {
   PhysicalOffset starting_point = paint_offset;
   auto writing_direction = box.StyleRef().GetWritingDirection();
   if (UNLIKELY(writing_direction.IsFlippedBlocks()))
-    starting_point.left += size.Width();
+    starting_point.left += size.width;
   if (UNLIKELY(writing_direction.IsRtl())) {
     if (writing_direction.IsHorizontal())
-      starting_point.left += size.Width();
+      starting_point.left += size.width;
     else
-      starting_point.top += size.Height();
+      starting_point.top += size.height;
   }
   return gfx::PointF(starting_point);
 }

@@ -61,6 +61,7 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     };
 
     AuthenticatorRequestDialogModel::PairedPhone phone(
+        AuthenticatorRequestDialogModel::PairedPhone::PairingSource::kQR,
         "Elisa's Pixel 6 Pro", 0,
         std::array<uint8_t, device::kP256X962Length>{0});
 
@@ -224,7 +225,8 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
         device::AuthenticatorData auth_data(kAppParam, 0 /* flags */,
                                             kSignatureCounter, absl::nullopt);
         device::AuthenticatorGetAssertionResponse response(
-            std::move(auth_data), {10, 11, 12, 13} /* signature */);
+            std::move(auth_data), {10, 11, 12, 13} /* signature */,
+            /*transport_used=*/absl::nullopt);
         device::PublicKeyCredentialUserEntity user({1, 2, 3, 4});
         user.name = info.first;
         user.display_name = info.second;
@@ -288,7 +290,8 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
         device::AuthenticatorData auth_data(kAppParam, 0 /* flags */,
                                             kSignatureCounter, absl::nullopt);
         device::AuthenticatorGetAssertionResponse response(
-            std::move(auth_data), {10, 11, 12, 13} /* signature */);
+            std::move(auth_data), {10, 11, 12, 13} /* signature */,
+            /*transport_used=*/absl::nullopt);
         device::PublicKeyCredentialUserEntity user({1, 2, 3, 4});
         user.name = info.first;
         user.display_name = info.second;

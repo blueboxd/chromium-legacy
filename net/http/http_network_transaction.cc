@@ -598,6 +598,17 @@ void HttpNetworkTransaction::SetResponseHeadersCallback(
   response_headers_callback_ = std::move(callback);
 }
 
+void HttpNetworkTransaction::SetModifyRequestHeadersCallback(
+    base::RepeatingCallback<void(net::HttpRequestHeaders*)> callback) {
+  modify_headers_callbacks_ = std::move(callback);
+}
+
+void HttpNetworkTransaction::SetIsSharedDictionaryReadAllowedCallback(
+    base::RepeatingCallback<bool()> callback) {
+  // This method should not be called for this class.
+  NOTREACHED();
+}
+
 int HttpNetworkTransaction::ResumeNetworkStart() {
   DCHECK_EQ(next_state_, STATE_CREATE_STREAM);
   return DoLoop(OK);
@@ -1102,6 +1113,10 @@ int HttpNetworkTransaction::BuildRequestHeaders(
         &request_headers_);
 
   request_headers_.MergeFrom(request_->extra_headers);
+
+  if (modify_headers_callbacks_) {
+    modify_headers_callbacks_.Run(&request_headers_);
+  }
 
   response_.did_use_http_auth =
       request_headers_.HasHeader(HttpRequestHeaders::kAuthorization) ||
@@ -1697,8 +1712,6 @@ HttpNetworkTransaction::GetRetryReasonForIOError(int error) {
       return RetryReason::kHttp2PingFailed;
     case ERR_HTTP2_SERVER_REFUSED_STREAM:
       return RetryReason::kHttp2ServerRefusedStream;
-    case ERR_HTTP2_PUSHED_STREAM_NOT_AVAILABLE:
-      return RetryReason::kHttp2PushedStreamNotAvailable;
     case ERR_HTTP2_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER:
       return RetryReason::kHttp2ClaimedPushedStreamResetByServer;
     case ERR_HTTP2_PUSHED_RESPONSE_DOES_NOT_MATCH:
@@ -1770,7 +1783,6 @@ int HttpNetworkTransaction::HandleIOError(int error) {
       break;
     case RetryReason::kHttp2PingFailed:
     case RetryReason::kHttp2ServerRefusedStream:
-    case RetryReason::kHttp2PushedStreamNotAvailable:
     case RetryReason::kHttp2ClaimedPushedStreamResetByServer:
     case RetryReason::kHttp2PushedResponseDoesNotMatch:
     case RetryReason::kQuicHandshakeFailed:

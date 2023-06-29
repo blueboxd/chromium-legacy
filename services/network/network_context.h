@@ -48,6 +48,7 @@
 #include "services/network/http_cache_data_counter.h"
 #include "services/network/http_cache_data_remover.h"
 #include "services/network/network_qualities_pref_delegate.h"
+#include "services/network/network_service_proxy_allow_list.h"
 #include "services/network/oblivious_http_request_handler.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/network_service_buildflags.h"
@@ -739,6 +740,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   std::unique_ptr<ResourceScheduler> resource_scheduler_;
 
+  // Used only when blink::features::kCompressionDictionaryTransportBackend is
+  // enabled.
+  // Note: `url_request_context_owner_` indirectly holds a pointer to
+  // `shared_dictionary_manager_` via URLRequestContext and HttpCache and
+  // SharedDictionaryNetworkTransactionFactory. So `url_request_context_owner_`
+  // needs to be defined after `shared_dictionary_manager_`.
+  std::unique_ptr<SharedDictionaryManager> shared_dictionary_manager_;
+
   // Holds owning pointer to |url_request_context_|. Will contain a nullptr for
   // |url_request_context| when the NetworkContextImpl doesn't own its own
   // URLRequestContext.
@@ -826,8 +835,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
            base::UniquePtrComparator>
       restricted_cookie_managers_;
 
-  ResourceScheduler::ClientId current_resource_scheduler_client_id_{0};
-
   // Owned by the URLRequestContext
   raw_ptr<net::StaticHttpUserAgentSettings> user_agent_settings_ = nullptr;
 
@@ -847,8 +854,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 #if BUILDFLAG(IS_CHROMEOS)
-  raw_ptr<CertVerifierWithTrustAnchors> cert_verifier_with_trust_anchors_ =
-      nullptr;
+  raw_ptr<CertVerifierWithTrustAnchors, DanglingUntriaged>
+      cert_verifier_with_trust_anchors_ = nullptr;
 #endif
 
 #if BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)
@@ -956,10 +963,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       http_cache_file_operations_factory_;
 
   const CacheTransparencySettings cache_transparency_settings_;
-
-  // Used only when blink::features::kCompressionDictionaryTransportBackend is
-  // enabled.
-  std::unique_ptr<SharedDictionaryManager> shared_dictionary_manager_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

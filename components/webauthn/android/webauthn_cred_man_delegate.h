@@ -42,18 +42,42 @@ class WebAuthnCredManDelegate {
 
   void CleanUpConditionalRequest();
 
-  // The setter for |request_completion_callback_|. Classes can set
-  // |request_completion_callback_| to be notified about when CredMan UI is
+  // The setter for `request_completion_callback_`. Classes can set
+  // `request_completion_callback_` to be notified about when CredMan UI is
   // closed (i.e. to show / hide keyboard).
   void SetRequestCompletionCallback(
       base::RepeatingCallback<void(bool)> callback);
 
+  // The setter for `filling_callback_`.  Classes should use this method before
+  // `FillUsernameAndPassword`.
+  void SetFillingCallback(
+      base::OnceCallback<void(const std::u16string&, const std::u16string&)>
+          filling_callback);
+
+  // If a password credential is received from CredMan UI, this method will be
+  // called. A password credential can be filled only once.
+  void FillUsernameAndPassword(const std::u16string& username,
+                               const std::u16string& password);
+
   static bool IsCredManEnabled();
+
+#if defined(UNIT_TEST)
+  static void override_android_version_for_testing(bool should_override) {
+    override_android_version_for_testing_ = should_override;
+  }
+#endif
 
  private:
   bool has_results_ = false;
   base::RepeatingCallback<void(bool)> full_assertion_request_;
   base::RepeatingCallback<void(bool)> request_completion_callback_;
+  base::OnceCallback<void(const std::u16string&, const std::u16string&)>
+      filling_callback_;
+
+  // This bool is required to override android version check in
+  // `IsCredManEnabled` because UNIT_TEST cannot be evaluated in the cc file for
+  // tests. It should be `false` for non-tests!
+  static bool override_android_version_for_testing_;
 };
 
 }  // namespace webauthn

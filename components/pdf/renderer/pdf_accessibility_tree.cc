@@ -41,6 +41,8 @@
 #include "ui/gfx/geometry/transform.h"
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#include "base/metrics/metrics_hashes.h"
+#include "components/language/core/common/language_util.h"  // nogncheck
 #include "components/services/screen_ai/public/mojom/screen_ai_service.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
@@ -524,6 +526,32 @@ gfx::Transform MakeTransformForImage(
   transform.Scale(width_scale_factor, height_scale_factor);
 
   return transform;
+}
+
+void RecordMostDetectedLanguageInOcrData(
+    const std::map<std::string, size_t>& detected_language_count_map) {
+  if (detected_language_count_map.empty()) {
+    return;
+  }
+
+  // Get the most detected language and record it UMA.
+  std::string most_detected_language;
+  size_t most_detected_language_count = 0u;
+  for (const auto& elem : detected_language_count_map) {
+    if (elem.second > most_detected_language_count) {
+      most_detected_language = elem.first;
+      most_detected_language_count = elem.second;
+    }
+  }
+  CHECK_GT(most_detected_language_count, 0u);
+
+  // Convert to a Chrome language code synonym. Then pass it to
+  // `base::HashMetricName()` that maps this code to a `LocaleCodeISO639` enum
+  // value expected by this histogram.
+  language::ToChromeLanguageSynonym(&most_detected_language);
+  // TODO(crbug.com/1443345): Add a browser test to validate this UMA metric.
+  base::UmaHistogramSparse("Accessibility.PdfOcr.MostDetectedLanguageInOcrData",
+                           base::HashMetricName(most_detected_language));
 }
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
@@ -1669,10 +1697,12 @@ void PdfAccessibilityTree::DoSetAccessibilityPageInfo(
 
   CHECK_LT(page_index, page_count_);
   ++next_page_index_;
+  // Update `did_get_a_text_run_` before calling `AddPageContent()` as this
+  // variable will be used inside of `AddPageContent()`.
+  did_get_a_text_run_ |= !text_runs.empty();
 
   AddPageContent(page_info, page_index, text_runs, chars, page_objects);
 
-  did_get_a_text_run_ |= !text_runs.empty();
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   // TODO(crbug.com/1443346): Use a more explicit flag indicating whether any
   // image was sent to the OCR model in `AddRemainingAnnotations()`.
@@ -1753,17 +1783,15 @@ void PdfAccessibilityTree::UnserializeNodes() {
   tree_data_.focus_id = doc_node_->id;
   update.root_id = doc_node_->id;
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  // Remove the status node if it doesn't have any message. The status message
-  // will be empty if PDF already has accessible text and thus doesn't need OCR.
-  if (features::IsPdfOcrEnabled()) {
-    if (ocr_status_node_->GetStringAttribute(ax::mojom::StringAttribute::kName)
-            .empty()) {
-      size_t num_erased =
-          base::Erase(doc_node_->child_ids, ocr_status_node_wrapper_->id);
-      CHECK_EQ(num_erased, 1u);
-      ocr_status_node_.reset();
-      ocr_status_node_wrapper_.reset();
-    }
+  // Remove the status node if PDF already has accessible text.
+  // `did_get_a_text_run_` will be true if the PDF already has accessible text
+  // and thus doesn't need OCR.
+  if (features::IsPdfOcrEnabled() && did_get_a_text_run_) {
+    size_t num_erased =
+        base::Erase(doc_node_->child_ids, ocr_status_node_wrapper_->id);
+    CHECK_EQ(num_erased, 1u);
+    ocr_status_node_.reset();
+    ocr_status_node_wrapper_.reset();
   }
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   update.nodes.push_back(*doc_node_);
@@ -2117,6 +2145,10 @@ void PdfAccessibilityTree::OnOcrDataReceived(
   // transform will be applied to all nodes from OCR results below.
   gfx::Transform transform = MakeTransformForImage(image);
 
+  // Count each detected language and find out the most detected language in
+  // OCR result. Then record the most detected language in UMA.
+  std::map<std::string, size_t> detected_language_count_map;
+
   // Copy nodes from `AXTreeUpdate` from OCR results and update their relative
   // bounds. PDF accessibility tree assumes that all nodes have bounds relative
   // to the root node.
@@ -2138,9 +2170,16 @@ void PdfAccessibilityTree::OnOcrDataReceived(
     }
     // Make all nodes relative to the root node.
     new_node->relative_bounds.offset_container_id = doc_node_->id;
+    // Count languages detected in OCR results. It will be used in UMA.
+    if (new_node->HasStringAttribute(ax::mojom::StringAttribute::kLanguage)) {
+      std::string detected_language =
+          new_node->GetStringAttribute(ax::mojom::StringAttribute::kLanguage);
+      detected_language_count_map[detected_language]++;
+    }
     // Move to `nodes_` for later unserialization in `UnserializeNodes()`.
     nodes_.push_back(std::move(new_node));
   }
+  RecordMostDetectedLanguageInOcrData(detected_language_count_map);
 
   if (!did_unserialize_once) {
     // `nodes_` have not been unserialized yet, so update `nodes_` directly and

@@ -278,11 +278,16 @@ void RecordBlockUntilHeadDurationHistogram(
 
 // Holds the state for the request for a single URL in the context of the
 // broader prefetch. A prefetch can request multiple URLs due to redirects.
-// While prefetching, mutable references are used via
-// `GetCurrentSinglePrefetchToPrefetch()` and non-mutable non-const members
-// are updated.
-// While serving, const references are used via
-// `GetCurrentSinglePrefetchToServe()` and mutable members are updated.
+// const/mutable member convention:
+// ------------------------ ----------- -------
+// can be modified during:  prefetching serving
+// ------------------------ ----------- -------
+// const                    No          No
+// non-const/non-mutable    Yes         No
+// mutable                  Yes         Yes
+// ------------------------ ----------- -------
+// because const references are used via `GetCurrentSinglePrefetchToServe()`
+// during serving.
 class PrefetchContainer::SinglePrefetch {
  public:
   explicit SinglePrefetch(const GURL& url,
@@ -305,6 +310,9 @@ class PrefetchContainer::SinglePrefetch {
   // This tracks whether the cookies associated with |url_| have changed at
   // some point after the initial eligibility check.
   std::unique_ptr<PrefetchCookieListener> cookie_listener_;
+
+  // Filled during prefetching and moved out during serving.
+  mutable std::unique_ptr<PrefetchResponseReader> response_reader_;
 
   // The different possible states of the cookie copy process.
   enum class CookieCopyStatus {
@@ -395,6 +403,10 @@ PrefetchContainer::~PrefetchContainer() {
   // UKM event.
 
   builder.Record(ukm::UkmRecorder::Get());
+
+  if (prefetch_document_manager_) {
+    prefetch_document_manager_->PrefetchWillBeDestroyed(this);
+  }
 }
 
 PrefetchContainer::Reader::Reader(PrefetchContainer& prefetch_container)
@@ -413,7 +425,7 @@ void PrefetchContainer::SetPrefetchStatusWithoutUpdatingTriggeringOutcome(
       preloading_trigger_outcome.has_value()) {
     devtools_instrumentation::DidUpdatePrefetchStatus(
         ftn, initiator_devtools_navigation_token_.value(), prefetch_url_,
-        preloading_trigger_outcome.value(), prefetch_status);
+        preloading_trigger_outcome.value(), prefetch_status, RequestId());
   }
 }
 
@@ -652,14 +664,6 @@ void PrefetchContainer::TakeStreamingURLLoader(
   streaming_loaders_.push_back(std::move(streaming_loader));
 }
 
-PrefetchStreamingURLLoader* PrefetchContainer::GetFirstStreamingURLLoader()
-    const {
-  if (streaming_loaders_.empty()) {
-    return nullptr;
-  }
-  return streaming_loaders_[0].get();
-}
-
 PrefetchStreamingURLLoader* PrefetchContainer::GetLastStreamingURLLoader()
     const {
   if (streaming_loaders_.empty()) {
@@ -668,30 +672,76 @@ PrefetchStreamingURLLoader* PrefetchContainer::GetLastStreamingURLLoader()
   return streaming_loaders_.back().get();
 }
 
-std::unique_ptr<PrefetchStreamingURLLoader>
-PrefetchContainer::ReleaseFirstStreamingURLLoader() {
-  CHECK(!streaming_loaders_.empty() &&
-        streaming_loaders_[0]->IsReadyToServeLastEvents());
+PrefetchResponseReader::RequestHandler
+PrefetchContainer::CreateRequestHandler() {
+  CHECK(!streaming_loaders_.empty());
+  auto* raw_streaming_loader = streaming_loaders_[0].get();
+  raw_streaming_loader->OnStartServing();
 
-  std::unique_ptr<PrefetchStreamingURLLoader> streaming_loader =
-      std::move(streaming_loaders_[0]);
-  streaming_loaders_.erase(streaming_loaders_.begin());
-  return streaming_loader;
+  DCHECK(GetReader()
+             .GetCurrentSinglePrefetchToServe()
+             .response_reader_->GetStreamingLoader()
+             .get() == raw_streaming_loader);
+
+  // Create a `RequestHandler` from the current `SinglePrefetch` (==
+  // `GetReader()`) and its corresponding `PrefetchStreamingURLLoader` (==
+  // `raw_streaming_loader`).
+  std::unique_ptr<PrefetchResponseReader> response_reader =
+      GetReader().TakeCurrentResponseReaderToServe();
+  auto* raw_response_reader = response_reader.get();
+  auto handler =
+      raw_response_reader->CreateRequestHandler(std::move(response_reader));
+
+  // Advance the current `SinglePrefetch` position.
+  GetReader().AdvanceCurrentURLToServe();
+
+  // If `raw_streaming_loader` doesn't correspond to the next `SinglePrefetch`,
+  // then schedule its deletion, because it is no longer used for any upcoming
+  // `SinglePrefetch`.
+  // TODO(crbug.com/1449360): Clean up the lifetime and the deletion mechanism
+  // of streaming loaders here.
+  if (GetReader().IsEnd() || GetReader()
+                                     .GetCurrentSinglePrefetchToServe()
+                                     .response_reader_->GetStreamingLoader()
+                                     .get() != raw_streaming_loader) {
+    std::unique_ptr<PrefetchStreamingURLLoader> streaming_loader =
+        std::move(streaming_loaders_[0]);
+    streaming_loaders_.erase(streaming_loaders_.begin());
+    DCHECK(streaming_loader.get() == raw_streaming_loader);
+
+    raw_streaming_loader->MakeSelfOwned(std::move(streaming_loader));
+    raw_streaming_loader->PostTaskToDeleteSelfIfDisconnected();
+  }
+
+  return handler;
+}
+
+bool PrefetchContainer::HasStreamingURLLoadersForTest() const {
+  return !streaming_loaders_.empty();
 }
 
 void PrefetchContainer::ResetAllStreamingURLLoaders() {
   CHECK(!streaming_loaders_.empty());
   for (auto& streaming_loader : streaming_loaders_) {
+    // The PrefetchStreamingURLLoader and PrefetchResponseReader can be deleted
+    // in one of its callbacks, so instead of deleting it immediately, it is
+    // made self owned and then deletes itself.
     DCHECK(streaming_loader);
-
-    // The streaming URL loader can be deleted in one of its callbacks, so
-    // instead of deleting it immediately, it is made self owned and then
-    // deletes itself.
-    PrefetchStreamingURLLoader* raw_streaming_loader = streaming_loader.get();
-    raw_streaming_loader->MakeSelfOwnedAndDeleteSoon(
-        std::move(streaming_loader));
+    auto* raw_streaming_loader = streaming_loader.get();
+    raw_streaming_loader->MakeSelfOwned(std::move(streaming_loader));
+    raw_streaming_loader->PostTaskToDeleteSelf();
   }
   streaming_loaders_.clear();
+
+  for (auto& single_prefetch : redirect_chain_) {
+    std::unique_ptr<PrefetchResponseReader> response_reader =
+        std::move(single_prefetch->response_reader_);
+    if (response_reader) {
+      auto* raw_response_reader = response_reader.get();
+      raw_response_reader->MakeSelfOwned(std::move(response_reader));
+      raw_response_reader->PostTaskToDeleteSelf();
+    }
+  }
 }
 
 void PrefetchContainer::Reader::OnPrefetchProbeResult(
@@ -772,14 +822,11 @@ bool PrefetchContainer::ShouldBlockUntilHeadReceived() const {
 
 void PrefetchContainer::TakeBlockUntilHeadTimer(
     std::unique_ptr<base::OneShotTimer> block_until_head_timer) {
-  VLOG(0) << "PC::TakeBlockUntilHeadTimer";
-
   CHECK(!block_until_head_timer_);
   block_until_head_timer_ = std::move(block_until_head_timer);
 }
 
 void PrefetchContainer::ResetBlockUntilHeadTimer() {
-  VLOG(0) << "PC::ResetBlockUntilHeadTimer";
   if (block_until_head_timer_) {
     block_until_head_timer_->AbandonAndStop();
   }
@@ -810,6 +857,13 @@ const PrefetchContainer::SinglePrefetch&
 PrefetchContainer::GetPreviousSinglePrefetchToPrefetch() const {
   CHECK(redirect_chain_.size() > 1);
   return *redirect_chain_[redirect_chain_.size() - 2];
+}
+
+bool PrefetchContainer::Reader::IsEnd() const {
+  DCHECK(index_redirect_chain_to_serve_ <=
+         prefetch_container_->redirect_chain_.size());
+  return index_redirect_chain_to_serve_ >=
+         prefetch_container_->redirect_chain_.size();
 }
 
 const PrefetchContainer::SinglePrefetch&
@@ -901,10 +955,22 @@ bool PrefetchContainer::IsIsolatedNetworkContextRequiredForPreviousRedirectHop()
   return previous_prefetch.is_isolated_network_context_required_;
 }
 
+base::WeakPtr<PrefetchResponseReader>
+PrefetchContainer::GetResponseReaderForCurrentPrefetch() {
+  const SinglePrefetch& this_prefetch = GetCurrentSinglePrefetchToPrefetch();
+  DCHECK(this_prefetch.response_reader_);
+  return this_prefetch.response_reader_->GetWeakPtr();
+}
+
 bool PrefetchContainer::Reader::IsIsolatedNetworkContextRequiredToServe()
     const {
   const SinglePrefetch& this_prefetch = GetCurrentSinglePrefetchToServe();
   return this_prefetch.is_isolated_network_context_required_;
+}
+
+std::unique_ptr<PrefetchResponseReader>
+PrefetchContainer::Reader::TakeCurrentResponseReaderToServe() {
+  return std::move(GetCurrentSinglePrefetchToServe().response_reader_);
 }
 
 net::SchemefulSite PrefetchContainer::GetSiteForPreviousRedirectHop(
@@ -937,7 +1003,8 @@ PrefetchContainer::SinglePrefetch::SinglePrefetch(
     const net::SchemefulSite& referring_site)
     : url_(url),
       is_isolated_network_context_required_(referring_site !=
-                                            net::SchemefulSite(url_)) {}
+                                            net::SchemefulSite(url_)),
+      response_reader_(std::make_unique<PrefetchResponseReader>()) {}
 
 PrefetchContainer::SinglePrefetch::~SinglePrefetch() = default;
 

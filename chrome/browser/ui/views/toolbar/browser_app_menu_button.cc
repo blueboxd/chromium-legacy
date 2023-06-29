@@ -21,6 +21,8 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/user_education/user_education_service.h"
+#include "chrome/browser/ui/user_education/user_education_service_factory.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
@@ -112,6 +114,13 @@ AlertMenuItem BrowserAppMenuButton::CloseFeaturePromoAndContinue() {
   if (browser_window == nullptr)
     return AlertMenuItem::kNone;
 
+  auto* const service =
+      UserEducationServiceFactory::GetForProfile(browser->profile());
+  if (service && service->tutorial_service().IsRunningTutorial(
+                     kPasswordManagerTutorialId)) {
+    return AlertMenuItem::kPasswordManager;
+  }
+
   promo_handle_ = browser_window->CloseFeaturePromoAndContinue(
       feature_engagement::kIPHHighEfficiencyModeFeature);
 
@@ -134,6 +143,10 @@ void BrowserAppMenuButton::UpdateThemeBasedState() {
   UpdateIcon();
   if (features::IsChromeRefresh2023()) {
     UpdateInkdrop();
+    // Outset focus ring should be present for the chip but not when only
+    // the icon is visible.
+    views::FocusRing::Get(this)->SetOutsetFocusRingDisabled(
+        IsLabelPresentAndVisible() ? false : true);
   }
 }
 

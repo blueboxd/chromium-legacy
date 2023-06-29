@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/strings/string_split.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/common/chrome_switches.h"
@@ -112,10 +113,6 @@ BASE_FEATURE(kBorealis, "Borealis", base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kChangePictureVideoMode,
              "ChangePictureVideoMode",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kClientStorageAccessContextAuditing,
-             "ClientStorageAccessContextAuditing",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables or disables "usm" service in the list of user services returned by
@@ -260,11 +257,6 @@ BASE_FEATURE(kDesktopTaskManagerEndProcessDisabledForExtension,
 BASE_FEATURE(kPWAsDefaultOfflinePage,
              "PWAsDefaultOfflinePage",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// API that allows PWAs manually minimizing, maximizing and restoring windows.
-BASE_FEATURE(kDesktopPWAsAdditionalWindowingControls,
-             "DesktopPWAsAdditionalWindowingControls",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When installing default installed PWAs, we wait for service workers
 // to cache resources.
@@ -729,6 +721,13 @@ BASE_FEATURE(kIncognitoNtpRevamp,
              "IncognitoNtpRevamp",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+#if BUILDFLAG(IS_CHROMEOS)
+// Enables automatic updates of Isolated Web Apps.
+BASE_FEATURE(kIsolatedWebAppAutomaticUpdates,
+             "IsolatedWebAppAutomaticUpdates",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
 // Enables Isolated Web App Developer Mode, which allows developers to
 // install untrusted Isolated Web Apps.
 BASE_FEATURE(kIsolatedWebAppDevMode,
@@ -868,7 +867,7 @@ BASE_FEATURE(kSystemNotifications,
 #endif  // BUILDFLAG(ENABLE_SYSTEM_NOTIFICATIONS)
 
 #if BUILDFLAG(IS_MAC)
-// Enables the usage of Apple's new Notification API on macOS 10.14+
+// Enables the usage of Apple's new Notification API.
 BASE_FEATURE(kNewMacNotificationAPI,
              "NewMacNotificationAPI",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -957,9 +956,22 @@ BASE_FEATURE(kPrerenderFallbackToPreconnect,
              "PrerenderFallbackToPreconnect",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+#if BUILDFLAG(IS_CHROMEOS)
+// Enable improved printer state and error state messaging for Print Preview.
+BASE_FEATURE(kPrintPreviewSetupAssistance,
+             "PrintPreviewSetupAssistance",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
 BASE_FEATURE(kPrivacyGuideAndroid,
              "PrivacyGuideAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kPrivacyGuideAndroidPostMVP,
+             "PrivacyGuideAndroidPostMVP",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 // Enables or disables push subscriptions keeping Chrome running in the
 // background when closed.
@@ -1028,10 +1040,12 @@ BASE_FEATURE(kSchedulerConfiguration,
 
 // Controls whether SCT audit reports are queued and the rate at which they
 // should be sampled. Default sampling rate is 1/10,000 certificates.
-#if BUILDFLAG(IS_ANDROID)
-BASE_FEATURE(kSCTAuditing, "SCTAuditing", base::FEATURE_DISABLED_BY_DEFAULT);
-#else
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kSCTAuditing, "SCTAuditing", base::FEATURE_ENABLED_BY_DEFAULT);
+#else
+// This requires backend infrastructure and a data collection policy.
+// Non-Chrome builds should not use Chrome's infrastructure.
+BASE_FEATURE(kSCTAuditing, "SCTAuditing", base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 constexpr base::FeatureParam<double> kSCTAuditingSamplingRate{
     &kSCTAuditing, "sampling_rate", 0.0001};
@@ -1060,11 +1074,6 @@ const base::FeatureParam<base::TimeDelta> kSCTLogMaxIngestionRandomDelay{
     "sct_log_max_ingestion_random_delay",
     base::Hours(1),
 };
-
-// Controls whether the user is prompted when sites request attestation.
-BASE_FEATURE(kSecurityKeyAttestationPrompt,
-             "SecurityKeyAttestationPrompt",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Alternative to switches::kSitePerProcess, for turning on full site isolation.
 // Launch bug: https://crbug.com/810843.  This is a //chrome-layer feature to

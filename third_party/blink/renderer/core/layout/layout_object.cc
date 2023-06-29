@@ -1542,19 +1542,6 @@ void LayoutObject::MarkParentForSpannerOrOutOfFlowPositionedChange() {
     object->SetChildNeedsLayout();
 }
 
-#if DCHECK_IS_ON()
-void LayoutObject::CheckBlockPositionedObjectsNeedLayout() {
-  NOT_DESTROYED();
-  if (ChildLayoutBlockedByDisplayLock())
-    return;
-  DCHECK(!NeedsLayout());
-
-  auto* layout_block = DynamicTo<LayoutBlock>(this);
-  if (layout_block)
-    layout_block->CheckPositionedObjectsNeedLayout();
-}
-#endif
-
 void LayoutObject::SetIntrinsicLogicalWidthsDirty(
     MarkingBehavior mark_parents) {
   NOT_DESTROYED();
@@ -1598,7 +1585,7 @@ void LayoutObject::InvalidateIntersectionObserverCachedRects() {
   }
 }
 
-static inline bool NGKeepInvalidatingBeyond(LayoutObject* o) {
+static inline bool ShouldInvalidateBeyond(LayoutObject* o) {
   // Because LayoutNG does not work on individual inline objects, we can't
   // use a dirty width on an inline as a signal that it is safe to stop --
   // inlines never get marked as clean. Instead, we need to keep going to the
@@ -1609,6 +1596,17 @@ static inline bool NGKeepInvalidatingBeyond(LayoutObject* o) {
   // LayoutNG.
   if (o->IsLayoutInline() || o->IsText() || o->IsLayoutFlowThread())
     return true;
+
+  // Invalidate past any subgrids. NOTE: we do this in both axes as we don't
+  // know what writing-mode the root grid is in.
+  if (o->IsLayoutNGGrid()) {
+    const auto& style = o->StyleRef();
+    if (style.GridTemplateColumns().IsSubgriddedAxis() ||
+        style.GridTemplateRows().IsSubgriddedAxis()) {
+      return true;
+    }
+  }
+
   return false;
 }
 
@@ -1629,7 +1627,7 @@ inline void LayoutObject::InvalidateContainerIntrinsicLogicalWidths() {
 
   LayoutObject* o = IntrinsicContainer(this);
   while (o &&
-         (!o->IntrinsicLogicalWidthsDirty() || NGKeepInvalidatingBeyond(o))) {
+         (!o->IntrinsicLogicalWidthsDirty() || ShouldInvalidateBeyond(o))) {
     // Don't invalidate the outermost object of an unrooted subtree. That object
     // will be invalidated when the subtree is added to the document.
     LayoutObject* container = IntrinsicContainer(o);
@@ -1739,10 +1737,14 @@ LayoutBlock* LayoutObject::FindNonAnonymousContainingBlock(
   // Allow an NG anonymous wrapper of an inline to be the containing block if it
   // is the direct child of a multicol. This avoids the multicol from
   // incorrectly becoming the containing block in the case of an inline
-  // container.
+  // container. Also explicitly allow the LayoutViewTransitionRoot to be a
+  // containing block since its purpose is to be the root containing block for
+  // the view transition hierarchy.
   while (container && container->IsAnonymousBlock() &&
-         !container->IsAnonymousNGMulticolInlineWrapper())
+         !container->IsAnonymousNGMulticolInlineWrapper() &&
+         !container->IsViewTransitionRoot()) {
     container = container->ContainingBlock(skip_info);
+  }
 
   return DynamicTo<LayoutBlock>(container);
 }
@@ -1751,6 +1753,9 @@ bool LayoutObject::ComputeIsFixedContainer(const ComputedStyle* style) const {
   NOT_DESTROYED();
   if (!style)
     return false;
+  if (IsViewTransitionRoot()) {
+    return true;
+  }
   bool is_document_element = IsDocumentElement();
   // https://www.w3.org/TR/filter-effects-1/#FilterProperty
   if (!is_document_element && style->HasNonInitialFilter())
@@ -2805,13 +2810,6 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
           *this);
     }
 
-    if (IsOutOfFlowPositioned() &&
-        (style_->GetPosition() != new_style.GetPosition())) {
-      // For changes in positioning styles, we need to conceivably remove
-      // ourselves from the positioned objects list.
-      LayoutBlock::RemovePositionedObject(To<LayoutBox>(this));
-    }
-
     affects_parent_block_ =
         IsFloatingOrOutOfFlowPositioned() &&
         ((!new_style.IsFloating() ||
@@ -3367,9 +3365,7 @@ void LayoutObject::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
     PhysicalOffset visual_point = transform_state.MappedPoint();
     transform_state.Move(
         visual_point -
-        PhysicalOffsetToBeNoop(
-            To<LayoutFlowThread>(this)->VisualPointToFlowThreadPoint(
-                visual_point.ToLayoutPoint())));
+        To<LayoutFlowThread>(this)->VisualPointToFlowThreadPoint(visual_point));
   }
 
   if (skip_info.AncestorSkipped()) {
@@ -4467,7 +4463,7 @@ gfx::RectF LayoutObject::ObjectBoundingBox() const {
   return gfx::RectF();
 }
 
-gfx::RectF LayoutObject::StrokeBoundingBox() const {
+gfx::RectF LayoutObject::DecoratedBoundingBox() const {
   NOT_DESTROYED();
   NOTREACHED();
   return gfx::RectF();

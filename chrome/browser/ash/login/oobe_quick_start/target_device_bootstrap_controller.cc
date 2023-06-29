@@ -10,6 +10,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/hash/hash.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/uuid.h"
 #include "base/values.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker_factory.h"
 #include "chrome/browser/ash/login/oobe_quick_start/oobe_quick_start_pref_names.h"
+#include "chrome/browser/ash/login/oobe_quick_start/second_device_auth_broker.h"
 #include "chrome/browser/browser_process.h"
 #include "chromeos/ash/components/quick_start/logging.h"
 #include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom.h"
@@ -58,8 +60,15 @@ TargetDeviceBootstrapController::QRCodePixelData GenerateQRCode(
 
 TargetDeviceBootstrapController::TargetDeviceBootstrapController(
     std::unique_ptr<TargetDeviceConnectionBroker>
-        target_device_connection_broker)
-    : connection_broker_(std::move(target_device_connection_broker)) {}
+        target_device_connection_broker,
+    std::unique_ptr<SecondDeviceAuthBroker> auth_broker,
+    std::unique_ptr<
+        TargetDeviceBootstrapController::AccessibilityManagerWrapper>
+        accessibility_manager_wrapper)
+    : connection_broker_(std::move(target_device_connection_broker)),
+      auth_broker_(std::move(auth_broker)),
+      accessibility_manager_wrapper_(std::move(accessibility_manager_wrapper)) {
+}
 
 TargetDeviceBootstrapController::~TargetDeviceBootstrapController() = default;
 
@@ -99,8 +108,10 @@ void TargetDeviceBootstrapController::StartAdvertising() {
   DCHECK(!weak_ptr_factory_.HasWeakPtrs());
 
   status_.step = Step::ADVERTISING;
+  bool use_pin_authentication =
+      accessibility_manager_wrapper_->IsSpokenFeedbackEnabled();
   connection_broker_->StartAdvertising(
-      this, /*use_pin_authentication=*/false,
+      this, use_pin_authentication,
       base::BindOnce(&TargetDeviceBootstrapController::OnStartAdvertisingResult,
                      weak_ptr_factory_.GetWeakPtr()));
   NotifyObservers();
@@ -312,9 +323,37 @@ void TargetDeviceBootstrapController::AttemptGoogleAccountTransfer() {
   status_.payload.emplace<absl::monostate>();
   NotifyObservers();
 
-  // TODO: Actually pass through a real challenge here.
+  // Request the challenge bytes from Gaia to be sent to the phone.
+  CHECK(auth_broker_);
+  auth_broker_->GetChallengeBytes(
+      base::BindOnce(&TargetDeviceBootstrapController::OnChallengeBytesReceived,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void TargetDeviceBootstrapController::OnChallengeBytesReceived(
+    SecondDeviceAuthBroker::ChallengeBytesOrError challenge) {
+  if (!challenge.has_value()) {
+    quick_start::QS_LOG(ERROR) << "Error fetching challenge bytes from Gaia. "
+                               << "Reason: " << challenge.error().ToString();
+    status_.step = Step::ERROR;
+    status_.payload = ErrorCode::FETCHING_CHALLENGE_BYTES_FAILED;
+    NotifyObservers();
+    return;
+    // TODO(b:286853512) - Implement retry mechanism.
+  }
+
+  if (!authenticated_connection_) {
+    quick_start::QS_LOG(ERROR)
+        << "Received challenge bytes, but a phone connection no longer exists.";
+    NOTIMPLEMENTED();
+  }
+
+  quick_start::QS_LOG(INFO)
+      << "Received challenge bytes from Gaia. Requesting FIDO assertion.";
+  challenge_bytes_ = challenge.value();
+
   authenticated_connection_->RequestAccountTransferAssertion(
-      "",
+      challenge_bytes_,
       base::BindOnce(&TargetDeviceBootstrapController::OnFidoAssertionReceived,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -329,8 +368,7 @@ void TargetDeviceBootstrapController::OnFidoAssertionReceived(
   }
 
   status_.step = Step::TRANSFERRED_GOOGLE_ACCOUNT_DETAILS;
-  status_.payload.emplace<absl::monostate>();
-  status_.fido_email = assertion->email;
+  status_.payload.emplace<FidoAssertionInfo>(assertion.value());
   NotifyObservers();
 }
 

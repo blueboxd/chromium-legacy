@@ -305,6 +305,9 @@ BASE_FEATURE(kAutofillFeedback,
              "AutofillFeedback",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Changes Autofill Clear Form into Undo Autofill.
+BASE_FEATURE(kAutofillUndo, "AutofillUndo", base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Makes is_autofilled = true cached only after filling and not previewing.
 BASE_FEATURE(kAutofillOnlyCacheIsAutofilledOnFill,
              "AutofillOnlyCacheIsAutofilledOnFill",
@@ -625,7 +628,7 @@ BASE_FEATURE(kAutofillManualFallbackAndroid,
 // Android.
 BASE_FEATURE(kAutofillTouchToFillForCreditCardsAndroid,
              "AutofillTouchToFillForCreditCardsAndroid",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #endif  // BUILDFLAG(IS_ANDROID)
 

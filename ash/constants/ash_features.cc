@@ -313,9 +313,7 @@ BASE_FEATURE(kBorealisStorageBallooning,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable or disable calendar jelly.
-BASE_FEATURE(kCalendarJelly,
-             "CalendarJelly",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kCalendarJelly, "CalendarJelly", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables to allow time-lapse video recording in the camera app.
 BASE_FEATURE(kCameraAppTimeLapse,
@@ -600,7 +598,7 @@ BASE_FEATURE(kDriveFsChromeNetworking,
 // Enables DriveFS' bulk pinning functionality.
 BASE_FEATURE(kDriveFsBulkPinning,
              "DriveFsBulkPinning",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables DriveFS' bulk pinning functionality. This flag is to be enabled by
 // the feature management module.
@@ -654,6 +652,11 @@ BASE_FEATURE(kEcheSWACheckAndroidNetworkInfo,
 BASE_FEATURE(kEcheSWAProcessAndroidAccessibilityTree,
              "EcheSWAProcessAndroidAccessibilityTree",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables metrics revamp for Eche.
+BASE_FEATURE(kEcheMetricsRevamp,
+             "EcheMetricsRevamp",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables background blur for the app list, shelf, unified system tray,
 // autoclick menu, etc. Also enables the AppsGridView mask layer, slower devices
@@ -844,7 +847,7 @@ BASE_FEATURE(kExoExtendedConfirmComposition,
 // or not (=decides using heuristics based on key code etc.).
 BASE_FEATURE(kExoSurroundingTextOffset,
              "ExoSurroundingTextOffset",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Allows RGB Keyboard to test new animations/patterns.
 BASE_FEATURE(kExperimentalRgbKeyboardPatterns,
@@ -936,6 +939,12 @@ BASE_FEATURE(kFastPairSavedDevicesStrictOptIn,
 // is intended to be controlled by the feature management module.
 BASE_FEATURE(kFeatureManagement16Desks,
              "FeatureManagement16Desks",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, shows a system update notification. This flag is intended to be
+// controlled by the feature management module.
+BASE_FEATURE(kFeatureManagementUpdateNotification,
+             "FeatureManagementUpdateNotification",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Allows borealis on certain boards whose features are determined by
@@ -1114,9 +1123,15 @@ BASE_FEATURE(kGaiaReauthEndpoint,
              "GaiaReauthEndpoint",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enable the Game Dashboard.
+// Enables the Game Dashboard.
 BASE_FEATURE(kGameDashboard,
              "GameDashboard",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the Game Dashboard's Record Game feature. This flag is to be enabled
+// by the feature management module.
+BASE_FEATURE(kFeatureManagementGameDashboardRecordGame,
+             "FeatureManagementGameDashboardRecordGame",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls gamepad vibration in Exo.
@@ -1304,7 +1319,7 @@ BASE_FEATURE(kImeDownloaderUpdate,
 // If enabled, use the updated parameters for the decoder.
 BASE_FEATURE(kImeFstDecoderParamsUpdate,
              "ImeFstDecoderParamsUpdate",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled use the updated US English IME language models.
 BASE_FEATURE(kImeUsEnglishModelUpdate,
@@ -1381,7 +1396,7 @@ BASE_FEATURE(kIppClientInfo, "IppClientInfo", base::FEATURE_ENABLED_BY_DEFAULT);
 // Enables correct handling of the function key row in Japanese.
 BASE_FEATURE(kJapaneseFunctionRow,
              "JapaneseFunctionRow",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether the "Remember password" button in the Kerberos "Add account"
 // dialog should be checked by default.
@@ -1448,7 +1463,7 @@ BASE_FEATURE(kLacrosProfileBackwardMigration,
 // removed. This is kill-switch just in case of accident.
 BASE_FEATURE(kLacrosSxSPrimaryRemove,
              "LacrosSxSPrimaryRemove",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, the Language Pack corresponding to the application locale is
 // downloaded and installed during OOBE. This pre-fetching is aimed at improving
@@ -1457,6 +1472,13 @@ BASE_FEATURE(kLacrosSxSPrimaryRemove,
 BASE_FEATURE(kLanguagePacksInOobe,
              "LanguagePacksInOobe",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables the UI and relative logic to manage Language Packs in Settings.
+// This feature allows users to install/remove languages and input methods
+// via the corresponding Settings page.
+BASE_FEATURE(kLanguagePacksInSettings,
+             "LanguagePacksInSettings",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Uses short intervals for launcher nudge for testing if enabled.
 BASE_FEATURE(kLauncherNudgeShortInterval,
@@ -1648,7 +1670,7 @@ BASE_FEATURE(kOnDeviceSpeechRecognition,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, CHOBOE Screen will be shown during the new user onboarding flow.
-BASE_FEATURE(kOobeChoobe, "OobeChoobe", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kOobeChoobe, "OobeChoobe", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, Drive Pinning Screen will be shown during
 // the new user onboarding flow.
@@ -1670,11 +1692,11 @@ BASE_FEATURE(kOobeGaiaInfoScreen,
 // enabling this without enabling OobeChoobe flag will have no effect
 BASE_FEATURE(kOobeTouchpadScroll,
              "OobeTouchpadScrollDirection",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kOobeDisplaySize,
              "OobeDisplaySize",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables the ChromeOS OOBE HID Detection Revamp, which updates
 // the OOBE HID detection screen UI and related infrastructure. See
@@ -1686,7 +1708,7 @@ BASE_FEATURE(kOobeHidDetectionRevamp,
 // Enables OOBE Jelly features.
 BASE_FEATURE(kOobeJelly, "OobeJelly", base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables lazy loading in OOBE's WebUI by prioritizing the first screen.n.
+// Enables lazy loading in OOBE's WebUI by prioritizing the first screen.
 BASE_FEATURE(kOobeLazyLoading,
              "OobeLazyLoading",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1735,7 +1757,7 @@ BASE_FEATURE(kOsSettingsAppNotificationsPage,
 // enabling this without enabling Lacros flag will have no effect
 BASE_FEATURE(kOsSyncConsentRevamp,
              "OsSyncConsentRevamp",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, the jelly colors will be used in the os feedback app. Requires
 // jelly-colors flag to also be enabled.
@@ -1848,6 +1870,10 @@ BASE_FEATURE(kPhoneHubPingOnBubbleOpen,
 const base::FeatureParam<base::TimeDelta> kPhoneHubPingTimeout{
     &kPhoneHubPingOnBubbleOpen, "PhoneHubPingTimeout", base::Seconds(5)};
 
+BASE_FEATURE(kPipDoubleTapToResize,
+             "PipDoubleTapToResize",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether policy provided trust anchors are allowed at the lock
 // screen.
 BASE_FEATURE(kPolicyProvidedTrustAnchorsAllowedAtLockScreen,
@@ -1896,7 +1922,7 @@ BASE_FEATURE(kMoreVideoCaptureBuffers,
 // using camera/microphone.
 BASE_FEATURE(kPrivacyIndicators,
              "PrivacyIndicators",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables a bubble-based launcher in clamshell mode. Changes the suggestions
 // that appear in the launcher in both clamshell and tablet modes. Removes pages
@@ -1984,7 +2010,7 @@ BASE_FEATURE(kProjectorUseApiKeyForTranslation,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable or disable quick settings revamped view (go/qsrevamp).
-BASE_FEATURE(kQsRevamp, "QsRevamp", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kQsRevamp, "QsRevamp", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the Projector Viewer supports the user experience for
 // secondary account.
@@ -2622,6 +2648,10 @@ bool Is16DesksEnabled() {
   return base::FeatureList::IsEnabled(kFeatureManagement16Desks);
 }
 
+bool IsUpdateNotificationEnabled() {
+  return base::FeatureList::IsEnabled(kFeatureManagementUpdateNotification);
+}
+
 bool IsAdaptiveChargingEnabled() {
   return base::FeatureList::IsEnabled(kAdaptiveCharging);
 }
@@ -2857,6 +2887,10 @@ bool IsEcheSWADebugModeEnabled() {
 
 bool IsEcheSWAMeasureLatencyEnabled() {
   return base::FeatureList::IsEnabled(kEcheSWAMeasureLatency);
+}
+
+bool IsEcheMetricsRevampEnabled() {
+  return base::FeatureList::IsEnabled(kEcheMetricsRevamp);
 }
 
 bool IsEOLIncentiveEnabled() {
@@ -3444,6 +3478,10 @@ bool IsPinAutosubmitBackfillFeatureEnabled() {
 
 bool IsPinAutosubmitFeatureEnabled() {
   return base::FeatureList::IsEnabled(kQuickUnlockPinAutosubmit);
+}
+
+bool IsPipDoubleTapToResizeEnabled() {
+  return base::FeatureList::IsEnabled(kPipDoubleTapToResize);
 }
 
 bool IsPrinterSettingsPrinterStatusEnabled() {

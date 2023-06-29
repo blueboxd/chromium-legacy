@@ -261,8 +261,6 @@ void OnIsolatedCookieCopyComplete(
 
 void BlockUntilHeadTimeoutHelper(
     base::WeakPtr<PrefetchContainer> prefetch_container) {
-  VLOG(0) << "PS::BlockUntilHeadTimeoutHelper";
-
   if (!prefetch_container || !prefetch_container->GetLastStreamingURLLoader()) {
     return;
   }
@@ -297,15 +295,6 @@ bool IsReferrerPolicySufficientlyStrict(
 }
 
 }  // namespace
-
-// static
-std::unique_ptr<PrefetchService> PrefetchService::CreateIfPossible(
-    BrowserContext* browser_context) {
-  if (!base::FeatureList::IsEnabled(features::kPrefetchUseContentRefactor))
-    return nullptr;
-
-  return std::make_unique<PrefetchService>(browser_context);
-}
 
 // static
 PrefetchService* PrefetchService::GetFromFrameTreeNodeId(
@@ -778,6 +767,8 @@ void PrefetchService::OnGotEligibilityResultForRedirect(
         PrefetchStreamingURLLoaderStatus::
             kStopSwitchInNetworkContextForRedirect,
         redirect_info, std::move(redirect_head));
+    // The new ResponseReader is associated with the new streaming URL loader at
+    // the PrefetchStreamingURLLoader constructor.
     MakePrefetchRequest(prefetch_container, redirect_info.new_url);
 
     return;
@@ -787,6 +778,9 @@ void PrefetchService::OnGotEligibilityResultForRedirect(
   prefetch_container->GetLastStreamingURLLoader()->HandleRedirect(
       PrefetchStreamingURLLoaderStatus::kFollowRedirect, redirect_info,
       std::move(redirect_head));
+  // Associate the new ResponseReader with the current streaming URL loader.
+  prefetch_container->GetLastStreamingURLLoader()->SetResponseReader(
+      prefetch_container->GetResponseReaderForCurrentPrefetch());
 }
 
 void PrefetchService::Prefetch() {
@@ -1080,7 +1074,8 @@ void PrefetchService::MakePrefetchRequest(
           base::BindOnce(&PrefetchService::OnPrefetchResponseCompleted,
                          base::Unretained(this), prefetch_container),
           base::BindRepeating(&PrefetchService::OnPrefetchRedirect,
-                              base::Unretained(this), prefetch_container));
+                              base::Unretained(this), prefetch_container),
+          prefetch_container->GetResponseReaderForCurrentPrefetch());
 
   prefetch_container->TakeStreamingURLLoader(std::move(streaming_loader));
 
@@ -1504,8 +1499,6 @@ void PrefetchService::GetPrefetchToServe(
 
     base::TimeDelta block_until_head_timeout = PrefetchBlockUntilHeadTimeout(
         prefetch_container->GetPrefetchType().GetEagerness());
-    VLOG(0) << "PS::GetPrefetchToServe; block_until_head_timeout = "
-            << block_until_head_timeout;
     if (block_until_head_timeout.is_positive()) {
       std::unique_ptr<base::OneShotTimer> block_until_head_timer =
           std::make_unique<base::OneShotTimer>();

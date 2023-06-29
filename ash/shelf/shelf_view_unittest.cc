@@ -1440,7 +1440,7 @@ TEST_P(LtrRtlShelfViewTest, ShouldHideTooltipTest) {
       continue;
     }
     EXPECT_FALSE(shelf_view_->ShouldHideTooltip(
-        button->GetMirroredBounds().CenterPoint()))
+        button->GetMirroredBounds().CenterPoint(), shelf_view_))
         << "ShelfView tries to hide on button " << i;
   }
 
@@ -1463,8 +1463,10 @@ TEST_P(LtrRtlShelfViewTest, ShouldHideTooltipTest) {
   gfx::Point test_point(left + (right - left) / 2,
                         home_button->GetBoundsInScreen().y());
   views::View::ConvertPointFromScreen(shelf_view_, &test_point);
-  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(gfx::Point(
-      shelf_view_->GetMirroredXInView(test_point.x()), test_point.y())))
+  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
+      gfx::Point(shelf_view_->GetMirroredXInView(test_point.x()),
+                 test_point.y()),
+      shelf_view_))
       << "Tooltip should hide between home button and first shelf item";
 
   // The tooltip shouldn't hide if the mouse is in the gap between two buttons.
@@ -1473,7 +1475,8 @@ TEST_P(LtrRtlShelfViewTest, ShouldHideTooltipTest) {
       GetButtonByID(platform_button_id)->GetMirroredBounds();
   ASSERT_FALSE(app_button_rect.Intersects(platform_button_rect));
   EXPECT_FALSE(shelf_view_->ShouldHideTooltip(
-      gfx::UnionRects(app_button_rect, platform_button_rect).CenterPoint()));
+      gfx::UnionRects(app_button_rect, platform_button_rect).CenterPoint(),
+      shelf_view_));
 
   // The tooltip should hide if it's outside of all buttons.
   gfx::Rect all_area;
@@ -1486,15 +1489,15 @@ TEST_P(LtrRtlShelfViewTest, ShouldHideTooltipTest) {
     all_area.Union(button->GetMirroredBounds());
   }
   EXPECT_FALSE(shelf_view_->ShouldHideTooltip(
-      gfx::Point(all_area.right() - 1, all_area.bottom() - 1)));
+      gfx::Point(all_area.right() - 1, all_area.bottom() - 1), shelf_view_));
   EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
-      gfx::Point(all_area.right(), all_area.y())));
+      gfx::Point(all_area.right(), all_area.y()), shelf_view_));
   EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
-      gfx::Point(all_area.x() - 1, all_area.y())));
+      gfx::Point(all_area.x() - 1, all_area.y()), shelf_view_));
   EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
-      gfx::Point(all_area.x(), all_area.y() - 1)));
+      gfx::Point(all_area.x(), all_area.y() - 1), shelf_view_));
   EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
-      gfx::Point(all_area.x(), all_area.bottom())));
+      gfx::Point(all_area.x(), all_area.bottom()), shelf_view_));
 }
 
 // Test that shelf button tooltips show (except app list) with an open app list.
@@ -1509,7 +1512,7 @@ TEST_P(LtrRtlShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
     }
 
     EXPECT_FALSE(shelf_view_->ShouldHideTooltip(
-        button->GetMirroredBounds().CenterPoint()))
+        button->GetMirroredBounds().CenterPoint(), shelf_view_))
         << "ShelfView tries to hide on button " << i;
   }
 
@@ -1518,8 +1521,10 @@ TEST_P(LtrRtlShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
       GetPrimaryShelf()->navigation_widget()->GetHomeButton();
   gfx::Point center_point = home_button->GetBoundsInScreen().CenterPoint();
   views::View::ConvertPointFromScreen(shelf_view_, &center_point);
-  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(gfx::Point(
-      shelf_view_->GetMirroredXInView(center_point.x()), center_point.y())));
+  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
+      gfx::Point(shelf_view_->GetMirroredXInView(center_point.x()),
+                 center_point.y()),
+      shelf_view_));
 }
 
 // Test that by moving the mouse cursor off the button onto the bubble it closes
@@ -3675,7 +3680,7 @@ class ShelfViewDeskButtonTest : public ShelfViewTest {
     prefs_ = Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   }
 
-  PrefService* prefs_;
+  raw_ptr<PrefService, ExperimentalAsh> prefs_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -3730,21 +3735,23 @@ TEST_F(ShelfViewDeskButtonTest, TabletModeVisibility) {
   EXPECT_TRUE(desk_button_widget()->GetLayer()->GetTargetVisibility());
 }
 
-// Verify that the desk button is 136 wide if the screen width is greater than
-// 1280px, and 96 otherwise, and that the button is 36x36 in vertical alignment.
+// Verify that the desk button is 136px wide if the screen width is greater than
+// 1280px, 96px if the screen width is less than or equal to 1280px, and 36px if
+// the screen width is small enough to cause shelf overflow. We also test that
+// the button is 36x36 in vertical alignment.
 TEST_F(ShelfViewDeskButtonTest, Position) {
   SetShowDeskButtonInShelfPref(prefs_, true);
-  test_api_->shelf_view()->shelf()->SetAlignment(ShelfAlignment::kBottom);
+  GetPrimaryShelf()->SetAlignment(ShelfAlignment::kBottom);
   UpdateDisplay("1281x400");
-  EXPECT_EQ(desk_button_widget()->GetTargetBounds().width(), 136);
-  UpdateDisplay("400x1281");
-  EXPECT_EQ(desk_button_widget()->GetTargetBounds().width(), 96);
+  EXPECT_EQ(136, desk_button_widget()->GetTargetBounds().width());
+  UpdateDisplay("200x1281");
+  EXPECT_EQ(36, desk_button_widget()->GetTargetBounds().width());
   UpdateDisplay("1280x400");
-  EXPECT_EQ(desk_button_widget()->GetTargetBounds().width(), 96);
+  EXPECT_EQ(96, desk_button_widget()->GetTargetBounds().width());
 
-  test_api_->shelf_view()->shelf()->SetAlignment(ShelfAlignment::kLeft);
-  EXPECT_EQ(desk_button_widget()->GetTargetBounds().width(), 36);
-  EXPECT_EQ(desk_button_widget()->GetTargetBounds().height(), 36);
+  GetPrimaryShelf()->SetAlignment(ShelfAlignment::kLeft);
+  EXPECT_EQ(36, desk_button_widget()->GetTargetBounds().width());
+  EXPECT_EQ(36, desk_button_widget()->GetTargetBounds().height());
 }
 
 // Verify that the desk button does not appear by default, appears when the user

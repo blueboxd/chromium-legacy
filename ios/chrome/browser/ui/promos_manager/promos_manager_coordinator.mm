@@ -33,6 +33,8 @@
 #import "ios/chrome/browser/ui/app_store_rating/app_store_rating_display_handler.h"
 #import "ios/chrome/browser/ui/app_store_rating/features.h"
 #import "ios/chrome/browser/ui/credential_provider_promo/credential_provider_promo_display_handler.h"
+#import "ios/chrome/browser/ui/default_promo/post_restore/features.h"
+#import "ios/chrome/browser/ui/default_promo/post_restore/post_restore_default_browser_promo_provider.h"
 #import "ios/chrome/browser/ui/default_promo/promo_handler/default_browser_promo_display_handler.h"
 #import "ios/chrome/browser/ui/post_restore_signin/post_restore_signin_provider.h"
 #import "ios/chrome/browser/ui/promos_manager/bannered_promo_view_provider.h"
@@ -79,8 +81,8 @@
       std::map<promos_manager::Promo, id<StandardPromoAlertProvider>>>
       _alertProviderPromos;
 
-  // The currently displayed promo, if any.
-  absl::optional<promos_manager::Promo> current_promo;
+  // The currently displayed promo data, if any.
+  absl::optional<PromoDisplayData> _currentPromoData;
 }
 
 // A mediator that observes when it's a good time to display a promo.
@@ -132,7 +134,7 @@
 #pragma mark - Public
 
 - (void)start {
-  [self displayPromoIfAvailable];
+  [self displayPromoIfAvailable:YES];
 }
 
 - (void)stop {
@@ -141,6 +143,12 @@
 }
 
 - (void)displayPromoIfAvailable {
+  [self displayPromoIfAvailable:NO];
+}
+
+// Display a promo if one is available, with special behavior if this is the
+// first time this coordinator has shown a promo.
+- (void)displayPromoIfAvailable:(BOOL)isFirstShownPromo {
   if (ShouldPromosManagerUseFET()) {
     // Wait to present a promo until the feature engagement tracker database
     // is fully initialized.
@@ -149,7 +157,7 @@
       if (!successfullyLoaded) {
         return;
       }
-      [weakSelf displayPromoCallback];
+      [weakSelf displayPromoCallback:isFirstShownPromo];
     };
 
     feature_engagement::Tracker* tracker =
@@ -157,13 +165,13 @@
             self.browser->GetBrowserState());
     tracker->AddOnInitializedCallback(base::BindOnce(onInitializedBlock));
   } else {
-    [self displayPromoCallback];
+    [self displayPromoCallback:isFirstShownPromo];
   }
 }
 
-- (void)displayPromoCallback {
-  absl::optional<promos_manager::Promo> nextPromoForDisplay =
-      [self.mediator nextPromoForDisplay];
+- (void)displayPromoCallback:(BOOL)isFirstShownPromo {
+  absl::optional<PromoDisplayData> nextPromoForDisplay =
+      [self.mediator nextPromoForDisplay:isFirstShownPromo];
 
   if (nextPromoForDisplay.has_value()) {
     [self displayPromo:nextPromoForDisplay.value()];
@@ -189,9 +197,10 @@
 }
 
 - (void)promoWasDismissed {
-  if (ShouldPromosManagerUseFET() && current_promo.has_value()) {
+  if (ShouldPromosManagerUseFET() && _currentPromoData.has_value() &&
+      !_currentPromoData.value().was_forced) {
     PromoConfigsSet configs = [self promoImpressionLimits];
-    auto it = configs.find(current_promo.value());
+    auto it = configs.find(_currentPromoData.value().promo);
     if (it == configs.end() || !it->feature_engagement_feature) {
       return;
     }
@@ -201,25 +210,27 @@
             self.browser->GetBrowserState());
     tracker->Dismissed(*it->feature_engagement_feature);
   }
-  current_promo = absl::nullopt;
+  _currentPromoData = absl::nullopt;
 }
 
-- (void)displayPromo:(promos_manager::Promo)promo {
+- (void)displayPromo:(PromoDisplayData)promoData {
   if (tests_hook::DisablePromoManagerFullScreenPromos()) {
     return;
   }
 
+  promos_manager::Promo promo = promoData.promo;
+
   // Trying to display a promo while the previous dismissal was not communicated
   // back to the promos manager.
   // TODO(crbug.com/1452233): Remove once all promos dismiss themselves.
-  if (current_promo.has_value()) {
+  if (_currentPromoData.has_value()) {
     static crash_reporter::CrashKeyString<40> key("current-promo");
     crash_reporter::ScopedCrashKeyString crashKey(
-        &key, ShortNameForPromo(current_promo.value()));
+        &key, ShortNameForPromo(_currentPromoData.value().promo));
     base::debug::DumpWithoutCrashing();
   }
 
-  current_promo = promo;
+  _currentPromoData = promoData;
 
   auto handler_it = _displayHandlerPromos.find(promo);
   auto provider_it = _viewProviderPromos.find(promo);
@@ -544,6 +555,12 @@
   // StandardPromoAlertProvider promo(s) below:
   _alertProviderPromos[promos_manager::Promo::PostRestoreSignInAlert] =
       [[PostRestoreSignInProvider alloc] init];
+  if (GetPostRestoreDefaultBrowserPromoType() ==
+      PostRestoreDefaultBrowserPromoType::kAlert) {
+    _alertProviderPromos
+        [promos_manager::Promo::PostRestoreDefaultBrowserAlert] =
+            [[PostRestoreDefaultBrowserPromoProvider alloc] init];
+  }
 
   // WhatsNewPromoHandler promo below:
   _displayHandlerPromos[promos_manager::Promo::WhatsNew] =

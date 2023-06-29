@@ -80,6 +80,7 @@
 #include "ui/accessibility/platform/inspect/ax_event_recorder.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/base/ime/mojom/virtual_keyboard_types.mojom.h"
+#include "ui/color/color_provider_key.h"
 #include "ui/color/color_provider_source_observer.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/native_theme/native_theme.h"
@@ -103,9 +104,9 @@ class WakeLock;
 }
 }  // namespace device
 
-namespace power_scheduler {
-class PowerModeVoter;
-}
+namespace network::mojom {
+class SharedDictionaryAccessDetails;
+}  // namespace network::mojom
 
 namespace service_manager {
 class InterfaceProvider;
@@ -360,7 +361,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   absl::optional<SkColor> GetBackgroundColor() override;
   void SetPageBaseBackgroundColor(absl::optional<SkColor> color) override;
   void SetColorProviderSource(ui::ColorProviderSource* source) override;
-  ui::ColorProviderManager::ColorMode GetColorMode() const override;
+  ui::ColorProviderKey::ColorMode GetColorMode() const override;
   WebUI* GetWebUI() override;
   void SetUserAgentOverride(const blink::UserAgentOverride& ua_override,
                             bool override_in_new_tabs) override;
@@ -721,6 +722,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                          const CookieAccessDetails& details) override;
   void OnTrustTokensAccessed(RenderFrameHostImpl*,
                              const TrustTokenAccessDetails& details) override;
+  void OnSharedDictionaryAccessed(
+      RenderFrameHostImpl*,
+      const network::mojom::SharedDictionaryAccessDetails& details) override;
 
   // Called when WebAudio starts or stops playing audible audio in an
   // AudioContext.
@@ -904,6 +908,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                          const CookieAccessDetails& details) override;
   void OnTrustTokensAccessed(NavigationHandle*,
                              const TrustTokenAccessDetails& details) override;
+  void OnSharedDictionaryAccessed(
+      NavigationHandle*,
+      const network::mojom::SharedDictionaryAccessDetails& details) override;
+
   void RegisterExistingOriginAsHavingDefaultIsolation(
       const url::Origin& origin,
       NavigationRequest* navigation_request_to_exclude) override;
@@ -2325,8 +2333,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // example, we may get multiple hints due to imprecise mouse movement while
   // the user is trying to move the mouse to the back button.
   base::TimeTicks last_back_navigation_hint_time_ = base::TimeTicks::Min();
-
-  std::unique_ptr<power_scheduler::PowerModeVoter> audible_power_mode_voter_;
 
   viz::FrameSinkId xr_render_target_;
 

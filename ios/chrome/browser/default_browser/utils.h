@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #import "base/feature_list.h"
+#import "ios/chrome/browser/default_browser/promo_statistics.h"
 
 namespace feature_engagement {
 class Tracker;
@@ -59,6 +60,28 @@ enum class IOSDefaultBrowserVideoPromoAction {
 // The feature parameter to activate the remind me later button.
 extern const char kDefaultBrowserFullscreenPromoExperimentRemindMeGroupParam[];
 
+// Visible for testing
+// Key in storage containing an NSDate indicating the last time a user
+// interacted with ANY promo. The string value is kept from when the promos
+// first launched to avoid changing the behavior for users that have already
+// seen the promo.
+extern NSString* const kLastTimeUserInteractedWithPromo;
+
+// Key in storage containing all the recent timestamps of browser cold starts up
+// to allowed maximum number of past events.
+extern NSString* const kAllTimestampsAppLaunchColdStart;
+
+// Key in storage containing all the recent timestamps of browser warm starts up
+// to allowed maximum number of past events.
+extern NSString* const kAllTimestampsAppLaunchWarmStart;
+
+// Key in storage containing all the recent timestamps of browser indirect
+// starts up to allowed maximum number of past events.
+extern NSString* const kAllTimestampsAppLaunchIndirectStart;
+
+// Helper function to set `data` for `key` into the storage object.
+void SetObjectIntoStorageForKey(NSString* key, NSObject* data);
+
 // Logs the timestamp of opening an HTTP(S) link sent and opened by the app.
 void LogOpenHTTPURLFromExternalURL();
 
@@ -68,20 +91,12 @@ void LogOpenHTTPURLFromExternalURL();
 // past expired logs for `type` that have happened too far in the past.
 void LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoType type);
 
-// Logs the timestamp of a user tap on the "Remind Me Later" button in the
-// Fullscreen Promo.
-void LogRemindMeLaterPromoActionInteraction();
-
 // Logs to the FET that a default browser promo has been shown.
 void LogToFETDefaultBrowserPromoShown(feature_engagement::Tracker* tracker);
 
 // Logs to the FET that the user has pasted a URL into the omnibox if certain
 // conditions are met.
 void LogToFETUserPastedURLIntoOmnibox(feature_engagement::Tracker* tracker);
-
-// Returns true if the user has tapped on the "Remind Me Later" button and the
-// delay time threshold has been met.
-bool ShouldShowRemindMeLaterDefaultBrowserFullscreenPromo();
 
 // Returns true if the passed default browser badge `feature` should be shown.
 // Also makes the necessary calls to the FET for keeping track of usage, as well
@@ -90,14 +105,6 @@ bool ShouldTriggerDefaultBrowserHighlightFeature(
     const base::Feature& feature,
     feature_engagement::Tracker* tracker,
     syncer::SyncService* syncService);
-
-// Returns true if the user is in the group that will be shown the Remind Me
-// Later button in the fullscreen promo.
-bool IsInRemindMeLaterGroup();
-
-// Returns true if the user is in the group that will be shown a modified
-// description and "Learn More" text.
-bool IsInModifiedStringsGroup();
 
 // Returns true if the user is not in the blue dot default browser experiment,
 // or if they are in the group with all DB promos enabled.
@@ -125,11 +132,13 @@ bool ShouldForceDefaultPromoType();
 // skipping the triggering criteria.
 DefaultPromoType ForceDefaultPromoType();
 
-// Returns true if the user is in the CTA experiment in the open links group.
-bool IsInCTAOpenLinksGroup();
+// Returns true if client is in Default Browser promo trigger criteria
+// experiment.
+bool IsDefaultBrowserTriggerCriteraExperimentEnabled();
 
-// Returns true if the user is in the CTA experiment in the switch group.
-bool IsInCTASwitchGroup();
+// Returns true if Default Browser promo should be triggered on omnibox
+// copy-paste.
+bool ShouldTriggerDefaultBrowserPromoOnOmniboxCopyPaste();
 
 // Returns true if the user has interacted with the Fullscreen Promo previously.
 // Returns false otherwise.
@@ -215,6 +224,10 @@ bool IsTailoredPromoEligibleUser(bool is_signed_in);
 // general promo.
 bool IsGeneralPromoEligibleUser(bool is_signed_in);
 
+// Returns true if it was determined that the user is eligible for the
+// post restore default browser promo.
+bool IsPostRestoreDefaultBrowserEligibleUser();
+
 // Return true if it was determined that the user is eligible for the
 // video promo.
 bool IsVideoPromoEligibleUser(feature_engagement::Tracker* tracker);
@@ -232,5 +245,32 @@ DefaultPromoTypeForUMA GetDefaultPromoTypeForUMA(DefaultPromoType type);
 void LogDefaultBrowserPromoHistogramForAction(
     DefaultPromoType type,
     IOSDefaultBrowserPromoAction action);
+
+// Below collect and compute data to record for an experiment. It is potentially
+// a lot of data but this is planned as a short and small experiment.
+
+// Returns string representation of the enum value.
+const std::string IOSDefaultBrowserPromoActionToString(
+    IOSDefaultBrowserPromoAction action);
+
+// Returns PromoStatistics object with all properties calculated.
+PromoStatistics* CalculatePromoStatistics();
+
+// Records given promo stats for given action into UMA histograms.
+void RecordPromoStatsToUMAForAction(PromoStatistics* promo_stats,
+                                    IOSDefaultBrowserPromoAction action);
+
+// Records given promo stats for "Appear" action into UMA histograms.
+void RecordPromoStatsToUMAForAppear(PromoStatistics* promo_stats);
+
+// Logs browser launched for default browser promo trigger criteria experiment
+// stats to NSUserDefaults. `LogBrowserIndirectlylaunched` and
+// `LogBrowserLaunched` will have overlap.
+void LogBrowserLaunched(bool is_cold_start);
+
+// Log browser started indirectly(by widget or external url) for default browser
+// promo experiment stats to NSUserDefaults. `LogBrowserIndirectlylaunched` and
+// `LogBrowserLaunched` will have overlap.
+void LogBrowserIndirectlylaunched();
 
 #endif  // IOS_CHROME_BROWSER_DEFAULT_BROWSER_UTILS_H_

@@ -292,6 +292,11 @@ NET_EXPORT BASE_DECLARE_FEATURE(kCookieSameSiteConsidersRedirectChain);
 // reading cookies).)
 NET_EXPORT BASE_DECLARE_FEATURE(kSamePartyAttributeEnabled);
 
+// When this feature is enabled, the network service will wait until First-Party
+// Sets are initialized before issuing requests that use the HTTP cache or
+// cookies.
+NET_EXPORT BASE_DECLARE_FEATURE(kWaitForFirstPartySetsInit);
+
 // When enabled, sites can opt-in to having their cookies partitioned by
 // top-level site with the Partitioned attribute. Partitioned cookies will only
 // be sent when the browser is on the same top-level site that it was on when
@@ -377,6 +382,10 @@ NET_EXPORT extern const base::FeatureParam<std::string>
 // false. This is needed as a workaround to set this value to true on Android
 // but not on WebView (until crbug.com/1430082 has been fixed).
 NET_EXPORT BASE_DECLARE_FEATURE(kMigrateSessionsOnNetworkChangeV2);
+
+// Enables whether blackhole detector should be disabled during connection
+// migration and there is no available network.
+NET_EXPORT BASE_DECLARE_FEATURE(kDisableBlackholeOnNoNewNetwork);
 
 #if BUILDFLAG(IS_LINUX)
 // AddressTrackerLinux will not run inside the network service in this

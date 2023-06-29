@@ -227,7 +227,7 @@ TEST_F(PaintLayerClipperTest, ControlClipSelect) {
 
   PhysicalRect content_box_rect = target->PhysicalContentBoxRect();
   EXPECT_GT(foreground_rect.Rect().X(),
-            content_box_rect.X() + target->Location().X());
+            content_box_rect.X() + target->PhysicalLocation().left);
   EXPECT_LE(foreground_rect.Rect().Width(), content_box_rect.Width());
 }
 
@@ -575,7 +575,7 @@ TEST_F(PaintLayerClipperTest, ScrollbarClipBehaviorChildScrollBetween) {
     </div>
   )HTML");
 
-  Element* parent = GetDocument().getElementById("parent");
+  Element* parent = GetDocument().getElementById(AtomicString("parent"));
   PaintLayer* root_paint_layer = parent->GetLayoutObject()->View()->Layer();
 
   PaintLayer* child_paint_layer = GetPaintLayerByElementId("child");

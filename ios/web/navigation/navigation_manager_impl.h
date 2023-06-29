@@ -28,6 +28,9 @@ class ElapsedTimer;
 }
 
 namespace web {
+namespace proto {
+class NavigationStorage;
+}  // namespace proto
 class BrowserState;
 class NavigationItem;
 class NavigationManagerDelegate;
@@ -105,15 +108,18 @@ class NavigationManagerImpl final : public NavigationManager {
     kSynthesized,
   };
 
-  NavigationManagerImpl();
+  NavigationManagerImpl(BrowserState* browser_state,
+                        NavigationManagerDelegate* delegate);
   ~NavigationManagerImpl() final;
 
   NavigationManagerImpl(const NavigationManagerImpl&) = delete;
   NavigationManagerImpl& operator=(const NavigationManagerImpl&) = delete;
 
-  // Setters for NavigationManagerDelegate and BrowserState.
-  void SetDelegate(NavigationManagerDelegate* delegate);
-  void SetBrowserState(BrowserState* browser_state);
+  // Restores state from `storage`.
+  void RestoreFromProto(const proto::NavigationStorage& storage);
+
+  // Serializes the NavigationItemImpl into `storage`.
+  void SerializeToProto(proto::NavigationStorage& storage) const;
 
   // Setter for the callback used to fetch the native session data blob from
   // the session cache.
@@ -399,10 +405,10 @@ class NavigationManagerImpl final : public NavigationManager {
   void FinalizeSessionRestore();
 
   // The primary delegate for this manager.
-  NavigationManagerDelegate* delegate_ = nullptr;
+  NavigationManagerDelegate* const delegate_;
 
   // The BrowserState that is associated with this instance.
-  BrowserState* browser_state_ = nullptr;
+  BrowserState* const browser_state_;
 
   // List of transient url rewriters added by `AddTransientURLRewriter()`.
   std::vector<BrowserURLRewriter::URLRewriter> transient_url_rewriters_;

@@ -8,8 +8,11 @@
 
 #import <memory>
 
+#import "base/apple/bundle_locations.h"
+#import "base/base_paths.h"
 #import "base/command_line.h"
 #import "base/ios/ios_util.h"
+#import "base/path_service.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
@@ -191,9 +194,8 @@ void ResetAuthentication() {
 - (net::EmbeddedTestServer*)testServer {
   if (!_testServer) {
     _testServer = std::make_unique<net::EmbeddedTestServer>();
-    NSString* bundlePath = [NSBundle bundleForClass:[self class]].resourcePath;
     _testServer->ServeFilesFromDirectory(
-        base::FilePath(base::SysNSStringToUTF8(bundlePath))
+        base::PathService::CheckedGet(base::DIR_ASSETS)
             .AppendASCII("ios/testing/data/http_server_files/"));
     net::test_server::RegisterDefaultHandlers(_testServer.get());
   }

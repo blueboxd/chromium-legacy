@@ -13,7 +13,6 @@ namespace arc::input_overlay {
 class Action;
 class DisplayOverlayController;
 class EditLabels;
-class NameTag;
 
 // ActionViewListItem shows in EditingList and is associated with each of
 // Action.
@@ -38,10 +37,9 @@ class ActionViewListItem : public views::View {
   void Init();
 
   raw_ptr<DisplayOverlayController> controller_;
-  raw_ptr<Action> action_;
+  raw_ptr<Action, DanglingUntriaged> action_;
 
   raw_ptr<EditLabels> labels_view_ = nullptr;
-  raw_ptr<NameTag> labels_name_tag_ = nullptr;
 };
 
 }  // namespace arc::input_overlay

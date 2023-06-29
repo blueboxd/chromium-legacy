@@ -11,12 +11,15 @@
 #include <vector>
 
 #include "base/apple/bundle_locations.h"
+#include "base/containers/adapters.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/notreached.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/ranges/algorithm.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -27,14 +30,6 @@
 
 extern "C" {
 CFTypeID SecKeyGetTypeID();
-#if !BUILDFLAG(IS_IOS)
-// The NSFont/CTFont toll-free bridging is broken before 10.15.
-// https://openradar.appspot.com/15341349
-//
-// TODO(https://crbug.com/1076527): This is fixed in 10.15. When 10.15 is the
-// minimum OS for Chromium, remove this SPI declaration.
-Boolean _CFIsObjC(CFTypeID typeID, CFTypeRef obj);
-#endif
 }  // extern "C"
 
 namespace base::mac {
@@ -204,6 +199,51 @@ FilePath GetAppBundlePath(const FilePath& exec_name) {
   return FilePath();
 }
 
+// Takes a path to an (executable) binary and tries to provide the path to an
+// application bundle containing it. It takes the innermost bundle that it can
+// find (so for "/Foo/Bar.app/.../Baz.app/..." it produces
+// "/Foo/Bar.app/.../Baz.app").
+//   |exec_name| - path to the binary
+//   returns - path to the application bundle, or empty on error
+FilePath GetInnermostAppBundlePath(const FilePath& exec_name) {
+  static constexpr char kExt[] = ".app";
+  static constexpr size_t kExtLength = std::size(kExt) - 1;
+
+  // Split the path into components.
+  std::vector<std::string> components = exec_name.GetComponents();
+
+  // It's an error if we don't get any components.
+  if (components.empty()) {
+    return FilePath();
+  }
+
+  auto app = base::ranges::find_if(
+      Reversed(components), [](const std::string& component) -> bool {
+        return component.size() > kExtLength && EndsWith(component, kExt);
+      });
+
+  if (app == components.rend()) {
+    return FilePath();
+  }
+
+  // Remove all path components after the final ".app" extension.
+  components.erase(app.base(), components.end());
+
+  std::string bundle_path;
+  for (const std::string& component : components) {
+    // Don't prepend a slash if this is the first component or if the
+    // previous component ended with a slash, which can happen when dealing
+    // with an absolute path.
+    if (!bundle_path.empty() && bundle_path.back() != '/') {
+      bundle_path += '/';
+    }
+
+    bundle_path += component;
+  }
+
+  return FilePath(bundle_path);
+}
+
 #define TYPE_NAME_FOR_CF_TYPE_DEFN(TypeCF) \
 std::string TypeNameForCFType(TypeCF##Ref) { \
   return #TypeCF; \
@@ -311,30 +351,7 @@ CF_TO_NS_CAST_DEFN(CFURL, NSURL)
 #if BUILDFLAG(IS_IOS)
 CF_TO_NS_CAST_DEFN(CTFont, UIFont)
 #else
-// The NSFont/CTFont toll-free bridging is broken before 10.15.
-// https://openradar.appspot.com/15341349
-//
-// TODO(https://crbug.com/1076527): This is fixed in 10.15. When 10.15 is the
-// minimum OS for Chromium, remove this specialization and replace it with just:
-//
-// CF_TO_NS_CAST_DEFN(CTFont, NSFont)
-NSFont* CFToNSCast(CTFontRef cf_val) {
-  NSFont* ns_val =
-      const_cast<NSFont*>(reinterpret_cast<const NSFont*>(cf_val));
-  DCHECK(!cf_val ||
-         CTFontGetTypeID() == CFGetTypeID(cf_val) ||
-         (_CFIsObjC(CTFontGetTypeID(), cf_val) &&
-          [ns_val isKindOfClass:[NSFont class]]));
-  return ns_val;
-}
-
-CTFontRef NSToCFCast(NSFont* ns_val) {
-  CTFontRef cf_val = reinterpret_cast<CTFontRef>(ns_val);
-  DCHECK(!cf_val ||
-         CTFontGetTypeID() == CFGetTypeID(cf_val) ||
-         [ns_val isKindOfClass:[NSFont class]]);
-  return cf_val;
-}
+CF_TO_NS_CAST_DEFN(CTFont, NSFont)
 #endif
 
 #undef CF_TO_NS_CAST_DEFN
@@ -374,46 +391,11 @@ CF_CAST_DEFN(CFUUID)
 
 CF_CAST_DEFN(CGColor)
 
+CF_CAST_DEFN(CTFont)
 CF_CAST_DEFN(CTFontDescriptor)
 CF_CAST_DEFN(CTRun)
 
 CF_CAST_DEFN(SecCertificate)
-
-#if BUILDFLAG(IS_IOS)
-CF_CAST_DEFN(CTFont)
-#else
-// The NSFont/CTFont toll-free bridging is broken before 10.15.
-// https://openradar.appspot.com/15341349
-//
-// TODO(https://crbug.com/1076527): This is fixed in 10.15. When 10.15 is the
-// minimum OS for Chromium, remove this specialization and the #if IOS above,
-// and rely just on the one CF_CAST_DEFN(CTFont).
-template<> CTFontRef
-CFCast<CTFontRef>(const CFTypeRef& cf_val) {
-  if (cf_val == NULL) {
-    return NULL;
-  }
-  if (CFGetTypeID(cf_val) == CTFontGetTypeID()) {
-    return (CTFontRef)(cf_val);
-  }
-
-  if (!_CFIsObjC(CTFontGetTypeID(), cf_val))
-    return NULL;
-
-  id<NSObject> ns_val = reinterpret_cast<id>(const_cast<void*>(cf_val));
-  if ([ns_val isKindOfClass:[NSFont class]]) {
-    return (CTFontRef)(cf_val);
-  }
-  return NULL;
-}
-
-template<> CTFontRef
-CFCastStrict<CTFontRef>(const CFTypeRef& cf_val) {
-  CTFontRef rv = CFCast<CTFontRef>(cf_val);
-  DCHECK(cf_val == NULL || rv);
-  return rv;
-}
-#endif
 
 #if !BUILDFLAG(IS_IOS)
 CF_CAST_DEFN(SecAccessControl)

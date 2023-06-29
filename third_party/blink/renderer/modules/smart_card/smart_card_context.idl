@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://github.com/WICG/web-smart-card/blob/main/README.md#smartcardcontext
+// https://wicg.github.io/web-smart-card/#smartcardcontext-interface
 
 dictionary SmartCardReaderStateIn {
   required DOMString readerName;
@@ -27,6 +27,12 @@ dictionary SmartCardReaderStateFlags {
   boolean inuse = false;
   boolean mute = false;
   boolean unpowered = false;
+};
+
+enum SmartCardProtocol {
+  "raw",
+  "t0",
+  "t1"
 };
 
 dictionary SmartCardConnectResult {

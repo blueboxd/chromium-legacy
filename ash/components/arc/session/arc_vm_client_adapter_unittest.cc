@@ -329,8 +329,9 @@ class ArcVmClientAdapterTest : public testing::Test,
                                public ArcClientAdapter::Observer {
  public:
   ArcVmClientAdapterTest() {
-    // Use the same VLOG() level as production. Note that session_manager sets
-    // "--vmodule=*arc/*=1" in src/platform2/login_manager/chrome_setup.cc.
+    // Use the same VLOG() level as production. Note that
+    // arc_vm_client_adapter.cc defines ENABLED_VLOG_LEVEL 1, which is respected
+    // at compile time when use_runtime_vlog is set to false.
     logging::SetMinLogLevel(-1);
 
     // Create and set new fake clients every time to reset clients' status.
@@ -1514,7 +1515,7 @@ TEST_F(ArcVmClientAdapterTest, KernelParam_RO) {
 
   // Check "rw" is not in |params|.
   const auto& request = GetTestConciergeClient()->start_arc_vm_request();
-  EXPECT_FALSE(request.enable_rw());
+  EXPECT_FALSE(request.rootfs_writable());
 }
 
 // Tests that the kernel parameter does include "rw" when '/' is writable and
@@ -1527,7 +1528,7 @@ TEST_F(ArcVmClientAdapterTest, KernelParam_RW) {
 
   // Check "rw" is in |params|.
   const auto& request = GetTestConciergeClient()->start_arc_vm_request();
-  EXPECT_TRUE(request.enable_rw());
+  EXPECT_TRUE(request.rootfs_writable());
 }
 
 // Tests that CreateArcVmClientAdapter() doesn't crash.

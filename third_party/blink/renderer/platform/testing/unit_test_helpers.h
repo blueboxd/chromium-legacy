@@ -94,6 +94,8 @@ String StylePerfTestDataPath(const String& relative_path = String());
 // Returns the directory of hyphenation dictionaries for testing.
 base::FilePath HyphenationDictionaryDir();
 
+// Reads the file at the given path and returns its data.
+// Returns nullptr if the file does not exist or couldn't be read.
 scoped_refptr<SharedBuffer> ReadFromFile(const String& path);
 
 class LineReader {

@@ -8,6 +8,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/companion/visual_search/features.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,7 +29,12 @@ VisualSearchSuggestionsServiceFactory::VisualSearchSuggestionsServiceFactory()
           ProfileSelections::Builder()
               .WithRegular(ProfileSelection::kOriginalOnly)
               .WithGuest(ProfileSelection::kOriginalOnly)
-              .Build()) {}
+              .Build()) {
+  if (base::FeatureList::IsEnabled(
+          companion::visual_search::features::kVisualSearchSuggestions)) {
+    DependsOn(OptimizationGuideKeyedServiceFactory::GetInstance());
+  }
+}
 
 // static
 VisualSearchSuggestionsServiceFactory*
@@ -39,6 +45,11 @@ VisualSearchSuggestionsServiceFactory::GetInstance() {
 
 KeyedService* VisualSearchSuggestionsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  if (!base::FeatureList::IsEnabled(
+          companion::visual_search::features::kVisualSearchSuggestions)) {
+    return nullptr;
+  }
+
   // The optimization guide service must be available for the translate model
   // service to be created.
   auto* opt_guide = OptimizationGuideKeyedServiceFactory::GetForProfile(
@@ -51,6 +62,16 @@ KeyedService* VisualSearchSuggestionsServiceFactory::BuildServiceInstanceFor(
                                               background_task_runner);
   }
   return nullptr;
+}
+
+bool VisualSearchSuggestionsServiceFactory::ServiceIsCreatedWithBrowserContext()
+    const {
+  return base::FeatureList::IsEnabled(
+      visual_search::features::kVisualSearchSuggestions);
+}
+
+bool VisualSearchSuggestionsServiceFactory::ServiceIsNULLWhileTesting() const {
+  return true;
 }
 
 }  // namespace companion::visual_search

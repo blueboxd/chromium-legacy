@@ -40,7 +40,7 @@ BASE_FEATURE(kAndroidSurfaceControlMagnifier,
 // Enables FLEDGE and Attribution Reporting API integration.
 BASE_FEATURE(kAttributionFencedFrameReportingBeacon,
              "AttributionFencedFrameReportingBeacon",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Launches the audio service on the browser startup.
 BASE_FEATURE(kAudioServiceLaunchOnStartup,
@@ -393,24 +393,10 @@ const char kFedCmIdpSignoutFieldTrialParamName[] = "IdpSignout";
 // Enables usage of the FedCM Authz API.
 BASE_FEATURE(kFedCmAuthz, "FedCmAuthz", base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables usage of the FedCM API with auto re-authentication. Note that actual
-// exposure of FedCM's auto re-authentication feature to web content is
-// controlled by the flag in RuntimeEnabledFeatures on the blink side. See also
-// the use of kSetOnlyIfOverridden in content/child/runtime_features.cc.
-// We enable it here by default to support use in origin trials.
-BASE_FEATURE(kFedCmAutoReauthn,
-             "FedCmAutoReauthn",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables usage of the FedCM IdP Registration API.
 BASE_FEATURE(kFedCmIdPRegistration,
              "FedCmIdPregistration",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables usage of the FedCM API with iframe support.
-BASE_FEATURE(kFedCmIframeSupport,
-             "FedCmIframeSupport",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM API with metrics endpoint at the same time.
 BASE_FEATURE(kFedCmMetricsEndpoint,
@@ -423,39 +409,29 @@ BASE_FEATURE(kFedCmMultipleIdentityProviders,
              "FedCmMultipleIdentityProviders",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables usage of the FedCM Relying Party Context API.
-BASE_FEATURE(kFedCmRpContext,
-             "FedCmRpContext",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables usage of the FedCM API with the User Info API at the same time.
-// Note that actual exposure of the FedCM API to web content is controlled
-// by the flag in RuntimeEnabledFeatures on the blink side. See also
-// the use of kSetOnlyIfOverridden in content/child/runtime_features.cc.
-BASE_FEATURE(kFedCmUserInfo, "FedCmUserInfo", base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables usage of the FedCM API with the Selective Disclosure API at the same
 // time.
 BASE_FEATURE(kFedCmSelectiveDisclosure,
              "FedCmSelectiveDisclosure",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables usage of the FedCM API with the login hint parameter.
-BASE_FEATURE(kFedCmLoginHint,
-             "FedCmLoginHint",
+// Enables metrics collection for signin status mismatches. Also enables
+// parsing the signin status HTTP headers.
+// kFedCmIdpSigninStatusEnabled takes precedence over this feature flag.
+BASE_FEATURE(kFedCmIdpSigninStatusMetrics,
+             "FedCmIdpSigninStatusMetrics",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Field trial boolean parameter which indicates whether IdpSigninStatus API is
-// used in FedCM API.
-const char kFedCmIdpSigninStatusFieldTrialParamName[] = "IdpSigninStatus";
+// Enables the IDP signin status API for use with FedCM, including avoiding
+// network requests when not signed in and mismatch handling.
+BASE_FEATURE(kFedCmIdpSigninStatusEnabled,
+             "FedCmIdpSigninStatusEnabled",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Alternative to `kFedCmIdpSigninStatusFieldTrialParamName` which runs
-// IdpSigninStatus API in a metrics-only mode. This field trial is default-on
-// and is intended as a kill switch.
-// `kFedCmIdpSigninStatusFieldTrialParamName` takes precedence over
-// `kFedCmIdpSigninStatusMetricsOnlyFieldTrialParamName`.
-const char kFedCmIdpSigninStatusMetricsOnlyFieldTrialParamName[] =
-    "IdpSigninStatusMetricsOnly";
+// Enables bypassing the well-known file enforcement.
+BASE_FEATURE(kFedCmWithoutWellKnownEnforcement,
+             "FedCmWithoutWellKnownEnforcement",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the MDocs API in the IdentityCredential.
 BASE_FEATURE(kWebIdentityMDocs,
@@ -848,8 +824,15 @@ BASE_FEATURE(kPreloadingHoldback,
              "PreloadingHoldback",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables exposure of the core milestone 1 (M1) APIs in the renderer without an
+// origin trial token: Attribution Reporting, FLEDGE, Topics.
+BASE_FEATURE(kPrivacySandboxAdsAPIsM1Override,
+             "PrivacySandboxAdsAPIsM1Override",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables exposure of ads APIs in the renderer: Attribution Reporting,
-// FLEDGE, Topics.
+// FLEDGE, Topics, along with a number of other features actively in development
+// within these APIs.
 BASE_FEATURE(kPrivacySandboxAdsAPIsOverride,
              "PrivacySandboxAdsAPIsOverride",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -995,6 +978,15 @@ constexpr base::FeatureParam<bool> kProcessPerSiteMainFrameAllowIPAndLocalhost{
     &kProcessPerSiteUpToMainFrameThreshold,
     "ProcessPerSiteMainFrameAllowIPAndLocalhost", false};
 
+// When `kProcessPerSiteUpToMainFrameThreshold` is enabled, allows process reuse
+// even when DevTools was ever attached. This allows developers to test the
+// process sharing mode, since DevTools normally disables it for the field
+// trial participants.
+constexpr base::FeatureParam<bool>
+    kProcessPerSiteMainFrameAllowDevToolsAttached{
+        &kProcessPerSiteUpToMainFrameThreshold,
+        "ProcessPerSiteMainFrameAllowDevToolsAttached", false};
+
 // Enables skipping the early call to CommitPending when navigating away from a
 // crashed frame.
 BASE_FEATURE(kSkipEarlyCommitPendingForCrashedFrame,
@@ -1050,9 +1042,13 @@ const base::FeatureParam<ServiceWorkerBypassFetchHandlerTarget>
 // e.g.
 // 9685C8DE399237BDA6FF3AD0F281E9D522D46BB0ECFACE05E98D2B9AAE51D1EF,
 // 20F0D78B280E40C0A17ABB568ACF4BDAFFB9649ADA75B0675F962B3F4FC78EA4
+BASE_FEATURE(kServiceWorkerBypassFetchHandlerHashStrings,
+             "ServiceWorkerBypassFetchHandlerHashStrings",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 const base::FeatureParam<std::string>
     kServiceWorkerBypassFetchHandlerBypassedHashStrings{
-        &kServiceWorkerBypassFetchHandler, "script_checksum_to_bypass", ""};
+        &kServiceWorkerBypassFetchHandlerHashStrings,
+        "script_checksum_to_bypass", ""};
 
 // Enables skipping the service worker fetch handler if the fetch handler is
 // identified as ignorable.
@@ -1192,6 +1188,12 @@ BASE_FEATURE(kWebOTPAssertionFeaturePolicy,
 // (https://github.com/WICG/lock-screen) in Chrome.
 BASE_FEATURE(kWebLockScreenApi,
              "WebLockScreenApi",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, puts subframe data: URLs in a separate SiteInstance in the same
+// SiteInstanceGroup as the initiator.
+BASE_FEATURE(kSiteInstanceGroupsForDataUrls,
+             "SiteInstanceGroupsForDataUrls",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether to isolate sites of documents that specify an eligible
@@ -1508,12 +1510,6 @@ BASE_FEATURE(kOnDemandAccessibilityEvents,
 BASE_FEATURE(kRequestDesktopSiteAdditions,
              "RequestDesktopSiteAdditions",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Request Desktop Site per-site setting for Android.
-// Refer to the launch bug (https://crbug.com/1244979) for more information.
-BASE_FEATURE(kRequestDesktopSiteExceptions,
-             "RequestDesktopSiteExceptions",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Request Desktop Site zoom for Android. Apply a pre-defined page zoom level
 // when desktop user agent is used.

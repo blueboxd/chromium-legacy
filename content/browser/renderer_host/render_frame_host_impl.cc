@@ -15,6 +15,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -81,6 +82,7 @@
 #include "content/browser/loader/resource_cache_manager.h"
 #include "content/browser/loader/subresource_proxying_url_loader_service.h"
 #include "content/browser/log_console_message.h"
+#include "content/browser/media/media_devices_util.h"
 #include "content/browser/media/media_interface_proxy.h"
 #include "content/browser/media/webaudio/audio_context_manager_impl.h"
 #include "content/browser/navigation_or_document_handle.h"
@@ -170,6 +172,7 @@
 #include "content/public/browser/document_service_internal.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/media_device_id.h"
 #include "content/public/browser/network_service_util.h"
 #include "content/public/browser/peak_gpu_memory_tracker.h"
 #include "content/public/browser/render_process_host.h"
@@ -263,7 +266,6 @@
 #include "ui/accessibility/ax_action_handler_registry.h"
 #include "ui/accessibility/ax_common.h"
 #include "ui/accessibility/ax_tree_update.h"
-#include "ui/base/ime/text_input_client.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
@@ -1130,16 +1132,10 @@ bool CoopSuppressOpener(const RenderFrameHostImpl* opener) {
   switch (opener->GetMainFrame()->cross_origin_opener_policy().value) {
     case network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone:
     case network::mojom::CrossOriginOpenerPolicyValue::kSameOriginAllowPopups:
-      return false;
-
-    // TODO(https://crbug.com/1385827): Ideally, we'd like to have support
-    // for cross-origin iframes in COOP: restrict-properties pages opening
-    // popups. This is somewhat complex, because it would break some COOP
-    // invariants and other changes need to happen first. See the bug for
-    // details. For now, set no-opener.
     case network::mojom::CrossOriginOpenerPolicyValue::kRestrictProperties:
     case network::mojom::CrossOriginOpenerPolicyValue::
         kRestrictPropertiesPlusCoep:
+      return false;
 
     case network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin:
     case network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep:
@@ -1542,8 +1538,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
           agent_scheduling_group_->GetProcess(),
           RenderProcessHostImpl::kKeepAliveHandleFactoryTimeout),
       subframe_unload_timeout_(kUnloadTimeout),
-      media_device_id_salt_base_(
-          BrowserContext::CreateRandomMediaDeviceIDSalt()),
+      media_device_id_salt_base_(CreateRandomMediaDeviceIDSalt()),
       document_associated_data_(absl::in_place, *this, document_token),
       lifecycle_state_(lifecycle_state),
       inner_tree_main_frame_tree_node_id_(
@@ -2591,7 +2586,7 @@ void RenderFrameHostImpl::ExecuteJavaScriptMethod(
     JavaScriptResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(CanExecuteJavaScript());
-  AssertNonSpeculativeFrame();
+  AssertFrameWasCommitted();
 
   const bool wants_result = !callback.is_null();
   GetAssociatedLocalFrame()->JavaScriptMethodExecuteRequest(
@@ -2603,7 +2598,7 @@ void RenderFrameHostImpl::ExecuteJavaScript(const std::u16string& javascript,
                                             JavaScriptResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(CanExecuteJavaScript());
-  AssertNonSpeculativeFrame();
+  AssertFrameWasCommitted();
 
   const bool wants_result = !callback.is_null();
   GetAssociatedLocalFrame()->JavaScriptExecuteRequest(javascript, wants_result,
@@ -2617,7 +2612,7 @@ void RenderFrameHostImpl::ExecuteJavaScriptInIsolatedWorld(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_GT(world_id, ISOLATED_WORLD_ID_GLOBAL);
   DCHECK_LE(world_id, ISOLATED_WORLD_ID_MAX);
-  AssertNonSpeculativeFrame();
+  AssertFrameWasCommitted();
 
   const bool wants_result = !callback.is_null();
   GetAssociatedLocalFrame()->JavaScriptExecuteRequestInIsolatedWorld(
@@ -2651,7 +2646,7 @@ void RenderFrameHostImpl::ExecuteJavaScriptForTests(
     int32_t world_id,
     JavaScriptResultAndTypeCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  AssertNonSpeculativeFrame();
+  AssertFrameWasCommitted();
 
   if (has_user_gesture && owner_) {
     // TODO(mustaq): The render-to-browser state update caused by the below
@@ -3349,6 +3344,86 @@ void RenderFrameHostImpl::SetMojomFrameRemote(
   frame_.Bind(std::move(frame_remote));
 }
 
+namespace {
+
+class DebugHelperForCrbug1425281 : public mojom::DebugHelperForCrbug1425281 {
+ public:
+  explicit DebugHelperForCrbug1425281(
+      const base::debug::StackTrace& create_rfh_stack_trace,
+      const absl::optional<base::debug::StackTrace>&
+          last_commit_navigation_stack_trace,
+      RenderFrameHostImpl::LifecycleStateImpl lifecycle_state,
+      bool page_is_primary,
+      bool browser_is_outermost_main_frame,
+      bool browser_has_parent,
+      bool browser_is_speculative)
+      : create_rfh_stack_trace_(create_rfh_stack_trace),
+        last_commit_navigation_stack_trace_(last_commit_navigation_stack_trace),
+        lifecycle_state_(lifecycle_state),
+        page_is_primary_(page_is_primary),
+        browser_is_outermost_main_frame_(browser_is_outermost_main_frame),
+        browser_has_parent_(browser_has_parent),
+        browser_is_speculative_(browser_is_speculative) {}
+
+  void Failed(mojom::Crbug1425281DebugInfoPtr debug_info) override {
+    base::debug::StackTrace create_rfh_stack_trace = create_rfh_stack_trace_;
+    absl::optional<base::debug::StackTrace> last_commit_navigation_stack_trace =
+        last_commit_navigation_stack_trace_;
+    base::debug::StackTrace delete_render_frame_stack_trace =
+        delete_render_frame_stack_trace_;
+
+    absl::optional<std::array<const void*, base::debug::StackTrace::kMaxTraces>>
+        added_to_frame_tree_stack_trace;
+    if (debug_info->added_to_frame_tree_stack_trace) {
+      added_to_frame_tree_stack_trace.emplace();
+      const size_t addresses_count =
+          std::min(base::debug::StackTrace::kMaxTraces,
+                   debug_info->added_to_frame_tree_stack_trace->size());
+      for (size_t i = 0; i < addresses_count; ++i) {
+        (*added_to_frame_tree_stack_trace)[i] =
+            reinterpret_cast<void*>(static_cast<uintptr_t>(
+                (*debug_info->added_to_frame_tree_stack_trace)[i]));
+      }
+    }
+
+    const RenderFrameHostImpl::LifecycleStateImpl lifecycle_state =
+        lifecycle_state_;
+    bool page_is_primary = page_is_primary_;
+    bool browser_is_outermost_main_frame = browser_is_outermost_main_frame_;
+    bool browser_has_parent = browser_has_parent_;
+    bool browser_is_speculative = browser_is_speculative_;
+    base::debug::Alias(&lifecycle_state);
+    base::debug::Alias(&page_is_primary);
+    base::debug::Alias(&browser_is_outermost_main_frame);
+    base::debug::Alias(&browser_has_parent);
+    base::debug::Alias(&browser_is_speculative);
+    base::debug::Alias(&create_rfh_stack_trace);
+    base::debug::Alias(&last_commit_navigation_stack_trace);
+    base::debug::Alias(&delete_render_frame_stack_trace);
+
+    bool renderer_is_main_frame = debug_info->is_main_frame;
+    bool renderer_is_provisional = debug_info->is_provisional;
+    base::debug::Alias(&renderer_is_main_frame);
+    base::debug::Alias(&renderer_is_provisional);
+    base::debug::Alias(&added_to_frame_tree_stack_trace);
+
+    base::debug::DumpWithoutCrashing();
+  }
+
+ private:
+  const base::debug::StackTrace create_rfh_stack_trace_;
+  const absl::optional<base::debug::StackTrace>
+      last_commit_navigation_stack_trace_;
+  const RenderFrameHostImpl::LifecycleStateImpl lifecycle_state_;
+  const bool page_is_primary_;
+  const bool browser_is_outermost_main_frame_;
+  const bool browser_has_parent_;
+  const bool browser_is_speculative_;
+  const base::debug::StackTrace delete_render_frame_stack_trace_;
+};
+
+}  // namespace
+
 void RenderFrameHostImpl::DeleteRenderFrame(
     mojom::FrameDeleteIntention intent) {
   TRACE_EVENT("navigation", "RenderFrameHostImpl::DeleteRenderFrame",
@@ -3359,7 +3434,19 @@ void RenderFrameHostImpl::DeleteRenderFrame(
     return;
 
   if (IsRenderFrameLive()) {
-    GetMojomFrameInRenderer()->Delete(intent);
+    mojo::PendingRemote<mojom::DebugHelperForCrbug1425281> helper_remote;
+    if (intent == mojom::FrameDeleteIntention::
+                      kSpeculativeMainFrameForNavigationCancelled) {
+      mojo::MakeSelfOwnedReceiver(
+          std::make_unique<DebugHelperForCrbug1425281>(
+              create_rfh_stack_trace_, last_commit_navigation_stack_trace_,
+              lifecycle_state_, GetPage().IsPrimary(), IsOutermostMainFrame(),
+              !!GetParent(),
+              frame_tree_node()->render_manager()->speculative_frame_host() ==
+                  this),
+          helper_remote.InitWithNewPipeAndPassReceiver());
+    }
+    GetMojomFrameInRenderer()->Delete(intent, std::move(helper_remote));
 
     // We change the lifecycle state to kRunningUnloadHandlers at the end of
     // this method to wait until OnUnloadACK() is invoked.
@@ -4105,7 +4192,7 @@ bool RenderFrameHostImpl::IsThirdPartyStoragePartitioningEnabled(
   }
   // If the enterprise policy blocks, we have directive to override the
   // current value of net::features::ThirdPartyStoragePartitioning.
-  // We can safely read the last comitted-origin (even during navigation)
+  // We can safely read the last committed-origin (even during navigation)
   // as we know we are not in the main-frame since that case is filtered above.
   if (!GetContentClient()->browser()->IsThirdPartyStoragePartitioningAllowed(
           GetBrowserContext(),
@@ -4510,20 +4597,6 @@ void RenderFrameHostImpl::DidFocusFrame() {
 
   DCHECK(owner_);  // See `owner_` invariants about `IsActive()`.
   owner_->SetFocusedFrame(GetSiteInstance()->group());
-
-#if BUILDFLAG(IS_WIN)
-  // If the frame has a url, notify the view to allow it to supply the Url to
-  // any interested IME (e.g. Windows 11's TSF uses this information).
-  if (!last_committed_url_.is_empty()) {
-    RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
-    if (view) {
-      ui::TextInputClient* input_client = view->GetTextInputClient();
-      if (input_client) {
-        input_client->OnFrameFocusChanged();
-      }
-    }
-  }
-#endif  // BUILDFLAG(IS_WIN)
 }
 
 void RenderFrameHostImpl::DidCallFocus() {
@@ -8008,6 +8081,10 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   bool wait_for_debugger =
       devtools_instrumentation::ShouldWaitForDebuggerInWindowOpen();
+
+  bool coop_forbids_initial_document_to_be_cross_origin_isolated =
+      new_main_rfh->CoopForbidsDocumentToBeCrossOriginIsolated();
+
   mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New(
       new_main_rfh->GetFrameToken(), new_main_rfh->GetRoutingID(),
       std::move(pending_frame_receiver), std::move(widget_params),
@@ -8018,7 +8095,8 @@ void RenderFrameHostImpl::CreateNewWindow(
       new_main_rfh->policy_container_host()->CreatePolicyContainerForBlink(),
       blink::BrowsingContextGroupInfo(
           new_main_rfh->GetSiteInstance()->browsing_instance_token(),
-          new_main_rfh->GetSiteInstance()->coop_related_group_token()));
+          new_main_rfh->GetSiteInstance()->coop_related_group_token()),
+      coop_forbids_initial_document_to_be_cross_origin_isolated);
 
   std::move(callback).Run(mojom::CreateNewWindowStatus::kSuccess,
                           std::move(reply));
@@ -8034,6 +8112,14 @@ void RenderFrameHostImpl::CreateNewWindow(
   // The mojom reply callback with kSuccess causes the renderer to create the
   // renderer-side objects.
   new_main_rfh->render_view_host()->RenderViewCreated(new_main_rfh);
+}
+
+void RenderFrameHostImpl::SendLegacyTechEvent(
+    const std::string& type,
+    blink::mojom::LegacyTechEventCodeLocationPtr code_location) {
+  GetContentClient()->browser()->ReportLegacyTechEvent(
+      this, type, GetLastCommittedURL(), code_location->filename,
+      code_location->line, code_location->column);
 }
 
 void RenderFrameHostImpl::SendPrivateAggregationRequestsForFencedFrameEvent(
@@ -10313,7 +10399,7 @@ void RenderFrameHostImpl::ClearWebUI() {
 
 const mojo::Remote<blink::mojom::ImageDownloader>&
 RenderFrameHostImpl::GetMojoImageDownloader() {
-  // TODO(https://crbug.com/1249933): Call AssertNonSpeculativeFrame() here.
+  // TODO(https://crbug.com/1249933): Call AssertFrameWasCommitted() here.
   if (!mojo_image_downloader_.is_bound() && GetRemoteInterfaces()) {
     GetRemoteInterfaces()->GetInterface(
         mojo_image_downloader_.BindNewPipeAndPassReceiver());
@@ -11319,6 +11405,10 @@ void RenderFrameHostImpl::BindMediaMetricsProviderReceiver(
 
 void RenderFrameHostImpl::BindVideoEncoderMetricsProviderReceiver(
     mojo::PendingReceiver<media::mojom::VideoEncoderMetricsProvider> receiver) {
+  // Ensure the frame is not in the prerendering state as we don't record UKM
+  // while prerendering. This is ensured as the BrowserInterfaceBinders defers
+  // binding until the frame's activation.
+  CHECK(!IsInLifecycleState(LifecycleState::kPrerendering));
   media::VideoEncoderMetricsProvider::Create(GetPageUkmSourceId(),
                                              std::move(receiver));
 }
@@ -12612,13 +12702,19 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     }
 
     // Continue observing the events for the committed navigation.
+    // This is intended to receive delayed IPC calls. If `navigation_request`
+    // still has a valid receiver, `this` will receive delayed IPC calls from
+    // the network service. When the remote interface in the network service is
+    // destructed, `mojo::ReceiverSet` automatically removes the receiver.
     for (auto& receiver : navigation_request->TakeCookieObservers()) {
       cookie_observers_.Add(this, std::move(receiver));
     }
-
-    // Continue observing the events for the committed navigation.
     for (auto& receiver : navigation_request->TakeTrustTokenObservers()) {
       trust_token_observers_.Add(this, std::move(receiver));
+    }
+    for (auto& receiver :
+         navigation_request->TakeSharedDictionaryAccessObservers()) {
+      shared_dictionary_observers_.Add(this, std::move(receiver));
     }
 
     // Resets when navigating to a new document. This is needed because
@@ -12770,11 +12866,14 @@ void RenderFrameHostImpl::DidCommitNewDocument(
   TakeNewDocumentPropertiesFromNavigation(navigation_request);
 
   // Set embedded documents' cross-origin-opener-policy from their top level:
-  //  - Use top level's policy if they are same-origin.
-  //  - Use the default policy if they are cross-origin.
+  //  - Use top level's policy if they are same-origin or the policy is
+  //    restrict-properties
+  //  - Use the default policy otherwise.
   // This COOP value is not used to enforce anything on this frame, but will be
   // inherited to every local-scheme document created from them.
   // It will also be inherited by the initial empty document from its opener.
+  // TODO(https://crbug.com/1442535): Always inherit COOP since it's now tied
+  // to an origin that set it.
 
   // TODO(https://crbug.com/888079) Computing and assigning the
   // cross-origin-opener-policy of an embedded frame should be done in
@@ -12785,13 +12884,17 @@ void RenderFrameHostImpl::DidCommitNewDocument(
 
   // TODO(https://crbug.com/1385827): See if the above is possible after we
   // bundle the COOP origin.
-  // TODO(https://crbug.com/1442535): Make cross-origin iframes inherit
-  // Cross-Origin-Opener-Policy: same-origin-allow-popups.
   if (parent_) {
+    const network::CrossOriginOpenerPolicy& top_level_coop =
+        GetMainFrame()->cross_origin_opener_policy();
     if (GetMainFrame()->GetLastCommittedOrigin().IsSameOriginWith(
-            params.origin)) {
-      policy_container_host_->set_cross_origin_opener_policy(
-          GetMainFrame()->cross_origin_opener_policy());
+            params.origin) ||
+        network::IsRelatedToCoopRestrictProperties(top_level_coop.value) ||
+        (top_level_coop.value ==
+             network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone &&
+         network::IsRelatedToCoopRestrictProperties(
+             top_level_coop.report_only_value))) {
+      policy_container_host_->set_cross_origin_opener_policy(top_level_coop);
     } else {
       policy_container_host_->set_cross_origin_opener_policy(
           network::CrossOriginOpenerPolicy());
@@ -12803,7 +12906,7 @@ void RenderFrameHostImpl::DidCommitNewDocument(
 
   // Reset the salt so that media device IDs are reset for the new document
   // if necessary.
-  media_device_id_salt_base_ = BrowserContext::CreateRandomMediaDeviceIDSalt();
+  media_device_id_salt_base_ = CreateRandomMediaDeviceIDSalt();
 
   accessibility_fatal_error_count_ = 0;
 
@@ -13162,6 +13265,10 @@ void RenderFrameHostImpl::SendCommitNavigation(
             GetSiteInstance()->coop_related_group_token());
   }
 
+  // For main frames, the check happens before CreateNewWindow.
+  bool coop_forbids_document_to_be_cross_origin_isolated =
+      !is_main_frame() &&
+      GetMainFrame()->CoopForbidsDocumentToBeCrossOriginIsolated();
   commit_params->commit_sent = base::TimeTicks::Now();
   navigation_client->CommitNavigation(
       std::move(common_params), std::move(commit_params),
@@ -13175,7 +13282,9 @@ void RenderFrameHostImpl::SendCommitNavigation(
       std::move(policy_container), std::move(code_cache_host),
       std::move(resource_cache_remote), std::move(cookie_manager_info),
       std::move(storage_info),
+      coop_forbids_document_to_be_cross_origin_isolated,
       BuildCommitNavigationCallback(navigation_request));
+  last_commit_navigation_stack_trace_.emplace();
   base::UmaHistogramTimes(
       base::StrCat({"Navigation.SendCommitNavigationTime.",
                     IsOutermostMainFrame() ? "MainFrame" : "Subframe"}),
@@ -14976,6 +15085,14 @@ RenderFrameHostImpl::CreateTrustTokenAccessObserver() {
   return remote;
 }
 
+mojo::PendingRemote<network::mojom::SharedDictionaryAccessObserver>
+RenderFrameHostImpl::CreateSharedDictionaryAccessObserver() {
+  mojo::PendingRemote<network::mojom::SharedDictionaryAccessObserver> remote;
+  shared_dictionary_observers_.Add(this,
+                                   remote.InitWithNewPipeAndPassReceiver());
+  return remote;
+}
+
 #if BUILDFLAG(ENABLE_MDNS)
 void RenderFrameHostImpl::CreateMdnsResponder(
     mojo::PendingReceiver<network::mojom::MdnsResponder> receiver) {
@@ -14992,6 +15109,12 @@ void RenderFrameHostImpl::Clone(
 void RenderFrameHostImpl::Clone(
     mojo::PendingReceiver<network::mojom::TrustTokenAccessObserver> observer) {
   trust_token_observers_.Add(this, std::move(observer));
+}
+
+void RenderFrameHostImpl::Clone(
+    mojo::PendingReceiver<network::mojom::SharedDictionaryAccessObserver>
+        observer) {
+  shared_dictionary_observers_.Add(this, std::move(observer));
 }
 
 void RenderFrameHostImpl::OnCookiesAccessed(
@@ -15014,6 +15137,11 @@ void RenderFrameHostImpl::OnCookiesAccessed(
 void RenderFrameHostImpl::OnTrustTokensAccessed(
     network::mojom::TrustTokenAccessDetailsPtr details) {
   delegate_->OnTrustTokensAccessed(this, TrustTokenAccessDetails(details));
+}
+
+void RenderFrameHostImpl::OnSharedDictionaryAccessed(
+    network::mojom::SharedDictionaryAccessDetailsPtr details) {
+  delegate_->OnSharedDictionaryAccessed(this, *details);
 }
 
 void RenderFrameHostImpl::SetEmbeddingToken(
@@ -15189,9 +15317,11 @@ bool RenderFrameHostImpl::ShouldWaitForUnloadHandlers() const {
   return has_unload_handlers() && !IsInBackForwardCache();
 }
 
-void RenderFrameHostImpl::AssertNonSpeculativeFrame() const {
-  if (LIKELY(lifecycle_state() != LifecycleStateImpl::kSpeculative))
+void RenderFrameHostImpl::AssertFrameWasCommitted() const {
+  if (LIKELY(lifecycle_state() != LifecycleStateImpl::kSpeculative &&
+             lifecycle_state() != LifecycleStateImpl::kPendingCommit)) {
     return;
+  }
 
   NOTREACHED();
   base::debug::DumpWithoutCrashing();
@@ -15344,6 +15474,20 @@ bool RenderFrameHostImpl::LoadedWithCacheControlNoStoreHeader() {
   return GetBackForwardCacheDisablingFeatures().Has(
       blink::scheduler::WebSchedulerTrackedFeature::
           kMainResourceHasCacheControlNoStore);
+}
+
+bool RenderFrameHostImpl::CoopForbidsDocumentToBeCrossOriginIsolated() const {
+  CHECK(is_main_frame());
+
+  // The document cannot be crossOriginIsolated if the COOP was set by a
+  // different origin. This can happen on initial empty documents opened by a
+  // cross-origin iframe.
+  const absl::optional<url::Origin>& coop_origin =
+      policy_container_host_
+          ? policy_container_host_->cross_origin_opener_policy().origin
+          : absl::nullopt;
+  return coop_origin.has_value() &&
+         !coop_origin->IsSameOriginWith(GetLastCommittedOrigin());
 }
 
 }  // namespace content

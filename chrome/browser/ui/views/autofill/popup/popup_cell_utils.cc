@@ -104,6 +104,13 @@ std::u16string GetIconAccessibleName(const std::string& icon_text) {
   return std::u16string();
 }
 
+std::unique_ptr<views::ImageView> ImageViewFromVectorIcon(
+    const gfx::VectorIcon& vector_icon,
+    int icon_size = kIconSize) {
+  return std::make_unique<views::ImageView>(
+      ui::ImageModel::FromVectorIcon(vector_icon, ui::kColorIcon, icon_size));
+}
+
 std::unique_ptr<views::ImageView> ImageViewFromImageSkia(
     const gfx::ImageSkia& image_skia) {
   if (image_skia.isNull()) {
@@ -138,6 +145,10 @@ std::unique_ptr<views::ImageView> GetIconImageViewByName(
 
   if (icon_str == "clearIcon") {
     return ImageViewFromVectorIcon(kBackspaceIcon, kIconSize);
+  }
+
+  if (icon_str == "undoIcon") {
+    return ImageViewFromVectorIcon(vector_icons::kUndoIcon, kIconSize);
   }
 
   if (icon_str == "globeIcon") {
@@ -187,13 +198,6 @@ std::unique_ptr<views::ImageView> GetIconImageViewByName(
 }
 
 }  // namespace
-
-std::unique_ptr<views::ImageView> ImageViewFromVectorIcon(
-    const gfx::VectorIcon& vector_icon,
-    int icon_size = kIconSize) {
-  return std::make_unique<views::ImageView>(
-      ui::ImageModel::FromVectorIcon(vector_icon, ui::kColorIcon, icon_size));
-}
 
 std::u16string GetVoiceOverStringFromSuggestion(const Suggestion& suggestion) {
   if (suggestion.voice_over) {
@@ -357,14 +361,10 @@ void AddSuggestionContentToView(
     std::unique_ptr<views::Label> description_label,
     std::vector<std::unique_ptr<views::View>> subtext_views,
     PopupCellView& content_view) {
-  bool has_control_element =
-      suggestion.popup_item_id == PopupItemId::kAutocompleteEntry &&
-      base::FeatureList::IsEnabled(
-          features::kAutofillShowAutocompleteDeleteButton);
   views::BoxLayout& layout =
       *content_view.SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
-          GetMarginsForContentCell(has_control_element)));
+          GetMarginsForContentCell(/*has_control_element=*/false)));
 
   layout.set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);

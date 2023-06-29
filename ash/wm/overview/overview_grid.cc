@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <memory>
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
@@ -27,7 +28,6 @@
 #include "ash/wm/desks/desk_bar_view_base.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_name_view.h"
-#include "ash/wm/desks/desks_constants.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/expanded_desks_bar_button.h"
@@ -41,6 +41,7 @@
 #include "ash/wm/desks/templates/saved_desk_util.h"
 #include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/delayed_animation_observer_impl.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid_event_handler.h"
@@ -55,7 +56,6 @@
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/backdrop_controller.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
@@ -66,7 +66,6 @@
 #include "base/ranges/algorithm.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/window_properties.h"
-#include "components/app_restore/full_restore_utils.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
@@ -76,6 +75,7 @@
 #include "ui/compositor/presentation_time_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor/throughput_tracker.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/views/animation/animation_builder.h"
@@ -419,14 +419,27 @@ bool ShouldExcludeItemFromGridLayout(
 // bar widget as well.
 class DesksBarSlideAnimation {
  public:
-  DesksBarSlideAnimation(std::unique_ptr<views::Widget> desks_widget,
-                         bool is_zero_state)
-      : desks_widget_(std::move(desks_widget)) {
+  DesksBarSlideAnimation(std::unique_ptr<views::Widget> desk_bar_widget,
+                         bool is_zero_state) {
     gfx::Transform transform;
-    transform.Translate(0, -desks_widget_->GetWindowBoundsInScreen().height());
+    transform.Translate(0,
+                        -desk_bar_widget->GetWindowBoundsInScreen().height());
 
-    const auto duration = is_zero_state ? kZeroDesksBarSlideDuration
-                                        : kExpandedDesksBarSlideDuration;
+    // Create layer copies, get rid of the original desk bar widget, and add the
+    // layer copies to the parent layer.
+    ui::Layer* parent_layer = desk_bar_widget->GetLayer()->parent();
+    layer_tree_ = wm::RecreateLayers(desk_bar_widget->GetContentsView());
+    ui::Layer* layer_tree_root = layer_tree_->root();
+    parent_layer->Add(layer_tree_root);
+    desk_bar_widget.reset();
+
+    // Add slide out animation as part of the overview exit animation.
+    ui::ScopedLayerAnimationSettings settings{parent_layer->GetAnimator()};
+    auto exit_observer = std::make_unique<ExitAnimationObserver>();
+    settings.AddObserver(exit_observer.get());
+    Shell::Get()->overview_controller()->AddExitAnimationObserver(
+        std::move(exit_observer));
+
     views::AnimationBuilder()
         .OnEnded(base::BindOnce(
             [](DesksBarSlideAnimation* animation) { delete animation; },
@@ -437,8 +450,9 @@ class DesksBarSlideAnimation {
         .SetPreemptionStrategy(
             ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
         .Once()
-        .SetDuration(duration)
-        .SetTransform(desks_widget_->GetLayer(), transform,
+        .SetDuration(is_zero_state ? kZeroDesksBarSlideDuration
+                                   : kExpandedDesksBarSlideDuration)
+        .SetTransform(layer_tree_root, transform,
                       gfx::Tween::ACCEL_20_DECEL_100);
   }
 
@@ -448,7 +462,7 @@ class DesksBarSlideAnimation {
   ~DesksBarSlideAnimation() = default;
 
  private:
-  std::unique_ptr<views::Widget> desks_widget_;
+  std::unique_ptr<ui::LayerTreeOwner> layer_tree_;
 };
 
 OverviewGrid::OverviewGrid(aura::Window* root_window,
@@ -546,15 +560,16 @@ void OverviewGrid::Shutdown(OverviewEnterExitType exit_type) {
   // overview grid to `DesksBarSlideAnimation` which is a self-deleting object,
   // when the animation is done, it will delete itself and destroy
   // `desks_widget_` as well.
-  if (chromeos::features::IsJellyrollEnabled() && desks_widget_ &&
-      exit_type != OverviewEnterExitType::kImmediateExit) {
-    bool is_zero_state = desks_bar_view_->IsZeroState();
-    desks_bar_view_->set_overview_grid(nullptr);
-    desks_bar_view_ = nullptr;
-    new DesksBarSlideAnimation(std::move(desks_widget_), is_zero_state);
-  } else {
-    desks_bar_view_ = nullptr;
-    desks_widget_.reset();
+  if (desks_widget_) {
+    if (chromeos::features::IsJellyrollEnabled() &&
+        exit_type != OverviewEnterExitType::kImmediateExit) {
+      new DesksBarSlideAnimation(std::move(desks_widget_),
+                                 desks_bar_view_->IsZeroState());
+      desks_bar_view_ = nullptr;
+    } else {
+      desks_widget_.reset();
+      desks_bar_view_ = nullptr;
+    }
   }
 }
 
@@ -1618,7 +1633,11 @@ bool OverviewGrid::UpdateScrollOffset(float delta) {
   for (const auto& item : window_list_) {
     absl::optional<gfx::RectF> scrolling_bounds_optional =
         item->scrolling_bounds();
-    DCHECK(scrolling_bounds_optional);
+    // Scrolling bounds may not be set if the item was added after scrolling
+    // started (i.e. another desk was combined into the active desk).
+    if (!scrolling_bounds_optional) {
+      continue;
+    }
     const gfx::RectF previous_bounds = scrolling_bounds_optional.value();
     gfx::RectF new_bounds = previous_bounds;
     // Apply the offset to the axis we are scrolling on.
@@ -1639,7 +1658,7 @@ bool OverviewGrid::UpdateScrollOffset(float delta) {
 
   scroll_offset_ = new_scroll_offset;
 
-  CHECK(presentation_time_recorder_);
+  DCHECK(presentation_time_recorder_);
   presentation_time_recorder_->RequestNext();
   return in_range;
 }
@@ -2079,7 +2098,7 @@ void OverviewGrid::UpdateSaveDeskButtons() {
   // distracting to the user to have the button animate behind moving windows.
   ScopedOverviewAnimationSettings settings(
       visibility_changed || in_desk_animation ||
-              ShouldUseScrollingLayout(/*ignored_items=*/0)
+              ShouldUseScrollingLayout(/*ignored_items_size=*/0)
           ? OVERVIEW_ANIMATION_NONE
           : OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW,
       save_desk_button_container_widget_->GetNativeWindow());
@@ -2242,8 +2261,8 @@ void OverviewGrid::MaybeInitDesksWidget() {
   // must be called before LegacyDeskBarView:: Init(). This is needed because
   // the desks mini views need to access the widget to get the root window in
   // order to know how to layout themselves.
-  desks_bar_view_ =
-      desks_widget_->SetContentsView(std::make_unique<LegacyDeskBarView>(this));
+  desks_bar_view_ = desks_widget_->SetContentsView(
+      std::make_unique<LegacyDeskBarView>(weak_ptr_factory_.GetWeakPtr()));
   desks_bar_view_->Init();
 
   desks_widget_->Show();
@@ -2725,7 +2744,7 @@ void OverviewGrid::UpdateNumSavedDeskUnsupportedWindows(aura::Window* window,
                               (Shell::Get()
                                    ->overview_controller()
                                    ->disable_app_id_check_for_saved_desks() ||
-                               !full_restore::GetAppId(window).empty());
+                               !saved_desk_util::GetAppId(window).empty());
   int addend = increment ? 1 : -1;
   if (!DeskTemplate::IsAppTypeSupported(window) || !has_restore_id) {
     num_unsupported_windows_ += addend;

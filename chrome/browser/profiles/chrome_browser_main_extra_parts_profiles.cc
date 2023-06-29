@@ -38,6 +38,7 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/client_hints/client_hints_factory.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
+#include "chrome/browser/companion/visual_search/visual_search_suggestions_service_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/content_index/content_index_provider_factory.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -54,6 +55,7 @@
 #include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/enterprise/identifiers/profile_id_service_factory.h"
 #include "chrome/browser/enterprise/reporting/cloud_profile_reporting_service_factory.h"
+#include "chrome/browser/enterprise/reporting/legacy_tech/legacy_tech_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/history_ui_favicon_request_handler_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
@@ -80,6 +82,7 @@
 #include "chrome/browser/media/media_engagement_service_factory.h"
 #include "chrome/browser/media/router/chrome_media_router_factory.h"
 #include "chrome/browser/media/router/presentation/chrome_local_presentation_manager_factory.h"
+#include "chrome/browser/media/webrtc/media_device_salt_service_factory.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_keyed_service_factory.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
 #include "chrome/browser/metrics/variations/google_groups_updater_service_factory.h"
@@ -283,6 +286,7 @@
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/apps/intent_helper/supported_links_infobar_prefs_service_factory.h"
 #include "chrome/browser/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_download_observer_factory.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/policy/messaging_layer/util/manual_test_heartbeat_event_factory.h"
 #include "chrome/browser/policy/networking/policy_cert_service_factory.h"
@@ -612,6 +616,8 @@ void ChromeBrowserMainExtraPartsProfiles::
   ClipboardRestrictionServiceFactory::GetInstance();
 #if !BUILDFLAG(IS_ANDROID)
   ClosedTabCacheServiceFactory::GetInstance();
+  companion::visual_search::VisualSearchSuggestionsServiceFactory::
+      GetInstance();
 #endif
   ConsentAuditorFactory::GetInstance();
   ContentIndexProviderFactory::GetInstance();
@@ -736,6 +742,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if !BUILDFLAG(IS_ANDROID)
   ManagedConfigurationAPIFactory::GetInstance();
 #endif
+  MediaDeviceSaltServiceFactory::GetInstance();
 #if BUILDFLAG(IS_ANDROID)
   MediaDrmOriginIdManagerFactory::GetInstance();
 #endif
@@ -888,6 +895,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   TriggeredProfileResetterFactory::GetInstance();
 #endif
 #if BUILDFLAG(IS_CHROMEOS)
+  policy::DlpDownloadObserverFactory::GetInstance();
   policy::DlpRulesManagerFactory::GetInstance();
   policy::PolicyCertServiceFactory::GetInstance();
   policy::UserNetworkConfigurationUpdaterFactory::GetInstance();
@@ -903,6 +911,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   enterprise_reporting::CloudProfileReportingServiceFactory::GetInstance();
 #endif
+  enterprise_reporting::LegacyTechServiceFactory::GetInstance();
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
   if (base::FeatureList::IsEnabled(
           permissions::features::kPermissionOnDeviceNotificationPredictions) ||

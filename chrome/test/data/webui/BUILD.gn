@@ -27,7 +27,6 @@ if (include_js_tests) {
 
     sources = [
       "bookmarks/bookmarks_focus_test.js",
-      "cr_elements/cr_elements_focus_test.js",
       "extensions/cr_extensions_interactive_ui_tests.js",
       "history/history_focus_test.js",
       "password_manager/password_manager_interactive_ui_tests.js",
@@ -94,12 +93,10 @@ if (include_js_tests) {
       "chrome_timeticks_browsertest.js",
       "commander/commander_browsertest.js",
       "cr_components/cr_components_browsertest.js",
-      "cr_elements/cr_elements_browsertest.js",
       "css/css_browsertest.js",
       "histograms/histograms_internals_ui_browsertest.js",
       "history/history_browsertest.js",
       "invalidations/about_invalidations_browsertest.js",
-      "js/webui_resource_module_async_browsertest.js",
       "js2gtest_browsertest.js",
       "management/a11y/management_a11y_test.js",
       "media_internals/media_internals_ui_browsertest.js",
@@ -113,7 +110,6 @@ if (include_js_tests) {
       "settings/cr_settings_browsertest.js",
       "settings/privacy_sandbox_browsertest.js",
       "settings/settings_idle_load_browsertest.js",
-      "whats_new/whats_new_browsertest.js",
     ]
 
     gen_include_files = [
@@ -384,6 +380,7 @@ ts_library("build_ts") {
     "fake_settings_private.ts",
     "invalidations/invalidations_test.ts",
     "metrics_test_support.ts",
+    "mocha_adapter_simple.ts",
     "mock_controller.ts",
     "mocked_metrics_reporter.ts",
     "mock_timer_test.ts",
@@ -428,6 +425,7 @@ ts_library("build_ts") {
   definitions = [
     "//tools/typescript/definitions/chrome_send.d.ts",
     "//tools/typescript/definitions/chrome_timeticks.d.ts",
+    "//tools/typescript/definitions/dom_automation_controller.d.ts",
     "//tools/typescript/definitions/metrics_private.d.ts",
     "//tools/typescript/definitions/settings_private.d.ts",
   ]

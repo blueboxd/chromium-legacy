@@ -419,7 +419,7 @@ class AcceleratorConfigurationProviderTest : public AshTestBase {
   NonConfigurableActionsMap non_configurable_actions_map_;
   base::test::ScopedFeatureList scoped_feature_list_;
   // Test global singleton. Delete is handled by InputMethodManager::Shutdown().
-  raw_ptr<TestInputMethodManager> input_method_manager_;
+  raw_ptr<TestInputMethodManager, DanglingUntriaged> input_method_manager_;
   std::unique_ptr<FakeDeviceManager> fake_keyboard_manager_;
   FakeAcceleratorsUpdatedObserver observer_;
 };
@@ -2144,6 +2144,78 @@ TEST_F(AcceleratorConfigurationProviderTest,
   EXPECT_EQ(mojom::AcceleratorType::kDefault, actual_infos2[0]->type);
   EXPECT_EQ(mojom::AcceleratorState::kEnabled, actual_infos2[1]->state);
   EXPECT_EQ(mojom::AcceleratorType::kDefault, actual_infos2[1]->type);
+}
+
+TEST_F(AcceleratorConfigurationProviderTest, GetConflictAccelerator) {
+  FakeAcceleratorsUpdatedMojoObserver observer;
+  SetUpObserver(&observer);
+
+  // Initialize default accelerators.
+  const AcceleratorData test_data[] = {
+      {/*trigger_on_press=*/true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN,
+       AcceleratorAction::kToggleMirrorMode},
+      {/*trigger_on_press=*/true, ui::VKEY_M, ui::EF_COMMAND_DOWN,
+       AcceleratorAction::kOpenCrosh},
+  };
+
+  AshAcceleratorConfiguration* config =
+      Shell::Get()->ash_accelerator_configuration();
+  config->Initialize(test_data);
+
+  // Override non-configurable accelerators.
+  const ui::Accelerator browser_accelerator(ui::VKEY_H, ui::EF_CONTROL_DOWN);
+  NonConfigurableActionsMap non_config_map = {
+      {NonConfigurableActions::kBrowserShowHistory,
+       NonConfigurableAcceleratorDetails({browser_accelerator})}};
+
+  base::RunLoop().RunUntilIdle();
+
+  // Check conflict with ash accelerator.
+  const ui::Accelerator conflict_accelerator(ui::VKEY_M, ui::EF_COMMAND_DOWN);
+  AcceleratorResultDataPtr result;
+  ash::shortcut_customization::mojom::
+      AcceleratorConfigurationProviderAsyncWaiter(provider_.get())
+          .GetConflictAccelerator(mojom::AcceleratorSource::kAsh,
+                                  AcceleratorAction::kOpenCrosh,
+                                  conflict_accelerator, &result);
+
+  EXPECT_EQ(mojom::AcceleratorConfigResult::kConflict, result->result);
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_ASH_ACCELERATOR_DESCRIPTION_OPEN_CROSH),
+      result->shortcut_name);
+
+  // Check a non-conflicting accelerator.
+  const ui::Accelerator good_accelerator(ui::VKEY_M, ui::EF_CONTROL_DOWN);
+  AcceleratorResultDataPtr good_result;
+  ash::shortcut_customization::mojom::
+      AcceleratorConfigurationProviderAsyncWaiter(provider_.get())
+          .GetConflictAccelerator(mojom::AcceleratorSource::kAsh,
+                                  AcceleratorAction::kOpenCrosh,
+                                  good_accelerator, &good_result);
+  EXPECT_EQ(mojom::AcceleratorConfigResult::kSuccess, good_result->result);
+
+  // Check conflict with an ambient accelerator.
+  const ui::Accelerator ambient_accelerator(ui::VKEY_H, ui::EF_CONTROL_DOWN);
+  AcceleratorResultDataPtr ambient_result;
+  ash::shortcut_customization::mojom::
+      AcceleratorConfigurationProviderAsyncWaiter(provider_.get())
+          .GetConflictAccelerator(mojom::AcceleratorSource::kBrowser,
+                                  NonConfigurableActions::kBrowserShowHistory,
+                                  ambient_accelerator, &ambient_result);
+  EXPECT_EQ(mojom::AcceleratorConfigResult::kConflict, ambient_result->result);
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_BROWSER_ACCELERATOR_DESCRIPTION_SHOW_HISTORY),
+            ambient_result->shortcut_name);
+
+  // Check conflict with an invalid accelerator.
+  const ui::Accelerator invalid_accelerator(ui::VKEY_I, ui::EF_CONTROL_DOWN);
+  AcceleratorResultDataPtr invalid_result;
+  ash::shortcut_customization::mojom::
+      AcceleratorConfigurationProviderAsyncWaiter(provider_.get())
+          .GetConflictAccelerator(mojom::AcceleratorSource::kAsh,
+                                  /*action_id=*/1111, invalid_accelerator,
+                                  &invalid_result);
+  EXPECT_EQ(mojom::AcceleratorConfigResult::kNotFound, invalid_result->result);
 }
 
 TEST_F(AcceleratorConfigurationProviderTest,

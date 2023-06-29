@@ -6,6 +6,7 @@
 
 #include <ostream>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/ash_prefs.h"
 #include "ash/shell.h"
@@ -16,6 +17,7 @@
 #include "ash/wallpaper/wallpaper_utils/wallpaper_calculated_colors.h"
 #include "base/functional/callback_helpers.h"
 #include "base/json/values_util.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
@@ -63,7 +65,9 @@ class TestObserver : public ui::NativeThemeObserver {
   ui::NativeTheme* last_theme() { return last_theme_; }
 
  private:
-  ui::NativeTheme* last_theme_ = nullptr;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter
+  // for: #constexpr-ctor-field-initializer
+  RAW_PTR_EXCLUSION ui::NativeTheme* last_theme_ = nullptr;
   int call_count_ = 0;
 };
 
@@ -108,10 +112,12 @@ class ColorPaletteControllerTest : public NoSessionAshTestBase {
   }
 
  private:
-  raw_ptr<DarkLightModeControllerImpl> dark_light_mode_controller_;  // unowned
-  raw_ptr<WallpaperControllerImpl> wallpaper_controller_;            // unowned
+  raw_ptr<DarkLightModeControllerImpl, DanglingUntriaged>
+      dark_light_mode_controller_;  // unowned
+  raw_ptr<WallpaperControllerImpl, DanglingUntriaged>
+      wallpaper_controller_;  // unowned
 
-  raw_ptr<ColorPaletteController> color_palette_controller_;
+  raw_ptr<ColorPaletteController, DanglingUntriaged> color_palette_controller_;
 };
 
 TEST_F(ColorPaletteControllerTest, ExpectedEmptyValues) {
@@ -119,6 +125,16 @@ TEST_F(ColorPaletteControllerTest, ExpectedEmptyValues) {
             color_palette_controller()->GetColorScheme(kAccountId));
   EXPECT_EQ(absl::nullopt,
             color_palette_controller()->GetStaticColor(kAccountId));
+}
+
+// Verifies that when the TimeOfDayWallpaper feature is active, the default
+// color scheme is Neutral instead of TonalSpot.
+TEST_F(ColorPaletteControllerTest, ExpectedColorScheme_TimeOfDay) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {ash::features::kTimeOfDayWallpaper, chromeos::features::kJelly}, {});
+  EXPECT_EQ(ColorScheme::kNeutral,
+            color_palette_controller()->GetColorScheme(kAccountId));
 }
 
 TEST_F(ColorPaletteControllerTest,
@@ -230,7 +246,7 @@ TEST_F(ColorPaletteControllerTest, ColorModeTriggersObserver) {
 
   EXPECT_CALL(observer, OnColorPaletteChanging(testing::Field(
                             &ColorPaletteSeed::color_mode,
-                            ui::ColorProviderManager::ColorMode::kDark)))
+                            ui::ColorProviderKey::ColorMode::kDark)))
       .Times(1);
   dark_light_controller()->SetDarkModeEnabledForTest(true);
 }
@@ -263,7 +279,7 @@ TEST_F(ColorPaletteControllerTest, NativeTheme_DarkModeChanged_JellyDisabled) {
   // Pre-Jelly, this should always be TonalSpot.
   EXPECT_THAT(
       observer.last_theme()->scheme_variant(),
-      testing::Optional(ui::ColorProviderManager::SchemeVariant::kTonalSpot));
+      testing::Optional(ui::ColorProviderKey::SchemeVariant::kTonalSpot));
 }
 
 TEST_F(ColorPaletteControllerTest, NativeTheme_DarkModeChanged_JellyEnabled) {
@@ -292,9 +308,8 @@ TEST_F(ColorPaletteControllerTest, NativeTheme_DarkModeChanged_JellyEnabled) {
   EXPECT_EQ(ui::NativeTheme::ColorScheme::kLight,
             observer.last_theme()->GetDefaultSystemColorScheme());
   EXPECT_EQ(kCelebiColor, observer.last_theme()->user_color().value());
-  EXPECT_THAT(
-      observer.last_theme()->scheme_variant(),
-      testing::Optional(ui::ColorProviderManager::SchemeVariant::kVibrant));
+  EXPECT_THAT(observer.last_theme()->scheme_variant(),
+              testing::Optional(ui::ColorProviderKey::SchemeVariant::kVibrant));
 }
 
 // Emulates Dark mode changes on login screen that can result from pod
@@ -452,6 +467,18 @@ TEST_F(ColorPaletteControllerLocalPrefTest,
   color_palette_controller()->SelectLocalAccount(kAccountId);
 }
 
+// Verifies that when the TimeOfDayWallpaper feature is active, the default
+// color scheme is Neutral instead of TonalSpot in local_state.
+TEST_F(ColorPaletteControllerLocalPrefTest, NoLocalAccount_TimeOfDayScheme) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {ash::features::kTimeOfDayWallpaper, chromeos::features::kJelly}, {});
+  // Since `kAccountId` is not logged in, this triggers default local_state
+  // behavior.
+  EXPECT_EQ(ColorScheme::kNeutral,
+            color_palette_controller()->GetColorScheme(kAccountId));
+}
+
 TEST_F(ColorPaletteControllerLocalPrefTest,
        SelectLocalAccount_NoLocalState_NotifiesObserversWithDefault) {
   base::test::ScopedFeatureList feature_list(chromeos::features::kJelly);
@@ -574,7 +601,8 @@ TEST_F(ColorPaletteControllerLocalPrefTest,
 void PrintTo(const SampleColorScheme& scheme, std::ostream* os) {
   *os << base::StringPrintf(
       "SampleColorScheme(scheme: %u primary: %x secondary: %x tertiary: %x)",
-      scheme.scheme, scheme.primary, scheme.secondary, scheme.tertiary);
+      static_cast<unsigned>(scheme.scheme), scheme.primary, scheme.secondary,
+      scheme.tertiary);
 }
 
 }  // namespace ash

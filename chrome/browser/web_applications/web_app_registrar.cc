@@ -12,6 +12,8 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -39,6 +41,7 @@
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/storage_partition_config.h"
 #include "content/public/common/content_features.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 
@@ -719,6 +722,22 @@ absl::optional<AppId> WebAppRegistrar::LookUpAppIdByInstallUrl(
   return absl::nullopt;
 }
 
+const WebApp* WebAppRegistrar::LookUpAppByInstallSourceInstallUrl(
+    WebAppManagement::Type install_source,
+    const GURL& install_url) const {
+  for (const WebApp& app : GetApps()) {
+    const WebApp::ExternalConfigMap& config_map =
+        app.management_to_external_config_map();
+    auto it = config_map.find(install_source);
+    if (it != config_map.end()) {
+      if (base::Contains(it->second.install_urls, install_url)) {
+        return &app;
+      }
+    }
+  }
+  return nullptr;
+}
+
 bool WebAppRegistrar::IsInstalled(const AppId& app_id) const {
   const WebApp* web_app = GetAppById(app_id);
   if (!web_app || web_app->is_uninstalling())
@@ -794,6 +813,10 @@ bool WebAppRegistrar::WasInstalledBySubApp(const AppId& app_id) const {
 bool WebAppRegistrar::CanUserUninstallWebApp(const AppId& app_id) const {
   const WebApp* web_app = GetAppById(app_id);
   return web_app && web_app->CanUserUninstallWebApp();
+}
+
+bool WebAppRegistrar::IsPreventCloseEnabled(const AppId& app_id) const {
+  return policy_manager_->IsPreventCloseEnabled(app_id);
 }
 
 bool WebAppRegistrar::IsAllowedLaunchProtocol(
@@ -883,14 +906,44 @@ WebAppRegistrar::GetIsolatedWebAppStoragePartitionConfigs(
     return {};
   }
 
+  // Start with IWA's base on-disk partition.
   std::vector<content::StoragePartitionConfig> partitions = {
       url_info->storage_partition_config(profile_)};
+
+  // Get all on-disk Controlled Frame partitions.
   for (const std::string& partition :
        isolated_web_app->isolation_data()->controlled_frame_partitions) {
     partitions.push_back(url_info->GetStoragePartitionConfigForControlledFrame(
         profile_, partition, /*in_memory=*/false));
   }
+
+  // Get all in-memory Controlled Frame partitions.
+  auto it = isolated_web_app_in_memory_controlled_frame_partitions_.find(
+      isolated_web_app_id);
+  if (it != isolated_web_app_in_memory_controlled_frame_partitions_.end()) {
+    for (const std::string& partition : it->second) {
+      partitions.push_back(
+          url_info->GetStoragePartitionConfigForControlledFrame(
+              profile_, partition, /*in_memory=*/true));
+    }
+  }
+
   return partitions;
+}
+
+absl::optional<content::StoragePartitionConfig>
+WebAppRegistrar::SaveAndGetInMemoryControlledFramePartitionConfig(
+    const IsolatedWebAppUrlInfo& url_info,
+    const std::string& partition_name) {
+  if (!IsInstalled(url_info.app_id())) {
+    return absl::nullopt;
+  }
+
+  isolated_web_app_in_memory_controlled_frame_partitions_[url_info.app_id()]
+      .insert(partition_name);
+
+  return url_info.GetStoragePartitionConfigForControlledFrame(
+      profile_, partition_name, true);
 }
 
 std::string WebAppRegistrar::GetAppShortName(const AppId& app_id) const {
@@ -1134,13 +1187,6 @@ WebAppRegistrar::GetAppShortcutsMenuItemInfos(const AppId& app_id) const {
                  : std::vector<WebAppShortcutsMenuItemInfo>();
 }
 
-std::vector<IconSizes> WebAppRegistrar::GetAppDownloadedShortcutsMenuIconsSizes(
-    const AppId& app_id) const {
-  auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->downloaded_shortcuts_menu_icons_sizes()
-                 : std::vector<IconSizes>();
-}
-
 std::vector<AppId> WebAppRegistrar::GetAppIds() const {
   return GetAppIdsForAppSet(GetApps());
 }
@@ -1344,6 +1390,17 @@ base::Value WebAppRegistrar::AsDebugValue() const {
         "value", RunOnOsLoginModeToString(run_on_os_login_mode.value));
     run_on_os_login_fields.Set("user_controllable",
                                run_on_os_login_mode.user_controllable);
+
+    base::Value::List* in_mem_controlled_frame_partitions =
+        app_debug_dict.EnsureDict("isolated_data_in_memory")
+            ->EnsureList("controlled_frame_partitions (in-memory)");
+    auto it = isolated_web_app_in_memory_controlled_frame_partitions_.find(
+        web_app->app_id());
+    if (it != isolated_web_app_in_memory_controlled_frame_partitions_.end()) {
+      for (const std::string& partition : it->second) {
+        in_mem_controlled_frame_partitions->Append(partition);
+      }
+    }
 
     web_app_details.Append(std::move(app_debug_value));
   }

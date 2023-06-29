@@ -454,24 +454,24 @@
       "--test-path=../../third_party/blink/web_tests/external/wpt/webdriver/tests/",
     ],
   },
-  "wpt_tests_isolate": {
-    "label": "//:wpt_tests_isolate",
+  "chrome_wpt": {
+    "label": "//:chrome_wpt",
     "type": "generated_script",
     "args": [
       "--results-directory",
       "${ISOLATED_OUTDIR}",
     ],
   },
-  "wpt_tests_isolate_content_shell": {
-    "label": "//:wpt_tests_isolate_content_shell",
+  "content_shell_wpt": {
+    "label": "//:content_shell_wpt",
     "type": "generated_script",
     "args": [
       "--results-directory",
       "${ISOLATED_OUTDIR}",
     ],
   },
-  "wpt_tests_ios": {
-    "label": "//ios/chrome/test/wpt:wpt_tests_ios",
+  "chrome_ios_wpt": {
+    "label": "//ios/chrome/test/wpt:chrome_ios_wpt",
     "type": "generated_script",
     "args": [
       "--results-directory",
@@ -1421,6 +1421,10 @@
     "label": "//chrome/browser/metrics/perf:profile_provider_unittest",
     "type": "console_test_launcher",
   },
+  "pthreadpool_unittests": {
+    "label": "//third_party/pthreadpool:pthreadpool_unittests",
+    "type": "console_test_launcher",
+  },
   "push_apps_to_background_apk": {
     "label": "//tools/android/push_apps_to_background:push_apps_to_background_apk",
     "type": "additional_compile_target",
@@ -1895,10 +1899,6 @@
       "${ISOLATED_OUTDIR}",
     ],
   },
-  "weblayer_browsertests": {
-    "label": "//weblayer/test:weblayer_browsertests",
-    "type": "windowed_test_launcher",
-  },
   "webview_cts_tests": {
     "label": "//android_webview/test:webview_cts_tests",
     "type": "script",
@@ -1958,14 +1958,6 @@
       "--use-apk-under-test-flags-file",
       "-v",
     ],
-  },
-  "webengine_support_instrumentation_test_apk": {
-    "label": "//weblayer/browser/android/javatests:webengine_support_instrumentation_test_apk",
-    "type": "console_test_launcher",
-  },
-  "weblayer_junit_tests": {
-    "label": "//weblayer/browser/java:weblayer_junit_tests",
-    "type": "junit_test",
   },
   "webview_instrumentation_test_apk": {
     "label": "//android_webview/test:webview_instrumentation_test_apk",

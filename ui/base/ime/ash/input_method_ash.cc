@@ -124,7 +124,7 @@ ui::EventDispatchDetails InputMethodAsh::DispatchKeyEvent(ui::KeyEvent* event) {
     input_method::ImeKeyboard* keyboard = manager->GetImeKeyboard();
     if (keyboard && event->type() == ui::ET_KEY_PRESSED &&
         event->key_code() != ui::VKEY_CAPITAL &&
-        keyboard->CapsLockIsEnabled() != event->IsCapsLockOn()) {
+        keyboard->IsCapsLockEnabled() != event->IsCapsLockOn()) {
       // Synchronize the keyboard state with event's state if they do not
       // match. Do not synchronize for Caps Lock key because it is already
       // handled in event rewriter.
@@ -565,7 +565,8 @@ void InputMethodAsh::ConfirmComposition(bool reset_engine) {
   }
   if (client &&
       (client->HasCompositionText() ||
-       base::FeatureList::IsEnabled(features::kAlwaysConfirmComposition))) {
+       (base::FeatureList::IsEnabled(features::kAlwaysConfirmComposition) &&
+        client->SupportsAlwaysConfirmComposition()))) {
     const size_t characters_committed =
         client->ConfirmCompositionText(/*keep_selection*/ true);
     typing_session_manager_.CommitCharacters(characters_committed);

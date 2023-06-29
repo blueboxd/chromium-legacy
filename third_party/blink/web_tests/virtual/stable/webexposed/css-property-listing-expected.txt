@@ -265,8 +265,10 @@ All changes to this list should go through Blink's feature review process: http:
     object-fit
     object-position
     object-view-box
+    offset-anchor
     offset-distance
     offset-path
+    offset-position
     offset-rotate
     opacity
     order
@@ -280,6 +282,7 @@ All changes to this list should go through Blink's feature review process: http:
     overflow-wrap
     overflow-x
     overflow-y
+    overlay
     overscroll-behavior-block
     overscroll-behavior-inline
     overscroll-behavior-x
@@ -688,8 +691,10 @@ All changes to this list should go through Blink's feature review process: http:
         marker-mid
         marker-start
     offset
+        offset-anchor
         offset-distance
         offset-path
+        offset-position
         offset-rotate
     outline
         outline-color

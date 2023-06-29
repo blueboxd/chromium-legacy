@@ -148,7 +148,7 @@ that they depend on. This case is much more situational and often tests will end
 up looking quite different depending on the exact requirements and code
 location.
 
-##### Tests within //ash/system/network
+#### Tests within `//ash/system/network`
 
 The tests within `//ash/system/network` typically don't use the same classes
 mentioned above. This difference is due to the
@@ -164,7 +164,7 @@ using the entire networking stack. Instead, these tests use
 [`FakeCrosNetworkConfig`](https://source.chromium.org/chromium/chromium/src/+/main:chromeos/services/network_config/public/cpp/fake_cros_network_config.h;drc=5e476d249f1b36460280115db38fdc37b1c37128)
 to directly configure the state of all things networking.
 
-### Network States
+### Network State
 
 While Shill and Hermes are the sources of truth for everything related to
 networks and eSIM on ChromeOS devices it would be both inefficient and slow to
@@ -215,10 +215,6 @@ Example of retrieving and iterating over `NetworkState` objects:
   }
 ```
 
-### Configuring Networks
-
-TODO: Discuss network\_configuration\_handler.h and friends.
-
 ### Device State
 
 [`DeviceState`](https://source.chromium.org/chromium/chromium/src/+/main:chromeos/ash/components/network/device_state.h;drc=ad947e92bd398452f42173e7a39ed7ab2e4ad094)
@@ -264,5 +260,101 @@ Example of retrieving a list of `DeviceState` objects:
     ...
   }
 ```
+
+## Connecting to a Network
+
+### `NetworkConnect`
+
+The [`NetworkConnect`](https://source.chromium.org/chromium/chromium/src/+/main:chromeos/ash/components/network/network_connect.h;drc=14ccdeb9606a78fadd516d7c1d9dbc7ca28ad019)
+class is used to handle the complex UI flows associated with connecting to a
+network on ChromeOS. This class does not show any UI itself, but
+instead delegates that responsibility to [`NetworkConnect::Delegate`](https://source.chromium.org/chromium/chromium/src/+/main:chromeos/ash/components/network/network_connect.h;l=30;drc=14ccdeb9606a78fadd516d7c1d9dbc7ca28ad019)
+implementations.
+
+Further, this class is also not responsible for making Shill connect calls and
+delegates this responsibility to [`NetworkConnectionHandler`](https://source.chromium.org/chromium/chromium/src/+/main:chromeos/ash/components/network/network_connection_handler.h;drc=14ccdeb9606a78fadd516d7c1d9dbc7ca28ad019).
+
+The `NetworkConnect` class provides APIs for:
+
+* Connect or disconnect to a network by passing in a network ID
+* Enable or disable a particular technology type (e.g., WiFi)
+* Configure a network and connect to that network
+
+### `NetworkConnectionHandler`
+
+`NetworkConnectionHandler` is responsible for managing network connection
+requests. It is the only class that should make Shill connect calls. It
+provides APIs to:
+* Connect to a network
+* Disconnect from a network
+
+It also defines a set of results that can be returned by the connection attempt.
+
+[`NetworkConnectionHandlerImpl`](https://osscs.corp.google.com/chromium/chromium/src/+/main:chromeos/ash/components/network/network_connection_handler_impl.h;drc=d8468bb60e224d8797b843ee9d0258862bcbe87f)
+is the class that implements `NetworkConnectionHandler`. When there is a
+connection request, it follows these steps:
+1. Determines whether or not sufficient information (e.g. passphrase) is known
+to be available to connect to the network
+2. Requests additional information (e.g. user data which contains certificate
+information) and determines whether enough information is available. If
+certificates have not been loaded yet then the connection request is queued.
+3. Possibly configures the network certificate info
+4. Sends the connect request
+5. Waits for the network state to change to a non-connecting state
+6. Invokes the appropriate callback (always) on success or failure
+
+If the network is of type `Tether`, `NetworkConnectionHandler` delegates
+actions to the [`TetherDelegate`](https://osscs.corp.google.com/chromium/chromium/src/+/main:chromeos/ash/components/network/network_connection_handler.h;l=138-159;drc=d8468bb60e224d8797b843ee9d0258862bcbe87f).
+
+If the network is of type `Cellular`, `CellularConnectionHandler` is used to
+prepare the network before having Shill initiate the connection.
+
+Classes can observe the following network connection events by implementing
+[`NetworkConnectionObserver`](https://osscs.corp.google.com/chromium/chromium/src/+/refs/heads/main:chromeos/ash/components/network/network_connection_observer.h;l=15;drc=afec9eaf1d11cc77e8e06f06cb026fadf0dbf758):
+* When a connection to a specific network is requested
+* When a connection requests succeeds
+* When a connection requests fails
+* When a disconnection from a specific network is requested
+
+These observer methods may be preferred over the observer methods in
+[`NetworkStateHandlerObserver`](https://osscs.corp.google.com/chromium/chromium/src/+/main:chromeos/ash/components/network/network_state_handler_observer.h;drc=614b0b49c9e734fa7f6632df48542891b9f7f92a)
+when a class wishes to receive notifications for specific connect/disconnect
+operations rather than more gross network activity.
+
+### `CellularConnectionHandler`
+
+[`CellularConnectionHandler`](https://source.chromium.org/chromium/chromium/src/+/refs/heads/main:chromeos/ash/components/network/cellular_connection_handler.h;drc=d8468bb60e224d8797b843ee9d0258862bcbe87f)
+provides the functions to prepare both pSIM and eSIM cellular
+networks for connection. Is provides API to:
+* Prepare connection for a newly installed cellular network
+* Prepare connection for an existing cellular network
+
+Before we can connect to a cellular network, the
+network must be backed by Shill service and must have its `Connectable`
+property set to true which means that it is the selected SIM profile in its
+slot.
+
+ChromeOS only supports a single physical SIM slot, so
+pSIM networks should always have their `Connectable` properties set to true as
+long as they are backed by Shill. Since Shill is expected to create a service
+for each pSIM, the only thing that the caller needs to do is wait for the
+corresponding Shill service to be configured.
+
+For eSIM networks, it is possible that there are multiple eSIM profiles on a
+single EUICC; in this case, `Connectable` being false means that the eSIM
+profile is disabled and must be enabled via Hermes before a connection can
+succeed. The steps for preparing an eSIM network are:
+
+1. Check to see if the profile is already enabled; if so, skip to step #6.
+2. Inhibit cellular scans
+3. Request installed profiles from Hermes
+4. Enable the relevant profile
+5. Uninhibit cellular scans
+6. Wait until the associated [`NetworkState`](#Network-State) becomes connectable
+7. Wait until Shill automatically connects if the SIM slot is switched
+
+## Configuring Networks
+
+TODO: Discuss network\_configuration\_handler.h and friends.
 
 TODO: Finish README

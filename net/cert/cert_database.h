@@ -56,6 +56,14 @@ class NET_EXPORT CertDatabase {
     Observer() = default;
   };
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class HistogramNotificationType {
+    kTrust = 0,
+    kClientCert = 1,
+    kMaxValue = kClientCert
+  };
+
   // Returns the CertDatabase singleton.
   static CertDatabase* GetInstance();
 
@@ -97,7 +105,7 @@ class NET_EXPORT CertDatabase {
 
   class Notifier;
   friend class Notifier;
-  raw_ptr<Notifier> notifier_ = nullptr;
+  raw_ptr<Notifier, DanglingUntriaged> notifier_ = nullptr;
 #endif
 };
 

@@ -108,6 +108,8 @@ class WebAppPolicyManager {
 
   bool IsPreventCloseEnabled(const AppId& app_id) const;
 
+  void RefreshPolicyInstalledAppsForTesting();
+
  private:
   friend class WebAppPolicyManagerTest;
 
@@ -187,7 +189,7 @@ class WebAppPolicyManager {
   raw_ptr<const ash::SystemWebAppDelegateMap, DanglingUntriaged>
       system_web_apps_delegate_map_ = nullptr;
 #endif
-  raw_ptr<OsIntegrationManager, DanglingUntriaged> os_integration_manager_ =
+  raw_ptr<OsIntegrationManager, DanglingAcrossTasks> os_integration_manager_ =
       nullptr;
   PrefChangeRegistrar pref_change_registrar_;
   PrefChangeRegistrar local_state_pref_change_registrar_;

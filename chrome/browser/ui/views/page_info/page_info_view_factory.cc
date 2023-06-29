@@ -83,11 +83,14 @@ int GetIconSize() {
 // static
 std::unique_ptr<views::View> PageInfoViewFactory::CreateSeparator(
     int horizontal_inset) {
-  // Distance for multi content list is used, but split in half, since there is
-  // a separator in the middle of it.
-  const int separator_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                                    DISTANCE_CONTENT_LIST_VERTICAL_MULTI) /
-                                2;
+  int separator_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_CONTENT_LIST_VERTICAL_MULTI);
+  if (!features::IsChromeRefresh2023()) {
+    // Distance for multi content list is used, but split in half, since there
+    // is a separator in the middle of it. For ChromeRefresh2023, the separator
+    // spacing is larger hence no need to split in half.
+    separator_spacing /= 2;
+  }
   auto separator = std::make_unique<views::Separator>();
   separator->SetProperty(views::kMarginsKey,
                          gfx::Insets::VH(separator_spacing, horizontal_inset));
@@ -201,18 +204,23 @@ std::unique_ptr<views::View> PageInfoViewFactory::CreateSubpageHeader(
       base::BindRepeating(&PageInfoNavigationHandler::OpenMainPage,
                           base::Unretained(navigation_handler_),
                           base::DoNothing()),
-      vector_icons::kArrowBackIcon, GetIconSize());
+      features::IsChromeRefresh2023()
+          ? vector_icons::kArrowBackChromeRefreshIcon
+          : vector_icons::kArrowBackIcon,
+      GetIconSize());
   views::InstallCircleHighlightPathGenerator(back_button.get());
   back_button->SetID(VIEW_ID_PAGE_INFO_BACK_BUTTON);
   back_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
   back_button->SetProperty(views::kInternalPaddingKey,
                            back_button->GetInsets());
   header->AddChildView(std::move(back_button));
-
   auto* label_wrapper = header->AddChildView(CreateLabelWrapper());
   auto* title_label = label_wrapper->AddChildView(
       std::make_unique<views::Label>(title, views::style::CONTEXT_DIALOG_TITLE,
                                      views::style::STYLE_SECONDARY));
+  if (features::IsChromeRefresh2023()) {
+    title_label->SetTextStyle(views::style::STYLE_HEADLINE_4);
+  }
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   if (!subtitle.empty()) {
@@ -570,7 +578,9 @@ const ui::ImageModel PageInfoViewFactory::GetLaunchIcon() {
   return ui::ImageModel::FromVectorIcon(
       features::IsChromeRefresh2023() ? vector_icons::kLaunchChromeRefreshIcon
                                       : vector_icons::kLaunchIcon,
-      ui::kColorIconSecondary, GetIconSize());
+      features::IsChromeRefresh2023() ? ui::kColorIcon
+                                      : ui::kColorIconSecondary,
+      GetIconSize());
 }
 
 // static

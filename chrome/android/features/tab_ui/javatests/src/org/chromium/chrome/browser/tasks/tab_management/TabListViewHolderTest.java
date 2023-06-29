@@ -337,7 +337,7 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
     }
 
     private void testSelectableTabClickToSelect(
-            ViewGroup view, PropertyModel model, boolean isLongClick) {
+            View view, PropertyModel model, boolean isLongClick) {
         Runnable clickTask = () -> {
             if (isLongClick) {
                 view.performLongClick();
@@ -651,6 +651,11 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
         ViewGroup selectableTabListContent = mSelectableTabListView.findViewById(R.id.content_view);
         testSelectableTabClickToSelect(selectableTabListContent, mSelectableModel, false);
         testSelectableTabClickToSelect(selectableTabListContent, mSelectableModel, true);
+        // Also test the end button.
+        testSelectableTabClickToSelect(
+                selectableTabListContent.findViewById(R.id.end_button), mSelectableModel, false);
+        testSelectableTabClickToSelect(
+                selectableTabListContent.findViewById(R.id.end_button), mSelectableModel, true);
     }
 
     @Test
@@ -1038,7 +1043,6 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
     @Override
     public void tearDownTest() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PriceTrackingFeatures.setPriceTrackingEnabledForTesting(null);
             mStripMCP.destroy();
             mGridMCP.destroy();
             mSelectableMCP.destroy();

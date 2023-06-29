@@ -1316,7 +1316,7 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
                                   AggregatableResult::kInternalError);
   }
 
-  // Early exit if done modifying the storage. Dropped reports still need to
+  // Early exit if done modifying the storage. Noised reports still need to
   // clean sources.
   if (!IsSuccessResult(store_event_level_status) &&
       !IsSuccessResult(store_aggregatable_status) &&
@@ -3133,6 +3133,14 @@ void AttributionStorageSql::DeleteByDataKey(
                 std::equal_to<blink::StorageKey>(),
                 blink::StorageKey::CreateFirstParty(key.reporting_origin())),
             /*delete_rate_limit_data=*/true);
+}
+
+void AttributionStorageSql::SetDelegate(
+    std::unique_ptr<AttributionStorageDelegate> delegate) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(delegate);
+  rate_limit_table_.SetDelegate(*delegate);
+  delegate_ = std::move(delegate);
 }
 
 }  // namespace content

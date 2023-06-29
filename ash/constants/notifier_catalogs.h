@@ -185,7 +185,8 @@ enum class NotificationCatalogName {
   kGeolocationSwitch = 170,
   kMultiCaptureOnLogin = 171,
   kFloatingWorkspace = 172,
-  kMaxValue = kFloatingWorkspace
+  kScalableIphNotification = 173,
+  kMaxValue = kScalableIphNotification
 };
 
 // A living catalog that registers system nudges.
@@ -212,7 +213,8 @@ enum class NudgeCatalogName {
   kVideoConferenceTrayCameraUseWhileHWDisabled = 14,
   kVideoConferenceTrayCameraUseWhileSWDisabled = 15,
   kVideoConferenceTraySpeakOnMuteOptIn = 16,
-  kMaxValue = kVideoConferenceTraySpeakOnMuteOptIn
+  kVideoConferenceTraySpeakOnMuteOptInConfirmation = 17,
+  kMaxValue = kVideoConferenceTraySpeakOnMuteOptInConfirmation
 };
 
 // A living catalog that registers toasts.

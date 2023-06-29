@@ -3595,7 +3595,7 @@ TEST(ServiceWorkerDatabaseTest, RouterRulesStoreRestore) {
     blink::ServiceWorkerRouterCondition condition;
     condition.type =
         blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
-    blink::UrlPattern url_pattern;
+    blink::SafeUrlPattern url_pattern;
     url_pattern.pathname.emplace_back(liburlpattern::PartType::kFixed,
                                       "/test_data",
                                       liburlpattern::Modifier::kNone);
@@ -3618,7 +3618,7 @@ TEST(ServiceWorkerDatabaseTest, RouterRulesStoreRestore) {
     blink::ServiceWorkerRouterCondition condition;
     condition.type =
         blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
-    blink::UrlPattern url_pattern;
+    blink::SafeUrlPattern url_pattern;
     url_pattern.pathname.emplace_back(liburlpattern::PartType::kFixed,
                                       "/test_data",
                                       liburlpattern::Modifier::kNone);
@@ -3642,7 +3642,7 @@ TEST(ServiceWorkerDatabaseTest, RouterRulesStoreRestore) {
     blink::ServiceWorkerRouterCondition condition;
     condition.type =
         blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
-    blink::UrlPattern url_pattern;
+    blink::SafeUrlPattern url_pattern;
     url_pattern.pathname.emplace_back(liburlpattern::PartType::kFixed,
                                       "/test_data",
                                       liburlpattern::Modifier::kNone);
@@ -3674,7 +3674,7 @@ TEST(ServiceWorkerDatabaseTest, RouterRulesStoreRestore) {
     blink::ServiceWorkerRouterCondition condition;
     condition.type =
         blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
-    blink::UrlPattern url_pattern;
+    blink::SafeUrlPattern url_pattern;
     url_pattern.pathname.emplace_back(liburlpattern::PartType::kFixed,
                                       "/test_data",
                                       liburlpattern::Modifier::kNone);
@@ -3683,9 +3683,16 @@ TEST(ServiceWorkerDatabaseTest, RouterRulesStoreRestore) {
 
     blink::ServiceWorkerRouterSource source;
     source.type = blink::ServiceWorkerRouterSource::SourceType::kNetwork;
-    source.network_source = blink::ServiceWorkerRouterNetworkSource{};
+    source.network_source.emplace();
     rule.sources.push_back(source);
-    rule.sources.push_back(source);
+    blink::ServiceWorkerRouterSource source2;
+    source2.type = blink::ServiceWorkerRouterSource::SourceType::kRace;
+    source2.race_source.emplace();
+    rule.sources.push_back(source2);
+    blink::ServiceWorkerRouterSource source3;
+    source3.type = blink::ServiceWorkerRouterSource::SourceType::kFetchEvent;
+    source3.fetch_event_source.emplace();
+    rule.sources.push_back(source3);
     router_rules.rules.emplace_back(rule);
 
     store_and_restore(router_rules);
@@ -3698,7 +3705,7 @@ TEST(ServiceWorkerDatabaseTest, RouterRulesStoreRestore) {
     blink::ServiceWorkerRouterCondition condition;
     condition.type =
         blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
-    blink::UrlPattern url_pattern;
+    blink::SafeUrlPattern url_pattern;
     url_pattern.pathname.emplace_back(liburlpattern::PartType::kFixed,
                                       "/test_data",
                                       liburlpattern::Modifier::kNone);

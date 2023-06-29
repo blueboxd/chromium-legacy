@@ -33,6 +33,7 @@ import androidx.core.widget.ImageViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.ResettersForTesting;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
@@ -705,9 +706,17 @@ public class TabGridDialogView extends FrameLayout {
         ((TextView) (mAnimationCardView.findViewById(R.id.tab_title)))
                 .setTextColor(((TextView) (view.findViewById(R.id.tab_title))).getTextColors());
 
-        ((ImageView) (mAnimationCardView.findViewById(R.id.tab_thumbnail)))
-                .setImageDrawable(
-                        ((ImageView) (view.findViewById(R.id.tab_thumbnail))).getDrawable());
+        TabGridThumbnailView originalThumbnailView =
+                (TabGridThumbnailView) view.findViewById(R.id.tab_thumbnail);
+        TabGridThumbnailView animationThumbnailView =
+                (TabGridThumbnailView) mAnimationCardView.findViewById(R.id.tab_thumbnail);
+        if (originalThumbnailView.isPlaceholder()) {
+            animationThumbnailView.setImageDrawable(null);
+        } else {
+            animationThumbnailView.setImageDrawable(originalThumbnailView.getDrawable());
+            animationThumbnailView.setImageMatrix(originalThumbnailView.getImageMatrix());
+            animationThumbnailView.setScaleType(originalThumbnailView.getScaleType());
+        }
 
         ImageView actionButton = mAnimationCardView.findViewById(R.id.action_button);
         actionButton.setImageDrawable(
@@ -880,62 +889,51 @@ public class TabGridDialogView extends FrameLayout {
         return mSnackBarContainer;
     }
 
-    @VisibleForTesting
     Animator getCurrentDialogAnimatorForTesting() {
         return mCurrentDialogAnimator;
     }
 
-    @VisibleForTesting
     Animator getCurrentUngroupBarAnimatorForTesting() {
         return mCurrentUngroupBarAnimator;
     }
 
-    @VisibleForTesting
     int getUngroupBarStatusForTesting() {
         return mUngroupBarStatus;
     }
 
-    @VisibleForTesting
     AnimatorSet getShowDialogAnimationForTesting() {
         return mShowDialogAnimation;
     }
 
-    @VisibleForTesting
     int getBackgroundColorForTesting() {
         return mBackgroundDrawableColor;
     }
 
-    @VisibleForTesting
     int getUngroupBarBackgroundColorForTesting() {
         return mUngroupBarBackgroundColor;
     }
 
-    @VisibleForTesting
     int getUngroupBarHoveredBackgroundColorForTesting() {
         return mUngroupBarHoveredBackgroundColor;
     }
 
-    @VisibleForTesting
     int getUngroupBarTextColorForTesting() {
         return mUngroupBarTextColor;
     }
 
-    @VisibleForTesting
     int getUngroupBarHoveredTextColorForTesting() {
         return mUngroupBarHoveredTextColor;
     }
 
-    @VisibleForTesting
     static void setSourceRectCallbackForTesting(Callback<RectF> callback) {
         sSourceRectCallbackForTesting = callback;
+        ResettersForTesting.register(() -> sSourceRectCallbackForTesting = null);
     }
 
-    @VisibleForTesting
     ScrimCoordinator getScrimCoordinatorForTesting() {
         return mScrimCoordinator;
     }
 
-    @VisibleForTesting
     VisibilityListener getVisibilityListenerForTesting() {
         return mVisibilityListener;
     }

@@ -32,12 +32,9 @@ class OTRWebStateObserver::WebStateObserver : public WebStateListObserver {
   }
 
   // WebStateListObserver
-  void WebStateListChanged(WebStateList* web_state_list,
-                           const WebStateListChange& change,
-                           const WebStateSelection& selection) override;
-  void WebStateDetachedAt(WebStateList* web_state_list,
-                          web::WebState* web_state,
-                          int index) override;
+  void WebStateListDidChange(WebStateList* web_state_list,
+                             const WebStateListChange& change,
+                             const WebStateSelection& selection) override;
   void BatchOperationEnded(WebStateList* web_state_list) override;
 
  private:
@@ -53,7 +50,7 @@ class OTRWebStateObserver::WebStateObserver : public WebStateListObserver {
 
 #pragma mark - WebStateListObserver
 
-void OTRWebStateObserver::WebStateObserver::WebStateListChanged(
+void OTRWebStateObserver::WebStateObserver::WebStateListDidChange(
     WebStateList* web_state_list,
     const WebStateListChange& change,
     const WebStateSelection& selection) {
@@ -62,8 +59,8 @@ void OTRWebStateObserver::WebStateObserver::WebStateListChanged(
       // Do nothing when a WebState is selected and its status is updated.
       break;
     case WebStateListChange::Type::kDetach:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // WebStateDetachedAt() to here.
+    case WebStateListChange::Type::kInsert:
+      UpdateOtrWebStateCount();
       break;
     case WebStateListChange::Type::kMove:
       // Do nothing when a WebState is moved.
@@ -71,17 +68,7 @@ void OTRWebStateObserver::WebStateObserver::WebStateListChanged(
     case WebStateListChange::Type::kReplace:
       // Do nothing when a WebState is replaced.
       break;
-    case WebStateListChange::Type::kInsert:
-      UpdateOtrWebStateCount();
-      break;
   }
-}
-
-void OTRWebStateObserver::WebStateObserver::WebStateDetachedAt(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index) {
-  UpdateOtrWebStateCount();
 }
 
 void OTRWebStateObserver::WebStateObserver::BatchOperationEnded(

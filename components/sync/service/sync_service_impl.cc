@@ -66,6 +66,10 @@ constexpr base::TimeDelta kRecordDownloadStatusTimeout = base::Seconds(30);
 constexpr char kModelTypeReachedUpToDateHistogramPrefix[] =
     "Sync.ModelTypeUpToDateTime";
 
+BASE_FEATURE(kReportPendingDownloadDuringFirstSync,
+             "ReportPendingDownloadDuringFirstSync",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // The initial state of sync, for the Sync.InitialState2 histogram. Even if
 // this value is CAN_START, sync startup might fail for reasons that we may
 // want to consider logging in the future, such as a passphrase needed for
@@ -259,6 +263,8 @@ void SyncServiceImpl::Initialize() {
       &crypto_, &sync_prefs_, sync_client_->GetPreferenceProvider(),
       GetRegisteredDataTypes(),
       base::BindRepeating(&SyncServiceImpl::GetSyncAccountStateForPrefs,
+                          base::Unretained(this)),
+      base::BindRepeating(&SyncServiceImpl::GetAccountInfo,
                           base::Unretained(this)));
 
   sync_prefs_.AddSyncPrefObserver(this);
@@ -284,6 +290,11 @@ void SyncServiceImpl::Initialize() {
     }
   }
 
+  // *After* setting up `auth_manager_`, run a prefs migration that depends on
+  // the account state.
+  sync_prefs_.MaybeMigratePrefsForSyncToSigninPart1(
+      GetSyncAccountStateForPrefs());
+
   if (!IsLocalSyncEnabled()) {
     const bool account_info_fully_loaded =
         auth_manager_->IsActiveAccountInfoFullyLoaded();
@@ -298,8 +309,7 @@ void SyncServiceImpl::Initialize() {
   // If sync is disabled permanently, clean up old data that may be around (e.g.
   // crash during signout).
   if (HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY) ||
-      (HasDisableReason(DISABLE_REASON_NOT_SIGNED_IN) &&
-       auth_manager_->IsActiveAccountInfoFullyLoaded())) {
+      HasDisableReason(DISABLE_REASON_NOT_SIGNED_IN)) {
     StopAndClear();
   }
 
@@ -325,12 +335,7 @@ void SyncServiceImpl::Initialize() {
   }
 
   if (base::FeatureList::IsEnabled(
-          kSyncAllowClearingMetadataWhenDataTypeIsStopped) &&
-      // The selected types depend on the signin state. Checking that the
-      // account info is fully loaded avoids accidentally clearing stuff.
-      // For local sync, no account info is needed.
-      (IsLocalSyncEnabled() ||
-       auth_manager_->IsActiveAccountInfoFullyLoaded())) {
+          kSyncAllowClearingMetadataWhenDataTypeIsStopped)) {
     // Call Stop() on controllers for non-preferred types to clear metadata.
     // This allows clearing metadata for types disabled in previous run early-on
     // during initialization.
@@ -764,8 +769,6 @@ SyncService::DisableReasonSet SyncServiceImpl::GetDisableReasons() const {
       result.Put(DISABLE_REASON_ENTERPRISE_POLICY);
     }
     if (!IsSignedIn()) {
-      // TODO(crbug.com/1447377): additionally, check for refresh tokens to be
-      // loaded.
       result.Put(DISABLE_REASON_NOT_SIGNED_IN);
     }
   }
@@ -950,6 +953,9 @@ void SyncServiceImpl::OnEngineInitialized(bool success,
   if (!protocol_event_observers_.empty()) {
     engine_->RequestBufferedProtocolEventsAndEnableForwarding();
   }
+
+  sync_prefs_.MaybeMigratePrefsForSyncToSigninPart2(
+      user_settings_->IsUsingExplicitPassphrase());
 
   data_type_manager_ =
       sync_client_->GetSyncApiComponentFactory()->CreateDataTypeManager(
@@ -1413,6 +1419,16 @@ ModelTypeSet SyncServiceImpl::GetTypesWithPendingDownloadForInitialSync()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  if (base::FeatureList::IsEnabled(kReportPendingDownloadDuringFirstSync) &&
+      GetTransportState() == TransportState::INITIALIZING &&
+      engine_->GetBirthday().empty()) {
+    CHECK(!data_type_manager_);
+    // The engine is initializing for the very first sync (usually after
+    // sign-in). In this case all types are reported as pending download,
+    // optimistically assuming datatype preconditions will be met.
+    return GetPreferredDataTypes();
+  }
+
   if (!data_type_manager_) {
     return ModelTypeSet();
   }
@@ -1584,11 +1600,6 @@ void SyncServiceImpl::UpdateDataTypesForInvalidations() {
   // traffic.
   types.Remove(HISTORY);
 #endif
-  if (!(base::FeatureList::IsEnabled(kUseSyncInvalidations) &&
-        base::FeatureList::IsEnabled(kUseSyncInvalidationsForWalletAndOffer))) {
-    types.RemoveAll({AUTOFILL_WALLET_DATA, AUTOFILL_WALLET_OFFER});
-  }
-
   types.RemoveAll(data_type_manager_->GetActiveProxyDataTypes());
 
   sync_client_->GetSyncInvalidationsService()->SetInterestedDataTypes(types);
@@ -1928,6 +1939,9 @@ SyncService::ModelTypeDownloadStatus SyncServiceImpl::GetDownloadStatusForImpl(
   CHECK(IsRealDataType(type));
 
   if (!IsLocalSyncEnabled()) {
+    // TODO(crbug.com/1425026): Verify whether it's actually necessary to check
+    // IsActiveAccountInfoFullyLoaded() - can the engine actually start, and
+    // data types become active, if that isn't true?
     if (!auth_manager_->IsActiveAccountInfoFullyLoaded()) {
       DVLOG(1) << "Waiting for refresh tokens to be loaded from the disk";
       // GetDisableReasons() won't be empty until then.
@@ -2069,6 +2083,9 @@ void SyncServiceImpl::StopAndClear() {
   // For explicit passphrase users, clear the encryption key, such that they
   // will need to reenter it if sync gets re-enabled.
   sync_prefs_.ClearEncryptionBootstrapToken();
+  // If the migration didn't finish before StopAndClear() was called, mark it as
+  // done so it doesn't trigger again if the user signs in later.
+  sync_prefs_.MarkPartialSyncToSigninMigrationFullyDone();
 
 #if BUILDFLAG(IS_IOS)
   sync_prefs_.ClearBookmarksAndReadingListAccountStorageOptIn();

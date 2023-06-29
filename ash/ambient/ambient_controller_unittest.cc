@@ -805,8 +805,8 @@ TEST_P(AmbientControllerTestForAnyUiSettings,
 TEST_F(AmbientControllerTest, ShouldResetLockScreenInactivityTimerOnEvent) {
   auto* ambient_ui_model = AmbientUiModel::Get();
   // Set a long photo download delay so that state is
-  // `AmbientUiVisibility::kShown` but widget does not exist to receive events
-  // yet.
+  // `AmbientUiVisibility::kShouldShow` but widget does not exist to receive
+  // events yet.
   SetPhotoDownloadDelay(base::Seconds(1));
   LockScreen();
   FastForwardByLockScreenInactivityTimeout();
@@ -2108,8 +2108,11 @@ class AmbientControllerDurationTest : public AmbientAshTestBase {
 TEST_F(AmbientControllerDurationTest, SetScreenSaverDuration) {
   EXPECT_TRUE(ash::features::IsScreenSaverDurationEnabled());
 
-  // Set screen saver duration.
+  // Duration is default to 10 minutes.
   SetAmbientModeEnabled(true);
+  EXPECT_EQ(10, GetScreenSaverDuration());
+
+  // Set screen saver duration.
   SetScreenSaverDuration(5);
   EXPECT_EQ(5, GetScreenSaverDuration());
 

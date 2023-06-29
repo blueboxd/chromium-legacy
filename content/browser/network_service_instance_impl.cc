@@ -17,6 +17,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
+#include "base/location.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -27,6 +28,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread.h"
@@ -321,13 +323,13 @@ void CreateNetworkContextInternal(
 
   if (network::TransferableDirectory::IsOpenForTransferRequired()) {
     if (params->file_paths) {
+      if (params->file_paths->http_cache_directory) {
+        params->file_paths->http_cache_directory->OpenForTransfer();
+      }
+      if (params->file_paths->shared_dictionary_directory) {
+        params->file_paths->shared_dictionary_directory->OpenForTransfer();
+      }
       params->file_paths->data_directory.OpenForTransfer();
-    }
-    if (params->http_cache_directory) {
-      params->http_cache_directory->OpenForTransfer();
-    }
-    if (params->shared_dictionary_directory) {
-      params->shared_dictionary_directory->OpenForTransfer();
     }
   }
 
@@ -417,6 +419,18 @@ void CreateInProcessNetworkService(
 #endif
 }
 
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
+// Runs a self-owned SystemDnsResolverMojoImpl. This is meant to run on a
+// high-priority thread pool.
+void RunSystemDnsResolverOnThreadPool(
+    mojo::PendingReceiver<network::mojom::SystemDnsResolver> dns_receiver) {
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<content::SystemDnsResolverMojoImpl>(),
+      std::move(dns_receiver));
+}
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) ||
+        // BUILDFLAG(IS_CHROMEOS)
+
 network::mojom::NetworkServiceParamsPtr CreateNetworkServiceParams() {
   network::mojom::NetworkServiceParamsPtr network_service_params =
       network::mojom::NetworkServiceParams::New();
@@ -472,18 +486,21 @@ network::mojom::NetworkServiceParamsPtr CreateNetworkServiceParams() {
   }
 #endif  // BUILDFLAG(IS_POSIX)
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
   if (GetContentClient()
           ->browser()
           ->ShouldRunOutOfProcessSystemDnsResolution() &&
       IsOutOfProcessNetworkService()) {
     mojo::PendingRemote<network::mojom::SystemDnsResolver> dns_remote;
-    mojo::MakeSelfOwnedReceiver(
-        std::make_unique<content::SystemDnsResolverMojoImpl>(),
-        dns_remote.InitWithNewPipeAndPassReceiver());
+    scoped_refptr<base::SequencedTaskRunner> thread_pool_task_runner =
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {base::TaskPriority::USER_BLOCKING});
+    thread_pool_task_runner->PostTask(
+        FROM_HERE, base::BindOnce(RunSystemDnsResolverOnThreadPool,
+                                  dns_remote.InitWithNewPipeAndPassReceiver()));
     network_service_params->system_dns_resolver = std::move(dns_remote);
   }
-#endif
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
 
   return network_service_params;
 }
@@ -921,17 +938,19 @@ void SetCertVerifierServiceFactoryForTesting(
 }
 
 void MaybeCleanCacheDirectory(network::mojom::NetworkContextParams* params) {
-  if (params->http_cache_enabled && params->http_cache_directory) {
+  if (params->http_cache_enabled && params->file_paths &&
+      params->file_paths->http_cache_directory) {
     // Delete any old data except for the "Cache_Data" directory.
     base::ThreadPool::PostTask(
         FROM_HERE,
         {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(MaybeDeleteOldCache,
-                       params->http_cache_directory->path()));
+                       params->file_paths->http_cache_directory->path()));
 
-    params->http_cache_directory =
-        params->http_cache_directory->path().Append(kCacheDataDirectoryName);
+    params->file_paths->http_cache_directory =
+        params->file_paths->http_cache_directory->path().Append(
+            kCacheDataDirectoryName);
   }
 }
 
@@ -944,8 +963,9 @@ void CreateNetworkContextInNetworkService(
   MaybeCleanCacheDirectory(params.get());
 
   const bool has_valid_http_cache_path =
-      params->http_cache_enabled && params->http_cache_directory &&
-      !params->http_cache_directory->path().empty();
+      params->http_cache_enabled && params->file_paths &&
+      params->file_paths->http_cache_directory &&
+      !params->file_paths->http_cache_directory->path().empty();
   const bool brokering_is_enabled =
       IsOutOfProcessNetworkService() &&
       base::FeatureList::IsEnabled(
@@ -953,7 +973,7 @@ void CreateNetworkContextInNetworkService(
   if (has_valid_http_cache_path && brokering_is_enabled) {
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<HttpCacheBackendFileOperationsFactory>(
-            params->http_cache_directory->path()),
+            params->file_paths->http_cache_directory->path()),
         params->http_cache_file_operations_factory
             .InitWithNewPipeAndPassReceiver());
   }

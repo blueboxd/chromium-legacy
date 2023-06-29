@@ -9,6 +9,8 @@
 
 #include "base/functional/bind.h"
 #include "base/json/json_reader.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -71,7 +73,6 @@ LiveTranslateController::LiveTranslateController(
 }
 
 LiveTranslateController::~LiveTranslateController() = default;
-
 // static
 void LiveTranslateController::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -144,6 +145,11 @@ void LiveTranslateController::GetTranslation(
                      base::Unretained(this), result.is_final,
                      std::move(callback)),
       kMaxMessageSize);
+
+  base::UmaHistogramSparse("Accessibility.LiveTranslate.TargetLanguage",
+                           base::HashMetricName(target_language));
+  base::UmaHistogramSparse("Accessibility.LiveTranslate.SourceLanguage",
+                           base::HashMetricName(source_language));
 }
 
 void LiveTranslateController::ResetURLLoaderFactory() {

@@ -112,9 +112,9 @@
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "components/supervised_user/core/browser/child_account_service.h"
 #include "components/supervised_user/core/browser/supervised_user_service.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
 #endif
@@ -2000,6 +2000,7 @@ void ProfileManager::SaveActiveProfiles() {
   base::Value::List& profile_list = update.Get();
 
   profile_list.clear();
+  has_updated_last_opened_profiles_ = true;
 
   // crbug.com/120112 -> several non-off-the-record profiles might have the same
   // GetBaseName(). In that case, we cannot restore both

@@ -754,8 +754,6 @@ class ASH_EXPORT WallpaperControllerImpl
       const WallpaperInfo& wallpaper_info,
       base::Time modification_time);
 
-  PrefService* GetUserPrefServiceSyncable(const AccountId& account_id) const;
-
   // This will not update a new wallpaper if the synced |info.collection_id| is
   // the same as the user's current collection_id.
   void HandleDailyWallpaperInfoSyncedIn(const AccountId& account_id,
@@ -772,6 +770,9 @@ class ASH_EXPORT WallpaperControllerImpl
 
   void CleanUpBeforeSettingUserWallpaperInfo(const AccountId& account_id,
                                              const WallpaperInfo& info);
+
+  // Returns whether session state is oobe or the oobe ui dialog is visible.
+  bool IsOobeState() const;
 
   bool is_session_active_ = false;
 

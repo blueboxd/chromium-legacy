@@ -70,7 +70,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <variants name="VmmSwapVmName">
-  <variant name="ArcVm" summary="ARCVM"/>
+  <variant name="ARCVM" summary="ARCVM"/>
 </variants>
 
 <histogram name="HeapProfiling.AndroidStackUnwinder"
@@ -174,7 +174,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="HeapProfiling.SamplingIntervalKB" units="KB"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>joenotcharles@google.com</owner>
   <owner>chrome-memory@google.com</owner>
   <summary>
@@ -911,7 +911,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Experimental.Renderer.HighestPrivateMemoryFootprint"
-    units="MB" expires_after="2023-10-22">
+    units="MB" expires_after="2023-12-24">
   <owner>tasak@google.com</owner>
   <owner>bartekn@google.com</owner>
   <summary>
@@ -1467,7 +1467,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.NetworkService.PrivateMemoryFootprint" units="MiB"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>mmenke@chromium.org</owner>
   <owner>morlovich@chromium.org</owner>
   <owner>erikchen@chromium.org</owner>
@@ -1615,7 +1615,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.OOMKills.Count" units="kills"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>vovoy@google.com</owner>
   <owner>wvk@google.com</owner>
   <summary>Cumulative count of OOM kills in one user session.</summary>
@@ -1689,16 +1689,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Memory.ParkableImage.Read.Size" units="KiB"
-    expires_after="2022-12-25">
-  <owner>thiabaud@google.com</owner>
-  <owner>lizeb@chromium.org</owner>
-  <summary>
-    Recorded each time a ParkableImage is read from disk. Records the size of
-    the read, in KiB.
-  </summary>
-</histogram>
-
 <histogram name="Memory.ParkableImage.Read.Throughput" units="MiBps"
     expires_after="2023-07-02">
   <owner>thiabaud@google.com</owner>
@@ -1706,16 +1696,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Recorded each time a ParkableImage is read from disk. Records the throughput
     of reading the ParkableImage from disk, in MiB/s.
-  </summary>
-</histogram>
-
-<histogram name="Memory.ParkableImage.Read.TimeSinceFreeze" units="ms"
-    expires_after="2022-12-25">
-  <owner>thiabaud@google.com</owner>
-  <owner>lizeb@chromium.org</owner>
-  <summary>
-    Recorded each time a ParkableImage is read from disk. Records the time since
-    the ParkableImage was frozen.
   </summary>
 </histogram>
 
@@ -1779,16 +1759,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Recorded each time a ParkableImage is written to disk. Records the size of
     the write, in KiB.
-  </summary>
-</histogram>
-
-<histogram name="Memory.ParkableImage.Write.Throughput" units="MiBps"
-    expires_after="2022-10-23">
-  <owner>thiabaud@google.com</owner>
-  <owner>lizeb@chromium.org</owner>
-  <summary>
-    Recorded each time a ParkableImage is written to disk. Records the
-    throughput of writing the ParkableImage to disk, in MiB/s.
   </summary>
 </histogram>
 
@@ -2068,7 +2038,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.PartitionAlloc.MemoryReclaim" units="microseconds"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>lizeb@chromium.org</owner>
   <owner>bartekn@chromium.org</owner>
   <summary>
@@ -2274,7 +2244,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.RendererProcessCount" units="processes"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>creis@chromium.org</owner>
   <owner>nasko@chromium.org</owner>
   <summary>
@@ -2575,7 +2545,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Total.RendererPrivateMemoryFootprint" units="MB"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>tommckee@chromium.org</owner>
   <summary>
     A rough estimate of the private memory footprint of all renderer processes.
@@ -2671,7 +2641,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Memory.Total.TileMemory" units="MB" expires_after="2023-10-22">
+<histogram name="Memory.Total.TileMemory" units="MB" expires_after="2023-12-24">
   <owner>lizeb@chromium.org</owner>
   <owner>chrome-gpu-memory@google.com</owner>
   <summary>

@@ -598,11 +598,12 @@ class PasswordAutofillAgent::DeferringPasswordManagerDriver
              renderer_id, field_name, value,
              autocomplete_attribute_has_username);
   }
-  void ShowPasswordSuggestions(::base::i18n::TextDirection text_direction,
+  void ShowPasswordSuggestions(FieldRendererId element_id,
+                               ::base::i18n::TextDirection text_direction,
                                const std::u16string& typed_username,
                                int32_t options,
                                const gfx::RectF& bounds) override {
-    DeferMsg(&mojom::PasswordManagerDriver::ShowPasswordSuggestions,
+    DeferMsg(&mojom::PasswordManagerDriver::ShowPasswordSuggestions, element_id,
              text_direction, typed_username, options, bounds);
   }
 #if BUILDFLAG(IS_ANDROID)
@@ -782,14 +783,13 @@ void PasswordAutofillAgent::TrackAutofilledElement(
   autofill_agent_->TrackAutofilledElement(element);
 }
 
-bool PasswordAutofillAgent::FillSuggestion(
-    const WebFormControlElement& control_element,
+void PasswordAutofillAgent::FillPasswordSuggestion(
     const std::u16string& username,
     const std::u16string& password) {
-  // The element in context of the suggestion popup.
-  WebInputElement element = control_element.DynamicTo<WebInputElement>();
+  auto element =
+      autofill_agent_->focused_element().DynamicTo<WebInputElement>();
   if (element.IsNull())
-    return false;
+    return;
 
   WebInputElement username_element;
   WebInputElement password_element;
@@ -799,7 +799,7 @@ bool PasswordAutofillAgent::FillSuggestion(
                                   &username_element, &password_element,
                                   &password_info) ||
       (!password_element.IsNull() && !IsElementEditable(password_element))) {
-    return false;
+    return;
   }
 
   password_info->password_was_edited_last = false;
@@ -840,8 +840,6 @@ bool PasswordAutofillAgent::FillSuggestion(
   }
 
   element.SetSelectionRange(element.Value().length(), element.Value().length());
-
-  return true;
 }
 
 void PasswordAutofillAgent::FillIntoFocusedField(
@@ -1656,7 +1654,7 @@ void PasswordAutofillAgent::ShowSuggestionPopup(
     options |= ACCEPTS_WEBAUTHN_CREDENTIALS;
 
   GetPasswordManagerDriver().ShowPasswordSuggestions(
-      field.text_direction, typed_username, options,
+      field.unique_renderer_id, field.text_direction, typed_username, options,
       render_frame()->ElementBoundsInWindow(user_input));
 }
 

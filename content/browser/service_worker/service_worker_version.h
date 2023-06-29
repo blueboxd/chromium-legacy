@@ -719,6 +719,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
     return sha256_script_checksum_;
   }
 
+  // Check if the static router API is enabled. It checks if the feature flag is
+  // enabled or having a valid trial token.
+  bool IsStaticRouterEnabled();
+
   // Timeout for a request to be handled.
   static constexpr base::TimeDelta kRequestTimeout = base::Minutes(5);
 
@@ -875,7 +879,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnScriptLoaded() override;
   void OnStarting() override;
   void OnStarted(blink::mojom::ServiceWorkerStartStatus status,
-                 FetchHandlerType fetch_handler_type) override;
+                 FetchHandlerType new_fetch_handler_type) override;
   void OnStopping() override;
   void OnStopped(EmbeddedWorkerStatus old_status) override;
   void OnDetached(EmbeddedWorkerStatus old_status) override;
@@ -1205,7 +1209,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
       blink::ServiceWorkerStatusCode::kOk;
 
   // The clock used to vend tick time.
-  raw_ptr<const base::TickClock> tick_clock_;
+  raw_ptr<const base::TickClock, LeakedDanglingUntriaged> tick_clock_;
 
   // The clock used for actual (wall clock) time
   const raw_ptr<base::Clock> clock_;

@@ -107,6 +107,7 @@ enum class Channel;
 
 class ChromeDirectSocketsDelegate;
 class ChromeHidDelegate;
+class ChromePrivateNetworkDeviceDelegate;
 class ChromeSerialDelegate;
 class ChromeUsbDelegate;
 class ChromeWebAuthenticationDelegate;
@@ -322,6 +323,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                  InterestGroupApiOperation operation,
                                  const url::Origin& top_frame_origin,
                                  const url::Origin& api_origin) override;
+  bool IsPrivacySandboxReportingDestinationAttested(
+      content::BrowserContext* browser_context,
+      const url::Origin& destination_origin,
+      content::PrivacySandboxInvokingAPI invoking_api) override;
   void OnAuctionComplete(content::RenderFrameHost* render_frame_host,
                          content::InterestGroupManager::InterestGroupDataKey
                              winner_data_key) override;
@@ -645,6 +650,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                    const std::string& mime_type) override;
   content::BluetoothDelegate* GetBluetoothDelegate() override;
   content::UsbDelegate* GetUsbDelegate() override;
+  content::PrivateNetworkDeviceDelegate* GetPrivateNetworkDeviceDelegate()
+      override;
 #if !BUILDFLAG(IS_ANDROID)
   void CreateDeviceInfoService(
       content::RenderFrameHost* render_frame_host,
@@ -766,11 +773,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                               const url::Origin& requesting_origin,
                               const url::Origin& embedding_origin) override;
 
-  bool ArePersistentMediaDeviceIDsAllowed(
-      content::BrowserContext* browser_context,
-      const GURL& scope,
+  void GetMediaDeviceIDSalt(
+      content::RenderFrameHost* rfh,
       const net::SiteForCookies& site_for_cookies,
-      const absl::optional<url::Origin>& top_frame_origin) override;
+      const blink::StorageKey& storage_key,
+      base::OnceCallback<void(bool, const std::string&)> callback) override;
 
 #if !BUILDFLAG(IS_ANDROID)
   base::OnceClosure FetchRemoteSms(
@@ -1034,6 +1041,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #endif
   std::unique_ptr<permissions::BluetoothDelegateImpl> bluetooth_delegate_;
   std::unique_ptr<ChromeUsbDelegate> usb_delegate_;
+  std::unique_ptr<ChromePrivateNetworkDeviceDelegate>
+      private_network_device_delegate_;
 
 #if BUILDFLAG(IS_CHROMEOS)
   std::unique_ptr<content::SmartCardDelegate> smart_card_delegate_;

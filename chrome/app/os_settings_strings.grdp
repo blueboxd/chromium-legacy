@@ -3020,10 +3020,64 @@ Press an assigned switch or key to remove assignment.
   </message>
   <!-- TODO(b/286937607): Finalize and translate these strings -->
   <message name="IDS_SETTINGS_MODIFIER_KEYS_LABEL" translateable="false" desc="In the remap keyboard keys settings subpage, the label for the section that contains all of the modifier keys (Ctrl, Alt, etc).">
-    Modifier keys
+    Choose an action for each key
   </message>
   <message name="IDS_SETTINGS_OTHER_KEYS_LABEL" translateable="false" desc="In the remap keyboard keys settings subpage, the label for the section that contains all of the non-modifier keys (Backspace, Home, etc).">
-    Other keys
+    Choose a key combination to generate each action
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_INSERT" translateable="false" desc="In the keyboard settings subpage, the text next to the dropdown for setting the shortcut used to trigger the insert 6-pack key action.">
+    insert
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_HOME" translateable="false" desc="In the keyboard settings subpage, the text next to the dropdown for setting the shortcut used to trigger the home 6-pack key action.">
+    home
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_END" translateable="false" desc="In the keyboard settings subpage, the text next to the dropdown for setting the shortcut used to trigger the end 6-pack key action.">
+    end
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP" translateable="false" desc="In the keyboard settings subpage, the text next to the dropdown for setting the shortcut used to trigger the PageUp 6-pack key action.">
+    page up
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN" translateable="false" desc="In the keyboard settings subpage, the text next to the dropdown for setting the shortcut used to trigger the PageDown 6-pack key action.">
+    page down
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_DELETE" translateable="false" desc="In the keyboard settings subpage, the text next to the dropdown for setting the shortcut used to trigger the delete 6-pack key action.">
+    delete
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_DELETE_ALT" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    alt + backspace
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_DELETE_SEARCH" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    search + backspace
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_HOME_ALT" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    ctrl + alt + up arrow
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_HOME_SEARCH" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    search + left arrow
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_END_ALT" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    ctrl + alt + down arrow
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_END_SEARCH" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    search + right arrow
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_INSERT_SEARCH" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    search + shift + backspace
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_ALT" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    alt + down arrow
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_SEARCH" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    search + down arrow
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP_ALT" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    alt + up arrow
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP_SEARCH" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+    search + up arrow
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_OPTION_OFF" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the Off option.">
+    Off
   </message>
 
   <!-- Printing Page (OS Settings)-->
@@ -3042,20 +3096,20 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_PRINTER" desc="In CUPS printing settings subpage, text for the link adding a new CUPS printer.">
     Add printer
   </message>
-  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_PRINTER_MANUALLY" desc="In CUPS printing settings subpage, text for the link adding a new CUPS printer." translateable="false">
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_PRINTER_MANUALLY" desc="In CUPS printing settings subpage, text for the link adding a new CUPS printer.">
     Add printer manually
   </message>
   <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_DETECTED_OR_NEW_PRINTER" desc="In CUPS printing settings subpage, explanatory text for the nearby printers list.">
     Save detected printers to your profile, or add a new printer. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
-  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS_READY_SUBTEXT" desc="In CUPS printing settings subpage, explanatory text for the nearby printers list." translateable="false">
-    Connected printers will automatically appear here and ready to use or save to your profile.
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS_READY_SUBTEXT" desc="In CUPS printing settings subpage, explanatory text for the nearby printers list.">
+    These printers are connected and ready to use. Save to your profile for easier access.
   </message>
   <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS" desc="In CUPS printing settings subpage, title for the nearby printers list.">
     Add printers to your profile
   </message>
-  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS_READY" desc="In CUPS printing settings subpage, title for the nearby printers list." translateable="false">
-    Available printers ready to use
+  <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS_READY" desc="In CUPS printing settings subpage, title for the nearby printers list.">
+    Other available printers
   </message>
   <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS_COUNT_MANY" desc="In CUPS printing settings subpage, this message will be read aloud to the user to inform them on the number of printers showing on the screen that are available to save.">
     There are <ph name="PRINTER_COUNT">$1<ex>3</ex></ph> printers available to save.
@@ -3105,8 +3159,8 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_PRINTING_CUPS_SAVED_PRINTERS_TITLE" desc="Text for the title of the user's saved printers list.">
     Your saved printers
   </message>
-  <message name="IDS_SETTINGS_PRINTING_CUPS_SAVED_PRINTERS_SUBTEXT" desc="Subtext of the user's saved printers list." translateable="false">
-    Saved printers will appear here for easier managing and access.
+  <message name="IDS_SETTINGS_PRINTING_CUPS_SAVED_PRINTERS_SUBTEXT" desc="Subtext of the user's saved printers list.">
+    Easily access and manage printers
   </message>
   <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_SAVED_PRINTERS_COUNT_MANY" desc="In CUPS printing settings subpage, this message will be read aloud to the user to inform them on the number of printers previously saved by the user.">
     You have <ph name="PRINTER_COUNT">$1<ex>3</ex></ph> saved printers.
@@ -3120,11 +3174,11 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_PRINTING_CUPS_NO_SAVED_PRINTERS" desc="In CUPS printing settings subpage, the text shown when a user has no printers saved to their profile.">
     No saved printers
   </message>
-  <message name="IDS_SETTINGS_PRINTING_CUPS_HELP_SECTION_TITLE" desc="In CUPS printing settings subpage, this title helps users when their local printer is not shown on the page." translateable="false">
-    Don't see your printers below?
+  <message name="IDS_SETTINGS_PRINTING_CUPS_HELP_SECTION_TITLE" desc="In CUPS printing settings subpage, this title helps users when their local printer is not shown on the page.">
+    Don’t see your printer?
   </message>
-  <message name="IDS_SETTINGS_PRINTING_CUPS_HELP_SECTION_DESCRIPTION" desc="In CUPS printing settings subpage, this description helps users when trying to connect to a local printer." translateable="false">
-    Make sure your printer is connected to the same Wi-Fi network as your Chromebook or via a USB cable. For more help, check compatibility and help information.
+  <message name="IDS_SETTINGS_PRINTING_CUPS_HELP_SECTION_DESCRIPTION" desc="In CUPS printing settings subpage, this description helps users when trying to connect to a local printer.">
+    Make sure your printer is connected to the same Wi-Fi network as your Chromebook or use a USB cable. Learn more about compatibility.
   </message>
   <message name="IDS_SETTINGS_PRINTING_CUPS_SHOW_MORE" desc="Text for the button to show more printers when there are more printers than currently displayed to the user.">
     Show more
@@ -3345,46 +3399,46 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_PRINTING_SCANNING_LAUNCH_APP_SUBLABEL" desc="Sub-label that describes the scanning app which lets users scan documents.">
     Scan documents and images
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_DEVICE_ERROR" translateable="false" desc="Error label to show under the destination dropdown when there is a mechanical error inside the printer.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_DEVICE_ERROR" desc="Error label to show under the destination dropdown when there is a mechanical error inside the printer.">
     Mechanical issue. Check printer
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_DOOR_OPEN" translateable="false" desc="Error label to show under the destination dropdown when the printer has an open cover or door.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_DOOR_OPEN" desc="Error label to show under the destination dropdown when the printer has an open cover or door.">
    Printer door is open
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_LOW_ON_INK" translateable="false" desc="Error label to show under the destination dropdown when the printer is low on ink.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_LOW_ON_INK" desc="Error label to show under the destination dropdown when the printer is low on ink.">
     Low on ink
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_LOW_ON_PAPER" translateable="false" desc="Error label to show under the destination dropdown when the printer is low on paper">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_LOW_ON_PAPER" desc="Error label to show under the destination dropdown when the printer is low on paper">
     Low on paper
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_OUT_OF_INK" translateable="false" desc="Error label to show under the destination dropdown when the printer is out of ink.">
-   Out of ink
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_OUT_OF_INK" desc="Error label to show under the destination dropdown when the printer is out of ink.">
+    Out of ink
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_OUT_OF_PAPER" translateable="false" desc="Error label to show under the destination dropdown when the printer is out of paper.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_OUT_OF_PAPER" desc="Error label to show under the destination dropdown when the printer is out of paper.">
     Out of paper
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_OUPUT_ALMOST_FULL" translateable="false" desc="Error label to show under the destination dropdown when the printer's output tray is almost full.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_OUPUT_ALMOST_FULL" desc="Error label to show under the destination dropdown when the printer's output tray is almost full.">
     Output tray is almost full
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_OUPUT_FULL" translateable="false" desc="Error label to show under the destination dropdown when the printer's output tray is full.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_OUPUT_FULL" desc="Error label to show under the destination dropdown when the printer's output tray is full.">
     Output tray is full
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_PAPER_JAM" translateable="false" desc="Error label to show under the destination dropdown when the printer has a paper jam.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_PAPER_JAM" desc="Error label to show under the destination dropdown when the printer has a paper jam.">
     Paper is jammed
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_PAUSED" translateable="false" desc="Error label to show under the destination dropdown when someone has put the printer into a paused state.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_PAUSED" desc="Error label to show under the destination dropdown when someone has put the printer into a paused state.">
     Printer is paused
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_PRINTER_QUEUE_FULL" translateable="false" desc="Error label to show under the destination dropdown when the printer's job queue is full and is temporarily unable to accept more print jobs.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_PRINTER_QUEUE_FULL" desc="Error label to show under the destination dropdown when the printer's job queue is full and is temporarily unable to accept more print jobs.">
     Printer queue is full
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_PRINTER_UNREACHABLE" translateable="false" desc="Error label to show under the destination dropdown when the device is attempting to schedule a print job on the printer but can't get a connection to the printer">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_PRINTER_UNREACHABLE" desc="Error label to show under the destination dropdown when the device is attempting to schedule a print job on the printer but can't get a connection to the printer">
     Can’t connect to printer
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_STOPPED" translateable="false" desc="Error label to show under the destination dropdown when the printer is in the process of stopping or the printer is powered down.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_STOPPED" desc="Error label to show under the destination dropdown when the printer is in the process of stopping or the printer is powered down.">
     Printer has stopped
   </message>
-  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_TRAY_MISSING" translateable="false" desc="Error label to show under the destination dropdown when the printer is missing a tray.">
+  <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_TRAY_MISSING" desc="Error label to show under the destination dropdown when the printer is missing a tray.">
     Tray is missing
   </message>
 
@@ -3449,8 +3503,14 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_INTERNET_HOTSPOT_SUMMARY_STATE_ON" desc="Sublabel for Hotspot summary row, when Hotspot is on.">
     On
   </message>
+  <message name="IDS_SETTINGS_INTERNET_HOTSPOT_SUMMARY_STATE_TURNING_ON" desc="Sublabel for Hotspot summary row, when Hotspot is turning on.">
+    Turning On...
+  </message>
   <message name="IDS_SETTINGS_INTERNET_HOTSPOT_SUMMARY_STATE_OFF" desc="Sublabel for Hotspot summary row, when Hotspot is off.">
     Off
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_HOTSPOT_SUMMARY_STATE_TURNING_OFF" desc="Sublabel for Hotspot summary row, when Hotspot is turning off.">
+    Turning off...
   </message>
   <message name="IDS_SETTINGS_INTERNET_HOTSPOT_ENABLED_A11Y_LABEL" desc="Accessibility announcement when Hotspot is enabled.">
     Hotspot enabled

@@ -125,6 +125,8 @@ _OS_SPECIFIC_FILTER['win'] = [
     'SupportIPv4AndIPv6.testSupportIPv4AndIPv6',
     # Flaky on Win7 bots: crbug.com/1132559
     'ChromeDriverTest.testTakeElementScreenshotInIframe',
+    # Pipe are supported only on Posix platforms crbug.com/chromedriver/3480
+    'ChromeSwitchesCapabilityTest.testRemoteDebuggingPipe',
 ]
 _OS_SPECIFIC_FILTER['linux'] = [
 ]
@@ -260,6 +262,8 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=3560
         'ChromeDriverTest.testTakeLargeElementViewportScreenshot',
         'ChromeDriverTest.testTakeLargeElementFullPageScreenshot'
+        # Pipe are supported only on Posix platforms crbug.com/chromedriver/3480
+        'ChromeSwitchesCapabilityTest.testRemoteDebuggingPipe',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -273,6 +277,8 @@ _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
         'ChromeDriverTest.testSwitchToWindow',
         # Feature not yet supported in this version
         'ChromeDriverTest.testGenerateTestReport',
+        # Pipe are supported only on Posix platforms crbug.com/chromedriver/3480
+        'ChromeSwitchesCapabilityTest.testRemoteDebuggingPipe',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
@@ -284,6 +290,8 @@ _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
         'ChromeDriverTest.testSwitchToWindow',
         # Feature not yet supported in this version
         'ChromeDriverTest.testGenerateTestReport',
+        # Pipe are supported only on Posix platforms crbug.com/chromedriver/3480
+        'ChromeSwitchesCapabilityTest.testRemoteDebuggingPipe',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chromium'] = (
@@ -323,6 +331,8 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         'ChromeDriverTest.testUnexpectedAlertOpenExceptionMessage',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2332
         'ChromeDriverTestLegacy.testTouchScrollElement',
+        # Pipe are supported only on Posix platforms crbug.com/chromedriver/3480
+        'ChromeSwitchesCapabilityTest.testRemoteDebuggingPipe',
     ]
 )
 
@@ -3498,6 +3508,12 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
           is_desktop,
           self._driver.capabilities['webauthn:extension:' + extension])
 
+  # Tests that the fedcm capability is true.
+  def testFedCmCapability(self):
+    self.assertEqual(
+        True,
+        self._driver.capabilities['fedcm:accounts'])
+
   def testCanClickInIframesInShadow(self):
     """Test that you can interact with a iframe within a shadow element.
        See https://bugs.chromium.org/p/chromedriver/issues/detail?id=3445
@@ -4732,6 +4748,16 @@ class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
     else:  # Else clause gets invoked if "break" never happens.
       raise  # This re-raises the most recent exception.
 
+  def testRemoteDebuggingPipe(self):
+    """Tests that passing --remote-debugging-pipe through capabilities works.
+    """
+    pipe_flag = 'remote-debugging-pipe'
+    driver = self.CreateDriver(chrome_switches=[pipe_flag])
+    driver.Load('chrome:version')
+    command_line = driver.FindElement('css selector',
+                                      '#command_line').GetText()
+    self.assertIn(pipe_flag, command_line)
+
 
 class ChromeDesiredCapabilityTest(ChromeDriverBaseTest):
   """Tests that chromedriver properly processes desired capabilities."""
@@ -5146,9 +5172,10 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTestWithWebServer):
     self.assertFalse(driver.w3c_compliant)
 
   def testClientHintsMobileLegacy(self):
-    expected_ua = 'Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Bui'
-    'ld/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chr'
-    'ome/18.0.1025.166 Mobile Safari/535.19'
+    expected_ua = ''.join(['Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5',
+                          'Build/JOP40D) AppleWebKit/535.19',
+                          '(KHTML, like Gecko) Chrome/18.0.1025.166 Mobile',
+                           'Safari/535.19'])
     driver = self.CreateDriver(
         mobile_emulation = {
             'deviceMetrics': {'width': 360, 'height': 640, 'pixelRatio': 3},
@@ -5199,6 +5226,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTestWithWebServer):
                 'platformVersion': '17',
                 'architecture': 'arm',
                 'bitness': '32',
+                'mobile': True,
                 'model': 'Special',
             }
         })
@@ -5482,7 +5510,8 @@ class LaunchDesktopTest(ChromeDriverBaseTest):
       with open(dev_tools_port_file, 'w') as fd:
         fd.write('34\n/devtools/browser/2dab5fb1-5571-40d8-a6ad-98823bc5ff84')
       driver = self.CreateDriver(
-          chrome_switches=['user-data-dir=' + user_data_dir])
+          chrome_switches=['user-data-dir=' + user_data_dir,
+                           '--remote-debugging-port=0'])
       with open(dev_tools_port_file, 'r') as fd:
         port = int(fd.readlines()[0])
       # Ephemeral ports are always high numbers.

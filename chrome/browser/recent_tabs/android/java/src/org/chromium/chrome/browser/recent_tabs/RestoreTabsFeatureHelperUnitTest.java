@@ -79,8 +79,7 @@ public class RestoreTabsFeatureHelperUnitTest {
         when(mForeignSessionHelperJniMock.isTabSyncEnabled(1L)).thenReturn(true);
 
         mActivity = Robolectric.buildActivity(Activity.class).setup().get();
-        mHelper = new RestoreTabsFeatureHelper(
-                mActivity, mProfile, mTabCreatorManager, mBottomSheetController);
+        mHelper = new RestoreTabsFeatureHelper();
         mHelper.setRestoreTabsControllerDelegateForTesting(mDelegate);
     }
 
@@ -92,11 +91,10 @@ public class RestoreTabsFeatureHelperUnitTest {
 
     @Test
     public void testRestoreTabsFeatureHelper_noSyncedDevices() {
-        mHelper.maybeShowPromo();
+        mHelper.maybeShowPromo(mActivity, mProfile, mTabCreatorManager, mBottomSheetController);
         verify(mForeignSessionHelperJniMock, times(1))
                 .getMobileAndTabletForeignSessions(1L, new ArrayList<ForeignSession>());
         verify(mForeignSessionHelperJniMock, times(1)).destroy(1L);
-        verify(mDelegate, times(1)).onDismissed(false);
     }
 
     @Test
@@ -121,7 +119,7 @@ public class RestoreTabsFeatureHelperUnitTest {
         })
                 .when(mForeignSessionHelperJniMock)
                 .getMobileAndTabletForeignSessions(1L, new ArrayList<ForeignSession>());
-        mHelper.maybeShowPromo();
-        verify(mDelegate, times(1)).showPromo(any(ForeignSessionHelper.class), anyList());
+        mHelper.maybeShowPromo(mActivity, mProfile, mTabCreatorManager, mBottomSheetController);
+        verify(mDelegate, times(1)).showPromo(anyList());
     }
 }

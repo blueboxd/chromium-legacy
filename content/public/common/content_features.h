@@ -84,19 +84,14 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(
     kExtraSafelistedRequestHeadersForOutOfBlinkCors);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCm);
 CONTENT_EXPORT extern const char kFedCmIdpSignoutFieldTrialParamName[];
-CONTENT_EXPORT extern const char kFedCmIdpSigninStatusFieldTrialParamName[];
-CONTENT_EXPORT extern const char
-    kFedCmIdpSigninStatusMetricsOnlyFieldTrialParamName[];
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmAuthz);
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmAutoReauthn);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmIdPRegistration);
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmIframeSupport);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmMetricsEndpoint);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmMultipleIdentityProviders);
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmRpContext);
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmUserInfo);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmSelectiveDisclosure);
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmLoginHint);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmIdpSigninStatusMetrics);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmIdpSigninStatusEnabled);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmWithoutWellKnownEnforcement);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebIdentityMDocs);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFirstPartySets);
 CONTENT_EXPORT extern const base::FeatureParam<bool>
@@ -182,6 +177,7 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kPreloadCookies);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kPrerender2Holdback);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kPreloadingHoldback);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kPreloadingConfig);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kPrivacySandboxAdsAPIsM1Override);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kPrivacySandboxAdsAPIsOverride);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kPrivateNetworkAccessForWorkers);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kPrivateNetworkAccessForWorkersWarningOnly);
@@ -203,6 +199,8 @@ CONTENT_EXPORT extern const base::FeatureParam<int>
     kProcessPerSiteMainFrameThreshold;
 CONTENT_EXPORT extern const base::FeatureParam<bool>
     kProcessPerSiteMainFrameAllowIPAndLocalhost;
+CONTENT_EXPORT extern const base::FeatureParam<bool>
+    kProcessPerSiteMainFrameAllowDevToolsAttached;
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kRunVideoCaptureServiceInBrowserProcess);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSecurePaymentConfirmation);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSecurePaymentConfirmationDebug);
@@ -214,6 +212,7 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(
     kShouldAllowFirstPartyStorageKeyOverrideFromEmbedder);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSignedExchangeReportingForDistributors);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSignedHTTPExchange);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kSiteInstanceGroupsForDataUrls);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSiteIsolationForCrossOriginOpenerPolicy);
 CONTENT_EXPORT extern const base::FeatureParam<bool>
     kSiteIsolationForCrossOriginOpenerPolicyShouldPersistParam;
@@ -270,6 +269,8 @@ enum class ServiceWorkerBypassFetchHandlerTarget {
 CONTENT_EXPORT extern const base::FeatureParam<
     ServiceWorkerBypassFetchHandlerTarget>
     kServiceWorkerBypassFetchHandlerTarget;
+CONTENT_EXPORT BASE_DECLARE_FEATURE(
+    kServiceWorkerBypassFetchHandlerHashStrings);
 CONTENT_EXPORT extern const base::FeatureParam<std::string>
     kServiceWorkerBypassFetchHandlerBypassedHashStrings;
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kServiceWorkerSkipIgnorableFetchHandler);
@@ -336,7 +337,6 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kBackgroundMediaRendererHasModerateBinding);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kReduceGpuPriorityOnBackground);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kOnDemandAccessibilityEvents);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kRequestDesktopSiteAdditions);
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kRequestDesktopSiteExceptions);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kRequestDesktopSiteZoom);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kForceOffTextAutosizing);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kUserMediaScreenCapturing);

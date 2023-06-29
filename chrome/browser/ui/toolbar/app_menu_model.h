@@ -93,11 +93,12 @@ enum AppMenuAction {
   MENU_ACTION_OPEN_GUEST_PROFILE = 71,
   MENU_ACTION_ADD_NEW_PROFILE = 72,
   MENU_ACTION_MANAGE_CHROME_PROFILES = 73,
+  MENU_ACTION_RECENT_TABS_LOGIN_FOR_DEVICE_TABS = 74,
 
   LIMIT_MENU_ACTION
 };
 
-enum class AlertMenuItem { kNone, kReopenTabs, kPerformance };
+enum class AlertMenuItem { kNone, kReopenTabs, kPerformance, kPasswordManager };
 
 // Function to record WrenchMenu.MenuAction histogram
 void LogWrenchMenuAction(AppMenuAction action_id);
@@ -215,19 +216,22 @@ class AppMenuModel : public ui::SimpleMenuModel,
   // Appends a clipboard menu (without separators).
   void CreateCutCopyPasteMenu();
 
+  // Appends a Find and edit sub-menu (without separators)
+  void CreateFindAndEditSubMenu();
+
   // Appends a zoom menu (without separators).
   void CreateZoomMenu();
+
+  // Called when a command is selected.
+  // Logs UMA metrics about which command was chosen and how long the user
+  // took to select the command.
+  void LogMenuMetrics(int command_id);
 
  private:
   // Adds actionable global error menu items to the menu.
   // Examples: Extension permissions and sign in errors.
   // Returns a boolean indicating whether any menu items were added.
   bool AddGlobalErrorMenuItems();
-
-  // Called when a command is selected.
-  // Logs UMA metrics about which command was chosen and how long the user
-  // took to select the command.
-  void LogMenuMetrics(int command_id);
 
 #if BUILDFLAG(IS_CHROMEOS)
   // Disables/Enables the settings item based on kSystemFeaturesDisableList

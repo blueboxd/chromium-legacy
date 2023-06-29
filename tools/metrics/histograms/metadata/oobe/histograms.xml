@@ -31,10 +31,12 @@ chromium-metrics-reviews@google.com.
 
 <variants name="OOBELegacyScreenName">
   <variant name="Adb-sideloading"/>
+  <variant name="Add-child"/>
   <variant name="App-downloading"/>
   <variant name="Assistant-optin-flow"/>
   <variant name="Auto-enrollment-check"/>
   <variant name="Autolaunch"/>
+  <variant name="Choobe"/>
   <variant name="Consolidated-consent"/>
   <variant name="Cryptohome-recovery"/>
   <variant name="Cryptohome-recovery-setup"/>
@@ -42,6 +44,7 @@ chromium-metrics-reviews@google.com.
   <variant name="Demo-preferences"/>
   <variant name="Demo-setup"/>
   <variant name="Device-disabled"/>
+  <variant name="Display-size"/>
   <variant name="Edu-coexistence-login"/>
   <variant name="Encryption-migration"/>
   <variant name="Enroll"/>
@@ -77,6 +80,7 @@ chromium-metrics-reviews@google.com.
   <variant name="Sync-consent"/>
   <variant name="Theme-selection"/>
   <variant name="Tos"/>
+  <variant name="Touchpad-scroll"/>
   <variant name="Tpm-error-message"/>
   <variant name="Update-required"/>
   <variant name="User-creation"/>
@@ -109,8 +113,19 @@ chromium-metrics-reviews@google.com.
   <variant name="Proxy"/>
 </variants>
 
+<variants name="OOBEOptionalScreens">
+  <variant name="Display-size"/>
+  <variant name="Theme-selection"/>
+  <variant name="Touchpad-scroll"/>
+</variants>
+
 <variants name="OOBEScreenName_ExitReason">
   <variant name="Adb-sideloading.Next"/>
+  <variant name="Add-child.Back"/>
+  <variant name="Add-child.CreateChildAccount"/>
+  <variant name="Add-child.EnterpriseEnroll"/>
+  <variant name="Add-child.KioskEnterpriseEnroll"/>
+  <variant name="Add-child.SignInAsChild"/>
   <variant name="App-downloading.Next"/>
   <variant name="Assistant-optin-flow.Next"/>
   <variant name="Auto-enrollment-check.Next"/>
@@ -202,15 +217,30 @@ chromium-metrics-reviews@google.com.
   <variant name="Terms-of-service.Declined"/>
   <variant name="Theme-selection.Proceed"/>
   <variant name="User-creation.Cancel"/>
-  <variant name="User-creation.CreateChildAccount"/>
+  <variant name="User-creation.CreateChildAccount">
+    <obsolete>
+      This histogram was available before introducing software update sreen
+      which requiered split the add child step into it is own screen this
+      changes is implemented in M-117. Add-child.CreateChildAccount is replacing
+      this one.
+    </obsolete>
+  </variant>
   <variant name="User-creation.EnterpriseEnroll"/>
   <variant name="User-creation.KioskEnterpriseEnroll"/>
   <variant name="User-creation.SignIn"/>
-  <variant name="User-creation.SignInAsChild"/>
+  <variant name="User-creation.SignInAsChild">
+    <obsolete>
+      This histogram was available before introducing software update sreen
+      which requiered split the add child step into it is own screen this
+      changes is implemented in M-117. Add-child.SignInAsChild histogram is
+      replacing this one.
+    </obsolete>
+  </variant>
   <variant name="Wrong-hwid.Next"/>
 </variants>
 
 <variants name="OOBEScreenShownBeforeNetworkError">
+  <variant name="AddChild" summary="Add Child Screen"/>
   <variant name="Enrollment" summary="Enrollment or Autoenrollment"/>
   <variant name="Signin" summary="Signin Screen"/>
   <variant name="Update" summary="Update Screen"/>
@@ -262,6 +292,45 @@ chromium-metrics-reviews@google.com.
     Warning: this histogram was expired from 2022-04-03 to 2023-04-04; data may
     be missing.
   </summary>
+</histogram>
+
+<histogram name="OOBE.CHOOBE.FlowSkipped" enum="BooleanSkipped"
+    expires_after="2024-01-20">
+  <owner>osamafathy@google.com</owner>
+  <owner>cros-oobe@google.com</owner>
+  <summary>
+    Whether the CHOOBE flow was skipped without selecting any screens. Recorded
+    after the user completes the CHOOBE flow.
+  </summary>
+</histogram>
+
+<histogram name="OOBE.CHOOBE.ScreenSelected.{OOBEOptionalScreens}"
+    enum="BooleanSelected" expires_after="2024-01-20">
+  <owner>osamafathy@google.com</owner>
+  <owner>cros-oobe@google.com</owner>
+  <summary>
+    Whether the {OOBEOptionalScreens} screen was selected and completed from the
+    CHOOBE screen. Recorded after the user completes the CHOOBE flow. If the
+    user visits the same screen multiple times, only a single event will be
+    recorded.
+
+    The histogram is not recorded if the {OOBEOptionalScreens} screen was shown
+    outside of the CHOOBE flow.
+  </summary>
+  <token key="OOBEOptionalScreens" variants="OOBEOptionalScreens"/>
+</histogram>
+
+<histogram name="OOBE.CHOOBE.SettingChanged.{OOBEOptionalScreens}"
+    enum="BooleanChanged" expires_after="2024-01-20">
+  <owner>osamafathy@google.com</owner>
+  <owner>cros-oobe@google.com</owner>
+  <summary>
+    Whether the setting in {OOBEOptionalScreens} screen was changed when the
+    screen was visited. Recorded when the user clicks &quot;next&quot; or
+    &quot;return to CHOOBE&quot; button. This metric is recorded regardless of
+    whether the CHOOBE screen was shown.
+  </summary>
+  <token key="OOBEOptionalScreens" variants="OOBEOptionalScreens"/>
 </histogram>
 
 <histogram name="OOBE.ConsolidatedConsentScreen.RecoveryOptInResult"

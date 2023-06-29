@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/magic_stack_module_container.h"
 
 #import "base/notreached.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/magic_stack_module_container_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
@@ -13,6 +14,7 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/ui_util.h"
+#import "ios/chrome/grit/ios_google_chrome_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
@@ -50,7 +52,7 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
 
 }  // namespace
 
-@interface MagicStackModuleContainer ()
+@interface MagicStackModuleContainer () <UIContextMenuInteractionDelegate>
 
 // The type of this container.
 @property(nonatomic, assign) ContentSuggestionsModuleType type;
@@ -79,6 +81,10 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
     _delegate = delegate;
     self.layer.cornerRadius = kCornerRadius;
     self.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+    if ([self allowsLongPress]) {
+      [self addInteraction:[[UIContextMenuInteraction alloc]
+                               initWithDelegate:self]];
+    }
 
     UIStackView* titleStackView = [[UIStackView alloc] init];
     titleStackView.alignment = UIStackViewAlignmentCenter;
@@ -95,6 +101,8 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
         CreateDynamicFont(UIFontTextStyleFootnote, UIFontWeightSemibold);
     title.adjustsFontForContentSizeCategory = YES;
     title.textColor = [UIColor colorNamed:kTextPrimaryColor];
+    title.numberOfLines = 0;
+    title.lineBreakMode = NSLineBreakByWordWrapping;
     title.accessibilityTraits |= UIAccessibilityTraitHeader;
     title.accessibilityIdentifier =
         [MagicStackModuleContainer titleStringForModule:type];
@@ -219,8 +227,8 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
        content_suggestions::ShouldShowWiderMagicStackLayer(self.traitCollection,
                                                            self.window));
   BOOL moduleShouldUseWideWidth =
-      self.traitCollection.horizontalSizeClass ==
-          UIUserInterfaceSizeClassRegular &&
+      content_suggestions::ShouldShowWiderMagicStackLayer(self.traitCollection,
+                                                          self.window) &&
       [_delegate doesMagicStackShowOnlyOneModule:_type];
   if (MVTModuleShouldUseWideWidth || moduleShouldUseWideWidth) {
     return CGSizeMake(kMagicStackWideWidth, self.bounds.size.height);
@@ -235,16 +243,58 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-  if (_type == ContentSuggestionsModuleType::kMostVisited &&
-      !ShouldPutMostVisitedSitesInMagicStack()) {
-    _contentViewWidthAnchor.constant = [self contentViewWidth];
-  }
+  _contentViewWidthAnchor.constant = [self contentViewWidth];
+  // Trigger relayout so intrinsic contentsize is recalculated.
+  [self invalidateIntrinsicContentSize];
+  [self sizeToFit];
+  [self layoutIfNeeded];
+}
+
+#pragma mark - UIContextMenuInteractionDelegate
+
+- (UIContextMenuConfiguration*)contextMenuInteraction:
+                                   (UIContextMenuInteraction*)interaction
+                       configurationForMenuAtLocation:(CGPoint)location {
+  CHECK([self allowsLongPress]);
+  __weak MagicStackModuleContainer* weakSelf = self;
+  UIContextMenuActionProvider actionProvider = ^(
+      NSArray<UIMenuElement*>* suggestedActions) {
+    UIAction* hideAction = [UIAction
+        actionWithTitle:[self contextMenuHideDescription]
+                  image:DefaultSymbolWithPointSize(kHideActionSymbol, 18)
+             identifier:nil
+                handler:^(UIAction* action) {
+                  MagicStackModuleContainer* strongSelf = weakSelf;
+                  [strongSelf->_delegate neverShowModuleType:strongSelf->_type];
+                }];
+    hideAction.attributes = UIMenuElementAttributesDestructive;
+    return [UIMenu menuWithTitle:[self contextMenuTitle]
+                        children:@[ hideAction ]];
+  };
+  return
+      [UIContextMenuConfiguration configurationWithIdentifier:nil
+                                              previewProvider:nil
+                                               actionProvider:actionProvider];
 }
 
 #pragma mark - Helpers
 
 - (void)seeMoreButtonWasTapped:(UIButton*)button {
   [_delegate seeMoreWasTappedForModuleType:_type];
+}
+
+// YES if this container should show a context menu when the user performs a
+// long-press gesture.
+- (BOOL)allowsLongPress {
+  switch (_type) {
+    case ContentSuggestionsModuleType::kSetUpListSync:
+    case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
+    case ContentSuggestionsModuleType::kSetUpListAutofill:
+    case ContentSuggestionsModuleType::kCompactedSetUpList:
+      return YES;
+    default:
+      return NO;
+  }
 }
 
 - (BOOL)shouldShowSeeMore {
@@ -261,9 +311,38 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
     case ContentSuggestionsModuleType::kSetUpListSync:
     case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
     case ContentSuggestionsModuleType::kSetUpListAutofill:
+    case ContentSuggestionsModuleType::kSetUpListAllSet:
       return YES;
     default:
       return NO;
+  }
+}
+
+// Title string for the context menu of this container.
+- (NSString*)contextMenuTitle {
+  switch (_type) {
+    case ContentSuggestionsModuleType::kSetUpListSync:
+    case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
+    case ContentSuggestionsModuleType::kSetUpListAutofill:
+    case ContentSuggestionsModuleType::kCompactedSetUpList:
+      return l10n_util::GetNSString(
+          IDS_IOS_SET_UP_LIST_HIDE_MODULE_CONTEXT_MENU_TITLE);
+    default:
+      NOTREACHED_NORETURN();
+  }
+}
+
+// Descriptor string for hide action of the context menu of this container.
+- (NSString*)contextMenuHideDescription {
+  switch (_type) {
+    case ContentSuggestionsModuleType::kSetUpListSync:
+    case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
+    case ContentSuggestionsModuleType::kSetUpListAutofill:
+    case ContentSuggestionsModuleType::kCompactedSetUpList:
+      return l10n_util::GetNSString(
+          IDS_IOS_SET_UP_LIST_HIDE_MODULE_CONTEXT_MENU_DESCRIPTION);
+    default:
+      NOTREACHED_NORETURN();
   }
 }
 

@@ -199,7 +199,7 @@ In addition to that, you need a different provisioning profile for each
 test application. Those provisioning profile will have a bundle identifier
 matching the following pattern `${prefix}.gtest.${test-suite-name}` where
 `${test-suite-name}` is the name of the test suite with underscores changed
-to dashes (e.g. `base_unittests` app will use `${prefix}.gest.base-unittests`
+to dashes (e.g. `base_unittests` app will use `${prefix}.gtest.base-unittests`
 as bundle identifier).
 
 To be able to run the EarlGrey tests on a device, you'll need two provisioning
@@ -430,7 +430,7 @@ debugging and follow them.
 If you use `xcode-select` to switch between multiple version of Xcode,
 you will have to follow the same steps.
 
-### Improving performance of `git status`
+### Improving performance of git commands
 
 #### Increase the vnode cache size
 

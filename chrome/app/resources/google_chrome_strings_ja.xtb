@@ -334,6 +334,7 @@
 <translation id="7412494426921990001">Chrome メニューをクリックします</translation>
 <translation id="7426611252293106642">この Linux ディストリビューションはサポートされなくなったため、Google Chrome は正常に機能しない可能性があります</translation>
 <translation id="7449333426561673451">{COUNT,plural, =1{1 分間使用しなかった場合、組織は Chrome を自動的に終了します。}other{# 分間使用しなかった場合、組織は Chrome を自動的に終了します。}}</translation>
+<translation id="7452987490177144319">{COUNT,plural, =1{1 分間使用しなかった場合、組織は Chrome の閲覧データを自動的に削除します。これには、履歴、自動入力、ダウンロードが含まれます。タブは開いたままになります。}other{# 分間使用しなかった場合、組織は Chrome の閲覧データを自動的に削除します。これには、履歴、自動入力、ダウンロードが含まれます。タブは開いたままになります。}}</translation>
 <translation id="7481213027396403996">Chrome の最高水準のセキュリティで保護</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7583399374488819119"><ph name="COMPANY_NAME" /> インストーラ</translation>
@@ -368,7 +369,6 @@
 <translation id="8013993649590906847">画像に有効な説明が設定されていない場合に、Chrome で説明を自動的に生成できるよう Google に画像が送信されます。</translation>
 <translation id="8019103195866286235">この拡張機能はデベロッパーが非公開にしており、安全でない可能性があります。アクセスしたサイトでユーザーデータ（個人情報を含む）が参照、変更されないように、Chrome からこの拡張機能を削除してください。</translation>
 <translation id="80471789339884597">インストールいただきありがとうございます。<ph name="BUNDLE_NAME" /> を使用するにはすべてのブラウザを再起動してください。</translation>
-<translation id="8057070436257749375">{COUNT,plural, =1{1 分間使用しなかった場合、組織は Chrome の閲覧データを自動的に削除します。これには、履歴、自動入力、ダウンロードが含まれます。既存のタブは開いたままになります。}other{# 分間使用しなかった場合、組織は Chrome の閲覧データを自動的に削除します。これには、履歴、自動入力、ダウンロードが含まれます。既存のタブは開いたままになります。}}</translation>
 <translation id="8064015586118426197">ChromeOS Flex</translation>
 <translation id="8129812357326543296">Google Chrome について(&amp;G)</translation>
 <translation id="813913629614996137">初期化しています...</translation>

@@ -67,6 +67,9 @@ import java.util.concurrent.TimeoutException;
 
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Batch(Batch.PER_CLASS)
+@Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ACCOUNT_PROFILE_STORAGE,
+        ChromeFeatureList.SYNC_ENABLE_CONTACT_INFO_DATA_TYPE,
+        ChromeFeatureList.SYNC_ENABLE_CONTACT_INFO_DATA_TYPE_IN_TRANSPORT_MODE})
 public class AutofillProfilesFragmentTest {
     private static final AutofillProfile sLocalOrSyncProfile =
             AutofillProfile.builder()
@@ -611,6 +614,32 @@ public class AutofillProfilesFragmentTest {
                         .getWidgetLayoutResource());
     }
 
+    /**
+     * Cloud off icons are shown conditionally depending on the 3 feature flags
+     * being turned on.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Preferences"})
+    @Features.DisableFeatures({ChromeFeatureList.AUTOFILL_ACCOUNT_PROFILE_STORAGE,
+            ChromeFeatureList.SYNC_ENABLE_CONTACT_INFO_DATA_TYPE,
+            ChromeFeatureList.SYNC_ENABLE_CONTACT_INFO_DATA_TYPE_IN_TRANSPORT_MODE})
+    public void
+    testLocalProfiles_NoRequiredFeatureFlags() throws Exception {
+        setUpMockPrimaryAccount("test@account.com");
+        setUpMockSyncService(false, new HashSet());
+        AutofillProfilesFragment autofillProfileFragment = sSettingsActivityTestRule.getFragment();
+
+        // Trigger address profile list rebuild.
+        mHelper.setProfile(sAccountProfile);
+        Assert.assertEquals(0,
+                autofillProfileFragment.findPreference(sAccountProfile.getFullName())
+                        .getWidgetLayoutResource());
+        Assert.assertEquals(0,
+                autofillProfileFragment.findPreference(sLocalOrSyncProfile.getFullName())
+                        .getWidgetLayoutResource());
+    }
+
     @Test
     @MediumTest
     @Feature({"Preferences"})
@@ -702,7 +731,7 @@ public class AutofillProfilesFragmentTest {
 
     private void setUpMockSyncService(boolean enabled, Set<Integer> selectedTypes) {
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> SyncServiceFactory.overrideForTests(mSyncService));
+                () -> SyncServiceFactory.setInstanceForTesting(mSyncService));
         when(mSyncService.isSyncFeatureEnabled()).thenReturn(enabled);
         when(mSyncService.getSelectedTypes()).thenReturn(selectedTypes);
     }

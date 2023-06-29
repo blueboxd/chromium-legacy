@@ -1931,6 +1931,10 @@ TEST_F(ServiceWorkerVersionTest, SetResources) {
   records.push_back(WriteToDiskCacheWithIdSync(
       helper_->context()->GetStorageControl(), version->script_url(), 10,
       {} /* headers */, "I'm a body", "I'm a meta data"));
+
+  // Set fetch_handler_type, which is refereed in SetResources().
+  version->set_fetch_handler_type(
+      ServiceWorkerVersion::FetchHandlerType::kNotSkippable);
   version->SetResources(records);
 
   // The checksum has been calculated after the SetResources.
@@ -1938,7 +1942,17 @@ TEST_F(ServiceWorkerVersionTest, SetResources) {
             version->sha256_script_checksum());
 }
 
-TEST_F(ServiceWorkerVersionTest, SetRouterEvaluator) {
+class ServiceWorkerVersionStaticRouterTest : public ServiceWorkerVersionTest {
+ public:
+  ServiceWorkerVersionStaticRouterTest() {
+    feature_list_.InitWithFeatures({features::kServiceWorkerStaticRouter}, {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(ServiceWorkerVersionStaticRouterTest, SetRouterEvaluator) {
   // Create a new version
   scoped_refptr<ServiceWorkerVersion> version = CreateNewServiceWorkerVersion(
       helper_->context()->registry(), registration_.get(),

@@ -609,7 +609,6 @@ WebFrameLoadType NavigationTypeToLoadType(
     bool should_replace_current_entry) {
   switch (navigation_type) {
     case blink::mojom::NavigationType::RELOAD:
-    case blink::mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL:
       return WebFrameLoadType::kReload;
 
     case blink::mojom::NavigationType::RELOAD_BYPASSING_CACHE:
@@ -854,9 +853,6 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
 
   document_state->set_is_overriding_user_agent(
       commit_params.is_overriding_user_agent);
-  document_state->set_must_reset_scroll_and_scale_state(
-      common_params.navigation_type ==
-      blink::mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL);
   document_state->set_request_id(request_id);
 
   // If this is a loadDataWithBaseURL request, save the commit URL so that we
@@ -1461,7 +1457,8 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
       // This conversion is a little sad, as this often comes from a
       // WebString...
       WebString::FromUTF8(replication_state->name),
-      replication_state->frame_policy.sandbox_flags, base_url);
+      replication_state->frame_policy.sandbox_flags, base_url,
+      params->coop_forbids_initial_empty_document_to_be_cross_origin_isolated);
   if (!params->is_on_initial_empty_document)
     render_frame->frame_->SetIsNotOnInitialEmptyDocument();
 
@@ -1495,7 +1492,11 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   web_frame_widget->ApplyVisualProperties(
       params->widget_params->visual_properties);
 
+  CHECK(!render_frame->in_frame_tree_);
   render_frame->in_frame_tree_ = true;
+#if !defined(ARCH_CPU_ARM64)
+  render_frame->added_to_frame_tree_stack_trace_.emplace();
+#endif
   render_frame->Initialize(nullptr);
 
   if (params->subresource_loader_factories
@@ -1603,7 +1604,11 @@ void RenderFrameImpl::CreateFrame(
 
     // The RenderFrame is created and inserted into the frame tree in the above
     // call to createLocalChild.
+    CHECK(!render_frame->in_frame_tree_);
     render_frame->in_frame_tree_ = true;
+#if !defined(ARCH_CPU_ARM64)
+    render_frame->added_to_frame_tree_stack_trace_.emplace();
+#endif
   } else {
     WebFrame* previous_web_frame =
         WebFrame::FromFrameToken(previous_frame_token.value());
@@ -2112,7 +2117,9 @@ void RenderFrameImpl::Unload(
   task_runner->PostTask(FROM_HERE, std::move(send_unload_ack));
 }
 
-void RenderFrameImpl::Delete(mojom::FrameDeleteIntention intent) {
+void RenderFrameImpl::Delete(
+    mojom::FrameDeleteIntention intent,
+    mojo::PendingRemote<mojom::DebugHelperForCrbug1425281> helper) {
   TRACE_EVENT(
       "navigation", "RenderFrameImpl::Delete", [&](perfetto::EventContext ctx) {
         auto* event = ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
@@ -2156,10 +2163,36 @@ void RenderFrameImpl::Delete(mojom::FrameDeleteIntention intent) {
       // main frame when a commit (and ownership transfer) is imminent.
       // TODO(dcheng): This is the case of https://crbug.com/838348.
       DCHECK(is_main_frame_);
+      // This check is not enabled on Android, since it was previously much
+      // easier to trigger this race there, and it's still unclear what's
+      // causing the new race.
 #if !BUILDFLAG(IS_ANDROID)
-      // This check is not enabled on Android, since it seems like it's much
-      // easier to trigger data races there.
-      CHECK(!in_frame_tree_);
+      if (in_frame_tree_) {
+        // This remote should always be non-null when intent ==
+        // kSpeculativeMainFrameForNavigationCancelled.
+        mojo::Remote<mojom::DebugHelperForCrbug1425281> helper_remote(
+            std::move(helper));
+        size_t addresses_count = 0;
+        const void* const* addresses_ptr =
+            added_to_frame_tree_stack_trace_
+                ? added_to_frame_tree_stack_trace_->Addresses(&addresses_count)
+                : nullptr;
+        absl::optional<std::vector<uint64_t>> addresses;
+        if (addresses_ptr) {
+          addresses.emplace();
+          addresses->reserve(addresses_count);
+          for (size_t i = 0; i < addresses_count; ++i) {
+            addresses->push_back(reinterpret_cast<uintptr_t>(addresses_ptr[i]));
+          }
+        }
+        auto debug_info = mojom::Crbug1425281DebugInfo::New(
+            addresses, is_main_frame_, frame_->IsProvisional());
+        helper_remote->Failed(std::move(debug_info));
+        helper_remote.reset();
+      } else {
+        // No need to signal anything; only failure is signalled.
+        helper.reset();
+      }
 #endif  // !BUILDFLAG(IS_ANDROID)
       break;
   }
@@ -2562,6 +2595,7 @@ void RenderFrameImpl::CommitNavigation(
     mojo::PendingRemote<blink::mojom::ResourceCache> resource_cache,
     mojom::CookieManagerInfoPtr cookie_manager_info,
     mojom::StorageInfoPtr storage_info,
+    bool coop_forbids_document_to_be_cross_origin_isolated,
     mojom::NavigationClient::CommitNavigationCallback commit_callback) {
   DCHECK(navigation_client_impl_);
   DCHECK(!blink::IsRendererDebugURL(common_params->url));
@@ -2605,6 +2639,8 @@ void RenderFrameImpl::CommitNavigation(
       ToWebPolicyContainer(std::move(policy_container));
   navigation_params->view_transition_state =
       std::move(commit_params->view_transition_state);
+  navigation_params->coop_forbids_document_to_be_cross_origin_isolated =
+      coop_forbids_document_to_be_cross_origin_isolated;
 
   if (frame_->IsOutermostMainFrame() && permissions_policy) {
     navigation_params->permissions_policy_override = permissions_policy;
@@ -3536,7 +3572,11 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
       child_render_frame->blink_interface_registry_.get(), frame_token);
   finish_creation(web_frame, document_token);
 
+  CHECK(!child_render_frame->in_frame_tree_);
   child_render_frame->in_frame_tree_ = true;
+#if !defined(ARCH_CPU_ARM64)
+  child_render_frame->added_to_frame_tree_stack_trace_.emplace();
+#endif
   child_render_frame->Initialize(/*parent=*/GetWebFrame());
 
   return web_frame;
@@ -5043,7 +5083,11 @@ bool RenderFrameImpl::SwapIn(WebFrame* previous_web_frame) {
 
   // `previous_web_frame` is now detached, and should no longer be referenced.
 
+  CHECK(!in_frame_tree_);
   in_frame_tree_ = true;
+#if !defined(ARCH_CPU_ARM64)
+  added_to_frame_tree_stack_trace_.emplace();
+#endif
 
   // If this is the main frame going from a remote frame to a local frame,
   // it needs to set RenderViewImpl's pointer for the main frame to itself.
@@ -6401,6 +6445,9 @@ WebView* RenderFrameImpl::CreateNewWindow(
   main_frame_params->subresource_loader_factories =
       base::WrapUnique(static_cast<blink::PendingURLLoaderFactoryBundle*>(
           CloneLoaderFactories()->Clone().release()));
+  main_frame_params
+      ->coop_forbids_initial_empty_document_to_be_cross_origin_isolated =
+      reply->coop_forbids_initial_empty_document_to_be_cross_origin_isolated;
 
   view_params->main_frame =
       mojom::CreateMainFrameUnion::NewLocalParams(std::move(main_frame_params));

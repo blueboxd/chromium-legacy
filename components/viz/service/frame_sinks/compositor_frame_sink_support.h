@@ -15,7 +15,6 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "components/power_scheduler/power_mode_voter.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -298,7 +297,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   void MaybeEvictSurfaces();
   void EvictLastActiveSurface();
-  bool ShouldSendBeginFrame(base::TimeTicks timestamp);
+  bool ShouldSendBeginFrame(base::TimeTicks timestamp,
+                            base::TimeDelta vsync_interval);
 
   // Checks if any of the pending surfaces should activate now because their
   // deadline has passed. This is called every BeginFrame.
@@ -318,7 +318,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // until the time elapsed has passed the requested throttle interval since the
   // last sent BeginFrame. This function returns true if such interval has
   // passed and a BeginFrame should be sent.
-  bool ShouldThrottleBeginFrameAsRequested(base::TimeTicks frame_time);
+  bool ShouldThrottleBeginFrameAsRequested(base::TimeTicks frame_time,
+                                           base::TimeDelta vsync_interval);
 
   // Instructs the FrameSinkManager to destroy our CompositorFrameSinkImpl.
   // To avoid reentrancy issues, this should be called from its own task.
@@ -466,8 +467,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   std::unique_ptr<SurfaceAnimationManager> surface_animation_manager_;
   // The sequence ID for the save directive pending copy.
   uint32_t in_flight_save_sequence_id_ = 0;
-
-  std::unique_ptr<power_scheduler::PowerModeVoter> power_mode_voter_;
 
   base::flat_set<base::PlatformThreadId> thread_ids_;
 

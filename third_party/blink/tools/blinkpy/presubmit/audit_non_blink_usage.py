@@ -532,9 +532,6 @@ _CONFIG = [
             'skia::.+',
             'url::.+',
 
-            # Power scheduling instrumentation, which only depends on //base
-            "power_scheduler::.+",
-
             # Nested namespaces under the blink namespace
             'bindings::.+',
             'canvas_heuristic_parameters::.+',
@@ -543,6 +540,7 @@ _CONFIG = [
             'css_parsing_utils::.+',
             'css_toggle_key_handling::.+',
             'cssvalue::.+',
+            'element_locator::.+',
             'encoding::.+',
             'encoding_enum::.+',
             'event_handling_util::.+',
@@ -900,6 +898,14 @@ _CONFIG = [
             # The existing code already contains gin::IsolateHolder.
             'gin::IsolateHolder',
         ],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/core/frame/deprecation/deprecation.cc'
+        ],
+        'allowed': [
+            'base::CommandLine',
+        ]
     },
     {
         'paths': ['third_party/blink/renderer/core/frame/visual_viewport.cc'],

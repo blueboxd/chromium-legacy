@@ -610,7 +610,7 @@ bool CanToggleGameDashboard() {
     return false;
   }
   aura::Window* window = GetTargetWindow();
-  return window && GameDashboardController::IsGameWindow(window);
+  return window && GameDashboardController::ReadyForAccelerator(window);
 }
 
 bool CanToggleMultitaskMenu() {
@@ -1622,9 +1622,7 @@ void ToggleOverview() {
 void TogglePrivacyScreen() {
   PrivacyScreenController* controller =
       Shell::Get()->privacy_screen_controller();
-  controller->SetEnabled(
-      !controller->GetEnabled(),
-      PrivacyScreenController::kToggleUISurfaceKeyboardShortcut);
+  controller->SetEnabled(!controller->GetEnabled());
 }
 
 void ToggleProjectorMarker() {

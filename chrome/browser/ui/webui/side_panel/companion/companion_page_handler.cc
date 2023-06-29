@@ -205,9 +205,9 @@ void CompanionPageHandler::ShowUI() {
     // Register a modal dialog manager to show permissions dialog like those
     // requested from the feedback UI.
     RegisterModalDialogManager(browser);
-    std::string initial_text_query = helper->GetTextQuery();
-    if (!initial_text_query.empty()) {
-      OnSearchTextQuery(initial_text_query);
+
+    // If searching the text query succeeds, then early return.
+    if (OnSearchTextQuery()) {
       return;
     }
 
@@ -219,10 +219,26 @@ void CompanionPageHandler::ShowUI() {
     }
 
     NotifyURLChanged(/*is_full_reload=*/true);
+    if (visual_search_host_) {
+      visual_search::VisualSearchClassifierHost::ResultCallback callback =
+          base::BindOnce(&CompanionPageHandler::HandleVisualSearchResult,
+                         weak_ptr_factory_.GetWeakPtr());
+      visual_search_host_->StartClassification(
+          web_contents()->GetPrimaryMainFrame(), web_contents()->GetURL(),
+          std::move(callback));
+    }
   }
 }
 
-void CompanionPageHandler::OnSearchTextQuery(const std::string& query) {
+bool CompanionPageHandler::OnSearchTextQuery() {
+  CHECK(web_contents());
+  auto* helper = companion::CompanionTabHelper::FromWebContents(web_contents());
+  CHECK(helper);
+  const std::string query = helper->GetTextQuery();
+  if (query.empty()) {
+    return false;
+  }
+
   // Only notify the companion UI the page changed if we can share
   // information about the page by user consent.
   GURL page_url;
@@ -232,17 +248,23 @@ void CompanionPageHandler::OnSearchTextQuery(const std::string& query) {
 
   GURL companion_url = url_builder_->BuildCompanionURL(page_url, query);
   page_->LoadCompanionPage(companion_url);
+  return true;
 }
 
 void CompanionPageHandler::NotifyURLChanged(bool is_full_reload) {
   if (is_full_reload) {
     GURL companion_url =
         url_builder_->BuildCompanionURL(web_contents()->GetVisibleURL());
+    full_load_start_time_ = base::TimeTicks::Now();
     page_->LoadCompanionPage(companion_url);
   } else {
     auto companion_update_proto = url_builder_->BuildCompanionUrlParamProto(
         web_contents()->GetVisibleURL());
+    reload_start_time_ = base::TimeTicks::Now();
     page_->UpdateCompanionPage(companion_update_proto);
+  }
+  if (visual_search_host_) {
+    visual_search_host_->CancelClassification();
   }
 }
 
@@ -276,8 +298,6 @@ void CompanionPageHandler::OnRegionSearchClicked() {
   auto* helper = companion::CompanionTabHelper::FromWebContents(web_contents());
   CHECK(helper);
   helper->StartRegionSearch(web_contents(), /*use_fullscreen_capture=*/false);
-  metrics_logger_->RecordUiSurfaceClicked(
-      side_panel::mojom::UiSurface::kRegionSearch, kInvalidPosition);
   feature_engagement::TrackerFactory::GetForBrowserContext(GetProfile())
       ->NotifyEvent("companion_side_panel_region_search_button_clicked");
 }
@@ -304,6 +324,16 @@ void CompanionPageHandler::RecordUiSurfaceShown(
     uint32_t ui_surface_position,
     uint32_t child_element_available_count,
     uint32_t child_element_shown_count) {
+  if (full_load_start_time_) {
+    base::UmaHistogramTimes("Companion.FullLoad.Latency",
+                            base::TimeTicks::Now() - *full_load_start_time_);
+    full_load_start_time_.reset();
+  }
+  if (reload_start_time_) {
+    base::UmaHistogramTimes("Companion.NavigationLoad.Latency",
+                            base::TimeTicks::Now() - *reload_start_time_);
+    reload_start_time_.reset();
+  }
   metrics_logger_->RecordUiSurfaceShown(ui_surface, ui_surface_position,
                                         child_element_available_count,
                                         child_element_shown_count);
@@ -347,6 +377,10 @@ void CompanionPageHandler::OpenUrlInBrowser(
   }
 
   signin_delegate_->OpenUrlInBrowser(url_to_open.value(), use_new_tab);
+}
+
+void CompanionPageHandler::OnNavigationError() {
+  page_->OnNavigationError();
 }
 
 Browser* CompanionPageHandler::GetBrowser() {

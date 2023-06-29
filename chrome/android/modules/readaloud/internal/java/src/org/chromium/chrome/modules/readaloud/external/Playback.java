@@ -4,18 +4,10 @@
 
 package org.chromium.chrome.modules.readaloud.external;
 
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
+import java.time.Duration;
 
 /** Represents a single audio playback session. */
 public interface Playback {
-    /**
-     * Returns metadata represented by this playback. Serialized ReadAloudMetadata proto message.
-     */
-    default byte[] getMetadata() {
-        return null;
-    }
-
     /**
      * Add a listener to be called on playback events.
      * @param listener Listener.
@@ -39,12 +31,6 @@ public interface Playback {
      */
     default void pause() {}
 
-    /** Helper class to hold a time duration in terms of seconds and nanoseconds. */
-    public class Duration {
-        public long seconds;
-        public int nanos;
-    }
-
     /**
      * Seek playback relative to the current position.
      * @param seekDuration Relative time by which to seek. Rewind by passing a negative duration.
@@ -54,9 +40,9 @@ public interface Playback {
     /**
      * Seek playback to an absolute position. Throws exception if duration is negative or past the
      * end.
-     * @param absoluteDurationSinceUnixEpoch Seek target time relative to Unix epoch.
+     * @param absolutePosition Seek target time relative to beginning of audio.
      */
-    default void seek(Duration absoluteDurationSinceUnixEpoch) {}
+    default void seek(Duration absolutePosition) {}
 
     /**
      * Seek playback to the given paragraph and time offset within the paragraph. Throws an
@@ -79,9 +65,4 @@ public interface Playback {
      * @param rate Playback rate. Must be positive.
      */
     default void setRate(float rate) {}
-
-    /** Returns ListenableFuture returning serialized ReadAloudPlaybackData proto message. */
-    default ListenableFuture<byte[]> getPlaybackData() {
-        return Futures.immediateFuture(null);
-    }
 }

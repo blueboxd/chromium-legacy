@@ -57,11 +57,6 @@ BASE_FEATURE(kSynchronousSignInChecking,
              "SynchronousSignInChecking",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Retires the static denylist functionality - this serves as a kill-switch.
-BASE_FEATURE(kRetireStaticDenyList,
-             "RetireStaticDenyList",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables the new local extension approvals experience, which requests approval
 // through a platform-specific Parent Access Widget. Available on ChromeOS.
 BASE_FEATURE(kLocalExtensionApprovalsV2,
@@ -153,6 +148,13 @@ bool CanDisplayFirstTimeInterstitialBanner() {
          base::FeatureList::IsEnabled(
              kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
 }
+
+// When enabled non-syncing signed in supervised users will not be signed out of
+// their google account when cookies are cleared
+BASE_FEATURE(kClearingCookiesKeepsSupervisedUsersSignedIn,
+             "ClearingCookiesKeepsSupervisedUsersSignedIn",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // The URL which the "Managed by your parent" UI links to. This is defined as a
 // FeatureParam (but with the currently correct default) because:
 // * We expect to change this URL in the near-term, this allows us to gradually

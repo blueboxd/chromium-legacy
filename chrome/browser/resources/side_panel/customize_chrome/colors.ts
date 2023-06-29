@@ -13,7 +13,7 @@ import {SkColor} from 'chrome://resources/mojo/skia/public/mojom/skcolor.mojom-w
 import {DomRepeat, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ColorElement} from './color.js';
-import {Color, ColorType, DARK_BASELINE_BLUE_COLOR, DARK_DEFAULT_COLOR, LIGHT_BASELINE_BLUE_COLOR, LIGHT_DEFAULT_COLOR, SelectedColor} from './color_utils.js';
+import {Color, ColorType, DARK_BASELINE_BLUE_COLOR, DARK_BASELINE_GREY_COLOR, DARK_DEFAULT_COLOR, LIGHT_BASELINE_BLUE_COLOR, LIGHT_BASELINE_GREY_COLOR, LIGHT_DEFAULT_COLOR, SelectedColor} from './color_utils.js';
 import {getTemplate} from './colors.html.js';
 import {ChromeColor, Theme} from './customize_chrome.mojom-webui.js';
 import {CustomizeChromeApiProxy} from './customize_chrome_api_proxy.js';
@@ -43,6 +43,10 @@ export class ColorsElement extends PolymerElement {
         type: Object,
         computed: 'computeDefaultColor_(theme_)',
       },
+      greyDefaultColor_: {
+        type: Object,
+        computed: 'computeGreyDefaultColor_(theme_)',
+      },
       mainColor_: {
         type: Object,
         computed: 'computeMainColor_(theme_)',
@@ -56,6 +60,10 @@ export class ColorsElement extends PolymerElement {
       isDefaultColorSelected_: {
         type: Object,
         computed: 'computeIsDefaultColorSelected_(selectedColor_)',
+      },
+      isGreyDefaultColorSelected_: {
+        type: Object,
+        computed: 'computeIsGreyDefaultColorSelected_(selectedColor_)',
       },
       isMainColorSelected_: {
         type: Object,
@@ -73,6 +81,15 @@ export class ColorsElement extends PolymerElement {
         },
       },
       showManagedDialog_: Boolean,
+      showBackgroundColor_: {
+        type: Boolean,
+        computed: 'computeShowBackgroundColor_(theme_)',
+      },
+      showCustomColorBackgroundColor_: {
+        type: Boolean,
+        computed: 'computeShowCustomColorBackgroundColor_(theme_)',
+      },
+      isChromeRefresh2023_: Boolean,
     };
   }
 
@@ -90,6 +107,14 @@ export class ColorsElement extends PolymerElement {
   private customColor_: Color;
   private setThemeListenerId_: number|null = null;
   private showManagedDialog_: boolean;
+  private isChromeRefresh2023_: boolean;
+
+  constructor() {
+    super();
+    this.isChromeRefresh2023_ =
+        loadTimeData.getString('chromeRefresh2023Attribute') ===
+        'chrome-refresh-2023';
+  }
 
   override connectedCallback() {
     super.connectedCallback();
@@ -108,11 +133,16 @@ export class ColorsElement extends PolymerElement {
   }
 
   private computeDefaultColor_(): Color {
-    if (loadTimeData.getString('chromeRefresh2023Attribute')) {
+    if (this.isChromeRefresh2023_) {
       return this.theme_.isDarkMode ? DARK_BASELINE_BLUE_COLOR :
                                       LIGHT_BASELINE_BLUE_COLOR;
     }
     return this.theme_.isDarkMode ? DARK_DEFAULT_COLOR : LIGHT_DEFAULT_COLOR;
+  }
+
+  private computeGreyDefaultColor_(): Color {
+    return this.theme_.isDarkMode ? DARK_BASELINE_GREY_COLOR :
+                                    LIGHT_BASELINE_GREY_COLOR;
   }
 
   private computeMainColor_(): SkColor|undefined {
@@ -123,6 +153,9 @@ export class ColorsElement extends PolymerElement {
   private computeSelectedColor_(): SelectedColor {
     if (!this.colors_ || !this.theme_) {
       return {type: ColorType.NONE};
+    }
+    if (this.isChromeRefresh2023_ && this.theme_.isGreyBaseline) {
+      return {type: ColorType.GREY};
     }
     if (!this.theme_.foregroundColor) {
       return {type: ColorType.DEFAULT};
@@ -145,6 +178,10 @@ export class ColorsElement extends PolymerElement {
 
   private computeIsDefaultColorSelected_(): boolean {
     return this.selectedColor_.type === ColorType.DEFAULT;
+  }
+
+  private computeIsGreyDefaultColorSelected_(): boolean {
+    return this.selectedColor_.type === ColorType.GREY;
   }
 
   private computeIsMainColorSelected_(): boolean {
@@ -188,11 +225,26 @@ export class ColorsElement extends PolymerElement {
         !!this.theme_.backgroundImage.mainColor;
   }
 
+  private computeShowBackgroundColor_(): boolean {
+    return this.isChromeRefresh2023_ || !this.themeHasBackgroundImage_();
+  }
+
+  private computeShowCustomColorBackgroundColor_(): boolean {
+    return !this.isChromeRefresh2023_ && !this.themeHasBackgroundImage_();
+  }
+
   private onDefaultColorClick_() {
     if (this.handleClickForManagedColors_()) {
       return;
     }
     CustomizeChromeApiProxy.getInstance().handler.setDefaultColor();
+  }
+
+  private onGreyDefaultColorClick_() {
+    if (this.handleClickForManagedColors_()) {
+      return;
+    }
+    CustomizeChromeApiProxy.getInstance().handler.setGreyDefaultColor();
   }
 
   private onMainColorClick_() {

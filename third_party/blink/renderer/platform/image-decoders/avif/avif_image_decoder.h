@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_AVIF_AVIF_IMAGE_DECODER_H_
 
 #include <memory>
+#include <vector>
 
 #include "third_party/blink/renderer/platform/allow_discouraged_type.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
@@ -36,6 +37,9 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   const AtomicString& MimeType() const override;
   bool ImageIsHighBitDepth() override;
   void OnSetData(SegmentReader* data) override;
+  bool GetGainmapInfoAndData(
+      SkGainmapInfo& out_gainmap_info,
+      scoped_refptr<SegmentReader>& out_gainmap_data) const override;
   cc::YUVSubsampling GetYUVSubsampling() const override;
   gfx::Size DecodedYUVSize(cc::YUVIndex) const override;
   wtf_size_t DecodedYUVWidthBytes(cc::YUVIndex) const override;
@@ -57,8 +61,21 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   gfx::ColorTransform* GetColorTransformForTesting();
 
  private:
+  // If the AVIF image has a clean aperture ('clap') property, what kind of
+  // clean aperture it is. Values synced with 'AVIFCleanApertureType' in
+  // src/tools/metrics/histograms/enums.xml.
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class AVIFCleanApertureType {
+    kInvalid = 0,        // The clean aperture property is invalid.
+    kNonzeroOrigin = 1,  // The origin of the clean aperture is not (0, 0).
+    kZeroOrigin = 2,     // The origin of the clean aperture is (0, 0).
+    kMaxValue = kZeroOrigin,
+  };
+
   struct AvifIOData {
-    blink::SegmentReader* reader = nullptr;
+    const SegmentReader* reader = nullptr;
     std::vector<uint8_t> buffer ALLOW_DISCOURAGED_TYPE("Required by libavif");
     bool all_data_received = false;
   };
@@ -127,6 +144,7 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   avifPixelFormat avif_yuv_format_ = AVIF_PIXEL_FORMAT_NONE;
   wtf_size_t decoded_frame_count_ = 0;
   SkYUVColorSpace yuv_color_space_ = SkYUVColorSpace::kIdentity_SkYUVColorSpace;
+  absl::optional<AVIFCleanApertureType> clap_type_;
   // Whether the 'clap' (clean aperture) property should be ignored, e.g.
   // because the 'clap' property is invalid or unsupported.
   bool ignore_clap_ = false;

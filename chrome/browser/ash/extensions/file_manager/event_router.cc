@@ -638,9 +638,12 @@ void EventRouter::Shutdown() {
       chromeos::PowerManagerClient::Get();
   power_manager_client->RemoveObserver(device_event_router_.get());
 
-  auto* registry = guest_os::GuestOsService::GetForProfile(profile_)
-                       ->MountProviderRegistry();
-  registry->RemoveObserver(this);
+  auto* guest_os_service = guest_os::GuestOsService::GetForProfile(profile_);
+  if (guest_os_service) {
+    // GuestOsService doesn't exist for all profiles.
+    auto* registry = guest_os_service->MountProviderRegistry();
+    registry->RemoveObserver(this);
+  }
 
   if (apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile_)) {
     apps::AppServiceProxy* proxy =
@@ -750,9 +753,12 @@ void EventRouter::ObserveEvents() {
     tablet_mode->AddObserver(this);
   }
 
-  auto* registry = guest_os::GuestOsService::GetForProfile(profile_)
-                       ->MountProviderRegistry();
-  registry->AddObserver(this);
+  auto* guest_os_service = guest_os::GuestOsService::GetForProfile(profile_);
+  if (guest_os_service) {
+    // GuestOsService doesn't exist for all profiles.
+    auto* registry = guest_os_service->MountProviderRegistry();
+    registry->AddObserver(this);
+  }
 
   if (apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile_)) {
     apps::AppServiceProxy* proxy =
@@ -1254,7 +1260,11 @@ void EventRouter::OnIOTaskStatus(const io_task::ProgressStatus& status) {
   event_status.task_id = status.task_id;
   event_status.type = GetIOTaskType(status.type);
   event_status.state = GetIOTaskState(status.state);
-  event_status.policy_error = GetPolicyErrorType(status.policy_error);
+  // TODO(b/288862472): Also pass # of blocked files to the Files app.
+  event_status.policy_error =
+      status.policy_error.has_value()
+          ? GetPolicyErrorType(status.policy_error->type)
+          : file_manager_private::POLICY_ERROR_TYPE_NONE;
   event_status.sources_scanned = status.sources_scanned;
   event_status.destination_volume_id = status.GetDestinationVolumeId();
   event_status.show_notification = status.show_notification;
@@ -1315,16 +1325,22 @@ void EventRouter::OnIOTaskStatus(const io_task::ProgressStatus& status) {
   if (GetIOTaskState(status.state) ==
       file_manager_private::IO_TASK_STATE_PAUSED) {
     file_manager_private::PauseParams pause_params;
-    pause_params.conflict_params->conflict_name =
-        status.pause_params.conflict_params->conflict_name;
-    pause_params.conflict_params->conflict_multiple =
-        status.pause_params.conflict_params->conflict_multiple;
-    pause_params.conflict_params->conflict_is_directory =
-        status.pause_params.conflict_params->conflict_is_directory;
-    pause_params.conflict_params->conflict_target_url =
-        status.pause_params.conflict_params->conflict_target_url;
-    pause_params.policy_params->type =
-        GetPolicyErrorType(status.pause_params.policy_params->type);
+    if (status.pause_params.conflict_params) {
+      pause_params.conflict_params.emplace();
+      pause_params.conflict_params->conflict_name =
+          status.pause_params.conflict_params->conflict_name;
+      pause_params.conflict_params->conflict_multiple =
+          status.pause_params.conflict_params->conflict_multiple;
+      pause_params.conflict_params->conflict_is_directory =
+          status.pause_params.conflict_params->conflict_is_directory;
+      pause_params.conflict_params->conflict_target_url =
+          status.pause_params.conflict_params->conflict_target_url;
+    }
+    if (status.pause_params.policy_params) {
+      pause_params.policy_params.emplace();
+      pause_params.policy_params->type =
+          GetPolicyErrorType(status.pause_params.policy_params->type);
+    }
     event_status.pause_params = std::move(pause_params);
   }
 

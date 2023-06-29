@@ -5,7 +5,7 @@
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
 import {ColorElement} from 'chrome://customize-chrome-side-panel.top-chrome/color.js';
-import {Color, DARK_BASELINE_BLUE_COLOR, DARK_DEFAULT_COLOR, LIGHT_BASELINE_BLUE_COLOR, LIGHT_DEFAULT_COLOR} from 'chrome://customize-chrome-side-panel.top-chrome/color_utils.js';
+import {Color, DARK_BASELINE_BLUE_COLOR, DARK_BASELINE_GREY_COLOR, DARK_DEFAULT_COLOR, LIGHT_BASELINE_BLUE_COLOR, LIGHT_BASELINE_GREY_COLOR, LIGHT_DEFAULT_COLOR} from 'chrome://customize-chrome-side-panel.top-chrome/color_utils.js';
 import {ColorsElement} from 'chrome://customize-chrome-side-panel.top-chrome/colors.js';
 import {ChromeColor, CustomizeChromePageCallbackRouter, CustomizeChromePageHandlerRemote, CustomizeChromePageRemote, Theme} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome.mojom-webui.js';
 import {CustomizeChromeApiProxy} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome_api_proxy.js';
@@ -25,6 +25,9 @@ suite('ColorsTest', () => {
   let chromeColorsResolver: PromiseResolver<{colors: ChromeColor[]}>;
 
   setup(() => {
+    loadTimeData.overrideValues({
+      chromeRefresh2023Attribute: '',
+    });
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
     handler = installMock(
         CustomizeChromePageHandlerRemote,
@@ -77,6 +80,49 @@ suite('ColorsTest', () => {
             });
       });
 
+  test('do not render grey default with ChromeRefresh disabled', async () => {
+    initializeElement();
+    const theme: Theme = createTheme(false);
+
+    callbackRouter.setTheme(theme);
+    await callbackRouter.$.flushForTesting();
+    await waitAfterNextRender(colorsElement);
+
+    const greyDefaultColorElement =
+        $$<ColorElement>(colorsElement, '#greyDefaultColor')!;
+    assertTrue(!greyDefaultColorElement);
+  });
+
+  ([
+    [true, DARK_BASELINE_GREY_COLOR],
+    [false, LIGHT_BASELINE_GREY_COLOR],
+  ] as Array<[boolean, Color]>)
+      .forEach(([isDarkMode, greyDefaultColor]) => {
+        test(`render DarkMode ${isDarkMode} grey default color`, async () => {
+          loadTimeData.overrideValues({
+            chromeRefresh2023Attribute: 'chrome-refresh-2023',
+          });
+
+          initializeElement();
+          const theme: Theme = createTheme(isDarkMode);
+
+          callbackRouter.setTheme(theme);
+          await callbackRouter.$.flushForTesting();
+          await waitAfterNextRender(colorsElement);
+
+          const greyDefaultColorElement =
+              $$<ColorElement>(colorsElement, '#greyDefaultColor')!;
+          assertDeepEquals(
+              greyDefaultColor.foreground,
+              greyDefaultColorElement.foregroundColor);
+          assertDeepEquals(
+              greyDefaultColor.background,
+              greyDefaultColorElement.backgroundColor);
+          assertDeepEquals(
+              greyDefaultColor.base, greyDefaultColorElement.baseColor);
+        });
+      });
+
   test('sets default color', async () => {
     initializeElement();
     const theme = createTheme();
@@ -88,6 +134,22 @@ suite('ColorsTest', () => {
     $$<HTMLElement>(colorsElement, '#defaultColor')!.click();
 
     assertEquals(1, handler.getCallCount('setDefaultColor'));
+  });
+
+  test('sets grey default color', async () => {
+    loadTimeData.overrideValues({
+      chromeRefresh2023Attribute: 'chrome-refresh-2023',
+    });
+    initializeElement();
+    const theme = createTheme();
+    theme.foregroundColor = undefined;
+    callbackRouter.setTheme(theme);
+    await callbackRouter.$.flushForTesting();
+    await waitAfterNextRender(colorsElement);
+
+    $$<HTMLElement>(colorsElement, '#greyDefaultColor')!.click();
+
+    assertEquals(1, handler.getCallCount('setGreyDefaultColor'));
   });
 
   test('renders main color', async () => {
@@ -345,27 +407,48 @@ suite('ColorsTest', () => {
     assertEquals(colorsElement.$.customColorContainer, indexedColors[0]);
   });
 
-  [false, true].forEach((hasBackgroundImage) => {
-    test(
-        `background color visibility if theme has image ${hasBackgroundImage}`,
-        async () => {
-          initializeElement();
-          const theme = createTheme();
-          if (hasBackgroundImage) {
-            theme.backgroundImage = createBackgroundImage('https://foo.com');
-          } else {
-            theme.backgroundImage = undefined;
-          }
-          callbackRouter.setTheme(theme);
-          await callbackRouter.$.flushForTesting();
+  ([
+    [false, false],
+    [false, true],
+    [true, false],
+    [true, true],
+  ] as Array<[boolean, boolean]>)
+      .forEach(([hasBackgroundImage, isChromeRefresh2023]) => {
+        test(
+            `background color visible if theme has image ${
+                hasBackgroundImage} GM3 ${isChromeRefresh2023}`,
+            async () => {
+              if (isChromeRefresh2023) {
+                loadTimeData.overrideValues({
+                  chromeRefresh2023Attribute: 'chrome-refresh-2023',
+                });
+              }
+              initializeElement();
+              const theme = createTheme();
+              if (hasBackgroundImage) {
+                theme.backgroundImage =
+                    createBackgroundImage('https://foo.com');
+              } else {
+                theme.backgroundImage = undefined;
+              }
+              callbackRouter.setTheme(theme);
+              await callbackRouter.$.flushForTesting();
 
-          const colors = colorsElement.shadowRoot!.querySelectorAll(
-              'customize-chrome-color');
-          for (const color of colors) {
-            assertEquals(hasBackgroundImage, color.backgroundColorHidden);
-          }
-        });
-  });
+              const colors = colorsElement.shadowRoot!.querySelectorAll(
+                  'customize-chrome-color');
+              for (const color of colors) {
+                if (color.id === 'customColor') {
+                  assertEquals(
+                      isChromeRefresh2023 || hasBackgroundImage,
+                      color.backgroundColorHidden);
+                } else {
+                  assertEquals(
+                      hasBackgroundImage && !isChromeRefresh2023,
+                      !!(color.backgroundColorHidden));
+                }
+              }
+            });
+      });
 
   ([
     ['#defaultColor', undefined, undefined],

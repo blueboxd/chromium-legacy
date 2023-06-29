@@ -34,7 +34,6 @@
 #include "components/viz/common/quads/video_hole_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -735,6 +734,13 @@ void VideoResourceUpdater::AppendQuads(
       // (e.g. *_layer_overlay.cc).
       texture_quad->is_stream_video =
           frame_resource_type_ == VideoFrameResourceType::STREAM_TEXTURE;
+#if BUILDFLAG(IS_WIN)
+      // Windows uses DComp surfaces to e.g. hold MediaFoundation videos, which
+      // must be promoted to overlay to be composited correctly.
+      if (frame->metadata().dcomp_surface) {
+        texture_quad->overlay_priority_hint = viz::OverlayPriority::kRequired;
+      }
+#endif
       texture_quad->is_video_frame = true;
       texture_quad->hdr_metadata = frame->hdr_metadata();
       for (viz::ResourceId resource_id : texture_quad->resources) {
@@ -767,14 +773,19 @@ viz::SharedImageFormat VideoResourceUpdater::YuvSharedImageFormat(
   const auto& caps = context_provider_->ContextCapabilities();
   if (caps.disable_one_component_textures)
     return PaintCanvasVideoRenderer::GetRGBPixelsOutputFormat();
-  if (bits_per_channel <= 8)
+  if (bits_per_channel <= 8) {
+    DCHECK(caps.supports_luminance_shared_images || caps.texture_rg);
     return caps.texture_rg ? viz::SinglePlaneFormat::kR_8
                            : viz::SinglePlaneFormat::kLUMINANCE_8;
+  }
   if (use_r16_texture_ && caps.texture_norm16)
     return viz::SinglePlaneFormat::kR_16;
-  if (caps.texture_half_float_linear)
+  if (caps.texture_half_float_linear && caps.supports_luminance_shared_images) {
     return viz::SinglePlaneFormat::kLUMINANCE_F16;
-  return viz::SinglePlaneFormat::kLUMINANCE_8;
+  }
+  DCHECK(caps.supports_luminance_shared_images || caps.texture_rg);
+  return caps.texture_rg ? viz::SinglePlaneFormat::kR_8
+                         : viz::SinglePlaneFormat::kLUMINANCE_8;
 }
 
 bool VideoResourceUpdater::ReallocateUploadPixels(size_t needed_size) {
@@ -1002,7 +1013,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
                 : VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601;
 
         transfer_resource.ycbcr_info = gpu::VulkanYCbCrInfo(
-            ToVkFormat(transfer_resource.format.resource_format()),
+            viz::SharedImageFormatRestrictedSinglePlaneUtils::ToVkFormat(
+                transfer_resource.format),
             /*external_format=*/0, ycbcr_conversion,
             VK_SAMPLER_YCBCR_RANGE_ITU_NARROW, VK_CHROMA_LOCATION_COSITED_EVEN,
             VK_CHROMA_LOCATION_COSITED_EVEN,
@@ -1239,11 +1251,14 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
           HardwarePlaneResource::ScopedTexture scope(gl, hardware_resource);
           gl->BindTexture(hardware_resource->texture_target(),
                           scope.texture_id());
-          gl->TexSubImage2D(hardware_resource->texture_target(), 0, 0, 0,
-                            plane_size.width(), plane_size.height(),
-                            GLDataFormat(output_si_format.resource_format()),
-                            GLDataType(output_si_format.resource_format()),
-                            source_pixels);
+          gl->TexSubImage2D(
+              hardware_resource->texture_target(), 0, 0, 0, plane_size.width(),
+              plane_size.height(),
+              viz::SharedImageFormatRestrictedSinglePlaneUtils::ToGLDataFormat(
+                  output_si_format),
+              viz::SharedImageFormatRestrictedSinglePlaneUtils::ToGLDataType(
+                  output_si_format),
+              source_pixels);
         }
       }
       plane_resource->SetUniqueId(video_frame->unique_id(), 0);
@@ -1405,11 +1420,14 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
       gl->PixelStorei(GL_UNPACK_ROW_LENGTH, unpack_row_length);
       gl->PixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment);
-      gl->TexSubImage2D(plane_resource->texture_target(), 0, 0, 0,
-                        resource_size_pixels.width(),
-                        resource_size_pixels.height(),
-                        GLDataFormat(plane_si_format.resource_format()),
-                        GLDataType(plane_si_format.resource_format()), pixels);
+      gl->TexSubImage2D(
+          plane_resource->texture_target(), 0, 0, 0,
+          resource_size_pixels.width(), resource_size_pixels.height(),
+          viz::SharedImageFormatRestrictedSinglePlaneUtils::ToGLDataFormat(
+              plane_si_format),
+          viz::SharedImageFormatRestrictedSinglePlaneUtils::ToGLDataType(
+              plane_si_format),
+          pixels);
       gl->PixelStorei(GL_UNPACK_ROW_LENGTH, kDefaultUnpackRowLength);
       gl->PixelStorei(GL_UNPACK_ALIGNMENT, kDefaultUnpackAlignment);
     }

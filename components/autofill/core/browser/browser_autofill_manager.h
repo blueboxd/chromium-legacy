@@ -28,6 +28,7 @@
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/field_filler.h"
+#include "components/autofill/core/browser/form_autofill_history.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/form_events/address_form_event_logger.h"
@@ -155,6 +156,9 @@ class BrowserAutofillManager : public AutofillManager,
                               const CreditCard& credit_card,
                               const std::u16string& cvc,
                               AutofillTriggerSource trigger_source) override;
+  // Reverts the last autofill operation on `form` that affected
+  // `trigger_field`, virtual for testing.
+  virtual void UndoAutofill(FormData form, const FormFieldData& trigger_field);
   // Virtual for testing
   virtual void DidShowSuggestions(bool has_autofill_suggestions,
                                   const FormData& form,
@@ -254,7 +258,8 @@ class BrowserAutofillManager : public AutofillManager,
   void OnDidPreviewAutofillFormDataImpl() override;
   void OnDidEndTextFieldEditingImpl() override;
   void OnHidePopupImpl() override;
-  void OnSelectFieldOptionsDidChangeImpl(const FormData& form) override;
+  void OnSelectOrSelectMenuFieldOptionsDidChangeImpl(
+      const FormData& form) override;
   void OnJavaScriptChangedAutofilledValueImpl(
       const FormData& form,
       const FormFieldData& field,
@@ -268,7 +273,7 @@ class BrowserAutofillManager : public AutofillManager,
   // SingleFieldFormFiller::SuggestionsHandler:
   void OnSuggestionsReturned(
       FieldGlobalId field_id,
-      AutoselectFirstSuggestion autoselect_first_suggestion,
+      AutofillSuggestionTriggerSource trigger_source,
       const std::vector<Suggestion>& suggestions) override;
 
   // Returns true if either Profile or CreditCard Autofill is enabled.
@@ -732,10 +737,10 @@ class BrowserAutofillManager : public AutofillManager,
   bool ShouldShowVirtualCardOption(FormStructure* form_structure);
 #endif
 
-  // Returns an appropriate EventFormLogger for the given |field_type_group|.
-  // May return nullptr.
+  // Returns an appropriate EventFormLogger, depending on the given `field`'s
+  // type. May return nullptr.
   autofill_metrics::FormEventLoggerBase* GetEventFormLogger(
-      FieldTypeGroup field_type_group) const;
+      const AutofillField& field) const;
 
   void SetDataList(const std::vector<std::u16string>& values,
                    const std::vector<std::u16string>& labels);
@@ -765,6 +770,10 @@ class BrowserAutofillManager : public AutofillManager,
 
   // Used to help fill data into fields.
   FieldFiller field_filler_;
+
+  // Container holding the history of Autofill filling operations. Used to undo
+  // some of the filling operations.
+  FormAutofillHistory form_autofill_history_;
 
   base::circular_deque<std::string> autofilled_form_signatures_;
 

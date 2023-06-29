@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/color/color_provider.h"
 #include "ui/views/layout/layout_provider.h"
 
 namespace {
@@ -37,6 +38,10 @@ class GM2TabStyle : public TabStyle {
   gfx::Size GetPreviewImageSize() const override;
   int GetTopCornerRadius() const override;
   int GetBottomCornerRadius() const override;
+  SkColor GetTabBackgroundColor(
+      TabSelectionState state,
+      bool frame_active,
+      const ui::ColorProvider& color_provider) const override;
   float GetSelectedTabOpacity() const override;
   gfx::Insets GetContentsInsets() const override;
 };
@@ -49,6 +54,10 @@ class ChromeRefresh2023TabStyle : public GM2TabStyle {
   int GetTabOverlap() const override;
   gfx::Size GetSeparatorSize() const override;
   gfx::Insets GetSeparatorMargins() const override;
+  SkColor GetTabBackgroundColor(
+      TabSelectionState state,
+      bool frame_active,
+      const ui::ColorProvider& color_provider) const override;
   gfx::Insets GetContentsInsets() const override;
 };
 
@@ -148,6 +157,34 @@ gfx::Insets GM2TabStyle::GetContentsInsets() const {
                            GetBottomCornerRadius() * 2);
 }
 
+SkColor GM2TabStyle::GetTabBackgroundColor(
+    const TabSelectionState state,
+    const bool frame_active,
+    const ui::ColorProvider& color_provider) const {
+  const SkColor active_color = color_provider.GetColor(
+      frame_active ? kColorTabBackgroundActiveFrameActive
+                   : kColorTabBackgroundActiveFrameInactive);
+  const SkColor inactive_color = color_provider.GetColor(
+      frame_active ? kColorTabBackgroundInactiveFrameActive
+                   : kColorTabBackgroundInactiveFrameInactive);
+
+  switch (state) {
+    case TabStyle::TabSelectionState::kActive:
+      return active_color;
+    case TabStyle::TabSelectionState::kSelected:
+      // TODO(tbergquist): This maybe should be done in a color mixer, with tab
+      // selected states having their own color ids even in GM2.
+      return color_utils::AlphaBlend(active_color, inactive_color,
+                                     GetSelectedTabOpacity());
+    case TabStyle::TabSelectionState::kHovered:
+      return active_color;
+    case TabStyle::TabSelectionState::kInactive:
+      return inactive_color;
+    default:
+      NOTREACHED_NORETURN();
+  }
+}
+
 float GM2TabStyle::GetSelectedTabOpacity() const {
   return kDefaultSelectedTabOpacity;
 }
@@ -185,6 +222,30 @@ gfx::Insets ChromeRefresh2023TabStyle::GetContentsInsets() const {
 gfx::Insets ChromeRefresh2023TabStyle::GetSeparatorMargins() const {
   return gfx::Insets::TLBR(0, kChromeRefreshSeparatorHorizontalMargin, 6,
                            kChromeRefreshSeparatorHorizontalMargin);
+}
+
+SkColor ChromeRefresh2023TabStyle::GetTabBackgroundColor(
+    const TabSelectionState state,
+    const bool frame_active,
+    const ui::ColorProvider& color_provider) const {
+  switch (state) {
+    case TabStyle::TabSelectionState::kSelected:
+      return frame_active ? color_provider.GetColor(
+                                kColorTabBackgroundSelectedFrameActive)
+                          : color_provider.GetColor(
+                                kColorTabBackgroundSelectedFrameInactive);
+    case TabStyle::TabSelectionState::kHovered:
+      return frame_active
+                 ? color_provider.GetColor(kColorTabBackgroundHoverFrameActive)
+                 : color_provider.GetColor(
+                       kColorTabBackgroundHoverFrameInactive);
+    case TabStyle::TabSelectionState::kActive:
+    case TabStyle::TabSelectionState::kInactive:
+      return GM2TabStyle::GetTabBackgroundColor(state, frame_active,
+                                                color_provider);
+    default:
+      NOTREACHED_NORETURN();
+  }
 }
 
 // static

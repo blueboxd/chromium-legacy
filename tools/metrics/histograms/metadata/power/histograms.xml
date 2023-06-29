@@ -559,7 +559,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PerformanceMonitor.UsageScenario.LongInterval"
     enum="PerformanceMonitor.UsageScenario.LongInterval"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>olivierli@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -574,7 +574,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PerformanceMonitor.UsageScenario.ShortInterval"
     enum="PerformanceMonitor.UsageScenario.ShortInterval"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>olivierli@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -798,7 +798,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.AvgCpuLoad.{ProcessType}" units="%"
-    expires_after="2023-07-31">
+    expires_after="2024-07-31">
   <owner>eseckler@chromium.org</owner>
   <owner>khokhlov@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -967,7 +967,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BatteryDischargeRate" units="mW"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -1096,15 +1096,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Power.BatteryInfoSample" enum="BatteryInfoSampleResult"
-    expires_after="2020-11-29">
-  <owner>tbroch@chromium.org</owner>
-  <summary>
-    Counts the number of times we have read the battery status from sysfs and if
-    it gave us sensible values. Chrome OS only.
-  </summary>
-</histogram>
-
 <histogram name="Power.BatteryLife.{BatteryCapacityType}" units="minute"
     expires_after="2024-05-12">
   <owner>puthik@chromium.org</owner>
@@ -1132,6 +1123,18 @@ chromium-metrics-reviews@google.com.
     discharge rate sampling, i.e., Power.BatteryDischargeRateWhileSuspended.
   </summary>
   <token key="BatteryCapacityType" variants="BatteryCapacityType"/>
+</histogram>
+
+<histogram name="Power.BatteryPercentageAtHibernateSuspend" units="%"
+    expires_after="2024-06-14">
+  <owner>mka@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
+  <owner>chromeos-platform-power@google.com</owner>
+  <owner>chromeos-hibernate@google.com</owner>
+  <summary>
+    The battery level in percent at the time the system entered hibernate.
+    Reported at resume from hibernate.
+  </summary>
 </histogram>
 
 <histogram name="Power.BatteryPercentDrop" units="%" expires_after="2023-11-12">
@@ -1187,16 +1190,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Power.BatteryRemainingWhenChargeStarts" units="%"
-    expires_after="2022-05-01">
-  <owner>puthik@chromium.org</owner>
-  <owner>chromeos-platform-power@google.com</owner>
-  <summary>
-    Chrome OS remaining battery charge as percent of the maximum battery charge,
-    sampled when charging starts.
-  </summary>
-</histogram>
-
 <histogram name="Power.BitfixChunks" units="units" expires_after="M77">
   <owner>dianders@chromium.org</owner>
   <summary>
@@ -1214,23 +1207,6 @@ chromium-metrics-reviews@google.com.
     around 97% of the time and a non-zero value around 3% of the time. Would be
     exactly equal to Power.BitfixChunks if there were only one corrupted word in
     each chunk but is sometimes several times higher.
-  </summary>
-</histogram>
-
-<histogram name="Power.ConnectedChargingPorts"
-    enum="PowerConnectedChargingPorts" expires_after="2022-04-24">
-  <owner>bleung@chromium.org</owner>
-  <owner>puthik@chromium.org</owner>
-  <owner>chromeos-platform-power@google.com</owner>
-  <summary>
-    Connected charging ports on Chrome OS. A sample is reported every time that
-    the power manager polls sysfs (typically every 30 seconds). Ordinals are
-    assigned based on the lexicographical ordering of power supply names from
-    sysfs and have no implied correspondence with ports' physical locations. For
-    example, with ports 'CROS_USB_PD_CHARGER0' and 'CROS_USB_PD_CHARGER1',
-    'first' refers to the former and 'second' to the latter. To determine a
-    port's physical location, see the powerd charging_ports pref in the device's
-    overlay.
   </summary>
 </histogram>
 
@@ -1334,7 +1310,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.CpuTimeSecondsPerProcessType.{Visibility}"
-    enum="ProcessType2" expires_after="2023-07-31">
+    enum="ProcessType2" expires_after="2024-07-31">
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -1358,7 +1334,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.CpuTimeSecondsPerThreadType.{ProcessType}"
-    enum="CpuTimeMetricsThreadType" expires_after="2023-07-31">
+    enum="CpuTimeMetricsThreadType" expires_after="2024-07-31">
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -1454,17 +1430,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Power.DarkResumeWakeupsPerHour" units="units"
-    expires_after="2020-08-02">
-  <owner>chirantan@chromium.org</owner>
-  <summary>
-    The number of times a system woke up in dark resume in an hour. Note that
-    this value is scaled up or down to an hour based on the amount of time the
-    system spent in suspend. So if the system suspended for 20 minutes and woke
-    up 3 times, it would report a value of 9.
-  </summary>
-</histogram>
-
 <histogram name="Power.DimEvent{PowerSource}" enum="PowerDimEvent"
     expires_after="2024-03-01">
   <owner>mqg@chromium.org</owner>
@@ -1480,17 +1445,6 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Power.ExternalBrightnessReadResult"
-    enum="ExternalDisplayReceiveResult" expires_after="2022-05-01">
-  <owner>puthik@chromium.org</owner>
-  <owner>chromeos-platform-power@google.com</owner>
-  <summary>
-    The result of attempting to read an external display's brightness on Chrome
-    OS. A read attempt is made after successfully requesting the brightness (see
-    Power.ExternalBrightnessRequestResult).
-  </summary>
-</histogram>
-
 <histogram name="Power.ExternalBrightnessRequestResult"
     enum="ExternalDisplaySendResult" expires_after="M100">
   <owner>puthik@chromium.org</owner>
@@ -1499,7 +1453,7 @@ chromium-metrics-reviews@google.com.
     The result of requesting an external display's brightness on Chrome OS. A
     request is sent when the user presses a brightness key and the current
     brightness is not already cached. A successful request is followed shortly
-    thereafter by a read attempt (see Power.ExternalBrightnessReadResult).
+    thereafter by a read attempt.
   </summary>
 </histogram>
 
@@ -1511,17 +1465,6 @@ chromium-metrics-reviews@google.com.
     The result of attempting to change an external display's brightness on
     Chrome OS. A request is sent when the user presses a brightness key and the
     current brightness is either already cached or successfully loaded.
-  </summary>
-</histogram>
-
-<histogram name="Power.ExternalDisplayOpenResult"
-    enum="ExternalDisplayOpenResult" expires_after="2021-08-01">
-  <owner>puthik@chromium.org</owner>
-  <owner>chromeos-platform-power@google.com</owner>
-  <summary>
-    The result of attempting to open an I2C device to control an external
-    display's brightness on Chrome OS. An attempt is made when a display is
-    connected to a device that lacks an internal display.
   </summary>
 </histogram>
 
@@ -1701,73 +1644,6 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Power.ForegroundRadio.SignalLevel.{NetworkType}"
-    enum="RadioSignalLevel" expires_after="2023-06-28">
-  <owner>eseckler@chromium.org</owner>
-  <owner>khokhlov@google.com</owner>
-  <owner>skyostil@chromium.org</owner>
-  <owner>woa-performance@google.com</owner>
-  <summary>
-    Periodically samples the radio (cellular/wifi) signal strength level while
-    Chrome is a foreground app and the device is on battery power. Sampled every
-    30 seconds and when Chrome is backgrounded or the device connects to a
-    charger.
-
-    Only supported on Android.
-  </summary>
-  <token key="NetworkType">
-    <variant name="Cell"/>
-    <variant name="Wifi"/>
-  </token>
-</histogram>
-
-<histogram name="Power.ForegroundRadio.Wakeups.Cell.30Seconds"
-    enum="RadioSignalLevel" expires_after="2023-11-12">
-  <owner>eseckler@chromium.org</owner>
-  <owner>khokhlov@google.com</owner>
-  <owner>skyostil@chromium.org</owner>
-  <owner>woa-performance@google.com</owner>
-  <summary>
-    Counts the number of radio wakeups while Chrome is a foreground app, the
-    device is on battery power and connection type is cellular. Values are
-    distributed across buckets according to the radio signal quality.
-
-    Caveat: signal quality is measured at the end of 30-sec period, so it might
-    not reflect the quality during the entire period.
-
-    Only supported on Android. Disabled by default. Please supply the
-    ForegroundRadioStateCountWakeups feature flag to turn this metric on.
-  </summary>
-</histogram>
-
-<histogram name="Power.ForegroundRadio.{Direction}KiB.{NetworkType}.30Seconds"
-    enum="RadioSignalLevel" expires_after="2023-06-28">
-  <owner>eseckler@chromium.org</owner>
-  <owner>khokhlov@google.com</owner>
-  <owner>skyostil@chromium.org</owner>
-  <owner>woa-performance@google.com</owner>
-  <summary>
-    Periodically samples the number of kibibytes received over network while
-    Chrome is a foreground app and the device is on battery power. Sampled every
-    30 seconds and when Chrome is backgrounded or the device connects to a
-    charger. Values are distributed across buckets according to the radio signal
-    quality.
-
-    Caveat: signal quality is measured at the end of 30-sec period, so it might
-    not reflect the quality during the entire period.
-
-    Only supported on Android.
-  </summary>
-  <token key="Direction">
-    <variant name="Received"/>
-    <variant name="Sent"/>
-  </token>
-  <token key="NetworkType">
-    <variant name="Cell"/>
-    <variant name="Wifi"/>
-  </token>
-</histogram>
-
 <histogram name="Power.ForegroundThermalState.ChangeEvent.Android"
     enum="DeviceThermalState" expires_after="2023-10-15">
   <owner>carlscab@google.com</owner>
@@ -1780,36 +1656,6 @@ chromium-metrics-reviews@google.com.
 
     Only supported on Android.
   </summary>
-</histogram>
-
-<histogram name="Power.FrameDamageAreaInDip.{ProcessType}" units="dip"
-    expires_after="2023-06-28">
-  <owner>eseckler@chromium.org</owner>
-  <owner>khokhlov@google.com</owner>
-  <owner>woa-performance@google.com</owner>
-  <summary>
-    Damaged area of a LayerTree's CompositorFrame in device-independent pixels.
-    Recorded every time a new frame is produced.
-  </summary>
-  <token key="ProcessType">
-    <variant name="Browser"/>
-    <variant name="Renderer"/>
-  </token>
-</histogram>
-
-<histogram name="Power.FrameDamageDiagonalInDip.{ProcessType}" units="dip"
-    expires_after="2023-06-28">
-  <owner>eseckler@chromium.org</owner>
-  <owner>khokhlov@google.com</owner>
-  <owner>woa-performance@google.com</owner>
-  <summary>
-    Diagonal length of the damaged area of a LayerTree's CompositorFrame in
-    device-independent pixels. Recorded every time a new frame is produced.
-  </summary>
-  <token key="ProcessType">
-    <variant name="Browser"/>
-    <variant name="Renderer"/>
-  </token>
 </histogram>
 
 <histogram name="Power.HasPreciseBatteryDischargeGranularity" enum="Boolean"
@@ -2055,17 +1901,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Power.LengthOfSession" units="seconds"
-    expires_after="2021-10-17">
-  <owner>puthik@chromium.org</owner>
-  <owner>chromeos-platform-power@google.com</owner>
-  <summary>
-    The length of time, in seconds, that a user spent in a single session.
-    Values for this metric are clamped to 12 hours, so the last bucket should be
-    considered to be including all metrics above 12 hours.
-  </summary>
-</histogram>
-
 <histogram name="Power.LidClosedSuspendCountDaily" units="count"
     expires_after="2021-10-10">
   <owner>puthik@chromium.org</owner>
@@ -2108,7 +1943,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.Mac.IsOnBattery2" enum="BooleanOnBattery"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>avi@chromium.org</owner>
   <owner>lgrey@chromium.org</owner>
   <summary>
@@ -2135,29 +1970,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Reasons why power-management-related daily metrics were reported. Chrome OS
     only.
-  </summary>
-</histogram>
-
-<histogram name="Power.NumberOfAlsAdjustmentsPerSession" units="units"
-    expires_after="2022-05-01">
-  <owner>tbroch@chromium.org</owner>
-  <owner>napper@chromium.org</owner>
-  <summary>
-    The number of times that the Automatic Light Sensor (ALS) adjusted the
-    brightness during a session. Values for this metric are clamped to 10k
-    count, so the last bucket should be considered to be including all metrics
-    above 10k.
-  </summary>
-</histogram>
-
-<histogram name="Power.NumberOfSessionsPerCharge" units="units"
-    expires_after="2022-03-31">
-  <owner>puthik@chromium.org</owner>
-  <owner>chromeos-platform-power@google.com</owner>
-  <summary>
-    The number of user sessions that occured since the last time that the device
-    was charged. Values for this metric are clamped at 10k, so the last bucket
-    should be considered to include all metrics about 10k.
   </summary>
 </histogram>
 
@@ -2229,16 +2041,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Power.PowerButtonDownTime" units="ms"
-    expires_after="2022-04-24">
-  <owner>puthik@chromium.org</owner>
-  <owner>chromeos-platform-power@google.com</owner>
-  <summary>
-    The amount of time between the user pressing the power button and releasing
-    it on Chrome OS.
-  </summary>
-</histogram>
-
 <histogram name="Power.PowerButtonMenuAction" enum="PowerButtonMenuActionType"
     expires_after="2024-05-01">
   <owner>minch@chromium.org</owner>
@@ -2247,7 +2049,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.PowerButtonPressed" units="units"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>emaamari@google.com</owner>
   <owner>chromeos-commercial-identity@google.com</owner>
   <summary>
@@ -2331,42 +2133,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Power.PowerSupplyMaxPower" units="W"
-    expires_after="2022-04-17">
-  <owner>bleung@chromium.org</owner>
-  <owner>puthik@chromium.org</owner>
-  <owner>chromeos-platform-power@google.com</owner>
-  <summary>
-    The maximum power supported by the connected power supply on Chrome OS. A
-    sample is reported every time that the power manager polls sysfs (typically
-    every 30 seconds) and sees a connected supply.
-  </summary>
-</histogram>
-
-<histogram name="Power.PowerSupplyMaxVoltage" units="V"
-    expires_after="2022-04-17">
-  <owner>bleung@chromium.org</owner>
-  <owner>puthik@chromium.org</owner>
-  <owner>chromeos-platform-power@google.com</owner>
-  <summary>
-    The maximum voltage supported by the connected power supply on Chrome OS. A
-    sample is reported every time that the power manager polls sysfs (typically
-    every 30 seconds) and sees a connected supply.
-  </summary>
-</histogram>
-
-<histogram name="Power.PowerSupplyType" enum="PowerSupplyType"
-    expires_after="2022-04-10">
-  <owner>bleung@chromium.org</owner>
-  <owner>puthik@chromium.org</owner>
-  <owner>chromeos-platform-power@google.com</owner>
-  <summary>
-    The type of the connected power supply on Chrome OS. A sample is reported
-    every time that the power manager polls sysfs (typically every 30 seconds)
-    and sees a connected supply.
-  </summary>
-</histogram>
-
 <histogram name="Power.ShutdownReason" enum="ShutdownReason"
     expires_after="2024-03-23">
   <owner>tbroch@chromium.org</owner>
@@ -2395,7 +2161,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.SuspendAttemptsBeforeCancel" units="units"
-    expires_after="2023-10-01">
+    expires_after="2023-12-17">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -2409,7 +2175,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.SuspendAttemptsBeforeSuccess" units="units"
-    expires_after="2023-09-17">
+    expires_after="2023-12-17">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>

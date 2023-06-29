@@ -632,7 +632,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.PerNotificationActions"
-    enum="NotificationActionType" expires_after="2023-10-22">
+    enum="NotificationActionType" expires_after="2023-12-24">
   <owner>dewittj@chromium.org</owner>
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -642,6 +642,83 @@ chromium-metrics-reviews@google.com.
     multiple events of the same type on a single notification will only record a
     single UMA event.
   </summary>
+</histogram>
+
+<histogram name="Notifications.Persistent.Actions.Action.SizeInBytes"
+    units="bytes" expires_after="2023-10-08">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>The action label size of one of the notification's actions.</summary>
+</histogram>
+
+<histogram name="Notifications.Persistent.Actions.Icon.SizeInBytes"
+    units="bytes" expires_after="2023-10-08">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>The icon (URL) size of one of the notification's actions.</summary>
+</histogram>
+
+<histogram name="Notifications.Persistent.Actions.Placeholder.SizeInBytes"
+    units="bytes" expires_after="2023-10-08">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>The placeholder size of one of the notification's actions.</summary>
+</histogram>
+
+<histogram name="Notifications.Persistent.Actions.Title.SizeInBytes"
+    units="bytes" expires_after="2023-10-08">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>The title size of one of the notification's actions.</summary>
+</histogram>
+
+<histogram name="Notifications.Persistent.Badge.SizeInBytes" units="bytes"
+    expires_after="2023-10-08">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>The size of the notification's badge (URL).</summary>
+</histogram>
+
+<histogram name="Notifications.Persistent.Body.SizeInBytes" units="bytes"
+    expires_after="2023-10-08">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>The size of the notification's body.</summary>
+</histogram>
+
+<histogram name="Notifications.Persistent.Data.SizeInBytes" units="bytes"
+    expires_after="2023-10-08">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>The size of the notification's data field.</summary>
+</histogram>
+
+<histogram name="Notifications.Persistent.Icon.SizeInBytes" units="bytes"
+    expires_after="2023-10-08">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>The size of the notification's icon (URL).</summary>
+</histogram>
+
+<histogram name="Notifications.Persistent.Image.SizeInBytes" units="bytes"
+    expires_after="2023-10-08">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>The size of the notification's image (URL).</summary>
+</histogram>
+
+<histogram name="Notifications.Persistent.Origin.SizeInBytes" units="bytes"
+    expires_after="2023-10-08">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>The size of the notification's origin.</summary>
+</histogram>
+
+<histogram name="Notifications.Persistent.Title.SizeInBytes" units="bytes"
+    expires_after="2023-10-08">
+  <owner>nwokedi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>The size of the notification's title.</summary>
 </histogram>
 
 <histogram name="Notifications.PersistentNotificationActionCount"
@@ -715,32 +792,12 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Notifications.Scheduler.BackgroundTask.Event"
-    enum="NotificationSchedulerBackgroundTaskEvent" expires_after="2022-12-31">
-  <owner>shaktisahu@chromium.org</owner>
-  <owner>nyquist@chromium.org</owner>
-  <summary>
-    Records the various events when running the background task in notification
-    scheduling system.
-  </summary>
-</histogram>
-
 <histogram name="Notifications.Scheduler.BackgroundTask.NotificationShown"
     units="notifications" expires_after="2023-06-04">
   <owner>shaktisahu@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <summary>
     Records the number of notifications shown in each background task run.
-  </summary>
-</histogram>
-
-<histogram name="Notifications.Scheduler.BackgroundTask.Start" units="hours"
-    expires_after="2022-12-31">
-  <owner>shaktisahu@chromium.org</owner>
-  <owner>nyquist@chromium.org</owner>
-  <summary>
-    Records the hour (0-23) when the notification scheduler background task
-    starts.
   </summary>
 </histogram>
 
@@ -783,28 +840,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records events for inline helpful/unhelpful action buttons on the
     notification when the buttons are shown or clicked.
-  </summary>
-</histogram>
-
-<histogram name="Notifications.Scheduler.Impression.Count" units="records"
-    expires_after="2022-12-31">
-<!-- Name completed by histogram_suffixes name="NotificationSchedulerClientType" -->
-
-  <owner>shaktisahu@chromium.org</owner>
-  <owner>nyquist@chromium.org</owner>
-  <summary>
-    Records the number of impression records in impression db right after the
-    impression database is initialized.
-  </summary>
-</histogram>
-
-<histogram name="Notifications.Scheduler.Impression.Event"
-    enum="NotificationSchedulerImpressionEvent" expires_after="2022-12-31">
-  <owner>shaktisahu@chromium.org</owner>
-  <owner>nyquist@chromium.org</owner>
-  <summary>
-    Records various events in impression history tracker in notification
-    scheduling system when the user interacts with the notification.
   </summary>
 </histogram>
 
@@ -878,30 +913,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records life cycle events for a scheduled notification, when notification is
     scheduled, shown or encountering any error.
-  </summary>
-</histogram>
-
-<histogram name="Notifications.Scheduler.PngIconConverter.DecodeResult"
-    enum="BooleanSuccess" expires_after="2022-12-31">
-  <owner>shaktisahu@chromium.org</owner>
-  <owner>nyquist@chromium.org</owner>
-  <summary>
-    Records the result of png icon converter decoding process in icon store for
-    the notification scheduling system. It will be logged typically when
-    scheduling system trying to display the notification to the client - the
-    icon store will load entries, and decode icons to PNG format for delivery.
-  </summary>
-</histogram>
-
-<histogram name="Notifications.Scheduler.PngIconConverter.EncodeResult"
-    enum="BooleanSuccess" expires_after="2022-12-31">
-  <owner>shaktisahu@chromium.org</owner>
-  <owner>nyquist@chromium.org</owner>
-  <summary>
-    Records the result of png icon converter encoding process in icon store for
-    the notification scheduling system. It will be logged typically when the
-    client scheduled notification with icons - the icon store will then encode
-    icons to string and store them in protodb.
   </summary>
 </histogram>
 

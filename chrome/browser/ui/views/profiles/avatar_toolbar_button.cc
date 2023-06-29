@@ -142,7 +142,6 @@ void AvatarToolbarButton::UpdateText() {
 
   if (features::IsChromeRefresh2023()) {
     color = color_provider->GetColor(kColorAvatarButtonHighlightDefault);
-    UpdateLayoutInsets();
   }
   switch (delegate_->GetState()) {
     case State::kIncognitoProfile: {
@@ -196,6 +195,17 @@ void AvatarToolbarButton::UpdateText() {
   SetInsets();
   SetTooltipText(GetAvatarTooltipText());
   SetHighlight(text, color);
+  // Update the layout insets after `SetHighlight()` since
+  // text might be updated by setting the highlight.
+  UpdateLayoutInsets();
+
+  if (features::IsChromeRefresh2023()) {
+    UpdateInkdrop();
+    // Outset focus ring should be present for the chip but not when only
+    // the icon is visible.
+    views::FocusRing::Get(this)->SetOutsetFocusRingDisabled(
+        IsLabelPresentAndVisible() ? false : true);
+  }
 
   // TODO(crbug.com/1078221): this is a hack because toolbar buttons don't
   // correctly calculate their preferred size until they've been laid out once

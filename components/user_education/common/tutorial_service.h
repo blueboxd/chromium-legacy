@@ -27,6 +27,10 @@ class HelpBubble;
 class HelpBubbleFactoryRegistry;
 class TutorialRegistry;
 
+namespace internal {
+class TutorialStepBuilder;
+}
+
 // A profile based service which provides the current running tutorial. A
 // TutorialService should be constructed by a factory which fills in the correct
 // tutorials based on the platform the tutorial targets.
@@ -40,7 +44,10 @@ class TutorialService {
   using AbortedCallback = base::OnceClosure;
 
   // Returns true if there is a currently running tutorial.
-  virtual bool IsRunningTutorial() const;
+  // If `id` is specified, specifically returns whether *that* tutorial is
+  // running.
+  virtual bool IsRunningTutorial(
+      absl::optional<TutorialIdentifier> id = absl::nullopt) const;
 
   // Sets the current help bubble stored by the service.
   void SetCurrentBubble(std::unique_ptr<HelpBubble> bubble, bool is_last_step);
@@ -83,6 +90,7 @@ class TutorialService {
 
  private:
   friend class Tutorial;
+  friend class internal::TutorialStepBuilder;
   friend TutorialInteractiveUitest;
 
   // Struct used to reconstruct a tutorial from the params initially used to
@@ -119,6 +127,9 @@ class TutorialService {
   // tutorial is not required to have it's interaction sequence started to
   // be stored in the service.
   std::unique_ptr<Tutorial> running_tutorial_;
+
+  // Set to the ID of the current or most recent tutorial to run.
+  TutorialIdentifier most_recent_tutorial_id_;
 
   // Was restarted denotes that the current running tutorial was restarted,
   // and when logging that the tutorial aborts, instead should log as completed.

@@ -59,6 +59,8 @@ static_library("fetcher") {
 
 static_library("browser") {
   sources = [
+    "child_account_service.cc",
+    "child_account_service.h",
     "kids_chrome_management_client.cc",
     "kids_chrome_management_client.h",
     "kids_management_url_checker_client.cc",
@@ -105,6 +107,8 @@ static_library("browser") {
 
   deps = [
     ":fetcher",
+    ":list_family_members_service",
+    ":supervised_user_preferences",
     "//base",
     "//components/feed/core/shared_prefs:feed_shared_prefs",
     "//components/google/core/common",
@@ -137,8 +141,12 @@ source_set("test_support") {
   deps = [
     ":fetcher",
     "//base",
+    "//components/safe_search_api",
+    "//components/signin/public/identity_manager",
+    "//components/supervised_user/core/browser",
     "//components/supervised_user/core/browser/proto",
     "//net/traffic_annotation",
+    "//services/network/public/cpp",
     "//url",
   ]
 }
@@ -156,6 +164,7 @@ source_set("unit_tests") {
     "supervised_user_metrics_service_unittest.cc",
     "supervised_user_pref_store_unittest.cc",
     "supervised_user_preferences_unittest.cc",
+    "supervised_user_service_unittest.cc",
     "supervised_user_settings_service_unittest.cc",
     "supervised_user_sync_model_type_controller_unittest.cc",
     "supervised_user_url_filter_unittest.cc",
@@ -171,11 +180,14 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/prefs:test_support",
     "//components/resources:components_resources",
+    "//components/signin/public/base",
+    "//components/signin/public/identity_manager",
     "//components/signin/public/identity_manager:test_support",
     "//components/strings:components_strings_grit",
     "//components/supervised_user/core/browser/proto",
     "//components/supervised_user/core/common",
     "//components/sync:test_support",
+    "//components/sync_preferences:test_support",
     "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",

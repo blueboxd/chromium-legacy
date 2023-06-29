@@ -150,10 +150,6 @@ declare_args() {
   # The gold linker by default has text section splitting enabled.
   use_text_section_splitting = false
 
-  # Turn off the --call-graph-profile-sort flag for lld by default. Enable
-  # selectively for targets where it's beneficial.
-  enable_call_graph_profile_sort = chrome_pgo_phase == 2
-
   # Enable DWARF v5.
   use_dwarf5 = false
 
@@ -207,7 +203,7 @@ declare_args() {
                                                        current_cpu == "x64"))))
 }
 
-if (is_android || (is_chromeos_ash && is_chromeos_device)) {
+if (is_android) {
   # Set the path to use orderfile for linking Chrome
   # Note that this is for using only one orderfile for linking
   # the Chrome binary/library.
@@ -218,15 +214,17 @@ if (is_android || (is_chromeos_ash && is_chromeos_device)) {
       # Allow downstream tools to set orderfile path with
       # another variable.
       chrome_orderfile_path = default_chrome_orderfile
-    } else if (is_chromeos_ash && is_chromeos_device) {
-      if (chromeos_afdo_platform == "arm" ||
-          chromeos_afdo_platform == "arm-exp") {
-        chrome_orderfile_path = "//chromeos/profiles/chromeos.arm.orderfile.txt"
-      } else {
-        chrome_orderfile_path = "//chromeos/profiles/chromeos.orderfile.txt"
-      }
     }
   }
+}
+
+declare_args() {
+  # Turn off the --call-graph-profile-sort flag for lld by default. Enable
+  # selectively for targets where it's beneficial.
+  enable_call_graph_profile_sort =
+      chrome_pgo_phase == 2 ||
+      (is_chromeos &&
+       (clang_use_default_sample_profile || clang_sample_profile_path != ""))
 }
 
 assert(!(llvm_force_head_revision && use_goma),
@@ -2797,36 +2795,35 @@ config("strip_debug") {
 }
 
 if (is_apple) {
-  # On Mac and iOS, this enables support for ARC (automatic ref-counting).
-  # See http://clang.llvm.org/docs/AutomaticReferenceCounting.html.
+  # On macOS and iOS, this enables support for ARC (automatic reference
+  # counting). See http://clang.llvm.org/docs/AutomaticReferenceCounting.html.
+  #
+  # -fobjc-arc enables ARC overall.
+  #
+  # ARC does not add exception handlers to pure Objective-C code, but does add
+  # them to Objective-C++ code with the rationale that C++ pervasively adds them
+  # in for exception safety. However, exceptions are banned in Chromium code for
+  # C++ and exceptions in Objective-C code are intended to be fatal, so
+  # -fno-objc-arc-exceptions is specified to disable these unwanted exception
+  # handlers.
   config("enable_arc") {
-    common_flags = [ "-fobjc-arc" ]
+    common_flags = [
+      "-fobjc-arc",
+      "-fno-objc-arc-exceptions",
+    ]
     cflags_objc = common_flags
     cflags_objcc = common_flags
   }
 }
 
-if (is_chromeos_ash && is_chromeos_device) {
-  # This config is intended to be a temporary to facilitate
-  # the transition to use orderfile in Chrome OS. Once orderfile
-  # use becomes a default in Chrome OS, this config should not
-  # be needed.
-  config("use_orderfile_for_hugepage") {
-    if (chrome_orderfile_path != "") {
-      defines = [ "CHROMEOS_ORDERFILE_USE" ]
-    }
-  }
-}
-
-if (is_android || (is_chromeos_ash && is_chromeos_device)) {
-  # Use orderfile for linking Chrome on Android and Chrome OS.
+if (is_android) {
+  # Use orderfile for linking Chrome on Android.
   # This config enables using an orderfile for linking in LLD.
   config("chrome_orderfile_config") {
     # Don't try to use an orderfile with call graph sorting, except on Android,
     # where we care about memory used by code, so we still want to mandate
     # ordering.
-    if (chrome_orderfile_path != "" &&
-        (is_android || !enable_call_graph_profile_sort)) {
+    if (chrome_orderfile_path != "") {
       assert(use_lld)
       _rebased_orderfile = rebase_path(chrome_orderfile_path, root_build_dir)
       ldflags = [

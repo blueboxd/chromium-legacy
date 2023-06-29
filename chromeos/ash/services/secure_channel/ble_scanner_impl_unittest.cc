@@ -244,6 +244,7 @@ class SecureChannelBleScannerImplTest : public testing::Test {
       std::unique_ptr<device::BluetoothLowEnergyScanFilter> filter,
       base::WeakPtr<device::BluetoothLowEnergyScanSession::Delegate> delegate) {
     EXPECT_FALSE(scan_session_ptr_);
+    EXPECT_TRUE(filter);
     auto scan_session =
         std::make_unique<device::MockBluetoothLowEnergyScanSession>(
             base::BindOnce(
@@ -304,6 +305,14 @@ class SecureChannelBleScannerImplTest : public testing::Test {
         present,
         ble_scanner_->GetLastSeenTimestamp(test_devices()[0].GetDeviceId())
             .has_value());
+  }
+
+  void SimulateAdapterPoweredChanged(bool powered) {
+    // Note: MockBluetoothAdapter provides no way to notify observers, so the
+    // observer callback must be invoked directly.
+    for (auto& observer : mock_adapter_->GetObservers()) {
+      observer.AdapterPoweredChanged(mock_adapter_.get(), powered);
+    }
   }
 
  private:
@@ -641,6 +650,26 @@ TEST_F(SecureChannelBleScannerImplTest, StartAndInvalidateSessionFloss) {
 
   // BleScanner should have realized that it was invalidated and start another
   // session.
+  EXPECT_TRUE(discovery_session_is_active());
+}
+
+TEST_F(SecureChannelBleScannerImplTest, StartAndPowerOffAndPowerOnFloss) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(floss::features::kFlossEnabled);
+
+  ConnectionAttemptDetails filter(DeviceIdPair(test_devices()[0].GetDeviceId(),
+                                               test_devices()[1].GetDeviceId()),
+                                  ConnectionMedium::kBluetoothLowEnergy,
+                                  ConnectionRole::kListenerRole);
+
+  AddScanRequest(filter);
+  SimulateAdapterPoweredChanged(false);
+
+  // BleScanner should have realized that Floss is powered off and give up
+  // starting another session.
+  EXPECT_FALSE(discovery_session_is_active());
+
+  SimulateAdapterPoweredChanged(true);
   EXPECT_TRUE(discovery_session_is_active());
 }
 

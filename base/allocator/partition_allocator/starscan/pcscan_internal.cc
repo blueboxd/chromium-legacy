@@ -1077,11 +1077,12 @@ void PCScanTask::SweepQuarantine() {
         SweepSuperPageWithBatchedFree(root, super_page, pcscan_epoch_, stat);
         (void)should_discard;
 #else
-        if (PA_UNLIKELY(should_discard && !root->settings.allow_cookie))
+        if (PA_UNLIKELY(should_discard && !root->settings.use_cookie)) {
           SweepSuperPageAndDiscardMarkedQuarantine(root, super_page,
                                                    pcscan_epoch_, stat);
-        else
+        } else {
           SweepSuperPage(root, super_page, pcscan_epoch_, stat);
+        }
 #endif  // PA_CONFIG(STARSCAN_BATCHED_FREE)
       });
 

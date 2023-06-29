@@ -9,6 +9,7 @@
 #import "base/metrics/user_metrics.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
+#import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "components/strings/grit/components_strings.h"
@@ -131,11 +132,11 @@ constexpr CGFloat kErrorSymbolSize = 22.;
 
   std::unique_ptr<SyncObserverBridge> _syncObserver;
 
-  // The type of account error that is being displayed in the error section.
-  // Is set to kNone when there is no error section.
+  // The type of account error that is being displayed in the error section for
+  // syncing accounts. Is set to kNone when there is no error section.
   syncer::SyncService::UserActionableError _diplayedAccountErrorType;
 
-  // The type of actionable the user needs to take to resolve the error.
+  // The type of actionable the syncing user needs to take to resolve the error.
   AccountErrorUserActionableType _accountErrorUserActionableType;
 }
 
@@ -463,6 +464,11 @@ constexpr CGFloat kErrorSymbolSize = 22.;
 // updated without reloading the view. Can refresh, add or remove the error
 // section when an update is needed.
 - (void)updateErrorSectionModelAndReloadViewIfNeeded:(BOOL)reloadViewIfNeeded {
+  if ([self isAccountSignedInNotSyncing]) {
+    // If the account is signed in not syncing, the error handling will be shown
+    // previously in account settings page and no need to load it in this view.
+    return;
+  }
   syncer::SyncService* syncService =
       SyncServiceFactory::GetForBrowserState(_browser->GetBrowserState());
   DCHECK(syncService);
@@ -587,6 +593,10 @@ constexpr CGFloat kErrorSymbolSize = 22.;
       break;
     }
     case ItemTypeSignOut: {
+      if ([self isAccountSignedInNotSyncing]) {
+        [self signOut];
+        break;
+      }
       UIView* itemView =
           [[tableView cellForRowAtIndexPath:indexPath] contentView];
       [self showSignOutWithItemView:itemView];
@@ -781,21 +791,6 @@ constexpr CGFloat kErrorSymbolSize = 22.;
   };
   self.signoutCoordinator.delegate = self;
   [self.signoutCoordinator start];
-}
-
-// Logs the UMA metrics to record the data retention option selected by the user
-// on signout. If the account is managed the data will always be cleared.
-- (void)logSignoutMetricsWithForceClearData:(BOOL)forceClearData {
-  if (![self authService]->HasPrimaryIdentityManaged(
-          signin::ConsentLevel::kSignin)) {
-    UMA_HISTOGRAM_BOOLEAN("Signin.UserRequestedWipeDataOnSignout",
-                          forceClearData);
-  }
-  if (forceClearData) {
-    base::RecordAction(base::UserMetricsAction("Signin_SignoutClearData"));
-  } else {
-    base::RecordAction(base::UserMetricsAction("Signin_Signout"));
-  }
 }
 
 // Handles the cancel action for `self.removeOrMyGoogleChooserAlertCoordinator`.
@@ -994,4 +989,32 @@ constexpr CGFloat kErrorSymbolSize = 22.;
               ->HasSyncConsent();
 }
 
+// Signs out without showing action sheet.
+// Used when the user is signed in not syncing.
+- (void)signOut {
+  if (![self authService]->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
+    // This could happen if the account somehow got removed after the UI was
+    // created.
+    return;
+  }
+  CHECK([self isAccountSignedInNotSyncing]);
+  if (_authenticationOperationInProgress) {
+    return;
+  }
+  _authenticationOperationInProgress = YES;
+  [self preventUserInteraction];
+  signin_metrics::RecordSignoutUserAction(/*force_clear_data=*/false);
+  __weak AccountsTableViewController* weakSelf = self;
+  ProceduralBlock signOutCompletion = ^() {
+    __strong AccountsTableViewController* strongSelf = weakSelf;
+    if (!strongSelf) {
+      return;
+    }
+    [strongSelf allowUserInteraction];
+    [strongSelf handleAuthenticationOperationDidFinish];
+  };
+  [self authService]->SignOut(
+      signin_metrics::ProfileSignout::kUserClickedSignoutSettings,
+      /*force_clear_browsing_data=*/NO, signOutCompletion);
+}
 @end

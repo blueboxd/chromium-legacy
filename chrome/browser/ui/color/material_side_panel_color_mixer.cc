@@ -5,21 +5,34 @@
 #include "chrome/browser/ui/color/material_side_panel_color_mixer.h"
 
 #include "chrome/browser/ui/color/chrome_color_id.h"
+#include "chrome/browser/ui/color/chrome_color_provider_utils.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_recipe.h"
 
 void AddMaterialSidePanelColorMixer(ui::ColorProvider* provider,
-                                    const ui::ColorProviderManager::Key& key) {
+                                    const ui::ColorProviderKey& key) {
   ui::ColorMixer& mixer = provider->AddMixer();
   mixer[kColorSidePanelContentBackground] = {ui::kColorSysBaseContainer};
-  mixer[kColorSidePanelScrollbarThumb] = {ui::kColorSysPrimary};
+  mixer[kColorSidePanelEntryIcon] = {ui::kColorSysPrimary};
+  mixer[kColorSidePanelEntryTitle] = {ui::kColorSysOnSurface};
+  mixer[kColorSidePanelContentAreaSeparator] = {ui::kColorSysBaseContainer};
+
+  // After ChromeRefresh2023 roll out these three should be moved to replace
+  // their colors in c/b/ui/color/chrome_color_mixer.cc. For now they need a
+  // separate themed ChromeRefresh2023 color because the side panel header has a
+  // different background color than it did before.
+  mixer[kColorSidePanelHeaderButtonIcon] = {kColorToolbarText};
+  mixer[kColorSidePanelHeaderButtonIconDisabled] = {kColorToolbarTextDisabled};
+  mixer[kColorSidePanelResizeAreaHandle] = {kColorToolbarText};
+
   mixer[kColorSidePanelCardBackground] = {ui::kColorSysBaseContainerElevated};
   mixer[kColorSidePanelCardPrimaryForeground] = {ui::kColorSysOnSurface};
   mixer[kColorSidePanelCardSecondaryForeground] = {
       ui::kColorSysOnSurfaceSubtle};
   mixer[kColorSidePanelDivider] = {ui::kColorSysDivider};
+  mixer[kColorSidePanelScrollbarThumb] = {ui::kColorSysPrimary};
 
   /* Dialogs within the side panel. */
   mixer[kColorSidePanelDialogBackground] = {ui::kColorSysSurface};
@@ -34,6 +47,11 @@ void AddMaterialSidePanelColorMixer(ui::ColorProvider* provider,
   mixer[kColorSidePanelMenuDivider] = {ui::kColorSysDivider};
   mixer[kColorSidePanelMenuForeground] = {ui::kColorSysOnSurface};
   mixer[kColorSidePanelMenuIcon] = {ui::kColorSysOnSurfaceSubtle};
+
+  /* Toasts within the side panel. */
+  mixer[kColorSidePanelToastBackground] = {ui::kColorSysInverseSurface};
+  mixer[kColorSidePanelToastButton] = {ui::kColorSysInversePrimary};
+  mixer[kColorSidePanelToastForeground] = {ui::kColorSysInverseOnSurface};
 
   mixer[kColorSidePanelBadgeBackground] = {ui::kColorSysNeutralContainer};
   mixer[kColorSidePanelBadgeBackgroundUpdated] = {
@@ -77,6 +95,22 @@ void AddMaterialSidePanelColorMixer(ui::ColorProvider* provider,
       ui::kColorSysTertiaryContainer};
   mixer[kColorSidePanelCustomizeChromeCustomOptionForeground] = {
       ui::kColorSysOnTertiaryContainer};
+  mixer[kColorSidePanelCustomizeChromeMiniNtpActiveTab] = {ui::kColorSysBase};
+  mixer[kColorSidePanelCustomizeChromeMiniNtpArrowsAndRefreshButton] = {
+      ui::kColorSysOnSurfaceSecondary};
+  mixer[kColorSidePanelCustomizeChromeMiniNtpBackground] = {ui::kColorSysBase};
+  mixer[kColorSidePanelCustomizeChromeMiniNtpBorder] = {
+      ui::kColorSysSurfaceVariant};
+  mixer[kColorSidePanelCustomizeChromeMiniNtpCaron] = {
+      ui::kColorSysOnSurfacePrimary};
+  mixer[kColorSidePanelCustomizeChromeMiniNtpCaronContainer] = {
+      ui::kColorSysHeaderContainer};
+  mixer[kColorSidePanelCustomizeChromeMiniNtpChromeLogo] = {
+      ui::kColorSysOnSurface};
+  mixer[kColorSidePanelCustomizeChromeMiniNtpOmnibox] = {
+      ui::kColorSysOmniboxContainer};
+  mixer[kColorSidePanelCustomizeChromeMiniNtpTabStripBackground] = {
+      ui::kColorSysHeader};
   mixer[kColorSidePanelCustomizeChromeThemeBackground] = {
       ui::kColorSysBaseContainerElevated};
   mixer[kColorSidePanelCustomizeChromeThemeCheckmarkBackground] = {
@@ -87,4 +121,12 @@ void AddMaterialSidePanelColorMixer(ui::ColorProvider* provider,
       ui::kColorSysTonalContainer};
   mixer[kColorSidePanelCustomizeChromeWebStoreOptionBorder] = {
       ui::kColorSysNeutralOutline};
+
+  // Note anything below here will only apply if themes aren't being used.
+  if (!ShouldApplyChromeMaterialOverrides(key)) {
+    return;
+  }
+  mixer[kColorSidePanelHeaderButtonIcon] = {ui::kColorSysOnSurfaceSubtle};
+  mixer[kColorSidePanelHeaderButtonIconDisabled] = {ui::kColorSysStateDisabled};
+  mixer[kColorSidePanelResizeAreaHandle] = {ui::kColorSysOnSurfaceSubtle};
 }

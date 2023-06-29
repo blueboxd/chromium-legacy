@@ -71,6 +71,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -4205,7 +4206,8 @@ class MockPrerenderPasswordManagerDriver
               (override));
   MOCK_METHOD(void,
               ShowPasswordSuggestions,
-              (base::i18n::TextDirection text_direction,
+              (autofill::FieldRendererId element_id,
+               base::i18n::TextDirection text_direction,
                const std::u16string& typed_username,
                int options,
                const gfx::RectF& bounds),
@@ -4277,11 +4279,12 @@ class MockPrerenderPasswordManagerDriver
               autocomplete_attribute_has_username);
         });
     ON_CALL(*this, ShowPasswordSuggestions)
-        .WillByDefault([this](base::i18n::TextDirection text_direction,
+        .WillByDefault([this](autofill::FieldRendererId element_id,
+                              base::i18n::TextDirection text_direction,
                               const std::u16string& typed_username, int options,
                               const gfx::RectF& bounds) {
-          impl_->ShowPasswordSuggestions(text_direction, typed_username,
-                                         options, bounds);
+          impl_->ShowPasswordSuggestions(element_id, text_direction,
+                                         typed_username, options, bounds);
         });
 #if BUILDFLAG(IS_ANDROID)
     ON_CALL(*this, ShowKeyboardReplacingSurface)

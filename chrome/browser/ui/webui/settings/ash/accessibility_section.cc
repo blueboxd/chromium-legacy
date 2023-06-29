@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/color_enhancement/color_enhancement_controller.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/accessibility_controller_enums.h"
@@ -419,16 +420,29 @@ GetA11yFullscreenMagnifierFocusFollowingSearchConcepts() {
   return *tags;
 }
 
+const std::vector<SearchConcept>& GetA11yColorCorrectionSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_A11Y_COLOR_CORRECTION,
+       mojom::kDisplayAndMagnificationSubpagePath,
+       mojom::SearchResultIcon::kA11y,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kColorCorrectionEnabled},
+       {IDS_OS_SETTINGS_TAG_A11Y_COLOR_CORRECTION_ALT1,
+        IDS_OS_SETTINGS_TAG_A11Y_COLOR_CORRECTION_ALT2,
+        IDS_OS_SETTINGS_TAG_A11Y_COLOR_CORRECTION_ALT3,
+        IDS_OS_SETTINGS_TAG_A11Y_COLOR_CORRECTION_ALT4,
+        IDS_OS_SETTINGS_TAG_A11Y_COLOR_CORRECTION_ALT5}},
+  });
+  return *tags;
+}
+
 bool IsLiveCaptionEnabled() {
   return captions::IsLiveCaptionFeatureSupported();
 }
 
 bool IsAccessibilityChromeVoxPageMigrationEnabled() {
   return ::features::IsAccessibilityChromeVoxPageMigrationEnabled();
-}
-
-bool IsAccessibilitySelectToSpeakPageMigrationEnabled() {
-  return ::features::IsAccessibilitySelectToSpeakPageMigrationEnabled();
 }
 
 bool AreExperimentalAccessibilityColorEnhancementSettingsEnabled() {
@@ -1085,9 +1099,6 @@ void AccessibilitySection::AddLoadTimeData(
   html_source->AddBoolean("isAccessibilityChromeVoxPageMigrationEnabled",
                           IsAccessibilityChromeVoxPageMigrationEnabled());
 
-  html_source->AddBoolean("isAccessibilitySelectToSpeakPageMigrationEnabled",
-                          IsAccessibilitySelectToSpeakPageMigrationEnabled());
-
   html_source->AddBoolean(
       "areExperimentalAccessibilityColorEnhancementSettingsEnabled",
       AreExperimentalAccessibilityColorEnhancementSettingsEnabled());
@@ -1146,6 +1157,21 @@ bool AccessibilitySection::LogMetric(mojom::Setting setting,
           "FullscreenMagnifierMouseFollowingMode",
           static_cast<MagnifierMouseFollowingMode>(value.GetInt()));
       return true;
+    case mojom::Setting::kColorCorrectionEnabled:
+      base::UmaHistogramBoolean(
+          "ChromeOS.Settings.Accessibility.ColorCorrection.Enabled",
+          value.GetBool());
+      return true;
+    case mojom::Setting::kColorCorrectionFilterType:
+      base::UmaHistogramEnumeration(
+          "ChromeOS.Settings.Accessibility.ColorCorrection.FilterType",
+          static_cast<ColorVisionCorrectionType>(value.GetInt()));
+      return true;
+    case mojom::Setting::kColorCorrectionFilterAmount:
+      base::UmaHistogramPercentage(
+          "ChromeOS.Settings.Accessibility.ColorCorrection.FilterAmount",
+          value.GetInt());
+      return true;
 
     default:
       return false;
@@ -1178,20 +1204,18 @@ void AccessibilitySection::RegisterHierarchy(
         mojom::kChromeVoxSubpagePath);
   }
   // Select to speak options page.
-  if (IsAccessibilitySelectToSpeakPageMigrationEnabled()) {
-    generator->RegisterTopLevelSubpage(
-        IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_LINK_TITLE,
-        mojom::Subpage::kSelectToSpeak, mojom::SearchResultIcon::kA11y,
-        mojom::SearchResultDefaultRank::kMedium,
-        mojom::kSelectToSpeakSubpagePath);
-    static constexpr mojom::Setting kSelectToSpeakSettings[] = {
-        mojom::Setting::kSelectToSpeakWordHighlight,
-        mojom::Setting::kSelectToSpeakBackgroundShading,
-        mojom::Setting::kSelectToSpeakNavigationControls,
-    };
-    RegisterNestedSettingBulk(mojom::Subpage::kSelectToSpeak,
-                              kSelectToSpeakSettings, generator);
-  }
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_LINK_TITLE,
+      mojom::Subpage::kSelectToSpeak, mojom::SearchResultIcon::kA11y,
+      mojom::SearchResultDefaultRank::kMedium,
+      mojom::kSelectToSpeakSubpagePath);
+  static constexpr mojom::Setting kSelectToSpeakSettings[] = {
+      mojom::Setting::kSelectToSpeakWordHighlight,
+      mojom::Setting::kSelectToSpeakBackgroundShading,
+      mojom::Setting::kSelectToSpeakNavigationControls,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kSelectToSpeak,
+                            kSelectToSpeakSettings, generator);
   // Display and magnification page.
   generator->RegisterTopLevelSubpage(
       IDS_SETTINGS_ACCESSIBILITY_DISPLAY_AND_MAGNIFICATION_LINK_TITLE,
@@ -1239,6 +1263,9 @@ void AccessibilitySection::RegisterHierarchy(
       mojom::Setting::kMonoAudio,
       mojom::Setting::kStartupSound,
       mojom::Setting::kEnableCursorColor,
+      mojom::Setting::kColorCorrectionEnabled,
+      mojom::Setting::kColorCorrectionFilterType,
+      mojom::Setting::kColorCorrectionFilterAmount,
   };
   RegisterNestedSettingBulk(mojom::Subpage::kManageAccessibility,
                             kManageAccessibilitySettings, generator);
@@ -1340,6 +1367,11 @@ void AccessibilitySection::UpdateSearchTags() {
   } else {
     updater.RemoveSearchTags(
         GetA11yFullscreenMagnifierFocusFollowingSearchConcepts());
+  }
+
+  if (::features::
+          AreExperimentalAccessibilityColorEnhancementSettingsEnabled()) {
+    updater.AddSearchTags(GetA11yColorCorrectionSearchConcepts());
   }
 
   if (!pref_service_->GetBoolean(prefs::kAccessibilitySwitchAccessEnabled)) {

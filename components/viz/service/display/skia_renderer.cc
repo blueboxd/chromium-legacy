@@ -40,7 +40,6 @@
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/resources/platform_color.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "components/viz/common/skia_helper.h"
 #include "components/viz/service/debugger/viz_debugger.h"
@@ -57,6 +56,7 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "skia/ext/opacity_filter_canvas.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -859,7 +859,9 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
       can_skip_render_pass_overlay_(
           base::FeatureList::IsEnabled(features::kCanSkipRenderPassOverlay)),
 #endif
-      is_using_raw_draw_(features::IsUsingRawDraw()) {
+      is_using_raw_draw_(features::IsUsingRawDraw()),
+      is_using_graphite_(
+          base::FeatureList::IsEnabled(features::kSkiaGraphite)) {
   DCHECK(skia_output_surface_);
   lock_set_for_external_use_.emplace(resource_provider, skia_output_surface_);
 
@@ -1627,6 +1629,34 @@ void SkiaRenderer::PrepareColorOrCanvasForRPDQ(
   }
 }
 
+bool SkiaRenderer::NeedsFlipY(const DrawQuad* quad) const {
+  // TODO(crbug.com/1449764): remove this workaround when bottom left origin
+  // image is supported by graphite.
+  if (!is_using_graphite_) {
+    return false;
+  }
+  switch (quad->material) {
+    case DrawQuad::Material::kTextureContent:
+      return TextureDrawQuad::MaterialCast(quad)->y_flipped;
+    case DrawQuad::Material::kAggregatedRenderPass: {
+      auto* render_pass_quad = AggregatedRenderPassDrawQuad::MaterialCast(quad);
+      auto bypass =
+          render_pass_bypass_quads_.find(render_pass_quad->render_pass_id);
+      if (bypass == render_pass_bypass_quads_.end()) {
+        return false;
+      }
+      const DrawQuad* bypass_quad = bypass->second;
+      if (RenderPassRemainsTransparent(
+              bypass_quad->shared_quad_state->blend_mode)) {
+        return false;
+      }
+      return NeedsFlipY(bypass_quad);
+    }
+    default:
+      return false;
+  }
+}
+
 SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
     const gfx::AxisTransform2d& target_to_device,
     const absl::optional<gfx::Rect>& scissor_rect,
@@ -1639,6 +1669,11 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
       GetSampling(quad), draw_region);
 
   params.content_device_transform.PostConcat(target_to_device);
+  if (NeedsFlipY(quad)) {
+    float height = quad->visible_rect.height();
+    params.content_device_transform.Scale(1, -1);
+    params.content_device_transform.Translate(0, -height);
+  }
   params.content_device_transform.Flatten();
 
   // Respect per-quad setting overrides as highest priority setting
@@ -1952,6 +1987,7 @@ SkiaRenderer::BypassMode SkiaRenderer::CalculateBypassParams(
                              std::size(params->draw_region->points));
   }
 
+  absl::optional<gfx::RectF> bypassed_quad_clip_rect;
   if (rpdq_params->bypass_geometry) {
     // If BypassGeometry is already populated then this is part of a chain of
     // bypassed render passes. This merges any additional transform and clip
@@ -1974,6 +2010,14 @@ SkiaRenderer::BypassMode SkiaRenderer::CalculateBypassParams(
         bypass_transform.MapRect(params->visible_rect);
     bypass_geometry.clip_rect.Intersect(bypass_visible_rect);
 
+    if (bypass_quad->shared_quad_state->clip_rect) {
+      // The bypass_quad clip_rect needs to be transformed from current bypassed
+      // render pass coordinate space into the first bypassed render pass
+      // coordinate space.
+      bypassed_quad_clip_rect = bypass_transform.MapRect(
+          gfx::RectF(*bypass_quad->shared_quad_state->clip_rect));
+    }
+
     // Update transform so it maps from `bypass_quad` to the first bypassed
     // render pass coordinate space.
     bypass_geometry.transform.preConcat(bypass_to_rpdq);
@@ -1983,15 +2027,20 @@ SkiaRenderer::BypassMode SkiaRenderer::CalculateBypassParams(
     // `bypass_quad` to bypassed render pass coordinate space.
     rpdq_params->bypass_geometry =
         DrawRPDQParams::BypassGeometry{bypass_to_rpdq, params->visible_rect};
+
+    if (bypass_quad->shared_quad_state->clip_rect) {
+      // The bypass_quad clip_rect is in the same coordinate space as the RPDQ +
+      // bypassed render pass aka the same as bypass_geometry.
+      bypassed_quad_clip_rect =
+          gfx::RectF(*bypass_quad->shared_quad_state->clip_rect);
+    }
   }
 
-  if (bypass_quad->shared_quad_state->clip_rect) {
-    // If bypass_quad->clip_rect isn't empty then normally it would be added to
-    // scissor_rect in SetScissorStateForQuad(). That never happens when the
-    // render pass is bypassed. The clip_rect is in the same coordinate space as
-    // the RPDQ + bypassed render pass aka the same as bypass_geometry.
-    rpdq_params->bypass_geometry->clip_rect.Intersect(
-        gfx::RectF(*bypass_quad->shared_quad_state->clip_rect));
+  if (bypassed_quad_clip_rect) {
+    // If bypassed_quad clip_rect isn't empty then normally it would be added
+    // to scissor_rect in SetScissorStateForQuad(). That never happens when the
+    // render pass is bypassed so add it here.
+    rpdq_params->bypass_geometry->clip_rect.Intersect(*bypassed_quad_clip_rect);
   }
 
   // Compute draw params for `bypass_quad` to update some of the original draw
@@ -2157,11 +2206,11 @@ void SkiaRenderer::AddQuadToBatch(const SkImage* image,
 
   SkMatrix m =
       gfx::TransformToFlattenedSkMatrix(params->content_device_transform);
-  std::vector<SkMatrix>& cdts = batched_cdt_matrices_;
-  if (cdts.empty() || cdts[cdts.size() - 1] != m) {
-    cdts.push_back(m);
+
+  if (batched_cdt_matrices_.empty() || batched_cdt_matrices_.back() != m) {
+    batched_cdt_matrices_.push_back(m);
   }
-  int matrix_index = cdts.size() - 1;
+  int matrix_index = batched_cdt_matrices_.size() - 1;
 
   batched_quads_.push_back(MakeEntry(image, matrix_index, *params));
 }
@@ -2252,6 +2301,7 @@ void SkiaRenderer::DrawSingleImage(const SkImage* image,
   TRACE_EVENT0("viz", "SkiaRenderer::DrawSingleImage");
 
   SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
+
   PrepareCanvas(params->scissor_rect, params->mask_filter_info,
                 &params->content_device_transform);
 
@@ -2508,6 +2558,7 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
     AddQuadToBatch(image, valid_texel_bounds, params);
     return;
   }
+
   // This needs a color filter for background blending and/or a mask filter
   // to simulate the vertex opacity, which requires configuring a full SkPaint
   // and is incompatible with anything batched, but since MustFlushBatchedQuads

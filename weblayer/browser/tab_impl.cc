@@ -422,7 +422,6 @@ TabImpl::TabImpl(ProfileImpl* profile,
   PrerenderTabHelper::CreateForWebContents(web_contents_.get());
 
   webapps::InstallableManager::CreateForWebContents(web_contents_.get());
-  webapps::MLInstallabilityPromoter::CreateForWebContents(web_contents_.get());
 
 #if BUILDFLAG(IS_ANDROID)
   // Must be created after InstallableManager and MLInstallabilityPromoter.
@@ -793,8 +792,7 @@ void TabImpl::SetDesktopUserAgentEnabled(JNIEnv* env, jboolean enable) {
 
   entry->SetIsOverridingUserAgent(enable);
   web_contents_->NotifyPreferencesChanged();
-  web_contents_->GetController().Reload(
-      content::ReloadType::ORIGINAL_REQUEST_URL, true);
+  web_contents_->GetController().LoadOriginalRequestURL();
 }
 
 jboolean TabImpl::IsDesktopUserAgentEnabled(JNIEnv* env) {

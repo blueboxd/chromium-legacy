@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ASH_APP_LIST_SEARCH_KEYBOARD_SHORTCUT_RESULT_H_
 #define CHROME_BROWSER_ASH_APP_LIST_SEARCH_KEYBOARD_SHORTCUT_RESULT_H_
 
+#include "ash/webui/shortcut_customization_ui/backend/search/search.mojom-forward.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ash/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ash/app_list/search/keyboard_shortcut_data.h"
@@ -25,6 +26,9 @@ class KeyboardShortcutResult : public ChromeSearchResult {
   explicit KeyboardShortcutResult(Profile* profile,
                                   const KeyboardShortcutData& data,
                                   double relevance);
+  KeyboardShortcutResult(
+      Profile* profile,
+      const ash::shortcut_customization::mojom::SearchResultPtr& search_result);
   KeyboardShortcutResult(const KeyboardShortcutResult&) = delete;
   KeyboardShortcutResult& operator=(const KeyboardShortcutResult&) = delete;
 
@@ -59,6 +63,10 @@ class KeyboardShortcutResult : public ChromeSearchResult {
       const std::u16string& template_string,
       const std::vector<std::u16string>& replacement_strings,
       const std::vector<ui::KeyboardCode>& shortcut_key_codes);
+
+  // Add the |accelerator| to the |text_vector|.
+  void PopulateTextVector(TextVector* text_vector,
+                          const ui::Accelerator& accelerator);
 
   void UpdateIcon();
 

@@ -52,6 +52,16 @@ declare_args() {
 }
 
 declare_args() {
+  # Turns on compiler optimizations in PartitionAlloc in Debug build.
+  # If enabling PartitionAlloc-Everywhere in Debug build for tests in Debug
+  # build, since all memory allocations and deallocations are executed by
+  # non-optimized PartitionAlloc, chrome (including tests) will be much
+  # slower. This will cause debug trybots' timeouts. If we want to debug
+  # PartitionAlloc itself, use partition_alloc_optimized_debug=false.
+  # Otherwise, use partition_alloc_optimized_debug=true to enable optimized
+  # PartitionAlloc.
+  partition_alloc_optimized_debug = true
+
   # PartitionAlloc-Everywhere (PA-E).
   use_partition_alloc_as_malloc =
       use_partition_alloc && use_partition_alloc_as_malloc_default
@@ -201,8 +211,9 @@ declare_args() {
 use_starscan = build_with_chromium && has_64_bit_pointers
 
 pcscan_stack_supported =
-    use_starscan && (current_cpu == "x64" || current_cpu == "x86" ||
-                     current_cpu == "arm" || current_cpu == "arm64")
+    use_starscan &&
+    (current_cpu == "x64" || current_cpu == "x86" || current_cpu == "arm" ||
+     current_cpu == "arm64" || current_cpu == "riscv64")
 
 # We want to provide assertions that guard against inconsistent build
 # args, but there is no point in having them fire if we're not building

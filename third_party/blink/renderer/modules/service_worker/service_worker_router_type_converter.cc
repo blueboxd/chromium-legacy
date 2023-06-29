@@ -46,7 +46,7 @@ RouterUrlPatternConditionToBlink(
   blink::ServiceWorkerRouterCondition condition;
   condition.type =
       blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern;
-  blink::UrlPattern url_pattern;
+  blink::SafeUrlPattern url_pattern;
   url_pattern.pathname = std::move(part_list);
   condition.url_pattern = std::move(url_pattern);
   return condition;
@@ -54,13 +54,20 @@ RouterUrlPatternConditionToBlink(
 
 absl::optional<blink::ServiceWorkerRouterSource> RouterSourceEnumToBlink(
     blink::V8RouterSourceEnum v8_source_enum) {
-  if (v8_source_enum != blink::V8RouterSourceEnum::Enum::kNetwork) {
-    return absl::nullopt;
+  if (v8_source_enum == blink::V8RouterSourceEnum::Enum::kNetwork) {
+    blink::ServiceWorkerRouterSource source;
+    source.type = blink::ServiceWorkerRouterSource::SourceType::kNetwork;
+    source.network_source.emplace();
+    return source;
   }
-  blink::ServiceWorkerRouterSource source;
-  source.type = blink::ServiceWorkerRouterSource::SourceType::kNetwork;
-  source.network_source.emplace();
-  return source;
+  if (v8_source_enum ==
+      blink::V8RouterSourceEnum::Enum::kRaceNetworkAndFetchHandler) {
+    blink::ServiceWorkerRouterSource source;
+    source.type = blink::ServiceWorkerRouterSource::SourceType::kRace;
+    source.race_source.emplace();
+    return source;
+  }
+  return absl::nullopt;
 }
 
 }  // namespace

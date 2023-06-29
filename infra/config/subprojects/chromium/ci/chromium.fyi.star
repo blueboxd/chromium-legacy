@@ -1341,15 +1341,16 @@ def build_perf_builder(**kwargs):
     kwargs.setdefault("reclient_instance", reclient.instance.DEFAULT_UNTRUSTED)
     kwargs.setdefault("reclient_jobs", reclient.jobs.HIGH_JOBS_FOR_CQ)
     kwargs.setdefault("use_clang_coverage", True)
+
     return ci.builder(
         service_account = "chromium-build-perf-ci-builder@chops-service-accounts.iam.gserviceaccount.com",
         # rely on the builder dimension for the bot selection.
         builderless = False,
         cores = None,
-        siso_config = "remote_all",
         siso_enable_cloud_profiler = True,
         siso_enable_cloud_trace = True,
         siso_project = siso.project.DEFAULT_UNTRUSTED,
+        siso_configs = ["remote_all", "rewrapper_to_reproxy"],
         notifies = ["chrome-build-perf"],
         **kwargs
     )
@@ -1653,7 +1654,6 @@ This builder measures build performance for Windows developer builds, by simulat
 
 build_perf_builder(
     name = "linux-chromeos-build-perf",
-    branch_selector = branches.selector.CROS_LTS_BRANCHES,
     description_html = """\
 This builder measures ChromeOS build performance with and without remote caches.<br/>\
 The build configs and the bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium/builders/try/linux-chromeos-rel-compilator">linux-chromeos-rel-compilator</a>.\
@@ -1683,7 +1683,6 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
 
 build_perf_builder(
     name = "linux-chromeos-build-perf-siso",
-    branch_selector = branches.selector.CROS_LTS_BRANCHES,
     description_html = """\
 This builder measures ChromeOS build performance with Siso.<br/>\
 The build configs and the bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium/builders/try/linux-chromeos-rel-compilator">linux-chromeos-rel-compilator</a>.\
@@ -2627,7 +2626,7 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-fyi-archive",
     ),
-    os = os.LINUX_BIONIC,
+    os = os.LINUX_DEFAULT,
     console_view_entry = consoles.console_view_entry(
         category = "cr23",
         short_name = "lnx",

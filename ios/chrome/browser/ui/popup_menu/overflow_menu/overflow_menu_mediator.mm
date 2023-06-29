@@ -50,6 +50,7 @@
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/shared/public/commands/overflow_menu_customization_commands.h"
 #import "ios/chrome/browser/shared/public/commands/page_info_commands.h"
 #import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/shared/public/commands/price_notifications_commands.h"
@@ -156,6 +157,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
                                     CRWWebStateObserver,
                                     FollowMenuUpdater,
                                     IOSLanguageDetectionTabHelperObserving,
+                                    OverflowMenuActionProvider,
                                     OverflowMenuDestinationProvider,
                                     OverlayPresenterObserving,
                                     PrefObserverDelegate,
@@ -209,6 +211,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 @property(nonatomic, strong) OverflowMenuActionGroup* appActionsGroup;
 @property(nonatomic, strong) OverflowMenuActionGroup* pageActionsGroup;
 @property(nonatomic, strong) OverflowMenuActionGroup* helpActionsGroup;
+@property(nonatomic, strong) OverflowMenuActionGroup* editActionsGroup;
 
 @property(nonatomic, strong) OverflowMenuAction* reloadAction;
 @property(nonatomic, strong) OverflowMenuAction* stopLoadAction;
@@ -233,6 +236,8 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 @property(nonatomic, strong) OverflowMenuAction* reportIssueAction;
 @property(nonatomic, strong) OverflowMenuAction* helpAction;
 @property(nonatomic, strong) OverflowMenuAction* shareChromeAction;
+
+@property(nonatomic, strong) OverflowMenuAction* editActionsAction;
 
 @end
 
@@ -316,6 +321,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
     self.menuOrderer =
         [[OverflowMenuOrderer alloc] initWithIsIncognito:self.isIncognito];
     self.menuOrderer.destinationProvider = self;
+    self.menuOrderer.actionProvider = self;
   }
   [self updateModel];
 }
@@ -722,6 +728,13 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
         [weakSelf shareChromeApp];
       });
 
+  self.editActionsAction = CreateOverflowMenuAction(
+      IDS_IOS_OVERFLOW_MENU_EDIT_ACTIONS, nil, /*systemSymbol=*/NO,
+      /*monochromeSymbol=*/NO, kToolsMenuEditActionsId, ^{
+        [weakSelf beginActionEdit];
+      });
+  self.editActionsAction.useSystemRowColoring = YES;
+
   // The app actions vary based on page state, so they are set in
   // `-updateModel`.
   self.appActionsGroup =
@@ -742,14 +755,25 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
                                                  actions:@[]
                                                   footer:nil];
 
+  self.editActionsGroup = [[OverflowMenuActionGroup alloc]
+      initWithGroupName:@"edit_actions"
+                actions:@[ self.editActionsAction ]
+                 footer:nil];
+
+  NSMutableArray* actionGroups = [[NSMutableArray alloc] init];
+  [actionGroups addObjectsFromArray:@[
+    self.appActionsGroup,
+    self.pageActionsGroup,
+    self.helpActionsGroup,
+  ]];
+  if (IsOverflowMenuCustomizationEnabled()) {
+    [actionGroups addObject:self.editActionsGroup];
+  }
+
   // Destinations and footer vary based on state, so they're set in
   // -updateModel.
   return [[OverflowMenuModel alloc] initWithDestinations:@[]
-                                            actionGroups:@[
-                                              self.appActionsGroup,
-                                              self.pageActionsGroup,
-                                              self.helpActionsGroup,
-                                            ]];
+                                            actionGroups:actionGroups];
 }
 
 #pragma mark - Private
@@ -892,55 +916,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 
   self.appActionsGroup.actions = appActions;
 
-  BOOL pageIsBookmarked =
-      self.webState && self.localOrSyncableBookmarkModel &&
-      bookmark_utils_ios::IsBookmarked(self.webState->GetVisibleURL(),
-                                       self.localOrSyncableBookmarkModel,
-                                       self.accountBookmarkModel);
-
-  NSMutableArray<OverflowMenuAction*>* pageActions =
-      [[NSMutableArray alloc] init];
-
-  // Try to create the followAction if there isn't one. It's possible that
-  // sometimes when creating the model the followActionState is hidden so the
-  // followAction hasn't been created but at the time when updating the model,
-  // the followAction should be valid.
-  if (!self.followAction) {
-    self.followAction = [self createFollowActionIfNeeded];
-    DCHECK(!self.followAction || self.webState != nullptr);
-  }
-
-  if (self.followAction) {
-    [pageActions addObject:self.followAction];
-    FollowTabHelper* followTabHelper =
-        FollowTabHelper::FromWebState(self.webState);
-    if (followTabHelper) {
-      followTabHelper->UpdateFollowMenuItem();
-    }
-  }
-
-  // Add actions before a possible Clear Browsing Data action.
-  [pageActions addObjectsFromArray:@[
-    (pageIsBookmarked) ? self.editBookmarkAction : self.addBookmarkAction,
-    self.readLaterAction
-  ]];
-
-  // Clear Browsing Data Action is not relevant in incognito, so don't show it.
-  // History is also hidden for similar reasons.
-  if (!self.isIncognito) {
-    [pageActions addObject:self.clearBrowsingDataAction];
-  }
-
-  // Add actions after a possible Clear Browsing Data action.
-  [pageActions addObjectsFromArray:@[
-    self.translateAction,
-    ([self userAgentType] != web::UserAgentType::DESKTOP)
-        ? self.requestDesktopAction
-        : self.requestMobileAction,
-    self.findInPageAction, self.textZoomAction
-  ]];
-
-  self.pageActionsGroup.actions = pageActions;
+  self.pageActionsGroup.actions = [self.menuOrderer pageActions];
 
   NSMutableArray<OverflowMenuAction*>* helpActions =
       [[NSMutableArray alloc] init];
@@ -1358,6 +1334,70 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
   }
 }
 
+#pragma mark - OverflowMenuActionProvider
+
+- (ActionRanking)basePageActions {
+  return {
+      overflow_menu::ActionType::Follow,
+      overflow_menu::ActionType::Bookmarks,
+      overflow_menu::ActionType::ReadingList,
+      overflow_menu::ActionType::ClearBrowsingData,
+      overflow_menu::ActionType::Translate,
+      overflow_menu::ActionType::DesktopSite,
+      overflow_menu::ActionType::FindInPage,
+      overflow_menu::ActionType::TextZoom,
+  };
+}
+
+- (OverflowMenuAction*)actionForActionType:
+    (overflow_menu::ActionType)actionType {
+  switch (actionType) {
+    case overflow_menu::ActionType::Follow: {
+      // Try to create the followAction if there isn't one. It's possible that
+      // sometimes when creating the model the followActionState is hidden so
+      // the followAction hasn't been created but at the time when updating the
+      // model, the followAction should be valid.
+      if (!self.followAction) {
+        self.followAction = [self createFollowActionIfNeeded];
+        DCHECK(!self.followAction || self.webState != nullptr);
+      }
+
+      if (self.followAction) {
+        FollowTabHelper* followTabHelper =
+            FollowTabHelper::FromWebState(self.webState);
+        if (followTabHelper) {
+          followTabHelper->UpdateFollowMenuItem();
+        }
+      }
+      return self.followAction;
+    }
+    case overflow_menu::ActionType::Bookmarks: {
+      BOOL pageIsBookmarked =
+          self.webState && self.localOrSyncableBookmarkModel &&
+          bookmark_utils_ios::IsBookmarked(self.webState->GetVisibleURL(),
+                                           self.localOrSyncableBookmarkModel,
+                                           self.accountBookmarkModel);
+      return (pageIsBookmarked) ? self.editBookmarkAction
+                                : self.addBookmarkAction;
+    }
+    case overflow_menu::ActionType::ReadingList:
+      return self.readLaterAction;
+    case overflow_menu::ActionType::ClearBrowsingData:
+      // Showing the Clear Browsing Data Action would be confusing in incognito.
+      return (self.isIncognito) ? nil : self.clearBrowsingDataAction;
+    case overflow_menu::ActionType::Translate:
+      return self.translateAction;
+    case overflow_menu::ActionType::DesktopSite:
+      return ([self userAgentType] != web::UserAgentType::DESKTOP)
+                 ? self.requestDesktopAction
+                 : self.requestMobileAction;
+    case overflow_menu::ActionType::FindInPage:
+      return self.findInPageAction;
+    case overflow_menu::ActionType::TextZoom:
+      return self.textZoomAction;
+  }
+}
+
 #pragma mark - Action handlers
 
 // Dismisses the menu and reloads the current page.
@@ -1536,6 +1576,11 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
   RecordAction(UserMetricsAction("MobileMenuHelp"));
   [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   [self.dispatcher showHelpPage];
+}
+
+// Begins the action edit flow.
+- (void)beginActionEdit {
+  [self.dispatcher showActionCustomization];
 }
 
 #pragma mark - Destinations Handlers

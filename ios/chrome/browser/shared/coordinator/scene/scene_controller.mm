@@ -141,7 +141,6 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
-#import "ios/chrome/browser/ui/thumb_strip/thumb_strip_feature.h"
 #import "ios/chrome/browser/ui/whats_new/promo/whats_new_scene_agent.h"
 #import "ios/chrome/browser/url_loading/scene_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
@@ -287,9 +286,9 @@ void InjectNTP(Browser* browser) {
 @property(nonatomic, assign)
     TabSwitcherDismissalMode modeToDisplayOnTabSwitcherDismissal;
 
-// A property to track whether the QR Scanner should be started upon tab
-// switcher dismissal. It can only be YES if the QR Scanner experiment is
-// enabled.
+// A property to track which action to perform after dismissing the tab
+// switcher. This is used to ensure certain post open actions that are
+// presented by the BVC to only be triggered when the BVC is active.
 @property(nonatomic, readwrite)
     TabOpeningPostOpeningAction NTPActionAfterTabSwitcherDismissal;
 
@@ -384,9 +383,6 @@ void InjectNTP(Browser* browser) {
                    incognitoBrowser:self.incognitoInterface.browser];
     tabGridCoordinator.delegate = self;
     _mainCoordinator = tabGridCoordinator;
-    tabGridCoordinator.regularThumbStripSupporting = self.mainInterface.bvc;
-    tabGridCoordinator.incognitoThumbStripSupporting =
-        self.incognitoInterface.bvc;
   }
   return _mainCoordinator;
 }
@@ -585,17 +581,6 @@ void InjectNTP(Browser* browser) {
                                 sceneState.currentOrigin);
 }
 
-- (BOOL)presentSignInAccountsViewControllerIfNecessary {
-  ChromeBrowserState* browserState = self.currentInterface.browserState;
-  DCHECK(browserState);
-  if ([SignedInAccountsViewController
-          shouldBePresentedForBrowserState:browserState]) {
-    [self presentSignedInAccountsViewControllerForBrowserState:browserState];
-    return YES;
-  }
-  return NO;
-}
-
 - (void)sceneState:(SceneState*)sceneState
     hasPendingURLs:(NSSet<UIOpenURLContext*>*)URLContexts {
   DCHECK(URLContexts);
@@ -753,9 +738,7 @@ void InjectNTP(Browser* browser) {
         [self shouldOpenNTPTabOnActivationOfBrowser:self.currentInterface
                                                         .browser]) {
       DCHECK(!self.activatingBrowser);
-      [self beginActivatingBrowser:self.mainInterface.browser
-                dismissTabSwitcher:YES
-                      focusOmnibox:NO];
+      [self beginActivatingBrowser:self.mainInterface.browser focusOmnibox:NO];
 
       OpenNewTabCommand* command = [OpenNewTabCommand commandWithIncognito:NO];
       command.userInitiated = NO;
@@ -763,7 +746,7 @@ void InjectNTP(Browser* browser) {
       id<ApplicationCommands> applicationHandler = HandlerForProtocol(
           browser->GetCommandDispatcher(), ApplicationCommands);
       [applicationHandler openURLInNewTab:command];
-      [self finishActivatingBrowserDismissingTabSwitcher:YES];
+      [self finishActivatingBrowserDismissingTabSwitcher];
     }
   }
 
@@ -822,6 +805,19 @@ void InjectNTP(Browser* browser) {
         }
         [weakSelf presentSigninUpgradePromo];
       }));
+}
+
+// Present the sign-in accounts view if the accounts have changed while in
+// background.
+- (BOOL)presentSignInAccountsViewControllerIfNecessary {
+  ChromeBrowserState* browserState = self.currentInterface.browserState;
+  DCHECK(browserState);
+  if ([SignedInAccountsViewController
+          shouldBePresentedForBrowserState:browserState]) {
+    [self presentSignedInAccountsViewControllerForBrowserState:browserState];
+    return YES;
+  }
+  return NO;
 }
 
 - (void)initializeUI {
@@ -1039,10 +1035,8 @@ void InjectNTP(Browser* browser) {
 
   if (self.mainCoordinator.isTabGridActive) {
     DCHECK(!self.activatingBrowser);
-    [self beginActivatingBrowser:self.mainInterface.browser
-              dismissTabSwitcher:YES
-                    focusOmnibox:NO];
-    [self finishActivatingBrowserDismissingTabSwitcher:YES];
+    [self beginActivatingBrowser:self.mainInterface.browser focusOmnibox:NO];
+    [self finishActivatingBrowserDismissingTabSwitcher];
   }
 
   // If this web state list should have an NTP created when it activates, then
@@ -1680,13 +1674,25 @@ void InjectNTP(Browser* browser) {
   Browser* mainBrowser = self.mainInterface.browser;
 
   switch (command.operation) {
-    case AuthenticationOperationReauthenticate:
+    case AuthenticationOperationPrimaryAccountReauth:
       self.signinCoordinator = [SigninCoordinator
-          reAuthenticationCoordinatorWithBaseViewController:baseViewController
-                                                    browser:mainBrowser
-                                                accessPoint:command.accessPoint
-                                                promoAction:command
-                                                                .promoAction];
+          primaryAccountReauthCoordinatorWithBaseViewController:
+              baseViewController
+                                                        browser:mainBrowser
+                                                    accessPoint:command
+                                                                    .accessPoint
+                                                    promoAction:
+                                                        command.promoAction];
+      break;
+    case AuthenticationOperationSigninAndSyncReauth:
+      self.signinCoordinator = [SigninCoordinator
+          signinAndSyncReauthCoordinatorWithBaseViewController:
+              baseViewController
+                                                       browser:mainBrowser
+                                                   accessPoint:command
+                                                                   .accessPoint
+                                                   promoAction:
+                                                       command.promoAction];
       break;
     case AuthenticationOperationSigninAndSync:
       self.signinCoordinator = [SigninCoordinator
@@ -2103,7 +2109,8 @@ void InjectNTP(Browser* browser) {
 
   self.settingsNavigationController =
       [SettingsNavigationController defaultBrowserControllerForBrowser:browser
-                                                              delegate:self];
+                                                              delegate:self
+                                                          sourceForUMA:source];
   [baseViewController presentViewController:self.settingsNavigationController
                                    animated:YES
                                  completion:nil];
@@ -2191,19 +2198,15 @@ void InjectNTP(Browser* browser) {
 
 - (void)tabGrid:(TabGridCoordinator*)tabGrid
     shouldActivateBrowser:(Browser*)browser
-           dismissTabGrid:(BOOL)dismissTabGrid
              focusOmnibox:(BOOL)focusOmnibox {
-  DCHECK(dismissTabGrid || self.mainCoordinator.isThumbStripEnabled);
-  [self beginActivatingBrowser:browser
-            dismissTabSwitcher:dismissTabGrid
-                  focusOmnibox:focusOmnibox];
+  [self beginActivatingBrowser:browser focusOmnibox:focusOmnibox];
 }
 
 - (void)tabGridDismissTransitionDidEnd:(TabGridCoordinator*)tabGrid {
   if (!self.sceneState.UIEnabled) {
     return;
   }
-  [self finishActivatingBrowserDismissingTabSwitcher:YES];
+  [self finishActivatingBrowserDismissingTabSwitcher];
 }
 
 - (TabGridPage)activePageForTabGrid:(TabGridCoordinator*)tabGrid {
@@ -2211,17 +2214,12 @@ void InjectNTP(Browser* browser) {
 }
 
 // Begins the process of activating the given current model, switching which BVC
-// is suspended if necessary. If `dismissTabSwitcher` is set, the tab switcher
-// will also be dismissed. Note that this means that a browser can be activated
-// without closing the tab switcher (e.g. thumb strip), but dismissing the tab
-// switcher requires activating a browser. The omnibox will be focused after the
-// tab switcher dismissal is completed if `focusOmnibox` is YES.
+// is suspended if necessary. The omnibox will be focused after the tab switcher
+// dismissal is completed if `focusOmnibox` is YES.
 - (void)beginActivatingBrowser:(Browser*)browser
-            dismissTabSwitcher:(BOOL)dismissTabSwitcher
                   focusOmnibox:(BOOL)focusOmnibox {
   DCHECK(browser == self.mainInterface.browser ||
          browser == self.incognitoInterface.browser);
-  DCHECK(dismissTabSwitcher || self.mainCoordinator.isThumbStripEnabled);
 
   self.activatingBrowser = YES;
   ApplicationMode mode = (browser == self.mainInterface.browser)
@@ -2231,19 +2229,13 @@ void InjectNTP(Browser* browser) {
 
   // The call to set currentBVC above does not actually display the BVC, because
   // _activatingBrowser is YES.  So: Force the BVC transition to start.
-  [self displayCurrentBVCAndFocusOmnibox:focusOmnibox
-                      dismissTabSwitcher:dismissTabSwitcher];
-  // If the tab switcher was not dismissed, finish the activation process now.
-  if (!dismissTabSwitcher) {
-    [self finishActivatingBrowserDismissingTabSwitcher:NO];
-  }
+  [self displayCurrentBVCAndFocusOmnibox:focusOmnibox];
 }
 
 // Completes the process of activating the given browser. If necessary, also
 // finishes dismissing the tab switcher, removing it from the
 // screen and showing the appropriate BVC.
-- (void)finishActivatingBrowserDismissingTabSwitcher:
-    (BOOL)dismissingTabSwitcher {
+- (void)finishActivatingBrowserDismissingTabSwitcher {
   // In real world devices, it is possible to have an empty tab model at the
   // finishing block of a BVC presentation animation. This can happen when the
   // following occur: a) There is JS that closes the last incognito tab, b) that
@@ -2256,11 +2248,9 @@ void InjectNTP(Browser* browser) {
       self.currentInterface.browser->GetWebStateList() &&
       self.currentInterface.browser->GetWebStateList()->count() == 0U) {
     self.activatingBrowser = NO;
-    if (dismissingTabSwitcher) {
-      self.modeToDisplayOnTabSwitcherDismissal = TabSwitcherDismissalMode::NONE;
-      self.NTPActionAfterTabSwitcherDismissal = NO_ACTION;
-      [self showTabSwitcher];
-    }
+    self.modeToDisplayOnTabSwitcherDismissal = TabSwitcherDismissalMode::NONE;
+    self.NTPActionAfterTabSwitcherDismissal = NO_ACTION;
+    [self showTabSwitcher];
     return;
   }
 
@@ -2273,15 +2263,13 @@ void InjectNTP(Browser* browser) {
   }
   self.activatingBrowser = NO;
 
-  if (dismissingTabSwitcher) {
-    self.modeToDisplayOnTabSwitcherDismissal = TabSwitcherDismissalMode::NONE;
+  self.modeToDisplayOnTabSwitcherDismissal = TabSwitcherDismissalMode::NONE;
 
-    ProceduralBlock action = [self completionBlockForTriggeringAction:
-                                       self.NTPActionAfterTabSwitcherDismissal];
-    self.NTPActionAfterTabSwitcherDismissal = NO_ACTION;
-    if (action) {
-      action();
-    }
+  ProceduralBlock action = [self completionBlockForTriggeringAction:
+                                     self.NTPActionAfterTabSwitcherDismissal];
+  self.NTPActionAfterTabSwitcherDismissal = NO_ACTION;
+  if (action) {
+    action();
   }
 }
 
@@ -2583,7 +2571,7 @@ void InjectNTP(Browser* browser) {
   self.browserViewWrangler.currentInterface = newInterface;
 
   if (!self.activatingBrowser) {
-    [self displayCurrentBVCAndFocusOmnibox:NO dismissTabSwitcher:YES];
+    [self displayCurrentBVCAndFocusOmnibox:NO];
   }
 
   // Tell the BVC that was made current that it can use the web.
@@ -2774,14 +2762,23 @@ void InjectNTP(Browser* browser) {
       UrlLoadingBrowserAgent::FromBrowser(targetInterface.browser)
           ->Load(savedParams);
     } else {
-      // Voice search, QRScanner and the omnibox are presented by the BVC.
-      // They must be started after the BVC view is added in the hierarchy.
+      // Voice search, QRScanner, Lens, and the omnibox are presented by the
+      // BVC. They must be started after the BVC view is added in the
+      // hierarchy.
       self.NTPActionAfterTabSwitcherDismissal =
           [self.startupParameters postOpeningAction];
       [self setStartupParameters:nil];
 
+      UrlLoadParams paramsToLoad = urlLoadParams;
+      // If the url to load is empty (such as with Lens) open a new tab page.
+      if (urlLoadParams.web_params.url.is_empty()) {
+        paramsToLoad = UrlLoadParams(urlLoadParams);
+        paramsToLoad.web_params.url = GURL(kChromeUINewTabURL);
+      }
+
       [self addANewTabAndPresentBrowser:targetInterface.browser
-                      withURLLoadParams:urlLoadParams];
+                      withURLLoadParams:paramsToLoad];
+
       // In this particular usage, there should be no postOpeningAction,
       // as triggering voice search while there are multiple windows opened is
       // probably a bad idea both technically and as a user experience. It
@@ -2842,16 +2839,25 @@ void InjectNTP(Browser* browser) {
   }
 }
 
-// Checks the target BVC's current tab's URL. If this URL is chrome://newtab,
-// loads `urlLoadParams` in this tab. Otherwise, open `urlLoadParams` in a new
-// tab in the target BVC. `tabDisplayedCompletion` will be called on the new tab
-// (if not nil).
+// Checks the target BVC's current tab's URL. If `urlLoadParams` has an empty
+// URL, no new tab will be opened and `tabOpenedCompletion` will be run. If this
+// URL is chrome://newtab, loads `urlLoadParams` in this tab. Otherwise, open
+// `urlLoadParams` in a new tab in the target BVC. `tabOpenedCompletion` will be
+// called on the new tab (if not nil).
 - (void)openOrReuseTabInMode:(ApplicationMode)targetMode
            withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
          tabOpenedCompletion:(ProceduralBlock)tabOpenedCompletion {
   WrangledBrowser* targetInterface = targetMode == ApplicationMode::NORMAL
                                          ? self.mainInterface
                                          : self.incognitoInterface;
+  // If the url to load is empty, create a new tab if no tabs are open and run
+  // the completion.
+  if (urlLoadParams.web_params.url.is_empty()) {
+    if (tabOpenedCompletion) {
+      tabOpenedCompletion();
+    }
+    return;
+  }
 
   BrowserViewController* targetBVC = targetInterface.bvc;
   web::WebState* currentWebState =
@@ -2896,11 +2902,7 @@ void InjectNTP(Browser* browser) {
 }
 
 // Displays current (incognito/normal) BVC and optionally focuses the omnibox.
-// If `dismissTabSwitcher` is NO, then the tab switcher is not dismissed,
-// although the BVC will be visible. `dismissTabSwitcher` is only used in the
-// thumb strip feature.
-- (void)displayCurrentBVCAndFocusOmnibox:(BOOL)focusOmnibox
-                      dismissTabSwitcher:(BOOL)dismissTabSwitcher {
+- (void)displayCurrentBVCAndFocusOmnibox:(BOOL)focusOmnibox {
   ProceduralBlock completion = nil;
   if (focusOmnibox) {
     id<OmniboxCommands> omniboxHandler = HandlerForProtocol(
@@ -2912,7 +2914,6 @@ void InjectNTP(Browser* browser) {
   [self.mainCoordinator
       showTabViewController:self.currentInterface.viewController
                   incognito:self.currentInterface.incognito
-         shouldCloseTabGrid:dismissTabSwitcher
                  completion:completion];
   [HandlerForProtocol(self.currentInterface.browser->GetCommandDispatcher(),
                       ApplicationCommands)
@@ -3133,22 +3134,43 @@ void InjectNTP(Browser* browser) {
 
 #pragma mark - WebStateListObserving
 
-// Called when a WebState is removed. Triggers the switcher view when the last
-// WebState is closed on a device that uses the switcher.
-- (void)webStateList:(WebStateList*)notifiedWebStateList
-    didDetachWebState:(web::WebState*)webState
-              atIndex:(int)atIndex {
-  // Do nothing on initialization.
-  if (!self.currentInterface.browser) {
-    return;
-  }
+- (void)didChangeWebStateList:(WebStateList*)webStateList
+                       change:(const WebStateListChange&)change
+                    selection:(const WebStateSelection&)selection {
+  switch (change.type()) {
+    case WebStateListChange::Type::kSelectionOnly:
+      // Do nothing when a WebState is selected and its status is updated.
+      break;
+    case WebStateListChange::Type::kDetach: {
+      // Do nothing on initialization.
+      if (!self.currentInterface.browser) {
+        return;
+      }
 
-  if (notifiedWebStateList->empty()) {
-    if (webState->GetBrowserState()->IsOffTheRecord()) {
-      [self lastIncognitoTabClosed];
-    } else {
-      [self lastRegularTabClosed];
+      // Triggers the switcher view when the last WebState is closed on a device
+      // that uses the switcher.
+      const WebStateListChangeDetach& detachChange =
+          change.As<WebStateListChangeDetach>();
+      if (webStateList->empty()) {
+        if (detachChange.detached_web_state()
+                ->GetBrowserState()
+                ->IsOffTheRecord()) {
+          [self lastIncognitoTabClosed];
+        } else {
+          [self lastRegularTabClosed];
+        }
+      }
+      break;
     }
+    case WebStateListChange::Type::kMove:
+      // Do nothing when a WebState is moved.
+      break;
+    case WebStateListChange::Type::kReplace:
+      // Do nothing when a WebState is replaced.
+      break;
+    case WebStateListChange::Type::kInsert:
+      // Do nothing when a WebState is inserted.
+      break;
   }
 }
 
@@ -3333,7 +3355,7 @@ void InjectNTP(Browser* browser) {
       /*in_background=*/false, /*inherit_opener=*/false,
       /*should_show_start_surface=*/false,
       /*should_skip_new_tab_animation=*/urlLoadParams.from_external);
-  [self beginActivatingBrowser:browser dismissTabSwitcher:YES focusOmnibox:NO];
+  [self beginActivatingBrowser:browser focusOmnibox:NO];
 }
 
 #pragma mark - Handling of destroying the incognito BrowserState
@@ -3457,8 +3479,6 @@ void InjectNTP(Browser* browser) {
   // Always set the new otr Browser for the tablet or grid switcher.
   // Notify the TabGrid with the new Incognito Browser.
   self.mainCoordinator.incognitoBrowser = self.incognitoInterface.browser;
-  self.mainCoordinator.incognitoThumbStripSupporting =
-      self.incognitoInterface.bvc;
 }
 
 #pragma mark - PolicyWatcherBrowserAgentObserving

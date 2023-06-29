@@ -7,6 +7,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/companion/core/constants.h"
 #include "chrome/browser/companion/core/mojom/companion.mojom.h"
@@ -84,10 +85,14 @@ class CompanionPageHandler
       unified_consent::UrlKeyedDataCollectionConsentHelper* consent_helper)
       override;
 
-  // Informs the page handler that a new text query to initialize / reload the
-  // page with was sent from client.
-  void OnSearchTextQuery(const std::string& text_query);
+  // Attempts to retrieve a search query string and initiate a search if
+  // available. If it does not load a companion page, returns false.
+  bool OnSearchTextQuery();
   void OnImageQuery(side_panel::mojom::ImageQuery image_query);
+
+  // Informs the page handler that the WebUI has detected a navigation that
+  // resulted in an error page.
+  void OnNavigationError();
 
  private:
   // Notifies the companion side panel about the URL of the main frame. Based on
@@ -142,6 +147,9 @@ class CompanionPageHandler
       unified_consent::UrlKeyedDataCollectionConsentHelper,
       unified_consent::UrlKeyedDataCollectionConsentHelper::Observer>
       consent_helper_observation_{this};
+
+  absl::optional<base::TimeTicks> full_load_start_time_;
+  absl::optional<base::TimeTicks> reload_start_time_;
 
   base::WeakPtrFactory<CompanionPageHandler> weak_ptr_factory_{this};
 };

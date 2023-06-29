@@ -8,11 +8,10 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests"
             }
           ],
@@ -30,11 +29,10 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests"
             }
           ],
@@ -70,166 +68,6 @@
       "chrome/updater:all"
     ]
   },
-  "mac10.13-updater-tester-dbg": {
-    "gtest_tests": [
-      {
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.13.6",
-              "pool": "chromium.tests"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "updater_tests",
-        "test_id_prefix": "ninja://chrome/updater:updater_tests/"
-      },
-      {
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.13.6",
-              "pool": "chromium.updater.mac"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "updater_tests_system",
-        "test_id_prefix": "ninja://chrome/updater:updater_tests_system/"
-      }
-    ]
-  },
-  "mac10.13-updater-tester-rel": {
-    "gtest_tests": [
-      {
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.13.6",
-              "pool": "chromium.tests"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "updater_tests",
-        "test_id_prefix": "ninja://chrome/updater:updater_tests/"
-      },
-      {
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.13.6",
-              "pool": "chromium.updater.mac"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "updater_tests_system",
-        "test_id_prefix": "ninja://chrome/updater:updater_tests_system/"
-      }
-    ]
-  },
-  "mac10.14-updater-tester-dbg": {
-    "gtest_tests": [
-      {
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.14.6",
-              "pool": "chromium.tests"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "updater_tests",
-        "test_id_prefix": "ninja://chrome/updater:updater_tests/"
-      },
-      {
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.14.6",
-              "pool": "chromium.updater.mac"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "updater_tests_system",
-        "test_id_prefix": "ninja://chrome/updater:updater_tests_system/"
-      }
-    ]
-  },
-  "mac10.14-updater-tester-rel": {
-    "gtest_tests": [
-      {
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.14.6",
-              "pool": "chromium.tests"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "updater_tests",
-        "test_id_prefix": "ninja://chrome/updater:updater_tests/"
-      },
-      {
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.14.6",
-              "pool": "chromium.updater.mac"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "updater_tests_system",
-        "test_id_prefix": "ninja://chrome/updater:updater_tests_system/"
-      }
-    ]
-  },
   "mac10.15-updater-tester-dbg": {
     "gtest_tests": [
       {
@@ -237,7 +75,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -255,7 +92,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -277,7 +113,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -295,7 +130,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -317,7 +151,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "arm64",
@@ -335,7 +168,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "arm64",
@@ -357,7 +189,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "arm64",
@@ -375,7 +206,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "arm64",
@@ -397,7 +227,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -415,7 +244,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -437,7 +265,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -455,7 +282,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -477,7 +303,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "arm64",
@@ -495,7 +320,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "arm64",
@@ -517,7 +341,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -535,7 +358,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -557,7 +379,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "arm64",
@@ -575,7 +396,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "arm64",
@@ -597,7 +417,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -615,7 +434,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -647,7 +465,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -666,7 +483,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -689,7 +505,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -708,7 +523,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -731,7 +545,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -750,7 +563,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -773,7 +585,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -792,7 +603,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -814,7 +624,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -833,7 +642,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -856,7 +664,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -875,7 +682,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -897,7 +703,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -916,7 +721,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -938,7 +742,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",
@@ -957,7 +760,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "cpu": "x86-64",

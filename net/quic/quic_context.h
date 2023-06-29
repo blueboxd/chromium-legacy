@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "net/base/features.h"
 #include "net/base/host_port_pair.h"
+#include "net/third_party/quiche/src/quiche/quic/core/crypto/quic_crypto_client_config.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_connection.h"
 
 namespace net {
@@ -105,6 +106,10 @@ struct NET_EXPORT QuicParams {
   size_t max_server_configs_stored_in_properties = 0u;
   // QUIC will be used for all connections in this set.
   std::set<HostPortPair> origins_to_force_quic_on;
+  // WebTransport developer mode disables the requirement that all QUIC
+  // connections are anchored to a system certificate root, but only for
+  // WebTransport connections.
+  bool webtransport_developer_mode = false;
   // Set of QUIC tags to send in the handshake's connection options.
   quic::QuicTagVector connection_options;
   // Set of QUIC tags to send in the handshake's connection options that only
@@ -234,6 +239,10 @@ class NET_EXPORT_PRIVATE QuicContext {
 
 // Initializes QuicConfig based on the specified parameters.
 quic::QuicConfig InitializeQuicConfig(const QuicParams& params);
+
+// Configures QuicCryptoClientConfig with Chromium-specific settings.
+void ConfigureQuicCryptoClientConfig(
+    quic::QuicCryptoClientConfig& crypto_config);
 
 }  // namespace net
 

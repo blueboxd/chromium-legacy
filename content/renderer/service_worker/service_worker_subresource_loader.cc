@@ -200,7 +200,10 @@ bool ServiceWorkerSubresourceLoader::MaybeStartRaceNetworkRequest() {
           kRaceNetworkRequest) {
     return false;
   }
+  return ServiceWorkerSubresourceLoader::StartRaceNetworkRequest();
+}
 
+bool ServiceWorkerSubresourceLoader::StartRaceNetworkRequest() {
   // If the fetch event is restarted for some reason, stop dispatching
   // RaceNetworkRequest to avoid making the race condition complex.
   if (fetch_request_restarted_) {
@@ -373,16 +376,20 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
     }
   }
 
-  if (base::FeatureList::IsEnabled(features::kServiceWorkerStaticRouter)) {
-    auto* router_evaluator = controller_connector_->router_evaluator();
-    if (router_evaluator) {
-      CHECK(router_evaluator->IsValid());
-      auto sources = router_evaluator->Evaluate(resource_request_);
-      if (!sources.empty()) {  // matched the rule.
-        // TODO(crbug.com/1371756): support other sources in the full form.
-        // https://github.com/yoshisatoyanagisawa/service-worker-static-routing-api/blob/main/final-form.md
-        if (sources[0].type ==
-            blink::ServiceWorkerRouterSource::SourceType::kNetwork) {
+  enum RaceNetworkRequestMode {
+    kDefault,
+    kForced,
+    kSkipped
+  } race_network_request_mode = kDefault;
+  auto* router_evaluator = controller_connector_->router_evaluator();
+  if (router_evaluator) {
+    CHECK(router_evaluator->IsValid());
+    auto sources = router_evaluator->Evaluate(resource_request_);
+    if (!sources.empty()) {  // matched the rule.
+      // TODO(crbug.com/1371756): support other sources in the full form.
+      // https://github.com/yoshisatoyanagisawa/service-worker-static-routing-api/blob/main/final-form.md
+      switch (sources[0].type) {
+        case blink::ServiceWorkerRouterSource::SourceType::kNetwork:
           // Network fallback is requested.
           fallback_factory_->CreateLoaderAndStart(
               url_loader_receiver_.Unbind(), request_id_, options_,
@@ -390,13 +397,28 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
               traffic_annotation_);
           delete this;
           return;
-        }
+        case blink::ServiceWorkerRouterSource::SourceType::kRace:
+          race_network_request_mode = kForced;
+          break;
+        case blink::ServiceWorkerRouterSource::SourceType::kFetchEvent:
+          race_network_request_mode = kSkipped;
+          break;
       }
     }
   }
 
-  // Dispatch RaceNetworkRequest if enabled.
-  did_start_race_network_request_ = MaybeStartRaceNetworkRequest();
+  switch (race_network_request_mode) {
+    case kForced:
+      did_start_race_network_request_ = StartRaceNetworkRequest();
+      break;
+    case kDefault:
+      // Dispatch RaceNetworkRequest if enabled.
+      did_start_race_network_request_ = MaybeStartRaceNetworkRequest();
+      break;
+    case kSkipped:
+      // Don't start race network request.
+      break;
+  }
 
   DispatchFetchEventForSubresource();
 }

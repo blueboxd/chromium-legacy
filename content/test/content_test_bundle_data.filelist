@@ -4641,6 +4641,8 @@ data/accessibility/html/wbr-expected-mac.txt
 data/accessibility/html/wbr-expected-uia-win.txt
 data/accessibility/html/wbr-expected-win.txt
 data/accessibility/html/wbr.html
+data/accessibility/html/whitespace-dynamic-expected-blink.txt
+data/accessibility/html/whitespace-dynamic.html
 data/accessibility/html/window-crops-items-expected-blink.txt
 data/accessibility/html/window-crops-items.html
 data/accessibility/language-detection/dynamic-basic-expected-blink.txt
@@ -5900,6 +5902,7 @@ data/gpu/webgl1_conformance_linux_runtimes.json
 data/gpu/webgl1_conformance_mac_runtimes.json
 data/gpu/webgl1_conformance_win_runtimes.json
 data/gpu/webgl2-context-blocked.html
+data/gpu/webgl2-copytexsubimage2d-high-power-switch-does-not-crash.html
 data/gpu/webgl2-multisampling-high-power-switch-does-not-crash.html
 data/gpu/webgl2-multisampling-high-power-switch-loses-context.html
 data/gpu/webgl2-preserve-db-high-power-switch-loses-context.html
@@ -6189,6 +6192,7 @@ data/locks/dedicated_worker.js
 data/locks/locks.html
 data/locks/service_worker.js
 data/locks/shared_worker.js
+data/long_response_body.html
 data/mac/mac_system_hotkeys.plist
 data/mac/mac_system_hotkeys_sparse.plist
 data/manifest/404-manifest.html
@@ -6701,8 +6705,11 @@ data/set_cookie.html
 data/set_cookie.html.mock-http-headers
 data/set_document_cookie.html
 data/shared_dictionary/blank.html
+data/shared_dictionary/fetch_dictionary.js
 data/shared_dictionary/test.dict
 data/shared_dictionary/test.dict.mock-http-headers
+data/shared_dictionary/test_no_acao.dict
+data/shared_dictionary/test_no_acao.dict.mock-http-headers
 data/shared_storage/customizable_module.js
 data/shared_storage/customizable_script.js
 data/shared_storage/erroneous_function_module.js

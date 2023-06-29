@@ -220,6 +220,10 @@ class ContentAutofillDriver : public AutofillDriver,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map)
       override;
+  void UndoAutofill(const FormData& data,
+                    const url::Origin& triggered_origin,
+                    const base::flat_map<FieldGlobalId, ServerFieldType>&
+                        field_type_map) override;
   void SendAutofillTypePredictionsToRenderer(
       const std::vector<FormStructure*>& forms) override;
   void RendererShouldAcceptDataListSuggestion(
@@ -227,6 +231,9 @@ class ContentAutofillDriver : public AutofillDriver,
       const std::u16string& value) override;
   void RendererShouldClearFilledSection() override;
   void RendererShouldClearPreviewedForm() override;
+  void RendererShouldTriggerSuggestions(
+      const FieldGlobalId& field_id,
+      AutofillSuggestionTriggerSource trigger_source) override;
   void RendererShouldFillFieldWithValue(const FieldGlobalId& field_id,
                                         const std::u16string& value) override;
   void RendererShouldPreviewFieldWithValue(
@@ -287,7 +294,7 @@ class ContentAutofillDriver : public AutofillDriver,
                                base::TimeTicks timestamp) override;
   void DidPreviewAutofillFormData() override;
   void DidEndTextFieldEditing() override;
-  void SelectFieldOptionsDidChange(const FormData& form) override;
+  void SelectOrSelectMenuFieldOptionsDidChange(const FormData& form) override;
   void JavaScriptChangedAutofilledValue(
       const FormData& form,
       const FormFieldData& field,

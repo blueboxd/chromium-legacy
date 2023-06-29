@@ -286,7 +286,7 @@ SmoothScrollSequencer* PaintLayerScrollableArea::GetSmoothScrollSequencer()
   if (HasBeenDisposed())
     return nullptr;
 
-  return &GetLayoutBox()->GetFrame()->GetSmoothScrollSequencer();
+  return GetLayoutBox()->GetFrame()->GetSmoothScrollSequencer();
 }
 
 bool PaintLayerScrollableArea::IsActive() const {
@@ -656,7 +656,7 @@ void PaintLayerScrollableArea::VisibleSizeChanged() {
 PhysicalRect PaintLayerScrollableArea::LayoutContentRect(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
   // LayoutContentRect is conceptually the same as the box's client rect.
-  LayoutSize layer_size = Size();
+  PhysicalSize layer_size = Size();
   LayoutUnit border_width = GetLayoutBox()->BorderWidth();
   LayoutUnit border_height = GetLayoutBox()->BorderHeight();
   NGPhysicalBoxStrut scrollbars;
@@ -664,8 +664,8 @@ PhysicalRect PaintLayerScrollableArea::LayoutContentRect(
     scrollbars = GetLayoutBox()->ComputeScrollbars();
 
   PhysicalSize size(
-      layer_size.Width() - border_width - scrollbars.HorizontalSum(),
-      layer_size.Height() - border_height - scrollbars.VerticalSum());
+      layer_size.width - border_width - scrollbars.HorizontalSum(),
+      layer_size.height - border_height - scrollbars.VerticalSum());
   size.ClampNegativeToZero();
   return PhysicalRect(PhysicalOffset::FromPointFRound(ScrollPosition()), size);
 }
@@ -903,9 +903,9 @@ PaintLayer* PaintLayerScrollableArea::Layer() const {
   return layer_;
 }
 
-LayoutSize PaintLayerScrollableArea::Size() const {
+PhysicalSize PaintLayerScrollableArea::Size() const {
   return layer_->IsRootLayer()
-             ? LayoutSize(GetLayoutBox()->GetFrameView()->Size())
+             ? PhysicalSize(GetLayoutBox()->GetFrameView()->Size())
              : GetLayoutBox()->Size();
 }
 
@@ -1104,7 +1104,7 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
 
   PositionOverflowControls();
 
-  if (RuntimeEnabledFeatures::CSSScrollSnap2Enabled()) {
+  if (RuntimeEnabledFeatures::CSSScrollStartEnabled()) {
     if (IsApplyingScrollStart()) {
       ApplyScrollStart();
     }
@@ -2233,7 +2233,7 @@ void PaintLayerScrollableArea::Resize(const gfx::Point& pos,
   new_offset.set_x(new_offset.x() / zoom_factor);
   new_offset.set_y(new_offset.y() / zoom_factor);
 
-  LayoutSize current_size = GetLayoutBox()->Size();
+  PhysicalSize current_size = GetLayoutBox()->Size();
   current_size.Scale(1 / zoom_factor);
 
   LayoutSize adjusted_old_offset = old_offset * (1.f / zoom_factor);
@@ -2242,41 +2242,44 @@ void PaintLayerScrollableArea::Resize(const gfx::Point& pos,
     adjusted_old_offset.SetWidth(-adjusted_old_offset.Width());
   }
 
-  LayoutSize new_size(current_size + LayoutSize(new_offset) -
-                      adjusted_old_offset);
+  PhysicalSize new_size(
+      current_size +
+      PhysicalSize(LayoutUnit(new_offset.x()), LayoutUnit(new_offset.y())) -
+      PhysicalSizeToBeNoop(adjusted_old_offset));
 
   // Ensure the new size is at least as large as the resize corner.
   gfx::SizeF corner_rect(CornerRect().size());
   corner_rect.InvScale(zoom_factor);
-  new_size.ClampToMinimumSize(LayoutSize(corner_rect));
+  new_size.width = std::max(new_size.width, LayoutUnit(corner_rect.width()));
+  new_size.height = std::max(new_size.height, LayoutUnit(corner_rect.height()));
 
-  LayoutSize difference(new_size - current_size);
+  PhysicalSize difference(new_size - current_size);
 
   bool is_box_sizing_border =
       GetLayoutBox()->StyleRef().BoxSizing() == EBoxSizing::kBorderBox;
 
   EResize resize = GetLayoutBox()->StyleRef().Resize(
       GetLayoutBox()->ContainingBlock()->StyleRef());
-  if (resize != EResize::kVertical && difference.Width()) {
+  if (resize != EResize::kVertical && difference.width) {
     LayoutUnit base_width =
-        GetLayoutBox()->Size().Width() -
+        GetLayoutBox()->Size().width -
         (is_box_sizing_border ? LayoutUnit()
                               : GetLayoutBox()->BorderAndPaddingWidth());
     base_width = LayoutUnit(base_width / zoom_factor);
     element->SetInlineStyleProperty(CSSPropertyID::kWidth,
-                                    RoundToInt(base_width + difference.Width()),
+                                    RoundToInt(base_width + difference.width),
                                     CSSPrimitiveValue::UnitType::kPixels);
   }
 
-  if (resize != EResize::kHorizontal && difference.Height()) {
+  if (resize != EResize::kHorizontal && difference.height) {
     LayoutUnit base_height =
-        GetLayoutBox()->Size().Height() -
+        GetLayoutBox()->Size().height -
         (is_box_sizing_border ? LayoutUnit()
                               : GetLayoutBox()->BorderAndPaddingHeight());
     base_height = LayoutUnit(base_height / zoom_factor);
-    element->SetInlineStyleProperty(
-        CSSPropertyID::kHeight, RoundToInt(base_height + difference.Height()),
-        CSSPrimitiveValue::UnitType::kPixels);
+    element->SetInlineStyleProperty(CSSPropertyID::kHeight,
+                                    RoundToInt(base_height + difference.height),
+                                    CSSPrimitiveValue::UnitType::kPixels);
   }
 
   document.UpdateStyleAndLayout(DocumentUpdateReason::kSizeChange);
@@ -2332,6 +2335,7 @@ PhysicalRect PaintLayerScrollableArea::ScrollIntoView(
   new_scroll_offset = ScrollPositionToOffset(end_point);
 
   if (params->is_for_scroll_sequence) {
+    CHECK(GetSmoothScrollSequencer());
     DCHECK(params->type == mojom::blink::ScrollType::kProgrammatic ||
            params->type == mojom::blink::ScrollType::kUser);
     mojom::blink::ScrollBehavior behavior = DetermineScrollBehavior(

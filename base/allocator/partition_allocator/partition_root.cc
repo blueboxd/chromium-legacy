@@ -29,7 +29,7 @@
 #include "base/allocator/partition_allocator/thread_isolation/thread_isolation.h"
 #include "build/build_config.h"
 
-#if PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK)
+#if BUILDFLAG(IS_MAC)
 #include "base/allocator/partition_allocator/partition_alloc_base/mac/mac_util.h"
 #endif
 
@@ -879,7 +879,11 @@ void PartitionRoot::Init(PartitionOptions opts) {
 
     settings.allow_aligned_alloc =
         opts.aligned_alloc == PartitionOptions::AlignedAlloc::kAllowed;
-    settings.allow_cookie = opts.cookie == PartitionOptions::Cookie::kAllowed;
+#if BUILDFLAG(PA_DCHECK_IS_ON)
+    settings.use_cookie = opts.cookie == PartitionOptions::Cookie::kAllowed;
+#else
+    static_assert(!Settings::use_cookie);
+#endif  // BUILDFLAG(PA_DCHECK_IS_ON)
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     settings.brp_enabled_ =
         opts.backup_ref_ptr == PartitionOptions::BackupRefPtr::kEnabled;
@@ -930,7 +934,7 @@ void PartitionRoot::Init(PartitionOptions opts) {
     settings.extras_size = 0;
     settings.extras_offset = 0;
 
-    if (settings.allow_cookie) {
+    if (settings.use_cookie) {
       settings.extras_size += internal::kPartitionCookieSizeAdjustment;
     }
 
@@ -942,6 +946,7 @@ void PartitionRoot::Init(PartitionOptions opts) {
       if (!ref_count_size) {
         ref_count_size = internal::kPartitionRefCountSizeAdjustment;
       }
+      ref_count_size = internal::AlignUpRefCountSizeForMac(ref_count_size);
 #if PA_CONFIG(INCREASE_REF_COUNT_SIZE_FOR_MTE)
       if (IsMemoryTaggingEnabled()) {
         ref_count_size = internal::base::bits::AlignUp(
@@ -1183,13 +1188,11 @@ bool PartitionRoot::TryReallocInPlaceForDirectMap(
     thread_cache->RecordAllocation(GetSlotUsableSize(slot_span));
   }
 
-#if BUILDFLAG(PA_DCHECK_IS_ON)
   // Write a new trailing cookie.
-  if (settings.allow_cookie) {
+  if (settings.use_cookie) {
     auto* object = static_cast<unsigned char*>(SlotStartToObject(slot_start));
     internal::PartitionCookieWriteValue(object + GetSlotUsableSize(slot_span));
   }
-#endif
 
   return true;
 }
@@ -1230,14 +1233,12 @@ bool PartitionRoot::TryReallocInPlaceForNormalBuckets(void* object,
     }
 #endif  // BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT) &&
         // BUILDFLAG(PA_DCHECK_IS_ON)
-#if BUILDFLAG(PA_DCHECK_IS_ON)
     // Write a new trailing cookie only when it is possible to keep track
     // raw size (otherwise we wouldn't know where to look for it later).
-    if (settings.allow_cookie) {
+    if (settings.use_cookie) {
       internal::PartitionCookieWriteValue(static_cast<unsigned char*>(object) +
                                           GetSlotUsableSize(slot_span));
     }
-#endif  // BUILDFLAG(PA_DCHECK_IS_ON)
   }
 
   // Always record a realloc() as a free() + malloc(), even if it's in

@@ -2964,7 +2964,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="Unknown" label=""/>
   <suffix name="WebUI" label=""/>
   <affected-histogram name="Notifications.Scheduler.IhnrActionButtonEvent"/>
-  <affected-histogram name="Notifications.Scheduler.Impression.Count"/>
   <affected-histogram
       name="Notifications.Scheduler.NotificationLifeCycleEvent"/>
   <affected-histogram name="Notifications.Scheduler.UserAction"/>
@@ -3920,14 +3919,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Previews.Triggered.EffectiveConnectionType2"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="PrivacyScreenToggleState" separator=".">
-  <owner>tengs@chromium.org</owner>
-  <owner>gzadina@google.com</owner>
-  <suffix name="Disabled" label=""/>
-  <suffix name="Enabled" label=""/>
-  <affected-histogram name="ChromeOS.PrivacyScreen.Toggled"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="ProcessMemoryAllocator2" separator=".">
   <suffix name="AndroidOtherPrivateDirty"
       label="Other private dirty memory, including GPU memory, as reported by
@@ -3939,6 +3930,8 @@ chromium-metrics-reviews@google.com.
              APIs. Only reported on Android, if the value hasn't been
              collected in the last 5 minutes (otherwise Android produces a
              stale value, which is not emitted in Chrome)."/>
+  <suffix name="AXPlatformNodeCount"
+      label="Count of accessibility nodes in the browser process."/>
   <suffix name="BlinkGC" label="Only counting Blink GC memory."/>
   <suffix name="BlinkGC.AllocatedObjects"
       label="Only counting objects allocated using Blink GC."/>
@@ -4478,24 +4471,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Platform.Memory.VMs"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="ProfileMenuGAIASource" separator=".">
-  <suffix name="GAIAAddSession"
-      label="GAIA-initiated interaction indicating a service type of Add a
-             Session"/>
-  <suffix name="GAIADefault"
-      label="GAIA-initiated interaction indicating the default service type"/>
-  <suffix name="GAIASignout"
-      label="GAIA-initiated interaction indicating a service type of Signout"/>
-  <suffix name="GAIASignoutIncognito"
-      label="GAIA-initiated interaction indicating a service type of Signout
-             and go Incognito (used for AndroidAccountManagementMenu)"/>
-  <suffix name="GAIASignup"
-      label="GAIA-initiated interaction indicating a service type of Add an
-             account"/>
-  <suffix name="NonGAIA" label="Interaction was not initiated from GAIA"/>
-  <affected-histogram name="Profile.AndroidAccountManagementMenu"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="ProfilePictureDownload" separator=".">
   <suffix name="Default.LoggedIn" label="default picture, after login"/>
   <suffix name="Default.OOBE" label="default picture, in OOBE"/>
@@ -4926,12 +4901,12 @@ chromium-metrics-reviews@google.com.
       label="Interstitial for a resource classified as unsafe by the Safe
              Browsing database version 4 via either
              {Local,Remote}SafeBrowsingDatabaseManager."/>
-  <suffix name="from_real_time_check"
-      label="Interstitial for a resource classified as unsafe by the Safe
-             Browsing URL real-time API."/>
   <suffix name="from_hash_prefix_real_time_check_v5"
       label="Interstitial for a resource classified as unsafe by the Safe
              Browsing hash-prefix real-time API version 5."/>
+  <suffix name="from_real_time_check"
+      label="Interstitial for a resource classified as unsafe by the Safe
+             Browsing URL real-time API."/>
   <affected-histogram name="interstitial.harmful.decision"/>
   <affected-histogram name="interstitial.harmful.decision.repeat_visit"/>
   <affected-histogram name="interstitial.harmful.interaction"/>

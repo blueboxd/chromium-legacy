@@ -293,6 +293,11 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kAssistPredictiveWritingEnabled, true);
   registry->RegisterBooleanPref(prefs::kEmojiSuggestionEnabled, true);
   registry->RegisterBooleanPref(prefs::kEmojiSuggestionEnterpriseAllowed, true);
+  registry->RegisterBooleanPref(
+      prefs::kManagedPhysicalKeyboardAutocorrectAllowed, true);
+  registry->RegisterBooleanPref(
+      prefs::kManagedPhysicalKeyboardPredictiveWritingAllowed, true);
+  registry->RegisterBooleanPref(prefs::kEmojiPickerGifSupportEnabled, true);
   registry->RegisterDictionaryPref(
       ::prefs::kLanguageInputMethodSpecificSettings);
   registry->RegisterBooleanPref(prefs::kLastUsedImeShortcutReminderDismissed,
@@ -592,6 +597,8 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterInt64Pref(::prefs::kHatsBorealisGamesSurveyCycleEndTs, 0);
   registry->RegisterBooleanPref(::prefs::kHatsBorealisGamesSurveyIsSelected,
                                 false);
+  registry->RegisterTimePref(
+      ::prefs::kHatsBorealisGamesLastInteractionTimestamp, base::Time());
 
   registry->RegisterBooleanPref(prefs::kShowDisplaySizeScreenEnabled, true);
 
@@ -599,8 +606,6 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(::prefs::kHasResetFirst7DaysSettingsUsedCount,
                                 false);
-
-  registry->RegisterBooleanPref(::prefs::kHasEverRevokedMetricsConsent, true);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {

@@ -127,8 +127,6 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <variants name="ArcUserTypes">
-  <variant name=".ActiveDirectory"
-      summary="User with active directory account"/>
   <variant name=".Child" summary="User with child accounts."/>
   <variant name=".DemoMode"
       summary="Demo devices with a demo mode robot account."/>
@@ -444,7 +442,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.AppCount.HasInstalledOrUnknownApp" enum="Boolean"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>khmel@google.com</owner>
   <owner>arcvm-eng@google.com</owner>
   <summary>
@@ -772,7 +770,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Auth.RequestAccountInfoResult.Secondary"
-    enum="ArcAuthCodeStatus" expires_after="2023-10-24">
+    enum="ArcAuthCodeStatus" expires_after="2023-12-24">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -962,7 +960,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.CompatMode.RightClickConversion"
-    enum="ArcRightClickConversionResult" expires_after="2023-10-22">
+    enum="ArcRightClickConversionResult" expires_after="2023-12-24">
   <owner>yhanada@google.com</owner>
   <owner>arc-framework@google.com</owner>
   <summary>
@@ -1417,7 +1415,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.InputOverlay.ButtonGroupRepositionOperationType"
-    enum="ArcInputOverlayRepositionOperationType" expires_after="2023-06-13">
+    enum="ArcInputOverlayRepositionOperationType" expires_after="2023-12-19">
   <owner>cuicuiruan@google.com</owner>
   <owner>arc-gaming@google.com</owner>
   <summary>
@@ -1465,7 +1463,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.InputOverlay.MenuEntryRepositionOperationType"
-    enum="ArcInputOverlayRepositionOperationType" expires_after="2023-06-13">
+    enum="ArcInputOverlayRepositionOperationType" expires_after="2023-12-19">
   <owner>cuicuiruan@google.com</owner>
   <owner>arc-gaming@google.com</owner>
   <summary>
@@ -1488,18 +1486,6 @@ chromium-metrics-reviews@google.com.
     <variant name="ButtonGroup"/>
     <variant name="MenuEntry"/>
   </token>
-</histogram>
-
-<histogram name="Arc.IntentHelper.OpenAppWithIntentAction"
-    enum="ArcIntentHelperIntentAction" expires_after="2023-07-30">
-  <owner>tsergeant@chromium.org</owner>
-  <owner>chromeos-apps-foundation-team@google.com</owner>
-  <summary>
-    Recorded when an ARC app opens a Chrome OS app with an intent (e.g., when
-    Sharing from an Android app to a Web App installed through the Play Store).
-    Records the action being handled by the Chrome OS app, like Viewing a URL or
-    Sending content.
-  </summary>
 </histogram>
 
 <histogram name="Arc.LaunchedWithGhostWindow" units="apps"
@@ -1646,7 +1632,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Net.ArcNetworkError" enum="ArcNetworkError"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-networking@google.com</owner>
   <summary>
@@ -1684,7 +1670,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Notifications.ActionEnabled" enum="BooleanEnabled"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>yaoqq@google.com</owner>
   <owner>arc-framework@google.com</owner>
   <summary>
@@ -1718,7 +1704,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Notifications.IsCustomNotification"
-    enum="BooleanIsCustomNotification" expires_after="2023-10-22">
+    enum="BooleanIsCustomNotification" expires_after="2023-12-24">
   <owner>shuminghao@google.com</owner>
   <owner>arc-framework@google.com</owner>
   <summary>
@@ -1727,14 +1713,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Notifications.Style" enum="ArcNotificationStyle"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>yaoqq@google.com</owner>
   <owner>arc-framework@google.com</owner>
   <summary>Records the style of an Arc notification when it's created.</summary>
 </histogram>
 
 <histogram name="Arc.OptInAction" enum="ArcOptInAction"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -1803,9 +1789,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.PlayAutoInstallRequest.State{ArcUserTypes}"
-    enum="ArcPlayAutoInstallRequestState" expires_after="2023-08-01">
+    enum="ArcPlayAutoInstallRequestState" expires_after="2024-07-01">
   <owner>jhorwich@google.com</owner>
   <owner>khmel@google.com</owner>
+  <owner>arc-core@google.com</owner>
   <summary>
     State of PlayAutoInstall flow after the request. {ArcUserTypes}
   </summary>
@@ -1815,9 +1802,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.PlayAutoInstallRequest.TimeDelta{ArcUserTypes}" units="ms"
-    expires_after="2023-08-01">
+    expires_after="2024-07-01">
   <owner>jhorwich@google.com</owner>
   <owner>khmel@google.com</owner>
+  <owner>arc-core@google.com</owner>
   <summary>
     Elapsed time from the when the PlayAutoInstall request was issued and
     completed. {ArcUserTypes}
@@ -1851,7 +1839,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.PlayStoreLaunchWithinAWeek" enum="BooleanUsage"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>rsorokin@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -2192,7 +2180,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Session.HasWebViewUsage" enum="Boolean"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>hungmn@google.com</owner>
   <owner>khmel@google.com</owner>
   <owner>arc-performance@google.com</owner>
@@ -2705,22 +2693,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Total bytes to be migrated in ARCVM /data migration. Reported once at the
     beginning of a new migration.
-  </summary>
-</histogram>
-
-<histogram name="Arc.VolumeMounter.MountFailureCount" units="failures"
-    expires_after="2023-04-19">
-  <owner>youkichihosoi@google.com</owner>
-  <owner>arc-storage@google.com</owner>
-  <summary>
-    Counts the number of mount failures for a volume shared with ARC. This is
-    recorded when a volume is successfully mounted by ARC, or when ARC gives up
-    on mounting a volume. Samples in the underflow bucket (value 0) indicate
-    that ARC successfully mounted the volume without any failure. Samples in the
-    overflow bucket indicate that ARC stopped trying to mount the volume after
-    reaching the retry threshold. Samples in between them with value n indicate
-    that ARC successfully mounted the volume after n failures (= n retries).
-    Emitted only on ARC-enabled Chrome OS devices.
   </summary>
 </histogram>
 

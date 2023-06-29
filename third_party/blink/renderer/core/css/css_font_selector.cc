@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/css/css_segmented_font_face.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
+#include "third_party/blink/renderer/core/css/font_size_functions.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -38,6 +39,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector_client.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -105,11 +107,12 @@ scoped_refptr<FontPalette> ResolveInterpolableFontPalette(
   }
 
   scoped_refptr<FontPalette> new_palette;
-  new_palette = FontPalette::Mix(start_palette, end_palette,
-                                 font_palette->GetPercentage(),
-                                 font_palette->GetAlphaMultiplier(),
-                                 font_palette->GetColorInterpolationSpace(),
-                                 font_palette->GetHueInterpolationMethod());
+  new_palette = FontPalette::Mix(
+      start_palette, end_palette, font_palette->GetStartPercentage(),
+      font_palette->GetEndPercentage(), font_palette->GetNormalizedPercentage(),
+      font_palette->GetAlphaMultiplier(),
+      font_palette->GetColorInterpolationSpace(),
+      font_palette->GetHueInterpolationMethod());
   new_palette->SetMatchFamilyName(start_palette->GetMatchFamilyName());
   return new_palette;
 }
@@ -265,6 +268,17 @@ scoped_refptr<FontData> CSSFontSelector::GetFontData(
 
   scoped_refptr<SimpleFontData> font_data =
       FontCache::Get().GetFontData(request_description, settings_family_name);
+  if (request_description.HasSizeAdjust()) {
+    DCHECK(RuntimeEnabledFeatures::CSSFontSizeAdjustEnabled());
+    if (auto adjusted_size =
+            FontSizeFunctions::MetricsMultiplierAdjustedFontSize(
+                font_data.get(), request_description)) {
+      FontDescription size_adjusted_description(request_description);
+      size_adjusted_description.SetAdjustedSize(adjusted_size.value());
+      font_data = FontCache::Get().GetFontData(size_adjusted_description,
+                                               settings_family_name);
+    }
+  }
 
   ReportFontLookupByUniqueOrFamilyName(settings_family_name,
                                        request_description, font_data);

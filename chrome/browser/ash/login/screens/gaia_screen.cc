@@ -13,7 +13,11 @@
 #include "base/values.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_context.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/enterprise/util/managed_browser_utils.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/known_user.h"
@@ -28,6 +32,7 @@ constexpr char kUserActionCancel[] = "cancel";
 constexpr char kUserActionStartEnrollment[] = "startEnrollment";
 constexpr char kUserActionReloadDefault[] = "reloadDefault";
 constexpr char kUserActionRetry[] = "retry";
+constexpr char kUserActionEnterIdentifier[] = "identifierEntered";
 
 bool ShouldPrepareForRecovery(const AccountId& account_id) {
   if (!features::IsCryptohomeRecoveryEnabled() || !account_id.is_valid()) {
@@ -54,7 +59,7 @@ bool ShouldPrepareForRecovery(const AccountId& account_id) {
 }
 
 bool ShouldUseReauthEndpoint(const AccountId& account_id) {
-  if (account_id.empty()) {
+  if (!account_id.is_valid()) {
     return false;
   }
   auto* user = user_manager::UserManager::Get()->FindUser(account_id);
@@ -63,13 +68,7 @@ bool ShouldUseReauthEndpoint(const AccountId& account_id) {
   if (user && user->IsChild()) {
     return true;
   }
-  // Use reauth endpoint for potential recovery use cases (exclude cases where
-  // reauth enforced by policy).
-  if (features::IsGaiaReauthEndpointEnabled() &&
-      ShouldPrepareForRecovery(account_id)) {
-    return true;
-  }
-  return false;
+  return features::IsGaiaReauthEndpointEnabled();
 }
 
 }  // namespace
@@ -204,6 +203,10 @@ void GaiaScreen::OnUserAction(const base::Value::List& args) {
     LoadOnline(EmptyAccountId());
   } else if (action_id == kUserActionRetry) {
     LoadOnline(EmptyAccountId());
+  } else if (action_id == kUserActionEnterIdentifier) {
+    CHECK_EQ(2u, args.size());
+    const std::string& email = args[1].GetString();
+    HandleIdentifierEntered(email);
   } else {
     BaseScreen::OnUserAction(args);
   }
@@ -226,6 +229,16 @@ void GaiaScreen::OnScreenBacklightStateChanged(
   if (screen_backlight_state == ScreenBacklightState::ON)
     return;
   exit_callback_.Run(Result::CANCEL);
+}
+
+void GaiaScreen::HandleIdentifierEntered(const std::string& user_email) {
+  if (MaybeTriggerEnrollmentNudge(user_email)) {
+    return;
+  }
+
+  if (view_) {
+    view_->CheckIfAllowlisted(user_email);
+  }
 }
 
 void GaiaScreen::OnGetAuthFactorsConfiguration(
@@ -264,6 +277,45 @@ void GaiaScreen::OnGaiaReauthTokenFetched(const AccountId& account,
   gaia_reauth_token_fetcher_.reset();
   view_->SetReauthRequestToken(token);
   view_->LoadGaiaAsync(account);
+}
+
+bool GaiaScreen::MaybeTriggerEnrollmentNudge(const std::string& user_email) {
+  const bool is_enterprise_managed = g_browser_process->platform_part()
+                                         ->browser_policy_connector_ash()
+                                         ->IsDeviceEnterpriseManaged();
+  if (is_enterprise_managed) {
+    // Device either already went through enterprise enrollment flow or goes
+    // through it right now. No need for nudging.
+    return false;
+  }
+  const bool is_first_user =
+      user_manager::UserManager::Get()->GetUsers().empty();
+  if (!is_first_user) {
+    // Enrollment nudge targets only initial OOBE flow on unowned devices.
+    // Current user is not a first user which means that device is already
+    // owned.
+    return false;
+  }
+  const std::string email_domain =
+      chrome::enterprise_util::GetDomainFromEmail(user_email);
+  if (chrome::enterprise_util::IsKnownConsumerDomain(email_domain)) {
+    // User doesn't belong to a managed domain, so enrollment nudging can't
+    // apply.
+    return false;
+  }
+
+  // TODO(b/271104781): replace this check with a policy fetch through a special
+  // DM server API when it is available.
+  if (!ash::features::IsEnrollmentNudgingForTestingEnabled()) {
+    return false;
+  }
+
+  if (!view_) {
+    return false;
+  }
+
+  view_->ShowEnrollmentNudge(email_domain);
+  return true;
 }
 
 }  // namespace ash

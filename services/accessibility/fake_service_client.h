@@ -7,6 +7,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -37,9 +38,10 @@ class FakeServiceClient : public mojom::AccessibilityServiceClient,
   ~FakeServiceClient() override;
 
   // ax::mojom::AccessibilityServiceClient:
-  void BindAutomation(mojo::PendingRemote<ax::mojom::Automation> automation,
-                      mojo::PendingReceiver<ax::mojom::AutomationClient>
-                          automation_client) override;
+  void BindAutomation(
+      mojo::PendingAssociatedRemote<ax::mojom::Automation> automation,
+      mojo::PendingReceiver<ax::mojom::AutomationClient> automation_client)
+      override;
 #if BUILDFLAG(SUPPORTS_OS_ACCESSIBILITY_SERVICE)
   void BindTts(mojo::PendingReceiver<ax::mojom::Tts> tts_receiver) override;
 
@@ -73,11 +75,11 @@ class FakeServiceClient : public mojom::AccessibilityServiceClient,
   }
 
  private:
-  raw_ptr<mojom::AccessibilityService> service_;
+  raw_ptr<mojom::AccessibilityService, DanglingUntriaged> service_;
   base::OnceClosure automation_bound_closure_;
   base::OnceClosure tts_bound_closure_;
 
-  mojo::RemoteSet<mojom::Automation> automation_remotes_;
+  mojo::AssociatedRemoteSet<mojom::Automation> automation_remotes_;
   mojo::ReceiverSet<mojom::AutomationClient> automation_client_receivers_;
 #if BUILDFLAG(SUPPORTS_OS_ACCESSIBILITY_SERVICE)
   base::RepeatingCallback<void(const std::string&, mojom::TtsOptionsPtr)>

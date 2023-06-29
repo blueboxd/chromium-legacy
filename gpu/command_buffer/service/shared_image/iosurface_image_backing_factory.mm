@@ -6,7 +6,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -127,9 +126,16 @@ IOSurfaceImageBackingFactory::IOSurfaceImageBackingFactory(
           feature_info->feature_flags().gpu_memory_buffer_formats),
       progress_reporter_(progress_reporter) {
   for (gfx::BufferFormat buffer_format : gpu_memory_buffer_formats_) {
+    // Add supported single-plane formats.
     viz::SharedImageFormat format = viz::GetSharedImageFormat(buffer_format);
     if (IsFormatSupported(format)) {
       supported_formats_.insert(format);
+    }
+
+    // Add supported multi-plane formats.
+    supported_formats_.insert(viz::MultiPlaneFormat::kNV12);
+    if (feature_info->feature_flags().chromium_image_ycbcr_p010) {
+      supported_formats_.insert(viz::MultiPlaneFormat::kP010);
     }
   }
 }
@@ -274,6 +280,16 @@ IOSurfaceImageBackingFactory::CreateSharedImageInternal(
                << format.ToString();
     return nullptr;
   }
+
+  if (format.is_multi_plane() && !pixel_data.empty()) {
+    LOG(ERROR)
+        << "CreateSharedImage: Creation from pixel data for SCANOUT is not "
+           "supported for multiplanar formats. "
+           "Format= "
+        << format.ToString();
+    return nullptr;
+  }
+
   if (!IsValidSize(size, max_texture_size_) ||
       !IsPixelDataValid(format, size, pixel_data)) {
     return nullptr;
@@ -295,8 +311,8 @@ IOSurfaceImageBackingFactory::CreateSharedImageInternal(
     const gfx::BufferFormat buffer_format = ToBufferFormat(format);
     const bool should_clear = false;
     const bool override_rgba_to_bgra = gr_context_type_ == GrContextType::kGL;
-    io_surface.reset(gfx::CreateIOSurface(size, buffer_format, should_clear,
-                                          override_rgba_to_bgra));
+    io_surface = gfx::CreateIOSurface(size, buffer_format, should_clear,
+                                      override_rgba_to_bgra);
     if (!io_surface) {
       LOG(ERROR) << "CreateSharedImage: Failed to create bindable image";
       return nullptr;

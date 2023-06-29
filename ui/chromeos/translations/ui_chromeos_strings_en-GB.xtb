@@ -41,6 +41,7 @@
 <translation id="1358735829858566124">The file or the directory is not usable.</translation>
 <translation id="1363028406613469049">Track</translation>
 <translation id="1378727793141957596">Welcome to Google Drive!</translation>
+<translation id="1379156577998569384">Your My Drive files are available offline</translation>
 <translation id="1379911846207762492">You can make files available offline for access when you don't have an Internet connection.</translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1388045380422025115">All types</translation>
@@ -299,7 +300,6 @@
 <translation id="3479552764303398839">Not now</translation>
 <translation id="3486821258960016770">Mongolian</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> errors.</translation>
-<translation id="3501954296166022751">Your Google Drive files are available offline</translation>
 <translation id="3509680540198371098">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />%, details</translation>
 <translation id="3511705761158917664">Preparing to sync <ph name="NUMBER_OF_ITEMS" /> items…</translation>
 <translation id="3522708245912499433">Portuguese</translation>
@@ -351,6 +351,7 @@
 <translation id="3855472144336161447">German Neo 2</translation>
 <translation id="3858860766373142691">Name</translation>
 <translation id="3866249974567520381">Description</translation>
+<translation id="3866439285517092441">Battery is low. Sync will resume when you are connected to power.</translation>
 <translation id="3899991606604168269">French (Canada) with multilingual keyboard</translation>
 <translation id="3901991538546252627">Connecting to <ph name="NAME" /></translation>
 <translation id="3906232975181435906">Installing mobile profile, network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
@@ -358,6 +359,7 @@
 <translation id="3943857333388298514">Paste</translation>
 <translation id="3952872973865944257">Telugu phonetic</translation>
 <translation id="3958548648197196644">Kiwi</translation>
+<translation id="397105322502079400">Calculating...</translation>
 <translation id="3971140002794351170">Download mobile profile, network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">English (UK)</translation>
 <translation id="3975895378829046965">Bangla phonetic</translation>
@@ -368,6 +370,7 @@
 <translation id="4040753847560036377">Incorrect PUK</translation>
 <translation id="4057991113334098539">Activating...</translation>
 <translation id="4092890906744441904">Irish</translation>
+<translation id="4124731372776320263">Syncing one Drive file</translation>
 <translation id="4124935795427217608">Unicorn</translation>
 <translation id="4131235941541910880">Move items that you don't need to the bin</translation>
 <translation id="4134804435730168042">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, activate after device setup</translation>
@@ -564,6 +567,7 @@
 <translation id="5422221874247253874">Access point</translation>
 <translation id="5428105026674456456">Spanish</translation>
 <translation id="5438282218546237410">There are no results for <ph name="SEARCH_TERM" />.</translation>
+<translation id="5447680084201416734">Not enough storage.</translation>
 <translation id="5449551289610225147">Invalid password</translation>
 <translation id="5459064203055649751">A file named ‘<ph name="FILENAME" />’ already exists. Do you want to replace it with the one that you're moving?</translation>
 <translation id="5463231940765244860">Enter</translation>
@@ -579,6 +583,7 @@
 <translation id="5524517123096967210">The file could not be read.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> image</translation>
 <translation id="5534520101572674276">Calculating size</translation>
+<translation id="5536122250858122375">This file type can't be synced</translation>
 <translation id="554153475311314364">Greek (transliteration)</translation>
 <translation id="5554171655917412781"><ph name="SELECTED_FOLDERS_COUNT" /> folders selected</translation>
 <translation id="5580591966435005537">virtual machine</translation>
@@ -691,6 +696,7 @@
 <translation id="6423031066725912715">Vietnamese with TCVN keyboard</translation>
 <translation id="6430271654280079150">You have 1 remaining attempt.</translation>
 <translation id="643243556292470964">Deleted files are now moved to the bin</translation>
+<translation id="6438480100790416671">Checking storage space…</translation>
 <translation id="6485131920355264772">Failed to retrieve space info</translation>
 <translation id="6495925982925244349">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />%, managed by your administrator, details</translation>
 <translation id="649877868557234318">Extracting <ph name="FILE_NAME" /> to <ph name="FOLDER_NAME" /></translation>
@@ -738,6 +744,7 @@
 <translation id="6874758081814639712">Person doing tai chi</translation>
 <translation id="6876155724392614295">Cycle</translation>
 <translation id="6878261347041253038">Devanagari keyboard (Phonetic)</translation>
+<translation id="6882444584974399416">Your device doesn't have enough storage space to keep your files available offline. New files will no longer be automatically synced.</translation>
 <translation id="6885780034956018177">Snail</translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="6898028766943174120">More sub-folders…</translation>
@@ -890,10 +897,10 @@
 <translation id="7972920761225148017">French (Switzerland)</translation>
 <translation id="7973962044839454485">PPP authentication failed due to an incorrect username or password</translation>
 <translation id="7980421588063892270">English (US) with Colemak keyboard</translation>
-<translation id="7985008041109611710">Syncing <ph name="NUMBER_OF_FILES_SYNCING" /> file(s)</translation>
 <translation id="8000066093800657092">No network</translation>
 <translation id="8008366997883261463">Jack Russell Terrier</translation>
 <translation id="8028993641010258682">Size</translation>
+<translation id="8034974485549318493">For initial setup, you need to connect to the Internet so that files can sync.</translation>
 <translation id="803771048473350947">File</translation>
 <translation id="8038111231936746805">(default)</translation>
 <translation id="8042602468072383151"><ph name="AUDIO_TYPE" /> audio</translation>
@@ -913,6 +920,7 @@
 <translation id="8154842056504218462">Selected all entries.</translation>
 <translation id="8157684860301034423">Failed to retrieve app info.</translation>
 <translation id="8175731104491895765">French (Belgium)</translation>
+<translation id="8175799081768705361">Syncing <ph name="NUMBER_OF_FILES_SYNCING" /> Drive files</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">Device model</translation>
 <translation id="8223479393428528563">To save these files for offline use, get back online, right-click the files and select the <ph name="OFFLINE_CHECKBOX_NAME" /> option.</translation>
@@ -945,6 +953,7 @@
 <translation id="8395901698320285466">Dimensions</translation>
 <translation id="8404498045299006085">Keep all</translation>
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> network, connecting</translation>
+<translation id="841387525767317275">Files in this folder are available offline</translation>
 <translation id="8425213833346101688">Change</translation>
 <translation id="8431909052837336408">Change SIM PIN</translation>
 <translation id="8437209419043462667">US</translation>
@@ -972,6 +981,7 @@
 <translation id="8560515948038859357">Cantonese</translation>
 <translation id="8561206103590473338">Elephant</translation>
 <translation id="8566466896628108558">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />%, blocked by your administrator, details</translation>
+<translation id="8567555211227790801">You are currently offline. Sync will resume when you are connected to the Internet.</translation>
 <translation id="8568374623837201676">Permanently delete this file?</translation>
 <translation id="8569764466147087991">Select a file to open</translation>
 <translation id="8577897833047451336">Croatian</translation>
@@ -1012,6 +1022,7 @@
 <translation id="8919081441417203123">Danish</translation>
 <translation id="8949925099261528566">Connected, no Internet</translation>
 <translation id="8965697826696209160">There is not enough space.</translation>
+<translation id="8970887620466824814">Something went wrong.</translation>
 <translation id="8971742885766657349">Syncing – <ph name="PERCENT" />%</translation>
 <translation id="8997962250644902079">Chinese (Traditional) Pinyin</translation>
 <translation id="8998871447376656508">There is not enough free space in your Google Drive to complete the upload.</translation>
@@ -1046,7 +1057,6 @@
 <translation id="9213073329713032541">Installation successfully started.</translation>
 <translation id="9219103736887031265">Images</translation>
 <translation id="9219908252191632183">Lunar</translation>
-<translation id="937795003075802289">Syncing 1 file</translation>
 <translation id="938470336146445890">Please install a user certificate.</translation>
 <translation id="939736085109172342">New folder</translation>
 <translation id="943972244133411984">Modified by</translation>

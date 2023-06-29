@@ -778,6 +778,11 @@ class FormForestTestUpdateOrder
     : public FormForestTestUpdateTree,
       public ::testing::WithParamInterface<FormNameVector> {
  protected:
+  void TearDown() override {
+    TestApi(ff_).Reset();
+    FormForestTestUpdateTree::TearDown();
+  }
+
   void UpdateFormForestAccordingToParamOrder() {
     for (const std::string& form_name : GetParam())
       UpdateTreeOfRendererForm(ff_, form_name);
@@ -1398,7 +1403,7 @@ class FormForestTestFlatten : public FormForestTestWithMockedTree {
  protected:
   // The subject of this test fixture.
   FormData GetBrowserForm(base::StringPiece form_name) {
-    return *flattened_forms_.GetBrowserForm(
+    return flattened_forms_.GetBrowserForm(
         GetMockedForm(form_name).global_id());
   }
 };

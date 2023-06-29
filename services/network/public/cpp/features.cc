@@ -84,7 +84,7 @@ BASE_FEATURE(kCoopRestrictProperties,
 // allows us to keep using CoopRestrictProperties to enable COOP: RP for WPTs.
 BASE_FEATURE(kCoopRestrictPropertiesOriginTrial,
              "CoopRestrictPropertiesOriginTrial",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or defaults splittup up server (not proxy) entries in the
 // HttpAuthCache.
@@ -293,11 +293,6 @@ BASE_FEATURE(kReduceAcceptLanguageOriginTrial,
              "ReduceAcceptLanguageOriginTrial",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Disable ResourceScheduler.
-BASE_FEATURE(kDisableResourceScheduler,
-             "DisableResourceScheduler",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Reduce PNA preflight response waiting time to 200ms.
 // See: https://wicg.github.io/private-network-access/#cors-preflight
 BASE_FEATURE(kPrivateNetworkAccessPreflightShortTimeout,
@@ -331,9 +326,6 @@ BASE_FEATURE(kPrefetchNoVarySearch,
              "PrefetchNoVarySearch",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kLessChattyNetworkService,
-             "LessChattyNetworkService",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 #if BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kNetworkServiceEmptyOutOfProcess,
              "NetworkServiceEmptyOutOfProcess",

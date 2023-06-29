@@ -8,6 +8,8 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shell.h"
 #include "ash/system/toast/system_nudge_view.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
@@ -28,6 +30,7 @@ AnchoredNudge::AnchoredNudge(const AnchoredNudgeData& nudge_data)
                                       nudge_data.arrow,
                                       views::BubbleBorder::NO_SHADOW),
       id_(nudge_data.id),
+      anchored_to_shelf_(nudge_data.anchored_to_shelf),
       nudge_click_callback_(std::move(nudge_data.nudge_click_callback)),
       nudge_dismiss_callback_(std::move(nudge_data.nudge_dimiss_callback)) {
   DCHECK(features::IsSystemNudgeV2Enabled());
@@ -39,11 +42,20 @@ AnchoredNudge::AnchoredNudge(const AnchoredNudgeData& nudge_data)
   SetLayoutManager(std::make_unique<views::FlexLayout>());
   system_nudge_view_ =
       AddChildView(std::make_unique<SystemNudgeView>(nudge_data));
+
+  if (anchored_to_shelf_) {
+    Shell::Get()->AddShellObserver(this);
+  }
 }
 
 AnchoredNudge::~AnchoredNudge() {
   if (!nudge_dismiss_callback_.is_null()) {
     std::move(nudge_dismiss_callback_).Run();
+  }
+
+  if (anchored_to_shelf_) {
+    Shell::Get()->RemoveShellObserver(this);
+    disable_shelf_auto_hide_.reset();
   }
 }
 
@@ -89,6 +101,15 @@ AnchoredNudge::CreateNonClientFrameView(views::Widget* widget) {
   return frame;
 }
 
+void AnchoredNudge::AddedToWidget() {
+  if (anchored_to_shelf_) {
+    auto* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
+    SetArrowFromShelf(shelf);
+    disable_shelf_auto_hide_ =
+        std::make_unique<Shelf::ScopedDisableAutoHide>(shelf);
+  }
+}
+
 bool AnchoredNudge::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
@@ -116,6 +137,24 @@ void AnchoredNudge::OnGestureEvent(ui::GestureEvent* event) {
       // Do nothing.
     }
   }
+}
+
+void AnchoredNudge::OnShelfAlignmentChanged(aura::Window* root_window,
+                                            ShelfAlignment old_alignment) {
+  if (!GetWidget()) {
+    return;
+  }
+
+  auto* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
+  if (shelf == Shelf::ForWindow(root_window)) {
+    SetArrowFromShelf(shelf);
+  }
+}
+
+void AnchoredNudge::SetArrowFromShelf(Shelf* shelf) {
+  SetArrow(shelf->SelectValueForShelfAlignment(
+      views::BubbleBorder::BOTTOM_CENTER, views::BubbleBorder::LEFT_CENTER,
+      views::BubbleBorder::RIGHT_CENTER));
 }
 
 BEGIN_METADATA(AnchoredNudge, views::BubbleDialogDelegateView)

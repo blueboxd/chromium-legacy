@@ -127,6 +127,8 @@
             eventSenderKeys = "Escape";
           } else if (charCode == 0xE003) {
             eventSenderKeys = "Backspace";
+          } else if (charCode == 0xE017) {
+            eventSenderKeys = "Delete";
           } else if (charCode == 0xE009) {
             eventSenderKeys = "ControlLeft";
             modifierValue = "ctrlKey";
@@ -476,8 +478,11 @@
   };
 
   window.test_driver_internal.get_fedcm_dialog_title = async function() {
-    // TODO(crbug.com/1453691): implement the title getter.
-    return "";
+    return internals.getFedCmTitle();
+  }
+
+  window.test_driver_internal.select_fedcm_account = async function(account_index) {
+    return internals.selectFedCmAccount(account_index);
   }
 
   // Enable automation so we don't wait for user input on unimplemented APIs

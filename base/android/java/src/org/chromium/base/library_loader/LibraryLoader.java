@@ -21,6 +21,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.NativeLibraryLoadedStatus;
 import org.chromium.base.NativeLibraryLoadedStatus.NativeLibraryLoadedStatusProvider;
+import org.chromium.base.ResettersForTesting;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.TimeUtils.CurrentThreadTimeMillisTimer;
 import org.chromium.base.TimeUtils.UptimeMillisTimer;
@@ -580,13 +581,9 @@ public class LibraryLoader {
      *
      * @deprecated: please avoid using in new code:
      * https://crsrc.org/c/base/android/jni_generator/README.md#testing-for-readiness-use-get
-     *
-     * TODO(crbug.com/1406012): adding back {@link VisibleForTesting} after crbug.com/1442347 is
-     * fixed. This method is exposed in order to unblock the test failures because of isInitialized
-     * loading .so file before native flags are ready. Ideally, it should be fixed by migrating
-     * the feature flag to CachedFlag.
      */
     @Deprecated
+    @VisibleForTesting
     public boolean isLoaded() {
         return mLoadState == LoadState.LOADED
                 && (!sEnableStateForTesting || mLoadStateForTesting == LoadState.LOADED);
@@ -901,9 +898,10 @@ public class LibraryLoader {
      * @param loader the mock library loader.
      */
     @Deprecated
-    @VisibleForTesting
     public static void setLibraryLoaderForTesting(LibraryLoader loader) {
+        var oldValue = sInstance;
         sInstance = loader;
+        ResettersForTesting.register(() -> sInstance = oldValue);
     }
 
     /**

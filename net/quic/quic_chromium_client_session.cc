@@ -13,6 +13,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -362,32 +363,6 @@ void LogProbeResultToHistogram(MigrationCause cause, bool success) {
       base::BooleanHistogram::FactoryGet(
           histogram_name, base::HistogramBase::kUmaTargetedHistogramFlag));
 }
-
-class QuicServerPushHelper : public ServerPushDelegate::ServerPushHelper {
- public:
-  explicit QuicServerPushHelper(
-      base::WeakPtr<QuicChromiumClientSession> session,
-      const GURL& url)
-      : session_(session), request_url_(url) {}
-
-  void Cancel() override {
-    if (session_) {
-      session_->CancelPush(request_url_);
-    }
-  }
-  const GURL& GetURL() const override { return request_url_; }
-
-  NetworkAnonymizationKey GetNetworkAnonymizationKey() const override {
-    if (session_) {
-      return session_->quic_session_key().network_anonymization_key();
-    }
-    return NetworkAnonymizationKey();
-  }
-
- private:
-  base::WeakPtr<QuicChromiumClientSession> session_;
-  const GURL request_url_;
-};
 
 }  // namespace
 
@@ -1020,7 +995,6 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     base::TimeTicks dns_resolution_start_time,
     base::TimeTicks dns_resolution_end_time,
     std::unique_ptr<quic::QuicClientPushPromiseIndex> push_promise_index,
-    ServerPushDelegate* push_delegate,
     const base::TickClock* tick_clock,
     base::SequencedTaskRunner* task_runner,
     std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
@@ -1064,7 +1038,6 @@ QuicChromiumClientSession::QuicChromiumClientSession(
           std::move(socket_performance_watcher),
           net_log_)),
       http3_logger_(std::make_unique<QuicHttp3Logger>(net_log_)),
-      push_delegate_(push_delegate),
       push_promise_index_(std::move(push_promise_index)),
       path_validation_writer_delegate_(this, task_runner_),
       ech_config_list_(endpoint_result.metadata.ech_config_list) {
@@ -2317,6 +2290,12 @@ void QuicChromiumClientSession::OnNoNewNetwork() {
   // alternate network available.
   static_cast<QuicChromiumPacketWriter*>(connection()->writer())
       ->set_force_write_blocked(true);
+
+  if (base::FeatureList::IsEnabled(features::kDisableBlackholeOnNoNewNetwork)) {
+    // Turn off the black hole detector since the writer is blocked.
+    // Blackhole will be re-enabled once a packet is sent again.
+    connection()->blackhole_detector().StopDetection(false);
+  }
 
   // Post a task to maybe close the session if the alarm fires.
   task_runner_->PostDelayedTask(
@@ -3735,7 +3714,11 @@ void QuicChromiumClientSession::Migrate(handles::NetworkHandle network,
   DVLOG(1) << "Force blocking the packet writer";
   static_cast<QuicChromiumPacketWriter*>(connection()->writer())
       ->set_force_write_blocked(true);
-
+  if (base::FeatureList::IsEnabled(features::kDisableBlackholeOnNoNewNetwork)) {
+    // Turn off the black hole detector since the writer is blocked.
+    // Blackhole will be re-enabled once a packet is sent again.
+    connection()->blackhole_detector().StopDetection(false);
+  }
   CompletionOnceCallback connect_callback = base::BindOnce(
       &QuicChromiumClientSession::FinishMigrate, weak_factory_.GetWeakPtr(),
       std::move(socket), peer_address, close_session_on_error,
@@ -3893,15 +3876,6 @@ bool QuicChromiumClientSession::HandlePromised(
     const spdy::Http2HeaderBlock& headers) {
   bool result =
       quic::QuicSpdyClientSessionBase::HandlePromised(id, promised_id, headers);
-  if (result && push_delegate_) {
-    // The push promise is accepted, notify the push_delegate that a push
-    // promise has been received.
-    std::string pushed_url =
-        quic::SpdyServerPushUtils::GetPromisedUrlFromHeaders(headers);
-    push_delegate_->OnPush(std::make_unique<QuicServerPushHelper>(
-                               weak_factory_.GetWeakPtr(), GURL(pushed_url)),
-                           net_log_);
-  }
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_PUSH_PROMISE_RECEIVED,
                     [&](NetLogCaptureMode capture_mode) {
                       return NetLogQuicPushPromiseReceivedParams(

@@ -21,6 +21,7 @@
 #include "content/public/common/isolated_world_ids.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "net/cookies/cookie_setting_override.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -947,6 +948,14 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // fenced frames is the same as the id for the outermost main frame. For
   // portals, this id for frames inside a portal is the same as the id for the
   // main frame for the portal.
+  // Note: For prerendered pages, this will return a UKM Source ID derived from
+  // the prerendering navigation's ID, which isn't associated with a URL. See
+  // https://chromium.googlesource.com/chromium/src/+/main/content/browser/preloading/prerender/README.md#ukm-source-ids
+  // for more details.
+  // TODO(crbug.com/1245014): We should either: 1) make sure callers don't use
+  // this for pages while they are prerendering and update it to return a UKM ID
+  // that is derived from the activation navigation's ID; or 2) actually record
+  // the current value as a source post-activation.
   virtual ukm::SourceId GetPageUkmSourceId() = 0;
 
   // Report an inspector issue to devtools. Note that the issue is stored on the
@@ -1025,6 +1034,11 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // browser (e.g. typing on the location bar) or from the renderer while having
   // transient user activation
   virtual bool IsLastCrossDocumentNavigationStartedByUser() const = 0;
+
+  // Checks Blink runtime-enabled features (BREF) to create and return
+  // a CookieSettingOverrides pertaining to the last committed document in the
+  // frame. Can only be called on a frame with a committed navigation.
+  virtual net::CookieSettingOverrides GetCookieSettingOverrides() = 0;
 
  private:
   // This interface should only be implemented inside content.

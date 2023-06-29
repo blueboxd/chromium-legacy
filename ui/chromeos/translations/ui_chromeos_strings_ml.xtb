@@ -41,6 +41,7 @@
 <translation id="1358735829858566124">ഫയലോ ഡയറക്‌റ്ററിയോ ഉപയോഗക്ഷമമല്ല.</translation>
 <translation id="1363028406613469049">ട്രാക്കുചെയ്യുക</translation>
 <translation id="1378727793141957596">Google ഡ്രൈവിലേക്ക് സ്വാഗതം!</translation>
+<translation id="1379156577998569384">നിങ്ങളുടെ 'എന്റെ ഡ്രൈവ്' ഫയലുകൾ ഓഫ്‌ലൈനിൽ ലഭ്യമാണ്</translation>
 <translation id="1379911846207762492">നിങ്ങൾക്ക് ഇന്റർനെറ്റ് കണക്ഷൻ ഇല്ലാത്തപ്പോൾ ആക്‌സസ് ചെയ്യാൻ ഫയലുകൾ ഓഫ്‌ലൈനിൽ ലഭ്യമാക്കാം.</translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1388045380422025115">എല്ലാ തരങ്ങളും</translation>
@@ -299,7 +300,6 @@
 <translation id="3479552764303398839">ഇപ്പോഴല്ല</translation>
 <translation id="3486821258960016770">മംഗോളിയൻ</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> പിശകുകൾ.</translation>
-<translation id="3501954296166022751">നിങ്ങളുടെ Google Drive ഫയലുകൾ ഓഫ്‌ലൈനിൽ ലഭ്യമാണ്</translation>
 <translation id="3509680540198371098"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" /> നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, വിശദാംശങ്ങൾ</translation>
 <translation id="3511705761158917664"><ph name="NUMBER_OF_ITEMS" /> ഇനങ്ങൾ സമന്വയിപ്പിക്കാൻ തയ്യാറെടുക്കുന്നു...</translation>
 <translation id="3522708245912499433">പോര്‍ച്ചുഗീസ്</translation>
@@ -351,6 +351,7 @@
 <translation id="3855472144336161447">ജർമ്മൻ നിയോ 2</translation>
 <translation id="3858860766373142691">പേര്</translation>
 <translation id="3866249974567520381">വിവരണം</translation>
+<translation id="3866439285517092441">ബാറ്ററി ചാർജ് കുറവാണ്. വൈദ്യുതിയിലേക്ക് കണക്‌റ്റ് ചെയ്യുമ്പോൾ സമന്വയിപ്പിക്കൽ പുനരാരംഭിക്കും.</translation>
 <translation id="3899991606604168269">ബഹുഭാഷാ കീബോർഡ് ഉള്ള ഫ്രഞ്ച് (കാനഡ)</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> എന്നതിലേക്ക് കണക്റ്റുചെയ്യുന്നു</translation>
 <translation id="3906232975181435906">മൊബെെൽ പ്രൊഫെെൽ ഇൻസ്‌റ്റാൾ ചെയ്യുന്നു, <ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" />-ാമത്തെ നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" /></translation>
@@ -358,6 +359,7 @@
 <translation id="3943857333388298514">ഒട്ടിക്കുക</translation>
 <translation id="3952872973865944257">തെലുങ്ക് ഉച്ചാരണശബ്‌ദം</translation>
 <translation id="3958548648197196644">കിവി</translation>
+<translation id="397105322502079400">കണക്കാക്കുന്നു...</translation>
 <translation id="3971140002794351170">മൊബൈൽ പ്രൊഫൈൽ ഡൗൺലോഡ് ചെയ്യുക, <ph name="NETWORK_COUNT" /> എണ്ണത്തിൽ <ph name="NETWORK_INDEX" />-ാമത്തെ നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">ഇംഗ്ലീഷ് (യുകെ)</translation>
 <translation id="3975895378829046965">ബംഗ്ലാ ഉച്ചാരണ ശബ്‌ദം</translation>
@@ -368,6 +370,7 @@
 <translation id="4040753847560036377">PUK തെറ്റാണ്</translation>
 <translation id="4057991113334098539">സജീവമാക്കുന്നു...</translation>
 <translation id="4092890906744441904">ഐറിഷ്</translation>
+<translation id="4124731372776320263">ഒരു Drive ഫയൽ സമന്വയിപ്പിക്കുന്നു</translation>
 <translation id="4124935795427217608">യൂണികോൺ</translation>
 <translation id="4131235941541910880">നിങ്ങൾക്ക് ആവശ്യമില്ലാത്ത ഇനങ്ങൾ ട്രാഷിലേക്ക് നീക്കുക</translation>
 <translation id="4134804435730168042"><ph name="NETWORK_COUNT" /> നെറ്റ്‌വർക്കുകളിൽ <ph name="NETWORK_INDEX" />-ാമത്തേത്, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, ഉപകരണം സജ്ജീകരിച്ചതിന് ശേഷം സജീവമാക്കുക</translation>
@@ -564,6 +567,7 @@
 <translation id="5422221874247253874">ആക്‌സസ് പോയിന്‍റ്</translation>
 <translation id="5428105026674456456">സ്പാനിഷ്</translation>
 <translation id="5438282218546237410"><ph name="SEARCH_TERM" /> എന്നതിന് ഫലങ്ങളൊന്നുമില്ല.</translation>
+<translation id="5447680084201416734">ആവശ്യത്തിന് സ്റ്റോറേജ് ഇല്ല.</translation>
 <translation id="5449551289610225147">പാസ്‌വേഡ് അസാധുവാണ്</translation>
 <translation id="5459064203055649751">"<ph name="FILENAME" />" എന്ന് പേരുള്ള ഫയൽ നിലവിലുണ്ട്. അത് മാറ്റി നിങ്ങൾ നീക്കുന്ന ഫയൽ സ്ഥാപിക്കണോ?</translation>
 <translation id="5463231940765244860">നൽകുക</translation>
@@ -579,6 +583,7 @@
 <translation id="5524517123096967210">ഫയൽ റീഡുചെയ്യാൻ കഴിഞ്ഞില്ല.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> ചിത്രം</translation>
 <translation id="5534520101572674276">കണക്കാക്കിയ വലുപ്പം</translation>
+<translation id="5536122250858122375">ഈ ഫയൽ തരം സമന്വയിപ്പിക്കാനാകുന്നില്ല</translation>
 <translation id="554153475311314364">ഗ്രീക്ക് ലിപ്യന്തരണം</translation>
 <translation id="5554171655917412781"><ph name="SELECTED_FOLDERS_COUNT" /> ഫോൾഡറുകൾ തിരഞ്ഞെടുത്തു</translation>
 <translation id="5580591966435005537">വെർച്വൽ മെഷീൻ</translation>
@@ -691,6 +696,7 @@
 <translation id="6423031066725912715">TCVN കീബോർഡ് ഉള്ള വിയറ്റ്നാമീസ്</translation>
 <translation id="6430271654280079150">നിങ്ങൾക്ക് ഒരു ശ്രമം കൂടി ബാക്കിയുണ്ട്.</translation>
 <translation id="643243556292470964">ഇല്ലാതാക്കിയ ഫയലുകൾ ഇപ്പോൾ ട്രാഷിലേക്ക് നീക്കി</translation>
+<translation id="6438480100790416671">സ്‌റ്റോറേജ് സ്‌പെയ്‌സ് പരിശോധിക്കുന്നു…</translation>
 <translation id="6485131920355264772">സ്‌പെയ്‌സ് വിവരം വീണ്ടെടുക്കുന്നതിന് പരാജയപ്പെട്ടു</translation>
 <translation id="6495925982925244349"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" /> നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, നിങ്ങളുടെ അഡ്‌മിൻ മാനേജ് ചെയ്യുന്നത്, വിശദാംശങ്ങൾ</translation>
 <translation id="649877868557234318"><ph name="FILE_NAME" /> എന്നത് <ph name="FOLDER_NAME" /> എന്നതിലേക്ക് എക്‌സ്‌ട്രാക്റ്റ് ചെയ്യുന്നു</translation>
@@ -738,6 +744,7 @@
 <translation id="6874758081814639712">തായ് ചി ചെയ്യുന്ന വ്യക്തി</translation>
 <translation id="6876155724392614295">ബൈക്കോടിക്കുക</translation>
 <translation id="6878261347041253038">ദേവനാഗരി കീബോർഡ് (സ്വരസൂചകം)</translation>
+<translation id="6882444584974399416">നിങ്ങളുടെ ഫയലുകൾ ഓഫ്‌ലൈനിൽ ലഭ്യമാക്കാൻ ആവശ്യമായ സ്‌റ്റോറേജ് സ്‌പെയ്‌സ് നിങ്ങളുടെ ഉപകരണത്തിലില്ല. പുതിയ ഫയലുകൾ ഇനി സ്വയമേവ സമന്വയിപ്പിക്കില്ല.</translation>
 <translation id="6885780034956018177">ഒച്ച്</translation>
 <translation id="6896758677409633944">പകര്‍ത്തുക</translation>
 <translation id="6898028766943174120">കൂടുതൽ ഉപ ഫോൾഡറുകൾ...</translation>
@@ -890,10 +897,10 @@
 <translation id="7972920761225148017">ഫ്രഞ്ച് (സ്വിറ്റ്സർലൻഡ്)</translation>
 <translation id="7973962044839454485">തെറ്റായ ഉപയോക്തൃനാമമോ പാസ്‌വേഡോ കാരണം PPP പരിശോധിച്ചുറപ്പിക്കൽ പരാജയപ്പെട്ടു</translation>
 <translation id="7980421588063892270">Colemak കീബോർഡ് ഇംഗ്ലീഷ് (യുഎസ്)</translation>
-<translation id="7985008041109611710"><ph name="NUMBER_OF_FILES_SYNCING" /> ഫയലുകൾ സമന്വയിപ്പിക്കുന്നു</translation>
 <translation id="8000066093800657092">നെറ്റ്‌വര്‍ക്ക് ഇല്ല</translation>
 <translation id="8008366997883261463">ജാക്ക് റസ്സൽ ടെറിയർ</translation>
 <translation id="8028993641010258682">വലുപ്പം</translation>
+<translation id="8034974485549318493">പ്രാരംഭ സജ്ജീകരണത്തിന്, ഫയലുകൾ സമന്വയിപ്പിക്കാൻ നിങ്ങൾ ഇന്റർനെറ്റിലേക്ക് കണക്റ്റ് ചെയ്യേണ്ടതുണ്ട്.</translation>
 <translation id="803771048473350947">ഫയല്‍</translation>
 <translation id="8038111231936746805">(ഡിഫോൾട്ട്)</translation>
 <translation id="8042602468072383151"><ph name="AUDIO_TYPE" /> ഓഡിയോ</translation>
@@ -913,6 +920,7 @@
 <translation id="8154842056504218462">എല്ലാ എൻട്രികളും തിരഞ്ഞെടുത്തു.</translation>
 <translation id="8157684860301034423">ആപ്പ് വിവരം വീണ്ടെടുക്കാനായില്ല.</translation>
 <translation id="8175731104491895765">ഫ്രഞ്ച് (ബെൽജിയം)</translation>
+<translation id="8175799081768705361"><ph name="NUMBER_OF_FILES_SYNCING" /> Drive ഫയലുകൾ സമന്വയിപ്പിക്കുന്നു</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">ഉപകരണ മോഡൽ</translation>
 <translation id="8223479393428528563">ഓഫ്‌ലൈൻ ഉപയോഗത്തിനായി ഈ ഫയലുകൾ സംരക്ഷിക്കാൻ, ഓൺലൈനിൽ തിരികെ വന്ന് ഫയലുകൾ റൈറ്റ് ക്ലിക്ക് ചെയ്‌ത്, <ph name="OFFLINE_CHECKBOX_NAME" /> ഓപ്‌ഷൻ തിരഞ്ഞെടുക്കുക.</translation>
@@ -945,6 +953,7 @@
 <translation id="8395901698320285466">തലങ്ങൾ</translation>
 <translation id="8404498045299006085">എല്ലാം നിലനിർത്തുക</translation>
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> നെറ്റ്‍വർക്ക്, കണക്റ്റ് ചെയ്യുന്നു</translation>
+<translation id="841387525767317275">ഈ ഫോൾഡറിലെ ഫയലുകൾ ഓഫ്‌ലൈനിൽ ലഭ്യമാണ്</translation>
 <translation id="8425213833346101688">മാറ്റുക</translation>
 <translation id="8431909052837336408">സിം പിൻ മാറ്റുക</translation>
 <translation id="8437209419043462667">യുഎസ്</translation>
@@ -972,6 +981,7 @@
 <translation id="8560515948038859357">കന്റോണീസ്</translation>
 <translation id="8561206103590473338">ആന</translation>
 <translation id="8566466896628108558"><ph name="NETWORK_INDEX" />-ൽ <ph name="NETWORK_COUNT" />-ാമത്തെ നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, നിങ്ങളുടെ അഡ്‌മിൻ ബ്ലോക്ക് ചെയ്തിരിക്കുന്നു, വിശദാംശങ്ങൾ</translation>
+<translation id="8567555211227790801">നിങ്ങൾ നിലവിൽ ഓഫ്‌ലൈനാണ്. നിങ്ങൾ ഇന്റർനെറ്റിലേക്ക് കണക്‌റ്റ് ചെയ്യുമ്പോൾ സമന്വയിപ്പിക്കൽ പുനരാരംഭിക്കും.</translation>
 <translation id="8568374623837201676">ഈ ഫയൽ ശാശ്വതമായി ഇല്ലാതാക്കണോ?</translation>
 <translation id="8569764466147087991">തുറക്കുന്നതിന് ഒരു ഫയല്‍ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="8577897833047451336">ക്രൊയേഷ്യൻ</translation>
@@ -1012,6 +1022,7 @@
 <translation id="8919081441417203123">ഡാനിഷ്</translation>
 <translation id="8949925099261528566">കണക്റ്റ് ചെയ്തു, എന്നാൽ ഇന്റർനെറ്റ് ഇല്ല</translation>
 <translation id="8965697826696209160">പര്യാപ്‌തമായ ഇടമില്ല.</translation>
+<translation id="8970887620466824814">എന്തോ കുഴപ്പമുണ്ടായി.</translation>
 <translation id="8971742885766657349">സമന്വയിപ്പിക്കുന്നു - <ph name="PERCENT" />%</translation>
 <translation id="8997962250644902079">ചൈനീസ് (പരമ്പരാഗതം) പിൻയിൻ</translation>
 <translation id="8998871447376656508">അപ്‌ലോഡ് ചെയ്യൽ പൂർത്തിയാക്കാൻ നിങ്ങളുടെ Google Drive-ൽ ആവശ്യമായ ഇടമില്ല.</translation>
@@ -1046,7 +1057,6 @@
 <translation id="9213073329713032541">ഇൻസ്‌റ്റലേഷൻ ആരംഭിച്ചു.</translation>
 <translation id="9219103736887031265">Images</translation>
 <translation id="9219908252191632183">ലൂണാർ</translation>
-<translation id="937795003075802289">ഒരു ഫയൽ സമന്വയിപ്പിക്കുന്നു</translation>
 <translation id="938470336146445890">ഒരു ഉപയോക്തൃ സര്‍ട്ടിഫിക്കേറ്റ് ദയവായി ഇന്‍സ്റ്റാള്‍ ചെയ്യുക.</translation>
 <translation id="939736085109172342">പുതിയ ഫോള്‍ഡര്‍</translation>
 <translation id="943972244133411984">പരിഷ്‌ക്കരിച്ചത്</translation>

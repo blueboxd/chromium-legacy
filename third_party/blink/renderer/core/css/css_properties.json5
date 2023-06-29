@@ -1296,7 +1296,6 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,
       font: true,
-      runtime_flag: "FontVariantAlternates",
       type_name: "FontVariantAlternates",
       name_for_methods: "FontVariantAlternates",
       converter: "ConvertFontVariantAlternates",
@@ -2542,8 +2541,8 @@
       field_template: "external",
       include_paths: ["third_party/blink/renderer/core/style/style_intrinsic_length.h"],
       keywords: ["auto", "none"],
-      default_value: "absl::nullopt",
-      type_name: "absl::optional<StyleIntrinsicLength>",
+      default_value: "StyleIntrinsicLength()",
+      type_name: "StyleIntrinsicLength",
       converter: "ConvertIntrinsicDimension",
     },
     {
@@ -2554,8 +2553,8 @@
       field_template: "external",
       include_paths: ["third_party/blink/renderer/core/style/style_intrinsic_length.h"],
       keywords: ["auto", "none"],
-      default_value: "absl::optional<StyleIntrinsicLength>()",
-      type_name: "absl::optional<StyleIntrinsicLength>",
+      default_value: "StyleIntrinsicLength()",
+      type_name: "StyleIntrinsicLength",
       converter: "ConvertIntrinsicDimension",
     },
     {
@@ -3761,12 +3760,26 @@
       runtime_flag: "CSSLogicalOverflow",
     },
     {
+      name: "-internal-overflow-inline",
+      logical_property_group: {
+        name: "overflow",
+        resolver: "inline",
+      },
+    },
+    {
       name: "overflow-block",
       logical_property_group: {
         name: "overflow",
         resolver: "block",
       },
       runtime_flag: "CSSLogicalOverflow",
+    },
+    {
+      name: "-internal-overflow-block",
+      logical_property_group: {
+        name: "overflow",
+        resolver: "block",
+      },
     },
     {
       name: "overflow-clip-margin",
@@ -4463,7 +4476,7 @@
       },
       keywords: ["auto", "start", "end", "center", "top", "bottom", "left", "right"],
       typedom_types: ["Keyword", "Length", "Percentage"],
-      runtime_flag: "CSSScrollSnap2",
+      runtime_flag: "CSSScrollStart",
     },
     {
       name: "scroll-start-inline",
@@ -4479,7 +4492,7 @@
       },
       keywords: ["auto", "start", "end", "center", "top", "bottom", "left", "right"],
       typedom_types: ["Keyword", "Length", "Percentage"],
-      runtime_flag: "CSSScrollSnap2",
+      runtime_flag: "CSSScrollStart",
     },
     {
       name: "scroll-start-x",
@@ -4494,7 +4507,7 @@
         name: "scroll-start",
         resolver: "horizontal"
       },
-      runtime_flag: "CSSScrollSnap2",
+      runtime_flag: "CSSScrollStart",
     },
     {
       name: "scroll-start-y",
@@ -4509,7 +4522,7 @@
         name: "scroll-start",
         resolver: "vertical"
       },
-      runtime_flag: "CSSScrollSnap2",
+      runtime_flag: "CSSScrollStart",
     },
     {
       name: "scroll-start-target-block",
@@ -4524,7 +4537,7 @@
       },
       keywords: ["none", "auto"],
       typedom_types: ["Keyword"],
-      runtime_flag: "CSSScrollSnap2",
+      runtime_flag: "CSSScrollStart",
     },
     {
       name: "scroll-start-target-inline",
@@ -4539,7 +4552,7 @@
       },
       keywords: ["none", "auto"],
       typedom_types: ["Keyword"],
-      runtime_flag: "CSSScrollSnap2",
+      runtime_flag: "CSSScrollStart",
     },
     {
       name: "scroll-start-target-x",
@@ -4553,7 +4566,7 @@
         resolver: "horizontal"
       },
       keywords: ["none", "auto"],
-      runtime_flag: "CSSScrollSnap2",
+      runtime_flag: "CSSScrollStart",
     },
     {
       name: "scroll-start-target-y",
@@ -4567,18 +4580,7 @@
         resolver: "vertical"
       },
       keywords: ["none", "auto"],
-      runtime_flag: "CSSScrollSnap2",
-    },
-    {
-      name: "scroll-timeline-attachment",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      field_group: "*->timeline",
-      field_template: "external",
-      default_value: "Vector<TimelineAttachment>()",
-      type_name: "Vector<TimelineAttachment>",
-      converter: "ConvertViewTimelineAttachment",
-      separator: ",",
-      runtime_flag: "ScrollTimelineAttachment",
+      runtime_flag: "CSSScrollStart",
     },
     {
       name: "scroll-timeline-axis",
@@ -5352,17 +5354,6 @@
       keywords: ["baseline", "sub", "super", "text-top", "text-bottom", "middle"],
       valid_for_first_letter: true,
       valid_for_first_line: true,
-    },
-    {
-      name: "view-timeline-attachment",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
-      field_group: "*->timeline",
-      field_template: "external",
-      default_value: "Vector<TimelineAttachment>()",
-      type_name: "Vector<TimelineAttachment>",
-      converter: "ConvertViewTimelineAttachment",
-      separator: ",",
-      runtime_flag: "ScrollTimelineAttachment",
     },
     {
       name: "view-timeline-axis",
@@ -6245,6 +6236,7 @@
       type_name: "int",
       computed_style_custom_functions: ["setter"],
       style_builder_template: "auto",
+      converter: "ConvertInteger",
       keywords: ["auto"],
       typedom_types: ["Keyword", "Number"],
     },
@@ -7380,17 +7372,17 @@
       name: "scroll-start",
       longhands: ["scroll-start-block", "scroll-start-inline"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollSnap2",
+      runtime_flag: "CSSScrollStart",
     },
     {
       name: "scroll-start-target",
       longhands: ["scroll-start-target-block", "scroll-start-target-inline"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollSnap2",
+      runtime_flag: "CSSScrollStart",
     },
     {
       name: "scroll-timeline",
-      longhands: ["scroll-timeline-name", "scroll-timeline-axis", "scroll-timeline-attachment"],
+      longhands: ["scroll-timeline-name", "scroll-timeline-axis"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "ScrollTimeline",
     },
@@ -7416,7 +7408,7 @@
     },
     {
       name: "view-timeline",
-      longhands: ["view-timeline-name", "view-timeline-axis", "view-timeline-attachment"],
+      longhands: ["view-timeline-name", "view-timeline-axis"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "ScrollTimeline",
     },

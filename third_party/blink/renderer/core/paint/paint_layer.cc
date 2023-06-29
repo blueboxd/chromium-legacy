@@ -48,6 +48,8 @@
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/containers/adapters.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
@@ -489,11 +491,10 @@ void PaintLayer::UpdateDescendantDependentFlags() {
         MarkAncestorChainForFlagsUpdate(kDoesNotNeedDescendantDependentUpdate);
       }
     }
-    if (base::FeatureList::IsEnabled(features::kFastPathPaintPropertyUpdates)) {
-      GetLayoutObject().InvalidateIntersectionObserverCachedRects();
-      GetLayoutObject().GetFrameView()->SetIntersectionObservationState(
-          LocalFrameView::kDesired);
-    }
+    GetLayoutObject().InvalidateIntersectionObserverCachedRects();
+    GetLayoutObject().GetFrameView()->SetIntersectionObservationState(
+        LocalFrameView::kDesired);
+
     needs_visual_overflow_recalc_ = false;
   }
 
@@ -706,16 +707,14 @@ void PaintLayer::SetNeedsVisualOverflowRecalc() {
   // mark this as needing a descendant dependent flags update, which will
   // cause a paint property update if needed (see:
   // PaintLayer::UpdateDescendantDependentFlags).
-  if (base::FeatureList::IsEnabled(features::kFastPathPaintPropertyUpdates))
-    SetNeedsDescendantDependentFlagsUpdate();
-  else
-    MarkAncestorChainForFlagsUpdate();
+  SetNeedsDescendantDependentFlagsUpdate();
 }
 
 bool PaintLayer::HasNonIsolatedDescendantWithBlendMode() const {
   DCHECK(!needs_descendant_dependent_flags_update_);
-  if (has_non_isolated_descendant_with_blend_mode_)
+  if (has_non_isolated_descendant_with_blend_mode_) {
     return true;
+  }
   if (GetLayoutObject().IsSVGRoot()) {
     return To<LayoutSVGRoot>(GetLayoutObject())
         .HasNonIsolatedBlendingDescendants();
@@ -1361,8 +1360,15 @@ PaintLayer* PaintLayer::HitTestLayer(
 
   if (UNLIKELY(layout_object.NeedsLayout() &&
                !layout_object.ChildLayoutBlockedByDisplayLock())) {
-    // Skip if we need layout. This should never happen. See crbug.com/1244130
-    NOTREACHED();
+    // Skip if we need layout. This should never happen. See crbug.com/1423308.
+
+    // Record whether the LayoutView exists and if it needs layout.
+    LayoutView* view = layout_object.GetFrameView()->GetLayoutView();
+    SCOPED_CRASH_KEY_BOOL("Crbug1423308", "ViewExists", !!view);
+    SCOPED_CRASH_KEY_BOOL("Crbug1423308", "ViewNeedsLayout",
+                          view && view->NeedsLayout());
+    base::debug::DumpWithoutCrashing();
+
     return nullptr;
   }
 

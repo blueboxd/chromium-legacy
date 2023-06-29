@@ -284,8 +284,10 @@ static unsigned FindLengthOfValidDouble(const LChar* string, const LChar* end) {
     auto is_decimal_mask = (b >= '0' && b <= '9');
     auto is_mark_mask = (b == '.');
 #ifdef __SSE2__
-    uint16_t is_decimal_bits = _mm_movemask_epi8(is_decimal_mask);
-    uint16_t is_mark_bits = _mm_movemask_epi8(is_mark_mask);
+    uint16_t is_decimal_bits =
+        _mm_movemask_epi8(reinterpret_cast<__m128i>(is_decimal_mask));
+    uint16_t is_mark_bits =
+        _mm_movemask_epi8(reinterpret_cast<__m128i>(is_mark_mask));
 
     // Only count the first decimal mark.
     is_mark_bits &= -is_mark_bits;
@@ -1249,6 +1251,8 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueID::kNormal ||
              value_id == CSSValueID::kBreakWord ||
              value_id == CSSValueID::kAnywhere;
+    case CSSPropertyID::kInternalOverflowBlock:
+    case CSSPropertyID::kInternalOverflowInline:
     case CSSPropertyID::kOverflowBlock:
     case CSSPropertyID::kOverflowInline:
     case CSSPropertyID::kOverflowX:
@@ -1645,6 +1649,8 @@ CSSBitset CSSParserFastPaths::handled_by_keyword_fast_paths_properties_{{
     CSSPropertyID::kForcedColorAdjust,
     CSSPropertyID::kHyphens,
     CSSPropertyID::kImageRendering,
+    CSSPropertyID::kInternalOverflowBlock,
+    CSSPropertyID::kInternalOverflowInline,
     CSSPropertyID::kListStylePosition,
     CSSPropertyID::kMaskType,
     CSSPropertyID::kMathShift,

@@ -69,7 +69,6 @@
 <translation id="1247519845643687288">אפליקציות אחרונות</translation>
 <translation id="1252999807265626933">טעינה מ-<ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">מה מזג האוויר?</translation>
-<translation id="1267032506238418139">שינוי מקש קיצור</translation>
 <translation id="1269405891096105529">אין תמיכה בציוד היקפי במצב אורח</translation>
 <translation id="1270290102613614947">המקלדת שמופיעה במסך מושבתת</translation>
 <translation id="1272079795634619415">הפסקה</translation>
@@ -140,7 +139,7 @@
 <translation id="1550406609415860283">המכשירים הזמינים</translation>
 <translation id="1550523713251050646">יש ללחוץ לקבלת אפשרויות נוספות</translation>
 <translation id="1555130319947370107">כחול</translation>
-<translation id="1576511610858879060">‏ב-Chromebook או במכשיר ה-Bluetooth שלך יש גרסה ישנה יותר של Bluetooth. לשיפור איכות האודיו, צריך להשתמש במקור קלט אחר.</translation>
+<translation id="1557622599341396706">הצגת השם של שולחן העבודה הווירטואלי</translation>
 <translation id="1576623706766186887">הקטנת התצוגה כשמפעילים את הזכוכית המגדלת</translation>
 <translation id="1586324912145647027">מעבר לשולחנות העבודה הווירטואליים 1 עד 8</translation>
 <translation id="1589090746204042747">גישה לכל הפעילות שלך בסשן הזה</translation>
@@ -217,7 +216,6 @@
 <translation id="1908992311423394684">התקנה חדשה</translation>
 <translation id="1915307458270490472">ניתוק</translation>
 <translation id="1918022425394817322">המצלמה מוצמדת לפינה השמאלית העליונה</translation>
-<translation id="1919743966458266018">מקש הקיצור לפתיחת מנהל המשימות השתנה. יש להשתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">לחיצות אוטומטיות</translation>
 <translation id="1928739107511554905">‏כדי להתקין את העדכון, יש להשתמש במסך המגע ולהפעיל מחדש את ה-Chromebook כשהמקלדת מחוברת.</translation>
 <translation id="1948405482892809935">מעבר אל המשתמש הבא</translation>
@@ -359,6 +357,7 @@
 <translation id="2579264398927991698">עדכוני קושחה</translation>
 <translation id="2582112259361606227">צריך להפעיל מחדש כדי לעדכן</translation>
 <translation id="2586561057878260610">‏יש להקיש על Ctrl +‏ W כדי לשלב עם <ph name="DESK_NAME" />. יש להקיש על Ctrl +‏ Shift +‏ W כדי לסגור את שולחן העבודה הווירטואלי והחלונות.</translation>
+<translation id="2586657967955657006">לוח</translation>
 <translation id="2595239820337756193">כמה מיילים יש ב-5 קילומטרים</translation>
 <translation id="2596078834055697711">צילום מסך של חלון</translation>
 <translation id="2598725286293895280">בשולחן העבודה יש אפליקציות שלא נתמכות</translation>
@@ -912,6 +911,7 @@
         <ph name="NOTIFICATION_2" />,
         <ph name="NUM_OTHER_NOTIFICATION" /></translation>
 <translation id="4987738733603015246">שולחן עבודה וירטואלי מספר 16</translation>
+<translation id="4989163558385430922">אני רוצה לראות הכול</translation>
 <translation id="5003993274120026347">המשפט הבא</translation>
 <translation id="5004607513195820459">הרשת מנוהלת</translation>
 <translation id="5009463889040999939">שינוי שם הפרופיל מתבצע. הפעולה עשויה להימשך מספר דקות.</translation>
@@ -973,7 +973,6 @@
 <translation id="5283198616748585639">הוספת דקה</translation>
 <translation id="528468243742722775">סיום</translation>
 <translation id="5286194356314741248">הסריקה מתבצעת</translation>
-<translation id="5293671101077843611">אין אירועים היום</translation>
 <translation id="5297423144044956168">לא נמצאו מכשירים ניידים</translation>
 <translation id="5297704307811127955">כבויה</translation>
 <translation id="5300589172476337783">הצגה</translation>
@@ -982,10 +981,12 @@
 <translation id="5308380583665731573">התחברות</translation>
 <translation id="5313326810920013265">‏הגדרות Bluetooth</translation>
 <translation id="5314219114274263156">התבצעה הקלטת מסך</translation>
+<translation id="5314489738835854379">מעבר אחורה בין חלונות</translation>
 <translation id="5316716239522500219">שיקוף צגים</translation>
 <translation id="5317780077021120954">שמירה</translation>
 <translation id="5319712128756744240">התאמת מכשיר חדש</translation>
 <translation id="5322611492012084517">לא ניתן למצוא את הטלפון</translation>
+<translation id="5323994101633366939">הסתרת השם של שולחן העבודה הווירטואלי</translation>
 <translation id="5327248766486351172">שם</translation>
 <translation id="5329548388331921293">מתבצעת התחברות…</translation>
 <translation id="5331975486040154427">‏מכשיר עם יציאת USB-C (יציאה שמאלית-אחורית)</translation>
@@ -1128,6 +1129,7 @@
 <translation id="5958529069007801266">משתמש בפיקוח</translation>
 <translation id="5961960957587052807">חלש</translation>
 <translation id="5965524703725988602">הפעלה או השבתה של עיצוב כהה. <ph name="STATE_TEXT" />.</translation>
+<translation id="5975235751479998104">מעבר קדימה בין חלונות</translation>
 <translation id="5976112937189445008">‏כדי להקליט את החלון, מקישים על Enter</translation>
 <translation id="5978382165065462689">שיתוף שליטה במסך דרך סיוע מרחוק.</translation>
 <translation id="5980301590375426705">יציאה מהפעלת אורח</translation>
@@ -1167,6 +1169,7 @@
 <translation id="6103838137565245112">מערכת</translation>
 <translation id="6114505516289286752">הורדת קובצי הדיבור של <ph name="LANGUAGE" /> הסתיימה</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
+<translation id="6119972796024789243">תיקון צבע</translation>
 <translation id="6121838516699723042">אישור ההורדה של <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">‏Google Assistant לא זמינה בגלישה כאורח.</translation>
 <translation id="6129953537138746214">רווח</translation>
@@ -1179,6 +1182,7 @@
 <translation id="6165508094623778733">למידע נוסף</translation>
 <translation id="6166852626429024716">חיפוש במכשיר, באפליקציות, בהגדרות, באינטרנט...</translation>
 <translation id="6168318496333165060">פתיחת האפליקציה 'אבחון'</translation>
+<translation id="6173151025443907148">‏רק משתמש אחד יכול להיכנס לחשבון כשארכיטקטורת Lacros מופעלת. במקום זאת, צריך להשתמש בפרופיל דפדפן שני ב-Lacros או להשבית את Lacros ולנסות שוב.</translation>
 <translation id="6179832488876878285">כאן אפשר להצמיד את הקבצים החשובים. יש לפתוח את אפליקציית 'קבצים' כדי להתחיל.</translation>
 <translation id="6182592640011875895">פתיחת שולחן העבודה</translation>
 <translation id="6185696379715117369">Page up</translation>
@@ -1271,6 +1275,7 @@
 <translation id="6597278316891651699">המצלמה מוצמדת לפינה הימנית התחתונה. התנגשות עם תצוגת המערכת.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, עוצמת האות: <ph name="SIGNAL_STRENGTH" />, הרשת מנוהלת על ידי מנהל המערכת</translation>
 <translation id="6612802754306526077">נבחר מצב של הקלטת מסך</translation>
+<translation id="6613765291890844037">נפח אחסון בשימוש: <ph name="STORAGE_IN_USE_SIZE" /> ‏| <ph name="STORAGE_TOTAL_SIZE" /> סה"כ</translation>
 <translation id="6614169507485700968">מסך הפרטיות פועל</translation>
 <translation id="6625718907317144388">ההתראות מהאפליקציות <ph name="APP_1_TITLE" /> וכן <ph name="APP_2_TITLE" /> ומאפליקציות נוספות מוסתרות כי מופעלת הגנה על תצוגה</translation>
 <translation id="6627638273713273709">‏חיפוש+Shift‏+K</translation>
@@ -1338,6 +1343,7 @@
 <translation id="6891721121089053234">הצגת התמונות, המדיה והאפליקציות שבטלפון מהזמן האחרון ב-<ph name="DEVICE_TYPE" /></translation>
 <translation id="6896758677409633944">העתקה</translation>
 <translation id="6901883536534621389">רוצה לנסות לנווט באמצעות תנועות?</translation>
+<translation id="6912841030378044227">התמקדות בסרגל הכתובות</translation>
 <translation id="6919251195245069855">לא ניתן היה לזהות את הכרטיס החכם שלך. יש לנסות שוב.</translation>
 <translation id="6920245099716267363">החלפת המצב של הנקודה לשיתוף אינטרנט. נקודת האינטרנט פועלת. יש מכשיר אחד מחובר.</translation>
 <translation id="6931576957638141829">שמירה ב-</translation>
@@ -1539,6 +1545,7 @@
 <translation id="7866482334467279021">פועלת</translation>
 <translation id="7872786842639831132">כבוי</translation>
 <translation id="7875575368831396199">‏נראה שה-Bluetooth כבוי ב-<ph name="DEVICE_TYPE" /> שלך. יש להפעיל את Bluetooth כדי להשתמש ב-Phone Hub.</translation>
+<translation id="7876243839304621966">הסרת הכול</translation>
 <translation id="7877557217297072640">{0,plural, =0{עליך לשנות את המכשיר לגרסה הקודמת עכשיו}=1{עליך לשנות את המכשיר לגרסה הקודמת בתוך שנייה}one{עליך לשנות את המכשיר לגרסה קודמת בתוך # שניות}two{עליך לשנות את המכשיר לגרסה קודמת בתוך # שניות}other{עליך לשנות את המכשיר לגרסה קודמת בתוך # שניות}}</translation>
 <translation id="7884446017008693258">הגדרות הנקודה לשיתוף אינטרנט</translation>
 <translation id="7884902759927478774">ביטול גרירת הכרטיסייה</translation>
@@ -1636,6 +1643,7 @@
 <translation id="8247998213073982446"><ph name="APP_NAME" />, אפליקציה</translation>
 <translation id="8255234195843591763">עליך לאפס כדי לעדכן</translation>
 <translation id="8261506727792406068">מחיקה</translation>
+<translation id="8262312463845990408">הפעלה או השהיה של הקראת הטקסט</translation>
 <translation id="8270450402312105425">{0,plural, =1{שינוי המכשיר לגרסה קודמת בתוך שעה}one{שינוי המכשיר לגרסה קודמת בתוך # שעות}two{שינוי המכשיר לגרסה קודמת בתוך שעתיים}other{שינוי המכשיר לגרסה קודמת בתוך # שעות}}</translation>
 <translation id="8277261673056602147">יש להדגיש טקסט במסך</translation>
 <translation id="8284362522226889623">יש להחליק ימינה בעזרת ארבע אצבעות כדי לעבור לשולחן העבודה הווירטואלי הקודם</translation>
@@ -1689,6 +1697,7 @@
 <translation id="8513108775083588393">סיבוב אוטומטי</translation>
 <translation id="851458219935658693">הצגת חלונות משולחן העבודה הווירטואלי הנוכחי, לחצן הבחירה נבחר</translation>
 <translation id="8517041960877371778">ייתכן שה-<ph name="DEVICE_TYPE" /> לא ייטען כשהוא פועל.</translation>
+<translation id="852060496139946719">{NUM_APPS,plural, =1{הקלט מהמיקרופון נשלט על ידי <ph name="APP_NAME" />}one{הקלט מהמיקרופון נשלט על ידי # אפליקציות}two{הקלט מהמיקרופון נשלט על ידי # אפליקציות}other{הקלט מהמיקרופון נשלט על ידי # אפליקציות}}</translation>
 <translation id="8535393432370007982">ביטול של סדר המיון לפי צבע</translation>
 <translation id="8541078764854166027">הפריים במצלמה</translation>
 <translation id="8542053257095774575">אין תבניות או שולחנות עבודה וירטואליים שמורים</translation>
@@ -1752,12 +1761,10 @@
 <translation id="8834539327799336565">מחובר עכשיו</translation>
 <translation id="8841375032071747811">לחצן 'הקודם'</translation>
 <translation id="8843682306134542540">הפעלה או השבתה של נעילת הסיבוב. <ph name="STATE_TEXT" /></translation>
-<translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8853703225951107899">לא הצלחנו לאמת את קוד האימות או את הסיסמה שלך. הערה: אם שינית לאחרונה את הסיסמה, עליך לנסות להיכנס עם הסיסמה הישנה. הסיסמה החדשה תיכנס לתוקף לאחר היציאה מהחשבון.</translation>
 <translation id="8855885154700222542">מקש מסך מלא</translation>
 <translation id="8858369206579825206">אמצעי בקרה על פרטיות</translation>
 <translation id="8860817004574502558">חיי הסוללה</translation>
-<translation id="8863602954531760927"><ph name="STORAGE_IN_USE_SIZE" /> בשימוש מתוך <ph name="STORAGE_TOTAL_SIZE" /></translation>
 <translation id="8870509716567206129">האפליקציה אינה תומכת במסך מפוצל.</translation>
 <translation id="8874184842967597500">לא מחובר</translation>
 <translation id="8875021410787719674">מעבר בין הפינה השמאלית התחתונה, מרכז האפליקציות, סרגל הכתובות, סרגל הסימניות, האתר שפתוח וההורדות</translation>
@@ -1813,7 +1820,6 @@
 <translation id="9089416786594320554">שיטות קלט</translation>
 <translation id="9091626656156419976">הוסרה התצוגה של <ph name="DISPLAY_NAME" /></translation>
 <translation id="9098969848082897657">השתקת הטלפון</translation>
-<translation id="9105450214093926548">‏אי אפשר להיכנס לחשבון של משתמש נוסף בזמן שדפדפן Lacros פועל. במקום זאת, יש להשתמש בפרופיל דפדפן שני ב-Lacros או לסגור את Lacros ולנסות שוב.</translation>
 <translation id="9120448753905017833">‏כיבינו את ה-Wi-Fi כדי להתחיל להשתמש בנקודה לשיתוף אינטרנט דרך חבילת הגלישה. בעקבות זאת, עשויים לחול חיובים על שימוש בחבילת הגלישה.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> או <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>
 <translation id="9126339866969410112">ביטול הפעולה האחרונה</translation>

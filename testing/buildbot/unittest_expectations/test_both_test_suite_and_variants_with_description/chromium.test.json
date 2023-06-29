@@ -4,14 +4,12 @@
   "Fake Tester": {
     "gtest_tests": [
       {
-        "args": [],
         "description": "This is a swarming test.\nVariant description.",
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "swarming_test a_variant",
         "swarming": {
-          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "os": "Linux"

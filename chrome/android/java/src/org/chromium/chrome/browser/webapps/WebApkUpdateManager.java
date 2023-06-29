@@ -201,11 +201,15 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
 
     /**
      * Logs how different (in percentages) two bitmaps are, scaling the images down to be the same
-     * size (if the two are of different dimensions). Does nothing if either bitmap is null.
+     * size (if the two are of different dimensions). Does nothing if either bitmap passed in
+     * via `iconDiffPair` is null.
+     * @param iconDiffPair a pair of Bitmaps to compare to each other.
      */
-    private void logIconDiffs(@Nullable Bitmap before, @Nullable Bitmap after) {
+    private void logIconDiffs(Pair<Bitmap, Bitmap> iconDiffPair) {
         ThreadUtils.assertOnBackgroundThread();
 
+        Bitmap before = iconDiffPair.first;
+        Bitmap after = iconDiffPair.second;
         if (before == null || after == null) return;
 
         // Unfortunately, the install size can differ from the update size (for example, a 96x96
@@ -238,6 +242,16 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
         mFetchedSplashIconUrl = splashIconUrl;
         mFetchedInfo =
                 MergedWebappInfo.create(/* oldWebappInfo= */ mInfo, fetchedIntentDataProvider);
+
+        Pair<Bitmap, Bitmap> iconDiffPair = new Pair<>(
+                mInfo.icon().bitmap(), mFetchedInfo != null ? mFetchedInfo.icon().bitmap() : null);
+        List<Integer> originalUpdateReasons = generateUpdateReasons(
+                mInfo, mFetchedInfo, mFetchedPrimaryIconUrl, mFetchedSplashIconUrl);
+        // In order to determine whether to log the icon differences, we need to consult the
+        // original update reasons, before we revert to using the old icon below.
+        boolean containsIconUpdateRequest =
+                originalUpdateReasons.contains(WebApkUpdateReason.PRIMARY_ICON_HASH_DIFFERS)
+                || originalUpdateReasons.contains(WebApkUpdateReason.PRIMARY_ICON_MASKABLE_DIFFERS);
 
         if (mFetchedInfo != null) {
             // When only some/no app identity updates are permitted, the update
@@ -292,6 +306,12 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
         }
 
         if (!needsUpgrade) {
+            // No updates can mean that an icon update was requested, but we blocked it. We still
+            // want to log the icon differences.
+            if (containsIconUpdateRequest) {
+                PostTask.postTask(TaskTraits.BEST_EFFORT, () -> logIconDiffs(iconDiffPair));
+            }
+
             if (!mStorage.didPreviousUpdateSucceed() || mStorage.shouldForceUpdate()) {
                 onFinishedUpdate(mStorage, WebApkInstallResult.SUCCESS, false /* relaxUpdates */);
             }
@@ -326,9 +346,8 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
         // If an icon change is involved, log the numerical value of how much the icon is changing,
         // except in cases where the user has already approved the update, because that means we
         // have already logged it the last time around (the update is still pending).
-        if (iconChanging && !alreadyUserApproved) {
-            PostTask.postTask(TaskTraits.BEST_EFFORT,
-                    () -> logIconDiffs(mInfo.icon().bitmap(), mFetchedInfo.icon().bitmap()));
+        if (containsIconUpdateRequest && !alreadyUserApproved) {
+            PostTask.postTask(TaskTraits.BEST_EFFORT, () -> logIconDiffs(iconDiffPair));
         }
 
         if ((!showDialogForName && !showDialogForIcon) || alreadyUserApproved) {
@@ -708,16 +727,16 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
             String primaryIconUrl, String splashIconUrl, boolean isManifestStale,
             boolean isAppIdentityUpdateSupported, List<Integer> updateReasons,
             Callback<Boolean> callback) {
-        new AsyncTask<Pair<String, String>>() {
+        new AsyncTask<Pair<byte[], byte[]>>() {
             @Override
-            protected Pair<String, String> doInBackground() {
-                String primaryIconData = info.icon().encoded();
-                String splashIconData = info.splashIcon().encoded();
+            protected Pair<byte[], byte[]> doInBackground() {
+                byte[] primaryIconData = info.icon().data();
+                byte[] splashIconData = info.splashIcon().data();
                 return Pair.create(primaryIconData, splashIconData);
             }
 
             @Override
-            protected void onPostExecute(Pair<String, String> result) {
+            protected void onPostExecute(Pair<byte[], byte[]> result) {
                 storeWebApkUpdateRequestToFile(updateRequestPath, info, primaryIconUrl,
                         result.first, splashIconUrl, result.second, isManifestStale,
                         isAppIdentityUpdateSupported, updateReasons, callback);
@@ -726,8 +745,8 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
     }
 
     protected void storeWebApkUpdateRequestToFile(String updateRequestPath, WebappInfo info,
-            String primaryIconUrl, String primaryIconData, String splashIconUrl,
-            String splashIconData, boolean isManifestStale, boolean isAppIdentityUpdateSupported,
+            String primaryIconUrl, byte[] primaryIconData, String splashIconUrl,
+            byte[] splashIconData, boolean isManifestStale, boolean isAppIdentityUpdateSupported,
             List<Integer> updateReasons, Callback<Boolean> callback) {
         int versionCode = info.webApkVersionCode();
         int size = info.iconUrlToMurmur2HashMap().size();
@@ -792,8 +811,8 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
     interface Natives {
         public void storeWebApkUpdateRequestToFile(String updateRequestPath, String startUrl,
                 String scope, String name, String shortName, String manifestId, String appKey,
-                String primaryIconUrl, String primaryIconData, boolean isPrimaryIconMaskable,
-                String splashIconUrl, String splashIconData, boolean isSplashIconMaskable,
+                String primaryIconUrl, byte[] primaryIconData, boolean isPrimaryIconMaskable,
+                String splashIconUrl, byte[] splashIconData, boolean isSplashIconMaskable,
                 String[] iconUrls, String[] iconHashes, @DisplayMode.EnumType int displayMode,
                 int orientation, long themeColor, long backgroundColor, String shareTargetAction,
                 String shareTargetParamTitle, String shareTargetParamText,

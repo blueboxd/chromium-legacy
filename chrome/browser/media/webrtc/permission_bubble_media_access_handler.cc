@@ -230,11 +230,15 @@ void PermissionBubbleMediaAccessHandler::HandleRequest(
 }
 
 void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
-    content::WebContents* web_contents) {
+    MayBeDangling<content::WebContents> web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // The queue is iterated through using a chain of PostTasks, and between these
+  // executions, `web_contents` might have been destroyed. In that case, the
+  // observer will have removed it from the map. Because all the accesses to the
+  // pending_requests_ map are made from the UI thread, we do not need to use a
+  // lock and simply verify that the WebContents is still there.
   auto it = pending_requests_.find(web_contents);
-
   if (it == pending_requests_.end() || it->second.empty()) {
     // Don't do anything if the tab was closed.
     return;
@@ -397,7 +401,7 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
       if (system_audio_permission == SystemPermission::kNotDetermined) {
         // Using WeakPtr since callback can come at any time and we might be
         // destroyed.
-        system_media_permissions::RequestSystemAudioCapturePermisson(
+        system_media_permissions::RequestSystemAudioCapturePermission(
             base::BindOnce(&PermissionBubbleMediaAccessHandler::
                                OnAccessRequestResponseForBinding,
                            weak_factory_.GetWeakPtr(), web_contents, request_id,
@@ -424,7 +428,7 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
       if (system_video_permission == SystemPermission::kNotDetermined) {
         // Using WeakPtr since callback can come at any time and we might be
         // destroyed.
-        system_media_permissions::RequestSystemVideoCapturePermisson(
+        system_media_permissions::RequestSystemVideoCapturePermission(
             base::BindOnce(&PermissionBubbleMediaAccessHandler::
                                OnAccessRequestResponseForBinding,
                            weak_factory_.GetWeakPtr(), web_contents, request_id,
@@ -455,8 +459,7 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
         FROM_HERE,
         base::BindOnce(
             &PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest,
-            base::Unretained(this),
-            base::UnsafeDanglingUntriaged(web_contents)));
+            base::Unretained(this), base::UnsafeDangling(web_contents)));
   }
 
   std::move(callback).Run(stream_devices_set, final_result, std::move(ui));

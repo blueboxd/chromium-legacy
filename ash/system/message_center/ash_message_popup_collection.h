@@ -84,6 +84,8 @@ class ASH_EXPORT AshMessagePopupCollection
       const message_center::Notification& notification) const override;
   void NotifyPopupAdded(message_center::MessagePopupView* popup) override;
   void NotifyPopupClosed(message_center::MessagePopupView* popup) override;
+  void NotifyPopupCollectionHeightChanged() override;
+  bool AdjustAndEvaluateShouldDisplayPopupItem(const PopupItem& item) override;
   void AnimationStarted() override;
   void AnimationFinished() override;
   message_center::MessagePopupView* CreatePopup(
@@ -131,9 +133,18 @@ class ASH_EXPORT AshMessagePopupCollection
   // Compute the new work area.
   void UpdateWorkArea();
 
-  // Makes changes to the baseline based on the visibility/bounds of
-  // `tray_bubble`.
-  void AdjustBaselineBasedOnTrayBubble(TrayBubbleView* tray_bubble);
+  // Makes changes to the baseline based on the visibility/bounds change of
+  // the current open bubble.
+  void AdjustBaselineBasedOnBubble(TrayBubbleView* tray_bubble, bool visible);
+
+  // Helper functions for `AdjustBaselineBaseOnBubble()`. Applied to shelf pod
+  // bubble.
+  void AdjustBaselineBasedOnShelfPodBubble();
+
+  // Helper functions for `AdjustBaselineBaseOnBubble()`. Applied to secondary
+  // bubble.
+  void AdjustBaselineBasedOnSecondaryBubble(TrayBubbleView* tray_bubble,
+                                            bool visible);
 
   // ShelfObserver:
   void OnShelfWorkAreaInsetsChanged() override;

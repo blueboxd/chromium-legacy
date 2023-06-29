@@ -228,9 +228,8 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
   // Root settings accessed on fast paths.
   //
   // Careful! PartitionAlloc's performance is sensitive to its layout.  Please
-  // put the fast-path objects in the struct below, and the other ones after
-  // the union..
-  struct Settings {
+  // put the fast-path objects in the struct below.
+  struct alignas(internal::kPartitionCachelineSize) Settings {
     // Chromium-style: Complex constructor needs an explicit out-of-line
     // constructor.
     Settings();
@@ -250,7 +249,11 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
     bool with_thread_cache = false;
 
     bool allow_aligned_alloc = false;
-    bool allow_cookie = false;
+#if BUILDFLAG(PA_DCHECK_IS_ON)
+    bool use_cookie = false;
+#else
+    static constexpr bool use_cookie = false;
+#endif  // BUILDFLAG(PA_DCHECK_IS_ON)
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     bool brp_enabled_ = false;
 #if PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK)
@@ -280,19 +283,11 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
 #endif  // PA_CONFIG(EXTRAS_REQUIRED)
   };
 
-  // Read-mostly settings.
-  union {
-    Settings settings;
-
-    // The flags above are accessed for all (de)allocations, and are mostly
-    // read-only. They should not share a cacheline with the data below, which
-    // is only touched when the lock is taken.
-    uint8_t one_cacheline[internal::kPartitionCachelineSize];
-  };
+  Settings settings;
 
   // Not used on the fastest path (thread cache allocations), but on the fast
   // path of the central allocator.
-  ::partition_alloc::internal::Lock lock_;
+  alignas(internal::kPartitionCachelineSize) internal::Lock lock_;
 
   Bucket buckets[internal::kNumBuckets] = {};
   Bucket sentinel_bucket{};
@@ -788,13 +783,18 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
 
   PA_ALWAYS_INLINE void* TaggedSlotStartToObject(
       void* tagged_slot_start) const {
-    // TODO(bartekn): Check that |slot_start| is indeed a slot start.
+    // TODO(bartekn): Check that |tagged_slot_start| is indeed a slot start.
     return reinterpret_cast<void*>(
         SlotStartToObjectAddr(reinterpret_cast<uintptr_t>(tagged_slot_start)));
   }
 
   PA_ALWAYS_INLINE uintptr_t ObjectToSlotStart(void* object) const {
     return UntagPtr(object) - settings.extras_offset;
+    // TODO(bartekn): Check that the result is indeed a slot start.
+  }
+
+  PA_ALWAYS_INLINE uintptr_t ObjectToTaggedSlotStart(void* object) const {
+    return reinterpret_cast<uintptr_t>(object) - settings.extras_offset;
     // TODO(bartekn): Check that the result is indeed a slot start.
   }
 
@@ -1236,9 +1236,6 @@ PA_ALWAYS_INLINE void PartitionRoot::FreeNoHooks(void* object) {
   SlotSpan* slot_span = SlotSpan::FromObject(object);
   PA_DCHECK(PartitionRoot::FromSlotSpan(slot_span) == root);
 
-  uintptr_t slot_start = root->ObjectToSlotStart(object);
-  PA_DCHECK(slot_span == SlotSpan::FromSlotStart(slot_start));
-
 #if PA_CONFIG(HAS_MEMORY_TAGGING)
   if (PA_LIKELY(root->IsMemoryTaggingEnabled())) {
     const size_t slot_size = slot_span->bucket->slot_size;
@@ -1250,7 +1247,7 @@ PA_ALWAYS_INLINE void PartitionRoot::FreeNoHooks(void* object) {
       tag_size -= root->settings.ref_count_size;
 #endif
       void* retagged_slot_start = internal::TagMemoryRangeIncrement(
-          internal::TagAddr(slot_start), tag_size);
+          root->ObjectToTaggedSlotStart(object), tag_size);
       // Incrementing the MTE-tag in the memory range invalidates the |object|'s
       // tag, so it must be retagged.
       object = root->TaggedSlotStartToObject(retagged_slot_start);
@@ -1270,6 +1267,9 @@ PA_ALWAYS_INLINE void PartitionRoot::FreeNoHooks(void* object) {
   // been touched above.
   PA_PREFETCH(slot_span);
 #endif  // PA_CONFIG(HAS_MEMORY_TAGGING)
+
+  uintptr_t slot_start = root->ObjectToSlotStart(object);
+  PA_DCHECK(slot_span == SlotSpan::FromSlotStart(slot_start));
 
 #if BUILDFLAG(USE_STARSCAN)
   // TODO(bikineev): Change the condition to PA_LIKELY once PCScan is enabled by
@@ -1326,14 +1326,12 @@ PA_ALWAYS_INLINE void PartitionRoot::FreeNoHooksImmediate(
   // For more context, see the other "Layout inside the slot" comment inside
   // AllocWithFlagsNoHooks().
 
-#if BUILDFLAG(PA_DCHECK_IS_ON)
-  if (settings.allow_cookie) {
+  if (settings.use_cookie) {
     // Verify the cookie after the allocated region.
     // If this assert fires, you probably corrupted memory.
     internal::PartitionCookieCheckValue(static_cast<unsigned char*>(object) +
                                         GetSlotUsableSize(slot_span));
   }
-#endif
 
 #if BUILDFLAG(USE_STARSCAN)
   // TODO(bikineev): Change the condition to PA_LIKELY once PCScan is enabled by
@@ -1957,13 +1955,11 @@ PA_ALWAYS_INLINE void* PartitionRoot::AllocWithFlagsNoHooks(
 
   void* object = SlotStartToObject(slot_start);
 
-#if BUILDFLAG(PA_DCHECK_IS_ON)
   // Add the cookie after the allocation.
-  if (settings.allow_cookie) {
+  if (settings.use_cookie) {
     internal::PartitionCookieWriteValue(static_cast<unsigned char*>(object) +
                                         usable_size);
   }
-#endif
 
   // Fill the region kUninitializedByte (on debug builds, if not requested to 0)
   // or 0 (if requested and not 0 already).
@@ -2161,10 +2157,6 @@ ThreadCache* PartitionRoot::GetThreadCache() {
 }
 
 using ThreadSafePartitionRoot = PartitionRoot;
-
-static_assert(offsetof(ThreadSafePartitionRoot, lock_) ==
-                  internal::kPartitionCachelineSize,
-              "Padding is incorrect");
 
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 // Usage in `raw_ptr.cc` is notable enough to merit a non-internal alias.

@@ -43,7 +43,7 @@ struct VIZ_SERVICE_EXPORT FixedPassData {
   FixedPassData& operator=(FixedPassData&& other);
   ~FixedPassData();
 
-  raw_ptr<CompositorRenderPass, DanglingUntriaged> render_pass = nullptr;
+  raw_ptr<CompositorRenderPass, DanglingAcrossTasks> render_pass = nullptr;
   // DrawQuads in |render_pass| that can contribute additional damage (eg.
   // surface and render passes) that need to be visited during the prewalk phase
   // of aggregation. Stored in front-to-back order like in |render_pass|.
@@ -108,6 +108,10 @@ struct VIZ_SERVICE_EXPORT AggregationPassData {
   // is false for may still be drawn but they won't contribute pixels to
   // framebuffer.
   bool will_draw = false;
+
+  // The damage added from its descandant surfaces during aggregation. This is
+  // not part of the original render_pass->damage_rect from CC.
+  gfx::Rect added_damage;
 };
 
 // Render pass data that must be recomputed each aggregation and needs to be

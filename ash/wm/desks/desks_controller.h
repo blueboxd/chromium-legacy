@@ -19,6 +19,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -198,6 +199,9 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
   void NewDesk(DesksCreationRemovalSource source);
 
   bool HasDesk(const Desk* desk) const;
+
+  // Gives the desk with the specified index.
+  Desk* GetDeskAtIndex(size_t index) const;
 
   // Removes and deletes the given `desk`. `desk` must already exist, and
   // CanRemoveDesks() must be checked before this.

@@ -213,6 +213,14 @@ struct CreateLocalMainFrameParams {
   // replace. Will only be set when RenderDocument is enabled, for main frame
   // LocalFrame <-> LocalFrame swap.
   blink.mojom.FrameToken? previous_frame_token;
+
+  // The initial empty document opened by a cross-origin iframe might inherit
+  // the COOP policies of the top-level document but it shouldn't have
+  // crossOriginIsolated capabilities if COOP was initially set by another
+  // origin. Hence, we pass down this boolean to tell the renderer to restrict
+  // those capabilities. For more detail, see
+  // https://github.com/hemeryar/coi-with-popups/blob/main/docs/cross_origin_iframe_popup.MD
+  bool coop_forbids_initial_empty_document_to_be_cross_origin_isolated = true;
 };
 
 // Parameters used for brower-initiated remote main frame creation.
@@ -374,6 +382,21 @@ enum FrameDeleteIntention {
   kSpeculativeMainFrameForNavigationCancelled,
 };
 
+struct Crbug1425281DebugInfo {
+  // The renderer stack trace when the frame was added to the frame tree. This
+  // is just an array of instruction pointers and should not be used in any way
+  // other than being captured by base::debug::Alias.
+  array<uint64>? added_to_frame_tree_stack_trace;
+  // True if the frame is a main frame.
+  bool is_main_frame;
+  // True if the associated WebFrame reports that `IsProvisional()` is true.
+  bool is_provisional;
+};
+
+interface DebugHelperForCrbug1425281 {
+  Failed(Crbug1425281DebugInfo debug_info);
+};
+
 // Implemented by the frame provider, and must be associated with other content
 // mojoms bound to frames, widgets, views, and currently also with the legacy
 // IPC channel.
@@ -431,7 +454,14 @@ interface Frame {
   // wants to detach, or for speculative main frames which are owned by the
   // browser process. Committed main frames are owned by the renderer's WebView
   // and can not be deleted directly.
-  Delete(FrameDeleteIntention intention);
+  //
+  // `helper` is temporary to help debug crbug.com/1425281. It is unclear how
+  // the browser process is ending up in a state where it deletes what it thinks
+  // is a speculative render frame but the renderer has somehow already
+  // committed a navigation. It will only be set if `intent` is
+  // `kSpeculativeMainFrameForNavigationCancelled`.
+  Delete(FrameDeleteIntention intention,
+         pending_remote<DebugHelperForCrbug1425281>? helper);
 
   // Requests that a speculative RenderFrameHost which the browser has already
   // sent a `CommitNavigation()` to should swap itself back out for a
@@ -667,6 +697,14 @@ struct CreateNewWindowReply {
 
   // Indicates which browsing context group the page in this view belongs to.
   blink.mojom.BrowsingContextGroupInfo browsing_context_group_info;
+
+  // The initial empty document opened by a cross-origin iframe might inherit
+  // the COOP policies of the top-level frame but it shouldn't have
+  // crossOriginIsolated capabilities if COOP was initially set by another
+  // origin. Hence, we pass down this boolean to tell the renderer to restrict
+  // those capabilities. For more detail, see
+  // https://github.com/hemeryar/coi-with-popups/blob/main/docs/cross_origin_iframe_popup.MD
+  bool coop_forbids_initial_empty_document_to_be_cross_origin_isolated = true;
 };
 
 // A per-navigation interface passed along with the BeginNavigation call, used

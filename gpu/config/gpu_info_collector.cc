@@ -272,7 +272,9 @@ void ForceDawnTogglesForWebGPU(
 void ForceDawnTogglesForSkiaGraphite(
     std::vector<const char*>* force_enabled_toggles,
     std::vector<const char*>* force_disabled_toggles) {
-#if !DCHECK_IS_ON()
+#if DCHECK_IS_ON()
+  force_enabled_toggles->push_back("use_user_defined_labels_in_backend");
+#else
   force_enabled_toggles->push_back("disable_robustness");
   force_enabled_toggles->push_back("skip_validation");
   force_disabled_toggles->push_back("lazy_clear_resource_on_first_use");
@@ -662,7 +664,11 @@ void CollectDawnInfo(const gpu::GpuPreferences& gpu_preferences,
   if (dawn_search_path.empty())
 #endif
   {
+#if BUILDFLAG(IS_IOS)
+    if (base::PathService::Get(base::DIR_ASSETS, &module_path)) {
+#else
     if (base::PathService::Get(base::DIR_MODULE, &module_path)) {
+#endif
       dawn_search_path = module_path.AsEndingWithSeparator().MaybeAsASCII();
     }
   }
@@ -678,8 +684,7 @@ void CollectDawnInfo(const gpu::GpuPreferences& gpu_preferences,
 
   auto instance = std::make_unique<dawn::native::Instance>(
       reinterpret_cast<const WGPUInstanceDescriptor*>(&instance_desc));
-  instance->DiscoverDefaultPhysicalDevices();
-  std::vector<dawn::native::Adapter> adapters = instance->GetAdapters();
+  std::vector<dawn::native::Adapter> adapters = instance->EnumerateAdapters();
 
   for (dawn::native::Adapter& adapter : adapters) {
     wgpu::AdapterProperties properties;

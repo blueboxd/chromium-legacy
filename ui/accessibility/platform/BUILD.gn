@@ -119,6 +119,7 @@ component("platform") {
       "//base:i18n",
       "//components/crash/core/common:crash_key",
       "//gin",
+      "//services/accessibility/public/mojom",
     ]
   }
 
@@ -193,6 +194,7 @@ component("platform") {
         "inspect/ax_tree_formatter_win.cc",
         "inspect/ax_tree_formatter_win.h",
         "inspect/ax_tree_indexer_win.h",
+        "sequence_affine_com_object_root_win.h",
         "uia_registrar_win.cc",
         "uia_registrar_win.h",
       ]

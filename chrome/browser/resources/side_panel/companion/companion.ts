@@ -168,26 +168,47 @@ function initialize() {
         }
       });
 
+  // POST dataUris from the Visual Search classification results to the iframe
+  companionProxy.callbackRouter.onDeviceVisualClassificationResult.addListener(
+      (results: VisualSearchResult[]) => {
+        const dataUris = results.map(result => result.dataUri);
+        const message = {
+          [ParamType.METHOD_TYPE]:
+              MethodType.kOnDeviceVisualClassificationResult,
+          [ParamType.VISUAL_SEARCH_PARAMS]: dataUris,
+        };
+
+        const companionOrigin =
+            new URL(loadTimeData.getString('companion_origin')).origin;
+        const frame = document.body.querySelector('iframe');
+        assert(frame);
+        if (frame.contentWindow) {
+          // We ensure that frame is done loading before posting the message.
+          if (frame.contentDocument?.readyState === 'complete') {
+            frame.contentWindow.postMessage(message, companionOrigin);
+          } else {
+            // Since frame is not done loading, we postpone it is loaded.
+            frame.addEventListener('load', () => {
+              assert(frame.contentWindow);
+              frame.contentWindow.postMessage(message, companionOrigin);
+            });
+          }
+        }
+      });
+
+  companionProxy.callbackRouter.onNavigationError.addListener(() => {
+    const networkErrorOverlay = document.getElementById('network-error-page');
+    const frame = document.body.querySelector('iframe');
+    assert(frame);
+    assert(networkErrorOverlay);
+
+    // Hide the frame and show the network error overlay.
+    networkErrorOverlay.style.display = 'block';
+    frame.style.display = 'none';
+  });
+
   companionProxy.handler.showUI();
 }
-
-// POST dataUris from the Visual Search classification results to the iframe
-companionProxy.callbackRouter.onDeviceVisualClassificationResult.addListener(
-    (results: VisualSearchResult[]) => {
-      const dataUris = results.map(result => result.dataUri);
-      const message = {
-        [ParamType.METHOD_TYPE]: MethodType.kOnDeviceVisualClassificationResult,
-        [ParamType.VISUAL_SEARCH_PARAMS]: dataUris,
-      };
-
-      const companionOrigin =
-          new URL(loadTimeData.getString('companion_origin')).origin;
-      const frame = document.body.querySelector('iframe');
-      assert(frame);
-      if (frame.contentWindow) {
-        frame.contentWindow.postMessage(message, companionOrigin);
-      }
-    });
 
 // Handler for postMessage() calls from the embedded iframe.
 function onCompanionMessageEvent(event: MessageEvent) {

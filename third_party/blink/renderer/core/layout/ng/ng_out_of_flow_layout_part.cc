@@ -317,10 +317,9 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
   // in this case?
   if (!container_builder->HasOutOfFlowPositionedCandidates() &&
       !container_builder->HasOutOfFlowFragmentainerDescendants() &&
-      !container_builder->HasMulticolsWithPendingOOFs() &&
-      !To<LayoutBlock>(container_builder_->GetLayoutObject())
-           ->HasPositionedObjects())
+      !container_builder->HasMulticolsWithPendingOOFs()) {
     return;
+  }
 
   // Disable first tier cache for grid layouts, as grid allows for out-of-flow
   // items to be placed in grid areas, which is complex to maintain a cache for.
@@ -349,8 +348,7 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
 void NGOutOfFlowLayoutPart::Run() {
   HandleFragmentation();
   const LayoutObject* current_container = container_builder_->GetLayoutObject();
-  if (!container_builder_->HasOutOfFlowPositionedCandidates() &&
-      !To<LayoutBlock>(current_container)->HasPositionedObjects()) {
+  if (!container_builder_->HasOutOfFlowPositionedCandidates()) {
     container_builder_
         ->AdjustFixedposContainingBlockForFragmentainerDescendants();
     container_builder_->AdjustFixedposContainingBlockForInnerMulticols();
@@ -556,34 +554,6 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
         container_builder_->GridLayoutData(), container_builder_->Borders(),
         {container_builder_->InlineSize(),
          container_builder_->FragmentBlockSize()});
-  }
-
-  // The ::view-transition element is special in that its containing block is
-  // the "snapshot root" rect, rather than a viewport or parent box:
-  // https://drafts.csswg.org/css-view-transitions-1/#selectordef-view-transition.
-  DCHECK(candidate.box);
-  if (ViewTransitionUtils::IsViewTransitionRoot(*candidate.box)) {
-    DCHECK(container_object->IsLayoutView());
-    const ViewTransition* transition =
-        ViewTransitionUtils::GetActiveTransition(candidate.box->GetDocument());
-    DCHECK(transition);
-
-    PhysicalRect physical_snapshot_root_in_frame(
-        PhysicalOffset(transition->GetFrameToSnapshotRootOffset()),
-        PhysicalSize(transition->GetSnapshotRootSize()));
-
-    WritingDirectionMode writing_direction =
-        ConstraintSpace().GetWritingDirection();
-    LogicalSize outer_size = container_builder_->Size();
-    WritingModeConverter converter(writing_direction, outer_size);
-
-    NGOutOfFlowLayoutPart::ContainingBlockInfo containing_block_for_snapshot;
-    containing_block_for_snapshot.rect =
-        converter.ToLogical(physical_snapshot_root_in_frame);
-
-    containing_block_for_snapshot.writing_direction = writing_direction;
-
-    return containing_block_for_snapshot;
   }
 
   return node_style.GetPosition() == EPosition::kAbsolute
@@ -869,10 +839,6 @@ void NGOutOfFlowLayoutPart::LayoutCandidates(
         if (has_block_fragmentation_) {
           container_builder_->SetHasOutOfFlowInFragmentainerSubtree(true);
           if (!container_builder_->IsInitialColumnBalancingPass()) {
-            // As an optimization, only populate legacy positioned objects lists
-            // when inside a fragmentation context root, since otherwise we can
-            // just look at the children in the fragment tree.
-            container_builder_->InsertLegacyPositionedObject(candidate.Node());
             NGLogicalOOFNodeForFragmentation fragmentainer_descendant(
                 candidate);
             container_builder_->AdjustFragmentainerDescendant(
@@ -1924,6 +1890,24 @@ NGOutOfFlowLayoutPart::TryCalculateOffset(
   offset_info.offset.inline_offset += inset.inline_start;
   offset_info.offset.block_offset += inset.block_start;
 
+  // Calculate the absolutized insets to be stored on |LayoutResult|.
+  // |node_dimensions.inset| doesn't include margins, but |insets| do. We add
+  // margins into |used_insets| for the calculation, and then remove them at the
+  // end.
+  const NGBoxStrut used_insets =
+      node_dimensions.inset - node_dimensions.margins;
+  NGBoxStrut insets_to_store;
+  insets_to_store.inline_start =
+      insets.inline_start.value_or(used_insets.inline_start);
+  insets_to_store.inline_end =
+      insets.inline_end.value_or(used_insets.inline_end);
+  insets_to_store.block_start =
+      insets.block_start.value_or(used_insets.block_start);
+  insets_to_store.block_end = insets.block_end.value_or(used_insets.block_end);
+  offset_info.insets_for_get_computed_style =
+      insets_to_store.ConvertToPhysical(candidate_writing_direction)
+          .ConvertToLogical(node_info.default_writing_direction);
+
   if (!container_builder_->IsBlockFragmentationContextRoot()) {
     // OOFs contained by an inline that's been split into continuations are
     // special, as their offset is relative to a fragment that's not the same as
@@ -1985,14 +1969,17 @@ const NGLayoutResult* NGOutOfFlowLayoutPart::Layout(
             node_info.node.Style().GetWritingDirection()));
   }
 
+  layout_result->GetMutableForOutOfFlow().SetOutOfFlowInsetsForGetComputedStyle(
+      offset_info.insets_for_get_computed_style,
+      allow_first_tier_oof_cache_ && !offset_info.disable_first_tier_cache);
+
+  layout_result->GetMutableForOutOfFlow().SetOutOfFlowPositionedOffset(
+      offset_info.offset);
+
   if (offset_info.fallback_index) {
     layout_result->GetMutableForOutOfFlow().SetPositionFallbackResult(
         *offset_info.fallback_index, offset_info.non_overflowing_ranges);
   }
-
-  layout_result->GetMutableForOutOfFlow().SetOutOfFlowPositionedOffset(
-      offset_info.offset,
-      allow_first_tier_oof_cache_ && !offset_info.disable_first_tier_cache);
 
   return layout_result;
 }
@@ -2233,7 +2220,7 @@ void NGOutOfFlowLayoutPart::AddOOFToFragmentainer(
   LogicalOffset offset_adjustment = fragmentainer_offset;
 
   result->GetMutableForOutOfFlow().SetOutOfFlowPositionedOffset(
-      adjusted_offset, allow_first_tier_oof_cache_);
+      adjusted_offset);
 
   LogicalOffset additional_fixedpos_offset;
   if (descendant.node_info.fixedpos_containing_block.Fragment()) {

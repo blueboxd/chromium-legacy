@@ -171,8 +171,10 @@ static const unsigned kConstructorFlagsMask =
 IntersectionGeometry::RootGeometry::RootGeometry(const LayoutObject* root,
                                                  const Vector<Length>& margin) {
   if (!root || !root->GetNode() || !root->GetNode()->isConnected() ||
-      !root->IsBox())
+      // TODO(crbug.com/1456208): Support inline root.
+      !root->IsBox()) {
     return;
+  }
   zoom = root->StyleRef().EffectiveZoom();
   local_root_rect = InitializeRootRect(root, margin);
   TransformState transform_state(TransformState::kApplyTransformDirection);
@@ -333,7 +335,8 @@ IntersectionGeometry::PrepareComputeGeometry(const Node* root_node,
   RootAndTarget root_and_target(root_node, target_element);
 
   if (ShouldUseCachedRects()) {
-    CHECK(!RootIsImplicit());
+    CHECK(!RootIsImplicit() ||
+          RuntimeEnabledFeatures::IntersectionOptimizationEnabled());
     // Cached rects can only be used if there are no scrollable objects in the
     // hierarchy between target and root (a scrollable root is ok). The reason
     // is that a scroll change in an intermediate scroller would change the
@@ -354,9 +357,13 @@ IntersectionGeometry::PrepareComputeGeometry(const Node* root_node,
       return false;
     };
     if (RuntimeEnabledFeatures::IntersectionOptimizationEnabled()
-            ? (root_and_target.relationship != RootAndTarget::kNotScrollable &&
-               root_and_target.relationship !=
-                   RootAndTarget::kScrollableByRootOnly)
+            // TODO(wangxianzhu): Don't use cached rects for implicit root for
+            // now because that would expose some under-invalidaiton bugs.
+            //
+            ? (RootIsImplicit() ||
+               (root_and_target.relationship != RootAndTarget::kNotScrollable &&
+                root_and_target.relationship !=
+                    RootAndTarget::kScrollableByRootOnly))
             : !legacy_can_use_cached_rects()) {
       flags_ &= ~kShouldUseCachedRects;
     }
@@ -555,6 +562,9 @@ bool IntersectionGeometry::ClipToRoot(const LayoutObject* root,
                                       PhysicalRect& unclipped_intersection_rect,
                                       PhysicalRect& intersection_rect,
                                       CachedRects* cached_rects) {
+  if (!root->IsBox()) {
+    return false;
+  }
   // Map and clip rect into root element coordinates.
   // TODO(szager): the writing mode flipping needs a test.
   const LayoutBox* local_ancestor = nullptr;

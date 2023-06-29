@@ -128,7 +128,8 @@ class CookieSettings : public CookieSettingsBase,
   //
   // This should only be called on the UI thread.
   bool IsThirdPartyAccessAllowed(const GURL& first_party_url,
-                                 content_settings::SettingSource* source);
+                                 content_settings::SettingSource* source,
+                                 base::Time* expiration = nullptr);
 
   // Sets the cookie setting for the site and third parties embedded in it.
   //
@@ -136,7 +137,10 @@ class CookieSettings : public CookieSettingsBase,
   void SetThirdPartyCookieSetting(const GURL& first_party_url,
                                   ContentSetting setting);
 
-  // Resets the third party cookie setting for the given url.
+  // Resets the third party cookie setting for the given url. Resets both site-
+  // and origin-scoped exceptions since either one might be present.
+  // `SetCookieSettingForUserBypass()` and `SetThirdPartyCookieSetting()` create
+  // site- and origin-scoped exceptions respectevely.
   //
   // This should only be called on the UI thread.
   void ResetThirdPartyCookieSetting(const GURL& first_party_url);
@@ -187,7 +191,8 @@ class CookieSettings : public CookieSettingsBase,
       const GURL& first_party_url,
       bool is_third_party_request,
       net::CookieSettingOverrides overrides,
-      content_settings::SettingSource* source) const override;
+      content_settings::SettingSource* source,
+      base::Time* expiration) const override;
 
   // content_settings::Observer:
   void OnContentSettingChanged(

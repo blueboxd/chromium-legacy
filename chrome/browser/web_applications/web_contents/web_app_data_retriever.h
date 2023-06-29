@@ -23,7 +23,6 @@
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
 
 class GURL;
-struct WebAppInstallInfo;
 
 namespace content {
 class WebContents;
@@ -36,6 +35,8 @@ struct InstallableData;
 namespace web_app {
 
 enum class IconsDownloadedResult;
+
+struct WebAppInstallInfo;
 
 // Class used by the WebApp system to retrieve the necessary information to
 // install an app. Should only be called from the UI thread.
@@ -59,6 +60,10 @@ class WebAppDataRetriever : content::WebContentsObserver {
                               webapps::InstallableStatusCode)>;
 
   using GetIconsCallback = WebAppIconDownloader::WebAppIconDownloaderCallback;
+
+  static void PopulateWebAppInfoFromMetadata(
+      WebAppInstallInfo* install_info,
+      const webapps::mojom::WebPageMetadata& metadata);
 
   WebAppDataRetriever();
   WebAppDataRetriever(const WebAppDataRetriever&) = delete;

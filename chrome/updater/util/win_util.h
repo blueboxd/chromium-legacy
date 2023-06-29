@@ -212,6 +212,10 @@ std::wstring GetAppCohortKey(const std::wstring& app_id);
 std::wstring GetAppCommandKey(const std::wstring& app_id,
                               const std::wstring& command_id);
 
+// Returns the registry value
+// `{HKRoot}\Software\{CompanyName}\Update\ClientState\{app_id}\ap`.
+std::string GetAppAPValue(UpdaterScope scope, const std::string& app_id);
+
 // Returns the registry path for the Updater app id under the |Clients| subkey.
 // The path does not include the registry root hive prefix.
 std::wstring GetRegistryKeyClientsUpdater();
@@ -417,7 +421,6 @@ template <typename T, typename I, typename... TArgs>
 // Does not create the directory if it does not exist.
 [[nodiscard]] absl::optional<base::FilePath> GetInstallDirectoryX86(
     UpdaterScope scope);
-
 }  // namespace updater
 
 #endif  // CHROME_UPDATER_UTIL_WIN_UTIL_H_

@@ -33,7 +33,6 @@
 #include "cc/trees/proxy_main.h"
 #include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/task_runner_provider.h"
-#include "components/power_scheduler/power_mode_arbiter.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/frame_timing_details.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
@@ -120,8 +119,7 @@ ProxyImpl::ProxyImpl(
       this, scheduler_settings, layer_tree_host_id_,
       task_runner_provider_->ImplThreadTaskRunner(),
       std::move(compositor_timing_history),
-      host_impl_->compositor_frame_reporting_controller(),
-      power_scheduler::PowerModeArbiter::GetInstance());
+      host_impl_->compositor_frame_reporting_controller());
 
   DCHECK_EQ(scheduler_->visible(), host_impl_->visible());
 }
@@ -543,9 +541,7 @@ void ProxyImpl::RenewTreePriority() {
   //   scroll offset change to be visible.
   if (host_impl_->active_tree()->GetDeviceViewport().size().IsEmpty() ||
       host_impl_->EvictedUIResourcesExist() ||
-      (host_impl_->IsCurrentScrollMainRepainted() &&
-       base::FeatureList::IsEnabled(
-           features::kMainRepaintScrollPrefersNewContent))) {
+      host_impl_->IsCurrentScrollMainRepainted()) {
     // Once we enter NEW_CONTENTS_TAKES_PRIORITY mode, visible tiles on active
     // tree might be freed. We need to set RequiresHighResToDraw to ensure that
     // high res tiles will be required to activate pending tree.

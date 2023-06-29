@@ -1552,9 +1552,9 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
 
         {
           IndexedDBDatabaseMetadata database;
-          leveldb::Status s = metadata_coding.CreateDatabase(
-              backing_store()->db(), backing_store()->origin_identifier(),
-              database_name, version, &database);
+          database.name = database_name;
+          database.version = version;
+          leveldb::Status s = backing_store()->CreateDatabase(database);
           EXPECT_TRUE(s.ok());
           EXPECT_GT(database.id, 0);
           database_id = database.id;
@@ -1589,8 +1589,7 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
         {
           IndexedDBDatabaseMetadata database;
           bool found;
-          leveldb::Status s = metadata_coding.ReadMetadataForDatabaseName(
-              backing_store()->db(), backing_store()->origin_identifier(),
+          leveldb::Status s = backing_store()->ReadMetadataForDatabaseName(
               database_name, &database, &found);
           EXPECT_TRUE(s.ok());
           EXPECT_TRUE(found);
@@ -1634,25 +1633,25 @@ TEST_F(IndexedDBBackingStoreTest, GetDatabaseNames) {
   // stale data, and should not be enumerated.
   const std::u16string db2_name(u"db2");
   const int64_t db2_version = IndexedDBDatabaseMetadata::DEFAULT_VERSION;
-  IndexedDBMetadataCoding metadata_coding;
 
   IndexedDBDatabaseMetadata db1;
-  leveldb::Status s = metadata_coding.CreateDatabase(
-      backing_store()->db(), backing_store()->origin_identifier(), db1_name,
-      db1_version, &db1);
+  db1.name = db1_name;
+  db1.version = db1_version;
+  leveldb::Status s = backing_store()->CreateDatabase(db1);
+
   EXPECT_TRUE(s.ok());
   EXPECT_GT(db1.id, 0LL);
 
   IndexedDBDatabaseMetadata db2;
-  s = metadata_coding.CreateDatabase(backing_store()->db(),
-                                     backing_store()->origin_identifier(),
-                                     db2_name, db2_version, &db2);
+  db2.name = db2_name;
+  db2.version = db2_version;
+  s = backing_store()->CreateDatabase(db2);
+
   EXPECT_TRUE(s.ok());
   EXPECT_GT(db2.id, db1.id);
 
   std::vector<std::u16string> names;
-  s = metadata_coding.ReadDatabaseNames(
-      backing_store()->db(), backing_store()->origin_identifier(), &names);
+  s = backing_store()->GetDatabaseNames(&names);
   EXPECT_TRUE(s.ok());
   ASSERT_EQ(1U, names.size());
   EXPECT_EQ(db1_name, names[0]);
@@ -1867,9 +1866,9 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
 
   {
     IndexedDBDatabaseMetadata database;
-    leveldb::Status s = metadata_coding.CreateDatabase(
-        backing_store()->db(), backing_store()->origin_identifier(),
-        database_name, version, &database);
+    database.name = database_name;
+    database.version = version;
+    leveldb::Status s = backing_store()->CreateDatabase(database);
     EXPECT_TRUE(s.ok());
     EXPECT_GT(database.id, 0);
     database_id = database.id;
@@ -1973,9 +1972,9 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
 
   {
     IndexedDBDatabaseMetadata database;
-    leveldb::Status s = metadata_coding.CreateDatabase(
-        backing_store()->db(), backing_store()->origin_identifier(),
-        database_name, version, &database);
+    database.name = database_name;
+    database.version = version;
+    leveldb::Status s = backing_store()->CreateDatabase(database);
     EXPECT_TRUE(s.ok());
     EXPECT_GT(database.id, 0);
     database_id = database.id;
@@ -2090,9 +2089,9 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeV3ToV4) {
 
   {
     IndexedDBDatabaseMetadata database;
-    leveldb::Status s = metadata_coding.CreateDatabase(
-        backing_store()->db(), backing_store()->origin_identifier(),
-        database_name, version, &database);
+    database.name = database_name;
+    database.version = version;
+    leveldb::Status s = backing_store()->CreateDatabase(database);
     EXPECT_TRUE(s.ok());
     EXPECT_GT(database.id, 0);
     database_id = database.id;
@@ -2244,9 +2243,9 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeV4ToV5) {
 
   {
     IndexedDBDatabaseMetadata database;
-    leveldb::Status s = metadata_coding.CreateDatabase(
-        backing_store()->db(), backing_store()->origin_identifier(),
-        database_name, version, &database);
+    database.name = database_name;
+    database.version = version;
+    leveldb::Status s = backing_store()->CreateDatabase(database);
     EXPECT_TRUE(s.ok());
     EXPECT_GT(database.id, 0);
     database_id = database.id;

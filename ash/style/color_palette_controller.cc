@@ -36,7 +36,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/color/color_provider_manager.h"
+#include "ui/color/color_provider_key.h"
 #include "ui/color/dynamic_color/palette.h"
 #include "ui/color/dynamic_color/palette_factory.h"
 #include "ui/gfx/color_palette.h"
@@ -47,7 +47,7 @@ namespace {
 
 class ColorPaletteControllerImpl;
 
-using ColorMode = ui::ColorProviderManager::ColorMode;
+using ColorMode = ui::ColorProviderKey::ColorMode;
 
 const SkColor kDefaultWallpaperColor = gfx::kGoogleBlue400;
 
@@ -60,7 +60,10 @@ SkColor GetWallpaperColor(bool is_dark_mode_enabled) {
 }
 
 PrefService* GetUserPrefService(const AccountId& account_id) {
-  DCHECK(account_id.is_valid());
+  if (!account_id.is_valid()) {
+    CHECK_IS_TEST();
+    return nullptr;
+  }
   return Shell::Get()->session_controller()->GetUserPrefServiceForUser(
       account_id);
 }
@@ -75,7 +78,7 @@ const AccountId& AccountFromSession(const UserSession* session) {
   return session->user_info.account_id;
 }
 
-using SchemeVariant = ui::ColorProviderManager::SchemeVariant;
+using SchemeVariant = ui::ColorProviderKey::SchemeVariant;
 
 SchemeVariant ToVariant(ColorScheme scheme) {
   switch (scheme) {
@@ -233,8 +236,8 @@ class ColorPaletteControllerImpl : public ColorPaletteController,
     }
 
     seed.color_mode = dark_light_mode_controller_->IsDarkModeEnabled()
-                          ? ui::ColorProviderManager::ColorMode::kDark
-                          : ui::ColorProviderManager::ColorMode::kLight;
+                          ? ui::ColorProviderKey::ColorMode::kDark
+                          : ui::ColorProviderKey::ColorMode::kLight;
     seed.seed_color = *seed_color;
     seed.scheme = GetColorScheme(account_id);
 
@@ -278,19 +281,27 @@ class ColorPaletteControllerImpl : public ColorPaletteController,
     }
     PrefService* pref_service = GetUserPrefService(account_id);
     if (pref_service) {
-      return static_cast<ColorScheme>(
-          pref_service->GetInteger(prefs::kDynamicColorColorScheme));
+      const PrefService::Preference* pref =
+          pref_service->FindPreference(prefs::kDynamicColorColorScheme);
+      if (!pref->IsDefaultValue()) {
+        return static_cast<ColorScheme>(pref->GetValue()->GetInt());
+      }
+    } else {
+      CHECK(local_state_);
+      const auto scheme =
+          user_manager::KnownUser(local_state_)
+              .FindIntPath(account_id, prefs::kDynamicColorColorScheme);
+      if (scheme.has_value()) {
+        return static_cast<ColorScheme>(scheme.value());
+      }
     }
-    CHECK(local_state_);
-    const auto scheme =
-        user_manager::KnownUser(local_state_)
-            .FindIntPath(account_id, prefs::kDynamicColorColorScheme);
-    if (scheme.has_value()) {
-      return static_cast<ColorScheme>(scheme.value());
-    }
+
     DVLOG(1) << "No user pref service or local pref service available. "
                 "Returning default color scheme.";
-    return ColorScheme::kTonalSpot;
+    // The preferred default color scheme for the time of day wallpaper instead
+    // of tonal spot.
+    return features::IsTimeOfDayWallpaperEnabled() ? ColorScheme::kNeutral
+                                                   : ColorScheme::kTonalSpot;
   }
 
   absl::optional<SkColor> GetStaticColor(
@@ -425,8 +436,8 @@ class ColorPaletteControllerImpl : public ColorPaletteController,
         // the color computation is done and this will be called again.
         return {};
       }
-      seed.color_mode = dark ? ui::ColorProviderManager::ColorMode::kDark
-                             : ui::ColorProviderManager::ColorMode::kLight;
+      seed.color_mode = dark ? ui::ColorProviderKey::ColorMode::kDark
+                             : ui::ColorProviderKey::ColorMode::kLight;
       seed.seed_color = *seed_color;
       seed.scheme = ColorScheme::kTonalSpot;
 

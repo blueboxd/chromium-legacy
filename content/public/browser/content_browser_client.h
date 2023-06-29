@@ -36,6 +36,7 @@
 #include "content/public/browser/interest_group_manager.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/mojo_binder_policy_map.h"
+#include "content/public/browser/privacy_sandbox_invoking_api.h"
 #include "content/public/browser/storage_partition_config.h"
 #include "content/public/common/alternative_error_page_override_info.mojom-forward.h"
 #include "content/public/common/page_visibility_state.h"
@@ -222,6 +223,7 @@ class NavigationThrottle;
 class NavigationUIData;
 class PrefetchServiceDelegate;
 class PresentationObserver;
+class PrivateNetworkDeviceDelegate;
 class ReceiverPresentationServiceDelegate;
 class RenderFrameHost;
 class RenderProcessHost;
@@ -884,6 +886,13 @@ class CONTENT_EXPORT ContentBrowserClient {
       InterestGroupApiOperation operation,
       const url::Origin& top_frame_origin,
       const url::Origin& api_origin);
+
+  // Returns whether |destination_origin| can receive beacons sent through
+  // window.fence.reportEvent() or automatic beacons.
+  virtual bool IsPrivacySandboxReportingDestinationAttested(
+      content::BrowserContext* browser_context,
+      const url::Origin& destination_origin,
+      content::PrivacySandboxInvokingAPI invoking_api);
 
   virtual void OnAuctionComplete(
       RenderFrameHost* render_frame_host,
@@ -1951,6 +1960,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to provide an implementation of the WebUSB API.
   virtual UsbDelegate* GetUsbDelegate();
 
+  // Allows the embedder to provide an implementation of the Private Network
+  // Device API.
+  virtual PrivateNetworkDeviceDelegate* GetPrivateNetworkDeviceDelegate();
+
   // Allows the embedder to provide an implementation of the Local Font Access
   // API.
   virtual FontAccessDelegate* GetFontAccessDelegate();
@@ -2230,12 +2243,17 @@ class CONTENT_EXPORT ContentBrowserClient {
                                       const url::Origin& requesting_origin,
                                       const url::Origin& embedding_origin);
 
-  // Returns true if the site is allowed to use persistent media device IDs.
-  virtual bool ArePersistentMediaDeviceIDsAllowed(
-      content::BrowserContext* browser_context,
-      const GURL& scope,
+  // Returns via callback:
+  //  1. A boolean indicating whether persistent device IDs are allowed.
+  //  2. A salt for hashing media device IDs for the given storage key.
+  //  Ideally, the salt should be unique per `storage_key` and persistent if
+  //  cookie access is allowed for `site_for_cookies`. However the embedder is
+  //  free to return a salt that does not satisfy all these properties.
+  virtual void GetMediaDeviceIDSalt(
+      content::RenderFrameHost* rfh,
       const net::SiteForCookies& site_for_cookies,
-      const absl::optional<url::Origin>& top_frame_origin);
+      const blink::StorageKey& storage_key,
+      base::OnceCallback<void(bool, const std::string&)> callback);
 
   // Requests an SMS from |origin_list| from a remote device with telephony
   // capabilities, for example the user's mobile phone. Callbacks |callback|

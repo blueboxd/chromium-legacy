@@ -22,6 +22,8 @@
 #include "base/types/expected.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
+#include "chrome/browser/web_applications/test/fake_web_app_provider.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
@@ -174,8 +176,26 @@ class InstallIsolatedWebAppFromCommandLineFlagTest : public WebAppTest {
         {features::kIsolatedWebApps, features::kIsolatedWebAppDevMode}, {});
   }
 
+  void SetUp() override {
+    WebAppTest::SetUp();
+
+    // Clear raw_ptr to existing scheduler to prevent dangling pointer.
+    // TODO(b/283816014): Remove this once SetSubsystems is replaced by
+    // SetProvider().
+    fake_provider().iwa_command_line_install_manager().SetSubsystems(nullptr);
+
+    fake_provider().SetScheduler(std::make_unique<FakeWebAppCommandScheduler>(
+        *profile(), &fake_provider()));
+
+    test::AwaitStartWebAppProviderAndSubsystems(profile());
+  }
+
   sync_preferences::TestingPrefServiceSyncable* pref_service() {
     return profile()->GetTestingPrefService();
+  }
+
+  IsolatedWebAppCommandLineInstallManager& manager() {
+    return fake_provider().iwa_command_line_install_manager();
   }
 
  private:
@@ -190,16 +210,11 @@ TEST_F(InstallIsolatedWebAppFromCommandLineFlagTest,
   base::test::RepeatingTestFuture<
       base::expected<InstallIsolatedWebAppCommandSuccess, std::string>>
       future;
-  auto manager = IsolatedWebAppCommandLineInstallManager(*profile());
-  FakeWebAppCommandScheduler fake_command_scheduler(*profile(), nullptr);
-  manager.OnReportInstallationResultForTesting(future.GetCallback());
-  manager.SetSubsystems(&fake_command_scheduler);
-  manager.Start();
-
   auto keep_alive = std::make_unique<ScopedKeepAlive>(
       KeepAliveOrigin::ISOLATED_WEB_APP_INSTALL,
       KeepAliveRestartOption::DISABLED);
-  manager.InstallFromCommandLine(
+  manager().OnReportInstallationResultForTesting(future.GetCallback());
+  manager().InstallFromCommandLine(
       CreateCommandLine("http://example.com:12345", absl::nullopt),
       std::move(keep_alive), /*optional_profile_keep_alive=*/nullptr,
       base::TaskPriority::USER_VISIBLE);
@@ -217,16 +232,11 @@ TEST_F(InstallIsolatedWebAppFromCommandLineFlagTest,
   base::test::RepeatingTestFuture<
       base::expected<InstallIsolatedWebAppCommandSuccess, std::string>>
       future;
-  auto manager = IsolatedWebAppCommandLineInstallManager(*profile());
-  FakeWebAppCommandScheduler fake_command_scheduler(*profile(), nullptr);
-  manager.OnReportInstallationResultForTesting(future.GetCallback());
-  manager.SetSubsystems(&fake_command_scheduler);
-  manager.Start();
-
   auto keep_alive = std::make_unique<ScopedKeepAlive>(
       KeepAliveOrigin::ISOLATED_WEB_APP_INSTALL,
       KeepAliveRestartOption::DISABLED);
-  manager.InstallFromCommandLine(
+  manager().OnReportInstallationResultForTesting(future.GetCallback());
+  manager().InstallFromCommandLine(
       CreateCommandLine("http://example.com:12345", absl::nullopt),
       std::move(keep_alive), /*optional_profile_keep_alive=*/nullptr,
       base::TaskPriority::USER_VISIBLE);
@@ -246,16 +256,11 @@ TEST_F(InstallIsolatedWebAppFromCommandLineFlagTest,
   base::test::RepeatingTestFuture<
       base::expected<InstallIsolatedWebAppCommandSuccess, std::string>>
       future;
-  auto manager = IsolatedWebAppCommandLineInstallManager(*profile());
-  FakeWebAppCommandScheduler fake_command_scheduler(*profile(), nullptr);
-  manager.OnReportInstallationResultForTesting(future.GetCallback());
-  manager.SetSubsystems(&fake_command_scheduler);
-  manager.Start();
-
   auto keep_alive = std::make_unique<ScopedKeepAlive>(
       KeepAliveOrigin::ISOLATED_WEB_APP_INSTALL,
       KeepAliveRestartOption::DISABLED);
-  manager.InstallFromCommandLine(
+  manager().OnReportInstallationResultForTesting(future.GetCallback());
+  manager().InstallFromCommandLine(
       CreateCommandLine("http://example.com:12345", absl::nullopt),
       std::move(keep_alive), /*optional_profile_keep_alive=*/nullptr,
       base::TaskPriority::USER_VISIBLE);

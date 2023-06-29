@@ -63,7 +63,6 @@
 #include "chrome/browser/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/certificate_provider/pin_dialog_manager.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/enterprise/util/managed_browser_utils.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/net/nss_temp_certs_cache_chromeos.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -189,23 +188,9 @@ GaiaScreenHandler::GaiaScreenMode GetGaiaScreenMode(const std::string& email) {
   CrosSettings::Get()->GetInteger(kLoginAuthenticationBehavior,
                                   &authentication_behavior);
   if (authentication_behavior ==
-      em::LoginAuthenticationBehaviorProto::SAML_INTERSTITIAL) {
-    if (email.empty())
-      return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_REDIRECT;
-
-    user_manager::KnownUser known_user(g_browser_process->local_state());
-    // If there's a populated email, we must check first that this user is using
-    // SAML in order to decide whether to show the interstitial page.
-    const user_manager::User* user =
-        user_manager::UserManager::Get()->FindUser(known_user.GetAccountId(
-            email, std::string() /* id */, AccountType::UNKNOWN));
-
-    // TODO(b/259675128): we shouldn't rely on `user->using_saml()` when
-    // deciding which IdP page to show because this flag can be outdated. Admin
-    // could have changed the IdP to GAIA since last authentication and we
-    // wouldn't know about it.
-    if (user && user->using_saml())
-      return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_REDIRECT;
+          em::LoginAuthenticationBehaviorProto::SAML_INTERSTITIAL &&
+      email.empty()) {
+    return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_REDIRECT;
   }
 
   return GaiaScreenHandler::GAIA_SCREEN_MODE_DEFAULT;
@@ -662,7 +647,6 @@ void GaiaScreenHandler::DeclareJSCallbacks() {
   AddCallback("samlChallengeMachineKey",
               &GaiaScreenHandler::HandleSamlChallengeMachineKey);
   AddCallback("loginWebuiReady", &GaiaScreenHandler::HandleGaiaUIReady);
-  AddCallback("identifierEntered", &GaiaScreenHandler::HandleIdentifierEntered);
   AddCallback("authExtensionLoaded",
               &GaiaScreenHandler::HandleAuthExtensionLoaded);
   AddCallback("setIsFirstSigninStep",
@@ -675,14 +659,6 @@ void GaiaScreenHandler::DeclareJSCallbacks() {
   AddCallback("passwordEntered", &GaiaScreenHandler::HandlePasswordEntered);
   AddCallback("showLoadingTimeoutError",
               &GaiaScreenHandler::HandleShowLoadingTimeoutError);
-}
-
-void GaiaScreenHandler::HandleIdentifierEntered(const std::string& user_email) {
-  if (MaybeTriggerEnrollmentNudge(user_email)) {
-    return;
-  }
-
-  CheckIfAllowlisted(user_email);
 }
 
 void GaiaScreenHandler::HandleAuthExtensionLoaded() {
@@ -1355,6 +1331,10 @@ void GaiaScreenHandler::SetReauthRequestToken(
   gaia_reauth_request_token_ = reauth_request_token;
 }
 
+void GaiaScreenHandler::ShowEnrollmentNudge(const std::string& email_domain) {
+  CallExternalAPI("showEnrollmentNudge", email_domain);
+}
+
 void GaiaScreenHandler::LoadAuthExtension(bool force) {
   VLOG(1) << "LoadAuthExtension, force: " << force;
   if (!initialized_) {
@@ -1604,42 +1584,6 @@ void GaiaScreenHandler::SAMLConfirmPassword(
     std::unique_ptr<UserContext> user_context) {
   LoginDisplayHost::default_host()->GetSigninUI()->SAMLConfirmPassword(
       std::move(scraped_saml_passwords), std::move(user_context));
-}
-
-bool GaiaScreenHandler::MaybeTriggerEnrollmentNudge(
-    const std::string& user_email) {
-  const bool is_enterprise_managed = g_browser_process->platform_part()
-                                         ->browser_policy_connector_ash()
-                                         ->IsDeviceEnterpriseManaged();
-  if (is_enterprise_managed) {
-    // Device either already went through enterprise enrollment flow or goes
-    // through it right now. No need for nudging.
-    return false;
-  }
-  const bool is_first_user =
-      user_manager::UserManager::Get()->GetUsers().empty();
-  if (!is_first_user) {
-    // Enrollment nudge targets only initial OOBE flow on unowned devices.
-    // Current user is not a first user which means that device is already
-    // owned.
-    return false;
-  }
-  const std::string email_domain =
-      chrome::enterprise_util::GetDomainFromEmail(user_email);
-  if (chrome::enterprise_util::IsKnownConsumerDomain(email_domain)) {
-    // User doesn't belong to a managed domain, so enrollment nudging can't
-    // apply.
-    return false;
-  }
-
-  // TODO(b/271104781): replace this check with a policy fetch through a special
-  // DM server API when it is available.
-  if (!ash::features::IsEnrollmentNudgingForTestingEnabled()) {
-    return false;
-  }
-
-  CallExternalAPI("showEnrollmentNudge", email_domain);
-  return true;
 }
 
 void GaiaScreenHandler::CheckIfAllowlisted(const std::string& user_email) {

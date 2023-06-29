@@ -423,8 +423,8 @@ Style notes:
       <message name="IDS_ASH_STATUS_TRAY_POWER_OFF" desc="The label used for the button in the status tray to turn off the device.">
         Power off
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_MESSAGE_NOT_ALLOWED_LACROS" desc="The error message multiple signin is prevented because Lacros is running.">
-        Signing in a second user is not supported while the Lacros browser is running. Please use a second browser profile in Lacros instead or close Lacros and try again.
+      <message name="IDS_ASH_STATUS_TRAY_MESSAGE_NOT_ALLOWED_LACROS" desc="The error message multiple signin is prevented because Lacros is enabled.">
+        Signing in a second user is not supported if Lacros is enabled. Please use a second browser profile in Lacros instead or disable Lacros and try again.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT" desc="The string for the button which lets the user add another account to the current session.">
         Sign in another user...
@@ -1622,10 +1622,19 @@ Style notes:
       <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_BODY" desc="The message for the nudge that is shown so users can opt-in or out of the speak-on-mute detection feature.">
         You'll get notified if you talk while muted. Audio never leaves your device.
       </message>
-      <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_DISMISS_BUTTON" desc="A toast message that we show when an app tries to access camera or microphone while it is disabled by hardware.">
+      <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_CONFIRMATION_BODY" desc="The message for the nudge that is shown after a user opted-in for the speak-on-mute detection feature.">
+        Mute nudge is on. You'll get notified if you talk while muted.
+      </message>
+      <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_OUT_CONFIRMATION_BODY" desc="The message for the nudge that is shown after a user opted-out of the speak-on-mute detection feature.">
+        You can change mic behavior anytime later.
+      </message>
+      <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_CONFIRMATION_BUTTON" desc="The button text for the nudge that is shown after a user has opted in or out of the speak-on-mute detection feature.">
+        Settings
+      </message>
+      <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_DISMISS_BUTTON" desc="The cancel button text for the nudge shown so users can opt-in or out of the speak-on-mute detection feature.">
         No thanks
       </message>
-      <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_SECOND_BUTTON" desc="A toast message that we show when an app tries to access camera or microphone while it is disabled by hardware.">
+      <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_SECOND_BUTTON" desc="The confirmation button text for the nudge shown so users can opt-in or out of the speak-on-mute detection feature.">
         Turn on
       </message>
       <message name="IDS_ASH_VIDEO_CONFERENCE_CAMERA_NAME" desc="Text display for the camera.">
@@ -2005,8 +2014,8 @@ Style notes:
       <message name="IDS_ASH_BATTERY_STATUS_IN_LAUNCHER_DESCRIPTION" desc="Message content for the description of the battery answer card, showing the battery health percentage and the cycle count.">
         Battery health <ph name="BATTERY_HEALTH_PERCENTAGE">$1<ex>97</ex></ph>% | Cycle count <ph name="CYCLE_COUNT">$2<ex>15</ex></ph>
       </message>
-      <message name="IDS_ASH_STORAGE_STATUS_IN_LAUNCHER_TITLE" desc="Message content for the title of the storage answer card, showing the amount of storage currently in use and the total storage size.">
-        <ph name="STORAGE_IN_USE_SIZE">$1<ex>65 GB</ex></ph> in use / <ph name="STORAGE_TOTAL_SIZE">$2<ex>124 GB</ex></ph>
+      <message name="IDS_ASH_STORAGE_STATUS_IN_LAUNCHER_DESCRIPTION" desc="Message content for the description of the storage answer card, showing the amount of storage currently in use and the total storage size.">
+        Storage <ph name="STORAGE_IN_USE_SIZE">$1<ex>65 GB</ex></ph> in use | <ph name="STORAGE_TOTAL_SIZE">$2<ex>124 GB</ex></ph> total
       </message>
       <message name="IDS_ASH_STORAGE_MANAGEMENT_KEYWORD_FOR_LAUNCHER" desc="Keyword of storage management in launcher search that should trigger a storage answer card result.">
         storage management
@@ -3008,7 +3017,13 @@ Connect your device to power.
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_AUDIO_NBS_MESSAGE" desc="label used to warn that NBS is in use">
-        Your Chromebook or Bluetooth device is using an older version of Bluetooth. Use another input source for better audio quality.
+        Your Chromebook or Bluetooth device is using an older version of Bluetooth. Use the internal microphone for better audio quality.
+      </message>
+
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_INPUT_AGC_INFO" desc="label used for the information of who is controlling mic input gain. [ICU Syntax]">
+        {NUM_APPS, plural,
+         =1 {Mic input controlled by <ph name="app_name">$1<ex>App</ex></ph>}
+         other {Mic input controlled by # apps}}
       </message>
 
       <!-- Status tray Live Caption strings. -->
@@ -3061,6 +3076,9 @@ Connect your device to power.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_AUDIO_SETTINGS" desc="The label used in audio detailed page for the button that launches the OS audio settings page.">
         Audio settings
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_SETTINGS_SHORT_STRING" desc="The label used in audio detailed page for the button that launches the OS audio settings page.">
+        Settings
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY" desc="The label used for the button in the status tray to show the display detailed page.">
         Display
@@ -3467,7 +3485,7 @@ Connect your device to power.
         Shift+Esc
       </message>
       <message name="IDS_SHORTCUT_TASK_MANAGER_NEW" desc="the new shortcut to open the task manager.">
-        Search+Esc
+        search+esc
       </message>
       <message name="IDS_SHORTCUT_IME_BUBBLE_OLD" desc="the old deprecated shortcut to show the input options menu bubble in the shelf.">
         Alt+Shift+K
@@ -3475,16 +3493,23 @@ Connect your device to power.
       <message name="IDS_SHORTCUT_IME_BUBBLE_NEW" desc="the new shortcut to show the input options menu bubble in the shelf.">
         Search+Shift+K
       </message>
+      <message name="IDS_SHORTCUT_SHOW_SHORTCUT_VIEWER_NEW" desc="the new shortcut to open the shortcut viewer app.">
+        ctrl+search+s
+      </message>
       <message name="IDS_DEPRECATED_SHOW_TASK_MANAGER_MSG"
                desc="Notification message to tell users about the deprecation of Shift+ESC shortcut to show the task manager.">
-        The shortcut to open the task manager has changed. Please use <ph name="NEW_SHORTCUT">$1<ex>Search+Esc</ex></ph> instead of <ph name="OLD_SHORTCUT">$2<ex>Shift+Esc</ex></ph>.
+        Open Task Manager app with "<ph name="NEW_SHORTCUT">$1<ex>Search+Esc</ex></ph>".
+      </message>
+      <message name="IDS_DEPRECATED_SHOW_SHORTCUT_VIEWER_MSG"
+               desc="Notification message to tell users about the deprecation of Ctrl+Alt+/ shortcut to show the shortcut viewer app.">
+        Open Key Shortcuts app with "<ph name="NEW_SHORTCUT">$1<ex>ctrl + search + s</ex></ph>".
       </message>
       <message name="IDS_DEPRECATED_SHOW_IME_BUBBLE_MSG"
                desc="Notification message to tell users about the deprecation of Alt+Shift+K shortcut to show the input options menu bubble in the shelf.">
         The shortcut to show the input options menu bubble in the shelf has changed. Please use <ph name="NEW_SHORTCUT">$1<ex>Search+Shift+K</ex></ph> instead of <ph name="OLD_SHORTCUT">$2<ex>Alt+Shift+K</ex></ph>.
       </message>
       <message name="IDS_DEPRECATED_SHORTCUT_TITLE" desc="Notification title to tell users that the keyboard accelerator is deprecated.">
-        Shortcut change
+        Use the updated shortcut
       </message>
 
       <!-- Notification that an accelerator was pressed, so the user knows how to toggle it back -->
@@ -5904,6 +5929,12 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_CLIPBOARD_HISTORY_CONTROL_V_LONGPRESS_FOOTER" desc="The message used to educate users about the clipboard history menu that shows when they hold down Ctrl+V.">
         You’ll see the clipboard when you press and hold Ctrl + V. You can turn off this shortcut by disabling the #clipboard-history-longpress flag in chrome://flags (os://flags if using Lacros).
       </message>
+      <message name="IDS_ASH_CLIPBOARD_HISTORY_HEADER_TITLE" desc="The title of the ChromeOS clipboard history menu, which shows the user's most recently copied items.">
+        Clipboard
+      </message>
+      <message name="IDS_ASH_CLIPBOARD_HISTORY_REMOVE_ALL_BUTTON" desc="The display text for a button in the top-right corner of the ChromeOS clipboard history menu. Users can activate this button to clear their clipboard history (remove all items from the menu).">
+        Remove all
+      </message>
       <message name="IDS_ASH_MULTIPASTE_CONTEXTUAL_NUDGE" desc="The label used for the multipaste nudge, to be seen once the user copies and pastes multiple times in a short time span.">
         Press <ph name="SHORTCUT_KEY_NAME">$1<ex>Launcher</ex></ph> + V to view your clipboard. The last 5 items you've copied are saved to your clipboard.
       </message>
@@ -6673,14 +6704,14 @@ New install
       <message name="IDS_GLANCEABLES_WELCOME_LABEL" desc="Personalized greeting / welcome message shown on glanceables surfaces (welcome screen and overview mode).">
         Welcome back, <ph name="GIVEN_NAME">$1<ex>John</ex></ph>
       </message>
-      <message name="IDS_GLANCEABLES_UP_NEXT" desc="Section header for upcoming calendar events. Used on the glanceables surface (welcome screen).">
-        Up next
+      <message name="IDS_GLANCEABLES_TASKS_DETAILS_FOOTER" desc="The glanceable displays tasks from a task list that's selected in a drop-down box within the glanceable UI. The first placeholder value is the number of tasks visible in the UI. The second placeholder value is the total number of tasks in the selected tasks list, including tasks that are not visible in the UI.">
+        Showing <ph name="NUM_SHOWN_TASKS">$1<ex>5</ex></ph> out of <ph name="NUM_TOTAL_TASKS">$2<ex>10</ex></ph>
       </message>
-      <message name="IDS_GLANCEABLES_UP_NEXT_NO_EVENTS" desc="Text label used in the up next section in case if there are no (more) calendar events for today.">
-        No events today
+      <message name="IDS_GLANCEABLES_TASKS_ACTION_BUTTON_LABEL" desc="The glanceable displays tasks from a task list that's selected in a drop-down box within the glanceable UI. Interacting with the button and label at the bottom of the glanceable opens the Tasks companion app.">
+        See all
       </message>
-      <message name="IDS_GLANCEABLES_UP_NEXT_EVENT_EMPTY_TITLE" desc="Placeholder text for calendar events without title.">
-        (No title)
+      <message name="IDS_GLANCEABLES_CLASSROOM_ASSIGNMENT_DUE_TODAY" desc="Classroom glanceable displays upcoming/missed/completed assignments from Google Classroom. This text is displayed for assignments that are due today. In other cases date formatter is used and no translation is needed.">
+        Today
       </message>
 
       <!-- Do not disturb notification -->

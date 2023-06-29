@@ -359,7 +359,7 @@ class RasterImplementation::PaintOpSerializer {
 
  private:
   const raw_ptr<RasterImplementation> ri_;
-  raw_ptr<char, AllowPtrArithmetic> buffer_;
+  raw_ptr<char, AllowPtrArithmetic | DanglingUntriaged> buffer_;
   const raw_ptr<cc::DecodeStashingImageProvider> stashing_image_provider_;
   const raw_ptr<TransferCacheSerializeHelperImpl> transfer_cache_helper_;
   raw_ptr<ClientFontManager> font_manager_;
@@ -1257,6 +1257,59 @@ void RasterImplementation::WritePixels(const gpu::Mailbox& dest_mailbox,
       src_info.height(), src_row_bytes, src_info.colorType(),
       src_info.alphaType(), shm_id, shm_offset, pixels_offset,
       dest_mailbox.name);
+}
+
+void RasterImplementation::WritePixelsYUV(const gpu::Mailbox& dest_mailbox,
+                                          const SkYUVAPixmaps& src_yuv_pixmap) {
+  TRACE_EVENT0("gpu", "RasterImplementation::WritePixelsYUV");
+  const auto& src_yuv_info = src_yuv_pixmap.yuvaInfo();
+  const auto& src_yuv_pixmap_info = src_yuv_pixmap.pixmapsInfo();
+  const std::array<SkPixmap, SkYUVAInfo::kMaxPlanes>& src_sk_pixmaps =
+      src_yuv_pixmap.planes();
+
+  GLuint src_size = src_yuv_pixmap_info.computeTotalBytes();
+  GLuint total_size =
+      base::bits::AlignUp(src_size, static_cast<GLuint>(sizeof(uint64_t)));
+
+  std::unique_ptr<ScopedSharedMemoryPtr> scoped_shared_memory =
+      std::make_unique<ScopedSharedMemoryPtr>(total_size, transfer_buffer_,
+                                              mapped_memory_.get(), helper());
+  if (!scoped_shared_memory->valid()) {
+    SetGLError(GL_INVALID_OPERATION, "WritePixelsYUV", "size too big");
+    return;
+  }
+
+  GLint shm_id = scoped_shared_memory->shm_id();
+  GLuint shm_offset = scoped_shared_memory->offset();
+  void* address = scoped_shared_memory->address();
+
+  // Copy the pixels for first plane at `address`.
+  memcpy(static_cast<uint8_t*>(address), src_sk_pixmaps[0].addr(),
+         src_sk_pixmaps[0].computeByteSize());
+
+  GLuint plane_offsets[SkYUVAInfo::kMaxPlanes] = {};
+  for (int plane = 1; plane < SkYUVAInfo::kMaxPlanes; plane++) {
+    GLuint curr_plane_size = src_sk_pixmaps[plane].computeByteSize();
+    // Calculate the offset based on previous plane offset and previous plane
+    // size, and copy pixels for current plane starting at current plane
+    // offset.
+    GLuint prev_plane_size = src_sk_pixmaps[plane - 1].computeByteSize();
+    plane_offsets[plane] =
+        plane_offsets[plane - 1] +
+        base::bits::AlignUp(prev_plane_size,
+                            static_cast<GLuint>(sizeof(uint64_t)));
+    memcpy(static_cast<uint8_t*>(address) + plane_offsets[plane],
+           src_sk_pixmaps[plane].addr(), curr_plane_size);
+  }
+
+  helper_->WritePixelsYUVINTERNALImmediate(
+      src_yuv_info.width(), src_yuv_info.height(), src_sk_pixmaps[0].rowBytes(),
+      src_sk_pixmaps[1].rowBytes(), src_sk_pixmaps[2].rowBytes(),
+      src_sk_pixmaps[3].rowBytes(),
+      static_cast<int>(src_yuv_info.planeConfig()),
+      static_cast<int>(src_yuv_info.subsampling()),
+      static_cast<int>(src_yuv_pixmap_info.dataType()), shm_id, shm_offset,
+      plane_offsets[1], plane_offsets[2], plane_offsets[3], dest_mailbox.name);
 }
 
 namespace {

@@ -36,6 +36,7 @@
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/media_session/public/cpp/media_image_manager.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "ui/gfx/favicon_size.h"
@@ -1040,7 +1041,8 @@ MediaSessionImpl::GetMediaSessionInfoSync() {
   info->is_sensitive = web_contents()->GetBrowserContext()->IsOffTheRecord();
 
   info->picture_in_picture_state =
-      web_contents()->HasPictureInPictureVideo()
+      web_contents()->HasPictureInPictureVideo() ||
+              web_contents()->HasPictureInPictureDocument()
           ? media_session::mojom::MediaPictureInPictureState::
                 kInPictureInPicture
           : media_session::mojom::MediaPictureInPictureState::
@@ -1179,10 +1181,15 @@ void MediaSessionImpl::ScrubTo(base::TimeDelta seek_time) {
 }
 
 void MediaSessionImpl::EnterPictureInPicture() {
-  if (ShouldRouteAction(
+  if (base::FeatureList::IsEnabled(
+          blink::features::kMediaSessionEnterPictureInPicture) &&
+      ShouldRouteAction(
           media_session::mojom::MediaSessionAction::kEnterPictureInPicture)) {
     DidReceiveAction(
-        media_session::mojom::MediaSessionAction::kEnterPictureInPicture);
+        media_session::mojom::MediaSessionAction::kEnterPictureInPicture,
+        blink::mojom::MediaSessionActionDetails::NewPictureInPicture(
+            blink::mojom::MediaSessionPictureInPictureActionDetails::New(
+                /*automatic=*/false)));
     return;
   }
 
@@ -1193,17 +1200,7 @@ void MediaSessionImpl::EnterPictureInPicture() {
 }
 
 void MediaSessionImpl::ExitPictureInPicture() {
-  if (ShouldRouteAction(
-          media_session::mojom::MediaSessionAction::kExitPictureInPicture)) {
-    DidReceiveAction(
-        media_session::mojom::MediaSessionAction::kExitPictureInPicture);
-    return;
-  }
-
-  // There should be one and only one player when we exit picture-in-picture.
-  DCHECK_EQ(normal_players_.size(), 1u);
-  normal_players_.begin()->first.observer->OnExitPictureInPicture(
-      normal_players_.begin()->first.player_id);
+  static_cast<WebContentsImpl*>(web_contents())->ExitPictureInPicture();
 }
 
 void MediaSessionImpl::SetAudioSinkId(const absl::optional<std::string>& id) {

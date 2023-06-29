@@ -131,6 +131,7 @@ class ASH_EXPORT VideoConferenceTray
   void HandleLocaleChange() override;
   void AnchorUpdated() override;
   void OnAnimationEnded() override;
+  bool ShouldEnterPushedState(const ui::Event& event) override;
 
   // VideoConferenceTrayController::Observer:
   void OnHasMediaAppStateChange() override;
@@ -152,6 +153,8 @@ class ASH_EXPORT VideoConferenceTray
   // Update the visibility and capturing state of the tray and icons according
   // to the state in `VideoConferenceTrayController`.
   void UpdateTrayAndIconsState();
+
+  IconButton* GetToggleBubbleButtonForTest();
 
  private:
   friend class video_conference::BubbleViewTest;

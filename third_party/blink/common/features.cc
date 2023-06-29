@@ -201,6 +201,10 @@ const base::FeatureParam<AutomaticLazyFrameLoadingToEmbedLoadingStrategy>
         AutomaticLazyFrameLoadingToEmbedLoadingStrategy::kAllowList,
         &kAutomaticLazyFrameLoadingToEmbedLoadingStrategies};
 
+BASE_FEATURE(kAvifGainmapHdrImages,
+             "AvifGainmapHdrImages",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kBackForwardCacheDWCOnJavaScriptExecution,
              "BackForwardCacheDWCOnJavaScriptExecution",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -385,10 +389,6 @@ BASE_FEATURE(kCORSErrorsIssueOnly,
              "CORSErrorsIssueOnly",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kCSPWildcardsInPermissionsPolicies,
-             "CSPWildcardsInPermissionsPolicies",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // When enabled, code cache is produced asynchronously from the script execution
 // (https://crbug.com/1260908).
 BASE_FEATURE(kCacheCodeOnIdle,
@@ -471,6 +471,11 @@ BASE_FEATURE(kClientHintsDeviceMemory,
 BASE_FEATURE(kClientHintsDeviceMemory_DEPRECATED,
              "ClientHintsDeviceMemory_DEPRECATED",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enable `form-factor` client hint.
+BASE_FEATURE(kClientHintsFormFactor,
+             "ClientHintsFormFactor",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable `sec-ch-width` client hint.
 BASE_FEATURE(kClientHintsResourceWidth,
@@ -714,6 +719,12 @@ BASE_FEATURE(kEventTimingMatchPresentationIndex,
              "EventTimingMatchPresentationIndex",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables reporting Event Timing entries with a smaller presentation index on
+// resolved painted presentation.
+BASE_FEATURE(kEventTimingReportAllEarlyEntriesOnPaintedPresentation,
+             "EventTimingReportAllEarlyEntriesOnPaintedPresentation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether LCP calculations should exclude low-entropy images. If
 // enabled, then the associated parameter sets the cutoff, expressed as the
 // minimum number of bits of encoded image data used to encode each rendered
@@ -729,10 +740,6 @@ const base::FeatureParam<double> kMinimumEntropyForLCP{
 BASE_FEATURE(kExtendScriptResourceLifetime,
              "ExtendScriptResourceLifetime",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kFastPathPaintPropertyUpdates,
-             "FastPathPaintPropertyUpdates",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable the <fencedframe> element; see crbug.com/1123606. Note that enabling
 // this feature does not automatically expose this element to the web, it only
@@ -783,6 +790,10 @@ BASE_FEATURE(kFledgeConsiderKAnonymity,
 BASE_FEATURE(kFledgeEnforceKAnonymity,
              "FledgeEnforceKAnonymity",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kFledgePassRecencyToGenerateBid,
+             "FledgePassRecencyToGenerateBid",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kForceDeferScriptIntervention,
              "ForceDeferScriptIntervention",

@@ -5,6 +5,7 @@
 #include "ash/shell.h"
 
 #include <algorithm>
+#include <iterator>
 #include <memory>
 #include <string>
 #include <utility>
@@ -179,7 +180,6 @@
 #include "ash/system/video_conference/fake_video_conference_tray_controller.h"
 #include "ash/touch/ash_touch_transform_controller.h"
 #include "ash/touch/touch_devices_controller.h"
-#include "ash/touch/touch_selection_magnifier_runner_ash.h"
 #include "ash/tray_action/tray_action.h"
 #include "ash/user_education/user_education_controller.h"
 #include "ash/user_education/user_education_delegate.h"
@@ -226,6 +226,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "chromeos/ash/components/dbus/fwupd/fwupd_client.h"
@@ -1019,8 +1020,6 @@ Shell::~Shell() {
 
   partial_magnifier_controller_.reset();
 
-  touch_selection_magnifier_runner_ash_.reset();
-
   laser_pointer_controller_.reset();
 
   if (display_change_observer_) {
@@ -1466,11 +1465,6 @@ void Shell::Init(
   laser_pointer_controller_ = std::make_unique<LaserPointerController>();
   partial_magnifier_controller_ =
       std::make_unique<PartialMagnifierController>();
-  if (::features::IsTouchTextEditingRedesignEnabled()) {
-    touch_selection_magnifier_runner_ash_ =
-        std::make_unique<TouchSelectionMagnifierRunnerAsh>(
-            kShellWindowId_ImeWindowParentContainer);
-  }
 
   fullscreen_magnifier_controller_ =
       std::make_unique<FullscreenMagnifierController>();
@@ -1693,11 +1687,14 @@ void Shell::Init(
   // `clipboard_history_controller_` is destroyed.
   chromeos::clipboard_history::SetQueryItemDescriptorsImpl(base::BindRepeating(
       [](ClipboardHistoryControllerImpl* controller) {
+        std::vector<crosapi::mojom::ClipboardHistoryItemDescriptor> descriptors;
         if (clipboard_history_util::IsEnabledInCurrentMode()) {
-          return clipboard_history_util::GetItemDescriptorsFrom(
-              controller->history()->GetItems());
+          const auto& items = controller->history()->GetItems();
+          descriptors.reserve(items.size());
+          base::ranges::transform(items, std::back_inserter(descriptors),
+                                  &clipboard_history_util::ItemToDescriptor);
         }
-        return std::vector<crosapi::mojom::ClipboardHistoryItemDescriptor>();
+        return descriptors;
       },
       clipboard_history_controller_.get()));
   chromeos::clipboard_history::SetPasteClipboardItemByIdImpl(

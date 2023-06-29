@@ -272,7 +272,7 @@ id<GREYMatcher> notPracticallyVisible() {
   [ChromeEarlGrey
       waitForSufficientlyVisibleElementWithMatcher:chrome_test_util::Omnibox()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      performAction:grey_typeText(URL)];
+      performAction:grey_replaceText(URL)];
 
   // The first suggestion is a search, the second suggestion is the URL.
   id<GREYMatcher> rowMatcher = grey_allOf(
@@ -296,8 +296,8 @@ id<GREYMatcher> notPracticallyVisible() {
 }
 
 // Tests that the fake omnibox width is correctly updated after a rotation.
-- (void)testOmniboxWidthRotation {
-
+// TODO(crbug.com/652465): Re-enable when fixed.
+- (void)DISABLED_testOmniboxWidthRotation {
   // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is
   // fixed.
   if ([ChromeEarlGrey isIPadIdiom]) {
@@ -337,8 +337,8 @@ id<GREYMatcher> notPracticallyVisible() {
 
 // Tests that the fake omnibox width is correctly updated after a rotation done
 // while the settings screen is shown.
-- (void)testOmniboxWidthRotationBehindSettings {
-
+// TODO(crbug.com/652465): Re-enable when fixed.
+- (void)DISABLED_testOmniboxWidthRotationBehindSettings {
   // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is
   // fixed.
   if ([ChromeEarlGrey isRegularXRegularSizeClass]) {
@@ -383,7 +383,8 @@ id<GREYMatcher> notPracticallyVisible() {
 
 // Tests that the fake omnibox width is correctly updated after a rotation done
 // while the fake omnibox is pinned to the top.
-- (void)testOmniboxPinnedWidthRotation {
+// TODO(crbug.com/652465): Re-enable when fixed.
+- (void)DISABLED_testOmniboxPinnedWidthRotation {
   // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is
   // fixed.
   if ([ChromeEarlGrey isRegularXRegularSizeClass]) {
@@ -680,7 +681,10 @@ id<GREYMatcher> notPracticallyVisible() {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      performAction:grey_typeText([URL stringByAppendingString:@"\n"])];
+      performAction:grey_replaceText(URL)];
+  // TODO(crbug.com/1454516): Use simulatePhysicalKeyboardEvent until
+  // replaceText can properly handle \n.
+  [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"\n" flags:0];
 
   // Check that the page is loaded.
   [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString];
@@ -1199,7 +1203,7 @@ id<GREYMatcher> notPracticallyVisible() {
   [self focusFakebox];
   NSString* omniboxText = @"Some text";
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      performAction:grey_typeText(omniboxText)];
+      performAction:grey_replaceText(omniboxText)];
 
   // Check that the omnibox contains the inputted text.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]

@@ -20,6 +20,7 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/functional/overloaded.h"
+#include "base/memory/raw_ref.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
@@ -229,10 +230,9 @@ AttributionInternalsHandlerImpl::AttributionInternalsHandlerImpl(
     WebUI* web_ui,
     mojo::PendingRemote<attribution_internals::mojom::Observer> observer,
     mojo::PendingReceiver<attribution_internals::mojom::Handler> handler)
-    : web_ui_(web_ui),
+    : web_ui_(raw_ref<WebUI>::from_ptr(web_ui)),
       observer_(std::move(observer)),
       handler_(this, std::move(handler)) {
-  DCHECK(web_ui_);
   if (auto* manager =
           AttributionManager::FromWebContents(web_ui_->GetWebContents())) {
     manager_observation_.Observe(manager);
@@ -255,8 +255,14 @@ void AttributionInternalsHandlerImpl::IsAttributionReportingEnabled(
           ContentBrowserClient::AttributionReportingOperation::kAny,
           /*rfh=*/nullptr, /*source_origin=*/nullptr,
           /*destination_origin=*/nullptr, /*reporting_origin=*/nullptr);
+
+  // TODO(apaseltiner): This is a layering violation: The internals handler
+  // should query the manager for its configuration, not the command line,
+  // especially since `AttributionManager::SetDebugMode()` can cause its value
+  // to change after initialization.
   bool debug_mode = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAttributionReportingDebugMode);
+
   std::move(callback).Run(attribution_reporting_enabled, debug_mode,
                           AttributionManager::GetSupport());
 }

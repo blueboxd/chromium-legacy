@@ -52,7 +52,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.DataDecoder.Image.Isolated.EndToEndTime" units="ms"
-    expires_after="2023-09-30">
+    expires_after="2023-12-24">
   <owner>lukasza@chromium.org</owner>
   <owner>rsesek@chromium.org</owner>
   <summary>
@@ -76,7 +76,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.DataDecoder.Image.Isolated.ProcessOverhead"
-    units="ms" expires_after="2023-09-30">
+    units="ms" expires_after="2023-12-24">
   <owner>lukasza@chromium.org</owner>
   <owner>rsesek@chromium.org</owner>
   <summary>
@@ -99,7 +99,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.DataDecoder.Image.Reusable.EndToEndTime" units="ms"
-    expires_after="2023-09-30">
+    expires_after="2023-12-24">
   <owner>lukasza@chromium.org</owner>
   <owner>rsesek@chromium.org</owner>
   <summary>
@@ -294,7 +294,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.PageInfo.AboutThisSiteLanguageSupported"
-    enum="Boolean" expires_after="2023-10-22">
+    enum="Boolean" expires_after="2023-12-24">
   <owner>dullweber@chromium.org</owner>
   <owner>olesiamarukhno@chromium.org</owner>
   <summary>
@@ -364,19 +364,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Security.PrivateNetworkAccess.CachedResourceCheckResult"
-    enum="PrivateNetworkAccessCheckResult" expires_after="2023-07-09">
-  <owner>titouan@chromium.org</owner>
-  <owner>clamy@chromium.org</owner>
-  <owner>mkwst@chromium.org</owner>
-  <summary>
-    Same as `Security.PrivateNetworkAccess.CheckResult`, but only recorded when
-    the resource is loaded from the HTTP cache.
-  </summary>
-</histogram>
-
 <histogram name="Security.PrivateNetworkAccess.CheckResult"
-    enum="PrivateNetworkAccessCheckResult" expires_after="2023-10-22">
+    enum="PrivateNetworkAccessCheckResult" expires_after="2023-12-24">
   <owner>titouan@chromium.org</owner>
   <owner>clamy@chromium.org</owner>
   <owner>mkwst@chromium.org</owner>
@@ -384,20 +373,6 @@ chromium-metrics-reviews@google.com.
     Result of the Private Network Access Check on a new connection. Recorded
     once per call to network::URLLoader::OnConnected(), which may be more than
     once per URL request.
-  </summary>
-</histogram>
-
-<histogram
-    name="Security.PrivateNetworkAccess.MismatchedAddressSpacesDuringRequest"
-    enum="Boolean" expires_after="2023-07-09">
-  <owner>titouan@chromium.org</owner>
-  <owner>clamy@chromium.org</owner>
-  <owner>mkwst@chromium.org</owner>
-  <summary>
-    Recorded once per network::URLLoader instantiation. True if the request
-    connected multiple times to different transports (e.g. for a
-    partially-cached range request) and not all the computed IP address spaces
-    were the same.
   </summary>
 </histogram>
 
@@ -985,6 +960,19 @@ chromium-metrics-reviews@google.com.
   <summary>
     The count of all out-of-process inner frame trees. Recorded once per UMA
     ping.
+  </summary>
+</histogram>
+
+<histogram
+    name="SiteIsolation.ProcessPerSiteWithMainFrameThreshold.BlockReason"
+    enum="ProcessPerSiteWithMainFrameThresholdBlockReason"
+    expires_after="2023-12-22">
+  <owner>bashi@chromium.org</owner>
+  <owner>blink-network-stack@google.com</owner>
+  <summary>
+    The reason why process sharing is disallowed when
+    ProcessPerSiteUpToMainFrameThreshold feature is enabled. Recorded when
+    initializing a frame tree or getting a site instance for navigation.
   </summary>
 </histogram>
 

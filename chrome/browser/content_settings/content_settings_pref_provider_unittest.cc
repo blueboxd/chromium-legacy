@@ -147,18 +147,9 @@ TEST_F(PrefProviderTest, Observer) {
   pref_content_settings_provider.ShutdownOnUIThread();
 }
 
-// Tests that fullscreen, obsolete NFC (with the old semantics, see
-// crbug.com/1275576), and obsolete content settings (plugins, mouselock,
-// installed web app metadata) are cleared.
+// Tests that obsolete content settings are cleared.
 TEST_F(PrefProviderTest, DiscardObsoletePreferences) {
-  static const char kNfcPrefPath[] = "profile.content_settings.exceptions.nfc";
 #if !BUILDFLAG(IS_ANDROID)
-  static const char kMouselockPrefPath[] =
-      "profile.content_settings.exceptions.mouselock";
-  const char kObsoletePluginsExceptionsPref[] =
-      "profile.content_settings.exceptions.plugins";
-  const char kObsoletePluginsDataExceptionsPref[] =
-      "profile.content_settings.exceptions.flash_data";
   const char kObsoleteInstalledWebAppMetadataExceptionsPref[] =
       "profile.content_settings.exceptions.installed_web_app_metadata";
 #endif
@@ -183,14 +174,9 @@ TEST_F(PrefProviderTest, DiscardObsoletePreferences) {
   base::Value::Dict pref_data;
   base::Value::List pref_list;
   pref_data.Set(kPattern, std::move(data_for_pattern));
-  prefs->SetDict(kNfcPrefPath, pref_data.Clone());
 #if !BUILDFLAG(IS_ANDROID)
-  prefs->SetDict(kMouselockPrefPath, pref_data.Clone());
-  prefs->SetDict(kObsoletePluginsExceptionsPref, pref_data.Clone());
   prefs->SetDict(kObsoleteInstalledWebAppMetadataExceptionsPref,
                  pref_data.Clone());
-  prefs->SetDict(kObsoletePluginsDataExceptionsPref,
-                 std::move(plugins_data_pref));
 #endif
   prefs->SetDict(kGeolocationPrefPath, std::move(pref_data));
   prefs->SetList(kGetDisplayMediaSetSelectAllScreensAllowedForUrlsPref,
@@ -203,14 +189,9 @@ TEST_F(PrefProviderTest, DiscardObsoletePreferences) {
                         /*restore_session=*/false);
   provider.ShutdownOnUIThread();
 
-  // Check that nfc and mouselock have been deleted.
-  EXPECT_FALSE(prefs->HasPrefPath(kNfcPrefPath));
 #if !BUILDFLAG(IS_ANDROID)
-  EXPECT_FALSE(prefs->HasPrefPath(kMouselockPrefPath));
   EXPECT_FALSE(
       prefs->HasPrefPath(kObsoleteInstalledWebAppMetadataExceptionsPref));
-  EXPECT_FALSE(prefs->HasPrefPath(kObsoletePluginsExceptionsPref));
-  EXPECT_FALSE(prefs->HasPrefPath(kObsoletePluginsDataExceptionsPref));
 #endif
   EXPECT_FALSE(prefs->HasPrefPath(
       kGetDisplayMediaSetSelectAllScreensAllowedForUrlsPref));
@@ -1074,6 +1055,56 @@ TEST_F(PrefProviderTest, LastVisitedTimeIsTracked) {
   EXPECT_NE(metadata.last_visited(), base::Time());
   EXPECT_GE(metadata.last_visited(), clock.Now() - base::Days(7));
   EXPECT_LE(metadata.last_visited(), clock.Now());
+
+  provider.ShutdownOnUIThread();
+}
+
+TEST_F(PrefProviderTest, RenewContentSetting) {
+  TestingProfile testing_profile;
+  PrefProvider provider(testing_profile.GetPrefs(), /*off_the_record=*/false,
+                        /*store_last_modified=*/true,
+                        /*restore_session=*/false);
+  base::SimpleTestClock clock;
+  clock.SetNow(base::Time::Now());
+  provider.SetClockForTesting(&clock);
+
+  GURL primary_url("https://example.com/");
+  ContentSettingsPattern primary_pattern =
+      ContentSettingsPattern::FromString("https://[*.]example.com");
+
+  ContentSettingConstraints constraints;
+  constraints.set_lifetime(base::Days(2));
+
+  ASSERT_TRUE(provider.SetWebsiteSetting(
+      primary_pattern, primary_pattern, ContentSettingsType::STORAGE_ACCESS,
+      base::Value(CONTENT_SETTING_ALLOW), constraints));
+
+  RuleMetaData metadata;
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, TestUtils::GetContentSetting(
+                                       &provider, primary_url, primary_url,
+                                       ContentSettingsType::STORAGE_ACCESS,
+                                       /*include_incognito=*/false, &metadata));
+  EXPECT_EQ(metadata.lifetime(), base::Days(2));
+  EXPECT_EQ(metadata.expiration(), clock.Now() + base::Days(2));
+
+  clock.Advance(base::Days(1));
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, TestUtils::GetContentSetting(
+                                       &provider, primary_url, primary_url,
+                                       ContentSettingsType::STORAGE_ACCESS,
+                                       /*include_incognito=*/false, &metadata));
+  EXPECT_EQ(metadata.lifetime(), base::Days(2));
+  EXPECT_EQ(metadata.expiration(), clock.Now() + base::Days(1));
+
+  EXPECT_TRUE(provider.RenewContentSetting(
+      primary_url, primary_url, ContentSettingsType::STORAGE_ACCESS));
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, TestUtils::GetContentSetting(
+                                       &provider, primary_url, primary_url,
+                                       ContentSettingsType::STORAGE_ACCESS,
+                                       /*include_incognito=*/false, &metadata));
+  EXPECT_EQ(metadata.lifetime(), base::Days(2));
+  EXPECT_EQ(metadata.expiration(), clock.Now() + base::Days(2));
 
   provider.ShutdownOnUIThread();
 }

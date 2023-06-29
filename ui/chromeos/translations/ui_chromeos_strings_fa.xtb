@@ -41,6 +41,7 @@
 <translation id="1358735829858566124">فایل یا فهرست راهنما قابل استفاده نیست.</translation>
 <translation id="1363028406613469049">تراک</translation>
 <translation id="1378727793141957596">‏به Google Drive خوش آمدید!</translation>
+<translation id="1379156577998569384">‏فایل‌های My Drive شما در حالت آفلاین دردسترس است</translation>
 <translation id="1379911846207762492">می‌توانید فایل‌ها را طوری تنظیم کنید که در حالت آفلاین دردسترس باشند تا هنگامی که اتصال اینترنت ندارید به آن‌ها دسترسی داشته باشید.</translation>
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="1388045380422025115">هر نوع</translation>
@@ -299,7 +300,6 @@
 <translation id="3479552764303398839">حالا نه</translation>
 <translation id="3486821258960016770">مغولی</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> خطا.</translation>
-<translation id="3501954296166022751">‏فایل‌های Google Drive شما در حالت آفلاین دردسترس است</translation>
 <translation id="3509680540198371098">شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، <ph name="SECURITY_STATUS" />، <ph name="CONNECTION_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />٪، جزئیات</translation>
 <translation id="3511705761158917664">درحال آماده شدن برای همگام‌سازی <ph name="NUMBER_OF_ITEMS" /> مورد…</translation>
 <translation id="3522708245912499433">پرتغالی</translation>
@@ -351,6 +351,7 @@
 <translation id="3855472144336161447">نئو آلمان ۲</translation>
 <translation id="3858860766373142691">نام</translation>
 <translation id="3866249974567520381">توضیح</translation>
+<translation id="3866439285517092441">باتری ضعیف است. وقتی دستگاه به برق وصل شد، همگام‌سازی ازسرگرفته می‌شود.</translation>
 <translation id="3899991606604168269">فرانسوی (کانادایی) با صفحه‌کلید چندزبانه</translation>
 <translation id="3901991538546252627">در حال اتصال به <ph name="NAME" /></translation>
 <translation id="3906232975181435906">درحال نصب نمایه تلفن همراه، شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" /></translation>
@@ -358,6 +359,7 @@
 <translation id="3943857333388298514">جاگذاری</translation>
 <translation id="3952872973865944257">تلوگو (آوایی)</translation>
 <translation id="3958548648197196644">کیوی</translation>
+<translation id="397105322502079400">در حال محاسبه…</translation>
 <translation id="3971140002794351170">بارگیری نمایه تلفن همراه، شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">انگلیسی (بریتانیا)</translation>
 <translation id="3975895378829046965">بنگلا (آوایی)</translation>
@@ -368,6 +370,7 @@
 <translation id="4040753847560036377">‏PUK نادرست است</translation>
 <translation id="4057991113334098539">فعالسازی...</translation>
 <translation id="4092890906744441904">ایرلندی</translation>
+<translation id="4124731372776320263">‏درحال همگام‌سازی یک فایل Drive</translation>
 <translation id="4124935795427217608">تک‌شاخ</translation>
 <translation id="4131235941541910880">مواردی را که نیاز ندارید به «حذف‌شده‌ها» منتقل کنید</translation>
 <translation id="4134804435730168042">شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" /> شبکه، <ph name="NETWORK_NAME" />، <ph name="NETWORK_PROVIDER_NAME" />، بعداز راه‌اندازی دستگاه فعال کنید</translation>
@@ -564,6 +567,7 @@
 <translation id="5422221874247253874">نقطه دسترسی</translation>
 <translation id="5428105026674456456">اسپانیایی</translation>
 <translation id="5438282218546237410">نتیجه‌ای برای <ph name="SEARCH_TERM" /> پیدا نشد.</translation>
+<translation id="5447680084201416734">فضای ذخیره‌سازی کافی نیست.</translation>
 <translation id="5449551289610225147">گذرواژه نامعتبر است</translation>
 <translation id="5459064203055649751">فایلی با نام «<ph name="FILENAME" />» ازقبل وجود دارد. می‌خواهید آن را با فایلی که منتقل می‌کنید جایگزین کنید؟</translation>
 <translation id="5463231940765244860">وارد کردن</translation>
@@ -579,6 +583,7 @@
 <translation id="5524517123096967210">امکان خواندن فایل وجود نداشت.</translation>
 <translation id="5533102081734025921">تصویر <ph name="IMAGE_TYPE" /></translation>
 <translation id="5534520101572674276">محاسبه اندازه</translation>
+<translation id="5536122250858122375">این نوع فایل را نمی‌توان همگام‌سازی کرد</translation>
 <translation id="554153475311314364">نویسه‌گردانی یونانی</translation>
 <translation id="5554171655917412781"><ph name="SELECTED_FOLDERS_COUNT" /> پوشه‌ انتخاب شده است</translation>
 <translation id="5580591966435005537">ماشین مجازی</translation>
@@ -691,6 +696,7 @@
 <translation id="6423031066725912715">‏ویتنامی با صفحه‌کلید TCVN</translation>
 <translation id="6430271654280079150">۱ تلاش دیگر دارید.</translation>
 <translation id="643243556292470964">فایل‌های حذف‌شده اکنون به «حذف‌شده‌ها» منتقل شد</translation>
+<translation id="6438480100790416671">درحال بررسی فضای ذخیره‌سازی…</translation>
 <translation id="6485131920355264772">دریافت اطلاعات فضا انجام نشد</translation>
 <translation id="6495925982925244349">شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، <ph name="SECURITY_STATUS" />، <ph name="CONNECTION_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />٪، تحت‌مدیریت سرپرست، جزئیات</translation>
 <translation id="649877868557234318">درحال استخراج <ph name="FILE_NAME" /> در <ph name="FOLDER_NAME" /></translation>
@@ -738,6 +744,7 @@
 <translation id="6874758081814639712">شخصی درحال تمرین تای چی</translation>
 <translation id="6876155724392614295">دوچرخه‌</translation>
 <translation id="6878261347041253038">صفحه‌کلید دواناگری (آوایی)</translation>
+<translation id="6882444584974399416">دستگاهتان به‌اندازه کافی فضای ذخیره‌سازی ندارد تا فایل‌هایتان در حالت آفلاین دردسترس باشد. فایل‌های جدید دیگر به‌طور خودکار همگام‌سازی نخواهد شد.</translation>
 <translation id="6885780034956018177">حلزون</translation>
 <translation id="6896758677409633944">کپی</translation>
 <translation id="6898028766943174120">پوشه‌های فرعی بیشتر...</translation>
@@ -750,7 +757,7 @@
 <translation id="69548399407432279">سال گذشته</translation>
 <translation id="6960565108681981554">فعال نیست. با شرکت مخابراتی‌تان تماس بگیرید.</translation>
 <translation id="696203921837389374">فعال کردن همگام‌سازی از طریق داده تلفن همراه</translation>
-<translation id="6965382102122355670">قبول</translation>
+<translation id="6965382102122355670">تأیید</translation>
 <translation id="6965648386495488594">درگاه</translation>
 <translation id="6970230597523682626">بلغاری</translation>
 <translation id="6973630695168034713">پوشه‌ها</translation>
@@ -890,10 +897,10 @@
 <translation id="7972920761225148017">فرانسوی (سوئیس)</translation>
 <translation id="7973962044839454485">‏اصالت‌سنجی PPP به دلیل نام کاربری یا گذرواژه نادرست انجام نشد</translation>
 <translation id="7980421588063892270">‏انگلیسی (امریکایی) با صفحه‌کلید Colemak</translation>
-<translation id="7985008041109611710">درحال همگام‌سازی <ph name="NUMBER_OF_FILES_SYNCING" /> فایل</translation>
 <translation id="8000066093800657092">بدون شبکه</translation>
 <translation id="8008366997883261463">جک راسل تریر</translation>
 <translation id="8028993641010258682">اندازه</translation>
+<translation id="8034974485549318493">برای راه‌اندازی اولیه، باید به اینترنت متصل شوید تا فایل‌ها همگام‌سازی شود.</translation>
 <translation id="803771048473350947">فایل</translation>
 <translation id="8038111231936746805">(پیش‌‏فرض)</translation>
 <translation id="8042602468072383151">فایل صوتی <ph name="AUDIO_TYPE" /></translation>
@@ -913,6 +920,7 @@
 <translation id="8154842056504218462">همه ورودی‌ها انتخاب شد.</translation>
 <translation id="8157684860301034423">اطلاعات برنامه بازیابی نشد.</translation>
 <translation id="8175731104491895765">فرانسوی (بلژیک)</translation>
+<translation id="8175799081768705361">‏درحال همگام‌سازی <ph name="NUMBER_OF_FILES_SYNCING" /> فایل Drive</translation>
 <translation id="8179976553408161302">ورود</translation>
 <translation id="8193175696669055101">مدل دستگاه</translation>
 <translation id="8223479393428528563">برای ذخیره این فایل‌ها جهت استفاده آفلاین، دوباره آنلاین شوید، روی فایل‌ها کلیک راست کنید و گزینه <ph name="OFFLINE_CHECKBOX_NAME" /> را انتخاب کنید.</translation>
@@ -945,6 +953,7 @@
 <translation id="8395901698320285466">ابعاد</translation>
 <translation id="8404498045299006085">نگه داشتن همه موارد</translation>
 <translation id="8408068190360279472">شبکه <ph name="NETWORK_TYPE" />، درحال اتصال</translation>
+<translation id="841387525767317275">فایل‌های این پوشه در حالت آفلاین دردسترس است</translation>
 <translation id="8425213833346101688">تغییر</translation>
 <translation id="8431909052837336408">تغییر پین سیم</translation>
 <translation id="8437209419043462667">آمریکایی</translation>
@@ -972,6 +981,7 @@
 <translation id="8560515948038859357">کانتونی</translation>
 <translation id="8561206103590473338">فیل</translation>
 <translation id="8566466896628108558">شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" /> شبکه، <ph name="NETWORK_NAME" />، <ph name="SECURITY_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />٪، سرپرست آن را مسدود کرده است، جزئیات</translation>
+<translation id="8567555211227790801">درحال‌حاضر آفلاين هستید. وقتی به اینترنت متصل شدید، همگام‌سازی ازسر گرفته می‌شود.</translation>
 <translation id="8568374623837201676">این فایل برای همیشه حذف شود؟</translation>
 <translation id="8569764466147087991">انتخاب فایلی برای باز کردن</translation>
 <translation id="8577897833047451336">کروات</translation>
@@ -1012,6 +1022,7 @@
 <translation id="8919081441417203123">دانمارکی</translation>
 <translation id="8949925099261528566">متصل، بدون اینترنت</translation>
 <translation id="8965697826696209160">فضای کافی وجود ندارد.</translation>
+<translation id="8970887620466824814">مشکلی پیش آمد.</translation>
 <translation id="8971742885766657349">درحال همگام‌سازی - <ph name="PERCENT" />٪</translation>
 <translation id="8997962250644902079">چینی پین‌یین (سنتی)</translation>
 <translation id="8998871447376656508">‏فضای ذخیره‌سازی کافی در Google Drive برای تکمیل بارگذاری وجود ندارد.</translation>
@@ -1046,7 +1057,6 @@
 <translation id="9213073329713032541">نصب باموفقیت شروع شد.</translation>
 <translation id="9219103736887031265">تصاویر</translation>
 <translation id="9219908252191632183">منظره سطح ماه</translation>
-<translation id="937795003075802289">درحال همگام‌سازی یک فایل</translation>
 <translation id="938470336146445890">لطفاً یک مجوز کاربر نصب کنید.</translation>
 <translation id="939736085109172342">پوشهٔ جدید</translation>
 <translation id="943972244133411984">اصلاح‌شده توسط</translation>

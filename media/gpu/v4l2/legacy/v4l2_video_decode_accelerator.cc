@@ -314,8 +314,7 @@ void V4L2VideoDecodeAccelerator::InitializeTask(const Config& config,
 bool V4L2VideoDecodeAccelerator::CheckConfig(const Config& config) {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
-  input_format_fourcc_ =
-      V4L2Device::VideoCodecProfileToV4L2PixFmt(config.profile, false);
+  input_format_fourcc_ = VideoCodecProfileToV4L2PixFmt(config.profile, false);
 
   if (input_format_fourcc_ == V4L2_PIX_FMT_INVALID ||
       !device_->Open(V4L2Device::Type::kDecoder, input_format_fourcc_)) {
@@ -851,10 +850,7 @@ bool V4L2VideoDecodeAccelerator::TryToSetupDecodeOnSeparateSequence(
 // static
 VideoDecodeAccelerator::SupportedProfiles
 V4L2VideoDecodeAccelerator::GetSupportedProfiles() {
-  scoped_refptr<V4L2Device> device = V4L2Device::Create();
-  if (!device)
-    return SupportedProfiles();
-
+  auto device = base::MakeRefCounted<V4L2Device>();
   return device->GetSupportedDecodeProfiles(kSupportedInputFourCCs);
 }
 
@@ -2310,11 +2306,7 @@ bool V4L2VideoDecodeAccelerator::SetupFormats() {
       VLOGF(1) << "Can't find a usable output format from image processor";
       return false;
     }
-    image_processor_device_ = V4L2Device::Create();
-    if (!image_processor_device_) {
-      VLOGF(1) << "Could not create a V4L2Device for image processor";
-      return false;
-    }
+    image_processor_device_ = base::MakeRefCounted<V4L2Device>();
   } else {
     egl_image_format_fourcc_ = output_format_fourcc_;
   }
@@ -2356,11 +2348,7 @@ bool V4L2VideoDecodeAccelerator::CreateImageProcessor() {
 
   // Start with a brand new image processor device, since the old one was
   // already opened and attempting to open it again is not supported.
-  image_processor_device_ = V4L2Device::Create();
-  if (!image_processor_device_) {
-    VLOGF(1) << "Could not create a V4L2Device for image processor";
-    return false;
-  }
+  image_processor_device_ = base::MakeRefCounted<V4L2Device>();
 
   image_processor_ = v4l2_vda_helpers::CreateImageProcessor(
       *output_format_fourcc_, *egl_image_format_fourcc_, coded_size_,

@@ -68,7 +68,7 @@ struct ASH_PUBLIC_EXPORT AnchoredNudgeData {
   // Unowned. Must outlive the `AnchoredNudge`.
   // TODO(b/285988197): Make setting an `anchor_view` optional. Nudges without
   // an anchor will show on the leading bottom of the screen.
-  raw_ptr<views::View> anchor_view;
+  raw_ptr<views::View, DanglingUntriaged> anchor_view;
 
   // Used to set bubble placement in relation to the anchor view.
   // A value of `BOTTOM_CENTER` means that the nudge will be anchored from its
@@ -80,6 +80,17 @@ struct ASH_PUBLIC_EXPORT AnchoredNudgeData {
   // on the nudge is clicked, or when it is destroyed due to other reasons (e.g.
   // anchor view is deleted, user locks session, etc.)
   bool has_infinite_duration = false;
+
+  // If true, `arrow` will be set based on the current shelf alignment, and the
+  // nudge will listen to shelf alignment changes to readjust its `arrow`.
+  // It will maintain the shelf visible while a nudge is being shown.
+  bool anchored_to_shelf = false;
+
+  // If true, the view will be styled to look like go/toast-style-spec. If there
+  // is a button it will be added on the trailing side of the nudge instead of
+  // the bottom when creating the nudge's contents view. Does not support adding
+  // a second button or a leading image.
+  bool use_toast_style = false;
 
   // Nudge action callbacks.
   HoverStateChangeCallback hover_state_change_callback;

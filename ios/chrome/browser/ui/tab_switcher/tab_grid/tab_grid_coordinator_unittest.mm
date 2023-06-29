@@ -57,23 +57,6 @@
 
 @end
 
-@interface StubThumbStripSupporting : NSObject <ThumbStripSupporting>
-@property(nonatomic, readonly, getter=isThumbStripEnabled)
-    BOOL thumbStripEnabled;
-@end
-
-@implementation StubThumbStripSupporting
-
-- (void)thumbStripEnabledWithPanHandler:
-    (ViewRevealingVerticalPanHandler*)panHandler {
-  _thumbStripEnabled = YES;
-}
-
-- (void)thumbStripDisabled {
-  _thumbStripEnabled = NO;
-}
-@end
-
 @interface TestTabGridCoordinatorDelegate
     : NSObject <TabGridCoordinatorDelegate>
 @property(nonatomic) BOOL didEndCalled;
@@ -83,7 +66,6 @@
 @synthesize didEndCalled = _didEndCalled;
 - (void)tabGrid:(TabGridCoordinator*)tabGrid
     shouldActivateBrowser:(Browser*)browser
-           dismissTabGrid:(BOOL)dismissTabGrid
              focusOmnibox:(BOOL)focusOmnibox {
   // No-op.
 }
@@ -166,17 +148,6 @@ class TabGridCoordinatorTest : public BlockCleanupTest {
 
     UIWindow* window = GetAnyKeyWindow();
 
-    regular_popup_menu_coordinator_ =
-        [[PopupMenuCoordinator alloc] initWithBrowser:browser_.get()];
-    regular_popup_menu_coordinator_.baseViewController =
-        window.rootViewController;
-    [regular_popup_menu_coordinator_ start];
-    incognito_popup_menu_coordinator_ =
-        [[PopupMenuCoordinator alloc] initWithBrowser:incognito_browser_.get()];
-    incognito_popup_menu_coordinator_.baseViewController =
-        window.rootViewController;
-    [incognito_popup_menu_coordinator_ start];
-
     // TODO(crbug.com/1414048): Add inactive browser.
     coordinator_ = [[TabGridCoordinator alloc]
                      initWithWindow:window
@@ -188,12 +159,6 @@ class TabGridCoordinatorTest : public BlockCleanupTest {
                     inactiveBrowser:nil
                    incognitoBrowser:incognito_browser_.get()];
     coordinator_.animationsDisabledForTesting = YES;
-
-    regular_thumb_strip_supporting_ = [[StubThumbStripSupporting alloc] init];
-    incognito_thumb_strip_supporting_ = [[StubThumbStripSupporting alloc] init];
-    coordinator_.regularThumbStripSupporting = regular_thumb_strip_supporting_;
-    coordinator_.incognitoThumbStripSupporting =
-        incognito_thumb_strip_supporting_;
 
     // TabGridCoordinator will make its view controller the root, so stash the
     // original root view controller before starting `coordinator_`.
@@ -220,12 +185,7 @@ class TabGridCoordinatorTest : public BlockCleanupTest {
   }
 
   UIViewController* GetBaseViewController() {
-    if (regular_thumb_strip_supporting_.thumbStripEnabled) {
-      return base::mac::ObjCCastStrict<UIViewController>(
-          coordinator_.bvcContainer);
-    } else {
-      return coordinator_.baseViewController;
-    }
+    return coordinator_.baseViewController;
   }
 
  protected:
@@ -264,14 +224,6 @@ class TabGridCoordinatorTest : public BlockCleanupTest {
   // Used to test logging the time spent in tab grid.
   base::HistogramTester histogram_tester_;
   base::ScopedMockClockOverride scoped_clock_;
-
-  // Thumbstrip supporting stubs.
-  StubThumbStripSupporting* regular_thumb_strip_supporting_;
-  StubThumbStripSupporting* incognito_thumb_strip_supporting_;
-
-  // PopupMenuCoordinator nedded for Thumbstrip support.
-  PopupMenuCoordinator* regular_popup_menu_coordinator_;
-  PopupMenuCoordinator* incognito_popup_menu_coordinator_;
 };
 
 // Tests that the tab grid view controller is the initial active view
@@ -285,7 +237,6 @@ TEST_F(TabGridCoordinatorTest, InitialActiveViewController) {
 TEST_F(TabGridCoordinatorTest, TabViewControllerBeforeTabSwitcher) {
   [coordinator_ showTabViewController:normal_tab_view_controller_
                             incognito:NO
-                   shouldCloseTabGrid:YES
                            completion:nil];
   EXPECT_EQ(normal_tab_view_controller_, coordinator_.activeViewController);
 
@@ -306,35 +257,29 @@ TEST_F(TabGridCoordinatorTest, TabViewControllerAfterTabSwitcher) {
 
   [coordinator_ showTabViewController:normal_tab_view_controller_
                             incognito:NO
-                   shouldCloseTabGrid:YES
                            completion:nil];
   EXPECT_EQ(normal_tab_view_controller_, coordinator_.activeViewController);
 
-  if (!regular_thumb_strip_supporting_.thumbStripEnabled) {
-    // Showing the TabSwitcher again will make it active, except with
-    // thumbstrip where the normal_tab_view_controller_ remains active.
     [coordinator_ showTabGrid];
     bool tab_switcher_active = base::test::ios::WaitUntilConditionOrTimeout(
         base::test::ios::kWaitForUIElementTimeout, ^bool {
           return GetBaseViewController() == coordinator_.activeViewController;
         });
     EXPECT_TRUE(tab_switcher_active);
-  }
 }
 
 // Tests swapping between two TabViewControllers.
 TEST_F(TabGridCoordinatorTest, SwapTabViewControllers) {
-  [coordinator_ showTabViewController:normal_tab_view_controller_
-                            incognito:NO
-                   shouldCloseTabGrid:YES
-                           completion:nil];
-  EXPECT_EQ(normal_tab_view_controller_, coordinator_.activeViewController);
+    [coordinator_ showTabViewController:normal_tab_view_controller_
+                              incognito:NO
+                             completion:nil];
+    EXPECT_EQ(normal_tab_view_controller_, coordinator_.activeViewController);
 
-  [coordinator_ showTabViewController:incognito_tab_view_controller_
-                            incognito:YES
-                   shouldCloseTabGrid:YES
-                           completion:nil];
-  EXPECT_EQ(incognito_tab_view_controller_, coordinator_.activeViewController);
+    [coordinator_ showTabViewController:incognito_tab_view_controller_
+                              incognito:YES
+                             completion:nil];
+    EXPECT_EQ(incognito_tab_view_controller_,
+              coordinator_.activeViewController);
 }
 
 // Tests calling showTabSwitcher twice in a row with the same VC.
@@ -350,13 +295,11 @@ TEST_F(TabGridCoordinatorTest, ShowTabSwitcherTwice) {
 TEST_F(TabGridCoordinatorTest, ShowTabViewControllerTwice) {
   [coordinator_ showTabViewController:normal_tab_view_controller_
                             incognito:NO
-                   shouldCloseTabGrid:YES
                            completion:nil];
   EXPECT_EQ(normal_tab_view_controller_, coordinator_.activeViewController);
 
   [coordinator_ showTabViewController:normal_tab_view_controller_
                             incognito:NO
-                   shouldCloseTabGrid:YES
                            completion:nil];
   EXPECT_EQ(normal_tab_view_controller_, coordinator_.activeViewController);
 }
@@ -373,7 +316,6 @@ TEST_F(TabGridCoordinatorTest, CompletionHandlers) {
   __block BOOL completion_handler_was_called = NO;
   [coordinator_ showTabViewController:normal_tab_view_controller_
                             incognito:NO
-                   shouldCloseTabGrid:YES
                            completion:^{
                              completion_handler_was_called = YES;
                            }];
@@ -381,17 +323,13 @@ TEST_F(TabGridCoordinatorTest, CompletionHandlers) {
     return completion_handler_was_called;
   });
   ASSERT_TRUE(completion_handler_was_called);
-  if (!regular_thumb_strip_supporting_.thumbStripEnabled) {
-    // Thumbstrip doesn't call delegate.
-    EXPECT_TRUE(delegate_.didEndCalled);
-  }
+  EXPECT_TRUE(delegate_.didEndCalled);
 
   // Tests that the completion handler is called when replacing an existing tab
   // view controller. Tests that the delegate 'didEnd' method is *not* called.
   delegate_.didEndCalled = NO;
   [coordinator_ showTabViewController:incognito_tab_view_controller_
                             incognito:YES
-                   shouldCloseTabGrid:YES
                            completion:^{
                              completion_handler_was_called = YES;
                            }];
@@ -399,10 +337,7 @@ TEST_F(TabGridCoordinatorTest, CompletionHandlers) {
     return completion_handler_was_called;
   });
   ASSERT_TRUE(completion_handler_was_called);
-  if (!regular_thumb_strip_supporting_.thumbStripEnabled) {
-    // Thumbstrip doesn't call delegate.
-    EXPECT_FALSE(delegate_.didEndCalled);
-  }
+  EXPECT_FALSE(delegate_.didEndCalled);
 }
 
 // Tests that the tab grid coordinator sizes its view controller to the window.
@@ -421,7 +356,6 @@ TEST_F(TabGridCoordinatorTest, TimeSpentInTabGrid) {
   scoped_clock_.Advance(base::Seconds(20));
   [coordinator_ showTabViewController:normal_tab_view_controller_
                             incognito:NO
-                   shouldCloseTabGrid:YES
                            completion:nil];
   histogram_tester_.ExpectUniqueTimeSample("IOS.TabSwitcher.TimeSpent",
                                            base::Seconds(20), 1);
@@ -436,7 +370,6 @@ TEST_F(TabGridCoordinatorTest, tabGridActive) {
 
   [coordinator_ showTabViewController:normal_tab_view_controller_
                             incognito:NO
-                   shouldCloseTabGrid:YES
                            completion:nil];
   EXPECT_FALSE(coordinator_.tabGridActive);
 

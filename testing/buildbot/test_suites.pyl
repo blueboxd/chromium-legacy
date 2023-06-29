@@ -196,7 +196,6 @@
         },
       },
       'viz_unittests': {},
-      'webengine_support_instrumentation_test_apk': {},
       'webview_instrumentation_test_apk': {
         'swarming': {
           'shards': 7,
@@ -557,7 +556,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-18.04"
+              "os": "Ubuntu-22.04"
             }
           ],
         },
@@ -1069,6 +1068,12 @@
     },
 
     'chromium_gtests_for_win_and_linux_only': {
+      # pthreadpool is only built on Windows and Linux platforms, that is
+      # determined by `build_tflite_with_xnnpack` defined in
+      # third_party/tflite/features.gni.
+      'pthreadpool_unittests': {
+        'ci_only': True,
+      },
     },
 
     'chromium_ios_scripts': {
@@ -1187,13 +1192,6 @@
         'remove_mixins': [
           'nougat-x86-emulator',
         ],
-      },
-      'weblayer_junit_tests': {
-        'remove_mixins': [
-          'nougat-x86-emulator',
-        ],
-        # Experimental until we're sure these are stable.
-        'experiment_percentage': 100
       },
     },
 
@@ -1677,7 +1675,11 @@
       'ppapi_unittests': {},
       'remoting_unittests': {},
       'services_unittests': {},
-      'sync_integration_tests': {},
+      'sync_integration_tests': {
+        'swarming': {
+          'shards': 3,
+        },
+      },
       'unit_tests': {},
     },
 
@@ -1988,7 +1990,7 @@
             # This suite simply analyzes build targets without running them.
             # It can thus run on a standard linux machine w/o a device.
             {
-              'os': 'Ubuntu-18.04',
+              'os': 'Ubuntu-22.04',
               'cpu': 'x86'
             },
           ],
@@ -2010,7 +2012,7 @@
             # This suite simply analyzes build targets without running them.
             # It can thus run on a standard linux machine w/o a device.
             {
-              'os': 'Ubuntu-18.04',
+              'os': 'Ubuntu-22.04',
               'cpu': 'x86'
             },
           ],
@@ -2321,32 +2323,11 @@
         'args': [
           '--disable-field-trial-config',
         ],
+        'ci_only': True,
         'test': 'android_browsertests',
         'swarming': {
           'shards': 3,
         },
-      },
-      'webview_cts_tests_no_field_trial': {
-        'args': [
-          '--disable-field-trial-config',
-        ],
-        'swarming': {
-          'shards': 2,
-          'cipd_packages': [
-            {
-              "cipd_package": 'chromium/android_webview/tools/cts_archive',
-              'location': 'android_webview/tools/cts_archive',
-              'revision': 'D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C',
-            }
-          ]
-        },
-        'test': 'webview_cts_tests',
-      },
-      'webview_ui_test_app_test_apk_no_field_trial': {
-        'args': [
-          '--disable-field-trial-config',
-        ],
-        'test': 'webview_ui_test_app_test_apk',
       },
     },
     'fieldtrial_browser_tests': {
@@ -2382,7 +2363,32 @@
         'test': 'sync_integration_tests',
       },
     },
-
+    'fieldtrial_webview_tests': {
+      'webview_trichrome_64_cts_tests_no_field_trial': {
+        'args': [
+          '--disable-field-trial-config',
+        ],
+        'ci_only': True,
+        'swarming': {
+          'shards': 2,
+          'cipd_packages': [
+            {
+              "cipd_package": 'chromium/android_webview/tools/cts_archive',
+              'location': 'android_webview/tools/cts_archive',
+              'revision': 'D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C',
+            }
+          ]
+        },
+        'test': 'webview_trichrome_64_cts_tests',
+      },
+      'webview_ui_test_app_test_apk_no_field_trial': {
+        'args': [
+          '--disable-field-trial-config',
+        ],
+        'ci_only': True,
+        'test': 'webview_ui_test_app_test_apk',
+      },
+    },
     'finch_smoke_tests': {
       # TODO(crbug.com/1227222): Change this to the actual finch smoke test
       # once it exists.
@@ -4386,7 +4392,7 @@
         'name': 'interactive_ui_tests',
         'test': 'interactive_ui_tests',
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.beta.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter',
         ],
         'swarming': {
           'shards': 3,
@@ -4399,7 +4405,7 @@
         'name': 'interactive_ui_tests',
         'test': 'interactive_ui_tests',
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.dev.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter',
         ],
         'swarming': {
           'shards': 3,
@@ -4412,7 +4418,7 @@
         'name': 'interactive_ui_tests',
         'test': 'interactive_ui_tests',
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.stable.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter',
         ],
         'swarming': {
           'shards': 3,
@@ -4709,7 +4715,11 @@
       'remoting_unittests': {},
       'service_manager_unittests': {}, # https://crbug.com/843134
       'snapshot_unittests': {},
-      'sync_integration_tests': {},
+      'sync_integration_tests': {
+        'swarming': {
+          'shards': 3,
+        },
+      },
       'views_unittests': {},
     },
 
@@ -5358,11 +5368,6 @@
       'web_engine_unittests': {},
     },
 
-    'webengine_android_gtests': {
-      'webengine_support_instrumentation_test_apk': {},
-      'weblayer_browsertests': {},
-    },
-
     'webrtc_chromium_baremetal_gtests': {
       # Run capture unittests on bots that have real webcams.
       'capture_unittests': {
@@ -5700,6 +5705,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
+        'isolate_name': 'chrome_ios_wpt',
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 15,
@@ -5718,7 +5724,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'isolate_name': 'wpt_tests_isolate',
+        'isolate_name': 'chrome_wpt',
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 15,
@@ -5734,7 +5740,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'isolate_name': 'wpt_tests_isolate_content_shell',
+        'isolate_name': 'content_shell_wpt',
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 15,
@@ -5753,7 +5759,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'isolate_name': 'wpt_tests_isolate_content_shell',
+        'isolate_name': 'content_shell_wpt',
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 15,
@@ -5774,7 +5780,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'isolate_name': 'wpt_tests_isolate_content_shell',
+        'isolate_name': 'content_shell_wpt',
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 3,
@@ -5794,7 +5800,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'isolate_name': 'wpt_tests_isolate',
+        'isolate_name': 'chrome_wpt',
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 1,
@@ -5818,7 +5824,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'isolate_name': 'wpt_tests_isolate',
+        'isolate_name': 'chrome_wpt',
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 1,
@@ -5840,7 +5846,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'isolate_name': 'wpt_tests_isolate_content_shell',
+        'isolate_name': 'content_shell_wpt',
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 10,
@@ -5863,7 +5869,10 @@
     'android_12_dbg_emulator_gtests': [
       'android_trichrome_smoke_tests',
     ],
-
+    'android_finch_fieldtrial_tests': [
+      'fieldtrial_android_tests',
+      'fieldtrial_webview_tests',
+    ],
     'android_marshmallow_gtests': [
       'android_smoke_tests',
       'android_specific_chromium_gtests',  # Already includes gl_gtests.
@@ -5873,7 +5882,6 @@
       'linux_flavor_specific_chromium_gtests',
       'vr_android_specific_chromium_tests',
       'vr_platform_specific_chromium_gtests',
-      'webengine_android_gtests',
     ],
 
     'android_nougat_emulator_gtests': [
@@ -5886,7 +5894,6 @@
       'chromium_gtests_for_devices_with_graphical_output',
       'linux_flavor_specific_chromium_gtests',
       'system_webview_shell_instrumentation_tests', # Not an experimental test
-      'webengine_android_gtests',
       'webview_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
     ],
@@ -5912,7 +5919,6 @@
       'chrome_public_tests',
       'vr_android_specific_chromium_tests',
       'webview_ui_instrumentation_tests',
-      'webengine_android_gtests',
     ],
 
     'android_pie_gtests': [
@@ -5939,7 +5945,6 @@
       'system_webview_shell_instrumentation_tests', # Not an experimental test
       'webview_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
-      'webengine_android_gtests',
     ],
 
     'android_pie_rel_gtests': [
@@ -5958,7 +5963,6 @@
     #   'vr_platform_specific_chromium_gtests',
       'webview_64_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
-      'webengine_android_gtests',
     ],
 
     'bfcache_android_gtests': [
@@ -6825,7 +6829,6 @@
       'chromium_gtests_for_devices_with_graphical_output': {},
       'linux_flavor_specific_chromium_gtests': {},
       'system_webview_shell_instrumentation_tests': {}, # Not an experimental test
-      'webengine_android_gtests': {},
       'webview_trichrome_cts_tests': {
         'variants': [
           'WEBVIEW_TRICHROME_FULL_CTS_TESTS',
@@ -6847,9 +6850,10 @@
       'chrome_profile_generator_tests': {},
       'chromium_gtests': {},
       'chromium_gtests_for_devices_with_graphical_output': {},
+      'fieldtrial_android_tests': {},
+      'fieldtrial_webview_tests': {},
       'linux_flavor_specific_chromium_gtests': {},
       'system_webview_shell_instrumentation_tests': {}, # Not an experimental test
-      'webengine_android_gtests': {},
       'webview_trichrome_64_cts_tests': {
         'variants': [
           'WEBVIEW_TRICHROME_FULL_CTS_TESTS',
@@ -6868,7 +6872,6 @@
       'chromium_gtests_for_devices_with_graphical_output': {},
       'linux_flavor_specific_chromium_gtests': {},
       'system_webview_shell_instrumentation_tests': {}, # Not an experimental test
-      'webengine_android_gtests': {},
       'webview_ui_instrumentation_tests': {},
     },
 
@@ -6952,7 +6955,7 @@
         ],
         'variants': [
           'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_6S_15_5',
+          'SIM_IPHONE_13_15_5',
         ]
       },
       'ios_eg2_tests': {
@@ -6962,7 +6965,7 @@
         ],
         'variants': [
           'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_6S_15_5',
+          'SIM_IPHONE_13_15_5',
         ]
       },
     },
@@ -7078,37 +7081,37 @@
     'ios16_sdk_simulator_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_X_16_4',
+          'SIM_IPHONE_14_16_4',
         ],
       },
       'ios_crash_xcuitests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_X_16_4',
+          'SIM_IPHONE_14_16_4',
         ]
       },
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
-          'SIM_IPHONE_X_16_4',
-          'SIM_IPAD_AIR_3RD_GEN_16_4',
-          'SIM_IPAD_PRO_3RD_GEN_16_4',
+          'SIM_IPHONE_14_16_4',
+          'SIM_IPAD_AIR_5TH_GEN_16_4',
+          'SIM_IPAD_PRO_6TH_GEN_16_4',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
-          'SIM_IPHONE_X_16_4',
-          'SIM_IPAD_AIR_3RD_GEN_16_4',
-          'SIM_IPAD_PRO_3RD_GEN_16_4',
+          'SIM_IPHONE_14_16_4',
+          'SIM_IPAD_AIR_5TH_GEN_16_4',
+          'SIM_IPAD_PRO_6TH_GEN_16_4',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_X_16_4',
+          'SIM_IPHONE_14_16_4',
           'SIM_IPHONE_SE_3RD_GEN_16_4',
-          'SIM_IPAD_AIR_3RD_GEN_16_4',
-          'SIM_IPAD_PRO_3RD_GEN_16_4',
+          'SIM_IPAD_AIR_5TH_GEN_16_4',
+          'SIM_IPAD_PRO_6TH_GEN_16_4',
         ],
       },
     },
@@ -7224,48 +7227,44 @@
     'ios_code_coverage_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_6S_15_5',
-          'SIM_IPHONE_8_16_2',
+          'SIM_IPHONE_14_PLUS_16_2',
+          'SIM_IPHONE_14_16_2',
         ],
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_6S_15_5',
-          'SIM_IPHONE_7_15_5',
-          'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_8_16_2',
-          'SIM_IPHONE_X_16_2',
+          'SIM_IPHONE_14_PLUS_16_2',
+          'SIM_IPHONE_12_16_2',
           'SIM_IPAD_AIR_3RD_GEN_16_2',
-          'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_2',
+          'SIM_IPHONE_14_16_2',
+          'SIM_IPAD_AIR_5TH_GEN_16_2',
+          'SIM_IPAD_PRO_5TH_GEN_15_5',
+          'SIM_IPAD_PRO_6TH_GEN_16_2',
         ],
       },
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_7_15_5',
-          'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_X_15_5',
-          'SIM_IPHONE_8_16_2',
-          'SIM_IPAD_AIR_3RD_GEN_16_2',
-          'SIM_IPHONE_X_16_2',
-          'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_2',
+          'SIM_IPHONE_12_16_2',
+          'SIM_IPHONE_13_15_5',
+          'SIM_IPHONE_14_16_2',
+          'SIM_IPAD_AIR_5TH_GEN_16_2',
+          'SIM_IPHONE_13_16_2',
+          'SIM_IPAD_PRO_5TH_GEN_15_5',
+          'SIM_IPAD_PRO_6TH_GEN_16_2',
         ],
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_6S_PLUS_15_5',
-          'SIM_IPHONE_6S_15_5',
-          'SIM_IPHONE_SE_1ST_GEN_15_5',
-          'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_8_PLUS_16_2',
-          'SIM_IPHONE_8_16_2',
+          'SIM_IPHONE_13_PRO_MAX_15_5',
+          'SIM_IPHONE_13_15_5',
+          'SIM_IPHONE_14_16_2',
           'SIM_IPHONE_SE_3RD_GEN_16_2',
-          'SIM_IPAD_AIR_3RD_GEN_16_2',
-          'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_2',
+          'SIM_IPHONE_SE_3RD_GEN_15_5',
+          'SIM_IPAD_AIR_5TH_GEN_16_2',
+          'SIM_IPAD_PRO_5TH_GEN_15_5',
+          'SIM_IPAD_PRO_6TH_GEN_16_2',
         ],
       },
     },
@@ -7273,32 +7272,33 @@
     'ios_m1_simulator_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_8_16_2',
+          'SIM_IPHONE_14_16_2',
         ],
       },
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
-          'SIM_IPHONE_8_16_2',
-          'SIM_IPAD_AIR_3RD_GEN_16_2',
-          'SIM_IPHONE_X_16_2'
+          'SIM_IPHONE_14_16_2',
+          'SIM_IPAD_AIR_5TH_GEN_16_2',
+          'SIM_IPHONE_14_PRO_MAX_16_2',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
-          'SIM_IPHONE_X_16_2',
-          'SIM_IPAD_6_GEN_16_2',
-          'SIM_IPAD_AIR_3RD_GEN_16_2',
-          'SIM_IPAD_PRO_3RD_GEN_16_2',
+          'SIM_IPHONE_14_16_2',
+          'SIM_IPAD_10TH_GEN_16_2',
+          'SIM_IPAD_AIR_5TH_GEN_16_2',
+          'SIM_IPAD_PRO_6TH_GEN_16_2',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_8_PLUS_16_2',
-          'SIM_IPHONE_8_16_2',
+          'SIM_IPHONE_14_PRO_MAX_16_2',
+          'SIM_IPHONE_14_16_2',
           'SIM_IPHONE_SE_3RD_GEN_16_2',
-          'SIM_IPAD_AIR_3RD_GEN_16_2',
+          'SIM_IPHONE_13_16_2',
+          'SIM_IPAD_AIR_5TH_GEN_16_2',
         ],
       },
     },
@@ -7306,7 +7306,7 @@
     'ios_simulator_cronet_tests': {
       'ios_cronet_tests': {
         'variants': [
-          'SIM_IPHONE_X_15_5',
+          'SIM_IPHONE_13_15_5',
         ]
       }
     },
@@ -7315,33 +7315,33 @@
     'ios_simulator_full_configs_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_6S_15_5',
+          'SIM_IPHONE_14_PLUS_16_2',
         ]
       },
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_7_15_5',
-          'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_X_16_2',
-          'SIM_IPAD_PRO_3RD_GEN_16_2',
+          'SIM_IPHONE_13_15_5',
+          'SIM_IPAD_AIR_5TH_GEN_15_5',
+          'SIM_IPHONE_14_16_2',
+          'SIM_IPAD_PRO_6TH_GEN_16_2',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_6S_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPHONE_8_16_2',
-          'SIM_IPAD_AIR_3RD_GEN_16_2',
+          'SIM_IPHONE_13_15_5',
+          'SIM_IPAD_PRO_6TH_GEN_16_2',
+          'SIM_IPHONE_14_16_2',
+          'SIM_IPAD_AIR_5TH_GEN_16_2',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_6S_15_5',
-          'SIM_IPHONE_SE_1ST_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPHONE_8_16_2',
+          'SIM_IPHONE_13_15_5',
+          'SIM_IPHONE_SE_3RD_GEN_15_5',
+          'SIM_IPAD_PRO_6TH_GEN_16_2',
+          'SIM_IPHONE_13_16_2',
         ]
       }
     },
@@ -7349,24 +7349,24 @@
     'ios_simulator_multi_window_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPAD_AIR_3RD_GEN_16_2',
+          'SIM_IPAD_AIR_5TH_GEN_16_2',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPAD_AIR_3RD_GEN_16_2',
+          'SIM_IPAD_AIR_5TH_GEN_16_2',
         ]
       },
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPAD_AIR_3RD_GEN_16_2',
+          'SIM_IPAD_AIR_5TH_GEN_16_2',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPAD_AIR_3RD_GEN_16_2',
+          'SIM_IPAD_AIR_5TH_GEN_16_2',
         ]
       }
     },
@@ -7379,22 +7379,22 @@
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
-          'SIM_IPHONE_X_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_2_T2',
+          'SIM_IPHONE_13_15_5',
+          'SIM_IPAD_PRO_6TH_GEN_16_2',
+          'SIM_IPAD_PRO_5TH_GEN_15_5',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
-          'SIM_IPHONE_7_15_5',
-          'SIM_IPAD_AIR_2_15_5',
+          'SIM_IPHONE_13_15_5',
+          'SIM_IPAD_AIR_5TH_GEN_16_2',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_6S_PLUS_15_5',
-          'SIM_IPAD_AIR_2_15_5',
+          'SIM_IPHONE_14_PLUS_16_2',
+          'SIM_IPAD_AIR_5TH_GEN_16_2',
           'SIM_IPHONE_SE_3RD_GEN_16_2',
           'SIM_IPAD_AIR_3RD_GEN_16_2',
         ]
@@ -7402,7 +7402,8 @@
       'ios_crash_xcuitests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_7_15_5',
+          'SIM_IPHONE_13_15_5',
+          'SIM_IPHONE_SE_3RD_GEN_16_2'
         ]
       },
     },
@@ -7411,19 +7412,19 @@
     'ios_simulator_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_8_16_2',
+          'SIM_IPHONE_14_16_2',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_8_16_2',
+          'SIM_IPHONE_14_16_2',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_X_16_2',
-          'SIM_IPAD_PRO_3RD_GEN_16_2',
+          'SIM_IPHONE_14_16_2',
+          'SIM_IPAD_PRO_6TH_GEN_16_2',
         ]
       }
     },
@@ -7744,14 +7745,12 @@
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
-          'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_mediapipe_passthrough_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
-          'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_passthrough_telemetry_tests': {
@@ -7764,7 +7763,6 @@
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
-          'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests': {
@@ -7798,21 +7796,18 @@
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
-          'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_fyi_mac_specific_gtests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
-          'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_gles2_conform_gtests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
           'MAC_RETINA_AMD_GPU_STABLE',
-          'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
     },

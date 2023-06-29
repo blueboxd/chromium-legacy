@@ -581,7 +581,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kPosition:
       return a.GetPosition() == b.GetPosition();
     case CSSPropertyID::kPositionFallback:
-      return a.PositionFallback() == b.PositionFallback();
+      return base::ValuesEquivalent(a.PositionFallback(), b.PositionFallback());
     case CSSPropertyID::kQuotes:
       return a.Quotes() == b.Quotes();
     case CSSPropertyID::kResize:
@@ -889,8 +889,6 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kViewTimelineAxis:
     case CSSPropertyID::kViewTimelineInset:
     case CSSPropertyID::kViewTimelineName:
-    case CSSPropertyID::kScrollTimelineAttachment:
-    case CSSPropertyID::kViewTimelineAttachment:
       NOTREACHED() << property.GetCSSPropertyName().ToAtomicString().Ascii();
       return true;
 
@@ -1076,6 +1074,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kInsetInlineEnd:
     case CSSPropertyID::kInsetBlockStart:
     case CSSPropertyID::kInsetBlockEnd:
+    case CSSPropertyID::kInternalOverflowBlock:
+    case CSSPropertyID::kInternalOverflowInline:
     case CSSPropertyID::kOverflowBlock:
     case CSSPropertyID::kOverflowInline:
     case CSSPropertyID::kOverscrollBehaviorBlock:

@@ -204,8 +204,8 @@ TEST_F(LayoutInlineTest, RelativePositionedHitTest) {
   const PhysicalOffset hit_location(18, 15);
   HitTestLocation location(hit_location);
 
-  Element* div = GetDocument().QuerySelector("div");
-  Element* span = GetDocument().QuerySelector("span");
+  Element* div = GetDocument().QuerySelector(AtomicString("div"));
+  Element* span = GetDocument().QuerySelector(AtomicString("span"));
   Node* text = span->firstChild();
 
   // Shouldn't hit anything in SPAN as it's in another paint layer
@@ -299,7 +299,7 @@ TEST_F(LayoutInlineTest, MultilineRelativePositionedHitTest) {
   {
     PhysicalOffset hit_location(13, 33);
     HitTestLocation location(hit_location);
-    Node* target = GetDocument().QuerySelector("img");
+    Node* target = GetDocument().QuerySelector(AtomicString("img"));
 
     HitTestResult hit_result(hit_request, location);
     bool hit_outcome =
@@ -759,8 +759,8 @@ TEST_F(LayoutInlineTest, VisualOverflowRecalcLegacyLayout) {
   )HTML");
 
   auto* span = To<LayoutInline>(GetLayoutObjectByElementId("span"));
-  auto* span_element = GetDocument().getElementById("span");
-  auto* span2_element = GetDocument().getElementById("span2");
+  auto* span_element = GetDocument().getElementById(AtomicString("span"));
+  auto* span2_element = GetDocument().getElementById(AtomicString("span2"));
 
   span_element->setAttribute(html_names::kStyleAttr, "outline: 50px solid red");
   UpdateAllLifecyclePhasesForTest();
@@ -803,8 +803,8 @@ TEST_F(LayoutInlineTest, VisualOverflowRecalcLayoutNG) {
   )HTML");
 
   auto* span = To<LayoutInline>(GetLayoutObjectByElementId("span"));
-  auto* span_element = GetDocument().getElementById("span");
-  auto* span2_element = GetDocument().getElementById("span2");
+  auto* span_element = GetDocument().getElementById(AtomicString("span"));
+  auto* span2_element = GetDocument().getElementById(AtomicString("span2"));
 
   span_element->setAttribute(html_names::kStyleAttr, "outline: 50px solid red");
   UpdateAllLifecyclePhasesForTest();
@@ -844,7 +844,7 @@ TEST_F(LayoutInlineTest, VisualOverflowRecalcLegacyLayoutPositionRelative) {
   )HTML");
 
   auto* span = To<LayoutInline>(GetLayoutObjectByElementId("span"));
-  auto* span_element = GetDocument().getElementById("span");
+  auto* span_element = GetDocument().getElementById(AtomicString("span"));
 
   span_element->setAttribute(html_names::kStyleAttr, "outline: 50px solid red");
   UpdateAllLifecyclePhasesForTest();

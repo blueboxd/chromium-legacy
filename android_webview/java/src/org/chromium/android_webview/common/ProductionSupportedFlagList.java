@@ -17,6 +17,7 @@ import org.chromium.components.metrics.AndroidMetricsFeatures;
 import org.chromium.components.metrics.MetricsFeatures;
 import org.chromium.components.metrics.MetricsSwitches;
 import org.chromium.components.network_session_configurator.NetworkSessionSwitches;
+import org.chromium.components.permissions.PermissionsAndroidFeatureList;
 import org.chromium.components.variations.VariationsSwitches;
 import org.chromium.components.viz.common.VizFeatures;
 import org.chromium.content_public.common.ContentFeatures;
@@ -124,6 +125,8 @@ public final class ProductionSupportedFlagList {
                             + "support."),
             Flag.baseFeature(GpuFeatures.WEBVIEW_THREAD_SAFE_MEDIA,
                     "Use thread-safe media path, requires Android P."),
+            Flag.baseFeature(GpuFeatures.AGGRESSIVE_SKIA_GPU_RESOURCE_PURGE,
+                    "More aggressively purge skia GPU resources"),
             Flag.baseFeature(VizFeatures.ALLOW_BYPASS_RENDER_PASS_QUADS,
                     "Enable bypass render pass for RenderPassDrawQuads"),
             Flag.baseFeature(VizFeatures.WEBVIEW_NEW_INVALIDATE_HEURISTIC,
@@ -323,10 +326,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.WEB_RTC_METRONOME,
                     "Inject a metronome into webrtc to allow task coalescing, "
                             + " including synchronized decoding."),
-            Flag.baseFeature(BlinkFeatures.FAST_PATH_PAINT_PROPERTY_UPDATES,
-                    "If enabled, some paint property updates (e.g., transform "
-                            + "changes) will be applied directly instead of "
-                            + "using the property tree builder."),
             Flag.baseFeature(BlinkFeatures.THREADED_BODY_LOADER,
                     "If enabled, reads and decodes navigation body data off the main thread."),
             Flag.baseFeature(BlinkFeatures.SVG_RASTER_OPTIMIZATIONS),
@@ -358,11 +357,18 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(MetricsFeatures.METRICS_CLEAR_LOGS_ON_CLONED_INSTALL,
                     "Controls whether UMA logs are cleared when a cloned "
                             + "install is detected."),
+            Flag.baseFeature(MetricsFeatures.MERGE_SUBPROCESS_METRICS_ON_BG_AND_FG,
+                    "Controls whether child process histograms are merged on background "
+                            + "and foreground."),
             Flag.baseFeature(MetricsFeatures.RESTORE_UMA_CLIENT_ID_INDEPENDENT_LOGS,
                     "Controls whether independent logs from PMA files will use the embedded "
                             + "client uuid as the log's client ID."),
             Flag.baseFeature(ContentFeatures.MAIN_THREAD_COMPOSITING_PRIORITY,
                     "When enabled runs the main thread at compositing priority."),
+            Flag.baseFeature(ContentFeatures.REDUCE_SUBRESOURCE_RESPONSE_STARTED_IPC,
+                    "When enabled, reduces SubresourceResponseStarted IPC by sending"
+                            + "subresource notifications only if the user has allowed"
+                            + "HTTPS-related exceptions."),
             Flag.baseFeature(AwFeatures.WEBVIEW_UMA_UPLOAD_QUALITY_OF_SERVICE_SET_TO_DEFAULT,
                     "If enabled, the frequency to upload UMA is increased."),
             Flag.baseFeature("CanvasColorCache"),
@@ -393,7 +399,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature("SafeBrowsingOnUIThread"),
             Flag.baseFeature(BlinkFeatures.ANDROID_EXTENDED_KEYBOARD_SHORTCUTS,
                     "Enables WebView to use the extended keyboard shortcuts added for Android U"),
-            Flag.baseFeature("LessChattyNetworkService"),
             Flag.baseFeature(BlinkFeatures.AUTOFILL_DETECT_REMOVED_FORM_CONTROLS,
                     "Enables Autofill to detect if form controls are removed from the DOM"),
             Flag.baseFeature(
@@ -442,6 +447,14 @@ public final class ProductionSupportedFlagList {
                             + "with a preferred framerate defined."),
             Flag.baseFeature(AwFeatures.WEBVIEW_REPORT_FRAME_METRICS,
                     "Report frame metrics to Google, if metrics reporting has been enabled."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_CLEAR_FUNCTOR_IN_BACKGROUND,
+                    "Clear the draw functor after some time in background."),
+            Flag.baseFeature(PermissionsAndroidFeatureList.BLOCK_MIDI_BY_DEFAULT,
+                    "This flag won't block MIDI by default in WebView. In fact "
+                            + "it makes sure the changes made to do so in "
+                            + "Chromium won't affect WebView."),
+            Flag.baseFeature(BlinkFeatures.REMOVE_NON_STANDARD_APPEARANCE_VALUE,
+                    "Remove non-standard CSS appearance values."),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

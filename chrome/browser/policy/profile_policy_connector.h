@@ -89,6 +89,13 @@ class ProfilePolicyConnector final : public PolicyService::Observer {
   // PolicyService::Observer:
   void OnPolicyServiceInitialized(PolicyDomain domain) override;
 
+  // Sets the local_test_policy_provider as active and all other policy
+  // providers to inactive.
+  void UseLocalTestPolicyProvider();
+
+  // Reverts the effects of UseLocalTestPolicyProvider.
+  void RevertUseLocalTestPolicyProvider();
+
  private:
   void DoPostInit();
   void ReportChromePolicyInitialized();
@@ -137,7 +144,7 @@ class ProfilePolicyConnector final : public PolicyService::Observer {
   // a PolicyService for testability.
   void OnProxiedPoliciesPropagated(PolicyServiceImpl* policy_service);
 
-  raw_ptr<const user_manager::User> user_ = nullptr;
+  raw_ptr<const user_manager::User, DanglingUntriaged> user_ = nullptr;
 
   // Some of the user policy configuration affects browser global state, and
   // can only come from one Profile. |is_primary_user_| is true if this
@@ -187,6 +194,8 @@ class ProfilePolicyConnector final : public PolicyService::Observer {
   absl::optional<base::TimeTicks> creation_time_for_metrics_;
 
   std::unique_ptr<bool> is_managed_override_;
+
+  raw_ptr<ConfigurationPolicyProvider> local_test_policy_provider_;
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Returns |true| when this is the main profile.

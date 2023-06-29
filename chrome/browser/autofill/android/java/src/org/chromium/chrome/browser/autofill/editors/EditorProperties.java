@@ -37,6 +37,22 @@ import java.util.stream.Stream;
  * Properties defined here reflect the visible state of the {@link EditorDialog}.
  */
 public class EditorProperties {
+    /**
+     * Contains information needed by {@link EditorDialogView} to display fields.
+     */
+    public static class FieldItem extends ListItem {
+        public final boolean isFullLine;
+
+        public FieldItem(int type, PropertyModel model) {
+            this(type, model, /*isFullLine=*/false);
+        }
+
+        public FieldItem(int type, PropertyModel model, boolean isFullLine) {
+            super(type, model);
+            this.isFullLine = isFullLine;
+        }
+    }
+
     public static final PropertyModel.ReadableObjectPropertyKey<String> EDITOR_TITLE =
             new PropertyModel.ReadableObjectPropertyKey<>("editor_title");
     public static final PropertyModel.ReadableObjectPropertyKey<String> CUSTOM_DONE_BUTTON_TEXT =
@@ -49,17 +65,9 @@ public class EditorProperties {
             new PropertyModel.ReadableObjectPropertyKey<>("delete_confirmation_text");
     public static final PropertyModel.ReadableBooleanPropertyKey SHOW_REQUIRED_INDICATOR =
             new PropertyModel.ReadableBooleanPropertyKey("show_required_indicator");
-    /**
-     * If true, done callback is triggered immediately after the user clicked
-     * on the done button. Otherwise, by default, it is triggered only after the dialog is
-     * dismissed with animation.
-     */
-    public static final PropertyModel
-            .ReadableBooleanPropertyKey TRIGGER_DONE_CALLBACK_BEFORE_CLOSE_ANIMATION =
-            new PropertyModel.ReadableBooleanPropertyKey(
-                    "trigger_done_callback_before_close_animation");
 
-    public static final PropertyModel.WritableObjectPropertyKey<ListModel<ListItem>> EDITOR_FIELDS =
+    public static final PropertyModel
+            .WritableObjectPropertyKey<ListModel<FieldItem>> EDITOR_FIELDS =
             new PropertyModel.WritableObjectPropertyKey<>("editor_fields");
 
     public static final PropertyModel.ReadableObjectPropertyKey<Runnable> DONE_RUNNABLE =
@@ -72,10 +80,20 @@ public class EditorProperties {
     public static final PropertyModel.ReadableObjectPropertyKey<Runnable> DELETE_RUNNABLE =
             new PropertyModel.ReadableObjectPropertyKey<>("delete_callback");
 
+    public static final PropertyModel.WritableBooleanPropertyKey VISIBLE =
+            new PropertyModel.WritableBooleanPropertyKey("visible");
+    /**
+     * This property is temporary way to trigger field error message update process.
+     * It also triggers field focus update.
+     * TODO(crbug.com/1435314): remove this property once fields are updated through MCP.
+     */
+    public static final PropertyModel.WritableBooleanPropertyKey FORM_VALID =
+            new PropertyModel.WritableBooleanPropertyKey("form_valid");
+
     public static final PropertyKey[] ALL_KEYS = {EDITOR_TITLE, CUSTOM_DONE_BUTTON_TEXT,
             FOOTER_MESSAGE, DELETE_CONFIRMATION_TITLE, DELETE_CONFIRMATION_TEXT,
-            SHOW_REQUIRED_INDICATOR, TRIGGER_DONE_CALLBACK_BEFORE_CLOSE_ANIMATION, EDITOR_FIELDS,
-            DONE_RUNNABLE, CANCEL_RUNNABLE, ALLOW_DELETE, DELETE_RUNNABLE};
+            SHOW_REQUIRED_INDICATOR, EDITOR_FIELDS, DONE_RUNNABLE, CANCEL_RUNNABLE, ALLOW_DELETE,
+            DELETE_RUNNABLE, VISIBLE, FORM_VALID};
 
     private EditorProperties() {}
 
@@ -129,15 +147,6 @@ public class EditorProperties {
          * @return True if the value is valid.
          */
         boolean isValid(@Nullable String value);
-
-        /**
-         * Called to check whether the length of the field value is maximum.
-         *
-         * @param value The value of the field to check.
-         * @return True if the field value length is maximum among all the possible valid values in
-         *         this field.
-         */
-        boolean isLengthMaximum(@Nullable String value);
     }
 
     /**
@@ -183,14 +192,11 @@ public class EditorProperties {
                 new PropertyModel.ReadableObjectPropertyKey<>("invalid_error_message");
         public static final PropertyModel.WritableObjectPropertyKey<String> CUSTOM_ERROR_MESSAGE =
                 new PropertyModel.WritableObjectPropertyKey<>("custom_error_message");
-        public static final PropertyModel.WritableBooleanPropertyKey IS_FULL_LINE =
-                new PropertyModel.WritableBooleanPropertyKey("is_full_line");
         public static final PropertyModel.WritableObjectPropertyKey<String> VALUE =
                 new PropertyModel.WritableObjectPropertyKey<>("value");
 
         public static final PropertyKey[] FIELD_ALL_KEYS = {LABEL, VALIDATOR, IS_REQUIRED,
-                REQUIRED_ERROR_MESSAGE, INVALID_ERROR_MESSAGE, CUSTOM_ERROR_MESSAGE, IS_FULL_LINE,
-                VALUE};
+                REQUIRED_ERROR_MESSAGE, INVALID_ERROR_MESSAGE, CUSTOM_ERROR_MESSAGE, VALUE};
     }
 
     /**
@@ -219,23 +225,17 @@ public class EditorProperties {
      * Properties specific for the text fields.
      */
     public static class TextFieldProperties {
-        /* Indicates that the length counter is disabled. */
-        public static final int LENGTH_COUNTER_LIMIT_NONE = 0;
-
         public static final PropertyModel.ReadableIntPropertyKey TEXT_INPUT_TYPE =
                 new PropertyModel.ReadableIntPropertyKey("text_input_type");
         public static final PropertyModel.WritableObjectPropertyKey<List<String>> TEXT_SUGGESTIONS =
                 new PropertyModel.WritableObjectPropertyKey<>("suggestions");
         public static final PropertyModel.ReadableObjectPropertyKey<TextWatcher> TEXT_FORMATTER =
                 new PropertyModel.ReadableObjectPropertyKey<>("formatter");
-        public static final PropertyModel.ReadableIntPropertyKey TEXT_LENGTH_COUNTER_LIMIT =
-                new PropertyModel.ReadableIntPropertyKey("length_counter_limit");
 
         public static final PropertyKey[] TEXT_SPECIFIC_KEYS = {
                 TEXT_INPUT_TYPE,
                 TEXT_SUGGESTIONS,
                 TEXT_FORMATTER,
-                TEXT_LENGTH_COUNTER_LIMIT,
         };
 
         public static final PropertyKey[] TEXT_ALL_KEYS =
@@ -280,11 +280,6 @@ public class EditorProperties {
         }
     }
 
-    public static boolean hasMaximumLength(PropertyModel textField) {
-        EditorFieldValidator validator = textField.get(FieldProperties.VALIDATOR);
-        return validator != null && validator.isLengthMaximum(textField.get(FieldProperties.VALUE));
-    }
-
     public static @Nullable String getValidationErrorMessage(PropertyModel textField) {
         final String customErrorMessage = textField.get(FieldProperties.CUSTOM_ERROR_MESSAGE);
         if (!TextUtils.isEmpty(customErrorMessage)) {
@@ -303,6 +298,15 @@ public class EditorProperties {
         }
 
         return null;
+    }
+
+    public static boolean isFormValid(PropertyModel editorModel) {
+        for (ListItem item : editorModel.get(EditorProperties.EDITOR_FIELDS)) {
+            if (!isFieldValid(item.model)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static boolean isFieldValid(PropertyModel textField) {

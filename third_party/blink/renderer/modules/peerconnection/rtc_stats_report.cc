@@ -37,8 +37,8 @@
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 #include "third_party/webrtc/api/stats/rtc_stats_report.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
-#include "v8-local-handle.h"
-#include "v8-object.h"
+#include "v8/include/v8-local-handle.h"
+#include "v8/include/v8-object.h"
 
 namespace blink {
 
@@ -200,6 +200,9 @@ RTCInboundRtpStreamStats* ToV8Stat(
   }
   if (webrtc_stat.fec_packets_discarded.is_defined()) {
     v8_stat->setFecPacketsDiscarded(*webrtc_stat.fec_packets_discarded);
+  }
+  if (webrtc_stat.fec_bytes_received.is_defined()) {
+    v8_stat->setFecPacketsDiscarded(*webrtc_stat.fec_bytes_received);
   }
   if (webrtc_stat.bytes_received.is_defined()) {
     v8_stat->setBytesReceived(*webrtc_stat.bytes_received);

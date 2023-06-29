@@ -22,8 +22,8 @@ import static org.chromium.chrome.browser.autofill.editors.EditorProperties.Drop
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.EDITOR_FIELDS;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.EDITOR_TITLE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FOOTER_MESSAGE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FORM_VALID;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.INVALID_ERROR_MESSAGE;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.IS_FULL_LINE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.IS_REQUIRED;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.LABEL;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.REQUIRED_ERROR_MESSAGE;
@@ -32,18 +32,17 @@ import static org.chromium.chrome.browser.autofill.editors.EditorProperties.Fiel
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.ItemType.DROPDOWN;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.ItemType.TEXT_INPUT;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.SHOW_REQUIRED_INDICATOR;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TRIGGER_DONE_CALLBACK_BEFORE_CLOSE_ANIMATION;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.LENGTH_COUNTER_LIMIT_NONE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_ALL_KEYS;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_FORMATTER;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_INPUT_TYPE;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_LENGTH_COUNTER_LIMIT;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType.ALPHA_NUMERIC_INPUT;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType.EMAIL_ADDRESS_INPUT;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType.PERSON_NAME_INPUT;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType.PHONE_NUMBER_INPUT;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType.PLAIN_TEXT_INPUT;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType.STREET_ADDRESS_INPUT;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.VISIBLE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.isFormValid;
 
 import android.content.Context;
 import android.text.TextUtils;
@@ -65,6 +64,7 @@ import org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator.Del
 import org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator.UserFlow;
 import org.chromium.chrome.browser.autofill.editors.EditorProperties.DropdownKeyValue;
 import org.chromium.chrome.browser.autofill.editors.EditorProperties.EditorFieldValidator;
+import org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldItem;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
@@ -72,7 +72,6 @@ import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.sync.SyncService;
 import org.chromium.components.sync.UserSelectableType;
 import org.chromium.ui.modelutil.ListModel;
-import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.HashMap;
@@ -113,6 +112,9 @@ class AddressEditorMediator {
     private String mCustomDoneButtonText;
     private boolean mAllowDelete;
     private boolean mShouldTriggerDoneCallbackBeforeCloseAnimation;
+
+    @Nullable
+    private PropertyModel mEditorModel;
 
     /**
      * The list of possible address fields for editing is determined statically.
@@ -200,7 +202,7 @@ class AddressEditorMediator {
                         .with(DROPDOWN_KEY_VALUE_LIST,
                                 getSupportedCountries(isAccountAddressProfile()
                                         && mUserFlow != CREATE_NEW_ADDRESS_PROFILE))
-                        .with(IS_FULL_LINE, true)
+                        .with(IS_REQUIRED, false)
                         .build();
 
         // Honorific prefix is present only for autofill settings.
@@ -211,7 +213,7 @@ class AddressEditorMediator {
                           .with(LABEL,
                                   mContext.getString(
                                           R.string.autofill_profile_editor_honorific_prefix))
-                          .with(IS_FULL_LINE, true)
+                          .with(IS_REQUIRED, false)
                           .build()
                 : null;
 
@@ -231,8 +233,6 @@ class AddressEditorMediator {
                         .with(INVALID_ERROR_MESSAGE,
                                 mContext.getString(
                                         R.string.payments_phone_invalid_validation_message))
-                        .with(IS_FULL_LINE, true)
-                        .with(TEXT_LENGTH_COUNTER_LIMIT, LENGTH_COUNTER_LIMIT_NONE)
                         .build();
 
         // Phone number is present for all countries.
@@ -245,8 +245,6 @@ class AddressEditorMediator {
                         .with(INVALID_ERROR_MESSAGE,
                                 mContext.getString(
                                         R.string.payments_email_invalid_validation_message))
-                        .with(IS_FULL_LINE, true)
-                        .with(TEXT_LENGTH_COUNTER_LIMIT, LENGTH_COUNTER_LIMIT_NONE)
                         .build();
 
         // TODO(crbug.com/1445020): Use localized string.
@@ -256,7 +254,7 @@ class AddressEditorMediator {
                 ? new PropertyModel.Builder(TEXT_ALL_KEYS)
                           .with(TEXT_INPUT_TYPE, PLAIN_TEXT_INPUT)
                           .with(LABEL, "Label")
-                          .with(IS_FULL_LINE, true)
+                          .with(IS_REQUIRED, false)
                           .build()
                 : null;
 
@@ -309,8 +307,12 @@ class AddressEditorMediator {
      * [ email address field ] <----- only present if purpose is Purpose.AUTOFILL_SETTINGS.
      * [ address nickname    ] <----- only present if nickname support is enabled.
      */
-    PropertyModel buildEditorModel() {
-        PropertyModel editorModel =
+    PropertyModel getEditorModel() {
+        if (mEditorModel != null) {
+            return mEditorModel;
+        }
+
+        mEditorModel =
                 new PropertyModel.Builder(ALL_KEYS)
                         .with(EDITOR_TITLE, getEditorTitle())
                         .with(CUSTOM_DONE_BUTTON_TEXT, mCustomDoneButtonText)
@@ -318,8 +320,6 @@ class AddressEditorMediator {
                         .with(DELETE_CONFIRMATION_TITLE, getDeleteConfirmationTitle())
                         .with(DELETE_CONFIRMATION_TEXT, getDeleteConfirmationText())
                         .with(SHOW_REQUIRED_INDICATOR, false)
-                        .with(TRIGGER_DONE_CALLBACK_BEFORE_CLOSE_ANIMATION,
-                                mShouldTriggerDoneCallbackBeforeCloseAnimation)
                         .with(EDITOR_FIELDS,
                                 buildEditorFieldList(AutofillAddress.getCountryCode(mProfileToEdit),
                                         mProfileToEdit.getLanguageCode()))
@@ -327,9 +327,10 @@ class AddressEditorMediator {
                         // If the user clicks [Cancel], send |toEdit| address back to the caller,
                         // which was the original state (could be null, a complete address, a
                         // partial address).
-                        .with(CANCEL_RUNNABLE, mDelegate::onCancel)
+                        .with(CANCEL_RUNNABLE, this::onCancelEditing)
                         .with(ALLOW_DELETE, mAllowDelete)
                         .with(DELETE_RUNNABLE, () -> mDelegate.onDelete(mAddressToEdit))
+                        .with(FORM_VALID, true)
                         .build();
 
         mCountryField.set(DROPDOWN_CALLBACK, new Callback<String>() {
@@ -338,7 +339,7 @@ class AddressEditorMediator {
              */
             @Override
             public void onResult(String countryCode) {
-                editorModel.set(EDITOR_FIELDS,
+                mEditorModel.set(EDITOR_FIELDS,
                         buildEditorFieldList(countryCode, Locale.getDefault().getLanguage()));
 
                 mPhoneFormatter.setCountryCode(countryCode);
@@ -346,7 +347,7 @@ class AddressEditorMediator {
             }
         });
 
-        return editorModel;
+        return mEditorModel;
     }
 
     private boolean shouldDisplayRequiredErrorIfFieldEmpty(AddressUiComponent component) {
@@ -375,20 +376,20 @@ class AddressEditorMediator {
      * @param countryCode The country for which fields are to be added.
      * @param languageCode The language in which localized strings (e.g. label) are presented.
      */
-    private ListModel<ListItem> buildEditorFieldList(String countryCode, String languageCode) {
-        ListModel<ListItem> editorFields = new ListModel<>();
+    private ListModel<FieldItem> buildEditorFieldList(String countryCode, String languageCode) {
+        ListModel<FieldItem> editorFields = new ListModel<>();
         mVisibleEditorFields = mAutofillProfileBridge.getAddressUiComponents(
                 countryCode, languageCode, AddressValidationType.ACCOUNT);
 
         // In terms of order, country must be the first field.
-        editorFields.add(new ListItem(DROPDOWN, mCountryField));
+        editorFields.add(new FieldItem(DROPDOWN, mCountryField, /*isFullLine=*/true));
 
         for (int i = 0; i < mVisibleEditorFields.size(); i++) {
             AddressUiComponent component = mVisibleEditorFields.get(i);
 
             // Honorific prefix should go before name.
             if (component.id == AddressField.RECIPIENT && mHonorificField != null) {
-                editorFields.add(new ListItem(TEXT_INPUT, mHonorificField));
+                editorFields.add(new FieldItem(TEXT_INPUT, mHonorificField, /*isFullLine=*/true));
             }
 
             PropertyModel field = mAddressFields.get(component.id);
@@ -396,9 +397,6 @@ class AddressEditorMediator {
             // Labels depend on country, e.g., state is called province in some countries. These are
             // already localized.
             field.set(LABEL, component.label);
-            field.set(IS_FULL_LINE,
-                    component.isFullLine || component.id == AddressField.LOCALITY
-                            || component.id == AddressField.DEPENDENT_LOCALITY);
 
             if (shouldDisplayRequiredErrorIfFieldEmpty(component)) {
                 String message =
@@ -409,29 +407,51 @@ class AddressEditorMediator {
                 // into account for the error.
                 field.set(IS_REQUIRED, true);
                 field.set(REQUIRED_ERROR_MESSAGE, message);
+            } else {
+                field.set(IS_REQUIRED, false);
             }
 
-            editorFields.add(new ListItem(TEXT_INPUT, field));
+            final boolean isFullLine = component.isFullLine || component.id == AddressField.LOCALITY
+                    || component.id == AddressField.DEPENDENT_LOCALITY;
+            editorFields.add(new FieldItem(TEXT_INPUT, field, isFullLine));
         }
         // Phone number (and email/nickname if applicable) are the last fields of the address.
-        if (mPhoneField != null) editorFields.add(new ListItem(TEXT_INPUT, mPhoneField));
-        if (mEmailField != null) editorFields.add(new ListItem(TEXT_INPUT, mEmailField));
-        if (mNicknameField != null) editorFields.add(new ListItem(TEXT_INPUT, mNicknameField));
+        if (mPhoneField != null) {
+            editorFields.add(new FieldItem(TEXT_INPUT, mPhoneField, /*isFullLine=*/true));
+        }
+        if (mEmailField != null) {
+            editorFields.add(new FieldItem(TEXT_INPUT, mEmailField, /*isFullLine=*/true));
+        }
+        if (mNicknameField != null) {
+            editorFields.add(new FieldItem(TEXT_INPUT, mNicknameField, /*isFullLine=*/true));
+        }
 
         return editorFields;
     }
 
     private void onCommitChanges() {
-        // If the user clicks [Done], save changes on disk, mark the address
-        // "complete" if possible,
-        // and send it back to the caller.
-        commitChanges(mProfileToEdit);
+        if (!isFormValid(mEditorModel)) {
+            // Note: triggering editor error messages and focused field update using temporary
+            // property.
+            // TODO(crbug.com/1435314): remove this temporary logic.
+            mEditorModel.set(FORM_VALID, true);
+            mEditorModel.set(FORM_VALID, false);
+            return;
+        }
+        mEditorModel.set(VISIBLE, false);
 
+        commitChanges(mProfileToEdit);
         // The address cannot be marked "complete" because it has not been
         // checked for all required fields.
         mAddressToEdit.updateAddress(mProfileToEdit);
 
         mDelegate.onDone(mAddressToEdit);
+    }
+
+    private void onCancelEditing() {
+        mEditorModel.set(VISIBLE, false);
+
+        mDelegate.onCancel();
     }
 
     /** Saves the edited profile on disk. */
@@ -635,11 +655,6 @@ class AddressEditorMediator {
             // updated frequently (daily) to do more strict validation.
             return TextUtils.isEmpty(value) ? mAllowEmptyValue
                                             : PhoneNumberUtil.isPossibleNumber(value, mCountryCode);
-        }
-
-        @Override
-        public boolean isLengthMaximum(@Nullable String value) {
-            return false;
         }
     }
 }

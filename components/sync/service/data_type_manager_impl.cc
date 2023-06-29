@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/task/sequenced_task_runner.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/protocol/model_type_state_helper.h"
@@ -121,9 +122,9 @@ DataTypeManagerImpl::DataTypeManagerImpl(
   DataTypeStatusTable::TypeErrorMap existing_errors;
   for (const auto& [type, controller] : *controllers_) {
     DataTypeController::State state = controller->state();
-    DCHECK(state == DataTypeController::NOT_RUNNING ||
-           state == DataTypeController::STOPPING ||
-           state == DataTypeController::FAILED)
+    CHECK(state == DataTypeController::NOT_RUNNING ||
+          state == DataTypeController::STOPPING ||
+          state == DataTypeController::FAILED)
         << " actual=" << DataTypeController::StateToString(state) << " for "
         << ModelTypeToDebugString(type);
 
@@ -163,6 +164,14 @@ void DataTypeManagerImpl::Configure(ModelTypeSet preferred_types,
 void DataTypeManagerImpl::DataTypePreconditionChanged(ModelType type) {
   if (!UpdatePreconditionError(type)) {
     // Nothing changed.
+    return;
+  }
+
+  if (base::FeatureList::IsEnabled(
+          syncer::kSyncAvoidReconfigurationIfAlreadyStopping) &&
+      state_ == STOPPING) {
+    // Configuration should not be set while stopping.
+    LOG(ERROR) << "Precondition changed while stopping.";
     return;
   }
 
@@ -269,7 +278,7 @@ void DataTypeManagerImpl::ConnectDataTypes() {
     std::unique_ptr<DataTypeActivationResponse> activation_response =
         dtc->Connect();
     DCHECK(activation_response);
-    DCHECK_EQ(dtc->state(), DataTypeController::RUNNING);
+    CHECK_EQ(dtc->state(), DataTypeController::RUNNING);
 
     if (activation_response->skip_engine_connection) {
       // |skip_engine_connection| means ConnectDataType() shouldn't be invoked

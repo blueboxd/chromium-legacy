@@ -179,12 +179,13 @@ BASE_FEATURE(kKeyboardShortcutHelperIntegrationFeature,
 // Controls ARCVM MGLRU reclaim feature.
 BASE_FEATURE(kMglruReclaim,
              "ArcMglruReclaim",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls the interval between MGLRU reclaims in milliseconds
-// A value of 0 will disable the MGLRU reclaim feature
+// A value of 0 will disable the MGLRU reclaim feature.
+// Current value is the best tuning from the ChromeOSARCVMAppRescue experiment.
 const base::FeatureParam<int> kMglruReclaimInterval{&kMglruReclaim, "interval",
-                                                    0};
+                                                    30000};
 
 // Controls the swappiness of MGLRU reclaims, in the range of 0 to 200
 // 0 means only filecache will be used while 200 means only swap will be used
@@ -251,6 +252,18 @@ BASE_FEATURE(kSwitchToKeyMintOnT,
 BASE_FEATURE(kSyncInstallPriority,
              "ArcSyncInstallPriority",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, touch screen emulation for compatibility is enabled on specific
+// apps.
+BASE_FEATURE(kTouchscreenEmulation,
+             "ArcTouchscreenEmulation",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// When enabled, compatibility logic for trackpad scrolling is enabled on
+// specific apps.
+BASE_FEATURE(kTrackpadScrollTouchscreenEmulation,
+             "ArcTrackpadScrollTouchscreenEmulation",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls ARC USB Storage UI feature.
 // When enabled, chrome://settings and Files.app will ask if the user wants

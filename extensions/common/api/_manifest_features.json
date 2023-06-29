@@ -171,7 +171,7 @@
       ]
     },
     {
-      "channel": "dev",
+      "channel": "beta",
       "extension_types": ["extension"],
       "min_manifest_version": 3
     }
@@ -341,10 +341,6 @@
       "login_screen_extension",
       "chromeos_system_extension"
     ]
-  },
-  "replacement_android_app": {
-    "channel": "trunk",
-    "extension_types": ["platform_app"]
   },
   "replacement_web_app": {
     "channel": "stable",

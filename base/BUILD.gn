@@ -229,7 +229,11 @@ if (is_apple) {
     defines = [ "BASE_IMPLEMENTATION" ]
     configs += [ "//build/config/compiler:enable_arc" ]
     deps = [
-      "//base:base_static",
+      ":base_static",
+      ":debugging_buildflags",
+      ":logging_buildflags",
+      ":tracing_buildflags",
+      "//base/allocator/partition_allocator:buildflags",
       "//base/numerics:base_numerics",
       "//build:blink_buildflags",
       "//third_party/abseil-cpp:absl",
@@ -698,7 +702,6 @@ component("base") {
     "strings/string_number_conversions.cc",
     "strings/string_number_conversions.h",
     "strings/string_number_conversions_internal.h",
-    "strings/string_piece.cc",
     "strings/string_piece.h",
     "strings/string_piece_forward.h",
     "strings/string_piece_rust.h",
@@ -718,6 +721,8 @@ component("base") {
     "strings/to_string.h",
     "strings/utf_offset_string_conversions.cc",
     "strings/utf_offset_string_conversions.h",
+    "strings/utf_ostream_operators.cc",
+    "strings/utf_ostream_operators.h",
     "strings/utf_string_conversion_utils.cc",
     "strings/utf_string_conversion_utils.h",
     "strings/utf_string_conversions.cc",
@@ -1156,63 +1161,8 @@ component("base") {
   }
 
   if (use_allocator_shim) {
-    sources += [
-      "allocator/partition_allocator/shim/allocator_shim.cc",
-      "allocator/partition_allocator/shim/allocator_shim.h",
-      "allocator/partition_allocator/shim/allocator_shim_internals.h",
-    ]
-    if (use_partition_alloc) {
-      sources += [
-        "allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_partition_alloc.cc",
-        "allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_partition_alloc.h",
-        "allocator/partition_allocator/shim/nonscannable_allocator.cc",
-        "allocator/partition_allocator/shim/nonscannable_allocator.h",
-      ]
-    }
-    if (is_android) {
-      sources += [
-        "allocator/partition_allocator/shim/allocator_shim_override_cpp_symbols.h",
-        "allocator/partition_allocator/shim/allocator_shim_override_linker_wrapped_symbols.h",
-      ]
-      all_dependent_configs += [ "//base/allocator:wrap_malloc_symbols" ]
-    }
     if (is_apple) {
-      sources += [
-        "allocator/early_zone_registration_mac.h",
-        "allocator/partition_allocator/shim/allocator_shim_override_mac_default_zone.h",
-        "allocator/partition_allocator/shim/allocator_shim_override_mac_symbols.h",
-        "allocator/partition_allocator/shim/early_zone_registration_constants.h",
-      ]
-      # configs += [ "//base/allocator:mac_no_default_new_delete_symbols" ]
-    }
-    if (is_chromeos || is_linux) {
-      sources += [
-        "allocator/partition_allocator/shim/allocator_shim_override_cpp_symbols.h",
-        "allocator/partition_allocator/shim/allocator_shim_override_glibc_weak_symbols.h",
-        "allocator/partition_allocator/shim/allocator_shim_override_libc_symbols.h",
-      ]
-    }
-    if (is_win) {
-      sources += [
-        "allocator/partition_allocator/shim/allocator_shim_override_ucrt_symbols_win.h",
-        "allocator/partition_allocator/shim/winheap_stubs_win.cc",
-        "allocator/partition_allocator/shim/winheap_stubs_win.h",
-      ]
-    }
-
-    if (!use_partition_alloc_as_malloc) {
-      if (is_android) {
-        sources += [ "allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_linker_wrapped_symbols.cc" ]
-      }
-      if (is_apple) {
-        sources += [ "allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_mac_zoned_malloc.cc" ]
-      }
-      if (is_chromeos || is_linux) {
-        sources += [ "allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_glibc.cc" ]
-      }
-      if (is_win) {
-        sources += [ "allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_winheap.cc" ]
-      }
+      sources += [ "allocator/early_zone_registration_mac.h" ]
     }
   }
 
@@ -1392,6 +1342,13 @@ component("base") {
       "debug/allocation_trace.cc",
       "debug/allocation_trace.h",
     ]
+
+    if (build_allocation_trace_recorder_full_reporting) {
+      sources += [
+        "debug/allocation_trace_reporting.cc",
+        "debug/allocation_trace_reporting.h",
+      ]
+    }
   }
 
   if (is_robolectric) {
@@ -1670,6 +1627,13 @@ component("base") {
       sources += [
         "base_paths_win.cc",
         "base_paths_win.h",
+      ]
+    }
+
+    if (is_apple) {
+      sources += [
+        "base_paths_apple.cc",
+        "base_paths_apple.h",
       ]
     }
 
@@ -2021,10 +1985,6 @@ component("base") {
   # Desktop Mac.
   if (is_mac) {
     sources += [
-      "allocator/partition_allocator/shim/allocator_interception_mac.h",
-      "allocator/partition_allocator/shim/allocator_interception_mac.mm",
-      "allocator/partition_allocator/shim/malloc_zone_functions_mac.cc",
-      "allocator/partition_allocator/shim/malloc_zone_functions_mac.h",
       "enterprise_util.cc",
       "enterprise_util.h",
       "files/file_path_watcher_fsevents.cc",
@@ -2180,8 +2140,8 @@ component("base") {
   # iOS
   if (is_ios) {
     sources += [
-      "base_paths_mac.h",
-      "base_paths_mac.mm",
+      "base_paths_ios.h",
+      "base_paths_ios.mm",
       "critical_closure_internal_ios.mm",
       "native_library_ios.mm",
       "power_monitor/power_monitor_device_source_ios.mm",
@@ -2242,14 +2202,7 @@ component("base") {
         "profiler/suspendable_thread_delegate_mac.h",
       ]
     }
-    if (use_allocator_shim) {
-      sources += [
-        "allocator/partition_allocator/shim/allocator_interception_mac.h",
-        "allocator/partition_allocator/shim/allocator_interception_mac.mm",
-        "allocator/partition_allocator/shim/malloc_zone_functions_mac.cc",
-        "allocator/partition_allocator/shim/malloc_zone_functions_mac.h",
-      ]
-    } else {
+    if (!use_allocator_shim) {
       sources -= [
         "sampling_heap_profiler/poisson_allocation_sampler.cc",
         "sampling_heap_profiler/poisson_allocation_sampler.h",
@@ -2525,6 +2478,7 @@ buildflag_header("debugging_buildflags") {
     "ENABLE_STACK_TRACE_LINE_NUMBERS=$enable_stack_trace_line_numbers",
     "ENABLE_COMMANDLINE_SEQUENCE_CHECKS=$enable_commandline_sequence_checks",
     "ENABLE_ALLOCATION_STACK_TRACE_RECORDER=$build_allocation_stack_trace_recorder",
+    "ENABLE_ALLOCATION_TRACE_RECORDER_FULL_REPORTING=$build_allocation_trace_recorder_full_reporting",
   ]
 }
 
@@ -3320,6 +3274,7 @@ test("base_unittests") {
     "strings/sys_string_conversions_unittest.cc",
     "strings/to_string_test.cc",
     "strings/utf_offset_string_conversions_unittest.cc",
+    "strings/utf_string_conversion_utils_unittest.cc",
     "strings/utf_string_conversions_unittest.cc",
     "substring_set_matcher/string_pattern_unittest.cc",
     "substring_set_matcher/substring_set_matcher_unittest.cc",
@@ -4225,7 +4180,6 @@ if (is_android) {
       "android/java/src/org/chromium/base/annotations/CalledByNativeForTesting.java",
       "android/java/src/org/chromium/base/annotations/CalledByNativeUnchecked.java",
       "android/java/src/org/chromium/base/annotations/JNINamespace.java",
-      "android/java/src/org/chromium/base/annotations/JniIgnoreNatives.java",
       "android/java/src/org/chromium/base/annotations/NativeClassQualifiedName.java",
       "android/java/src/org/chromium/base/annotations/NativeMethods.java",
     ]

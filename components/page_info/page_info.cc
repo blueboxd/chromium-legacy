@@ -839,8 +839,6 @@ std::u16string PageInfo::GetSubjectNameForDisplay() const {
 }
 
 void PageInfo::ComputeUIInputs(const GURL& url) {
-  // TODO(https://crbug.com/1404024): Check |isolated-app| scheme once we have a
-  // definition available for components
   if (IsIsolatedWebApp()) {
     site_identity_status_ = SITE_IDENTITY_STATUS_ISOLATED_WEB_APP;
     site_connection_status_ = SITE_CONNECTION_STATUS_ISOLATED_WEB_APP;
@@ -1128,10 +1126,9 @@ void PageInfo::ComputeUIInputs(const GURL& url) {
 void PageInfo::PopulatePermissionInfo(PermissionInfo& permission_info,
                                       HostContentSettingsMap* content_settings,
                                       const content_settings::SettingInfo& info,
-                                      const base::Value& value) const {
+                                      ContentSetting setting) const {
   DCHECK(permission_info.type != ContentSettingsType::DEFAULT);
-  DCHECK(value.is_int());
-  permission_info.setting = content_settings::ValueToContentSetting(value);
+  permission_info.setting = setting;
 
   permission_info.source = info.source;
   permission_info.is_one_time = (info.metadata.session_model() ==
@@ -1234,12 +1231,8 @@ bool PageInfo::ShouldShowPermission(
 
   // Hide camera if camera PTZ is granted or blocked.
   if (info.type == ContentSettingsType::MEDIASTREAM_CAMERA) {
-    const base::Value value = GetContentSettings()->GetWebsiteSetting(
-        site_url_, site_url_, ContentSettingsType::CAMERA_PAN_TILT_ZOOM,
-        nullptr);
-    DCHECK(value.is_int());
-    ContentSetting camera_ptz_setting =
-        content_settings::ValueToContentSetting(value);
+    ContentSetting camera_ptz_setting = GetContentSettings()->GetContentSetting(
+        site_url_, site_url_, ContentSettingsType::CAMERA_PAN_TILT_ZOOM);
     if (camera_ptz_setting == CONTENT_SETTING_ALLOW ||
         camera_ptz_setting == CONTENT_SETTING_BLOCK) {
       return false;
@@ -1283,11 +1276,9 @@ void PageInfo::PresentSitePermissions() {
     permission_info.type = type;
 
     content_settings::SettingInfo info;
-    // TODO(crbug.com/1030245) Investigate why the value is queried from the low
-    // level routine GetWebsiteSettings.
-    const base::Value value = content_settings->GetWebsiteSetting(
+    ContentSetting setting = content_settings->GetContentSetting(
         site_url_, site_url_, permission_info.type, &info);
-    PopulatePermissionInfo(permission_info, content_settings, info, value);
+    PopulatePermissionInfo(permission_info, content_settings, info, setting);
     if (ShouldShowPermission(permission_info)) {
       permission_info_list.push_back(permission_info);
     }
@@ -1299,9 +1290,7 @@ void PageInfo::PresentSitePermissions() {
             permissions::features::kPermissionStorageAccessAPI)) {
       continue;
     }
-    ContentSettingsForOneType settings;
-    content_settings->GetSettingsForOneType(type, &settings);
-    for (auto& setting : settings) {
+    for (auto& setting : content_settings->GetSettingsForOneType(type)) {
       // Skip default setting.
       if (setting.primary_pattern == ContentSettingsPattern::Wildcard() &&
           setting.secondary_pattern == ContentSettingsPattern::Wildcard()) {
@@ -1342,8 +1331,9 @@ void PageInfo::PresentSitePermissions() {
           .secondary_pattern = setting.secondary_pattern,
           .metadata = setting.metadata,
       };
-      PopulatePermissionInfo(permission_info, content_settings, setting_info,
-                             setting.setting_value);
+      PopulatePermissionInfo(
+          permission_info, content_settings, setting_info,
+          content_settings::ValueToContentSetting(setting.setting_value));
       if (ShouldShowPermission(permission_info)) {
         permission_info_list.push_back(permission_info);
       }

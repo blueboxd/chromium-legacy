@@ -7,12 +7,15 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/public/browser/clear_site_data_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -20,9 +23,12 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
+#include "net/base/schemeful_site.h"
 #include "net/base/url_util.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/extras/shared_dictionary/shared_dictionary_isolation_key.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/mojom/shared_dictionary_access_observer.mojom.h"
 #include "third_party/blink/public/common/features.h"
 
 namespace content {
@@ -49,6 +55,57 @@ constexpr char kOriginTrialToken[] =
     "OjQ0MyIsICJmZWF0dXJlIjogIkNvbXByZXNzaW9uRGljdGlvbmFyeVRyYW5zcG9ydCIsICJleH"
     "BpcnkiOiAxOTk5ODQzODIwfQ==";
 
+// The SHA256 hash of dictionary
+// (content/test/data/shared_dictionary/test.dict).
+const std::string kExpectedDictionaryHash =
+    "53969bcf5e960e0edbf0a4bdde6b0b3e9381e156de7f5b91ce8391624270f416";
+const std::string kUncompressedDataString = "test(\"This is uncompressed.\");";
+const std::string kErrorInvalidHashString =
+    "test(\"Invalid dictionary hash.\");";
+const std::string kErrorNoSbrAcceptEncodingString =
+    "test(\"sbr is not set in accept-encoding header.\");";
+
+const std::string kCompressedDataOriginalString =
+    "test(\"This is compressed test data using a test dictionary\");";
+const uint8_t kCompressedData[] = {
+    0xa1, 0xe0, 0x01, 0x00, 0x64, 0x9c, 0xa4, 0xaa, 0xd7, 0x47, 0xe0, 0x26,
+    0x4b, 0x95, 0x91, 0xb4, 0x46, 0x36, 0x09, 0xc9, 0xc7, 0x0e, 0x38, 0xe4,
+    0x44, 0xe8, 0x72, 0x0d, 0x3c, 0x6e, 0xab, 0x35, 0x9b, 0x0f, 0x4b, 0xd1,
+    0x67, 0x0c, 0xec, 0x7f, 0x9d, 0x1e, 0x99, 0x10, 0xf5, 0x1e, 0x57, 0x2f};
+const std::string kCompressedDataString =
+    std::string(reinterpret_cast<const char*>(kCompressedData),
+                sizeof(kCompressedData));
+
+class SharedDictionaryAccessObserver : public WebContentsObserver {
+ public:
+  SharedDictionaryAccessObserver(WebContents* web_contents,
+                                 base::RepeatingClosure on_accessed_callback)
+      : WebContentsObserver(web_contents),
+        on_accessed_callback_(std::move(on_accessed_callback)) {}
+
+  const network::mojom::SharedDictionaryAccessDetailsPtr& details() const {
+    return details_;
+  }
+
+ private:
+  // WebContentsObserver overrides:
+  void OnSharedDictionaryAccessed(
+      NavigationHandle* navigation,
+      const network::mojom::SharedDictionaryAccessDetails& details) override {
+    details_ = details.Clone();
+    on_accessed_callback_.Run();
+  }
+  void OnSharedDictionaryAccessed(
+      RenderFrameHost* rfh,
+      const network::mojom::SharedDictionaryAccessDetails& details) override {
+    details_ = details.Clone();
+    on_accessed_callback_.Run();
+  }
+
+  base::RepeatingClosure on_accessed_callback_;
+  network::mojom::SharedDictionaryAccessDetailsPtr details_;
+};
+
 bool WaitForHistogram(const std::string& histogram_name,
                       absl::optional<base::TimeDelta> timeout = absl::nullopt) {
   // Need the polling of histogram because ScopedHistogramSampleObserver doesn't
@@ -66,7 +123,13 @@ bool WaitForHistogram(const std::string& histogram_name,
 
 enum class FeatureState { kDisabled, kBackendOnly, kFullyEnabled };
 enum class BrowserType { kNormal, kOffTheRecord };
-enum class FetchType { kLinkRelDictionary, kFetchApi };
+enum class FetchType {
+  kLinkRelDictionary,
+  kFetchApi,
+  kFetchApiFromDedicatedWorker,
+  kFetchApiFromSharedWorker,
+  kFetchApiFromServiceWorker,
+};
 
 std::string LinkRelDictionaryScript(const GURL& dictionary_url) {
   return JsReplace(R"(
@@ -81,12 +144,92 @@ std::string LinkRelDictionaryScript(const GURL& dictionary_url) {
 }
 
 std::string FetchDictionaryScript(const GURL& dictionary_url) {
-  return JsReplace("fetch($1);", dictionary_url);
+  return JsReplace(R"(
+          (async () => {
+            try {
+              await fetch($1);
+            } catch (e) {
+            }
+          })();
+        )",
+                   dictionary_url);
+}
+
+std::string StartTestDedicatedWorkerScript(const GURL& dictionary_url) {
+  return JsReplace(R"(
+          (async () => {
+            const script = '/shared_dictionary/fetch_dictionary.js';
+            const worker = new Worker(script);
+            worker.postMessage($1);
+          })();
+        )",
+                   dictionary_url);
+}
+
+std::string StartTestSharedWorkerScript(const GURL& dictionary_url) {
+  return JsReplace(R"(
+          (async () => {
+            const script =
+                new URL(location).searchParams.has('otworker') ?
+                  '/shared_dictionary/fetch_dictionary.js?ot=enabled' :
+                  '/shared_dictionary/fetch_dictionary.js';
+            const worker = new SharedWorker(script);
+            worker.port.start();
+            worker.port.postMessage($1);
+          })();
+        )",
+                   dictionary_url);
+}
+
+std::string RegisterTestServiceWorkerScript(const GURL& dictionary_url) {
+  return JsReplace(R"(
+          (async () => {
+            const script =
+                new URL(location).searchParams.has('otworker') ?
+                  '/shared_dictionary/fetch_dictionary.js?ot=enabled' :
+                  '/shared_dictionary/fetch_dictionary.js';
+            const registration = await navigator.serviceWorker.register(
+                script,
+                {scope: '/shared_dictionary/'});
+            registration.installing.postMessage($1);
+          })();
+        )",
+                   dictionary_url);
+}
+
+std::string FetchTargetDataScript(const GURL& dictionary_url) {
+  return JsReplace(R"(
+          (async () => {
+            const url = new URL('./path/test' ,$1);
+            const response = await fetch(url);
+            return response.text();
+          })();
+        )",
+                   dictionary_url);
+}
+
+absl::optional<std::string> GetSecAvailableDictionary(
+    const net::test_server::HttpRequest::HeaderMap& headers) {
+  auto it = headers.find("sec-available-dictionary");
+  if (it == headers.end()) {
+    return absl::nullopt;
+  }
+  return it->second;
+}
+
+bool HasSbrAcceptEncoding(
+    const net::test_server::HttpRequest::HeaderMap& headers) {
+  auto it = headers.find(net::HttpRequestHeaders::kAcceptEncoding);
+  if (it == headers.end()) {
+    return false;
+  }
+  return it->second == "sbr" || base::EndsWith(it->second, ", sbr");
 }
 
 class SharedDictionaryBrowserTestBase : public ContentBrowserTest {
  public:
   SharedDictionaryBrowserTestBase() = default;
+
   SharedDictionaryBrowserTestBase(const SharedDictionaryBrowserTestBase&) =
       delete;
   SharedDictionaryBrowserTestBase& operator=(
@@ -105,6 +248,18 @@ class SharedDictionaryBrowserTestBase : public ContentBrowserTest {
     }
     return file_size;
   }
+  std::string GetTestDataFile(const std::string& name) {
+    base::FilePath file_path;
+    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &file_path));
+    std::string contents;
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      CHECK(base::ReadFileToString(
+          file_path.Append(GetTestDataFilePath()).AppendASCII(name),
+          &contents));
+    }
+    return contents;
+  }
 
   void RunWriteDictionaryTest(Shell* shell,
                               FetchType fetch_type,
@@ -113,6 +268,10 @@ class SharedDictionaryBrowserTestBase : public ContentBrowserTest {
                               const std::string& histogram_name,
                               bool expect_success) {
     EXPECT_TRUE(NavigateToURL(shell, page_url));
+    base::RunLoop write_loop;
+    auto write_observer = std::make_unique<SharedDictionaryAccessObserver>(
+        shell->web_contents(), write_loop.QuitClosure());
+
     base::HistogramTester histogram_tester;
     std::string script;
     switch (fetch_type) {
@@ -122,17 +281,106 @@ class SharedDictionaryBrowserTestBase : public ContentBrowserTest {
       case FetchType::kFetchApi:
         script = FetchDictionaryScript(dictionary_url);
         break;
+      case FetchType::kFetchApiFromDedicatedWorker:
+        script = StartTestDedicatedWorkerScript(dictionary_url);
+        break;
+      case FetchType::kFetchApiFromSharedWorker:
+        script = StartTestSharedWorkerScript(dictionary_url);
+        break;
+      case FetchType::kFetchApiFromServiceWorker:
+        script = RegisterTestServiceWorkerScript(dictionary_url);
+        break;
     }
     EXPECT_TRUE(ExecJs(shell->web_contents()->GetPrimaryMainFrame(), script));
+    if (expect_success) {
+      write_loop.Run();
+      ASSERT_TRUE(write_observer->details());
+      EXPECT_EQ(network::mojom::SharedDictionaryAccessDetails::Type::kWrite,
+                write_observer->details()->type);
+      EXPECT_EQ(dictionary_url, write_observer->details()->url);
+      EXPECT_EQ(net::SharedDictionaryIsolationKey(url::Origin::Create(page_url),
+                                                  net::SchemefulSite(page_url)),
+                write_observer->details()->isolation_key);
+      EXPECT_FALSE(write_observer->details()->is_blocked);
+    }
 
     if (!expect_success) {
       EXPECT_FALSE(WaitForHistogram(histogram_name, base::Milliseconds(100)));
+      EXPECT_FALSE(write_observer->details());
+
+      EXPECT_EQ(kUncompressedDataString,
+                EvalJs(shell->web_contents()->GetPrimaryMainFrame(),
+                       FetchTargetDataScript(dictionary_url))
+                    .ExtractString());
       return;
     }
     EXPECT_TRUE(WaitForHistogram(histogram_name));
     histogram_tester.ExpectBucketCount(
         histogram_name, GetTestDataFileSize("shared_dictionary/test.dict"),
         /*expected_count=*/1);
+    base::RunLoop read_loop;
+
+    auto read_observer = std::make_unique<SharedDictionaryAccessObserver>(
+        shell->web_contents(), read_loop.QuitClosure());
+    EXPECT_EQ(kCompressedDataOriginalString,
+              EvalJs(shell->web_contents()->GetPrimaryMainFrame(),
+                     FetchTargetDataScript(dictionary_url))
+                  .ExtractString());
+    read_loop.Run();
+    ASSERT_TRUE(read_observer->details());
+    EXPECT_EQ(network::mojom::SharedDictionaryAccessDetails::Type::kRead,
+              read_observer->details()->type);
+    EXPECT_EQ(dictionary_url.Resolve("path/test"),
+              read_observer->details()->url);
+    EXPECT_EQ(net::SharedDictionaryIsolationKey(url::Origin::Create(page_url),
+                                                net::SchemefulSite(page_url)),
+              read_observer->details()->isolation_key);
+    EXPECT_FALSE(read_observer->details()->is_blocked);
+  }
+
+  void RegisterTestRequestHandler(net::EmbeddedTestServer& server) {
+    server.RegisterRequestHandler(
+        base::BindRepeating(&SharedDictionaryBrowserTestBase::RequestHandler,
+                            base::Unretained(this)));
+  }
+
+ private:
+  std::unique_ptr<net::test_server::HttpResponse> RequestHandler(
+      const net::test_server::HttpRequest& request) {
+    if (!base::StartsWith(request.relative_url,
+                          "/shared_dictionary/path/test")) {
+      return nullptr;
+    }
+    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+    response->set_code(net::HTTP_OK);
+
+    if (request.GetURL().query() == "html") {
+      response->set_content_type("text/html");
+    } else {
+      response->set_content_type("application/javascript");
+    }
+
+    if (request.GetURL().query() != "no_acao") {
+      response->AddCustomHeader("access-control-allow-origin", "*");
+    }
+    absl::optional<std::string> dict_hash =
+        GetSecAvailableDictionary(request.headers);
+    if (dict_hash) {
+      if (*dict_hash == kExpectedDictionaryHash) {
+        if (HasSbrAcceptEncoding(request.headers)) {
+          response->AddCustomHeader("content-encoding", "sbr");
+          response->set_content(kCompressedDataString);
+        } else {
+          response->set_content(kErrorNoSbrAcceptEncodingString);
+        }
+      } else {
+        response->set_content(kErrorInvalidHashString);
+      }
+    } else {
+      response->set_content(kUncompressedDataString);
+    }
+
+    return response;
   }
 };
 
@@ -172,12 +420,15 @@ class SharedDictionaryFeatureStateBrowserTest
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::test_server::EmbeddedTestServer::TYPE_HTTPS);
     https_server_->AddDefaultHandlers(GetTestDataFilePath());
+    RegisterTestRequestHandler(*https_server_);
     ASSERT_TRUE(https_server_->Start());
     SharedDictionaryBrowserTestBase::SetUpOnMainThread();
 
     // Need to use URLLoaderInterceptor to test the behavior of Origin Trial.
     url_loader_interceptor_.emplace(base::BindRepeating(
-        &SharedDictionaryFeatureStateBrowserTest::InterceptRequest));
+        &SharedDictionaryFeatureStateBrowserTest::InterceptRequest,
+        GetTestDataFile("shared_dictionary/blank.html"),
+        GetTestDataFile("shared_dictionary/fetch_dictionary.js")));
   }
 
   void TearDownOnMainThread() override { url_loader_interceptor_.reset(); }
@@ -188,10 +439,9 @@ class SharedDictionaryFeatureStateBrowserTest
 
  private:
   // URLLoaderInterceptor callback
-  static bool InterceptRequest(URLLoaderInterceptor::RequestParams* params) {
-    if (params->url_request.url.path() != "/blank.html") {
-      return false;
-    }
+  static bool InterceptRequest(const std::string& blink_html_content,
+                               const std::string& fetch_dictionary_js_content,
+                               URLLoaderInterceptor::RequestParams* params) {
     // Find the appropriate origin trial token.
     base::StringPiece origin_trial_token;
     std::string origin_trial_query_param;
@@ -202,6 +452,22 @@ class SharedDictionaryFeatureStateBrowserTest
       }
     }
 
+    if (params->url_request.url.path() == "/blank.html") {
+      InterceptBlankPageRequest(params, origin_trial_token, blink_html_content);
+      return true;
+    } else if (params->url_request.url.path() ==
+               "/shared_dictionary/fetch_dictionary.js") {
+      InterceptFetchDictionaryScriptRequest(params, origin_trial_token,
+                                            fetch_dictionary_js_content);
+      return true;
+    }
+    return false;
+  }
+
+  static void InterceptBlankPageRequest(
+      URLLoaderInterceptor::RequestParams* params,
+      base::StringPiece origin_trial_token,
+      const std::string& content) {
     // Construct and send the response.
     std::string headers =
         "HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\n";
@@ -209,9 +475,26 @@ class SharedDictionaryFeatureStateBrowserTest
       base::StrAppend(&headers, {"Origin-Trial: ", origin_trial_token, "\n"});
     }
     headers += '\n';
-    std::string body = "<!DOCTYPE html><body>Hello world!</body>";
-    URLLoaderInterceptor::WriteResponse(headers, body, params->client.get());
-    return true;
+    URLLoaderInterceptor::WriteResponse(headers, content, params->client.get(),
+                                        /*ssl_info=*/absl::nullopt,
+                                        params->url_request.url);
+  }
+
+  static void InterceptFetchDictionaryScriptRequest(
+      URLLoaderInterceptor::RequestParams* params,
+      base::StringPiece origin_trial_token,
+      const std::string& content) {
+    // Construct and send the response.
+    std::string headers =
+        "HTTP/1.1 200 OK\nContent-Type: application/javascript; "
+        "charset=utf-8\n";
+    if (!origin_trial_token.empty()) {
+      base::StrAppend(&headers, {"Origin-Trial: ", origin_trial_token, "\n"});
+    }
+    headers += '\n';
+    URLLoaderInterceptor::WriteResponse(headers, content, params->client.get(),
+                                        /*ssl_info=*/absl::nullopt,
+                                        params->url_request.url);
   }
 
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
@@ -274,6 +557,69 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryFeatureStateBrowserTest,
       /*expect_success=*/GetFeatureState() != FeatureState::kDisabled);
 }
 
+IN_PROC_BROWSER_TEST_P(SharedDictionaryFeatureStateBrowserTest,
+                       FetchApiFromDedicatedWorker) {
+  RunWriteDictionaryTest(
+      shell(), FetchType::kFetchApiFromDedicatedWorker,
+      GURL("https://shared-dictionary.test/blank.html"),
+      https_server()->GetURL("/shared_dictionary/test.dict"),
+      "Net.SharedDictionaryManagerOnDisk.DictionarySizeKB",
+      /*expect_success=*/GetFeatureState() == FeatureState::kFullyEnabled);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryFeatureStateBrowserTest,
+                       FetchApiFromDedicatedWorkerWithOriginTrial) {
+  RunWriteDictionaryTest(
+      shell(), FetchType::kFetchApiFromDedicatedWorker,
+      GURL("https://shared-dictionary.test/blank.html?ot=enabled"),
+      https_server()->GetURL("/shared_dictionary/test.dict"),
+      "Net.SharedDictionaryManagerOnDisk.DictionarySizeKB",
+      /*expect_success=*/GetFeatureState() != FeatureState::kDisabled);
+}
+
+#if !BUILDFLAG(IS_ANDROID)
+// Shared workers are not supported on Android.
+IN_PROC_BROWSER_TEST_P(SharedDictionaryFeatureStateBrowserTest,
+                       FetchApiFromSharedWorker) {
+  RunWriteDictionaryTest(
+      shell(), FetchType::kFetchApiFromSharedWorker,
+      GURL("https://shared-dictionary.test/blank.html"),
+      https_server()->GetURL("/shared_dictionary/test.dict"),
+      "Net.SharedDictionaryManagerOnDisk.DictionarySizeKB",
+      /*expect_success=*/GetFeatureState() == FeatureState::kFullyEnabled);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryFeatureStateBrowserTest,
+                       FetchApiFromSharedWorkerWithOriginTrial) {
+  RunWriteDictionaryTest(
+      shell(), FetchType::kFetchApiFromSharedWorker,
+      GURL("https://shared-dictionary.test/blank.html?otworker"),
+      https_server()->GetURL("/shared_dictionary/test.dict"),
+      "Net.SharedDictionaryManagerOnDisk.DictionarySizeKB",
+      /*expect_success=*/GetFeatureState() != FeatureState::kDisabled);
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryFeatureStateBrowserTest,
+                       FetchApiFromServiceWorker) {
+  RunWriteDictionaryTest(
+      shell(), FetchType::kFetchApiFromServiceWorker,
+      GURL("https://shared-dictionary.test/blank.html"),
+      https_server()->GetURL("/shared_dictionary/test.dict"),
+      "Net.SharedDictionaryManagerOnDisk.DictionarySizeKB",
+      /*expect_success=*/GetFeatureState() == FeatureState::kFullyEnabled);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryFeatureStateBrowserTest,
+                       FetchApiFromServiceWorkerWithOriginTrial) {
+  RunWriteDictionaryTest(
+      shell(), FetchType::kFetchApiFromServiceWorker,
+      GURL("https://shared-dictionary.test/blank.html?otworker"),
+      https_server()->GetURL("/shared_dictionary/test.dict"),
+      "Net.SharedDictionaryManagerOnDisk.DictionarySizeKB",
+      /*expect_success=*/GetFeatureState() != FeatureState::kDisabled);
+}
+
 // Tests end to end functionality of "compression dictionary transport" feature
 // with fully enabled features.
 class SharedDictionaryBrowserTest
@@ -293,14 +639,25 @@ class SharedDictionaryBrowserTest
 
   // ContentBrowserTest implementation:
   void SetUpOnMainThread() override {
+    RegisterTestRequestHandler(*embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
+
+    cross_origin_server_ = std::make_unique<net::EmbeddedTestServer>();
+    cross_origin_server()->AddDefaultHandlers(GetTestDataFilePath());
+    RegisterTestRequestHandler(*cross_origin_server());
+    ASSERT_TRUE(cross_origin_server()->Start());
+
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
  protected:
   BrowserType GetBrowserType() const { return GetParam(); }
+  net::EmbeddedTestServer* cross_origin_server() {
+    return cross_origin_server_.get();
+  }
 
  private:
+  std::unique_ptr<net::EmbeddedTestServer> cross_origin_server_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -383,6 +740,208 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
           ? "Net.SharedDictionaryManagerOnDisk.DictionarySizeKB"
           : "Net.SharedDictionaryWriterInMemory.DictionarySize",
       /*expect_success=*/false);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       FetchDictionaryFromDedicatedWorker) {
+  RunWriteDictionaryTest(
+      GetBrowserType() == BrowserType::kNormal ? shell()
+                                               : CreateOffTheRecordBrowser(),
+      FetchType::kFetchApiFromDedicatedWorker,
+      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
+      embedded_test_server()->GetURL("/shared_dictionary/test.dict"),
+      GetBrowserType() == BrowserType::kNormal
+          ? "Net.SharedDictionaryManagerOnDisk.DictionarySizeKB"
+          : "Net.SharedDictionaryWriterInMemory.DictionarySize",
+      /*expect_success=*/true);
+}
+
+#if !BUILDFLAG(IS_ANDROID)
+// Shared workers are not supported on Android.
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       FetchDictionaryFromSharedWorker) {
+  RunWriteDictionaryTest(
+      GetBrowserType() == BrowserType::kNormal ? shell()
+                                               : CreateOffTheRecordBrowser(),
+      FetchType::kFetchApiFromSharedWorker,
+      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
+      embedded_test_server()->GetURL("/shared_dictionary/test.dict"),
+      GetBrowserType() == BrowserType::kNormal
+          ? "Net.SharedDictionaryManagerOnDisk.DictionarySizeKB"
+          : "Net.SharedDictionaryWriterInMemory.DictionarySize",
+      /*expect_success=*/true);
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       FetchDictionaryFromServiceWorker) {
+  RunWriteDictionaryTest(
+      GetBrowserType() == BrowserType::kNormal ? shell()
+                                               : CreateOffTheRecordBrowser(),
+      FetchType::kFetchApiFromServiceWorker,
+      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
+      embedded_test_server()->GetURL("/shared_dictionary/test.dict"),
+      GetBrowserType() == BrowserType::kNormal
+          ? "Net.SharedDictionaryManagerOnDisk.DictionarySizeKB"
+          : "Net.SharedDictionaryWriterInMemory.DictionarySize",
+      /*expect_success=*/true);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       CrossOriginLinkRelDictionary) {
+  RunWriteDictionaryTest(
+      GetBrowserType() == BrowserType::kNormal ? shell()
+                                               : CreateOffTheRecordBrowser(),
+      FetchType::kLinkRelDictionary,
+      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
+      cross_origin_server()->GetURL("/shared_dictionary/test.dict"),
+      GetBrowserType() == BrowserType::kNormal
+          ? "Net.SharedDictionaryManagerOnDisk.DictionarySizeKB"
+          : "Net.SharedDictionaryWriterInMemory.DictionarySize",
+      /*expect_success=*/true);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       CrossOriginFetchDictionary) {
+  RunWriteDictionaryTest(
+      GetBrowserType() == BrowserType::kNormal ? shell()
+                                               : CreateOffTheRecordBrowser(),
+      FetchType::kFetchApi,
+      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
+      cross_origin_server()->GetURL("/shared_dictionary/test.dict"),
+      GetBrowserType() == BrowserType::kNormal
+          ? "Net.SharedDictionaryManagerOnDisk.DictionarySizeKB"
+          : "Net.SharedDictionaryWriterInMemory.DictionarySize",
+      /*expect_success=*/true);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       CrossOriginLinkRelDictionaryWithoutACAO) {
+  RunWriteDictionaryTest(
+      GetBrowserType() == BrowserType::kNormal ? shell()
+                                               : CreateOffTheRecordBrowser(),
+      FetchType::kLinkRelDictionary,
+      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
+      cross_origin_server()->GetURL("/shared_dictionary/test_no_acao.dict"),
+      GetBrowserType() == BrowserType::kNormal
+          ? "Net.SharedDictionaryManagerOnDisk.DictionarySizeKB"
+          : "Net.SharedDictionaryWriterInMemory.DictionarySize",
+      /*expect_success=*/false);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       CrossOriginFetchDictionaryWithoutACAO) {
+  RunWriteDictionaryTest(
+      GetBrowserType() == BrowserType::kNormal ? shell()
+                                               : CreateOffTheRecordBrowser(),
+      FetchType::kFetchApi,
+      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
+      cross_origin_server()->GetURL("/shared_dictionary/test_no_acao.dict"),
+      GetBrowserType() == BrowserType::kNormal
+          ? "Net.SharedDictionaryManagerOnDisk.DictionarySizeKB"
+          : "Net.SharedDictionaryWriterInMemory.DictionarySize",
+      /*expect_success=*/false);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest, CrossOriginDataNoCors) {
+  Shell* target_shell = GetBrowserType() == BrowserType::kNormal
+                            ? shell()
+                            : CreateOffTheRecordBrowser();
+  // Registers a dictionary as same as CrossOriginFetchDictionary test.
+  RunWriteDictionaryTest(
+      target_shell, FetchType::kFetchApi,
+      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
+      cross_origin_server()->GetURL("/shared_dictionary/test.dict"),
+      GetBrowserType() == BrowserType::kNormal
+          ? "Net.SharedDictionaryManagerOnDisk.DictionarySizeKB"
+          : "Net.SharedDictionaryWriterInMemory.DictionarySize",
+      /*expect_success=*/true);
+
+  EXPECT_EQ("This is compressed test data using a test dictionary",
+            EvalJs(target_shell->web_contents()->GetPrimaryMainFrame(),
+                   JsReplace(R"(
+          (async () => {
+            return await new Promise(resolve => {
+              window.test = resolve;
+              const script = document.createElement('script');
+              script.src = $1;
+              document.body.appendChild(script);
+            });
+          })();
+        )",
+                             cross_origin_server()->GetURL(
+                                 "/shared_dictionary/path/test")))
+                .ExtractString());
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       CrossOriginDataNoCorsWithoutACAO) {
+  Shell* target_shell = GetBrowserType() == BrowserType::kNormal
+                            ? shell()
+                            : CreateOffTheRecordBrowser();
+  // Registers a dictionary as same as CrossOriginFetchDictionary test.
+  RunWriteDictionaryTest(
+      target_shell, FetchType::kFetchApi,
+      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
+      cross_origin_server()->GetURL("/shared_dictionary/test.dict"),
+      GetBrowserType() == BrowserType::kNormal
+          ? "Net.SharedDictionaryManagerOnDisk.DictionarySizeKB"
+          : "Net.SharedDictionaryWriterInMemory.DictionarySize",
+      /*expect_success=*/true);
+
+  EXPECT_EQ("Script load failed",
+            EvalJs(target_shell->web_contents()->GetPrimaryMainFrame(),
+                   JsReplace(R"(
+          (async () => {
+            return await new Promise(resolve => {
+              window.test = resolve;
+              const script = document.createElement('script');
+              script.src = $1;
+              script.onerror = () => {resolve('Script load failed');};
+              document.body.appendChild(script);
+            });
+          })();
+        )",
+                             cross_origin_server()->GetURL(
+                                 "/shared_dictionary/path/test?no_acao")))
+                .ExtractString());
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest, Navigation) {
+  Shell* target_shell = GetBrowserType() == BrowserType::kNormal
+                            ? shell()
+                            : CreateOffTheRecordBrowser();
+  RunWriteDictionaryTest(
+      target_shell, FetchType::kFetchApi,
+      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
+      embedded_test_server()->GetURL("/shared_dictionary/test.dict"),
+      GetBrowserType() == BrowserType::kNormal
+          ? "Net.SharedDictionaryManagerOnDisk.DictionarySizeKB"
+          : "Net.SharedDictionaryWriterInMemory.DictionarySize",
+      /*expect_success=*/true);
+
+  const GURL target_url =
+      embedded_test_server()->GetURL("/shared_dictionary/path/test?html");
+
+  base::RunLoop loop;
+  auto observer = std::make_unique<SharedDictionaryAccessObserver>(
+      target_shell->web_contents(), loop.QuitClosure());
+  EXPECT_TRUE(NavigateToURL(target_shell, target_url));
+  loop.Run();
+
+  ASSERT_TRUE(observer->details());
+  EXPECT_EQ(network::mojom::SharedDictionaryAccessDetails::Type::kRead,
+            observer->details()->type);
+  EXPECT_EQ(target_url, observer->details()->url);
+  EXPECT_EQ(net::SharedDictionaryIsolationKey(url::Origin::Create(target_url),
+                                              net::SchemefulSite(target_url)),
+            observer->details()->isolation_key);
+  EXPECT_FALSE(observer->details()->is_blocked);
+
+  EXPECT_EQ(kCompressedDataOriginalString,
+            EvalJs(target_shell->web_contents()->GetPrimaryMainFrame(),
+                   "document.body.innerText")
+                .ExtractString());
 }
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest, ClearSiteData) {

@@ -27,6 +27,7 @@ chromium-metrics-reviews@google.com.
   <variant name="CQ"/>
   <variant name="PageEntities"/>
   <variant name="PH"/>
+  <variant name="PHResult"/>
   <variant name="RegionSearch"/>
   <variant name="RelQr"/>
   <variant name="RelQs"/>
@@ -42,6 +43,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records whether a text highlight operation was successful on the companion
     page. Recorded after text highlighting is completed.
+  </summary>
+</histogram>
+
+<histogram name="Companion.FullLoad.Latency" units="ms"
+    expires_after="2023-10-20">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>src/chrome/browser/companion/OWNERS</owner>
+  <summary>
+    Records the latency of Companion for full loads of the UI. Recorded once the
+    UI responds and reports the first element is shown.
   </summary>
 </histogram>
 
@@ -66,12 +77,33 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Companion.IsUserOptedInToExps" enum="BooleanOptedIn"
-    expires_after="2023-10-20">
+    expires_after="2023-12-24">
   <owner>tbansal@chromium.org</owner>
   <owner>src/chrome/browser/companion/OWNERS</owner>
   <summary>
     Records whether user is opted-in to various experiments. Recorded when the
     information is received from the companion backend.
+  </summary>
+</histogram>
+
+<histogram name="Companion.NavigationLoad.Latency" units="ms"
+    expires_after="2023-10-20">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>src/chrome/browser/companion/OWNERS</owner>
+  <summary>
+    Records the latency of Companion for loads of the UI that are triggered by
+    navigation refreshes via PostMessages. Recorded once the UI responds and
+    reports the first element is shown.
+  </summary>
+</histogram>
+
+<histogram name="Companion.PHFeedback.Result" enum="Companion.PhFeedback"
+    expires_after="2023-10-20">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>src/chrome/browser/companion/OWNERS</owner>
+  <summary>
+    Records the last PH feedback submitted by the user for the current page.
+    Recorded at the once the companion is reloaded or closed.
   </summary>
 </histogram>
 
@@ -86,7 +118,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Companion.SidePanel.OpenTrigger" enum="SidePanelOpenTrigger"
-    expires_after="2023-10-20">
+    expires_after="2023-12-24">
   <owner>shaktisahu@chromium.org</owner>
   <owner>src/chrome/browser/companion/OWNERS</owner>
   <summary>
@@ -96,7 +128,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Companion.SidePanelAvailabilityChanged"
-    enum="CompanionSidePanelAvailabilityChanged" expires_after="2023-10-20">
+    enum="CompanionSidePanelAvailabilityChanged" expires_after="2023-12-24">
   <owner>tbansal@chromium.org</owner>
   <owner>src/chrome/browser/companion/OWNERS</owner>
   <summary>

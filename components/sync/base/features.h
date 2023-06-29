@@ -10,11 +10,6 @@
 
 namespace syncer {
 
-// If enabled, EntitySpecifics will be cached in EntityMetadata in order to
-// prevent data loss caused by older clients dealing with unknown proto fields
-// (introduced later).
-BASE_DECLARE_FEATURE(kCacheBaseEntitySpecificsInMetadata);
-
 // Customizes the delay of a deferred sync startup.
 BASE_DECLARE_FEATURE(kDeferredSyncStartupCustomDelay);
 inline constexpr base::FeatureParam<int>
@@ -65,12 +60,6 @@ inline constexpr base::FeatureParam<int> kSyncAndroidNTPPromoMaxImpressions{
 // Controls whether to enable syncing of Autofill Wallet Usage Data.
 BASE_DECLARE_FEATURE(kSyncAutofillWalletUsageData);
 
-// Causes the sync engine to count a quota for commits of data types that can
-// be committed by extension JS API. If the quota is depleted, an extra long
-// nudge delay is applied to that data type. As a result, more changes are
-// likely to get combined into one commit message.
-BASE_DECLARE_FEATURE(kSyncExtensionTypesThrottling);
-
 // If enabled, Segmentation data type will be synced.
 BASE_DECLARE_FEATURE(kSyncSegmentationDataType);
 
@@ -102,13 +91,6 @@ BASE_DECLARE_FEATURE(kUseSyncInvalidations);
 // TODO(crbug/1365292): Add more information about this feature after
 // upload/download invalidations support from ModelTypeState msg will be added.
 BASE_DECLARE_FEATURE(kSyncPersistInvalidations);
-
-// If enabled, types related to Wallet and Offer will be included in interested
-// data types, and the device will listen to new invalidations for those types
-// (if they are enabled).
-// The device will not register for old invalidations at all.
-// UseSyncInvalidations must be enabled for this to take effect.
-BASE_DECLARE_FEATURE(kUseSyncInvalidationsForWalletAndOffer);
 
 // When enabled, optimization flags (single client and a list of FCM
 // registration tokens) will be disabled if during the current sync cycle
@@ -207,6 +189,9 @@ inline constexpr base::FeatureParam<base::TimeDelta>
 
 // Feature flag to replace all sync-related UI with sign-in ones.
 BASE_DECLARE_FEATURE(kReplaceSyncPromosWithSignInPromos);
+
+// Flag to stop call to reconfiguration of datatypes if it's already stopping.
+BASE_DECLARE_FEATURE(kSyncAvoidReconfigurationIfAlreadyStopping);
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_BASE_FEATURES_H_

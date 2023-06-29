@@ -9,11 +9,12 @@
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/common_export.h"
-#include "third_party/blink/public/common/url_pattern.h"
+#include "third_party/blink/public/common/safe_url_pattern.h"
 
 namespace blink {
 
 // TODO(crbug.com/1371756): implement other conditions in the proposal.
+// TODO(crbug.com/1456599): migrate to absl::variant if possible.
 struct BLINK_COMMON_EXPORT ServiceWorkerRouterCondition {
   // Type of conditions.
   enum class ConditionType {
@@ -24,7 +25,7 @@ struct BLINK_COMMON_EXPORT ServiceWorkerRouterCondition {
 
   // URLPattern to be used for matching.
   // This field is valid if `type` is `kUrlPattern`.
-  absl::optional<UrlPattern> url_pattern;
+  absl::optional<SafeUrlPattern> url_pattern;
 
   bool operator==(const ServiceWorkerRouterCondition& other) const;
 };
@@ -37,17 +38,41 @@ struct BLINK_COMMON_EXPORT ServiceWorkerRouterNetworkSource {
   }
 };
 
+// Race network and fetch handler source.
+struct BLINK_COMMON_EXPORT ServiceWorkerRouterRaceSource {
+  bool operator==(const ServiceWorkerRouterRaceSource& other) const {
+    return true;
+  }
+};
+
+// Fetch handler source structure.
+struct BLINK_COMMON_EXPORT ServiceWorkerRouterFetchEventSource {
+  bool operator==(const ServiceWorkerRouterFetchEventSource& other) const {
+    return true;
+  }
+};
+
 // This represents a source of the router rule.
 // TODO(crbug.com/1371756): implement other sources in the proposal.
 struct BLINK_COMMON_EXPORT ServiceWorkerRouterSource {
   // Type of sources.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class SourceType {
     // Network is used as a source.
-    kNetwork,
+    kNetwork = 0,
+    // Race network and fetch handler.
+    kRace = 1,
+    // Fetch Event is used as a source.
+    kFetchEvent = 2,
+
+    kMaxValue = kFetchEvent,
   };
   SourceType type;
 
   absl::optional<ServiceWorkerRouterNetworkSource> network_source;
+  absl::optional<ServiceWorkerRouterRaceSource> race_source;
+  absl::optional<ServiceWorkerRouterFetchEventSource> fetch_event_source;
 
   bool operator==(const ServiceWorkerRouterSource& other) const;
 };

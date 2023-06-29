@@ -112,7 +112,7 @@ void TryToShowPasswordMigrationWarning(
 SaveUpdatePasswordMessageDelegate::SaveUpdatePasswordMessageDelegate()
     : SaveUpdatePasswordMessageDelegate(
           base::BindRepeating(PasswordEditDialogBridge::Create),
-          base::BindRepeating(&password_manager::ShowWarning)) {}
+          base::BindRepeating(&local_password_migration::ShowWarning)) {}
 
 SaveUpdatePasswordMessageDelegate::SaveUpdatePasswordMessageDelegate(
     PasswordEditDialogFactory password_edit_dialog_factory,
@@ -484,8 +484,10 @@ void SaveUpdatePasswordMessageDelegate::HandleMessageDismissed(
         GetSaveUpdatePasswordMessageDismissReason(dismiss_reason));
   }
 
-  TryToShowPasswordMigrationWarning(create_migration_warning_callback_,
-                                    web_contents_);
+  if (dismiss_reason == messages::DismissReason::PRIMARY_ACTION) {
+    TryToShowPasswordMigrationWarning(create_migration_warning_callback_,
+                                      web_contents_);
+  }
   ClearState();
 }
 

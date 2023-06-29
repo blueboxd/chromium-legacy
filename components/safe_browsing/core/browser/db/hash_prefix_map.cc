@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ref.h"
+#include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "components/safe_browsing/core/browser/db/prefix_iterator.h"
 #include "components/safe_browsing/core/common/features.h"
@@ -341,12 +342,36 @@ class MmapHashPrefixMap::BufferedFileWriter {
   bool has_error_;
 };
 
-MmapHashPrefixMap::MmapHashPrefixMap(const base::FilePath& store_path,
-                                     size_t buffer_size)
-    : store_path_(store_path), buffer_size_(buffer_size) {}
-MmapHashPrefixMap::~MmapHashPrefixMap() = default;
+MmapHashPrefixMap::MmapHashPrefixMap(
+    const base::FilePath& store_path,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    size_t buffer_size)
+    : store_path_(store_path),
+      task_runner_(task_runner
+                       ? std::move(task_runner)
+                       : base::SequencedTaskRunner::GetCurrentDefault()),
+      buffer_size_(buffer_size) {}
+
+MmapHashPrefixMap::~MmapHashPrefixMap() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+}
 
 void MmapHashPrefixMap::Clear() {
+  if (kMmapSafeBrowsingDatabaseAsync.Get() &&
+      !task_runner_->RunsTasksInCurrentSequence()) {
+    // Clear the map on the db task runner, since the memory mapped files should
+    // be destroyed on the same thread they were created. base::Unretained is
+    // safe since the map is destroyed on the db task runner.
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(&MmapHashPrefixMap::ClearOnTaskRunner,
+                                          base::Unretained(this)));
+  } else {
+    map_.clear();
+  }
+}
+
+void MmapHashPrefixMap::ClearOnTaskRunner() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   map_.clear();
 }
 
@@ -383,8 +408,20 @@ ApplyUpdateResult MmapHashPrefixMap::ReadFromDisk(
     const V4StoreFileFormat& file_format) {
   DCHECK(file_format.list_update_response().additions().empty());
   for (const auto& hash_file : file_format.hash_files()) {
-    if (!GetFileInfo(hash_file.prefix_size()).Initialize(hash_file)) {
+    PrefixSize prefix_size = hash_file.prefix_size();
+    auto& file_info = GetFileInfo(prefix_size);
+    if (!file_info.Initialize(hash_file)) {
       return MMAP_FAILURE;
+    }
+    static const base::FeatureParam<bool> kCheckMapSorted{
+        &kMmapSafeBrowsingDatabase, "check-sb-map-sorted", true};
+    if (kCheckMapSorted.Get()) {
+      HashPrefixesView prefixes = file_info.GetView();
+      uint32_t end = prefixes.size() / prefix_size;
+      if (!std::is_sorted(PrefixIterator(prefixes, 0, prefix_size),
+                          PrefixIterator(prefixes, end, prefix_size))) {
+        return MMAP_FAILURE;
+      }
     }
   }
   return APPLY_UPDATE_SUCCESS;
@@ -494,6 +531,13 @@ base::FilePath MmapHashPrefixMap::GetPath(const base::FilePath& store_path,
 
 const std::string& MmapHashPrefixMap::GetExtensionForTesting(PrefixSize size) {
   return GetFileInfo(size).GetExtensionForTesting();  // IN-TEST
+}
+
+void MmapHashPrefixMap::ClearAndWaitForTesting() {
+  Clear();
+  base::RunLoop run_loop;
+  task_runner_->PostTask(FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 MmapHashPrefixMap::FileInfo& MmapHashPrefixMap::GetFileInfo(PrefixSize size) {

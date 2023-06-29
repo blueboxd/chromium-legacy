@@ -69,7 +69,6 @@
 <translation id="1247519845643687288">最近使用的應用程式</translation>
 <translation id="1252999807265626933">正在使用 <ph name="POWER_SOURCE" />充電</translation>
 <translation id="1255033239764210633">天氣點樣？</translation>
-<translation id="1267032506238418139">快速鍵有變動</translation>
 <translation id="1269405891096105529">訪客模式不支援周邊裝置</translation>
 <translation id="1270290102613614947">屏幕鍵盤已停用</translation>
 <translation id="1272079795634619415">停止</translation>
@@ -140,7 +139,7 @@
 <translation id="1550406609415860283">有可用的裝置</translation>
 <translation id="1550523713251050646">點擊即可取得更多選項</translation>
 <translation id="1555130319947370107">藍色</translation>
-<translation id="1576511610858879060">Chromebook 或藍牙裝置正使用較舊版本的藍牙。如要提高音效品質，請使用其他輸入來源。</translation>
+<translation id="1557622599341396706">顯示桌面名稱</translation>
 <translation id="1576623706766186887">放大鏡開啟時縮小畫面</translation>
 <translation id="1586324912145647027">前往桌面 1 至 8</translation>
 <translation id="1589090746204042747">存取此工作階段的所有活動紀錄</translation>
@@ -217,7 +216,6 @@
 <translation id="1908992311423394684">新安裝</translation>
 <translation id="1915307458270490472">結束通話</translation>
 <translation id="1918022425394817322">攝錄機已經對齊右上角</translation>
-<translation id="1919743966458266018">開啟工作管理員的快速鍵已變更，請改用 <ph name="NEW_SHORTCUT" /> 取代 <ph name="OLD_SHORTCUT" /> 。</translation>
 <translation id="1923539912171292317">自動按一下</translation>
 <translation id="1928739107511554905">如要下載更新，請連接鍵盤並使用觸控螢幕重新啟動 Chromebook。</translation>
 <translation id="1948405482892809935">切換至下一位使用者</translation>
@@ -249,7 +247,7 @@
 <translation id="2023558322300866873">您可隨時停止擷取封包</translation>
 <translation id="2034971124472263449">仍要儲存</translation>
 <translation id="2049240716062114887">已將桌面名稱變更為「<ph name="DESK_NAME" />」</translation>
-<translation id="206377500836174974">100%</translation>
+<translation id="206377500836174974">完全</translation>
 <translation id="2064048859448024834">開咗攝錄機預覽</translation>
 <translation id="2067602449040652523">鍵盤亮度</translation>
 <translation id="2075520525463668108">切換<ph name="CAPTURE_MEDIUM" />。<ph name="CAPTURE_MEDIUM" /><ph name="CAPTURE_STATE" /></translation>
@@ -359,6 +357,7 @@
 <translation id="2579264398927991698">韌體更新</translation>
 <translation id="2582112259361606227">重新啟動即可更新</translation>
 <translation id="2586561057878260610">㩒 Ctrl + W 制就可以同「<ph name="DESK_NAME" />」合併。㩒 Ctrl + Shift + W 制就可以閂咗桌面同埋視窗。</translation>
+<translation id="2586657967955657006">剪貼簿</translation>
 <translation id="2595239820337756193">5 公里等於幾多英里</translation>
 <translation id="2596078834055697711">擷取視窗螢幕畫面</translation>
 <translation id="2598725286293895280">桌面不支援的應用程式</translation>
@@ -911,6 +910,7 @@
         <ph name="NOTIFICATION_1" />；
         <ph name="NOTIFICATION_2" />；以及 <ph name="NUM_OTHER_NOTIFICATION" /></translation>
 <translation id="4987738733603015246">桌面 16</translation>
+<translation id="4989163558385430922">查看全部</translation>
 <translation id="5003993274120026347">下一句</translation>
 <translation id="5004607513195820459">這是受管理的網絡</translation>
 <translation id="5009463889040999939">正在重新命名設定檔。這項操作可能需時數分鐘。</translation>
@@ -928,6 +928,7 @@
 <translation id="504465286040788597">上一段</translation>
 <translation id="5045550434625856497">密碼不正確</translation>
 <translation id="5062496344832867502">RAM</translation>
+<translation id="5068762093486106012">如果在靜音狀態下說話，系統會傳送通知給您。音訊資料只會儲存在裝置上。</translation>
 <translation id="5078796286268621944">PIN 不正確</translation>
 <translation id="5083553833479578423">啟用更多「Google 助理」功能。</translation>
 <translation id="5092436659250499817">開啟/關閉鍵盤背光</translation>
@@ -958,6 +959,7 @@
 <translation id="5207949376430453814">突顯文字插入符號</translation>
 <translation id="5208059991603368177">開啟</translation>
 <translation id="5216991270656129561">關閉，直到<ph name="TIME" /></translation>
+<translation id="5221423477036820198">使用 Phone Hub 快速傳送或回覆手機的訊息。</translation>
 <translation id="5222676887888702881">登出</translation>
 <translation id="5229343007215035173">開啟/關閉私隱保護畫面</translation>
 <translation id="5234764350956374838">關閉</translation>
@@ -972,7 +974,6 @@
 <translation id="5283198616748585639">增加 1 分鐘</translation>
 <translation id="528468243742722775">結束</translation>
 <translation id="5286194356314741248">正在掃瞄</translation>
-<translation id="5293671101077843611">今天沒有任何活動</translation>
 <translation id="5297423144044956168">找不到流動裝置</translation>
 <translation id="5297704307811127955">已關閉</translation>
 <translation id="5300589172476337783">顯示</translation>
@@ -986,6 +987,7 @@
 <translation id="5317780077021120954">儲存</translation>
 <translation id="5319712128756744240">配對新裝置</translation>
 <translation id="5322611492012084517">找不到手機</translation>
+<translation id="5323994101633366939">隱藏桌面名稱</translation>
 <translation id="5327248766486351172">名稱</translation>
 <translation id="5329548388331921293">正在連線…</translation>
 <translation id="5331975486040154427">USB-C 裝置 (左側後方連接埠)</translation>
@@ -1126,7 +1128,7 @@
 <translation id="595202126637698455">效能追蹤已啟用</translation>
 <translation id="5955304353782037793">應用程式</translation>
 <translation id="5958529069007801266">受管使用者</translation>
-<translation id="5961960957587052807">亮度</translation>
+<translation id="5961960957587052807">輕微</translation>
 <translation id="5965524703725988602">切換深色主題背景。<ph name="STATE_TEXT" />。</translation>
 <translation id="5975235751479998104">向前循環切換視窗</translation>
 <translation id="5976112937189445008">㩒 Enter 掣就可以錄視窗畫面</translation>
@@ -1168,6 +1170,7 @@
 <translation id="6103838137565245112">系統</translation>
 <translation id="6114505516289286752">已下載<ph name="LANGUAGE" />語音檔案</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />。<ph name="BATTERY_SAVER_STATE" /></translation>
+<translation id="6119972796024789243">色彩校正</translation>
 <translation id="6121838516699723042">確認下載 <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">「Google 助理」不適用於訪客工作階段。</translation>
 <translation id="6129953537138746214">空格</translation>
@@ -1180,6 +1183,7 @@
 <translation id="6165508094623778733">瞭解更多資料</translation>
 <translation id="6166852626429024716">搜尋您的裝置、應用程式、設定、網絡…</translation>
 <translation id="6168318496333165060">開啟「診斷」應用程式</translation>
+<translation id="6173151025443907148">啟用 Lacros 後，第二位使用者便無法登入。請改為在 Lacros 中使用第二個瀏覽器設定檔，或停用 Lacros，然後再試一次。</translation>
 <translation id="6179832488876878285">您可將重要的檔案固定至此處。開啟「檔案」應用程式即可開始使用。</translation>
 <translation id="6182592640011875895">開啟桌面</translation>
 <translation id="6185696379715117369">向上鍵</translation>
@@ -1271,6 +1275,7 @@
 <translation id="6597278316891651699">攝錄機已經對齊左下角，同系統平台有衝突。</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />，訊號強度係 <ph name="SIGNAL_STRENGTH" />，由管理員管理</translation>
 <translation id="6612802754306526077">揀咗螢幕錄影模式</translation>
+<translation id="6613765291890844037">已使用 <ph name="STORAGE_IN_USE_SIZE" /> 的儲存空間 | 共 <ph name="STORAGE_TOTAL_SIZE" /></translation>
 <translation id="6614169507485700968">已啟用私隱保護畫面</translation>
 <translation id="6625718907317144388">檢視保護功能已開啟，因此系統已隱藏 <ph name="APP_1_TITLE" />、<ph name="APP_2_TITLE" /> 和其他應用程式的通知</translation>
 <translation id="6627638273713273709">搜尋鍵 + Shift + K 鍵</translation>
@@ -1538,6 +1543,7 @@
 <translation id="7866482334467279021">開啟</translation>
 <translation id="7872786842639831132">關閉</translation>
 <translation id="7875575368831396199"><ph name="DEVICE_TYPE" /> 上的藍牙似乎已關閉。請開啟藍牙，才能使用 Phone Hub。</translation>
+<translation id="7876243839304621966">全部移除</translation>
 <translation id="7877557217297072640">{0,plural, =0{現在將裝置回復為先前的版本}=1{在 1 秒內將裝置回復為先前的版本}other{在 # 秒內將裝置回復為先前的版本}}</translation>
 <translation id="7884446017008693258">熱點設定</translation>
 <translation id="7884902759927478774">取消分頁拖曳</translation>
@@ -1635,6 +1641,7 @@
 <translation id="8247998213073982446"><ph name="APP_NAME" />，應用程式</translation>
 <translation id="8255234195843591763">重設以更新</translation>
 <translation id="8261506727792406068">刪除</translation>
+<translation id="8262312463845990408">切換播放</translation>
 <translation id="8270450402312105425">{0,plural, =1{在 1 小時內將裝置回復為先前的版本}other{在 # 小時內將裝置回復為先前的版本}}</translation>
 <translation id="8277261673056602147">突顯畫面上的文字</translation>
 <translation id="8284362522226889623">請用四隻手指向左滑動以切換至上一個桌面</translation>
@@ -1688,6 +1695,7 @@
 <translation id="8513108775083588393">自動旋轉</translation>
 <translation id="851458219935658693">顯示目前桌面嘅視窗，揀咗圓形按鈕</translation>
 <translation id="8517041960877371778">您的 <ph name="DEVICE_TYPE" /> 在開啟時可能無法充電。</translation>
+<translation id="852060496139946719">{NUM_APPS,plural, =1{麥克風輸入由「<ph name="APP_NAME" />」控制}other{麥克風輸入由 # 個應用程式控制}}</translation>
 <translation id="8535393432370007982">根據顏色復原排列次序</translation>
 <translation id="8541078764854166027">相機取景功能</translation>
 <translation id="8542053257095774575">沒有已儲存的桌面或範本</translation>
@@ -1751,12 +1759,10 @@
 <translation id="8834539327799336565">目前已連接的裝置</translation>
 <translation id="8841375032071747811">[返回] 按鈕</translation>
 <translation id="8843682306134542540">切換旋轉鎖定。<ph name="STATE_TEXT" /></translation>
-<translation id="8850991929411075241">搜尋鍵 + Esc 鍵</translation>
 <translation id="8853703225951107899">系統仍然無法驗證您的 PIN 或密碼。注意：如果您最近變更過密碼，請嘗試使用舊密碼，新密碼會在您登出後立即生效。</translation>
 <translation id="8855885154700222542">全螢幕鍵</translation>
 <translation id="8858369206579825206">私隱權設定</translation>
 <translation id="8860817004574502558">電池壽命</translation>
-<translation id="8863602954531760927"><ph name="STORAGE_IN_USE_SIZE" /> 使用中 / 總共 <ph name="STORAGE_TOTAL_SIZE" /></translation>
 <translation id="8870509716567206129">應用程式不支援分割畫面。</translation>
 <translation id="8874184842967597500">未連線</translation>
 <translation id="8875021410787719674">在右下角、啟動器、網址列、書籤列、開啟的網站和下載項目之間移動</translation>
@@ -1812,7 +1818,6 @@
 <translation id="9089416786594320554">輸入法</translation>
 <translation id="9091626656156419976">已移除「<ph name="DISPLAY_NAME" />」畫面</translation>
 <translation id="9098969848082897657">將手機設為靜音</translation>
-<translation id="9105450214093926548">Lacros 瀏覽器執行時，系統不支援第二位使用者登入。請改為在 Lacros 中使用第二個瀏覽器設定檔，或者關閉 Lacros，然後再試一次。</translation>
 <translation id="9120448753905017833">系統已關閉 Wi-Fi，並開始透過流動數據使用「熱點」。您可能需支付數據費用。</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> 或 <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>
 <translation id="9126339866969410112">復原上一個操作</translation>

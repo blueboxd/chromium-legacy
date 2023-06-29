@@ -8857,6 +8857,28 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Extensions.ContextMenu.PinExtension">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user pinned an extenson to the toolbar by clicking on the pin entry of
+    an extension's context menu. This isn't emmitted if extension is pinned
+    through other mechanism. This is recorded for both keyboard and mouse
+    activation.
+  </description>
+</action>
+
+<action name="Extensions.ContextMenu.UnpinExtension">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user unpinned an extenson to the toolbar by clicking on the unpin entry
+    of an extension's context menu. This isn't emmitted if extension is unpinned
+    through other mechanism. This is recorded for both keyboard and mouse
+    activation.
+  </description>
+</action>
+
 <action name="Extensions.ExtensionDisabled">
   <owner>archanasimha@chromium.org</owner>
   <description>
@@ -8888,6 +8910,65 @@ should be able to be added at any place in this file.
 <action name="Extensions.IDChangedError">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Extensions.Menu.AllowByExtensionSelected">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user interacted with the &quot;site settings&quot; toggle in the
+    extensions menu to allow site access by extension on the current site. This
+    is recorded for both keyboard and mouse activations.
+  </description>
+</action>
+
+<action name="Extensions.Menu.ExtensionsBlockedSelected">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user interacted with the &quot;site settings&quot; toggle in the
+    extensions menu to block all extensions on the current site. This is
+    recorded for both keyboard and mouse activations.
+  </description>
+</action>
+
+<action name="Extensions.Menu.OnAllSitesSelected">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user clicked the &quot;on all sites&quot; option in an extension's site
+    permissions page in the extensions menu. This is recorded for both keyboard
+    and mouse activations.
+  </description>
+</action>
+
+<action name="Extensions.Menu.OnClickSelected">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user clicked the &quot;on click&quot; option in an extension's site
+    permissions page in the extensions menu. This is recorded for both keyboard
+    and mouse activations.
+  </description>
+</action>
+
+<action name="Extensions.Menu.OnSiteSelected">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user clicked the &quot;on site&quot; option in an extension's site
+    permissions page in the extensions menu. This is recorded for both keyboard
+    and mouse activations.
+  </description>
+</action>
+
+<action name="Extensions.Menu.SitePermissionsPageOpened">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user opened an extension's site permissions page in the extensions menu.
+    This is recorded for both keyboard and mouse activations.
+  </description>
 </action>
 
 <action name="Extensions.NtpPromoClicked">
@@ -9123,6 +9204,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Extensions.Toolbar.ExtensionRequestDismissedFromMenu">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user dismissed an extension's site access request in the toolbar and
+    extensions menu by dismissing it from the extensions menu.
+  </description>
+</action>
+
 <action name="Extensions.Toolbar.ExtensionsActivatedFromRequestAccessButton">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>emiliapaz@chromium.org</owner>
@@ -9139,6 +9229,16 @@ should be able to be added at any place in this file.
   <description>
     The user opened the Extensions Menu in the toolbar. This is recorded for
     both keyboard and mouse activation.
+  </description>
+</action>
+
+<action name="Extensions.Toolbar.MenuOpenedWhenExtensionsAreRequestingAccess">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user opened the Extensions Menu in the toolbar while the request access
+    button in the toolbar is visible. This is recorded when the user opens the
+    menu for both keyboard and mouse activation.
   </description>
 </action>
 
@@ -17873,26 +17973,6 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="MediaContextMenu_Mute">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
-</action>
-
-<action name="MediaContextMenu_Pause">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
-</action>
-
-<action name="MediaContextMenu_Play">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
-</action>
-
-<action name="MediaContextMenu_Unmute">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
-</action>
-
 <action name="MediaIndicatorButton_Dragged">
   <obsolete>Replaced with &quot;AlertIndicatorButton_Dragged&quot;.</obsolete>
   <owner>miu@chromium.org</owner>
@@ -22168,6 +22248,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileThumbstripCreateIncognitoTab">
+  <obsolete>Deprecated as of 06/2023</obsolete>
   <owner>djean@chromium.org</owner>
   <owner>edchin@chromium.org</owner>
   <description>
@@ -22177,6 +22258,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileThumbstripCreateRegularTab">
+  <obsolete>Deprecated as of 06/2023</obsolete>
   <owner>djean@chromium.org</owner>
   <owner>edchin@chromium.org</owner>
   <description>
@@ -28335,6 +28417,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="RestoreTabsOnFRE">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>bjfong@google.com</owner>
+  <description>
+    User took an action on the RestoreTabsOnFRE feature.
+  </description>
+</action>
+
 <action name="SafeBrowsing.AccountIntegration.DisabledDialog.Dismissed">
   <owner>jacastro@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
@@ -32379,6 +32469,22 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Signin_FromPasswordMigrationWarning">
+  <owner>ioanap@chromium.org</owner>
+  <owner>izuzic@google.com</owner>
+  <owner>chrome-signin-team@chromium.org</owner>
+  <description>
+    Recorded on sign in/sync consent flow start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_MIGRATION_WARNING.
+    Android only.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromPasswordMigrationWarningAndroid">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of the metric.</description>
+</action>
+
 <action name="Signin_Signin_FromPostDeviceRestoreSigninPromo">
   <owner>scottyoder@google.com</owner>
   <owner>bling-get-set-up@google.com</owner>
@@ -34301,6 +34407,14 @@ should be able to be added at any place in this file.
 <action name="StatusArea_Drive_Settings">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="StatusArea_FocusMode_Detailed">
+  <owner>richui@chromium.org</owner>
+  <description>
+    Counts the number of times the user has clicked on the Focus Mode status
+    tray item and is now in the detail view.
+  </description>
 </action>
 
 <action name="StatusArea_HighContrastDisabled">
@@ -37417,10 +37531,152 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="WhatsNew.CalendarEvent">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>The user opened Calendar Event in What's New.</description>
+</action>
+
+<action name="WhatsNew.CalendarEvent.InstructionsTapped">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user tapped on the instruction button of Calendar Event in What's New.
+  </description>
+</action>
+
+<action name="WhatsNew.CalendarEvent.LearnMoreTapped">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user tapped on learn more to know more about Calendar Event in What's
+    New.
+  </description>
+</action>
+
+<action name="WhatsNew.ChromeActions">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>The user opened Chrome Actions in What's New.</description>
+</action>
+
+<action name="WhatsNew.ChromeActions.InstructionsTapped">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user tapped on the instruction button of Chrome Actions in What's New.
+  </description>
+</action>
+
+<action name="WhatsNew.ChromeActions.LearnMoreTapped">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user tapped on learn more to know more about Chrome Actions in What's
+    New.
+  </description>
+</action>
+
+<action name="WhatsNew.ChromeActions.PrimaryActionTapped">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user tapped on the primary action of Chrome Actions in What's New.
+  </description>
+</action>
+
 <action name="WhatsNew.Dismissed">
   <owner>cheickcisse@google.com</owner>
   <owner>sebsg@chromium.org</owner>
   <description>The user dismissed What's New.</description>
+</action>
+
+<action name="WhatsNew.IncognitoLock">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>The user opened Incognito Lock in What's New.</description>
+</action>
+
+<action name="WhatsNew.IncognitoLock.InstructionsTapped">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user tapped on the instruction button of Incognito Lock in What's New.
+  </description>
+</action>
+
+<action name="WhatsNew.IncognitoLock.LearnMoreTapped">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user tapped on learn more to know more about Incognito Lock in What's
+    New.
+  </description>
+</action>
+
+<action name="WhatsNew.IncognitoLock.PrimaryActionTapped">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user tapped on the primary action of Incognito Lock in What's New.
+  </description>
+</action>
+
+<action name="WhatsNew.IncognitoTabsFromOtherApps">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user opened Incognito Tabs From Other Apps in What's New.
+  </description>
+</action>
+
+<action name="WhatsNew.IncognitoTabsFromOtherApps.InstructionsTapped">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user tapped on the instruction button of Incognito Tabs From Other Apps
+    in What's New.
+  </description>
+</action>
+
+<action name="WhatsNew.IncognitoTabsFromOtherApps.LearnMoreTapped">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user tapped on learn more to know more about Incognito Tabs From Other
+    Apps in What's New.
+  </description>
+</action>
+
+<action name="WhatsNew.IncognitoTabsFromOtherApps.PrimaryActionTapped">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user tapped on the primary action of Incognito Tabs From Other Apps in
+    What's New.
+  </description>
+</action>
+
+<action name="WhatsNew.MiniMaps">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>The user opened Mini Maps in What's New.</description>
+</action>
+
+<action name="WhatsNew.MiniMaps.InstructionsTapped">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user tapped on the instruction button of Mini Maps in What's New.
+  </description>
+</action>
+
+<action name="WhatsNew.MiniMaps.LearnMoreTapped">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user tapped on learn more to know more about Mini Maps in What's New.
+  </description>
 </action>
 
 <action name="WhatsNew.NewOverflowMenu">
@@ -37967,6 +38223,8 @@ should be able to be added at any place in this file.
   <suffix name="EphemeralTab" label="For Ephemeral Tab."/>
   <suffix name="ExploreSitesTile" label="For Explore Sites feature."/>
   <suffix name="ExtensionsMenu" label="For Extensions menu opening."/>
+  <suffix name="ExtensionsRequestAccessButton"
+      label="For Extensions request access button feature."/>
   <suffix name="FeatureNotificationGuideDefaultBrowserNotificationShown"
       label="For feature notification guide default browser notification
              feature."/>
@@ -38034,12 +38292,16 @@ should be able to be added at any place in this file.
       label="For iOSHistoryOnOverflowMenuFeature feature"/>
   <suffix name="iOSNewTabToolbarItemFeature"
       label="For iOSNewTabToolbarItemFeature feature"/>
+  <suffix name="iOSPasswordPromoDesktop"
+      label="For iOSPasswordPromoDesktop feature"/>
   <suffix name="iOSPromoAppStore" label="For iOSPromoAppStore feature"/>
   <suffix name="iOSPromoCredentialProviderExtension"
       label="For iOSPromoCredentialProviderExtension feature"/>
   <suffix name="iOSPromoDefaultBrowser"
       label="For iOSPromoDefaultBrowser feature"/>
   <suffix name="iOSPromoPostRestore" label="For iOSPromoPostRestore feature"/>
+  <suffix name="iOSPromoPostRestoreDefaultBrowser"
+      label="For iOSPromoPostRestoreDefaultBrowser feature"/>
   <suffix name="iOSPromoWhatsNew" label="For iOSPromoWhatsNew feature"/>
   <suffix name="iOSShareToolbarItemFeature"
       label="For iOSShareToolbarItemFeature feature"/>
@@ -38089,6 +38351,8 @@ should be able to be added at any place in this file.
   <suffix name="PreviewsOmniboxUI"
       label="For the Previews UI in the Android Omnibox feature."/>
   <suffix name="PriceDropNTP" label="For PriceDropNTP feature."/>
+  <suffix name="PriceInsightsPageActionIconLabel"
+      label="For price insights page action icon label triggering."/>
   <suffix name="PriceTrackingChipFeature"
       label="For PriceTrackingChipFeature feature."/>
   <suffix name="PriceTrackingInSidePanel"
@@ -38130,6 +38394,26 @@ should be able to be added at any place in this file.
   <suffix name="RequestDesktopSiteOptIn"
       label="For the RequestDesktopSiteOptIn feature."/>
   <suffix name="RestoreTabsOnFRE" label="For the RestoreTabsOnFRE feature."/>
+  <suffix name="ScalableIphTimerBasedEight"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphTimerBasedFive"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphTimerBasedFour"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphTimerBasedNine"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphTimerBasedOne"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphTimerBasedSeven"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphTimerBasedSix"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphTimerBasedTen"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphTimerBasedThree"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphTimerBasedTwo"
+      label="For a variant of Scalable Iph feature."/>
   <suffix name="SharedHighlightingBuilder"
       label="For SharedHighlightingBuilder feature."/>
   <suffix name="SharedHighlightingReceiver"
@@ -38478,6 +38762,32 @@ should be able to be added at any place in this file.
   <suffix name="UngroupTabs"
       label="Users tapped on the ungroup tabs button in TabSelectionEditorV2."/>
   <affected-action name="TabMultiSelectV2"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="BackPressTypeBackButton"
+      label="Users backpressed the promo by using the back button."/>
+  <suffix name="BackPressTypeSystemBackPress"
+      label="Users backpressed the promo using the system backpress handler."/>
+  <suffix name="DeviceSelectionScreen"
+      label="Users entered the device selection screen."/>
+  <suffix name="PromoResultAccepted"
+      label="Users accepted the promo by touching a restore tabs button."/>
+  <suffix name="PromoResultDismissedByBackpress"
+      label="Users dismissed the promo by backpressing."/>
+  <suffix name="PromoResultDismissedByScrim"
+      label="Users dismissed the promo by touching the scrim."/>
+  <suffix name="PromoResultDismissedBySwipe"
+      label="Users dismissed the promo by swiping down."/>
+  <suffix name="RestoredViaPromoScreen"
+      label="Users restored tabs via the promo home screen button."/>
+  <suffix name="RestoredViaReviewTabsScreen"
+      label="Users restored tabs via the review tabs screen button."/>
+  <suffix name="ReviewTabsScreen"
+      label="Users entered the review tabs screen."/>
+  <suffix name="SelectedNonDefaultDevice"
+      label="Users selected the non default device to restore tabs from."/>
+  <affected-action name="RestoreTabsOnFRE"/>
 </action-suffix>
 
 <action-suffix separator="." ordering="suffix">

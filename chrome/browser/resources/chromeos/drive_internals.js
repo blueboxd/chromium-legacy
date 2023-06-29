@@ -105,6 +105,7 @@ function updateBulkPinning(enabled) {
 }
 
 function onBulkPinningProgress(progress) {
+  updateBulkPinning(progress.enabled);
   $('bulk-pinning-stage').innerText = progress.stage;
   $('bulk-pinning-free-space').innerText = progress.free_space;
   $('bulk-pinning-required-space').innerText = progress.required_space;
@@ -130,6 +131,7 @@ function onBulkPinningProgress(progress) {
       progress.time_spent_listing_items;
   $('bulk-pinning-time-spent-pinning-files').innerText =
       progress.time_spent_pinning_files;
+  $('bulk-pinning-remaining-time').innerText = progress.remaining_time;
 }
 
 function updateStartupArguments(args) {

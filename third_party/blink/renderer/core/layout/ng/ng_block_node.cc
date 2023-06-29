@@ -262,9 +262,11 @@ bool CanUseCachedIntrinsicInlineSizes(const NGConstraintSpace& constraint_space,
     return false;
   }
 
-  if (node.HasAspectRatio() && (style.LogicalMinHeight().IsPercentOrCalc() ||
-                                style.LogicalMaxHeight().IsPercentOrCalc()))
+  if (node.HasAspectRatio() &&
+      (style.LogicalMinHeight().IsPercentOrCalcOrStretch() ||
+       style.LogicalMaxHeight().IsPercentOrCalcOrStretch())) {
     return false;
+  }
 
   if (node.IsNGTableCell() && To<LayoutNGTableCell>(node.GetLayoutBox())
                                       ->IntrinsicLogicalWidthsBorderSizes() !=
@@ -275,9 +277,10 @@ bool CanUseCachedIntrinsicInlineSizes(const NGConstraintSpace& constraint_space,
   // "grid-template-columns: repeat(auto-fill, 50px); min-width: 50%;"
   // In this specific case our min/max sizes are now dependent on what
   // "min-width" resolves to - which is unique to grid.
-  if (node.IsGrid() && (style.LogicalMinWidth().IsPercentOrCalc() ||
-                        style.LogicalMaxWidth().IsPercentOrCalc()))
+  if (node.IsGrid() && (style.LogicalMinWidth().IsPercentOrCalcOrStretch() ||
+                        style.LogicalMaxWidth().IsPercentOrCalcOrStretch())) {
     return false;
+  }
 
   if (constraint_space.IsInFlexIntrinsicSizing() !=
       node.GetLayoutBox()->IntrinsicLogicalWidthsInFlexIntrinsicSizing()) {
@@ -530,7 +533,7 @@ const NGLayoutResult* NGBlockNode::Layout(
       // We need to clear any previous results when scrollbars change. For
       // example - we may have stored a "measure" layout result which will be
       // incorrect if we try and reuse it.
-      LayoutSize old_box_size = box_->Size();
+      PhysicalSize old_box_size = box_->Size();
       params.previous_result = nullptr;
       box_->SetShouldSkipLayoutCache(true);
 
@@ -783,7 +786,7 @@ void NGBlockNode::FinishLayout(LayoutBlockFlow* block_flow,
                                const NGConstraintSpace& constraint_space,
                                const NGBlockBreakToken* break_token,
                                const NGLayoutResult* layout_result,
-                               LayoutSize old_box_size) const {
+                               PhysicalSize old_box_size) const {
   // Computing MinMax after layout. Do not modify the |LayoutObject| tree, paint
   // properties, and other global states.
   if (NGDisableSideEffectsScope::IsDisabled())
@@ -948,14 +951,19 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
     sizes = NGFragment({container_writing_mode, TextDirection::kLtr},
                        layout_result->PhysicalFragment())
                 .InlineSize();
-    return MinMaxSizesResult(sizes, /* depends_on_block_constraints */ false);
+    const bool depends_on_block_constraints =
+        Style().LogicalWidth().IsAuto() ||
+        Style().LogicalWidth().IsPercentOrCalcOrStretch() ||
+        Style().LogicalMinWidth().IsPercentOrCalcOrStretch() ||
+        Style().LogicalMaxWidth().IsPercentOrCalcOrStretch();
+    return MinMaxSizesResult(sizes, depends_on_block_constraints);
   }
 
   // Returns if we are (directly) dependent on any block constraints.
   auto DependsOnBlockConstraints = [&]() -> bool {
-    return Style().LogicalHeight().IsPercentOrCalc() ||
-           Style().LogicalMinHeight().IsPercentOrCalc() ||
-           Style().LogicalMaxHeight().IsPercentOrCalc() ||
+    return Style().LogicalHeight().IsPercentOrCalcOrStretch() ||
+           Style().LogicalMinHeight().IsPercentOrCalcOrStretch() ||
+           Style().LogicalMaxHeight().IsPercentOrCalcOrStretch() ||
            (Style().LogicalHeight().IsAuto() &&
             constraint_space.IsBlockAutoBehaviorStretch());
   };
@@ -1040,8 +1048,8 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
     result.sizes.max_size = min_max.ClampSizeToMinAndMax(result.sizes.max_size);
     depends_on_block_constraints =
         depends_on_block_constraints ||
-        Style().LogicalMinHeight().IsPercentOrCalc() ||
-        Style().LogicalMaxHeight().IsPercentOrCalc();
+        Style().LogicalMinHeight().IsPercentOrCalcOrStretch() ||
+        Style().LogicalMaxHeight().IsPercentOrCalcOrStretch();
   }
 
   box_->SetIntrinsicLogicalWidthsFromNG(
@@ -1177,8 +1185,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     // work correctly (since that's still being handled by the legacy engine),
     // but at least layout, painting and hit-testing will be correct.
     if (LIKELY(physical_fragment.IsFirstForNode())) {
-      box_->SetSize(LayoutSize(physical_fragment.Size().width,
-                               physical_fragment.Size().height));
+      box_->SetSize(physical_fragment.Size());
     } else {
       // Update logical height, unless this fragment is past the block-end of
       // the generating node (happens with overflow).
@@ -1232,10 +1239,6 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   LayoutBlock* block = DynamicTo<LayoutBlock>(box_.Get());
   bool needs_full_invalidation = false;
   if (LIKELY(block)) {
-#if DCHECK_IS_ON()
-    block->CheckPositionedObjectsNeedLayout();
-#endif
-
     if (UNLIKELY(flow_thread && Style().HasColumnRule())) {
       // Issue full invalidation, in case the number of column rules have
       // changed.
@@ -1694,10 +1697,9 @@ LogicalSize NGBlockNode::GetReplacedSizeOverrideIfAny(
   if (!box_->IsSVGRoot())
     return LogicalSize();
   const LayoutSVGRoot& svg_root = To<LayoutSVGRoot>(*box_);
-  LayoutSize size_override = svg_root.GetContainerSize();
+  PhysicalSize size_override = svg_root.GetContainerSize();
   if (!size_override.IsEmpty()) {
-    return PhysicalSize(size_override)
-        .ConvertToLogical(Style().GetWritingMode());
+    return size_override.ConvertToLogical(Style().GetWritingMode());
   }
   if (svg_root.IsEmbeddedThroughFrameContainingSVGDocument())
     return space.AvailableSize();
@@ -1846,14 +1848,6 @@ void NGBlockNode::UpdateShapeOutsideInfoIfNeeded(
                                                   : box_size.TransposedSize());
   shape_outside->SetPercentageResolutionInlineSize(
       percentage_resolution_inline_size);
-}
-
-void NGBlockNode::InsertIntoLegacyPositionedObjectsOf(
-    LayoutBlock* containing_block) const {
-  DCHECK(box_->IsOutOfFlowPositioned());
-  DCHECK(containing_block);
-  DCHECK_EQ(containing_block, box_->ContainingBlock());
-  containing_block->InsertPositionedObject(box_);
 }
 
 void NGBlockNode::StoreMargins(const NGConstraintSpace& constraint_space,

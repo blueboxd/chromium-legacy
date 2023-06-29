@@ -1282,12 +1282,9 @@ bool Element::ShouldUpdateLastRememberedBlockSize() const {
     return false;
   }
 
-  if (style->IsHorizontalWritingMode()) {
-    return style->ContainIntrinsicHeight() &&
-           style->ContainIntrinsicHeight()->HasAuto();
-  }
-  return style->ContainIntrinsicWidth() &&
-         style->ContainIntrinsicWidth()->HasAuto();
+  return style->IsHorizontalWritingMode()
+             ? style->ContainIntrinsicHeight().HasAuto()
+             : style->ContainIntrinsicWidth().HasAuto();
 }
 
 bool Element::ShouldUpdateLastRememberedInlineSize() const {
@@ -1296,12 +1293,9 @@ bool Element::ShouldUpdateLastRememberedInlineSize() const {
     return false;
   }
 
-  if (style->IsHorizontalWritingMode()) {
-    return style->ContainIntrinsicWidth() &&
-           style->ContainIntrinsicWidth()->HasAuto();
-  }
-  return style->ContainIntrinsicHeight() &&
-         style->ContainIntrinsicHeight()->HasAuto();
+  return style->IsHorizontalWritingMode()
+             ? style->ContainIntrinsicWidth().HasAuto()
+             : style->ContainIntrinsicHeight().HasAuto();
 }
 
 void Element::SetLastRememberedInlineSize(absl::optional<LayoutUnit> size) {
@@ -4125,6 +4119,14 @@ void Element::setEditContext(EditContext* edit_context,
     return;
   }
 
+  if (edit_context && edit_context->attachedElements().size() > 0 &&
+      edit_context->attachedElements()[0] != this) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "An EditContext can be only be associated with a single element");
+    return;
+  }
+
   // If an element is in focus when being attached to a new EditContext,
   // its old EditContext, if it has any, will get blurred,
   // and the new EditContext will automatically get focused.
@@ -5063,14 +5065,13 @@ Element* Element::GetFocusableArea(bool in_descendant_traversal) const {
 
   DCHECK(GetShadowRoot());
   if (RuntimeEnabledFeatures::DialogNewFocusBehaviorEnabled()) {
-    return GetFocusDelegate(/*autofocus_only=*/false, in_descendant_traversal);
+    return GetFocusDelegate(in_descendant_traversal);
   } else {
     return FocusController::FindFocusableElementInShadowHost(*this);
   }
 }
 
-Element* Element::GetFocusDelegate(bool autofocus_only,
-                                   bool in_descendant_traversal) const {
+Element* Element::GetFocusDelegate(bool in_descendant_traversal) const {
   ShadowRoot* shadowroot = GetShadowRoot();
   if (shadowroot && !shadowroot->IsUserAgent() &&
       !shadowroot->delegatesFocus()) {
@@ -5084,10 +5085,6 @@ Element* Element::GetFocusDelegate(bool autofocus_only,
 
   if (Element* autofocus_delegate = where_to_look->GetAutofocusDelegate()) {
     return autofocus_delegate;
-  }
-
-  if (autofocus_only) {
-    return nullptr;
   }
 
   for (Element& descendant : ElementTraversal::DescendantsOf(*where_to_look)) {
@@ -8272,19 +8269,42 @@ void Element::RecalcTransitionPseudoTreeStyle(
       continue;
     }
 
+    // Nested pseudo elements don't keep pointers to their children, only their
+    // parents (i.e. firstChild() in a  ::view-transition is nullptr but
+    // parentNode of ::view-transition-group is ::view-transition). However,
+    // the layout tree is reattached by descending the DOM tree by child
+    // pointers so if any pseudo needs a reattach we have to explicitly mark
+    // all descendant pseudos as needing a reattach explicitly.
+    // TODO(crbug.com/1455139): Implement tree traversal for nested pseudos.
+    if (transition_pseudo->NeedsReattachLayoutTree()) {
+      container_pseudo->SetNeedsReattachLayoutTree();
+    }
+
     PseudoElement* wrapper_pseudo = container_pseudo->UpdatePseudoElement(
         kPseudoIdViewTransitionImagePair, style_recalc_change,
         style_recalc_context, view_transition_name);
     if (!wrapper_pseudo) {
       continue;
     }
+    if (container_pseudo->NeedsReattachLayoutTree()) {
+      wrapper_pseudo->SetNeedsReattachLayoutTree();
+    }
 
-    wrapper_pseudo->UpdatePseudoElement(
+    PseudoElement* old_pseudo = wrapper_pseudo->UpdatePseudoElement(
         kPseudoIdViewTransitionOld, style_recalc_change, style_recalc_context,
         view_transition_name);
-    wrapper_pseudo->UpdatePseudoElement(
+    PseudoElement* new_pseudo = wrapper_pseudo->UpdatePseudoElement(
         kPseudoIdViewTransitionNew, style_recalc_change, style_recalc_context,
         view_transition_name);
+
+    if (wrapper_pseudo->NeedsReattachLayoutTree()) {
+      if (old_pseudo) {
+        old_pseudo->SetNeedsReattachLayoutTree();
+      }
+      if (new_pseudo) {
+        new_pseudo->SetNeedsReattachLayoutTree();
+      }
+    }
 
     container_pseudo->ClearChildNeedsStyleRecalc();
     wrapper_pseudo->ClearChildNeedsStyleRecalc();
@@ -8831,15 +8851,18 @@ Element* Element::ImplicitAnchorElement() {
   if (!RuntimeEnabledFeatures::CSSAnchorPositioningEnabled()) {
     return nullptr;
   }
-  HTMLElement* html_element = DynamicTo<HTMLElement>(this);
-  if (!html_element) {
-    return nullptr;
-  }
-  if (Element* anchor = html_element->anchorElement()) {
-    return anchor;
-  }
-  if (Element* select_menu = html_element->ownerSelectMenuElement()) {
-    return select_menu;
+  if (HTMLElement* html_element = DynamicTo<HTMLElement>(this)) {
+    if (Element* anchor = html_element->anchorElement()) {
+      return anchor;
+    }
+    if (Element* select_menu = html_element->ownerSelectMenuElement()) {
+      return select_menu;
+    }
+  } else if (PseudoElement* pseudo_element = DynamicTo<PseudoElement>(this)) {
+    PseudoId pseudo_id = pseudo_element->GetPseudoId();
+    if (pseudo_id == kPseudoIdBefore || pseudo_id == kPseudoIdAfter) {
+      return pseudo_element->OriginatingElement()->ImplicitAnchorElement();
+    }
   }
   return nullptr;
 }

@@ -60,6 +60,7 @@ class PrivacySandboxSettingsDelegate;
 namespace signin {
 
 struct AccountsInCookieJarInfo;
+struct AccountAvailabilityOptions;
 class IdentityManagerTest;
 class IdentityTestEnvironment;
 class DiagnosticsProvider;
@@ -353,8 +354,8 @@ class IdentityManager : public KeyedService,
     raw_ptr<SigninClient> signin_client = nullptr;
 #endif
 #if BUILDFLAG(IS_CHROMEOS)
-    raw_ptr<account_manager::AccountManagerFacade> account_manager_facade =
-        nullptr;
+    raw_ptr<account_manager::AccountManagerFacade, DanglingUntriaged>
+        account_manager_facade = nullptr;
 #endif
 
     InitParameters();
@@ -379,27 +380,7 @@ class IdentityManager : public KeyedService,
   // initialized.
   void OnNetworkInitialized();
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Methods related to migration of account IDs from email to Gaia ID.
-  // TODO(https://crbug.com/883272): Remove these once all platforms have
-  // migrated to the new account_id based on gaia (currently, only ChromeOS
-  // remains).
-
-  // Possible values for the account ID migration state, needs to be kept in
-  // sync with AccountTrackerService::AccountIdMigrationState.
-  enum AccountIdMigrationState {
-    MIGRATION_NOT_STARTED = 0,
-    MIGRATION_IN_PROGRESS = 1,
-    MIGRATION_DONE = 2,
-    NUM_MIGRATION_STATES
-  };
-
-  // Returns the currently saved state of the migration of account IDs.
-  AccountIdMigrationState GetAccountIdMigrationState() const;
-#endif
-
-  // Picks the correct account_id for the specified account depending on the
-  // migration state.
+  // Picks the correct account_id for account with the given gaia id and email.
   CoreAccountId PickAccountIdForAccount(const std::string& gaia,
                                         const std::string& email) const;
 
@@ -466,9 +447,6 @@ class IdentityManager : public KeyedService,
 
  private:
   // These test helpers need to use some of the private methods below.
-  friend CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
-                                           const std::string& email,
-                                           ConsentLevel consent_level);
   friend void SetRefreshTokenForPrimaryAccount(
       IdentityManager* identity_manager,
       const std::string& token_value);
@@ -476,19 +454,11 @@ class IdentityManager : public KeyedService,
       IdentityManager* identity_manager);
   friend void RemoveRefreshTokenForPrimaryAccount(
       IdentityManager* identity_manager);
-  friend AccountInfo MakePrimaryAccountAvailable(
-      IdentityManager* identity_manager,
-      const std::string& email,
-      ConsentLevel consent_level);
   friend void RevokeSyncConsent(IdentityManager* identity_manager);
   friend void ClearPrimaryAccount(IdentityManager* identity_manager);
-  friend AccountInfo MakeAccountAvailable(IdentityManager* identity_manager,
-                                          const std::string& email);
-  friend AccountInfo MakeAccountAvailableWithCookies(
+  friend AccountInfo MakeAccountAvailable(
       IdentityManager* identity_manager,
-      network::TestURLLoaderFactory* test_url_loader_factory,
-      const std::string& email,
-      const std::string& gaia_id);
+      const AccountAvailabilityOptions& options);
   friend void SetRefreshTokenForAccount(IdentityManager* identity_manager,
                                         const CoreAccountId& account_id,
                                         const std::string& token_value);
@@ -672,7 +642,8 @@ class IdentityManager : public KeyedService,
   const raw_ptr<SigninClient> signin_client_;
 #endif
 #if BUILDFLAG(IS_CHROMEOS)
-  const raw_ptr<account_manager::AccountManagerFacade> account_manager_facade_;
+  const raw_ptr<account_manager::AccountManagerFacade, DanglingUntriaged>
+      account_manager_facade_;
 #endif
 
   IdentityMutator identity_mutator_;

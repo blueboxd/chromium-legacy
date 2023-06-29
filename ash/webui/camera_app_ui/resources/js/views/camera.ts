@@ -48,7 +48,7 @@ import {
   MimeType,
   Mode,
   PerfEvent,
-  PortraitModeProcessError,
+  PortraitErrorNoFaceDetected,
   Resolution,
   Rotation,
   ViewName,
@@ -63,6 +63,7 @@ import * as timertick from './camera/timertick.js';
 import {VideoEncoderOptions} from './camera/video_encoder_options.js';
 import {Dialog} from './dialog.js';
 import {DocumentReview} from './document_review.js';
+import {Flash} from './flash.js';
 import {OptionPanel} from './option_panel.js';
 import {PTZPanel} from './ptz_panel.js';
 import * as review from './review.js';
@@ -139,7 +140,7 @@ export class Camera extends View implements CameraViewUI {
       this.review,
       this.documentReview,
       this.lowStorageDialogView,
-      new View(ViewName.FLASH),
+      new Flash(),
     ];
 
     this.layoutHandler = new Layout(this.cameraManager);
@@ -642,10 +643,9 @@ export class Camera extends View implements CameraViewUI {
             portraitBlob, ToteMetricFormat.PHOTO, name, portraitMetadata);
       } catch (e) {
         toast.show(I18nString.ERROR_MSG_TAKE_PORTRAIT_BOKEH_PHOTO_FAILED);
-        // PortraitModeProcessError might be thrown when no face is detected
-        // or the segmentataion failed for the scene. Since there is not much
-        // we can do for either cases, we tolerate such error.
-        if (!(e instanceof PortraitModeProcessError)) {
+        // Throws PortraitErrorNoFaceDetected error if no face is detected for
+        // the scene.
+        if (!(e instanceof PortraitErrorNoFaceDetected)) {
           throw e;
         }
       }
@@ -858,7 +858,7 @@ export class Camera extends View implements CameraViewUI {
     if (autoStopped) {
       this.showLowStorageDialog(LowStorageDialogType.AUTO_STOP);
     }
-    nav.open(ViewName.FLASH);
+    nav.open(ViewName.FLASH, I18nString.MSG_PROCESSING_VIDEO);
     state.set(PerfEvent.TIME_LAPSE_CAPTURE_POST_PROCESSING, true);
     try {
       metrics.sendCaptureEvent({

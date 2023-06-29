@@ -150,6 +150,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Extensions.AlarmManager.AlarmsLoadedCount" units="alarms"
     expires_after="2023-12-01">
+  <obsolete>
+    Code removed 2023/06.
+  </obsolete>
   <owner>dbertoni@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -660,15 +663,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Extensions.Database.Database.Restore"
-    enum="LevelDBDatabaseCorruptionRestoreValue" expires_after="M85">
-  <owner>cmumford@chromium.org</owner>
-  <summary>
-    The result of an attempt to recover from an attempt to open a database that
-    failed as a result of corruption.
-  </summary>
-</histogram>
-
 <histogram name="Extensions.Database.Open{ExtensionsDatabaseOpen}"
     enum="LevelDBStatus" expires_after="never">
 <!-- expires-never: core storage metric; consumed in separate dashboard (go/chrome-storage-dashboard) -->
@@ -687,14 +681,6 @@ chromium-metrics-reviews@google.com.
     <variant name=".State" summary="State backing stores"/>
     <variant name=".WebAppsLockScreen" summary="Web apps lock screen stores"/>
   </token>
-</histogram>
-
-<histogram name="Extensions.Database.Value.Restore"
-    enum="LevelDBValueCorruptionDeleteValue" expires_after="M85">
-  <owner>cmumford@chromium.org</owner>
-  <summary>
-    The result of an attempt to delete a corrupted value from a database.
-  </summary>
 </histogram>
 
 <histogram name="Extensions.Debugger.UserIsInDeveloperMode"
@@ -804,7 +790,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.DeclarativeNetRequest.ManifestEnabledRulesCount2"
-    units="rules" expires_after="2023-10-22">
+    units="rules" expires_after="2023-12-24">
   <owner>kelvinjiang@chromium.org</owner>
   <owner>src/extensions/OWNERS</owner>
   <summary>
@@ -2287,7 +2273,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.GuestView.ChangeOwnerWebContentsOnAttach"
-    enum="Boolean" expires_after="2023-10-15">
+    enum="Boolean" expires_after="2023-12-17">
   <owner>mcnee@chromium.org</owner>
   <owner>src/components/guest_view/OWNERS</owner>
   <summary>
@@ -4099,7 +4085,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ServiceWorkerBackground.StartWorkerStatus"
-    enum="Boolean" expires_after="2023-10-22">
+    enum="Boolean" expires_after="2023-12-24">
   <owner>jlulejian@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -4261,6 +4247,16 @@ chromium-metrics-reviews@google.com.
     The duration by which a network request was delayed while waiting for
     extension user script load. Recorded once per request that is delayed, at
     the time the resource resumes loading.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Toolbar.ExtensionsActivatedFromRequestAccessButton"
+    units="Extension Count" expires_after="2023-12-10">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <summary>
+    The number of extensions in the request access button that were granted site
+    access after the user clicked on the request access button.
   </summary>
 </histogram>
 

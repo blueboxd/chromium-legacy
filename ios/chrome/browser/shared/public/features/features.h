@@ -26,9 +26,6 @@ enum class BlueDotPromoUserGroup {
 extern const base::FeatureParam<BlueDotPromoUserGroup>
     kBlueDotPromoUserGroupParam;
 
-// Feature to open tab switcher after sliding down the toolbar.
-BASE_DECLARE_FEATURE(kExpandedTabStrip);
-
 // Test-only: Feature flag used to verify that EG2 can trigger flags. Must be
 // always disabled by default, because it is used to verify that enabling
 // features in tests works.
@@ -197,5 +194,21 @@ BASE_DECLARE_FEATURE(kOnlyAccessClipboardAsync);
 // Feature flag to hide the sync promo card in the main settings screen. The
 // "Turn On Sync" row will still be shown when this is enabled.
 BASE_DECLARE_FEATURE(kHideSettingsSyncPromo);
+
+// Feature flag that enables default browser promo to be displayed without
+// matching all the criteria and in depth metrics collection for the displayed
+// promo.
+BASE_DECLARE_FEATURE(kDefaultBrowserTriggerCriteriaExperiment);
+
+// Param for default browser promo trigger criteria experiment representing
+// whether promos should be displayed on omnbibox copy-paste event or on chrome
+// launch by default.
+extern const char kDefaultBrowserTriggerOnOmniboxCopyPaste[];
+
+// Feature flag to try using the page theme color in the toolbar
+BASE_DECLARE_FEATURE(kThemeColorInToolbar);
+
+// Feature flag enabling tab grid refactoring.
+BASE_DECLARE_FEATURE(kTabGridRefactoring);
 
 #endif  // IOS_CHROME_BROWSER_SHARED_PUBLIC_FEATURES_FEATURES_H_

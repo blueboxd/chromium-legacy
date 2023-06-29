@@ -28,6 +28,9 @@ EnumTraits<media::mojom::VideoEncodeAcceleratorSupportedRateControlMode,
     case media::VideoEncodeAccelerator::kVariableMode:
       return media::mojom::VideoEncodeAcceleratorSupportedRateControlMode::
           kVariableMode;
+    case media::VideoEncodeAccelerator::kExternalMode:
+      return media::mojom::VideoEncodeAcceleratorSupportedRateControlMode::
+          kExternalMode;
   }
   NOTREACHED_NORETURN();
 }
@@ -48,6 +51,10 @@ bool EnumTraits<media::mojom::VideoEncodeAcceleratorSupportedRateControlMode,
     case media::mojom::VideoEncodeAcceleratorSupportedRateControlMode::
         kVariableMode:
       *out = media::VideoEncodeAccelerator::kVariableMode;
+      return true;
+    case media::mojom::VideoEncodeAcceleratorSupportedRateControlMode::
+        kExternalMode:
+      *out = media::VideoEncodeAccelerator::kExternalMode;
       return true;
   }
   NOTREACHED_NORETURN();
@@ -153,6 +160,22 @@ bool StructTraits<media::mojom::VideoBitrateAllocationDataView,
       // Invalid (too low) peak for the sum of the bitrates.
       return false;
     }
+  }
+
+  return true;
+}
+
+// static
+bool StructTraits<media::mojom::VideoEncodeOptionsDataView,
+                  media::VideoEncoder::EncodeOptions>::
+    Read(media::mojom::VideoEncodeOptionsDataView data,
+         media::VideoEncoder::EncodeOptions* out_options) {
+  out_options->key_frame = data.force_keyframe();
+  int32_t quantizer = data.quantizer();
+  if (quantizer < 0) {
+    out_options->quantizer.reset();
+  } else {
+    out_options->quantizer = data.quantizer();
   }
 
   return true;
@@ -491,8 +514,6 @@ bool StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
   media::Bitrate bitrate;
   if (!input.ReadBitrate(&bitrate))
     return false;
-  DCHECK((bitrate.mode() == media::Bitrate::Mode::kConstant) ==
-         (bitrate.peak_bps() == 0u));
 
   absl::optional<uint32_t> initial_framerate;
   if (input.has_initial_framerate())

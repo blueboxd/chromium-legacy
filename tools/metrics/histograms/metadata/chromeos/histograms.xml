@@ -179,19 +179,8 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
   </token>
 </histogram>
 
-<histogram name="ChromeOS.Apps.ExternalProtocolDialog.Rejected"
-    enum="ArcExternalProtocolAction" expires_after="2022-05-21">
-  <owner>dominickn@chromium.org</owner>
-  <owner>melzhang@chromium.org</owner>
-  <owner>mxcai@chromium.org</owner>
-  <summary>
-    Records the response when users that are shown the intent picker reject
-    opening an external protocol in an app.
-  </summary>
-</histogram>
-
 <histogram name="ChromeOS.Apps.IntentPickerDestinationPlatform"
-    enum="ArcIntentHandlerDestinationPlatform" expires_after="2023-10-15">
+    enum="ArcIntentHandlerDestinationPlatform" expires_after="2023-12-17">
   <owner>tsergeant@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -202,8 +191,8 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Attestation.AttestationFlowStatus"
-    enum="AttestationFlowStatus" expires_after="2023-10-22">
-  <owner>cylai@chromium.org</owner>
+    enum="AttestationFlowStatus" expires_after="2023-12-24">
+  <owner>chingkang@google.com</owner>
   <owner>cros-hwsec+umas@chromium.org</owner>
   <summary>
     Records the status of attestation flow. The value represents 6 flags in 6
@@ -214,17 +203,18 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Attestation.GetCertificateStatus"
-    enum="AttestationStatus" expires_after="2022-10-08">
-  <owner>cylai@chromium.org</owner>
+    enum="AttestationStatus" expires_after="2023-12-26">
+  <owner>chingkang@google.com</owner>
   <owner>cros-hwsec+umas@chromium.org</owner>
   <summary>
     Records the status of `AttesttionClient::GetCertificate()` called by
-    `AttestationFlowIntegrated`.
+    `AttestationFlowIntegrated`. Warning: this histogram was expired from Oct 8,
+    2022 to June 26, 2023; data may be missing.
   </summary>
 </histogram>
 
 <histogram name="ChromeOS.Camera.AutoFraming.AverageDetectionLatency"
-    units="microseconds" expires_after="2023-10-15">
+    units="microseconds" expires_after="2023-12-24">
   <owner>kamesan@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -236,7 +226,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Camera.AutoFraming.DetectionHitRate" units="%"
-    expires_after="2023-10-15">
+    expires_after="2023-12-24">
   <owner>kamesan@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -278,7 +268,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Camera.AutoFraming.MedianZoomRatio" units="tenths"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>kamesan@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -820,7 +810,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.CWP.ParseLacrosPath" enum="ChromeOSParseLacrosPath"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>shantuo@google.com</owner>
   <owner>cwp-team@google.com</owner>
   <summary>
@@ -841,7 +831,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.CWP.ParsePSIMemory" enum="ChromeOSParsePSIMemStatus"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>raging@google.com</owner>
   <owner>chromeos-memory@google.com</owner>
   <summary>
@@ -937,18 +927,6 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
   </token>
 </histogram>
 
-<histogram name="ChromeOS.DeviceSettings.FeatureFlagsMigration"
-    enum="DeviceSettingsFeatureFlagsMigrationStatus" expires_after="2022-04-10">
-  <owner>mnissler@chromium.org</owner>
-  <owner>src/chrome/browser/ash/settings/OWNERS</owner>
-  <summary>
-    Migration status for Chrome OS feature flags configuration in device
-    settings. This is intended to track migration progress in the field, so the
-    migration code can be removed when the old approach of storing bare flags is
-    no longer relevant in the field.
-  </summary>
-</histogram>
-
 <histogram
     name="ChromeOS.DiagnosticsUi.Error.CrosHealthdProbeError.{ProbeErrorSourceStruct}"
     enum="CrosDiagnosticsCrosHealthdProbeError" expires_after="2024-06-15">
@@ -1026,7 +1004,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.DiagnosticsUi.OpenDuration" units="ms"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>zhangwenyu@google.com</owner>
   <owner>ashleydp@google.com</owner>
   <owner>gavinwill@chromium.org</owner>
@@ -1127,7 +1105,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.FirmwareUpdateUi.InstallResult"
-    enum="FirmwareUpdateInstallResult" expires_after="2023-10-22">
+    enum="FirmwareUpdateInstallResult" expires_after="2023-12-24">
   <owner>jimmyxgong@chromium.org</owner>
   <owner>zentaro@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
@@ -1576,7 +1554,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Intents.IntentPickerIconEvent"
-    enum="IntentPickerIconEvent" expires_after="2023-10-22">
+    enum="IntentPickerIconEvent" expires_after="2023-12-24">
   <owner>tsergeant@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -1659,26 +1637,6 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
   <summary>
     Recorded as part of the metrics session data to identify the lacros-chrome
     browser binary.
-  </summary>
-</histogram>
-
-<histogram name="ChromeOS.KeyPermissionsManager.ArcUsageUpdate"
-    enum="KeyPermissionsManagerArcUsageUpdateStatus" expires_after="2022-02-06">
-  <owner>omorsi@google.com</owner>
-  <owner>pmarko@google.com</owner>
-  <summary>
-    Counts the number of times the arc usage flags update started as well as the
-    number of times it succeeded and failed.
-  </summary>
-</histogram>
-
-<histogram name="ChromeOS.KeyPermissionsManager.ArcUsageUpdateTime" units="ms"
-    expires_after="2022-02-06">
-  <owner>omorsi@google.com</owner>
-  <owner>pmarko@chromium.org</owner>
-  <summary>
-    Records the time taken to successfully update chaps with the new ARC usage
-    flags.
   </summary>
 </histogram>
 
@@ -1778,7 +1736,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.LanguagePacks.InstallBasePack.FeatureId"
-    enum="LanguagePackFeatureIds" expires_after="2023-09-01">
+    enum="LanguagePackFeatureIds" expires_after="2023-12-17">
   <owner>claudiomagni@chromium.org</owner>
   <owner>mlcui@google.com</owner>
   <owner>dvallet@chromium.org</owner>
@@ -1789,7 +1747,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.LanguagePacks.InstallError.Handwriting"
-    enum="LanguagePackDlcErrorType" expires_after="2023-09-01">
+    enum="LanguagePackDlcErrorType" expires_after="2023-12-17">
   <owner>claudiomagni@chromium.org</owner>
   <owner>mlcui@google.com</owner>
   <owner>dvallet@chromium.org</owner>
@@ -1896,7 +1854,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Liveness.PingResponseTime" units="ms"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>rtinkoff@google.com</owner>
   <owner>xiyuan@google.com</owner>
   <summary>
@@ -1907,7 +1865,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Liveness.PingResult" enum="BooleanSuccess"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>iby@google.com</owner>
   <owner>xiyuan@google.com</owner>
   <summary>
@@ -2037,25 +1995,13 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
   </summary>
 </histogram>
 
-<histogram name="ChromeOS.PlatformVerification.BrowserResult"
-    enum="ChromeOSPlatformVerificationBrowserResult" expires_after="2022-05-21">
-  <owner>erikchen@chromium.org</owner>
-  <owner>cros-hwsec+uma@chromium.org</owner>
-  <summary>
-    The result of a platform verification attempt for content protection on
-    Chrome OS, limited to the browser-specific checks. It's still possible for
-    platform verification to fail at later layers.
-  </summary>
-</histogram>
-
 <histogram name="ChromeOS.PlatformVerification.Result2"
     enum="ChromeOSPlatformVerificationResult2" expires_after="2023-12-04">
   <owner>erikchen@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
     The result of a platform verification attempt for content protection on
-    Chrome OS. Does not include browser-related failures. Those are tracked in
-    ChromeOS.PlatformVerification.BrowserResult.
+    Chrome OS. Does not include browser-related failures.
   </summary>
 </histogram>
 
@@ -2127,17 +2073,6 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
     <variant name="Notification"/>
     <variant name="Settings"/>
   </token>
-</histogram>
-
-<histogram name="ChromeOS.PrivacyScreen.Toggled"
-    enum="PrivacyScreenToggleUISurface" expires_after="2022-04-01">
-  <owner>tengs@chromium.org</owner>
-  <owner>gzadina@google.com</owner>
-  <summary>
-    Record when the user toggles the integrated privacy screen on/off. See the
-    PrivacyScreenToggleUISurface enum for all UI surfaces for toggling the
-    feature.
-  </summary>
 </histogram>
 
 <histogram name="ChromeOS.RgbKeyboard.RgbKeyboardCapabilityType"
@@ -2246,6 +2181,20 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 
     The state of Landlock is determined once per boot and the metric is also
     recorded only once per boot.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Sandboxing.SecCompCoverage" units="%"
+    expires_after="2024-01-31">
+  <owner>enlightened@chromium.org</owner>
+  <owner>chromeos-hardening@google.com</owner>
+  <summary>
+    Records the percentage of processes on the system that are covered by
+    SecComp. A process is considered covered by SecComp if the Seccomp: line in
+    /proc/self/status is anything other than 0.
+
+    SecComp coverage for the system is sent once per boot and only when a user
+    is logged in.
   </summary>
 </histogram>
 
@@ -2365,7 +2314,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.SecurityAnomaly" enum="SecurityAnomaly"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>jorgelo@chromium.org</owner>
   <owner>chromeos-security-core@google.com</owner>
   <summary>
@@ -2929,7 +2878,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.SystemTray.Network.RowClickedAction"
-    enum="NetworkRowClickedAction" expires_after="2023-10-22">
+    enum="NetworkRowClickedAction" expires_after="2023-12-24">
   <owner>khorimoto@chromium.org</owner>
   <owner>tjohnsonkanu@chromium.org</owner>
   <owner>chadduffin@chromium.org</owner>
@@ -2942,7 +2891,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.SystemTray.Network.SectionShown"
-    enum="DetailedViewSection" expires_after="2023-10-22">
+    enum="DetailedViewSection" expires_after="2023-12-24">
   <owner>khorimoto@chromium.org</owner>
   <owner>tjohnsonkanu@chromium.org</owner>
   <owner>chadduffin@chromium.org</owner>
@@ -3103,7 +3052,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.UrlXattrsCount" units="units"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>jorgelo@chromium.org</owner>
   <owner>tnagel@chromium.org</owner>
   <summary>
@@ -3227,7 +3176,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.WXMountCount" units="count"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>jorgelo@chromium.org</owner>
   <owner>chromeos-security-core@google.com</owner>
   <summary>
@@ -3239,7 +3188,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Zram.PSISomeOrigDataSizeMB" units="MB"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>erikchen@chromium.org</owner>
   <owner>bgeffon@chromium.org</owner>
   <owner>chromeos-memory@google.com</owner>

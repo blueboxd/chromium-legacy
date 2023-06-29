@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_paint_value.h"
+#include "third_party/blink/renderer/core/css/css_palette_mix_value.h"
 #include "third_party/blink/renderer/core/css/css_path_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -988,7 +989,8 @@ class MathFunctionParser {
 
 CSSPrimitiveValue* ConsumeInteger(CSSParserTokenRange& range,
                                   const CSSParserContext& context,
-                                  double minimum_value) {
+                                  double minimum_value,
+                                  const bool is_percentage_allowed) {
   const CSSParserToken& token = range.Peek();
   if (token.GetType() == kNumberToken) {
     if (token.GetNumericValueType() == kNumberValueType ||
@@ -1011,7 +1013,8 @@ CSSPrimitiveValue* ConsumeInteger(CSSParserTokenRange& range,
     value_range = CSSPrimitiveValue::ValueRange::kPositiveInteger;
   }
 
-  MathFunctionParser math_parser(range, context, value_range);
+  MathFunctionParser math_parser(range, context, value_range,
+                                 is_percentage_allowed);
   if (const CSSMathFunctionValue* math_value = math_parser.Value()) {
     if (math_value->Category() != kCalcNumber) {
       return nullptr;
@@ -1476,7 +1479,11 @@ CSSPrimitiveValue* ConsumeResolution(CSSParserTokenRange& range,
   if (const CSSParserToken& token = range.Peek();
       token.GetType() == kDimensionToken) {
     CSSPrimitiveValue::UnitType unit = token.GetUnitType();
-    if (!CSSPrimitiveValue::IsResolution(unit)) {
+    if (!CSSPrimitiveValue::IsResolution(unit) || token.NumericValue() < 0.0) {
+      // "The allowed range of <resolution> values always excludes negative
+      // values"
+      // https://www.w3.org/TR/css-values-4/#resolution-value
+
       return nullptr;
     }
 
@@ -1485,7 +1492,7 @@ CSSPrimitiveValue* ConsumeResolution(CSSParserTokenRange& range,
   }
 
   MathFunctionParser math_parser(range, context,
-                                 CSSPrimitiveValue::ValueRange::kAll);
+                                 CSSPrimitiveValue::ValueRange::kNonNegative);
   const CSSMathFunctionValue* math_value = math_parser.Value();
   if (math_value && math_value->IsResolution()) {
     return math_parser.ConsumeValue();
@@ -3350,12 +3357,17 @@ CSSValue* ConsumeIntrinsicSizeLonghand(CSSParserTokenRange& range,
   if (css_parsing_utils::IdentMatches<CSSValueID::kAuto>(range.Peek().Id())) {
     list->Append(*css_parsing_utils::ConsumeIdent(range));
   }
-  CSSValue* length = css_parsing_utils::ConsumeLength(
-      range, context, CSSPrimitiveValue::ValueRange::kNonNegative);
-  if (!length) {
-    return nullptr;
+  if (RuntimeEnabledFeatures::CSSContainIntrinsicSizeAutoNoneEnabled() &&
+      css_parsing_utils::IdentMatches<CSSValueID::kNone>(range.Peek().Id())) {
+    list->Append(*css_parsing_utils::ConsumeIdent(range));
+  } else {
+    CSSValue* length = css_parsing_utils::ConsumeLength(
+        range, context, CSSPrimitiveValue::ValueRange::kNonNegative);
+    if (!length) {
+      return nullptr;
+    }
+    list->Append(*length);
   }
-  list->Append(*length);
   return list;
 }
 
@@ -3560,9 +3572,6 @@ static CSSImageSetOptionValue* ConsumeImageSetOption(
   }
 
   CSSPrimitiveValue* resolution = ConsumeResolution(range, context);
-  if (resolution && resolution->GetDoubleValue() < 0.0) {
-    return nullptr;
-  }
 
   if (!type) {
     type = ConsumeImageSetType(range);
@@ -3733,14 +3742,16 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
     case CSSPropertyID::kAppearance:
       // TODO(crbug.com/924486): Remove CSS value slider-horizontal,
       // slider-vertical and the associated warnings.
-      if ((value_id == CSSValueID::kSliderHorizontal ||
-           value_id == CSSValueID::kSliderVertical) ||
+      if (value_id == CSSValueID::kSliderVertical ||
           (!RuntimeEnabledFeatures::RemoveNonStandardAppearanceValueEnabled() &&
            (value_id == CSSValueID::kInnerSpinButton ||
             value_id == CSSValueID::kMediaSlider ||
             value_id == CSSValueID::kMediaSliderthumb ||
             value_id == CSSValueID::kMediaVolumeSlider ||
             value_id == CSSValueID::kMediaVolumeSliderthumb ||
+            value_id == CSSValueID::kPushButton ||
+            value_id == CSSValueID::kSquareButton ||
+            value_id == CSSValueID::kSliderHorizontal ||
             value_id == CSSValueID::kSliderthumbHorizontal ||
             value_id == CSSValueID::kSliderthumbVertical ||
             value_id == CSSValueID::kSearchfieldCancelButton))) {
@@ -4472,11 +4483,6 @@ bool ConsumeAnimationShorthand(
   } while (ConsumeCommaIncludingWhitespace(range));
 
   return true;
-}
-
-CSSValue* ConsumeSingleTimelineAttachment(CSSParserTokenRange& range) {
-  return ConsumeIdent<CSSValueID::kLocal, CSSValueID::kDefer,
-                      CSSValueID::kAncestor>(range);
 }
 
 CSSValue* ConsumeSingleTimelineAxis(CSSParserTokenRange& range) {
@@ -5303,6 +5309,102 @@ CSSValue* ConsumeLineHeight(CSSParserTokenRange& range,
   }
   return ConsumeLengthOrPercent(range, context,
                                 CSSPrimitiveValue::ValueRange::kNonNegative);
+}
+
+CSSValue* ConsumePaletteMixFunction(CSSParserTokenRange& range,
+                                    const CSSParserContext& context) {
+  // Grammar proposal in: https://github.com/w3c/csswg-drafts/issues/8922
+  //
+  // palette-mix() = palette-mix(<color-interpolation-method> , [ [normal |
+  // light | dark | <palette-identifier> | <palette-mix()>] && <percentage
+  // [0,100]>? ]#{2})
+  DCHECK(RuntimeEnabledFeatures::FontPaletteAnimationEnabled());
+
+  if (range.Peek().FunctionId() != CSSValueID::kPaletteMix) {
+    return nullptr;
+  }
+
+  CSSParserTokenRange range_copy = range;
+  CSSParserTokenRange args = ConsumeFunction(range_copy);
+  Color::ColorSpace color_space;
+  Color::HueInterpolationMethod hue_interpolation_method =
+      Color::HueInterpolationMethod::kShorter;
+  if (!ConsumeColorInterpolationSpace(args, color_space,
+                                      hue_interpolation_method)) {
+    return nullptr;
+  }
+
+  auto consume_endpoint_palette_with_percentage =
+      [](CSSParserTokenRange& args, const CSSParserContext& context)
+      -> std::pair<CSSValue*, CSSPrimitiveValue*> {
+    if (!ConsumeCommaIncludingWhitespace(args)) {
+      return std::make_pair(nullptr, nullptr);
+    }
+
+    CSSValue* palette = ConsumeFontPalette(args, context);
+    CSSPrimitiveValue* percentage =
+        ConsumePercent(args, context, CSSPrimitiveValue::ValueRange::kAll);
+    // Percentage can be followed by a palette.
+    if (!palette) {
+      palette = ConsumeFontPalette(args, context);
+      if (!palette) {
+        return std::make_pair(nullptr, nullptr);
+      }
+    }
+    // Reject negative values and values > 100%, but not calc() values.
+    if (percentage && percentage->IsNumericLiteralValue() &&
+        (percentage->GetDoubleValue() < 0.0 ||
+         percentage->GetDoubleValue() > 100.0)) {
+      return std::make_pair(nullptr, nullptr);
+    }
+    return std::make_pair(palette, percentage);
+  };
+
+  auto palette_with_percentage_1 =
+      consume_endpoint_palette_with_percentage(args, context);
+  auto palette_with_percentage_2 =
+      consume_endpoint_palette_with_percentage(args, context);
+  CSSValue* palette1 = palette_with_percentage_1.first;
+  CSSValue* palette2 = palette_with_percentage_2.first;
+  CSSPrimitiveValue* percentage1 = palette_with_percentage_1.second;
+  CSSPrimitiveValue* percentage2 = palette_with_percentage_2.second;
+
+  if (!palette1 || !palette2) {
+    return nullptr;
+  }
+  // If both values are literally zero (and not calc()) reject at parse time.
+  if (percentage1 && percentage2 && percentage1->IsNumericLiteralValue() &&
+      percentage1->GetDoubleValue() == 0.0f &&
+      percentage2->IsNumericLiteralValue() &&
+      percentage2->GetDoubleValue() == 0.0) {
+    return nullptr;
+  }
+
+  if (!args.AtEnd()) {
+    return nullptr;
+  }
+
+  range = range_copy;
+
+  return MakeGarbageCollected<cssvalue::CSSPaletteMixValue>(
+      palette1, palette2, percentage1, percentage2, color_space,
+      hue_interpolation_method);
+}
+
+CSSValue* ConsumeFontPalette(CSSParserTokenRange& range,
+                             const CSSParserContext& context) {
+  if (range.Peek().Id() == CSSValueID::kNormal ||
+      range.Peek().Id() == CSSValueID::kLight ||
+      range.Peek().Id() == CSSValueID::kDark) {
+    return css_parsing_utils::ConsumeIdent(range);
+  }
+
+  if (RuntimeEnabledFeatures::FontPaletteAnimationEnabled() &&
+      range.Peek().FunctionId() == CSSValueID::kPaletteMix) {
+    return ConsumePaletteMixFunction(range, context);
+  }
+
+  return ConsumeDashedIdent(range, context);
 }
 
 CSSValueList* ConsumeFontFamily(CSSParserTokenRange& range) {
@@ -7485,8 +7587,12 @@ CSSValue* ConsumeFontSizeAdjust(CSSParserTokenRange& range,
       ConsumeIdent<CSSValueID::kExHeight, CSSValueID::kCapHeight,
                    CSSValueID::kChWidth, CSSValueID::kIcWidth>(range);
 
-  CSSPrimitiveValue* value = css_parsing_utils::ConsumeNumber(
+  CSSValue* value = css_parsing_utils::ConsumeNumber(
       range, context, CSSPrimitiveValue::ValueRange::kNonNegative);
+  if (!value) {
+    value = ConsumeIdent<CSSValueID::kFromFont>(range);
+  }
+
   if (!value || !font_metric ||
       font_metric->GetValueID() == CSSValueID::kExHeight) {
     return value;

@@ -2133,9 +2133,6 @@
           },
           "sync.typed_urls": {
             "default_value": false
-          },
-          "sync.wifi_configurations": {
-            "default_value": false
           }
         }
       },
@@ -2151,8 +2148,7 @@
             "readingList",
             "tabs",
             "themes",
-            "typedUrls",
-            "wifiConfigurations"
+            "typedUrls"
           ]
         },
         "prefs": {
@@ -2185,9 +2181,6 @@
           },
           "sync.typed_urls": {
             "value": false
-          },
-          "sync.wifi_configurations": {
-            "value": false
           }
         }
       }
@@ -2202,7 +2195,8 @@
         "policies": {
           "SyncTypesListDisabled": [
             "apps",
-            "preferences"
+            "preferences",
+            "wifiConfigurations"
           ]
         },
         "prefs": {
@@ -2210,6 +2204,9 @@
             "value": false
           },
           "sync.os_preferences": {
+            "value": false
+          },
+          "sync.wifi_configurations": {
             "value": false
           }
         }
@@ -8155,6 +8152,76 @@
       }
     ]
   },
+  "ChargingSoundsEnabled": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "ash.charging_sounds.enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "ChargingSoundsEnabled": false
+        },
+        "prefs": {
+          "ash.charging_sounds.enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "ChargingSoundsEnabled": true
+        },
+        "prefs": {
+          "ash.charging_sounds.enabled": {
+            "value": true
+          }
+        }
+      }
+    ]
+  },
+  "LowBatterySoundEnabled": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "ash.low_battery_sound.enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "LowBatterySoundEnabled": false
+        },
+        "prefs": {
+          "ash.low_battery_sound.enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "LowBatterySoundEnabled": true
+        },
+        "prefs": {
+          "ash.low_battery_sound.enabled": {
+            "value": true
+          }
+        }
+      }
+    ]
+  },
   "AppLaunchAutomation": {
     "os": [
       "chromeos_ash"
@@ -10485,6 +10552,32 @@
       }
     ]
   },
+  "ColorCorrectionEnabled": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Default value (no policies set).",
+        "prefs": {
+          "settings.a11y.color_filtering.enabled": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "note": "Simple value.",
+        "policies": {
+          "ColorCorrectionEnabled": true
+        },
+        "prefs": {
+          "settings.a11y.color_filtering.enabled": {
+            "value": true
+          }
+        }
+      }
+    ]
+  },
   "SpokenFeedbackEnabled": {
     "os": [
       "chromeos_ash"
@@ -10818,6 +10911,60 @@
         },
         "prefs": {
           "settings.a11y.virtual_keyboard": {
+            "value": false
+          }
+        }
+      }
+    ]
+  },
+  "PhysicalKeyboardAutocorrect": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "PhysicalKeyboardAutocorrect": true
+        },
+        "prefs": {
+          "settings.ime.managed.physical_keyboard.autocorrect_enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "PhysicalKeyboardAutocorrect": false
+        },
+        "prefs": {
+          "settings.ime.managed.physical_keyboard.autocorrect_enabled": {
+            "value": false
+          }
+        }
+      }
+    ]
+  },
+  "PhysicalKeyboardPredictiveWriting": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "PhysicalKeyboardPredictiveWriting": true
+        },
+        "prefs": {
+          "settings.ime.managed.physical_keyboard.predictive_writing_enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "PhysicalKeyboardPredictiveWriting": false
+        },
+        "prefs": {
+          "settings.ime.managed.physical_keyboard.predictive_writing_enabled": {
             "value": false
           }
         }
@@ -16263,6 +16410,45 @@
         },
         "prefs": {
           "assistive_input.emoji_suggestion.enterprise_allowed": {}
+        }
+      }
+    ]
+  },
+  "EmojiPickerGifSupportEnabled": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Check default values (no policies set)",
+        "policies": {},
+        "prefs": {
+          "emoji_picker.gif_support_enabled": {
+            "location": "user_profile",
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "EmojiPickerGifSupportEnabled": false
+        },
+        "prefs": {
+          "emoji_picker.gif_support_enabled": {
+            "location": "user_profile",
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "EmojiPickerGifSupportEnabled": true
+        },
+        "prefs": {
+          "emoji_picker.gif_support_enabled": {
+            "location": "user_profile",
+            "value": true
+          }
         }
       }
     ]
@@ -23553,6 +23739,112 @@
         "prefs": {
           "ssl.post_quantum_enabled": {
             "value": true,
+            "location": "local_state"
+          }
+        }
+      }
+    ]
+  },
+  "NativeClientForceAllowed": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "NativeClientForceAllowed":true
+        },
+        "prefs": {
+          "native_client_force_allowed": {
+            "location": "local_state"
+          }
+        }
+      },
+      {
+        "policies": {
+          "NativeClientForceAllowed":false
+        },
+        "prefs": {
+          "native_client_force_allowed": {
+            "location": "local_state"
+          }
+        }
+      }
+    ]
+  },
+  "ArcVmDataMigrationStrategy": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Default value (no policies set).",
+        "policies": {},
+        "prefs": {
+          "arc.vm_data_migration_strategy": {
+            "default_value": 0
+          }
+        }
+      },
+      {
+        "policies": {
+          "ArcVmDataMigrationStrategy": 0
+        },
+        "prefs": {
+          "arc.vm_data_migration_strategy": {
+            "value": 0
+          }
+        }
+      },
+      {
+        "policies": {
+          "ArcVmDataMigrationStrategy": 1
+        },
+        "prefs": {
+          "arc.vm_data_migration_strategy": {
+            "value": 1
+          }
+        }
+      }
+    ]
+  },
+  "AccessibilityPerformanceFilteringAllowed": {
+   "os": [
+      "android"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Default value (no policies set).",
+        "policies": {},
+        "prefs": {
+          "settings.a11y.allow_accessibility_performance_filtering": {
+            "default_value": true,
+            "location": "local_state"
+          }
+        }
+      },
+      {
+        "policies": {
+          "AccessibilityPerformanceFilteringAllowed": true
+        },
+        "prefs": {
+          "settings.a11y.allow_accessibility_performance_filtering": {
+            "value": true,
+            "location": "local_state"
+          }
+        }
+      },
+      {
+        "policies": {
+          "AccessibilityPerformanceFilteringAllowed": false
+        },
+        "prefs": {
+          "settings.a11y.allow_accessibility_performance_filtering": {
+            "value": false,
             "location": "local_state"
           }
         }

@@ -77,12 +77,18 @@ class MockAutofillAgent : public mojom::AutofillAgent {
               FillOrPreviewForm,
               (const FormData& form, mojom::RendererFormDataAction action),
               (override));
+  MOCK_METHOD(void, UndoAutofill, (const FormData& form), (override));
   MOCK_METHOD(void,
               FieldTypePredictionsAvailable,
               (const std::vector<FormDataPredictions>& forms),
               (override));
   MOCK_METHOD(void, ClearSection, (), (override));
   MOCK_METHOD(void, ClearPreviewedForm, (), (override));
+  MOCK_METHOD(void,
+              TriggerSuggestions,
+              (FieldRendererId field_id,
+               AutofillSuggestionTriggerSource trigger_source),
+              (override));
   MOCK_METHOD(void,
               FillFieldWithValue,
               (FieldRendererId field, const std::u16string& value),
@@ -98,11 +104,6 @@ class MockAutofillAgent : public mojom::AutofillAgent {
   MOCK_METHOD(void,
               AcceptDataListSuggestion,
               (FieldRendererId field, const ::std::u16string& value),
-              (override));
-  MOCK_METHOD(void,
-              FillPasswordSuggestion,
-              (const ::std::u16string& username,
-               const ::std::u16string& password),
               (override));
   MOCK_METHOD(void,
               PreviewPasswordSuggestion,
@@ -327,8 +328,8 @@ TEST_P(ContentAutofillDriverFactoryTest_WithOrWithoutBfCacheAndIframes,
   // by ContentAutofillDriver's use of the factory callback.
 }
 
-// Tests that that a driver survives a same-origin navigation but is reset
-// afterwards.
+// Tests that that a driver is 1:1 with RenderFrameHost, which might or might
+// not change after a same-origin navigation.
 TEST_P(ContentAutofillDriverFactoryTest_WithOrWithoutBfCacheAndIframes,
        SameOriginNavigation) {
   NavigateMainFrame("https://a.com/");
@@ -340,9 +341,14 @@ TEST_P(ContentAutofillDriverFactoryTest_WithOrWithoutBfCacheAndIframes,
   // of the factory callback.
 
   NavigateMainFrame("https://a.com/after-navigation");
-  EXPECT_EQ(factory_test_api().GetDriver(orig_rfh), orig_driver);
-  // If BFCache is enabled, there will be 2 drivers as the old document is still
-  // around.
+  // If the RenderFrameHost changed, a new driver for main_rfh() is created, and
+  // if BFCache is disabled the driver for |orig_rfh| has now been removed in
+  // ContentAutofillDriverFactory::RenderFrameDeleted().
+  if (use_bfcache()) {
+    EXPECT_EQ(factory_test_api().GetDriver(orig_rfh), orig_driver);
+  } else if (main_rfh() != orig_rfh) {
+    EXPECT_EQ(factory_test_api().GetDriver(orig_rfh), nullptr);
+  }
   EXPECT_EQ(factory_test_api().num_drivers(), use_bfcache() ? 2u : 1u);
 }
 

@@ -208,6 +208,20 @@ BASE_FEATURE(kNestedArchives,
              "SafeBrowsingArchiveImprovements",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kRedWarningSurvey,
+             "RedWarningSurvey",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+constexpr base::FeatureParam<std::string> kRedWarningSurveyTriggerId{
+    &kRedWarningSurvey, "RedWarningSurveyTriggerId", /*default_value=*/""};
+constexpr base::FeatureParam<std::string> kRedWarningSurveyReportTypeFilter{
+    &kRedWarningSurvey, "RedWarningSurveyReportTypeFilter",
+    /*default_value=*/
+    "URL_PHISHING,URL_MALWARE,URL_UNWANTED,URL_CLIENT_SIDE_PHISHING"};
+constexpr base::FeatureParam<std::string> kRedWarningSurveyDidProceedFilter{
+    &kRedWarningSurvey, "RedWarningSurveyDidProceedFilter",
+    /*default_value=*/"TRUE,FALSE"};
+
 BASE_FEATURE(kRealTimeUrlFilteringForEnterprise,
              "RealTimeUrlFilteringForEnterprise",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -358,6 +372,8 @@ constexpr struct {
     {&kExtensionTelemetryReportHostsContactedViaWebSocket, true},
     {&kExtensionTelemetryTabsExecuteScriptSignal, true},
     {&kFileTypePoliciesTag, true},
+    {&kHashPrefixRealTimeLookups, true},
+    {&kHashRealTimeOverOhttp, true},
     {&kLogAccountEnhancedProtectionStateInProtegoPings, true},
     {&kMmapSafeBrowsingDatabase, true},
     {&kNestedArchives, true},
@@ -404,6 +420,10 @@ base::Value::List GetFeatureStatusList() {
   param_list.Append(base::GetFieldTrialParamValueByFeature(
       kFileTypePoliciesTag, kFileTypePoliciesTagParamName));
   param_list.Append(kFileTypePoliciesTag.name);
+  param_list.Append(kHashPrefixRealTimeLookupsRelayUrl.Get());
+  param_list.Append(kHashPrefixRealTimeLookupsRelayUrl.name);
+  param_list.Append(kHashRealTimeOverOhttpRelayUrl.Get());
+  param_list.Append(kHashRealTimeOverOhttpRelayUrl.name);
 
   return param_list;
 }

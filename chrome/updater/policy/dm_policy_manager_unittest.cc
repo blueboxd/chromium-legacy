@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "chrome/updater/constants.h"
-#include "chrome/updater/util/unittest_util.h"
+#include "chrome/updater/util/unit_test_util.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -213,7 +213,8 @@ TEST(DMPolicyManager, PolicyManagerFromProto) {
 
   EXPECT_EQ(policy_manager->GetPackageCacheSizeLimitMBytes(), absl::nullopt);
   EXPECT_EQ(policy_manager->GetPackageCacheExpirationTimeDays(), absl::nullopt);
-  EXPECT_EQ(policy_manager->GetForceInstallApps(), absl::nullopt);
+  EXPECT_EQ(policy_manager->GetForceInstallApps(),
+            std::vector<std::string>({kApp2}));
   EXPECT_EQ(policy_manager->GetAppsWithPolicy(),
             std::vector<std::string>({test::kChromeAppId, kApp1, kApp2}));
 

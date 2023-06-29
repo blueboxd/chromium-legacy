@@ -116,6 +116,13 @@ class AppBannerManagerTest : public AppBannerManager {
       const GURL& manifest_id) override {
     return false;
   }
+  void OnMlInstallPrediction(base::PassKey<MLInstallabilityPromoter>,
+                             std::string result_label) override {}
+
+  segmentation_platform::SegmentationPlatformService*
+  GetSegmentationPlatformService() override {
+    return nullptr;
+  }
 
  protected:
   // The overridden RequestAppBanner() can filter out about:blank calls
@@ -178,11 +185,13 @@ class AppBannerManagerTest : public AppBannerManager {
     }
   }
 
-  base::WeakPtr<AppBannerManager> GetWeakPtr() override {
+  base::WeakPtr<AppBannerManager> GetWeakPtrForThisNavigation() override {
     return weak_factory_.GetWeakPtr();
   }
 
-  void InvalidateWeakPtrs() override { weak_factory_.InvalidateWeakPtrs(); }
+  void InvalidateWeakPtrsForThisNavigation() override {
+    weak_factory_.InvalidateWeakPtrs();
+  }
 
   bool IsSupportedNonWebAppPlatform(
       const std::u16string& platform) const override {

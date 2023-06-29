@@ -203,6 +203,16 @@ HTMLSelectMenuElement::HTMLSelectMenuElement(Document& document)
 
 // static
 HTMLSelectMenuElement* HTMLSelectMenuElement::OwnerSelectMenu(Node* node) {
+  // Do some quick checks in order to avoid, in most cases, walking up the
+  // entire tree if `node` does not have a selectmenu ancestor.
+  if (!IsA<HTMLOptionElement>(node)) {
+    HTMLElement* html_element = DynamicTo<HTMLElement>(node);
+    if (!html_element ||
+        !html_element->FastHasAttribute(html_names::kBehaviorAttr)) {
+      return nullptr;
+    }
+  }
+
   HTMLSelectMenuElement* nearest_select_menu_ancestor =
       SelectMenuPartTraversal::NearestSelectMenuAncestor(*node);
 
@@ -759,6 +769,14 @@ void HTMLSelectMenuElement::OptionPartInserted(
   }
   SetNeedsValidityCheck();
   should_recalc_list_items_ = true;
+
+  if (GetDocument().IsActive()) {
+    GetDocument()
+        .GetFrame()
+        ->GetPage()
+        ->GetChromeClient()
+        .SelectOrSelectMenuFieldOptionsChanged(*this);
+  }
 }
 
 void HTMLSelectMenuElement::OptionPartRemoved(HTMLOptionElement* option_part) {
@@ -775,6 +793,14 @@ void HTMLSelectMenuElement::OptionPartRemoved(HTMLOptionElement* option_part) {
   }
   SetNeedsValidityCheck();
   should_recalc_list_items_ = true;
+
+  if (GetDocument().IsActive()) {
+    GetDocument()
+        .GetFrame()
+        ->GetPage()
+        ->GetChromeClient()
+        .SelectOrSelectMenuFieldOptionsChanged(*this);
+  }
 }
 
 HTMLOptionElement* HTMLSelectMenuElement::FirstOptionPart() const {

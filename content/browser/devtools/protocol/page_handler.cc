@@ -1474,6 +1474,8 @@ Page::BackForwardCacheNotRestoredReason NotRestoredReasonToProtocol(
       return Page::BackForwardCacheNotRestoredReasonEnum::FencedFramesEmbedder;
     case Reason::kCookieDisabled:
       return Page::BackForwardCacheNotRestoredReasonEnum::CookieDisabled;
+    case Reason::kHTTPAuthRequired:
+      return Page::BackForwardCacheNotRestoredReasonEnum::HTTPAuthRequired;
     case Reason::kBlocklistedFeatures:
       // Blocklisted features should be handled separately and be broken down
       // into sub reasons.
@@ -1522,9 +1524,6 @@ Page::BackForwardCacheNotRestoredReason BlocklistedFeatureToProtocol(
     case WebSchedulerTrackedFeature::kOutstandingNetworkRequestOthers:
       return Page::BackForwardCacheNotRestoredReasonEnum::
           OutstandingNetworkRequestOthers;
-    case WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction:
-      return Page::BackForwardCacheNotRestoredReasonEnum::
-          OutstandingIndexedDBTransaction;
     case WebSchedulerTrackedFeature::kRequestedMIDIPermission:
       return Page::BackForwardCacheNotRestoredReasonEnum::
           RequestedMIDIPermission;
@@ -1542,8 +1541,6 @@ Page::BackForwardCacheNotRestoredReason BlocklistedFeatureToProtocol(
           RequestedBackgroundWorkPermission;
     case WebSchedulerTrackedFeature::kBroadcastChannel:
       return Page::BackForwardCacheNotRestoredReasonEnum::BroadcastChannel;
-    case WebSchedulerTrackedFeature::kIndexedDBConnection:
-      return Page::BackForwardCacheNotRestoredReasonEnum::IndexedDBConnection;
     case WebSchedulerTrackedFeature::kWebXR:
       return Page::BackForwardCacheNotRestoredReasonEnum::WebXR;
     case WebSchedulerTrackedFeature::kSharedWorker:
@@ -1754,6 +1751,7 @@ Page::BackForwardCacheNotRestoredReasonType MapNotRestoredReasonToType(
     case Reason::kErrorDocument:
     case Reason::kFencedFramesEmbedder:
     case Reason::kCookieDisabled:
+    case Reason::kHTTPAuthRequired:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::Circumstantial;
     case Reason::kCacheControlNoStore:
     case Reason::kCacheControlNoStoreCookieModified:
@@ -1775,9 +1773,7 @@ Page::BackForwardCacheNotRestoredReasonType MapBlocklistedFeatureToType(
   switch (feature) {
     case WebSchedulerTrackedFeature::kWebRTC:
     case WebSchedulerTrackedFeature::kOutstandingNetworkRequestOthers:
-    case WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction:
     case WebSchedulerTrackedFeature::kBroadcastChannel:
-    case WebSchedulerTrackedFeature::kIndexedDBConnection:
     case WebSchedulerTrackedFeature::kWebXR:
     case WebSchedulerTrackedFeature::kSharedWorker:
     case WebSchedulerTrackedFeature::kWebHID:

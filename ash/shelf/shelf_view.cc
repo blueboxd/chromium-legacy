@@ -507,7 +507,8 @@ bool ShelfView::LocationInsideVisibleShelfItemBounds(
   return visible_shelf_item_bounds_union_.Contains(location);
 }
 
-bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
+bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location,
+                                  views::View* delegate_view) const {
   // There are thin gaps between launcher buttons but the tooltip shouldn't hide
   // in the gaps, but the tooltip should hide if the mouse moved totally outside
   // of the buttons area.
@@ -2626,8 +2627,6 @@ void ShelfView::OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) {
 }
 
 void ShelfView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
-  shelf_->set_is_tablet_mode_animation_running(false);
-
   if (move_animation_tracker_) {
     move_animation_tracker_->Stop();
     move_animation_tracker_.reset();
@@ -2803,7 +2802,8 @@ bool ShelfView::CanDrop(const OSExchangeData& data) {
 
   std::set<ui::ClipboardFormatType> format_types;
   format_types.insert(GetAppItemFormatType());
-  return data.HasAnyFormat(0, format_types);
+  return data.HasAnyFormat(0, format_types) &&
+         app_info->type == DraggableAppType::kAppGridItem;
 }
 
 void ShelfView::OnDragExited() {

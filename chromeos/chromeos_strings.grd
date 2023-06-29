@@ -285,8 +285,9 @@
       <message name="IDS_QUICK_ANSWERS_VIEW_A11Y_INFO_DESC_TEMPLATE_V2" desc="A11y description template for the Quick Answers view (V2 version).">
         <ph name="QUERY_TEXT">$1<ex>interested</ex></ph>; <ph name="RESULT_TEXT">$2<ex>showing curiosity or concern about something or someone; having a feeling of interest.</ex></ph>; Press Search plus Space to see result in Google Search.
       </message>
+      <!-- TODO(b/259440976): Remove navigation directions once the QA Rich Card feature launches. -->
       <message name="IDS_QUICK_ANSWERS_VIEW_A11Y_NAME_TEXT" desc="A11y name text for the Quick Answers view.">
-        Info related to your selection
+        Info related to your selection. Use Left or Right arrow keys to access controls.
       </message>
       <message name="IDS_QUICK_ANSWERS_VIEW_A11Y_RETRY_LABEL_DESC" desc="A11y retry label description for the Quick Answers view.">
         Cannot connect to the internet. Click to try again.
@@ -2486,6 +2487,18 @@
         <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_OFF" desc="Label for the toggle row in ambient mode settings page when it is disabled.">
           Off
         </message>
+        <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_DURATION_TITLE" desc="Label for the drop down menu of ambient mode duration settings.">
+         Show screen saver
+        </message>
+        <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_DURATION_MINUTES" desc="Label for the screen saver duration option in minutes.">
+         for <ph name="MINUTES">$1<ex>10</ex></ph> minutes
+        </message>
+        <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_DURATION_ONE_HOUR" desc="Label for the screen saver duration option 1 hour.">
+         for 1 hour
+        </message>
+        <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_DURATION_FOREVER" desc="Label for the screen saver duration option forever.">
+         forever
+        </message>
         <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_TITLE" desc="Label for the radio button group of ambient mode topic source, where the screen contents come from.">
          Image source
         </message>
@@ -3571,6 +3584,27 @@
         <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_DRAM_PART_NUMBER_LABEL" translateable="false" desc="The label for the text input showing the device's dram part number.">
           DRAM part number
         </message>
+        <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_DEVICE_NOT_COMPLIANT" translateable="false" desc="The text stating that the current device is not compliant.">
+          This device is not compliant.
+        </message>
+        <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_DEVICE_COMPLIANT" translateable="false" desc="The text stating that the current device is compliant.">
+          This device is compliant.
+        </message>
+        <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_DEVICE_COMPLIANCE_WARNING" translateable="false" desc="The text informing the user to replace the device's mainboard if the compliance information is incorrect.">
+          If this isn't correct, replace the mainboard.
+        </message>
+        <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_DEVICE_QUESTION_IS_BRANDED" translateable="false" desc="The text asking if the device chassis is branded.">
+          Is the chassis branded?
+        </message>
+        <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_DEVICE_QUESTION_DOES_MEET_REQUIREMENTS" translateable="false" desc="The text asking if the device's components meet compliance requirements.">
+          Do the device components meet requirements?
+        </message>
+        <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_ANSWER_NO" translateable="false" desc="The option text answering 'no' for yes/no questions.">
+          No
+        </message>
+        <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_ANSWER_YES" translateable="false" desc="The option text answering 'yes' for yes/no questions.">
+          Yes
+        </message>
         <!-- RO firmware reimaging page -->
         <message name="IDS_SHIMLESS_RMA_FIRMWARE_UPDATE_INSTALL_IMAGE_TITLE" translateable="false" desc="The title for the page when the device firmware is expected to be installed.">
           Install firmware image
@@ -3870,6 +3904,12 @@
         <message name="IDS_FEEDBACK_TOOL_BLUETOOTH_LOGS_MESSAGE" translateable="false" desc="Message shown after user clicks on the bluetooth logs hyperlink">
           Include bluetooth logs which captures information such as btsnoop and HCI logs from your current session. The logs will be filtered to remove as much personal identifiable information as possible.&#10;&#10;The information is stored for up to 90 days and access is restricted to the team working on this issue.
         </message>
+        <message name="IDS_FEEDBACK_TOOL_LINK_CROSS_DEVICE_DOGFOOD_FEEDBACK_INFO" translateable="false" desc="Checkbox for Google internal account to submit a Cross Device Feedback Report.">
+          This is an issue between this Chromebook and another device. <ph name="BEGIN_LINK1">&lt;a id="linkCrossDeviceDogfoodFeedbackInfoLink"&gt;</ph>View more details<ph name="END_LINK1">&lt;/a&gt;</ph>.
+        </message>
+        <message name="IDS_FEEDBACK_TOOL_LINK_CROSS_DEVICE_DOGFOOD_FEEDBACK_MESSAGE" translateable="false" desc="Message shown after user clicks on the Cross Device Feedback hyperlink">
+          For cross-device issues related to features such as Phone Hub, Smart Lock, Instant Tethering, you may be prompted to file another feedback report from your phone.&#10;&#10;Access to this feedback report is restricted to the team working on this issue.
+        </message>
         <message name="IDS_FEEDBACK_TOOL_ASSISTANT_LOGS_CHECKBOX" translateable="false" desc="Checkbox for Google internal account to attach assistant logs from the current session.">
         Include recent Google Assistant history and information. <ph name="BEGIN_LINK1">&lt;a id="assistantLogsLink"&gt;</ph>View more details<ph name="END_LINK1">&lt;/a&gt;</ph>.
         </message>
@@ -3883,6 +3923,9 @@
         </message>
         <message name="IDS_FEEDBACK_TOOL_PRIVACY_NOTE" desc="Text for the privacy note included in the feedback app">
           Go to the <ph name="BEGIN_LINK1">&lt;a id="legalHelpPageUrl"&gt;</ph>Legal Help page<ph name="END_LINK1">&lt;/a&gt;</ph> to request content changes for legal reasons. Some account and system information may be sent to Google. We will use the information you give us to help address technical issues and to improve our services, subject to our <ph name="BEGIN_LINK2">&lt;a id="privacyPolicyUrl"&gt;</ph>Privacy Policy<ph name="END_LINK2">&lt;/a&gt;</ph> and <ph name="BEGIN_LINK3">&lt;a id="termsOfServiceUrl"&gt;</ph>Terms of Service<ph name="END_LINK3">&lt;/a&gt;</ph>.
+        </message>
+        <message name="IDS_FEEDBACK_TOOL_MAY_BE_SHARED_NOTE" desc="Text to inform all users that their feedback may be shared">
+          We may share feedback submitted via this form with our partners to troubleshoot bugs and other issues that you report to us. Don’t include sensitive information such as passwords.
         </message>
         <message name="IDS_FEEDBACK_TOOL_USER_EMAIL_LABEL" desc="Label showing the e-mail address that will be reported.">
           Email
@@ -4007,6 +4050,10 @@
         <!-- TODO(b/286268215): Translate this string -->
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SHORTCUT_WITH_CONFILICT_STATUS_MESSAGE" desc="The status message that displays when user clicks button to override an accelerator" translateable="false">
           Shortcut is used by <ph name="CONFLICT_ACCEL_NAME">$1<ex>BRIGHTNESS_UP</ex></ph>. Press a new shortcut or press the same one again to use it for this action instead.
+        </message>
+        <!-- TODO(b/286268215): Translate this string -->
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_MAX_ACCELERATORS_REACHED_HINT" desc="The hint message that displays when there are five accelerators in the dialog" translateable="false">
+          You can only customize 5 shortcuts. Delete a shortcut to add a new one.
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SEARCH_NO_RESULTS" desc="Text description of a search that has no results.">
           No search results found

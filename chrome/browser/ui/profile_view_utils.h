@@ -7,6 +7,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 class Profile;
 class ProfileAttributesEntry;
@@ -34,5 +35,10 @@ ProfileAttributesEntry* GetProfileAttributesFromProfile(const Profile* profile);
 // Returns the profile display name based off the profile attributes.
 std::u16string GetProfileMenuDisplayName(
     ProfileAttributesEntry* profile_attributes);
+
+// Returns all profile entries sorted by local profile name except for the
+// current or omitted profiles.
+std::vector<ProfileAttributesEntry*> GetAllOtherProfileEntriesForProfileSubMenu(
+    const Profile* current_profile);
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_UI_UTILS_H_

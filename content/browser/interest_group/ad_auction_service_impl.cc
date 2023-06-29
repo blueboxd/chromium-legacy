@@ -22,6 +22,7 @@
 #include "content/browser/fenced_frame/fenced_frame_reporter.h"
 #include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
 #include "content/browser/interest_group/ad_auction_document_data.h"
+#include "content/browser/interest_group/ad_auction_page_data.h"
 #include "content/browser/interest_group/ad_auction_result_metrics.h"
 #include "content/browser/interest_group/auction_runner.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
@@ -224,6 +225,11 @@ void AdAuctionServiceImpl::RunAdAuction(
     const blink::AuctionConfig& config,
     mojo::PendingReceiver<blink::mojom::AbortableAdAuction> abort_receiver,
     RunAdAuctionCallback callback) {
+  // Ensure the page is not in prerendering as code belows expect it, i.e.
+  // GetPageUkmSourceId() doesn't work with prerendering pages.
+  CHECK(!render_frame_host().IsInLifecycleState(
+      RenderFrameHost::LifecycleState::kPrerendering));
+
   // If the run ad auction API is not allowed for this context by Permissions
   // Policy, do nothing
   if (!render_frame_host().IsFeatureEnabled(
@@ -254,9 +260,7 @@ void AdAuctionServiceImpl::RunAdAuction(
 
   std::unique_ptr<AuctionRunner> auction = AuctionRunner::CreateAndStart(
       &auction_worklet_manager_, &GetInterestGroupManager(),
-      AttributionManager::FromBrowserContext(
-          render_frame_host().GetBrowserContext()),
-      private_aggregation_manager_,
+      render_frame_host().GetBrowserContext(), private_aggregation_manager_,
       // Unlike other callbacks, this needs to be safe to call after destruction
       // of the AdAuctionServiceImpl, so that the reporter can outlive it.
       base::BindRepeating(
@@ -380,6 +384,7 @@ void AdAuctionServiceImpl::GetInterestGroupAdAuctionData(
 
   BiddingAndAuctionDataConstructionState state;
   state.callback = std::move(callback);
+  state.seller = seller;
 
   GetInterestGroupManager().GetInterestGroupAdAuctionData(
       GetTopWindowOrigin(),
@@ -426,6 +431,11 @@ AdAuctionServiceImpl::GetFrameURLLoaderFactory() {
 
 network::mojom::URLLoaderFactory*
 AdAuctionServiceImpl::GetTrustedURLLoaderFactory() {
+  // Ensure the page is not in prerendering as code belows expect it, i.e.
+  // GetPageUkmSourceId() doesn't work with prerendering pages.
+  CHECK(!render_frame_host().IsInLifecycleState(
+      RenderFrameHost::LifecycleState::kPrerendering));
+
   if (!trusted_url_loader_factory_ ||
       !trusted_url_loader_factory_.is_connected()) {
     trusted_url_loader_factory_.reset();
@@ -748,11 +758,22 @@ void AdAuctionServiceImpl::OnGotBiddingAndAuctionServerKey(
 
   std::string data = maybe_request->EncapsulateAndSerialize();
   const auto* bytes = reinterpret_cast<const uint8_t*>(data.data());
+  std::string request_id_str = state.request_id.AsLowercaseString();
+
+  AdAuctionPageData* ad_auction_page_data =
+      PageUserData<AdAuctionPageData>::GetOrCreateForPage(
+          render_frame_host().GetPage());
+
+  AdAuctionRequestContext context(std::move(state.seller),
+                                  std::move(state.data.group_names),
+                                  std::move(*maybe_request).ReleaseContext());
+  ad_auction_page_data->RegisterAdAuctionRequestContext(request_id_str,
+                                                        std::move(context));
+
   std::move(state.callback)
       .Run(mojo_base::BigBuffer(
                base::make_span(bytes, data.size() * sizeof(char))),
-           state.request_id.AsLowercaseString());
-  // TODO(behamilton): Save request context for decryption.
+           request_id_str);
 }
 
 InterestGroupManagerImpl& AdAuctionServiceImpl::GetInterestGroupManager()

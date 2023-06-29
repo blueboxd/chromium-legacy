@@ -7,12 +7,18 @@
 #include <memory>
 
 #include "ash/capture_mode/capture_mode_controller.h"
+#include "ash/constants/ash_features.h"
+#include "ash/game_dashboard/game_dashboard_utils.h"
 #include "ash/public/cpp/app_types_util.h"
+#include "ash/public/cpp/arc_game_controls_flag.h"
 #include "ash/public/cpp/ash_view_ids.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_tile.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/view.h"
@@ -48,7 +54,7 @@ std::unique_ptr<FeatureTile> CreateTile(base::RepeatingClosure callback,
   return tile;
 }
 
-std::unique_ptr<ash::FeaturePodIconButton> CreateIconButton(
+std::unique_ptr<FeaturePodIconButton> CreateIconButton(
     base::RepeatingClosure callback,
     int id,
     const gfx::VectorIcon& icon,
@@ -99,13 +105,20 @@ void GameDashboardMainMenuView::OnToolbarTilePressed() {
   // TODO(b/273641426): Add support when toolbar tile is pressed.
 }
 
+void GameDashboardMainMenuView::OnGameControlsTilePressed() {
+  // TODO(b/275380943): Add support when controls tile is pressed.
+}
+
 void GameDashboardMainMenuView::OnRecordGameTilePressed() {
-  // TODO(b/273641250): Add support when record game tile is pressed.
+  GetWidget()->Close();
+  CaptureModeController::Get()->StartForGameDashboard(game_window_);
+  // TODO(b/286889385): Add support to stop game recording using
+  // `GameDashboardMainMenuView` and the `GameDashboardMainMenuButton`.
 }
 
 void GameDashboardMainMenuView::OnScreenshotTilePressed() {
-  CaptureModeController::Get()->CaptureScreenshotOfGivenWindow(game_window_);
   GetWidget()->Close();
+  CaptureModeController::Get()->CaptureScreenshotOfGivenWindow(game_window_);
 }
 
 void GameDashboardMainMenuView::OnScreenSizeSettingsButtonPressed() {
@@ -137,14 +150,20 @@ void GameDashboardMainMenuView::AddShortcutTilesRow() {
       VIEW_ID_GD_TOOLBAR_TILE, vector_icons::kVideogameAssetOutlineIcon,
       l10n_util::GetStringUTF16(
           IDS_ASH_GAME_DASHBOARD_TOOLBAR_TILE_BUTTON_TITLE)));
-  // TODO(b/273641132): Filter out record game button based on device info.
-  container->AddChildView(CreateTile(
-      base::BindRepeating(&GameDashboardMainMenuView::OnRecordGameTilePressed,
-                          base::Unretained(this)),
-      /*is_togglable=*/false, FeatureTile::TileType::kCompact,
-      VIEW_ID_GD_RECORD_TILE, vector_icons::kVideocamIcon,
-      l10n_util::GetStringUTF16(
-          IDS_ASH_GAME_DASHBOARD_RECORD_GAME_TILE_BUTTON_TITLE)));
+
+  MaybeAddGameControlsTile(container);
+
+  if (base::FeatureList::IsEnabled(
+          features::kFeatureManagementGameDashboardRecordGame)) {
+    container->AddChildView(CreateTile(
+        base::BindRepeating(&GameDashboardMainMenuView::OnRecordGameTilePressed,
+                            base::Unretained(this)),
+        /*is_togglable=*/false, FeatureTile::TileType::kCompact,
+        VIEW_ID_GD_RECORD_GAME_TILE, vector_icons::kVideocamIcon,
+        l10n_util::GetStringUTF16(
+            IDS_ASH_GAME_DASHBOARD_RECORD_GAME_TILE_BUTTON_TITLE)));
+  }
+
   container->AddChildView(CreateTile(
       base::BindRepeating(&GameDashboardMainMenuView::OnScreenshotTilePressed,
                           base::Unretained(this)),
@@ -154,13 +173,44 @@ void GameDashboardMainMenuView::AddShortcutTilesRow() {
           IDS_ASH_GAME_DASHBOARD_SCREENSHOT_TILE_BUTTON_TITLE)));
 }
 
+void GameDashboardMainMenuView::MaybeAddGameControlsTile(
+    views::View* container) {
+  if (!IsArcWindow(game_window_)) {
+    return;
+  }
+
+  const ArcGameControlsFlag flags =
+      game_window_->GetProperty(kArcGameControlsFlagsKey);
+  DCHECK(game_dashboard_utils::IsFlagSet(flags, ArcGameControlsFlag::kKnown));
+
+  if (!game_dashboard_utils::IsFlagSet(flags,
+                                       ArcGameControlsFlag::kAvailable)) {
+    return;
+  }
+
+  auto* controls_tile = container->AddChildView(CreateTile(
+      base::BindRepeating(&GameDashboardMainMenuView::OnGameControlsTilePressed,
+                          base::Unretained(this)),
+      /*is_togglable=*/true, FeatureTile::TileType::kCompact,
+      VIEW_ID_GD_CONTROLS_TILE, kGdGameControlsIcon,
+      l10n_util::GetStringUTF16(
+          IDS_ASH_GAME_DASHBOARD_CONTROLS_TILE_BUTTON_TITLE)));
+
+  controls_tile->SetEnabled(
+      !game_dashboard_utils::IsFlagSet(flags, ArcGameControlsFlag::kEmpty));
+  if (controls_tile->GetEnabled()) {
+    controls_tile->SetToggled(
+        game_dashboard_utils::IsFlagSet(flags, ArcGameControlsFlag::kEnabled));
+  }
+}
+
 void GameDashboardMainMenuView::MaybeAddScreenSizeSettingsRow() {
   if (IsArcWindow(game_window_)) {
     AddChildView(CreateTile(
         base::BindRepeating(
             &GameDashboardMainMenuView::OnScreenSizeSettingsButtonPressed,
             base::Unretained(this)),
-        /*is_togglable=*/false, ash::FeatureTile::TileType::kPrimary,
+        /*is_togglable=*/false, FeatureTile::TileType::kPrimary,
         VIEW_ID_GD_SCREEN_SIZE_TILE, vector_icons::kSelectWindowIcon,
         l10n_util::GetStringUTF16(
             IDS_ASH_GAME_DASHBOARD_SCREEN_SIZE_SETTINGS_TITLE)));

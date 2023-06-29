@@ -41,6 +41,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #import "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 AppShimHost* GetHostForBrowser(Browser* browser) {
@@ -78,17 +82,17 @@ bool ShouldHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {
 // BrowserWindowTouchBarController.
 API_AVAILABLE(macos(10.12.2))
 @interface BrowserWindowTouchBarViewsDelegate
-    : NSObject<WindowTouchBarDelegate> {
-  raw_ptr<Browser> _browser;  // Weak.
-  NSWindow* _window;  // Weak.
-  base::scoped_nsobject<BrowserWindowTouchBarController> _touchBarController;
-}
+    : NSObject <WindowTouchBarDelegate>
 
 - (BrowserWindowTouchBarController*)touchBarController;
 
 @end
 
-@implementation BrowserWindowTouchBarViewsDelegate
+@implementation BrowserWindowTouchBarViewsDelegate {
+  raw_ptr<Browser> _browser;
+  NSWindow* __weak _window;
+  BrowserWindowTouchBarController* __strong _touchBarController;
+}
 
 - (instancetype)initWithBrowser:(Browser*)browser window:(NSWindow*)window {
   if ((self = [super init])) {
@@ -100,14 +104,14 @@ API_AVAILABLE(macos(10.12.2))
 }
 
 - (BrowserWindowTouchBarController*)touchBarController {
-  return _touchBarController.get();
+  return _touchBarController;
 }
 
 - (NSTouchBar*)makeTouchBar API_AVAILABLE(macos(10.12.2)) {
   if (!_touchBarController) {
-    _touchBarController.reset([[BrowserWindowTouchBarController alloc]
-        initWithBrowser:_browser
-                 window:_window]);
+    _touchBarController =
+        [[BrowserWindowTouchBarController alloc] initWithBrowser:_browser
+                                                          window:_window];
   }
   return [_touchBarController makeTouchBar];
 }
@@ -360,7 +364,6 @@ void BrowserFrameMac::PopulateCreateWindowParams(
                        NSWindowStyleMaskMiniaturizable |
                        NSWindowStyleMaskResizable;
 
-  base::scoped_nsobject<NativeWidgetMacNSWindow> ns_window;
   if (browser_view_->GetIsNormalType() || browser_view_->GetIsWebAppType()) {
     params->window_class = remote_cocoa::mojom::WindowClass::kBrowser;
     params->style_mask |= NSWindowStyleMaskFullSizeContentView;
@@ -385,10 +388,10 @@ NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
     const remote_cocoa::mojom::CreateWindowParams* params) {
   NativeWidgetMacNSWindow* ns_window = NativeWidgetMac::CreateNSWindow(params);
   if (@available(macOS 10.12.2, *)) {
-    touch_bar_delegate_.reset([[BrowserWindowTouchBarViewsDelegate alloc]
+    touch_bar_delegate_ = [[BrowserWindowTouchBarViewsDelegate alloc]
         initWithBrowser:browser_view_->browser()
-                 window:ns_window]);
-    [ns_window setWindowTouchBarDelegate:touch_bar_delegate_.get()];
+                 window:ns_window];
+    [ns_window setWindowTouchBarDelegate:touch_bar_delegate_];
   }
 
   return ns_window;
@@ -403,9 +406,8 @@ BrowserFrameMac::GetRemoteCocoaApplicationHost() {
 
 void BrowserFrameMac::OnWindowInitialized() {
   if (auto* bridge = GetInProcessNSWindowBridge()) {
-    bridge->SetCommandDispatcher(
-        [[[ChromeCommandDispatcherDelegate alloc] init] autorelease],
-        [[[BrowserWindowCommandHandler alloc] init] autorelease]);
+    bridge->SetCommandDispatcher([[ChromeCommandDispatcherDelegate alloc] init],
+                                 [[BrowserWindowCommandHandler alloc] init]);
   } else {
     if (auto* host = GetHostForBrowser(browser_view_->browser())) {
       host->GetAppShim()->CreateCommandDispatcherForWidget(

@@ -646,11 +646,12 @@ void PasswordAutofillManager::DeleteFillData() {
 }
 
 void PasswordAutofillManager::OnShowPasswordSuggestions(
+    autofill::FieldRendererId element_id,
     base::i18n::TextDirection text_direction,
     const std::u16string& typed_username,
     int options,
     const gfx::RectF& bounds) {
-  ShowPopup(
+  bool autofill_available = ShowPopup(
       bounds, text_direction,
       BuildSuggestions(typed_username,
                        ForPasswordField(options & autofill::IS_PASSWORD_FIELD),
@@ -658,6 +659,11 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
                        OffersGeneration(false), ShowPasswordSuggestions(true),
                        ShowWebAuthnCredentials(
                            options & autofill::ACCEPTS_WEBAUTHN_CREDENTIALS)));
+
+  password_manager_driver_->SetSuggestionAvailability(
+      element_id, autofill_available
+                      ? autofill::mojom::AutofillState::kAutofillAvailable
+                      : autofill::mojom::AutofillState::kNoSuggestions);
 }
 
 bool PasswordAutofillManager::MaybeShowPasswordSuggestions(
@@ -741,8 +747,8 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
           suggestion.custom_icon = page_favicon_;
           suggestion.payload = autofill::Suggestion::BackendId(
               base::Base64Encode(passkey.credential_id()));
-          suggestion.labels = {{autofill::Suggestion::Text(
-              l10n_util::GetStringUTF16(passkey.GetAuthenticatorLabel()))}};
+          suggestion.labels = {
+              {autofill::Suggestion::Text(passkey.GetAuthenticatorLabel())}};
           return suggestion;
         });
   }
@@ -762,7 +768,7 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
 
 #if !BUILDFLAG(IS_ANDROID)
   // Add "Sign in with another device" button.
-  if (uses_passkeys) {
+  if (uses_passkeys && delegate->OfferPasskeysFromAnotherDeviceOption()) {
     suggestions.push_back(CreateWebAuthnEntry());
   }
 #endif

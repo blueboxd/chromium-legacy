@@ -5368,6 +5368,21 @@ domain Network
       # address space.
       UnexpectedPrivateNetworkAccess
       NoCorsRedirectModeNotFollow
+      # Request was a private network request and needed user permission yet did
+      # not carry `Private-Network-Access-Id` in the preflight response.
+      # https://github.com/WICG/private-network-access/blob/main/permission_prompt/explainer.md
+      PreflightMissingPrivateNetworkAccessId
+      # Request was a private network request and needed user permission yet did
+      # not carry `Private-Network-Access-Name` in the preflight response.
+      # https://github.com/WICG/private-network-access/blob/main/permission_prompt/explainer.md
+      PreflightMissingPrivateNetworkAccessName
+      # Request was a private network request and needed user permission yet not
+      # able to request for permission.
+      # https://github.com/WICG/private-network-access/blob/main/permission_prompt/explainer.md
+      PrivateNetworkAccessPermissionUnavailable
+      # Request was a private network request and is denied by user permission.
+      # https://github.com/WICG/private-network-access/blob/main/permission_prompt/explainer.md
+      PrivateNetworkAccessPermissionDenied
 
   type CorsErrorStatus extends object
     properties
@@ -7321,6 +7336,7 @@ domain Page
       ch-ua-platform
       ch-ua-model
       ch-ua-mobile
+      ch-ua-form-factor
       ch-ua-full-version
       ch-ua-full-version-list
       ch-ua-platform-version
@@ -7757,6 +7773,9 @@ domain Page
       # Specifies whether command line API should be available to the script, defaults
       # to false.
       experimental optional boolean includeCommandLineAPI
+      # If true, runs the script immediately on existing execution contexts or worlds.
+      # Default: false.
+      experimental optional boolean runImmediately
     returns
       # Identifier of the added script.
       ScriptIdentifier identifier
@@ -8540,6 +8559,7 @@ domain Page
       ErrorDocument
       FencedFramesEmbedder
       CookieDisabled
+      HTTPAuthRequired
       #Blocklisted features
       WebSocket
       WebTransport
@@ -8552,14 +8572,12 @@ domain Page
       DocumentLoaded
       DedicatedWorkerOrWorklet
       OutstandingNetworkRequestOthers
-      OutstandingIndexedDBTransaction
       RequestedMIDIPermission
       RequestedAudioCapturePermission
       RequestedVideoCapturePermission
       RequestedBackForwardCacheBlockedSensors
       RequestedBackgroundWorkPermission
       BroadcastChannel
-      IndexedDBConnection
       WebXR
       SharedWorker
       WebLocks
@@ -9615,6 +9633,12 @@ experimental domain Storage
   event storageBucketDeleted
     parameters
       string bucketId
+
+  # https://wicg.github.io/attribution-reporting-api/
+  experimental command setAttributionReportingLocalTestingMode
+    parameters
+      # If enabled, noise is suppressed and reports are sent immediately.
+      boolean enabled
 
 # The SystemInfo domain defines methods and events for querying low-level system information.
 experimental domain SystemInfo
@@ -11149,6 +11173,8 @@ experimental domain Preload
       boolean disabledByPreference
       boolean disabledByDataSaver
       boolean disabledByBatterySaver
+      boolean disabledByHoldbackPrefetchSpeculationRules
+      boolean disabledByHoldbackPrerenderSpeculationRules
 
   # Preloading status values, see also PreloadingTriggeringOutcome. This
   # status is shared by prefetchStatusUpdated and prerenderStatusUpdated.
@@ -11212,6 +11238,7 @@ experimental domain Preload
       string prefetchUrl
       PreloadingStatus status
       PrefetchStatus prefetchStatus
+      Network.RequestId requestId
 
   # Fired when a prerender attempt is updated.
   event prerenderStatusUpdated
@@ -11219,6 +11246,9 @@ experimental domain Preload
       PreloadingAttemptKey key
       PreloadingStatus status
       optional PrerenderFinalStatus prerenderStatus
+      # This is used to give users more information about the name of Mojo interface
+      # that is incompatible with prerender and has caused the cancellation of the attempt.
+      optional string disallowedMojoInterface
 
   # Send a list of sources for all preloading attempts in a document.
   event preloadingAttemptSourcesUpdated

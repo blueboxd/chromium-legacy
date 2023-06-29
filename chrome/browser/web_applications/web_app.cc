@@ -31,7 +31,7 @@
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "third_party/blink/public/common/permissions_policy/origin_with_possible_wildcards.h"
 #include "third_party/blink/public/common/permissions_policy/policy_helper_public.h"
-#include "third_party/blink/public/common/url_pattern.h"
+#include "third_party/blink/public/common/safe_url_pattern.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "ui/gfx/color_utils.h"
 #include "url/origin.h"
@@ -217,7 +217,7 @@ base::Value::Dict ImageResourceDebugDict(
   return root;
 }
 
-base::Value::Dict UrlPatternDebugValue(const blink::UrlPattern& pattern) {
+base::Value::Dict UrlPatternDebugValue(const blink::SafeUrlPattern& pattern) {
   liburlpattern::Options options = {.delimiter_list = "/",
                                     .prefix_list = "/",
                                     .sensitive = true,
@@ -510,11 +510,8 @@ void WebApp::SetNoteTakingNewNoteUrl(const GURL& note_taking_new_note_url) {
 }
 
 void WebApp::SetShortcutsMenuInfo(
-    std::vector<WebAppShortcutsMenuItemInfo> shortcuts_menu_item_infos,
-    std::vector<IconSizes> downloaded_sizes) {
-  CHECK_EQ(shortcuts_menu_item_infos.size(), downloaded_sizes.size());
+    std::vector<WebAppShortcutsMenuItemInfo> shortcuts_menu_item_infos) {
   shortcuts_menu_item_infos_ = std::move(shortcuts_menu_item_infos);
-  downloaded_shortcuts_menu_icons_sizes_ = std::move(downloaded_sizes);
 }
 
 void WebApp::SetLastBadgingTime(const base::Time& time) {
@@ -777,7 +774,7 @@ base::Value WebApp::IsolationData::AsDebugValue() const {
                         IsolatedWebAppLocationAsDebugValue(location))
                    .Set("version", version.GetString());
   base::Value::List* partitions =
-      value.EnsureList("controlled_frame_partitions");
+      value.EnsureList("controlled_frame_partitions (on-disk)");
   for (const std::string& partition : controlled_frame_partitions) {
     partitions->Append(partition);
   }
@@ -854,7 +851,6 @@ bool WebApp::operator==(const WebApp& other) const {
         app.downloaded_icon_sizes_maskable_,
         app.is_generated_icon_,
         app.shortcuts_menu_item_infos_,
-        app.downloaded_shortcuts_menu_icons_sizes_,
         app.file_handlers_,
         app.share_target_,
         app.additional_search_terms_,
@@ -984,20 +980,6 @@ base::Value WebApp::AsDebugValueWithOnlyPlatformAgnosticFields() const {
                                    ConvertList(downloaded_icon_sizes(purpose)));
   }
   root.Set("downloaded_icon_sizes", std::move(downloaded_icon_sizes_json));
-
-  base::Value::List downloaded_shortcuts_menu_icons_sizes;
-  for (size_t i = 0; i < downloaded_shortcuts_menu_icons_sizes_.size(); ++i) {
-    const IconSizes& icon_sizes = downloaded_shortcuts_menu_icons_sizes_[i];
-    base::Value::Dict entry;
-    entry.Set("index", static_cast<int>(i));
-    for (IconPurpose purpose : kIconPurposes) {
-      entry.Set(base::ToString(purpose),
-                ConvertList(icon_sizes.GetSizesForPurpose(purpose)));
-    }
-    downloaded_shortcuts_menu_icons_sizes.Append(std::move(entry));
-  }
-  root.Set("downloaded_shortcuts_menu_icons_sizes",
-           std::move(downloaded_shortcuts_menu_icons_sizes));
 
   root.Set("file_handler_approval_state",
            ApiApprovalStateToString(file_handler_approval_state_));
@@ -1173,7 +1155,7 @@ base::Value WebApp::AsDebugValueWithOnlyPlatformAgnosticFields() const {
       }
 
       base::Value::List scope_patterns_json;
-      const std::vector<blink::UrlPattern>& scope_patterns =
+      const std::vector<blink::SafeUrlPattern>& scope_patterns =
           home_tab_params.scope_patterns;
 
       for (const auto& scope_pattern : scope_patterns) {

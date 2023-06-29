@@ -22,6 +22,37 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histograms>
 
+<histogram name="ChromeOS.Settings.Accessibility.ColorCorrection.Enabled"
+    units="%" expires_after="2024-06-14">
+  <owner>katie@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Logged when color correction settings are enabled or disabled by the user
+    from os://settings. Note that color correction settings can also be enabled
+    or disabled in quick settings.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Settings.Accessibility.ColorCorrection.FilterAmount"
+    units="%" expires_after="2024-06-14">
+  <owner>katie@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    The color correction filter intensity chosen by the user. Logged on change
+    from settings. The default value in settings is 100%.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Settings.Accessibility.ColorCorrection.FilterType"
+    enum="ColorCorrectionFilterTypes" expires_after="2024-06-14">
+  <owner>katie@chromium.org</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    The color correction filter type chosen by the user. Logged on change from
+    settings. The default value in settings is deuteranopia.
+  </summary>
+</histogram>
+
 <histogram
     name="ChromeOS.Settings.Accessibility.FullscreenMagnifierFocusFollowing"
     enum="BooleanToggled" expires_after="2023-10-16">
@@ -191,7 +222,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Settings.Languages.Interaction"
-    enum="SettingsLanguagesPageInteraction" expires_after="2023-10-22">
+    enum="SettingsLanguagesPageInteraction" expires_after="2023-12-24">
   <owner>myy@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -210,17 +241,8 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="ChromeOS.Settings.Languages.SupportPageVisits"
-    enum="SettingsLanguagesSupportPage" expires_after="2022-10-12">
-  <owner>myy@chromium.org</owner>
-  <owner>essential-inputs-team@google.com</owner>
-  <summary>
-    Records when users visit a language settings support page for Chrome OS.
-  </summary>
-</histogram>
-
 <histogram base="true" name="ChromeOS.Settings.Languages.Toggle"
-    enum="BooleanToggled" expires_after="2023-10-22">
+    enum="BooleanToggled" expires_after="2023-12-24">
 <!-- Name completed by histogram_suffixes name="SettingsLanguagesPageToggle" -->
 
   <owner>myy@chromium.org</owner>
@@ -306,7 +328,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Settings.NumSearchResultsFetched" units="results"
-    expires_after="2023-10-22">
+    expires_after="2023-12-24">
   <owner>wesokuhara@google.com</owner>
   <owner>xiaohuic@chromium.org</owner>
   <owner>cros-settings@google.com</owner>
@@ -367,7 +389,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Settings.PathVisited"
-    enum="WebUIOSSettingsPathHashes" expires_after="2023-10-22">
+    enum="WebUIOSSettingsPathHashes" expires_after="2023-12-24">
   <owner>wesokuhara@google.com</owner>
   <owner>xiaohuic@chromium.org</owner>
   <owner>cros-settings@google.com</owner>
@@ -434,7 +456,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Settings.SearchRequests"
-    enum="OsSettingSearchRequestTypes" expires_after="2023-10-22">
+    enum="OsSettingSearchRequestTypes" expires_after="2023-12-24">
   <owner>wesokuhara@google.com</owner>
   <owner>xiaohuic@chromium.org</owner>
   <owner>cros-settings@google.com</owner>
@@ -469,7 +491,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Settings.SearchResultSectionSelected"
-    enum="OsSettingsSection" expires_after="2023-10-22">
+    enum="OsSettingsSection" expires_after="2023-12-24">
   <owner>wesokuhara@google.com</owner>
   <owner>xiaohuic@chromium.org</owner>
   <owner>cros-settings@google.com</owner>
@@ -489,7 +511,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Settings.SearchResultSubpageSelected"
-    enum="OsSettingsSubpage" expires_after="2023-10-22">
+    enum="OsSettingsSubpage" expires_after="2023-12-24">
   <owner>wesokuhara@google.com</owner>
   <owner>xiaohuic@chromium.org</owner>
   <owner>cros-settings@google.com</owner>
@@ -499,7 +521,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Settings.SearchResultTypeSelected"
-    enum="OsSettingsSearchResultType" expires_after="2023-10-22">
+    enum="OsSettingsSearchResultType" expires_after="2023-12-24">
   <owner>wesokuhara@google.com</owner>
   <owner>xiaohuic@chromium.org</owner>
   <owner>cros-settings@google.com</owner>
@@ -509,7 +531,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Settings.SettingChanged" enum="OsSetting"
-    expires_after="2023-08-01">
+    expires_after="2024-06-20">
   <owner>wesokuhara@google.com</owner>
   <owner>xiaohuic@chromium.org</owner>
   <owner>cros-settings@google.com</owner>

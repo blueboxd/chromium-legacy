@@ -163,9 +163,8 @@ TEST_F(PrefetchContainerTest, Servable) {
       blink::mojom::SpeculationInjectionWorld::kNone,
       /*prefetch_document_manager=*/nullptr);
 
-  prefetch_container.TakeStreamingURLLoader(
-      MakeServableStreamingURLLoaderForTest(
-          network::mojom::URLResponseHead::New(), "test body"));
+  MakeServableStreamingURLLoaderForTest(
+      &prefetch_container, network::mojom::URLResponseHead::New(), "test body");
 
   task_environment()->FastForwardBy(base::Minutes(2));
 
@@ -473,9 +472,9 @@ TEST_F(PrefetchContainerTest, PrefetchProxyPrefetchedResourceUkm) {
   UpdatePrefetchRequestMetrics(prefetch_container.get(), completion_status,
                                head.get());
 
-  prefetch_container->TakeStreamingURLLoader(
-      MakeServableStreamingURLLoaderForTest(
-          network::mojom::URLResponseHead::New(), "test body"));
+  MakeServableStreamingURLLoaderForTest(prefetch_container.get(),
+                                        network::mojom::URLResponseHead::New(),
+                                        "test body");
 
   // Simulates the URL of the prefetch being navigated to and the prefetch being
   // considered for serving.
@@ -864,62 +863,45 @@ TEST_F(PrefetchContainerTest, MultipleStreamingURLLoaders) {
       blink::mojom::SpeculationInjectionWorld::kNone,
       /*prefetch_document_manager=*/nullptr);
 
-  EXPECT_EQ(prefetch_container.GetFirstStreamingURLLoader(), nullptr);
+  EXPECT_FALSE(prefetch_container.HasStreamingURLLoadersForTest());
   EXPECT_EQ(prefetch_container.GetLastStreamingURLLoader(), nullptr);
 
   EXPECT_FALSE(prefetch_container.IsPrefetchServable(base::TimeDelta::Max()));
   EXPECT_FALSE(prefetch_container.GetHead());
 
-  std::vector<std::unique_ptr<PrefetchStreamingURLLoader>> streaming_loaders =
+  auto streaming_loaders =
       MakeServableStreamingURLLoadersWithNetworkTransitionRedirectForTest(
-          kTestUrl1, kTestUrl2);
+          &prefetch_container, kTestUrl1, kTestUrl2);
   ASSERT_EQ(streaming_loaders.size(), 2U);
-
-  base::WeakPtr<PrefetchStreamingURLLoader> weak_first_streaming_loader =
-      streaming_loaders[0]->GetWeakPtr();
-  prefetch_container.TakeStreamingURLLoader(std::move(streaming_loaders[0]));
-
-  EXPECT_EQ(prefetch_container.GetFirstStreamingURLLoader(),
-            weak_first_streaming_loader.get());
   EXPECT_EQ(prefetch_container.GetLastStreamingURLLoader(),
-            weak_first_streaming_loader.get());
-
-  EXPECT_FALSE(prefetch_container.IsPrefetchServable(base::TimeDelta::Max()));
-  EXPECT_FALSE(prefetch_container.GetHead());
-
-  base::WeakPtr<PrefetchStreamingURLLoader> weak_second_streaming_loader =
-      streaming_loaders[1]->GetWeakPtr();
-  prefetch_container.TakeStreamingURLLoader(std::move(streaming_loaders[1]));
-
-  EXPECT_EQ(prefetch_container.GetFirstStreamingURLLoader(),
-            weak_first_streaming_loader.get());
-  EXPECT_EQ(prefetch_container.GetLastStreamingURLLoader(),
-            weak_second_streaming_loader.get());
-
+            streaming_loaders[1].get());
   EXPECT_TRUE(prefetch_container.IsPrefetchServable(base::TimeDelta::Max()));
   EXPECT_TRUE(prefetch_container.GetHead());
 
-  std::unique_ptr<PrefetchStreamingURLLoader> first_streaming_loader =
-      prefetch_container.ReleaseFirstStreamingURLLoader();
+  PrefetchResponseReader::RequestHandler first_request_handler =
+      prefetch_container.CreateRequestHandler();
 
-  EXPECT_EQ(first_streaming_loader.get(), weak_first_streaming_loader.get());
-  EXPECT_EQ(prefetch_container.GetFirstStreamingURLLoader(),
-            weak_second_streaming_loader.get());
   EXPECT_EQ(prefetch_container.GetLastStreamingURLLoader(),
-            weak_second_streaming_loader.get());
+            streaming_loaders[1].get());
 
-  std::unique_ptr<PrefetchStreamingURLLoader> second_streaming_loader =
-      prefetch_container.ReleaseFirstStreamingURLLoader();
+  EXPECT_TRUE(streaming_loaders[0]);
+  // `PrefetchStreamingURLLoader` is deleted asynchronously, because
+  // `RequestHandler` doesn't keep it alive.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(streaming_loaders[0]);
 
-  EXPECT_EQ(second_streaming_loader.get(), weak_second_streaming_loader.get());
-  EXPECT_EQ(prefetch_container.GetFirstStreamingURLLoader(), nullptr);
+  PrefetchResponseReader::RequestHandler second_request_handler =
+      prefetch_container.CreateRequestHandler();
+
+  EXPECT_FALSE(prefetch_container.HasStreamingURLLoadersForTest());
   EXPECT_EQ(prefetch_container.GetLastStreamingURLLoader(), nullptr);
-
-  EXPECT_TRUE(weak_first_streaming_loader);
-  EXPECT_TRUE(weak_second_streaming_loader);
 
   EXPECT_FALSE(prefetch_container.IsPrefetchServable(base::TimeDelta::Max()));
   EXPECT_FALSE(prefetch_container.GetHead());
+
+  EXPECT_TRUE(streaming_loaders[1]);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(streaming_loaders[1]);
 }
 
 TEST_F(PrefetchContainerTest, ReleaseAllStreamingURLLoaders) {
@@ -937,42 +919,28 @@ TEST_F(PrefetchContainerTest, ReleaseAllStreamingURLLoaders) {
       blink::mojom::SpeculationInjectionWorld::kNone,
       /*prefetch_document_manager=*/nullptr);
 
-  EXPECT_EQ(prefetch_container.GetFirstStreamingURLLoader(), nullptr);
+  EXPECT_FALSE(prefetch_container.HasStreamingURLLoadersForTest());
   EXPECT_EQ(prefetch_container.GetLastStreamingURLLoader(), nullptr);
 
-  std::vector<std::unique_ptr<PrefetchStreamingURLLoader>> streaming_loaders =
+  auto streaming_loaders =
       MakeServableStreamingURLLoadersWithNetworkTransitionRedirectForTest(
-          kTestUrl1, kTestUrl2);
+          &prefetch_container, kTestUrl1, kTestUrl2);
   ASSERT_EQ(streaming_loaders.size(), 2U);
-
-  base::WeakPtr<PrefetchStreamingURLLoader> weak_first_streaming_loader =
-      streaming_loaders[0]->GetWeakPtr();
-  prefetch_container.TakeStreamingURLLoader(std::move(streaming_loaders[0]));
-
-  EXPECT_EQ(prefetch_container.GetFirstStreamingURLLoader(),
-            weak_first_streaming_loader.get());
   EXPECT_EQ(prefetch_container.GetLastStreamingURLLoader(),
-            weak_first_streaming_loader.get());
-
-  base::WeakPtr<PrefetchStreamingURLLoader> weak_second_streaming_loader =
-      streaming_loaders[1]->GetWeakPtr();
-  prefetch_container.TakeStreamingURLLoader(std::move(streaming_loaders[1]));
-
-  EXPECT_EQ(prefetch_container.GetFirstStreamingURLLoader(),
-            weak_first_streaming_loader.get());
-  EXPECT_EQ(prefetch_container.GetLastStreamingURLLoader(),
-            weak_second_streaming_loader.get());
+            streaming_loaders[1].get());
 
   prefetch_container.ResetAllStreamingURLLoaders();
 
-  EXPECT_EQ(prefetch_container.GetFirstStreamingURLLoader(), nullptr);
+  EXPECT_FALSE(prefetch_container.HasStreamingURLLoadersForTest());
   EXPECT_EQ(prefetch_container.GetLastStreamingURLLoader(), nullptr);
 
+  EXPECT_TRUE(streaming_loaders[0]);
+  EXPECT_TRUE(streaming_loaders[1]);
   // The streaming loaders are released from |prefetch_container|, but are made
   // self owned and scheduled to delete themselves.
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(weak_first_streaming_loader);
-  EXPECT_FALSE(weak_second_streaming_loader);
+  EXPECT_FALSE(streaming_loaders[0]);
+  EXPECT_FALSE(streaming_loaders[1]);
 }
 
 }  // namespace content

@@ -23,6 +23,28 @@ enum class HashRealTimeSelection {
   kHashRealTimeService = 1,
 };
 
+// Used only for tests. This is useful so that more than just
+// GOOGLE_CHROME_BRANDING bots are capable of testing code that only runs when
+// |IsHashRealTimeLookupEligibleInSession| returns true. To allow pretending
+// that there is Google Chrome branding on unbranded builds, create an object
+// of this type and keep it in scope for as long as the override should exist.
+// The constructor will set the override, and the destructor will clear it. If
+// necessary, the override can be cleared by calling |StopApplyingBranding|.
+class GoogleChromeBrandingPretenderForTesting {
+ public:
+  GoogleChromeBrandingPretenderForTesting();
+  GoogleChromeBrandingPretenderForTesting(
+      const GoogleChromeBrandingPretenderForTesting&) = delete;
+  GoogleChromeBrandingPretenderForTesting& operator=(
+      const GoogleChromeBrandingPretenderForTesting&) = delete;
+  ~GoogleChromeBrandingPretenderForTesting();
+
+  // The normal way to stop applying branding is for this object to go out of
+  // scope. However, if necessary it can also be done manually by calling this
+  // method.
+  void StopApplyingBranding();
+};
+
 // Returns whether the threat type is relevant for hash-prefix real-time
 // lookups.
 bool IsThreatTypeRelevant(const V5::ThreatType& threat_type);
@@ -35,9 +57,13 @@ std::string GetHashPrefix(const std::string& full_hash);
 bool IsHashRealTimeLookupEligibleInSession();
 
 // Based on the user's settings and session, determines which hash-prefix
-// real-time lookup should be used, if any.
-HashRealTimeSelection DetermineHashRealTimeSelection(bool is_off_the_record,
-                                                     PrefService* prefs);
+// real-time lookup should be used, if any. If |log_usage_histograms| is true,
+// this will log metrics related to whether hash real-time lookups were
+// available or why not.
+HashRealTimeSelection DetermineHashRealTimeSelection(
+    bool is_off_the_record,
+    PrefService* prefs,
+    bool log_usage_histograms = false);
 
 // A helper for consumers that want to recompute DetermineHashRealTimeSelection
 // when there are pref changes. This returns all prefs that modify the outcome

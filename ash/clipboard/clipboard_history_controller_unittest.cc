@@ -21,12 +21,12 @@
 #include "ash/test/ash_test_util.h"
 #include "ash/test/view_drawn_waiter.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/repeating_test_future.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "base/unguessable_token.h"
@@ -186,7 +186,7 @@ class ClipboardHistoryControllerTest : public AshTestBase {
     AshTestBase::SetUp();
     mock_image_factory_ = std::make_unique<MockClipboardImageModelFactory>();
     GetClipboardHistoryController()->set_confirmed_operation_callback_for_test(
-        operation_confirmed_future_.GetCallback());
+        operation_confirmed_future_.GetRepeatingCallback());
   }
 
   ClipboardHistoryControllerImpl* GetClipboardHistoryController() {
@@ -245,7 +245,7 @@ class ClipboardHistoryControllerTest : public AshTestBase {
   }
 
  protected:
-  base::test::RepeatingTestFuture<bool> operation_confirmed_future_;
+  base::test::TestFuture<bool> operation_confirmed_future_;
 
  private:
   std::unique_ptr<MockClipboardImageModelFactory> mock_image_factory_;
@@ -363,7 +363,7 @@ TEST_F(ClipboardHistoryControllerTest, VerifyAvailabilityInUserModes) {
       // disabled actually allows writes to go through, because the operation
       // might not have finished yet in that case. The history verification
       // below mitigates the chance that such a bug would not be caught.
-      EXPECT_TRUE(operation_confirmed_future_.IsEmpty());
+      EXPECT_FALSE(operation_confirmed_future_.IsReady());
     }
 
     const std::list<ClipboardHistoryItem>& items =
@@ -578,6 +578,19 @@ TEST_F(ClipboardHistoryControllerObserverTest, AddAndRemoveItem) {
   GetClipboardHistoryController()->FireItemUpdateNotificationTimerForTest();
 }
 
+// Verifies that when the clipboard history is cleared, the controller notifies
+// observers of clipboard history item updates as expected when removing items.
+TEST_F(ClipboardHistoryControllerObserverTest, ClearHistory) {
+  MockObserver mock_observer;
+  EXPECT_CALL(mock_observer, OnClipboardHistoryItemsUpdated).Times(3);
+  WriteTextToClipboardAndConfirm(u"A");
+  WriteTextToClipboardAndConfirm(u"B");
+
+  // Clear the system clipboard, which causes clipboard history to clear.
+  ui::Clipboard::GetForCurrentThread()->Clear(ui::ClipboardBuffer::kCopyPaste);
+  GetClipboardHistoryController()->FireItemUpdateNotificationTimerForTest();
+}
+
 // Verifies that clipboard history controller notifies observers once when
 // clipboard history item addition causes overflow.
 TEST_F(ClipboardHistoryControllerObserverTest, Overflow) {
@@ -676,7 +689,7 @@ class ClipboardHistoryControllerWithTextfieldTest
   }
 
   std::unique_ptr<views::Widget> textfield_widget_;
-  views::Textfield* textfield_;
+  raw_ptr<views::Textfield, ExperimentalAsh> textfield_;
 };
 
 TEST_F(ClipboardHistoryControllerWithTextfieldTest, PasteClipboardItemById) {
@@ -761,11 +774,25 @@ TEST_F(ClipboardHistoryControllerWithTextfieldTest, PasteClipboardItemById) {
   }
 }
 
+// Base class for tests that exercise clipboard history controller behavior with
+// every possible way of showing the clipboard history menu. The
+// `kClipboardHistoryLongpress` feature is enabled iff the menu is shown via
+// Ctrl+V longpress.
 class ClipboardHistoryControllerShowSourceTest
     : public ClipboardHistoryControllerTest,
       public testing::WithParamInterface<ClipboardHistoryControllerShowSource> {
  public:
+  ClipboardHistoryControllerShowSourceTest() {
+    scoped_feature_list_.InitWithFeatureState(
+        features::kClipboardHistoryLongpress,
+        GetSource() ==
+            ClipboardHistoryControllerShowSource::kControlVLongpress);
+  }
+
   ClipboardHistoryControllerShowSource GetSource() const { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -824,7 +851,7 @@ TEST_P(ClipboardHistoryControllerShowSourceTest, ShowMenuReturnsSuccess) {
 // Tests that the client-provided `OnMenuClosingCallback` runs before the menu
 // closes.
 TEST_P(ClipboardHistoryControllerShowSourceTest, OnMenuClosingCallback) {
-  base::test::RepeatingTestFuture<bool> on_menu_closing_future;
+  base::test::TestFuture<bool> on_menu_closing_future;
   base::HistogramTester histogram_tester;
 
   // Copy something to enable the clipboard history menu.
@@ -836,9 +863,9 @@ TEST_P(ClipboardHistoryControllerShowSourceTest, OnMenuClosingCallback) {
   // Show the menu with an `OnMenuClosingCallback`.
   GetClipboardHistoryController()->ShowMenu(
       test_window_rect, ui::MenuSourceType::MENU_SOURCE_NONE, GetSource(),
-      on_menu_closing_future.GetCallback());
+      on_menu_closing_future.GetRepeatingCallback());
   EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
-  EXPECT_TRUE(on_menu_closing_future.IsEmpty());
+  EXPECT_FALSE(on_menu_closing_future.IsReady());
 
   // Hide the menu. The callback should indicate that nothing will be pasted.
   PressAndReleaseKey(ui::VKEY_ESCAPE);
@@ -854,7 +881,7 @@ TEST_P(ClipboardHistoryControllerShowSourceTest, OnMenuClosingCallback) {
       test_window_rect, ui::MenuSourceType::MENU_SOURCE_NONE, GetSource(),
       on_menu_closing_future.GetCallback());
   EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
-  EXPECT_TRUE(on_menu_closing_future.IsEmpty());
+  EXPECT_FALSE(on_menu_closing_future.IsReady());
 
   // Toggle the menu closed. The callback should indicate a pending paste.
   PressAndReleaseKey(ui::VKEY_V, ui::EF_COMMAND_DOWN);

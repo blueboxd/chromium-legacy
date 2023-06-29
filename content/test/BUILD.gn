@@ -693,6 +693,10 @@ static_library("test_support") {
     ]
   }
 
+  if (is_apple) {
+    configs += [ "//build/config/compiler:enable_arc" ]
+  }
+
   if (is_mac) {
     sources += [
       "../browser/renderer_host/test_render_widget_host_view_mac_factory.h",
@@ -1611,10 +1615,6 @@ test("content_browsertests") {
     sources += [ "../browser/network/address_map_linux_browsertest.cc" ]
   }
 
-  if (is_mac) {
-    sources +=
-        [ "../app_shim_remote_cocoa/window_occlusion_browsertest_mac.mm" ]
-  }
   if (enable_reporting) {
     sources += [
       "../browser/network/cross_origin_opener_policy_reporting_browsertest.cc",
@@ -2028,13 +2028,16 @@ test("content_browsertests") {
     ]
   }
 
+  if (is_apple) {
+    configs += [ "//build/config/compiler:enable_arc" ]
+  }
+
   if (is_mac) {
     sources += [
+      "../app_shim_remote_cocoa/window_occlusion_browsertest_mac.mm",
       "../browser/accessibility/ax_tree_formatter_mac_browsertest.mm",
       "../browser/accessibility/browser_accessibility_cocoa_browsertest.mm",
       "../browser/accessibility/hit_testing_mac_browsertest.mm",
-      "../browser/form_controls_browsertest_mac.h",
-      "../browser/form_controls_browsertest_mac.mm",
       "../browser/gpu/browser_child_process_backgrounded_bridge_browsertest.mm",
       "../browser/keyboard_lock_browsertest_mac.mm",
       "../browser/pointer_lock_browsertest_mac.mm",
@@ -2047,6 +2050,7 @@ test("content_browsertests") {
     deps += [ "//third_party/ocmock" ]
     data_deps += [ "//content/shell:content_shell" ]
     data += [ "$root_out_dir/Content Shell.app/" ]
+    weak_frameworks = [ "ScreenCaptureKit.framework" ]  # macOS 12.3
   }
 
   if (is_ios) {
@@ -2171,7 +2175,6 @@ test("content_browsertests") {
   if (is_fuchsia) {
     use_test_server = true
 
-    test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
     additional_manifest_fragments = [
       "//build/config/fuchsia/test/audio_output.shard.test-cml",
       "//build/config/fuchsia/test/fonts.shard.test-cml",
@@ -2634,6 +2637,7 @@ test("content_unittests") {
     "../browser/storage_partition_impl_unittest.cc",
     "../browser/tracing/background_startup_tracing_observer_unittest.cc",
     "../browser/tracing/background_tracing_config_unittest.cc",
+    "../browser/tracing/tracing_scenario_unittest.cc",
     "../browser/usb/web_usb_service_impl_unittest.cc",
     "../browser/web_contents/aura/gesture_nav_simple_unittest.cc",
     "../browser/web_contents/web_contents_delegate_unittest.cc",
@@ -2750,6 +2754,7 @@ test("content_unittests") {
       "../browser/accessibility/browser_accessibility_mac_unittest.mm",
       "../browser/child_process_task_port_provider_mac_unittest.cc",
       "../browser/cocoa/system_hotkey_map_unittest.mm",
+      "../browser/media/capture/screen_capture_kit_fullscreen_module_unittest.mm",
       "../browser/renderer_host/input/mouse_wheel_rails_filter_unittest_mac.cc",
       "../browser/renderer_host/input/web_input_event_builders_mac_unittest.mm",
       "../browser/renderer_host/native_web_keyboard_event_mac_unittest.mm",
@@ -2781,12 +2786,11 @@ test("content_unittests") {
       "../browser/renderer_host/media/fuchsia_media_codec_provider_impl_unittest.cc",
     ]
 
-    # TODO(https://crbug.com/1185811): Investigate removing the requirement for
-    # job_policy_ambient_mark_vmo_exec for the sake of V8's allocator in tests.
-    test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
-
     additional_manifest_fragments = [
       "//build/config/fuchsia/test/fonts.shard.test-cml",
+
+      # TODO(https://crbug.com/1185811): Investigate removing the requirement
+      # for VmexResource.
       "//build/config/fuchsia/test/mark_vmo_executable.shard.test-cml",
       "//build/config/fuchsia/test/network.shard.test-cml",
       "//build/config/fuchsia/test/platform_video_codecs.shard.test-cml",
@@ -2856,7 +2860,6 @@ test("content_unittests") {
     "//components/network_session_configurator/common",
     "//components/offline_pages/buildflags",
     "//components/payments/mojom",
-    "//components/power_scheduler",
     "//components/services/quarantine/public/mojom",
     "//components/services/storage",
     "//components/services/storage:filesystem_proxy_factory",
@@ -3130,12 +3133,14 @@ test("content_unittests") {
       "//ui/base/mojom",
     ]
     frameworks = [
+      "AVFAudio.framework",
       "Carbon.framework",
       "IOSurface.framework",
     ]
     weak_frameworks = [
       "AuthenticationServices.framework",
     ]
+    weak_frameworks = [ "ScreenCaptureKit.framework" ]  # macOS 12.3
   }
   if (is_chromeos_ash) {
     sources += [
@@ -3199,6 +3204,7 @@ test("content_unittests") {
     sources += [
       "../browser/devtools/protocol/webauthn_handler_unittest.cc",
       "../browser/host_zoom_map_impl_unittest.cc",
+      "../browser/picture_in_picture/document_picture_in_picture_navigation_throttle_unittest.cc",
       "../browser/serial/serial_unittest.cc",
       "../browser/speech/endpointer/endpointer_unittest.cc",
       "../browser/speech/speech_recognition_engine_unittest.cc",

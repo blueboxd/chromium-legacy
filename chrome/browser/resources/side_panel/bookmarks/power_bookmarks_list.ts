@@ -85,6 +85,7 @@ export interface PowerBookmarksListElement {
     searchField: CrToolbarSearchFieldElement,
     shownBookmarksIronList: IronListElement,
     sortMenu: CrActionMenuElement,
+    editMenu: CrActionMenuElement,
     editDialog: PowerBookmarksEditDialogElement,
     disabledFeatureDialog: CrDialogElement,
     topLevelEmptyState: SpEmptyStateElement,
@@ -196,6 +197,14 @@ export class PowerBookmarksListElement extends PolymerElement {
         type: Boolean,
         value: false,
       },
+
+      canDrag_: {
+        type: Boolean,
+        value: true,
+        computed:
+            'computeCanDrag_(editing_, renamingId_, searchQuery_, labels_.*)',
+        observer: 'onCanDragChange_',
+      },
     };
   }
 
@@ -236,6 +245,7 @@ export class PowerBookmarksListElement extends PolymerElement {
   private hasScrollbars_: boolean;
   private contextMenuBookmark_: chrome.bookmarks.BookmarkTreeNode|undefined;
   private hasLoadedData_: boolean;
+  private canDrag_: boolean;
 
   constructor() {
     super();
@@ -335,6 +345,10 @@ export class PowerBookmarksListElement extends PolymerElement {
             'bookmarkFolderCreated', getBookmarkName(bookmark)));
       }
     }
+    const visibleParentIndex = this.visibleIndex_(parent.id);
+    if (visibleParentIndex > -1) {
+      this.notifyPath(`shownBookmarks_.${visibleParentIndex}.children`);
+    }
     this.updateShoppingData_();
   }
 
@@ -367,13 +381,13 @@ export class PowerBookmarksListElement extends PolymerElement {
       getAnnouncerInstance().announce(loadTimeData.getStringF(
           'bookmarkMoved', getBookmarkName(bookmark),
           getBookmarkName(newParent)));
-      // If the new parent folder is visible, notify to ensure its displayed
-      // child count is updated.
-      const visibleIndex = this.visibleIndex_(newParent.id);
-      if (visibleIndex > -1) {
-        this.notifyPath(`shownBookmarks_.${visibleIndex}.children`);
-      }
       this.$.shownBookmarksIronList.scrollToIndex(scrollIndex);
+    }
+    // If the new parent folder is visible, notify to ensure its displayed
+    // child count is updated.
+    const visibleIndex = this.visibleIndex_(newParent.id);
+    if (visibleIndex > -1) {
+      this.notifyPath(`shownBookmarks_.${visibleIndex}.children`);
     }
   }
 
@@ -406,6 +420,16 @@ export class PowerBookmarksListElement extends PolymerElement {
   }
 
   /** PowerBookmarksDragDelegate */
+  getFallbackBookmark(): chrome.bookmarks.BookmarkTreeNode {
+    return this.getParentFolder_();
+  }
+
+  /** PowerBookmarksDragDelegate */
+  getFallbackDropTargetElement(): HTMLElement {
+    return this;
+  }
+
+  /** PowerBookmarksDragDelegate */
   onFinishDrop(dropTarget: chrome.bookmarks.BookmarkTreeNode): void {
     this.focusBookmark_(dropTarget.id);
 
@@ -418,7 +442,7 @@ export class PowerBookmarksListElement extends PolymerElement {
     }, {once: true});
   }
 
-  private canDrag_() {
+  private computeCanDrag_(): boolean {
     return !this.editing_ && !this.renamingId_ && !this.searchQuery_ &&
         !this.hasActiveLabels_();
   }
@@ -490,8 +514,11 @@ export class PowerBookmarksListElement extends PolymerElement {
     if (!this.visibleParent_(parent)) {
       return [];
     }
-    return this.bookmarksService_.applySearchQueryAndLabels(
-        this.labels_, this.searchQuery_, [bookmark]);
+    if (this.searchQuery_ || this.labels_.find((label) => label.active)) {
+      return this.bookmarksService_.applySearchQueryAndLabels(
+          this.labels_, this.searchQuery_, [bookmark]);
+    }
+    return [bookmark];
   }
 
   private getActiveFolder_(): chrome.bookmarks.BookmarkTreeNode|undefined {
@@ -660,6 +687,14 @@ export class PowerBookmarksListElement extends PolymerElement {
     this.bookmarksService_.refreshDataForBookmarks(this.shownBookmarks_);
   }
 
+  private onCanDragChange_() {
+    if (this.canDrag_) {
+      this.bookmarksDragManager_.startObserving();
+    } else {
+      this.bookmarksDragManager_.stopObserving();
+    }
+  }
+
   private recordMetricsOnConnected_() {
     chrome.metricsPrivate.recordEnumerationValue(
         'PowerBookmarks.SidePanel.SortTypeShown',
@@ -813,6 +848,10 @@ export class PowerBookmarksListElement extends PolymerElement {
         (this.shouldHideHeader_() && this.shownBookmarks_.length === 0);
   }
 
+  private shouldHideFilterChips_(): boolean {
+    return this.guestMode_ || this.labels_.length === 0;
+  }
+
   private shouldHideHeader_(): boolean {
     return this.hasActiveLabels_() || !!this.searchQuery_;
   }
@@ -893,6 +932,12 @@ export class PowerBookmarksListElement extends PolymerElement {
     this.$.sortMenu.showAt(event.target as HTMLElement);
   }
 
+  private onShowEditMenuClicked_(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.$.editMenu.showAt(event.target as HTMLElement);
+  }
+
   private onAddNewFolderClicked_(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
@@ -912,6 +957,7 @@ export class PowerBookmarksListElement extends PolymerElement {
   private onBulkEditClicked_(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
+    this.$.editMenu.close();
     this.editing_ = !this.editing_;
     if (!this.editing_) {
       this.selectedBookmarks_ = [];
@@ -1003,7 +1049,7 @@ export class PowerBookmarksListElement extends PolymerElement {
         bookmarks, moveOnly);
   }
 
-  private onEditMenuClicked_(event: MouseEvent) {
+  private onBulkEditMenuClicked_(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
     this.$.contextMenu.showAt(
@@ -1024,7 +1070,7 @@ export class PowerBookmarksListElement extends PolymerElement {
   private onVisualViewClicked_(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
-    this.$.sortMenu.close();
+    this.$.editMenu.close();
     this.compact_ = false;
     this.$.shownBookmarksIronList.notifyResize();
     this.bookmarksApi_.setViewType(ViewType.kExpanded);
@@ -1036,7 +1082,7 @@ export class PowerBookmarksListElement extends PolymerElement {
   private onCompactViewClicked_(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
-    this.$.sortMenu.close();
+    this.$.editMenu.close();
     this.compact_ = true;
     this.$.shownBookmarksIronList.notifyResize();
     this.bookmarksApi_.setViewType(ViewType.kCompact);

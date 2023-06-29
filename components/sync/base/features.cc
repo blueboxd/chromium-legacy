@@ -8,10 +8,6 @@
 
 namespace syncer {
 
-BASE_FEATURE(kCacheBaseEntitySpecificsInMetadata,
-             "CacheBaseEntitySpecificsInMetadata",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kDeferredSyncStartupCustomDelay,
              "DeferredSyncStartupCustomDelay",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -43,10 +39,6 @@ BASE_FEATURE(kSyncAutofillWalletUsageData,
              "SyncAutofillWalletUsageData",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSyncExtensionTypesThrottling,
-             "SyncExtensionTypesThrottling",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kSyncSegmentationDataType,
              "SyncSegmentationDataType",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -76,10 +68,6 @@ BASE_FEATURE(kUseSyncInvalidations,
 BASE_FEATURE(kSyncPersistInvalidations,
              "SyncPersistInvalidations",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kUseSyncInvalidationsForWalletAndOffer,
-             "UseSyncInvalidationsForWalletAndOffer",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSkipInvalidationOptimizationsWhenDeviceInfoUpdated,
              "SkipInvalidationOptimizationsWhenDeviceInfoUpdated",
@@ -170,4 +158,8 @@ BASE_FEATURE(kTabGroupsSaveNudgeDelay,
 BASE_FEATURE(kReplaceSyncPromosWithSignInPromos,
              "ReplaceSyncPromosWithSignInPromos",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSyncAvoidReconfigurationIfAlreadyStopping,
+             "SyncAvoidReconfigurationIfAlreadyStopping",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 }  // namespace syncer

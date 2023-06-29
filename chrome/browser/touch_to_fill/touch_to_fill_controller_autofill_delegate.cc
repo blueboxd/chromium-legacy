@@ -82,7 +82,7 @@ TouchToFillControllerAutofillDelegate::TouchToFillControllerAutofillDelegate(
       webauthn_delegate_(webauthn_delegate),
       filler_(std::move(filler)),
       show_password_migration_warning_(
-          base::BindRepeating(&password_manager::ShowWarning)),
+          base::BindRepeating(&local_password_migration::ShowWarning)),
       should_show_hybrid_option_(should_show_hybrid_option),
       source_id_(password_client->web_contents()
                      ->GetPrimaryMainFrame()
@@ -99,7 +99,7 @@ TouchToFillControllerAutofillDelegate::
 void TouchToFillControllerAutofillDelegate::OnShow(
     base::span<const password_manager::UiCredential> credentials,
     base::span<password_manager::PasskeyCredential> passkey_credentials) {
-  CHECK(filler_->IsReadyToFill());
+  CHECK(filler_);
 
   filler_->UpdateTriggerSubmission(ShouldTriggerSubmission() &&
                                    ContainsNonEmptyUsername(credentials));
@@ -119,7 +119,7 @@ void TouchToFillControllerAutofillDelegate::OnShow(
 void TouchToFillControllerAutofillDelegate::OnCredentialSelected(
     const UiCredential& credential,
     base::OnceClosure action_complete) {
-  if (!filler_->IsReadyToFill()) {
+  if (!filler_) {
     return;
   }
 
@@ -160,7 +160,7 @@ void TouchToFillControllerAutofillDelegate::OnPasskeyCredentialSelected(
 void TouchToFillControllerAutofillDelegate::OnManagePasswordsSelected(
     bool passkeys_shown,
     base::OnceClosure action_complete) {
-  if (!filler_->IsReadyToFill()) {
+  if (!filler_) {
     return;
   }
 
@@ -200,7 +200,7 @@ void TouchToFillControllerAutofillDelegate::OnHybridSignInSelected(
 
 void TouchToFillControllerAutofillDelegate::OnDismiss(
     base::OnceClosure action_complete) {
-  if (!filler_->IsReadyToFill()) {
+  if (!filler_) {
     return;
   }
 
@@ -213,7 +213,7 @@ void TouchToFillControllerAutofillDelegate::OnDismiss(
 }
 
 const GURL& TouchToFillControllerAutofillDelegate::GetFrameUrl() {
-  CHECK(filler_->IsReadyToFill());
+  CHECK(filler_);
   return filler_->GetFrameUrl();
 }
 
@@ -233,7 +233,7 @@ void TouchToFillControllerAutofillDelegate::OnReauthCompleted(
     UiCredential credential,
     bool auth_successful) {
   CHECK(action_complete_);
-  if (!filler_->IsReadyToFill()) {
+  if (!filler_) {
     return;
   }
 
@@ -250,12 +250,14 @@ void TouchToFillControllerAutofillDelegate::OnReauthCompleted(
 void TouchToFillControllerAutofillDelegate::FillCredential(
     const UiCredential& credential) {
   CHECK(action_complete_);
-  CHECK(filler_->IsReadyToFill());
+  CHECK(filler_);
 
   // Do not trigger autosubmission if the password migration warning is being
   // shown because it interrupts the nomal workflow.
-  filler_->UpdateTriggerSubmission(ShouldTriggerSubmission() &&
-                                   !password_manager::ShouldShowWarning());
+  filler_->UpdateTriggerSubmission(
+      ShouldTriggerSubmission() &&
+      !local_password_migration::ShouldShowWarning(
+          Profile::FromBrowserContext(web_contents_->GetBrowserContext())));
   filler_->FillUsernameAndPassword(credential.username(),
                                    credential.password());
   ShowPasswordMigrationWarningIfNeeded();
@@ -273,13 +275,15 @@ void TouchToFillControllerAutofillDelegate::FillCredential(
 void TouchToFillControllerAutofillDelegate::CleanUpFillerAndReportOutcome(
     TouchToFillOutcome outcome,
     bool show_virtual_keyboard) {
-  filler_->CleanUp(ToShowVirtualKeyboard(show_virtual_keyboard));
+  filler_->Dismiss(ToShowVirtualKeyboard(show_virtual_keyboard));
+  filler_.reset();
   base::UmaHistogramEnumeration("PasswordManager.TouchToFill.Outcome", outcome);
 }
 
 void TouchToFillControllerAutofillDelegate::
     ShowPasswordMigrationWarningIfNeeded() {
-  if (!password_manager::ShouldShowWarning()) {
+  if (!local_password_migration::ShouldShowWarning(
+          Profile::FromBrowserContext(web_contents_->GetBrowserContext()))) {
     return;
   }
   show_password_migration_warning_.Run(

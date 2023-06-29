@@ -16,9 +16,9 @@ constexpr auto kContentsInsets = gfx::Insets::VH(kContentsVerticalInset, 16);
 // The size of the `DeleteButton`.
 constexpr int kDeleteButtonSizeDip = 16;
 
-// The margins of the `DeleteButton` instance showing on
-// `ClipboardHistoryTextItemView` or `ClipboardHistoryFileItemView`.
-constexpr auto kDefaultItemDeleteButtonMargins = gfx::Insets::TLBR(0, 8, 0, 4);
+// The margins of the `DeleteButton` instance showing on a
+// `ClipboardHistoryTextItemView`.
+constexpr auto kTextItemDeleteButtonMargins = gfx::Insets::TLBR(0, 8, 0, 4);
 
 // The margins of the `DeleteButton` instance showing on
 // `ClipboardHistoryBitmapItemView`.
@@ -39,6 +39,12 @@ constexpr int kImageBackgroundCornerRadius = 12;
 
 // The radius of the image view's rounded corners when surrounded by a border.
 constexpr int kImageBorderCornerRadius = 4;
+
+// The preferred size for an item's icon.
+constexpr gfx::Size kIconSize(20, 20);
+
+// The margins for an item's icon.
+constexpr auto kIconMargins = gfx::Insets::TLBR(0, 0, 0, 12);
 
 // The thickness of the image border.
 constexpr int kImageBorderThickness = 1;

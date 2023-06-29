@@ -224,6 +224,61 @@ void ServiceWorkerMainResourceLoader::StartRequest(
   scoped_refptr<ServiceWorkerContextWrapper> context = core->wrapper();
   DCHECK(context);
 
+  enum RaceNetworkRequestMode {
+    kDefault,
+    kForced,
+    kSkipped
+  } race_network_request_mode = kDefault;
+  // Check if registered static route rules match the request.
+  if (active_worker->router_evaluator()) {
+    CHECK(active_worker->router_evaluator()->IsValid());
+    auto sources =
+        active_worker->router_evaluator()->Evaluate(resource_request_);
+    // TODO(crbug.com/1371756) In some cases the router is evaluated only in the
+    // renderer side. The same mechanism is needed in the subresource loader
+    // as well.
+    active_worker->CountFeature(
+        blink::mojom::WebFeature::kServiceWorkerStaticRouter_Evaluate);
+    if (!sources.empty()) {  // matched the rule.
+      // TODO(crbug.com/1371756): support other sources in the full form.
+      // https://github.com/yoshisatoyanagisawa/service-worker-static-routing-api/blob/main/final-form.md
+      switch (sources[0].type) {
+        case blink::ServiceWorkerRouterSource::SourceType::kNetwork:
+          // Network fallback is requested.
+          // URLLoader in |fallback_callback_|, in other words |url_loader_|
+          // which is referred in
+          // NavigationURLLoaderImpl::FallbackToNonInterceptedRequest() is not
+          // ready until ServiceWorkerMainResourceLoader::StartRequest()
+          // finishes, so calling the fallback at this point doesn't correctly
+          // handle the fallback process. Use PostTask to run the callback after
+          // finishing StartRequset(), also start the ServiceWorker manually
+          // since we don't instantiate ServiceWorkerFetchDispatcher, which
+          // involves the ServiceWorker startup.
+          base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+              FROM_HERE,
+              base::BindOnce(
+                  [](NavigationLoaderInterceptor::FallbackCallback
+                         fallback_callback,
+                     scoped_refptr<ServiceWorkerVersion> active_worker) {
+                    std::move(fallback_callback)
+                        .Run(false /* reset_subresource_loader_params */,
+                             net::LoadTimingInfo());
+                    active_worker->StartWorker(
+                        ServiceWorkerMetrics::EventType::STATIC_ROUTER,
+                        base::DoNothing());
+                  },
+                  std::move(fallback_callback_), active_worker));
+          return;
+        case blink::ServiceWorkerRouterSource::SourceType::kRace:
+          race_network_request_mode = kForced;
+          break;
+        case blink::ServiceWorkerRouterSource::SourceType::kFetchEvent:
+          race_network_request_mode = kSkipped;
+          break;
+      }
+    }
+  }
+
   // Dispatch the fetch event.
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
       blink::mojom::FetchAPIRequest::From(resource_request_),
@@ -239,7 +294,12 @@ void ServiceWorkerMainResourceLoader::StartRequest(
   if (container_host_->IsContainerForWindowClient()) {
     // The RaceNetworkRequest mode doesn't support Navigation Preload. If
     // RaceNetworkRequest is triggered, Navigation Preload never happens.
-    if (MaybeStartRaceNetworkRequest(context, active_worker)) {
+    if (race_network_request_mode == kForced) {
+      if (StartRaceNetworkRequest(context, active_worker)) {
+        dispatched_preload_type_ = DispatchedPreloadType::kRaceNetworkRequest;
+      }
+    } else if (race_network_request_mode != kSkipped &&
+               MaybeStartRaceNetworkRequest(context, active_worker)) {
       dispatched_preload_type_ = DispatchedPreloadType::kRaceNetworkRequest;
     } else if (fetch_dispatcher_->MaybeStartNavigationPreload(
                    resource_request_, context, frame_tree_node_id_)) {
@@ -265,6 +325,22 @@ bool ServiceWorkerMainResourceLoader::MaybeStartRaceNetworkRequest(
     return false;
   }
 
+  bool status = StartRaceNetworkRequest(context, version);
+  if (is_enabled_by_origin_trial) {
+    version->CountFeature(
+        blink::mojom::WebFeature::
+            kServiceWorkerBypassFetchHandlerForAllWithRaceNetworkRequestByOriginTrial);
+  } else if (is_enabled_by_feature_flag) {
+    version->CountFeature(
+        blink::mojom::WebFeature::
+            kServiceWorkerBypassFetchHandlerForAllWithRaceNetworkRequest);
+  }
+  return status;
+}
+
+bool ServiceWorkerMainResourceLoader::StartRaceNetworkRequest(
+    scoped_refptr<ServiceWorkerContextWrapper> context,
+    scoped_refptr<ServiceWorkerVersion> version) {
   // Set fetch_handler_bypass_option to tell the renderer that
   // RaceNetworkRequest is enabled.
   version->set_fetch_handler_bypass_option(
@@ -336,16 +412,6 @@ bool ServiceWorkerMainResourceLoader::MaybeStartRaceNetworkRequest(
   race_network_request_url_loader_ = std::move(url_loader);
   race_network_request_loader_client_ =
       std::move(race_network_request_url_loader_client);
-
-  if (is_enabled_by_origin_trial) {
-    version->CountFeature(
-        blink::mojom::WebFeature::
-            kServiceWorkerBypassFetchHandlerForAllWithRaceNetworkRequestByOriginTrial);
-  } else if (is_enabled_by_feature_flag) {
-    version->CountFeature(
-        blink::mojom::WebFeature::
-            kServiceWorkerBypassFetchHandlerForAllWithRaceNetworkRequest);
-  }
 
   return true;
 }

@@ -40,9 +40,7 @@
 #include "net/socket/stream_socket.h"
 #include "net/spdy/buffered_spdy_framer.h"
 #include "net/spdy/http2_priority_dependencies.h"
-#include "net/spdy/http2_push_promise_index.h"
 #include "net/spdy/multiplexed_session.h"
-#include "net/spdy/server_push_delegate.h"
 #include "net/spdy/spdy_buffer.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_stream.h"
@@ -304,8 +302,7 @@ class NET_EXPORT SpdySession
       public spdy::SpdyFramerDebugVisitorInterface,
       public MultiplexedSession,
       public HigherLayeredPool,
-      public NetworkChangeNotifier::DefaultNetworkActiveObserver,
-      public Http2PushPromiseIndex::Delegate {
+      public NetworkChangeNotifier::DefaultNetworkActiveObserver {
  public:
   // TODO(akalin): Use base::TickClock when it becomes available.
   typedef base::TimeTicks (*TimeFunc)();
@@ -342,7 +339,6 @@ class NET_EXPORT SpdySession
               bool http2_end_stream_with_data_frame,
               bool enable_priority_update,
               TimeFunc time_func,
-              ServerPushDelegate* push_delegate,
               NetworkQualityEstimator* network_quality_estimator,
               NetLog* net_log);
 
@@ -355,27 +351,6 @@ class NET_EXPORT SpdySession
     return spdy_session_key_.host_port_proxy_pair();
   }
   const SpdySessionKey& spdy_session_key() const { return spdy_session_key_; }
-
-  // Get a pushed stream for a given |url| with stream ID |pushed_stream_id|.
-  // The caller must have already claimed the stream from Http2PushPromiseIndex.
-  // |pushed_stream_id| must not be kNoPushedStreamFound.
-  //
-  // Returns ERR_CONNECTION_CLOSED if the connection is being closed.
-  // Returns ERR_HTTP2_PUSHED_STREAM_NOT_AVAILABLE if the pushed stream is not
-  //   available any longer, for example, if the server has reset it.
-  // Returns OK if the stream is still available, and returns the stream in
-  //   |*spdy_stream|.  If the stream is still open, updates its priority to
-  //   |priority|.
-  // TODO(https://crbug.com/1426477): Remove.
-  int GetPushedStream(const GURL& url,
-                      spdy::SpdyStreamId pushed_stream_id,
-                      RequestPriority priority,
-                      raw_ptr<SpdyStream>* spdy_stream);
-
-  // Called when the pushed stream should be cancelled. If the pushed stream is
-  // not claimed and active, sends RST to the server to cancel the stream.
-  // TODO(https://crbug.com/1426477): Remove.
-  void CancelPush(const GURL& url);
 
   // Initialize the session with the given connection.
   //
@@ -623,19 +598,11 @@ class NET_EXPORT SpdySession
   // standards for TLS.
   bool HasAcceptableTransportSecurity() const;
 
-  // Must be used only by |pool_| (including |pool_.push_promise_index_|).
+  // Must be used only by |pool_|.
   base::WeakPtr<SpdySession> GetWeakPtr();
 
   // HigherLayeredPool implementation:
   bool CloseOneIdleConnection() override;
-
-  // Http2PushPromiseIndex::Delegate implementation:
-  // TODO(https://crbug.com/1426477): Remove.
-  bool ValidatePushedStream(spdy::SpdyStreamId stream_id,
-                            const GURL& url,
-                            const HttpRequestInfo& request_info,
-                            const SpdySessionKey& key) const override;
-  base::WeakPtr<SpdySession> GetWeakPtrToSession() override;
 
   // Change this session's socket tag to |new_tag|. Returns true on success.
   bool ChangeSocketTag(const SocketTag& new_tag);
@@ -698,7 +665,6 @@ class NET_EXPORT SpdySession
   // |request->OnRequestComplete{Success,Failure}()| will be called
   // when the stream is created (unless it is cancelled). Otherwise,
   // no stream is created and the error is returned.
-  // TODO(https://crbug.com/1426477): Remove.
   int TryCreateStream(const base::WeakPtr<SpdyStreamRequest>& request,
                       base::WeakPtr<SpdyStream>* stream);
 

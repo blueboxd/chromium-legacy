@@ -41,6 +41,7 @@
 <translation id="1358735829858566124">Fail atau direktori tidak boleh digunakan.</translation>
 <translation id="1363028406613469049">Penjejakan</translation>
 <translation id="1378727793141957596">Selamat datang ke Google Drive!</translation>
+<translation id="1379156577998569384">Fail Drive Saya anda tersedia di luar talian</translation>
 <translation id="1379911846207762492">Anda boleh menjadikan fail tersedia di luar talian untuk diakses semasa anda tidak mempunyai sambungan Internet.</translation>
 <translation id="1383876407941801731">Carian</translation>
 <translation id="1388045380422025115">Semua jenis</translation>
@@ -299,7 +300,6 @@
 <translation id="3479552764303398839">Bukan sekarang</translation>
 <translation id="3486821258960016770">Mongolia</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> ralat.</translation>
-<translation id="3501954296166022751">Fail Google Drive anda tersedia di luar talian</translation>
 <translation id="3509680540198371098">Rangkaian <ph name="NETWORK_INDEX" /> daripada <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />%, Butiran</translation>
 <translation id="3511705761158917664">Membuat persediaan untuk menyegerakkan <ph name="NUMBER_OF_ITEMS" /> item...</translation>
 <translation id="3522708245912499433">Bahasa Portugis</translation>
@@ -351,6 +351,7 @@
 <translation id="3855472144336161447">Bahasa Jerman Neo 2</translation>
 <translation id="3858860766373142691">Nama</translation>
 <translation id="3866249974567520381">Huraian</translation>
+<translation id="3866439285517092441">Bateri lemah. Penyegerakan akan disambung semula apabila anda disambungkan kepada bekalan kuasa.</translation>
 <translation id="3899991606604168269">Perancis (Kanada) dengan papan kekunci Berbilang Bahasa</translation>
 <translation id="3901991538546252627">Menyambung ke <ph name="NAME" /></translation>
 <translation id="3906232975181435906">Memasang profil mudah alih, Rangkaian <ph name="NETWORK_INDEX" /> daripada <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
@@ -358,6 +359,7 @@
 <translation id="3943857333388298514">Tampal</translation>
 <translation id="3952872973865944257">Fonetik Telugu</translation>
 <translation id="3958548648197196644">Kiwi</translation>
+<translation id="397105322502079400">Mengira...</translation>
 <translation id="3971140002794351170">Muat turun profil mudah alih, Rangkaian <ph name="NETWORK_INDEX" /> daripada <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Inggeris (UK)</translation>
 <translation id="3975895378829046965">Fonetik Bangla</translation>
@@ -368,6 +370,7 @@
 <translation id="4040753847560036377">PUK salah</translation>
 <translation id="4057991113334098539">Mengaktifkan...</translation>
 <translation id="4092890906744441904">Ireland</translation>
+<translation id="4124731372776320263">1 fail Drive disegerakkan</translation>
 <translation id="4124935795427217608">Unikorn</translation>
 <translation id="4131235941541910880">Alihkan item yang tidak diperlukan ke sampah</translation>
 <translation id="4134804435730168042">Rangkaian <ph name="NETWORK_INDEX" /> daripada <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, Aktifkan selepas persediaan peranti</translation>
@@ -564,6 +567,7 @@
 <translation id="5422221874247253874">Titik Akses</translation>
 <translation id="5428105026674456456">Bahasa Sepanyol</translation>
 <translation id="5438282218546237410">Tiada hasil carian untuk <ph name="SEARCH_TERM" />.</translation>
+<translation id="5447680084201416734">Storan tidak mencukupi.</translation>
 <translation id="5449551289610225147">Kata laluan tidak sah</translation>
 <translation id="5459064203055649751">Fail yang bernama "<ph name="FILENAME" />" sudah wujud. Adakah anda mahu menggantikan fail tersebut dengan fail yang sedang anda alihkan?</translation>
 <translation id="5463231940765244860">Masuk</translation>
@@ -579,6 +583,7 @@
 <translation id="5524517123096967210">Fail tidak boleh dibaca.</translation>
 <translation id="5533102081734025921">Imej <ph name="IMAGE_TYPE" /></translation>
 <translation id="5534520101572674276">Mengira saiz</translation>
+<translation id="5536122250858122375">Jenis fail ini tidak dapat disegerakkan</translation>
 <translation id="554153475311314364">Alih Huruf Greek</translation>
 <translation id="5554171655917412781"><ph name="SELECTED_FOLDERS_COUNT" /> folder dipilih</translation>
 <translation id="5580591966435005537">mesin maya</translation>
@@ -691,6 +696,7 @@
 <translation id="6423031066725912715">Vietnam dengan papan kekunci TCVN</translation>
 <translation id="6430271654280079150">Anda mempunyai 1 percubaan lagi.</translation>
 <translation id="643243556292470964">Fail yang dipadamkan kini dialihkan ke sampah</translation>
+<translation id="6438480100790416671">Menyemak ruang storan…</translation>
 <translation id="6485131920355264772">Gagal mendapatkan maklumat ruang</translation>
 <translation id="6495925982925244349">Rangkaian <ph name="NETWORK_INDEX" /> daripada <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />%, Diurus oleh Pentadbir anda, Butiran</translation>
 <translation id="649877868557234318">Mengekstrak <ph name="FILE_NAME" /> ke <ph name="FOLDER_NAME" /></translation>
@@ -738,6 +744,7 @@
 <translation id="6874758081814639712">Orang sedang melakukan tai chi</translation>
 <translation id="6876155724392614295">Basikal</translation>
 <translation id="6878261347041253038">Papan kekunci Devanagari (Fonetik)</translation>
+<translation id="6882444584974399416">Peranti anda tiada ruang storan yang mencukupi untuk memastikan fail anda tersedia di luar talian. Fail baharu tidak akan disegerakkan secara automatik lagi.</translation>
 <translation id="6885780034956018177">Siput</translation>
 <translation id="6896758677409633944">Salin</translation>
 <translation id="6898028766943174120">Lagi subfolder...</translation>
@@ -890,10 +897,10 @@
 <translation id="7972920761225148017">Perancis (Switzerland)</translation>
 <translation id="7973962044839454485">Pengesahan PPP gagal disebabkan oleh nama pengguna atau kata laluan yang salah</translation>
 <translation id="7980421588063892270">Inggeris (AS) dengan papan kekunci Colemak</translation>
-<translation id="7985008041109611710">Menyegerakkan <ph name="NUMBER_OF_FILES_SYNCING" /> fail</translation>
 <translation id="8000066093800657092">Tiada rangkaian</translation>
 <translation id="8008366997883261463">Anjing Jack Russel Terrier</translation>
 <translation id="8028993641010258682">Saiz</translation>
+<translation id="8034974485549318493">Untuk persediaan permulaan, anda perlukan sambungan Internet supaya fail dapat disegerakkan.</translation>
 <translation id="803771048473350947">Fail</translation>
 <translation id="8038111231936746805">(lalai)</translation>
 <translation id="8042602468072383151">Audio <ph name="AUDIO_TYPE" /></translation>
@@ -913,6 +920,7 @@
 <translation id="8154842056504218462">Semua masukan dipilih.</translation>
 <translation id="8157684860301034423">Gagal mengambil maklumat apl.</translation>
 <translation id="8175731104491895765">Perancis (Belgium)</translation>
+<translation id="8175799081768705361"><ph name="NUMBER_OF_FILES_SYNCING" /> fail Drive disegerakkan</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">Model peranti</translation>
 <translation id="8223479393428528563">Bagi menyimpan fail-fail ini untuk kegunaan diluar talian, sila kembali ke dalam talian, klik kanan fail dan pilih pilihan <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
@@ -945,6 +953,7 @@
 <translation id="8395901698320285466">Dimensi</translation>
 <translation id="8404498045299006085">Kekalkan semua</translation>
 <translation id="8408068190360279472">Rangkaian <ph name="NETWORK_TYPE" />, menyambung</translation>
+<translation id="841387525767317275">Fail dalam folder ini tersedia di luar talian</translation>
 <translation id="8425213833346101688">Tukar</translation>
 <translation id="8431909052837336408">Tukar PIN SIM</translation>
 <translation id="8437209419043462667">AS</translation>
@@ -972,6 +981,7 @@
 <translation id="8560515948038859357">Kantonis</translation>
 <translation id="8561206103590473338">Gajah</translation>
 <translation id="8566466896628108558">Rangkaian <ph name="NETWORK_INDEX" /> daripada <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />%, Disekat oleh Pentadbir anda, Butiran</translation>
+<translation id="8567555211227790801">Kini anda di luar talian. Penyegerakan akan disambung semula apabila anda disambungkan kepada Internet.</translation>
 <translation id="8568374623837201676">Padam fail ini secara kekal?</translation>
 <translation id="8569764466147087991">Pilih fail untuk dibuka</translation>
 <translation id="8577897833047451336">Croatia</translation>
@@ -1012,6 +1022,7 @@
 <translation id="8919081441417203123">Bahasa Denmark</translation>
 <translation id="8949925099261528566">Disambungkan, tiada Internet</translation>
 <translation id="8965697826696209160">Tiada ruang yang mencukupi.</translation>
+<translation id="8970887620466824814">Kesilapan telah berlaku.</translation>
 <translation id="8971742885766657349">Menyegerakkan - <ph name="PERCENT" />%</translation>
 <translation id="8997962250644902079">Pinyin Cina (Tradisional)</translation>
 <translation id="8998871447376656508">Ruang kosong tidak mencukupi dalam Google Drive anda untuk menyelesaikan muat naik.</translation>
@@ -1046,7 +1057,6 @@
 <translation id="9213073329713032541">Pemasangan berjaya dimulakan.</translation>
 <translation id="9219103736887031265">Imej</translation>
 <translation id="9219908252191632183">Qamari</translation>
-<translation id="937795003075802289">Menyegerakkan 1 fail</translation>
 <translation id="938470336146445890">Sila pasang sijil pengguna.</translation>
 <translation id="939736085109172342">Folder baharu</translation>
 <translation id="943972244133411984">Diubah suai oleh</translation>

@@ -13,6 +13,7 @@ if (is_android) {
 
 if (is_ios) {
   import("//build/config/ios/config.gni")  # For `target_environment`
+  import("//build/config/ios/ios_sdk.gni")  # For `xcode_version_int`
 }
 
 declare_args() {
@@ -23,9 +24,10 @@ declare_args() {
   # should not be removed.
   enable_rust =
       build_with_chromium &&
-      # TODO(crbug.com/1386212): Mac and iOS. Note that enabling iOS, without
-      # enabling Mac for host tools, is not possible.
-      !is_mac && !is_ios && !(is_official_build && is_mac) &&
+      # TODO(crbug.com/1386212): Mac official.
+      !(is_official_build && is_mac) &&
+      # TODO(crbug.com/1386212): Bindgen finds bad system headers on XCode 15.
+      !(is_ios && xcode_version_int >= 1500) &&
       # TODO(crbug.com/1453618): Windows ARM64 is missing clang_rt libs, and
       # clang_rt.profile is needed when coverage is enabled.
       !(is_win && use_clang_coverage && target_cpu == "arm64")
@@ -90,7 +92,7 @@ declare_args() {
   enable_rust_json = enable_all_rust_features
 
   # Support for chrome://crash-rust to check crash dump collection works.
-  enable_rust_crash = is_linux || is_android || enable_all_rust_features
+  enable_rust_crash = !(is_chromeos || is_mac) || enable_all_rust_features
 
   # Support for QR code generation - see https://crbug.com/1431991.
   enable_rust_qr = is_linux || is_android || enable_all_rust_features

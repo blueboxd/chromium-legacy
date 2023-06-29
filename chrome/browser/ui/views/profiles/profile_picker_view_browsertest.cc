@@ -95,6 +95,7 @@
 #include "components/sync/service/sync_user_settings.h"
 #include "components/sync/test/test_sync_service.h"
 #include "components/user_education/test/feature_promo_test_util.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -575,10 +576,11 @@ class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
     // Add an account - simulate a successful Gaia sign-in.
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile_being_created);
-    CoreAccountInfo core_account_info =
-        signin::MakeAccountAvailable(identity_manager, email);
-    signin::SetCookieAccounts(identity_manager, test_url_loader_factory(),
-                              {{email, core_account_info.gaia}});
+    CoreAccountInfo core_account_info = signin::MakeAccountAvailable(
+        identity_manager,
+        signin::AccountAvailabilityOptionsBuilder(test_url_loader_factory())
+            .WithCookie()
+            .Build(email));
     EXPECT_TRUE(identity_manager->HasAccountWithRefreshToken(
         core_account_info.account_id));
 
@@ -1132,11 +1134,11 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
           base::Milliseconds(10));
 
   // Add an account - simulate a successful Gaia sign-in.
-  CoreAccountInfo core_account_info =
-      signin::MakeAccountAvailable(identity_manager, "joe.consumer@gmail.com");
-  signin::SetCookieAccounts(
-      identity_manager, test_url_loader_factory(),
-      {{"joe.consumer@gmail.com", core_account_info.gaia}});
+  CoreAccountInfo core_account_info = signin::MakeAccountAvailable(
+      identity_manager,
+      signin::AccountAvailabilityOptionsBuilder(test_url_loader_factory())
+          .WithCookie()
+          .Build("joe.consumer@gmail.com"));
   ASSERT_TRUE(identity_manager->HasAccountWithRefreshToken(
       core_account_info.account_id));
 
@@ -1183,11 +1185,11 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
       IdentityManagerFactory::GetForProfile(profile_being_created);
 
   // Add an account - simulate a successful Gaia sign-in.
-  CoreAccountInfo core_account_info =
-      signin::MakeAccountAvailable(identity_manager, "joe.consumer@gmail.com");
-  signin::SetCookieAccounts(
-      identity_manager, test_url_loader_factory(),
-      {{"joe.consumer@gmail.com", core_account_info.gaia}});
+  CoreAccountInfo core_account_info = signin::MakeAccountAvailable(
+      identity_manager,
+      signin::AccountAvailabilityOptionsBuilder(test_url_loader_factory())
+          .WithCookie()
+          .Build("joe.consumer@gmail.com"));
   ASSERT_TRUE(identity_manager->HasAccountWithRefreshToken(
       core_account_info.account_id));
 
@@ -2252,8 +2254,13 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLocalProfileCreationDialogBrowserTest,
   EXPECT_FALSE(new_browser->signin_view_controller()->ShowsModalDialog());
 }
 
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_CancelLocalProfileCreation DISABLED_CancelLocalProfileCreation
+#else
+#define MAYBE_CancelLocalProfileCreation CancelLocalProfileCreation
+#endif  // BUILDFLAG(IS_MAC)
 IN_PROC_BROWSER_TEST_F(ProfilePickerLocalProfileCreationDialogBrowserTest,
-                       CancelLocalProfileCreation) {
+                       MAYBE_CancelLocalProfileCreation) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
   ASSERT_EQ(1u, g_browser_process->profile_manager()
                     ->GetProfileAttributesStorage()

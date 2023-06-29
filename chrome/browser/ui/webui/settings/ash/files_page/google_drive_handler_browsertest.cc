@@ -86,8 +86,10 @@ class GoogleDriveHandlerTest
     : public drive::DriveIntegrationServiceBrowserTestBase {
  public:
   GoogleDriveHandlerTest() : receiver_(&fake_search_query_) {
-    scoped_feature_list_.InitWithFeatures({ash::features::kDriveFsBulkPinning},
-                                          {});
+    scoped_feature_list_.InitWithFeatures(
+        {ash::features::kDriveFsBulkPinning,
+         ash::features::kFeatureManagementDriveFsBulkPinning},
+        {});
   }
 
   GoogleDriveHandlerTest(const GoogleDriveHandlerTest&) = delete;
@@ -156,8 +158,9 @@ IN_PROC_BROWSER_TEST_F(GoogleDriveHandlerTest,
   google_drive_settings.AssertBulkPinningSpace(required_space, remaining_space);
 }
 
+// Failing reliably in M117: crbug.com/1456602
 IN_PROC_BROWSER_TEST_F(GoogleDriveHandlerTest,
-                       OnlyUnpinnedResultsUpdateTheSpaceRequirements) {
+                       DISABLED_OnlyUnpinnedResultsUpdateTheSpaceRequirements) {
   SetUpSearchResultExpectations();
 
   auto* fake_drivefs = GetFakeDriveFsForProfile(browser()->profile());

@@ -761,9 +761,11 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // the root element box and have specific stacking requirements.
   bool IsInTopOrViewTransitionLayer() const {
     NOT_DESTROYED();
+    if (IsViewTransitionRoot()) {
+      return true;
+    }
     if (Element* element = DynamicTo<Element>(GetNode())) {
-      return StyleRef().StyleType() == kPseudoIdViewTransition ||
-             StyleRef().IsRenderedInTopLayer(*element);
+      return StyleRef().IsRenderedInTopLayer(*element);
     }
     return false;
   }
@@ -1058,6 +1060,11 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     return false;
   }
 
+  virtual bool IsViewTransitionRoot() const {
+    NOT_DESTROYED();
+    return false;
+  }
+
   virtual bool IsInlineBlockOrInlineTable() const {
     NOT_DESTROYED();
     return false;
@@ -1339,7 +1346,9 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // Like VisualRectInLocalSVGCoordinates() but does not include visual overflow
   // (name is misleading). May be zoomed (currently only for <foreignObject>,
   // which represents this via its LocalToSVGParentTransform()).
-  virtual gfx::RectF StrokeBoundingBox() const;
+  // It mostly corresponds to the "decorated bounding box" from the SVG spec.
+  // (https://svgwg.org/svg2-draft/coords.html#BoundingBoxes)
+  virtual gfx::RectF DecoratedBoundingBox() const;
 
   // This returns the transform applying to the local SVG coordinate space,
   // which combines the CSS transform properties and animation motion transform.
@@ -2789,6 +2798,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
    * of line -
    * useful for character range rect computations
    */
+  // TODO(crbug.com/1353190): Change the return type to PhysicalRect, and
+  // merge LocalCaretRect() and PhysicalLocalCaretRect().
   virtual LayoutRect LocalCaretRect(
       int caret_offset,
       LayoutUnit* extra_width_to_end_of_line = nullptr) const;
@@ -2796,6 +2807,10 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
       int caret_offset,
       LayoutUnit* extra_width_to_end_of_line = nullptr) const {
     NOT_DESTROYED();
+    if (RuntimeEnabledFeatures::LayoutNGNoLocationEnabled()) {
+      return PhysicalRect(
+          LocalCaretRect(caret_offset, extra_width_to_end_of_line));
+    }
     return FlipForWritingMode(
         LocalCaretRect(caret_offset, extra_width_to_end_of_line));
   }
@@ -3805,10 +3820,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   ALWAYS_INLINE
   StyleDifference AdjustStyleDifference(StyleDifference) const;
 
-#if DCHECK_IS_ON()
-  void CheckBlockPositionedObjectsNeedLayout();
-#endif
-
   bool IsTextOrSVGChild() const {
     NOT_DESTROYED();
     return IsText() || IsSVGChild();
@@ -4490,10 +4501,6 @@ inline void LayoutObject::ClearNeedsLayoutWithoutPaintInvalidation() {
     DCHECK(context);
     context->NotifyChildLayoutWasBlocked();
   }
-
-#if DCHECK_IS_ON()
-  CheckBlockPositionedObjectsNeedLayout();
-#endif
 
   SetScrollAnchorDisablingStyleChanged(false);
 

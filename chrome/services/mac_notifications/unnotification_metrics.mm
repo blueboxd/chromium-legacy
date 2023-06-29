@@ -39,6 +39,7 @@ enum class UNNotificationPermissionStatus {
   kMaxValue = kPermissionGranted,
 };
 
+API_AVAILABLE(macosx(10.14))
 UNNotificationStyle ConvertNotificationStyle(UNAlertStyle alert_style) {
   switch (alert_style) {
     case UNAlertStyleBanner:
@@ -50,6 +51,7 @@ UNNotificationStyle ConvertNotificationStyle(UNAlertStyle alert_style) {
   }
 }
 
+API_AVAILABLE(macosx(10.14))
 UNNotificationPermissionStatus ConvertAuthorizationStatus(
     UNAuthorizationStatus authorization_status) {
   switch (authorization_status) {

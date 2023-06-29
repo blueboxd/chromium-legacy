@@ -313,14 +313,24 @@ void ThemeHelperMac::LoadSystemColorsForCurrentAppearance(
         break;
       }
       case blink::MacSystemColorID::kControlAccentColor:
-        values[i] = NSColorToSkColor(NSColor.controlAccentColor);
+        if (@available(macOS 10.14, *)) {
+          values[i] = NSColorToSkColor(NSColor.controlAccentColor);
+        } else {
+          // controlAccentColor property is not available before macOS 10.14,
+          // so keyboardFocusIndicatorColor is used instead.
+          values[i] = NSColorToSkColor(NSColor.keyboardFocusIndicatorColor);
+        }
         break;
       case blink::MacSystemColorID::kKeyboardFocusIndicator:
         values[i] = NSColorToSkColor(NSColor.keyboardFocusIndicatorColor);
         break;
       case blink::MacSystemColorID::kSecondarySelectedControl:
-        values[i] = NSColorToSkColor(
-            NSColor.unemphasizedSelectedContentBackgroundColor);
+        if (@available(macOS 10.14, *)) {
+          values[i] = NSColorToSkColor(
+              NSColor.unemphasizedSelectedContentBackgroundColor);
+        } else {
+          values[i] = NSColorToSkColor(NSColor.secondarySelectedControlColor);
+        }
         break;
       case blink::MacSystemColorID::kSelectedTextBackground:
         values[i] = NSColorToSkColor(NSColor.selectedTextBackgroundColor);
@@ -350,7 +360,7 @@ void ThemeHelperMac::LoadSystemColors() {
               static_cast<size_t>(blink::MacSystemColorID::kCount),
               static_cast<size_t>(blink::MacSystemColorID::kCount)));
         }];
-  } else {
+  } else if (@available(macOS 10.14, *)) {
     NSAppearance* saved_appearance = NSAppearance.currentAppearance;
     NSAppearance.currentAppearance =
         [NSAppearance appearanceNamed:NSAppearanceNameAqua];
@@ -362,6 +372,12 @@ void ThemeHelperMac::LoadSystemColors() {
         values.subspan(static_cast<size_t>(blink::MacSystemColorID::kCount),
                        static_cast<size_t>(blink::MacSystemColorID::kCount)));
     NSAppearance.currentAppearance = saved_appearance;
+  } else {
+    LoadSystemColorsForCurrentAppearance(values.subspan(
+        0, static_cast<size_t>(blink::MacSystemColorID::kCount)));
+    LoadSystemColorsForCurrentAppearance(
+        values.subspan(static_cast<size_t>(blink::MacSystemColorID::kCount),
+                       static_cast<size_t>(blink::MacSystemColorID::kCount)));
   }
 }
 

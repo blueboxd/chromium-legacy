@@ -13,7 +13,7 @@
 #endif
 
 extern "C" {
-bool CGFontRenderingGetFontSmoothingDisabled(void);
+bool CGFontRenderingGetFontSmoothingDisabled(void) API_AVAILABLE(macos(10.14));
 }
 
 namespace content {
@@ -34,8 +34,11 @@ void SystemColorsDidChange(int aqua_color_variant) {
 }
 
 bool IsSubpixelAntialiasingAvailable() {
-  // See https://trac.webkit.org/changeset/239306/webkit for more info.
-  return !CGFontRenderingGetFontSmoothingDisabled();
+  if (@available(macOS 10.14, *)) {
+    // See https://trac.webkit.org/changeset/239306/webkit for more info.
+    return !CGFontRenderingGetFontSmoothingDisabled();
+  }
+  return true;
 }
 
 }  // namespace content

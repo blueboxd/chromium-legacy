@@ -12,11 +12,22 @@
 
 namespace base {
 
-TEST(EnterpriseUtilMacTest, IsDeviceRegisteredWithManagementSmokeTest) {
-  MacDeviceManagementState state = IsDeviceRegisteredWithManagement();
+TEST(EnterpriseUtilMacTest, IsDeviceRegisteredWithManagementOldSmokeTest) {
+  MacDeviceManagementStateOld state = IsDeviceRegisteredWithManagementOld();
 
-  EXPECT_NE(MacDeviceManagementState::kFailureAPIUnavailable, state);
-  EXPECT_NE(MacDeviceManagementState::kFailureUnableToParseResult, state);
+  EXPECT_NE(MacDeviceManagementStateOld::kFailureAPIUnavailable, state);
+  EXPECT_NE(MacDeviceManagementStateOld::kFailureUnableToParseResult, state);
+}
+
+TEST(EnterpriseUtilMacTest, IsDeviceRegisteredWithManagementNewSmokeTest) {
+  MacDeviceManagementStateNew state = IsDeviceRegisteredWithManagementNew();
+
+  if (@available(macOS 10.13.4, *)) {
+    EXPECT_NE(MacDeviceManagementStateNew::kFailureAPIUnavailable, state);
+    EXPECT_NE(MacDeviceManagementStateNew::kFailureUnableToParseResult, state);
+  } else {
+    EXPECT_EQ(MacDeviceManagementStateNew::kFailureAPIUnavailable, state);
+  }
 }
 
 }  // namespace base

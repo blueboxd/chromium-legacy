@@ -94,8 +94,10 @@ void PolicyLoaderMac::InitOnBackgroundThread() {
   base::UmaHistogramBoolean("EnterpriseCheck.IsEnterpriseUser",
                             base::IsEnterpriseDevice());
 
+  base::UmaHistogramEnumeration("EnterpriseCheck.Mac.IsDeviceMDMEnrolledOld",
+                                base::IsDeviceRegisteredWithManagementOld());
   base::UmaHistogramEnumeration("EnterpriseCheck.Mac.IsDeviceMDMEnrolledNew",
-                                base::IsDeviceRegisteredWithManagement());
+                                base::IsDeviceRegisteredWithManagementNew());
   base::DeviceUserDomainJoinState state =
       base::AreDeviceAndUserJoinedToDomain();
   base::UmaHistogramBoolean("EnterpriseCheck.Mac.IsDeviceDomainJoined",

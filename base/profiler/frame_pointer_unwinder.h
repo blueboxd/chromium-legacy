@@ -19,7 +19,7 @@ namespace base {
 
 // Native unwinder implementation for platforms that have frame pointers:
 //  * iOS, ARM64 and X86_64,
-//  * macOS
+//  * macOS 10.14+.
 //  * ChromeOS X86_64
 class BASE_EXPORT
 #if BUILDFLAG(IS_APPLE)

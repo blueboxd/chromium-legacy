@@ -25,13 +25,14 @@
 
 extern "C" {
 // Changes the current thread's directory to a path or directory file
-// descriptor.
-int pthread_chdir_np(const char* dir);
+// descriptor. libpthread only exposes a syscall wrapper starting in
+// macOS 10.12, but the system call dates back to macOS 10.5. On older OSes,
+// the syscall is issued directly.
+int pthread_chdir_np(const char* dir) API_AVAILABLE(macosx(10.12));
+int pthread_fchdir_np(int fd) API_AVAILABLE(macosx(10.12));
 
-int pthread_fchdir_np(int fd);
-
-int responsibility_spawnattrs_setdisclaim(posix_spawnattr_t attrs,
-                                          int disclaim);
+int responsibility_spawnattrs_setdisclaim(posix_spawnattr_t attrs, int disclaim)
+    API_AVAILABLE(macosx(10.14));
 }  // extern "C"
 
 namespace base {
@@ -87,7 +88,7 @@ class PosixSpawnFileActions {
   }
 
 #if BUILDFLAG(IS_MAC)
-  void Chdir(const char* path) {
+  void Chdir(const char* path) API_AVAILABLE(macos(10.15)) {
     DPSXCHECK(posix_spawn_file_actions_addchdir_np(&file_actions_, path));
   }
 #endif
@@ -98,7 +99,6 @@ class PosixSpawnFileActions {
   posix_spawn_file_actions_t file_actions_;
 };
 
-#if !BUILDFLAG(IS_MAC)
 int ChangeCurrentThreadDirectory(const char* path) {
   if (__builtin_available(macOS 10.12, *)) {
     return pthread_chdir_np(path);
@@ -116,7 +116,6 @@ int ResetCurrentThreadDirectory() {
     return syscall(SYS___pthread_fchdir, -1);
   }
 }
-#endif
 
 struct GetAppOutputOptions {
   // Whether to pipe stderr to stdout in |output|.
@@ -240,7 +239,9 @@ Process LaunchProcess(const std::vector<std::string>& argv,
 
 #if BUILDFLAG(IS_MAC)
   if (options.disclaim_responsibility) {
-    DPSXCHECK(responsibility_spawnattrs_setdisclaim(attr.get(), 1));
+    if (__builtin_available(macOS 10.14, *)) {
+      DPSXCHECK(responsibility_spawnattrs_setdisclaim(attr.get(), 1));
+    }
   }
 #endif
 
@@ -273,17 +274,20 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   if (!options.current_directory.empty()) {
     const char* chdir_str = options.current_directory.value().c_str();
 #if BUILDFLAG(IS_MAC)
-    file_actions.Chdir(chdir_str);
-#else
-    // If the chdir posix_spawn_file_actions extension is not available,
-    // change the thread-specific working directory. The new process will
-    // inherit it during posix_spawnp().
-    int rv = ChangeCurrentThreadDirectory(chdir_str);
-    if (rv != 0) {
-      DPLOG(ERROR) << "pthread_chdir_np";
-      return Process();
-    }
+    if (__builtin_available(macOS 10.15, *)) {
+      file_actions.Chdir(chdir_str);
+    } else
 #endif
+    {
+      // If the chdir posix_spawn_file_actions extension is not available,
+      // change the thread-specific working directory. The new process will
+      // inherit it during posix_spawnp().
+      int rv = ChangeCurrentThreadDirectory(chdir_str);
+      if (rv != 0) {
+        DPLOG(ERROR) << "pthread_chdir_np";
+        return Process();
+      }
+    }
   }
 
   int rv;
@@ -321,12 +325,15 @@ Process LaunchProcess(const std::vector<std::string>& argv,
     }
   }
 
-#if !BUILDFLAG(IS_MAC)
   // Restore the thread's working directory if it was changed.
   if (!options.current_directory.empty()) {
-    ResetCurrentThreadDirectory();
+    if (__builtin_available(macOS 10.15, *)) {
+      // Nothing to do because no global state was changed, but
+      // __builtin_available is special and cannot be negated.
+    } else {
+      ResetCurrentThreadDirectory();
+    }
   }
-#endif
 
   if (rv != 0) {
     DLOG(ERROR) << "posix_spawnp(" << executable_path << "): -" << rv << " "

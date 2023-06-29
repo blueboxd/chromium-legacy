@@ -225,6 +225,7 @@ enum class SystemSettingsPane {
   kPrivacySecurity_Bluetooth,
 
   // Privacy & Security > Camera
+  // Available on macOS 10.14 and later.
   kPrivacySecurity_Camera,
 
   // Privacy & Security > Extensions > Sharing
@@ -234,9 +235,11 @@ enum class SystemSettingsPane {
   kPrivacySecurity_LocationServices,
 
   // Privacy & Security > Microphone
+  // Available on macOS 10.14 and later.
   kPrivacySecurity_Microphone,
 
   // Privacy & Security > Screen Recording
+  // Available on macOS 10.15 and later.
   kPrivacySecurity_ScreenRecording,
 };
 

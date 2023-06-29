@@ -34,11 +34,14 @@
 namespace {
 
 bool IsDarkMode() {
-  NSAppearanceName appearance =
-      [NSApp.effectiveAppearance bestMatchFromAppearancesWithNames:@[
-        NSAppearanceNameAqua, NSAppearanceNameDarkAqua
-      ]];
-  return [appearance isEqual:NSAppearanceNameDarkAqua];
+  if (@available(macOS 10.14, *)) {
+    NSAppearanceName appearance =
+        [NSApp.effectiveAppearance bestMatchFromAppearancesWithNames:@[
+          NSAppearanceNameAqua, NSAppearanceNameDarkAqua
+        ]];
+    return [appearance isEqual:NSAppearanceNameDarkAqua];
+  }
+  return false;
 }
 
 bool IsHighContrast() {
@@ -69,16 +72,20 @@ bool IsHighContrast() {
   self = [super init];
   if (self) {
     _handler = handler;
-    [NSApp addObserver:self
-            forKeyPath:@"effectiveAppearance"
-               options:0
-               context:nullptr];
+    if (@available(macOS 10.14, *)) {
+      [NSApp addObserver:self
+              forKeyPath:@"effectiveAppearance"
+                 options:0
+                 context:nullptr];
+    }
   }
   return self;
 }
 
 - (void)dealloc {
-  [NSApp removeObserver:self forKeyPath:@"effectiveAppearance"];
+  if (@available(macOS 10.14, *)) {
+    [NSApp removeObserver:self forKeyPath:@"effectiveAppearance"];
+  }
 }
 
 - (void)observeValueForKeyPath:(NSString*)forKeyPath
@@ -121,7 +128,10 @@ NativeTheme* NativeTheme::GetInstanceForDarkUI() {
 
 // static
 bool NativeTheme::SystemDarkModeSupported() {
-  return true;
+  if (@available(macOS 10.14, *)) {
+    return true;
+  }
+  return false;
 }
 
 // static

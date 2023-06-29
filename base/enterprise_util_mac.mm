@@ -40,7 +40,7 @@ bool IsEnterpriseDevice() {
 
 MacDeviceManagementState IsDeviceRegisteredWithManagement() {
   if (!@available(macOS 10.10, *))
-    return MacDeviceManagementStateOld::kFailureAPIUnavailable;
+    return MacDeviceManagementState::kFailureAPIUnavailable;
 
   static MacDeviceManagementState state = [] {
     std::vector<std::string> profiles_argv{"/usr/bin/profiles", "status",

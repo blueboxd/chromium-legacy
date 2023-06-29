@@ -75,9 +75,23 @@ TEST(VideoCaptureDeviceAVFoundationMacTest,
   }));
 }
 
-TEST(VideoCaptureDeviceAVFoundationMacTest, TakePhoto) {
-  RunTestCase(
-      base::BindOnce([] {
+class VideoCaptureDeviceAVFoundationMacTakePhotoTest
+    : public testing::TestWithParam<bool> {
+ public:
+  VideoCaptureDeviceAVFoundation* CreateCaptureDevice(
+      testing::NiceMock<MockVideoCaptureDeviceAVFoundationFrameReceiver>*
+          frame_receiver) {
+    VideoCaptureDeviceAVFoundation* captureDevice =
+        [[VideoCaptureDeviceAVFoundation alloc]
+            initWithFrameReceiver:frame_receiver];
+    [captureDevice setForceLegacyStillImageApiForTesting:GetParam()];
+    return captureDevice;
+  }
+};
+
+TEST_P(VideoCaptureDeviceAVFoundationMacTakePhotoTest, TakePhoto) {
+  RunTestCase(base::BindOnce(
+      [](VideoCaptureDeviceAVFoundationMacTakePhotoTest* thiz) {
         NSString* deviceId = GetFirstDeviceId();
         if (!deviceId) {
           DVLOG(1) << "No camera available. Exiting test.";
@@ -87,8 +101,7 @@ TEST(VideoCaptureDeviceAVFoundationMacTest, TakePhoto) {
         testing::NiceMock<MockVideoCaptureDeviceAVFoundationFrameReceiver>
             frame_receiver;
         VideoCaptureDeviceAVFoundation* captureDevice =
-            [[VideoCaptureDeviceAVFoundation alloc]
-                initWithFrameReceiver:&frame_receiver];
+            thiz->CreateCaptureDevice(&frame_receiver);
 
         NSString* errorMessage = nil;
         ASSERT_TRUE([captureDevice setCaptureDevice:deviceId
@@ -108,12 +121,14 @@ TEST(VideoCaptureDeviceAVFoundationMacTest, TakePhoto) {
             });
         [captureDevice takePhoto];
         run_loop.Run();
-      }));
+      },
+      this));
 }
 
-TEST(VideoCaptureDeviceAVFoundationMacTest, StopCaptureWhileTakingPhoto) {
-  RunTestCase(
-      base::BindOnce([] {
+TEST_P(VideoCaptureDeviceAVFoundationMacTakePhotoTest,
+       StopCaptureWhileTakingPhoto) {
+  RunTestCase(base::BindOnce(
+      [](VideoCaptureDeviceAVFoundationMacTakePhotoTest* thiz) {
         NSString* deviceId = GetFirstDeviceId();
         if (!deviceId) {
           DVLOG(1) << "No camera available. Exiting test.";
@@ -123,8 +138,7 @@ TEST(VideoCaptureDeviceAVFoundationMacTest, StopCaptureWhileTakingPhoto) {
         testing::NiceMock<MockVideoCaptureDeviceAVFoundationFrameReceiver>
             frame_receiver;
         VideoCaptureDeviceAVFoundation* captureDevice =
-            [[VideoCaptureDeviceAVFoundation alloc]
-                initWithFrameReceiver:&frame_receiver];
+            thiz->CreateCaptureDevice(&frame_receiver);
 
         NSString* errorMessage = nil;
         ASSERT_TRUE([captureDevice setCaptureDevice:deviceId
@@ -136,16 +150,18 @@ TEST(VideoCaptureDeviceAVFoundationMacTest, StopCaptureWhileTakingPhoto) {
             .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
         [captureDevice takePhoto];
         // There is no risk that takePhoto() has successfully finishes before
-        // stopCapture() because the takePhoto() call involves a
+        // stopCapture() because the takePhoto() call involes a
         // PostDelayedTask() that cannot run until RunLoop::Run() below.
         [captureDevice stopCapture];
         run_loop.Run();
-      }));
+      },
+      this));
 }
 
-TEST(VideoCaptureDeviceAVFoundationMacTest, MultiplePendingTakePhotos) {
-  RunTestCase(
-      base::BindOnce([] {
+TEST_P(VideoCaptureDeviceAVFoundationMacTakePhotoTest,
+       MultiplePendingTakePhotos) {
+  RunTestCase(base::BindOnce(
+      [](VideoCaptureDeviceAVFoundationMacTakePhotoTest* thiz) {
         NSString* deviceId = GetFirstDeviceId();
         if (!deviceId) {
           DVLOG(1) << "No camera available. Exiting test.";
@@ -155,8 +171,7 @@ TEST(VideoCaptureDeviceAVFoundationMacTest, MultiplePendingTakePhotos) {
         testing::NiceMock<MockVideoCaptureDeviceAVFoundationFrameReceiver>
             frame_receiver;
         VideoCaptureDeviceAVFoundation* captureDevice =
-            [[VideoCaptureDeviceAVFoundation alloc]
-                initWithFrameReceiver:&frame_receiver];
+            thiz->CreateCaptureDevice(&frame_receiver);
 
         NSString* errorMessage = nil;
         ASSERT_TRUE([captureDevice setCaptureDevice:deviceId
@@ -172,13 +187,14 @@ TEST(VideoCaptureDeviceAVFoundationMacTest, MultiplePendingTakePhotos) {
         [captureDevice takePhoto];
         [captureDevice takePhoto];
         run_loop.Run();
-      }));
+      },
+      this));
 }
 
-TEST(VideoCaptureDeviceAVFoundationMacTest,
-     StopCaptureWhileMultiplePendingTakePhotos) {
-  RunTestCase(
-      base::BindOnce([] {
+TEST_P(VideoCaptureDeviceAVFoundationMacTakePhotoTest,
+       StopCaptureWhileMultiplePendingTakePhotos) {
+  RunTestCase(base::BindOnce(
+      [](VideoCaptureDeviceAVFoundationMacTakePhotoTest* thiz) {
         NSString* deviceId = GetFirstDeviceId();
         if (!deviceId) {
           DVLOG(1) << "No camera available. Exiting test.";
@@ -188,8 +204,7 @@ TEST(VideoCaptureDeviceAVFoundationMacTest,
         testing::NiceMock<MockVideoCaptureDeviceAVFoundationFrameReceiver>
             frame_receiver;
         VideoCaptureDeviceAVFoundation* captureDevice =
-            [[VideoCaptureDeviceAVFoundation alloc]
-                initWithFrameReceiver:&frame_receiver];
+            thiz->CreateCaptureDevice(&frame_receiver);
 
         NSString* errorMessage = nil;
         ASSERT_TRUE([captureDevice setCaptureDevice:deviceId
@@ -209,67 +224,78 @@ TEST(VideoCaptureDeviceAVFoundationMacTest,
         // PostDelayedTask() that cannot run until RunLoop::Run() below.
         [captureDevice stopCapture];
         run_loop.Run();
-      }));
+      },
+      this));
 }
 
-TEST(VideoCaptureDeviceAVFoundationMacTest,
-     StopPhotoOutputWhenNoLongerTakingPhotos) {
-  RunTestCase(base::BindOnce([] {
-    NSString* deviceId = GetFirstDeviceId();
-    if (!deviceId) {
-      DVLOG(1) << "No camera available. Exiting test.";
-      return;
-    }
+TEST_P(VideoCaptureDeviceAVFoundationMacTakePhotoTest,
+       StopPhotoOutputWhenNoLongerTakingPhotos) {
+  RunTestCase(base::BindOnce(
+      [](VideoCaptureDeviceAVFoundationMacTakePhotoTest* thiz) {
+        NSString* deviceId = GetFirstDeviceId();
+        if (!deviceId) {
+          DVLOG(1) << "No camera available. Exiting test.";
+          return;
+        }
 
-    testing::NiceMock<MockVideoCaptureDeviceAVFoundationFrameReceiver>
-        frame_receiver;
-    VideoCaptureDeviceAVFoundation* captureDevice =
-        [[VideoCaptureDeviceAVFoundation alloc]
-            initWithFrameReceiver:&frame_receiver];
+        testing::NiceMock<MockVideoCaptureDeviceAVFoundationFrameReceiver>
+            frame_receiver;
+        VideoCaptureDeviceAVFoundation* captureDevice =
+            thiz->CreateCaptureDevice(&frame_receiver);
 
-    NSString* errorMessage = nil;
-    ASSERT_TRUE([captureDevice setCaptureDevice:deviceId
-                                   errorMessage:&errorMessage]);
-    ASSERT_TRUE([captureDevice startCapture]);
+        NSString* errorMessage = nil;
+        ASSERT_TRUE([captureDevice setCaptureDevice:deviceId
+                                       errorMessage:&errorMessage]);
+        ASSERT_TRUE([captureDevice startCapture]);
 
-    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-    [captureDevice setOnPhotoOutputStoppedForTesting:run_loop.QuitClosure()];
-    base::TimeTicks start_time = base::TimeTicks::Now();
-    [captureDevice takePhoto];
-    // The RunLoop automatically advances mocked time when there are delayed
-    // tasks pending. This allows the test to run fast and still assert how
-    // much mocked time has elapsed.
-    run_loop.Run();
-    auto time_elapsed = base::TimeTicks::Now() - start_time;
-    // Still image output is not stopped until 60 seconds of inactivity, so
-    // the mocked time must have advanced at least this much.
-    EXPECT_GE(time_elapsed.InSeconds(), 60);
-  }));
+        base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+        [captureDevice
+            setOnPhotoOutputStoppedForTesting:run_loop.QuitClosure()];
+        base::TimeTicks start_time = base::TimeTicks::Now();
+        [captureDevice takePhoto];
+        // The RunLoop automatically advances mocked time when there are delayed
+        // tasks pending. This allows the test to run fast and still assert how
+        // much mocked time has elapsed.
+        run_loop.Run();
+        auto time_elapsed = base::TimeTicks::Now() - start_time;
+        // Still image output is not stopped until 60 seconds of inactivity, so
+        // the mocked time must have advanced at least this much.
+        EXPECT_GE(time_elapsed.InSeconds(), 60);
+      },
+      this));
 }
 
-TEST(VideoCaptureDeviceAVFoundationMacTest,
-     TakePhotoAndShutDownWithoutWaiting) {
-  RunTestCase(base::BindOnce([] {
-    NSString* deviceId = GetFirstDeviceId();
-    if (!deviceId) {
-      DVLOG(1) << "No camera available. Exiting test.";
-      return;
-    }
+TEST_P(VideoCaptureDeviceAVFoundationMacTakePhotoTest,
+       TakePhotoAndShutDownWithoutWaiting) {
+  RunTestCase(base::BindOnce(
+      [](VideoCaptureDeviceAVFoundationMacTakePhotoTest* thiz) {
+        NSString* deviceId = GetFirstDeviceId();
+        if (!deviceId) {
+          DVLOG(1) << "No camera available. Exiting test.";
+          return;
+        }
 
-    testing::NiceMock<MockVideoCaptureDeviceAVFoundationFrameReceiver>
-        frame_receiver;
-    VideoCaptureDeviceAVFoundation* captureDevice =
-        [[VideoCaptureDeviceAVFoundation alloc]
-            initWithFrameReceiver:&frame_receiver];
+        testing::NiceMock<MockVideoCaptureDeviceAVFoundationFrameReceiver>
+            frame_receiver;
+        VideoCaptureDeviceAVFoundation* captureDevice =
+            thiz->CreateCaptureDevice(&frame_receiver);
 
-    NSString* errorMessage = nil;
-    ASSERT_TRUE([captureDevice setCaptureDevice:deviceId
-                                   errorMessage:&errorMessage]);
-    ASSERT_TRUE([captureDevice startCapture]);
+        NSString* errorMessage = nil;
+        ASSERT_TRUE([captureDevice setCaptureDevice:deviceId
+                                       errorMessage:&errorMessage]);
+        ASSERT_TRUE([captureDevice startCapture]);
 
-    [captureDevice takePhoto];
-  }));
+        [captureDevice takePhoto];
+      },
+      this));
 }
+
+// When not forcing legacy API, AVCapturePhotoOutput is used if available
+// (macOS 10.15+). Otherwise AVCaptureStillImageOutput is used.
+INSTANTIATE_TEST_SUITE_P(VideoCaptureDeviceAVFoundationMacTakePhotoTest,
+                         VideoCaptureDeviceAVFoundationMacTakePhotoTest,
+                         // Force legacy API?
+                         testing::Values(false, true));
 
 TEST(VideoCaptureDeviceAVFoundationMacTest, ForwardsOddPixelBufferResolution) {
   // See crbug/1168112.
@@ -297,7 +323,7 @@ TEST(VideoCaptureDeviceAVFoundationMacTest, ForwardsOddPixelBufferResolution) {
 }
 
 TEST(VideoCaptureDeviceAVFoundationMacTest, FrameRateFloatInaccuracyIsHandled) {
-  // See https://crbug.com/1299812.
+  // See crbug/1299812.
   RunTestCase(base::BindOnce([] {
     double max_frame_rate = 30.000030;
     AVCaptureDeviceFormat* format1 =

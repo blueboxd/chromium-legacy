@@ -8,6 +8,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -205,17 +206,26 @@ bool CanShare() {
     service.subject = title;
 
     NSArray* itemsToShare = @[ url ];
+    if (@available(macOS 10.14, *)) {
+    } else {
+      if ([[service name] isEqual:NSSharingServiceNamePostOnTwitter]) {
+        // The Twitter share service expects the title as an additional share
+        // item. This is the same approach system apps use.
+        itemsToShare = @[ url, title ];
+      }
+    }
+
     if ([[service name] isEqual:kRemindersSharingServiceName]) {
       _activity = [[NSUserActivity alloc]
-          initWithActivityType:NSUserActivityTypeBrowsingWeb];
+          initWithActivityType:*NSUserActivityTypeBrowsingWebStr];
       // webpageURL must be http or https or an exception is thrown.
       if ([url.scheme hasPrefix:@"http"]) {
         [_activity setWebpageURL:url];
       }
       [_activity setTitle:title];
       [_activity becomeCurrent];
+      [service performWithItems:itemsToShare];
     }
-    [service performWithItems:itemsToShare];
   }
 }
 

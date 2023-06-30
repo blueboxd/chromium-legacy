@@ -3920,7 +3920,7 @@ Möchtest du <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4367513928820380646">Entfernte Berechtigungen überprüfen</translation>
 <translation id="4369215744064167350">Websiteanfrage genehmigt</translation>
 <translation id="436926121798828366">Du kannst diese Einstellung jederzeit unter <ph name="SETTINGS_LINK" /> ändern</translation>
-<translation id="4369735607080757018">Zur Erfolgsmessung von Werbeanzeigen werden nur manche Datentypen zwischen Websites geteilt, wie z. B. die Tageszeit, zu der dir die Werbung präsentiert wurde</translation>
+<translation id="4369735607080757018">Zur Erfolgsmessung von Anzeigen werden nur manche Datentypen zwischen Websites geteilt, wie z. B. die Tageszeit, zu der dir die Werbung präsentiert wurde</translation>
 <translation id="4370975561335139969">Die E-Mail-Adresse und das Passwort, die du eingegeben hast, stimmen nicht überein.</translation>
 <translation id="4374805630006466253">Anderes Smartphone oder Tablet verwenden</translation>
 <translation id="4374831787438678295">Linux-Installationsprogramm</translation>
@@ -5086,7 +5086,7 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="5427459444770871191">Im &amp;Uhrzeigersinn drehen</translation>
 <translation id="542750953150239272">Wenn du fortfährst, stimmst du zu, dass auf diesem Gerät auch automatisch Updates und Apps von Google, von deinem Mobilfunkanbieter und vom Hersteller deines Geräts heruntergeladen und installiert werden dürfen, möglicherweise über eine mobile Datenverbindung. Bei einigen dieser Apps werden eventuell In-App-Käufe angeboten.</translation>
 <translation id="5428850089342283580"><ph name="ACCNAME_APP" /> (Update verfügbar)</translation>
-<translation id="542948651837270806">Für das Trusted Platform Module muss ein Firmwareupdate installiert werden. Weitere Informationen: <ph name="TPM_FIRMWARE_UPDATE_LINK" /></translation>
+<translation id="542948651837270806">Für das Trusted Platform Module muss ein Firmware-Update installiert werden. Weitere Informationen: <ph name="TPM_FIRMWARE_UPDATE_LINK" /></translation>
 <translation id="5429818411180678468">Volle Breite</translation>
 <translation id="5430931332414098647">Instant Tethering</translation>
 <translation id="5431318178759467895">Farbe</translation>

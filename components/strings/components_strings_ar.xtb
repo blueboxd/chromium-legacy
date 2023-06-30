@@ -187,7 +187,7 @@
 <translation id="1391289752476847787">أسهم وسندات</translation>
 <translation id="1391625539203220400">‏هل تريد حفظ رقم الحساب بصيغة IBAN على هذا الجهاز؟</translation>
 <translation id="139305205187523129">لم يرسل <ph name="HOST_NAME" /> أي بيانات.</translation>
-<translation id="1396259464226642517">هل كانت هذه النتيجة غير متوقعة؟ <ph name="BEGIN_LINK" />إرسال تعليقات<ph name="END_LINK" /></translation>
+<translation id="1396259464226642517">هل كانت هذه النتيجة غير متوقعة؟ <ph name="BEGIN_LINK" />إرسال ملاحظات<ph name="END_LINK" /></translation>
 <translation id="1405567553485452995">أخضر فاتح</translation>
 <translation id="1406500794671479665">جارٍ التحقق...</translation>
 <translation id="1407135791313364759">فتح الكل</translation>
@@ -1766,7 +1766,7 @@
 <translation id="5273658854610202413">‏تحذير: لم يتم دمج هذه السياسة كما هو موضح في سياسة PolicyDictionaryMultipleSourceMergeList؛ لأنها ليست جزءًا من سياسات المعجم التي يمكن دمجها.</translation>
 <translation id="5273881944177595304">تطبيقات ويب وأدوات على الإنترنت</translation>
 <translation id="5274025349362408263">كتب وأدب</translation>
-<translation id="5279286380302340275">إدارة التنزيلات</translation>
+<translation id="5279286380302340275">إدارة عمليات التنزيل</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="5284295735376057059">خصائص المستند</translation>
 <translation id="528468243742722775">‏مفتاح End</translation>
@@ -2895,7 +2895,7 @@
 <translation id="8037357227543935929">الطلب (تلقائي)</translation>
 <translation id="803771048473350947">ملف</translation>
 <translation id="8038817883578389970">سباق سيارات</translation>
-<translation id="8041089156583427627">إرسال تعليقات</translation>
+<translation id="8041089156583427627">إرسال ملاحظات</translation>
 <translation id="8041940743680923270">استخدام الإعداد التلقائي العمومي (طلب)</translation>
 <translation id="8052898407431791827">تمّ النسخ إلى الحافظة.</translation>
 <translation id="8055534648776115597">تعليم مهني وتعليم مستمر</translation>

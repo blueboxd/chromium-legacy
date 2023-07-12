@@ -31,6 +31,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
+#include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -157,6 +158,27 @@ class AutofillTableTest : public testing::Test {
   }
 
   void TearDown() override { OSCryptMocker::TearDown(); }
+
+  // Get date_modifed `column` of `table_name` with specific `instrument_id` or
+  // `guid`.
+  time_t GetDateModified(base::StringPiece table_name,
+                         base::StringPiece column,
+                         absl::variant<std::string, int64_t> id) {
+    sql::Statement s(db_->GetSQLConnection()->GetUniqueStatement(
+        base::StrCat({"SELECT ", column, " FROM ", table_name, " WHERE ",
+                      absl::holds_alternative<std::string>(id)
+                          ? "guid"
+                          : "instrument_id",
+                      " = ?"})
+            .c_str()));
+    if (const std::string* guid = absl::get_if<std::string>(&id)) {
+      s.BindString(0, *guid);
+    } else {
+      s.BindInt64(0, absl::get<int64_t>(id));
+    }
+    EXPECT_TRUE(s.Step());
+    return s.ColumnInt64(0);
+  }
 
   base::FilePath file_;
   base::ScopedTempDir temp_dir_;
@@ -1219,6 +1241,116 @@ TEST_F(AutofillTableTest, CreditCard) {
   EXPECT_FALSE(db_creditcard);
 }
 
+// Tests that adding credit card with cvc, get credit card with cvc and update
+// credit card with only cvc change will not update credit_card table
+// modification_date.
+TEST_F(AutofillTableTest, CreditCardCvc) {
+  const base::Time arbitrary_time = base::Time::FromDoubleT(25);
+  // Create the test clock and set the time to a specific value.
+  TestAutofillClock test_clock;
+  test_clock.SetNow(arbitrary_time);
+  CreditCard card = test::GetCreditCard();
+  card.set_cvc(u"123");
+  EXPECT_TRUE(table_->AddCreditCard(card));
+
+  // Get the credit card, cvc should match.
+  std::unique_ptr<CreditCard> db_card = table_->GetCreditCard(card.guid());
+  EXPECT_EQ(card.cvc(), db_card->cvc());
+
+  // Verify last_updated_timestamp in local_stored_cvc table is set correctly.
+  EXPECT_EQ(GetDateModified("local_stored_cvc", "last_updated_timestamp",
+                            card.guid()),
+            arbitrary_time.ToTimeT());
+
+  // Set the current time to another value.
+  const base::Time some_later_time = base::Time::FromDoubleT(1000);
+  test_clock.SetNow(some_later_time);
+
+  // Update the credit card but CVC is same.
+  card.SetRawInfo(CREDIT_CARD_NAME_FULL, u"Charles Grady");
+  EXPECT_TRUE(table_->UpdateCreditCard(card));
+  // credit_card table date_modified should be updated.
+  EXPECT_EQ(GetDateModified("credit_cards", "date_modified", card.guid()),
+            some_later_time.ToTimeT());
+  // local_stored_cvc table timestamp should not be updated.
+  EXPECT_EQ(GetDateModified("local_stored_cvc", "last_updated_timestamp",
+                            card.guid()),
+            arbitrary_time.ToTimeT());
+
+  // Set the current time to another value.
+  const base::Time much_later_time = base::Time::FromDoubleT(5000);
+  test_clock.SetNow(much_later_time);
+
+  // Update the credit card and CVC is different.
+  card.SetRawInfo(CREDIT_CARD_NAME_FULL, u"Jack Torrance");
+  card.set_cvc(u"234");
+  EXPECT_TRUE(table_->UpdateCreditCard(card));
+  db_card = table_->GetCreditCard(card.guid());
+  // CVC should be updated to new CVC.
+  EXPECT_EQ(u"234", db_card->cvc());
+  // local_stored_cvc table timestamp should be updated.
+  EXPECT_EQ(GetDateModified("local_stored_cvc", "last_updated_timestamp",
+                            card.guid()),
+            much_later_time.ToTimeT());
+
+  // Remove the credit card. It should also remove cvc from local_stored_cvc
+  // table.
+  EXPECT_TRUE(table_->RemoveCreditCard(card.guid()));
+  sql::Statement cvc_removed_statement(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT guid FROM local_stored_cvc WHERE guid=?"));
+  cvc_removed_statement.BindString(0, card.guid());
+  ASSERT_TRUE(cvc_removed_statement.is_valid());
+  EXPECT_FALSE(cvc_removed_statement.Step());
+}
+
+// Tests that verify add, update and clear server cvc function working as
+// expected.
+TEST_F(AutofillTableTest, ServerCvc) {
+  const base::Time kArbitraryTime = base::Time::FromDoubleT(25);
+  TestAutofillClock test_clock;
+  test_clock.SetNow(kArbitraryTime);
+
+  int64_t kInstrumentId = 1111;
+  const std::u16string kCvc = u"123";
+  EXPECT_TRUE(table_->AddServerCvc(kInstrumentId, kCvc));
+  // Database does not allow adding same instrument_id twice.
+  EXPECT_FALSE(table_->AddServerCvc(kInstrumentId, kCvc));
+  EXPECT_EQ(table_->GetServerCvcForTesting(kInstrumentId), kCvc);
+  // Verify last_updated_timestamp in server_stored_cvc table is set correctly.
+  EXPECT_EQ(GetDateModified("server_stored_cvc", "last_updated_timestamp",
+                            kInstrumentId),
+            kArbitraryTime.ToTimeT());
+
+  // Set the current time to another value.
+  const base::Time kSomeLaterTime = base::Time::FromDoubleT(1000);
+  test_clock.SetNow(kSomeLaterTime);
+
+  const std::u16string kNewCvc = u"234";
+  EXPECT_TRUE(table_->UpdateServerCvc(kInstrumentId, kNewCvc));
+  EXPECT_EQ(table_->GetServerCvcForTesting(kInstrumentId), kNewCvc);
+  // Verify last_updated_timestamp in server_stored_cvc table is set correctly.
+  EXPECT_EQ(GetDateModified("server_stored_cvc", "last_updated_timestamp",
+                            kInstrumentId),
+            kSomeLaterTime.ToTimeT());
+
+  // Remove the server cvc. It should also remove cvc from server_stored_cvc
+  // table.
+  EXPECT_TRUE(table_->RemoveServerCvc(kInstrumentId));
+  EXPECT_TRUE(table_->GetServerCvcForTesting(kInstrumentId).empty());
+
+  // Remove non-exist cvc will return false.
+  EXPECT_FALSE(table_->RemoveServerCvc(kInstrumentId));
+
+  // Clear the server_stored_cvc table.
+  table_->AddServerCvc(kInstrumentId, kCvc);
+  EXPECT_TRUE(table_->ClearServerCvcs());
+  EXPECT_TRUE(table_->GetAllServerCvcForTesting().empty());
+
+  // Clear the server_stored_cvc table when table is empty will return false.
+  EXPECT_FALSE(table_->ClearServerCvcs());
+}
+
 TEST_F(AutofillTableTest, AddFullServerCreditCard) {
   CreditCard credit_card;
   credit_card.set_record_type(CreditCard::FULL_SERVER_CARD);
@@ -1771,6 +1903,7 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
   inputs[0].set_virtual_card_enrollment_type(
       CreditCard::VirtualCardEnrollmentType::ISSUER);
   inputs[0].set_product_description(u"Fake description");
+  inputs[0].set_cvc(u"000");
 
   inputs.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b456"));
   inputs[1].SetRawInfo(CREDIT_CARD_NAME_FULL, u"Rick Roman");
@@ -1788,6 +1921,7 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
   inputs[1].set_virtual_card_enrollment_type(
       CreditCard::VirtualCardEnrollmentType::NETWORK);
   inputs[1].set_card_art_url(GURL("https://www.example.com"));
+  inputs[1].set_cvc(u"111");
 
   test::SetServerCreditCards(table_.get(), inputs);
 
@@ -1835,6 +1969,9 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
   EXPECT_EQ(GURL("https://www.example.com"), outputs[1]->card_art_url());
 
   EXPECT_EQ(u"Fake description", outputs[0]->product_description());
+
+  EXPECT_EQ(inputs[0].cvc(), outputs[0]->cvc());
+  EXPECT_EQ(inputs[1].cvc(), outputs[1]->cvc());
 }
 
 TEST_F(AutofillTableTest, SetGetRemoveServerCardMetadata) {

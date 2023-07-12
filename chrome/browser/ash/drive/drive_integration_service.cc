@@ -1050,7 +1050,7 @@ void DriveIntegrationService::MaybeMountDrive(const base::FilePath& data_dir,
       file_manager::SystemNotificationManager snm(profile_);
       const std::unique_ptr<const message_center::Notification> notification =
           snm.CreateNotification("drive_data_dir_missing",
-                                 IDS_FILE_BROWSER_DRIVE_SYNC_ERROR_TITLE,
+                                 IDS_FILE_BROWSER_DRIVE_DATA_DIR_MISSING_TITLE,
                                  IDS_FILE_BROWSER_DRIVE_DATA_DIR_MISSING);
       DCHECK(notification);
       snm.GetNotificationDisplayService()->Display(
@@ -1366,7 +1366,7 @@ void DriveIntegrationService::ToggleBulkPinning() {
   }
 
   if (GetPrefs()->GetBoolean(kDriveFsBulkPinningEnabled)) {
-    pin_manager_->ShouldPin(true);
+    pin_manager_->ShouldPin();
     pin_manager_->Start();
   } else {
     pin_manager_->Stop();
@@ -1381,17 +1381,28 @@ void DriveIntegrationService::GetTotalPinnedSize(
     return;
   }
 
-  GetDriveFsInterface()->GetOfflineFilesSpaceUsage(base::BindOnce(
-      [](base::OnceCallback<void(int64_t)> callback, drive::FileError error,
-         int64_t total_size) {
-        if (error != drive::FILE_ERROR_OK) {
-          LOG(ERROR) << "Cannot get offline size: " << error;
-          std::move(callback).Run(-1);
-          return;
-        }
-        std::move(callback).Run(total_size);
-      },
-      std::move(callback)));
+  if (base::Time::Now() < last_offline_storage_size_time_ + Seconds(2)) {
+    std::move(callback).Run(last_offline_storage_size_result_);
+    return;
+  }
+
+  GetDriveFsInterface()->GetOfflineFilesSpaceUsage(
+      base::BindOnce(&DriveIntegrationService::OnGetOfflineFilesSpaceUsage,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void DriveIntegrationService::OnGetOfflineFilesSpaceUsage(
+    base::OnceCallback<void(int64_t)> callback,
+    drive::FileError error,
+    int64_t total_size) {
+  if (error != drive::FILE_ERROR_OK) {
+    LOG(ERROR) << "Cannot get offline size: " << error;
+    std::move(callback).Run(-1);
+    return;
+  }
+  last_offline_storage_size_result_ = total_size;
+  last_offline_storage_size_time_ = base::Time::Now();
+  std::move(callback).Run(total_size);
 }
 
 void DriveIntegrationService::ClearOfflineFiles(

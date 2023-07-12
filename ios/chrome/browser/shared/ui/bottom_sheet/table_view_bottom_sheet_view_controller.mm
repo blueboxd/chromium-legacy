@@ -146,9 +146,7 @@ CGFloat const kInitialHeightPadding = 5;
   self.imageHasFixedSize = YES;
   self.showsVerticalScrollIndicator = NO;
   self.showDismissBarButton = NO;
-  self.customSpacing = 0;
   self.customSpacingAfterImage = 0;
-  self.titleTextStyle = UIFontTextStyleTitle2;
   self.topAlignedLayout = YES;
   self.scrollEnabled = NO;
   self.customScrollViewBottomInsets = 0;
@@ -172,8 +170,6 @@ CGFloat const kInitialHeightPadding = 5;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-  [self.view layoutIfNeeded];
-
   // Update the custom detent with the correct initial height for the bottom
   // sheet. (Initial height is not calculated properly in -viewDidLoad, but we
   // need to setup the bottom sheet in that method so there is not a delay when

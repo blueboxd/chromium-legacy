@@ -657,6 +657,8 @@ class OmniboxEditModelPopupTest : public ::testing::Test {
     auto omnibox_client = std::make_unique<TestOmniboxClient>();
     EXPECT_CALL(*omnibox_client, GetLocationBarModel())
         .WillRepeatedly(Return(&location_bar_model_));
+    EXPECT_CALL(*omnibox_client, GetPrefs())
+        .WillRepeatedly(Return(pref_service()));
 
     view_ = std::make_unique<TestOmniboxView>(std::move(omnibox_client));
     view_->controller()->SetEditModelForTesting(
@@ -681,6 +683,7 @@ class OmniboxEditModelPopupTest : public ::testing::Test {
   OmniboxController* controller() { return view_->controller(); }
 
  protected:
+  base::test::ScopedFeatureList features{omnibox::kUpdateResultDebounce};
   base::test::TaskEnvironment task_environment_;
   TestLocationBarModel location_bar_model_;
   TestingPrefServiceSimple pref_service_;
@@ -701,7 +704,7 @@ TEST_F(OmniboxEditModelPopupTest, SetSelectedLine) {
     match.allowed_to_be_default_match = true;
     matches.push_back(match);
   }
-  auto* result = &controller()->autocomplete_controller()->result_;
+  auto* result = &controller()->autocomplete_controller()->published_result_;
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
   result->AppendMatches(matches);
@@ -724,7 +727,7 @@ TEST_F(OmniboxEditModelPopupTest, SetSelectedLineWithNoDefaultMatches) {
     match.keyword = u"match";
     matches.push_back(match);
   }
-  auto* result = &controller()->autocomplete_controller()->result_;
+  auto* result = &controller()->autocomplete_controller()->published_result_;
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
   result->AppendMatches(matches);
@@ -757,7 +760,7 @@ TEST_F(OmniboxEditModelPopupTest, PopupPositionChanging) {
     match.allowed_to_be_default_match = true;
     matches.push_back(match);
   }
-  auto* result = &controller()->autocomplete_controller()->result_;
+  auto* result = &controller()->autocomplete_controller()->published_result_;
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
   result->AppendMatches(matches);
@@ -805,7 +808,7 @@ TEST_F(OmniboxEditModelPopupTest, PopupStepSelection) {
   // Make match index 5 have a suggestion_group_id but no header text.
   matches[5].suggestion_group_id = omnibox::GROUP_HISTORY_CLUSTER;
 
-  auto* result = &controller()->autocomplete_controller()->result_;
+  auto* result = &controller()->autocomplete_controller()->published_result_;
   result->AppendMatches(matches);
 
   omnibox::GroupConfigMap suggestion_groups_map;
@@ -813,7 +816,7 @@ TEST_F(OmniboxEditModelPopupTest, PopupStepSelection) {
   suggestion_groups_map[omnibox::GROUP_HISTORY_CLUSTER].set_header_text("");
 
   // Do not set the original_group_id on purpose to test that default visibility
-  // can be safely queried via AutocompleteResult::IsSuggestionGroupHidden().
+  // can be safely queried via OmniboxController::IsSuggestionGroupHidden().
   result->MergeSuggestionGroupsMap(suggestion_groups_map);
 
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
@@ -896,16 +899,16 @@ TEST_F(OmniboxEditModelPopupTest, PopupStepSelectionWithHiddenGroupIds) {
   matches[2].suggestion_group_id = kNewGroupId;
   matches[3].suggestion_group_id = kNewGroupId;
 
-  auto* result = &controller()->autocomplete_controller()->result_;
+  auto* result = &controller()->autocomplete_controller()->published_result_;
   result->AppendMatches(matches);
 
   omnibox::GroupConfigMap suggestion_groups_map;
   suggestion_groups_map[kNewGroupId].set_header_text("header");
   // Setting the original_group_id allows the default visibility to be set via
-  // AutocompleteResult::SetSuggestionGroupHidden().
+  // OmniboxController::SetSuggestionGroupHidden().
   result->MergeSuggestionGroupsMap(suggestion_groups_map);
-  result->SetSuggestionGroupHidden(pref_service(), kNewGroupId,
-                                   /*hidden=*/true);
+  controller()->SetSuggestionGroupHidden(kNewGroupId, /*hidden=*/true);
+  EXPECT_TRUE(controller()->IsSuggestionGroupHidden(kNewGroupId));
 
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
@@ -972,7 +975,7 @@ TEST_F(OmniboxEditModelPopupTest, PopupStepSelectionWithActions) {
   matches[3].takeover_action = base::MakeRefCounted<OmniboxAction>(
       OmniboxAction::LabelStrings(), GURL());
 
-  auto* result = &controller()->autocomplete_controller()->result_;
+  auto* result = &controller()->autocomplete_controller()->published_result_;
   result->AppendMatches(matches);
 
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
@@ -1042,7 +1045,7 @@ TEST_F(OmniboxEditModelPopupTest, PopupInlineAutocompleteAndTemporaryText) {
   const auto kNewGroupId = omnibox::GROUP_PREVIOUS_SEARCH_RELATED;
   matches[2].suggestion_group_id = kNewGroupId;
 
-  auto* result = &controller()->autocomplete_controller()->result_;
+  auto* result = &controller()->autocomplete_controller()->published_result_;
   result->AppendMatches(matches);
 
   omnibox::GroupConfigMap suggestion_groups_map;
@@ -1116,7 +1119,7 @@ TEST_F(OmniboxEditModelPopupTest, TestFocusFixing) {
   match.has_tab_match = true;
   matches.push_back(match);
 
-  auto* result = &controller()->autocomplete_controller()->result_;
+  auto* result = &controller()->autocomplete_controller()->published_result_;
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
   result->AppendMatches(matches);
@@ -1203,7 +1206,7 @@ TEST_F(OmniboxEditModelPopupTest, OpenActionSelectionLogsOmniboxEvent) {
       controller()->autocomplete_controller()->search_provider();
   matches[1].actions.push_back(base::MakeRefCounted<TabSwitchAction>(url));
   AutocompleteResult* result =
-      &controller()->autocomplete_controller()->result_;
+      &controller()->autocomplete_controller()->published_result_;
   result->AppendMatches(matches);
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());

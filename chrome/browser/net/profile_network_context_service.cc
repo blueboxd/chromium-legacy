@@ -565,9 +565,9 @@ ProfileNetworkContextService::CreateCookieManagerParams(
       cookie_settings.ShouldBlockThirdPartyCookies();
   // This allows cookies to be sent on https requests from chrome:// pages,
   // ignoring SameSite attribute rules. For example, this is needed for browser
-  // UI to interact with SameSite cookies on accounts.google.com, which are used
-  // for logging into Cloud Print from chrome://print, for displaying a list
-  // of available accounts on the NTP (chrome://new-tab-page), etc.
+  // UI to interact with SameSite cookies on accounts.google.com, which is used
+  // for displaying a list of available accounts on the NTP
+  // (chrome://new-tab-page), etc.
   out->secure_origin_cookies_allowed_schemes.push_back(
       content::kChromeUIScheme);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -764,6 +764,8 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   g_browser_process->system_network_context_manager()
       ->ConfigureDefaultNetworkContextParams(network_context_params);
 
+  network_context_params->enable_zstd =
+      base::FeatureList::IsEnabled(net::features::kZstdContentEncoding);
   network_context_params->accept_language = ComputeAcceptLanguage();
   network_context_params->enable_referrers = enable_referrers_.GetValue();
 

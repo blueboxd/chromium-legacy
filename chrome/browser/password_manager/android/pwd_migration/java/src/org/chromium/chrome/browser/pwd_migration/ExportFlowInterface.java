@@ -5,8 +5,11 @@
 package org.chromium.chrome.browser.pwd_migration;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 /**
@@ -29,6 +32,13 @@ public interface ExportFlowInterface {
          * @return The ID of the root view of the owning fragment.
          */
         int getViewId();
+
+        /**
+         * Runs the activity on the fragment owning the export flow.
+         *
+         * @param intent The intent to start an activity.
+         */
+        void runCreateFileOnDiskIntent(Intent intent);
     }
 
     /**
@@ -43,11 +53,8 @@ public interface ExportFlowInterface {
 
     /**
      * Starts the password export flow.
-     *
-     * @param passwordsAvailable indicates if the passwords have been fetched and are ready to be
-     *         exported.
      */
-    public void startExporting(boolean passwordsAvailable);
+    public void startExporting();
 
     /**
      * A hook to be used in a {@link Fragment}'s onResume method. I processes the result of the
@@ -59,4 +66,12 @@ public interface ExportFlowInterface {
      * Continues the export flow when password list is available.
      */
     public void passwordsAvailable();
+
+    /**
+     * Saves the passwords into the file (in the form of Uri) passed in.
+     *
+     * @param passwordsFile The file into which the passwords will be written (expected to be a file
+     *         Uri).
+     */
+    void savePasswordsToDownloads(Uri passwordsFile);
 }

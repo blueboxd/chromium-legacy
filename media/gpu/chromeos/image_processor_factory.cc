@@ -12,6 +12,7 @@
 #include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/task/sequenced_task_runner.h"
+#include "build/build_config.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_types.h"
 #include "media/gpu/buildflags.h"
@@ -338,9 +339,13 @@ ImageProcessorFactory::CreateGLImageProcessorWithInputCandidatesForTesting(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     PickFormatCB out_format_picker,
     ImageProcessor::ErrorCB error_cb) {
+#if defined(ARCH_CPU_ARM_FAMILY)
   return CreateGLImageProcessorWithInputCandidates(
       input_candidates, input_visible_rect, output_size, client_task_runner,
       out_format_picker, error_cb);
+#else
+  return nullptr;
+#endif
 }
 #endif
 

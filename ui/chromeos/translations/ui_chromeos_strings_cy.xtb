@@ -37,11 +37,11 @@
 <translation id="1297922636971898492">Nid yw Google Drive ar gael ar hyn o bryd. Bydd uwchlwytho yn ailgychwyn yn awtomatig unwaith y bydd Google Drive yn ôl.</translation>
 <translation id="1307931752636661898">Methu â gweld ffeiliau Linux</translation>
 <translation id="1313405956111467313">Ffurfweddu dirprwy weinydd yn awtomatig</translation>
+<translation id="134645005685694099">Nid oes gan eich dyfais ddigon o le storio i gadw cysoni ffeiliau ymlaen. Ni fydd ffeiliau newydd yn cysoni'n awtomatig mwyach.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
 <translation id="1358735829858566124">Nid oes modd defnyddio'r ffeil na'r cyfeiriadur.</translation>
 <translation id="1363028406613469049">Olrhain</translation>
 <translation id="1378727793141957596">Croeso i Google Drive!</translation>
-<translation id="1379156577998569384">Mae eich ffeiliau My Drive ar gael all-lein</translation>
 <translation id="1379911846207762492">Gallwch wneud ffeiliau ar gael all-lein ar gyfer mynediad pan nad oes gennych gysylltiad i'r we.</translation>
 <translation id="1383876407941801731">Chwilio</translation>
 <translation id="1388045380422025115">Pob math</translation>
@@ -131,7 +131,6 @@
 <translation id="2084108471225856927">Gosodiadau'r ddyfais</translation>
 <translation id="2084809735218147718">Yn arwyddo diolch</translation>
 <translation id="2088690981887365033">Rhwydwaith VPN</translation>
-<translation id="2089751716171649322">Cael mynediad at eich ffeiliau Google Drive yn hawdd pan fyddwch all-lein</translation>
 <translation id="2111134541987263231">Trowch <ph name="BEGIN_BOLD" />Caniatáu yn y modd Anhysbys<ph name="END_BOLD" /> ymlaen</translation>
 <translation id="2114191879048183086">Bydd <ph name="NUMBER_OF_ITEMS" /> eitem yn cael eu dileu ac ni fyddwch yn gallu eu hadfer.</translation>
 <translation id="2122305276694332719">Mae cysylltu'n awtomatig â rhwydwaith cudd yn caniatáu i eraill weld eich dyfais a rhai gosodiadau rhwydwaith, ac ni chaiff ei argymell.</translation>
@@ -182,6 +181,7 @@
 <translation id="2464089476039395325">Dirprwy Weinydd HTTP</translation>
 <translation id="2467267713099745100">Rhwydwaith <ph name="NETWORK_TYPE" />, wedi'i ddiffodd</translation>
 <translation id="2468402215065996499">Tamagotchi</translation>
+<translation id="2468470447085858632">Cyrchwch eich ffeiliau Google Drive all-lein gyda chysoni ffeiliau</translation>
 <translation id="2470939964922472929">Rhoddwyd y PIN anghywir gormod o weithiau. I osod PIN newydd, rhowch yr Allwedd Ddadrwystro Bersonol 8 digid (PUK) a ddarperir gan eich cludwr.</translation>
 <translation id="2500392669976258912">Seinegol Gwjarati</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -351,12 +351,12 @@
 <translation id="3855472144336161447">Almaeneg Neo 2</translation>
 <translation id="3858860766373142691">Enw</translation>
 <translation id="3866249974567520381">Disgrifiad</translation>
-<translation id="3866439285517092441">Batri yn isel. Bydd cysoni yn ailddechrau pan fyddwch wedi'ch cysylltu â phŵer.</translation>
 <translation id="3899991606604168269">Ffrangeg (Canada) gyda bysellfwrdd Amlieithog</translation>
 <translation id="3901991538546252627">Cysylltu â <ph name="NAME" /></translation>
 <translation id="3906232975181435906">Wrthi'n gosod proffil dyfais symudol, Rhwydwaith <ph name="NETWORK_INDEX" /> o <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Gludo</translation>
+<translation id="3950820424414687140">Mewngofnodwch</translation>
 <translation id="3952872973865944257">Seinegol Telwgw</translation>
 <translation id="3958548648197196644">Ciwi</translation>
 <translation id="397105322502079400">Wrthi'n cyfrifo…</translation>
@@ -577,12 +577,10 @@
 <translation id="5494920125229734069">Dewis pob un</translation>
 <translation id="5500122897333236901">Islandeg</translation>
 <translation id="5508696409934741614">Dotiau</translation>
-<translation id="5519161320735100193">Gosodiadau Google Drive</translation>
 <translation id="5522908512596376669">Mae'r rhestr ffeiliau wedi newid i wedd rhestr.</translation>
 <translation id="5524517123096967210">Ni ellid darllen y ffeil.</translation>
 <translation id="5533102081734025921">Llun <ph name="IMAGE_TYPE" /></translation>
 <translation id="5534520101572674276">Wrthi'n cyfrifo maint</translation>
-<translation id="5536122250858122375">Nid oes modd cysoni'r math hwn o ffeil</translation>
 <translation id="554153475311314364">Trawslythrennu Groeg</translation>
 <translation id="5554171655917412781">Mae <ph name="SELECTED_FOLDERS_COUNT" /> ffolder wedi'u dewis</translation>
 <translation id="5580591966435005537">peiriant rhithwir</translation>
@@ -606,6 +604,7 @@
 <translation id="5720028165859493293">Symudwyd <ph name="FILE_NAME" /> i'r bin sbwriel</translation>
 <translation id="5724172041621205163">Thai gyda bysellfwrdd Pattachote</translation>
 <translation id="57383366388012121">Y mis diwethaf</translation>
+<translation id="575175778971367197">Nid oes modd cysoni'r ffeil hon ar hyn o bryd</translation>
 <translation id="5756666464756035725">QWERTY Hwngareg</translation>
 <translation id="5760252553414789727">Mae <ph name="SELECTED_FILES_COUNT" /> eitem wedi'u dewis</translation>
 <translation id="5763377084591234761">Almaeneg (Y Swistir)</translation>
@@ -708,6 +707,7 @@
 <translation id="6558280019477628686">Bu gwall. Mae'n bosib na fydd rhai eitemau wedi'u dileu.</translation>
 <translation id="656398493051028875">Wrthi'n dileu "<ph name="FILENAME" />"...</translation>
 <translation id="6581162200855843583">Dolen Google Drive</translation>
+<translation id="6588648400954570689">Gosodiadau cysoni ffeiliau</translation>
 <translation id="6594855146910089723">Mae'r ffolder hwn yn cael ei rhannu gyda Linux a Parallels Desktop</translation>
 <translation id="6607272825297743757">Gwybodaeth am y ffeil</translation>
 <translation id="6609332149380188670">Mae <ph name="NUMBER_OF_ITEMS" /> ffolder wedi'u rhannu â Parallels Desktop</translation>
@@ -743,7 +743,6 @@
 <translation id="6874758081814639712">Person yn gwneud tai chi</translation>
 <translation id="6876155724392614295">Beic</translation>
 <translation id="6878261347041253038">Bysellfwrdd Devanagari (Seinegol)</translation>
-<translation id="6882444584974399416">Nid oes gan eich dyfais ddigon o le storio i gadw'ch ffeiliau ar gael all-lein. Ni fydd ffeiliau newydd yn cael eu cysoni'n awtomatig mwyach.</translation>
 <translation id="6885780034956018177">Malwen</translation>
 <translation id="6896758677409633944">Copïo</translation>
 <translation id="6898028766943174120">Rhagor o is-ffolderi...</translation>
@@ -833,6 +832,7 @@
 <translation id="7547811415869834682">Iseldireg</translation>
 <translation id="7551643184018910560">Pinio i'r silff</translation>
 <translation id="7553492409867692754">Rhoi caniatâd i apiau Linux gael mynediad at ffeiliau yn y ffolder <ph name="FOLDER_NAME" /></translation>
+<translation id="7555339735447658365">Rydych chi all-lein ar hyn o bryd. Bydd cysoni ffeiliau yn ailddechrau pan fyddwch wedi'ch cysylltu â'r rhyngrwyd</translation>
 <translation id="7589661784326793847">Arhoswch eiliad</translation>
 <translation id="7592775719802218421">Yn gwneud <ph name="FILE_NAME" /> ar gael all-lein</translation>
 <translation id="7600126690270271294">Serbeg</translation>
@@ -875,6 +875,7 @@
 <translation id="7814857791038398352">Microsoft OneDrive</translation>
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7831491651892296503">Bu gwall wrth ffurfweddu'r rhwydwaith</translation>
+<translation id="7832093238954689746">Mae cysoni ffeiliau wedi'i gwblhau. Mae ffeiliau My Drive ar gael all-lein.</translation>
 <translation id="7839804798877833423">Bydd nôl y ffeiliau hyn yn defnyddio tua <ph name="FILE_SIZE" /> o ddata symudol.</translation>
 <translation id="7846076177841592234">Canslo dewis</translation>
 <translation id="7853966320808728790">BÉPO Ffrengig</translation>
@@ -923,6 +924,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">Model y ddyfais</translation>
 <translation id="8223479393428528563">I gadw'r ffeiliau hyn i'w defnyddio all-lein, ewch yn ôl ar-lein, de-gliciwch y ffeiliau, a dewiswch yr opsiwn <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
+<translation id="8241139360630443550">Gweld y storfa</translation>
 <translation id="8249296373107784235">Terfynu</translation>
 <translation id="8250690786522693009">Lladin</translation>
 <translation id="8250920743982581267">Dogfennau</translation>
@@ -952,8 +954,8 @@
 <translation id="8395901698320285466">Dimensiynau</translation>
 <translation id="8404498045299006085">Cadw pob un</translation>
 <translation id="8408068190360279472">Rhwydwaith <ph name="NETWORK_TYPE" />, werthi'n cysylltu</translation>
-<translation id="841387525767317275">Mae ffeiliau yn y ffolder hwn ar gael all-lein</translation>
 <translation id="8425213833346101688">Newid</translation>
+<translation id="8428213095426709021">Gosodiadau</translation>
 <translation id="8431909052837336408">Newid PIN SIM</translation>
 <translation id="8437209419043462667">UDA</translation>
 <translation id="8452135315243592079">Cerdyn SIM ar goll</translation>
@@ -980,7 +982,6 @@
 <translation id="8560515948038859357">Cantoneg</translation>
 <translation id="8561206103590473338">Eliffant</translation>
 <translation id="8566466896628108558">Rhwydwaith <ph name="NETWORK_INDEX" /> o <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, Cryfder Signal <ph name="SIGNAL_STRENGTH" />%, Rhwystrwyd gan eich Gweinyddwr, Manylion</translation>
-<translation id="8567555211227790801">Rydych chi all-lein ar hyn o bryd. Bydd cysoni yn ailddechrau pan fyddwch wedi'ch cysylltu â'r rhyngrwyd.</translation>
 <translation id="8568374623837201676">Dileu'r ffeil hon yn barhaol?</translation>
 <translation id="8569764466147087991">Dewiswch ffeil i'w hagor</translation>
 <translation id="8577897833047451336">Croateg</translation>

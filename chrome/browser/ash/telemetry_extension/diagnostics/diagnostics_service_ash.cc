@@ -114,6 +114,18 @@ void DiagnosticsServiceAsh::RunAcPowerRoutine(
           std::move(callback)));
 }
 
+void DiagnosticsServiceAsh::RunAudioDriverRoutine(
+    RunAudioDriverRoutineCallback callback) {
+  GetService()->RunAudioDriverRoutine(base::BindOnce(
+      [](crosapi::mojom::DiagnosticsService::RunAudioDriverRoutineCallback
+             callback,
+         cros_healthd::mojom::RunRoutineResponsePtr ptr) {
+        std::move(callback).Run(
+            converters::ConvertDiagnosticsPtr(std::move(ptr)));
+      },
+      std::move(callback)));
+}
+
 void DiagnosticsServiceAsh::RunBatteryCapacityRoutine(
     RunBatteryCapacityRoutineCallback callback) {
   GetService()->RunBatteryCapacityRoutine(base::BindOnce(
@@ -424,6 +436,21 @@ void DiagnosticsServiceAsh::RunUfsLifetimeRoutine(
             converters::ConvertDiagnosticsPtr(std::move(ptr)));
       },
       std::move(callback)));
+}
+
+void DiagnosticsServiceAsh::RunPowerButtonRoutine(
+    uint32_t timeout_seconds,
+    RunPowerButtonRoutineCallback callback) {
+  GetService()->RunPowerButtonRoutine(
+      timeout_seconds,
+      base::BindOnce(
+          [](crosapi::mojom::DiagnosticsService::RunPowerButtonRoutineCallback
+                 callback,
+             cros_healthd::mojom::RunRoutineResponsePtr ptr) {
+            std::move(callback).Run(
+                converters::ConvertDiagnosticsPtr(std::move(ptr)));
+          },
+          std::move(callback)));
 }
 
 }  // namespace ash

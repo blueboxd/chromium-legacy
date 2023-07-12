@@ -40,8 +40,11 @@ public class PageInfoCookiesController
 
     private int mAllowedCookies;
     private int mBlockedCookies;
+    private int mAllowedSites;
+    private int mBlockedSites;
     private int mStatus;
     private boolean mIsEnforced;
+    private long mExpiration;
     private Website mWebsite;
 
     public PageInfoCookiesController(PageInfoMainController mainController, PageInfoRowView rowView,
@@ -93,8 +96,13 @@ public class PageInfoCookiesController
         params.disableCookieDeletion = isDeletionDisabled();
         params.hostName = mMainController.getURL().getHost();
         mSubPage.setParams(params);
-        mSubPage.setCookiesCount(mAllowedCookies, mBlockedCookies);
-        mSubPage.setCookieBlockingStatus(mStatus, mIsEnforced);
+        if (PageInfoFeatures.USER_BYPASS_UI.isEnabled()) {
+            mSubPage.setCookieStatus(mStatus, mIsEnforced, mExpiration);
+            mSubPage.setSitesCount(mAllowedSites, mBlockedSites);
+        } else {
+            mSubPage.setCookieBlockingStatus(mStatus, mIsEnforced);
+            mSubPage.setCookiesCount(mAllowedCookies, mBlockedCookies);
+        }
 
         SiteSettingsCategory storageCategory = SiteSettingsCategory.createFromType(
                 mMainController.getBrowserContext(), SiteSettingsCategory.Type.USE_STORAGE);
@@ -181,13 +189,27 @@ public class PageInfoCookiesController
         }
     }
 
-    // TODO(crbug.com/1446230): Implement the following three UserBypassUI methods.
     @Override
-    public void onStatusChanged(int status, int enforcement, long expiration) {}
+    public void onStatusChanged(int status, int enforcement, long expiration) {
+        mStatus = status;
+        mIsEnforced = enforcement != CookieControlsEnforcement.NO_ENFORCEMENT;
+        mExpiration = expiration;
+        if (mSubPage != null) {
+            mSubPage.setCookieStatus(mStatus, mIsEnforced, expiration);
+        }
+    }
 
     @Override
-    public void onSitesCountChanged(int allowedSites, int blockedSites) {}
+    public void onSitesCountChanged(int allowedSites, int blockedSites) {
+        mAllowedSites = allowedSites;
+        mBlockedSites = blockedSites;
+        // TODO(crbug.com/1446230): Update the row view.
+        if (mSubPage != null) {
+            mSubPage.setSitesCount(allowedSites, blockedSites);
+        }
+    }
 
+    // TODO(crbug.com/1446230): Implement.
     @Override
     public void onBreakageConfidenceLevelChanged(int level) {}
 

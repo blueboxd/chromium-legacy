@@ -18,6 +18,10 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace views {
 
 namespace {
@@ -150,8 +154,8 @@ CocoaScrollBar::CocoaScrollBar(bool horizontal)
                                                 base::Unretained(this))),
       thickness_animation_(this) {
   SetThumb(new CocoaScrollBarThumb(this));
-  bridge_.reset([[ViewsScrollbarBridge alloc] initWithDelegate:this]);
-  scroller_style_ = [ViewsScrollbarBridge getPreferredScrollerStyle];
+  bridge_ = [[ViewsScrollbarBridge alloc] initWithDelegate:this];
+  scroller_style_ = [ViewsScrollbarBridge preferredScrollerStyle];
 
   thickness_animation_.SetSlideDuration(base::Milliseconds(240));
 
@@ -344,7 +348,7 @@ void CocoaScrollBar::ObserveScrollEvent(const ui::ScrollEvent& event) {
 
 void CocoaScrollBar::OnScrollerStyleChanged() {
   NSScrollerStyle scroller_style =
-      [ViewsScrollbarBridge getPreferredScrollerStyle];
+      [ViewsScrollbarBridge preferredScrollerStyle];
   if (scroller_style_ == scroller_style)
     return;
 

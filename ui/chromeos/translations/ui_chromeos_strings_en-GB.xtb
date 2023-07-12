@@ -37,11 +37,11 @@
 <translation id="1297922636971898492">Google Drive is not available right now. Uploading will automatically restart once Google Drive is back.</translation>
 <translation id="1307931752636661898">Unable to view Linux files</translation>
 <translation id="1313405956111467313">Automatic proxy configuration</translation>
+<translation id="134645005685694099">Your device doesn’t have enough storage space to keep file sync turned on. New files will no longer sync automatically.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
 <translation id="1358735829858566124">The file or the directory is not usable.</translation>
 <translation id="1363028406613469049">Track</translation>
 <translation id="1378727793141957596">Welcome to Google Drive!</translation>
-<translation id="1379156577998569384">Your My Drive files are available offline</translation>
 <translation id="1379911846207762492">You can make files available offline for access when you don't have an Internet connection.</translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1388045380422025115">All types</translation>
@@ -131,7 +131,7 @@
 <translation id="2084108471225856927">Device settings</translation>
 <translation id="2084809735218147718">Signing thank you</translation>
 <translation id="2088690981887365033">VPN network</translation>
-<translation id="2089751716171649322">Easily access your Google Drive files when you’re offline</translation>
+<translation id="209653272837065803">There isn’t enough storage space to continue syncing files</translation>
 <translation id="2111134541987263231">Turn on <ph name="BEGIN_BOLD" />Allow in Incognito<ph name="END_BOLD" />.</translation>
 <translation id="2114191879048183086"><ph name="NUMBER_OF_ITEMS" /> items will be deleted and you won't be able to restore them.</translation>
 <translation id="2122305276694332719">Automatically connecting to a hidden network allows others to see your device and some network settings, and is not recommended.</translation>
@@ -148,9 +148,11 @@
 <translation id="2198315389084035571">Simplified Chinese</translation>
 <translation id="22085916256174561">Korean</translation>
 <translation id="2208919847696382164">Install with Linux</translation>
+<translation id="2215692307449050019">Battery is low. File sync will resume when you are connected to power.</translation>
 <translation id="2225536596944493418">Are you sure that you want to delete <ph name="NUMBER_OF_ITEMS" /> items?</translation>
 <translation id="2230062665678605299">Unable to create folder "<ph name="FOLDER_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="2239068707900391003">Person with coffee</translation>
+<translation id="2247561763838186830">You've been logged out</translation>
 <translation id="2251368349685848079">Restore from bin</translation>
 <translation id="2278133026967558505">File access by all websites and URLs</translation>
 <translation id="2282155092769082568">Auto-configuration URL:</translation>
@@ -165,6 +167,7 @@
 <translation id="2325650632570794183">This file type is not supported. Please visit the Chrome Web Store to find an app that can open this type of file.</translation>
 <translation id="2326539130272988168">Bulgarian</translation>
 <translation id="2337715497728194187">Share with Bruschetta</translation>
+<translation id="233822363739146957">There isn’t enough storage space to sync all of your files</translation>
 <translation id="23721837607121582">Download mobile profile, network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Switch to list view</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> folders shared with Linux</translation>
@@ -182,6 +185,7 @@
 <translation id="2464089476039395325">HTTP Proxy</translation>
 <translation id="2467267713099745100"><ph name="NETWORK_TYPE" /> network, off</translation>
 <translation id="2468402215065996499">Tamagotchi</translation>
+<translation id="2468470447085858632">Access your Google Drive files offline with file sync</translation>
 <translation id="2470939964922472929">An incorrect PIN was entered too many times. To set up a new PIN, enter the 8-digit personal unblocking key (PUK) provided by your operator.</translation>
 <translation id="2500392669976258912">Gujarati (phonetic)</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -217,6 +221,7 @@
 <translation id="2782104745158847185">Error installing Linux application</translation>
 <translation id="2802583107108007218">Learn more about these restrictions</translation>
 <translation id="2803375539583399270">Enter PIN</translation>
+<translation id="2819519502129272135">File sync turned off</translation>
 <translation id="2820957248982571256">Scanning...</translation>
 <translation id="2830077785865012357">Chinese Zhuyin</translation>
 <translation id="2843806747483486897">Change default...</translation>
@@ -351,12 +356,12 @@
 <translation id="3855472144336161447">German Neo 2</translation>
 <translation id="3858860766373142691">Name</translation>
 <translation id="3866249974567520381">Description</translation>
-<translation id="3866439285517092441">Battery is low. Sync will resume when you are connected to power.</translation>
 <translation id="3899991606604168269">French (Canada) with multilingual keyboard</translation>
 <translation id="3901991538546252627">Connecting to <ph name="NAME" /></translation>
 <translation id="3906232975181435906">Installing mobile profile, network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Paste</translation>
+<translation id="3950820424414687140">Sign in</translation>
 <translation id="3952872973865944257">Telugu phonetic</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="397105322502079400">Calculating...</translation>
@@ -441,6 +446,7 @@
 <translation id="4599600860674643278">Filter has been reset.</translation>
 <translation id="4603392156942865207">Copying <ph name="FILE_NAME" /> to <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">Artist</translation>
+<translation id="4635373743001040938">Storage space was extremely low. File sync has been turned off.</translation>
 <translation id="4642769377300286600">Installing mobile profile, network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="4646813851450205600">Czech with QWERTY keyboard</translation>
 <translation id="4656777537938206294">Make files available offline</translation>
@@ -494,6 +500,7 @@
 <translation id="4961158930123534723">1 folder shared with Parallels Desktop</translation>
 <translation id="496656650103537022"><ph name="FILE_NAME" /> restored</translation>
 <translation id="4969785127455456148">Album</translation>
+<translation id="4972330214479971536">Couldn’t finish setting up file sync</translation>
 <translation id="4973523518332075481">Use a name that's <ph name="MAX_LENGTH" /> characters or less</translation>
 <translation id="4973970068702235170">Zipping failed, unexpected error: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Japanese</translation>
@@ -578,12 +585,10 @@
 <translation id="5494920125229734069">Select all</translation>
 <translation id="5500122897333236901">Icelandic</translation>
 <translation id="5508696409934741614">Dots</translation>
-<translation id="5519161320735100193">Google Drive settings</translation>
 <translation id="5522908512596376669">File list has changed to list view.</translation>
 <translation id="5524517123096967210">The file could not be read.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> image</translation>
 <translation id="5534520101572674276">Calculating size</translation>
-<translation id="5536122250858122375">This file type can't be synced</translation>
 <translation id="554153475311314364">Greek (transliteration)</translation>
 <translation id="5554171655917412781"><ph name="SELECTED_FOLDERS_COUNT" /> folders selected</translation>
 <translation id="5580591966435005537">virtual machine</translation>
@@ -607,6 +612,7 @@
 <translation id="5720028165859493293"><ph name="FILE_NAME" /> moved to the bin</translation>
 <translation id="5724172041621205163">Thai with Pattachote keyboard</translation>
 <translation id="57383366388012121">Last month</translation>
+<translation id="575175778971367197">Can’t sync this file right now</translation>
 <translation id="5756666464756035725">Hungarian QWERTY</translation>
 <translation id="5760252553414789727"><ph name="SELECTED_FILES_COUNT" /> items selected</translation>
 <translation id="5763377084591234761">German (Switzerland)</translation>
@@ -709,6 +715,7 @@
 <translation id="6558280019477628686">An error occurred. Some items may not have been deleted.</translation>
 <translation id="656398493051028875">Deleting "<ph name="FILENAME" />"...</translation>
 <translation id="6581162200855843583">Google Drive link</translation>
+<translation id="6588648400954570689">File sync settings</translation>
 <translation id="6594855146910089723">This folder is shared with Linux and Parallels Desktop</translation>
 <translation id="6607272825297743757">File info</translation>
 <translation id="6609332149380188670"><ph name="NUMBER_OF_ITEMS" /> folders shared with Parallels Desktop</translation>
@@ -744,7 +751,6 @@
 <translation id="6874758081814639712">Person doing tai chi</translation>
 <translation id="6876155724392614295">Cycle</translation>
 <translation id="6878261347041253038">Devanagari keyboard (Phonetic)</translation>
-<translation id="6882444584974399416">Your device doesn't have enough storage space to keep your files available offline. New files will no longer be automatically synced.</translation>
 <translation id="6885780034956018177">Snail</translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="6898028766943174120">More sub-folders…</translation>
@@ -808,6 +814,7 @@
 <translation id="7309413087278791451">German (Belgium)</translation>
 <translation id="7339898014177206373">New window</translation>
 <translation id="7343393116438664539">Vietnamese Telex</translation>
+<translation id="7347346221088620549">Encrypted file</translation>
 <translation id="7357762654218998920">This file type is not supported. <ph name="BEGIN_LINK_HELP" />Learn more<ph name="END_LINK_HELP" /> about opening files on Chrome OS.</translation>
 <translation id="7359359531237882347">Copying <ph name="NUMBER_OF_ITEMS" /> items…</translation>
 <translation id="7375951387215729722">File list sorted by <ph name="COLUMN_NAME" /> in descending order.</translation>
@@ -834,6 +841,7 @@
 <translation id="7547811415869834682">Dutch</translation>
 <translation id="7551643184018910560">Pin to shelf</translation>
 <translation id="7553492409867692754">Give Linux apps permission to access files in the <ph name="FOLDER_NAME" /> folder</translation>
+<translation id="7555339735447658365">You are currently offline. File sync will resume when you are connected to the Internet</translation>
 <translation id="7589661784326793847">Wait just a sec</translation>
 <translation id="7592775719802218421">Making <ph name="FILE_NAME" /> available offline</translation>
 <translation id="7600126690270271294">Serbian</translation>
@@ -876,6 +884,7 @@
 <translation id="7814857791038398352">Microsoft® OneDrive</translation>
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7831491651892296503">Error configuring network</translation>
+<translation id="7832093238954689746">File sync complete. My Drive files are available offline.</translation>
 <translation id="7839804798877833423">Fetching these files will use approximately <ph name="FILE_SIZE" /> of mobile data.</translation>
 <translation id="7846076177841592234">Cancel selection</translation>
 <translation id="7853966320808728790">French BÉPO</translation>
@@ -924,6 +933,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">Device model</translation>
 <translation id="8223479393428528563">To save these files for offline use, get back online, right-click the files and select the <ph name="OFFLINE_CHECKBOX_NAME" /> option.</translation>
+<translation id="8241139360630443550">View storage</translation>
 <translation id="8249296373107784235">Abort</translation>
 <translation id="8250690786522693009">Latin</translation>
 <translation id="8250920743982581267">Documents</translation>
@@ -953,8 +963,8 @@
 <translation id="8395901698320285466">Dimensions</translation>
 <translation id="8404498045299006085">Keep all</translation>
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> network, connecting</translation>
-<translation id="841387525767317275">Files in this folder are available offline</translation>
 <translation id="8425213833346101688">Change</translation>
+<translation id="8428213095426709021">Settings</translation>
 <translation id="8431909052837336408">Change SIM PIN</translation>
 <translation id="8437209419043462667">US</translation>
 <translation id="8452135315243592079">Missing SIM card</translation>
@@ -981,7 +991,6 @@
 <translation id="8560515948038859357">Cantonese</translation>
 <translation id="8561206103590473338">Elephant</translation>
 <translation id="8566466896628108558">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />%, blocked by your administrator, details</translation>
-<translation id="8567555211227790801">You are currently offline. Sync will resume when you are connected to the Internet.</translation>
 <translation id="8568374623837201676">Permanently delete this file?</translation>
 <translation id="8569764466147087991">Select a file to open</translation>
 <translation id="8577897833047451336">Croatian</translation>
@@ -992,6 +1001,7 @@
 <translation id="8609695766746872526">Icelandic</translation>
 <translation id="863903787380594467">Incorrect PIN. You have <ph name="RETRIES" /> remaining attempts.</translation>
 <translation id="8639391553632924850"><ph name="INPUT_LABEL" /> – port</translation>
+<translation id="8656407365183407932">Your offline files had to be removed</translation>
 <translation id="8656768832129462377">Do not check</translation>
 <translation id="8688591111840995413">Bad password</translation>
 <translation id="8698464937041809063">Google drawing</translation>
@@ -1027,6 +1037,7 @@
 <translation id="8997962250644902079">Chinese (Traditional) Pinyin</translation>
 <translation id="8998871447376656508">There is not enough free space in your Google Drive to complete the upload.</translation>
 <translation id="9003940392834790328">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />%, managed by your administrator, details</translation>
+<translation id="9007990314804111233">Sign in to your Microsoft account</translation>
 <translation id="9017798300203431059">Russian phonetic</translation>
 <translation id="9034924485347205037">Linux files</translation>
 <translation id="9035012421917565900">The items cannot be moved back into '<ph name="DESTINATION_NAME" />', so you won't be able to undo this action.</translation>

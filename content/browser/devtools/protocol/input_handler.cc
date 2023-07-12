@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/check.h"
@@ -38,6 +39,7 @@
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -845,23 +847,30 @@ void InputHandler::DragController::StartDragging(
     const content::DropData& drop_data,
     blink::DragOperationsMask drag_operations_mask) {
   if (!last_widget_host_ || !last_mouse_move_) {
-    CancelDragging();
+    CancelDragging(base::DoNothing());
     return;
   }
 
   drag_state_ =
       std::make_unique<DragController::DragState>(DragController::DragState{
           drop_data, drag_operations_mask, nullptr, gfx::PointF(),
-          ui::mojom::DragOperation(), 0, base::DoNothing()});
+          ui::mojom::DragOperation::kNone, 0, base::DoNothing()});
   UpdateDragging(*last_widget_host_, *last_mouse_move_);
 }
 
-void InputHandler::DragController::CancelDragging() {
-  auto* view = handler_.GetRootView();
-  if (!view) {
+void InputHandler::DragController::CancelDragging(base::OnceClosure callback) {
+  if (!drag_state_ || !drag_state_->host) {
+    if (auto* view = handler_.GetRootView()) {
+      view->GetRenderWidgetHost()->DragSourceSystemDragEnded();
+    }
+    std::move(callback).Run();
     return;
   }
-  view->GetRenderWidgetHost()->DragSourceSystemDragEnded();
+
+  drag_state_->host->DragTargetDragLeave(drag_state_->pos, drag_state_->pos);
+  drag_state_->host->DragSourceEndedAt(drag_state_->pos, drag_state_->pos,
+                                       ui::mojom::DragOperation::kNone,
+                                       std::move(callback));
 }
 
 void InputHandler::DragController::UpdateDragging(
@@ -920,7 +929,7 @@ void InputHandler::DragController::EndDragging(
                     return;
                   }
                   if (!view || !point) {
-                    controller->CancelDragging();
+                    controller->CancelDragging(base::DoNothing());
                     return;
                   }
                   controller->drag_state_->host =
@@ -1460,6 +1469,17 @@ void InputHandler::DispatchTouchEvent(
   DispatchWebTouchEvent(event_type, std::move(touch_points),
                         std::move(modifiers), std::move(timestamp),
                         std::move(callback));
+}
+
+void InputHandler::CancelDragging(
+    std::unique_ptr<CancelDraggingCallback> callback) {
+  if (!drag_controller_.IsDragging()) {
+    callback->sendSuccess();
+    return;
+  }
+  drag_controller_.CancelDragging(base::BindOnce(
+      &FailSafe<CancelDraggingCallback>::sendSuccess,
+      std::make_unique<FailSafe<CancelDraggingCallback>>(std::move(callback))));
 }
 
 void InputHandler::DispatchWebTouchEvent(

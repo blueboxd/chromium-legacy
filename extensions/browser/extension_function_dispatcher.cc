@@ -636,20 +636,22 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
 
   // Increment the keepalive to ensure the extension doesn't shut down while
   // it's executing an API function.
+  base::Uuid request_uuid;
   if (IsRequestFromServiceWorker(params)) {
     CHECK(function->worker_id());
     const content::ServiceWorkerExternalRequestTimeoutType timeout_type =
         function->ShouldKeepWorkerAliveIndefinitely()
             ? content::ServiceWorkerExternalRequestTimeoutType::kDoesNotTimeout
             : content::ServiceWorkerExternalRequestTimeoutType::kDefault;
-    base::Uuid uuid = process_manager->IncrementServiceWorkerKeepaliveCount(
+    request_uuid = process_manager->IncrementServiceWorkerKeepaliveCount(
         *function->worker_id(), timeout_type, Activity::API_FUNCTION,
         function->name());
-    function->set_request_uuid(std::move(uuid));
   } else {
     process_manager->IncrementLazyKeepaliveCount(
         function->extension(), Activity::API_FUNCTION, function->name());
+    request_uuid = base::Uuid::GenerateRandomV4();
   }
+  function->set_request_uuid(std::move(request_uuid));
 }
 
 void ExtensionFunctionDispatcher::RemoveWorkerCallbacksForProcess(
@@ -729,12 +731,12 @@ void ExtensionFunctionDispatcher::AddWorkerResponseTarget(
 }
 
 void ExtensionFunctionDispatcher::ProcessServiceWorkerResponse(
-    int request_id,
+    const base::Uuid& request_uuid,
     int64_t service_worker_version_id) {
   for (auto it = worker_response_targets_.begin();
        it != worker_response_targets_.end(); ++it) {
     ExtensionFunction* func = *it;
-    if (func->request_id() == request_id &&
+    if (func->request_uuid() == request_uuid &&
         func->service_worker_version_id() == service_worker_version_id) {
       // Calling this may cause the instance to delete itself, so no
       // referencing it after this!
@@ -784,7 +786,6 @@ ExtensionFunctionDispatcher::CreateExtensionFunction(
     function->set_source_url(*rfh_url);
   }
 
-  function->set_request_id(params.request_id);
   function->set_has_callback(params.has_callback);
   function->set_user_gesture(params.user_gesture);
   function->set_extension(extension);

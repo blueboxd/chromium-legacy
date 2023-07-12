@@ -88,6 +88,7 @@ compositing/shadows/shadow-drawing.html
 compositing/squashing/squash-above-fixed-1.html
 compositing/squashing/squash-above-fixed-3.html
 compositing/transform-gained-3d.html
+compositing/transitions/transform-on-large-layer.html
 compositing/video/video-reflection.html
 compositing/webgl/webgl-copy-image.html
 css1/pseudo/pseudo_elements_in_selectors.html
@@ -176,6 +177,7 @@ fast/backgrounds/background-opaque-clipped-gradients.html
 fast/backgrounds/repeat/negative-offset-repeat-transformed.html
 fast/backgrounds/root-background-display-none-no-crash.html
 fast/backgrounds/root-background-fixed-attachment-positioning.html
+fast/backgrounds/size/contain-and-cover-zoomed.html
 fast/block/float/016.html
 fast/block/float/4145535-crash.html
 fast/block/float/float-on-clean-line-subsequently-dirtied.html
@@ -511,6 +513,7 @@ fast/forms/select/disabled-select-change-index.html
 fast/forms/select/listbox-appearance-separator.html
 fast/forms/select/listbox-bidi-align.html
 fast/forms/select/listbox-clip.html
+fast/forms/select/listbox-group-indent.html
 fast/forms/select/listbox-intrinsic-min-width-applies-with-fixed-width.html
 fast/forms/select/listbox-line-height.html
 fast/forms/select/listbox-scrollbar-incremental-load.html
@@ -1050,7 +1053,6 @@ http/tests/devtools/overrides/can-edit-iframe-html.js
 http/tests/devtools/overrides/project-added-with-existing-files-bind.js
 http/tests/devtools/persistence/automapping-rename-files.js
 http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.js
-http/tests/devtools/profiler/cpu-profiler-calculate-time.js
 http/tests/devtools/profiler/heap-profiler-profiling.js
 http/tests/devtools/profiler/heap-snapshot-comparison-expansion-preserved-when-sorting.js
 http/tests/devtools/profiler/heap-snapshot-comparison-shown-node-count-preserved-when-sorting.js
@@ -1360,8 +1362,6 @@ http/tests/security/cross-frame-mouse-source-capabilities.html
 http/tests/security/cross-origin-OffscreenCanvas2D-convertToBlob.html
 http/tests/security/cross-origin-createImageBitmap.html
 http/tests/security/document-domain-canonicalizes.html
-http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change-async.html
-http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html
 http/tests/security/inactive-document-with-empty-security-origin.html
 http/tests/security/isolatedWorld/bypass-main-world-csp-font-src.html
 http/tests/security/javascriptURL/xss-DENIED-from-javascript-url-in-foreign-domain-window-open.html
@@ -1590,6 +1590,7 @@ paint/invalidation/table/composited-table-background-section-composited-row-init
 paint/invalidation/table/composited-table-background-section-composited-row.html
 paint/invalidation/table/scroll-inside-table-cell.html
 paint/invalidation/table/scroll-relative-table-inside-table-cell.html
+paint/invalidation/table/table-hover-on-link.html
 paint/invalidation/transform/change-transform.html
 paint/invalidation/transform/subpixel-offset-scaled-transform.html
 paint/invalidation/transform/transform-layout-repaint.html
@@ -1976,7 +1977,6 @@ virtual/plz-dedicated-worker/http/tests/devtools/sources/sources-panel-extension
 virtual/plz-dedicated-worker/http/tests/devtools/storage-panel-dom-storage-update.js
 virtual/plz-dedicated-worker/http/tests/devtools/stylesheet-source-mapping.js
 virtual/plz-dedicated-worker/http/tests/devtools/template-content-inspect-crash.js
-virtual/plz-dedicated-worker/http/tests/devtools/tracing-session-id.js
 virtual/plz-dedicated-worker/http/tests/devtools/tracing/timeline-js/cpu-profile-unsorted-timestamps.js
 virtual/plz-dedicated-worker/http/tests/devtools/tracing/timeline-misc/timeline-filtering-self-time.js
 virtual/plz-dedicated-worker/http/tests/devtools/tracing/timeline-misc/timeline-load-event.js
@@ -1991,7 +1991,7 @@ virtual/plz-dedicated-worker/http/tests/inspector-protocol/fetch/dedicated-worke
 virtual/plz-dedicated-worker/http/tests/inspector-protocol/issues/content-security-policy-issue-creation-inline-script.js
 virtual/plz-dedicated-worker/http/tests/inspector-protocol/network/get-response-body.js
 virtual/plz-dedicated-worker/http/tests/inspector-protocol/network/raw-headers-after-navigation.js
-virtual/plz-dedicated-worker/http/tests/inspector-protocol/runtime/serialization_options.js
+virtual/plz-dedicated-worker/http/tests/inspector-protocol/runtime/serialization-options.js
 virtual/plz-dedicated-worker/http/tests/inspector-protocol/storage/cache-storage-request-cache-names.js
 virtual/plz-dedicated-worker/http/tests/inspector-protocol/storage/indexed-db-storage-key-request-database-names.js
 virtual/plz-dedicated-worker/http/tests/inspector-protocol/target/auto-attach-wait-for-debugger-2-sessions-worker.js

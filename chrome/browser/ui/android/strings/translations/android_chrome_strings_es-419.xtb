@@ -30,7 +30,7 @@ Solo alguien con tu frase de contraseña puede leer los datos encriptados. Googl
 <translation id="1142732900304639782">No ofrecer traducir estos sitios</translation>
 <translation id="1145536944570833626">Borra los datos existentes.</translation>
 <translation id="1149401351239820326">Mes de vencimiento</translation>
-<translation id="1150263420752757504">Se abrirá <ph name="APP_NAME" /> en Chrome. Si continúas, aceptas las <ph name="BEGIN_LINK1" />Condiciones del Servicio de Google<ph name="END_LINK1" /> y las <ph name="BEGIN_LINK2" />Condiciones del Servicio Adicionales de Google Chrome y Chrome OS<ph name="END_LINK2" />.</translation>
+<translation id="1150263420752757504">Se abrirá <ph name="APP_NAME" /> en Chrome. Si continúas, aceptas las <ph name="BEGIN_LINK1" />Condiciones del Servicio de Google<ph name="END_LINK1" /> y las <ph name="BEGIN_LINK2" />Condiciones del Servicio Adicionales de Google Chrome y ChromeOS<ph name="END_LINK2" />.</translation>
 <translation id="1173894706177603556">Cambiar nombre</translation>
 <translation id="1177863135347784049">Personalizado</translation>
 <translation id="1181037720776840403">Quitar</translation>
@@ -297,6 +297,7 @@ Los tokens de estado privado mejoran la privacidad en la Web y no pueden usarse 
 <translation id="2643064289437760082">Para borrar los datos de medición de anuncios, borra tus datos de navegación en cualquier momento.</translation>
 <translation id="2647434099613338025">Agregar idioma</translation>
 <translation id="2649068648233607930"><ph name="DOMAIN" /> administra tu navegador</translation>
+<translation id="2650077116157640844">Más dominios en dispositivos sincronizados</translation>
 <translation id="2650348088770008516">Se cerró la explicación de la guía sobre privacidad</translation>
 <translation id="2650408372219180431">Exportar y borrar las contraseñas guardadas en este dispositivo</translation>
 <translation id="2650751991977523696">¿Deseas volver a descargar el archivo?</translation>
@@ -387,7 +388,7 @@ Los tokens de estado privado mejoran la privacidad en la Web y no pueden usarse 
 <translation id="3062802207422175757">Artículos de Chrome relacionados con tus intereses</translation>
 <translation id="3066573403916685335">Bajar</translation>
 <translation id="3070005020161560471">Traducir automáticamente</translation>
-<translation id="3072980200212375806">Se abrirá <ph name="APP_NAME" /> en Chrome. Si continúas, aceptas las <ph name="BEGIN_LINK1" />Condiciones del Servicio de Google<ph name="END_LINK1" /> y las <ph name="BEGIN_LINK2" />Condiciones del Servicio Adicionales de Google Chrome y Chrome OS<ph name="END_LINK2" />. También se aplica la <ph name="BEGIN_LINK3" />Política de privacidad<ph name="END_LINK3" />.</translation>
+<translation id="3072980200212375806">Se abrirá <ph name="APP_NAME" /> en Chrome. Si continúas, aceptas las <ph name="BEGIN_LINK1" />Condiciones del Servicio de Google<ph name="END_LINK1" /> y las <ph name="BEGIN_LINK2" />Condiciones del Servicio Adicionales de Google Chrome y ChromeOS<ph name="END_LINK2" />. También se aplica la <ph name="BEGIN_LINK3" />Política de privacidad<ph name="END_LINK3" />.</translation>
 <translation id="3080525922482950719">Puedes guardar páginas para leerlas más tarde o sin conexión.</translation>
 <translation id="3091010850649238832">Muestra el contenido del portapapeles</translation>
 <translation id="3098745985164956033">Se envían algunas imágenes a Google para proporcionarte mejores descripciones.</translation>
@@ -445,7 +446,6 @@ Los tokens de estado privado mejoran la privacidad en la Web y no pueden usarse 
 <translation id="3421726884497337397">Decide cuándo bloquear las cookies de terceros</translation>
 <translation id="3428747202529429621">Te protege en Chrome y puede usarse para mejorar tu seguridad en otras apps de Google cuando accedes a tu cuenta.</translation>
 <translation id="3429160811076349561">Las funciones de prueba están desactivadas</translation>
-<translation id="3432973700170747422">Borrar últimos 15 minutos</translation>
 <translation id="3435465986463792564">¿Tienes muchas ventanas? Puedes administrarlas desde aquí.</translation>
 <translation id="3435738964857648380">Seguridad</translation>
 <translation id="3443221991560634068">Volver a cargar la página actual</translation>
@@ -479,9 +479,9 @@ Los tokens de estado privado mejoran la privacidad en la Web y no pueden usarse 
 <translation id="3587596251841506391">Ayuda a mejorar la seguridad en la Web</translation>
 <translation id="3597179440835065298">Obtén mejores sugerencias</translation>
 <translation id="3602290021589620013">Vista previa</translation>
-<translation id="360901359071773787">¿Quieres borrar los últimos 15 minutos?</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3622349720008044802">Administrar ventanas</translation>
+<translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{+ 1 sitio}other{+ # sitios}}</translation>
 <translation id="3631987586758005671">Compartiendo con <ph name="DEVICE_NAME" /></translation>
 <translation id="363596933471559332">Permite acceder automáticamente a los sitios web con las credenciales almacenadas. Si la función está desactivada, siempre se solicitará verificación antes de acceder a un sitio web.</translation>
 <translation id="3636940436873918441">Idiomas preferidos</translation>
@@ -750,6 +750,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5010886807652684893">Vista visual</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> desea conectarse</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">Últimos 15 minutos</translation>
 <translation id="5032430150487044192">No se puede crear el código QR</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidad</translation>
@@ -768,7 +769,6 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5118713593561876160">Intereses</translation>
 <translation id="5122378528687922675">Si necesitas ayuda, pídele a tu madre o padre (<ph name="PARENT_NAME_1" /> o <ph name="PARENT_NAME_2" />)</translation>
 <translation id="5123685120097942451">Pestaña de incógnito</translation>
-<translation id="5126510351761255129">Verifica tu tarjeta</translation>
 <translation id="5132942445612118989">Sincroniza tus contraseñas, historial y más en todos los dispositivos</translation>
 <translation id="5139940364318403933">Aprender a usar Google Drive</translation>
 <translation id="5142281402488957685">Para obtener noticias nuevas, actualiza la pantalla deslizando el dedo hacia abajo.</translation>
@@ -928,7 +928,6 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="6011308810877101166">Mejorar las sugerencias de búsqueda</translation>
 <translation id="6026538407078977628">Expandir a pantalla completa</translation>
 <translation id="6030719887161080597">Administra la información que usan los sitios para medir el rendimiento de los anuncios</translation>
-<translation id="6034146297924778597">Se borrará el siguiente historial de los últimos 15 minutos:</translation>
 <translation id="6039379616847168523">Ir a la pestaña siguiente</translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="604124094241169006">Automático</translation>
@@ -1082,7 +1081,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6767294960381293877">La lista de dispositivos con los que se puede compartir una pestaña está abierta a media altura.</translation>
 <translation id="6770042910635026163">Los sitios que visitas y definen tus intereses</translation>
 <translation id="6770602306803890733">Mejora la seguridad para ti y todos los usuarios de la Web</translation>
-<translation id="6785476624617658922">Condiciones del Servicio Adicionales de Chrome y Chrome OS</translation>
+<translation id="6785476624617658922">Condiciones del Servicio Adicionales de Chrome y ChromeOS</translation>
 <translation id="6795633245022906657">Abre rápidamente una nueva pestaña. Para editar este atajo, ve a Configuración.</translation>
 <translation id="6802555630140434547">Se cerrará la ventana</translation>
 <translation id="6811034713472274749">Ya puedes ver la página</translation>
@@ -1370,6 +1369,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />Tus dispositivos<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">Reanudar</translation>
 <translation id="8209050860603202033">Abrir imagen</translation>
+<translation id="8210770465353466621">Aquí encontrarás tus pestañas</translation>
 <translation id="8215740705341534369">Hoja lateral</translation>
 <translation id="8218622182176210845">Administra tu cuenta</translation>
 <translation id="8221401890884589479">Puedes bloquear los sitios que no quieres. Chrome también borra los sitios de la lista que tienen más de 30 días de forma automática. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>

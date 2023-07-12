@@ -34,6 +34,7 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleRegistry;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
@@ -186,7 +187,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.ToolbarIntentMetadata;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
-import org.chromium.chrome.browser.translate.TranslateIntentHandler;
 import org.chromium.chrome.browser.ui.AppLaunchDrawBlocker;
 import org.chromium.chrome.browser.ui.IncognitoRestoreAppLaunchDrawBlockerFactory;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
@@ -460,21 +460,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         // clang-format on
     }
 
-    private void incrementCounter(String key) {
-        // Increment a counter for sessions where Java code runs up to this
-        // point, with the counter to be reset in the native C++ code. Thus
-        // this serves as a diagnostic tool in the cases where the native C++
-        // code is not reached.
-        SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
-        int count = prefs.readInt(key, 0);
-        // Note that this is written asynchronously, so there is a chance that
-        // this will not succeed.
-        prefs.writeInt(key, count + 1);
-    }
-
     @Override
     protected void onPreCreate() {
-        incrementCounter(ChromePreferenceKeys.UMA_ON_PRECREATE_COUNTER);
         super.onPreCreate();
         mMultiInstanceManager = MultiInstanceManager.create(this, getTabModelOrchestratorSupplier(),
                 getMultiWindowModeStateDispatcher(), getLifecycleDispatcher(),
@@ -915,19 +902,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
             mIntentHandlingTimeMs = SystemClock.uptimeMillis();
             super.onNewIntent(intent);
-
-            // When onNewIntent() comes, calling launchIntent() may trigger a static layout is
-            // showing without even canceling the overview layout which is about to show. It
-            // leaves the StartSurfaceState to be SHOWING_START instead of NOT_SHOWN, since
-            // hiding the overview layout won't be called. Thus we need to reset the
-            // StartSurfaceState to prevent it being a wrong state. See crbug.com/1298740.
-            if (ReturnToChromeUtil.isStartSurfaceEnabled(this)
-                    && getCurrentTabModel().getCount() > 0 && !isTablet()
-                    && !shouldShowOverviewPageOnStart() && !isInOverviewMode()
-                    && mStartSurfaceSupplier.get() != null) {
-                mStartSurfaceSupplier.get().setStartSurfaceState(
-                        StartSurfaceState.NOT_SHOWN, NewTabPageLaunchOrigin.UNKNOWN);
-            }
 
             boolean shouldShowRegularOverviewMode = IntentUtils.safeGetBooleanExtra(
                     intent, IntentHandler.EXTRA_OPEN_REGULAR_OVERVIEW_MODE, false);
@@ -1401,6 +1375,14 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                     mAppLaunchDrawBlocker.onActiveTabAvailable(isTabNtp);
                 }
             }
+
+            if (getSavedInstanceState() != null) {
+                long unfoldLatencyBeginTime = getSavedInstanceState().getLong(
+                        ChromeActivity.UNFOLD_LATENCY_BEGIN_TIMESTAMP);
+                if (unfoldLatencyBeginTime != 0) {
+                    getWindowAndroid().setUnfoldLatencyBeginTime(unfoldLatencyBeginTime);
+                }
+            }
         } finally {
             TraceEvent.end("ChromeTabbedActivity.initializeState");
         }
@@ -1683,9 +1665,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                     focus ? OmniboxFocusReason.LAUNCH_NEW_INCOGNITO_TAB
                           : OmniboxFocusReason.UNFOCUS);
 
-            if (tabModel.getCount() > 0 && isInOverviewMode() && !isTablet()
-                    && !shouldShowOverviewPageOnStart()) {
-                mLayoutManager.showLayout(LayoutType.BROWSING, true);
+            // An overview page shouldn't be shown on URL VIEW intent. Since a new Tab has been
+            // created for loading the URL, it is fine to call hideOverview() which skips hiding
+            // the overview page when there is no Tab.
+            if (tabModel.getCount() > 0 && isInOverviewMode() && !isTablet()) {
+                hideOverview();
             }
         }
 
@@ -1697,12 +1681,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         @Override
         public void processWebSearchIntent(String query) {
             assert false;
-        }
-
-        @Override
-        public void processTranslateTabIntent(
-                @Nullable String targetLanguageCode, @Nullable String expectedUrl) {
-            TranslateIntentHandler.translateTab(getActivityTab(), targetLanguageCode, expectedUrl);
         }
 
         private boolean isFromChrome(Intent intent, String externalAppId) {
@@ -1863,8 +1841,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     private boolean shouldIgnoreIntent() {
         if (mShouldIgnoreIntent == null) {
             // We call this only once because mIntentHandler#shouldIgnoreIntent has side effects.
-            mShouldIgnoreIntent =
-                    mIntentHandler.shouldIgnoreIntent(getIntent(), /*startedActivity=*/true);
+            mShouldIgnoreIntent = mIntentHandler.shouldIgnoreIntent(getIntent());
         }
         return mShouldIgnoreIntent;
     }
@@ -1940,7 +1917,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             int assignedIndex = TabWindowManagerSingleton.getInstance().getIndexForWindow(this);
             // The given index and the one computed by TabWindowManager should be one and the same.
             assert !MultiWindowUtils.isMultiInstanceApi31Enabled() || assignedIndex == mWindowId;
-            mMultiInstanceManager.initialize(assignedIndex, getTaskId());
+            mMultiInstanceManager.initialize(assignedIndex, ApplicationStatus.getTaskId(this));
         }
 
         mTabModelSelector = mTabModelOrchestrator.getTabModelSelector();
@@ -2136,7 +2113,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             // |allocInstanceId| doesn't do any disk I/O that would add a long-running task
             // to pre-inflation startup.
             boolean preferNew = getExtraPreferNewFromIntent(intent);
-            mWindowId = mMultiInstanceManager.allocInstanceId(windowId, getTaskId(), preferNew);
+            mWindowId = mMultiInstanceManager.allocInstanceId(
+                    windowId, ApplicationStatus.getTaskId(this), preferNew);
         }
         if (mWindowId == INVALID_WINDOW_ID) {
             Log.i(TAG, "Window ID not allocated. Finishing the activity");
@@ -2146,7 +2124,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         }
 
         if (mMultiInstanceManager != null
-                && !mMultiInstanceManager.isStartedUpCorrectly(getTaskId())) {
+                && !mMultiInstanceManager.isStartedUpCorrectly(ApplicationStatus.getTaskId(this))) {
             return false;
         }
         recordMaxWindowLimitExceededHistogram(/*limitExceeded=*/false);
@@ -2329,6 +2307,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     @Override
     public boolean handleBackPressed() {
+        // Back press event should be handled through the back press handler.
+        assert !BackPressManager.isEnabled() : "Incorrect way of handling back press.";
         if (!mUIWithNativeInitialized) {
             RecordUserAction.record("SystemBackBeforeUINativeInitialized");
             return false;
@@ -2984,7 +2964,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     @Override
     public void onResume() {
         try (TraceEvent e = TraceEvent.scoped("ChromeTabbedActivity.onResume")) {
-            incrementCounter(ChromePreferenceKeys.UMA_ON_RESUME_COUNTER);
             super.onResume();
         }
     }

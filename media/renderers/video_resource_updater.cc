@@ -81,8 +81,7 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
   const VideoPixelFormat format = frame.format();
   const size_t num_textures = frame.NumTextures();
 
-  if (frame.RequiresExternalSampler() &&
-      frame.shared_image_format_type() == SharedImageFormatType::kLegacy) {
+  if (frame.RequiresExternalSampler()) {
     // The texture |target| can be 0 for Fuchsia.
     DCHECK(target == 0 || target == GL_TEXTURE_EXTERNAL_OES)
         << "Unsupported target " << gl::GLEnums::GetStringEnum(target);
@@ -90,9 +89,47 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
     absl::optional<gfx::BufferFormat> buffer_format =
         VideoPixelFormatToGfxBufferFormat(format);
     DCHECK(buffer_format.has_value());
-    si_formats[0] = viz::GetSharedImageFormat(buffer_format.value());
+    if (frame.shared_image_format_type() == SharedImageFormatType::kLegacy) {
+      si_formats[0] = viz::GetSharedImageFormat(buffer_format.value());
+    } else {
+#if BUILDFLAG(IS_OZONE)
+      CHECK_EQ(frame.shared_image_format_type(),
+               SharedImageFormatType::kSharedImageFormatExternalSampler);
+
+      // The format must be one of NV12/YV12/P016LE, as these are the only
+      // formats for which VideoFrame::RequiresExternalSampler() will return
+      // true.
+      // NOTE: If this is ever expanded to include NV12A, it will be necessary
+      // to decide whether the value returned in that case should be RGB (as is
+      // done for other values here) or RGBA (as is done for the handling of
+      // NV12A with per-plane sampling below).
+      switch (format) {
+        case PIXEL_FORMAT_NV12:
+          si_formats[0] = viz::MultiPlaneFormat::kNV12;
+          break;
+        case PIXEL_FORMAT_YV12:
+          si_formats[0] = viz::MultiPlaneFormat::kYV12;
+          break;
+        case PIXEL_FORMAT_P016LE:
+          si_formats[0] = viz::MultiPlaneFormat::kP010;
+          break;
+        default:
+          NOTREACHED_NORETURN();
+      }
+      si_formats[0].SetPrefersExternalSampler();
+#else
+      // MultiplanarSharedImage with external sampling is supported only on
+      // Ozone, and VideoFrames with format type
+      // kSharedImageFormatExternalSampler should not be created on other
+      // platforms.
+      NOTREACHED_NORETURN();
+#endif
+    }
+
     return VideoFrameResourceType::RGB;
   }
+
+  CHECK(!frame.RequiresExternalSampler());
 
   switch (format) {
     case PIXEL_FORMAT_ARGB:
@@ -700,7 +737,7 @@ void VideoResourceUpdater::AppendQuads(
           frame_resource_offset_, frame_resource_multiplier_,
           frame_bits_per_channel_,
           ProtectedVideoTypeFromMetadata(frame->metadata()),
-          frame->hdr_metadata());
+          frame->hdr_metadata().value_or(gfx::HDRMetadata()));
 
       for (viz::ResourceId resource_id : yuv_video_quad->resources) {
         resource_provider_->ValidateResource(resource_id);
@@ -742,7 +779,8 @@ void VideoResourceUpdater::AppendQuads(
       }
 #endif
       texture_quad->is_video_frame = true;
-      texture_quad->hdr_metadata = frame->hdr_metadata();
+      texture_quad->hdr_metadata =
+          frame->hdr_metadata().value_or(gfx::HDRMetadata());
       for (viz::ResourceId resource_id : texture_quad->resources) {
         resource_provider_->ValidateResource(resource_id);
       }
@@ -994,7 +1032,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
       transfer_resource.color_space = resource_color_space;
       transfer_resource.color_space_when_sampled =
           resource_color_space_when_sampled;
-      transfer_resource.hdr_metadata = video_frame->hdr_metadata();
+      transfer_resource.hdr_metadata =
+          video_frame->hdr_metadata().value_or(gfx::HDRMetadata());
       if (video_frame->metadata().read_lock_fences_enabled) {
         transfer_resource.synchronization_type = viz::TransferableResource::
             SynchronizationType::kGpuCommandsCompleted;
@@ -1079,7 +1118,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     }
 
     // Some YUV resources have different sized planes. If we lack the proper
-    // ResourceFormat just convert to RGB. We could do something better like
+    // SharedImageFormat just convert to RGB. We could do something better like
     // unpacking to I420/I016, but texture_rg and r16 support should be pretty
     // universal and we expect these frames to be rare.
     if (input_frame_format == PIXEL_FORMAT_NV12) {

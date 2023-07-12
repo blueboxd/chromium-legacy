@@ -288,17 +288,6 @@ class SpdySessionTest : public PlatformTest, public WithTaskEnvironment {
     session_->stream_hi_water_mark_ = stream_hi_water_mark;
   }
 
-  void set_last_accepted_push_stream_id(
-      spdy::SpdyStreamId last_accepted_push_stream_id) {
-    session_->last_accepted_push_stream_id_ = last_accepted_push_stream_id;
-  }
-
-  size_t num_pushed_streams() { return session_->num_pushed_streams_; }
-
-  size_t num_active_pushed_streams() {
-    return session_->num_active_pushed_streams_;
-  }
-
   size_t max_concurrent_streams() { return session_->max_concurrent_streams_; }
 
   void set_max_concurrent_streams(size_t max_concurrent_streams) {
@@ -1933,8 +1922,6 @@ TEST_F(SpdySessionTest, NetLogOnSessionGoaway) {
   int pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP2_SESSION_RECV_GOAWAY,
       NetLogEventPhase::NONE);
-  ASSERT_EQ(42,
-            GetIntegerValueFromParams(entries[pos], "last_accepted_stream_id"));
   ASSERT_EQ(0, GetIntegerValueFromParams(entries[pos], "active_streams"));
   ASSERT_EQ("11 (ENHANCE_YOUR_CALM)",
             GetStringValueFromParams(entries[pos], "error_code"));
@@ -5207,11 +5194,8 @@ TEST_F(SpdySessionTest, RejectInvalidUnknownFrames) {
   // Client id exceeding watermark.
   EXPECT_FALSE(OnUnknownFrame(9, 0));
 
-  set_last_accepted_push_stream_id(6);
-  // Low server (even) ids are fine.
-  EXPECT_TRUE(OnUnknownFrame(2, 0));
-  // Server id exceeding last accepted id.
-  EXPECT_FALSE(OnUnknownFrame(8, 0));
+  // Frames on push streams are rejected.
+  EXPECT_FALSE(OnUnknownFrame(2, 0));
 }
 
 TEST_F(SpdySessionTest, EnableWebSocket) {
@@ -5348,8 +5332,6 @@ TEST_F(SpdySessionTest, GreaseFrameTypeAfterSettings) {
   // Initial SETTINGS frame.
   spdy::SettingsMap expected_settings;
   expected_settings[spdy::SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
-  expected_settings[spdy::SETTINGS_MAX_CONCURRENT_STREAMS] =
-      kSpdyMaxConcurrentPushedStreams;
   expected_settings[spdy::SETTINGS_MAX_HEADER_LIST_SIZE] =
       kSpdyMaxHeaderListSize;
   expected_settings[spdy::SETTINGS_ENABLE_PUSH] = 0;
@@ -5496,8 +5478,6 @@ class SendInitialSettingsOnNewSpdySessionTest : public SpdySessionTest {
 TEST_F(SendInitialSettingsOnNewSpdySessionTest, Empty) {
   spdy::SettingsMap expected_settings;
   expected_settings[spdy::SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
-  expected_settings[spdy::SETTINGS_MAX_CONCURRENT_STREAMS] =
-      kSpdyMaxConcurrentPushedStreams;
   expected_settings[spdy::SETTINGS_MAX_HEADER_LIST_SIZE] =
       kSpdyMaxHeaderListSize;
   expected_settings[spdy::SETTINGS_ENABLE_PUSH] = 0;
@@ -5516,8 +5496,6 @@ TEST_F(SendInitialSettingsOnNewSpdySessionTest, ProtocolDefault) {
       64 * 1024 - 1;
 
   spdy::SettingsMap expected_settings;
-  expected_settings[spdy::SETTINGS_MAX_CONCURRENT_STREAMS] =
-      kSpdyMaxConcurrentPushedStreams;
   expected_settings[spdy::SETTINGS_MAX_HEADER_LIST_SIZE] =
       kSpdyMaxHeaderListSize;
   expected_settings[spdy::SETTINGS_ENABLE_PUSH] = 0;
@@ -5550,8 +5528,6 @@ TEST_F(SendInitialSettingsOnNewSpdySessionTest, UnknownSettings) {
 
   spdy::SettingsMap expected_settings;
   expected_settings[spdy::SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
-  expected_settings[spdy::SETTINGS_MAX_CONCURRENT_STREAMS] =
-      kSpdyMaxConcurrentPushedStreams;
   expected_settings[spdy::SETTINGS_MAX_HEADER_LIST_SIZE] =
       kSpdyMaxHeaderListSize;
   expected_settings[spdy::SETTINGS_ENABLE_PUSH] = 0;

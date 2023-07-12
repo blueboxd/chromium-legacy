@@ -1031,6 +1031,9 @@ static_library("browsertest_support") {
     deps += [ "//ui/views" ]
   }
 
+  if (is_apple) {
+    configs += [ "//build/config/compiler:enable_arc" ]
+  }
   if (is_mac) {
     sources += [ "../public/test/content_browser_test_utils_mac.mm" ]
     deps += [ "//ui/base/mojom" ]
@@ -1541,6 +1544,7 @@ test("content_browsertests") {
     "../browser/tracing/memory_tracing_browsertest.cc",
     "../browser/tracing/startup_tracing_browsertest.cc",
     "../browser/tracing/tracing_controller_browsertest.cc",
+    "../browser/tracing/tracing_end_to_end_browsertest.cc",
     "../browser/usb/usb_browsertest.cc",
     "../browser/utility_process_host_browsertest.cc",
     "../browser/vibration_browsertest.cc",
@@ -1615,6 +1619,10 @@ test("content_browsertests") {
     sources += [ "../browser/network/address_map_linux_browsertest.cc" ]
   }
 
+  if (is_android) {
+    sources += [ "../browser/gpu/gpu_background_kill_android_browsertest.cc" ]
+  }
+
   if (enable_reporting) {
     sources += [
       "../browser/network/cross_origin_opener_policy_reporting_browsertest.cc",
@@ -1644,6 +1652,7 @@ test("content_browsertests") {
     ":web_ui_js_bridge_test_bindings_webui_js_bridge_impl",
     ":web_ui_test_mojo_bindings",
     ":web_ui_ts_test_mojo_bindings",
+    "//base/test:proto_test_support",
     "//base/test:test_support",
     "//build:chromecast_buildflags",
     "//build:chromeos_buildflags",
@@ -1773,6 +1782,7 @@ test("content_browsertests") {
   if (is_ios) {
     bundle_deps = [
       ":content_test_bundle_data",
+      ":content_test_perfetto_bundle_data",
       "//media/test:media_bundle_data",
       "//testing/buildbot/filters:content_browsertests_filter_bundle_data",
     ]
@@ -1780,8 +1790,12 @@ test("content_browsertests") {
     data = [
       "data/",
       "//media/test/data/",
+      "$root_gen_dir/third_party/perfetto/protos/perfetto/config/chrome/scenario_config.descriptor",
     ]
-    data_deps += [ "//testing/buildbot/filters:content_browsertests_filters" ]
+    data_deps += [
+      "//testing/buildbot/filters:content_browsertests_filters",
+      "//third_party/perfetto/protos/perfetto/config/chrome:scenario_descriptor",
+    ]
   }
 
   if (enable_plugins) {
@@ -2259,7 +2273,6 @@ test("content_unittests") {
     "../browser/attribution_reporting/attribution_storage_unittest.cc",
     "../browser/attribution_reporting/attribution_utils_unittest.cc",
     "../browser/attribution_reporting/combinatorics_unittest.cc",
-    "../browser/attribution_reporting/destination_throttler_unittest.cc",
     "../browser/attribution_reporting/rate_limit_table_unittest.cc",
     "../browser/background_fetch/background_fetch_cross_origin_filter_unittest.cc",
     "../browser/background_fetch/background_fetch_data_manager_unittest.cc",
@@ -2393,6 +2406,7 @@ test("content_unittests") {
     "../browser/interest_group/auction_runner_unittest.cc",
     "../browser/interest_group/auction_url_loader_factory_proxy_unittest.cc",
     "../browser/interest_group/auction_worklet_manager_unittest.cc",
+    "../browser/interest_group/bidding_and_auction_response_unittest.cc",
     "../browser/interest_group/bidding_and_auction_server_key_fetcher_unittest.cc",
     "../browser/interest_group/interest_group_auction_reporter_unittest.cc",
     "../browser/interest_group/interest_group_k_anonymity_manager_unittest.cc",
@@ -2639,6 +2653,7 @@ test("content_unittests") {
     "../browser/storage_partition_impl_unittest.cc",
     "../browser/tracing/background_startup_tracing_observer_unittest.cc",
     "../browser/tracing/background_tracing_config_unittest.cc",
+    "../browser/tracing/trace_report_database_unittest.cc",
     "../browser/tracing/tracing_scenario_unittest.cc",
     "../browser/usb/web_usb_service_impl_unittest.cc",
     "../browser/web_contents/aura/gesture_nav_simple_unittest.cc",
@@ -2939,6 +2954,7 @@ test("content_unittests") {
     "//services/network:test_support",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
+    "//services/network/shared_storage:shared_storage",
     "//services/service_manager/public/cpp/test:test_support",
     "//services/video_capture/public/cpp:mocks",
     "//services/video_capture/public/mojom",
@@ -3304,6 +3320,12 @@ if (is_ios) {
     outputs = [ "{{bundle_resources_dir}}/content_shell.pak" ]
   }
 
+  bundle_data_from_filelist("content_test_bundle_data") {
+    testonly = true
+    filelist_name = "content_test_bundle_data.filelist"
+  }
+}
+if (is_apple) {
   bundle_data("content_test_perfetto_bundle_data") {
     testonly = true
     _relative_path = "third_party/perfetto/protos/perfetto/config/chrome"
@@ -3311,11 +3333,6 @@ if (is_ios) {
     sources = [ "$root_gen_dir/$_relative_path/scenario_config.descriptor" ]
     outputs =
         [ "{{bundle_resources_dir}}/gen/$_relative_path/{{source_file_part}}" ]
-  }
-
-  bundle_data_from_filelist("content_test_bundle_data") {
-    testonly = true
-    filelist_name = "content_test_bundle_data.filelist"
   }
 }
 

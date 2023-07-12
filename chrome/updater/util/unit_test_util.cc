@@ -17,6 +17,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
+#include "base/functional/function_ref.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
@@ -29,7 +30,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/bind.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -450,17 +450,17 @@ EventHolder CreateWaitableEventForTest() {
 
 #endif  // BUILDFLAG(IS_WIN)
 
-bool WaitFor(base::RepeatingCallback<bool()> predicate,
-             base::RepeatingClosure still_waiting) {
+bool WaitFor(base::FunctionRef<bool()> predicate,
+             base::FunctionRef<void()> still_waiting) {
   constexpr base::TimeDelta kOutputInterval = base::Seconds(10);
   auto notify_next = base::TimeTicks::Now() + kOutputInterval;
   const auto deadline = base::TimeTicks::Now() + TestTimeouts::action_timeout();
   while (base::TimeTicks::Now() < deadline) {
-    if (predicate.Run()) {
+    if (predicate()) {
       return true;
     }
     if (notify_next < base::TimeTicks::Now()) {
-      still_waiting.Run();
+      still_waiting();
       notify_next += kOutputInterval;
     }
     base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
@@ -527,17 +527,17 @@ void ExpectOnlyMockUpdater(const base::FilePath& mock_updater_path) {
   ASSERT_TRUE(base::PathExists(mock_updater_path));
   int count_mock_updater_path = 0;
 
-  ForEachItemInPath(
+  base::FileEnumerator(
       mock_updater_path.DirName(), false,
-      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES,
-      base::BindLambdaForTesting([&mock_updater_path, &count_mock_updater_path](
-                                     const base::FilePath& item) {
+      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES)
+      .ForEach([&mock_updater_path,
+                &count_mock_updater_path](const base::FilePath& item) {
         if (item == mock_updater_path) {
           ++count_mock_updater_path;
         } else {
           ADD_FAILURE() << "Unexpected file/directory found: " << item;
         }
-      }));
+      });
 
   EXPECT_EQ(count_mock_updater_path, 1);
 }

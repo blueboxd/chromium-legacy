@@ -297,6 +297,7 @@
 <translation id="2643064289437760082">तुमचा ब्राउझिंग डेटा हटवून तुम्ही कधीही जाहिरात मापन डेटा हटवू शकता</translation>
 <translation id="2647434099613338025">भाषा जोडा</translation>
 <translation id="2649068648233607930">तुमचा ब्राउझर <ph name="DOMAIN" /> द्वारे व्यवस्थापित केला जातो</translation>
+<translation id="2650077116157640844">सर्व सिंक केलेल्या डिव्हाइसवर आणखी</translation>
 <translation id="2650348088770008516">गोपनीयता मार्गदर्शक स्पष्टीकरण बंद आहे</translation>
 <translation id="2650408372219180431">या डिव्हाइसवर सेव्ह केलेले पासवर्ड एक्सपोर्ट करा आणि हटवा</translation>
 <translation id="2650751991977523696">फाइल पुन्हा डाउनलोड करायची?</translation>
@@ -445,7 +446,6 @@
 <translation id="3421726884497337397">तृतीय पक्ष कुकी कधी ब्लॉक करायच्या ते निवडा</translation>
 <translation id="3428747202529429621">तुम्हाला Chrome वर सुरक्षित ठेवते आणि तुम्ही साइन इन केलेले असताना इतर Google अ‍ॅप्समध्ये तुमच्या सुरक्षिततेत सुधारणा करण्यासाठी वापरले जाऊ शकते</translation>
 <translation id="3429160811076349561">चाचणी वैशिष्ट्ये बंद आहेत</translation>
-<translation id="3432973700170747422">शेवटची १५ मिनिटे हटवा</translation>
 <translation id="3435465986463792564">खूप विंडो उघडल्या आहेत का? तुम्ही त्या येथे व्यवस्थापित करू शकता</translation>
 <translation id="3435738964857648380">सुरक्षितता</translation>
 <translation id="3443221991560634068">सध्याचे पेज रीलोड करा</translation>
@@ -479,9 +479,9 @@
 <translation id="3587596251841506391">वेबवरील सुरक्षेमध्ये सुधारणा करण्यात मदत करा</translation>
 <translation id="3597179440835065298">आणखी चांगल्या सूचना मिळवा</translation>
 <translation id="3602290021589620013">पूर्वावलोकन</translation>
-<translation id="360901359071773787">शेवटची १५ मिनिटे हटवायची आहेत का?</translation>
 <translation id="3616113530831147358">ऑडिओ</translation>
 <translation id="3622349720008044802">विंडो व्यवस्थापित करा</translation>
+<translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{आणि १ साइट}other{आणि # साइट}}</translation>
 <translation id="3631987586758005671"><ph name="DEVICE_NAME" /> शी शेअर करत आहे</translation>
 <translation id="363596933471559332">स्टोअर क्रेडेंशियल वापरून वेबसाइटवर आपोआप साइन इन करा. वैशिष्ट्य बंद असते तेव्हा, वेबसाइटवर साइन इन करण्यापूर्वी दरवेळी तुम्हाला पडताळणीसाठी विचारले जाईल.</translation>
 <translation id="3636940436873918441">प्राधान्य दिलेल्या भाषा</translation>
@@ -750,6 +750,7 @@
 <translation id="5010886807652684893">व्हिज्युअल दृश्य</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> कनेक्ट करू इच्छिते</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">शेवटची १५ मिनिटे</translation>
 <translation id="5032430150487044192">QR कोड तयार करता आला नाही</translation>
 <translation id="5039804452771397117">परवानगी द्या</translation>
 <translation id="5040262127954254034">गोपनीयता</translation>
@@ -768,7 +769,6 @@
 <translation id="5118713593561876160">स्वारस्ये</translation>
 <translation id="5122378528687922675">तुम्हाला मदत हवी असल्यास, तुमचे पालक (<ph name="PARENT_NAME_1" /> किंवा <ph name="PARENT_NAME_2" />) यांना विचारा</translation>
 <translation id="5123685120097942451">गुप्त टॅब</translation>
-<translation id="5126510351761255129">तुमच्या कार्डाची पडताळणी करा</translation>
 <translation id="5132942445612118989">सर्व डिव्हाइसवर तुमचे पासवर्ड, इतिहास आणि बरेच काही सिंक करा</translation>
 <translation id="5139940364318403933">Google ड्राइव्ह कसे वापरावे ते जाणून घ्या</translation>
 <translation id="5142281402488957685">नवीन बातम्यांसाठी, रिफ्रेश करण्याकरिता खाली खेचा</translation>
@@ -928,7 +928,6 @@
 <translation id="6011308810877101166">शोध सूचनांमध्ये सुधारणा करा</translation>
 <translation id="6026538407078977628">फुलस्क्रीनवर विस्तार करा</translation>
 <translation id="6030719887161080597">जाहिरातीच्या परफॉर्मन्सचे मापन करण्यासाठी साइट वापरत असलेल्या माहितीचे व्यवस्थापन करा</translation>
-<translation id="6034146297924778597">शेवटच्या १५ मिनिटांमधील इतिहास हटवला जाईल:</translation>
 <translation id="6039379616847168523">पुढील टॅबवर जा</translation>
 <translation id="6040143037577758943">बंद करा</translation>
 <translation id="604124094241169006">स्वयंचलित</translation>
@@ -1370,6 +1369,7 @@
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />तुमची डिव्हाइस<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">रेझ्युमे</translation>
 <translation id="8209050860603202033">इमेज उघडा</translation>
+<translation id="8210770465353466621">तुमचे टॅब तुम्हाला येथे सापडतील</translation>
 <translation id="8215740705341534369">साइड शीट</translation>
 <translation id="8218622182176210845">तुमचे खाते व्यवस्थापित करा</translation>
 <translation id="8221401890884589479">तुम्हाला नको असलेल्या साइट तुम्ही ब्लॉक करू शकता. Chrome हे ३० दिवसांपेक्षा जुन्या असलेल्या साइटदेखील सूचीमधून ऑटो-डिलीट करते. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>

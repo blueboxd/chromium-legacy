@@ -79,10 +79,8 @@
                     subtitle:item.subtitle
           primaryActionTitle:item.primaryActionTitle
             instructionSteps:item.instructionSteps
-            hasPrimaryAction:item.hasPrimaryAction
                         type:item.type
-                learnMoreURL:item.learnMoreURL
-          hasLearnMoreAction:item.learnMoreURL.is_valid()];
+                learnMoreURL:item.learnMoreURL];
       self.whatsNewDetailViewController.actionHandler = self.actionHandler;
       self.whatsNewDetailViewController.delegate = self;
     }
@@ -159,7 +157,6 @@
 
 - (void)confirmationAlertPrimaryAction {
   [self.actionHandler didTapActionButton:self.item.type];
-  [self dismiss];
 }
 
 - (void)confirmationAlertSecondaryAction {

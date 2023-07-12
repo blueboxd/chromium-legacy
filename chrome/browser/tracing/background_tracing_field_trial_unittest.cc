@@ -21,7 +21,10 @@
 
 class BackgroundTracingTest : public testing::Test {
  public:
-  BackgroundTracingTest() = default;
+  BackgroundTracingTest() {
+    background_tracing_manager_ =
+        content::BackgroundTracingManager::CreateInstance();
+  }
 
   void TearDown() override {
     content::BackgroundTracingManager::GetInstance().AbortScenarioForTesting();
@@ -29,12 +32,11 @@ class BackgroundTracingTest : public testing::Test {
 
  private:
   content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<content::BackgroundTracingManager>
+      background_tracing_manager_;
 };
 
 namespace {
-
-const char kTestConfig[] = "test";
-bool g_test_config_loaded = false;
 
 const char kValidTracingConfig[] = R"(
   {
@@ -51,12 +53,6 @@ const char kValidTracingConfig[] = R"(
   }
 )";
 
-std::string CheckConfig(const std::string& config) {
-  if (config == kTestConfig)
-    g_test_config_loaded = true;
-  return config;
-}
-
 using tracing::BackgroundTracingSetupMode;
 
 }  // namespace
@@ -65,23 +61,18 @@ TEST_F(BackgroundTracingTest, SetupBackgroundTracingFieldTrial) {
   const std::string kTrialName = "BackgroundTracing";
   const std::string kExperimentName = "SlowStart";
   base::AssociateFieldTrialParams(kTrialName, kExperimentName,
-                                  {{"config", kTestConfig}});
+                                  {{"config", kValidTracingConfig}});
   base::FieldTrialList::CreateFieldTrial(kTrialName, kExperimentName);
 
   TestingProfileManager testing_profile_manager(
       TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(testing_profile_manager.SetUp());
 
-  // In case it is already set at previous test run.
-  g_test_config_loaded = false;
-
-  content::BackgroundTracingManager::GetInstance()
-      .SetConfigTextFilterForTesting(base::BindRepeating(&CheckConfig));
-
   ASSERT_EQ(tracing::GetBackgroundTracingSetupMode(),
             BackgroundTracingSetupMode::kFromFieldTrial);
   tracing::SetupBackgroundTracingFieldTrial();
-  EXPECT_TRUE(g_test_config_loaded);
+  EXPECT_TRUE(
+      content::BackgroundTracingManager::GetInstance().HasActiveScenario());
 }
 
 TEST_F(BackgroundTracingTest, SetupBackgroundTracingFromConfigFile) {

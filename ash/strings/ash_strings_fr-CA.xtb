@@ -297,6 +297,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="2318576281648121272">Aujourd'hui le <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" />, catégorie de résultats de recherche</translation>
 <translation id="2322173485024759474">Déplacer une lettre vers l'arrière</translation>
+<translation id="2335091074961603075">Votre Chromebook ou votre appareil Bluetooth utilise une ancienne version de Bluetooth. Utilisez le microphone interne pour une meilleure qualité audio.</translation>
 <translation id="2339073806695260576">Touchez le bouton du stylet sur l'étagère pour créer une note, pour prendre une capture d'écran, ou pour utiliser le pointeur laser ou la loupe.</translation>
 <translation id="2341729377289034582">Verrouillée à la verticale</translation>
 <translation id="2345226652884463045">Appuyez sur Entrée ou Rechercher + Espace pour sélectionner le texte à modifier.</translation>
@@ -394,6 +395,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="2750941250130734256">Fenêtre active désancrée.</translation>
 <translation id="2761723519669354964">Ouvrir l'élément en évidence dans l'étagère</translation>
 <translation id="2774348302533424868"><ph name="MODIFIER" /><ph name="DELIMITER" /><ph name="KEY_ONE" /> à <ph name="KEY_TWO" /></translation>
+<translation id="2778197796481941784">ctrl+recherche+s</translation>
 <translation id="2778650143428714839">Ce <ph name="DEVICE_TYPE" /> est géré par <ph name="MANAGER" /></translation>
 <translation id="2782591952652094792">Quitter le mode de capture</translation>
 <translation id="2785499565474703580">1 appareil connecté</translation>
@@ -457,6 +459,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="3062298103034426069">Non prise en charge</translation>
 <translation id="3068622547379332530">Version <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">Étagère à gauche</translation>
+<translation id="3070639127620815135">recherche+échapp.</translation>
 <translation id="3077734595579995578">majuscule</translation>
 <translation id="3081696990447829002">Développer le menu</translation>
 <translation id="3087734570205094154">Bas</translation>
@@ -470,6 +473,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="3120421559657122717">Éteindre l'appareil?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">Redémarrer pour faire la mise à jour</translation>
+<translation id="3139188263101386725">Utilisez le raccourci mis à jour</translation>
 <translation id="3139942575505304791">Bureau 1</translation>
 <translation id="315116470104423982">Données mobiles</translation>
 <translation id="3151786313568798007">Orientation</translation>
@@ -605,6 +609,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
         <ph name="END_TIME" />,
         <ph name="TIME_ZONE" />. Sélectionnez cet événement pour voir davantage d'information dans Google Agenda.</translation>
 <translation id="3659444876902283058">(Jour <ph name="CURRENT_DAY" />/<ph name="TOTAL_DAYS" />)</translation>
+<translation id="3659667652322717492">Vous pouvez toujours modifier le comportement du microphone plus tard.</translation>
 <translation id="3659814201068740063">Il reste environ <ph name="TIME_LEFT" /> (<ph name="PERCENTAGE" /> %).
 Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="366222428570480733">Utilisateur géré : <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -928,6 +933,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="504465286040788597">Paragraphe précédent</translation>
 <translation id="5045550434625856497">Mot de passe incorrect</translation>
 <translation id="5062496344832867502">mémoire vive</translation>
+<translation id="5068762093486106012">Vous serez averti si vous parlez en sourdine. Les données audio ne quittent jamais votre appareil.</translation>
 <translation id="5078796286268621944">NIP incorrect</translation>
 <translation id="5083553833479578423">Déverrouillez davantage de fonctionnalités de l'Assistant Google.</translation>
 <translation id="5092436659250499817">Activer ou désactiver le rétroéclairage du clavier</translation>
@@ -958,6 +964,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="5207949376430453814">Mettre le point d'insertion de texte en surbrillance</translation>
 <translation id="5208059991603368177">Activé</translation>
 <translation id="5216991270656129561">Désactivée jusqu'à <ph name="TIME" /></translation>
+<translation id="5221423477036820198">Envoyez rapidement des messages sur votre téléphone ou répondez aux messages à l'aide de Phone Hub.</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
 <translation id="5229343007215035173">Activer ou désactiver l'écran de confidentialité</translation>
 <translation id="5234764350956374838">Fermer</translation>
@@ -1045,6 +1052,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="5578188167649348993">mémoire</translation>
 <translation id="5580000943347215299">Bibliothèque</translation>
 <translation id="558849140439112033">Faites glisser le curseur pour sélectionner une région à capturer</translation>
+<translation id="5590609058453685222">Le coup de coude de détection de la voix en sourdine est activé. Vous serez averti si vous parlez en sourdine.</translation>
 <translation id="5596627076506792578">Autres options</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" /> <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Appuyez sur Ctrl + Alt + Z pour désactiver la rétroaction vocale.</translation>
@@ -1197,6 +1205,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="6231419273573514727">Les performances du périphérique peuvent être limitées</translation>
 <translation id="6232891689835436217"><ph name="APP_NAME" /> utilise actuellement votre appareil photo et votre microphone</translation>
 <translation id="6237231532760393653">1X</translation>
+<translation id="6244986124527896815">Ouvrez l'application Gestionnaire de tâches avec « <ph name="NEW_SHORTCUT" /> ».</translation>
 <translation id="6247728804802644171">Ouvrir les notifications</translation>
 <translation id="6254629735336163724">Verrouillée à l'horizontale</translation>
 <translation id="6259254695169772643">Utilisez votre stylet pour effectuer une sélection</translation>
@@ -1247,6 +1256,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="6497418457565568043">Mode Ne pas déranger activé</translation>
 <translation id="6500896621837555595">Mettre à jour</translation>
 <translation id="6501401484702599040">Diffusion de l'écran sur <ph name="RECEIVER_NAME" /> en cours</translation>
+<translation id="6507042703812908515">Ouvrez l'application Raccourcis clavier avec « <ph name="NEW_SHORTCUT" /> ».</translation>
 <translation id="6507618042428827377">Passer à la prochaine méthode d'entrée accessible</translation>
 <translation id="6508923215158854599">Assurez-vous que votre Chromebook est sur le même réseau Wi-Fi que votre appareil Chromecast.</translation>
 <translation id="6515727200518652613">Caméra déconnectée; tentative de reconnexion en cours…</translation>
@@ -1479,7 +1489,7 @@ Pour éteindre l'appareil, appuyez à nouveau sur le bouton d'alimentation de l'
 <translation id="7579778809502851308">Capture d'écran</translation>
 <translation id="7593891976182323525">Recherche ou Majuscule</translation>
 <translation id="7600875258240007829">Afficher toutes les notifications</translation>
-<translation id="7601417191446344542">Activer le rappel de son désactivé?</translation>
+<translation id="7601417191446344542">Activer le Rappel de son désactivé?</translation>
 <translation id="7607002721634913082">Interrompu</translation>
 <translation id="7609951632080598826">Vue de l'agenda, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Caméra reconnectée.</translation>
@@ -1540,7 +1550,6 @@ Pour éteindre l'appareil, appuyez à nouveau sur le bouton d'alimentation de l'
 <translation id="7866482334467279021">activé</translation>
 <translation id="7872786842639831132">Désactivé</translation>
 <translation id="7875575368831396199">Il semble que le Bluetooth est désactivé sur votre <ph name="DEVICE_TYPE" />. Veuillez activer le Bluetooth pour utiliser Phone Hub.</translation>
-<translation id="7876243839304621966">Tout supprimer</translation>
 <translation id="7877557217297072640">{0,plural, =0{Restaurez la version antérieure de l'appareil maintenant}=1{Restaurez la version antérieure de l'appareil dans un délai de 1 seconde}one{Restaurez la version antérieure de l'appareil dans un délai de # seconde}other{Restaurez la version antérieure de l'appareil dans un délai de # secondes}}</translation>
 <translation id="7884446017008693258">Paramètres du point d’accès</translation>
 <translation id="7884902759927478774">Annuler le glissement de l'onglet</translation>
@@ -1744,6 +1753,7 @@ Pour éteindre l'appareil, appuyez à nouveau sur le bouton d'alimentation de l'
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8790998409862094015">Abondant</translation>
 <translation id="8792626944327216835">Microphone</translation>
+<translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535">Dossier <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">« Aide »</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

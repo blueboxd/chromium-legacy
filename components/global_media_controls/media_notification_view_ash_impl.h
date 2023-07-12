@@ -79,12 +79,17 @@ class COMPONENT_EXPORT(GLOBAL_MEDIA_CONTROLS) MediaNotificationViewAshImpl
   void UpdateWithMuteStatus(bool mute) override {}
   void UpdateWithVolume(float volume) override {}
 
+  // views::View:
+  void AddedToWidget() override;
+
   // Helper functions for testing:
   views::ImageView* GetArtworkViewForTesting();
   views::Label* GetSourceLabelForTesting();
   views::Label* GetArtistLabelForTesting();
   views::Label* GetTitleLabelForTesting();
   views::ImageView* GetChevronIconForTesting();
+  views::Button* GetActionButtonForTesting(
+      media_session::mojom::MediaSessionAction action);
   views::Button* GetStartCastingButtonForTesting();
   MediaItemUIFooter* GetFooterForTesting();
   MediaItemUIDeviceSelector* GetDeviceSelectorForTesting();
@@ -108,7 +113,10 @@ class COMPONENT_EXPORT(GLOBAL_MEDIA_CONTROLS) MediaNotificationViewAshImpl
   void SeekTo(double seek_progress);
 
   // Callback for when the start casting button is toggled by user.
-  void StartCastingButtonPressed(MediaButton* button);
+  void StartCastingButtonPressed();
+
+  // Update the display states of UI elements for casting devices.
+  void UpdateCastingState();
 
   // Raw pointer to the container holding this view. The |container_| should
   // never be nullptr.
@@ -120,6 +128,9 @@ class COMPONENT_EXPORT(GLOBAL_MEDIA_CONTROLS) MediaNotificationViewAshImpl
 
   // The color theme for all the colors in this view.
   media_message_center::MediaColorTheme theme_;
+
+  // The display page source for this view.
+  MediaDisplayPage media_display_page_;
 
   media_session::MediaPosition position_;
 

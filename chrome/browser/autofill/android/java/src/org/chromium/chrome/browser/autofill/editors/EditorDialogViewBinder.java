@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill.editors;
 
+import static org.chromium.chrome.browser.autofill.AutofillUiUtils.getInputTypeForField;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.ALLOW_DELETE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.CANCEL_RUNNABLE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.CUSTOM_DONE_BUTTON_TEXT;
@@ -11,15 +12,30 @@ import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DELE
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DELETE_CONFIRMATION_TITLE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DELETE_RUNNABLE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DONE_RUNNABLE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DropdownFieldProperties.DROPDOWN_CALLBACK;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DropdownFieldProperties.DROPDOWN_HINT;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DropdownFieldProperties.DROPDOWN_KEY_VALUE_LIST;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.EDITOR_FIELDS;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.EDITOR_TITLE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FOOTER_MESSAGE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FORM_VALID;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.ERROR_MESSAGE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.IS_REQUIRED;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.LABEL;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.VALIDATOR;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldProperties.VALUE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.SHOW_REQUIRED_INDICATOR;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_FIELD_TYPE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_FORMATTER;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_SUGGESTIONS;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.VISIBLE;
 
+import org.chromium.chrome.browser.autofill.editors.EditorProperties.DropdownKeyValue;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Provides functions that map {@link EditorProperties} changes in a {@link PropertyModel} to
@@ -64,6 +80,55 @@ public class EditorDialogViewBinder {
             }
         } else {
             assert false : "Unhandled update to property:" + propertyKey;
+        }
+    }
+
+    static void bindTextFieldView(PropertyModel model, TextFieldView view, PropertyKey key) {
+        if (key == LABEL || key == IS_REQUIRED) {
+            view.setLabel(model.get(LABEL), model.get(IS_REQUIRED));
+        } else if (key == VALIDATOR) {
+            view.setValidator(model.get(VALIDATOR));
+        } else if (key == ERROR_MESSAGE) {
+            view.setErrorMessage(model.get(ERROR_MESSAGE));
+        } else if (key == VALUE) {
+            view.setValue(model.get(VALUE));
+        } else if (key == TEXT_FIELD_TYPE) {
+            // Setting text input triggers TextWatcher, which overwrites the
+            // model's text value. Always set value before the text input type
+            // to avoid loosing the text value.
+            view.setValue(model.get(VALUE));
+            view.setTextInputType(getInputTypeForField(model.get(TEXT_FIELD_TYPE)));
+        } else if (key == TEXT_SUGGESTIONS) {
+            view.setTextSuggestions(model.get(TEXT_SUGGESTIONS));
+        } else if (key == TEXT_FORMATTER) {
+            view.setTextFormatter(model.get(TEXT_FORMATTER));
+        } else {
+            assert false : "Unhandled update to property:" + key;
+        }
+    }
+
+    static void bindDropdownFieldView(
+            PropertyModel model, DropdownFieldView view, PropertyKey key) {
+        if (key == LABEL || key == IS_REQUIRED) {
+            view.setLabel(model.get(LABEL), model.get(IS_REQUIRED));
+        } else if (key == VALIDATOR) {
+            view.setValidator(model.get(VALIDATOR));
+        } else if (key == ERROR_MESSAGE) {
+            view.setErrorMessage(model.get(ERROR_MESSAGE));
+        } else if (key == VALUE) {
+            view.setValue(model.get(VALUE));
+        } else if (key == DROPDOWN_KEY_VALUE_LIST || key == DROPDOWN_HINT) {
+            List<String> values = model.get(DROPDOWN_KEY_VALUE_LIST)
+                                          .stream()
+                                          .map(DropdownKeyValue::getValue)
+                                          .collect(Collectors.toList());
+            view.setDropdownValues(values, model.get(DROPDOWN_HINT));
+            view.setValue(model.get(VALUE));
+            view.setErrorMessage(model.get(ERROR_MESSAGE));
+        } else if (key == DROPDOWN_CALLBACK) {
+            // Does not require binding at the moment.
+        } else {
+            assert false : "Unhandled update to property:" + key;
         }
     }
 }

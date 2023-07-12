@@ -585,11 +585,9 @@ void RuleFeatureSet::UpdateFeaturesFromCombinator(
 void RuleFeatureSet::UpdateFeaturesFromStyleScope(
     const StyleScope& style_scope,
     InvalidationSetFeatures& descendant_features) {
-  for (const StyleScope* scope = &style_scope; scope; scope = scope->Parent()) {
-    if (!scope->From()) {
-      continue;
-    }
-    for (const CSSSelector* selector = scope->From(); selector;
+  auto add_features = [this](const CSSSelector* selector_list,
+                             InvalidationSetFeatures& descendant_features) {
+    for (const CSSSelector* selector = selector_list; selector;
          selector = CSSSelectorList::Next(*selector)) {
       InvalidationSetFeatures scope_features;
       ExtractInvalidationSetFeaturesFromCompound(
@@ -597,6 +595,11 @@ void RuleFeatureSet::UpdateFeaturesFromStyleScope(
           /* for_logical_combination_in_has */ false, /*in_nth_child=*/false);
       descendant_features.Merge(scope_features);
     }
+  };
+
+  for (const StyleScope* scope = &style_scope; scope; scope = scope->Parent()) {
+    add_features(scope->From(), descendant_features);
+    add_features(scope->To(), descendant_features);
   }
 }
 
@@ -1034,7 +1037,8 @@ const CSSSelector* RuleFeatureSet::ExtractInvalidationSetFeaturesFromCompound(
     }
 
     if (!simple_selector->NextSimpleSelector() ||
-        simple_selector->Relation() != CSSSelector::kSubSelector) {
+        (simple_selector->Relation() != CSSSelector::kSubSelector &&
+         simple_selector->Relation() != CSSSelector::kScopeActivation)) {
       return simple_selector;
     }
   }
@@ -1311,7 +1315,6 @@ void RuleFeatureSet::AddFeaturesToInvalidationSetsForLogicalCombinationInHas(
     InvalidationSetFeatures& descendant_features,
     CSSSelector::RelationType previous_combinator,
     AddFeaturesMethodForLogicalCombinationInHas add_features_method) {
-  DCHECK(logical_combination.SelectorList());
   DCHECK(compound_containing_has);
 
   for (const CSSSelector* complex = logical_combination.SelectorListOrParent();

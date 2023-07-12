@@ -6,31 +6,44 @@
 #define ASH_GLANCEABLES_CLASSROOM_GLANCEABLES_CLASSROOM_ITEM_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "ui/views/layout/flex_layout_view.h"
+#include "ash/glanceables/classroom/glanceables_classroom_types.h"
+#include "base/functional/callback_forward.h"
+#include "ui/views/controls/button/button.h"
 
 namespace ash {
 
-struct GlanceablesClassroomStudentAssignment;
+struct GlanceablesClassroomAssignment;
 
 // A view which shows information about a single assignment in the classroom
 // glanceable.
-class ASH_EXPORT GlanceablesClassroomItemView : public views::FlexLayoutView {
+class ASH_EXPORT GlanceablesClassroomItemView : public views::Button {
  public:
   METADATA_HEADER(GlanceablesClassroomItemView);
 
-  // Known view ids.
-  static constexpr int kIconViewId = 1;
-  static constexpr int kCourseWorkTitleLabelId = 2;
-  static constexpr int kCourseTitleLabelId = 3;
-  static constexpr int kDueDateLabelId = 4;
-  static constexpr int kDueTimeLabelId = 5;
+  GlanceablesClassroomItemView(const GlanceablesClassroomAssignment* assignment,
+                               base::RepeatingClosure pressed_callback);
 
-  explicit GlanceablesClassroomItemView(
-      const GlanceablesClassroomStudentAssignment* assignment);
   GlanceablesClassroomItemView(const GlanceablesClassroomItemView&) = delete;
   GlanceablesClassroomItemView& operator=(const GlanceablesClassroomItemView&) =
       delete;
   ~GlanceablesClassroomItemView() override;
+};
+
+// A view which shows information about a single assignment in the classroom
+// glanceable.
+class ASH_EXPORT GlanceablesClassroomTeacherItemView
+    : public GlanceablesClassroomItemView {
+ public:
+  METADATA_HEADER(GlanceablesClassroomTeacherItemView);
+
+  GlanceablesClassroomTeacherItemView(
+      const GlanceablesClassroomAssignment* assignment,
+      base::RepeatingClosure pressed_callback);
+  GlanceablesClassroomTeacherItemView(
+      const GlanceablesClassroomTeacherItemView&) = delete;
+  GlanceablesClassroomTeacherItemView& operator=(
+      const GlanceablesClassroomTeacherItemView&) = delete;
+  ~GlanceablesClassroomTeacherItemView() override;
 };
 
 }  // namespace ash

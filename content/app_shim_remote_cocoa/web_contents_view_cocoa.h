@@ -5,7 +5,6 @@
 #ifndef CONTENT_APP_SHIM_REMOTE_COCOA_WEB_CONTENTS_VIEW_COCOA_H_
 #define CONTENT_APP_SHIM_REMOTE_COCOA_WEB_CONTENTS_VIEW_COCOA_H_
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/raw_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/web_contents_ns_view_bridge.mojom.h"
@@ -16,12 +15,9 @@ namespace content {
 struct DropData;
 }  // namespace content
 
-namespace remote_cocoa {
-class DroppedScreenShotCopierMac;
-namespace mojom {
+namespace remote_cocoa::mojom {
 class WebContentsNSViewHost;
-}  // namespace mojom
-}  // namespace remote_cocoa
+}  // namespace remote_cocoa::mojom
 
 @class WebDragSource;
 

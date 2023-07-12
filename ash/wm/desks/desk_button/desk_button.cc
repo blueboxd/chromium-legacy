@@ -17,13 +17,14 @@
 #include "ash/wm/desks/desks_controller.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
@@ -43,6 +44,8 @@ constexpr int kButtonCornerRadius = 12;
 // DeskSwitchButton:
 DeskSwitchButton::DeskSwitchButton(PressedCallback callback)
     : ImageButton(callback) {
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
   SetSize(gfx::Size(kDeskSwitchButtonWidth, kDeskSwitchButtonHeight));
   SetImageHorizontalAlignment(
       views::ImageButton::HorizontalAlignment::ALIGN_CENTER);
@@ -50,11 +53,16 @@ DeskSwitchButton::DeskSwitchButton(PressedCallback callback)
       views::ImageButton::VerticalAlignment::ALIGN_MIDDLE);
   SetProperty(views::kFlexBehaviorKey,
               views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred));
-  SetVisible(false);
-  SetEnabled(true);
+  SetShown(false);
+  SetVisible(true);
 }
 
 DeskSwitchButton::~DeskSwitchButton() = default;
+
+void DeskSwitchButton::SetShown(bool show) {
+  layer()->SetOpacity(show ? 1.f : 0.f);
+  SetEnabled(show);
+}
 
 void DeskSwitchButton::OnMouseEntered(const ui::MouseEvent& event) {
   if (hovered_) {
@@ -111,8 +119,7 @@ DeskButton::DeskButton(DeskButtonWidget* desk_button_widget)
   prev_desk_button_->SetAccessibleName(u"Previous desk button");
   prev_desk_button_->SetBackground(views::CreateThemedRoundedRectBackground(
       cros_tokens::kCrosSysHoverOnSubtle,
-      views::Radii{.top_left = kButtonCornerRadius,
-                   .bottom_left = kButtonCornerRadius},
+      gfx::RoundedCornersF{kButtonCornerRadius, 0, 0, kButtonCornerRadius},
       /*for_border_thickness=*/0));
 
   next_desk_button_->SetImageModel(
@@ -121,8 +128,7 @@ DeskButton::DeskButton(DeskButtonWidget* desk_button_widget)
   next_desk_button_->SetAccessibleName(u"Next desk button");
   next_desk_button_->SetBackground(views::CreateThemedRoundedRectBackground(
       cros_tokens::kCrosSysHoverOnSubtle,
-      views::Radii{.top_right = kButtonCornerRadius,
-                   .bottom_right = kButtonCornerRadius},
+      gfx::RoundedCornersF{0, kButtonCornerRadius, kButtonCornerRadius, 0},
       /*for_border_thickness=*/0));
 
   CalculateDisplayNames(DesksController::Get()->active_desk());
@@ -136,6 +142,15 @@ DeskButton::DeskButton(DeskButtonWidget* desk_button_widget)
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                views::MaximumFlexSizeRule::kUnbounded));
+
+  // Using color ID instead of the direct color guarantees that the label will
+  // automatically change color on a theme change (b/287129850).
+  desk_name_label_->SetEnabledColorId(cros_tokens::kCrosSysOnSurface);
+
+  // Labels automatically assume that they have an opaque background, and will
+  // try to contrast with this assumed background unless we tell it not to do
+  // that here.
+  desk_name_label_->SetAutoColorReadabilityEnabled(false);
   TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosButton1,
                                         *desk_name_label_);
 
@@ -149,7 +164,15 @@ DeskButton::~DeskButton() {
 void DeskButton::OnExpandedStateUpdate(bool expanded) {
   is_expanded_ = expanded;
   desk_name_label_->SetText(is_expanded_ ? desk_name_ : abbreviated_desk_name_);
+
+  // In the shrunk desk button the desk switch buttons should not be used in the
+  // layout.
+  prev_desk_button_->SetVisible(expanded);
+  next_desk_button_->SetVisible(expanded);
   MaybeUpdateDeskSwitchButtonVisibility();
+
+  // Re-layout the button to reflect desk switch button visibility changes.
+  Layout();
 }
 
 void DeskButton::SetActivation(bool is_activated) {
@@ -170,12 +193,13 @@ void DeskButton::SetActivation(bool is_activated) {
     }
   }
 
-  background()->SetNativeControlColor(GetColorProvider()->GetColor(
+  SetBackground(views::CreateThemedRoundedRectBackground(
       is_activated_ ? cros_tokens::kCrosSysSystemPrimaryContainer
-                    : cros_tokens::kCrosSysSystemOnBaseOpaque));
-  desk_name_label_->SetEnabledColor(GetColorProvider()->GetColor(
+                    : cros_tokens::kCrosSysSystemOnBaseOpaque,
+      kButtonCornerRadius));
+  desk_name_label_->SetEnabledColorId(
       is_activated_ ? cros_tokens::kCrosSysSystemOnPrimaryContainer
-                    : cros_tokens::kCrosSysOnSurface));
+                    : cros_tokens::kCrosSysOnSurface);
 
   MaybeUpdateDeskSwitchButtonVisibility();
 }
@@ -251,6 +275,13 @@ void DeskButton::OnMouseExited(const ui::MouseEvent& event) {
   MaybeUpdateDeskSwitchButtonVisibility();
 }
 
+views::View* DeskButton::GetTooltipHandlerForPoint(const gfx::Point& point) {
+  // We override this function so that the tooltip manager ignores disabled desk
+  // switch buttons when creating tooltips.
+  views::View* tooltip_handler = Button::GetTooltipHandlerForPoint(point);
+  return tooltip_handler->GetEnabled() ? tooltip_handler : this;
+}
+
 void DeskButton::OnDeskAdded(const Desk* desk) {
   MaybeUpdateDeskSwitchButtonVisibility();
 }
@@ -281,6 +312,8 @@ void DeskButton::OnDeskNameChanged(const Desk* desk,
 }
 
 void DeskButton::OnButtonPressed() {
+  base::UmaHistogramBoolean(kDeskButtonPressesHistogramName, true);
+
   aura::Window* root = desk_button_widget_->GetNativeWindow()->GetRootWindow();
   DeskBarController* desk_bar_controller =
       DesksController::Get()->desk_bar_controller();
@@ -342,10 +375,10 @@ void DeskButton::MaybeUpdateDeskSwitchButtonVisibility() {
   // the buttons.
   const bool can_show_desk_switch_buttons =
       is_hovered_ && !is_activated_ && is_expanded_;
-  prev_desk_button_->SetVisible(can_show_desk_switch_buttons &&
-                                can_show_prev_desk_button);
-  next_desk_button_->SetVisible(can_show_desk_switch_buttons &&
-                                can_show_next_desk_button);
+  prev_desk_button_->SetShown(can_show_desk_switch_buttons &&
+                              can_show_prev_desk_button);
+  next_desk_button_->SetShown(can_show_desk_switch_buttons &&
+                              can_show_next_desk_button);
 }
 
 void DeskButton::UpdateShelfAutoHideDisabler(

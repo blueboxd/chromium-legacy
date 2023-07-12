@@ -255,6 +255,7 @@
 <translation id="2595587704210555261">{COUNT,plural, =1{ایک یا زیادہ دن کے لیے استعمال نہ ہونے والے کھلے ٹیبز کو غیر فعال ٹیبز میں منتقل کر دیا جاتا ہے تاکہ آپ آسانی سے ان ٹیبز پر توجہ مرکوز کر سکیں جنہیں آپ سب سے زیادہ استعمال کرتے ہیں۔ آپ اسے ترتیبات میں کسی بھی وقت تبدیل کر سکتے ہیں۔}other{{COUNT} یا زیادہ دن کے لیے استعمال نہ ہونے والے کھلے ٹیبز کو غیر فعال ٹیبز میں منتقل کر دیا جاتا ہے تاکہ آپ آسانی سے ان ٹیبز پر توجہ مرکوز کر سکیں جنہیں آپ سب سے زیادہ استعمال کرتے ہیں۔ آپ اسے ترتیبات میں کسی بھی وقت تبدیل کر سکتے ہیں۔}}</translation>
 <translation id="2600682495497606169">سائٹ کوکیز صاف کریں</translation>
 <translation id="2609008503159898744">سبھی ٹیبز بند کریں؟</translation>
+<translation id="2617210333344098964">پتہ کو اکاؤنٹ پر منتقل کریں</translation>
 <translation id="2625189173221582860">پاس ورڈ کاپی ہو گیا</translation>
 <translation id="2626236249646841566">اپنا کنکشن چیک کریں اور دوبارہ سائن ان کرنے کی کوشش کریں۔</translation>
 <translation id="2637313651144986786">ٹیبز تلاش کریں...</translation>
@@ -404,7 +405,6 @@
 <translation id="3464194322481586217">قیمت ٹریک نہیں کی جا سکی۔</translation>
 <translation id="3469166899695866866">ڈاؤن لوڈ روکیں؟</translation>
 <translation id="3470502288861289375">کاپی کیے جا رہے ہیں…</translation>
-<translation id="3471148582064653480">اپنے پاس ورڈز، سرگزشت، اور بہت کچھ کو مطابقت پذیر بنائیں۔</translation>
 <translation id="3474048842645761983">{COUNT,plural, =1{{COUNT} سائٹ یا ایپ کے لیے}other{{COUNT} سائٹس یا ایپس کے لیے}}</translation>
 <translation id="3474624961160222204">بطور <ph name="NAME" /> جاری رکھیں</translation>
 <translation id="3476450923187944815">دیگر ایپس پر اپنے پاس ورڈز تک رسائی حاصل کریں۔</translation>
@@ -465,6 +465,7 @@
 <translation id="3851938967634752633"><ph name="WEBSITE" />، <ph name="SECOND_WEBSITE" /> اور <ph name="NUMBER_OF_ACCOUNTS" /> دیگر کے پاسورڈز حذف ہو جائيں گے۔ آپ کے اکاؤنٹس حذف نہیں ہوں گے۔</translation>
 <translation id="3858860766373142691">نام</translation>
 <translation id="3861486700625780712">پیروی ختم کریں</translation>
+<translation id="3861908220442487587">‏یہ پتہ صرف اس آلے پر محفوظ ہوتا ہے۔ اسے اپنے دوسرے آلات پر استعمال کرنے کے لیے، اسے اپنے Google اکاؤنٹ <ph name="USER_EMAIL" /> پر منتقل کریں</translation>
 <translation id="3863769054730344136">اپنے آلات پر بھیجیں</translation>
 <translation id="387280738075653372">‏یہاں Chrome ڈاؤن لوڈ کریں۔</translation>
 <translation id="3875783148670536197">مجھے طریقہ دکھائیں</translation>
@@ -649,6 +650,7 @@
 <translation id="5083464117946352670">فائل سائز کا تعین نہیں کیا جا سکتا ہے۔</translation>
 <translation id="5090832849094901128">اس پاس ورڈ کو حذف کرنے سے آپ کا اکاؤنٹ <ph name="WEBSITE" /> سے حذف نہیں ہوگا۔</translation>
 <translation id="5094827893301452931">ٹویٹ مکمل ہوگیا۔</translation>
+<translation id="5109892411553231226">ادائیگی کے طریقوں کا نظم کریں</translation>
 <translation id="5118713593561876160">دلچسپیاں</translation>
 <translation id="5118764316110575523">آف</translation>
 <translation id="5119391094379141756">‏Chrome منتخب کریں</translation>
@@ -999,6 +1001,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="7053983685419859001">مسدود کریں</translation>
 <translation id="7062545763355031412">قبول کریں اور اکاؤنٹس سوئچ کریں</translation>
 <translation id="7080806333218412752">‏چیک کرنے کے لیے URLs کو محفوظ براؤزنگ کو بھیجتا ہے۔ نئے خطرات کا پتہ لگانے میں مدد کے لیے صفحات، ڈاؤن لوڈز، ایکسٹینشن کی سرگرمی اور سسٹم کی معلومات کا چھوٹا سا نمونہ بھی بھیجتا ہے۔ Google ایپس پر آپ کی حفاظت کرنے کے لیے آپ کے سائن ان ہونے پر آپ کے Google اکاؤنٹ سے اس ڈیٹا کو عارضی طور پر لنک کرتا ہے۔</translation>
+<translation id="7082853213442715471">آن ہونے پر کچھ ویب ٹیکنالوجیز مسدود کر دی جاتی ہیں، جس کی وجہ سے کچھ ویب سائٹس مزید آہستہ لوڈ ہوتی ہیں یا صحیح طریقے سے کام نہیں کرتی ہیں۔</translation>
 <translation id="7095110968493193530">‏<ph name="EMAIL" /> کے لیے Google پاس ورڈ مینیجر میں محفوظ کریں</translation>
 <translation id="7099761977003084116">حالیہ ٹیبز</translation>
 <translation id="7102005569666697658">ڈاؤن لوڈ ہو رہی ہے… <ph name="FILE_SIZE" /></translation>
@@ -1058,6 +1061,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="7531345132340165516">موجودہ سائٹ</translation>
 <translation id="7537586195939242955">‏معذرت، آپ کا Pass اس وقت Passbook میں انسٹال نہیں کیا جا سکتا ہے۔</translation>
 <translation id="754655535278952384"><ph name="TIME" /> چیک کیا گیا</translation>
+<translation id="7552154146060018538"><ph name="SOURCE_DEVICE" /> پر آخری ٹیب استعمال کیا گیا</translation>
 <translation id="7553234618121028547">آف کرنے کے لیے، <ph name="BEGIN_LINK" />ترتیبات<ph name="END_LINK" /> کھولیں اور پاس ورڈ کے اختیارات پر جائیں۔</translation>
 <translation id="7554645225856321710">تمام بند کریں</translation>
 <translation id="7554791636758816595">نیا ٹیب</translation>
@@ -1190,7 +1194,6 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8319076807703933069">نئی تلاش</translation>
 <translation id="8323906514956095947">ٹیب کے مزید اختیارات کیلئے ٹچ کریں اور دبائے رکھیں</translation>
 <translation id="8328777765163860529">تمام بند کریں</translation>
-<translation id="8331621926962374866">‏Chrome کے لاک ڈاؤن وضع میں ہونے پر کچھ ویب ٹیکنالوجیز مسدود کی جاتی ہیں، جس کی وجہ سے کچھ ویب سائٹس مزید آہستہ لوڈ ہوتی ہیں یا صحیح طریقے سے کام نہیں کرتی ہیں۔</translation>
 <translation id="8343993175958086504">اپنے ڈیٹا کا بیک اپ لیں اور اسے کسی بھی آلے پر استعمال کریں۔</translation>
 <translation id="834783239627985533">سب سے زیادہ ملاحظہ کردہ سائٹس</translation>
 <translation id="8378714024927312812">آپ کی تنظیم کے زیر نظم</translation>
@@ -1204,6 +1207,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8428045167754449968">شہر / قصبہ</translation>
 <translation id="8428213095426709021">ترتیبات</translation>
 <translation id="8428634594422941299">سمجھ آ گئی</translation>
+<translation id="8446201778524791138">کارروائیوں میں ترمیم کریں</translation>
 <translation id="8446884382197647889">مزید جانیں</translation>
 <translation id="8458397775385147834">1 آئٹم کو حذف کر دیا گیا</translation>
 <translation id="8459333855531264009">محفوظ نہیں</translation>
@@ -1296,7 +1300,6 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8976414606286374109">‏کارڈز آپ کے Google اکاؤنٹ میں محفوظ ہوتے ہیں۔</translation>
 <translation id="8981454092730389528">‏Google سرگرمی کنٹرولز</translation>
 <translation id="8985320356172329008">‏Google میں سائن ان ہے بطور</translation>
-<translation id="8986567980592931173">‏اپنے پاس ورڈز، سرگزشت وغیرہ کو مطابقت پذیر بنانے کے لیے اپنے Google اکاؤنٹ کے ساتھ سائن ان کریں۔</translation>
 <translation id="8998289560386111590">آپ کے آلے پر دستیاب نہیں ہے</translation>
 <translation id="8999545564078155498">‏Face ID کے ساتھ غیر مقفل کریں</translation>
 <translation id="9000089900434778519">آپ کا سرچ انجن <ph name="DSE_NAME" /> ہے۔ اگر قابل اطلاق ہو تو اپنی تلاش کی سرگزشت حذف کرنے کے لیے ان کی ہدایات دیکھیں۔</translation>

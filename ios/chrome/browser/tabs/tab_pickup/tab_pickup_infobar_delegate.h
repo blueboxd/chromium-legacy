@@ -10,26 +10,30 @@
 
 #import "base/ios/block_types.h"
 #import "components/infobars/core/confirm_infobar_delegate.h"
+#import "components/sessions/core/session_id.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
-#import "ios/chrome/browser/synced_sessions/distant_session.h"
 
-class ChromeBrowserState;
+class Browser;
 class FaviconLoader;
 class GURL;
 
 namespace synced_sessions {
-class SyncedSessions;
+struct DistantSession;
 }
 
 // An interface derived from ConfirmInfoBarDelegate for the Tab Pickup InfoBar.
 class TabPickupInfobarDelegate : public ConfirmInfoBarDelegate {
  public:
-  TabPickupInfobarDelegate(ChromeBrowserState* browser_state_);
+  TabPickupInfobarDelegate(Browser* browser,
+                           const synced_sessions::DistantSession* session);
 
   ~TabPickupInfobarDelegate() override;
 
   // Fetches the favicon image and executes the given procedural block.
   void FetchFavIconImage(ProceduralBlock block_handler);
+
+  // Opens the last synced tab from another device.
+  void OpenDistantTab();
 
   // Getters.
   const std::string GetSessionName() const { return session_name_; }
@@ -48,13 +52,15 @@ class TabPickupInfobarDelegate : public ConfirmInfoBarDelegate {
   base::Time synced_time_;
   // Las synced tab URL.
   GURL tab_url_;
+  // Tab identifier.
+  SessionID tab_id_ = SessionID::InvalidValue();
+  // Distant session tag.
+  std::string session_tag_;
   // Favicon of the last synced tab.
   UIImage* favicon_image_ = nullptr;
 
-  // The Associated BrowserState.
-  raw_ptr<ChromeBrowserState> browser_state_ = nullptr;
-  // The instance that owns the DistantTabs to display.
-  std::unique_ptr<synced_sessions::SyncedSessions> synced_sessions_;
+  // The owning Browser.
+  raw_ptr<Browser> browser_ = nullptr;
   // Loads favicons.
   raw_ptr<FaviconLoader> favicon_loader_ = nullptr;
 };

@@ -72,6 +72,7 @@
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
+#include "chrome/browser/trusted_vault/trusted_vault_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/browser/webid/federated_identity_permission_context.h"
 #include "chrome/common/chrome_constants.h"
@@ -116,13 +117,13 @@
 #include "components/omnibox/browser/zero_suggest_cache_service.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/os_crypt/sync/os_crypt_mocker.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/mock_field_info_store.h"
 #include "components/password_manager/core/browser/mock_password_store_interface.h"
 #include "components/password_manager/core/browser/mock_smart_bubble_stats_store.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/content/mock_payment_manifest_web_data_service.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_actions_history.h"
@@ -392,8 +393,9 @@ class RemoveHistoryTester {
   [[nodiscard]] bool Init(Profile* profile) {
     history_service_ = HistoryServiceFactory::GetForProfile(
         profile, ServiceAccessType::EXPLICIT_ACCESS);
-    if (!history_service_)
+    if (!history_service_) {
       return false;
+    }
 
     return true;
   }
@@ -437,13 +439,15 @@ class RemoveFaviconTester {
     // Create the history service if it has not been created yet.
     history_service_ = HistoryServiceFactory::GetForProfile(
         profile, ServiceAccessType::EXPLICIT_ACCESS);
-    if (!history_service_)
+    if (!history_service_) {
       return false;
+    }
 
     favicon_service_ = FaviconServiceFactory::GetForProfile(
         profile, ServiceAccessType::EXPLICIT_ACCESS);
-    if (!favicon_service_)
+    if (!favicon_service_) {
       return false;
+    }
 
     return true;
   }
@@ -539,8 +543,9 @@ class RemoveUkmDataTester {
         profile);
     history_service_ = HistoryServiceFactory::GetForProfile(
         profile, ServiceAccessType::EXPLICIT_ACCESS);
-    if (!history_service_)
+    if (!history_service_) {
       return false;
+    }
     test_utils_.set_history_service(history_service_);
 
     // Run model overrides to start storing UKM metrics.
@@ -696,12 +701,14 @@ class RemoveDIPSEventsTester {
   void WriteEventTimes(GURL url,
                        absl::optional<base::Time> storage_time,
                        absl::optional<base::Time> interaction_time) {
-    if (storage_time.has_value())
+    if (storage_time.has_value()) {
       storage_->AsyncCall(&DIPSStorage::RecordStorage)
-          .WithArgs(url, storage_time.value(), DIPSCookieMode::kStandard);
-    if (interaction_time.has_value())
+          .WithArgs(url, storage_time.value(), DIPSCookieMode::kBlock3PC);
+    }
+    if (interaction_time.has_value()) {
       storage_->AsyncCall(&DIPSStorage::RecordInteraction)
-          .WithArgs(url, interaction_time.value(), DIPSCookieMode::kStandard);
+          .WithArgs(url, interaction_time.value(), DIPSCookieMode::kBlock3PC);
+    }
     storage_->FlushPostedTasksForTesting();
   }
 
@@ -829,8 +836,9 @@ class ProbablySameFilterMatcher
         GURL("http://host3.com:1"), GURL("invalid spec")};
     for (GURL url : urls_to_test_) {
       if (filter.Run(url) != to_match_.Run(url)) {
-        if (listener)
+        if (listener) {
           *listener << "The filters differ on the URL " << url;
+        }
         return false;
       }
     }
@@ -902,17 +910,12 @@ class RemoveDownloadsTester {
 
 base::RepeatingCallback<bool(const GURL&)> CreateUrlFilterFromOriginFilter(
     const base::RepeatingCallback<bool(const url::Origin&)>& origin_filter) {
-  if (origin_filter.is_null())
+  if (origin_filter.is_null()) {
     return base::RepeatingCallback<bool(const GURL&)>();
+  }
   return base::BindLambdaForTesting([origin_filter](const GURL& url) {
     return origin_filter.Run(url::Origin::Create(url));
   });
-}
-
-}  // namespace
-
-ACTION(QuitMainMessageLoop) {
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 class PersonalDataLoadedObserverMock
@@ -923,6 +926,12 @@ class PersonalDataLoadedObserverMock
   MOCK_METHOD0(OnPersonalDataChanged, void());
   MOCK_METHOD0(OnPersonalDataFinishedProfileTasks, void());
 };
+
+}  // namespace
+
+ACTION(QuitMainMessageLoop) {
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
+}
 
 // RemoveAutofillTester is not a part of the anonymous namespace above, as
 // PersonalDataManager declares it a friend in an empty namespace.
@@ -953,8 +962,9 @@ class RemoveAutofillTester {
     const std::vector<autofill::CreditCard*>& credit_cards =
         personal_data_manager_->GetCreditCards();
     for (const autofill::CreditCard* credit_card : credit_cards) {
-      if (credit_card->origin() == origin)
+      if (credit_card->origin() == origin) {
         return true;
+      }
     }
 
     return false;
@@ -1233,6 +1243,8 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
                   return std::make_unique<SpellcheckService>(
                       static_cast<Profile*>(profile));
                 }))
+            .AddTestingFactory(TrustedVaultServiceFactory::GetInstance(),
+                               TrustedVaultServiceFactory::GetDefaultFactory())
             .AddTestingFactory(SyncServiceFactory::GetInstance(),
                                SyncServiceFactory::GetDefaultFactory())
             .AddTestingFactory(
@@ -1339,8 +1351,9 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
         .WillOnce(
             testing::WithArgs<3, 4>([](auto callback, auto sync_callback) {
               std::move(callback).Run();
-              if (sync_callback)
+              if (sync_callback) {
                 std::move(sync_callback).Run(false);
+              }
             }));
   }
 
@@ -1352,8 +1365,9 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
         .WillOnce(
             testing::WithArgs<3, 4>([](auto callback, auto sync_callback) {
               std::move(callback).Run();
-              if (sync_callback)
+              if (sync_callback) {
                 std::move(sync_callback).Run(false);
+              }
             }));
   }
 
@@ -3515,8 +3529,9 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
 
   // Set a value for every WebsiteSetting.
   for (const content_settings::WebsiteSettingsInfo* info : *registry) {
-    if (base::Contains(non_deletable_types, info->type()))
+    if (base::Contains(non_deletable_types, info->type())) {
       continue;
+    }
     base::Value some_value;
     auto* content_setting = content_setting_registry->Get(info->type());
     if (content_setting) {
@@ -3557,8 +3572,9 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
 
   // All settings should be deleted now.
   for (const content_settings::WebsiteSettingsInfo* info : *registry) {
-    if (base::Contains(non_deletable_types, info->type()))
+    if (base::Contains(non_deletable_types, info->type())) {
       continue;
+    }
     base::Value value = map->GetWebsiteSetting(url, url, info->type(), nullptr);
 
     if (value.is_int()) {

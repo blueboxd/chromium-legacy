@@ -276,6 +276,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool MayDeleteServiceWorkerRegistration(
       const GURL& scope,
       content::BrowserContext* browser_context) override;
+  bool ShouldTryToUpdateServiceWorkerRegistration(
+      const GURL& scope,
+      content::BrowserContext* browser_context) override;
   void UpdateEnabledBlinkRuntimeFeaturesInIsolatedWorker(
       content::BrowserContext* context,
       const GURL& script_url,
@@ -423,6 +426,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   base::FilePath GetGraphiteDawnDiskCacheDirectory() override;
   base::FilePath GetNetLogDefaultDirectory() override;
   base::FilePath GetFirstPartySetsDirectory() override;
+  absl::optional<base::FilePath> GetLocalTracesDirectory() override;
   void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) override;
   content::BrowserPpapiHost* GetExternalBrowserPpapiHost(
       int plugin_process_id) override;
@@ -813,7 +817,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& url) override;
   bool ShouldServiceWorkerInheritPolicyContainerFromCreator(
       const GURL& url) override;
-  bool ShouldAllowInsecureLocalNetworkRequests(
+  bool ShouldAllowInsecurePrivateNetworkRequests(
       content::BrowserContext* browser_context,
       const url::Origin& origin) override;
   bool IsJitDisabledForSite(content::BrowserContext* browser_context,

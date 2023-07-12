@@ -5343,7 +5343,9 @@ class ServiceWorkerRaceNetworkRequestBrowserTest
         [](const net::test_server::HttpRequest& request)
             -> std::unique_ptr<net::test_server::HttpResponse> {
           if (!base::Contains(request.GetURL().path(),
-                              "/service_worker/mock_response")) {
+                              "/service_worker/mock_response") &&
+              !base::Contains(request.GetURL().path(),
+                              "/service_worker/no_race")) {
             return nullptr;
           }
 
@@ -5824,6 +5826,31 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerRaceNetworkRequestBrowserTest,
                    "response.text())"));
 }
 
+IN_PROC_BROWSER_TEST_F(ServiceWorkerRaceNetworkRequestBrowserTest,
+                       Subresource_FetchHandler_PassThrough) {
+  SetupAndRegisterServiceWorker();
+  WorkerRunningStatusObserver observer(public_context());
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+  observer.WaitUntilRunning();
+
+  const std::string relative_url =
+      "/service_worker/mock_response?sw_pass_through";
+  EXPECT_TRUE(ExecJs(GetPrimaryMainFrame(), "fetch('" + relative_url + "')"));
+
+  // Request count should be 1. RaceNetworkRequest + pass through request from
+  // fetch handler but the fetch handler request will reuse the response from
+  // RaceNetworkRequest.
+  //
+  // TODO(crbug.com/1420517) Add the mechanism to wait for the fetch handler
+  // completion signal to ensure the request count is exactly not incremented
+  // anymore. Currently we don't record the UMA for the fetch handler
+  // completion if the RaceNetworkRequest wins.
+  while (GetRequestCount(relative_url) != 1) {
+    base::RunLoop().RunUntilIdle();
+  }
+  EXPECT_EQ(1, GetRequestCount(relative_url));
+}
+
 class ServiceWorkerRaceNetworkRequestOriginTrialBrowserTest
     : public ServiceWorkerRaceNetworkRequestBrowserTest {
  public:
@@ -5945,6 +5972,65 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerRaceNetworkRequestOriginTrialBrowserTest,
              "=> response.text())"));
 
   run_loop.Run();
+}
+
+class ServiceWorkerRaceNetworkRequestOptOutBrowserTest
+    : public ServiceWorkerRaceNetworkRequestBrowserTest {
+ public:
+  ServiceWorkerRaceNetworkRequestOptOutBrowserTest() {
+    feature_list_.InitWithFeaturesAndParameters(
+        {{features::kServiceWorkerBypassFetchHandler,
+          {{"strategy", "optin"},
+           {"bypass_for", "all_with_race_network_request"}}},
+         {features::kServiceWorkerStaticRouter, {}}},
+        {});
+  }
+  ~ServiceWorkerRaceNetworkRequestOptOutBrowserTest() override = default;
+
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerRaceNetworkRequestOptOutBrowserTest,
+                       MainResourceFetchHandlerShouldNotRace) {
+  SetupAndRegisterServiceWorker();
+  const std::string relative_url = "/service_worker/no_race?sw_slow&sw_respond";
+  // Capture the response head.
+  const GURL test_url = embedded_test_server()->GetURL(relative_url);
+
+  NavigationHandleObserver observer(web_contents(), test_url);
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
+  EXPECT_TRUE(observer.has_committed());
+
+  // ServiceWorker will respond after the delay.
+  // If race is enabled, the response will come from the network request.
+  // This test expects not.
+  EXPECT_NE("[ServiceWorkerRaceNetworkRequest] Response from the network",
+            GetInnerText());
+  EXPECT_EQ("[ServiceWorkerRaceNetworkRequest] Response from the fetch handler",
+            GetInnerText());
+
+  // Check the response header. "X-Response-From: fetch-handler" is returned
+  // when the result from the fetch handler is used.
+  EXPECT_EQ("fetch-handler",
+            observer.GetNormalizedResponseHeader("X-Response-From"));
+
+  EXPECT_EQ(0, GetRequestCount(relative_url));
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerRaceNetworkRequestOptOutBrowserTest,
+                       SubresourceFetchHandlerShouldNotRace) {
+  SetupAndRegisterServiceWorker();
+  WorkerRunningStatusObserver observer(public_context());
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+  observer.WaitUntilRunning();
+  const std::string relative_url = "/service_worker/no_race?sw_slow&sw_respond";
+  // Fetch something from the service worker.
+  EXPECT_EQ("[ServiceWorkerRaceNetworkRequest] Response from the fetch handler",
+            EvalJs(GetPrimaryMainFrame(),
+                   "fetch('" + relative_url +
+                       "').then(response => response.text())"));
+
+  EXPECT_EQ(0, GetRequestCount(relative_url));
 }
 
 // Test class for static routing API (crbug.com/1420517) browsertest.

@@ -197,16 +197,14 @@ const std::vector<SearchConcept>& GetOnStartupSearchConcepts() {
 void AddAppManagementStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"appManagementAppDetailsTitle", IDS_APP_MANAGEMENT_APP_DETAILS_TITLE},
-      {"appManagementAppDetailsTooltipSystem",
-       IDS_APP_MANAGEMENT_APP_DETAILS_TOOLTIP_SYSTEM},
+      {"appManagementAppDetailsTooltipCrosSystem",
+       IDS_APP_MANAGEMENT_APP_DETAILS_TOOLTIP_CROS_SYSTEM},
       {"appManagementAppDetailsTypeAndroid",
        IDS_APP_MANAGEMENT_APP_DETAILS_TYPE_ANDROID},
       {"appManagementAppDetailsTypeChrome",
        IDS_APP_MANAGEMENT_APP_DETAILS_TYPE_CHROME},
       {"appManagementAppDetailsTypeWeb",
        IDS_APP_MANAGEMENT_APP_DETAILS_TYPE_WEB},
-      {"appManagementAppDetailsTypeSystem",
-       IDS_APP_MANAGEMENT_APP_DETAILS_TYPE_SYSTEM},
       {"appManagementAppDetailsTypeCrosSystem",
        IDS_APP_MANAGEMENT_APP_DETAILS_TYPE_CROS_SYSTEM},
       {"appManagementAppDetailsInstallSourceWebStore",

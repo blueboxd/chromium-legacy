@@ -32,7 +32,6 @@
 #include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/stop_source.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/sync_util.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/engine_components_factory_impl.h"
@@ -47,6 +46,7 @@
 #include "components/sync/service/configure_context.h"
 #include "components/sync/service/sync_api_component_factory.h"
 #include "components/sync/service/sync_auth_manager.h"
+#include "components/sync/service/sync_prefs.h"
 #include "components/sync/service/sync_type_preference_provider.h"
 #include "components/sync/service/trusted_vault_histograms.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -65,10 +65,6 @@ constexpr base::TimeDelta kRecordDownloadStatusTimeout = base::Seconds(30);
 
 constexpr char kModelTypeReachedUpToDateHistogramPrefix[] =
     "Sync.ModelTypeUpToDateTime";
-
-BASE_FEATURE(kReportPendingDownloadDuringFirstSync,
-             "ReportPendingDownloadDuringFirstSync",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // The initial state of sync, for the Sync.InitialState2 histogram. Even if
 // this value is CAN_START, sync startup might fail for reasons that we may
@@ -296,6 +292,8 @@ void SyncServiceImpl::Initialize() {
       GetSyncAccountStateForPrefs());
 
   if (!IsLocalSyncEnabled()) {
+    // TODO(crbug.com/1454037): Record these histograms only if
+    // `is_regular_profile_for_uma_` is true.
     const bool account_info_fully_loaded =
         auth_manager_->IsActiveAccountInfoFullyLoaded();
     base::UmaHistogramBoolean("Sync.Startup.AccountInfoFullyLoaded",
@@ -308,8 +306,13 @@ void SyncServiceImpl::Initialize() {
 
   // If sync is disabled permanently, clean up old data that may be around (e.g.
   // crash during signout).
+  // TODO(crbug.com/1456707): The IsActiveAccountInfoFullyLoaded() here
+  // shouldn't be necessary - the signin state is known even before refresh
+  // tokens are fully loaded. But on ChromeOS-Ash, on the very first startup of
+  // a fresh profile, the signed-in account isn't known yet.
   if (HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY) ||
-      HasDisableReason(DISABLE_REASON_NOT_SIGNED_IN)) {
+      (HasDisableReason(DISABLE_REASON_NOT_SIGNED_IN) &&
+       auth_manager_->IsActiveAccountInfoFullyLoaded())) {
     StopAndClear();
   }
 
@@ -339,7 +342,7 @@ void SyncServiceImpl::Initialize() {
     // Call Stop() on controllers for non-preferred types to clear metadata.
     // This allows clearing metadata for types disabled in previous run early-on
     // during initialization.
-    ModelTypeSet preferred_types = GetDataTypesToConfigure();
+    ModelTypeSet preferred_types = GetPreferredDataTypes();
     for (auto& [type, controller] : data_type_controllers_) {
       if (!preferred_types.Has(type)) {
         controller->Stop(CLEAR_METADATA, base::DoNothing());
@@ -598,6 +601,8 @@ void SyncServiceImpl::Shutdown() {
 
   DCHECK(!data_type_manager_);
   data_type_controllers_.clear();
+
+  crypto_.StopObservingTrustedVaultClient();
 
   // All observers must be gone now: All KeyedServices should have unregistered
   // their observers already before, in their own Shutdown(), and all others
@@ -1282,10 +1287,6 @@ bool SyncServiceImpl::IsSyncFeatureDisabledViaDashboard() const {
 
 bool SyncServiceImpl::CanConfigureDataTypes(
     bool bypass_setup_in_progress_check) const {
-  // TODO(crbug.com/856179): Arguably, IsSetupInProgress() shouldn't prevent
-  // configuring data types in transport mode, but at least for now, it's
-  // easier to keep it like this. Changing this will likely require changes to
-  // the setup UI flow.
   return data_type_manager_ &&
          (bypass_setup_in_progress_check || !IsSetupInProgress());
 }
@@ -1330,18 +1331,21 @@ base::Time SyncServiceImpl::GetLastSyncedTimeForDebugging() const {
   return engine_->GetLastSyncedTimeForDebugging();
 }
 
-void SyncServiceImpl::OnPreferredDataTypesPrefChange() {
+void SyncServiceImpl::OnPreferredDataTypesPrefChange(
+    bool payments_integration_enabled_changed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!engine_ && !HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR)) {
-    return;
-  }
 
   if (data_type_manager_) {
     data_type_manager_->ResetDataTypeErrors();
   }
 
   ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
+
+  if (payments_integration_enabled_changed) {
+    for (SyncServiceObserver& observer : *observers_) {
+      observer.OnSyncPaymentsIntegrationEnabledChanged(this);
+    }
+  }
 }
 
 SyncClient* SyncServiceImpl::GetSyncClientForTest() {
@@ -1398,7 +1402,18 @@ bool SyncServiceImpl::HasObserver(const SyncServiceObserver* observer) const {
 
 ModelTypeSet SyncServiceImpl::GetPreferredDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return user_settings_->GetPreferredDataTypes();
+  ModelTypeSet types = user_settings_->GetPreferredDataTypes();
+  // SyncUserSettings already filters out UserSelectableTypes that aren't
+  // supported in transport mode. However, there are two reasons why the
+  // ModelTypes still need to be filtered here:
+  // 1) For some UserSelectableTypes, some of their ModelTypes are supported
+  //    while others aren't.
+  // 2) Some ModelTypes implement additional preconditions in
+  //    ShouldRunInTransportOnlyMode() (e.g. related to passphrase type).
+  if (UseTransportOnlyMode()) {
+    types = Intersection(types, GetModelTypesForTransportOnlyMode());
+  }
+  return types;
 }
 
 ModelTypeSet SyncServiceImpl::GetActiveDataTypes() const {
@@ -1419,8 +1434,7 @@ ModelTypeSet SyncServiceImpl::GetTypesWithPendingDownloadForInitialSync()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (base::FeatureList::IsEnabled(kReportPendingDownloadDuringFirstSync) &&
-      GetTransportState() == TransportState::INITIALIZING &&
+  if (GetTransportState() == TransportState::INITIALIZING &&
       engine_->GetBirthday().empty()) {
     CHECK(!data_type_manager_);
     // The engine is initializing for the very first sync (usually after
@@ -1481,7 +1495,7 @@ void SyncServiceImpl::ConfigureDataTypeManager(ConfigureReason reason) {
   if (use_transport_only_mode) {
     configure_context.sync_mode = SyncMode::kTransportOnly;
   }
-  data_type_manager_->Configure(GetDataTypesToConfigure(), configure_context);
+  data_type_manager_->Configure(GetPreferredDataTypes(), configure_context);
 
   // Record in UMA whether we're configuring the full Sync feature or only the
   // transport.
@@ -1497,6 +1511,7 @@ void SyncServiceImpl::ConfigureDataTypeManager(ConfigureReason reason) {
 
   // Only if it's the full Sync feature, also record the user's choice of data
   // types.
+  // TODO(crbug.com/1431212): Record the selected types in transport mode too.
   if (!use_transport_only_mode) {
     bool sync_everything = sync_prefs_.HasKeepEverythingSynced();
     base::UmaHistogramBoolean("Sync.SyncEverything2", sync_everything);
@@ -1570,15 +1585,6 @@ ModelTypeSet SyncServiceImpl::GetModelTypesForTransportOnlyMode() const {
   return allowed_types;
 }
 
-ModelTypeSet SyncServiceImpl::GetDataTypesToConfigure() const {
-  ModelTypeSet types = GetPreferredDataTypes();
-  // In transport-only mode, only a subset of data types is supported.
-  if (UseTransportOnlyMode()) {
-    types = Intersection(types, GetModelTypesForTransportOnlyMode());
-  }
-  return types;
-}
-
 void SyncServiceImpl::UpdateDataTypesForInvalidations() {
   // Wait for configuring data types. This is needed to consider proxy types
   // which become known during configuration.
@@ -1590,7 +1596,7 @@ void SyncServiceImpl::UpdateDataTypesForInvalidations() {
   // No need to register invalidations for non-protocol or commit-only types.
   // TODO(crbug.com/1260836): consider DataTypeManager::GetActiveDataTypes() to
   // unsubscribe from failed data types.
-  ModelTypeSet types = Intersection(GetDataTypesToConfigure(), ProtocolTypes());
+  ModelTypeSet types = Intersection(GetPreferredDataTypes(), ProtocolTypes());
   types.RemoveAll(CommitOnlyTypes());
   if (!sessions_invalidations_enabled_) {
     types.Remove(SESSIONS);
@@ -1959,7 +1965,7 @@ SyncService::ModelTypeDownloadStatus SyncServiceImpl::GetDownloadStatusForImpl(
 
   // TODO(crbug.com/1425026): check whether this works when local sync is
   // enabled.
-  if (!GetDisableReasons().Empty() || !GetDataTypesToConfigure().Has(type)) {
+  if (!GetDisableReasons().Empty() || !GetPreferredDataTypes().Has(type)) {
     DVLOG(1)
         << "Sync or " << ModelTypeToDebugString(type)
         << " is disabled hence updates won't be downloaded from the server";
@@ -2048,23 +2054,6 @@ void SyncServiceImpl::SetInvalidationsForSessionsEnabled(bool enabled) {
 
   sessions_invalidations_enabled_ = enabled;
   UpdateDataTypesForInvalidations();
-}
-
-void SyncServiceImpl::AddTrustedVaultDecryptionKeysFromWeb(
-    const std::string& gaia_id,
-    const std::vector<std::vector<uint8_t>>& keys,
-    int last_key_version) {
-  sync_client_->GetTrustedVaultClient()->StoreKeys(gaia_id, keys,
-                                                   last_key_version);
-}
-
-void SyncServiceImpl::AddTrustedVaultRecoveryMethodFromWeb(
-    const std::string& gaia_id,
-    const std::vector<uint8_t>& public_key,
-    int method_type_hint,
-    base::OnceClosure callback) {
-  sync_client_->GetTrustedVaultClient()->AddTrustedRecoveryMethod(
-      gaia_id, public_key, method_type_hint, std::move(callback));
 }
 
 void SyncServiceImpl::StopAndClear() {

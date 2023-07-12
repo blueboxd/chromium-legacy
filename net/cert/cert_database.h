@@ -5,13 +5,12 @@
 #ifndef NET_CERT_CERT_DATABASE_H_
 #define NET_CERT_CERT_DATABASE_H_
 
-#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "net/base/net_export.h"
 
 namespace base {
-template <typename T> struct DefaultSingletonTraits;
 
 template <class ObserverType>
 class ObserverListThreadSafe;
@@ -64,6 +63,8 @@ class NET_EXPORT CertDatabase {
     kMaxValue = kClientCert
   };
 
+  ~CertDatabase() = delete;
+
   // Returns the CertDatabase singleton.
   static CertDatabase* GetInstance();
 
@@ -80,10 +81,9 @@ class NET_EXPORT CertDatabase {
   void RemoveObserver(Observer* observer);
 
 #if BUILDFLAG(IS_MAC)
-  // Start observing and forwarding events from Keychain services on the
-  // current thread. Current thread must have an associated CFRunLoop,
-  // which means that this must be called from a MessageLoop of TYPE_UI.
-  void StartListeningForKeychainEvents();
+  // Start observing and forwarding events from Keychain services. May be
+  // called multiple times, and may be called on any thread.
+  static void StartListeningForKeychainEvents();
 #endif
 
   // Synthetically injects notifications to all observers. In general, this
@@ -93,20 +93,11 @@ class NET_EXPORT CertDatabase {
   void NotifyObserversClientCertStoreChanged();
 
  private:
-  friend struct base::DefaultSingletonTraits<CertDatabase>;
+  friend base::NoDestructor<CertDatabase>;
 
   CertDatabase();
-  ~CertDatabase();
 
   const scoped_refptr<base::ObserverListThreadSafe<Observer>> observer_list_;
-
-#if BUILDFLAG(IS_MAC)
-  void ReleaseNotifier();
-
-  class Notifier;
-  friend class Notifier;
-  raw_ptr<Notifier, DanglingUntriaged> notifier_ = nullptr;
-#endif
 };
 
 }  // namespace net

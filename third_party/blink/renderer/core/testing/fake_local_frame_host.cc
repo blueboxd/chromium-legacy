@@ -35,6 +35,12 @@ void FakeLocalFrameHost::FullscreenStateChanged(
     bool is_fullscreen,
     mojom::blink::FullscreenOptionsPtr options) {}
 
+#if defined(USE_AURA)
+void FakeLocalFrameHost::Maximize() {}
+void FakeLocalFrameHost::Minimize() {}
+void FakeLocalFrameHost::Restore() {}
+#endif
+
 void FakeLocalFrameHost::RegisterProtocolHandler(const WTF::String& scheme,
                                                  const ::blink::KURL& url,
                                                  bool user_gesture) {}

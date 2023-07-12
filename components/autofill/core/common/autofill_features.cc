@@ -126,6 +126,20 @@ const base::FeatureParam<bool> kAutofillImportFromAutocompleteUnrecognized{
     &kAutofillPredictionsForAutocompleteUnrecognized,
     "import_from_autocomplete_unrecognized", false};
 
+// When enabled, an entry is added to the context menu of ac=unrecognized fields
+// which allows triggering Autofill suggestions. Selecting such a suggestion
+// fills all address fields in the field's section, independently of the
+// autocomplete attribute.
+// TODO(crbug.com/1446318): Remove when launched.
+BASE_FEATURE(kAutofillFallbackForAutocompleteUnrecognized,
+             "AutofillFallbackForAutocompleteUnrecognized",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+// If true, the context menu entry is shown for all address fields.
+const base::FeatureParam<bool>
+    kAutofillFallForAutocompleteUnrecognizedOnAllAddressField{
+        &kAutofillFallbackForAutocompleteUnrecognized,
+        "show_on_all_address_fields", false};
+
 // Kill switch for Autofill filling.
 BASE_FEATURE(kAutofillDisableFilling,
              "AutofillDisableFilling",
@@ -355,6 +369,13 @@ BASE_FEATURE(kAutofillIgnoreUnmappableAutocompleteValues,
              "AutofillIgnoreUnmappableAutocompleteValues",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, some local heuristic predictions will take precedence over the
+// autocomplete attribute and server predictions, when determining a field's
+// overall type.
+BASE_FEATURE(kAutofillLocalHeuristicsOverrides,
+             "AutofillLocalHeuristicsOverrides",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // When enabled, only changed values are highlighted in preview mode.
 // TODO(crbug/1248585): Remove when launched.
 BASE_FEATURE(kAutofillHighlightOnlyChangedValuesInPreviewMode,
@@ -423,15 +444,6 @@ BASE_FEATURE(kAutofillParseNameAsAutocompleteType,
 // TODO(crbug.com/1317961): Remove once launched.
 BASE_FEATURE(kAutofillAlwaysParsePlaceholders,
              "AutofillAlwaysParsePlaceholders",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// If enabled, the same 500ms threshold will be applied for accepting keyboard
-// enter strokes that is already applied to mouse and gesture events.
-// It will also be applied to tap events on popup menus on Android (but not the
-// keyboard accessory, at the screen is outside of the render surface).
-// TODO(crbug.com/1418364): Remove once launched.
-BASE_FEATURE(kAutofillPopupUseThresholdForKeyboardAndMobileAccept,
-             "AutofillPopupUseThresholdForKeyboardAndMobileAccept",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If the feature is enabled, FormTracker's probable-form-submission detection
@@ -545,10 +557,6 @@ const base::FeatureParam<bool> kAutofillSectioningModeCreateGaps{
     &kAutofillUseParameterizedSectioning, "create_gaps", false};
 const base::FeatureParam<bool> kAutofillSectioningModeExpand{
     &kAutofillUseParameterizedSectioning, "expand_assigned_sections", false};
-const base::FeatureParam<bool>
-    kAutofillSectioningModeExpandOverUnfocusableFields{
-        &kAutofillUseParameterizedSectioning, "expand_over_unfocsuable_fields",
-        false};
 
 // Controls whether to use form renderer IDs to find the form which contains the
 // field that was last interacted with in
@@ -609,7 +617,7 @@ BASE_FEATURE(kAutofillUseUpdatedRequiredFieldsForAddressImport,
 // surface for credit cards on Android.
 BASE_FEATURE(kAutofillVirtualCardsOnTouchToFillAndroid,
              "AutofillVirtualCardsOnTouchToFillAndroid",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_ANDROID)
 // When enabled, Autofill suggestions are displayed in the keyboard accessory
@@ -640,13 +648,6 @@ const char kAutofillUseMobileLabelDisambiguationParameterName[] = "variant";
 const char kAutofillUseMobileLabelDisambiguationParameterShowAll[] = "show-all";
 const char kAutofillUseMobileLabelDisambiguationParameterShowOne[] = "show-one";
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-
-#if BUILDFLAG(IS_ANDROID)
-bool IsAutofillManualFallbackEnabled() {
-  return base::FeatureList::IsEnabled(kAutofillKeyboardAccessory) &&
-         base::FeatureList::IsEnabled(kAutofillManualFallbackAndroid);
-}
-#endif  // BUILDFLAG(IS_ANDROID)
 
 namespace test {
 

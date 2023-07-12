@@ -1576,7 +1576,7 @@ NavigationRequest::NavigationRequest(
 
   if (GetInitiatorFrameToken().has_value()) {
     RenderFrameHostImpl* initiator_rfh = RenderFrameHostImpl::FromFrameToken(
-        GetInitiatorProcessID(), GetInitiatorFrameToken().value());
+        GetInitiatorProcessId(), GetInitiatorFrameToken().value());
     if (initiator_rfh)
       initiator_document_ = initiator_rfh->GetWeakDocumentPtr();
   }
@@ -1982,7 +1982,10 @@ NavigationRequest::~NavigationRequest() {
     loading_mem_tracker_->Cancel();
   ResetExpectedProcess();
   if (!HasCommitted()) {
-    if (state_ >= WILL_START_NAVIGATION) {
+    // If we're before WILL_START_NAVIGATION, we haven't reported request start
+    // to DevTools yet.
+    // If we're in WILL_FAIL_REQUEST, the failure has been reported already.
+    if (state_ >= WILL_START_NAVIGATION && state_ != WILL_FAIL_REQUEST) {
       devtools_instrumentation::OnNavigationRequestFailed(
           *this, network::URLLoaderCompletionStatus(net::ERR_ABORTED));
     }
@@ -6299,9 +6302,20 @@ NavigationRequest::CheckCSPEmbeddedEnforcement() {
   const network::mojom::AllowCSPFromHeaderValue* allow_csp_from =
       response() ? response()->parsed_headers->allow_csp_from.get() : nullptr;
 
+  const url::Origin& request_origin =
+      GetParentFrame()->GetLastCommittedOrigin();
+
   if (network::AllowsBlanketEnforcementOfRequiredCSP(
-          GetParentFrame()->GetLastCommittedOrigin(), GetURL(), allow_csp_from,
-          required_csp_)) {
+          request_origin, GetURL(), allow_csp_from, required_csp_)) {
+    if (request_origin.IsSameOriginWith(GetURL()) && response() &&
+        !network::AllowCspFromAllowOrigin(request_origin, allow_csp_from) &&
+        !network::Subsumes(
+            *required_csp_,
+            response()->parsed_headers->content_security_policy)) {
+      GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+          GetParentFrame(),
+          blink::mojom::WebFeature::kCSPEESameOriginBlanketEnforcement);
+    }
     // Enforce the required CSPs on the frame by passing them down to blink.
     policy_container_builder_->AddContentSecurityPolicy(required_csp_->Clone());
     return CSPEmbeddedEnforcementResult::ALLOW_RESPONSE;
@@ -7044,7 +7058,7 @@ bool NavigationRequest::NeedsUrlLoader() {
          !is_mhtml_subframe_loaded_from_achive;
 }
 
-void NavigationRequest::UpdateLocalNetworkRequestPolicy() {
+void NavigationRequest::UpdatePrivateNetworkRequestPolicy() {
   // It is useless to update this state for same-document navigations as well
   // as pages served from the back-forward cache or prerendered pages.
   DCHECK(!IsSameDocument());
@@ -7060,7 +7074,7 @@ void NavigationRequest::UpdateLocalNetworkRequestPolicy() {
       frame_tree_node_->navigator().controller().GetBrowserContext();
 
   url::Origin origin = GetOriginToCommit().value();
-  if (client->ShouldAllowInsecureLocalNetworkRequests(context, origin)) {
+  if (client->ShouldAllowInsecurePrivateNetworkRequests(context, origin)) {
     // The content browser client decided to make an exception for this URL.
     local_network_request_policy_ =
         network::mojom::LocalNetworkRequestPolicy::kAllow;
@@ -7150,7 +7164,7 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
   }
 
   if (!IsSameDocument() && !IsPageActivation())
-    UpdateLocalNetworkRequestPolicy();
+    UpdatePrivateNetworkRequestPolicy();
 
   RenderFrameHostImpl* previous_render_frame_host =
       frame_tree_node_->current_frame_host();
@@ -7548,14 +7562,8 @@ NavigationRequest::MakeDidCommitProvisionalLoadParamsForActivation() {
   CHECK(params);
 
   if (IsPrerenderedPageActivation()) {
-    if (prerender_navigation_utils::IsDisallowedHttpResponseCode(
-            params->http_status_code)) {
-      // TODO(https://crbug.com/1441842) Replace with CHECK when the
-      // investigation is done.
-      SCOPED_CRASH_KEY_NUMBER("PrerenderUnexpected", "http_status_code",
-                              params->http_status_code);
-      NOTREACHED_NORETURN();
-    }
+    CHECK(!prerender_navigation_utils::IsDisallowedHttpResponseCode(
+        params->http_status_code));
   } else {
     DCHECK_EQ(params->http_status_code, net::HTTP_OK);
   }
@@ -7963,7 +7971,7 @@ NavigationRequest::GetInitiatorFrameToken() {
   return initiator_frame_token_;
 }
 
-int NavigationRequest::GetInitiatorProcessID() {
+int NavigationRequest::GetInitiatorProcessId() {
   return initiator_process_id_;
 }
 
@@ -8651,6 +8659,15 @@ void NavigationRequest::ComputePoliciesToCommit() {
 
   policy_container_builder_->SetCrossOriginEmbedderPolicy(
       ComputeCrossOriginEmbedderPolicy());
+
+  // COOP origins always match after a main frame navigation, so we only need
+  // to check sub frames. The main frame could be about:blank so we still might
+  // inherit `true`.
+  policy_container_builder_->SetAllowCrossOriginIsolation(
+      IsInMainFrame() || GetParentFrame()
+                             ->policy_container_host()
+                             ->policies()
+                             .allow_cross_origin_isolation);
 
   DCHECK(commit_params_);
   DCHECK(!HasCommitted());

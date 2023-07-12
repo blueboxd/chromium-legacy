@@ -1427,8 +1427,10 @@ void WizardController::OnConsolidatedConsentScreenExit(
   OnScreenExit(ConsolidatedConsentScreenView::kScreenId,
                ConsolidatedConsentScreen::GetResultString(result));
 
-  if (features::IsOobeDrivePinningEnabled()) {
-    GetScreen<DrivePinningScreen>()->CalculateRequiredSpace();
+  if (features::IsOobeDrivePinningEnabled() &&
+      !GetScreen<DrivePinningScreen>()->CalculateRequiredSpace()) {
+    LOG(ERROR)
+        << "DriveFS bulk-pinning manager cannot calculate the required space";
   }
 
   if (wizard_context_->is_cloud_ready_update_flow) {
@@ -1755,6 +1757,9 @@ void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
         demo_setup_controller_.reset();
         ShowWelcomeScreen();
         break;
+      case NetworkScreen::Result::QUICK_START:
+        NOTREACHED();
+        break;
     }
     return;
   }
@@ -1771,6 +1776,9 @@ void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
       case NetworkScreen::Result::BACK:
         ShowOsTrialScreen();
         break;
+      case NetworkScreen::Result::QUICK_START:
+        NOTREACHED();
+        break;
     }
     return;
   }
@@ -1785,6 +1793,9 @@ void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
       break;
     case NetworkScreen::Result::BACK:
       ShowWelcomeScreen();
+      break;
+    case NetworkScreen::Result::QUICK_START:
+      ShowQuickStartScreen();
       break;
   }
 }

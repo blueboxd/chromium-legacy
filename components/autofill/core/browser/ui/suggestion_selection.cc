@@ -52,6 +52,24 @@ std::u16string GetInfoInOneLine(const AutofillProfile* profile,
 
   return profile->GetInfo(type, app_locale);
 }
+
+// Creates the suggestion that will open the delete address profile dialog.
+// TODO(crbug.com/1459990): Use this once the delete the new popup with submenus
+// implementation is complete.
+Suggestion GetDeleteAddressProfileSuggestion(Suggestion::BackendId backend_id) {
+  Suggestion delete_address_profile_suggestion(l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_DELETE_ADDRESS_PROFILE_POPUP_OPTION_SELECTED));
+
+  delete_address_profile_suggestion.popup_item_id =
+      PopupItemId::kDeleteAddressProfile;
+  delete_address_profile_suggestion.icon = "deleteIcon";
+  delete_address_profile_suggestion.payload = backend_id;
+  delete_address_profile_suggestion
+      .acceptance_a11y_announcement = l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_A11Y_ANNOUNCE_DELETE_ADDRESS_PROFILE_POPUP_OPTION_SELECTED);
+  return delete_address_profile_suggestion;
+}
+
 }  // namespace
 
 // As of November 2018, 50 profiles should be more than enough to cover at least
@@ -94,8 +112,7 @@ std::vector<Suggestion> GetPrefixMatchedSuggestions(
     // work and a home address would appear twice but a click would be a noop.
     // TODO(fhorschig): Consider refilling form instead (at least on Android).
 #if BUILDFLAG(IS_ANDROID)
-    if (base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory) &&
-        field_is_autofilled &&
+    if (field_is_autofilled &&
         profile->GetRawInfo(type.GetStorableType()) == raw_field_contents) {
       continue;
     }

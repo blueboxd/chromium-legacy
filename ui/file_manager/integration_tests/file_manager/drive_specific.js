@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ENTRIES, EntryType, expectHistogramTotalCount, getCaller, getUserActionCount, pending, repeatUntil, RootPath, sendTestMessage, TestEntryInfo} from '../test_util.js';
+import {addEntries, createTestFile, ENTRIES, EntryType, expectHistogramTotalCount, getCaller, getUserActionCount, pending, repeatUntil, RootPath, sendTestMessage, TestEntryInfo} from '../test_util.js';
 import {testcase} from '../testcase.js';
 
 import {navigateWithDirectoryTree, remoteCall, setupAndWaitUntilReady, waitForMediaApp} from './background.js';
@@ -915,17 +915,17 @@ testcase.driveEncryptionBadge = async () => {
   const appId = await setupAndWaitUntilReady(
       RootPath.DRIVE, [], [ENTRIES.hello, ENTRIES.testCSEFile]);
 
-  // Check: non-encrypted file doesn't have a badge.
-  const plain = await remoteCall.waitForElementStyles(
-      appId, '#file-list [file-name="hello.txt"] .encryption-status',
-      ['display']);
-  chrome.test.assertEq('none', plain.styles.display);
-
   // Check: encrypted file has a badge.
   const encrypted = await remoteCall.waitForElementStyles(
-      appId, '#file-list [file-name="test-encrypted.txt"] .encryption-status',
+      appId, '#file-list [file-name="test-encrypted.txt"] .encrypted-icon',
       ['display']);
-  chrome.test.assertEq('flex', encrypted.styles.display);
+  chrome.test.assertNe('none', encrypted.styles.display);
+
+  // Check: non-encrypted file doesn't have a badge.
+  const plain = await remoteCall.callRemoteTestUtil(
+      'deepQueryAllElements', appId,
+      ['#file-list [file-name="hello.txt"] .encrypted-icon', []]);
+  chrome.test.assertEq(0, plain.length);
 };
 
 /**
@@ -1707,4 +1707,156 @@ testcase.driveCantPinItemsShouldHaveClassNameAndGetUpdatedWhenCanPin =
   // Wait for the `.cant-pin` class to be removed.
   await remoteCall.waitForElement(
       appId, '#file-list [file-name="text.txt"]:not(.cant-pin)');
+};
+
+/**
+ * Tests that items that are cached outside of their virtual list get their
+ * inline sync status updated when they get attached back to the DOM.
+ */
+testcase.driveItemsOutOfViewportShouldUpdateTheirSyncStatus = async () => {
+  const entries = [];
+  const emptyFile = createTestFile('text.txt');
+  for (let i = 0; i < 50; ++i) {
+    entries.push(emptyFile.cloneWithNewName(`File ${i}`));
+  }
+
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE, [], entries);
+
+  // Sort the table by the `name` column.
+  await remoteCall.waitAndClickElement(
+      appId, ['.table-header-cell:nth-of-type(1)']);
+
+  // Wait for the first entry to appear in the file list.
+  const firstFileName = entries[0].nameText;
+  await remoteCall.waitForElement(
+      appId, `#file-list [file-name="${firstFileName}"]`);
+
+  // Scroll to the bottom of the virtual list which ensures the first element
+  // should be removed from the DOM and cached.
+  await remoteCall.callRemoteTestUtil(
+      'setScrollTop', appId, ['#file-list', 10000]);
+
+  await remoteCall.waitForElementLost(
+      appId, `#file-list [file-name="${firstFileName}"]`);
+  const lastFileName = entries[entries.length - 1].nameText;
+  await remoteCall.waitForElement(
+      appId, `#file-list [file-name="${lastFileName}"]`);
+
+  // Send a file sync progress for the first file name.
+  await sendTestMessage({
+    name: 'setDriveSyncProgress',
+    path: `/root/${firstFileName}`,
+    progress: 50,
+  });
+
+  // Send a file sync progress event for the last file name to use as a marker
+  // to know when the first file has made it to 50% pie progress.
+  await sendTestMessage({
+    name: 'setDriveSyncProgress',
+    path: `/root/${lastFileName}`,
+    progress: 50,
+  });
+
+  const inlineSyncSelector = fileName => `#file-list [file-name="${
+      fileName}"][data-sync-status=in_progress] .progress`;
+
+  // Wait for the progress to appear on the last file and assert it received the
+  // correct progress value.
+  let lastFileInlineStatus =
+      await remoteCall.waitForElement(appId, inlineSyncSelector(lastFileName));
+  chrome.test.assertEq(
+      Number(lastFileInlineStatus.attributes['progress']), 0.5);
+
+  // Scroll back up to the first element.
+  await remoteCall.callRemoteTestUtil('setScrollTop', appId, ['#file-list', 0]);
+
+  // Assert that the first element has the 50% progress as the event was sent
+  // before the last file event was sent.
+  const firstFileInlineStatus =
+      await remoteCall.waitForElement(appId, inlineSyncSelector(firstFileName));
+  chrome.test.assertEq(
+      Number(firstFileInlineStatus.attributes['progress']), 0.5);
+
+  // Switch to grid view.
+  await remoteCall.waitAndClickElement(appId, '#view-button');
+
+  // Wait for the first entry to appear in the file grid.
+  await remoteCall.waitForElement(
+      appId, `grid#file-list [file-name="${firstFileName}"]`);
+
+  // Scroll back down to the last element.
+  await remoteCall.callRemoteTestUtil(
+      'setScrollTop', appId, ['grid#file-list', 10000]);
+
+  // Assert that the last element still has 50% progress.
+  lastFileInlineStatus =
+      await remoteCall.waitForElement(appId, inlineSyncSelector(lastFileName));
+  chrome.test.assertEq(
+      Number(lastFileInlineStatus.attributes['progress']), 0.5);
+};
+
+/**
+ * Tests that when bulk pinning is enabled the queued state is shown for all
+ * files that the PinManager is tracking but has not yet pinned.
+ */
+testcase.driveAllItemsShouldBeQueuedIfTrackedByPinManager = async () => {
+  // Stop the PinManager from pinning files.
+  await sendTestMessage({name: 'setBulkPinningShouldPinFiles', enabled: false});
+
+  // Add a single empty file and load Files app up at the Drive root.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.hello]);
+
+  // Enable bulk pinning functionality.
+  await remoteCall.setSpacedFreeSpace(4n << 30n);
+  await sendTestMessage({name: 'setBulkPinningEnabledPref', enabled: true});
+
+  // Wait for bulk pinning to enter the syncing stage.
+  await remoteCall.waitForBulkPinningStage('Syncing');
+
+  // The file should have a queued despite never getting set to pinned.
+  await remoteCall.waitForElement(
+      appId, '#file-list [file-name="hello.txt"][data-sync-status=queued]');
+
+  // Disable bulk pinning and ensure the sync status gets removed (i.e. returns
+  // to not found).
+  await sendTestMessage({name: 'setBulkPinningEnabledPref', enabled: false});
+  await remoteCall.waitForElement(
+      appId, '#file-list [file-name="hello.txt"][data-sync-status=not_found]');
+
+  // Ensure the pin manager pins files then re-enable the bulk pinning
+  // preferece. The hello file should be pinned now.
+  await sendTestMessage({name: 'setBulkPinningShouldPinFiles', enabled: true});
+  await sendTestMessage({name: 'setBulkPinningEnabledPref', enabled: true});
+  await remoteCall.waitForElement(
+      appId,
+      '#file-list [file-name="hello.txt"][data-sync-status=not_found].pinned');
+};
+
+/**
+ * Tests that items that have the `dirty` metadata flag set to true have their
+ * sync_status property returned as "QUEUED".
+ */
+testcase.driveDirtyItemsShouldBeDisplayedAsQueued = async () => {
+  // Add a single test file with the dirty metadata set to "true" and load Files
+  // app up at the Drive root.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.dirty]);
+
+  // The file should be displayed as "queued" despite it not having received any
+  // progress events yet because dirty=true.
+  await remoteCall.waitForElement(
+      appId, '#file-list [file-name="dirty.txt"][data-sync-status=queued]');
+
+  // Fake the file starting to sync.
+  await sendTestMessage({
+    name: 'setDriveSyncProgress',
+    path: `/root/${ENTRIES.dirty.targetPath}`,
+    progress: 50,
+  });
+
+  // Verify that the sync_state transitions to "in_progress".
+  await remoteCall.waitForElement(
+      appId,
+      '#file-list [file-name="dirty.txt"][data-sync-status=in_progress]');
 };

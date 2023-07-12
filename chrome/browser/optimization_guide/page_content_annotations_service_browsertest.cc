@@ -19,6 +19,7 @@
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/history/core/test/history_service_test_util.h"
 #include "components/optimization_guide/content/browser/page_content_annotations_service.h"
 #include "components/optimization_guide/content/browser/test_page_content_annotator.h"
 #include "components/optimization_guide/core/execution_status.h"
@@ -326,6 +327,17 @@ class PageContentAnnotationsServiceBrowserTest : public InProcessBrowserTest {
     service->Annotate(visit);
   }
 
+  void WaitForHistoryServiceToFinish() {
+    base::RunLoop().RunUntilIdle();
+    history::HistoryService* history_service =
+        HistoryServiceFactory::GetForProfile(
+            browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS);
+    if (!history_service) {
+      return;
+    }
+    history::BlockUntilHistoryProcessesPendingRequests(history_service);
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   bool load_model_on_startup_ = true;
@@ -551,24 +563,7 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceRemoteMetadataBrowserTest,
       ->AddHintForTesting(url, proto::PAGE_ENTITIES, metadata);
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
-  RetryForHistogramUntilCountReached(
-      &histogram_tester,
-      "OptimizationGuide.PageContentAnnotationsService."
-      "ContentAnnotationsStorageStatus",
-      2);
-
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.PageContentAnnotationsService."
-      "ContentAnnotationsStorageStatus",
-      PageContentAnnotationsStorageStatus::kSuccess, 2);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.PageContentAnnotationsService."
-      "ContentAnnotationsStorageStatus.ModelAnnotations",
-      PageContentAnnotationsStorageStatus::kSuccess, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.PageContentAnnotationsService."
-      "ContentAnnotationsStorageStatus.RemoteMetadata",
-      PageContentAnnotationsStorageStatus::kSuccess, 1);
+  WaitForHistoryServiceToFinish();
 
   absl::optional<history::VisitContentAnnotations> got_content_annotations =
       GetContentAnnotationsForURL(url);
@@ -606,20 +601,7 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceRemoteMetadataBrowserTest,
       ->AddHintForTesting(url, proto::PAGE_ENTITIES, metadata);
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
-  RetryForHistogramUntilCountReached(
-      &histogram_tester,
-      "OptimizationGuide.PageContentAnnotationsService."
-      "ContentAnnotationsStorageStatus",
-      1);
-
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.PageContentAnnotationsService."
-      "ContentAnnotationsStorageStatus",
-      PageContentAnnotationsStorageStatus::kSuccess, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.PageContentAnnotationsService."
-      "ContentAnnotationsStorageStatus.ModelAnnotations",
-      PageContentAnnotationsStorageStatus::kSuccess, 1);
+  WaitForHistoryServiceToFinish();
 
   absl::optional<history::VisitContentAnnotations> got_content_annotations =
       GetContentAnnotationsForURL(url);
@@ -648,20 +630,7 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceRemoteMetadataBrowserTest,
       ->AddHintForTesting(url, proto::PAGE_ENTITIES, metadata);
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
-  RetryForHistogramUntilCountReached(
-      &histogram_tester,
-      "OptimizationGuide.PageContentAnnotationsService."
-      "ContentAnnotationsStorageStatus",
-      1);
-
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.PageContentAnnotationsService."
-      "ContentAnnotationsStorageStatus",
-      PageContentAnnotationsStorageStatus::kSuccess, 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.PageContentAnnotationsService."
-      "ContentAnnotationsStorageStatus.RemoteMetadata",
-      PageContentAnnotationsStorageStatus::kSuccess, 1);
+  WaitForHistoryServiceToFinish();
 
   absl::optional<history::VisitContentAnnotations> got_content_annotations =
       GetContentAnnotationsForURL(url);
@@ -684,10 +653,10 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceRemoteMetadataBrowserTest,
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   base::RunLoop().RunUntilIdle();
 
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.PageContentAnnotationsService."
-      "ContentAnnotationsStorageStatus.RemoteMetadata",
-      0);
+  history::VisitContentAnnotations got_content_annotations =
+      GetContentAnnotationsForURL(url).value_or(
+          history::VisitContentAnnotations());
+  EXPECT_TRUE(got_content_annotations.alternative_title.empty());
 }
 
 class PageContentAnnotationsServiceSalientImageMetadataBrowserTest
@@ -724,10 +693,10 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   base::RunLoop().RunUntilIdle();
 
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.PageContentAnnotationsService."
-      "ContentAnnotationsStorageStatus.SalientImageMetadata",
-      0);
+  history::VisitContentAnnotations got_content_annotations =
+      GetContentAnnotationsForURL(url).value_or(
+          history::VisitContentAnnotations());
+  ASSERT_FALSE(got_content_annotations.has_url_keyed_image);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -748,10 +717,10 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   base::RunLoop().RunUntilIdle();
 
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.PageContentAnnotationsService."
-      "ContentAnnotationsStorageStatus.SalientImageMetadata",
-      0);
+  history::VisitContentAnnotations got_content_annotations =
+      GetContentAnnotationsForURL(url).value_or(
+          history::VisitContentAnnotations());
+  ASSERT_FALSE(got_content_annotations.has_url_keyed_image);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -771,16 +740,7 @@ IN_PROC_BROWSER_TEST_F(
       ->AddHintForTesting(url, proto::SALIENT_IMAGE, metadata);
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
-  RetryForHistogramUntilCountReached(
-      &histogram_tester,
-      "OptimizationGuide.PageContentAnnotationsService."
-      "ContentAnnotationsStorageStatus.SalientImageMetadata",
-      1);
-
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.PageContentAnnotationsService."
-      "ContentAnnotationsStorageStatus.SalientImageMetadata",
-      PageContentAnnotationsStorageStatus::kSuccess, 1);
+  WaitForHistoryServiceToFinish();
 
   absl::optional<history::VisitContentAnnotations> got_content_annotations =
       GetContentAnnotationsForURL(url);

@@ -105,8 +105,6 @@
 #include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/common_features.h"
 #include "components/supervised_user/core/common/buildflags.h"
-#include "components/translate/content/renderer/per_frame_translate_agent.h"
-#include "components/translate/core/common/translate_util.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
@@ -670,15 +668,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
       render_frame_observer->associated_interfaces();
 
   if (!render_frame->IsInFencedFrameTree() ||
-      (base::FeatureList::IsEnabled(
-           autofill::features::kAutofillEnableWithinFencedFrame) &&
-       base::FeatureList::IsEnabled(
-           blink::features::kFencedFramesAPIChanges)) ||
-      (base::FeatureList::IsEnabled(
-           password_manager::features::
-               kEnablePasswordManagerWithinFencedFrame) &&
-       base::FeatureList::IsEnabled(
-           blink::features::kFencedFramesAPIChanges))) {
+      base::FeatureList::IsEnabled(blink::features::kFencedFramesAPIChanges)) {
     PasswordAutofillAgent* password_autofill_agent =
         new PasswordAutofillAgent(render_frame, associated_interfaces);
     PasswordGenerationAgent* password_generation_agent =
@@ -718,11 +708,6 @@ void ChromeContentRendererClient::RenderFrameCreated(
             render_frame, subresource_filter_ruleset_dealer_.get(),
             std::move(ad_resource_tracker));
     subresource_filter_agent->Initialize();
-  }
-
-  if (translate::IsSubFrameTranslationEnabled()) {
-    new translate::PerFrameTranslateAgent(
-        render_frame, ISOLATED_WORLD_ID_TRANSLATE, associated_interfaces);
   }
 
 #if !BUILDFLAG(IS_ANDROID)

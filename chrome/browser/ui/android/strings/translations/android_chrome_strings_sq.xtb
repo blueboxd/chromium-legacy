@@ -297,6 +297,7 @@ Kodet e gjendjes private përmirësojnë privatësinë në ueb dhe nuk mund të 
 <translation id="2643064289437760082">Mund t'i fshish gjithmonë të dhënat për matjen e reklamave duke fshirë të dhënat e tua të shfletimit</translation>
 <translation id="2647434099613338025">Shto gjuhën</translation>
 <translation id="2649068648233607930">Shfletuesi yt menaxhohet nga <ph name="DOMAIN" /></translation>
+<translation id="2650077116157640844">Më shumë në pajisjet e sinkronizuara</translation>
 <translation id="2650348088770008516">Shpjegimi i udhëzuesit të privatësisë u mbyll</translation>
 <translation id="2650408372219180431">Eksporto dhe fshi fjalëkalimet e ruajtura në këtë pajisje</translation>
 <translation id="2650751991977523696">Të shkarkohet skedari sërish?</translation>
@@ -445,7 +446,6 @@ Kodet e gjendjes private përmirësojnë privatësinë në ueb dhe nuk mund të 
 <translation id="3421726884497337397">Zgjidh se kur do t'i bllokosh kukit e palëve të treta</translation>
 <translation id="3428747202529429621">Të mban të sigurt në Chrome dhe mund të përdoret për të përmirësuar sigurinë tënde në aplikacionet e tjera të Google kur je i identifikuar</translation>
 <translation id="3429160811076349561">Veçoritë e provës janë joaktive</translation>
-<translation id="3432973700170747422">Fshi 15 minutat e fundit</translation>
 <translation id="3435465986463792564">Ke shumë dritare? Mund t'i menaxhosh ato nga këtu</translation>
 <translation id="3435738964857648380">Siguria</translation>
 <translation id="3443221991560634068">Ringarko faqen aktuale</translation>
@@ -479,9 +479,9 @@ Kodet e gjendjes private përmirësojnë privatësinë në ueb dhe nuk mund të 
 <translation id="3587596251841506391">Ndihmo në përmirësimin e sigurisë në ueb</translation>
 <translation id="3597179440835065298">Merr sugjerime më të mira</translation>
 <translation id="3602290021589620013">Pamje paraprake</translation>
-<translation id="360901359071773787">Të fshihen 15 minutat e fundit?</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3622349720008044802">Menaxho dritaret</translation>
+<translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{+ 1 sajt}other{+ # sajte}}</translation>
 <translation id="3631987586758005671">Po ndahet te <ph name="DEVICE_NAME" /></translation>
 <translation id="363596933471559332">Identifikohu automatikisht në sajtet e uebit duke përdorur kredencialet e ruajtura. Kur funksioni është i çaktivizuar, do të të kërkohet gjithmonë verifikimi  përpara se të identifikohesh në një sajt uebi.</translation>
 <translation id="3636940436873918441">Gjuhët e preferuara</translation>
@@ -750,6 +750,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5010886807652684893">Pamja vizuale</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> dëshiron që të lidhet</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">15 minutat e fundit</translation>
 <translation id="5032430150487044192">Kodi QR nuk mund të krijohet</translation>
 <translation id="5039804452771397117">Lejo</translation>
 <translation id="5040262127954254034">Privatësia</translation>
@@ -768,7 +769,6 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5118713593561876160">Interesat</translation>
 <translation id="5122378528687922675">Nëse ke nevojë për ndihmë, pyet prindin tënd (<ph name="PARENT_NAME_1" /> ose <ph name="PARENT_NAME_2" />)</translation>
 <translation id="5123685120097942451">Skeda "e fshehtë"</translation>
-<translation id="5126510351761255129">Verifiko kartën tënde</translation>
 <translation id="5132942445612118989">Sinkronizo fjalëkalimet, historikun etj. në të gjitha pajisjet</translation>
 <translation id="5139940364318403933">Mëso se si të përdorësh "Diskun e Google"</translation>
 <translation id="5142281402488957685">Për historitë e reja, tërhiq poshtë për të rifreskuar</translation>
@@ -928,7 +928,6 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="6011308810877101166">Përmirëso sugjerimet për kërkimin</translation>
 <translation id="6026538407078977628">Zgjero në ekranin e plotë</translation>
 <translation id="6030719887161080597">Menaxho informacionet e përdorura nga sajtet për të matur performancën e reklamave</translation>
-<translation id="6034146297924778597">Historiku nga 15 minutat e fundit do të fshihet:</translation>
 <translation id="6039379616847168523">Kalo te skeda tjetër</translation>
 <translation id="6040143037577758943">Mbyll</translation>
 <translation id="604124094241169006">Automatike</translation>
@@ -1370,6 +1369,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />Pajisjet e tua<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">Vazhdo</translation>
 <translation id="8209050860603202033">Hape imazhin</translation>
+<translation id="8210770465353466621">Këtu do të gjesh skedat e tua</translation>
 <translation id="8215740705341534369">Fleta anësore</translation>
 <translation id="8218622182176210845">Menaxho llogarinë tënde</translation>
 <translation id="8221401890884589479">Mund t'i bllokosh sajtet që nuk i dëshiron. Gjithashtu, Chrome i fshin automatikisht nga lista sajtet që janë më të vjetra se 30 ditë. <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>

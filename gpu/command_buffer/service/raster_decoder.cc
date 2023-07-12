@@ -474,6 +474,7 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   void SetQueryCallback(unsigned int query_client_id,
                         base::OnceClosure callback) override;
+  void CancelAllQueries() override;
   gles2::GpuFenceManager* GetGpuFenceManager() override;
   bool HasPendingQueries() const override;
   void ProcessPendingQueries(bool did_finish) override;
@@ -971,7 +972,7 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   const bool is_drdc_enabled_;
 
-  raw_ptr<gl::GLApi, DanglingUntriaged> api_ = nullptr;
+  raw_ptr<gl::GLApi, DanglingAcrossTasks> api_ = nullptr;
 
   base::WeakPtrFactory<DecoderContext> weak_ptr_factory_{this};
 };
@@ -1378,6 +1379,10 @@ void RasterDecoderImpl::SetQueryCallback(unsigned int query_client_id,
             << query_client_id << ". Running the callback immediately.";
     std::move(callback).Run();
   }
+}
+
+void RasterDecoderImpl::CancelAllQueries() {
+  query_manager_->RemoveAllQueries();
 }
 
 gles2::GpuFenceManager* RasterDecoderImpl::GetGpuFenceManager() {
@@ -2291,6 +2296,8 @@ void RasterDecoderImpl::DoWritePixelsYUVINTERNAL(
   plane_offsets[2] = plane3_offset;
   plane_offsets[3] = plane4_offset;
 
+  std::array<SkPixmap, SkYUVAInfo::kMaxPlanes> pixmaps = {};
+
   for (int plane = 0; plane < yuv_info.numPlanes(); plane++) {
     auto color_type = viz::ToClosestSkColorType(true, dest_format, plane);
     auto plane_size =
@@ -2331,38 +2338,20 @@ void RasterDecoderImpl::DoWritePixelsYUVINTERNAL(
       return;
     }
 
-    // Try a direct texture upload without using SkSurface.
-    SkPixmap pixmap(src_info, pixel_data, row_bytes[plane]);
-    bool written = false;
-    if (gr_context()) {
-      written = gr_context()->updateBackendTexture(
-          dest_scoped_access->promise_image_texture(plane)->backendTexture(),
-          &pixmap,
-          /*numLevels=*/1, dest_shared_image->surface_origin(), nullptr,
-          nullptr);
-    } else {
-      CHECK(graphite_context());
-      written = graphite_recorder()->updateBackendTexture(
-          dest_scoped_access->graphite_texture(plane), &pixmap,
-          /*numLevels=*/1);
-    }
-    if (!written) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glWritePixelsYUV",
-                         "Failed to upload pixels to dest shared image");
-      return;
-    }
+    // Create an SkPixmap for the plane.
+    pixmaps[plane] = SkPixmap(src_info, pixel_data, row_bytes[plane]);
   }
 
-  if (gr_context()) {
-    dest_scoped_access->ApplyBackendSurfaceEndState();
-    SubmitIfNecessary(std::move(end_semaphores));
-  } else {
-    auto recording = graphite_recorder()->snap();
-    GraphiteFlushAndSubmitWithRecording(std::move(recording));
-  }
-
-  if (!dest_shared_image->IsCleared()) {
-    dest_shared_image->SetClearedRect(gfx::Rect(src_width, src_height));
+  // Try a direct texture upload without using SkSurface.
+  CopySharedImageHelper helper(&shared_image_representation_factory_,
+                               shared_context_state_.get());
+  auto helper_result = helper.WritePixelsYUV(
+      src_width, src_height, pixmaps, std::move(end_semaphores),
+      std::move(dest_shared_image), std::move(dest_scoped_access));
+  if (!helper_result.has_value()) {
+    LOCAL_SET_GL_ERROR(helper_result.error().gl_error,
+                       helper_result.error().function_name.c_str(),
+                       helper_result.error().msg.c_str());
   }
 }
 
@@ -2719,18 +2708,27 @@ void RasterDecoderImpl::DoReadbackYUVImagePixelsINTERNAL(
     return;
   }
 
-  SkIRect src_rect = SkIRect::MakeSize(sk_image->dimensions());
-  SkISize dst_size = SkISize::Make(dst_width, dst_height);
+  const SkIRect src_rect = SkIRect::MakeSize(sk_image->dimensions());
+  const SkISize dst_size = SkISize::Make(dst_width, dst_height);
 
-  // While this function indicates it's asynchronous, the flushAndSubmit()
-  // call below ensures it completes synchronously. We do this because
-  // RasterImplementation/Decoder does not currently have a query
-  // that can handle asynchronous calls.
+  // While this function indicates it's asynchronous, the DoFinish() call below
+  // ensures it completes synchronously.
   YUVReadbackResult yuv_result;
-  sk_image->asyncRescaleAndReadPixelsYUV420(
-      kJPEG_Full_SkYUVColorSpace, SkColorSpace::MakeSRGB(), src_rect, dst_size,
-      SkImage::RescaleGamma::kSrc, SkImage::RescaleMode::kRepeatedLinear,
-      &OnReadYUVImagePixelsDone, &yuv_result);
+  if (graphite_context()) {
+    // SkImage/SkSurface asyncRescaleAndReadPixels methods won't be implemented
+    // for Graphite. Instead the equivalent methods will be on Graphite Context.
+    graphite_context()->asyncRescaleAndReadPixelsYUV420(
+        sk_image.get(), kJPEG_Full_SkYUVColorSpace, SkColorSpace::MakeSRGB(),
+        src_rect, dst_size, SkImage::RescaleGamma::kSrc,
+        SkImage::RescaleMode::kRepeatedLinear, &OnReadYUVImagePixelsDone,
+        &yuv_result);
+  } else {
+    sk_image->asyncRescaleAndReadPixelsYUV420(
+        kJPEG_Full_SkYUVColorSpace, SkColorSpace::MakeSRGB(), src_rect,
+        dst_size, SkImage::RescaleGamma::kSrc,
+        SkImage::RescaleMode::kRepeatedLinear, &OnReadYUVImagePixelsDone,
+        &yuv_result);
+  }
 
   source_scoped_access->ApplyBackendSurfaceEndState();
   if (!end_semaphores.empty()) {
@@ -2744,13 +2742,11 @@ void RasterDecoderImpl::DoReadbackYUVImagePixelsINTERNAL(
     gr_context()->flush(flush_info);
   }
 
-  // TODO(crbug.com/1023262): Eventually we should make this function truly
-  // asynchronous by removing this flush and implementing a query that can
-  // signal back to client process.
+  // TODO(crbug.com/1023262): Use COMMANDS_COMPLETED query for async readback.
   DoFinish();
 
   // The call above will sync up gpu and CPU, resulting in callback being run
-  // during flushAndSubmit. To prevent UAF make sure it indeed happened.
+  // during DoFinish(). To prevent UAF make sure it indeed happened.
   CHECK(yuv_result.finished);
   if (!yuv_result.async_result) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadbackYUVImagePixels",

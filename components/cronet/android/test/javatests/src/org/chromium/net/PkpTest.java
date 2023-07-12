@@ -12,6 +12,7 @@ import static org.junit.Assert.fail;
 
 import static org.chromium.net.CronetTestRule.getTestStorage;
 import static org.chromium.net.Http2TestServer.SERVER_CERT_PEM;
+import static org.chromium.net.truth.UrlResponseInfoSubject.assertThat;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -394,9 +395,9 @@ public class PkpTest {
                     + ((NetworkException) mListener.mError).getCronetInternalErrorCode());
         }
         assertWithMessage("Expected non-null response from the server")
-                .that(mListener.mResponseInfo)
+                .that(mListener.getResponseInfoWithChecks())
                 .isNotNull();
-        assertThat(mListener.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
+        assertThat(mListener.getResponseInfoWithChecks()).hasHttpStatusCodeThat().isEqualTo(200);
     }
 
     private void createCronetEngineBuilder(boolean bypassPinningForLocalAnchors, boolean knownRoot)

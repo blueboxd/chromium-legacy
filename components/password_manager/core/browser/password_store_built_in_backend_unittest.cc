@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/password_store_built_in_backend.h"
 
+#include <cstddef>
 #include <memory>
 #include <utility>
 
@@ -18,14 +19,20 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/os_crypt/sync/os_crypt_mocker.h"
+#include "components/password_manager/core/browser/affiliation/affiliated_match_helper.h"
+#include "components/password_manager/core/browser/affiliation/fake_affiliation_service.h"
+#include "components/password_manager/core/browser/affiliation/mock_affiliated_match_helper.h"
 #include "components/password_manager/core/browser/login_database.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_backend.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -118,23 +125,18 @@ class PasswordStoreBuiltInBackendTest : public testing::Test {
  public:
   PasswordStoreBuiltInBackendTest() = default;
 
-  PasswordStoreBackend* Initialize() {
-    store_ = std::make_unique<PasswordStoreBuiltInBackend>(
-        std::make_unique<LoginDatabase>(test_login_db_file_path(),
-                                        IsAccountStore(false)));
-    PasswordStoreBackend* backend = store_.get();
-    backend->InitBackend(/*remote_form_changes_received=*/base::DoNothing(),
-                         /*sync_enabled_or_disabled_cb=*/base::DoNothing(),
-                         /*completion=*/base::DoNothing());
-    RunUntilIdle();
-    return backend;
-  }
+  PasswordStoreBackend* Initialize(
+      std::unique_ptr<LoginDatabase> database = nullptr,
+      AffiliatedMatchHelper* affiliated_match_helper = nullptr) {
+    if (!database) {
+      database = std::make_unique<LoginDatabase>(test_login_db_file_path(),
+                                                 IsAccountStore(false));
+    }
 
-  PasswordStoreBackend* InitializeWithDatabase(
-      std::unique_ptr<LoginDatabase> database) {
     store_ = std::make_unique<PasswordStoreBuiltInBackend>(std::move(database));
     PasswordStoreBackend* backend = store_.get();
-    backend->InitBackend(/*remote_form_changes_received=*/base::DoNothing(),
+    backend->InitBackend(affiliated_match_helper,
+                         /*remote_form_changes_received=*/base::DoNothing(),
                          /*sync_enabled_or_disabled_cb=*/base::DoNothing(),
                          /*completion=*/base::DoNothing());
     RunUntilIdle();
@@ -337,7 +339,7 @@ TEST_F(PasswordStoreBuiltInBackendTest, GetAllLoginsAsyncFailsMetrics) {
   base::HistogramTester histogram_tester;
 
   PasswordStoreBackend* bad_backend =
-      InitializeWithDatabase(std::make_unique<BadLoginDatabase>());
+      Initialize(std::make_unique<BadLoginDatabase>());
 
   bad_backend->GetAllLoginsAsync(base::DoNothing());
 
@@ -412,7 +414,7 @@ TEST_F(PasswordStoreBuiltInBackendTest,
   base::HistogramTester histogram_tester;
 
   PasswordStoreBackend* bad_backend =
-      InitializeWithDatabase(std::make_unique<BadLoginDatabase>());
+      Initialize(std::make_unique<BadLoginDatabase>());
 
   // Fill the store
   PasswordForm form = *FillPasswordFormWithData(CreateTestPasswordFormData());
@@ -478,7 +480,7 @@ TEST_F(PasswordStoreBuiltInBackendTest, UpdateLoginAsyncFailsMetrics) {
   base::HistogramTester histogram_tester;
 
   PasswordStoreBackend* bad_backend =
-      InitializeWithDatabase(std::make_unique<BadLoginDatabase>());
+      Initialize(std::make_unique<BadLoginDatabase>());
   PasswordForm form = *FillPasswordFormWithData(CreateTestPasswordFormData());
 
   bad_backend->UpdateLoginAsync(form, base::DoNothing());
@@ -525,7 +527,7 @@ TEST_F(PasswordStoreBuiltInBackendTest, RemoveLoginAsyncFailsMetrics) {
   base::HistogramTester histogram_tester;
 
   PasswordStoreBackend* bad_backend =
-      InitializeWithDatabase(std::make_unique<BadLoginDatabase>());
+      Initialize(std::make_unique<BadLoginDatabase>());
   PasswordForm form = *FillPasswordFormWithData(CreateTestPasswordFormData());
 
   bad_backend->AddLoginAsync(form, base::DoNothing());
@@ -614,7 +616,7 @@ TEST_F(PasswordStoreBuiltInBackendTest,
   base::HistogramTester histogram_tester;
 
   PasswordStoreBackend* bad_backend =
-      InitializeWithDatabase(std::make_unique<BadLoginDatabase>());
+      Initialize(std::make_unique<BadLoginDatabase>());
 
   bad_backend->RemoveLoginsCreatedBetweenAsync(kStart, kEnd, base::DoNothing());
 
@@ -751,6 +753,66 @@ TEST_F(PasswordStoreBuiltInBackendTest,
   histogram_tester.ExpectTimeBucketCount(kDurationMetric, kLatencyDelta, 1);
   histogram_tester.ExpectTotalCount(kSuccessMetric, 1);
   histogram_tester.ExpectBucketCount(kSuccessMetric, true, 1);
+}
+
+TEST_F(PasswordStoreBuiltInBackendTest, GetLoginsWithAffiliations) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kFillingAcrossGroupedSites,
+                            features::kFillingAcrossAffiliatedWebsites},
+      /*disabled_features=*/{});
+
+  FakeAffiliationService fake_affiliation_service;
+  MockAffiliatedMatchHelper mock_affiliated_match_helper(
+      &fake_affiliation_service);
+  PasswordStoreBackend* backend =
+      Initialize(nullptr, &mock_affiliated_match_helper);
+
+  std::vector<std::unique_ptr<PasswordForm>> all_credentials;
+  for (const auto& test_credential : kTestCredentials) {
+    all_credentials.push_back(FillPasswordFormWithData(test_credential));
+    backend->AddLoginAsync(*all_credentials.back(), base::DoNothing());
+    RunUntilIdle();
+  }
+
+  std::vector<std::unique_ptr<PasswordForm>> expected_results;
+  expected_results.push_back(
+      std::make_unique<PasswordForm>(*all_credentials[0]));
+  expected_results.back()->is_affiliation_based_match = true;
+  expected_results.back()->match_type = PasswordForm::MatchType::kAffiliated;
+  expected_results.push_back(
+      std::make_unique<PasswordForm>(*all_credentials[3]));
+  expected_results.back()->match_type = PasswordForm::MatchType::kExact;
+  expected_results.push_back(
+      std::make_unique<PasswordForm>(*all_credentials[4]));
+  expected_results.back()->is_public_suffix_match = true;
+  expected_results.back()->match_type = PasswordForm::MatchType::kPSL;
+  expected_results.push_back(
+      std::make_unique<PasswordForm>(*all_credentials[5]));
+  expected_results.back()->is_public_suffix_match = true;
+  expected_results.back()->is_affiliation_based_match = true;
+  expected_results.back()->is_grouped_match = true;
+  expected_results.back()->match_type = PasswordForm::MatchType::kAffiliated |
+                                        PasswordForm::MatchType::kPSL |
+                                        PasswordForm::MatchType::kGrouped;
+
+  PasswordFormDigest observed_form = {PasswordForm::Scheme::kHtml,
+                                      kTestWebRealm1, GURL(kTestWebOrigin1)};
+
+  std::vector<std::string> affiliated_android_realms;
+  affiliated_android_realms.push_back(kTestAndroidRealm1);
+  std::vector<std::string> grouped_realms;
+  grouped_realms.push_back(kTestWebRealm3);
+
+  mock_affiliated_match_helper.ExpectCallToGetAffiliatedAndGrouped(
+      observed_form, affiliated_android_realms, grouped_realms);
+  mock_affiliated_match_helper
+      .ExpectCallToInjectAffiliationAndBrandingInformation({});
+  base::MockCallback<LoginsOrErrorReply> mock_reply;
+  EXPECT_CALL(mock_reply, Run(LoginsResultsOrErrorAre(&expected_results)));
+
+  backend->GetGroupedMatchingLoginsAsync(observed_form, mock_reply.Get());
+  RunUntilIdle();
 }
 
 }  // namespace password_manager

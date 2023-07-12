@@ -11,6 +11,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "components/bookmarks/common/bookmark_features.h"
 #import "components/reading_list/features/reading_list_switches.h"
+#import "components/sync/base/features.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_switch.h"
@@ -167,7 +168,13 @@ enum AuthenticationState {
   if (!_performer) {
     _performer = [[AuthenticationFlowPerformer alloc] initWithDelegate:self];
   }
-  [self continueSignin];
+  // Make sure -[AuthenticationFlow startSignInWithCompletion:] doesn't call
+  // the completion block synchronously.
+  // Related to http://crbug.com/1246480.
+  __weak __typeof(self) weakSelf = self;
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [weakSelf continueSignin];
+  });
 }
 
 - (void)cancelAndDismissAnimated:(BOOL)animated {
@@ -489,13 +496,9 @@ enum AuthenticationState {
     }
   }
   if (_signInCompletion) {
-    // Make sure the completion callback is always called after
-    // -[AuthenticationFlow startSignInWithCompletion:] returns.
     CompletionCallback signInCompletion = _signInCompletion;
     _signInCompletion = nil;
-    dispatch_async(dispatch_get_main_queue(), ^{
-      signInCompletion(success);
-    });
+    signInCompletion(success);
   }
   if (_shouldShowSigninSnackbar) {
     [_performer showSnackbarWithSignInIdentity:_identityToSignIn
@@ -538,11 +541,11 @@ enum AuthenticationState {
 // sign-in flow.
 - (void)optInBookmarkReadingListAccountStorage {
   bool bookmarksAccountStorageEnabled =
-      base::FeatureList::IsEnabled(bookmarks::kEnableBookmarksAccountStorage);
+      base::FeatureList::IsEnabled(syncer::kEnableBookmarksAccountStorage);
   bool dualReadingListModelEnabled = base::FeatureList::IsEnabled(
-      reading_list::switches::kReadingListEnableDualReadingListModel);
+      syncer::kReadingListEnableDualReadingListModel);
   bool readingListTransportUponSignInEnabled = base::FeatureList::IsEnabled(
-      reading_list::switches::kReadingListEnableSyncTransportModeUponSignIn);
+      syncer::kReadingListEnableSyncTransportModeUponSignIn);
   CHECK(bookmarksAccountStorageEnabled ||
         (dualReadingListModelEnabled && readingListTransportUponSignInEnabled))
       << "bookmarksAccountStorageEnabled: " << bookmarksAccountStorageEnabled

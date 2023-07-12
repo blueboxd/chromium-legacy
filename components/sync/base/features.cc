@@ -18,7 +18,7 @@ BASE_FEATURE(kIgnoreSyncEncryptionKeysLongMissing,
 
 BASE_FEATURE(kPasswordNotesWithBackup,
              "PasswordNotesWithBackup",
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_ANDROID)
              base::FEATURE_DISABLED_BY_DEFAULT
 #else
              base::FEATURE_ENABLED_BY_DEFAULT
@@ -28,6 +28,10 @@ BASE_FEATURE(kPasswordNotesWithBackup,
 BASE_FEATURE(kSharingOfferKeyPairBootstrap,
              "SharingOfferKeyPairBootstrap",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSharingOfferKeyPairRead,
+             "SharingOfferKeyPairRead",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kSyncAndroidLimitNTPPromoImpressions,
@@ -75,7 +79,7 @@ BASE_FEATURE(kSkipInvalidationOptimizationsWhenDeviceInfoUpdated,
 
 BASE_FEATURE(kSyncEnableHistoryDataType,
              "SyncEnableHistoryDataType",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSyncEnableContactInfoDataType,
              "SyncEnableContactInfoDataType",
@@ -131,12 +135,6 @@ BASE_FEATURE(kSyncPollWithoutDelayOnStartup,
              "SyncPollWithoutDelayOnStartup",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-#if BUILDFLAG(IS_IOS)
-BASE_FEATURE(kIndicateAccountStorageErrorInAccountCell,
-             "IndicateAccountStorageErrorInAccountCell",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_IOS)
-
 #if !BUILDFLAG(IS_ANDROID) || !BUILDFLAG(IS_IOS)
 BASE_FEATURE(kSyncWebauthnCredentials,
              "SyncWebauthnCredentials",
@@ -162,4 +160,25 @@ BASE_FEATURE(kReplaceSyncPromosWithSignInPromos,
 BASE_FEATURE(kSyncAvoidReconfigurationIfAlreadyStopping,
              "SyncAvoidReconfigurationIfAlreadyStopping",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableBookmarksAccountStorage,
+             "EnableBookmarksAccountStorage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kReadingListEnableDualReadingListModel,
+             "ReadingListEnableDualReadingListModel",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kReadingListEnableSyncTransportModeUponSignIn,
+             "ReadingListEnableSyncTransportModeUponSignIn",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSyncEnableWalletMetadataInTransportMode,
+             "SyncEnableWalletMetadataInTransportMode",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSyncEnableWalletOfferInTransportMode,
+             "SyncEnableWalletOfferInTransportMode",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 }  // namespace syncer

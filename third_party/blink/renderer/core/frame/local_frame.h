@@ -218,24 +218,18 @@ class CORE_EXPORT LocalFrame final
   //   you pass ukm::kInvalidSourceId, a new ukm source id will be generated.
   // - `creator_base_url` is the base url of the initiator that created this
   //    frame.
-  // - If |coop_forbids_initial_empty_document_to_be_cross_origin_isolated| is
-  //   false, the frame cannot be crossOriginIsolated while it's still on the
-  //   initial empty document.
   //
   // Note: Usually, the initial empty document inherits its |policy_container|
   // and |storage_key| from the parent or the opener. The inheritance operation
   // is taken care of by the browser (if this LocalFrame was just created in
   // response to the creation of a RenderFrameHost) or by blink if this is a
   // synchronously created LocalFrame child.
-  void Init(
-      Frame* opener,
-      const DocumentToken& document_token,
-      std::unique_ptr<PolicyContainer> policy_container,
-      const StorageKey& storage_key,
-      ukm::SourceId document_ukm_source_id,
-      const KURL& creator_base_url,
-      bool coop_forbids_initial_empty_document_to_be_cross_origin_isolated =
-          true);
+  void Init(Frame* opener,
+            const DocumentToken& document_token,
+            std::unique_ptr<PolicyContainer> policy_container,
+            const StorageKey& storage_key,
+            ukm::SourceId document_ukm_source_id,
+            const KURL& creator_base_url);
   void SetView(LocalFrameView*);
   void CreateView(const gfx::Size&, const Color&);
 
@@ -654,9 +648,6 @@ class CORE_EXPORT LocalFrame final
   const mojom::blink::BackForwardCacheNotRestoredReasonsPtr&
   GetNotRestoredReasons();
 
-  // Sets the LCPP Hint available at the navigation commit timing.
-  void SetLCPPHint(mojom::blink::LCPCriticalPathPredictorNavigationTimeHintPtr);
-
   const AtomicString& GetReducedAcceptLanguage() const {
     return reduced_accept_language_;
   }
@@ -886,7 +877,7 @@ class CORE_EXPORT LocalFrame final
 
   void ScheduleNextServiceForScrollSnapshotClients();
 
-  void CollectAnchorScrollContainerIds(
+  void CollectAnchorPositionScrollerIds(
       Vector<cc::ElementId>* scroll_container_ids) const;
 
   using BlockingDetailsList = Vector<mojom::blink::BlockingDetailsPtr>;
@@ -900,10 +891,6 @@ class CORE_EXPORT LocalFrame final
 
   // Sets a ResourceCache hosted by another frame in a different renderer.
   void SetResourceCacheRemote(mojo::PendingRemote<mojom::blink::ResourceCache>);
-
-  bool CoopForbidsInitialEmptyDocumentToBeCrossOriginIsolated() const {
-    return coop_forbids_initial_empty_document_to_be_cross_origin_isolated_;
-  }
 
  private:
   friend class FrameNavigationDisabler;
@@ -1170,10 +1157,6 @@ class CORE_EXPORT LocalFrame final
 
   // Reduced accept language for top-level frame.
   AtomicString reduced_accept_language_;
-
-  // If this is true, the frame cannot be crossOriginIsolated while it's still
-  // on the initial empty document.
-  bool coop_forbids_initial_empty_document_to_be_cross_origin_isolated_ = true;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

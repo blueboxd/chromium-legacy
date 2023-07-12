@@ -23,17 +23,21 @@
 // Number of indirect starts in the last
 // `kTriggerCriteriaExperimentStatExpiration` days.
 @property(nonatomic, assign) int chromeIndirectStartCount;
+// Number of active days in the last `kTriggerCriteriaExperimentStatExpiration`
+// days.
+@property(nonatomic, assign) int activeDayCount;
+// Number of times password manager features where used in the last
+// `kTriggerCriteriaExperimentStatExpiration` days.
+@property(nonatomic, assign) int passwordManagerUseCount;
+// Number of times user copy-pasted in omnibox in the last
+// `kTriggerCriteriaExperimentStatExpiration` days.
+@property(nonatomic, assign) int omniboxClipboardUseCount;
 
-// TODO:
+// TODO(crbug.com/1456438): Implement rest of the metrics:
 // OmniboxClipboardUseCount
-// PasswordManagerUseCount
 // BookmarkUseCount
 // AutofillUseCount
 // SpecialTabsUseCount
-// ReadingListUseCount
-// PinnedTabsCount
-// ReadingListItemsCount
-// PasswordWidgetUse
 
 @end
 

@@ -67,7 +67,9 @@ def fyi_reclient_staging_builder(
     reclient_bootstrap_env.update({
         # TODO(b/258210757) remove once long term breakpad plans are dertermined
         "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "true",
+        "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
         "RBE_fast_log_collection": "true",
+        "RBE_use_unified_uploads": "true",
     })
 
     reclient_rewrapper_env = kwargs.pop("reclient_rewrapper_env", {})
@@ -147,9 +149,6 @@ fyi_reclient_staging_builder(
     ),
     os = os.LINUX_DEFAULT,
     console_view_category = "linux",
-    reclient_bootstrap_env = {
-        "RBE_clang_depscan_archive": "true",
-    },
 )
 
 fyi_reclient_test_builder(
@@ -169,9 +168,6 @@ fyi_reclient_test_builder(
     ),
     os = os.LINUX_DEFAULT,
     console_view_category = "linux",
-    reclient_bootstrap_env = {
-        "RBE_clang_depscan_archive": "true",
-    },
 )
 
 fyi_reclient_test_builder(
@@ -448,6 +444,7 @@ ci.builder(
     ),
     execution_timeout = 6 * time.hour,
     reclient_bootstrap_env = {
+        "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
         "RBE_ip_reset_min_delay": "-1s",
         "RBE_clang_depscan_archive": "true",
         "RBE_fast_log_collection": "true",
@@ -474,6 +471,7 @@ ci.builder(
     ),
     execution_timeout = 12 * time.hour,
     reclient_bootstrap_env = {
+        "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
         "RBE_fast_log_collection": "true",
     },
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
@@ -505,6 +503,7 @@ ci.builder(
     ),
     execution_timeout = 12 * time.hour,
     reclient_bootstrap_env = {
+        "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
         "RBE_fast_log_collection": "true",
     },
     reclient_disable_bq_upload = True,
@@ -538,6 +537,7 @@ ci.builder(
     ),
     execution_timeout = 14 * time.hour,
     reclient_bootstrap_env = {
+        "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
         "RBE_fast_log_collection": "true",
     },
     reclient_ensure_verified = True,

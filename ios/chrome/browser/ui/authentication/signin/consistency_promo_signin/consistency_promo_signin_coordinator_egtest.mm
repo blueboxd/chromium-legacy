@@ -4,6 +4,7 @@
 
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
@@ -39,6 +40,19 @@
   // Resets the number of dismissals for web sign-in.
   [ChromeEarlGrey setIntegerValue:0
                       forUserPref:prefs::kSigninWebSignDismissalCount];
+}
+
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+  if ([self isRunningTest:@selector
+            (testRemoveLastIdentityWithSigninErrorDialogNoDismiss)]) {
+    config.features_enabled.push_back(kConsistencyNewAccountInterface);
+  }
+  if ([self isRunningTest:@selector
+            (testRemoveLastIdentityWithSigninErrorDialogAutomaticDismiss)]) {
+    config.features_disabled.push_back(kConsistencyNewAccountInterface);
+  }
+  return config;
 }
 
 // Tests that ConsistencyPromoSigninCoordinator shows up, and then skips it.
@@ -92,8 +106,10 @@
 }
 
 // Removes the only identity while the error dialog is opened. Once the identity
-// is removed, the web sign-in dialog is removed.
-- (void)testRemoveLastIdentityWithSigninErrorDialog {
+// is removed, the web sign-in dialog needs to update itself to show the version
+// with no identity.
+// kConsistencyNewAccountInterface is enabled.
+- (void)testRemoveLastIdentityWithSigninErrorDialogNoDismiss {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
@@ -115,6 +131,40 @@
                                               kWaitForDownloadTimeout];
   [SigninEarlGrey forgetFakeIdentity:fakeIdentity];
   [ChromeEarlGreyUI waitForAppToIdle];
+  // Dismiss the error dialog.
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::StaticTextWithAccessibilityLabelId(
+                     IDS_IOS_SIGN_IN_DISMISS)] performAction:grey_tap()];
+  // The web sign-in should be still visible.
+  [SigninEarlGreyUI verifyWebSigninIsVisible:YES];
+}
+
+// Removes the only identity while the error dialog is opened. Once the identity
+// is removed, the web sign-in dialog needs to disappear automatically.
+// kConsistencyNewAccountInterface is disabled.
+- (void)testRemoveLastIdentityWithSigninErrorDialogAutomaticDismiss {
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  const GURL url = self.testServer->GetURL("/echo");
+  [SigninEarlGreyAppInterface
+      triggerConsistencyPromoSigninDialogWithURL:net::NSURLWithGURL(url)];
+  [SigninEarlGreyUI verifyWebSigninIsVisible:YES];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          WebSigninPrimaryButtonMatcher()]
+      performAction:grey_tap()];
+  // Wait for the error dialog (sign-in fails since the sign-in is done with a
+  // fake identity).
+  [ChromeEarlGreyUI waitForAppToIdle];
+  [ChromeEarlGrey
+      waitForUIElementToAppearWithMatcher:
+          chrome_test_util::StaticTextWithAccessibilityLabelId(
+              IDS_IOS_WEBSIGN_ERROR_TITLE)
+                                  timeout:base::test::ios::
+                                              kWaitForDownloadTimeout];
+  [SigninEarlGrey forgetFakeIdentity:fakeIdentity];
+  [ChromeEarlGreyUI waitForAppToIdle];
+  // Expect the web sign-in dialog to disappear automatically.
   [SigninEarlGreyUI verifyWebSigninIsVisible:NO];
 }
 

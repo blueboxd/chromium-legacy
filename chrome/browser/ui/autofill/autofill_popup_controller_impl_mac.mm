@@ -59,7 +59,7 @@ AutofillPopupControllerImplMac::~AutofillPopupControllerImplMac() = default;
 
 void AutofillPopupControllerImplMac::Show(
     std::vector<autofill::Suggestion> suggestions,
-    AutoselectFirstSuggestion autoselect_first_suggestion) {
+    AutofillSuggestionTriggerSource trigger_source) {
   if (!suggestions.empty() && is_credit_card_popup_) {
     if (@available(macOS 10.12.2, *)) {
       touch_bar_controller_ = [WebTextfieldTouchBarController
@@ -68,8 +68,7 @@ void AutofillPopupControllerImplMac::Show(
     }
   }
 
-  AutofillPopupControllerImpl::Show(std::move(suggestions),
-                                    autoselect_first_suggestion);
+  AutofillPopupControllerImpl::Show(std::move(suggestions), trigger_source);
   // No code below this line!
   // |Show| may hide the popup and destroy |this|, so |Show| should be the last
   // line.

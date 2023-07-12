@@ -414,16 +414,14 @@ void MaybeEnableEmailNotifications(PrefService* pref_service) {
   }
 }
 
-bool IsEmailDisabledByUser(PrefService* pref_service) {
-  if (pref_service) {
-    const PrefService::Preference* email_pref =
-        pref_service->FindPreference(kPriceEmailNotificationsEnabled);
-    if (email_pref && !email_pref->IsDefaultValue() &&
-        !email_pref->GetValue()->GetBool()) {
-      return true;
-    }
-  }
-  return false;
+bool GetEmailNotificationPrefValue(PrefService* pref_service) {
+  return pref_service &&
+         pref_service->GetBoolean(kPriceEmailNotificationsEnabled);
+}
+
+bool IsEmailNotificationPrefSetByUser(PrefService* pref_service) {
+  return pref_service &&
+         pref_service->HasPrefPath(kPriceEmailNotificationsEnabled);
 }
 
 CommerceSubscription BuildUserSubscriptionForClusterId(uint64_t cluster_id) {
@@ -442,6 +440,14 @@ bool CanTrackPrice(const absl::optional<ProductInfo>& info) {
 
 bool CanTrackPrice(const power_bookmarks::ShoppingSpecifics& specifics) {
   return specifics.has_product_cluster_id();
+}
+
+const std::u16string& GetBookmarkParentNameOrDefault(
+    bookmarks::BookmarkModel* model,
+    const GURL& url) {
+  const bookmarks::BookmarkNode* node =
+      model->GetMostRecentlyAddedUserNodeForURL(url);
+  return node ? node->parent()->GetTitle() : model->other_node()->GetTitle();
 }
 
 }  // namespace commerce

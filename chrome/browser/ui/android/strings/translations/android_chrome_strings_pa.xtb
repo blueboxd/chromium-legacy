@@ -297,6 +297,7 @@
 <translation id="2643064289437760082">ਤੁਸੀਂ ਆਪਣੇ ਬ੍ਰਾਊਜ਼ਿੰਗ ਡਾਟਾ ਨੂੰ ਮਿਟਾ ਕੇ ਕਦੇ ਵੀ ਆਪਣੇ ਵਿਗਿਆਪਨ ਮੁਲਾਂਕਣ ਡਾਟਾ ਨੂੰ ਮਿਟਾ ਸਕਦੇ ਹੋ</translation>
 <translation id="2647434099613338025">ਭਾਸ਼ਾ ਜੋੜੋ</translation>
 <translation id="2649068648233607930">ਤੁਹਾਡੇ ਬ੍ਰਾਊਜ਼ਰ ਦਾ ਪ੍ਰਬੰਧਨ <ph name="DOMAIN" /> ਵੱਲੋਂ ਕੀਤਾ ਜਾਂਦਾ ਹੈ</translation>
+<translation id="2650077116157640844">ਸਿੰਕ ਕੀਤੇ ਡੀਵਾਈਸਾਂ ਬਾਰੇ ਹੋਰ ਜਾਣਕਾਰੀ</translation>
 <translation id="2650348088770008516">ਪਰਦੇਦਾਰੀ ਗਾਈਡ ਵਿਆਖਿਆ ਬੰਦ ਹੈ</translation>
 <translation id="2650408372219180431">ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਰੱਖਿਅਤ ਕੀਤੇ ਪਾਸਵਰਡਾਂ ਨੂੰ ਨਿਰਯਾਤ ਕਰੋ ਅਤੇ ਮਿਟਾਓ</translation>
 <translation id="2650751991977523696">ਕੀ ਫ਼ਾਈਲ ਦੁਬਾਰਾ ਡਾਊਨਲੋਡ ਕਰਨੀ ਹੈ?</translation>
@@ -445,7 +446,6 @@
 <translation id="3421726884497337397">ਚੁਣੋ ਕਿ ਤੀਜੀ-ਧਿਰ ਦੀਆਂ ਸਾਰੀਆਂ ਕੁਕੀਜ਼ ਨੂੰ ਕਦੋਂ ਬਲਾਕ ਕਰਨਾ ਹੈ</translation>
 <translation id="3428747202529429621">ਤੁਹਾਡੇ ਸਾਈਨ-ਇਨ ਹੋਣ 'ਤੇ, ਤੁਹਾਨੂੰ Chrome ਵਿੱਚ ਸੁਰੱਖਿਅਤ ਰੱਖਿਆ ਜਾਂਦਾ ਹੈ ਅਤੇ ਸ਼ਾਇਦ ਹੋਰ Google ਐਪਾਂ ਵਿੱਚ ਤੁਹਾਡੀ ਸੁਰੱਖਿਆ ਨੂੰ ਸੁਧਾਰਨ ਲਈ ਵਰਤਿਆ ਜਾ ਸਕੇ</translation>
 <translation id="3429160811076349561">ਪਰਖ ਸੰਬੰਧੀ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਬੰਦ ਹਨ</translation>
-<translation id="3432973700170747422">ਪਿਛਲੇ 15 ਮਿੰਟਾਂ ਦਾ ਖੋਜ ਇਤਿਹਾਸ ਮਿਟਾਓ</translation>
 <translation id="3435465986463792564">ਕੀ ਬਹੁਤ ਸਾਰੀਆਂ ਵਿੰਡੋ ਖੁੱਲ੍ਹੀਆਂ ਹੋਈਆਂ ਹਨ? ਤੁਸੀਂ ਇੱਥੇ ਉਨ੍ਹਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰ ਸਕਦੇ ਹੋ</translation>
 <translation id="3435738964857648380">ਸੁਰੱਖਿਆ</translation>
 <translation id="3443221991560634068">ਮੌਜੂਦਾ ਪੰਨੇ ਨੂੰ ਮੁੜ-ਲੋਡ ਕਰੋ</translation>
@@ -479,9 +479,9 @@
 <translation id="3587596251841506391">ਵੈੱਬ 'ਤੇ ਸੁਰੱਖਿਆ ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਵਿੱਚ ਮਦਦ ਕਰੋ</translation>
 <translation id="3597179440835065298">ਬਿਹਤਰ ਸੁਝਾਅ ਪ੍ਰਾਪਤ ਕਰੋ</translation>
 <translation id="3602290021589620013">ਪ੍ਰੀਵਿਊ</translation>
-<translation id="360901359071773787">ਕੀ ਪਿਛਲੇ 15 ਮਿੰਟਾਂ ਦਾ ਬ੍ਰਾਊਜ਼ਿੰਗ ਡਾਟਾ ਮਿਟਾਉਣਾ ਹੈ?</translation>
 <translation id="3616113530831147358">ਆਡੀਓ</translation>
 <translation id="3622349720008044802">ਵਿੰਡੋਆਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ</translation>
+<translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{+ 1 ਸਾਈਟ}one{+ # ਸਾਈਟ}other{+ # ਸਾਈਟਾਂ}}</translation>
 <translation id="3631987586758005671"><ph name="DEVICE_NAME" /> ਨਾਲ ਸਾਂਝਾ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ</translation>
 <translation id="363596933471559332">ਸਟੋਰ ਕੀਤੇ ਕ੍ਰੀਡੈਂਸ਼ੀਅਲਾਂ ਦੀ ਵਰਤੋਂ ਕਰਕੇ ਆਪਣੇ-ਆਪ ਸਾਈਟਾਂ ਵਿੱਚ ਸਾਈਨ-ਇਨ ਕਰੋ। ਜਦੋਂ ਵਿਸ਼ੇਸ਼ਤਾ ਬੰਦ ਹੋਵੇ, ਤਾਂ ਤੁਹਾਨੂੰ ਇੱਕ ਵੈੱਬਸਾਈਟ 'ਤੇ ਸਾਈਨ-ਇਨ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਹਰ ਵਾਰ ਪੁਸ਼ਟੀ ਕਰਨ ਲਈ ਕਿਹਾ ਜਾਵੇਗਾ।</translation>
 <translation id="3636940436873918441">ਤਰਜੀਹੀ ਭਾਸ਼ਾਵਾਂ</translation>
@@ -750,6 +750,7 @@
 <translation id="5010886807652684893">ਦ੍ਰਿਸ਼ਟੀਗਤ ਦ੍ਰਿਸ਼</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> ਕਨੈਕਟ ਕਰਨਾ ਚਾਹੁੰਦੀ ਹੈ</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">ਪਿਛਲੇ 15 ਮਿੰਟ</translation>
 <translation id="5032430150487044192">QR ਕੋਡ ਬਣਾਇਆ ਨਹੀਂ ਜਾ ਸਕਦਾ</translation>
 <translation id="5039804452771397117">ਆਗਿਆ ਦਿਓ</translation>
 <translation id="5040262127954254034">ਪਰਦੇਦਾਰੀ</translation>
@@ -768,7 +769,6 @@
 <translation id="5118713593561876160">ਦਿਲਚਸਪੀਆਂ</translation>
 <translation id="5122378528687922675">ਜੇ ਤੁਹਾਨੂੰ ਮਦਦ ਦੀ ਲੋੜ ਹੈ, ਤਾਂ ਆਪਣੇ ਮਾਂ-ਪਿਓ (<ph name="PARENT_NAME_1" /> ਜਾਂ <ph name="PARENT_NAME_2" />) ਨੂੰ ਕਹੋ</translation>
 <translation id="5123685120097942451">ਇਨਕੋਗਨਿਟੋ ਟੈਬ</translation>
-<translation id="5126510351761255129">ਆਪਣੇ ਕਾਰਡ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ</translation>
 <translation id="5132942445612118989">ਸਾਰੇ ਡੀਵਾਈਸਾਂ 'ਤੇ ਤੁਹਾਡੇ ਪਾਸਵਰਡਾਂ, ਇਤਿਹਾਸ ਅਤੇ ਹੋਰ ਬਹੁਤ ਕੁਝ ਦਾ ਸਿੰਕ ਕਰੋ</translation>
 <translation id="5139940364318403933">Google Drive ਨੂੰ ਵਰਤਣ ਬਾਰੇ ਹੋਰ ਜਾਣੋ</translation>
 <translation id="5142281402488957685">ਨਵੀਆਂ ਕਹਾਣੀਆਂ ਲਈ, ਰਿਫ੍ਰੈਸ਼ ਕਰਨ ਵਾਸਤੇ ਹੇਠਾਂ ਵੱਲ ਖਿੱਚੋ</translation>
@@ -928,7 +928,6 @@
 <translation id="6011308810877101166">ਖੋਜ ਸੁਝਾਵਾਂ ਨੂੰ ਬਿਹਤਰ ਬਣਾਓ</translation>
 <translation id="6026538407078977628">ਪੂਰੀ-ਸਕ੍ਰੀਨ 'ਤੇ ਵਿਸਤਾਰ ਕਰੋ</translation>
 <translation id="6030719887161080597">ਵਿਗਿਆਪਨ ਦੀ ਕਾਰਗੁਜ਼ਾਰੀ ਨੂੰ ਮਾਪਣ ਲਈ ਸਾਈਟ ਵੱਲੋਂ ਵਰਤੀ ਗਈ ਜਾਣਕਾਰੀ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ</translation>
-<translation id="6034146297924778597">ਪਿਛਲੇ 15 ਮਿੰਟਾਂ ਵਾਲਾ ਇਤਿਹਾਸ ਮਿਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ:</translation>
 <translation id="6039379616847168523">ਅਗਲੀ ਟੈਬ 'ਤੇ ਜਾਓ</translation>
 <translation id="6040143037577758943">ਬੰਦ ਕਰੋ</translation>
 <translation id="604124094241169006">ਆਟੋਮੈਟਿਕ</translation>
@@ -1370,6 +1369,7 @@
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />ਤੁਹਾਡੇ ਡੀਵਾਈਸ<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">ਦੁਬਾਰਾ ਸ਼ੁਰੂ ਕਰੋ</translation>
 <translation id="8209050860603202033">ਚਿੱਤਰ ਖੋਲ੍ਹੋ</translation>
+<translation id="8210770465353466621">ਤੁਹਾਨੂੰ ਆਪਣੀਆਂ ਟੈਬਾਂ ਇੱਥੇ ਮਿਲਣਗੀਆਂ</translation>
 <translation id="8215740705341534369">ਸਾਈਡ ਸ਼ੀਟ</translation>
 <translation id="8218622182176210845">ਆਪਣੇ ਖਾਤੇ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ</translation>
 <translation id="8221401890884589479">ਤੁਹਾਨੂੰ ਜੋ ਸਾਈਟਾਂ ਨਹੀਂ ਚਾਹੀਦੀਆਂ, ਤੁਸੀਂ ਉਨ੍ਹਾਂ ਨੂੰ ਬਲਾਕ ਕਰ ਸਕਦੇ ਹੋ। Chrome 30 ਦਿਨਾਂ ਤੋਂ ਵੱਧ ਪੁਰਾਣੀਆਂ ਸਾਈਟਾਂ ਨੂੰ ਵੀ ਸੂਚੀ ਤੋਂ ਸਵੈਚਲਿਤ-ਮਿਟਾਉਂਦਾ ਹੈ। <ph name="BEGIN_LINK" />ਹੋਰ ਜਾਣੋ<ph name="END_LINK" /></translation>

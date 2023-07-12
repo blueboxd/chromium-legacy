@@ -232,10 +232,17 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
   source->AddBoolean(
       "historyClustersModuleEnabled",
       base::FeatureList::IsEnabled(ntp_features::kNtpHistoryClustersModule));
+  source->AddBoolean(
+      "historyClustersSuggestionChipHeaderEnabled",
+      base::FeatureList::IsEnabled(
+          ntp_features::kNtpHistoryClustersModuleSuggestionChipHeader));
   source->AddBoolean("historyClustersModuleLoadEnabled",
                      base::FeatureList::IsEnabled(
                          ntp_features::kNtpHistoryClustersModuleLoad) &&
                          HasCredentials(profile));
+  source->AddBoolean("historyClustersTextOnlyEnabled",
+                     base::FeatureList::IsEnabled(
+                         ntp_features::kNtpHistoryClustersModuleTextOnly));
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"doneButton", IDS_DONE},
@@ -737,7 +744,7 @@ void NewTabPageUI::BindInterface(
     mojo::PendingReceiver<omnibox::mojom::PageHandler> pending_page_handler) {
   realbox_handler_ = std::make_unique<RealboxHandler>(
       std::move(pending_page_handler), profile_, web_contents(),
-      &metrics_reporter_, /*is_omnibox_popup_handler=*/false);
+      &metrics_reporter_, /*omnibox_controller=*/nullptr);
 }
 
 void NewTabPageUI::BindInterface(

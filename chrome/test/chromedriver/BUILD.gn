@@ -231,6 +231,7 @@ source_set("automation_client_lib") {
 
   if (is_mac) {
     sources += [ "chrome/chrome_finder_mac.mm" ]
+    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_win) {
@@ -325,6 +326,7 @@ source_set("lib") {
 
   if (is_mac) {
     sources += [ "keycode_text_conversion_mac.mm" ]
+    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_win) {
@@ -514,7 +516,6 @@ test("chromedriver_unittests") {
     "net/adb_client_socket_unittest.cc",
     "net/net_util_unittest.cc",
     "net/pipe_builder_unittest.cc",
-    "net/pipe_connection_unittest.cc",
     "net/sync_websocket_impl_unittest.cc",
     "net/test_http_server.cc",
     "net/test_http_server.h",
@@ -530,9 +531,14 @@ test("chromedriver_unittests") {
 
   if (is_posix) {
     sources += [
+      "net/pipe_connection_unittest.cc",
       "net/pipe_reader_posix_unittest.cc",
       "net/pipe_writer_posix_unittest.cc",
     ]
+  }
+
+  if (is_win) {
+    sources += [ "net/pipe_connection_unittest.cc" ]
   }
 
   data = [

@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_multi_detail_text_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_edit_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_controller_test.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
@@ -23,6 +24,7 @@
 #import "ios/chrome/browser/ui/autofill/autofill_profile_edit_table_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/autofill_profile_edit_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "testing/gtest_mac.h"
 #import "testing/platform_test.h"
@@ -55,7 +57,9 @@ class AutofillSettingsProfileEditTableViewControllerTest
   ChromeTableViewController* InstantiateController() override {
     AutofillSettingsProfileEditTableViewController* viewController =
         [[AutofillSettingsProfileEditTableViewController alloc]
-            initWithStyle:ChromeTableViewStyle()];
+                            initWithDelegate:nil
+            shouldShowMigrateToAccountButton:NO
+                                   userEmail:nil];
     autofill_profile_edit_table_view_controller_ =
         [[AutofillProfileEditTableViewController alloc]
             initWithDelegate:delegate_mock_
@@ -169,7 +173,10 @@ class AutofillSettingsProfileEditTableViewControllerTestWithUnionViewEnabled
   ChromeTableViewController* InstantiateController() override {
     AutofillSettingsProfileEditTableViewController* viewController =
         [[AutofillSettingsProfileEditTableViewController alloc]
-            initWithStyle:ChromeTableViewStyle()];
+                            initWithDelegate:nil
+            shouldShowMigrateToAccountButton:NO
+                                   userEmail:base::SysUTF16ToNSString(
+                                                 kTestSyncingEmail)];
     autofill_profile_edit_table_view_controller_ =
         [[AutofillProfileEditTableViewController alloc]
             initWithDelegate:delegate_mock_
@@ -253,6 +260,53 @@ TEST_F(AutofillSettingsProfileEditTableViewControllerTestWithUnionViewEnabled,
       IDS_IOS_SETTINGS_AUTOFILL_ACCOUNT_ADDRESS_FOOTER_TEXT, kTestSyncingEmail);
   TableViewLinkHeaderFooterItem* footer = [model footerForSectionIndex:1];
   EXPECT_NSEQ(expected_footer_text, footer.text);
+}
+
+class AutofillSettingsProfileEditTableViewControllerWithMigrationButtonTest
+    : public AutofillSettingsProfileEditTableViewControllerTest {
+ protected:
+  ChromeTableViewController* InstantiateController() override {
+    AutofillSettingsProfileEditTableViewController* viewController =
+        [[AutofillSettingsProfileEditTableViewController alloc]
+                            initWithDelegate:nil
+            shouldShowMigrateToAccountButton:YES
+                                   userEmail:base::SysUTF16ToNSString(
+                                                 kTestSyncingEmail)];
+    autofill_profile_edit_table_view_controller_ =
+        [[AutofillProfileEditTableViewController alloc]
+            initWithDelegate:delegate_mock_
+                   userEmail:base::SysUTF16ToNSString(kTestSyncingEmail)
+                  controller:viewController
+                settingsView:YES];
+    viewController.handler = autofill_profile_edit_table_view_controller_;
+    return viewController;
+  }
+};
+
+// Tests the number of sections and the number of items in the sections.
+TEST_F(AutofillSettingsProfileEditTableViewControllerWithMigrationButtonTest,
+       TestElementsInView) {
+  TableViewModel* model = [controller() tableViewModel];
+  int rowCnt =
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableSupportForHonorificPrefixes)
+          ? 11
+          : 10;
+
+  EXPECT_EQ(2, [model numberOfSections]);
+  EXPECT_EQ(rowCnt, [model numberOfItemsInSection:0]);
+  EXPECT_EQ(2, [model numberOfItemsInSection:1]);
+  NSString* migrateButtonDescription = l10n_util::GetNSStringF(
+      IDS_IOS_SETTINGS_AUTOFILL_MIGRATE_ADDRESS_TO_ACCOUNT_BUTTON_DESCRIPTION,
+      kTestSyncingEmail);
+  TableViewItem* descriptionItem = GetTableViewItem(1, 0);
+  EXPECT_NSEQ(
+      static_cast<SettingsImageDetailTextItem*>(descriptionItem).detailText,
+      migrateButtonDescription);
+  EXPECT_NSEQ(
+      static_cast<TableViewTextItem*>(GetTableViewItem(1, 1)).text,
+      l10n_util::GetNSString(
+          IDS_IOS_SETTINGS_AUTOFILL_MIGRATE_ADDRESS_TO_ACCOUNT_BUTTON_TITLE));
 }
 
 }  // namespace

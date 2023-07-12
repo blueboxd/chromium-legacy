@@ -11,15 +11,16 @@
 
 namespace flag_descriptions {
 
-const char kAddToHomeScreenName[] = "Add to home screen";
-const char kAddToHomeScreenDescription[] =
-    "Allows to add a bookmark on the device home screen when sharing from a "
-    "web view.";
-
 const char kAppStoreRatingName[] = "Enable the App Store Rating promo.";
 const char kAppStoreRatingDescription[] =
     "When enabled, App Store Rating promo will be presented to eligible "
     "users.";
+
+const char kAppStoreRatingLoosenedTriggersName[] =
+    "Enable the App Store Rating promo's loosened triggers.";
+const char kAppStoreRatingLoosenedTriggersDescription[] =
+    "When enabled, App Store Rating promo will have loosened trigger "
+    "requirements.";
 
 const char kAutofillAccountProfilesStorageName[] =
     "Enable profile saving in Google Account";
@@ -374,12 +375,6 @@ const char kTileAblationName[] = "Enables tile ablation";
 const char kTileAblationDescription[] =
     "Hides the shortcuts and most visited tiles on the NTP for new users.";
 
-const char kEnableEmailInBookmarksReadingListSnackbarName[] =
-    "Enable Email In Bookmark/Reading List Snackbar";
-const char kEnableEmailInBookmarksReadingListSnackbarDescription[] =
-    "Enable the display of the signed-in account email in the snackbar which "
-    "indicates that an item is added to the bookmarks/reading list.";
-
 const char kEnableFeedAblationName[] = "Enables Feed Ablation";
 const char kEnableFeedAblationDescription[] =
     "If Enabled the Feed will be removed from the NTP";
@@ -419,12 +414,6 @@ const char kPasswordsGroupingName[] =
 const char kPasswordsGroupingDescription[] =
     "Group passwords into the same affiliated group in the Password Manager "
     "for the Saved Passwords section";
-
-const char kEnablePasswordsAccountStorageName[] =
-    "Enable the account data storage for passwords";
-const char kEnablePasswordsAccountStorageDescription[] =
-    "Enables storing passwords in a second, Gaia-account-scoped storage for "
-    "signed-in but not syncing users";
 
 const char kEnablePreferencesAccountStorageName[] =
     "Enable the account data storage for preferences for syncing users";
@@ -553,12 +542,6 @@ const char kIncognitoNtpRevampName[] = "Revamped Incognito New Tab Page";
 const char kIncognitoNtpRevampDescription[] =
     "When enabled, Incognito new tab page will have an updated UI.";
 
-const char kIndicateAccountStorageErrorInAccountCellName[] =
-    "Indicate Account Storage Error in Account Cell";
-const char kIndicateAccountStorageErrorInAccountCellDescription[] =
-    "When enabled, the Account Cell indicates the Account"
-    " Storage error when Sync is turned OFF";
-
 const char kIndicateIdentityErrorInOverflowMenuName[] =
     "Indicate Identity Error in Overflow Menu";
 const char kIndicateIdentityErrorInOverflowMenuDescription[] =
@@ -575,10 +558,6 @@ const char kInProductHelpDemoModeDescription[] =
 const char kIOSBrowserEditMenuMetricsName[] = "Browser edit menu metrics";
 const char kIOSBrowserEditMenuMetricsDescription[] =
     "Collect metrics for edit menu usage.";
-
-const char kIOSCustomBrowserEditMenuName[] = "Custom browser edit menu";
-const char kIOSCustomBrowserEditMenuDescription[] =
-    "Use the new API for the WKWebView Edit menu.";
 
 const char kIOSEditMenuPartialTranslateName[] =
     "Enable partial translate in edit menu";
@@ -604,6 +583,11 @@ const char kIOSNewPostRestoreExperienceName[] = "New Post Restore Experience";
 const char kIOSNewPostRestoreExperienceDescription[] =
     "When enabled, a prompt will be presented after a device restore to "
     "allow the user to sign in again.";
+
+const char kIOSPasswordAuthOnEntryName[] = "Password Manager Auth on Entry";
+const char kIOSPasswordAuthOnEntryDescription[] =
+    "Requires Biometric Authentication before showing saved credentials in "
+    "Password Manager.";
 
 const char kIOSPasswordCheckupName[] = "Password Checkup";
 const char kIOSPasswordCheckupDescription[] =
@@ -818,6 +802,11 @@ const char kOmniboxReportSearchboxStatsDescription[] =
     "Enables reporting the serialized Searchbox Stats proto param in search "
     "destination URLs originated from the Omnibox.";
 
+extern const char kOmniboxSuggestionsRTLImprovementsName[] =
+    "Omnibox Improved RTL Suggestion Layout";
+extern const char kOmniboxSuggestionsRTLImprovementsDescription[] =
+    "Improved layout for suggestions in right-to-left contexts";
+
 const char kOmniboxTailSuggestName[] = "Omnibox Tail suggestions";
 const char kOmniboxTailSuggestDescription[] =
     "Enables tail search suggestions. Search suggestions only matching the end "
@@ -868,10 +857,6 @@ const char kOptimizationGuidePushNotificationClientName[] =
 const char kOptimizationGuidePushNotificationClientDescription[] =
     "Enables the client that handles incoming push notifications on behalf of "
     "the optimization guide.";
-
-const char kPasswordNotesWithBackupName[] = "Password notes in settings";
-const char kPasswordNotesWithBackupDescription[] =
-    "Enables a note section for each password in the settings page.";
 
 const char kPasswordReuseDetectionName[] =
     "PhishGuard password reuse detection";
@@ -1078,9 +1063,6 @@ const char kEnableSessionSerializationOptimizationsDescription[] =
     "Enables the use of multiple separate files to save the session state "
     "and the ability to load only the minimum amount of data when restoring "
     "the session from disk.";
-
-const char kSFSymbolsFollowUpName[] = "SF Symbol follow up";
-const char kSFSymbolsFollowUpDescription[] = "Change the + button.";
 
 const char kTabGridRecencySortName[] = "Change TabGrid sorting";
 const char kTabGridRecencySortDescription[] =

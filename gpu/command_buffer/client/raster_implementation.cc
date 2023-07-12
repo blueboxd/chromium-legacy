@@ -359,7 +359,7 @@ class RasterImplementation::PaintOpSerializer {
 
  private:
   const raw_ptr<RasterImplementation> ri_;
-  raw_ptr<char, AllowPtrArithmetic | DanglingUntriaged> buffer_;
+  raw_ptr<char, AllowPtrArithmetic | DanglingAcrossTasks> buffer_;
   const raw_ptr<cc::DecodeStashingImageProvider> stashing_image_provider_;
   const raw_ptr<TransferCacheSerializeHelperImpl> transfer_cache_helper_;
   raw_ptr<ClientFontManager> font_manager_;
@@ -1267,29 +1267,32 @@ void RasterImplementation::WritePixelsYUV(const gpu::Mailbox& dest_mailbox,
   const std::array<SkPixmap, SkYUVAInfo::kMaxPlanes>& src_sk_pixmaps =
       src_yuv_pixmap.planes();
 
-  GLuint src_size = src_yuv_pixmap_info.computeTotalBytes();
-  GLuint total_size =
-      base::bits::AlignUp(src_size, static_cast<GLuint>(sizeof(uint64_t)));
+  GLuint total_size = 0;
+  for (int plane = 0; plane < src_yuv_info.numPlanes(); plane++) {
+    CHECK(src_sk_pixmaps[plane].addr());
+    total_size += base::bits::AlignUp(src_sk_pixmaps[plane].computeByteSize(),
+                                      sizeof(uint64_t));
+  }
 
-  std::unique_ptr<ScopedSharedMemoryPtr> scoped_shared_memory =
-      std::make_unique<ScopedSharedMemoryPtr>(total_size, transfer_buffer_,
-                                              mapped_memory_.get(), helper());
-  if (!scoped_shared_memory->valid()) {
+  ScopedSharedMemoryPtr scoped_shared_memory(total_size, transfer_buffer_,
+                                             mapped_memory_.get(), helper());
+  if (!scoped_shared_memory.valid()) {
     SetGLError(GL_INVALID_OPERATION, "WritePixelsYUV", "size too big");
     return;
   }
 
-  GLint shm_id = scoped_shared_memory->shm_id();
-  GLuint shm_offset = scoped_shared_memory->offset();
-  void* address = scoped_shared_memory->address();
+  GLint shm_id = scoped_shared_memory.shm_id();
+  GLuint shm_offset = scoped_shared_memory.offset();
+  void* address = scoped_shared_memory.address();
 
   // Copy the pixels for first plane at `address`.
+  CHECK(src_sk_pixmaps[0].addr());
   memcpy(static_cast<uint8_t*>(address), src_sk_pixmaps[0].addr(),
          src_sk_pixmaps[0].computeByteSize());
 
   GLuint plane_offsets[SkYUVAInfo::kMaxPlanes] = {};
-  for (int plane = 1; plane < SkYUVAInfo::kMaxPlanes; plane++) {
-    GLuint curr_plane_size = src_sk_pixmaps[plane].computeByteSize();
+  for (int plane = 1; plane < src_yuv_info.numPlanes(); plane++) {
+    CHECK(src_sk_pixmaps[plane].addr());
     // Calculate the offset based on previous plane offset and previous plane
     // size, and copy pixels for current plane starting at current plane
     // offset.
@@ -1299,7 +1302,8 @@ void RasterImplementation::WritePixelsYUV(const gpu::Mailbox& dest_mailbox,
         base::bits::AlignUp(prev_plane_size,
                             static_cast<GLuint>(sizeof(uint64_t)));
     memcpy(static_cast<uint8_t*>(address) + plane_offsets[plane],
-           src_sk_pixmaps[plane].addr(), curr_plane_size);
+           src_sk_pixmaps[plane].addr(),
+           src_sk_pixmaps[plane].computeByteSize());
   }
 
   helper_->WritePixelsYUVINTERNALImmediate(
@@ -1579,12 +1583,7 @@ void RasterImplementation::ReadbackImagePixelsINTERNAL(
     argb_request_queue_.push(std::move(request));
     SignalQuery(query,
                 base::BindOnce(&RasterImplementation::OnAsyncARGBReadbackDone,
-                               // We know that at least one or both pointers
-                               // were dangling. Crash reports was not precise
-                               // enough to determine which was it was. Marking
-                               // the two so that the study can move forward.
-                               base::UnsafeDanglingUntriaged(this),
-                               base::UnsafeDanglingUntriaged(request_ptr)));
+                               base::Unretained(this), request_ptr));
   } else {
     WaitForCmd();
 
@@ -1629,6 +1628,7 @@ void RasterImplementation::OnAsyncARGBReadbackDone(
 }
 
 void RasterImplementation::CancelRequests() {
+  gpu_control_->CancelAllQueries();
   while (!argb_request_queue_.empty()) {
     if (argb_request_queue_.front()->query)
       DeleteQueriesEXT(1, &argb_request_queue_.front()->query);

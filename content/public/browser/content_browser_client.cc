@@ -419,6 +419,12 @@ bool ContentBrowserClient::MayDeleteServiceWorkerRegistration(
   return true;
 }
 
+bool ContentBrowserClient::ShouldTryToUpdateServiceWorkerRegistration(
+    const GURL& scope,
+    BrowserContext* browser_context) {
+  return true;
+}
+
 void ContentBrowserClient::UpdateEnabledBlinkRuntimeFeaturesInIsolatedWorker(
     BrowserContext* context,
     const GURL& script_url,
@@ -720,6 +726,10 @@ base::FilePath ContentBrowserClient::GetNetLogDefaultDirectory() {
 
 base::FilePath ContentBrowserClient::GetFirstPartySetsDirectory() {
   return base::FilePath();
+}
+
+absl::optional<base::FilePath> ContentBrowserClient::GetLocalTracesDirectory() {
+  return absl::nullopt;
 }
 
 BrowserPpapiHost* ContentBrowserClient::GetExternalBrowserPpapiHost(
@@ -1370,7 +1380,7 @@ bool ContentBrowserClient::ShouldServiceWorkerInheritPolicyContainerFromCreator(
   return url.SchemeIsLocal();
 }
 
-bool ContentBrowserClient::ShouldAllowInsecureLocalNetworkRequests(
+bool ContentBrowserClient::ShouldAllowInsecurePrivateNetworkRequests(
     BrowserContext* browser_context,
     const url::Origin& origin) {
   return false;

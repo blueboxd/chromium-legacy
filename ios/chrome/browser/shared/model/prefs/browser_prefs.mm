@@ -52,8 +52,8 @@
 #import "components/supervised_user/core/browser/supervised_user_service.h"
 #import "components/supervised_user/core/common/buildflags.h"
 #import "components/supervised_user/core/common/pref_names.h"
-#import "components/sync/base/sync_prefs.h"
 #import "components/sync/service/glue/sync_transport_data_prefs.h"
+#import "components/sync/service/sync_prefs.h"
 #import "components/sync_device_info/device_info_prefs.h"
 #import "components/sync_sessions/session_sync_prefs.h"
 #import "components/translate/core/browser/translate_pref_names.h"
@@ -80,7 +80,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_field_trial.h"
-#import "ios/chrome/browser/ui/ntp/synced_segments_field_trial.h"
 #import "ios/chrome/browser/voice/voice_search_prefs_registration.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
 #import "ios/web/common/features.h"
@@ -135,6 +134,9 @@ const char* kTrialGroupMICeAndDefaultBrowserVersionPrefName =
 
 // Deprecated 04/2023.
 const char kTrialPrefName[] = "trending_queries.trial_version";
+
+// Deprecated 07/2023.
+const char kUnifiedConsentMigrationState[] = "unified_consent.migration_state";
 }  // namespace
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
@@ -152,7 +154,6 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   update_client::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
   new_tab_page_field_trial::RegisterLocalStatePrefs(registry);
-  synced_segments_field_trial::RegisterLocalStatePrefs(registry);
   component_updater::RegisterComponentUpdateServicePrefs(registry);
   component_updater::AutofillStatesComponentInstallerPolicy::RegisterPrefs(
       registry);
@@ -201,6 +202,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kOverflowMenuNewDestinations,
                              PrefRegistry::LOSSY_PREF);
   registry->RegisterListPref(prefs::kOverflowMenuDestinationsOrder);
+  registry->RegisterDictionaryPref(prefs::kOverflowMenuActionsOrder);
 
   // Preferences related to Enterprise policies.
   registry->RegisterListPref(prefs::kRestrictAccountsToPatterns);
@@ -425,6 +427,9 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ntp_snippets::prefs::RegisterProfilePrefsForMigrationApril2023(registry);
 
   registry->RegisterBooleanPref(kDeprecatedReadingListHasUnseenEntries, false);
+
+  // Deprecated 07/2023.
+  registry->RegisterIntegerPref(kUnifiedConsentMigrationState, 0);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -499,4 +504,7 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
 
   // Added 04/2023.
   ntp_snippets::prefs::MigrateObsoleteProfilePrefsApril2023(prefs);
+
+  // Added 07/2023.
+  prefs->ClearPref(kUnifiedConsentMigrationState);
 }

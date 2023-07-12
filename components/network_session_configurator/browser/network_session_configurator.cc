@@ -489,13 +489,6 @@ quic::ParsedQuicVersionVector GetQuicVersions(
   return filtered_versions;
 }
 
-bool ShouldEnableServerPushCancelation(
-    const VariationParameters& quic_trial_params) {
-  return base::EqualsCaseInsensitiveASCII(
-      GetVariationParam(quic_trial_params, "enable_server_push_cancellation"),
-      "true");
-}
-
 bool AreQuicParamsValid(const base::CommandLine& command_line,
                         base::StringPiece quic_trial_group,
                         const VariationParameters& quic_trial_params) {
@@ -552,9 +545,6 @@ void ConfigureQuicParams(const base::CommandLine& command_line,
     // Skip parsing of invalid params.
     return;
   }
-
-  params->enable_server_push_cancellation =
-      ShouldEnableServerPushCancelation(quic_trial_params);
 
   quic_params->retry_without_alt_svc_on_quic_errors =
       ShouldRetryWithoutAltSvcOnQuicErrors(quic_trial_params);
@@ -795,24 +785,20 @@ net::URLRequestContextBuilder::HttpCacheParams::Type ChooseCacheType() {
     return net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE;
   }
 
-  // Blockfile breaks on OSX 10.14 (see https://crbug.com/899874); so use
-  // SimpleCache even when we don't enable it via experiment, as long as we
-  // don't force it off (not used at this time). This unfortunately
-  // muddles the experiment data, but as this was written to be considered for
-  // backport, having it behave differently than in stable would be a bigger
-  // problem.
-#if BUILDFLAG(IS_MAC)
-  if (base::mac::IsAtLeastOS10_14())
-    return net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
-#endif  // BUILDFLAG(IS_MAC)
-
   if (base::StartsWith(experiment_name, "ExperimentYes",
                        base::CompareCase::INSENSITIVE_ASCII)) {
     return net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
   }
 #endif  // #if !BUILDFLAG(IS_ANDROID)
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  // Blockfile breaks on macOS 10.14 (see https://crbug.com/899874); so use
+  // SimpleCache even when we don't enable it via experiment, as long as we
+  // don't force it off (not used at this time). This unfortunately
+  // muddles the experiment data, but as this was written to be considered for
+  // backport, having it behave differently than in stable would be a bigger
+  // problem. TODO: Does this work in later macOS releases?
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_MAC)
   return net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
 #else
   return net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE;

@@ -899,6 +899,15 @@ absl::optional<float> SplitViewController::ComputeSnapRatio(
   return absl::nullopt;
 }
 
+bool SplitViewController::WillStartOverview() const {
+  // Note that at this point `state_` may not have been updated yet, so check if
+  // only one of `primary_window_` or `secondary_window_` are snapped.
+  return !IsInOverviewSession() && !DesksController::Get()->animation() &&
+         (split_view_type_ == SplitViewType::kTabletType ||
+          IsSnapGroupEnabledInClamshellMode()) &&
+         !!primary_window_ != !!secondary_window_;
+}
+
 void SplitViewController::SnapWindow(aura::Window* window,
                                      SnapPosition snap_position,
                                      WindowSnapActionSource snap_action_source,
@@ -1369,8 +1378,9 @@ int SplitViewController::GetDividerPosition(SnapPosition snap_position,
   int next_divider_position = snap_position == SnapPosition::kPrimary
                                   ? snap_width
                                   : divider_end_position - snap_width;
-  if (split_view_type_ == SplitViewType::kTabletType ||
-      IsSnapGroupEnabledInClamshellMode()) {
+  if (split_view_divider_) {
+    // The divider may be visible in tablet mode, or between two windows in a
+    // snap group in clamshell mode.
     next_divider_position -= kSplitviewDividerShortSideLength / 2;
   }
   return next_divider_position;
@@ -2790,11 +2800,7 @@ void SplitViewController::OnWindowSnapped(
   // only one snapped window in split screen when in tablet mode or clamshell
   // mode when `CanEnterOverview()` returns true, the check will happen in
   // `OverviewController`.
-  if (!IsInOverviewSession() && !DesksController::Get()->animation() &&
-      (split_view_type_ == SplitViewType::kTabletType ||
-       snap_group_enabled_in_clamshell) &&
-      (state_ == State::kPrimarySnapped ||
-       state_ == State::kSecondarySnapped)) {
+  if (WillStartOverview()) {
     in_snap_group_creation_session_ = snap_group_enabled_in_clamshell;
     Shell::Get()->overview_controller()->StartOverview(
         OverviewStartAction::kSplitView, OverviewEnterExitType::kNormal);

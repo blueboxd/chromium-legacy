@@ -2256,6 +2256,12 @@ void AXObjectCacheImpl::UpdateCacheAfterNodeIsAttachedWithCleanLayout(
   if (AXObject::HasARIAOwns(element))
     HandleAttributeChangedWithCleanLayout(html_names::kAriaOwnsAttr, element);
 
+  if (AccessibleNode::GetPropertyOrARIAAttributeValue(
+          element, AOMRelationProperty::kActiveDescendant)) {
+    HandleAttributeChangedWithCleanLayout(html_names::kAriaActivedescendantAttr,
+                                          element);
+  }
+
   AXObject* obj = Get(node);
   MaybeNewRelationTarget(*node, obj);
 
@@ -2304,6 +2310,7 @@ void AXObjectCacheImpl::UpdateCacheAfterNodeIsAttachedWithCleanLayout(
     if (parent) {
       UpdateTableRoleWithCleanLayout(parent);
     }
+    TableCellRoleMaybeChanged(node);
   }
 }
 
@@ -2522,6 +2529,8 @@ void AXObjectCacheImpl::ChildrenChangedWithCleanLayout(Node* optional_node,
 
   if (optional_node)
     relation_cache_->UpdateRelatedTree(optional_node, obj);
+
+  TableCellRoleMaybeChanged(optional_node);
 }
 
 void AXObjectCacheImpl::UpdateTreeIfNeededOnce() {
@@ -3329,6 +3338,13 @@ void AXObjectCacheImpl::HandleActiveDescendantChangedWithCleanLayout(
   // it can affect what's focusable or not.
   modification_count_++;
 
+  if (Element* element = DynamicTo<Element>(node)) {
+    if (auto& value = AccessibleNode::GetPropertyOrARIAAttributeValue(
+            element, AOMRelationProperty::kActiveDescendant)) {
+      relation_cache_->UpdateReverseActiveDescendantRelations(node, value);
+    }
+  }
+
   if (AXObject* obj = GetOrCreate(node))
     obj->HandleActiveDescendantChanged();
 }
@@ -3348,9 +3364,30 @@ void AXObjectCacheImpl::SectionOrRegionRoleMaybeChanged(Element* element) {
   HandleRoleMaybeChangedWithCleanLayout(element);
 }
 
+void AXObjectCacheImpl::TableCellRoleMaybeChanged(Node* node) {
+  if (!node) {
+    return;
+  }
+  // The role for a table cell depends in complex ways on multiple of its
+  // siblings (see DecideRoleFromSiblings). Rather than attempt to reproduce
+  // that logic here for invalidation, just recompute the role of all siblings
+  // when new table cells are added.
+  if (auto* cell = DynamicTo<HTMLTableCellElement>(node)) {
+    for (auto* prev = LayoutTreeBuilderTraversal::PreviousSibling(*cell); prev;
+         prev = LayoutTreeBuilderTraversal::PreviousSibling(*prev)) {
+      HandleRoleMaybeChangedWithCleanLayout(prev);
+    }
+    HandleRoleMaybeChangedWithCleanLayout(cell);
+    for (auto* next = LayoutTreeBuilderTraversal::NextSibling(*cell); next;
+         next = LayoutTreeBuilderTraversal::PreviousSibling(*next)) {
+      HandleRoleMaybeChangedWithCleanLayout(next);
+    }
+  }
+}
+
 void AXObjectCacheImpl::HandleRoleMaybeChangedWithCleanLayout(Node* node) {
-  // If role would stay the same, do nothing.
   if (AXObject* obj = GetOrCreate(node)) {
+    // If role would stay the same, do nothing.
     if (obj->RoleValue() == obj->DetermineAccessibilityRole()) {
       return;
     }
@@ -3721,13 +3758,16 @@ void AXObjectCacheImpl::HandleEventSubscriptionChanged(
   MarkElementDirty(&node);
   // If the ignored state changes, the parent's children may have changed.
   if (AXObject* obj = SafeGet(&node)) {
-    if (obj->CachedParentObject())
-      ChildrenChanged(obj->CachedParentObject());
-    // The role of an element depends on whether it has an event listener, so
-    // check if the role changed, and if so re-create the object.
-    if (obj->RoleValue() != obj->DetermineAccessibilityRole()) {
-      DeferTreeUpdate(&AXObjectCacheImpl::HandleRoleMaybeChangedWithCleanLayout,
-                      &node);
+    if (!obj->IsDetached()) {
+      if (obj->CachedParentObject()) {
+        ChildrenChanged(obj->CachedParentObject());
+      }
+      // The role of an element depends on whether it has an event listener, so
+      // check if the role changed, and if so re-create the object.
+      if (obj->RoleValue() != obj->DetermineAccessibilityRole()) {
+        DeferTreeUpdate(
+            &AXObjectCacheImpl::HandleRoleMaybeChangedWithCleanLayout, &node);
+      }
     }
   }
 }
@@ -3982,6 +4022,19 @@ void AXObjectCacheImpl::ResetSerializer() {
 void AXObjectCacheImpl::MarkElementDirty(const Node* element) {
   // Warning, if no AXObject exists for element, nothing is marked dirty.
   MarkAXObjectDirty(Get(element));
+}
+
+WTF::Vector<TextChangedOperation>*
+AXObjectCacheImpl::GetFromTextOperationInNodeIdMap(AXID id) {
+  auto it = text_operation_in_node_ids_.find(id);
+  if (it != text_operation_in_node_ids_.end()) {
+    return &it.Get()->value;
+  }
+  return nullptr;
+}
+
+void AXObjectCacheImpl::ClearTextOperationInNodeIdMap() {
+  text_operation_in_node_ids_.clear();
 }
 
 void AXObjectCacheImpl::MarkElementDirtyWithCleanLayout(const Node* element) {
@@ -4425,17 +4478,51 @@ void AXObjectCacheImpl::HandleEditableTextContentChanged(Node* node) {
       node);
 }
 
+void AXObjectCacheImpl::HandleDeletionOrInsertionInTextField(
+    const SelectionInDOMTree& changed_selection,
+    bool is_deletion) {
+  Position start_pos = changed_selection.ComputeStartPosition();
+  Position end_pos = changed_selection.ComputeEndPosition();
+
+  // Currently there are scenarios where the start/end are not offset in
+  // anchor, if this is the case, we need to compute their offset in the
+  // container node since we need this information on the browser side.
+  int start_offset = start_pos.ComputeOffsetInContainerNode();
+  int end_offset = end_pos.ComputeOffsetInContainerNode();
+
+  AXObject* start_obj = GetOrCreate(start_pos.ComputeContainerNode());
+  AXObject* end_obj = GetOrCreate(end_pos.ComputeContainerNode());
+  if (!start_obj || !end_obj) {
+    return;
+  }
+
+  AXObject* text_field_obj = start_obj->GetTextFieldAncestor();
+  if (!text_field_obj) {
+    return;
+  }
+
+  auto it = text_operation_in_node_ids_.find(text_field_obj->AXObjectID());
+  ax::mojom::blink::Command op = is_deletion
+                                     ? ax::mojom::blink::Command::kDelete
+                                     : ax::mojom::blink::Command::kInsert;
+  if (it != text_operation_in_node_ids_.end()) {
+    it->value.push_back(TextChangedOperation(start_offset, end_offset,
+                                             start_obj->AXObjectID(),
+                                             end_obj->AXObjectID(), op));
+  } else {
+    WTF::Vector<TextChangedOperation> info{
+        TextChangedOperation(start_offset, end_offset, start_obj->AXObjectID(),
+                             end_obj->AXObjectID(), op)};
+    text_operation_in_node_ids_.Set(text_field_obj->AXObjectID(), info);
+  }
+}
+
 void AXObjectCacheImpl::HandleEditableTextContentChangedWithCleanLayout(
     Node* node) {
-  AXObject* obj = nullptr;
-  do {
-    obj = GetOrCreate(node);
-  } while (!obj && (node = node->parentNode()));
-  if (!obj)
-    return;
-
-  while (obj && !obj->IsTextField())
-    obj = obj->ParentObject();
+  AXObject* obj = GetOrCreate(node);
+  if (obj) {
+    obj = obj->GetTextFieldAncestor();
+  }
 
   PostNotification(obj, ax::mojom::Event::kValueChanged);
 }
@@ -4703,7 +4790,7 @@ void AXObjectCacheImpl::OnTouchAccessibilityHover(const gfx::Point& location) {
 
 void AXObjectCacheImpl::SetCanvasObjectBounds(HTMLCanvasElement* canvas,
                                               Element* element,
-                                              const LayoutRect& rect) {
+                                              const PhysicalRect& rect) {
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION();
 
   AXObject* obj = GetOrCreate(element);

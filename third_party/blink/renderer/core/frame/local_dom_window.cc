@@ -2219,7 +2219,7 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   frame_request.GetResourceRequest().SetHasUserGesture(has_user_gesture);
   GetFrame()->MaybeLogAdClickNavigation();
 
-  if (has_user_gesture && window_features.attribution_srcs.has_value()) {
+  if (window_features.attribution_srcs.has_value()) {
     // An impression must be attached prior to the
     // `FindOrCreateFrameForNavigation()` call, as that call may result in
     // performing a navigation if the call results in creating a new window with
@@ -2228,7 +2228,8 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
                                     ->GetAttributionSrcLoader()
                                     ->RegisterNavigation(
                                         /*navigation_url=*/completed_url,
-                                        *window_features.attribution_srcs));
+                                        *window_features.attribution_srcs,
+                                        has_user_gesture));
   }
 
   FrameTree::FindResult result =
@@ -2368,17 +2369,12 @@ void LocalDOMWindow::Trace(Visitor* visitor) const {
   ExecutionContext::Trace(visitor);
   Supplementable<LocalDOMWindow>::Trace(visitor);
 }
+
 bool LocalDOMWindow::CrossOriginIsolatedCapability() const {
   return Agent::IsCrossOriginIsolated() &&
          IsFeatureEnabled(
              mojom::blink::PermissionsPolicyFeature::kCrossOriginIsolated) &&
-         GetFrame() &&
-         !(GetFrame()->Loader().IsOnInitialEmptyDocument()
-               ? GetFrame()
-                     ->CoopForbidsInitialEmptyDocumentToBeCrossOriginIsolated()
-               : GetFrame()
-                     ->Loader()
-                     .CoopForbidsDocumentToBeCrossOriginIsolated());
+         GetPolicyContainer()->GetPolicies().allow_cross_origin_isolation;
 }
 
 bool LocalDOMWindow::IsIsolatedContext() const {
@@ -2497,17 +2493,46 @@ void LocalDOMWindow::SetHasStorageAccess() {
   has_storage_access_ = true;
 }
 
-bool LocalDOMWindow::HadActivationlessPaymentRequest() const {
-  return had_activationless_payment_request_;
-}
+void LocalDOMWindow::maximize() {
+  if (!GetFrame() || !GetFrame()->IsOutermostMainFrame() ||
+      GetFrame()->GetPage()->IsPrerendering()) {
+    return;
+  }
 
-void LocalDOMWindow::SetHadActivationlessPaymentRequest() {
-  had_activationless_payment_request_ = true;
+#if defined(USE_AURA)
+  GetFrame()->GetLocalFrameHostRemote().Maximize();
+#else
+  // API works only on Aura platforms for now.
+  return;
+#endif
 }
 
 void LocalDOMWindow::minimize() {
-  // TODO(isandrk): API is WIP. Explainer link:
-  // https://github.com/ivansandrk/additional-windowing-controls/blob/main/awc-explainer.md
+  if (!GetFrame() || !GetFrame()->IsOutermostMainFrame() ||
+      GetFrame()->GetPage()->IsPrerendering()) {
+    return;
+  }
+
+#if defined(USE_AURA)
+  GetFrame()->GetLocalFrameHostRemote().Minimize();
+#else
+  // API works only on Aura platforms for now.
+  return;
+#endif
+}
+
+void LocalDOMWindow::restore() {
+  if (!GetFrame() || !GetFrame()->IsOutermostMainFrame() ||
+      GetFrame()->GetPage()->IsPrerendering()) {
+    return;
+  }
+
+#if defined(USE_AURA)
+  GetFrame()->GetLocalFrameHostRemote().Restore();
+#else
+  // API works only on Aura platforms for now.
+  return;
+#endif
 }
 
 void LocalDOMWindow::GenerateNewNavigationId() {

@@ -38,6 +38,7 @@ import org.mockito.Spy;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.Restriction;
@@ -164,6 +165,7 @@ public class RestoreTabsTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1459179")
     public void testRestoreTabsPromo_testOpenDeviceScreenAndRestore() {
         setupMultipleDevicesAndTabsMockData();
         Assert.assertEquals(1, mActivityTestRule.tabsCount(false));
@@ -200,6 +202,7 @@ public class RestoreTabsTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1459179")
     public void testRestoreTabsPromo_testOpenReviewTabsScreenBackButtonRestore() {
         setupMultipleDevicesAndTabsMockData();
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
@@ -241,6 +244,7 @@ public class RestoreTabsTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1459179")
     public void testRestoreTabsPromo_testOpenReviewTabsScreenBackPressChangeDevice() {
         setupMultipleDevicesAndTabsMockData();
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
@@ -299,6 +303,7 @@ public class RestoreTabsTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1459179")
     public void testRestoreTabsPromo_testReviewTabsScreenToggleSelection() {
         setupMultipleDevicesAndTabsMockData();
         Assert.assertEquals(1, mActivityTestRule.tabsCount(false));

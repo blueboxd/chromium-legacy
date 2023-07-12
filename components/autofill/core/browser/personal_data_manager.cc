@@ -665,6 +665,18 @@ void PersonalDataManager::OnStateChanged(syncer::SyncService* sync_service) {
       sync_service && !sync_service->IsSyncFeatureEnabled());
 }
 
+void PersonalDataManager::OnSyncPaymentsIntegrationEnabledChanged(
+    syncer::SyncService* sync_service) {
+  DCHECK_EQ(sync_service_, sync_service);
+
+  if (!sync_service_->GetUserSettings()->IsPaymentsIntegrationEnabled()) {
+    // Re-mask all server cards when the user turns off wallet card
+    // integration.
+    ResetFullServerCards();
+    NotifyPersonalDataObserver();
+  }
+}
+
 void PersonalDataManager::OnSyncShutdown(syncer::SyncService* sync_service) {
   DCHECK_EQ(sync_service_, sync_service);
   sync_service_->RemoveObserver(this);
@@ -892,6 +904,16 @@ bool PersonalDataManager::IsCountryEligibleForAccountStorage(
   constexpr char const* kUnsupportedCountries[] = {"CU", "IR", "KP", "SD",
                                                    "SY"};
   return !base::Contains(kUnsupportedCountries, country_code);
+}
+
+void PersonalDataManager::MigrateProfileToAccount(
+    const AutofillProfile& profile) {
+  CHECK_EQ(profile.source(), AutofillProfile::Source::kLocalOrSyncable);
+  AutofillProfile account_profile = profile.ConvertToAccountProfile();
+  DCHECK_NE(profile.guid(), account_profile.guid());
+  // Update the database (and this way indirectly Sync).
+  RemoveByGUID(profile.guid());
+  AddProfile(account_profile);
 }
 
 std::string PersonalDataManager::AddIBAN(const IBAN& iban) {
@@ -1636,7 +1658,17 @@ bool PersonalDataManager::IsAutofillIBANEnabled() const {
 }
 
 bool PersonalDataManager::IsAutofillWalletImportEnabled() const {
-  return prefs::IsPaymentsIntegrationEnabled(pref_service_);
+  if (is_syncing_for_test_) {
+    return true;
+  }
+
+  if (!sync_service_) {
+    // Without `sync_service_`, namely in off-the-record profiles, wallet import
+    // is effectively disabled.
+    return false;
+  }
+
+  return sync_service_->GetUserSettings()->IsPaymentsIntegrationEnabled();
 }
 
 bool PersonalDataManager::ShouldSuggestServerCards() const {
@@ -1646,8 +1678,7 @@ bool PersonalDataManager::ShouldSuggestServerCards() const {
   if (is_syncing_for_test_)
     return true;
 
-  if (!sync_service_)
-    return false;
+  CHECK(sync_service_);
 
   // Check if the user is in sync transport mode for wallet data.
   if (!sync_service_->IsSyncFeatureEnabled()) {
@@ -1668,7 +1699,6 @@ std::string PersonalDataManager::CountryCodeForCurrentTimezone() const {
 }
 
 void PersonalDataManager::SetPrefService(PrefService* pref_service) {
-  wallet_enabled_pref_ = std::make_unique<BooleanPrefMember>();
   profile_enabled_pref_ = std::make_unique<BooleanPrefMember>();
   credit_card_enabled_pref_ = std::make_unique<BooleanPrefMember>();
   pref_service_ = pref_service;
@@ -1683,11 +1713,6 @@ void PersonalDataManager::SetPrefService(PrefService* pref_service) {
         prefs::kAutofillProfileEnabled, pref_service_,
         base::BindRepeating(&PersonalDataManager::EnableAutofillPrefChanged,
                             base::Unretained(this)));
-    wallet_enabled_pref_->Init(
-        prefs::kAutofillWalletImportEnabled, pref_service_,
-        base::BindRepeating(
-            &PersonalDataManager::EnableWalletIntegrationPrefChanged,
-            base::Unretained(this)));
   }
 }
 
@@ -2356,15 +2381,6 @@ std::string PersonalDataManager::MostCommonCountryCodeFromProfiles() const {
   }
 
   return std::string();
-}
-
-void PersonalDataManager::EnableWalletIntegrationPrefChanged() {
-  if (!prefs::IsPaymentsIntegrationEnabled(pref_service_)) {
-    // Re-mask all server cards when the user turns off wallet card
-    // integration.
-    ResetFullServerCards();
-    NotifyPersonalDataObserver();
-  }
 }
 
 void PersonalDataManager::EnableAutofillPrefChanged() {

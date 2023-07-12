@@ -1667,9 +1667,12 @@
     "self-block",
     "self-inline",
 
-    // anchor-scroll
+    // anchor-default
     "implicit",
     // none,
+
+    // position-fallback-bounds
+    // normal,
 
     // animation-[end-]delay
     // contain
@@ -1682,5 +1685,8 @@
     // scroll()
     "root",
     "nearest",
+
+    // transition-animation-type
+    "discrete",
   ],
 }

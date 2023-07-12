@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/coord_box_offset_path_operation.h"
 #include "third_party/blink/renderer/core/style/grid_area.h"
+#include "third_party/blink/renderer/core/style/paint_order_array.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/reference_offset_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
@@ -192,34 +193,6 @@ const CSSValue* AnchorName::CSSValueFromComputedStyleInternal(
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   }
   return MakeGarbageCollected<CSSCustomIdentValue>(*style.AnchorName());
-}
-
-const CSSValue* AnchorScroll::ParseSingleValue(
-    CSSParserTokenRange& range,
-    const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
-  if (CSSValue* value = css_parsing_utils::ConsumeIdent<
-          CSSValueID::kNone, CSSValueID::kDefault, CSSValueID::kImplicit>(
-          range)) {
-    return value;
-  }
-  return css_parsing_utils::ConsumeDashedIdent(range, context);
-}
-const CSSValue* AnchorScroll::CSSValueFromComputedStyleInternal(
-    const ComputedStyle& style,
-    const LayoutObject*,
-    bool allow_visited_style) const {
-  if (!style.AnchorScroll()) {
-    return CSSIdentifierValue::Create(CSSValueID::kNone);
-  }
-  if (style.AnchorScroll()->IsDefault()) {
-    return CSSIdentifierValue::Create(CSSValueID::kDefault);
-  }
-  if (style.AnchorScroll()->IsImplicit()) {
-    return CSSIdentifierValue::Create(CSSValueID::kImplicit);
-  }
-  return MakeGarbageCollected<CSSCustomIdentValue>(
-      style.AnchorScroll()->GetName());
 }
 
 const CSSValue* AnimationComposition::ParseSingleValue(
@@ -6408,31 +6381,12 @@ const CSSValue* PaintOrder::CSSValueFromComputedStyleInternal(
     return CSSIdentifierValue::Create(CSSValueID::kNormal);
   }
 
-  // Table mapping to the shortest (canonical) form of the property.
-  //
-  // Per spec, if any keyword is omitted it will be added last using
-  // the standard ordering. So "stroke" implies an order "stroke fill
-  // markers" etc. From a serialization PoV this means we never need
-  // to emit the last keyword.
-  //
-  // https://svgwg.org/svg2-draft/painting.html#PaintOrder
-  static const uint8_t canonical_form[][2] = {
-      // kPaintOrderNormal is handled above.
-      {PT_FILL, PT_NONE},       // kPaintOrderFillStrokeMarkers
-      {PT_FILL, PT_MARKERS},    // kPaintOrderFillMarkersStroke
-      {PT_STROKE, PT_NONE},     // kPaintOrderStrokeFillMarkers
-      {PT_STROKE, PT_MARKERS},  // kPaintOrderStrokeMarkersFill
-      {PT_MARKERS, PT_NONE},    // kPaintOrderMarkersFillStroke
-      {PT_MARKERS, PT_STROKE},  // kPaintOrderMarkersStrokeFill
-  };
-  DCHECK_LT(static_cast<size_t>(paint_order) - 1, std::size(canonical_form));
+  const unsigned canonical_length =
+      PaintOrderArray::CanonicalLength(paint_order);
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  for (const auto& keyword : canonical_form[paint_order - 1]) {
-    const auto paint_order_type = static_cast<EPaintOrderType>(keyword);
-    if (paint_order_type == PT_NONE) {
-      break;
-    }
-    list->Append(*CSSIdentifierValue::Create(paint_order_type));
+  const PaintOrderArray paint_order_array(paint_order);
+  for (unsigned i = 0; i < canonical_length; ++i) {
+    list->Append(*CSSIdentifierValue::Create(paint_order_array[i]));
   }
   return list;
 }
@@ -6560,6 +6514,30 @@ const CSSValue* PositionFallback::CSSValueFromComputedStyleInternal(
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   }
   return MakeGarbageCollected<CSSCustomIdentValue>(*style.PositionFallback());
+}
+
+const CSSValue* PositionFallbackBounds::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  if (CSSValue* value =
+          css_parsing_utils::ConsumeIdent<CSSValueID::kNormal>(range)) {
+    return value;
+  }
+  if (CSSValue* value = css_parsing_utils::ConsumeDashedIdent(range, context)) {
+    return value;
+  }
+  return nullptr;
+}
+const CSSValue* PositionFallbackBounds::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  if (!style.PositionFallbackBounds()) {
+    return CSSIdentifierValue::Create(CSSValueID::kNormal);
+  }
+  return MakeGarbageCollected<CSSCustomIdentValue>(
+      *style.PositionFallbackBounds());
 }
 
 const CSSValue* Quotes::ParseSingleValue(CSSParserTokenRange& range,
@@ -8550,6 +8528,39 @@ const CSSValue* TransitionProperty::InitialValue() const {
   return CSSIdentifierValue::Create(CSSValueID::kAll);
 }
 
+namespace {
+CSSIdentifierValue* ConsumeIdentNoTemplate(CSSParserTokenRange& range,
+                                           const CSSParserContext&) {
+  return css_parsing_utils::ConsumeIdent(range);
+}
+}  // namespace
+
+const CSSValue* TransitionAnimationType::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  CSSValueList* list = css_parsing_utils::ConsumeCommaSeparatedList(
+      ConsumeIdentNoTemplate, range, context);
+  if (!list || !css_parsing_utils::IsValidTransitionAnimationTypeList(*list)) {
+    return nullptr;
+  }
+  return list;
+}
+
+const CSSValue* TransitionAnimationType::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValueForTransitionAnimationType(
+      style.Transitions());
+}
+
+const CSSValue* TransitionAnimationType::InitialValue() const {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  list->Append(*CSSIdentifierValue::Create(CSSValueID::kNormal));
+  return list;
+}
+
 const CSSValue* TransitionTimingFunction::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -9081,26 +9092,6 @@ const CSSValue* WebkitFontSmoothing::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetFontDescription().FontSmoothing());
-}
-
-const CSSValue* WebkitHighlight::ParseSingleValue(
-    CSSParserTokenRange& range,
-    const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
-  if (range.Peek().Id() == CSSValueID::kNone) {
-    return css_parsing_utils::ConsumeIdent(range);
-  }
-  return css_parsing_utils::ConsumeString(range);
-}
-
-const CSSValue* WebkitHighlight::CSSValueFromComputedStyleInternal(
-    const ComputedStyle& style,
-    const LayoutObject*,
-    bool allow_visited_style) const {
-  if (style.Highlight() == g_null_atom) {
-    return CSSIdentifierValue::Create(CSSValueID::kNone);
-  }
-  return MakeGarbageCollected<CSSStringValue>(style.Highlight());
 }
 
 const CSSValue* HyphenateCharacter::ParseSingleValue(

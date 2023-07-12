@@ -381,6 +381,7 @@ inline RuleIndexList* ElementRuleCollector::EnsureRuleList() {
 
 void ElementRuleCollector::AddElementStyleProperties(
     const CSSPropertyValueSet* property_set,
+    CascadeOrigin origin,
     bool is_cacheable,
     bool is_inline_style) {
   if (!property_set) {
@@ -388,11 +389,9 @@ void ElementRuleCollector::AddElementStyleProperties(
   }
   auto link_match_type = static_cast<unsigned>(CSSSelector::kMatchAll);
   result_.AddMatchedProperties(
-      property_set,
-      AddMatchedPropertiesOptions::Builder()
-          .SetLinkMatchType(AdjustLinkMatchType(inside_link_, link_match_type))
-          .SetIsInlineStyle(is_inline_style)
-          .Build());
+      property_set, origin,
+      {.link_match_type = AdjustLinkMatchType(inside_link_, link_match_type),
+       .is_inline_style = is_inline_style});
   if (!is_cacheable) {
     result_.SetIsCacheable(false);
   }
@@ -867,6 +866,11 @@ void ElementRuleCollector::CollectMatchingShadowHostRules(
     CollectMatchingRulesForList(bundle.rule_set->ShadowHostRules(),
                                 match_request, bundle.rule_set,
                                 bundle.style_sheet_index, checker);
+    if (bundle.rule_set->MayHaveScopeInUniversalBucket()) {
+      CollectMatchingRulesForList(bundle.rule_set->UniversalRules(),
+                                  match_request, bundle.rule_set,
+                                  bundle.style_sheet_index, checker);
+    }
   }
 }
 
@@ -975,6 +979,7 @@ void ElementRuleCollector::AppendCSSOMWrapperForRule(
 }
 
 void ElementRuleCollector::SortAndTransferMatchedRules(
+    CascadeOrigin origin,
     bool is_vtt_embedded_style,
     StyleRuleUsageTracker* tracker) {
   if (matched_rules_.empty()) {
@@ -1007,15 +1012,13 @@ void ElementRuleCollector::SortAndTransferMatchedRules(
           static_cast<MatchFlags>(MatchFlag::kAffectedByStartingStyle));
     }
     result_.AddMatchedProperties(
-        &rule_data->Rule()->Properties(),
-        AddMatchedPropertiesOptions::Builder()
-            .SetLinkMatchType(
-                AdjustLinkMatchType(inside_link_, rule_data->LinkMatchType()))
-            .SetValidPropertyFilter(
-                rule_data->GetValidPropertyFilter(matching_ua_rules_))
-            .SetLayerOrder(matched_rule.LayerOrder())
-            .SetIsInlineStyle(is_vtt_embedded_style)
-            .Build());
+        &rule_data->Rule()->Properties(), origin,
+        {.link_match_type =
+             AdjustLinkMatchType(inside_link_, rule_data->LinkMatchType()),
+         .valid_property_filter =
+             rule_data->GetValidPropertyFilter(matching_ua_rules_),
+         .layer_order = matched_rule.LayerOrder(),
+         .is_inline_style = is_vtt_embedded_style});
   }
 
   if (tracker) {

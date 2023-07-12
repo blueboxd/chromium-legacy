@@ -23,6 +23,7 @@
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/site_engagement/content/site_engagement_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents.h"
@@ -30,6 +31,15 @@
 #include "net/cookies/site_for_cookies.h"
 
 using base::UserMetricsAction;
+using site_engagement::SiteEngagementService;
+
+namespace {
+
+// The number of page reloads in the last 30 seconds that is considered to be a
+// high confidence breakage signal.
+constexpr int kFrequentReloadThreshold = 3;
+
+}  // namespace
 
 namespace content_settings {
 
@@ -146,12 +156,23 @@ CookieControlsController::GetConfidenceLevel(CookieControlsStatus status,
     return CookieControlsBreakageConfidenceLevel::kLow;
   }
 
-  // TODO(crbug.com/1446230): Check if FedCM or SAA were requested.
+  // TODO(crbug.com/1446230): Check if FedCM was requested.
+  auto* web_contents = GetWebContents();
+  const GURL& url = web_contents->GetLastCommittedURL();
+  if (cookie_settings_->HasAnyFrameRequestedStorageAccess(url)) {
+    return CookieControlsBreakageConfidenceLevel::kMedium;
+  }
 
-  // TODO(crbug.com/1446230): Check if user has refreshed the page multiple
-  // times in the last minute.
+  if (recent_reloads_count_ >= kFrequentReloadThreshold) {
+    return CookieControlsBreakageConfidenceLevel::kHigh;
+  }
 
-  // TODO(crbug.com/1446230): Check if the site has high site engagement index.
+  auto score = SiteEngagementService::Get(GetWebContents()->GetBrowserContext())
+                   ->GetScore(GetWebContents()->GetVisibleURL());
+  if (SiteEngagementService::IsEngagementAtLeast(
+          score, blink::mojom::EngagementLevel::HIGH)) {
+    return CookieControlsBreakageConfidenceLevel::kHigh;
+  }
 
   // TODO(crbug.com/1446230): Record if the entry point was already animated for
   // the site. Only animate it once per site.
@@ -191,7 +212,7 @@ bool CookieControlsController::FirstPartyCookiesBlocked() {
 
 int CookieControlsController::GetAllowedCookieCount() const {
   auto* pscs = content_settings::PageSpecificContentSettings::GetForPage(
-      tab_observer_->web_contents()->GetPrimaryPage());
+      GetWebContents()->GetPrimaryPage());
   if (pscs) {
     return pscs->allowed_local_shared_objects().GetObjectCount();
   } else {
@@ -200,7 +221,7 @@ int CookieControlsController::GetAllowedCookieCount() const {
 }
 int CookieControlsController::GetBlockedCookieCount() const {
   auto* pscs = content_settings::PageSpecificContentSettings::GetForPage(
-      tab_observer_->web_contents()->GetPrimaryPage());
+      GetWebContents()->GetPrimaryPage());
   if (pscs) {
     return pscs->blocked_local_shared_objects().GetObjectCount();
   } else {
@@ -212,7 +233,7 @@ int CookieControlsController::GetAllowedSitesCount() const {
   // TODO(crbug.com/1446230): The method should return the number of allowed
   // *third-party* sites (and take BDM into account).
   auto* pscs = content_settings::PageSpecificContentSettings::GetForPage(
-      tab_observer_->web_contents()->GetPrimaryPage());
+      GetWebContents()->GetPrimaryPage());
   if (!pscs) {
     return 0;
   }
@@ -225,7 +246,7 @@ int CookieControlsController::GetBlockedSitesCount() const {
   // TODO(crbug.com/1446230): The method should return the number of blocked
   // *third-party* sites (and take BDM into account).
   auto* pscs = content_settings::PageSpecificContentSettings::GetForPage(
-      tab_observer_->web_contents()->GetPrimaryPage());
+      GetWebContents()->GetPrimaryPage());
   if (!pscs) {
     return 0;
   }
@@ -236,7 +257,7 @@ int CookieControlsController::GetBlockedSitesCount() const {
 
 int CookieControlsController::GetStatefulBounceCount() const {
   auto* pscs = content_settings::PageSpecificContentSettings::GetForPage(
-      tab_observer_->web_contents()->GetPrimaryPage());
+      GetWebContents()->GetPrimaryPage());
   if (pscs) {
     return pscs->stateful_bounce_count();
   } else {
@@ -267,6 +288,28 @@ void CookieControlsController::PresentBlockedCookieCounter() {
   }
 }
 
+void CookieControlsController::OnPageReloadDetected(int recent_reloads_count) {
+  if (!base::FeatureList::IsEnabled(
+          content_settings::features::kUserBypassUI)) {
+    return;
+  }
+
+  recent_reloads_count_ = recent_reloads_count;
+  // Only inform the observers if the reload count is higher than the threshold.
+  if (recent_reloads_count_ < kFrequentReloadThreshold) {
+    return;
+  }
+
+  auto status = GetStatus(GetWebContents());
+  int allowed_sites = GetAllowedSitesCount();
+  int blocked_sites = GetBlockedSitesCount();
+
+  for (auto& observer : observers_) {
+    observer.OnBreakageConfidenceLevelChanged(
+        GetConfidenceLevel(status.status, allowed_sites, blocked_sites));
+  }
+}
+
 void CookieControlsController::OnThirdPartyCookieBlockingChanged(
     bool block_third_party_cookies) {
   if (GetWebContents()) {
@@ -280,11 +323,11 @@ void CookieControlsController::OnCookieSettingChanged() {
   }
 }
 
-content::WebContents* CookieControlsController::GetWebContents() {
+content::WebContents* CookieControlsController::GetWebContents() const {
   if (!tab_observer_) {
     return nullptr;
   }
-  return tab_observer_->web_contents();
+  return tab_observer_->content::WebContentsObserver::web_contents();
 }
 
 void CookieControlsController::AddObserver(OldCookieControlsObserver* obs) {
@@ -308,6 +351,7 @@ CookieControlsController::TabObserver::TabObserver(
     content::WebContents* web_contents)
     : content_settings::PageSpecificContentSettings::SiteDataObserver(
           web_contents),
+      content::WebContentsObserver(web_contents),
       cookie_controls_(cookie_controls) {}
 
 void CookieControlsController::TabObserver::OnSiteDataAccessed(
@@ -317,6 +361,28 @@ void CookieControlsController::TabObserver::OnSiteDataAccessed(
 
 void CookieControlsController::TabObserver::OnStatefulBounceDetected() {
   cookie_controls_->PresentBlockedCookieCounter();
+}
+
+void CookieControlsController::TabObserver::PrimaryPageChanged(
+    content::Page& page) {
+  const GURL& current_url =
+      content::WebContentsObserver::web_contents()->GetVisibleURL();
+  if (last_visited_url_ != GURL() && current_url != last_visited_url_) {
+    last_visited_url_ = current_url;
+    reload_count_ = 0;
+    timer_.Stop();
+  } else {
+    if (!timer_.IsRunning()) {
+      timer_.Start(FROM_HERE, base::Seconds(30), this,
+                   &CookieControlsController::TabObserver::ResetReloadCounter);
+    }
+    reload_count_++;
+    cookie_controls_->OnPageReloadDetected(reload_count_);
+  }
+}
+
+void CookieControlsController::TabObserver::ResetReloadCounter() {
+  reload_count_ = 0;
 }
 
 }  // namespace content_settings

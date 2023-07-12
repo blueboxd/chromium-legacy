@@ -133,6 +133,7 @@
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace blink {
 
@@ -270,14 +271,14 @@ static int g_allow_destroying_layout_object_in_finalizer = 0;
 void ApplyVisibleOverflowToClipRect(OverflowClipAxes overflow_clip,
                                     PhysicalRect& clip_rect) {
   DCHECK_NE(overflow_clip, kOverflowClipBothAxis);
-  const LayoutRect infinite_rect(LayoutRect::InfiniteIntRect());
+  const gfx::Rect infinite_rect(InfiniteIntRect());
   if ((overflow_clip & kOverflowClipX) == kNoOverflowClip) {
-    clip_rect.offset.left = infinite_rect.X();
-    clip_rect.size.width = infinite_rect.Width();
+    clip_rect.offset.left = LayoutUnit(infinite_rect.x());
+    clip_rect.size.width = LayoutUnit(infinite_rect.width());
   }
   if ((overflow_clip & kOverflowClipY) == kNoOverflowClip) {
-    clip_rect.offset.top = infinite_rect.Y();
-    clip_rect.size.height = infinite_rect.Height();
+    clip_rect.offset.top = LayoutUnit(infinite_rect.y());
+    clip_rect.size.height = LayoutUnit(infinite_rect.height());
   }
 }
 
@@ -1450,8 +1451,7 @@ void LayoutObject::MarkContainerChainForLayout(bool schedule_relayout) {
     // it's not enough to check |object|, since the element that is actually
     // locked needs its child bits set properly, we need to go one more
     // iteration after that.
-    if (!last->SelfNeedsLayout() && !last->NeedsPositionedMovementLayout() &&
-        last->ChildLayoutBlockedByDisplayLock()) {
+    if (!last->SelfNeedsLayout() && last->ChildLayoutBlockedByDisplayLock()) {
       return;
     }
 
@@ -2641,7 +2641,11 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
       SetNeedsLayoutAndIntrinsicWidthsRecalc(
           layout_invalidation_reason::kStyleChange);
     } else if (updated_diff.NeedsPositionedMovementLayout()) {
-      SetNeedsPositionedMovementLayout();
+      if (StyleRef().HasOutOfFlowPosition()) {
+        ContainingBlock()->SetNeedsSimplifiedLayout();
+      } else {
+        ContainingBlock()->SetChildNeedsLayout();
+      }
     }
   }
 
@@ -3018,7 +3022,11 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
     SetNeedsLayoutAndIntrinsicWidthsRecalc(
         layout_invalidation_reason::kStyleChange);
   } else if (diff.NeedsPositionedMovementLayout()) {
-    SetNeedsPositionedMovementLayout();
+    if (StyleRef().HasOutOfFlowPosition()) {
+      ContainingBlock()->SetNeedsSimplifiedLayout();
+    } else {
+      ContainingBlock()->SetChildNeedsLayout();
+    }
   }
 
   if (diff.ScrollAnchorDisablingPropertyChanged())
@@ -3280,8 +3288,7 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
     // everything in the fragmentation context lived in one tall single column).
     // Convert it to a visual point now, since we're about to escape the flow
     // thread.
-    container_offset += PhysicalOffsetToBeNoop(
-        ColumnOffset(transform_state.MappedPoint().ToLayoutPoint()));
+    container_offset += ColumnOffset(transform_state.MappedPoint());
   }
 
   // Text objects just copy their parent's computed style, so we need to ignore
@@ -4977,6 +4984,19 @@ void LayoutObject::SetSVGDescendantMayHaveTransformRelatedAnimation() {
     if (auto* layer = object->EnclosingLayer())
       layer->SetNeedsRepaint();
   }
+}
+
+void LayoutObject::SetSVGSelfOrDescendantHasViewportDependency() {
+  NOT_DESTROYED();
+  auto* object = this;
+  do {
+    DCHECK(object->IsSVGChild());
+    if (object->SVGSelfOrDescendantHasViewportDependency()) {
+      break;
+    }
+    object->bitfields_.SetSVGSelfOrDescendantHasViewportDependency(true);
+    object = object->Parent();
+  } while (object && !object->IsSVGRoot());
 }
 
 void LayoutObject::InvalidateSubtreePositionFallback(bool mark_style_dirty) {

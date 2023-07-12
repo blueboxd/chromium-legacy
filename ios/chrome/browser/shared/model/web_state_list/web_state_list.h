@@ -155,7 +155,7 @@ class WebStateList {
   // WebStates at the beginning of the list).
   int SetWebStatePinnedAt(int index, bool pinned);
 
-  // Returns true if the WebState at |index| is pinned.
+  // Returns true if the WebState at `index` is pinned.
   bool IsWebStatePinnedAt(int index) const;
 
   // Inserts the specified WebState at the best position in the WebStateList
@@ -233,7 +233,9 @@ class WebStateList {
   // Moves the WebState at the specified index to another index.
   //
   // Assumes that the WebStateList is locked.
-  void MoveWebStateAtImpl(int from_index, int to_index);
+  void MoveWebStateAtImpl(int from_index,
+                          int to_index,
+                          bool pinned_state_change);
 
   // Replaces the WebState at the specified index with new WebState. Returns
   // the old WebState at that index to the caller (abandon ownership of the
@@ -248,7 +250,9 @@ class WebStateList {
   // to the caller (abandon ownership of the returned WebState).
   //
   // Assumes that the WebStateList is locked.
-  std::unique_ptr<web::WebState> DetachWebStateAtImpl(int index);
+  std::unique_ptr<web::WebState> DetachWebStateAtImpl(int index,
+                                                      bool is_closing,
+                                                      bool is_user_action);
 
   // Closes and destroys the WebState at the specified index. The `close_flags`
   // is a bitwise combination of ClosingFlags values.
@@ -270,16 +274,11 @@ class WebStateList {
   // Makes the WebState at the specified index the active WebState.
   //
   // Assumes that the WebStateList is locked.
-  void ActivateWebStateAtImpl(int index, ActiveWebStateChangeReason reason);
+  void ActivateWebStateAtImpl(int index);
 
   // Sets the opener of any WebState that reference the WebState at the
   // specified index to null.
   void ClearOpenersReferencing(int index);
-
-  // Notify the observers if the active WebState change. `reason` is the value
-  // passed to the WebStateListObservers.
-  void NotifyIfActiveWebStateChanged(web::WebState* old_web_state,
-                                     ActiveWebStateChangeReason reason);
 
   // Returns the index of the `n`-th WebState (with n > 0) in the sequence of
   // WebStates opened from the specified WebState starting the search from
@@ -317,6 +316,10 @@ class WebStateList {
   // Returns the wrapper of the WebState at the specified index. It is invalid
   // to call this with an index such that `ContainsIndex(index)` returns false.
   WebStateWrapper* GetWebStateWrapperAt(int index) const;
+
+  // Brings forcefully the current active WebState in "realized" state. Do
+  // nothing when the current active WebState is nullptr.
+  void ForceActiveWebStateRealized() const;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -73,7 +73,7 @@ using signin_metrics::PromoAction;
 
 #pragma mark - SigninCoordinator
 
-- (void)interruptWithAction:(SigninCoordinatorInterruptAction)action
+- (void)interruptWithAction:(SigninCoordinatorInterrupt)action
                  completion:(ProceduralBlock)completion {
   if (self.userSigninCoordinator) {
     DCHECK(!self.addAccountSigninManager);
@@ -87,17 +87,8 @@ using signin_metrics::PromoAction;
   }
 
   DCHECK(self.addAccountSigninManager);
-  switch (action) {
-    case SigninCoordinatorInterruptActionNoDismiss:
-    case SigninCoordinatorInterruptActionDismissWithoutAnimation:
-      [self.addAccountSigninManager interruptAddAccountAnimated:NO
-                                                     completion:completion];
-      break;
-    case SigninCoordinatorInterruptActionDismissWithAnimation:
-      [self.addAccountSigninManager interruptAddAccountAnimated:YES
-                                                     completion:completion];
-      break;
-  }
+  [self.addAccountSigninManager interruptWithAction:action
+                                         completion:completion];
 }
 
 #pragma mark - ChromeCoordinator

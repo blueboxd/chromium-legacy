@@ -217,6 +217,9 @@ class ASH_EXPORT LockContentsView
   // Called for debugging to toggle forced online sign-in form |user|.
   void ToggleForceOnlineSignInForUserForDebug(const AccountId& user);
 
+  // Called for debugging to toggle TPM disabled message for |user|.
+  void ToggleDisableTpmForUserForDebug(const AccountId& user);
+
   // Called for debugging to remove forced online sign-in form |user|.
   void UndoForceOnlineSignInForUserForDebug(const AccountId& user);
 
@@ -406,6 +409,9 @@ class ASH_EXPORT LockContentsView
       AuthEventsRecorder::AuthenticationOutcome outcome,
       AccountId account_id);
 
+  // Updates the layout with the new users list.
+  void ApplyUserChanges(const std::vector<LoginUserInfo>& users);
+
   const LockScreen::ScreenType screen_type_;
 
   std::vector<UserState> users_;
@@ -439,7 +445,7 @@ class ASH_EXPORT LockContentsView
 
   // If the kiosk app button is not visible, the kiosk app default message would
   // be shown.
-  raw_ptr<KioskAppDefaultMessage, DanglingUntriaged> kiosk_default_message_ =
+  raw_ptr<KioskAppDefaultMessage, DanglingAcrossTasks> kiosk_default_message_ =
       nullptr;
 
   // Actions that should be executed before a new layout happens caused by a
@@ -467,7 +473,7 @@ class ASH_EXPORT LockContentsView
   raw_ptr<LoginErrorBubble, ExperimentalAsh> warning_banner_bubble_;
 
   // View that is shown on login timeout with camera usage.
-  raw_ptr<LoginCameraTimeoutView, DanglingUntriaged>
+  raw_ptr<LoginCameraTimeoutView, DanglingAcrossTasks>
       login_camera_timeout_view_ = nullptr;
 
   // Bottom status indicator displaying entreprise domain or ADB enabled alert
@@ -524,6 +530,10 @@ class ASH_EXPORT LockContentsView
 
   BottomIndicatorState bottom_status_indicator_state_ =
       BottomIndicatorState::kNone;
+
+  // When OnUsersChanged called during authentication this object stores
+  // the users info till the authentication finished.
+  absl::optional<std::vector<LoginUserInfo>> pending_users_change_;
 
   base::WeakPtrFactory<LockContentsView> weak_ptr_factory_{this};
 };

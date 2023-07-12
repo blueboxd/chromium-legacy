@@ -295,12 +295,6 @@ BASE_FEATURE(kDesktopPWAsPreventClose,
              "DesktopPWAsPreventClose",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, allow-listed PWAs cannot will be prevented from throttling /
-// hibernation, even when idle.
-BASE_FEATURE(kDesktopPWAsKeepAlive,
-             "DesktopPWAsKeepAlive",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Runs diagnostics during start up to measure how broken web app icons are to
 // feed into metrics.
 BASE_FEATURE(kDesktopPWAsIconHealthChecks,
@@ -538,6 +532,36 @@ const base::FeatureParam<base::TimeDelta>
     kHappinessTrackingSurveysForDesktopWhatsNewTime{
         &kHappinessTrackingSurveysForDesktopWhatsNew, "whats-new-time",
         base::Seconds(20)};
+
+// Happiness tracking surveys for the M1 Privacy Sandbox settings.
+BASE_FEATURE(kHappinessTrackingSurveysForDesktopM1AdPrivacyPage,
+             "HappinessTrackingSurveysForDesktopM1AdPrivacyPage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<base::TimeDelta>
+    kHappinessTrackingSurveysForDesktopM1AdPrivacyPageTime{
+        &kHappinessTrackingSurveysForDesktopM1AdPrivacyPage, "settings-time",
+        base::Seconds(20)};
+BASE_FEATURE(kHappinessTrackingSurveysForDesktopM1TopicsSubpage,
+             "HappinessTrackingSurveysForDesktopM1TopicsSubpage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<base::TimeDelta>
+    kHappinessTrackingSurveysForDesktopM1TopicsSubpageTime{
+        &kHappinessTrackingSurveysForDesktopM1TopicsSubpage, "settings-time",
+        base::Seconds(20)};
+BASE_FEATURE(kHappinessTrackingSurveysForDesktopM1FledgeSubpage,
+             "HappinessTrackingSurveysForDesktopM1FledgeSubpage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<base::TimeDelta>
+    kHappinessTrackingSurveysForDesktopM1FledgeSubpageTime{
+        &kHappinessTrackingSurveysForDesktopM1FledgeSubpage, "settings-time",
+        base::Seconds(20)};
+BASE_FEATURE(kHappinessTrackingSurveysForDesktopM1AdMeasurementSubpage,
+             "HappinessTrackingSurveysForDesktopM1AdMeasurementSubpage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<base::TimeDelta>
+    kHappinessTrackingSurveysForDesktopM1AdMeasurementSubpageTime{
+        &kHappinessTrackingSurveysForDesktopM1AdMeasurementSubpage,
+        "settings-time", base::Seconds(20)};
 
 #endif  // !BUILDFLAG(IS_ANDROID)
 
@@ -1466,13 +1490,6 @@ BASE_FEATURE(kChromeKioskEnableLacros,
 BASE_FEATURE(kWebKioskEnableLacros,
              "WebKioskEnableLacros",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// When enabled, the Ash browser only manages system web apps, and non-system
-// web apps are managed by the Lacros browser. When disabled, the Ash browser
-// manages all web apps.
-BASE_FEATURE(kWebAppsCrosapi,
-             "WebAppsCrosapi",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !BUILDFLAG(IS_ANDROID)

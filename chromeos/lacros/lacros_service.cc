@@ -16,6 +16,7 @@
 #include "base/task/thread_pool.h"
 #include "build/chromeos_buildflags.h"
 #include "chromeos/components/cdm_factory_daemon/mojom/browser_cdm_factory.mojom.h"
+#include "chromeos/components/payments/mojom/payment_app.mojom.h"
 #include "chromeos/components/remote_apps/mojom/remote_apps.mojom.h"
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
 #include "chromeos/crosapi/mojom/app_service.mojom.h"
@@ -94,6 +95,7 @@
 #include "chromeos/crosapi/mojom/speech_recognition.mojom.h"
 #include "chromeos/crosapi/mojom/sync.mojom.h"
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
+#include "chromeos/crosapi/mojom/telemetry_diagnostic_routine_service.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_event_service.mojom.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
 #include "chromeos/crosapi/mojom/timezone.mojom.h"
@@ -106,6 +108,7 @@
 #include "chromeos/crosapi/mojom/vpn_service.mojom.h"
 #include "chromeos/crosapi/mojom/wallpaper.mojom.h"
 #include "chromeos/crosapi/mojom/web_app_service.mojom.h"
+#include "chromeos/crosapi/mojom/web_kiosk_service.mojom.h"
 #include "chromeos/crosapi/mojom/web_page_info.mojom.h"
 #include "chromeos/lacros/lacros_service_never_blocking_state.h"
 #include "chromeos/lacros/native_theme_cache.h"
@@ -395,6 +398,9 @@ LacrosService::LacrosService()
       crosapi::mojom::ChromeAppKioskService,
       &Crosapi::BindChromeAppKioskService,
       Crosapi::MethodMinVersions::kBindChromeAppKioskServiceMinVersion>();
+  ConstructRemote<crosapi::mojom::WebKioskService,
+                  &Crosapi::BindWebKioskService,
+                  Crosapi::MethodMinVersions::kBindWebKioskServiceMinVersion>();
   ConstructRemote<
       crosapi::mojom::KioskSessionService, &Crosapi::BindKioskSessionService,
       Crosapi::MethodMinVersions::kBindKioskSessionServiceMinVersion>();
@@ -462,6 +468,10 @@ LacrosService::LacrosService()
       Crosapi::MethodMinVersions::kBindNetworkSettingsServiceMinVersion>();
   ConstructRemote<crosapi::mojom::ParentAccess, &Crosapi::BindParentAccess,
                   Crosapi::MethodMinVersions::kBindParentAccessMinVersion>();
+  ConstructRemote<
+      chromeos::payments::mojom::PaymentAppInstance,
+      &Crosapi::BindPaymentAppInstance,
+      Crosapi::MethodMinVersions::kBindPaymentAppInstanceMinVersion>();
   ConstructRemote<crosapi::mojom::PolicyService, &Crosapi::BindPolicyService,
                   Crosapi::MethodMinVersions::kBindPolicyServiceMinVersion>();
   ConstructRemote<
@@ -504,6 +514,10 @@ LacrosService::LacrosService()
   ConstructRemote<crosapi::mojom::TaskManager,
                   &crosapi::mojom::Crosapi::BindTaskManager,
                   Crosapi::MethodMinVersions::kBindTaskManagerMinVersion>();
+  ConstructRemote<crosapi::mojom::TelemetryDiagnosticRoutinesService,
+                  &Crosapi::BindTelemetryDiagnosticRoutinesService,
+                  Crosapi::MethodMinVersions::
+                      kBindTelemetryDiagnosticRoutinesServiceMinVersion>();
   ConstructRemote<
       crosapi::mojom::TelemetryEventService,
       &Crosapi::BindTelemetryEventService,
@@ -573,8 +587,9 @@ void LacrosService::BindReceiver(const std::string& browser_version) {
 
   // In unittests/browser_tests cases, the mojo pipe may not be set up.
   // Just ignore the case.
-  if (!command_line->HasSwitch(crosapi::kCrosapiMojoPlatformChannelHandle))
+  if (!command_line->HasSwitch(crosapi::kCrosapiMojoPlatformChannelHandle)) {
     return;
+  }
 
   mojo::PlatformChannelEndpoint endpoint =
       mojo::PlatformChannel::RecoverPassedEndpointFromString(
@@ -748,8 +763,9 @@ void LacrosService::BindStableVideoDecoderFactory(
 }
 
 absl::optional<uint32_t> LacrosService::CrosapiVersion() const {
-  if (chromeos::BrowserParamsProxy::Get()->DisableCrosapiForTesting())
+  if (chromeos::BrowserParamsProxy::Get()->DisableCrosapiForTesting()) {
     return absl::nullopt;
+  }
   DCHECK(did_bind_receiver_);
   return chromeos::BrowserParamsProxy::Get()->CrosapiVersion();
 }

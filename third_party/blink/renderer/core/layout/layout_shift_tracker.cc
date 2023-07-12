@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace blink {
 
@@ -95,7 +96,7 @@ bool EqualWithinMovementThreshold(const gfx::PointF& a,
          fabs(a.y() - b.y()) < threshold_physical_px;
 }
 
-bool SmallerThanRegionGranularity(const LayoutRect& rect) {
+bool SmallerThanRegionGranularity(const PhysicalRect& rect) {
   // Normally we paint by snapping to whole pixels, so rects smaller than half
   // a pixel may be invisible.
   return rect.Width() < 0.5 || rect.Height() < 0.5;
@@ -187,7 +188,8 @@ bool LayoutShiftTracker::NeedsToTrack(const LayoutObject& object) const {
     return false;
   }
 
-  if (SmallerThanRegionGranularity(box->VisualOverflowRectAllowingUnset())) {
+  if (SmallerThanRegionGranularity(
+          box->PhysicalVisualOverflowRectAllowingUnset())) {
     return false;
   }
 

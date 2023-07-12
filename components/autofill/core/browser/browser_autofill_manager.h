@@ -33,6 +33,7 @@
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/form_events/address_form_event_logger.h"
 #include "components/autofill/core/browser/metrics/form_events/credit_card_form_event_logger.h"
+#include "components/autofill/core/browser/metrics/log_event.h"
 #include "components/autofill/core/browser/payments/autofill_offer_manager.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
@@ -46,6 +47,7 @@
 #include "components/autofill/core/browser/ui/touch_to_fill_delegate.h"
 #include "components/autofill/core/common/dense_set.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/signatures.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
@@ -157,8 +159,11 @@ class BrowserAutofillManager : public AutofillManager,
                               const std::u16string& cvc,
                               AutofillTriggerSource trigger_source) override;
   // Reverts the last autofill operation on `form` that affected
-  // `trigger_field`, virtual for testing.
-  virtual void UndoAutofill(FormData form, const FormFieldData& trigger_field);
+  // `trigger_field`, virtual for testing. `renderer_action` denotes whether
+  // this is an actual filling or a preview operation on the renderer side.
+  virtual void UndoAutofill(mojom::RendererFormDataAction renderer_action,
+                            FormData form,
+                            const FormFieldData& trigger_field);
   // Virtual for testing
   virtual void DidShowSuggestions(bool has_autofill_suggestions,
                                   const FormData& form,
@@ -530,6 +535,29 @@ class BrowserAutofillManager : public AutofillManager,
     std::map<FieldGlobalId, std::u16string> forced_fill_values;
   };
 
+  // Given a `form` (and corresponding `form_structure`) to fill with a
+  // `profile_or_credit_card`, return a list of field indices of the fields that
+  // should be filled and not skipped. Also logs the reason for skipping the
+  // other fields.
+  // `trigger_field` and corresponding `trigger_autofill_field` are the field
+  // that initiated the filling.
+  // `action` records whether the browser filling is a renderer fill or preview
+  // operation. `fill_event_id` is used to record log events.
+  // TODO(crbug/1331312): Keep only one of 'form' and 'form_structure', and one
+  // of `trigger_field` and `autofill_trigger_field`.
+  std::vector<size_t> GetFieldsToFill(
+      mojom::RendererFormDataAction action,
+      FormData& form,
+      FormStructure& form_structure,
+      const FormFieldData& trigger_field,
+      const AutofillField& autofill_trigger_field,
+      absl::variant<const AutofillProfile*, const CreditCard*>
+          profile_or_credit_card,
+      absl::optional<FillEventId> fill_event_id,
+      const std::u16string* optional_cvc,
+      bool is_refill,
+      AutofillTriggerSource trigger_source);
+
   // CreditCardAccessManager::Accessor
   void OnCreditCardFetched(CreditCardFetchResult result,
                            const CreditCard* credit_card,
@@ -584,10 +612,9 @@ class BrowserAutofillManager : public AutofillManager,
   // case.
   [[nodiscard]] bool ShouldPreventAutofillFromOverridingPrefilledField(
       mojom::RendererFormDataAction action,
-      const FormFieldData& initiating_field,
-      const FormFieldData& to_be_filled_field,
       AutofillField* cached_field,
       FormFieldData* field_data,
+      bool is_initiating_field,
       absl::variant<const AutofillProfile*, const CreditCard*>
           profile_or_credit_card,
       const std::u16string* optional_cvc);
@@ -602,14 +629,15 @@ class BrowserAutofillManager : public AutofillManager,
   // TODO(crbug.com/1411352): Consider moving to form_types.h.
   [[nodiscard]] bool FormHasAddressField(const FormData& form);
 
-  // Returns Suggestions corresponding to both the |autofill_field| type and
-  // stored profiles whose values match the contents of |field|. |form| stores
-  // data about the form with which the user is interacting, e.g. the number and
-  // types of form fields.
+  // Returns suggestions for the `form`, if suggestions were triggered using
+  // the `trigger_source` on the `field`. The field's type is `field_type`.
+  // The `trigger_source` controls which fields are considered for filling and
+  // thus influences the suggestion labels.
   std::vector<Suggestion> GetProfileSuggestions(
       const FormStructure& form,
       const FormFieldData& field,
-      const AutofillField& autofill_field) const;
+      AutofillType field_type,
+      AutofillSuggestionTriggerSource trigger_source) const;
 
   // Returns a list of values from the stored credit cards that match |type| and
   // the value of |field| and returns the labels of the matching credit cards.
@@ -715,12 +743,15 @@ class BrowserAutofillManager : public AutofillManager,
   void AnalyzeJavaScriptChangedAutofilledValue(const FormData& form,
                                                const FormFieldData& field);
 
-  // Replaces the contents of |suggestions| with available suggestions for
-  // |field|. |context| will contain additional information about the
-  // suggestions, such as if they correspond to credit card suggestions and
-  // if the context is secure.
+  // Replaces the contents of `suggestions` with available suggestions for
+  // `field`. Which fields of the `form` are filled depends on the
+  // `trigger_source`.
+  // `context` will contain additional information about the suggestions, such
+  // as if they correspond to credit card suggestions and if the context is
+  // secure.
   void GetAvailableSuggestions(const FormData& form,
                                const FormFieldData& field,
+                               AutofillSuggestionTriggerSource trigger_source,
                                std::vector<Suggestion>* suggestions,
                                SuggestionsContext* context);
 

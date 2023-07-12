@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.pwd_migration;
 
-import android.content.Context;
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -22,25 +24,28 @@ import org.chromium.components.browser_ui.widget.RadioButtonWithDescription;
  * alternatives are to export the passwords or to start syncing passwords.
  */
 public class PasswordMigrationWarningOptionsFragment extends Fragment {
-    private Context mContext;
+    private static final int PASSWORD_EXPORT_INTENT_REQUEST_CODE = 3485764;
+
+    private static final String PASSWORD_EXPORT_TEXT = "PASSWORD_EXPORT_TEXT";
+    private String mPaswordExportText;
     private PasswordMigrationWarningOnClickHandler mOnClickHandler;
     private Runnable mCancelCallback;
-    private String mChannelString;
     private RadioButtonWithDescription mSignInOrSyncButton;
     private RadioButtonWithDescription mPasswordExportButton;
     private String mAccountDisplayName;
     private FragmentManager mFragmentManager;
     private Runnable mOnResumeExportFlowCallback;
+    private boolean mShouldOfferSync;
 
-    public PasswordMigrationWarningOptionsFragment(Context context,
-            PasswordMigrationWarningOnClickHandler onClickHandler, Runnable cancelCallback,
-            String channelString, String accountDisplayName, FragmentManager fragmentManager,
+    public PasswordMigrationWarningOptionsFragment(String paswordExportText,
+            boolean shouldOfferSync, PasswordMigrationWarningOnClickHandler onClickHandler,
+            Runnable cancelCallback, String accountDisplayName, FragmentManager fragmentManager,
             Runnable onResumeExportFlowCallback) {
         super(R.layout.pwd_migration_warning_options);
-        mContext = context;
+        mPaswordExportText = paswordExportText;
+        mShouldOfferSync = shouldOfferSync;
         mOnClickHandler = onClickHandler;
         mCancelCallback = cancelCallback;
-        mChannelString = channelString;
         mAccountDisplayName = accountDisplayName;
         mFragmentManager = fragmentManager;
         mOnResumeExportFlowCallback = onResumeExportFlowCallback;
@@ -53,14 +58,17 @@ public class PasswordMigrationWarningOptionsFragment extends Fragment {
         Button nextButton = view.findViewById(R.id.password_migration_next_button);
         Button cancelButton = view.findViewById(R.id.password_migration_cancel_button);
 
-        mSignInOrSyncButton.setChecked(true);
-        if (mAccountDisplayName != null) {
-            mSignInOrSyncButton.setDescriptionText(mAccountDisplayName);
+        if (mShouldOfferSync) {
+            if (mAccountDisplayName != null) {
+                mSignInOrSyncButton.setDescriptionText(mAccountDisplayName);
+            }
+            mSignInOrSyncButton.setChecked(true);
+        } else {
+            mSignInOrSyncButton.setVisibility(View.GONE);
+            mPasswordExportButton.setChecked(true);
         }
 
-        mPasswordExportButton.setDescriptionText(
-                mContext.getString(R.string.password_migration_warning_password_export_subtitle)
-                        .replace("%1$s", mChannelString));
+        mPasswordExportButton.setDescriptionText(mPaswordExportText);
         nextButton.setOnClickListener((unusedView) -> handleOptionSelected());
         cancelButton.setOnClickListener((unusedView) -> mCancelCallback.run());
     }
@@ -77,5 +85,34 @@ public class PasswordMigrationWarningOptionsFragment extends Fragment {
     public void onResume() {
         super.onResume();
         mOnResumeExportFlowCallback.run();
+    }
+
+    void runCreateFileOnDiskIntent(Intent intent) {
+        startActivityForResult(intent, PASSWORD_EXPORT_INTENT_REQUEST_CODE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+        if (requestCode != PASSWORD_EXPORT_INTENT_REQUEST_CODE) return;
+        if (resultCode != Activity.RESULT_OK) return;
+        if (intent == null || intent.getData() == null) return;
+        if (mOnClickHandler == null) return;
+
+        mOnClickHandler.onSavePasswordsToDownloads(intent.getData());
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            mPaswordExportText = savedInstanceState.getString(PASSWORD_EXPORT_TEXT);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(PASSWORD_EXPORT_TEXT, mPaswordExportText);
     }
 }

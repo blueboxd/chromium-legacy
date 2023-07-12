@@ -31,10 +31,13 @@
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/check.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/uuid.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/haptic_touchpad_effects.h"
 #include "ui/events/event_observer.h"
@@ -502,10 +505,12 @@ DeskBarViewBase::DeskBarViewBase(aura::Window* root, Type type)
       base::BindRepeating(&DeskBarViewBase::ScrollToPreviousPage,
                           base::Unretained(this)),
       /*is_left_arrow=*/true, this));
+  left_scroll_button_->RemoveFromFocusList();
   right_scroll_button_ = AddChildView(std::make_unique<ScrollArrowButton>(
       base::BindRepeating(&DeskBarViewBase::ScrollToNextPage,
                           base::Unretained(this)),
       /*is_left_arrow=*/false, this));
+  right_scroll_button_->RemoveFromFocusList();
 
   // Make the scroll content view animatable by painting to a layer.
   scroll_view_contents_ =
@@ -704,10 +709,6 @@ std::unique_ptr<views::Widget> DeskBarViewBase::CreateDeskWidget(
   return widget;
 }
 
-const char* DeskBarViewBase::GetClassName() const {
-  return "DeskBarViewBase";
-}
-
 void DeskBarViewBase::Layout() {
   if (is_bounds_animation_on_going_) {
     return;
@@ -867,6 +868,11 @@ void DeskBarViewBase::OnNewDeskButtonPressed(
   if (!controller->CanCreateDesks()) {
     return;
   }
+
+  if (type_ == Type::kDeskButton) {
+    base::UmaHistogramBoolean(kDeskBarNewDeskHistogramName, true);
+  }
+
   controller->NewDesk(desks_creation_removal_source);
   NudgeDeskName(mini_views_.size() - 1);
 
@@ -1287,6 +1293,10 @@ void DeskBarViewBase::EndDragDesk(DeskMiniView* mini_view, bool end_by_user) {
   CHECK(drag_proxy_);
   CHECK_EQ(mini_view, drag_view_);
   CHECK(!mini_view->is_animating_to_remove());
+
+  if (type_ == Type::kDeskButton) {
+    base::UmaHistogramBoolean(kDeskBarReorderDeskHistogramName, true);
+  }
 
   // Update default desk names after dropping.
   Shell::Get()->desks_controller()->UpdateDesksDefaultNames();
@@ -1723,6 +1733,11 @@ int DeskBarViewBase::GetAdjustedUncroppedScrollPosition(int position) const {
 
 void DeskBarViewBase::OnLibraryButtonPressed() {
   RecordLoadSavedDeskLibraryHistogram();
+
+  if (type_ == Type::kDeskButton) {
+    base::UmaHistogramBoolean(kDeskBarOpenLibraryHistogramName, true);
+  }
+
   if (IsDeskNameBeingModified()) {
     DeskNameView::CommitChanges(GetWidget());
   }
@@ -1800,5 +1815,8 @@ bool DeskBarViewBase::MaybeScrollByDraggedDesk() {
 gfx::Rect DeskBarViewBase::GetAvailableBounds() const {
   return GetWidget()->GetRootView()->bounds();
 }
+
+BEGIN_METADATA(DeskBarViewBase, View)
+END_METADATA
 
 }  // namespace ash

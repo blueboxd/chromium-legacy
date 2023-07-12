@@ -173,7 +173,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.AdaptiveToolbarButton.Clicked"
-    enum="AdaptiveToolbarButtonVariant" expires_after="2023-11-05">
+    enum="AdaptiveToolbarButtonVariant" expires_after="2024-01-07">
   <owner>bttk@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -183,7 +183,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.AdaptiveToolbarButton.SessionVariant"
-    enum="AdaptiveToolbarButtonVariant" expires_after="2023-11-05">
+    enum="AdaptiveToolbarButtonVariant" expires_after="2024-01-07">
   <owner>bttk@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -262,19 +262,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.AppLaunch.BlockDrawForInitialTabAccuracy"
-    enum="AppLaunchBlockDrawForInitialTabAccuracy" expires_after="2022-10-16">
-  <owner>sinansahin@google.com</owner>
-  <owner>twellington@chromium.org</owner>
-  <owner>skym@chromium.org</owner>
-  <owner>clank-app-team@google.com</owner>
-  <summary>
-    Records the accuracy of the logic used to decide whether to block the view
-    draw of the first tab, expressed as an enum. Recorded when the active tab is
-    restored or an initial tab is created in ChromeTabbedActivity.
-  </summary>
-</histogram>
-
 <histogram name="Android.AppLaunch.DurationDrawWasBlocked" units="ms"
     expires_after="2022-08-21">
   <obsolete>
@@ -308,34 +295,6 @@ chromium-metrics-reviews@google.com.
     you leave Chrome&quot; under &quot;Privacy and Security&quot; So, if the
     feature is turned off, we wouldn't block draw for this use-case and won't
     record this metric.
-  </summary>
-</histogram>
-
-<histogram name="Android.AppLaunch.DurationDrawWasBlocked.OnInitialTab"
-    units="ms" expires_after="2022-08-21">
-  <owner>sinansahin@google.com</owner>
-  <owner>twellington@chromium.org</owner>
-  <owner>skym@chromium.org</owner>
-  <owner>clank-app-team@google.com</owner>
-  <summary>
-    Records how long the initial tab's draw was blocked, if it was. Recorded no
-    more than once per cold start. Recorded when the active tab is restored or
-    an initial tab is created in ChromeTabbedActivity. Recorded always except
-    when the overview page is shown during startup.
-  </summary>
-</histogram>
-
-<histogram name="Android.AppLaunch.DurationDrawWasBlocked.OnOverviewPage"
-    units="ms" expires_after="2022-08-21">
-  <owner>sinansahin@google.com</owner>
-  <owner>twellington@chromium.org</owner>
-  <owner>skym@chromium.org</owner>
-  <owner>clank-app-team@google.com</owner>
-  <summary>
-    Records how long the overview page's draw was blocked, if it was. Recorded
-    no more than once per cold start. Recorded when the overview page state is
-    initialized in ChromeTabbedActivity and only when overview page was shown
-    during startup.
   </summary>
 </histogram>
 
@@ -546,7 +505,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackPress.Intercept" enum="BackPressConsumer"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/chrome/browser/back_press/android/OWNERS</owner>
   <summary>
@@ -555,7 +514,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackPress.Interval" units="ms"
-    expires_after="2023-09-03">
+    expires_after="2023-12-31">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/chrome/browser/back_press/android/OWNERS</owner>
   <summary>
@@ -565,7 +524,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackPress.MinimizeAppAndCloseTab"
-    enum="MinimizeAppAndCloseTabType" expires_after="2023-11-05">
+    enum="MinimizeAppAndCloseTabType" expires_after="2024-01-07">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/chrome/browser/back_press/android/OWNERS</owner>
   <summary>
@@ -575,7 +534,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackPress.SecondaryActivity" enum="SecondaryActivity"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/chrome/browser/back_press/android/OWNERS</owner>
   <summary>
@@ -1862,7 +1821,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.MediaPickerShown" enum="MediaPickerShown"
-    expires_after="2023-08-08">
+    expires_after="2024-06-01">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -2188,7 +2147,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.ActionInSuggest.IntentResult"
-    enum="ActionInSuggestIntentResult" expires_after="2023-08-20">
+    enum="ActionInSuggestIntentResult" expires_after="2024-02-20">
   <owner>ender@google.com</owner>
   <owner>chrome-mobile-search@google.com</owner>
   <summary>
@@ -3516,7 +3475,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.SearchEngineChoice.EventsV2"
-    enum="AndroidSearchEngineChoiceEventsV2" expires_after="2023-08-08">
+    enum="AndroidSearchEngineChoiceEventsV2" expires_after="2024-01-20">
   <owner>wylieb@chromium.org</owner>
   <owner>pavely@chromium.org</owner>
   <owner>fgorski@chromium.org</owner>
@@ -3527,7 +3486,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.SearchEngineChoice.SearchEngineBeforeChoicePrompt"
-    enum="OmniboxSearchEngineType" expires_after="2023-08-08">
+    enum="OmniboxSearchEngineType" expires_after="2024-01-20">
   <owner>wylieb@chromium.org</owner>
   <owner>fgorski@chromium.org</owner>
   <summary>
@@ -3547,7 +3506,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.SelectFileDialogContentSelected"
-    enum="SelectFileDialogContent" expires_after="2023-11-05">
+    enum="SelectFileDialogContent" expires_after="2024-01-07">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -3559,7 +3518,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.SelectFileDialogImgCount" units="images"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -3571,7 +3530,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.SelectFileDialogScope" enum="SelectFileDialogScope"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>peter@chromium.org</owner>
   <owner>finnur@chromium.org</owner>
   <summary>
@@ -4812,7 +4771,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.NonEmbeddedMetrics.HistogramRecordAge"
-    units="minutes" expires_after="2023-10-22">
+    units="minutes" expires_after="2023-12-31">
   <owner>hazems@chromium.org</owner>
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -4826,7 +4785,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.NonEmbeddedMetrics.NumHistograms"
-    units="histograms" expires_after="2023-10-22">
+    units="histograms" expires_after="2023-12-31">
   <owner>ntfschr@chromium.org</owner>
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -5491,7 +5450,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AndroidSearchEngineLogo.Events"
-    enum="AndroidSearchEngineLogoEvents" expires_after="2023-06-01">
+    enum="AndroidSearchEngineLogoEvents" expires_after="2024-01-20">
   <owner>wylieb@chromium.org</owner>
   <owner>fgorski@chromium.org</owner>
   <summary>

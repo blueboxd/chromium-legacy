@@ -1280,6 +1280,25 @@ void AccessibilityManager::OnSelectToSpeakChanged() {
   }
 }
 
+void AccessibilityManager::OnSelectToSpeakContextMenuClick() {
+  if (!profile_) {
+    return;
+  }
+
+  extensions::EventRouter* event_router =
+      extensions::EventRouter::Get(profile_);
+
+  // Send an event to the Select-to-Speak extension requesting a state change.
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
+      extensions::events::
+          ACCESSIBILITY_PRIVATE_ON_SELECT_TO_SPEAK_CONTEXT_MENU_CLICKED,
+      extensions::api::accessibility_private::
+          OnSelectToSpeakContextMenuClicked::kEventName,
+      base::Value::List()));
+  event_router->DispatchEventWithLazyListener(
+      extension_misc::kSelectToSpeakExtensionId, std::move(event));
+}
+
 void AccessibilityManager::SetSwitchAccessEnabled(bool enabled) {
   if (!profile_)
     return;
@@ -1697,15 +1716,19 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
 
     if (::features::
             AreExperimentalAccessibilityColorEnhancementSettingsEnabled()) {
+      bool color_correction_enabled = IsColorCorrectionEnabled();
       base::UmaHistogramBoolean("Accessibility.CrosColorCorrection",
-                                IsColorCorrectionEnabled());
-      base::UmaHistogramEnumeration(
-          "Accessibility.CrosColorCorrection.FilterType",
-          static_cast<ColorVisionCorrectionType>(prefs->GetInteger(
-              prefs::kAccessibilityColorVisionCorrectionType)));
-      base::UmaHistogramPercentage(
-          "Accessibility.CrosColorCorrection.FilterAmount",
-          prefs->GetInteger(prefs::kAccessibilityColorVisionCorrectionAmount));
+                                color_correction_enabled);
+      if (color_correction_enabled) {
+        base::UmaHistogramEnumeration(
+            "Accessibility.CrosColorCorrection.FilterType",
+            static_cast<ColorVisionCorrectionType>(prefs->GetInteger(
+                prefs::kAccessibilityColorVisionCorrectionType)));
+        base::UmaHistogramPercentage(
+            "Accessibility.CrosColorCorrection.FilterAmount",
+            prefs->GetInteger(
+                prefs::kAccessibilityColorVisionCorrectionAmount));
+      }
     }
   }
   base::UmaHistogramBoolean("Accessibility.CrosCaretHighlight",

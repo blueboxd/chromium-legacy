@@ -345,6 +345,7 @@ class ArcVmClientAdapterTest : public testing::Test,
   ArcVmClientAdapterTest& operator=(const ArcVmClientAdapterTest&) = delete;
 
   ~ArcVmClientAdapterTest() override {
+    ash::UpstartClient::Shutdown();
     ash::ConciergeClient::Shutdown();
     ash::DebugDaemonClient::SetInstanceForTest(nullptr);
     test_debug_daemon_client_.reset();
@@ -369,7 +370,6 @@ class ArcVmClientAdapterTest : public testing::Test,
     GetTestConciergeClient()->set_start_vm_response(start_vm_response);
 
     // Reset to the original behavior.
-    RemoveUpstartStartStopJobFailures();
     SetArcVmBootNotificationServerFdForTesting(absl::nullopt);
 
     const std::string abstract_addr(GenerateAbstractAddress());
@@ -553,7 +553,8 @@ class ArcVmClientAdapterTest : public testing::Test,
         [job_name_to_fail](const std::string& job_name,
                            const std::vector<std::string>& env) {
           // Return success unless |job_name| is |job_name_to_fail|.
-          return job_name != job_name_to_fail;
+          return ash::FakeUpstartClient::StartJobResult(job_name !=
+                                                        job_name_to_fail);
         }));
   }
 
@@ -574,7 +575,7 @@ class ArcVmClientAdapterTest : public testing::Test,
                                           const std::vector<std::string>& env) {
           upstart_operations_.push_back(
               {job_name, env, UpstartOperationType::START});
-          return true;
+          return ash::FakeUpstartClient::StartJobResult(true /* success */);
         }));
     upstart_client->set_stop_job_cb(
         base::BindLambdaForTesting([this](const std::string& job_name,
@@ -583,14 +584,6 @@ class ArcVmClientAdapterTest : public testing::Test,
               {job_name, env, UpstartOperationType::STOP});
           return true;
         }));
-  }
-
-  void RemoveUpstartStartStopJobFailures() {
-    auto* upstart_client = ash::FakeUpstartClient::Get();
-    upstart_client->set_start_job_cb(
-        ash::FakeUpstartClient::StartStopJobCallback());
-    upstart_client->set_stop_job_cb(
-        ash::FakeUpstartClient::StartStopJobCallback());
   }
 
   // We expect ConciergeClient::StopVm to have been called two times,
@@ -1703,6 +1696,24 @@ TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_NoLvmForEphemeralCryptohome) {
   EXPECT_TRUE(req.enable_virtio_blk_data());
 }
 
+TEST_F(ArcVmClientAdapterTest, ArcErofsImagesDisabled) {
+  StartParams start_params(GetPopulatedStartParams());
+  StartMiniArcWithParams(true, std::move(start_params));
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_FALSE(request.rootfs_o_direct());  // system image
+  EXPECT_FALSE(request.disks(0).o_direct());  // vendor image
+}
+
+TEST_F(ArcVmClientAdapterTest, ArcErofsImagesEnabled) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-erofs"});
+  StartParams start_params(GetPopulatedStartParams());
+  StartMiniArcWithParams(true, std::move(start_params));
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_TRUE(request.rootfs_o_direct());  // system image
+  EXPECT_TRUE(request.disks(0).o_direct());  // vendor image
+}
+
 // Tests that the binary translation type is set to None when no library is
 // enabled by USE flags.
 TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeNone) {
@@ -2384,7 +2395,8 @@ TEST_F(ArcVmClientAdapterTest, ArcGuestZramSwappinessValid) {
   base::test::ScopedFeatureList feature_list;
   base::FieldTrialParams params;
   params["swappiness"] = "90";
-  params["size"] = "2000";
+  params["size"] = base::NumberToString(256 * 1024 * 1024);
+  params["size_percentage"] = "0";
   feature_list.InitAndEnableFeatureWithParameters(kGuestZram, params);
   StartParams start_params(GetPopulatedStartParams());
   StartMiniArcWithParams(true, std::move(start_params));
@@ -2392,7 +2404,84 @@ TEST_F(ArcVmClientAdapterTest, ArcGuestZramSwappinessValid) {
   EXPECT_FALSE(is_system_shutdown().has_value());
   const auto& request = GetTestConciergeClient()->start_arc_vm_request();
   EXPECT_EQ(90, request.guest_swappiness());
-  EXPECT_EQ(2000, request.guest_zram_size());
+  EXPECT_EQ(0, request.guest_zram_size());
+  EXPECT_EQ(256u, request.guest_zram_mib());
+}
+
+TEST_F(ArcVmClientAdapterTest, ArcGuestZramSizeByPercentage_5GbSystem) {
+  class TestDelegate : public ArcVmClientAdapterDelegate {
+    bool GetSystemMemoryInfo(base::SystemMemoryInfoKB* info) override {
+      info->total = 5 * 1024 * 1024;
+      return true;
+    }
+    bool IsCrosvm32bit() override { return false; }
+  };
+  SetArcVmClientAdapterDelegateForTesting(adapter(),
+                                          std::make_unique<TestDelegate>());
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["size"] = "2000";  // Should be ignored
+  params["size_percentage"] = "50";
+
+  feature_list.InitAndEnableFeatureWithParameters(kGuestZram, params);
+  StartParams start_params(GetPopulatedStartParams());
+  StartMiniArcWithParams(true, std::move(start_params));
+
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_EQ(0, request.guest_zram_size());
+  // 5GB system should result in 4GB VM size => 2GB ZRAM.
+  EXPECT_EQ(2048u, request.guest_zram_mib());
+}
+
+TEST_F(ArcVmClientAdapterTest, ArcGuestZramSizeByPercentage_4GbSystem) {
+  class TestDelegate : public ArcVmClientAdapterDelegate {
+    bool GetSystemMemoryInfo(base::SystemMemoryInfoKB* info) override {
+      info->total = 4 * 1024 * 1024;
+      return true;
+    }
+    bool IsCrosvm32bit() override { return false; }
+  };
+  SetArcVmClientAdapterDelegateForTesting(adapter(),
+                                          std::make_unique<TestDelegate>());
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["size"] = "2000";  // Should be ignored
+  params["size_percentage"] = "50";
+
+  feature_list.InitAndEnableFeatureWithParameters(kGuestZram, params);
+  StartParams start_params(GetPopulatedStartParams());
+  StartMiniArcWithParams(true, std::move(start_params));
+
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_EQ(0, request.guest_zram_size());
+  // 4GB system should result in 3GB VM size => 1.5GB ZRAM.
+  EXPECT_EQ(1536u, request.guest_zram_mib());
+}
+
+TEST_F(ArcVmClientAdapterTest, ArcGuestZramSizeByPercentage_CustomMem) {
+  class TestDelegate : public ArcVmClientAdapterDelegate {
+    bool GetSystemMemoryInfo(base::SystemMemoryInfoKB* info) override {
+      info->total = 6 * 1024 * 1024;
+      return true;
+    }
+    bool IsCrosvm32bit() override { return false; }
+  };
+  SetArcVmClientAdapterDelegateForTesting(adapter(),
+                                          std::make_unique<TestDelegate>());
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+
+  feature_list.InitWithFeaturesAndParameters(
+      {{kGuestZram, {{"size_percentage", "50"}}},
+       {kVmMemorySize, {{"shift_mib", "-2048"}}}},
+      {});
+  StartParams start_params(GetPopulatedStartParams());
+  StartMiniArcWithParams(true, std::move(start_params));
+
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_EQ(0, request.guest_zram_size());
+  // 6GB system with -2GB shift results in 4GB VM size => 2GB ZRAM.
+  EXPECT_EQ(2048u, request.guest_zram_mib());
 }
 
 // Test that StartArcVmRequest has no matching command line flag

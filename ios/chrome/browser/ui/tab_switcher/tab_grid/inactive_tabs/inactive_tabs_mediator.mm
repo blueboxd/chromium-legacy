@@ -270,6 +270,22 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
 
 #pragma mark - WebStateListObserving
 
+- (void)willChangeWebStateList:(WebStateList*)webStateList
+                        change:(const WebStateListChangeDetach&)detachChange
+                     selection:(const WebStateSelection&)selection {
+  DCHECK_EQ(_webStateList, webStateList);
+  if (_webStateList->IsBatchInProgress()) {
+    // Updates are handled in the batch operation observer methods.
+    return;
+  }
+
+  web::WebState* detachedWebState = detachChange.detached_web_state();
+  [_consumer removeItemWithID:detachedWebState->GetStableIdentifier()
+               selectedItemID:nil];
+
+  _scopedWebStateObservation->RemoveObservation(detachedWebState);
+}
+
 - (void)didChangeWebStateList:(WebStateList*)webStateList
                        change:(const WebStateListChange&)change
                     selection:(const WebStateSelection&)selection {
@@ -280,13 +296,14 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   }
 
   switch (change.type()) {
-    case WebStateListChange::Type::kSelectionOnly:
+    case WebStateListChange::Type::kSelectionOnly: {
+      CHECK(!selection.pinned_state_change);
       // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason and
-      // webStateList:didChangePinnedStateForWebState:atIndexto here. Note that
-      // here is reachable only when `reason` ==
+      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
+      // here. Note that here is reachable only when `reason` ==
       // ActiveWebStateChangeReason::Activated for didChangeActiveWebState:.
       break;
+    }
     case WebStateListChange::Type::kDetach:
       // Do nothing when a WebState is detached.
       break;
@@ -313,39 +330,11 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
 }
 
 - (void)webStateList:(WebStateList*)webStateList
-    willDetachWebState:(web::WebState*)webState
-               atIndex:(int)index {
-  DCHECK_EQ(_webStateList, webStateList);
-  if (_webStateList->IsBatchInProgress()) {
-    // Updates are handled in the batch operation observer methods.
-    return;
-  }
-
-  [_consumer removeItemWithID:webState->GetStableIdentifier()
-               selectedItemID:nil];
-
-  _scopedWebStateObservation->RemoveObservation(webState);
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    willCloseWebState:(web::WebState*)webState
-              atIndex:(int)atIndex
-           userAction:(BOOL)userAction {
-  // No-op.
-}
-
-- (void)webStateList:(WebStateList*)webStateList
     didChangeActiveWebState:(web::WebState*)newWebState
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
                      reason:(ActiveWebStateChangeReason)reason {
   // No-op.
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didChangePinnedStateForWebState:(web::WebState*)webState
-                            atIndex:(int)index {
-  NOTREACHED_NORETURN();
 }
 
 - (void)webStateListWillBeginBatchOperation:(WebStateList*)webStateList {

@@ -297,6 +297,7 @@
 <translation id="2643064289437760082">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ಅಳಿಸುವ ಮೂಲಕ, ನೀವು ಯಾವಾಗಲೂ ಜಾಹೀರಾತು-ಮಾಪನ ಡೇಟಾವನ್ನು ಅಳಿಸಬಹುದು</translation>
 <translation id="2647434099613338025">ಭಾಷೆಯನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="2649068648233607930">ನಿಮ್ಮ ಬ್ರೌಸರ್ ಅನ್ನು <ph name="DOMAIN" /> ನಿರ್ವಹಿಸುತ್ತಿದೆ</translation>
+<translation id="2650077116157640844">ಸಿಂಕ್ ಮಾಡಲಾದ ಸಾಧನಗಳಲ್ಲಿ ಇನ್ನಷ್ಟು</translation>
 <translation id="2650348088770008516">ಗೌಪ್ಯತೆ ಮಾರ್ಗದರ್ಶಿ ವಿವರಣೆಯನ್ನು ಮುಚ್ಚಲಾಗಿದೆ</translation>
 <translation id="2650408372219180431">ಈ ಸಾಧನದಲ್ಲಿ ಸೇವ್‌ ಮಾಡಲಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ರಫ್ತು ಮಾಡಿ ಮತ್ತು ಅಳಿಸಿ</translation>
 <translation id="2650751991977523696">ಫೈಲ್‌ ಮತ್ತೆ ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಬೇಕೆ?</translation>
@@ -445,7 +446,6 @@
 <translation id="3421726884497337397">ಥರ್ಡ್-ಕುಕೀಗಳನ್ನು ಯಾವಾಗ ನಿರ್ಬಂಧಿಸಬೇಕು ಎಂಬುದನ್ನು ಆರಿಸಿ</translation>
 <translation id="3428747202529429621">ನೀವು ಸೈನ್ ಇನ್ ಮಾಡಿದಾಗ, Chrome ನಲ್ಲಿ ನಿಮ್ಮನ್ನು ಸುರಕ್ಷಿತವಾಗಿರಿಸುತ್ತದೆ ಮತ್ತು ಇತರ Google ಆ್ಯಪ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ಸುರಕ್ಷತೆಯನ್ನು ಸುಧಾರಿಸಲು ಬಳಸಬಹುದು</translation>
 <translation id="3429160811076349561">ಪ್ರಾಯೋಗಿಕ ವೈಶಿಷ್ಟ್ಯಗಳು ಆಫ್ ಆಗಿವೆ</translation>
-<translation id="3432973700170747422">ಕೊನೆಯ 15 ನಿಮಿಷಗಳ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾ ಅಳಿಸಿ</translation>
 <translation id="3435465986463792564">ಹಲವು ವಿಂಡೋಗಳನ್ನು ತೆರೆದಿರುವಿರಾ? ನೀವು ಅವುಗಳನ್ನು ಇಲ್ಲಿಂದಲೇ ನಿರ್ವಹಿಸಬಹುದು</translation>
 <translation id="3435738964857648380">ಭದ್ರತೆ</translation>
 <translation id="3443221991560634068">ಪ್ರಸ್ತುತ ಪುಟ ಮರುಲೋಡ್ ಮಾಡಿ</translation>
@@ -479,9 +479,9 @@
 <translation id="3587596251841506391">ವೆಬ್‌ ಸುರಕ್ಷತೆ ಸುಧಾರಿಸಲು ಸಹಕರಿಸಿ</translation>
 <translation id="3597179440835065298">ಉತ್ತಮ ಸಲಹೆಗಳನ್ನು ಪಡೆಯಿರಿ</translation>
 <translation id="3602290021589620013">ಪೂರ್ವವೀಕ್ಷಣೆ</translation>
-<translation id="360901359071773787">ಕೊನೆಯ 15 ನಿಮಿಷಗಳ ಅವಧಿಯ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ಅಳಿಸಬೇಕೇ?</translation>
 <translation id="3616113530831147358">ಆಡಿಯೋ</translation>
 <translation id="3622349720008044802">ವಿಂಡೋಗಳನ್ನು ನಿರ್ವಹಿಸಿ</translation>
+<translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{+ 1 ಸೈಟ್}one{+ # ಸೈಟ್‌ಗಳು}other{+ # ಸೈಟ್‌ಗಳು}}</translation>
 <translation id="3631987586758005671"><ph name="DEVICE_NAME" /> ಜೊತೆಗೆ ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ</translation>
 <translation id="363596933471559332">ಸಂಗ್ರಹಿಸಲಾದ ರುಜುವಾತುಗಳನ್ನು ಬಳಸಿಕೊಳ್ಳುವ ಮೂಲಕ ವೆಬ್‌ಸೈಟ್‌ಗಳಿಗೆ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸೈನ್ ಇನ್ ಮಾಡಿ. ವೈಶಿಷ್ಟ್ಯವು ಆಫ್ ಆಗಿರುವಾಗ, ವೆಬ್‌ಸೈಟ್‌ಗೆ ಸೈನ್ ಇನ್ ಮಾಡುವ ಮೊದಲು ಪ್ರತಿ ಬಾರಿಯೂ ನಿಮಗೆ ಪರಿಶೀಲನೆ ಮಾಡಲು ಕೇಳಲಾಗುವುದು.</translation>
 <translation id="3636940436873918441">ಆದ್ಯತೆಯ ಭಾಷೆಗಳು</translation>
@@ -749,6 +749,7 @@
 <translation id="5010886807652684893">ವಿಷುವಲ್ ವೀಕ್ಷಣೆ</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> ಸಂಪರ್ಕಿಸಲು ಬಯಸುತ್ತದೆ</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">ಹಿಂದಿನ 15 ನಿಮಿಷಗಳು</translation>
 <translation id="5032430150487044192">QR ಕೋಡ್‌ ಅನ್ನು ರಚಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ</translation>
 <translation id="5039804452771397117">ಅನುಮತಿಸಿ</translation>
 <translation id="5040262127954254034">ಗೌಪ್ಯತೆ</translation>
@@ -767,7 +768,6 @@
 <translation id="5118713593561876160">ಆಸಕ್ತಿಗಳು</translation>
 <translation id="5122378528687922675">ನಿಮಗೆ ಸಹಾಯ ಬೇಕಿದ್ದರೆ, ನಿಮ್ಮ ಪೋಷಕರನ್ನು ಕೇಳಿ (<ph name="PARENT_NAME_1" /> ಅಥವಾ <ph name="PARENT_NAME_2" />)</translation>
 <translation id="5123685120097942451">ಅದೃಶ್ಯ ಟ್ಯಾಬ್‌</translation>
-<translation id="5126510351761255129">ನಿಮ್ಮ ಕಾರ್ಡ್ ಅನ್ನು ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="5132942445612118989">ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲೂ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು, ಇತಿಹಾಸ ಹಾಗೂ ಇನ್ನೂ ಹೆಚ್ಚಿನವುಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಿ</translation>
 <translation id="5139940364318403933">Google ಡ್ರೈವ್‌‌ ಅನ್ನು ಹೇಗೆ ಬಳಸುವುದು ಎಂದು ತಿಳಿದುಕೊಳ್ಳಿ</translation>
 <translation id="5142281402488957685">ಹೊಸ ಸ್ಟೋರಿಗಳಿಗಾಗಿ, ರಿಫ್ರೆಶ್ ಮಾಡಲು ಕೆಳಗೆ ಎಳೆಯಿರಿ</translation>
@@ -927,7 +927,6 @@
 <translation id="6011308810877101166">ಹುಡುಕಾಟ ಸಲಹೆಗಳನ್ನು ಸುಧಾರಿಸಿ</translation>
 <translation id="6026538407078977628">ಪೂರ್ಣ ಸ್ಕ್ರೀನ್‌ಗೆ ವಿಸ್ತೃತಗೊಳಿಸಿ</translation>
 <translation id="6030719887161080597">ಆ್ಯಡ್ ಪರ್ಫಾರ್ಮೆನ್ಸ್ ಅನ್ನು ಮಾಪನ ಮಾಡಲು ಸೈಟ್‌ಗಳು ಬಳಸುವ ಮಾಹಿತಿಯನ್ನು ನಿರ್ವಹಿಸಿ</translation>
-<translation id="6034146297924778597">ಕಳೆದ 15 ನಿಮಿಷಗಳ ಇತಿಹಾಸವನ್ನು ಅಳಿಸಲಾಗುತ್ತದೆ:</translation>
 <translation id="6039379616847168523">ಮುಂದಿನ ಟ್ಯಾಬ್‌ಗೆ ಹೋಗಿ</translation>
 <translation id="6040143037577758943">ಮುಚ್ಚಿರಿ</translation>
 <translation id="604124094241169006">ಸ್ವಯಂಚಾಲಿತ</translation>
@@ -1369,6 +1368,7 @@
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />ನಿಮ್ಮ ಸಾಧನಗಳು<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">ಪುನರಾರಂಭಿಸು</translation>
 <translation id="8209050860603202033">ಚಿತ್ರವನ್ನು ತೆರೆಯಿರಿ</translation>
+<translation id="8210770465353466621">ನಿಮ್ಮ ಟ್ಯಾಬ್‌ಗಳನ್ನು ನೀವು ಇಲ್ಲಿ ಕಾಣಬಹುದು</translation>
 <translation id="8215740705341534369">ಸೈಡ್ ಶೀಟ್</translation>
 <translation id="8218622182176210845">ನಿಮ್ಮ ಖಾತೆಯನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="8221401890884589479">ನಿಮಗೆ ಬೇಡವಾದ ಸೈಟ್‌ಗಳನ್ನು ನೀವು ನಿರ್ಬಂಧಿಸಬಹುದು. 30 ದಿನಗಳಿಗಿಂತ ಹಳೆಯದಾದ ಸೈಟ್‌ಗಳನ್ನು ಪಟ್ಟಿಯಿಂದ Chrome ಸ್ವಯಂ ಅಳಿಸುತ್ತದೆ. <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>

@@ -13,12 +13,14 @@
 #include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_util.h"
+#include "chrome/browser/apps/app_service/app_icon/icon_effects.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_registry.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
 #include "chrome/browser/apps/app_service/instance_registry_updater.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics_service.h"
 #include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
+#include "chrome/browser/apps/app_service/package_id.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_registry_cache.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_service.h"
@@ -407,7 +409,15 @@ void AppServiceProxyAsh::OnPromiseApp(PromiseAppPtr delta) {
   if (!promise_app_service_) {
     return;
   }
-  PromiseAppService()->OnPromiseApp(std::move(delta));
+  promise_app_service_->OnPromiseApp(std::move(delta));
+}
+
+void AppServiceProxyAsh::LoadPromiseIcon(const PackageId& package_id,
+                                         int32_t size_hint_in_dip,
+                                         IconEffects icon_effects,
+                                         apps::LoadIconCallback callback) {
+  PromiseAppService()->LoadIcon(package_id, size_hint_in_dip, icon_effects,
+                                std::move(callback));
 }
 
 void AppServiceProxyAsh::RegisterShortcutPublisher(

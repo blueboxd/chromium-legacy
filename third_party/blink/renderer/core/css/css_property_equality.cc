@@ -168,8 +168,6 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return base::ValuesEquivalent(a.AnchorDefault(), b.AnchorDefault());
     case CSSPropertyID::kAnchorName:
       return base::ValuesEquivalent(a.AnchorName(), b.AnchorName());
-    case CSSPropertyID::kAnchorScroll:
-      return base::ValuesEquivalent(a.AnchorScroll(), b.AnchorScroll());
     case CSSPropertyID::kAppearance:
       return a.Appearance() == b.Appearance();
     case CSSPropertyID::kAppRegion:
@@ -582,6 +580,9 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.GetPosition() == b.GetPosition();
     case CSSPropertyID::kPositionFallback:
       return base::ValuesEquivalent(a.PositionFallback(), b.PositionFallback());
+    case CSSPropertyID::kPositionFallbackBounds:
+      return base::ValuesEquivalent(a.PositionFallbackBounds(),
+                                    b.PositionFallbackBounds());
     case CSSPropertyID::kQuotes:
       return a.Quotes() == b.Quotes();
     case CSSPropertyID::kResize:
@@ -763,8 +764,6 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kWebkitFontSmoothing:
       return a.GetFontDescription().FontSmoothing() ==
              b.GetFontDescription().FontSmoothing();
-    case CSSPropertyID::kWebkitHighlight:
-      return a.Highlight() == b.Highlight();
     case CSSPropertyID::kWebkitLocale:
       return a.Locale() == b.Locale();
     case CSSPropertyID::kWebkitMaskBoxImageOutset:
@@ -822,6 +821,9 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return base::ValuesEquivalent<TransformOperation>(a.Rotate(), b.Rotate());
     case CSSPropertyID::kScale:
       return base::ValuesEquivalent<TransformOperation>(a.Scale(), b.Scale());
+    case CSSPropertyID::kSize:
+      return a.GetPageSizeType() == b.GetPageSizeType() &&
+             a.PageSize() == b.PageSize();
     case CSSPropertyID::kTransformOrigin:
       return a.GetTransformOrigin() == b.GetTransformOrigin();
     case CSSPropertyID::kWebkitPerspectiveOriginX:
@@ -1252,6 +1254,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kTransitionDelay:
     case CSSPropertyID::kTransitionDuration:
     case CSSPropertyID::kTransitionProperty:
+    case CSSPropertyID::kTransitionAnimationType:
     case CSSPropertyID::kTransitionTimingFunction:
     case CSSPropertyID::kUnicodeBidi:
     case CSSPropertyID::kWebkitWritingMode:
@@ -1260,13 +1263,12 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       NOTREACHED() << property.GetCSSPropertyName().ToAtomicString().Ascii();
       return true;
 
-    // Invalid properties.
+    // TODO(crbug.com/1459374): Implement comparison for these properties. They
+    // are reachable via transitions now.
     case CSSPropertyID::kAdditiveSymbols:
-    case CSSPropertyID::kAll:
     case CSSPropertyID::kAscentOverride:
     case CSSPropertyID::kBasePalette:
     case CSSPropertyID::kDescentOverride:
-    case CSSPropertyID::kInvalid:
     case CSSPropertyID::kFallback:
     case CSSPropertyID::kFontDisplay:
     case CSSPropertyID::kInherits:
@@ -1277,7 +1279,6 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kPad:
     case CSSPropertyID::kPrefix:
     case CSSPropertyID::kRange:
-    case CSSPropertyID::kSize:
     case CSSPropertyID::kSpeakAs:
     case CSSPropertyID::kSrc:
     case CSSPropertyID::kSuffix:
@@ -1285,6 +1286,11 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kSyntax:
     case CSSPropertyID::kSystem:
     case CSSPropertyID::kUnicodeRange:
+      return true;
+
+    // Invalid properties.
+    case CSSPropertyID::kAll:
+    case CSSPropertyID::kInvalid:
     case CSSPropertyID::kVariable:
       NOTREACHED() << property.GetCSSPropertyName().ToAtomicString().Ascii();
       return true;

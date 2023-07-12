@@ -221,18 +221,7 @@ void CheckSoftNavigationHeuristicsTracking(const Document& document,
 
 }  // anonymous namespace
 
-String HTMLElement::DebugNodeName() const {
-  if (IsA<HTMLDocument>(GetDocument())) {
-    return TagQName().HasPrefix() ? Element::nodeName().UpperASCII()
-                                  : TagQName().LocalName().UpperASCII();
-  }
-  return Element::nodeName();
-}
-
 String HTMLElement::nodeName() const {
-  // localNameUpper may intern and cache an AtomicString.
-  DCHECK(IsMainThread());
-
   // FIXME: Would be nice to have an atomicstring lookup based off uppercase
   // chars that does not have to copy the string on a hit in the hash.
   // FIXME: We should have a way to detect XHTML elements and replace the
@@ -1317,7 +1306,6 @@ bool HTMLElement::IsPopoverReady(PopoverTriggerAction action,
   CHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
       GetDocument().GetExecutionContext()));
   CHECK_NE(action, PopoverTriggerAction::kNone);
-  CHECK_NE(action, PopoverTriggerAction::kToggle);
 
   auto maybe_throw_exception = [&exception_state, &include_event_handler_text](
                                    DOMExceptionCode code, const char* msg) {
@@ -1430,6 +1418,12 @@ bool HTMLElement::togglePopover(bool force, ExceptionState& exception_state) {
     hidePopover(exception_state);
   } else if (force && !popoverOpen()) {
     ShowPopoverInternal(/*invoker*/ nullptr, &exception_state);
+  } else {
+    // Throw an exception if this element is disconnected or doesn't have a
+    // popover attribute.
+    IsPopoverReady(PopoverTriggerAction::kToggle, &exception_state,
+                   /*include_event_handler_text=*/false,
+                   /*document=*/nullptr);
   }
 
   if (GetPopoverData()) {
@@ -1448,9 +1442,6 @@ void HTMLElement::ShowPopoverInternal(Element* invoker,
   CHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
       GetDocument().GetExecutionContext()));
 
-  if (GetPopoverData()) {
-    GetPopoverData()->setInvoker(invoker);
-  }
   if (!IsPopoverReady(PopoverTriggerAction::kShow, exception_state,
                       /*include_event_handler_text=*/false, /*document=*/nullptr)) {
     CHECK(exception_state)
@@ -1459,6 +1450,8 @@ void HTMLElement::ShowPopoverInternal(Element* invoker,
            "shown.";
     return;
   }
+
+  CHECK(!GetPopoverData() || !GetPopoverData()->invoker());
 
   // Fire events by default, unless we're recursively showing this popover.
   PopoverData::ScopedStartShowingOrHiding scoped_was_showing_or_hiding(*this);
@@ -1494,7 +1487,7 @@ void HTMLElement::ShowPopoverInternal(Element* invoker,
   auto original_type = PopoverType();
   if (original_type == PopoverValueType::kAuto ||
       original_type == PopoverValueType::kHint) {
-    const auto* ancestor = FindTopmostPopoverAncestor(*this);
+    const auto* ancestor = FindTopmostPopoverAncestor(*this, invoker);
     if (original_type == PopoverValueType::kHint) {
       CHECK(RuntimeEnabledFeatures::HTMLPopoverHintEnabled());
       // If the new popover is popover=hint, hide other hints first.
@@ -1556,6 +1549,7 @@ void HTMLElement::ShowPopoverInternal(Element* invoker,
   original_document.AddToTopLayer(this);
   // Make the popover match `:popover-open` and remove `display:none` styling:
   GetPopoverData()->setVisibilityState(PopoverVisibilityState::kShowing);
+  GetPopoverData()->setInvoker(invoker);
   PseudoStateChanged(CSSSelector::kPseudoPopoverOpen);
   CHECK(!original_document.AllOpenPopovers().Contains(this));
   original_document.AllOpenPopovers().insert(this);
@@ -1661,8 +1655,9 @@ void HTMLElement::HideAllPopoversUntil(
         // If there is a popover=hint showing that is a descendant of something
         // on the popover=auto stack, then the hint should be hidden before that
         // ancestor is hidden, regardless of popover_independence.
-        hint_ancestor =
-            FindTopmostPopoverAncestor(*document.PopoverHintShowing());
+        hint_ancestor = FindTopmostPopoverAncestor(
+            *document.PopoverHintShowing(),
+            document.PopoverHintShowing()->GetPopoverData()->invoker());
         if (!hint_ancestor &&
             popover_independence == HidePopoverIndependence::kHideUnrelated) {
           document.PopoverHintShowing()->HidePopoverInternal(
@@ -2006,7 +2001,8 @@ const HTMLElement* NearestTargetPopoverForInvoker(
 // popover=auto popovers can *be* ancestors, and only popover=auto/hint popovers
 // can *have* ancestors.
 const HTMLElement* HTMLElement::FindTopmostPopoverAncestor(
-    HTMLElement& new_popover) {
+    HTMLElement& new_popover,
+    Element* new_popovers_invoker) {
   CHECK(new_popover.HasPopoverAttribute());
   CHECK_NE(new_popover.PopoverType(), PopoverValueType::kManual);
   auto& document = new_popover.GetDocument();
@@ -2044,7 +2040,7 @@ const HTMLElement* HTMLElement::FindTopmostPopoverAncestor(
   // 2. Anchor attribute.
   check_ancestor(new_popover.anchorElement());
   // 3. Invoker to popover
-  check_ancestor(new_popover.GetPopoverData()->invoker());
+  check_ancestor(new_popovers_invoker);
   return topmost_popover_ancestor;
 }
 

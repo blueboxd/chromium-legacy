@@ -22,6 +22,7 @@
 #include "components/segmentation_platform/internal/database/signal_storage_config.h"
 #include "components/segmentation_platform/internal/execution/processing/feature_list_query_processor.h"
 #include "components/segmentation_platform/internal/metadata/metadata_utils.h"
+#include "components/segmentation_platform/internal/platform_options.h"
 #include "components/segmentation_platform/internal/segmentation_ukm_helper.h"
 #include "components/segmentation_platform/internal/selection/segmentation_result_prefs.h"
 #include "components/segmentation_platform/internal/stats.h"
@@ -89,6 +90,7 @@ struct TrainingDataCollectorImpl::TrainingTimings {
 };
 
 TrainingDataCollectorImpl::TrainingDataCollectorImpl(
+    const PlatformOptions& platform_options,
     processing::FeatureListQueryProcessor* processor,
     HistogramSignalHandler* histogram_signal_handler,
     UserActionSignalHandler* user_action_signal_handler,
@@ -96,7 +98,8 @@ TrainingDataCollectorImpl::TrainingDataCollectorImpl(
     PrefService* profile_prefs,
     base::Clock* clock,
     CachedResultProvider* cached_result_provider)
-    : segment_info_database_(storage_service->segment_info_database()),
+    : platform_options_(platform_options),
+      segment_info_database_(storage_service->segment_info_database()),
       feature_list_query_processor_(processor),
       histogram_signal_handler_(histogram_signal_handler),
       user_action_signal_handler_(user_action_signal_handler),
@@ -139,8 +142,9 @@ void TrainingDataCollectorImpl::OnGetSegmentsInfoList(
   for (const auto& segment : segment_list) {
     const proto::SegmentInfo& segment_info = segment.second;
 
-    // Skip the segment if it is not in allowed list.
-    if (!SegmentationUkmHelper::GetInstance()->CanUploadTensors(segment_info)) {
+    // Skip the segment if training data is not needed.
+    if (!SegmentationUkmHelper::GetInstance()->IsUploadRequested(
+            segment_info)) {
       continue;
     }
 
@@ -187,6 +191,8 @@ void TrainingDataCollectorImpl::OnGetSegmentsInfoList(
       for (int i = 0; i < segment_info.training_data_size(); ++i) {
         const auto& training_data = segment_info.training_data(i);
         if (current_time > training_data.observation_trigger_timestamp()) {
+          VLOG(1) << "Periodic observation ended for "
+                  << proto::SegmentId_Name(segment_info.segment_id());
           // Observation is reached for the current training data.
           OnObservationTrigger(
               absl::nullopt,
@@ -235,6 +241,7 @@ void TrainingDataCollectorImpl::OnHistogramSignalUpdated(
   if (it != immediate_trigger_histograms_.end()) {
     auto segments = it->second;
     auto param = absl::make_optional<ImmediateCollectionParam>();
+    param->output_metric_name = histogram_name;
     param->output_metric_hash = hash;
     param->output_value = static_cast<float>(sample);
     for (auto segment : segments) {
@@ -285,6 +292,10 @@ void TrainingDataCollectorImpl::OnUmaUpdatedReportForSegmentInfo(
       RecordTrainingDataCollectionEvent(
           segment.value().segment_id(),
           stats::TrainingDataCollectionEvent::kHistogramTriggerHit);
+      VLOG(1) << "Observation ended for "
+              << proto::SegmentId_Name(segment.value().segment_id()) << " "
+              << (param ? param->output_metric_name : "");
+
       OnObservationTrigger(param, request_id.value(), segment.value(),
                            base::DoNothing());
     }
@@ -298,7 +309,13 @@ bool TrainingDataCollectorImpl::CanReportTrainingData(
     RecordTrainingDataCollectionEvent(
         segment_info.segment_id(),
         stats::TrainingDataCollectionEvent::kModelInfoMissing);
+    VLOG(1) << "Upload skipped due to model version "
+            << proto::SegmentId_Name(segment_info.segment_id());
     return false;
+  }
+
+  if (platform_options_.force_refresh_results) {
+    return true;
   }
 
   const proto::SegmentationModelMetadata& model_metadata =
@@ -315,6 +332,8 @@ bool TrainingDataCollectorImpl::CanReportTrainingData(
     RecordTrainingDataCollectionEvent(
         segment_info.segment_id(),
         stats::TrainingDataCollectionEvent::kPartialDataNotAllowed);
+    VLOG(1) << "Upload skipped due to consent "
+            << proto::SegmentId_Name(segment_info.segment_id());
     return false;
   }
 
@@ -335,6 +354,8 @@ bool TrainingDataCollectorImpl::CanReportTrainingData(
       RecordTrainingDataCollectionEvent(
           segment_info.segment_id(),
           stats::TrainingDataCollectionEvent::kNotEnoughCollectionTime);
+      VLOG(1) << "Upload skipped due to new model "
+              << proto::SegmentId_Name(segment_info.segment_id());
       return false;
     }
   }
@@ -345,6 +366,8 @@ bool TrainingDataCollectorImpl::CanReportTrainingData(
     RecordTrainingDataCollectionEvent(
         segment_info.segment_id(),
         stats::TrainingDataCollectionEvent::kNotEnoughCollectionTime);
+    VLOG(1) << "Upload skipped due to missing signals "
+            << proto::SegmentId_Name(segment_info.segment_id());
     return false;
   }
 
@@ -460,6 +483,8 @@ void TrainingDataCollectorImpl::CollectTrainingData(
     immediate_param->output_value =
         static_cast<float>(param.output_metric.value().second);
   }
+  VLOG(1) << "Observation ended for " << proto::SegmentId_Name(segment_id)
+          << " " << (param.output_metric ? param.output_metric->first : "");
   OnObservationTrigger(immediate_param, request_id, segment_info.value(),
                        std::move(callback));
 }
@@ -583,6 +608,10 @@ void TrainingDataCollectorImpl::OnGetTrainingTensorsAtDecisionTime(
           stats::TrainingDataCollectionEvent::kDelayedTaskPosted);
     }
 
+    VLOG(1) << "Observation timeout set for "
+            << proto::SegmentId_Name(segment_info.segment_id()) << " "
+            << *training_request.observation_delayed_task;
+
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&TrainingDataCollectorImpl::OnObservationTrigger,
@@ -590,6 +619,8 @@ void TrainingDataCollectorImpl::OnGetTrainingTensorsAtDecisionTime(
                        request_id, segment_info, base::DoNothing()),
         *training_request.observation_delayed_task);
   } else {
+    VLOG(1) << "Observation without timeout "
+            << proto::SegmentId_Name(segment_info.segment_id());
     RecordTrainingDataCollectionEvent(
         segment_info.segment_id(),
         stats::TrainingDataCollectionEvent::kWaitingForNonDelayedTrigger);
@@ -644,6 +675,11 @@ void TrainingDataCollectorImpl::OnGetStoredTrainingData(
   base::Time observation_time =
       ComputeObservationTiming(segment_info, prediction_time);
 
+  VLOG(1) << "Generating training data for segment "
+          << proto::SegmentId_Name(segment_info.segment_id())
+          << ". Prediction time: " << prediction_time
+          << " Observation time: " << observation_time;
+
   // Generate training data output.
   feature_list_query_processor_->ProcessFeatureList(
       segment_info.model_metadata(), /*input_context=*/nullptr,
@@ -690,7 +726,7 @@ TrainingDataCollectorImpl::ComputeDecisionTiming(
   absl::optional<uint64_t> delay_sec;
   for (int i = 0; i < training_config.observation_trigger_size(); i++) {
     const auto& trigger = training_config.observation_trigger(i);
-    if (trigger.has_delay_sec()) {
+    if (trigger.delay_sec() > 0) {
       delay_sec = trigger.delay_sec();
     }
   }

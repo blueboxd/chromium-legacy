@@ -62,7 +62,8 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
       bool supports_viewporter,
       bool supports_acquire_fence,
       bool supports_overlays,
-      uint32_t supported_surface_augmentor_version) override;
+      uint32_t supported_surface_augmentor_version,
+      bool supports_single_pixel_buffer) override;
 
   // These two calls get the surface, which backs the |widget| and notifies it
   // about the submission and the presentation. After the surface receives the
@@ -114,6 +115,10 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
                               const gfx::Size& size,
                               uint32_t buf_id);
 
+  // Asks Wayland to create a single pixel wl_buffer that is not backed by
+  // anything on the gpu side. Requires single pixel buffer protocol.
+  void CreateSinglePixelBuffer(SkColor4f color, uint32_t buf_id);
+
   // Asks Wayland to find a wl_buffer with the |buffer_id| and attach the
   // buffer to the WaylandWindow's surface, which backs the following |widget|.
   // Once the buffer is submitted and presented, the OnSubmission and
@@ -156,6 +161,9 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   bool supports_non_backed_solid_color_buffers() const {
     return supports_non_backed_solid_color_buffers_;
   }
+  bool supports_single_pixel_buffer() const {
+    return supports_single_pixel_buffer_;
+  }
   bool supports_subpixel_accurate_position() const {
     return supports_subpixel_accurate_position_;
   }
@@ -163,6 +171,7 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
     return supports_surface_background_color_;
   }
   bool supports_clip_rect() const { return supports_clip_rect_; }
+  bool supports_affine_transform() const { return supports_affine_transform_; }
 
   // Adds a WaylandBufferManagerGpu binding.
   void AddBindingWaylandBufferManagerGpu(
@@ -236,6 +245,7 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   void CreateSolidColorBufferTask(SkColor4f color,
                                   const gfx::Size& size,
                                   uint32_t buf_id);
+  void CreateSinglePixelBufferTask(SkColor4f color, uint32_t buf_id);
   void CommitOverlaysTask(gfx::AcceleratedWidget widget,
                           uint32_t frame_id,
                           gfx::FrameData data,
@@ -269,6 +279,10 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   // image via a wayland protocol.
   bool supports_non_backed_solid_color_buffers_ = false;
 
+  // Determines whether single pixel buffer are supported via a wayland
+  // protocol.
+  bool supports_single_pixel_buffer_ = false;
+
   // Determines whether subpixel accurate position is supported.
   bool supports_subpixel_accurate_position_ = false;
 
@@ -280,6 +294,10 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   bool supports_dmabuf_ = true;
 
   bool supports_clip_rect_ = false;
+
+  // Determines whether Wayland server supports delegating non axis-aligned 2d
+  // transforms.
+  bool supports_affine_transform_ = false;
 
   mojo::ReceiverSet<ozone::mojom::WaylandBufferManagerGpu> receiver_set_;
 

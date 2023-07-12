@@ -15,6 +15,8 @@
 #include "components/browsing_data/content/local_storage_helper.h"
 #include "content/public/browser/attribution_data_model.h"
 #include "content/public/browser/interest_group_manager.h"
+#include "content/public/browser/private_aggregation_data_model.h"
+#include "net/extras/shared_dictionary/shared_dictionary_isolation_key.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
@@ -44,12 +46,15 @@ class BrowsingDataModel {
     kTrustTokens = 1,  // Only issuance information considered.
     kSharedStorage = 2,
     kLocalStorage,
+    kSessionStorage,
     kInterestGroup,
     kAttributionReporting,
+    kPrivateAggregation,
     kQuotaStorage,
+    kSharedDictionary,
 
     kFirstType = kTrustTokens,
-    kLastType = kQuotaStorage,
+    kLastType = kSharedDictionary,
     kExtendedDelegateRange =
         64,  // This is needed to include delegate values when adding delegate
              // browsing data to the model.
@@ -64,7 +69,9 @@ class BrowsingDataModel {
   typedef absl::variant<url::Origin,        // Single origin, e.g. Trust Tokens
                         blink::StorageKey,  // Partitioned JS storage
                         content::InterestGroupManager::InterestGroupDataKey,
-                        content::AttributionDataModel::DataKey
+                        content::AttributionDataModel::DataKey,
+                        content::PrivateAggregationDataModel::DataKey,
+                        net::SharedDictionaryIsolationKey
                         // TODO(crbug.com/1271155): Additional backend keys.
                         >
       DataKey;
@@ -218,15 +225,23 @@ class BrowsingDataModel {
 
   // Removes all browsing data associated with `data_owner`, reaches out to
   // all supported storage backends to remove the data, and updates the model.
-  // Deletion at more granularity than `data_owner` is purposefully not
-  // supported by this model. UI that wishes to support such deletion should
-  // consider whether it is really required, and if so, implement it separately.
   // The in-memory representation of the model is updated immediately, while
   // actual deletion from disk occurs async, completion reported by `completed`.
   // Invalidates any iterators.
   // Virtual to allow an in-memory only fake to be created.
   virtual void RemoveBrowsingData(const DataOwner& data_owner,
                                   base::OnceClosure completed);
+
+  // Removes data for `data_owner` partitioned on `top_level_site`.
+  // This supports more granular data deletion needed by UI surfaces.
+  // The in-memory representation of the model is updated immediately, while
+  // actual deletion from disk occurs async, completion reported by `completed`.
+  // Invalidates any iterators.
+  // Virtual to allow an in-memory only fake to be created.
+  virtual void RemovePartitionedBrowsingData(
+      const DataOwner& data_owner,
+      const net::SchemefulSite& top_level_site,
+      base::OnceClosure completed);
 
  protected:
   friend class BrowsingDataModelTest;

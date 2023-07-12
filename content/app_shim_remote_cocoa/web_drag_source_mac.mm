@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/apple/bridging.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"

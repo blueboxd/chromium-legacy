@@ -1190,7 +1190,7 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
 
  protected:
   mojo::Remote<blink::mojom::FederatedAuthRequest> request_remote_;
-  raw_ptr<FederatedAuthRequestImpl, DanglingUntriaged>
+  raw_ptr<FederatedAuthRequestImpl, DanglingAcrossTasks>
       federated_auth_request_impl_;
 
   std::unique_ptr<TestIdpNetworkRequestManager> test_network_request_manager_;
@@ -1290,9 +1290,9 @@ TEST_F(FederatedAuthRequestImplTest, WellKnownEnforcementBypassed) {
   list.InitAndEnableFeature(features::kFedCmWithoutWellKnownEnforcement);
 
   MockConfiguration config = kConfigurationValid;
+  // The provider is not in the provider_list from the well-known.
   config.idp_info[kProviderUrlFull].well_known = {
-      {kProviderUrlFull, kProviderTwoUrlFull},
-      {ParseStatus::kSuccess, net::HTTP_OK}};
+      {kProviderTwoUrlFull}, {ParseStatus::kSuccess, net::HTTP_OK}};
   RunAuthTest(kDefaultRequestParameters, kExpectationSuccess, config);
   EXPECT_TRUE(DidFetchWellKnownAndConfig());
   EXPECT_TRUE(DidFetch(FetchedEndpoint::ACCOUNTS));

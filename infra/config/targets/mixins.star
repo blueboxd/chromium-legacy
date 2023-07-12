@@ -273,7 +273,7 @@ targets.mixin(
                 "cpu": "x86",
                 "kvm": "1",
                 "gce": "1",
-                "os": "Ubuntu-18.04",
+                "os": "Ubuntu-22.04",
                 "pool": "chrome.tests",
             },
         ],
@@ -659,15 +659,6 @@ targets.mixin(
 )
 
 targets.mixin(
-    name = "linux-bionic",
-    swarming = targets.swarming(
-        dimensions = {
-            "os": "Ubuntu-18.04",
-        },
-    ),
-)
-
-targets.mixin(
     name = "linux-focal",
     swarming = targets.swarming(
         dimensions = {
@@ -1005,7 +996,7 @@ targets.mixin(
             "cpu": "x86-64",
             "gpu": "1002:67ef",
             "hidpi": "1",
-            "os": "Mac-13.2.1",
+            "os": "Mac-13.4.1",
             "pool": "chromium.tests.gpu",
             "display_attached": "1",
         },
@@ -1062,7 +1053,7 @@ targets.mixin(
             targets.cipd_package(
                 package = "infra/tools/mac_toolchain/${platform}",
                 location = ".",
-                revision = "git_revision:278fb59d5eb5d2d2da6175c0f97103bffad579b1",
+                revision = "git_revision:59ddedfe3849abf560cbe0b41bb8e431041cd2bb",
             ),
         ],
     ),
@@ -1615,12 +1606,12 @@ targets.mixin(
     name = "xcode_15_beta",
     args = [
         "--xcode-build-version",
-        "15a5161b",
+        "15a5195k",
     ],
     swarming = targets.swarming(
         named_caches = [
             swarming.cache(
-                name = "xcode_ios_15a5161b",
+                name = "xcode_ios_15a5195k",
                 path = "Xcode.app",
             ),
         ],

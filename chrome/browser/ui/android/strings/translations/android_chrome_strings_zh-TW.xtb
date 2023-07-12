@@ -298,6 +298,7 @@
 <translation id="2643064289437760082">刪除瀏覽資料即可刪除廣告評估資料</translation>
 <translation id="2647434099613338025">新增語言</translation>
 <translation id="2649068648233607930">你的瀏覽器是由 <ph name="DOMAIN" /> 管理</translation>
+<translation id="2650077116157640844">前往已同步的裝置查看更多資訊</translation>
 <translation id="2650348088770008516">已關閉隱私權指南說明</translation>
 <translation id="2650408372219180431">匯出並刪除儲存到這部裝置的密碼</translation>
 <translation id="2650751991977523696">要再次下載檔案嗎？</translation>
@@ -446,7 +447,6 @@
 <translation id="3421726884497337397">選擇要在何時封鎖第三方 Cookie</translation>
 <translation id="3428747202529429621">在已登入帳戶的狀態下，能確保你持續享有安全無虞的 Chrome 使用體驗，也有助於提升其他 Google 應用程式的安全機制</translation>
 <translation id="3429160811076349561">試用功能已關閉</translation>
-<translation id="3432973700170747422">刪除過去 15 分鐘的瀏覽資料</translation>
 <translation id="3435465986463792564">開啟了多個視窗嗎？你可以在這裡進行管理</translation>
 <translation id="3435738964857648380">安全性</translation>
 <translation id="3443221991560634068">重新載入目前網頁</translation>
@@ -480,9 +480,9 @@
 <translation id="3587596251841506391">協助改善網路安全</translation>
 <translation id="3597179440835065298">取得更貼近需求的建議</translation>
 <translation id="3602290021589620013">預覽</translation>
-<translation id="360901359071773787">刪除過去 15 分鐘的瀏覽資料？</translation>
 <translation id="3616113530831147358">音訊</translation>
 <translation id="3622349720008044802">管理視窗</translation>
+<translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{+ 1 個網站}other{+ # 個網站}}</translation>
 <translation id="3631987586758005671">正在分享至「<ph name="DEVICE_NAME" />」</translation>
 <translation id="363596933471559332">自動使用已儲存的憑證登入網站。如果關閉這項功能，每次在您登入網站之前，網站一律會要求驗證。</translation>
 <translation id="3636940436873918441">偏好語言</translation>
@@ -749,6 +749,7 @@
 <translation id="5010886807652684893">視覺化檢視</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> 要求連線</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">過去 15 分鐘</translation>
 <translation id="5032430150487044192">無法建立 QR 圖碼</translation>
 <translation id="5039804452771397117">允許</translation>
 <translation id="5040262127954254034">隱私權</translation>
@@ -767,7 +768,6 @@
 <translation id="5118713593561876160">興趣喜好</translation>
 <translation id="5122378528687922675">如需協助，請找家長 (<ph name="PARENT_NAME_1" /> 或 <ph name="PARENT_NAME_2" />) 幫忙</translation>
 <translation id="5123685120097942451">無痕式分頁</translation>
-<translation id="5126510351761255129">請驗證卡片</translation>
 <translation id="5132942445612118989">同步處理你所有裝置上的密碼、歷史記錄和其他設定</translation>
 <translation id="5139940364318403933">瞭解如何使用 Google 雲端硬碟</translation>
 <translation id="5142281402488957685">如要重新整理動態消息內容，請將頁面往下拉</translation>
@@ -927,7 +927,6 @@
 <translation id="6011308810877101166">改善搜尋建議</translation>
 <translation id="6026538407078977628">展開至全螢幕模式</translation>
 <translation id="6030719887161080597">管理網站用來評估廣告成效的資訊</translation>
-<translation id="6034146297924778597">系統將刪除過去 15 分鐘的歷史記錄：</translation>
 <translation id="6039379616847168523">跳至下一個分頁</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="604124094241169006">自動</translation>
@@ -1369,6 +1368,7 @@
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />你的裝置<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">繼續</translation>
 <translation id="8209050860603202033">開啟圖片</translation>
+<translation id="8210770465353466621">這裡會顯示你的分頁</translation>
 <translation id="8215740705341534369">側邊工作表</translation>
 <translation id="8218622182176210845">管理你的帳戶</translation>
 <translation id="8221401890884589479">你可以封鎖不喜歡的網站，Chrome 也會自動將 30 天前的網站從清單中刪除。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>

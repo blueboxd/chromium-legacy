@@ -7,6 +7,7 @@
 #include "base/barrier_closure.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/browsing_data/content/browsing_data_model_test_util.h"
 #include "components/browsing_data/content/test_browsing_data_model_delegate.h"
 #include "content/public/browser/browser_context.h"
@@ -14,10 +15,16 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_storage_partition.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "net/base/schemeful_site.h"
+#include "net/extras/shared_dictionary/shared_dictionary_isolation_key.h"
+#include "net/extras/shared_dictionary/shared_dictionary_usage_info.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/test/test_network_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
+#include "url/origin.h"
 
 using browsing_data_model_test_util::BrowsingDataEntry;
 using browsing_data_model_test_util::ValidateBrowsingDataEntries;
@@ -36,6 +43,15 @@ class MockNetworkContext : public network::TestNetworkContext {
   MOCK_METHOD(void,
               DeleteStoredTrustTokens,
               (const url::Origin&, DeleteStoredTrustTokensCallback),
+              (override));
+  MOCK_METHOD(void,
+              GetSharedDictionaryUsageInfo,
+              (GetSharedDictionaryUsageInfoCallback),
+              (override));
+  MOCK_METHOD(void,
+              ClearSharedDictionaryCacheForIsolationKey,
+              (const net::SharedDictionaryIsolationKey&,
+               ClearSharedDictionaryCacheForIsolationKeyCallback),
               (override));
 
  private:
@@ -372,4 +388,114 @@ TEST_F(BrowsingDataModelTest, DelegateDataCanBeOriginOwned) {
 
   browsing_data_model_test_util::ValidateBrowsingDataEntries(model.get(),
                                                              expected_entries);
+}
+
+TEST_F(BrowsingDataModelTest, RemovePartitionedBrowsingData) {
+  std::unique_ptr<BrowsingDataModel> model = BrowsingDataModel::BuildEmpty(
+      storage_partition(),
+      std::make_unique<browsing_data::TestBrowsingDataModelDelegate>());
+
+  auto first_party_storage_key =
+      blink::StorageKey::CreateFirstParty(kSiteOrigin);
+  auto partitioned_storage_key =
+      blink::StorageKey::Create(kSiteOrigin, net::SchemefulSite(kTestOrigin),
+                                blink::mojom::AncestorChainBit::kCrossSite,
+                                /*third_party_partitioning_allowed=*/true);
+
+  model->AddBrowsingData(first_party_storage_key,
+                         BrowsingDataModel::StorageType::kLocalStorage, 0);
+  model->AddBrowsingData(partitioned_storage_key,
+                         BrowsingDataModel::StorageType::kLocalStorage, 0);
+
+  auto expected_entries = std::vector<BrowsingDataEntry>{
+      {kSiteOriginHost,
+       first_party_storage_key,
+       {{BrowsingDataModel::StorageType::kLocalStorage}, 0, 0}},
+      {kSiteOriginHost,
+       partitioned_storage_key,
+       {{BrowsingDataModel::StorageType::kLocalStorage}, 0, 0}},
+  };
+
+  browsing_data_model_test_util::ValidateBrowsingDataEntries(model.get(),
+                                                             expected_entries);
+  {
+    base::RunLoop run_loop;
+    model->RemovePartitionedBrowsingData(kSiteOriginHost,
+                                         net::SchemefulSite(kTestOrigin),
+                                         run_loop.QuitWhenIdleClosure());
+    run_loop.Run();
+  }
+
+  expected_entries = std::vector<BrowsingDataEntry>{
+      {kSiteOriginHost,
+       first_party_storage_key,
+       {{BrowsingDataModel::StorageType::kLocalStorage}, 0, 0}},
+  };
+  browsing_data_model_test_util::ValidateBrowsingDataEntries(model.get(),
+                                                             expected_entries);
+}
+
+class BrowsingDataModelSharedDictionaryTest : public BrowsingDataModelTest {
+ public:
+  BrowsingDataModelSharedDictionaryTest() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{network::features::
+                                  kCompressionDictionaryTransportBackend},
+        /*disabled_features=*/{});
+  }
+  ~BrowsingDataModelSharedDictionaryTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(BrowsingDataModelSharedDictionaryTest, GetUsageInfo) {
+  net::SharedDictionaryIsolationKey isolation_key(
+      kTestOrigin, net::SchemefulSite(kTestOrigin));
+  EXPECT_CALL(*mock_network_context(), GetStoredTrustTokenCounts(testing::_))
+      .WillOnce(
+          [&](network::TestNetworkContext::GetStoredTrustTokenCountsCallback
+                  callback) { std::move(callback).Run({}); });
+  EXPECT_CALL(*mock_network_context(), GetSharedDictionaryUsageInfo(testing::_))
+      .WillOnce(
+          [&](network::TestNetworkContext::GetSharedDictionaryUsageInfoCallback
+                  callback) {
+            std::move(callback).Run({net::SharedDictionaryUsageInfo{
+                .isolation_key = isolation_key, .total_size_bytes = 1234}});
+          });
+  base::RunLoop run_loop;
+  BuildModel(run_loop.QuitWhenIdleClosure());
+  run_loop.Run();
+  ValidateBrowsingDataEntries(
+      model(),
+      {{kTestOriginHost,
+        isolation_key,
+        {{BrowsingDataModel::StorageType::kSharedDictionary}, 1234, 0}},
+       {kTestOriginHost,
+        kTestOrigin,
+        {{static_cast<BrowsingDataModel::StorageType>(
+             browsing_data::TestBrowsingDataModelDelegate::StorageType::
+                 kTestDelegateType)},
+         0,
+         0}}});
+}
+
+TEST_F(BrowsingDataModelSharedDictionaryTest, Delete) {
+  net::SharedDictionaryIsolationKey isolation_key(
+      kTestOrigin, net::SchemefulSite(kTestOrigin));
+  model()->AddBrowsingData(
+      isolation_key, BrowsingDataModel::StorageType::kSharedDictionary, 1234);
+  EXPECT_CALL(*mock_network_context(),
+              ClearSharedDictionaryCacheForIsolationKey(testing::_, testing::_))
+      .WillOnce(
+          [&](const net::SharedDictionaryIsolationKey& key,
+              MockNetworkContext::
+                  ClearSharedDictionaryCacheForIsolationKeyCallback callback) {
+            EXPECT_EQ(isolation_key, key);
+            std::move(callback).Run();
+          });
+
+  base::RunLoop runloop;
+  model()->RemoveBrowsingData(kTestOriginHost, runloop.QuitClosure());
+  runloop.Run();
 }

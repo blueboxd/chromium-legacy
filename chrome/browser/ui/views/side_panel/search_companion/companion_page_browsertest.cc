@@ -336,13 +336,13 @@ class CompanionPageBrowserTest : public InProcessBrowserTest {
   // Mimics a user clicking a link to `url` in search companion and waits for
   // the page to load.
   void ClickUrlInCompanion(const GURL& url, bool wait_for_navigation = true) {
-    content::TestNavigationObserver nav_observer(web_contents());
     std::string script =
         "const link = document.createElement('a');link.target = "
         "\"blank_\";link.href=\"" +
         url.spec() + "\";document.body.appendChild(link);link.click();";
     ExecJs(script);
     if (wait_for_navigation) {
+      content::TestNavigationObserver nav_observer(web_contents());
       nav_observer.Wait();
     }
   }
@@ -434,6 +434,15 @@ class CompanionPageBrowserTest : public InProcessBrowserTest {
     std::string companion_proto_encoded = eval_js_result.ExtractString();
     proto = DeserializeCompanionRequest(companion_proto_encoded);
     return proto;
+  }
+
+  absl::optional<GURL> GetLastLinkOpenedUrlFromPostMessage() {
+    content::EvalJsResult eval_js_result =
+        EvalJs("getLastReceivedLinkOpenedUrl()");
+    if (!eval_js_result.error.empty() || !eval_js_result.value.is_string()) {
+      return absl::nullopt;
+    }
+    return GURL(eval_js_result.ExtractString());
   }
 
   void EnableMsbb(bool enable_msbb) {
@@ -642,9 +651,11 @@ IN_PROC_BROWSER_TEST_F(CompanionPageSameTabBrowserTest,
 
   // Click a link on the companion page. It should open in the same tab and
   // refresh the companion.
+  content::TestNavigationObserver nav_observer(web_contents());
   std::string script =
       "document.getElementById('some_link').click(); waitForMessage();";
   EvalJs(script);
+  nav_observer.Wait();
 
   // Close side panel and verify UKM of the second companion entry.
   side_panel_coordinator()->Close();
@@ -800,6 +811,30 @@ IN_PROC_BROWSER_TEST_F(CompanionPageSameTabBrowserTest,
   EXPECT_NE(clicked_url, web_contents()->GetURL());
 }
 
+IN_PROC_BROWSER_TEST_F(CompanionPageSameTabBrowserTest,
+                       LinkClickOnCompanionPageNotifiesViaPostMessage) {
+  const GURL clicked_url = CreateUrl(kHost, "/clicked.html");
+  // EnableSignInMsbbExps(/*signed_in=*/true, /*msbb=*/true, /*exps=*/true);
+
+  // Load a page on the active tab.
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), CreateUrl(kHost, kRelativeUrl1)));
+  ASSERT_EQ(side_panel_coordinator()->GetCurrentEntryId(), absl::nullopt);
+
+  // Open companion companion via toolbar entry point.
+  side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion);
+  EXPECT_TRUE(side_panel_coordinator()->IsSidePanelShowing());
+
+  WaitForCompanionToBeLoaded();
+  EXPECT_EQ(side_panel_coordinator()->GetCurrentEntryId(),
+            SidePanelEntry::Id::kSearchCompanion);
+
+  ClickUrlInCompanion(clicked_url);
+
+  // Ensure browser sent post message
+  EXPECT_EQ(clicked_url, GetLastLinkOpenedUrlFromPostMessage());
+}
+
 IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest, LinkClickOnCompanionPage) {
   EnableSignInMsbbExps(/*signed_in=*/true, /*msbb=*/true, /*exps=*/true);
   ukm::TestAutoSetUkmRecorder ukm_recorder;
@@ -830,6 +865,31 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest, LinkClickOnCompanionPage) {
   ExpectUkmEntryAt(
       &ukm_recorder, 0, ukm::builders::Companion_PageView::kOpenTriggerName,
       static_cast<int>(SidePanelOpenTrigger::kOpenedInNewTabFromSidePanel));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    CompanionPageBrowserTest,
+    LinkClickOnCompanionPageNotifiesNewTabSidePanelViaPostMessage) {
+  const GURL clicked_url = CreateUrl(kHost, "/clicked.html");
+  // EnableSignInMsbbExps(/*signed_in=*/true, /*msbb=*/true, /*exps=*/true);
+
+  // Load a page on the active tab.
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), CreateUrl(kHost, kRelativeUrl1)));
+  ASSERT_EQ(side_panel_coordinator()->GetCurrentEntryId(), absl::nullopt);
+
+  // Open companion companion via toolbar entry point.
+  side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion);
+  EXPECT_TRUE(side_panel_coordinator()->IsSidePanelShowing());
+
+  WaitForCompanionToBeLoaded();
+  EXPECT_EQ(side_panel_coordinator()->GetCurrentEntryId(),
+            SidePanelEntry::Id::kSearchCompanion);
+
+  ClickUrlInCompanion(clicked_url);
+
+  // Ensure browser sent post message
+  EXPECT_EQ(clicked_url, GetLastLinkOpenedUrlFromPostMessage());
 }
 
 IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
@@ -1752,6 +1812,80 @@ IN_PROC_BROWSER_TEST_F(
   // Enable companion by policy and that should enable the feature.
   EnableCompanionByPolicy(true);
   EXPECT_TRUE(companion::IsCompanionFeatureEnabled());
+  // Load a page on the active tab and open companion side panel
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), CreateUrl(kHost, kRelativeUrl1)));
+  side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion);
+
+  WaitForCompanionToBeLoaded();
+  EXPECT_EQ(side_panel_coordinator()->GetCurrentEntryId(),
+            SidePanelEntry::Id::kSearchCompanion);
+  EXPECT_EQ(1u, requests_received_on_server());
+}
+
+class SidePanelCompanion2BrowserEnabledTest : public CompanionPageBrowserTest {
+ public:
+  SidePanelCompanion2BrowserEnabledTest() : CompanionPageBrowserTest() {
+    enable_feature_side_panel_companion_ = true;
+  }
+
+ private:
+  void SetUpFeatureList() override {
+    base::FieldTrialParams enabled_params;
+    enabled_params["companion-homepage-url"] =
+        companion_server_.GetURL("/companion_iframe.html").spec();
+    enabled_params["companion-image-upload-url"] =
+        companion_server_.GetURL("/upload").spec();
+    enabled_params["open-links-in-current-tab"] = ShouldOpenLinkInCurrentTab();
+
+    std::vector<base::test::FeatureRefAndParams> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
+
+    if (enable_feature_side_panel_companion_) {
+      enabled_features.emplace_back(
+          companion::features::internal::kSidePanelCompanion2, enabled_params);
+      feature_list_.InitWithFeaturesAndParameters(enabled_features,
+                                                  disabled_features);
+      EXPECT_TRUE(companion::IsCompanionFeatureEnabled());
+    } else {
+      disabled_features.emplace_back(
+          companion::features::internal::kSidePanelCompanion);
+      disabled_features.emplace_back(
+          companion::features::internal::kSidePanelCompanion2);
+      disabled_features.emplace_back(
+          companion::features::internal::
+              kCompanionEnabledByObservingExpsNavigations);
+      feature_list_.InitWithFeaturesAndParameters(enabled_features,
+                                                  disabled_features);
+      EXPECT_FALSE(companion::IsCompanionFeatureEnabled());
+    }
+  }
+};
+
+class SidePanelCompanion2BrowserDisabledTest
+    : public SidePanelCompanion2BrowserEnabledTest {
+ public:
+  SidePanelCompanion2BrowserDisabledTest() {
+    enable_feature_side_panel_companion_ = false;
+  }
+};
+
+// Verify that Companion is disabled when `kSidePanelCompanion2` is disabled.
+IN_PROC_BROWSER_TEST_F(SidePanelCompanion2BrowserDisabledTest,
+                       FeatureDisabled) {
+  EXPECT_FALSE(companion::IsCompanionFeatureEnabled());
+  // Load a page on the active tab and open companion side panel
+  WaitForMainPageToBeLoaded(kRelativeUrl1);
+  side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion);
+
+  EXPECT_FALSE(side_panel_coordinator()->GetCurrentEntryId().has_value());
+  EXPECT_EQ(0u, requests_received_on_server());
+}
+
+// Verify that Companion is enabled when `kSidePanelCompanion2` is enabled.
+IN_PROC_BROWSER_TEST_F(SidePanelCompanion2BrowserEnabledTest, FeatureEnabled) {
+  EXPECT_TRUE(companion::IsCompanionFeatureEnabled());
+
   // Load a page on the active tab and open companion side panel
   ASSERT_TRUE(
       ui_test_utils::NavigateToURL(browser(), CreateUrl(kHost, kRelativeUrl1)));

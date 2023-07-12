@@ -17,6 +17,7 @@
 #include "components/autofill/core/common/mojom/autofill_types.mojom-forward.h"
 #include "components/device_reauth/device_authenticator.h"
 #include "components/device_reauth/mock_device_authenticator.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -384,7 +385,10 @@ TEST_F(AllPasswordsBottomSheetControllerTest,
       password_manager::features::
           kUnifiedPasswordManagerLocalPasswordsMigrationWarning);
   createAllPasswordsController(FocusedFieldType::kFillablePasswordField);
-  EXPECT_CALL(show_migration_warning_callback(), Run);
+  EXPECT_CALL(show_migration_warning_callback(),
+              Run(_, _,
+                  password_manager::metrics_util::
+                      PasswordMigrationWarningTriggers::kAllPasswords));
   all_passwords_controller()->OnCredentialSelected(
       kUsername1, kPassword, RequestsToFillPassword(true));
 }

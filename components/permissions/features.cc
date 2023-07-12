@@ -8,6 +8,12 @@
 namespace permissions {
 namespace features {
 
+// Enables or disables whether pages with pending permission requests will
+// go into back/forward cache.
+BASE_FEATURE(kBackForwardCacheUnblockPermissionRequest,
+             "BackForwardCacheUnblockPermissionRequest",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables or disables whether permission prompts are automatically blocked
 // after the user has explicitly dismissed them too many times.
 BASE_FEATURE(kBlockPromptsIfDismissedOften,
@@ -145,6 +151,10 @@ BASE_FEATURE(kWindowManagementPermissionAlias,
 // Enables disallowing MIDI permission by default.
 BASE_FEATURE(kBlockMidiByDefault,
              "BlockMidiByDefault",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kImprovedSemanticsActivityIndicators,
+             "ImprovedSemanticsActivityIndicators",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

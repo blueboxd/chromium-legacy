@@ -298,6 +298,7 @@
 <translation id="2318576281648121272">今天 <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" />，搜尋結果類別</translation>
 <translation id="2322173485024759474">移至上一個字母</translation>
+<translation id="2335091074961603075">Chromebook 或藍牙裝置使用的是舊版藍牙。如要提高音訊品質，請使用內部麥克風。</translation>
 <translation id="2339073806695260576">輕觸檔案櫃的觸控筆圖示即可做筆記、擷取螢幕畫面，以及使用雷射筆或放大鏡。</translation>
 <translation id="2341729377289034582">已鎖定為垂直畫面</translation>
 <translation id="2345226652884463045">按下 Enter 鍵或搜尋 + 空格鍵即可選取要編輯的文字。</translation>
@@ -395,6 +396,7 @@
 <translation id="2750941250130734256">已取消固定使用中的視窗。</translation>
 <translation id="2761723519669354964">開啟檔案櫃中的醒目顯示項目</translation>
 <translation id="2774348302533424868">按下 <ph name="MODIFIER" /><ph name="DELIMITER" /><ph name="KEY_ONE" /> 到 <ph name="KEY_TWO" /> 鍵</translation>
+<translation id="2778197796481941784">Ctrl + 搜尋鍵 + S 鍵</translation>
 <translation id="2778650143428714839">這部 <ph name="DEVICE_TYPE" /> 是由 <ph name="MANAGER" /> 管理</translation>
 <translation id="2782591952652094792">結束擷取模式</translation>
 <translation id="2785499565474703580">已與 1 部裝置連線</translation>
@@ -458,6 +460,7 @@
 <translation id="3062298103034426069">不支援</translation>
 <translation id="3068622547379332530">版本 <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">在左側顯示檔案櫃</translation>
+<translation id="3070639127620815135">搜尋鍵 + Esc 鍵</translation>
 <translation id="3077734595579995578">Shift</translation>
 <translation id="3081696990447829002">展開選單</translation>
 <translation id="3087734570205094154">置底</translation>
@@ -471,6 +474,7 @@
 <translation id="3120421559657122717">要關機嗎？</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">重新啟動即可更新</translation>
+<translation id="3139188263101386725">使用新版快速鍵</translation>
 <translation id="3139942575505304791">桌面 1</translation>
 <translation id="315116470104423982">行動數據</translation>
 <translation id="3151786313568798007">方向</translation>
@@ -603,6 +607,7 @@
         <ph name="EVENT_SUMMARY" />：
         <ph name="START_TIME" /> 至 <ph name="END_TIME" /> (<ph name="TIME_ZONE" />)。選取活動即可在 Google 日曆中查看詳情。</translation>
 <translation id="3659444876902283058">(第 <ph name="CURRENT_DAY" /> 天，共 <ph name="TOTAL_DAYS" /> 天)</translation>
+<translation id="3659667652322717492">你稍後隨時可以變更麥克風行為。</translation>
 <translation id="3659814201068740063">大約還可使用 <ph name="TIME_LEFT" /> (<ph name="PERCENTAGE" />%)。
 請將裝置接上電源。</translation>
 <translation id="366222428570480733">受管理的使用者：<ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -1046,6 +1051,7 @@
 <translation id="5578188167649348993">記憶體</translation>
 <translation id="5580000943347215299">資料庫</translation>
 <translation id="558849140439112033">拖曳選取要擷圖的區域</translation>
+<translation id="5590609058453685222">靜音提醒已開啟。如果在靜音狀態下說話，系統會傳送通知給你。</translation>
 <translation id="5596627076506792578">更多選項</translation>
 <translation id="5597451508971090205"><ph name="DATE" /><ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">按下 Ctrl + Alt + Z 鍵即可停用互動朗讀功能。</translation>
@@ -1199,6 +1205,7 @@
 <translation id="6231419273573514727">周邊裝置效能可能受到限制</translation>
 <translation id="6232891689835436217">「<ph name="APP_NAME" />」正在使用你的攝影機和麥克風</translation>
 <translation id="6237231532760393653">1X</translation>
+<translation id="6244986124527896815">使用「<ph name="NEW_SHORTCUT" />」開啟工作管理員應用程式。</translation>
 <translation id="6247728804802644171">開啟通知</translation>
 <translation id="6254629735336163724">已鎖定為水平畫面</translation>
 <translation id="6259254695169772643">請使用觸控筆選取</translation>
@@ -1249,6 +1256,7 @@
 <translation id="6497418457565568043">零打擾模式已開啟</translation>
 <translation id="6500896621837555595">更新</translation>
 <translation id="6501401484702599040">正在將畫面投放到「<ph name="RECEIVER_NAME" />」</translation>
+<translation id="6507042703812908515">使用「<ph name="NEW_SHORTCUT" />」開啟 Key Shortcuts 應用程式。</translation>
 <translation id="6507618042428827377">切換到下一個可用的輸入法</translation>
 <translation id="6508923215158854599">確認 Chromebook 和 Chromecast 裝置連線到相同 Wi-Fi 網路。</translation>
 <translation id="6515727200518652613">攝影機連線中斷，正在嘗試重新連接。</translation>
@@ -1480,7 +1488,7 @@
 <translation id="7579778809502851308">擷取螢幕畫面</translation>
 <translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
 <translation id="7600875258240007829">查看所有通知</translation>
-<translation id="7601417191446344542">要開啟靜音狀態的自動提醒嗎？</translation>
+<translation id="7601417191446344542">要開啟靜音提醒嗎？</translation>
 <translation id="7607002721634913082">已暫停</translation>
 <translation id="7609951632080598826">日曆檢視畫面，<ph name="DATE" /> <ph name="TIME" /></translation>
 <translation id="7611213136657090146">已重新連接攝影機。</translation>
@@ -1541,7 +1549,6 @@
 <translation id="7866482334467279021">開啟</translation>
 <translation id="7872786842639831132">關閉</translation>
 <translation id="7875575368831396199"><ph name="DEVICE_TYPE" /> 的藍牙功能似乎已關閉。請開啟藍牙功能，才能使用 Phone Hub。</translation>
-<translation id="7876243839304621966">全部移除</translation>
 <translation id="7877557217297072640">{0,plural, =0{立即將裝置復原為較舊的版本}=1{在 1 秒內將裝置復原為較舊的版本}other{在 # 秒內將裝置復原為較舊的版本}}</translation>
 <translation id="7884446017008693258">無線基地台設定</translation>
 <translation id="7884902759927478774">取消分頁拖曳</translation>
@@ -1746,6 +1753,7 @@
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />。<ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8790998409862094015">強</translation>
 <translation id="8792626944327216835">麥克風</translation>
+<translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" />資料夾</translation>
 <translation id="880709030178078220">「說明」</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

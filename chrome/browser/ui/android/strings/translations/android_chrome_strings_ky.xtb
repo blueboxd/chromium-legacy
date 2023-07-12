@@ -293,6 +293,7 @@
 <translation id="2643064289437760082">Серептөө дайындарын өчүрүү менен жарнамалардын талданышы тууралуу маалыматты каалаган убакта өчүрө аласыз</translation>
 <translation id="2647434099613338025">Тил кошуу</translation>
 <translation id="2649068648233607930">Серепчини <ph name="DOMAIN" /> башкарат</translation>
+<translation id="2650077116157640844">Шайкештирилген түзмөктөрдө дагы башкалары болушу мүмкүн</translation>
 <translation id="2650348088770008516">Купуялык жетектемесинин түшүндүрмөсү жабылды</translation>
 <translation id="2650408372219180431">Бул түзмөктө сакталган сырсөздөрдү экспорттоо жана өчүрүү</translation>
 <translation id="2650751991977523696">Файл кайра жүктөлүп алынсынбы?</translation>
@@ -441,7 +442,6 @@
 <translation id="3421726884497337397">Үчүнчү тараптын cookie файлдары качан бөгөттөлсүн?</translation>
 <translation id="3428747202529429621">Аккаунтуңузга киргенде Chrome'до жана башка Google колдонмолорунда коопсуздугуңузду коргоп турат</translation>
 <translation id="3429160811076349561">Сыноонун функциялары өчүк</translation>
-<translation id="3432973700170747422">Акыркы 15 мүнөттү өчүрүү</translation>
 <translation id="3435465986463792564">Көп терезе ачылып турабы? Аларды бул жерден башкарыңыз</translation>
 <translation id="3435738964857648380">Коопсуздук</translation>
 <translation id="3443221991560634068">Учурдагы баракты кайра жүктөө</translation>
@@ -475,9 +475,9 @@
 <translation id="3587596251841506391">Интернеттеги коопсуздукту жакшыртууга жардам бериңиз</translation>
 <translation id="3597179440835065298">Жакшыраак сунуштарды алыңыз</translation>
 <translation id="3602290021589620013">Алдн-ала көз жүгртүү</translation>
-<translation id="360901359071773787">Акыркы 15 мүнөт өчүрүлсүнбү?</translation>
 <translation id="3616113530831147358">Аудио</translation>
 <translation id="3622349720008044802">Терезелерди башкаруу</translation>
+<translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{+ 1 сайт}other{+ # сайт}}</translation>
 <translation id="3631987586758005671"><ph name="DEVICE_NAME" /> менен бөлүшүлүүдө</translation>
 <translation id="363596933471559332">Веб-сайттарга сакталган колдонуучу аты жана сырсөз менен кирсе болот. Бул функция өчүрүлсө, вебсайтка кирген сайын колдонуучу аты менен сырсөздү киргизүүгө туура келет.</translation>
 <translation id="3636940436873918441">Тандалган тилдер</translation>
@@ -742,6 +742,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="5010886807652684893">Визуалдык көрүнүш</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> сайты туташканы жатат</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">Акыркы 15 мүнөттө</translation>
 <translation id="5032430150487044192">QR код түзүлгөн жок</translation>
 <translation id="5039804452771397117">Уруксат берүү</translation>
 <translation id="5040262127954254034">Купуялык</translation>
@@ -760,7 +761,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="5118713593561876160">Кызыккан нерселер</translation>
 <translation id="5122378528687922675">Жардам керек болсо, ата-энеңе кайрыл (<ph name="PARENT_NAME_1" /> же <ph name="PARENT_NAME_2" />)</translation>
 <translation id="5123685120097942451">Жашыруун өтмөк</translation>
-<translation id="5126510351761255129">Картаны ырастаңыз</translation>
 <translation id="5132942445612118989">Бардык түзмөктөрдөгү сырсөздөрдү, таржымалды жана башкаларды шайкештирүү</translation>
 <translation id="5139940364318403933">Google Drive'ты колдонгонду үйрөнүп алыңыз</translation>
 <translation id="5142281402488957685">Жаңы окуяларды көрүү үчүн баракты ылдый тартыңыз</translation>
@@ -920,7 +920,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6011308810877101166">Издөө сунуштарын жакшыртуу</translation>
 <translation id="6026538407078977628">Толук экранга жайып көрсөтүү</translation>
 <translation id="6030719887161080597">Сайттар жарнаманын майнаптуулугун өлчөө үчүн колдонгон маалыматтарды тескеңиз</translation>
-<translation id="6034146297924778597">Акыркы 15 мүнөттө каралган таржымал өчүрүлөт:</translation>
 <translation id="6039379616847168523">Кийинки өтмөккө секирүү</translation>
 <translation id="6040143037577758943">Жабуу</translation>
 <translation id="604124094241169006">Автоматтык</translation>
@@ -1362,6 +1361,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />Түзмөктөрүңүз<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">Улантуу</translation>
 <translation id="8209050860603202033">Сүрөттү ачуу</translation>
+<translation id="8210770465353466621">Өтмөктөрүңүздү ушул жерден табасыз</translation>
 <translation id="8215740705341534369">Капталдагы экран</translation>
 <translation id="8218622182176210845">Аккаунтуңузду башкарыңыз</translation>
 <translation id="8221401890884589479">Каалаган сайтты бөгөттөй аласыз. Chrome тизмеге 30 күн мурун кошулган сайттарды автоматтык түрдө жок кылып турат. <ph name="BEGIN_LINK" />Кеңири маалымат<ph name="END_LINK" /></translation>

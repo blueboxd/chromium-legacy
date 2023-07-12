@@ -1935,6 +1935,7 @@ def CheckNoProductionCodeUsingTestOnlyFunctionsJava(input_api, output_api):
     inclusion_re = input_api.re.compile(r'(%s)\s*\(' % name_pattern)
     # Ignore definitions. (Comments are ignored separately.)
     exclusion_re = input_api.re.compile(r'(%s)[^;]+\{' % name_pattern)
+    allowlist_re = input_api.re.compile(r'// IN-TEST$')
 
     problems = []
     sources = lambda x: input_api.FilterSourceFile(
@@ -1955,6 +1956,7 @@ def CheckNoProductionCodeUsingTestOnlyFunctionsJava(input_api, output_api):
                 continue
             if (inclusion_re.search(line) and not comment_re.search(line)
                     and not annotation_re.search(line)
+                    and not allowlist_re.search(line)
                     and not exclusion_re.search(line)):
                 problems.append('%s:%d\n    %s' %
                                 (local_path, line_number, line.strip()))
@@ -2021,16 +2023,26 @@ def CheckNoStrCatRedefines(input_api, output_api):
     return []
 
 
+def _CheckNoUNIT_TESTInSourceFiles(input_api, f):
+    problems = []
+
+    unit_test_macro = input_api.re.compile(
+        '^\s*#.*(?:ifn?def\s+UNIT_TEST|defined\s*\(?\s*UNIT_TEST\s*\)?)(?:$|\s+)')
+    for line_num, line in f.ChangedContents():
+        if unit_test_macro.match(line):
+            problems.append('    %s:%d' % (f.LocalPath(), line_num))
+
+    return problems
+
+
 def CheckNoUNIT_TESTInSourceFiles(input_api, output_api):
     """Checks to make sure no source files use UNIT_TEST."""
     problems = []
     for f in input_api.AffectedFiles():
         if (not f.LocalPath().endswith(('.cc', '.mm'))):
             continue
-
-        for line_num, line in f.ChangedContents():
-            if 'UNIT_TEST ' in line or line.endswith('UNIT_TEST'):
-                problems.append('    %s:%d' % (f.LocalPath(), line_num))
+        problems.extend(
+            _CheckNoUNIT_TESTInSourceFiles(input_api, f))
 
     if not problems:
         return []
@@ -3053,6 +3065,7 @@ def CheckSpamLogging(input_api, output_api):
             r"^chrome/chrome_elf/dll_hash/dll_hash_main\.cc$",
             r"^chrome/installer/setup/.*",
             r"^chromecast/",
+            r"^components/cast",
             r"^components/media_control/renderer/media_playback_options\.cc$",
             r"^components/policy/core/common/policy_logger\.cc$",
             r"^components/viz/service/display/"

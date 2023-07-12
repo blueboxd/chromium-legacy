@@ -186,13 +186,7 @@ void LayoutSVGRoot::UpdateLayout() {
   // current{Scale,Translate}, decorations and 'overflow'.
   const bool viewport_may_have_changed =
       SelfNeedsLayout() || old_size != SizeFromNG();
-
-  auto* svg = To<SVGSVGElement>(GetNode());
-  DCHECK(svg);
-  // When hasRelativeLengths() is false, no descendants have relative lengths
-  // (hence no one is interested in viewport size changes).
-  is_layout_size_changed_ =
-      viewport_may_have_changed && svg->HasRelativeLengths();
+  is_layout_size_changed_ = viewport_may_have_changed;
 
   SVGContainerLayoutInfo layout_info;
   layout_info.scale_factor_changed = did_screen_scale_factor_change_;
@@ -241,7 +235,7 @@ LayoutRect LayoutSVGRoot::ComputeContentsVisualOverflow() const {
   // To condition, we intersect with something that we oftentimes
   // consider to be "infinity".
   return Intersection(EnclosingLayoutRect(content_visual_rect),
-                      LayoutRect(LayoutRect::InfiniteIntRect()));
+                      LayoutRect(InfiniteIntRect()));
 }
 
 void LayoutSVGRoot::PaintReplaced(const PaintInfo& paint_info,

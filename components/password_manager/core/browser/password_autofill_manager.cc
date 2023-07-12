@@ -34,6 +34,7 @@
 #include "components/device_reauth/device_authenticator.h"
 #include "components/favicon/core/favicon_util.h"
 #include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -42,7 +43,6 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/webauthn_credentials_delegate.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
@@ -386,7 +386,8 @@ void PasswordAutofillManager::OnPopupHidden() {}
 void PasswordAutofillManager::OnPopupSuppressed() {}
 
 void PasswordAutofillManager::DidSelectSuggestion(
-    const autofill::Suggestion& suggestion) {
+    const autofill::Suggestion& suggestion,
+    autofill::AutofillSuggestionTriggerSource trigger_source) {
   ClearPreviewedForm();
   if (suggestion.popup_item_id ==
           autofill::PopupItemId::kAllSavedPasswordsEntry ||
@@ -431,7 +432,8 @@ void PasswordAutofillManager::OnUnlockItemAccepted(
 
 void PasswordAutofillManager::DidAcceptSuggestion(
     const autofill::Suggestion& suggestion,
-    int position) {
+    int position,
+    autofill::AutofillSuggestionTriggerSource trigger_source) {
   using metrics_util::PasswordDropdownSelectedOption;
   switch (suggestion.popup_item_id) {
     case autofill::PopupItemId::kGeneratePasswordEntry:
@@ -829,7 +831,7 @@ bool PasswordAutofillManager::ShowPopup(
   LogMetricsForSuggestions(suggestions);
   autofill::AutofillClient::PopupOpenArgs open_args(
       bounds, text_direction, suggestions,
-      autofill::AutoselectFirstSuggestion(false));
+      autofill::AutofillSuggestionTriggerSource::kPasswordManager);
   autofill_client_->ShowAutofillPopup(open_args,
                                       weak_ptr_factory_.GetWeakPtr());
   return true;

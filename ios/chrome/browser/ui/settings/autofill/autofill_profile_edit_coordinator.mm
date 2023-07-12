@@ -13,6 +13,8 @@
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -86,15 +88,16 @@
       _autofillProfile, GetApplicationContext()->GetApplicationLocale());
 
   self.mediator = [[AutofillProfileEditMediator alloc]
-                initWithDelegate:self
-             personalDataManager:personalDataManager
-                 autofillProfile:&_autofillProfile
-                     countryCode:base::SysUTF8ToNSString(countryCode)
-               isMigrationPrompt:NO
-      showMigrateToAccountButton:self.showMigrateToAccountButton];
+         initWithDelegate:self
+      personalDataManager:personalDataManager
+          autofillProfile:&_autofillProfile
+              countryCode:base::SysUTF8ToNSString(countryCode)
+        isMigrationPrompt:NO];
 
   self.viewController = [[AutofillSettingsProfileEditTableViewController alloc]
-      initWithStyle:ChromeTableViewStyle()];
+                      initWithDelegate:self.mediator
+      shouldShowMigrateToAccountButton:self.showMigrateToAccountButton
+                             userEmail:[self userEmail]];
   self.sharedViewController = [[AutofillProfileEditTableViewController alloc]
       initWithDelegate:self.mediator
              userEmail:[self userEmail]
@@ -102,6 +105,8 @@
           settingsView:YES];
   self.mediator.consumer = self.sharedViewController;
   self.viewController.handler = self.sharedViewController;
+  self.viewController.snackbarCommandsHandler = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), SnackbarCommands);
 
   DCHECK(self.baseNavigationController);
   [self.baseNavigationController pushViewController:self.viewController

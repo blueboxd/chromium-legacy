@@ -15,24 +15,16 @@
 
 @optional
 
+// Invoked before the specified WebState is updated. Currently, this is called
+// only before a WebState is detached from WebStateList.
+- (void)willChangeWebStateList:(WebStateList*)webStateList
+                        change:(const WebStateListChangeDetach&)change
+                     selection:(const WebStateSelection&)selection;
+
 // Invoked after the WebStateList is updated.
 - (void)didChangeWebStateList:(WebStateList*)webStateList
                        change:(const WebStateListChange&)change
                     selection:(const WebStateSelection&)selection;
-
-// Invoked before the specified WebState is detached from the WebStateList.
-// The WebState is still valid and still in the WebStateList.
-- (void)webStateList:(WebStateList*)webStateList
-    willDetachWebState:(web::WebState*)webState
-               atIndex:(int)atIndex;
-
-// Invoked before the specified WebState is destroyed via the WebStateList.
-// The WebState is still valid but is no longer in the WebStateList. If the
-// WebState is closed due to user action, `userAction` will be true.
-- (void)webStateList:(WebStateList*)webStateList
-    willCloseWebState:(web::WebState*)webState
-              atIndex:(int)atIndex
-           userAction:(BOOL)userAction;
 
 // Invoked after `newWebState` was activated at the specified index. Both
 // WebState are either valid or null (if there was no selection or there is
@@ -81,24 +73,17 @@ class WebStateListObserverBridge final : public WebStateListObserver {
 
  private:
   // WebStateListObserver implementation.
+  void WebStateListWillChange(WebStateList* web_state_list,
+                              const WebStateListChangeDetach& detach_change,
+                              const WebStateSelection& selection) override;
   void WebStateListDidChange(WebStateList* web_state_list,
                              const WebStateListChange& change,
                              const WebStateSelection& selection) override;
-  void WillDetachWebStateAt(WebStateList* web_state_list,
-                            web::WebState* web_state,
-                            int index) final;
-  void WillCloseWebStateAt(WebStateList* web_state_list,
-                           web::WebState* web_state,
-                           int index,
-                           bool user_action) final;
   void WebStateActivatedAt(WebStateList* web_state_list,
                            web::WebState* old_web_state,
                            web::WebState* new_web_state,
                            int active_index,
                            ActiveWebStateChangeReason reason) final;
-  void WebStatePinnedStateChanged(WebStateList* web_state_list,
-                                  web::WebState* web_state,
-                                  int index) final;
   void WillBeginBatchOperation(WebStateList* web_state_list) final;
   void BatchOperationEnded(WebStateList* web_state_list) final;
   void WebStateListDestroyed(WebStateList* web_state_list) final;

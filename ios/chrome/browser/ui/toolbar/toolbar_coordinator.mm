@@ -346,6 +346,10 @@
   return self.locationBarCoordinator.omniboxScribbleForwardingTarget;
 }
 
+- (void)didNavigateToNTPOnActiveWebState {
+  [self.toolbarMediator didNavigateToNTPOnActiveWebState];
+}
+
 #pragma mark - PopupMenuUIUpdating
 
 - (void)updateUIForOverflowMenuIPHDisplayed {
@@ -402,8 +406,8 @@
   AdaptiveToolbarCoordinator* adaptiveToolbarCoordinator =
       [self coordinatorWithToolbarType:toolbarType];
 
-  [self updateLocationBarForSideSwipeSnapshot:webState];
   [adaptiveToolbarCoordinator updateToolbarForSideSwipeSnapshot:webState];
+  [self updateLocationBarForSideSwipeSnapshot:webState];
 
   UIImage* toolbarSnapshot = CaptureViewWithOption(
       adaptiveToolbarCoordinator.viewController.view,
@@ -430,13 +434,9 @@
 
 /// Prepares location bar for a side swipe snapshot with`webState`.
 - (void)updateLocationBarForSideSwipeSnapshot:(web::WebState*)webState {
-  BOOL isNTP = IsVisibleURLNewTabPage(webState);
-  // Don't do anything for a live non-ntp tab.
-  if (webState == self.browser->GetWebStateList()->GetActiveWebState() &&
-      !isNTP) {
-    [self.locationBarCoordinator.locationBarViewController.view setHidden:NO];
-  } else {
-    self.primaryToolbarViewController.view.hidden = NO;
+  // Hide LocationBarView when taking a snapshot on a web state that is not the
+  // active one, as the URL is not updated.
+  if (webState != self.browser->GetWebStateList()->GetActiveWebState()) {
     [self.locationBarCoordinator.locationBarViewController.view setHidden:YES];
   }
 }

@@ -41,13 +41,12 @@ class FilesPolicyDialogFactory {
   virtual views::Widget* CreateWarnDialog(
       OnDlpRestrictionCheckedCallback callback,
       const std::vector<DlpConfidentialFile>& files,
-      DlpFileDestination destination,
       dlp::FileAction action,
-      gfx::NativeWindow modal_parent) = 0;
+      gfx::NativeWindow modal_parent,
+      absl::optional<DlpFileDestination> destination) = 0;
 
   virtual views::Widget* CreateErrorDialog(
       const std::map<DlpConfidentialFile, Policy>& files,
-      DlpFileDestination destination,
       dlp::FileAction action,
       gfx::NativeWindow modal_parent) = 0;
 };
@@ -60,7 +59,6 @@ class FilesPolicyDialog : public PolicyDialogBase {
 
   FilesPolicyDialog() = delete;
   FilesPolicyDialog(size_t file_count,
-                    DlpFileDestination destination,
                     dlp::FileAction action,
                     gfx::NativeWindow modal_parent);
   FilesPolicyDialog(const FilesPolicyDialog& other) = delete;
@@ -72,15 +70,14 @@ class FilesPolicyDialog : public PolicyDialogBase {
   static views::Widget* CreateWarnDialog(
       OnDlpRestrictionCheckedCallback callback,
       const std::vector<DlpConfidentialFile>& files,
-      DlpFileDestination destination,
       dlp::FileAction action,
-      gfx::NativeWindow modal_parent);
+      gfx::NativeWindow modal_parent,
+      absl::optional<DlpFileDestination> destination = absl::nullopt);
 
   // Creates and shows an instance of FilesPolicyErrorDialog. Returns owning
   // Widget.
   static views::Widget* CreateErrorDialog(
       const std::map<DlpConfidentialFile, Policy>& files,
-      DlpFileDestination destination,
       dlp::FileAction action,
       gfx::NativeWindow modal_parent);
 
@@ -92,7 +89,6 @@ class FilesPolicyDialog : public PolicyDialogBase {
   void AddConfidentialRow(const gfx::ImageSkia& icon,
                           const std::u16string& title) override;
 
-  DlpFileDestination destination_;
   dlp::FileAction action_;
   // Number of files listed in the dialog.
   size_t file_count_;

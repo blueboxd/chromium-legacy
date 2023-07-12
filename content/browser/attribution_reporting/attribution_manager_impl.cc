@@ -97,7 +97,7 @@ using ScopedUseInMemoryStorageForTesting =
     ::content::AttributionManagerImpl::ScopedUseInMemoryStorageForTesting;
 
 using ::attribution_reporting::mojom::OsRegistrationResult;
-using ::attribution_reporting::mojom::OsRegistrationType;
+using ::attribution_reporting::mojom::RegistrationType;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -183,10 +183,11 @@ bool IsStorageKeySessionOnly(
 }
 
 void RecordStoreSourceStatus(StoreSourceResult result) {
-  static_assert(StorableSource::Result::kMaxValue ==
-                    StorableSource::Result::kDestinationBothLimitsReached,
-                "Bump version of Conversions.SourceStoredStatus3 histogram.");
-  base::UmaHistogramEnumeration("Conversions.SourceStoredStatus3",
+  static_assert(
+      StorableSource::Result::kMaxValue ==
+          StorableSource::Result::kReportingOriginsPerSiteLimitReached,
+      "Bump version of Conversions.SourceStoredStatus4 histogram.");
+  base::UmaHistogramEnumeration("Conversions.SourceStoredStatus4",
                                 result.status);
 }
 
@@ -1313,13 +1314,13 @@ void AttributionManagerImpl::HandleOsRegistration(
   const url::Origin* source_origin;
   const url::Origin* destination_origin;
   switch (registration.GetType()) {
-    case OsRegistrationType::kSource:
+    case RegistrationType::kSource:
       operation =
           ContentBrowserClient::AttributionReportingOperation::kOsSource;
       source_origin = &registration.top_level_origin;
       destination_origin = nullptr;
       break;
-    case OsRegistrationType::kTrigger:
+    case RegistrationType::kTrigger:
       operation =
           ContentBrowserClient::AttributionReportingOperation::kOsTrigger;
       source_origin = nullptr;
@@ -1397,11 +1398,11 @@ void AttributionManagerImpl::NotifyOsRegistration(
     observer.OnOsRegistration(now, registration, is_debug_key_allowed, result);
   }
   switch (registration.GetType()) {
-    case attribution_reporting::mojom::OsRegistrationType::kSource:
+    case attribution_reporting::mojom::RegistrationType::kSource:
       base::UmaHistogramEnumeration("Conversions.OsRegistrationResult.Source",
                                     result);
       break;
-    case attribution_reporting::mojom::OsRegistrationType::kTrigger:
+    case attribution_reporting::mojom::RegistrationType::kTrigger:
       base::UmaHistogramEnumeration("Conversions.OsRegistrationResult.Trigger",
                                     result);
       break;
@@ -1412,6 +1413,8 @@ void AttributionManagerImpl::OnOsRegistration(
     bool is_debug_key_allowed,
     const OsRegistration& registration,
     bool success) {
+  MaybeSendVerboseDebugReport(registration);
+
   NotifyOsRegistration(registration, is_debug_key_allowed,
                        success ? OsRegistrationResult::kPassedToOs
                                : OsRegistrationResult::kRejectedByOs);
@@ -1428,6 +1431,48 @@ void AttributionManagerImpl::SetDebugMode(absl::optional<bool> enabled,
   attribution_storage_.AsyncCall(&AttributionStorage::SetDelegate)
       .WithArgs(MakeStorageDelegate(debug_mode))
       .Then(std::move(done));
+}
+
+void AttributionManagerImpl::MaybeSendVerboseDebugReport(
+    const OsRegistration& registration) {
+  if (!base::FeatureList::IsEnabled(kAttributionVerboseDebugReporting)) {
+    return;
+  }
+
+  const auto registration_origin =
+      url::Origin::Create(registration.registration_url);
+
+  ContentBrowserClient::AttributionReportingOperation operation;
+  const url::Origin* source_origin;
+  const url::Origin* destination_origin;
+  switch (registration.GetType()) {
+    case RegistrationType::kSource:
+      operation = ContentBrowserClient::AttributionReportingOperation::
+          kOsSourceVerboseDebugReport;
+      source_origin = &registration.top_level_origin;
+      destination_origin = nullptr;
+      break;
+    case RegistrationType::kTrigger:
+      operation = ContentBrowserClient::AttributionReportingOperation::
+          kOsTriggerVerboseDebugReport;
+      source_origin = nullptr;
+      destination_origin = &registration.top_level_origin;
+      break;
+  }
+
+  if (!IsOperationAllowed(*storage_partition_, operation,
+                          /*rfh=*/nullptr, source_origin, destination_origin,
+                          /*reporting_origin=*/&registration_origin)) {
+    return;
+  }
+
+  if (absl::optional<AttributionDebugReport> debug_report =
+          AttributionDebugReport::Create(registration)) {
+    report_sender_->SendReport(
+        std::move(*debug_report),
+        base::BindOnce(&AttributionManagerImpl::NotifyDebugReportSent,
+                       weak_factory_.GetWeakPtr()));
+  }
 }
 
 }  // namespace content

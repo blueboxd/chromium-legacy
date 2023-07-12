@@ -2401,7 +2401,8 @@ class LayerTreeHostScrollTestElasticOverscroll
   // These values should be used on the impl thread only.
   int num_begin_main_frames_impl_thread_;
   MockInputHandlerClient input_handler_client_;
-  raw_ptr<ScrollElasticityHelper, DanglingUntriaged> scroll_elasticity_helper_;
+  raw_ptr<ScrollElasticityHelper, DanglingAcrossTasks>
+      scroll_elasticity_helper_;
 
   // These values should be used on the main thread only.
   int num_begin_main_frames_main_thread_;
@@ -2866,10 +2867,6 @@ SINGLE_THREAD_TEST_F(NonScrollingNonFastScrollableRegion);
 // from LayerTreeHostScrollTest since that enables LayerLists.
 class UnifiedScrollingRepaintOnScroll : public LayerTreeTest {
  public:
-  UnifiedScrollingRepaintOnScroll() {
-    scoped_feature_list.InitAndEnableFeature(features::kScrollUnification);
-  }
-
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void SetupTree() override {

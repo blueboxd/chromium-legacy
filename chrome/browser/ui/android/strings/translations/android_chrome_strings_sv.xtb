@@ -297,6 +297,7 @@ Med förtroendetoken förbättras integriteten på webben. De kan inte användas
 <translation id="2643064289437760082">Du kan när du vill radera annonsmätningsdata genom att radera din webbinformation</translation>
 <translation id="2647434099613338025">Lägg till språk</translation>
 <translation id="2649068648233607930">Webbläsaren hanteras av <ph name="DOMAIN" /></translation>
+<translation id="2650077116157640844">Fler på synkroniserade enheter</translation>
 <translation id="2650348088770008516">Förklaringen till integritetsguiden har stängts</translation>
 <translation id="2650408372219180431">Exportera och radera lösenord som har sparats på den här enheten</translation>
 <translation id="2650751991977523696">Vill du ladda ned filen igen?</translation>
@@ -445,7 +446,6 @@ Med förtroendetoken förbättras integriteten på webben. De kan inte användas
 <translation id="3421726884497337397">Välj när cookies från tredje part ska blockeras</translation>
 <translation id="3428747202529429621">Skyddar dig i Chrome och kan användas för förbättrad säkerhet i andra Google-appar där du är inloggad</translation>
 <translation id="3429160811076349561">Provfunktionerna är inaktiverade</translation>
-<translation id="3432973700170747422">Radera senaste 15 minuterna</translation>
 <translation id="3435465986463792564">Har du många fönster? Du kan hantera dem härifrån</translation>
 <translation id="3435738964857648380">Säkerhet</translation>
 <translation id="3443221991560634068">Läs in den aktuella sidan igen</translation>
@@ -479,9 +479,9 @@ Med förtroendetoken förbättras integriteten på webben. De kan inte användas
 <translation id="3587596251841506391">Förbättra säkerheten på webben</translation>
 <translation id="3597179440835065298">Få bättre förslag</translation>
 <translation id="3602290021589620013">Förhandsgranskning</translation>
-<translation id="360901359071773787">Vill du radera senaste 15 minuterna?</translation>
 <translation id="3616113530831147358">Ljud</translation>
 <translation id="3622349720008044802">Hantera fönster</translation>
+<translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{+ 1 webbplats}other{+ # webbplatser}}</translation>
 <translation id="3631987586758005671">Delas med <ph name="DEVICE_NAME" /></translation>
 <translation id="363596933471559332">Logga in automatiskt på webbplatser med hjälp av lagrade inloggningsuppgifter. När funktionen är inaktiverad måste du verifiera dina uppgifter varje gång du besöker webbplatsen innan du kan logga in.</translation>
 <translation id="3636940436873918441">Föredragna språk</translation>
@@ -751,6 +751,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5010886807652684893">Visuell vy</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> vill ansluta</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">De senaste 15 minuterna</translation>
 <translation id="5032430150487044192">Det gick inte att skapa QR-koden</translation>
 <translation id="5039804452771397117">Tillåt</translation>
 <translation id="5040262127954254034">Integritet</translation>
@@ -769,7 +770,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5118713593561876160">Intressen</translation>
 <translation id="5122378528687922675">Prata med din förälder (<ph name="PARENT_NAME_1" /> eller <ph name="PARENT_NAME_2" />) om du behöver hjälp</translation>
 <translation id="5123685120097942451">Inkognitoflik</translation>
-<translation id="5126510351761255129">Verifiera kortet</translation>
 <translation id="5132942445612118989">Synkronisera lösenord, historik med mera på alla dina enheter</translation>
 <translation id="5139940364318403933">Lär dig använda Google Drive</translation>
 <translation id="5142281402488957685">Om du vill se nya artiklar drar du nedåt för att uppdatera</translation>
@@ -929,7 +929,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="6011308810877101166">Förbättra sökförslag</translation>
 <translation id="6026538407078977628">Utöka till helskärmsläge</translation>
 <translation id="6030719887161080597">Hantera information som används av webbplatser för att mäta annonsresultat</translation>
-<translation id="6034146297924778597">Historik från de senaste 15 minuterna raderas:</translation>
 <translation id="6039379616847168523">Hoppa till nästa flik</translation>
 <translation id="6040143037577758943">Stäng</translation>
 <translation id="604124094241169006">Automatisk</translation>
@@ -1371,6 +1370,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />Dina enheter<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">Återuppta</translation>
 <translation id="8209050860603202033">Öppna bild</translation>
+<translation id="8210770465353466621">Du hittar dina flikar här</translation>
 <translation id="8215740705341534369">Ark på sidan av skärmen</translation>
 <translation id="8218622182176210845">Hantera kontot</translation>
 <translation id="8221401890884589479">Du kan blockera webbplatser som du inte vill ha. Chrome raderar även webbplatser som är äldre än 30 dagar automatiskt. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>

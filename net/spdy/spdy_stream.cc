@@ -152,7 +152,7 @@ void SpdyStream::PushedStreamReplay() {
   base::WeakPtr<SpdyStream> weak_this = GetWeakPtr();
 
   CHECK(delegate_);
-  delegate_->OnHeadersReceived(response_headers_, &request_headers_);
+  delegate_->OnHeadersReceived(response_headers_);
 
   // OnHeadersReceived() may have closed |this|.
   if (!weak_this)
@@ -489,24 +489,6 @@ void SpdyStream::OnHeadersReceived(
       session_->ResetStream(stream_id_, ERR_HTTP2_PROTOCOL_ERROR, error);
       break;
   }
-}
-
-bool SpdyStream::ShouldRetryRSTPushStream() const {
-  // Retry if the stream is a pushed stream, has been claimed, but did not yet
-  // receive response headers
-  return (response_headers_.empty() && type_ == SPDY_PUSH_STREAM && delegate_);
-}
-
-void SpdyStream::OnPushPromiseHeadersReceived(spdy::Http2HeaderBlock headers,
-                                              GURL url) {
-  CHECK(!request_headers_valid_);
-  CHECK_EQ(io_state_, STATE_IDLE);
-  CHECK_EQ(type_, SPDY_PUSH_STREAM);
-  DCHECK(!delegate_);
-
-  io_state_ = STATE_RESERVED_REMOTE;
-  request_headers_ = std::move(headers);
-  request_headers_valid_ = true;
 }
 
 void SpdyStream::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {
@@ -940,32 +922,12 @@ void SpdyStream::SaveResponseHeaders(
     response_headers_.insert(*it);
   }
 
-  // Reject pushed stream with unsupported status code regardless of whether
-  // delegate is already attached or not.
-  // TODO(https://crbug.com/1426477): Remove this code, since pushed streams are
-  // already rejected.
-  if (type_ == SPDY_PUSH_STREAM &&
-      (status / 100 != 2 && status / 100 != 3 && status != 416)) {
-    session_->ResetStream(stream_id_, ERR_HTTP2_CLIENT_REFUSED_STREAM,
-                          "Unsupported status code for pushed stream.");
-    return;
-  }
-
   // If delegate is not yet attached, OnHeadersReceived() will be called after
   // the delegate gets attached to the stream.
   if (!delegate_)
     return;
 
-  // TODO(https://crbug.com/1426477): Remove this code, since pushed streams are
-  // already rejected.
-  if (type_ == SPDY_PUSH_STREAM) {
-    // OnPushPromiseHeadersReceived() must have been called before
-    // OnHeadersReceived().
-    DCHECK(request_headers_valid_);
-    delegate_->OnHeadersReceived(response_headers_, &request_headers_);
-  } else {
-    delegate_->OnHeadersReceived(response_headers_, nullptr);
-  }
+  delegate_->OnHeadersReceived(response_headers_);
 }
 
 #define STATE_CASE(s)                                       \

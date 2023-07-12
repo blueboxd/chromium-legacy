@@ -9,11 +9,11 @@
 #import "base/feature_list.h"
 #import "base/notreached.h"
 #import "base/ranges/algorithm.h"
+#import "components/password_manager/core/browser/features/password_features.h"
 #import "components/password_manager/core/browser/password_form.h"
 #import "components/password_manager/core/browser/password_manager_client.h"
 #import "components/password_manager/core/browser/ui/affiliated_group.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
-#import "components/password_manager/core/common/password_manager_features.h"
 
 namespace password_manager {
 
@@ -37,8 +37,10 @@ bool ShouldShowLocalOnlyIcon(const CredentialUIEntry& credential,
           syncer::SyncService::DisableReason::DISABLE_REASON_NOT_SIGNED_IN)) {
     return false;
   }
-  return base::FeatureList::IsEnabled(
-      password_manager::features::kEnablePasswordsAccountStorage);
+
+  CHECK(base::FeatureList::IsEnabled(
+      password_manager::features::kEnablePasswordsAccountStorage));
+  return true;
 }
 
 bool ShouldShowLocalOnlyIconForGroup(const AffiliatedGroup& affiliated_group,

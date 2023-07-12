@@ -65,7 +65,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Assistant.DspHotwordDetection"
-    enum="DspHotwordDetectionStatus" expires_after="2023-11-05">
+    enum="DspHotwordDetectionStatus" expires_after="2024-01-07">
   <owner>xiaohuic@chromium.org</owner>
   <owner>croissant-eng@chromium.org</owner>
   <summary>
@@ -165,7 +165,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Assistant.QueryCountPerEntryPoint" enum="AssistantEntryPoint"
-    expires_after="2023-10-31">
+    expires_after="2023-12-31">
   <owner>xiaohuic@chromium.org</owner>
   <owner>croissant-eng@chromium.org</owner>
   <summary>Number of queries fired for each entry point.</summary>
@@ -219,7 +219,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Assistant.ServiceState" enum="AssistantServiceState"
-    expires_after="2023-10-31">
+    expires_after="2023-12-31">
   <owner>wutao@chromium.org</owner>
   <owner>assistive-eng@google.com</owner>
   <summary>

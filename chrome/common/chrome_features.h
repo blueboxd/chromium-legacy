@@ -185,9 +185,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kDesktopPWAsPreventClose);
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-BASE_DECLARE_FEATURE(kDesktopPWAsKeepAlive);
-
-COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kDesktopPWAsTabStripSettings);
 
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kDesktopPWAsWebBundles);
@@ -305,6 +302,27 @@ BASE_DECLARE_FEATURE(kHappinessTrackingSurveysForDesktopWhatsNew);
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<base::TimeDelta>
     kHappinessTrackingSurveysForDesktopWhatsNewTime;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kHappinessTrackingSurveysForDesktopM1AdPrivacyPage);
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<base::TimeDelta>
+    kHappinessTrackingSurveysForDesktopM1AdPrivacyPageTime;
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kHappinessTrackingSurveysForDesktopM1TopicsSubpage);
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<base::TimeDelta>
+    kHappinessTrackingSurveysForDesktopM1TopicsSubpageTime;
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kHappinessTrackingSurveysForDesktopM1FledgeSubpage);
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<base::TimeDelta>
+    kHappinessTrackingSurveysForDesktopM1FledgeSubpageTime;
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kHappinessTrackingSurveysForDesktopM1AdMeasurementSubpage);
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<base::TimeDelta>
+    kHappinessTrackingSurveysForDesktopM1AdMeasurementSubpageTime;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kHaTSDesktopDevToolsIssuesCOEP);
@@ -886,8 +904,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kWebAppManifestPolicyAppIdentityUpdate);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kWebAppsCrosapi);
-
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kChromeKioskEnableLacros);
 

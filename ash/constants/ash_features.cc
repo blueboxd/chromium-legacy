@@ -13,8 +13,7 @@
 #include "build/build_config.h"
 #include "chromeos/constants/chromeos_features.h"
 
-namespace ash {
-namespace features {
+namespace ash::features {
 namespace {
 
 // Controls whether Instant Tethering supports hosts which use the background
@@ -167,6 +166,9 @@ BASE_FEATURE(kAssistMultiWordExpanded,
              "AssistMultiWordExpanded",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls enabling / disabling the orca feature.
+BASE_FEATURE(kOrca, "Orca", base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kAssistantNativeIcons,
              "AssistantNativeIcons",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -304,6 +306,14 @@ BASE_FEATURE(kBorealisForceDoubleScale,
 // it functions more like the linux client.
 BASE_FEATURE(kBorealisLinuxMode,
              "BorealisLinuxMode",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable the "provision" flag when mounting Borealis' stateful disk.
+// TODO(b/288361720): This is temporary while we test the 'provision'
+// mount option. Once we're satisfied things are stable, we'll make this
+// the default and remove this feature/flag.
+BASE_FEATURE(kBorealisProvision,
+             "BorealisProvision",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable storage ballooning for Borealis. This takes precedence over
@@ -836,7 +846,7 @@ BASE_FEATURE(kExoOrdinalMotion,
 // or not (=decides using heuristics based on key code etc.).
 BASE_FEATURE(kExoConsumedByImeByFlag,
              "ExoConsumedByImeByFlag",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables using an extended Wayland API for ConfirmCompositionText.
 BASE_FEATURE(kExoExtendedConfirmComposition,
@@ -935,6 +945,11 @@ BASE_FEATURE(kFastPairSavedDevicesStrictOptIn,
              "FastPairSavedDevicesStrictOptIn",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables Fast Pair Devices in Bluetooth Settings page.
+BASE_FEATURE(kFastPairDevicesBluetoothSettings,
+             "FastPairDevicesBluetoothSettings",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, allows the creation of up to 16 desks (default is 8). This flag
 // is intended to be controlled by the feature management module.
 BASE_FEATURE(kFeatureManagement16Desks,
@@ -978,6 +993,11 @@ BASE_FEATURE(kFederatedService,
 // much resources while example storage is supposed to be cheap and safe.
 BASE_FEATURE(kFederatedServiceScheduleTasks,
              "FederatedServiceScheduleTasks",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the federated strings service.
+BASE_FEATURE(kFederatedStringsService,
+             "FederatedStringsService",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kFederatedTimezoneCodePhh,
@@ -1099,6 +1119,13 @@ BASE_FEATURE(kFullscreenAlertBubble,
 
 // Debugging UI for ChromeOS FuseBox service.
 BASE_FEATURE(kFuseBoxDebug, "FuseBoxDebug", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether the fwupd dbus client should be active. This is used only
+// for testing to prevent the fwupd service from spooling and re-activating
+// powerd service.
+BASE_FEATURE(kBlockFwupdClient,
+             "BlockFwupdClient",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable a notification to provide an option to open Gallery app for a
 // downloaded pdf file.
@@ -1362,6 +1389,11 @@ BASE_FEATURE(kImeTrayHideVoiceButton,
 // that can be taken to resolve the problem.
 BASE_FEATURE(kImprovedLoginErrorHandling,
              "ImprovedLoginErrorHandling",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables Instant Hotspot rebrand/feature improvements. crbug/290075504.
+BASE_FEATURE(kInstantHotspotRebrand,
+             "InstantHotspotRebrand",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables Instant Tethering on ChromeOS.
@@ -1706,7 +1738,12 @@ BASE_FEATURE(kOobeHidDetectionRevamp,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables OOBE Jelly features.
-BASE_FEATURE(kOobeJelly, "OobeJelly", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kOobeJelly, "OobeJelly", base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables OOBE Jelly modal features.
+BASE_FEATURE(kOobeJellyModal,
+             "OobeJellyModal",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables lazy loading in OOBE's WebUI by prioritizing the first screen.
 BASE_FEATURE(kOobeLazyLoading,
@@ -1780,6 +1817,11 @@ BASE_FEATURE(kOsSettingsDeprecateSyncMetricsToggle,
 // Enables the wayfinding improvements for the ChromeOS Settings revamp
 BASE_FEATURE(kOsSettingsRevampWayfinding,
              "OsSettingsRevampWayfinding",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the new Chrome component refresh for testing purposes in OS Settings.
+BASE_FEATURE(kOsSettingsTestChromeRefresh,
+             "OsSettingsTestChromeRefresh",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kOverviewButton,
@@ -1932,9 +1974,6 @@ BASE_FEATURE(kProductivityLauncher,
              "ProductivityLauncher",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Controls whether to enable Projector.
-BASE_FEATURE(kProjector, "Projector", base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Controls whether to enable Projector for managed users.
 BASE_FEATURE(kProjectorManagedUser,
              "ProjectorManagedUser",
@@ -1946,15 +1985,10 @@ BASE_FEATURE(kProjectorAppDebug,
              "ProjectorAppDebug",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Controls whether to fold short gap between transcript into the previous
-// transcript.
-BASE_FEATURE(kProjectorFoldShortGapIntoPreviousTranscript,
-             "ProjectorFoldShortGapIntoPreviousTranscript",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Controls whether Projector's tutorial videos are displayed.
-BASE_FEATURE(kProjectorTutorialVideoView,
-             "ProjectorTutorialVideoView",
+// Constrols whether fallback implementation is enabled when streaming
+// connection fails for server side speech recognition.
+BASE_FEATURE(kProjectorServerSideRecognitionFallbackImpl,
+             "ProjectorServerSideRecognititionFallbackImpl",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether Projector use custom thumbnail in gallery page.
@@ -1980,43 +2014,14 @@ BASE_FEATURE(kProjectorUpdateIndexableText,
              "ProjectorUpdateIndexableText",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Controls whether to use OAuth token for getting streaming URL from
-// get_video_info endpoint.
-BASE_FEATURE(kProjectorUseOAuthForGetVideoInfo,
-             "ProjectorUseOAuthForGetVideoInfo",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Controls whether to allow viewing screencast with local playback URL when
-// screencast is being transcoded.
-BASE_FEATURE(kProjectorLocalPlayback,
-             "ProjectorLocalPlayback",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Controls whether to enable features that are not ready to enable by
 // default but ready for internal testing.
 BASE_FEATURE(kProjectorBleedingEdgeExperience,
              "ProjectorBleedingEdgeExperience",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Controls whether to enable crash report from the Projector web component.
-BASE_FEATURE(kProjectorWebReportCrash,
-             "ProjectorWebReportCrash",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Controls whether to use API key instead of OAuth token for translation
-// requests.
-BASE_FEATURE(kProjectorUseApiKeyForTranslation,
-             "ProjectorUseApiKeyForTranslation",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enable or disable quick settings revamped view (go/qsrevamp).
 BASE_FEATURE(kQsRevamp, "QsRevamp", base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Controls whether the Projector Viewer supports the user experience for
-// secondary account.
-BASE_FEATURE(kProjectorViewerUseSecondaryAccount,
-             "ProjectorViewerUseSecondaryAccount",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether to show toast notification when account switches.
 BASE_FEATURE(kProjectorAccountSwitchNotification,
@@ -2168,6 +2173,11 @@ BASE_FEATURE(kShimlessRMADiagnosticPage,
 // Enables or disables device compliance check in the Shimless RMA flow.
 BASE_FEATURE(kShimlessRMAComplianceCheck,
              "ShimlessRMAComplianceCheck",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables 3p diagnostics in the Shimless RMA flow.
+BASE_FEATURE(kShimlessRMA3pDiagnostics,
+             "ShimlessRMA3pDiagnostics",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, the jelly colors will be used in the shortcut customization app.
@@ -2422,6 +2432,11 @@ BASE_FEATURE(kVcBackgroundReplace,
 // This is only used as a way to disable portrait relighting.
 BASE_FEATURE(kVcPortraitRelight,
              "VcPortraitRelight",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// This is only used as a way to disable stopAllScreenShare.
+BASE_FEATURE(kVcStopAllScreenShare,
+             "VcStopAllScreenShare",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable or disable the fake effects for ChromeOS video conferencing controls
@@ -2833,7 +2848,8 @@ bool IsInputDeviceSettingsSplitEnabled() {
 }
 
 bool IsPeripheralCustomizationEnabled() {
-  return base::FeatureList::IsEnabled(kPeripheralCustomization);
+  return base::FeatureList::IsEnabled(kPeripheralCustomization) &&
+         IsInputDeviceSettingsSplitEnabled();
 }
 
 bool IsDisplayAlignmentAssistanceEnabled() {
@@ -3010,6 +3026,10 @@ bool IsFullscreenAfterUnlockAllowed() {
 
 bool IsFullscreenAlertBubbleEnabled() {
   return base::FeatureList::IsEnabled(kFullscreenAlertBubble);
+}
+
+bool IsBlockFwupdClientEnabled() {
+  return base::FeatureList::IsEnabled(kBlockFwupdClient);
 }
 
 bool IsGaiaReauthEndpointEnabled() {
@@ -3303,6 +3323,7 @@ bool IsNewLockScreenReauthLayoutEnabled() {
 
 bool IsSystemNudgeV2Enabled() {
   return base::FeatureList::IsEnabled(kSystemNudgeV2) ||
+         IsScalableIphEnabled() ||
          IsVideoConferenceEnabled();  // System Nudge V2 is launching
                                       // together with the VC project.
 }
@@ -3352,6 +3373,10 @@ bool IsOobeJellyEnabled() {
          base::FeatureList::IsEnabled(kOobeJelly);
 }
 
+bool IsOobeJellyModalEnabled() {
+  return IsOobeJellyEnabled() && base::FeatureList::IsEnabled(kOobeJellyModal);
+}
+
 bool IsOobeSimonEnabled() {
   return base::FeatureList::IsEnabled(kFeatureManagementOobeSimon) &&
          base::FeatureList::IsEnabled(kOobeSimon);
@@ -3382,7 +3407,6 @@ bool IsOobeLazyLoadingEnabled() {
   return base::FeatureList::IsEnabled(kOobeLazyLoading);
 }
 
-
 bool IsOobeQuickStartEnabled() {
   return base::FeatureList::IsEnabled(kOobeQuickStart);
 }
@@ -3397,6 +3421,10 @@ bool IsOobeDisplaySizeEnabled() {
          base::FeatureList::IsEnabled(kOobeDisplaySize);
 }
 
+bool IsOrcaEnabled() {
+  return base::FeatureList::IsEnabled(kOrca);
+}
+
 bool IsOsSettingsAppBadgingToggleEnabled() {
   return base::FeatureList::IsEnabled(kOsSettingsAppBadgingToggle);
 }
@@ -3407,6 +3435,10 @@ bool IsOsSettingsDeprecateSyncMetricsToggleEnabled() {
 
 bool IsOsSettingsRevampWayfindingEnabled() {
   return base::FeatureList::IsEnabled(kOsSettingsRevampWayfinding);
+}
+
+bool IsOsSettingsTestChromeRefresh() {
+  return base::FeatureList::IsEnabled(kOsSettingsTestChromeRefresh);
 }
 
 bool IsOsSyncConsentRevampEnabled() {
@@ -3506,24 +3538,12 @@ bool IsProductivityLauncherEnabled() {
   return base::FeatureList::IsEnabled(kProductivityLauncher);
 }
 
-bool IsProjectorEnabled() {
-  return IsProjectorAllUserEnabled() || IsProjectorManagedUserEnabled();
-}
-
-bool IsProjectorAllUserEnabled() {
-  return base::FeatureList::IsEnabled(kProjector);
-}
-
 bool IsProjectorManagedUserEnabled() {
   return base::FeatureList::IsEnabled(kProjectorManagedUser);
 }
 
 bool IsProjectorAppDebugMode() {
   return base::FeatureList::IsEnabled(kProjectorAppDebug);
-}
-
-bool IsProjectorTutorialVideoViewEnabled() {
-  return base::FeatureList::IsEnabled(kProjectorTutorialVideoView);
 }
 
 bool IsProjectorCustomThumbnailEnabled() {
@@ -3542,38 +3562,17 @@ bool IsProjectorUpdateIndexableTextEnabled() {
   return base::FeatureList::IsEnabled(kProjectorUpdateIndexableText);
 }
 
-bool IsProjectorUseOAuthForGetVideoInfoEnabled() {
-  return base::FeatureList::IsEnabled(kProjectorUseOAuthForGetVideoInfo);
-}
-
-bool IsProjectorLocalPlaybackEnabled() {
-  return base::FeatureList::IsEnabled(kProjectorLocalPlayback) ||
-         base::FeatureList::IsEnabled(kProjectorBleedingEdgeExperience);
-}
-
-bool IsProjectorWebReportCrashEnabled() {
-  return base::FeatureList::IsEnabled(kProjectorWebReportCrash);
-}
-
-bool IsProjectorUseApiKeyForTranslationEnabled() {
-  return base::FeatureList::IsEnabled(kProjectorUseApiKeyForTranslation);
-}
-
 bool IsQsRevampEnabled() {
   return base::FeatureList::IsEnabled(kQsRevamp);
-}
-
-bool IsProjectorViewerUseSecondaryAccountEnabled() {
-  return base::FeatureList::IsEnabled(kProjectorViewerUseSecondaryAccount);
 }
 
 bool IsProjectorAccountSwitchNotificationEnabled() {
   return base::FeatureList::IsEnabled(kProjectorAccountSwitchNotification);
 }
 
-bool IsProjectorFoldShortGapIntoPreviousTranscriptEnabled() {
+bool IsProjectorServerSideRecognitionFallbackImplEnabled() {
   return base::FeatureList::IsEnabled(
-      kProjectorFoldShortGapIntoPreviousTranscript);
+      kProjectorServerSideRecognitionFallbackImpl);
 }
 
 bool IsQuickDimEnabled() {
@@ -3639,6 +3638,10 @@ bool IsShimlessRMADiagnosticPageEnabled() {
 
 bool IsShimlessRMAComplianceCheckEnabled() {
   return base::FeatureList::IsEnabled(kShimlessRMAComplianceCheck);
+}
+
+bool IsShimlessRMA3pDiagnosticsEnabled() {
+  return base::FeatureList::IsEnabled(kShimlessRMA3pDiagnostics);
 }
 
 bool IsSmdsSupportEnabled() {
@@ -3738,6 +3741,11 @@ bool IsVideoConferenceEnabled() {
          switches::IsCameraEffectsSupportedByHardware();
 }
 
+bool IsStopAllScreenShareEnabled() {
+  return base::FeatureList::IsEnabled(kVcStopAllScreenShare) &&
+         IsVideoConferenceEnabled();
+}
+
 bool IsVcBackgroundReplaceEnabled() {
   return base::FeatureList::IsEnabled(kVcBackgroundReplace) &&
          IsVideoConferenceEnabled();
@@ -3815,5 +3823,4 @@ bool ShouldUseV2DeviceSync() {
          base::FeatureList::IsEnabled(kCryptAuthV2DeviceSync);
 }
 
-}  // namespace features
-}  // namespace ash
+}  // namespace ash::features

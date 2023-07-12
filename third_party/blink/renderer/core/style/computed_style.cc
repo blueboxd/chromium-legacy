@@ -706,16 +706,6 @@ bool ComputedStyle::InheritedDataShared(const ComputedStyle& other) const {
   return ComputedStyleBase::InheritedDataShared(other);
 }
 
-static bool DependenceOnContentHeightHasChanged(const ComputedStyle& a,
-                                                const ComputedStyle& b) {
-  // If top or bottom become auto/non-auto then it means we either have to solve
-  // height based on the content or stop doing so
-  // (http://www.w3.org/TR/CSS2/visudet.html#abs-non-replaced-height)
-  // - either way requires a layout.
-  return a.LogicalTop().IsAuto() != b.LogicalTop().IsAuto() ||
-         a.LogicalBottom().IsAuto() != b.LogicalBottom().IsAuto();
-}
-
 StyleDifference ComputedStyle::VisualInvalidationDiff(
     const Document& document,
     const ComputedStyle& other) const {
@@ -741,8 +731,7 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
   }
 
   if (!diff.NeedsFullLayout() && !MarginEqual(other)) {
-    // Relative-positioned elements collapse their margins so need a full
-    // layout.
+    // Inflow elements participate in margin-collapsing so need a full layout.
     if (HasOutOfFlowPosition()) {
       diff.SetNeedsPositionedMovementLayout();
     } else {
@@ -752,13 +741,7 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
 
   if (!diff.NeedsFullLayout() && GetPosition() != EPosition::kStatic &&
       !OffsetEqual(other)) {
-    // Optimize for the case where a positioned layer is moving but not changing
-    // size.
-    if (DependenceOnContentHeightHasChanged(*this, other)) {
-      diff.SetNeedsFullLayout();
-    } else {
-      diff.SetNeedsPositionedMovementLayout();
-    }
+    diff.SetNeedsPositionedMovementLayout();
   }
 
   AdjustDiffForNeedsPaintInvalidation(other, diff, document);
@@ -1717,29 +1700,6 @@ const CounterDirectives ComputedStyle::GetCounterDirectives(
   return CounterDirectives();
 }
 
-AtomicString ComputedStyle::LocaleForLineBreakIterator() const {
-  LineBreakIteratorMode mode = LineBreakIteratorMode::kDefault;
-  switch (GetLineBreak()) {
-    case LineBreak::kAuto:
-    case LineBreak::kAfterWhiteSpace:
-    case LineBreak::kAnywhere:
-      return Locale();
-    case LineBreak::kNormal:
-      mode = LineBreakIteratorMode::kNormal;
-      break;
-    case LineBreak::kStrict:
-      mode = LineBreakIteratorMode::kStrict;
-      break;
-    case LineBreak::kLoose:
-      mode = LineBreakIteratorMode::kLoose;
-      break;
-  }
-  if (const LayoutLocale* locale = GetFontDescription().Locale()) {
-    return locale->LocaleWithBreakKeyword(mode);
-  }
-  return Locale();
-}
-
 Hyphenation* ComputedStyle::GetHyphenation() const {
   if (GetHyphens() != Hyphens::kAuto) {
     return nullptr;
@@ -2555,45 +2515,6 @@ absl::optional<blink::Color> ComputedStyle::ScrollbarTrackColorResolved()
                                                            UsedColorScheme());
   }
   return absl::nullopt;
-}
-
-static const int kPaintOrderBitwidth = 2;
-
-static unsigned PaintOrderSequence(EPaintOrderType first,
-                                   EPaintOrderType second,
-                                   EPaintOrderType third) {
-  return (((third << kPaintOrderBitwidth) | second) << kPaintOrderBitwidth) |
-         first;
-}
-
-EPaintOrderType ComputedStyle::PaintOrderType(unsigned index) const {
-  unsigned pt = 0;
-  DCHECK(index < ((1 << kPaintOrderBitwidth) - 1));
-  switch (PaintOrder()) {
-    case kPaintOrderNormal:
-    case kPaintOrderFillStrokeMarkers:
-      pt = PaintOrderSequence(PT_FILL, PT_STROKE, PT_MARKERS);
-      break;
-    case kPaintOrderFillMarkersStroke:
-      pt = PaintOrderSequence(PT_FILL, PT_MARKERS, PT_STROKE);
-      break;
-    case kPaintOrderStrokeFillMarkers:
-      pt = PaintOrderSequence(PT_STROKE, PT_FILL, PT_MARKERS);
-      break;
-    case kPaintOrderStrokeMarkersFill:
-      pt = PaintOrderSequence(PT_STROKE, PT_MARKERS, PT_FILL);
-      break;
-    case kPaintOrderMarkersFillStroke:
-      pt = PaintOrderSequence(PT_MARKERS, PT_FILL, PT_STROKE);
-      break;
-    case kPaintOrderMarkersStrokeFill:
-      pt = PaintOrderSequence(PT_MARKERS, PT_STROKE, PT_FILL);
-      break;
-  }
-
-  pt =
-      (pt >> (kPaintOrderBitwidth * index)) & ((1u << kPaintOrderBitwidth) - 1);
-  return static_cast<EPaintOrderType>(pt);
 }
 
 bool ComputedStyle::ShouldApplyAnyContainment(const Element& element,

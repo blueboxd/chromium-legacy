@@ -157,6 +157,7 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorFlyingIndicatorForeground] = {kColorToolbarButtonIcon};
   mixer[kColorFrameCaptionActive] = {ui::kColorSysOnHeaderPrimary};
   mixer[kColorFrameCaptionInactive] = {ui::kColorSysOnHeaderPrimaryInactive};
+  mixer[kColorTabHoverCardSecondaryText] = {ui::kColorSysOnSurfaceSubtle};
   mixer[kColorInfoBarBackground] = {ui::kColorSysBase};
   mixer[kColorInfoBarButtonIcon] = {kColorInfoBarForeground};
   mixer[kColorInfoBarButtonIconDisabled] = {ui::kColorSysStateDisabled};
@@ -200,6 +201,7 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorToolbarButtonText] = {ui::kColorSysOnSurfaceSecondary};
   mixer[kColorToolbarContentAreaSeparator] = {ui::kColorSysSurfaceVariant};
   mixer[kColorToolbarFeaturePromoHighlight] = {ui::kColorSysPrimary};
+  mixer[kColorToolbarIconContainerBorder] = {ui::kColorSysNeutralOutline};
   mixer[kColorToolbarInkDropHover] = {ui::kColorSysStateHoverOnSubtle};
   mixer[kColorToolbarInkDropRipple] = {ui::kColorSysStateRippleNeutralOnSubtle};
   mixer[kColorToolbarExtensionSeparatorEnabled] = {ui::kColorSysOnBaseDivider};

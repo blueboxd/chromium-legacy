@@ -110,6 +110,7 @@
 #include "chrome/browser/touch_to_fill/payments/android/touch_to_fill_credit_card_view_impl.h"
 #include "chrome/browser/ui/android/autofill/autofill_accessibility_utils.h"
 #include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
+#include "chrome/browser/ui/android/autofill/autofill_save_card_bottom_sheet_bridge.h"
 #include "chrome/browser/ui/android/autofill/card_expiration_date_fix_flow_view_android.h"
 #include "chrome/browser/ui/android/autofill/card_name_fix_flow_view_android.h"
 #include "chrome/browser/ui/android/infobars/autofill_credit_card_filling_infobar.h"
@@ -742,6 +743,15 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
     UploadSaveCardPromptCallback callback) {
 #if BUILDFLAG(IS_ANDROID)
   DCHECK(options.show_prompt);
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnablePaymentsAndroidBottomSheet)) {
+    if (!autofill_save_card_bottom_sheet_bridge_) {
+      autofill_save_card_bottom_sheet_bridge_ =
+          std::make_unique<AutofillSaveCardBottomSheetBridge>(web_contents());
+    }
+    autofill_save_card_bottom_sheet_bridge_->RequestShowContent();
+    return;
+  }
 
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(GetProfile());
@@ -872,8 +882,7 @@ void ChromeAutofillClient::ShowAutofillPopup(
       web_contents()->GetNativeView(), element_bounds_in_screen_space,
       open_args.text_direction);
 
-  popup_controller_->Show(open_args.suggestions,
-                          open_args.autoselect_first_suggestion);
+  popup_controller_->Show(open_args.suggestions, open_args.trigger_source);
 
   // When testing, try to keep popup open when the reason to hide is from an
   // external browser frame resize that is extraneous to our testing goals.
@@ -910,9 +919,14 @@ ChromeAutofillClient::GetReopenPopupArgs() const {
   gfx::Rect client_area = web_contents()->GetContainerBounds();
   gfx::RectF screen_space_independent_bounds =
       controller->element_bounds() - client_area.OffsetFromOrigin();
+  // Reopening the popup is currently only used for password suggestions, so the
+  // trigger source can be set to `kPasswordManager`.
+  // TODO(crbug.com/1446318): Make the suggestion trigger source a parameter.
+  CHECK_EQ(controller->GetPopupType(), PopupType::kPasswords);
   return autofill::AutofillClient::PopupOpenArgs(
       screen_space_independent_bounds, controller->GetElementTextDirection(),
-      controller->GetSuggestions(), AutoselectFirstSuggestion(false));
+      controller->GetSuggestions(),
+      AutofillSuggestionTriggerSource::kPasswordManager);
 }
 
 void ChromeAutofillClient::UpdatePopup(
@@ -932,8 +946,13 @@ void ChromeAutofillClient::UpdatePopup(
     return;
   }
 
-  // Calling show will reuse the existing view automatically
-  popup_controller_->Show(suggestions, AutoselectFirstSuggestion(false));
+  // Calling show will reuse the existing view automatically.
+  // Updating the popup is currently only used for password suggestions, so the
+  // trigger source can be set to `kPasswordManager`.
+  // TODO(crbug.com/1446318): Make the suggestion trigger source a parameter.
+  CHECK_EQ(popup_type, PopupType::kPasswords);
+  popup_controller_->Show(suggestions,
+                          AutofillSuggestionTriggerSource::kPasswordManager);
 }
 
 void ChromeAutofillClient::HideAutofillPopup(PopupHidingReason reason) {
@@ -996,8 +1015,7 @@ void ChromeAutofillClient::OnVirtualCardDataAvailable(
 #if BUILDFLAG(IS_ANDROID)
   // Show the virtual card snackbar only if the ManualFillingComponent component
   // is enabled for credit cards.
-  if (features::IsAutofillManualFallbackEnabled() ||
-      base::FeatureList::IsEnabled(
+  if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableManualFallbackForVirtualCards)) {
     if (!autofill_snackbar_controller_impl_) {
       autofill_snackbar_controller_impl_ =
@@ -1224,6 +1242,15 @@ ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
   }
 #endif
 }
+
+#if BUILDFLAG(IS_ANDROID)
+void ChromeAutofillClient::SetAutofillSaveCardBottomSheetBridgeForTesting(
+    std::unique_ptr<AutofillSaveCardBottomSheetBridge>
+        autofill_save_card_bottom_sheet_bridge) {
+  autofill_save_card_bottom_sheet_bridge_ =
+      std::move(autofill_save_card_bottom_sheet_bridge);
+}
+#endif
 
 Profile* ChromeAutofillClient::GetProfile() const {
   if (!web_contents())

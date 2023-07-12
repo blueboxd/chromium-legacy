@@ -34,6 +34,9 @@ api::os_events::LidEventInfo UncheckedConvertPtr(
 api::os_events::UsbEventInfo UncheckedConvertPtr(
     crosapi::mojom::TelemetryUsbEventInfoPtr ptr);
 
+api::os_events::HdmiEventInfo UncheckedConvertPtr(
+    crosapi::mojom::TelemetryHdmiEventInfoPtr ptr);
+
 api::os_events::SdCardEventInfo UncheckedConvertPtr(
     crosapi::mojom::TelemetrySdCardEventInfoPtr ptr);
 
@@ -57,6 +60,15 @@ api::os_events::TouchpadConnectedEventInfo UncheckedConvertPtr(
 
 api::os_events::TouchPointInfo UncheckedConvertPtr(
     crosapi::mojom::TelemetryTouchPointInfoPtr ptr);
+
+api::os_events::StylusTouchPointInfo UncheckedConvertPtr(
+    crosapi::mojom::TelemetryStylusTouchPointInfoPtr ptr);
+
+api::os_events::StylusTouchEventInfo UncheckedConvertPtr(
+    crosapi::mojom::TelemetryStylusTouchEventInfoPtr ptr);
+
+api::os_events::StylusConnectedEventInfo UncheckedConvertPtr(
+    crosapi::mojom::TelemetryStylusConnectedEventInfoPtr ptr);
 
 }  // namespace unchecked
 
@@ -89,6 +101,9 @@ api::os_events::LidEvent Convert(
 
 api::os_events::UsbEvent Convert(
     crosapi::mojom::TelemetryUsbEventInfo::State state);
+
+api::os_events::HdmiEvent Convert(
+    crosapi::mojom::TelemetryHdmiEventInfo::State state);
 
 api::os_events::SdCardEvent Convert(
     crosapi::mojom::TelemetrySdCardEventInfo::State state);

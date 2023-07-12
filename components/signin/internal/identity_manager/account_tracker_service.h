@@ -172,6 +172,7 @@ class AccountTrackerService {
 
  private:
   friend class AccountFetcherService;
+  friend class AccountTrackerServiceTest;
   friend void signin::SimulateSuccessfulFetchOfAccountInfo(
       signin::IdentityManager*,
       const CoreAccountId&,
@@ -190,7 +191,9 @@ class AccountTrackerService {
   void NotifyAccountUpdated(const AccountInfo& account_info);
   void NotifyAccountRemoved(const AccountInfo& account_info);
 
+  // Start tracking `account_id` (`account_id` must not be empty).
   void StartTrackingAccount(const CoreAccountId& account_id);
+  bool IsTrackingAccount(const CoreAccountId& account_id);
   void StopTrackingAccount(const CoreAccountId& account_id);
 
   // Load the current state of the account info from the preferences file.
@@ -231,6 +234,13 @@ class AccountTrackerService {
   static AccountIdMigrationState GetMigrationState(
       const PrefService* pref_service);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  // Update the child status on the provided account.
+  // This does not notify observers, or persist updates to disk - the caller
+  // is responsible for doing so.
+  // Returns true if the child status was modified, false otherwise.
+  bool UpdateAccountInfoChildStatus(AccountInfo& account_info,
+                                    bool is_child_account);
 
   raw_ptr<PrefService> pref_service_ = nullptr;  // Not owned.
   std::map<CoreAccountId, AccountInfo> accounts_;

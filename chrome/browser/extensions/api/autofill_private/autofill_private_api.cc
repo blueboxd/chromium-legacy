@@ -27,6 +27,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/iban.h"
 #include "components/autofill/core/browser/form_data_importer.h"
+#include "components/autofill/core/browser/geo/address_i18n.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_flow.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_manager.h"
@@ -81,25 +82,25 @@ constexpr char kCountryField[] = "COUNTY_CODE";
 // Converts an autofill::ServerFieldType to string format. Used in serilization
 // of field type info to be used in JavaScript code, and hence those values
 // shouldn't be modified.
-const char* GetStringFromAddressField(i18n::addressinput::AddressField type) {
+const char* GetStringFromAddressField(autofill::ServerFieldType type) {
   switch (type) {
-    case i18n::addressinput::RECIPIENT:
+    case autofill::NAME_FULL:
       return kFullNameField;
-    case i18n::addressinput::ORGANIZATION:
+    case autofill::COMPANY_NAME:
       return kCompanyNameField;
-    case i18n::addressinput::STREET_ADDRESS:
+    case autofill::ADDRESS_HOME_STREET_ADDRESS:
       return kAddressLineField;
-    case i18n::addressinput::DEPENDENT_LOCALITY:
+    case autofill::ADDRESS_HOME_DEPENDENT_LOCALITY:
       return kDependentLocalityField;
-    case i18n::addressinput::LOCALITY:
+    case autofill::ADDRESS_HOME_CITY:
       return kCityField;
-    case i18n::addressinput::ADMIN_AREA:
+    case autofill::ADDRESS_HOME_STATE:
       return kStateField;
-    case i18n::addressinput::POSTAL_CODE:
+    case autofill::ADDRESS_HOME_ZIP:
       return kPostalCodeField;
-    case i18n::addressinput::SORTING_CODE:
+    case autofill::ADDRESS_HOME_SORTING_CODE:
       return kSortingCodeField;
-    case i18n::addressinput::COUNTRY:
+    case autofill::ADDRESS_HOME_COUNTRY:
       return kCountryField;
     default:
       NOTREACHED();
@@ -109,14 +110,14 @@ const char* GetStringFromAddressField(i18n::addressinput::AddressField type) {
 
 // Serializes the AddressUiComponent a map from string to base::Value().
 base::Value::Dict AddressUiComponentAsValueMap(
-    const autofill::ExtendedAddressUiComponent& address_ui_component) {
+    const autofill::AutofillAddressUIComponent& address_ui_component) {
   base::Value::Dict info;
   info.Set(kFieldNameKey, address_ui_component.name);
   info.Set(kFieldTypeKey,
            GetStringFromAddressField(address_ui_component.field));
   info.Set(kFieldLengthKey,
            address_ui_component.length_hint ==
-               i18n::addressinput::AddressUiComponent::HINT_LONG);
+               autofill::AutofillAddressUIComponent::HINT_LONG);
   info.Set(kFieldRequired, address_ui_component.is_required);
   return info;
 }
@@ -369,7 +370,7 @@ AutofillPrivateGetAddressComponentsFunction::Run() {
           api::autofill_private::GetAddressComponents::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(parameters);
 
-  std::vector<std::vector<autofill::ExtendedAddressUiComponent>> lines;
+  std::vector<std::vector<autofill::AutofillAddressUIComponent>> lines;
   std::string language_code;
 
   autofill::GetAddressComponents(
@@ -382,7 +383,7 @@ AutofillPrivateGetAddressComponentsFunction::Run() {
 
   for (auto& line : lines) {
     base::Value::List row_values;
-    for (const autofill::ExtendedAddressUiComponent& component : line) {
+    for (const autofill::AutofillAddressUIComponent& component : line) {
       row_values.Append(AddressUiComponentAsValueMap(component));
     }
     base::Value::Dict row;

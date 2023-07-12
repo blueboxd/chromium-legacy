@@ -117,7 +117,9 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
       : AutofillExternalDelegate(autofill_manager, autofill_driver) {}
   ~MockAutofillExternalDelegate() override = default;
 
-  void DidSelectSuggestion(const Suggestion& suggestion) override {}
+  void DidSelectSuggestion(
+      const Suggestion& suggestion,
+      AutofillSuggestionTriggerSource trigger_source) override {}
   bool RemoveSuggestion(const std::u16string& value,
                         PopupItemId popup_item_id,
                         Suggestion::BackendId backend_id) override {
@@ -129,7 +131,10 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
 
   MOCK_METHOD(void, ClearPreviewedForm, (), (override));
   MOCK_METHOD(void, OnPopupSuppressed, (), (override));
-  MOCK_METHOD(void, DidAcceptSuggestion, (const Suggestion&, int), (override));
+  MOCK_METHOD(void,
+              DidAcceptSuggestion,
+              (const Suggestion&, int, AutofillSuggestionTriggerSource),
+              (override));
 };
 
 class MockAutofillPopupView : public AutofillPopupView {
@@ -163,7 +168,10 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
       base::WeakPtr<AutofillExternalDelegate> external_delegate,
       content::WebContents* web_contents,
       const gfx::RectF& element_bounds,
-      base::RepeatingCallback<void(gfx::NativeWindow, Profile*)>
+      base::RepeatingCallback<void(
+          gfx::NativeWindow,
+          Profile*,
+          password_manager::metrics_util::PasswordMigrationWarningTriggers)>
           show_pwd_migration_warning_callback)
       : AutofillPopupControllerImpl(
             external_delegate,
@@ -261,8 +269,9 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
     for (PopupItemId popup_item_id : popup_item_ids) {
       suggestions.emplace_back("", "", "", popup_item_id);
     }
-    popup_controller().Show(std::move(suggestions),
-                            AutoselectFirstSuggestion(false));
+    popup_controller().Show(
+        std::move(suggestions),
+        AutofillSuggestionTriggerSource::kFormControlElementClicked);
   }
 
   TestAutofillPopupController& popup_controller() {
@@ -320,10 +329,13 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
   NiceMock<MockPasswordAccessoryController> mock_pwd_controller_;
   NiceMock<MockAddressAccessoryController> mock_address_controller_;
   NiceMock<MockCreditCardAccessoryController> mock_cc_controller_;
-  base::MockCallback<base::RepeatingCallback<void(gfx::NativeWindow, Profile*)>>
+  base::MockCallback<base::RepeatingCallback<void(
+      gfx::NativeWindow,
+      Profile*,
+      password_manager::metrics_util::PasswordMigrationWarningTriggers)>>
       show_pwd_migration_warning_callback_;
 #endif
-  raw_ptr<NiceMock<TestAutofillPopupController>, DanglingUntriaged>
+  raw_ptr<NiceMock<TestAutofillPopupController>, DanglingAcrossTasks>
       autofill_popup_controller_ = nullptr;
 };
 
@@ -626,7 +638,10 @@ TEST_F(AutofillPopupControllerUnitTest,
 
   // Calls are accepted immediately.
   EXPECT_CALL(*delegate(), DidAcceptSuggestion).Times(1);
-  EXPECT_CALL(show_pwd_migration_warning_callback_, Run);
+  EXPECT_CALL(show_pwd_migration_warning_callback_,
+              Run(_, _,
+                  password_manager::metrics_util::
+                      PasswordMigrationWarningTriggers::kKeyboardAcessoryBar));
   popup_controller().AcceptSuggestionWithoutThreshold(0);
 }
 

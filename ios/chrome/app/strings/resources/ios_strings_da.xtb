@@ -255,6 +255,7 @@ Websites kan ikke bruge cookies til at se din browseraktivitet på forskellige w
 <translation id="2595587704210555261">{COUNT,plural, =1{Åbne faner, der ikke har været i brug i mindst én dag, flyttes til Inaktive faner, så du nemt kan fokusere på de faner, du bruger mest. Du kan til enhver tid ændre dette i indstillingerne.}one{Åbne faner, der ikke har været i brug i mindst {COUNT} dag, flyttes til Inaktive faner, så du nemt kan fokusere på de faner, du bruger mest. Du kan til enhver tid ændre dette i indstillingerne.}other{Åbne faner, der ikke har været i brug i mindst {COUNT} dage, flyttes til Inaktive faner, så du nemt kan fokusere på de faner, du bruger mest. Du kan til enhver tid ændre dette i indstillingerne.}}</translation>
 <translation id="2600682495497606169">Ryd cookies fra websitet</translation>
 <translation id="2609008503159898744">Vil du lukke alle faner?</translation>
+<translation id="2617210333344098964">Flyt adressen til kontoen</translation>
 <translation id="2625189173221582860">Adgangskoden er kopieret</translation>
 <translation id="2626236249646841566">Tjek din forbindelse, og prøv at logge ind igen.</translation>
 <translation id="2637313651144986786">Søg i faner...</translation>
@@ -404,7 +405,6 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="3464194322481586217">Prisovervågning mislykkedes.</translation>
 <translation id="3469166899695866866">Vil du stoppe downloaden?</translation>
 <translation id="3470502288861289375">Kopierer...</translation>
-<translation id="3471148582064653480">Synkroniser dine adgangskoder, din historik og meget mere.</translation>
 <translation id="3474048842645761983">{COUNT,plural, =1{til {COUNT} website eller app}one{til {COUNT} website og app}other{til {COUNT} websites og apps}}</translation>
 <translation id="3474624961160222204">Fortsæt som <ph name="NAME" /></translation>
 <translation id="3476450923187944815">Få adgang til dine adgangskoder i andre apps.</translation>
@@ -465,6 +465,7 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="3851938967634752633">Adgangskoderne til <ph name="WEBSITE" />, <ph name="SECOND_WEBSITE" /> og <ph name="NUMBER_OF_ACCOUNTS" /> andre slettes. Dine konti slettes ikke.</translation>
 <translation id="3858860766373142691">Navn</translation>
 <translation id="3861486700625780712">Følg ikke</translation>
+<translation id="3861908220442487587">Denne adresse gemmes kun på denne enhed. Hvis du vil bruge den på dine andre enheder, skal du flytte den til din Google-konto, <ph name="USER_EMAIL" /></translation>
 <translation id="3863769054730344136">Send to Your Devices [Send til dine enheder]</translation>
 <translation id="387280738075653372">Download Chrome her.</translation>
 <translation id="3875783148670536197">Vis mig hvordan</translation>
@@ -649,6 +650,7 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="5083464117946352670">Kan ikke fastslå filstørrelse.</translation>
 <translation id="5090832849094901128">Fjernelse af denne adgangskode sletter ikke din konto på <ph name="WEBSITE" />.</translation>
 <translation id="5094827893301452931">Indlæg delt på Twitter.</translation>
+<translation id="5109892411553231226">Administrer betalingsmetoder</translation>
 <translation id="5118713593561876160">Interesser</translation>
 <translation id="5118764316110575523">Fra</translation>
 <translation id="5119391094379141756">Vælg Chrome</translation>
@@ -999,6 +1001,7 @@ Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhis
 <translation id="7053983685419859001">Bloker</translation>
 <translation id="7062545763355031412">Acceptér, og skift konto</translation>
 <translation id="7080806333218412752">Sender webadresser til tjek i Beskyttet browsing. Der sendes også et mindre antal sider, downloads, udvidelsesaktivitet og systemoplysninger for at identificere nye trusler. Disse data knyttes midlertidigt til din Google-konto, når du er logget ind, for at beskytte dig i Google-apps.</translation>
+<translation id="7082853213442715471">Når denne funktion er aktiveret, blokeres visse webteknologier, hvilket kan medføre, at nogle websites indlæses langsommere eller ikke fungerer korrekt.</translation>
 <translation id="7095110968493193530">I Google Adgangskodeadministrator for <ph name="EMAIL" /></translation>
 <translation id="7099761977003084116">Seneste faner</translation>
 <translation id="7102005569666697658">Downloader… <ph name="FILE_SIZE" /></translation>
@@ -1058,6 +1061,7 @@ Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhis
 <translation id="7531345132340165516">Aktuelt website</translation>
 <translation id="7537586195939242955">Din adgangssætning kan ikke installeres på Passbook lige nu.</translation>
 <translation id="754655535278952384">Tjek udført for <ph name="TIME" /></translation>
+<translation id="7552154146060018538">Sidste fane er blevet brugt på <ph name="SOURCE_DEVICE" /></translation>
 <translation id="7553234618121028547">Du kan deaktivere funktionen ved at åbne <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" /> og gå til Valgmuligheder for adgangskoder.</translation>
 <translation id="7554645225856321710">Luk alle</translation>
 <translation id="7554791636758816595">Ny fane</translation>
@@ -1080,6 +1084,7 @@ Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhis
 <translation id="7687508192620387263">Tilgængelig kalenderfil</translation>
 <translation id="7701040980221191251">Ingen</translation>
 <translation id="7711440461521638739">Du genbruger ikke nogen adgangskoder</translation>
+<translation id="7719038820139380048">Log ind for at få indhold baseret på dine interesser.</translation>
 <translation id="7720410380936703141">PRØV IGEN</translation>
 <translation id="7726702057919861819">Menu → Historik → Ryd browserdata</translation>
 <translation id="7733646263819020771"><ph name="BOOKMRK_NAME" />. Kun på denne enhed.</translation>
@@ -1189,7 +1194,6 @@ Websites kan bruge cookies til at se din browseraktivitet på forskellige websit
 <translation id="8319076807703933069">Ny søgning</translation>
 <translation id="8323906514956095947">Tryk og hold nede for at se flere faneindstillinger</translation>
 <translation id="8328777765163860529">Luk alt</translation>
-<translation id="8331621926962374866">Når Chrome er i Nedlukningstilstand, blokeres visse webteknologier, og det kan medføre, at nogle websites indlæses langsommere eller ikke fungerer korrekt.</translation>
 <translation id="8343993175958086504">Sikkerhedskopiér dit indhold, og få adgang til det på enhver enhed.</translation>
 <translation id="834783239627985533">Mest besøgte websites</translation>
 <translation id="8378714024927312812">Administreret af din organisation</translation>
@@ -1203,6 +1207,7 @@ Websites kan bruge cookies til at se din browseraktivitet på forskellige websit
 <translation id="8428045167754449968">By</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8428634594422941299">OK</translation>
+<translation id="8446201778524791138">Rediger handlinger</translation>
 <translation id="8446884382197647889">Få flere oplysninger</translation>
 <translation id="8458397775385147834">1 bogmærke blev slettet</translation>
 <translation id="8459333855531264009">Ikke sikker</translation>
@@ -1295,7 +1300,6 @@ Dine data blev krypteret med din adgangssætning <ph name="TIME" />. Angiv adgan
 <translation id="8976414606286374109">Kort gemmes på din Google-konto.</translation>
 <translation id="8981454092730389528">Aktivitetsadministration på Google</translation>
 <translation id="8985320356172329008">Du er logget ind på Google som</translation>
-<translation id="8986567980592931173">Log ind med din Google-konto for at synkronisere dine adgangskoder, din historik m.m.</translation>
 <translation id="8998289560386111590">Ikke tilgængelig på din enhed</translation>
 <translation id="8999545564078155498">Lås op med Face ID</translation>
 <translation id="9000089900434778519">Dine standardsøgemaskine er <ph name="DSE_NAME" />. Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis det er relevant.</translation>

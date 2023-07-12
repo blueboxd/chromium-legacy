@@ -3,11 +3,32 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/location_bar/cookie_controls/cookie_controls_bubble_view_controller.h"
+
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/url_identity.h"
+#include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/location_bar/cookie_controls/cookie_controls_content_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/favicon/core/favicon_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/view_class_properties.h"
+
+namespace {
+
+constexpr int kProgressBarHeight = 3;
+
+// Unique identifier within the CookieControlsBubbleView hierarchy.
+constexpr int kFaviconID = 1;
+
+int getDaysToExpiration(base::Time expiration) {
+  // TODO(crbug.com/1446230): Apply DST corrections.
+  const base::Time midnight_today = base::Time::Now().LocalMidnight();
+  const base::Time midnight_expiration = expiration.LocalMidnight();
+  return (midnight_expiration - midnight_today).InDays();
+}
 
 // Expected URL types for `UrlIdentity::CreateFromUrl()`.
 constexpr UrlIdentity::TypeSet kUrlIdentityAllowedTypes = {
@@ -18,6 +39,16 @@ constexpr UrlIdentity::FormatOptions kUrlIdentityOptions{
     .default_options = {UrlIdentity::DefaultFormatOptions::
                             kOmitSchemePathAndTrivialSubdomains}};
 
+std::u16string GetSubjectUrlName(content::WebContents* web_contents) {
+  CHECK(web_contents);
+  return UrlIdentity::CreateFromUrl(
+             Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+             web_contents->GetVisibleURL(), kUrlIdentityAllowedTypes,
+             kUrlIdentityOptions)
+      .name;
+}
+}  // namespace
+
 CookieControlsBubbleViewController::CookieControlsBubbleViewController(
     CookieControlsBubbleView* bubble_view,
     content_settings::CookieControlsController* controller,
@@ -25,6 +56,19 @@ CookieControlsBubbleViewController::CookieControlsBubbleViewController(
     : bubble_view_(bubble_view), controller_(controller->AsWeakPtr()) {
   controller_observation_.Observe(controller);
   bubble_view_->UpdateSubtitle(GetSubjectUrlName(web_contents));
+
+  bubble_view_->InitContentView(std::make_unique<CookieControlsContentView>());
+  bubble_view_->InitReloadingView(InitReloadingView(web_contents));
+
+  FetchFaviconFrom(web_contents);
+  SetFeedbackButtonPressedCallback();
+
+  bubble_view_->ShowReloadingView();
+}
+
+void CookieControlsBubbleViewController::OnFaviconFetched(
+    const favicon_base::FaviconImageResult& result) const {
+  bubble_view_->UpdateFaviconImage(result.image, kFaviconID);
 }
 
 CookieControlsBubbleViewController::~CookieControlsBubbleViewController() =
@@ -38,11 +82,31 @@ void CookieControlsBubbleViewController::OnStatusChanged(
     case CookieControlsStatus::kEnabled:
       bubble_view_->UpdateTitle(l10n_util::GetStringUTF16(
           IDS_COOKIE_CONTROLS_BUBBLE_COOKIES_BLOCKED_TITLE));
+      bubble_view_->content_view()->UpdateContentLabels(
+          l10n_util::GetStringUTF16(
+              IDS_COOKIE_CONTROLS_BUBBLE_SITE_NOT_WORKING_TITLE),
+          l10n_util::GetStringUTF16(
+              IDS_COOKIE_CONTROLS_BUBBLE_SITE_NOT_WORKING_DESCRIPTION_TEMPORARY));
+      bubble_view_->content_view()->SetFeedbackSectionVisibility(false);
       break;
-    case CookieControlsStatus::kDisabledForSite:
+    case CookieControlsStatus::kDisabledForSite: {
+      bool is_permanent_exception =
+          getDaysToExpiration(expiration) == 0 || expiration == base::Time();
       bubble_view_->UpdateTitle(l10n_util::GetStringUTF16(
           IDS_COOKIE_CONTROLS_BUBBLE_COOKIES_ALLOWED_TITLE));
-      break;
+      bubble_view_->content_view()->UpdateContentLabels(
+          is_permanent_exception
+              ? l10n_util::GetStringUTF16(
+                    IDS_COOKIE_CONTROLS_BUBBLE_PERMANENT_ALLOWED_TITLE)
+              : l10n_util::GetPluralStringFUTF16(
+                    IDS_COOKIE_CONTROLS_BUBBLE_BLOCKING_RESTART_TITLE,
+                    getDaysToExpiration(expiration)),
+          l10n_util::GetStringUTF16(
+              is_permanent_exception
+                  ? IDS_COOKIE_CONTROLS_BUBBLE_PERMANENT_ALLOWED_DESCRIPTION
+                  : IDS_COOKIE_CONTROLS_BUBBLE_BLOCKING_RESTART_DESCRIPTION_TODAY));
+      bubble_view_->content_view()->SetFeedbackSectionVisibility(true);
+    } break;
     case CookieControlsStatus::kDisabled:
     case CookieControlsStatus::kUninitialized:
       NOTREACHED();
@@ -64,14 +128,71 @@ void CookieControlsBubbleViewController::OnBreakageConfidenceLevelChanged(
   // TODO(1446230): Implement OnBreakageConfidenceLevelChanged.
 }
 
-std::u16string CookieControlsBubbleViewController::GetSubjectUrlName(
-    content::WebContents* web_contents) {
-  CHECK(web_contents);
-  content::NavigationEntry* nav_entry =
-      web_contents->GetController().GetVisibleEntry();
+void CookieControlsBubbleViewController::SetFeedbackButtonPressedCallback() {
+  feedback_button_callback_ =
+      bubble_view_->content_view()->RegisterFeedbackButtonPressedCallback(
+          base::BindRepeating(
+              &CookieControlsBubbleViewController::OnFeedbackButtonPressed,
+              base::Unretained(this)));
+}
 
-  return UrlIdentity::CreateFromUrl(
-             Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-             nav_entry->GetURL(), kUrlIdentityAllowedTypes, kUrlIdentityOptions)
-      .name;
+void CookieControlsBubbleViewController::OnFeedbackButtonPressed() {
+  // TODO(crbug.com/1446230): Handle Feedback button press.
+}
+
+void CookieControlsBubbleViewController::DidStopLoading() {
+  bubble_view_->GetWidget()->Close();
+}
+
+std::unique_ptr<views::View>
+CookieControlsBubbleViewController::InitReloadingView(
+    content::WebContents* web_contents) {
+  auto* provider = ChromeLayoutProvider::Get();
+  const int vertical_margin =
+      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE);
+  const int side_margin =
+      provider->GetInsetsMetric(views::INSETS_DIALOG).left();
+
+  auto reloading_view = std::make_unique<views::View>();
+  reloading_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
+
+  auto progress_bar = std::make_unique<views::ProgressBar>(
+      kProgressBarHeight, /*allow_round_corner=*/false);
+  progress_bar->SetValue(-1);
+
+  auto reloading_content = std::make_unique<views::View>();
+  reloading_content->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
+  reloading_content->SetProperty(views::kMarginsKey,
+                                 gfx::Insets::VH(vertical_margin, side_margin));
+
+  auto favicon = std::make_unique<NonAccessibleImageView>();
+  favicon->SetProperty(views::kMarginsKey,
+                       gfx::Insets::TLBR(0, 0, 0, side_margin));
+  favicon->SetID(kFaviconID);
+  reloading_content->AddChildView(std::move(favicon));
+
+  reloading_content->AddChildView(std::make_unique<views::Label>(
+      l10n_util::GetStringFUTF16(IDS_COOKIE_CONTROLS_BUBBLE_RELOADING_LABEL,
+                                 GetSubjectUrlName(web_contents))));
+
+  reloading_view->AddChildView(std::move(progress_bar));
+  reloading_view->AddChildView(std::move(reloading_content));
+
+  return reloading_view;
+}
+
+void CookieControlsBubbleViewController::FetchFaviconFrom(
+    content::WebContents* web_contents) {
+  auto* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  favicon::FaviconService* const favicon_service =
+      FaviconServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
+  favicon_service->GetFaviconImageForPageURL(
+      web_contents->GetVisibleURL(),
+      base::BindOnce(&CookieControlsBubbleViewController::OnFaviconFetched,
+                     weak_factory_.GetWeakPtr()),
+      &cancelable_task_tracker_);
 }

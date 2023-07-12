@@ -298,6 +298,7 @@
 <translation id="2318576281648121272">आज <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" /> , शोध परिणामाची वर्गवारी</translation>
 <translation id="2322173485024759474">एक अक्षर मागे जा</translation>
+<translation id="2335091074961603075">तुमचे Chromebook किंवा ब्लूटूथ डिव्‍हाइस हे ब्लूटूथ ची जुनी आवृत्ती वापरत आहे. सर्वोत्तम ऑडिओ गुणवत्तेसाठी अंतर्गत मायक्रोफोन वापरा.</translation>
 <translation id="2339073806695260576">नोट व स्क्रीनशॉट घेण्यासाठी, तसेच लेझर पॉइंटर किंवा भिंग वापरण्यासाठी शेल्फवरील स्टायलस बटणावर टॅप करा.</translation>
 <translation id="2341729377289034582">उभ्या दिशेने लॉक केले</translation>
 <translation id="2345226652884463045">संपादित करण्यासाठी मजकूर निवडण्याकरिता एंटर किंवा शोधा + स्पेस प्रेस करा.</translation>
@@ -395,6 +396,7 @@
 <translation id="2750941250130734256">अ‍ॅक्टिव्ह विंडो अनडॉक केली आहे.</translation>
 <translation id="2761723519669354964">शेल्फमधील हायलाइट केलेला आयटम उघडा</translation>
 <translation id="2774348302533424868"><ph name="MODIFIER" /><ph name="DELIMITER" /><ph name="KEY_ONE" /> ते <ph name="KEY_TWO" /></translation>
+<translation id="2778197796481941784">ctrl+search+s</translation>
 <translation id="2778650143428714839"><ph name="DEVICE_TYPE" /> हे <ph name="MANAGER" /> द्वारे व्यवस्थापित केले आहे</translation>
 <translation id="2782591952652094792">कॅप्चर मोडमधून बाहेर पडा</translation>
 <translation id="2785499565474703580">एक डिव्हाइस कनेक्ट केलेले आहे</translation>
@@ -458,6 +460,7 @@
 <translation id="3062298103034426069">सपोर्ट करत नाही</translation>
 <translation id="3068622547379332530">आवृत्ती <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">शेल्फ डावीकडे आहे</translation>
+<translation id="3070639127620815135">search+esc</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">मेनूचा विस्तार करा</translation>
 <translation id="3087734570205094154">तळाकडील</translation>
@@ -471,6 +474,7 @@
 <translation id="3120421559657122717">डिव्हाइस बंद करायचे का?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">अपडेटासाठी पुनर्सुरू करा</translation>
+<translation id="3139188263101386725">अपडेट केलेला शॉर्टकट वापरा</translation>
 <translation id="3139942575505304791">डेस्‍क १</translation>
 <translation id="315116470104423982">मोबाइल डेटा</translation>
 <translation id="3151786313568798007">अभिमुखता</translation>
@@ -606,6 +610,7 @@
         <ph name="END_TIME" />,
         <ph name="TIME_ZONE" />. Google Calendar मध्ये आणखी तपशिलांसाठी निवडा.</translation>
 <translation id="3659444876902283058">(<ph name="CURRENT_DAY" />/<ph name="TOTAL_DAYS" /> दिवस)</translation>
+<translation id="3659667652322717492">तुम्ही माइकचे वर्तन नंतर कधीही बदलू शकता.</translation>
 <translation id="3659814201068740063">सुमारे <ph name="TIME_LEFT" /> शिल्लक (<ph name="PERCENTAGE" />%).
 तुमचे डिव्हाइस पॉवरशी कनेक्ट करा.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> व्यवस्थापित वापरकर्ता</translation>
@@ -1049,6 +1054,7 @@
 <translation id="5578188167649348993">मेमरी</translation>
 <translation id="5580000943347215299">लायब्ररी</translation>
 <translation id="558849140439112033">कॅप्चर करायचे असलेले भाग निवडण्यासाठी ड्रॅग करा</translation>
+<translation id="5590609058453685222">म्यूट असल्याची सूचना सुरू आहे. म्यूट केलेले असताना तुम्ही बोलल्यास, तुम्हाला सूचित केले जाईल.</translation>
 <translation id="5596627076506792578">अधिक पर्याय</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">वाचिक फीडबॅक देणे बंद करण्यासाठी Ctrl + Alt + Z प्रेस करा.</translation>
@@ -1202,6 +1208,7 @@
 <translation id="6231419273573514727">पेरिफेरल परफॉर्मन्स मर्यादित असू शकतो</translation>
 <translation id="6232891689835436217"><ph name="APP_NAME" /> हे सध्या तुमचा कॅमेरा आणि मायक्रोफोन वापरत आहे</translation>
 <translation id="6237231532760393653">१X</translation>
+<translation id="6244986124527896815">"<ph name="NEW_SHORTCUT" />" वापरून Task Manager अ‍ॅप उघडा.</translation>
 <translation id="6247728804802644171">सूचना उघडा</translation>
 <translation id="6254629735336163724">आडव्या दिशेने लॉक केले</translation>
 <translation id="6259254695169772643">निवडण्यासाठी तुमचे स्टायलस वापरा</translation>
@@ -1252,6 +1259,7 @@
 <translation id="6497418457565568043">व्यत्यय आणू नका सुरू आहे</translation>
 <translation id="6500896621837555595">अपडेट करा</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" /> वर स्क्रीन कास्ट करीत आहे</translation>
+<translation id="6507042703812908515"><ph name="NEW_SHORTCUT" />" वापरून Shortcuts ॲप उघडा.</translation>
 <translation id="6507618042428827377">उपलब्ध असलेल्या पुढील इनपुट पद्धतीवर स्विच करा</translation>
 <translation id="6508923215158854599">तुमचे Chromebook आणि Chromecast डिव्हाइस एकाच वाय-फाय नेटवर्कवर असल्याची खात्री करा.</translation>
 <translation id="6515727200518652613">कॅमेरा डिस्कनेक्ट झाला, पुन्हा कनेक्ट करण्याचा प्रयत्न करत आहे.</translation>
@@ -1484,7 +1492,7 @@
 <translation id="7579778809502851308">स्‍क्रीन कॅप्‍चर</translation>
 <translation id="7593891976182323525">Search किंवा Shift</translation>
 <translation id="7600875258240007829">सर्व सूचना पहा</translation>
-<translation id="7601417191446344542">म्यूट नज सुरू करायचा का?</translation>
+<translation id="7601417191446344542">म्यूट असल्याची सूचना सुरू करायची का?</translation>
 <translation id="7607002721634913082">विराम द्या</translation>
 <translation id="7609951632080598826">कॅलेंडर दृश्य, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">कॅमेरा पुन्हा कनेक्ट केला.</translation>
@@ -1545,7 +1553,6 @@
 <translation id="7866482334467279021">सुरू</translation>
 <translation id="7872786842639831132">बंद करा</translation>
 <translation id="7875575368831396199">तुमच्या <ph name="DEVICE_TYPE" /> चा ब्लूटूथ बंद असल्याचे दिसते. कृपया फोन हब वापरण्यासाठी ब्लूटूथ सुरू करा.</translation>
-<translation id="7876243839304621966">सर्व काढून टाका</translation>
 <translation id="7877557217297072640">{0,plural, =0{Change device to previous version now}=1{एका सेकंदामध्ये डिव्हाइस मागील आवृत्तीवर बदला}other{# सेकंदांमध्ये डिव्हाइस मागील आवृत्तीवर बदला}}</translation>
 <translation id="7884446017008693258">हॉटस्पॉट सेटिंग्ज</translation>
 <translation id="7884902759927478774">टॅब ड्रॅग करणे रद्द करा</translation>
@@ -1751,6 +1758,7 @@
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8790998409862094015">जास्त</translation>
 <translation id="8792626944327216835">मायक्रोफोन</translation>
+<translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> फोल्डर</translation>
 <translation id="880709030178078220">"मदत"</translation>
 <translation id="8814190375133053267">वाय-फाय</translation>

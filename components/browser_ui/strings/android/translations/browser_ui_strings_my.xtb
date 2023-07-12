@@ -67,6 +67,7 @@
 <translation id="2238944249568001759">သင့်နောက်ဆုံးတဘ်ကို အခြေခံ၍ အကြံပြုထားသောရှာဖွေမှုများ</translation>
 <translation id="2241634353105152135">တစ်ကြိမ်သာ</translation>
 <translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> ဖယ်ရှားရန်</translation>
+<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{ဝဘ်ဆိုက် ၁ ခု ပိတ်ထားသည်}other{ဝဘ်ဆိုက် # ခု ပိတ်ထားသည်}}</translation>
 <translation id="228293613124499805">သင်ဝင်ကြည့်သည့် ဝဘ်ဆိုက်အများစုသည် အများအားဖြင့် အသုံးပြုမှု ပိုမိုကောင်းမွန်စေရန်အတွက် သင်၏သတ်မှတ်ချက်များ (သို့) ဝဘ်ဆိုက်နှင့် မျှဝေထားသည့် အချက်အလက်များကို ဒေတာအဖြစ် သင့်စက်တွင် သိမ်းထားနိုင်သည်။ ဤဆက်တင်ကို ဖွင့်ထားရန် အကြံပြုပါသည်။</translation>
 <translation id="2289270750774289114">ဝဘ်ဆိုက်က အနီးအနားရှိ ဘလူးတုသ်ကိရိယာများ ရှာဖွေလိုသည့်အခါ ခွင့်တောင်းရန် (အကြံပြုထားသည်)</translation>
 <translation id="2315043854645842844">ကလိုင်းယင့် ဘက်မှ လက်မှတ်ရွေးမှုကို လည်ပတ်သည့်စနစ်မှ မပံ့ပိုးပါ။</translation>
@@ -302,7 +303,6 @@
 <translation id="6467852467360539617">ဒေတာကိုရှင်းပြီး ခွင့်ပြုချက်များ ပြင်ဆင်သတ်မှတ်ရန်</translation>
 <translation id="6527303717912515753">မျှဝေရန်</translation>
 <translation id="6545864417968258051">ဘလူးတုသ် ရှာဖွေရန်</translation>
-<translation id="6552691050538553146">နောက်ထပ် ရွေးစရာများ <ph name="BANNER_TITLE" /></translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />၊ <ph name="PERMISSION_2" /> နှင့် နောက်ထပ် <ph name="NUM_MORE" /> ခုကို ပိတ်ထားသည်}other{<ph name="PERMISSION_1" />၊ <ph name="PERMISSION_2" /> နှင့် နောက်ထပ် <ph name="NUM_MORE" /> ခုကို ပိတ်ထားသည်}}</translation>
 <translation id="6554732001434021288">ပြီးခဲ့သော <ph name="NUM_DAYS" /> ရက်က နောက်ဆုံး ဝင်ကြည့်ထားသည်</translation>
 <translation id="6561560012278703671">ပိုမိုတိတ်ဆိတ်သော မက်ဆေ့ဂျ်ပို့ခြင်းကို အသုံးပြုပါ (သင့်အားမနှောင့်ယှက်စေရန် အကြောင်းကြားချက် အတည်ပြုစနစ်များကို ပိတ်ပေးသည်)</translation>
@@ -384,6 +384,7 @@
 <translation id="8068648041423924542">လက်မှတ်ကို မရွေးနိုင်ပါ။</translation>
 <translation id="8077120325605624147">သင်ဝင်ကြည့်သည့် ဝဘ်ဆိုက်တိုင်းက မည်သည့်ကြော်ငြာကိုမဆို ပြနိုင်သည်</translation>
 <translation id="8087000398470557479">ဤအကြောင်းအရာသည် Google မှနေ၍ပံ့ပိုးပေးထားသည့် <ph name="DOMAIN_NAME" /> မှဖြစ်သည်။</translation>
+<translation id="8088603949666785339"><ph name="BANNER_TITLE" /> တွင်နောက်ထပ် ရွေးစရာများ</translation>
 <translation id="8116925261070264013">ဖျောက်ထားသည်</translation>
 <translation id="813082847718468539">ဆိုက် အချက်အလက်များကို ကြည့်ရန်</translation>
 <translation id="8131740175452115882">အတည်ပြုရန်</translation>
@@ -430,6 +431,7 @@
 <translation id="8719283222052720129"><ph name="BEGIN_LINK" />Android ဆက်တင်များ<ph name="END_LINK" /> တွင် <ph name="APP_NAME" /> အတွက် ခွင့်ပြုချက်ကို ဖွင့်ပါ။</translation>
 <translation id="8725066075913043281">ထပ် စမ်းကြည့်ရန်</translation>
 <translation id="8730621377337864115">ပြီးပါပြီ</translation>
+<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{ဝဘ်ဆိုက် ၁ ခု ခွင့်ပြုထားသည်}other{ဝဘ်ဆိုက် # ခု ခွင့်ပြုထားသည်}}</translation>
 <translation id="8737217482364735741">၎င်းက <ph name="ORIGIN" /> သိမ်းထားသည့် ဒေတာနှင့် ကွတ်ကီးအားလုံးကို ရှင်းထုတ်လိုက်ပါမည်။</translation>
 <translation id="8751914237388039244">ပုံတစ်ပုံ ရွေးပါ</translation>
 <translation id="8801436777607969138">သတ်မှတ်ထားသော ဝဘ်ဆိုက်အတွက် JavaScript ကို ပိတ်သည်။</translation>

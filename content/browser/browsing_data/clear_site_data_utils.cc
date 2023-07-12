@@ -4,6 +4,7 @@
 
 #include "content/public/browser/clear_site_data_utils.h"
 
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
@@ -15,7 +16,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/browser/client_hints_controller_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 
@@ -37,6 +40,7 @@ class SiteDataClearer : public BrowsingDataRemover::Observer {
       bool clear_cookies,
       bool clear_storage,
       bool clear_cache,
+      bool clear_client_hints,
       const std::set<std::string>& storage_buckets_to_remove,
       bool avoid_closing_connections,
       const absl::optional<net::CookiePartitionKey>& cookie_partition_key,
@@ -47,6 +51,7 @@ class SiteDataClearer : public BrowsingDataRemover::Observer {
         clear_cookies_(clear_cookies),
         clear_storage_(clear_storage),
         clear_cache_(clear_cache),
+        clear_client_hints_(clear_client_hints),
         storage_buckets_to_remove_(storage_buckets_to_remove),
         avoid_closing_connections_(avoid_closing_connections),
         cookie_partition_key_(cookie_partition_key),
@@ -69,14 +74,14 @@ class SiteDataClearer : public BrowsingDataRemover::Observer {
     DCHECK(!callback_);
   }
 
-  void RunAndDestroySelfWhenDone() {
+  void RunAndDestroySelfWhenDone(
+      ClientHintsControllerDelegate* client_hints_controller_delegate) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     // Cookies and channel IDs are scoped to
     // a) eTLD+1 of |origin|'s host if |origin|'s host is a registrable domain
     //    or a subdomain thereof
     // b) |origin|'s host exactly if it is an IP address or an internal hostname
     //    (e.g. "localhost" or "fileserver").
-    // TODO(msramek): What about plugin data?
     if (clear_cookies_) {
       std::string domain = GetDomainAndRegistry(
           origin_,
@@ -150,6 +155,22 @@ class SiteDataClearer : public BrowsingDataRemover::Observer {
           std::move(origin_filter_builder), this);
     }
 
+    // We clear client hints for both cookie and cache clears.
+    if (client_hints_controller_delegate &&
+        base::FeatureList::IsEnabled(
+            features::kClearSiteDataClientHintsSupport) &&
+        (clear_cookies_ || clear_cache_ || clear_client_hints_)) {
+      pending_task_count_++;
+      // TODO(crbug.com/1458394): Migrate into BrowsingDataRemover.
+      client_hints_controller_delegate->PersistClientHints(
+          origin_,
+          /*parent_rfh=*/nullptr,
+          /*client_hints=*/{});
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, base::BindOnce(&SiteDataClearer::OnBrowsingDataRemoverDone,
+                                    weak_factory_.GetWeakPtr(), 0));
+    }
+
     DCHECK_GT(pending_task_count_, 0);
   }
 
@@ -169,6 +190,7 @@ class SiteDataClearer : public BrowsingDataRemover::Observer {
   const bool clear_cookies_;
   const bool clear_storage_;
   const bool clear_cache_;
+  const bool clear_client_hints_;
   const std::set<std::string> storage_buckets_to_remove_;
   const bool avoid_closing_connections_;
   const absl::optional<net::CookiePartitionKey> cookie_partition_key_;
@@ -190,6 +212,7 @@ void ClearSiteData(
     bool clear_cookies,
     bool clear_storage,
     bool clear_cache,
+    bool clear_client_hints,
     const std::set<std::string>& storage_buckets_to_remove,
     bool avoid_closing_connections,
     const absl::optional<net::CookiePartitionKey>& cookie_partition_key,
@@ -207,11 +230,12 @@ void ClearSiteData(
     return;
   }
   (new SiteDataClearer(browser_context, origin, clear_cookies, clear_storage,
-                       clear_cache, storage_buckets_to_remove,
-                       avoid_closing_connections, cookie_partition_key,
-                       storage_key, partitioned_state_allowed_only,
-                       std::move(callback)))
-      ->RunAndDestroySelfWhenDone();
+                       clear_cache, clear_client_hints,
+                       storage_buckets_to_remove, avoid_closing_connections,
+                       cookie_partition_key, storage_key,
+                       partitioned_state_allowed_only, std::move(callback)))
+      ->RunAndDestroySelfWhenDone(
+          browser_context->GetClientHintsControllerDelegate());
 }
 
 }  // namespace content

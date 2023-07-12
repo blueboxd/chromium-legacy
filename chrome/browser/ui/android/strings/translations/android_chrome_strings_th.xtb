@@ -221,7 +221,7 @@
 <translation id="2230777942707397948">หน้าต่างว่าง</translation>
 <translation id="223356358902285214">กิจกรรมบนเว็บและแอป</translation>
 <translation id="2234827758954819389">คู่มือความเป็นส่วนตัว</translation>
-<translation id="2239812875700136898">ควบคุมเรื่องราวของคุณจากปุ่ม "ตัวเลือกสำหรับ Discover"</translation>
+<translation id="2239812875700136898">ควบคุมเรื่องราวของคุณจากปุ่ม "ตัวเลือกสำหรับฟีดสำรวจ"</translation>
 <translation id="2248941474044011069">ระบบจะเข้ารหัสให้แก่รหัสผ่านในอุปกรณ์ก่อนบันทึกลงในเครื่องมือจัดการรหัสผ่านบน Google</translation>
 <translation id="2249635629516220541">ปรับแต่งข้อมูลที่เว็บไซต์ใช้เพื่อแสดงโฆษณาแก่คุณ</translation>
 <translation id="2259659629660284697">ส่งออกรหัสผ่าน…</translation>
@@ -400,7 +400,7 @@
 <translation id="3166827708714933426">แป้นพิมพ์ลัดสำหรับแท็บและหน้าต่าง</translation>
 <translation id="316694332262407393">Chrome ทำงานอยู่แล้วที่นี่</translation>
 <translation id="3167258285411721858">คุณขอเว็บไซต์ในอุปกรณ์เคลื่อนที่สำหรับ <ph name="HOST_NAME" /> ได้</translation>
-<translation id="3169472444629675720">Discover</translation>
+<translation id="3169472444629675720">สำรวจ</translation>
 <translation id="3187472288455401631">การวัดผลโฆษณา</translation>
 <translation id="3207960819495026254">บุ๊กมาร์กแล้ว</translation>
 <translation id="3208584281581115441">ตรวจสอบเลย</translation>
@@ -446,7 +446,6 @@
 <translation id="3421726884497337397">เลือกเวลาที่จะบล็อกคุกกี้ของบุคคลที่สาม</translation>
 <translation id="3428747202529429621">รักษาความปลอดภัยของคุณใน Chrome และอาจใช้เพื่อปรับปรุงความปลอดภัยในแอปอื่นๆ ของ Google เมื่อลงชื่อเข้าใช้</translation>
 <translation id="3429160811076349561">ฟีเจอร์ช่วงทดลองใช้ปิดอยู่</translation>
-<translation id="3432973700170747422">ลบ 15 นาทีที่ผ่านมา</translation>
 <translation id="3435465986463792564">หากมีหน้าต่างเปิดอยู่หลายหน้า คุณจัดการหน้าต่างเหล่านั้นได้จากที่นี่</translation>
 <translation id="3435738964857648380">ความปลอดภัย</translation>
 <translation id="3443221991560634068">โหลดหน้าปัจจุบันอีกครั้ง</translation>
@@ -480,7 +479,6 @@
 <translation id="3587596251841506391">ช่วยปรับปรุงความปลอดภัยในอินเทอร์เน็ต</translation>
 <translation id="3597179440835065298">รับคำแนะนำที่ดียิ่งขึ้น</translation>
 <translation id="3602290021589620013">ดูตัวอย่าง</translation>
-<translation id="360901359071773787">ลบ 15 นาทีที่ผ่านมาใช่ไหม</translation>
 <translation id="3616113530831147358">เสียง</translation>
 <translation id="3622349720008044802">จัดการหน้าต่าง</translation>
 <translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{และอีก 1 เว็บไซต์}other{และอีก # เว็บไซต์}}</translation>
@@ -723,7 +721,7 @@
 <translation id="488187801263602086">เปลี่ยนชื่อไฟล์</translation>
 <translation id="4885273946141277891">อินสแตนซ์ของ Chrome เกินจำนวนที่สนับสนุน</translation>
 <translation id="4905823827770127520">ใส่ลิงก์ลงในหน้า</translation>
-<translation id="4908869848243824489">Discover โดย Google</translation>
+<translation id="4908869848243824489">ฟีเจอร์สำรวจโดย Google</translation>
 <translation id="4909709702739934280">ผู้ดูแลระบบของคุณเป็นผู้จัดการเบราว์เซอร์</translation>
 <translation id="4910889077668685004">แอปชำระเงิน</translation>
 <translation id="4912413785358399818">ย้ายแท็บ</translation>
@@ -752,6 +750,7 @@
 <translation id="5010886807652684893">ดูภาพ</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> ต้องการเชื่อมต่อ</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">15 นาทีที่ผ่านมา</translation>
 <translation id="5032430150487044192">สร้างคิวอาร์โค้ดไม่ได้</translation>
 <translation id="5039804452771397117">อนุญาต</translation>
 <translation id="5040262127954254034">ความเป็นส่วนตัว</translation>
@@ -759,7 +758,7 @@
 <translation id="5054455334322721892">ระบบอาจบันทึก<ph name="BEGIN_LINK1" />กิจกรรมรูปแบบอื่น<ph name="END_LINK1" />ในบัญชี Google เมื่อคุณลงชื่อเข้าใช้ คุณลบข้อมูลนี้ได้ทุกเมื่อ</translation>
 <translation id="506254248375231072">ไม่มีแท็บ</translation>
 <translation id="5062960805900435602">การอัปเดตเกี่ยวกับการผสานรหัสผ่านปิดอยู่</translation>
-<translation id="5091199029769593641">เร็วๆ นี้คุณจะเห็นเรื่องราวจาก <ph name="SITE_NAME" /> เมื่อเปิดแท็บใหม่ ระบบจะบันทึกเว็บไซต์ที่คุณติดตามไว้ในบัญชี Google โดยคุณจัดการเว็บไซต์เหล่านี้ได้ในการตั้งค่า Discover</translation>
+<translation id="5091199029769593641">เร็วๆ นี้คุณจะเห็นเรื่องราวจาก <ph name="SITE_NAME" /> เมื่อเปิดแท็บใหม่ ระบบจะบันทึกเว็บไซต์ที่คุณติดตามไว้ในบัญชี Google โดยคุณจัดการเว็บไซต์เหล่านี้ได้ในการตั้งค่าของฟีเจอร์สำรวจ</translation>
 <translation id="5091249083535528968">ข้อมูลการใช้งานเพิ่มเติม</translation>
 <translation id="509429900233858213">มีข้อผิดพลาดเกิดขึ้น</translation>
 <translation id="5097349930204431044">เว็บไซต์ที่คุณเข้าชมจะสามารถระบุสิ่งที่คุณชอบ จากนั้นจะแนะนำโฆษณาในขณะที่คุณท่องเว็บต่อไป</translation>
@@ -770,7 +769,6 @@
 <translation id="5118713593561876160">ความสนใจ</translation>
 <translation id="5122378528687922675">โปรดขอความช่วยเหลือจากผู้ปกครอง (<ph name="PARENT_NAME_1" /> หรือ <ph name="PARENT_NAME_2" />) หากต้องการ</translation>
 <translation id="5123685120097942451">แท็บที่ไม่ระบุตัวตน</translation>
-<translation id="5126510351761255129">ยืนยันบัตร</translation>
 <translation id="5132942445612118989">ซิงค์รหัสผ่าน ประวัติการเข้าชม และอื่นๆ ในอุปกรณ์ทุกเครื่อง</translation>
 <translation id="5139940364318403933">ดูวิธีใช้ Google ไดรฟ์</translation>
 <translation id="5142281402488957685">สำหรับเรื่องราวใหม่ๆ ให้ดึงลงเพื่อรีเฟรช</translation>
@@ -874,7 +872,7 @@
 <translation id="5749237766298580851">ปิด <ph name="SEPARATOR" /> ไม่แนะนำ</translation>
 <translation id="5752232708629533680">แชร์ GIF เท่านั้น</translation>
 <translation id="5753139477036638699">คุณใช้เสียงเพื่อค้นหาใน Chrome ได้</translation>
-<translation id="5754350196967618083">รีเฟรช Discover ไม่ได้</translation>
+<translation id="5754350196967618083">รีเฟรชฟีดสำรวจไม่ได้</translation>
 <translation id="5755162682436943950">ออกจากระบบ เปิดกล่องโต้ตอบเพื่อลงชื่อเข้าใช้และเปิดการซิงค์</translation>
 <translation id="5763382633136178763">แท็บที่ไม่ระบุตัวตน</translation>
 <translation id="5763514718066511291">แตะเพื่อคัดลอก URL สำหรับแอปนี้</translation>
@@ -930,7 +928,6 @@
 <translation id="6011308810877101166">ปรับปรุงการแนะนำการค้นหา</translation>
 <translation id="6026538407078977628">ขยายเต็มหน้าจอ</translation>
 <translation id="6030719887161080597">จัดการข้อมูลที่เว็บไซต์ต่างๆ ใช้เพื่อวัดประสิทธิภาพโฆษณา</translation>
-<translation id="6034146297924778597">ระบบจะลบประวัติการเข้าชมจาก 15 นาทีที่ผ่านมา</translation>
 <translation id="6039379616847168523">ข้ามไปยังแท็บถัดไป</translation>
 <translation id="6040143037577758943">ปิด</translation>
 <translation id="604124094241169006">อัตโนมัติ</translation>
@@ -1033,7 +1030,7 @@
 <translation id="6560414384669816528">ค้นหาด้วย Sogou</translation>
 <translation id="656065428026159829">ดูเพิ่มเติม</translation>
 <translation id="6565959834589222080">ระบบจะใช้ Wi-Fi เมื่อพร้อมใช้งาน</translation>
-<translation id="6569373978618239158">ตอนนี้คุณจะเห็นเรื่องราวจาก <ph name="SITE_NAME" /> เมื่อเปิดแท็บใหม่ ระบบจะบันทึกเว็บไซต์ที่คุณติดตามไว้ในบัญชี Google โดยคุณจัดการเว็บไซต์เหล่านี้ได้ในการตั้งค่า Discover</translation>
+<translation id="6569373978618239158">ตอนนี้คุณจะเห็นเรื่องราวจาก <ph name="SITE_NAME" /> เมื่อเปิดแท็บใหม่ ระบบจะบันทึกเว็บไซต์ที่คุณติดตามไว้ในบัญชี Google โดยคุณจัดการเว็บไซต์เหล่านี้ได้ในการตั้งค่าของฟีเจอร์สำรวจ</translation>
 <translation id="6573096386450695060">อนุญาตเสมอ</translation>
 <translation id="6573431926118603307">แท็บที่คุณเปิดไว้ใน Chrome ในอุปกรณ์เครื่องอื่นๆ จะปรากฏที่นี่</translation>
 <translation id="6583199322650523874">บุ๊กมาร์กหน้าปัจจุบัน</translation>
@@ -1101,7 +1098,7 @@
 <translation id="6846298663435243399">กำลังโหลด…</translation>
 <translation id="6850409657436465440">ระบบยังดาวน์โหลดอยู่</translation>
 <translation id="6850830437481525139">ปิดแล้ว <ph name="TAB_COUNT" /> แท็บ</translation>
-<translation id="685850645784703949">Discover โดย Google - ปิดอยู่</translation>
+<translation id="685850645784703949">ฟีเจอร์สำรวจโดย Google - ปิดอยู่</translation>
 <translation id="686366188661646310">ลบรหัสผ่านไหม</translation>
 <translation id="6864459304226931083">ดาวน์โหลดรูปภาพ</translation>
 <translation id="6865313869410766144">ข้อมูลแบบฟอร์มที่ป้อนอัตโนมัติ</translation>
@@ -1190,7 +1187,7 @@
 <translation id="7332075081379534664">ลงชื่อเข้าใช้สำเร็จ</translation>
 <translation id="7333232495927792353">ซิงค์เพื่อรับเนื้อหาที่เกี่ยวข้องที่สุดจาก Google</translation>
 <translation id="7339898014177206373">หน้าต่างใหม่</translation>
-<translation id="7340958967809483333">ตัวเลือกสำหรับ Discover</translation>
+<translation id="7340958967809483333">ตัวเลือกสำหรับฟีดสำรวจ</translation>
 <translation id="7352339641508007922">ลากเพื่อถ่ายภาพหน้าจอแบบยาว</translation>
 <translation id="7352651011704765696">มีข้อผิดพลาดเกิดขึ้น</translation>
 <translation id="7352939065658542140">วิดีโอ</translation>
@@ -1222,7 +1219,7 @@
 <translation id="7479104141328977413">การจัดการแท็บ</translation>
 <translation id="7481312909269577407">ส่งต่อ</translation>
 <translation id="7482656565088326534">แท็บแสดงตัวอย่าง</translation>
-<translation id="7484997419527351112">Discover - ปิดอยู่</translation>
+<translation id="7484997419527351112">สำรวจ - ปิดอยู่</translation>
 <translation id="7485033510383818941">ดึงหน้าเว็บลงเพื่อรีเฟรชเนื้อหาฟีด</translation>
 <translation id="749294055653435199">Google Lens ไม่พร้อมใช้งานในอุปกรณ์นี้</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (อัปเดตเมื่อ <ph name="TIME_SINCE_UPDATE" />)</translation>
@@ -1372,6 +1369,7 @@
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />อุปกรณ์ของคุณ<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">ทำต่อ</translation>
 <translation id="8209050860603202033">เปิดรูปภาพ</translation>
+<translation id="8210770465353466621">คุณจะเห็นแท็บที่นี่</translation>
 <translation id="8215740705341534369">ชีตด้านข้าง</translation>
 <translation id="8218622182176210845">จัดการบัญชีของคุณ</translation>
 <translation id="8221401890884589479">คุณบล็อกเว็บไซต์ที่ไม่ต้องการได้ นอกจากนี้ Chrome จะลบข้อมูลเว็บไซต์ที่นานเกิน 30 วันออกจากรายการโดยอัตโนมัติ <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>

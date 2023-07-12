@@ -2666,8 +2666,8 @@ enum WebFeature {
   kHtmlClipboardApiWrite = 3363,
   kOBSOLETE_CSSSystemColorComputeToSelf = 3364,
   kConversionAPIAll = 3365,
-  kImpressionRegistration = 3366,
-  kConversionRegistration = 3367,
+  kOBSOLETE_ImpressionRegistration = 3366,
+  kOBSOLETE_ConversionRegistration = 3367,
   kWebSharePolicyAllow = 3368,
   kWebSharePolicyDisallow = 3369,
   kFormAssociatedCustomElement = 3370,
@@ -3935,6 +3935,9 @@ enum WebFeature {
   kTextWrapPrettyFail = 4595,
   kContainerQueryEvalUnknown = 4596,
   kEventTimingPresentationPromiseResolvedAfterReport = 4597,
+  kGetCoalescedEventsInInsecureContext = 4598,
+  kCSPEESameOriginBlanketEnforcement = 4599,
+  kV8Navigator_GetEnvironmentIntegrity_Method = 4600,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -311,6 +311,9 @@ bool UtilityProcessHost::StartProcess() {
       network::switches::kHostResolverRules,
       network::switches::kIgnoreCertificateErrorsSPKIList,
       network::switches::kIgnoreUrlFetcherCertRequests,
+      network::switches::kIPAnonymizationProxyAllowList,
+      network::switches::kIPAnonymizationProxyPassword,
+      network::switches::kIPAnonymizationProxyServer,
       network::switches::kLogNetLog,
       network::switches::kNetLogCaptureMode,
       network::switches::kTestThirdPartyCookiePhaseout,
@@ -388,8 +391,7 @@ bool UtilityProcessHost::StartProcess() {
       switches::kHardwareVideoDecodeFrameRate,
 #endif
     };
-    cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
-                               std::size(kSwitchNames));
+    cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames);
 
     network_session_configurator::CopyNetworkSwitches(browser_command_line,
                                                       cmd_line.get());

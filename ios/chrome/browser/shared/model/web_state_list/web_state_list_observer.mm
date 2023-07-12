@@ -12,9 +12,21 @@
 #error "This file requires ARC support."
 #endif
 
+WebStateListChangeSelectionOnly::WebStateListChangeSelectionOnly(
+    raw_ptr<web::WebState> selected_web_state)
+    : selected_web_state_(selected_web_state) {}
+
+WebStateListChange::Type WebStateListChangeSelectionOnly::type() const {
+  return kType;
+}
+
 WebStateListChangeDetach::WebStateListChangeDetach(
-    raw_ptr<web::WebState> detached_web_state)
-    : detached_web_state_(detached_web_state) {}
+    raw_ptr<web::WebState> detached_web_state,
+    bool is_closing,
+    bool is_user_action)
+    : detached_web_state_(detached_web_state),
+      is_closing_(is_closing),
+      is_user_action_(is_user_action) {}
 
 WebStateListChange::Type WebStateListChangeDetach::type() const {
   return kType;
@@ -55,19 +67,15 @@ WebStateListObserver::~WebStateListObserver() {
          "list before their destruction.";
 }
 
+void WebStateListObserver::WebStateListWillChange(
+    WebStateList* web_state_list,
+    const WebStateListChangeDetach& detach_change,
+    const WebStateSelection& selection) {}
+
 void WebStateListObserver::WebStateListDidChange(
     WebStateList* web_state_list,
     const WebStateListChange& change,
     const WebStateSelection& selection) {}
-
-void WebStateListObserver::WillDetachWebStateAt(WebStateList* web_state_list,
-                                                web::WebState* web_state,
-                                                int index) {}
-
-void WebStateListObserver::WillCloseWebStateAt(WebStateList* web_state_list,
-                                               web::WebState* web_state,
-                                               int index,
-                                               bool user_action) {}
 
 void WebStateListObserver::WebStateActivatedAt(
     WebStateList* web_state_list,
@@ -75,11 +83,6 @@ void WebStateListObserver::WebStateActivatedAt(
     web::WebState* new_web_state,
     int active_index,
     ActiveWebStateChangeReason reason) {}
-
-void WebStateListObserver::WebStatePinnedStateChanged(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index) {}
 
 void WebStateListObserver::WillBeginBatchOperation(
     WebStateList* web_state_list) {}

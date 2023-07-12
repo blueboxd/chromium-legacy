@@ -262,12 +262,22 @@ bool Action::InitFromEditor() {
   if (!touch_injector_) {
     return false;
   }
-  id_ = touch_injector_->GetNextActionID();
+  id_ = touch_injector_->GetNextNewActionID();
 
   InitPositions(original_positions_);
   InitPositions(current_positions_);
 
   return true;
+}
+
+void Action::InitFromAction(Action* action) {
+  id_ = action->id();
+  name_ = action->name();
+  original_positions_ = action->original_positions();
+  current_positions_ = action->current_positions();
+  current_position_idx_ = action->current_position_idx();
+  pending_position_ = std::move(action->pending_position_);
+  touch_down_positions_ = action->touch_down_positions();
 }
 
 bool IsInputBound(const InputElement& input_element) {

@@ -204,18 +204,17 @@ class CORE_EXPORT LayoutMultiColumnFlowThread final
     return column_count_;
   }
 
-  LayoutSize ColumnOffset(const LayoutPoint&) const final;
+  PhysicalOffset ColumnOffset(const PhysicalOffset&) const final;
 
   bool IsPageLogicalHeightKnown() const final;
 
-  LayoutSize FlowThreadTranslationAtOffset(LayoutUnit,
-                                           PageBoundaryRule,
-                                           CoordinateSpaceConversion) const;
-  LayoutSize FlowThreadTranslationAtPoint(const LayoutPoint& flow_thread_point,
-                                          CoordinateSpaceConversion) const;
+  PhysicalOffset FlowThreadTranslationAtOffset(LayoutUnit,
+                                               PageBoundaryRule,
+                                               CoordinateSpaceConversion) const;
+  PhysicalOffset FlowThreadTranslationAtPoint(
+      const PhysicalOffset& flow_thread_point,
+      CoordinateSpaceConversion) const;
 
-  LayoutPoint FlowThreadPointToVisualPoint(
-      const LayoutPoint& flow_thread_point) const final;
   PhysicalOffset VisualPointToFlowThreadPoint(
       const PhysicalOffset& visual_point) const final;
 
@@ -268,7 +267,7 @@ class CORE_EXPORT LayoutMultiColumnFlowThread final
   // "public" for |MakeGarbageCollected<T>|.
   explicit LayoutMultiColumnFlowThread();
 
-  LayoutPoint Location() const override;
+  LayoutPoint LocationInternal() const override;
   PhysicalSize Size() const override;
 
  private:

@@ -238,8 +238,7 @@ VideoConferenceTray::VideoConferenceTray(Shelf* shelf)
       std::make_unique<VideoConferenceTrayButton>(
           base::BindRepeating(&VideoConferenceTray::OnScreenShareButtonClicked,
                               weak_ptr_factory_.GetWeakPtr()),
-          &kPrivacyIndicatorsScreenShareIcon,
-          &kPrivacyIndicatorsScreenShareIcon,
+          &kVideoConferenceScreenShareIcon, &kVideoConferenceScreenShareIcon,
           VIDEO_CONFERENCE_TOGGLE_BUTTON_TYPE_SCREEN_SHARE));
   // Toggling screen share stops screen share, and removes the item.
   screen_share_icon_->set_toggle_is_one_way();
@@ -439,12 +438,10 @@ void VideoConferenceTray::OnAudioButtonClicked(const ui::Event& event) {
 }
 
 void VideoConferenceTray::OnScreenShareButtonClicked(const ui::Event& event) {
-  Shell::Get()
-      ->system_notification_controller()
-      ->screen_security_controller()
-      ->StopAllSessions(/*is_screen_access=*/true);
-
-  base::UmaHistogramBoolean(kStopScreenShareHistogramName, true);
+  if (features::IsStopAllScreenShareEnabled()) {
+    VideoConferenceTrayController::Get()->StopAllScreenShare();
+    base::UmaHistogramBoolean(kStopScreenShareHistogramName, true);
+  }
 }
 
 BEGIN_METADATA(VideoConferenceTray, TrayBackgroundView)

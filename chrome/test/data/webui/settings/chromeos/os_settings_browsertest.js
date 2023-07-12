@@ -194,10 +194,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  ['AppManagementToggleRow', 'app_management/toggle_row_test.js'],
  ['CellularNetworksList', 'cellular_networks_list_test.js'],
  ['CellularRoamingToggleButton', 'cellular_roaming_toggle_button_test.js'],
- [
-   'CupsPrinterPage', 'cups_printer_page_tests.js',
-   {enabled: ['ash::features::kPrinterSettingsRevamp']}
- ],
  ['DateTimePage', 'date_time_page/date_time_page_test.js'],
  ['DateTimePageTimezoneSelector', 'date_time_page/timezone_selector_test.js'],
  ['DateTimePageTimezoneSubpage', 'date_time_page/timezone_subpage_test.js'],
@@ -239,8 +235,12 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  ],
  [
    'DevicePagePerDeviceMouseSubsection',
-   'device_page/per_device_mouse_subsection_test.js',
-   {enabled: ['ash::features::kInputDeviceSettingsSplit']}
+   'device_page/per_device_mouse_subsection_test.js', {
+     enabled: [
+       'ash::features::kInputDeviceSettingsSplit',
+       'ash::features::kPeripheralCustomization',
+     ]
+   }
  ],
  [
    'DevicePagePerDevicePointingStick',
@@ -267,7 +267,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  ['EsimRenameDialog', 'esim_rename_dialog_test.js'],
  ['GuestOsSharedPaths', 'guest_os/guest_os_shared_paths_test.js'],
  ['GuestOsSharedUsbDevices', 'guest_os/guest_os_shared_usb_devices_test.js'],
- ['InputPage', 'input_page_test.js'],
  ['InternetDetailMenu', 'internet_detail_menu_test.js'],
  [
    'InternetKnownNetworksSubpage', 'internet_known_networks_subpage_tests.js', {
@@ -381,7 +380,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
      ],
    },
  ],
- ['ManageUsersSubpage', 'manage_users_subpage_tests.js'],
  // TODO(b/208932892): Re-enable once flakiness is fixed.
  // ['MultideviceFeatureItem', 'multidevice_feature_item_tests.js'],
  ['MultidevicePage', 'multidevice_page/multidevice_page_tests.js'],
@@ -585,6 +583,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'OsLanguagesPageInputMethodOptionsPage',
    'os_languages_page/input_method_options_page_test.js'
  ],
+ ['OsLanguagesPageInputPage', 'os_languages_page/input_page_test.js'],
  [
    'OsLanguagesPageOsClearPersonalizationDataPage',
    'os_languages_page/os_clear_personalization_data_page_test.js'
@@ -614,6 +613,11 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    {enabled: ['ash::features::kPrinterSettingsPrinterStatus']}
  ],
  [
+   'OsPrintingPageCupsPrinterPage',
+   'os_printing_page/cups_printer_page_test.js',
+   {enabled: ['ash::features::kPrinterSettingsRevamp']}
+ ],
+ [
    'OsPrintingPageCupsPrintersEntry',
    'os_printing_page/cups_printers_entry_test.js', {
      enabled: [
@@ -627,6 +631,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'os_printing_page/printer_status_test.js',
  ],
  ['OsPrivacyPage', 'os_privacy_page/os_privacy_page_test.js'],
+ [
+   'OsPrivacyPageManageUsersSubpage',
+   'os_privacy_page/manage_users_subpage_test.js'
+ ],
  [
    'OsPrivacyPagePrivacyHubSubpage',
    'os_privacy_page/privacy_hub_subpage_test.js',
@@ -658,6 +666,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  [
    'OsSettingsUiPageVisibility',
    'os_settings_ui/os_settings_ui_page_visibility_test.js',
+ ],
+ [
+   'OsSettingsUiScrollRestoration',
+   'os_settings_ui/scroll_restoration_test.js',
  ],
  ['OsSettingsUiToolbar', 'os_settings_ui/os_settings_ui_toolbar_test.js'],
  [

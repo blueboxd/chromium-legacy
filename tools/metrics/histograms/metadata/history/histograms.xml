@@ -185,6 +185,7 @@ chromium-metrics-reviews@google.com.
     <variant name="HttpAuthCache" summary="HttpAuthCache"/>
     <variant name="KeywordsModel" summary="KeywordsModel"/>
     <variant name="LegacyStrikes" summary="LegacyStrikes"/>
+    <variant name="MediaDeviceSalts" summary="MediaDeviceSalts"/>
     <variant name="MediaFeeds" summary="MediaFeeds"/>
     <variant name="NaclCache" summary="NaclCache"/>
     <variant name="NetworkErrorLogging" summary="NetworkErrorLogging"/>
@@ -861,7 +862,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="History.Clusters.Backend.FilterClusterProcessor.ClusterFilterReason{Source}"
-    enum="ClusterFilterReason" expires_after="2023-08-08">
+    enum="ClusterFilterReason" expires_after="2023-12-10">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;Journeys</component>
@@ -876,7 +877,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="History.Clusters.Backend.FilterClusterProcessor.NumClusters.{Segment}{Source}"
-    units="counts" expires_after="2023-08-08">
+    units="counts" expires_after="2023-12-10">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;Journeys</component>
@@ -1933,7 +1934,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.DatabaseFileMB" units="MB" expires_after="2023-11-05">
+<histogram name="History.DatabaseFileMB" units="MB" expires_after="2024-01-07">
   <owner>sophiechang@chromium.org</owner>
   <owner>tommycli@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
@@ -1946,7 +1947,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.DatabaseForeignVisitMetricsTime" units="ms"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>sophiechang@chromium.org</owner>
   <owner>tommycli@chromium.org</owner>
   <owner>treib@chromium.org</owner>
@@ -2320,7 +2321,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.InMemoryDBItemCount" units="typed URLs"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>sky@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -2357,7 +2358,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.InMemoryURLIndexingTime.RoundTripTime" units="ms"
-    expires_after="2023-08-20">
+    expires_after="2023-12-17">
   <owner>tommycli@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>

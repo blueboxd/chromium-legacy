@@ -4,22 +4,19 @@
 
 #include "third_party/blink/renderer/core/dom/child_node_part.h"
 
+#include "third_party/blink/renderer/core/dom/node_cloning_data.h"
+
 namespace blink {
 
 // static
-ChildNodePart* ChildNodePart::Create(PartRoot* root,
+ChildNodePart* ChildNodePart::Create(PartRootUnion* root_union,
                                      Node* previous_sibling,
                                      Node* next_sibling,
                                      const NodePartInit* init,
                                      ExceptionState& exception_state) {
-  if (!root->SupportsContainedParts()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "The provided PartRoot does not support contained parts");
-    return nullptr;
-  }
-  return MakeGarbageCollected<ChildNodePart>(*root, *previous_sibling,
-                                             *next_sibling, init);
+  return MakeGarbageCollected<ChildNodePart>(*GetPartRootFromUnion(root_union),
+                                             *previous_sibling, *next_sibling,
+                                             init);
 }
 
 // TODO(crbug.com/1453291): Handle the init parameter.
@@ -52,19 +49,35 @@ void ChildNodePart::disconnect() {
   Part::disconnect();
 }
 
+PartRootUnion* ChildNodePart::clone() const {
+  // TODO(crbug.com/1453291) Implement ChildNodePart cloning.
+  // NodeCloningData data{CloneOption::kIncludeChildren,
+  //                      CloneOption::kPreserveDOMParts};
+  // Node* clone = rootContainer()->Clone(GetDocument(), data);
+  return nullptr;
+}
+
 void ChildNodePart::Trace(Visitor* visitor) const {
   visitor->Trace(previous_sibling_);
   visitor->Trace(next_sibling_);
+  PartRoot::Trace(visitor);
   Part::Trace(visitor);
 }
 
 // A ChildNodePart is valid if:
-//  1. previous_sibling_ is connected to the document.
-//  2. previous_sibling_ and next_sibling_ have the same (non-null) parent.
-//  3. previous_sibling_ does not come after next_sibling_ in the tree.
-bool ChildNodePart::IsValid() {
+//  1. The base |Part| is valid (it has a |root|).
+//  2. previous_sibling_ and next_sibling_ are non-null.
+//  3. previous_sibling_ and next_sibling_ have the same (non-null) parent.
+//  4. previous_sibling_ does not come after next_sibling_ in the tree.
+bool ChildNodePart::IsValid() const {
+  if (!Part::IsValid()) {
+    return false;
+  }
+  if (!previous_sibling_ || !next_sibling_) {
+    return false;
+  }
   ContainerNode* parent = previous_sibling_->parentNode();
-  if (!parent || !parent->isConnected()) {
+  if (!parent) {
     return false;
   }
   if (next_sibling_->parentNode() != parent) {
@@ -84,8 +97,25 @@ Node* ChildNodePart::NodeToSortBy() const {
   return previous_sibling_->parentNode();
 }
 
-Document* ChildNodePart::GetDocument() const {
-  return &previous_sibling_->GetDocument();
+ContainerNode* ChildNodePart::rootContainer() const {
+  CHECK(IsValid());
+  return previous_sibling_->parentNode();
+}
+
+void ChildNodePart::Clone(NodeCloningData& data) const {
+  CHECK(IsValid());
+  PartRoot* new_part_root = data.ClonedPartRootFor(*root());
+  Node* new_previous = data.ClonedNodeFor(*previous_sibling_);
+  Node* new_next = data.ClonedNodeFor(*next_sibling_);
+  CHECK(new_part_root && new_previous && new_next);
+  data.ConnectPartRootToClone(
+      *this, *MakeGarbageCollected<ChildNodePart>(*new_part_root, *new_previous,
+                                                  *new_next));
+}
+
+Document& ChildNodePart::GetDocument() const {
+  CHECK(IsValid());
+  return previous_sibling_->GetDocument();
 }
 
 }  // namespace blink

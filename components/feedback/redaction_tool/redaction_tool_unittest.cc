@@ -8,7 +8,10 @@
 #include <set>
 #include <utility>
 
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "build/chromeos_buildflags.h"
 #include "components/feedback/redaction_tool/metrics_tester.h"
@@ -243,6 +246,12 @@ const StringWithRedaction kStringsWithRedactions[] = {
     // Random data before and after a valid IBAN shouldn't match.
     {"base64DataGB82-WEST-1234-5698-7654-32+base64Data",
      "base64DataGB82-WEST-1234-5698-7654-32+base64Data", PIIType::kNone},
+    // Redacted Crash IDs.
+    {"Crash report receipt ID 153c963587d8d8d4",
+     "Crash report receipt ID (Crash ID: 1)", PIIType::kCrashId},
+    {"with prefixCrash report receipt ID 153C963587D8D8D4b with trailing text",
+     "with prefixCrash report receipt ID (Crash ID: 2) with trailing text",
+     PIIType::kCrashId},
 #if BUILDFLAG(IS_CHROMEOS_ASH)  // We only redact Android paths on Chrome OS.
     // Allowed android storage path.
     {"112K\t/home/root/deadbeef1234/android-data/data/system_de",
@@ -655,6 +664,10 @@ TEST_F(RedactionToolTest, RedactChunk) {
   ExpectBucketCount(kCreditCardRedactionHistogram, kRepeatedChars, 0);
   ExpectBucketCount(kCreditCardRedactionHistogram, kDoesntValidate, 0);
   ExpectBucketCount(kCreditCardRedactionHistogram, kValidated, 0);
+  EXPECT_EQ(metrics_tester_->GetNumBucketEntries(
+                RedactionToolMetricsRecorder::
+                    GetTimeSpentRedactingHistogramNameForTesting()),
+            0u);
 
   for (int enum_int = static_cast<int>(PIIType::kNone) + 1;
        enum_int <= static_cast<int>(PIIType::kMaxValue); ++enum_int) {
@@ -691,6 +704,10 @@ TEST_F(RedactionToolTest, RedactChunk) {
   ExpectBucketCount(kCreditCardRedactionHistogram, kRepeatedChars, 1);
   ExpectBucketCount(kCreditCardRedactionHistogram, kDoesntValidate, 8);
   ExpectBucketCount(kCreditCardRedactionHistogram, kValidated, 5);
+  EXPECT_EQ(metrics_tester_->GetNumBucketEntries(
+                RedactionToolMetricsRecorder::
+                    GetTimeSpentRedactingHistogramNameForTesting()),
+            1u);
 }
 
 TEST_F(RedactionToolTest, RedactAndKeepSelected) {
@@ -852,9 +869,10 @@ TEST_F(RedactionToolTest, DetectPII) {
          }},
         {PIIType::kCreditCard,
          {"4012888888881881", "5019717010103742", "5019717010103742787"}},
+        {PIIType::kIBAN, {"GB82WEST12345698765432", "GB33BUKB20201555555555"}},
     {
-      PIIType::kIBAN, {
-        "GB82WEST12345698765432", "GB33BUKB20201555555555"
+      PIIType::kCrashId, {
+        "153c963587d8d8d4", "153C963587D8D8D4b"
       }
     }
   };
@@ -913,7 +931,32 @@ TEST_F(RedactionToolTest, RedactAndroidAppStoragePaths) {
       "key=value exe=/data/app/pack.age1/b_ key=value\n";
   EXPECT_EQ(kDuOutputRedacted, RedactAndroidAppStoragePaths(kDuOutput));
 }
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if !BUILDFLAG(IS_IOS)
+// TODO(xiangdongkong): Make the test work on IOS builds. Current issue: the
+// test files do not exist.
+//
+// Redact the text in the input file "test_data/test_logs.txt".
+// The expected output is from "test_data/test_logs_redacted.txt".
+TEST_F(RedactionToolTest, RedactTextFileContent) {
+  base::FilePath base_path;
+  base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &base_path);
+  base_path = base_path.AppendASCII("components/feedback/redaction_tool")
+                  .AppendASCII("test_data");
+
+  std::string text_to_be_redacted;
+  std::string text_redacted;
+  ASSERT_TRUE(base::ReadFileToString(base_path.AppendASCII("test_logs.txt"),
+                                     &text_to_be_redacted));
+  ASSERT_TRUE(base::ReadFileToString(
+      base_path.AppendASCII("test_logs_redacted.txt"), &text_redacted));
+
+  EXPECT_EQ(text_redacted, redactor_.Redact(text_to_be_redacted));
+}
+
+#endif  // !BUILDFLAG(IS_IOS)
 
 TEST_F(RedactionToolTest, RedactBlockDevices) {
   // Test cases in the form {input, output}.

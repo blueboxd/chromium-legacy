@@ -49,7 +49,8 @@ class MediaAuthorizationWrapperImpl final : public MediaAuthorizationWrapper {
 
   ~MediaAuthorizationWrapperImpl() override = default;
 
-  NSInteger AuthorizationStatusForMediaType(AVMediaType media_type) override {
+  AVAuthorizationStatus AuthorizationStatusForMediaType(
+      AVMediaType media_type) override {
     if (@available(macOS 10.14, *)) {
       return [AVCaptureDevice authorizationStatusForMediaType:media_type];
     } else {
@@ -84,7 +85,7 @@ MediaAuthorizationWrapper& GetMediaAuthorizationWrapper() {
   return *media_authorization_wrapper;
 }
 
-NSInteger MediaAuthorizationStatus(AVMediaType media_type) {
+AVAuthorizationStatus MediaAuthorizationStatus(AVMediaType media_type) {
   if (@available(macOS 10.14, *)) {
     return GetMediaAuthorizationWrapper().AuthorizationStatusForMediaType(
         media_type);
@@ -99,7 +100,7 @@ SystemPermission CheckSystemMediaCapturePermission(AVMediaType media_type) {
     return SystemPermission::kAllowed;
 
   if (@available(macOS 10.14, *)) {
-    NSInteger auth_status = MediaAuthorizationStatus(media_type);
+    AVAuthorizationStatus auth_status = MediaAuthorizationStatus(media_type);
     switch (auth_status) {
       case AVAuthorizationStatusNotDetermined:
         return SystemPermission::kNotDetermined;

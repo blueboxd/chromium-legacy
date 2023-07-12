@@ -327,6 +327,15 @@ void LayoutText::SetFirstInlineFragmentItemIndex(wtf_size_t index) {
   // TODO(yosin): Call |NGAbstractInlineTextBox::WillDestroy()|.
   DCHECK_NE(index, 0u);
   DetachAbstractInlineTextBoxesIfNeeded();
+  // Changing the first fragment item index causes
+  // LayoutText::FirstAbstractInlineTextBox to return a box,
+  // so notify the AX object for this LayoutText that it might need to
+  // recompute its text child.
+  if (index > 0 && first_fragment_item_index_ == 0) {
+    if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
+      cache->TextChanged(this);
+    }
+  }
   first_fragment_item_index_ = index;
 }
 
@@ -388,10 +397,8 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
         const unsigned box_length = clamped_end - clamped_start;
 
         // Compute rect of the legacy text box.
-        LayoutRect rect =
-            cursor.CurrentLocalRect(clamped_start, clamped_end).ToLayoutRect();
-        rect.MoveBy(
-            cursor.Current().OffsetInContainerFragment().ToLayoutPoint());
+        PhysicalRect rect = cursor.CurrentLocalRect(clamped_start, clamped_end);
+        rect.offset += cursor.Current().OffsetInContainerFragment();
 
         // Compute start of the legacy text box.
         if (unit.AssociatedNode()) {

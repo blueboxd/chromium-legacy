@@ -147,7 +147,9 @@ export interface OsSettingsRoutes extends MinimumRoutes {
   BRUSCHETTA_SHARED_USB_DEVICES: Route;
   BRUSCHETTA_SHARED_PATHS: Route;
   CHANGE_PICTURE: Route;
+  CUSTOMIZE_TABLET_BUTTONS: Route;
   CUPS_PRINTERS: Route;
+  CUSTOMIZE_MOUSE_BUTTONS: Route;
   DARK_MODE: Route;
   DATETIME: Route;
   DATETIME_TIMEZONE_SUBPAGE: Route;
@@ -359,6 +361,14 @@ export function createRoutes(): OsSettingsRoutes {
     r.GRAPHICS_TABLET = createSubpage(
         r.DEVICE, routesMojom.GRAPHICS_TABLET_SUBPAGE_PATH,
         Subpage.kGraphicsTablet);
+    if (r.PER_DEVICE_MOUSE) {
+      r.CUSTOMIZE_MOUSE_BUTTONS = createSubpage(
+          r.PER_DEVICE_MOUSE, routesMojom.CUSTOMIZE_MOUSE_BUTTONS_SUBPAGE_PATH,
+          Subpage.kCustomizeMouseButtons);
+    }
+    r.CUSTOMIZE_TABLET_BUTTONS = createSubpage(
+        r.GRAPHICS_TABLET, routesMojom.CUSTOMIZE_TABLET_BUTTONS_SUBPAGE_PATH,
+        Subpage.kCustomizeTabletButtons);
   }
   r.STORAGE = createSubpage(
       r.DEVICE, routesMojom.STORAGE_SUBPAGE_PATH, Subpage.kStorage);

@@ -5,8 +5,6 @@
 #ifndef CONTENT_APP_SHIM_REMOTE_COCOA_WEB_DRAG_SOURCE_MAC_H_
 #define CONTENT_APP_SHIM_REMOTE_COCOA_WEB_DRAG_SOURCE_MAC_H_
 
-#include "base/memory/raw_ptr.h"
-
 #import <Cocoa/Cocoa.h>
 
 #include <memory>
@@ -14,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/raw_ptr.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 

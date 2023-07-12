@@ -20,7 +20,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -55,7 +55,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -92,7 +92,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -127,7 +127,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -167,7 +167,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -205,7 +205,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -245,7 +245,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -281,7 +281,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -323,7 +323,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -358,7 +358,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -393,7 +393,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -428,7 +428,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -463,7 +463,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -499,7 +499,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -534,7 +534,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -569,7 +569,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -618,7 +618,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -655,7 +655,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -691,7 +691,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -726,7 +726,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -761,7 +761,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -798,7 +798,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -833,7 +833,42 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
+              "pool": "chrome.tests"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "cros_vm",
+              "path": "magic_cros_vm_cache"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "cros_vm"
+              }
+            ]
+          },
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "rust_gtest_interop_unittests",
+        "test_id_prefix": "ninja://testing/rust_gtest_interop:rust_gtest_interop_unittests/"
+      },
+      {
+        "args": [
+          "--magic-vm-cache=magic_cros_vm_cache"
+        ],
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "dimension_sets": [
+            {
+              "cpu": "x86",
+              "gce": "1",
+              "kvm": "1",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -868,7 +903,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -911,7 +946,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -959,7 +994,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -1006,7 +1041,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -1137,7 +1172,7 @@
       {
         "autotest_name": "tast.chrome-from-tls",
         "cros_board": "brya",
-        "cros_img": "brya-release/R117-15511.0.0",
+        "cros_img": "brya-release/R117-15519.0.0",
         "name": "chrome_all_tast_tests BRYA_RELEASE_LKGM",
         "shards": 10,
         "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !informational)",
@@ -1150,7 +1185,7 @@
       {
         "autotest_name": "tast.chrome-from-tls",
         "cros_board": "brya",
-        "cros_img": "brya-release/R117-15511.0.0",
+        "cros_img": "brya-release/R117-15519.0.0",
         "experiment_percentage": 100,
         "name": "chrome_criticalstaging_tast_tests BRYA_RELEASE_LKGM",
         "shards": 10,
@@ -1158,6 +1193,19 @@
         "test": "chrome_criticalstaging_tast_tests",
         "test_id_prefix": "ninja://chromeos:chrome_criticalstaging_tast_tests/",
         "test_level_retries": 2,
+        "timeout_sec": 7200,
+        "variant_id": "BRYA_RELEASE_LKGM"
+      },
+      {
+        "autotest_name": "tast.chrome-from-tls",
+        "cros_board": "brya",
+        "cros_img": "brya-release/R117-15519.0.0",
+        "experiment_percentage": 100,
+        "name": "chrome_disabled_tast_tests BRYA_RELEASE_LKGM",
+        "shards": 10,
+        "test": "chrome_disabled_tast_tests",
+        "test_id_prefix": "ninja://chromeos:chrome_disabled_tast_tests/",
+        "test_level_retries": 1,
         "timeout_sec": 7200,
         "variant_id": "BRYA_RELEASE_LKGM"
       }
@@ -1173,7 +1221,7 @@
       {
         "autotest_name": "tast.chrome-from-tls",
         "cros_board": "jacuzzi",
-        "cros_img": "jacuzzi-release/R117-15511.0.0",
+        "cros_img": "jacuzzi-release/R117-15519.0.0",
         "name": "chrome_all_tast_tests JACUZZI_RELEASE_CHROME_FROM_TLS_LKGM",
         "shards": 10,
         "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !informational)",
@@ -1195,7 +1243,7 @@
       {
         "autotest_name": "tast.chrome-from-tls",
         "cros_board": "kevin",
-        "cros_img": "kevin-release/R117-15511.0.0",
+        "cros_img": "kevin-release/R117-15519.0.0",
         "name": "chrome_all_tast_tests CROS_KEVIN_RELEASE_CHROME_FROM_TLS_LKGM",
         "shards": 10,
         "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !informational)",
@@ -1217,7 +1265,7 @@
       {
         "autotest_name": "tast.chrome-from-tls",
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R117-15511.0.0",
+        "cros_img": "octopus-release/R117-15519.0.0",
         "name": "chrome_all_tast_tests OCTOPUS_RELEASE_CHROME_FROM_TLS_LKGM",
         "shards": 10,
         "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !informational)",
@@ -1234,12 +1282,14 @@
       "chrome",
       "linux_symbols",
       "symupload"
-    ],
+    ]
+  },
+  "chromeos-trogdor-chrome-skylab-tests-fyi": {
     "skylab_tests": [
       {
         "autotest_name": "tast.chrome-from-tls",
         "cros_board": "trogdor",
-        "cros_img": "trogdor-release/R117-15511.0.0",
+        "cros_img": "trogdor-release/R117-15519.0.0",
         "name": "chrome_all_tast_tests TROGDOR_RELEASE_LKGM",
         "shards": 10,
         "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !informational)",
@@ -1261,7 +1311,7 @@
       {
         "autotest_name": "tast.chrome-from-tls",
         "cros_board": "volteer",
-        "cros_img": "volteer-release/R117-15511.0.0",
+        "cros_img": "volteer-release/R117-15519.0.0",
         "name": "chrome_all_tast_tests VOLTEER_RELEASE_LKGM",
         "shards": 10,
         "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !informational)",

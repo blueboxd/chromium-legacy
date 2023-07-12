@@ -44,7 +44,7 @@ std::unique_ptr<ImageDecoder> CreatePNGDecoder(
     ImageDecoder::AlphaOption alpha_option) {
   return std::make_unique<PNGImageDecoder>(
       alpha_option, ImageDecoder::kDefaultBitDepth,
-      ColorBehavior::TransformToSRGB(), ImageDecoder::kNoDecodedImageByteLimit);
+      ColorBehavior::kTransformToSRGB, ImageDecoder::kNoDecodedImageByteLimit);
 }
 
 std::unique_ptr<ImageDecoder> CreatePNGDecoder() {
@@ -54,7 +54,7 @@ std::unique_ptr<ImageDecoder> CreatePNGDecoder() {
 std::unique_ptr<ImageDecoder> Create16BitPNGDecoder() {
   return std::make_unique<PNGImageDecoder>(
       ImageDecoder::kAlphaNotPremultiplied,
-      ImageDecoder::kHighBitDepthToHalfFloat, ColorBehavior::Tag(),
+      ImageDecoder::kHighBitDepthToHalfFloat, ColorBehavior::kTag,
       ImageDecoder::kNoDecodedImageByteLimit);
 }
 
@@ -484,8 +484,9 @@ TEST(AnimatedPNGTests, ActlErrors) {
     for (size_t times = 0; times < 2; times++) {
       scoped_refptr<SharedBuffer> extra_actl_data =
           SharedBuffer::Create(data2->Data(), kPostIDATOffset);
-      for (size_t i = 0; i < times; i++)
+      for (size_t i = 0; i < times; i++) {
         extra_actl_data->Append(ac_tl, kAcTLSize);
+      }
       extra_actl_data->Append(data2->Data() + kPostIDATOffset,
                               data2->size() - kPostIDATOffset);
 
@@ -1027,7 +1028,7 @@ TEST(AnimatedPNGTests, Offset) {
   // non-zero offset.
   auto decoder = std::make_unique<PNGImageDecoder>(
       ImageDecoder::kAlphaNotPremultiplied, ImageDecoder::kDefaultBitDepth,
-      ColorBehavior::TransformToSRGB(), ImageDecoder::kNoDecodedImageByteLimit,
+      ColorBehavior::kTransformToSRGB, ImageDecoder::kNoDecodedImageByteLimit,
       kOffset);
   decoder->SetData(data, true);
   ASSERT_EQ(kExpectedFrameCount, decoder->FrameCount());
@@ -1450,17 +1451,19 @@ TEST(PNGTests, VerifyFrameCompleteBehavior) {
     // With full data, parsing the size still does not mark a frame as
     // complete for animated images.
     EXPECT_TRUE(decoder->IsSizeAvailable());
-    if (rec.expected_frame_count > 1)
+    if (rec.expected_frame_count > 1) {
       EXPECT_FALSE(decoder->FrameIsReceivedAtIndex(0));
-    else
+    } else {
       EXPECT_TRUE(decoder->FrameIsReceivedAtIndex(0));
+    }
 
     const auto frame_count = decoder->FrameCount();
     ASSERT_EQ(rec.expected_frame_count, frame_count);
 
     // After parsing (the full file), all frames are complete.
-    for (size_t i = 0; i < frame_count; ++i)
+    for (size_t i = 0; i < frame_count; ++i) {
       EXPECT_TRUE(decoder->FrameIsReceivedAtIndex(i));
+    }
 
     frame = decoder->DecodeFrameBufferAtIndex(0);
     ASSERT_TRUE(frame);

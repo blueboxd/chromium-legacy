@@ -23,6 +23,7 @@
 #import "components/sync_device_info/device_info_sync_service.h"
 #import "components/sync_device_info/device_info_tracker.h"
 #import "components/sync_device_info/local_device_info_provider.h"
+#import "components/sync_preferences/pref_service_syncable.h"
 #import "ios/chrome/browser/bookmarks/account_bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/account_bookmark_sync_service_factory.h"
 #import "ios/chrome/browser/bookmarks/bookmark_undo_service_factory.h"
@@ -32,6 +33,7 @@
 #import "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
 #import "ios/chrome/browser/history/history_service_factory.h"
+#import "ios/chrome/browser/metrics/google_groups_updater_service_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_account_password_store_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
@@ -104,6 +106,9 @@ SyncServiceFactory::SyncServiceFactory()
   DependsOn(ChromeAccountManagerServiceFactory::GetInstance());
   DependsOn(ConsentAuditorFactory::GetInstance());
   DependsOn(DeviceInfoSyncServiceFactory::GetInstance());
+  // Sync needs this service to still be present when the sync engine is
+  // disabled, so that preferences can be cleared.
+  DependsOn(GoogleGroupsUpdaterServiceFactory::GetInstance());
   DependsOn(ios::AboutSigninInternalsFactory::GetInstance());
   DependsOn(ios::AccountBookmarkModelFactory::GetInstance());
   DependsOn(ios::AccountBookmarkSyncServiceFactory::GetInstance());
@@ -190,6 +195,11 @@ std::unique_ptr<KeyedService> SyncServiceFactory::BuildServiceInstanceFor(
           device_info_sync_service->GetLocalDeviceInfoProvider());
     }
   }
+
+  // Allow sync_preferences/ components to use SyncService.
+  sync_preferences::PrefServiceSyncable* pref_service =
+      browser_state->GetSyncablePrefs();
+  pref_service->OnSyncServiceInitialized(sync_service.get());
 
   return sync_service;
 }

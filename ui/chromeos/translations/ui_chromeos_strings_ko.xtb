@@ -37,11 +37,11 @@
 <translation id="1297922636971898492">현재 Google Drive를 사용할 수 없습니다. Google Drive를 다시 사용할 수 있게 되면 자동으로 업로드가 다시 시작됩니다.</translation>
 <translation id="1307931752636661898">Linux 파일을 볼 수 없음</translation>
 <translation id="1313405956111467313">자동 프록시 설정</translation>
+<translation id="134645005685694099">기기의 저장공간이 부족하여 파일 동기화를 사용 설정할 수 없습니다. 새 파일이 더 이상 자동으로 동기화되지 않습니다.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
 <translation id="1358735829858566124">파일 또는 디렉터리를 사용할 수 없습니다.</translation>
 <translation id="1363028406613469049">트랙</translation>
 <translation id="1378727793141957596">Google Drive에 오신 것을 환영합니다.</translation>
-<translation id="1379156577998569384">오프라인 상태에서 내 드라이브 파일을 사용할 수 있습니다.</translation>
 <translation id="1379911846207762492">파일을 오프라인에서 사용하도록 설정하면 인터넷에 연결되어 있지 않을 때도 액세스할 수 있습니다.</translation>
 <translation id="1383876407941801731">검색</translation>
 <translation id="1388045380422025115">모든 유형</translation>
@@ -131,7 +131,6 @@
 <translation id="2084108471225856927">기기 설정</translation>
 <translation id="2084809735218147718">고맙다는 노래를 부르는 사람</translation>
 <translation id="2088690981887365033">VPN 네트워크</translation>
-<translation id="2089751716171649322">오프라인 상태에서도 손쉽게 Google Drive 파일에 액세스</translation>
 <translation id="2111134541987263231"><ph name="BEGIN_BOLD" />시크릿 모드에서 허용<ph name="END_BOLD" />을 사용 설정합니다.</translation>
 <translation id="2114191879048183086">항목 <ph name="NUMBER_OF_ITEMS" />개가 삭제되며 복원할 수 없습니다.</translation>
 <translation id="2122305276694332719">숨겨진 네트워크에 자동 연결하면 다른 사용자가 내 기기 및 일부 네트워크 설정을 볼 수 있으므로 권장되지 않습니다.</translation>
@@ -182,6 +181,7 @@
 <translation id="2464089476039395325">HTTP 프록시</translation>
 <translation id="2467267713099745100"><ph name="NETWORK_TYPE" /> 네트워크, 연결 없음</translation>
 <translation id="2468402215065996499">다마고치</translation>
+<translation id="2468470447085858632">파일 동기화를 사용해 오프라인에서 Google Drive 파일에 액세스</translation>
 <translation id="2470939964922472929">잘못된 PIN을 너무 여러 번 입력했습니다. 새 PIN을 설정하려면 이동통신사에서 제공한 8자리 PUK(Personal Unblocking Key)를 입력하세요.</translation>
 <translation id="2500392669976258912">구자라트어(표음)</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -351,12 +351,12 @@
 <translation id="3855472144336161447">독일어 Neo 2</translation>
 <translation id="3858860766373142691">이름</translation>
 <translation id="3866249974567520381">설명</translation>
-<translation id="3866439285517092441">배터리가 부족합니다 전원에 연결되면 동기화가 재개됩니다.</translation>
 <translation id="3899991606604168269">프랑스어(캐나다, 다국어 키보드)</translation>
 <translation id="3901991538546252627"><ph name="NAME" />에 연결 중</translation>
 <translation id="3906232975181435906">모바일 프로필 설치 중, 네트워크 <ph name="NETWORK_COUNT" />개 중 <ph name="NETWORK_INDEX" />번째, <ph name="NETWORK_NAME" /></translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">붙여넣기</translation>
+<translation id="3950820424414687140">로그인</translation>
 <translation id="3952872973865944257">텔루구어(표음)</translation>
 <translation id="3958548648197196644">키위</translation>
 <translation id="397105322502079400">계산 중...</translation>
@@ -578,12 +578,10 @@
 <translation id="5494920125229734069">모두 선택</translation>
 <translation id="5500122897333236901">아이슬란드어</translation>
 <translation id="5508696409934741614">점</translation>
-<translation id="5519161320735100193">Google Drive 설정</translation>
 <translation id="5522908512596376669">파일 목록을 목록 보기로 변경했습니다.</translation>
 <translation id="5524517123096967210">파일을 읽지 못했습니다.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> 이미지</translation>
 <translation id="5534520101572674276">크기를 계산하는 중</translation>
-<translation id="5536122250858122375">동기화할 수 없는 파일 형식입니다.</translation>
 <translation id="554153475311314364">그리스어(음역)</translation>
 <translation id="5554171655917412781"><ph name="SELECTED_FOLDERS_COUNT" />개의 폴더가 선택됨</translation>
 <translation id="5580591966435005537">가상 머신</translation>
@@ -607,6 +605,7 @@
 <translation id="5720028165859493293"><ph name="FILE_NAME" /> 파일을 휴지통으로 이동함</translation>
 <translation id="5724172041621205163">태국어(파타초테 키보드)</translation>
 <translation id="57383366388012121">지난달</translation>
+<translation id="575175778971367197">지금은 이 파일을 동기화할 수 없습니다.</translation>
 <translation id="5756666464756035725">헝가리어 QWERTY</translation>
 <translation id="5760252553414789727"><ph name="SELECTED_FILES_COUNT" />개의 항목이 선택됨</translation>
 <translation id="5763377084591234761">독일어(스위스)</translation>
@@ -709,6 +708,7 @@
 <translation id="6558280019477628686">오류가 발생했습니다. 일부 항목이 삭제되지 않았을 수 있습니다.</translation>
 <translation id="656398493051028875">'<ph name="FILENAME" />' 삭제 중...</translation>
 <translation id="6581162200855843583">Google Drive 링크</translation>
+<translation id="6588648400954570689">파일 동기화 설정</translation>
 <translation id="6594855146910089723">Linux 및 Parallels Desktop과 공유된 폴더</translation>
 <translation id="6607272825297743757">파일 정보</translation>
 <translation id="6609332149380188670">폴더 <ph name="NUMBER_OF_ITEMS" />개가 Parallels Desktop과 공유됨</translation>
@@ -744,7 +744,6 @@
 <translation id="6874758081814639712">태극권을 하는 사람</translation>
 <translation id="6876155724392614295">자전거</translation>
 <translation id="6878261347041253038">데바나가리 키보드(음역)</translation>
-<translation id="6882444584974399416">기기에 오프라인에서 파일을 사용할 수 있는 저장공간이 충분하지 않습니다. 새 파일이 더 이상 자동으로 동기화되지 않습니다.</translation>
 <translation id="6885780034956018177">달팽이</translation>
 <translation id="6896758677409633944">복사</translation>
 <translation id="6898028766943174120">하위 폴더 더보기...</translation>
@@ -834,6 +833,7 @@
 <translation id="7547811415869834682">네덜란드어</translation>
 <translation id="7551643184018910560">앱 표시줄에 고정</translation>
 <translation id="7553492409867692754">Linux 앱이 <ph name="FOLDER_NAME" /> 폴더의 파일에 액세스하도록 허용합니다.</translation>
+<translation id="7555339735447658365">현재 오프라인 상태입니다. 인터넷에 연결되면 파일 동기화가 재개됩니다.</translation>
 <translation id="7589661784326793847">잠시만 기다려 주세요.</translation>
 <translation id="7592775719802218421"><ph name="FILE_NAME" /> 파일을 오프라인에서 사용하도록 설정 중</translation>
 <translation id="7600126690270271294">세르비아어</translation>
@@ -876,6 +876,7 @@
 <translation id="7814857791038398352">Microsoft OneDrive</translation>
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" />TB</translation>
 <translation id="7831491651892296503">네트워크를 설정하는 중에 오류가 발생했습니다</translation>
+<translation id="7832093238954689746">파일 동기화가 완료되었습니다. Drive 파일을 오프라인에서 사용할 수 있습니다.</translation>
 <translation id="7839804798877833423">이 파일을 가져오는 데 약 <ph name="FILE_SIZE" />의 모바일 데이터가 사용됩니다.</translation>
 <translation id="7846076177841592234">선택 취소</translation>
 <translation id="7853966320808728790">프랑스어 BÉPO</translation>
@@ -924,6 +925,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">기기 모델</translation>
 <translation id="8223479393428528563">오프라인 사용 목적으로 이 파일을 저장하려면 온라인으로 돌아가서 마우스 오른쪽 버튼으로 파일을 클릭한 다음 <ph name="OFFLINE_CHECKBOX_NAME" /> 옵션을 선택하세요.</translation>
+<translation id="8241139360630443550">스토리지 보기</translation>
 <translation id="8249296373107784235">중단</translation>
 <translation id="8250690786522693009">라틴어</translation>
 <translation id="8250920743982581267">문서</translation>
@@ -953,8 +955,8 @@
 <translation id="8395901698320285466">크기</translation>
 <translation id="8404498045299006085">모두 보관</translation>
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> 네트워크, 연결 중</translation>
-<translation id="841387525767317275">이 폴더의 파일은 오프라인에서 사용할 수 있습니다.</translation>
 <translation id="8425213833346101688">변경</translation>
+<translation id="8428213095426709021">설정</translation>
 <translation id="8431909052837336408">SIM PIN 변경</translation>
 <translation id="8437209419043462667">영어(미국)</translation>
 <translation id="8452135315243592079">SIM 카드 없음</translation>
@@ -981,7 +983,6 @@
 <translation id="8560515948038859357">광둥어</translation>
 <translation id="8561206103590473338">코끼리</translation>
 <translation id="8566466896628108558">네트워크 <ph name="NETWORK_COUNT" />개 중 <ph name="NETWORK_INDEX" />번째, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, 신호 강도 <ph name="SIGNAL_STRENGTH" />%, 관리자가 차단함, 세부정보</translation>
-<translation id="8567555211227790801">현재 오프라인 상태 인터넷에 연결되면 동기화가 재개됩니다.</translation>
 <translation id="8568374623837201676">이 파일을 완전히 삭제하시겠습니까?</translation>
 <translation id="8569764466147087991">열려는 파일 선택</translation>
 <translation id="8577897833047451336">크로아티아어</translation>

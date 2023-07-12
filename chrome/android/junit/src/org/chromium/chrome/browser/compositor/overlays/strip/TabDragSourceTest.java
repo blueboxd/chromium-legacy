@@ -22,6 +22,8 @@ import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Point;
+import android.graphics.PointF;
 import android.os.Parcel;
 import android.view.ContextThemeWrapper;
 import android.view.DragEvent;
@@ -99,6 +101,9 @@ public class TabDragSourceTest {
     private static final float TAB_Y_OFFSET_OUTSIDE = TAB_STRIP_HEIGHT + 1.f;
     private static final float TAB_WIDTH = 150.f;
     private static final long TIMESTAMP = 5000;
+    private static final float DROP_X_SCREEN_POS = 1000.f;
+    private static final float DROP_Y_SCREEN_POS = 500.f;
+    private static final PointF DRAG_START_POINT = new PointF(TAB_X_OFFSET, TAB_Y_OFFSET_WITHIN);
 
     /** Resets the environment before each test. */
     @Before
@@ -199,7 +204,7 @@ public class TabDragSourceTest {
         mTabDragSource.prepareForDragDrop(mTabsToolbarView, mMultiInstanceManager, mTabDropTarget);
         assertTrue("Failed to start the tag drag action.",
                 mTabDragSource.startTabDragAction(
-                        mTabsToolbarView, mStripLayoutHelper, tabBeingDragged));
+                        mTabsToolbarView, mStripLayoutHelper, tabBeingDragged, DRAG_START_POINT));
         verify(mTabsToolbarView, atLeastOnce()).startDragAndDrop(any(), any(), any(), anyInt());
         verify(mTabsToolbarView, atMostOnce()).startDragAndDrop(any(), any(), any(), anyInt());
     }
@@ -220,7 +225,7 @@ public class TabDragSourceTest {
         // Act and verify.
         mTabDragSource.prepareForDragDrop(mTabsToolbarView, mMultiInstanceManager, mTabDropTarget);
         assertFalse(mTabDragSource.startTabDragAction(
-                mTabsToolbarView, mStripLayoutHelper, tabBeingDragged));
+                mTabsToolbarView, mStripLayoutHelper, tabBeingDragged, DRAG_START_POINT));
         verify(mTabsToolbarView, never()).startDragAndDrop(any(), any(), any(), anyInt());
     }
 
@@ -259,7 +264,7 @@ public class TabDragSourceTest {
         mTabDragSource.prepareForDragDrop(mTabsToolbarView, mMultiInstanceManager, mTabDropTarget);
         assertTrue(mTabDragSource.getDragSourceTabsToolbarHashCode() == 0);
         assertTrue(mTabDragSource.startTabDragAction(
-                mTabsToolbarView, mStripLayoutHelper, tabBeingDragged));
+                mTabsToolbarView, mStripLayoutHelper, tabBeingDragged, DRAG_START_POINT));
         assertTrue(mTabDragSource.getDragSourceTabsToolbarHashCode()
                 == System.identityHashCode(mTabsToolbarView));
     }
@@ -275,7 +280,7 @@ public class TabDragSourceTest {
         initializeTest(false, false, 1, 5);
         mTabDragSource.prepareForDragDrop(mTabsToolbarView, mMultiInstanceManager, mTabDropTarget);
         mTabDragSource.startTabDragAction(mTabsToolbarView, mStripLayoutHelper,
-                mStripLayoutHelper.getTabById(mClickedTab.getId()));
+                mStripLayoutHelper.getTabById(mClickedTab.getId()), DRAG_START_POINT);
 
         // Perform drag n drop simulation actions for movement within the strip layout.
         TabDragSource.OnDragListenerImpl onTabDragListener = simulateDragDropEvents(true);
@@ -300,7 +305,7 @@ public class TabDragSourceTest {
         initializeTest(false, false, 1, 5);
         mTabDragSource.prepareForDragDrop(mTabsToolbarView, mMultiInstanceManager, mTabDropTarget);
         mTabDragSource.startTabDragAction(mTabsToolbarView, mStripLayoutHelper,
-                mStripLayoutHelper.getTabById(mClickedTab.getId()));
+                mStripLayoutHelper.getTabById(mClickedTab.getId()), DRAG_START_POINT);
 
         // Perform drag n drop simulation actions for movement outside the strip layout.
         TabDragSource.OnDragListenerImpl onTabDragListener =
@@ -327,7 +332,7 @@ public class TabDragSourceTest {
         initializeTest(false, false, 1, 5);
         mTabDragSource.prepareForDragDrop(mTabsToolbarView, mMultiInstanceManager, mTabDropTarget);
         mTabDragSource.startTabDragAction(mTabsToolbarView, mStripLayoutHelper,
-                mStripLayoutHelper.getTabById(mClickedTab.getId()));
+                mStripLayoutHelper.getTabById(mClickedTab.getId()), DRAG_START_POINT);
 
         // Perform drag n drop simulation actions for movement within the strip layout.
         TabDragSource.OnDragListenerImpl onTabDragListener = simulateDragDropEvents(true);
@@ -349,7 +354,7 @@ public class TabDragSourceTest {
         initializeTest(false, false, 1, 5);
         mTabDragSource.prepareForDragDrop(mTabsToolbarView, mMultiInstanceManager, mTabDropTarget);
         mTabDragSource.startTabDragAction(mTabsToolbarView, mStripLayoutHelper,
-                mStripLayoutHelper.getTabById(mClickedTab.getId()));
+                mStripLayoutHelper.getTabById(mClickedTab.getId()), DRAG_START_POINT);
 
         // Perform drag n drop simulation actions for movement outside the strip layout.
         TabDragSource.OnDragListenerImpl onTabDragListener =
@@ -372,7 +377,7 @@ public class TabDragSourceTest {
         initializeTest(false, false, 1, 5);
         mTabDragSource.prepareForDragDrop(mTabsToolbarView, mMultiInstanceManager, mTabDropTarget);
         mTabDragSource.startTabDragAction(mTabsToolbarView, mStripLayoutHelper,
-                mStripLayoutHelper.getTabById(mClickedTab.getId()));
+                mStripLayoutHelper.getTabById(mClickedTab.getId()), DRAG_START_POINT);
 
         // Perform drag n drop simulation action.
         TabDragSource.OnDragListenerImpl onTabDragListener = simulateDragDropEvents(true);
@@ -398,8 +403,14 @@ public class TabDragSourceTest {
         assertTrue("Toolbar hash code should match.",
                 mTabDragSource.getDragSourceTabsToolbarHashCode()
                         == System.identityHashCode(mTabsToolbarView));
-        onTabDragListener.onDrag(
-                mTabsToolbarView, createDragEvent(DragEvent.ACTION_DRAG_ENDED, 0f, 0f, 0));
+        if (withinStripLayout) {
+            onTabDragListener.onDrag(
+                    mTabsToolbarView, createDragEvent(DragEvent.ACTION_DRAG_ENDED, 0f, 0f, 0));
+        } else {
+            onTabDragListener.onDrag(mTabsToolbarView,
+                    createDragEvent(
+                            DragEvent.ACTION_DRAG_ENDED, DROP_X_SCREEN_POS, DROP_Y_SCREEN_POS, 0));
+        }
         assertTrue("Toolbar hash code should be cleared.",
                 mTabDragSource.getDragSourceTabsToolbarHashCode() == 0);
 
@@ -475,7 +486,7 @@ public class TabDragSourceTest {
         initializeTest(false, false, 1, 5);
         mTabDragSource.prepareForDragDrop(mTabsToolbarView, mMultiInstanceManager, mTabDropTarget);
         mTabDragSource.startTabDragAction(mTabsToolbarView, mStripLayoutHelper,
-                mStripLayoutHelper.getTabById(mClickedTab.getId()));
+                mStripLayoutHelper.getTabById(mClickedTab.getId()), DRAG_START_POINT);
         View tabsToolbarViewForDrop = getAnotherToolbarView();
         when(tabsToolbarViewForDrop.getWidth()).thenReturn(300);
         when(tabsToolbarViewForDrop.getHeight()).thenReturn(50);
@@ -514,5 +525,57 @@ public class TabDragSourceTest {
         anotherTabsToolbarView = Mockito.spy(new View(mActivity));
         anotherTabsToolbarView.setLayoutParams(new MarginLayoutParams(300, 50));
         return anotherTabsToolbarView;
+    }
+
+    /**
+     * Tests the instance of the local class {@link TabDragSource#OnDragListenerImpl}.
+     *
+     * Checks that a drop position of the new window is broadcasted when new window is opened.
+     */
+    @Test
+    public void test_sendPositionInfoToSysUI_WithNewWindowIsOpened_ReturnsSuccess() {
+        // Prepare
+        initializeTest(false, false, 1, 5);
+        mTabDragSource.prepareForDragDrop(mTabsToolbarView, mMultiInstanceManager, mTabDropTarget);
+        mTabDragSource.startTabDragAction(mTabsToolbarView, mStripLayoutHelper,
+                mStripLayoutHelper.getTabById(mClickedTab.getId()), DRAG_START_POINT);
+
+        // Perform drag n drop simulation actions for movement outside the strip layout.
+        TabDragSource.OnDragListenerImpl onTabDragListener =
+                simulateDragDropEvents(/*withinStripLayout*/ false);
+
+        // Verify
+        // Since the drop is outside the TabToolbar area check if intent is send to SysUI to
+        // position the window.
+        verify(mTabDragSource, times(1))
+                .sendPositionInfoToSysUI(eq(mTabsToolbarView), anyFloat(), anyFloat(),
+                        eq(DROP_X_SCREEN_POS), eq(DROP_Y_SCREEN_POS));
+    }
+
+    /**
+     * Tests the instance of the local class {@link TabDragSource#TabDragShadowBuilder}.
+     *
+     * Checks that a drag start position of the drag is used as the anchor point.
+     */
+    @Test
+    public void test_onProvideShadowMetrics_WithDesiredStartPosition_ReturnsSuccess() {
+        // Prepare
+        final float dragStartXPosition = 90f;
+        final float dragStartYPosition = 45f;
+        initializeTest(false, false, 1, 5);
+        mTabDragSource.prepareForDragDrop(mTabsToolbarView, mMultiInstanceManager, mTabDropTarget);
+        mTabDragSource.startTabDragAction(mTabsToolbarView, mStripLayoutHelper,
+                mStripLayoutHelper.getTabById(mClickedTab.getId()),
+                new PointF(dragStartXPosition, dragStartYPosition));
+        View.DragShadowBuilder tabDragShadowBuilder = mTabDragSource.getTabDragShadowBuilder();
+
+        // Perform asking the TabDragShadowBuilder what is the anchor point.
+        Point dragSize = new Point(0, 0);
+        Point dragAnchor = new Point(0, 0);
+        tabDragShadowBuilder.onProvideShadowMetrics(dragSize, dragAnchor);
+
+        // Validate anchor.
+        assertTrue(dragAnchor.x == Math.round(dragStartXPosition));
+        assertTrue(dragAnchor.y == Math.round(dragStartYPosition));
     }
 }

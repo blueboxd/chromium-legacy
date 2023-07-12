@@ -8,7 +8,7 @@ import {DialogPage, OperationType, UserAction} from 'chrome://cloud-upload/cloud
 import {CloudUploadBrowserProxy} from 'chrome://cloud-upload/cloud_upload_browser_proxy.js';
 import {CloudUploadElement} from 'chrome://cloud-upload/cloud_upload_dialog.js';
 import {OfficePwaInstallPageElement} from 'chrome://cloud-upload/office_pwa_install_page.js';
-import {OneDriveUploadPageElement} from 'chrome://cloud-upload/one_drive_upload_page.js';
+import {OfficeSetupCompletePageElement} from 'chrome://cloud-upload/office_setup_complete_page.js';
 import {SetupCancelDialogElement} from 'chrome://cloud-upload/setup_cancel_dialog.js';
 import {SignInPageElement} from 'chrome://cloud-upload/sign_in_page.js';
 import {WelcomePageElement} from 'chrome://cloud-upload/welcome_page.js';
@@ -115,8 +115,9 @@ suite('<cloud-upload>', () => {
     assertTrue(cloudUploadApp.currentPage instanceof SignInPageElement);
   }
 
-  function checkIsOneDriveUploadPage(): void {
-    assertTrue(cloudUploadApp.currentPage instanceof OneDriveUploadPageElement);
+  function checkIsOfficeSetupCompletePage(): void {
+    assertTrue(
+        cloudUploadApp.currentPage instanceof OfficeSetupCompletePageElement);
   }
 
   async function waitForNextPage(): Promise<void> {
@@ -185,7 +186,7 @@ suite('<cloud-upload>', () => {
     const officeWebAppInstalled = false;
     const odfsMounted = false;
     await setUp({
-      fileName: 'file.docx',
+      fileNames: ['file.docx'],
       officeWebAppInstalled,
       installOfficeWebAppResult: true,
       odfsMounted,
@@ -198,7 +199,7 @@ suite('<cloud-upload>', () => {
     await doPWAInstallPage();
     await doSignInPage();
 
-    checkIsOneDriveUploadPage();
+    checkIsOfficeSetupCompletePage();
   });
 
   /**
@@ -209,6 +210,7 @@ suite('<cloud-upload>', () => {
     const officeWebAppInstalled = false;
     const odfsMounted = false;
     await setUp({
+      fileNames: [],
       officeWebAppInstalled,
       installOfficeWebAppResult: true,
       odfsMounted,
@@ -221,7 +223,7 @@ suite('<cloud-upload>', () => {
     await doPWAInstallPage();
     await doSignInPage();
 
-    checkIsOneDriveUploadPage();
+    checkIsOfficeSetupCompletePage();
   });
 
   /**
@@ -232,6 +234,7 @@ suite('<cloud-upload>', () => {
     const officeWebAppInstalled = true;
     const odfsMounted = false;
     await setUp({
+      fileNames: ['file.docx'],
       officeWebAppInstalled,
       installOfficeWebAppResult: true,
       odfsMounted,
@@ -242,7 +245,7 @@ suite('<cloud-upload>', () => {
     await doWelcomePage(officeWebAppInstalled, odfsMounted);
     await doSignInPage();
 
-    checkIsOneDriveUploadPage();
+    checkIsOfficeSetupCompletePage();
   });
 
   /**
@@ -252,7 +255,7 @@ suite('<cloud-upload>', () => {
     const officeWebAppInstalled = false;
     const odfsMounted = true;
     await setUp({
-      fileName: 'file.docx',
+      fileNames: ['file.docx'],
       officeWebAppInstalled,
       installOfficeWebAppResult: true,
       odfsMounted,
@@ -263,7 +266,7 @@ suite('<cloud-upload>', () => {
     await doWelcomePage(officeWebAppInstalled, odfsMounted);
     await doPWAInstallPage();
 
-    checkIsOneDriveUploadPage();
+    checkIsOfficeSetupCompletePage();
   });
 
   /**
@@ -277,6 +280,7 @@ suite('<cloud-upload>', () => {
         const officeWebAppInstalled = true;
         const odfsMounted = true;
         await setUp({
+          fileNames: ['file.docx'],
           officeWebAppInstalled,
           installOfficeWebAppResult: true,
           odfsMounted,
@@ -286,7 +290,59 @@ suite('<cloud-upload>', () => {
 
         await doWelcomePage(officeWebAppInstalled, odfsMounted);
 
-        checkIsOneDriveUploadPage();
+        checkIsOfficeSetupCompletePage();
+      });
+
+  /**
+   * Tests that when the Office PWA is already installed and ODFS is already
+   * mounted, but there is no file to upload. If Office file handlers still need
+   * to be set (first time setup), the welcome page should not be skipped, as
+   * opposed to the Office PWA install page and the sign in page.
+   */
+  test(
+      'Set up Office with PWA already installed, already signed in, no file' +
+          ' to upload',
+      async () => {
+        const officeWebAppInstalled = true;
+        const odfsMounted = true;
+        await setUp({
+          fileNames: [],
+          officeWebAppInstalled,
+          installOfficeWebAppResult: true,
+          odfsMounted,
+          dialogPage: DialogPage.kOneDriveSetup,
+          setOfficeAsDefaultHandler: true,
+          operationType: OperationType.kMove,
+        });
+
+        await doWelcomePage(officeWebAppInstalled, odfsMounted);
+
+        checkIsOfficeSetupCompletePage();
+      });
+
+  /**
+   * Tests that when the Office PWA is already installed and ODFS is already
+   * mounted, but there is no file to upload. If file handlers have already been
+   * set, the welcome page should be skipped, as well as the Office PWA install
+   * page and the sign in page.
+   */
+  test(
+      'Set up Office with PWA already installed, already signed in, no file' +
+          ' to upload, file handlers already set',
+      async () => {
+        const officeWebAppInstalled = true;
+        const odfsMounted = true;
+        await setUp({
+          fileNames: [],
+          officeWebAppInstalled,
+          installOfficeWebAppResult: true,
+          odfsMounted,
+          dialogPage: DialogPage.kOneDriveSetup,
+          setOfficeAsDefaultHandler: false,
+          operationType: OperationType.kMove,
+        });
+
+        checkIsOfficeSetupCompletePage();
       });
 
   /**
@@ -297,7 +353,7 @@ suite('<cloud-upload>', () => {
     const officeWebAppInstalled = false;
     const odfsMounted = false;
     await setUp({
-      fileName: 'file.docx',
+      fileNames: ['file.docx'],
       officeWebAppInstalled,
       installOfficeWebAppResult: true,
       odfsMounted,
@@ -312,7 +368,7 @@ suite('<cloud-upload>', () => {
     await doPWAInstallPage();
     await doSignInPage();
 
-    checkIsOneDriveUploadPage();
+    checkIsOfficeSetupCompletePage();
     cloudUploadApp.$('.action-button').click();
     await testProxy.handler.whenCalled('respondWithUserActionAndClose');
     assertEquals(
@@ -331,6 +387,7 @@ suite('<cloud-upload>', () => {
         const officeWebAppInstalled = false;
         const odfsMounted = false;
         await setUp({
+          fileNames: ['file.docx'],
           officeWebAppInstalled,
           installOfficeWebAppResult: true,
           odfsMounted,
@@ -380,17 +437,18 @@ suite('<cloud-upload>', () => {
         const officeWebAppInstalled = false;
         const odfsMounted = true;
         await setUp({
+          fileNames: ['file.docx'],
           officeWebAppInstalled,
           installOfficeWebAppResult: true,
           odfsMounted,
           dialogPage: DialogPage.kOneDriveSetup,
-          firstTimeSetup: true,
+          setOfficeAsDefaultHandler: true,
           operationType: OperationType.kMove,
         });
         // Go to the OneDrive upload page.
         await doWelcomePage(officeWebAppInstalled, odfsMounted);
         await doPWAInstallPage();
-        checkIsOneDriveUploadPage();
+        checkIsOfficeSetupCompletePage();
 
         // Click the open file button.
         cloudUploadApp.$('.action-button').click();
@@ -410,17 +468,18 @@ suite('<cloud-upload>', () => {
         const officeWebAppInstalled = false;
         const odfsMounted = true;
         await setUp({
+          fileNames: ['file.docx'],
           officeWebAppInstalled,
           installOfficeWebAppResult: true,
           odfsMounted,
           dialogPage: DialogPage.kOneDriveSetup,
-          firstTimeSetup: false,
+          setOfficeAsDefaultHandler: false,
           operationType: OperationType.kMove,
         });
         // Go to the OneDrive upload page.
         await doWelcomePage(officeWebAppInstalled, odfsMounted);
         await doPWAInstallPage();
-        checkIsOneDriveUploadPage();
+        checkIsOfficeSetupCompletePage();
 
         // Click the open file button.
         cloudUploadApp.$('.action-button').click();

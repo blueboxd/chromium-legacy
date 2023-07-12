@@ -7,8 +7,10 @@ package org.chromium.chrome.browser.compositor.overlays.strip;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.view.DragEvent;
@@ -45,6 +47,7 @@ public class TabDragSource {
     private Tab mTabBeingDragged;
     private boolean mAcceptNextDrop;
     private OnDragListenerImpl mOnDragListenerImpl;
+    private View.DragShadowBuilder mTabDragShadowBuilder;
 
     private float mPxToDp;
 
@@ -105,6 +108,11 @@ public class TabDragSource {
         mMultiInstanceManager = multiInstanceManager;
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    View.DragShadowBuilder getTabDragShadowBuilder() {
+        return mTabDragShadowBuilder;
+    }
+
     @VisibleForTesting
     class OnDragListenerImpl implements View.OnDragListener {
         private int mLastAction;
@@ -151,6 +159,11 @@ public class TabDragSource {
                     // Check if anyone handled the dropped ClipData meaning that drop was beyond
                     // acceptable drop area.
                     if (mTabBeingDragged != null && mLastAction == DragEvent.ACTION_DRAG_EXITED) {
+                        // Following call is device specific and is intended for specific platform
+                        // SysUI.
+                        sendPositionInfoToSysUI(view, mStartXPosition / mPxToDp,
+                                mStartYPosition / mPxToDp, dragEvent.getX(), dragEvent.getY());
+
                         // Hence move the tab to a new Chrome window.
                         openTabInNewWindow();
                     }
@@ -158,6 +171,7 @@ public class TabDragSource {
                     // Clear the source view handle as DragNDrop is completed.
                     clearDragSourceTabsToolbarHashCode();
                     mSourceStripLayoutHelper.clearActiveClickedTab();
+                    mTabDragShadowBuilder = null;
                     break;
                 case DragEvent.ACTION_DRAG_ENTERED:
                     mSourceStripLayoutHelper.onDownInternal(
@@ -197,22 +211,26 @@ public class TabDragSource {
         }
     }
 
-    private void initiateTabDragAndDrop(View view, ClipData dragData) {
+    private void initiateTabDragAndDrop(View view, ClipData dragData, PointF startPointInView) {
         // Instantiate the drag shadow builder.
-        View.DragShadowBuilder tabShadow = new TabDragShadowBuilder(getDragShadowView(view));
+        mTabDragShadowBuilder = new TabDragShadowBuilder(
+                getDragShadowView(view), getPositionOnScreen(view, startPointInView));
 
         // Start the drag.
         int flags = View.DRAG_FLAG_GLOBAL;
         view.startDragAndDrop(dragData, // The data to be dragged.
-                tabShadow, // The drag shadow builder.
+                mTabDragShadowBuilder, // The drag shadow builder.
                 null, // No need to use local data.
                 flags);
     }
 
     private static class TabDragShadowBuilder extends View.DragShadowBuilder {
-        public TabDragShadowBuilder(View view) {
+        private PointF mStartPositionOnScreen;
+
+        public TabDragShadowBuilder(View view, PointF startPositionOnScreen) {
             // Store the View parameter.
             super(view);
+            mStartPositionOnScreen = startPositionOnScreen;
         }
 
         // Defines a callback that sends the drag shadow dimensions and touch point
@@ -231,11 +249,10 @@ public class TabDragSource {
             // to the system through the size parameter.
             size.set(width, height);
 
-            // Set the touch point's position to be in the middle of the drag
-            // shadow.
-            // TODO(b/285584145): Update to accurate x and y posiiton of user hold/touch relative
-            // to the Drag Shadow/Chrome Window.
-            touch.set(width / 2, 50);
+            // Set the touch point of the drag shadow to be user's hold/touch point within Chrome
+            // Window.
+            touch.set(Math.round(mStartPositionOnScreen.x), Math.round(mStartPositionOnScreen.y));
+            Log.d(TAG, "DnD onProvideShadowMetrics: " + mStartPositionOnScreen);
         }
     }
 
@@ -282,9 +299,10 @@ public class TabDragSource {
      * @param sourceStripLayoutHelper @{link MultiInstanceManager} to forward drag message to @{link
      *         StripLayoutHelper} for reodering tabs.
      * @param tabBeingDragged @{link Tab} is the selected tab being dragged.
+     * @param startPoint Position of the drag start point in view coordinates.
      */
-    public boolean startTabDragAction(
-            View tabsToolbarView, StripLayoutHelper sourceStripLayoutHelper, Tab tabBeingDragged) {
+    public boolean startTabDragAction(View tabsToolbarView,
+            StripLayoutHelper sourceStripLayoutHelper, Tab tabBeingDragged, PointF startPoint) {
         if (!ChromeFeatureList.sTabDragDropAndroid.isEnabled()) return false;
         if (getDragSourceTabsToolbarHashCode() != 0) return false;
 
@@ -297,7 +315,7 @@ public class TabDragSource {
         ClipData tabClipData = createClipDataFromTab(tabBeingDragged, tabsToolbarView);
         if (tabClipData != null) {
             mTabBeingDragged = tabBeingDragged;
-            initiateTabDragAndDrop(tabsToolbarView, tabClipData);
+            initiateTabDragAndDrop(tabsToolbarView, tabClipData, startPoint);
 
             // Save this View handle to identify the source view.
             mDragSourceTabsToolbarHashCode = System.identityHashCode(tabsToolbarView);
@@ -393,5 +411,72 @@ public class TabDragSource {
     int getTabIdFromClipData(ClipData.Item item) {
         String[] itemTexts = item.getText().toString().split(";");
         return Integer.parseInt(itemTexts[0].replaceAll("[^0-9]", ""));
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    void sendPositionInfoToSysUI(View view, float startXInView, float startYInView,
+            float endXInScreen, float endYInScreen) {
+        // The start position is in the view coordinate system and related to the top left position
+        // of the toolbar container view. Convert it to the screen coordinate system for comparison
+        // with the drop position which is in screen coordinates.
+        int[] topLeftLocation = new int[2];
+        view.getLocationOnScreen(topLeftLocation);
+        float startXInScreen = topLeftLocation[0] + startXInView;
+        float startYInScreen = topLeftLocation[1] + startYInView;
+
+        Activity activity = (Activity) view.getContext();
+        View decorView = activity.getWindow().getDecorView();
+
+        // Compute relative offsets based on screen coords of the source window dimensions.
+        // Tabet screen is:
+        //          -------------------------------------
+        //          |    Source                         |  Relative X Offset =
+        //          |    window                         |    (x2 - x1) / width
+        //          |   (x1, y1)                        |
+        //       |->|   ---------                       |  Relative Y Offset =
+        // height|  |   |   *   |                       |    (y2 - y1) / height
+        //       |  |   |       |                       |
+        //       |->|   ---------                       |
+        //          |               ---------           |
+        //          |               |   *   |           |
+        //          |               |       |           |
+        //          |               ---------           |
+        //          |                (x2, y2)           |
+        //          |              Destination          |
+        //          -------------------------------------
+        //              <------->
+        //               width
+        // * is touch point and the anchor of drag shadow of the window for the tab drag and drop.
+        float xOffsetRelative2WindowWidth = (endXInScreen - startXInScreen) / decorView.getWidth();
+        float yOffsetRelative2WindowHeight =
+                (endYInScreen - startYInScreen) / decorView.getHeight();
+
+        // Prepare the positioning intent for SysUI to place the next Chrome window.
+        // The intent is ignored when not handled with no impact on existing Android platforms.
+        Intent intent = new Intent();
+        intent.setPackage("com.android.systemui");
+        intent.setAction("com.android.systemui.CHROME_TAB_DRAG_DROP");
+        intent.putExtra("CHROME_TAB_DRAG_DROP_ANCHOR_TASK_ID", activity.getTaskId());
+        intent.putExtra("CHROME_TAB_DRAG_DROP_ANCHOR_OFFSET_X", xOffsetRelative2WindowWidth);
+        intent.putExtra("CHROME_TAB_DRAG_DROP_ANCHOR_OFFSET_Y", yOffsetRelative2WindowHeight);
+        activity.sendBroadcast(intent);
+        Log.d(TAG,
+                "DnD Position info for SysUI: tId=" + activity.getTaskId() + ", xOff="
+                        + xOffsetRelative2WindowWidth + ", yOff=" + yOffsetRelative2WindowHeight);
+    }
+
+    private PointF getPositionOnScreen(View view, PointF positionInView) {
+        int[] topLeftLocationOfToolbarView = new int[2];
+        view.getLocationOnScreen(topLeftLocationOfToolbarView);
+
+        int[] topLeftLocationOfDecorView = new int[2];
+        View decorView = ((Activity) view.getContext()).getWindow().getDecorView();
+        decorView.getLocationOnScreen(topLeftLocationOfDecorView);
+
+        float positionXOnScreen = (topLeftLocationOfToolbarView[0] - topLeftLocationOfDecorView[0])
+                + positionInView.x / mPxToDp;
+        float positionYOnScreen = (topLeftLocationOfToolbarView[1] - topLeftLocationOfDecorView[1])
+                + positionInView.y / mPxToDp;
+        return new PointF(positionXOnScreen, positionYOnScreen);
     }
 }

@@ -256,8 +256,7 @@ IDBRequest* IDBObjectStore::getAll(ScriptState* script_state,
   IDBRequest* request = IDBRequest::Create(
       script_state, this, transaction_.Get(), std::move(metrics));
   BackendDB()->GetAll(transaction_->Id(), Id(), IDBIndexMetadata::kInvalidId,
-                      range, max_count, false,
-                      request->CreateWebCallbacks().release());
+                      range, max_count, false, request);
   return request;
 }
 
@@ -322,8 +321,7 @@ IDBRequest* IDBObjectStore::batchGetAll(
 
   BackendDB()->BatchGetAll(transaction_->Id(), Id(),
                            IDBIndexMetadata::kInvalidId,
-                           std::move(key_range_ptrs), max_count,
-                           request->CreateWebCallbacks().release());
+                           std::move(key_range_ptrs), max_count, request);
 
   return request;
 }
@@ -370,8 +368,7 @@ IDBRequest* IDBObjectStore::getAllKeys(ScriptState* script_state,
   IDBRequest* request = IDBRequest::Create(
       script_state, this, transaction_.Get(), std::move(metrics));
   BackendDB()->GetAll(transaction_->Id(), Id(), IDBIndexMetadata::kInvalidId,
-                      range, max_count, true,
-                      request->CreateWebCallbacks().release());
+                      range, max_count, true, request);
   return request;
 }
 
@@ -1163,8 +1160,9 @@ IDBRequest* IDBObjectStore::count(ScriptState* script_state,
 
   IDBRequest* request = IDBRequest::Create(
       script_state, this, transaction_.Get(), std::move(metrics));
-  BackendDB()->Count(transaction_->Id(), Id(), IDBIndexMetadata::kInvalidId,
-                     key_range, request->CreateWebCallbacks().release());
+  BackendDB()->Count(
+      transaction_->Id(), Id(), IDBIndexMetadata::kInvalidId, key_range,
+      WTF::BindOnce(&IDBRequest::OnCount, WrapWeakPersistent(request)));
   return request;
 }
 

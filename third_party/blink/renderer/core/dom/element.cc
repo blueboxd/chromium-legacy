@@ -105,6 +105,7 @@
 #include "third_party/blink/renderer/core/dom/mutation_observer_interest_group.h"
 #include "third_party/blink/renderer/core/dom/mutation_record.h"
 #include "third_party/blink/renderer/core/dom/named_node_map.h"
+#include "third_party/blink/renderer/core/dom/node_cloning_data.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/presentation_attribute_style.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
@@ -501,21 +502,12 @@ void EnqueueAutofocus(Element& element) {
   top_document.EnqueueAutofocusCandidate(element);
 }
 
-// For container query containers, we may skip the style recalc of the
-// container's descendants during regular style recalc, with the expectation
-// that we will recalc the style of those elements during `NGBlockNode::Layout`.
-// If a given LayoutObject isn't guaranteed to actually enter
-// `NGBlockNode::Layout`, then we recalc the skipped descendants during
-// layout-tree building instead.
-bool IsGuaranteedToEnterNGBlockNodeLayout(const LayoutObject& layout_object) {
-  auto* box = DynamicTo<LayoutBox>(layout_object);
-  if (!box) {
-    return false;
-  }
-  if (!NGBlockNode::CanUseNewLayout(*box)) {
-    return false;
-  }
-  return true;
+bool WillUpdateSizeContainerDuringLayout(const LayoutObject& layout_object) {
+  // When a size-container LayoutObject is marked as needs layout,
+  // NGBlockNode::Layout() will resume style recalc with an up-to-date size in
+  // StyleEngine::UpdateStyleAndLayoutTreeForContainer().
+  return layout_object.SelfNeedsLayout() &&
+         layout_object.IsEligibleForSizeContainment();
 }
 
 bool IsValidShadowHostName(const QualifiedName& tag_name) {
@@ -639,14 +631,16 @@ bool Element::IsBaseElementFocusableStyle() const {
   return false;
 }
 
-Node* Element::Clone(Document& factory, CloneChildrenFlag flag) const {
-  if (flag == CloneChildrenFlag::kSkip) {
-    return &CloneWithoutChildren(&factory);
+Node* Element::Clone(Document& factory, NodeCloningData& data) const {
+  if (!data.Has(CloneOption::kIncludeDescendants)) {
+    CHECK(!data.Has(CloneOption::kIncludeShadowRoots));
+    CHECK(!data.Has(CloneOption::kPreserveDOMParts));
+    return &CloneWithoutChildren(data, &factory);
   }
-  Element* copy = &CloneWithChildren(flag, &factory);
+  Element* copy = &CloneWithChildren(data, &factory);
   // 7. If node is a shadow host and the clone shadows flag is set, run these
   // steps:
-  if (flag == CloneChildrenFlag::kCloneWithShadows) {
+  if (data.Has(CloneOption::kIncludeShadowRoots)) {
     auto* shadow_root = GetShadowRoot();
     if (shadow_root && (shadow_root->GetType() == ShadowRootType::kOpen ||
                         shadow_root->GetType() == ShadowRootType::kClosed)) {
@@ -673,13 +667,13 @@ Node* Element::Clone(Document& factory, CloneChildrenFlag flag) const {
       // shadow root and append them to copy’s shadow root, with document as
       // specified, the clone children flag being set, and the clone shadows
       // flag being set.
-      cloned_shadow_root.CloneChildNodesFrom(*shadow_root, flag);
+      cloned_shadow_root.CloneChildNodesFrom(*shadow_root, data);
     }
   }
   return copy;
 }
 
-Element& Element::CloneWithChildren(CloneChildrenFlag flag,
+Element& Element::CloneWithChildren(NodeCloningData& data,
                                     Document* nullable_factory) const {
   Element& clone = CloneWithoutAttributesAndChildren(
       nullable_factory ? *nullable_factory : GetDocument());
@@ -688,12 +682,19 @@ Element& Element::CloneWithChildren(CloneChildrenFlag flag,
   DCHECK_EQ(IsHTMLElement(), clone.IsHTMLElement());
 
   clone.CloneAttributesFrom(*this);
-  clone.CloneNonAttributePropertiesFrom(*this, flag);
-  clone.CloneChildNodesFrom(*this, flag);
+  clone.CloneNonAttributePropertiesFrom(*this, data);
+  clone.ClonePartsFrom(*this, data);
+  clone.CloneChildNodesFrom(*this, data);
   return clone;
 }
 
-Element& Element::CloneWithoutChildren(Document* nullable_factory) const {
+Element& Element::CloneWithoutChildren() const {
+  NodeCloningData data;
+  return CloneWithoutChildren(data);
+}
+
+Element& Element::CloneWithoutChildren(NodeCloningData& data,
+                                       Document* nullable_factory) const {
   Element& clone = CloneWithoutAttributesAndChildren(
       nullable_factory ? *nullable_factory : GetDocument());
   // This will catch HTML elements in the wrong namespace that are not correctly
@@ -701,7 +702,7 @@ Element& Element::CloneWithoutChildren(Document* nullable_factory) const {
   DCHECK_EQ(IsHTMLElement(), clone.IsHTMLElement());
 
   clone.CloneAttributesFrom(*this);
-  clone.CloneNonAttributePropertiesFrom(*this, CloneChildrenFlag::kSkip);
+  clone.CloneNonAttributePropertiesFrom(*this, data);
   return clone;
 }
 
@@ -2962,7 +2963,7 @@ void Element::DetachLayoutTree(bool performing_reattach) {
       element_animations->RestartAnimationOnCompositor();
     }
 
-    data->RemoveAnchorScrollData();
+    data->RemoveAnchorPositionScrollData();
   }
 
   DetachPrecedingPseudoElements(performing_reattach);
@@ -3162,9 +3163,8 @@ bool Element::SkipStyleRecalcForContainer(
 
   if (!child_change.ReattachLayoutTree()) {
     LayoutObject* layout_object = GetLayoutObject();
-    if (!layout_object || !layout_object->SelfNeedsLayout() ||
-        !layout_object->IsEligibleForSizeContainment() ||
-        !IsGuaranteedToEnterNGBlockNodeLayout(*layout_object)) {
+    if (!layout_object ||
+        !WillUpdateSizeContainerDuringLayout(*layout_object)) {
       return false;
     }
   }
@@ -6248,6 +6248,7 @@ const ComputedStyle* Element::EnsureComputedStyle(
   auto style_recalc_context = LayoutTreeBuilderTraversal::Parent(*top)
                                   ? StyleRecalcContext::FromAncestors(*top)
                                   : StyleRecalcContext();
+  style_recalc_context.is_outside_flat_tree = !is_in_flat_tree;
 
   for (auto it = ancestors.rbegin(); it != ancestors.rend(); it++) {
     Element* ancestor = it->Get();
@@ -8803,18 +8804,19 @@ CSSToggleMap& Element::EnsureToggleMap() {
   return EnsureElementRareData().EnsureToggleMap(this);
 }
 
-AnchorScrollData& Element::EnsureAnchorScrollData() {
-  return EnsureElementRareData().EnsureAnchorScrollData(this);
+AnchorPositionScrollData& Element::EnsureAnchorPositionScrollData() {
+  return EnsureElementRareData().EnsureAnchorPositionScrollData(this);
 }
 
-void Element::RemoveAnchorScrollData() {
+void Element::RemoveAnchorPositionScrollData() {
   if (HasRareData()) {
-    GetElementRareData()->RemoveAnchorScrollData();
+    GetElementRareData()->RemoveAnchorPositionScrollData();
   }
 }
 
-AnchorScrollData* Element::GetAnchorScrollData() const {
-  return HasRareData() ? GetElementRareData()->GetAnchorScrollData() : nullptr;
+AnchorPositionScrollData* Element::GetAnchorPositionScrollData() const {
+  return HasRareData() ? GetElementRareData()->GetAnchorPositionScrollData()
+                       : nullptr;
 }
 
 void Element::IncrementImplicitlyAnchoredElementCount() {
@@ -8859,9 +8861,13 @@ Element* Element::ImplicitAnchorElement() {
       return select_menu;
     }
   } else if (PseudoElement* pseudo_element = DynamicTo<PseudoElement>(this)) {
-    PseudoId pseudo_id = pseudo_element->GetPseudoId();
-    if (pseudo_id == kPseudoIdBefore || pseudo_id == kPseudoIdAfter) {
-      return pseudo_element->OriginatingElement()->ImplicitAnchorElement();
+    switch (pseudo_element->GetPseudoId()) {
+      case kPseudoIdBefore:
+      case kPseudoIdAfter:
+      case kPseudoIdBackdrop:
+        return pseudo_element->OriginatingElement()->ImplicitAnchorElement();
+      default:
+        return nullptr;
     }
   }
   return nullptr;

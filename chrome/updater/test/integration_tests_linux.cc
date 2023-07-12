@@ -67,19 +67,16 @@ absl::optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope) {
   return path->Append(GetExecutableRelativePath());
 }
 
-bool WaitForUpdaterExit(UpdaterScope scope) {
+bool WaitForUpdaterExit(UpdaterScope /*scope*/) {
   return WaitFor(
-      base::BindRepeating(
-          [](UpdaterScope scope) {
-            return !base::NamedProcessIterator(
-                        GetExecutableRelativePath().MaybeAsASCII(), nullptr)
-                        .NextProcessEntry() &&
-                   !base::NamedProcessIterator(kLauncherName, nullptr)
-                        .NextProcessEntry();
-          },
-          scope),
-      base::BindLambdaForTesting(
-          [] { VLOG(0) << "Still waiting for updater to exit..."; }));
+      []() {
+        return !base::NamedProcessIterator(
+                    GetExecutableRelativePath().MaybeAsASCII(), nullptr)
+                    .NextProcessEntry() &&
+               !base::NamedProcessIterator(kLauncherName, nullptr)
+                    .NextProcessEntry();
+      },
+      [] { VLOG(0) << "Still waiting for updater to exit..."; });
 }
 
 void Uninstall(UpdaterScope scope) {
@@ -148,7 +145,7 @@ void EnterTestMode(const GURL& update_url,
                   .SetDeviceManagementURL(device_management_url.spec())
                   .SetUseCUP(false)
                   .SetInitialDelay(base::Milliseconds(100))
-                  .SetServerKeepAliveTime(base::Seconds(1))
+                  .SetServerKeepAliveTime(base::Seconds(2))
                   .SetCrxVerifierFormat(crx_file::VerifierFormat::CRX3)
                   .SetOverinstallTimeout(TestTimeouts::action_timeout())
                   .SetIdleCheckPeriod(idle_timeout)

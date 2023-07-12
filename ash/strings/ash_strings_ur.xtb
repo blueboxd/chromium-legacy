@@ -298,6 +298,7 @@
 <translation id="2318576281648121272">آج <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" /> ، تلاش کے نتیجہ کا زمرہ</translation>
 <translation id="2322173485024759474">ایک حرف پیچھے جائیں</translation>
+<translation id="2335091074961603075">‏آپ کا Chromebook یا بلوٹوتھ آلہ بلوٹوتھ کا پرانا ورژن استعمال کر رہا ہے۔ بہتر آڈیو کوالٹی کے لیے اندرونی مائیکروفون استعمال کریں۔</translation>
 <translation id="2339073806695260576">ایک نوٹ، اسکرین شاٹ لینے، لیزر پوائنٹر یا میگنیفائنگ گلاس استعمال کرنے کے لیے شیلف پر اسٹائلس بٹن تھپتھپائیں۔</translation>
 <translation id="2341729377289034582">عمودی پر مقفل ہے</translation>
 <translation id="2345226652884463045">ترمیم کی خاطر ٹیکسٹ کو منتخب کرنے کے لیے اینٹر یا تلاش + اسپیس دبائیں۔</translation>
@@ -1551,7 +1552,6 @@
 <translation id="7866482334467279021">آن</translation>
 <translation id="7872786842639831132">آف</translation>
 <translation id="7875575368831396199">ایسا لگتا ہے کہ آپ کے <ph name="DEVICE_TYPE" /> پر بلوٹوتھ آف ہے۔ فون ہب کا استعمال کرنے کیلئے براہ کرم بلوٹوتھ آن کریں۔</translation>
-<translation id="7876243839304621966">سبھی ہٹائیں</translation>
 <translation id="7877557217297072640">{0,plural, =0{ابھی آلہ کو گزشتہ ورژن میں تبدیل کریں}=1{1 سیکنڈ کے اندر آلہ کو گزشتہ ورژن میں تبدیل کریں}other{# سیکنڈ کے اندر آلہ کو گزشتہ ورژن میں تبدیل کریں}}</translation>
 <translation id="7884446017008693258">ہاٹ اسپاٹ کی ترتیبات</translation>
 <translation id="7884902759927478774">ٹیب گھسیٹنا منسوخ کریں</translation>
@@ -1650,7 +1650,6 @@
 <translation id="8255234195843591763">اپ ڈیٹ کرنے کے لیے ری سیٹ کریں</translation>
 <translation id="8261506727792406068">حذف کریں</translation>
 <translation id="8262312463845990408">پلے بیک ٹوگل کریں</translation>
-<translation id="8265826854528868575"><ph name="NUM_TOTAL_TASKS" /> میں سے <ph name="NUM_SHOWN_TASKS" /> دکھائے جا رہے ہیں</translation>
 <translation id="8270450402312105425">{0,plural, =1{ایک گھنٹے کے اندر آلہ کو گزشتہ ورژن میں تبدیل کریں}other{# گھنٹے کے اندر آلہ کو گزشتہ ورژن میں تبدیل کریں}}</translation>
 <translation id="8277261673056602147">اپنی اسکرین پر ٹیکسٹ کو نمایاں کریں</translation>
 <translation id="8284362522226889623">پچھلے ڈیسک پر سوئچ کرنے کے لیے، چار انگلیوں سے بائیں سوائپ کریں</translation>
@@ -1758,6 +1757,7 @@
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />۔ <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8790998409862094015">بہت زیادہ</translation>
 <translation id="8792626944327216835">مائیکروفون</translation>
+<translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535">فولڈر <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">"مدد"</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

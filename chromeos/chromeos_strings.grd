@@ -314,22 +314,22 @@
       </message>
 
       <!-- Multitask Menu -->
-      <message name="IDS_MULTITASK_MENU_HALF_BUTTON_NAME" desc="Title of the half button on the multitask menu.">
+      <message name="IDS_MULTITASK_MENU_HALF_BUTTON_NAME" desc="Title of the half button on the multitask menu." meaning="Splits the associated window into half snapped state.">
         Split
       </message>
-      <message name="IDS_MULTITASK_MENU_PARTIAL_BUTTON_NAME" desc="Title and and accessible name of the partial button on the multitask menu.">
+      <message name="IDS_MULTITASK_MENU_PARTIAL_BUTTON_NAME" desc="Title and and accessible name of the partial button on the multitask menu." meaning="Splits the associated window into half snapped state.">
         Partial
       </message>
-      <message name="IDS_MULTITASK_MENU_FULLSCREEN_BUTTON_NAME" desc="Title and and accessible name of the fullscreen button on the multitask menu, when the window is not in fullscreen state.">
+      <message name="IDS_MULTITASK_MENU_FULLSCREEN_BUTTON_NAME" desc="Title and and accessible name of the fullscreen button on the multitask menu, when the window is not in fullscreen state." meaning="Puts the associated window into fullscreen state.">
         Full
       </message>
-      <message name="IDS_MULTITASK_MENU_EXIT_FULLSCREEN_BUTTON_NAME" desc="Title and and accessible name of the fullscreen button on the multitask menu, when the window is in fullscreen state.">
+      <message name="IDS_MULTITASK_MENU_EXIT_FULLSCREEN_BUTTON_NAME" desc="Title and and accessible name of the fullscreen button on the multitask menu, when the window is in fullscreen state." meaning="Restores the associated fullscreen window into its pre-fullscreen state.">
         Exit full
       </message>
-      <message name="IDS_MULTITASK_MENU_FLOAT_BUTTON_NAME" desc="Title and and accessible name of the float button on the multitask menu, when the window is not in float state.">
+      <message name="IDS_MULTITASK_MENU_FLOAT_BUTTON_NAME" desc="Title and and accessible name of the float button on the multitask menu, when the window is not in float state." meaning="Floats the associated window above other windows.">
         Float
       </message>
-      <message name="IDS_MULTITASK_MENU_EXIT_FLOAT_BUTTON_NAME" desc="Title and and accessible name of the float button on the multitask menu, when the window is in float state.">
+      <message name="IDS_MULTITASK_MENU_EXIT_FLOAT_BUTTON_NAME" desc="Title and and accessible name of the float button on the multitask menu, when the window is in float state." meaning="Restores the associated floated window to regular z-order.">
         Exit float
       </message>
       <message name="IDS_MULTITASK_MENU_HALF_BUTTON_ACCESSIBLE_NAME" desc="A11y name for the half button on the multitask menu.">
@@ -341,16 +341,16 @@
       <message name="IDS_MULTITASK_MENU_PARTIAL_BUTTON_SMALL_ACCESSIBLE_NAME" desc="A11y name for the partial button's small side on the multitask menu.">
         Dock window on the <ph name="DIRECTION">$1<ex>left</ex></ph> smaller portion of the screen
       </message>
-      <message name="IDS_MULTITASK_MENU_LEFT" desc="A11y name and tooltip to describe left side of the screen.">
+      <message name="IDS_MULTITASK_MENU_LEFT" desc="A11y name and tooltip to describe left side of the screen." meaning="The associated window will snap to the left side of the screen.">
         left
       </message>
-      <message name="IDS_MULTITASK_MENU_RIGHT" desc="A11y name and tooltip to describe right side of the screen.">
+      <message name="IDS_MULTITASK_MENU_RIGHT" desc="A11y name and tooltip to describe right side of the screen." meaning="The associated window will snap to the right side of the screen.">
         right
       </message>
-      <message name="IDS_MULTITASK_MENU_TOP" desc="A11y name and tooltip to describe top side of the screen.">
+      <message name="IDS_MULTITASK_MENU_TOP" desc="A11y name and tooltip to describe top side of the screen." meaning="The associated window will snap to the top side of the screen.">
         top
       </message>
-      <message name="IDS_MULTITASK_MENU_BOTTOM" desc="A11y name and tooltip to describe bottom side of the screen.">
+      <message name="IDS_MULTITASK_MENU_BOTTOM" desc="A11y name and tooltip to describe bottom side of the screen." meaning="The associated window will snap to the bottom side of the screen.">
         bottom
       </message>
       <message name="IDS_MULTITASK_MENU_NUDGE_TEXT" desc="Text that is shown when the clamshell multitask menu nudge is displayed.">
@@ -2499,6 +2499,9 @@
         <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_DURATION_FOREVER" desc="Label for the screen saver duration option forever.">
          forever
         </message>
+        <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_DURATION_DESCRIPTION" desc="Label for the screen saver duration description.">
+         To conserve battery, screen saver works only while charging.
+        </message>
         <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_TITLE" desc="Label for the radio button group of ambient mode topic source, where the screen contents come from.">
          Image source
         </message>
@@ -2702,18 +2705,6 @@
         </message>
 
         <!-- Personalization App Time of Day strings -->
-        <message name="IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_TITLE" desc="Title for the dialog confirming user's selection of a Time of Day wallpaper.">
-          Confirm preset
-        </message>
-        <message name="IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_CONTENT" desc="Content for the dialog confirming user's selection of a Time of Day wallpaper.">
-          Selecting this wallpaper will turn on auto dark mode and wallpaper color matching.
-        </message>
-        <message name="IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_BACK_BUTTON" desc="Label for the button to close the dialog confirming user's selection of a Time of Day wallpaper.">
-          Back
-        </message>
-        <message name="IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_CONFIRM_BUTTON" desc="Label for the button to accept the dialog confirming user's selection of a Time of Day wallpaper.">
-          Confirm
-        </message>
         <message name="IDS_PERSONALIZATION_APP_TIME_OF_DAY_VIDEO_CLOUDS_ALBUM_TITLE" desc="Title for the clouds video in the ambient section of the hub.">
           Cloud Flow
         </message>
@@ -3599,6 +3590,13 @@
         <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_DEVICE_QUESTION_DOES_MEET_REQUIREMENTS" translateable="false" desc="The text asking if the device's components meet compliance requirements.">
           Do the device components meet requirements?
         </message>
+        <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_DEVICE_QUESTION_DOES_MEET_REQUIREMENTS_TOOLTIP" translateable="false" desc="The tooltip next to the question asking if the device's components meet compliance requirements.">
+          <!-- TODO(cambickel) Update this with the actual tooltip string. -->
+          Do the device components meet requirements?
+        </message>
+        <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_ANSWER_DEFAULT" translateable="false" desc="The option text showing the default value for yes/no questions.">
+          Select
+        </message>
         <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_ANSWER_NO" translateable="false" desc="The option text answering 'no' for yes/no questions.">
           No
         </message>
@@ -4032,6 +4030,10 @@
         <message name="IDS_SHORTCUT_CUSTOMIZATION_EDIT_VIEW_STATUS_MESSAGE" desc="Instructions to user when they're inputting a new shortcut" translateable="false">
           Press 1-4 modifiers and 1 other key on your keyboard
         </message>
+        <!-- TODO(b/286268215): Translate this string -->
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_RESTORE_DEFAULT_ERROR_MESSAGE" desc="Description text shown to users that their default shortcut is used by another shortcut action" translateable="false">
+          Shortcut is used by "<ph name="CONFLICT_ACCEL_NAME">$1<ex>BRIGHTNESS_UP</ex></ph>". Remove or edit to resolve the conflict.
+        </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_RESET_ALL_SHORTCUTS" desc="Button label to reset all shortcuts in the app to their default values">
           Reset all shortcuts
         </message>
@@ -4299,6 +4301,9 @@
         <message name="IDS_SETTINGS_APN_MENU_DETAILS" desc="Details button in three dotted menu for APNs">
           Details
         </message>
+        <message name="IDS_SETTINGS_APN_MENU_EDIT" desc="Edit button in three dotted menu for APNs">
+          Edit
+        </message>
         <message name="IDS_SETTINGS_APN_MENU_DISABLE" desc="Disable button in three dotted menu for APNs">
           Disable
         </message>
@@ -4307,6 +4312,18 @@
         </message>
         <message name="IDS_SETTINGS_APN_MENU_REMOVE" desc="Remove button in three dotted menu for APNs">
           Remove
+        </message>
+        <message name="IDS_SETTINGS_APN_A11Y_NAME" desc="Accessibility text to display the name of an APN item in the APN list and what index it is in the list">
+          <ph name="INDEX">$1<ex>1</ex></ph> of <ph name="COUNT">$2<ex>5</ex></ph>, <ph name="NAME">$3<ex>ATT Broadband</ex></ph>.
+        </message>
+        <message name="IDS_SETTINGS_APN_A11Y_AUTO_DETECTED" desc="Accessibility text for when an APN is automatically detected">
+          APN is automatically detected.
+        </message>
+        <message name="IDS_SETTINGS_APN_A11Y_CONNECTED" desc="Accessibility text for when an APN is connected">
+          APN is connected.
+        </message>
+        <message name="IDS_SETTINGS_APN_A11Y_DISABLED" desc="Accessibility text for when an APN is disabled">
+          APN is disabled.
         </message>
         <message name="IDS_SETTINGS_APN_MORE_ACTIONS_TITLE" desc="Description of the tree dotted menu for APNs">
           More actions for <ph name="APN_NAME">$1<ex>vzwinternet</ex></ph>
@@ -4318,7 +4335,7 @@
           APN details
         </message>
         <message name="IDS_SETTINGS_EDIT_APN_DIALOG_TITLE" desc="Title for the dialog for viewing an APN">
-          View and edit details
+          Edit APN details
         </message>
         <message name="IDS_SETTINGS_APN_INPUT_LABEL" desc="Label for the input field where the APN is specified, the asterisk indicates that this is required">
           APN*

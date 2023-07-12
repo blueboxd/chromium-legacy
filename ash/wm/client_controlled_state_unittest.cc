@@ -980,7 +980,7 @@ TEST_F(ClientControlledStateTest, TuckAndUntuckFloatedWindowInTabletMode) {
   ShellTestApi().WaitForWindowFinishAnimating(window());
   EXPECT_TRUE(window()->IsVisible());
   EXPECT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window()));
-  EXPECT_EQ(FloatController::GetPreferredFloatWindowTabletBounds(window()),
+  EXPECT_EQ(FloatController::GetFloatWindowTabletBounds(window()),
             delegate()->requested_bounds());
 }
 
@@ -1046,6 +1046,12 @@ TEST_P(ClientControlledStateTestClamshellAndTablet, MoveFloatedWindow) {
     // persist after releasing the mouse button.
     EXPECT_EQ(delegate()->requested_bounds(), expected_bounds);
   }
+
+  // Minimize and unminimize the window. Test that its bounds are restored.
+  window_state()->Minimize();
+  window_state()->Restore();
+  ApplyPendingRequestedBounds();
+  EXPECT_EQ(delegate()->requested_bounds(), expected_bounds);
 }
 
 TEST_P(ClientControlledStateTestClamshellAndTablet, FloatWindow) {
@@ -1062,11 +1068,11 @@ TEST_P(ClientControlledStateTestClamshellAndTablet, FloatWindow) {
   // Test float.
   const WMEvent float_event(WM_EVENT_FLOAT);
   window_state()->OnWMEvent(&float_event);
-  EXPECT_EQ(
-      InTabletMode()
-          ? FloatController::GetPreferredFloatWindowTabletBounds(window())
-          : FloatController::GetPreferredFloatWindowClamshellBounds(window()),
-      delegate()->requested_bounds());
+  EXPECT_EQ(InTabletMode()
+                ? FloatController::GetFloatWindowTabletBounds(window())
+                : FloatController::GetFloatWindowClamshellBounds(
+                      window(), chromeos::FloatStartLocation::kBottomRight),
+            delegate()->requested_bounds());
   EXPECT_EQ(WindowStateType::kDefault, delegate()->old_state());
   EXPECT_EQ(WindowStateType::kFloated, delegate()->new_state());
 
@@ -1080,11 +1086,11 @@ TEST_P(ClientControlledStateTestClamshellAndTablet, FloatWindow) {
       display::Screen::GetScreen()->GetPrimaryDisplay().id(),
       display::Display::ROTATE_90, display::Display::RotationSource::USER);
   ASSERT_FALSE(chromeos::wm::IsLandscapeOrientationForWindow(window()));
-  EXPECT_EQ(
-      InTabletMode()
-          ? FloatController::GetPreferredFloatWindowTabletBounds(window())
-          : FloatController::GetPreferredFloatWindowClamshellBounds(window()),
-      delegate()->requested_bounds());
+  EXPECT_EQ(InTabletMode()
+                ? FloatController::GetFloatWindowTabletBounds(window())
+                : FloatController::GetFloatWindowClamshellBounds(
+                      window(), chromeos::FloatStartLocation::kBottomRight),
+            delegate()->requested_bounds());
 
   // Test minimize.
   const WMEvent minimize_event(WM_EVENT_MINIMIZE);
@@ -1098,11 +1104,11 @@ TEST_P(ClientControlledStateTestClamshellAndTablet, FloatWindow) {
   // Test unminimize.
   const WMEvent unminimize_event(WM_EVENT_RESTORE);
   window_state()->OnWMEvent(&unminimize_event);
-  EXPECT_EQ(
-      InTabletMode()
-          ? FloatController::GetPreferredFloatWindowTabletBounds(window())
-          : FloatController::GetPreferredFloatWindowClamshellBounds(window()),
-      delegate()->requested_bounds());
+  EXPECT_EQ(InTabletMode()
+                ? FloatController::GetFloatWindowTabletBounds(window())
+                : FloatController::GetFloatWindowClamshellBounds(
+                      window(), chromeos::FloatStartLocation::kBottomRight),
+            delegate()->requested_bounds());
   EXPECT_EQ(WindowStateType::kMinimized, delegate()->old_state());
   EXPECT_EQ(WindowStateType::kFloated, delegate()->new_state());
   state()->EnterNextState(window_state(), delegate()->new_state());

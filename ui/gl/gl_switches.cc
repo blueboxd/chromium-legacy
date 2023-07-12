@@ -165,7 +165,7 @@ const char* const kGLSwitchesCopiedFromGpuProcessHost[] = {
     kEnableDirectCompositionVideoOverlays,
     kDirectCompositionVideoSwapChainFormat,
 };
-const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches =
+const size_t kGLSwitchesCopiedFromGpuProcessHostNumSwitches =
     std::size(kGLSwitchesCopiedFromGpuProcessHost);
 
 }  // namespace switches
@@ -230,6 +230,11 @@ BASE_FEATURE(kIntelVpSuperResolution,
 // Allow overlay swapchain to use NVIDIA video processor for super resolution.
 BASE_FEATURE(kNvidiaVpSuperResolution,
              "NvidiaVpSuperResolution",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Allow overlay swapchain to use NVIDIA video processor for trueHDR.
+BASE_FEATURE(kNvidiaVpTrueHDR,
+             "NvidiaVpTrueHDR",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Default to using ANGLE's OpenGL backend

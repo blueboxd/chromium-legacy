@@ -3975,6 +3975,29 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Blink.ContentManagementSystem.Versions" singular="True">
+  <owner>felixarntz@google.com</owner>
+  <owner>nrosenthal@chromium.org</owner>
+  <summary>
+    Metrics stating the detected major+minor version of known content management
+    systems when detected. This event is recorded when the page is loaded. For
+    interoperability with the framework detection above, this reports each
+    content management system individually instead of a single number. The
+    version numbers here are a bit mask: 0xMMmm (Major+minor), e.g. version 16.3
+    would be 0x1003
+  </summary>
+  <metric name="DrupalVersion">
+    <summary>
+      A bitmask (0xMMmm) representing the Drupal version
+    </summary>
+  </metric>
+  <metric name="WordPressVersion">
+    <summary>
+      A bitmask (0xMMmm) representing the WordPress version
+    </summary>
+  </metric>
+</event>
+
 <event name="Blink.ContextMenu.ImageSelection">
   <obsolete>
     No longer recorded after August 2022 launch of the feature.
@@ -4340,11 +4363,6 @@ be describing additional metrics about the same event.
       A bitmask (0xMMmm) representing the Angular version
     </summary>
   </metric>
-  <metric name="DrupalVersion">
-    <summary>
-      A bitmask (0xMMmm) representing the Drupal version
-    </summary>
-  </metric>
   <metric name="NextJSVersion">
     <summary>
       A bitmask (0xMMmm) representing the NextJS version
@@ -4358,11 +4376,6 @@ be describing additional metrics about the same event.
   <metric name="VueVersion">
     <summary>
       A bitmask (0xMMmm) representing the Vue version
-    </summary>
-  </metric>
-  <metric name="WordPressVersion">
-    <summary>
-      A bitmask (0xMMmm) representing the WordPress version
     </summary>
   </metric>
 </event>
@@ -7339,6 +7352,50 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="ContentManagementSystemPageLoad" singular="True">
+  <owner>felixarntz@google.com</owner>
+  <owner>npm@chromium.org</owner>
+  <summary>
+    Metrics stating whether the main frame of a page uses certain content
+    management systems. This event is recorded when the page is going to be
+    unloaded or when the app enters the background on Android. The content
+    management system detection is done when the document is loaded (similar to
+    when load event is fired). If a CMS is used after this then it would not be
+    detected. For interoperability with the JavaScript framework detection
+    above, this reports each CMS individually instead of a single enum.
+  </summary>
+  <metric name="DrupalPageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the Drupal CMS.
+    </summary>
+  </metric>
+  <metric name="JoomlaPageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the Joomloa CMS.
+    </summary>
+  </metric>
+  <metric name="ShopifyPageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the Shopify CMS.
+    </summary>
+  </metric>
+  <metric name="SquarespacePageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the Squarespace CMS.
+    </summary>
+  </metric>
+  <metric name="WixPageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the Wix CMS.
+    </summary>
+  </metric>
+  <metric name="WordPressPageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the WordPress CMS.
+    </summary>
+  </metric>
+</event>
+
 <event name="ContextMenuAndroid.Selected">
   <owner>benwgold@google.com</owner>
   <owner>twellington@chromium.org</owner>
@@ -8635,142 +8692,6 @@ be describing additional metrics about the same event.
       may still be skipped if the floc was not calculated or has been
       invalidated.
     </summary>
-  </metric>
-</event>
-
-<event name="FontMatchAttempts">
-  <owner>caraitto@chromium.org</owner>
-  <owner>pauljensen@chromium.org</owner>
-  <owner>privacy-sandbox-dev@chromium.org</owner>
-  <summary>
-    Records font family match attempts, broken down by system fonts and web
-    fonts. Multiple match attempts using the same font family name are
-    de-duplicated. Matching of @font-face src:local fonts isn't currently
-    supported.
-  </summary>
-  <metric name="LoadContext" enum="FontLoadContext">
-    <summary>
-      If the font family name was matched in a top-level frame, a sub-frame or a
-      worker.
-    </summary>
-  </metric>
-  <metric name="LocalFontFailures">
-    <summary>
-      The count of failed attempts to match @font-face src:local rules.
-    </summary>
-    <aggregation>
-      <history>
-        <index fields="profile.country"/>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-  <metric name="LocalFontSuccesses">
-    <summary>
-      The count of successful attempts to match @font-face src:local rules.
-    </summary>
-    <aggregation>
-      <history>
-        <index fields="profile.country"/>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-  <metric name="LocalFontTotal">
-    <summary>
-      The count of total attempts (failed + succeeded) to match @font-face
-      src:local rules.
-    </summary>
-    <aggregation>
-      <history>
-        <index fields="profile.country"/>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-  <metric name="SystemFontFamilyFailures">
-    <summary>
-      The count of system font family match attempts that failed.
-    </summary>
-    <aggregation>
-      <history>
-        <index fields="profile.country"/>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-  <metric name="SystemFontFamilySuccesses">
-    <summary>
-      The count of system font family match attempts that succeeded.
-    </summary>
-    <aggregation>
-      <history>
-        <index fields="profile.country"/>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-  <metric name="SystemFontFamilyTotal">
-    <summary>
-      Total count of system font family match attempts (succeeded + failed).
-    </summary>
-    <aggregation>
-      <history>
-        <index fields="profile.country"/>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-  <metric name="WebFontFamilyFailures">
-    <summary>
-      The count of web font family match attempts that failed.
-    </summary>
-    <aggregation>
-      <history>
-        <index fields="profile.country"/>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-  <metric name="WebFontFamilySuccesses">
-    <summary>
-      The count of web font family match attempts that succeeded.
-    </summary>
-    <aggregation>
-      <history>
-        <index fields="profile.country"/>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-  <metric name="WebFontFamilyTotal">
-    <summary>
-      Total count of web font family match attempts (succeeded + failed).
-    </summary>
-    <aggregation>
-      <history>
-        <index fields="profile.country"/>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
 </event>
 
@@ -12308,20 +12229,10 @@ be describing additional metrics about the same event.
       framework.
     </summary>
   </metric>
-  <metric name="DrupalPageLoad" enum="Boolean">
-    <summary>
-      True if the page loaded in the main frame uses the Drupal CMS.
-    </summary>
-  </metric>
   <metric name="GatsbyPageLoad" enum="Boolean">
     <summary>
       True if the page loaded in the main frame uses the Gatsby JavaScript
       framework.
-    </summary>
-  </metric>
-  <metric name="JoomlaPageLoad" enum="Boolean">
-    <summary>
-      True if the page loaded in the main frame uses the Joomloa CMS.
     </summary>
   </metric>
   <metric name="NextJSPageLoad" enum="Boolean">
@@ -12354,16 +12265,6 @@ be describing additional metrics about the same event.
       framework.
     </summary>
   </metric>
-  <metric name="ShopifyPageLoad" enum="Boolean">
-    <summary>
-      True if the page loaded in the main frame uses the Shopify CMS.
-    </summary>
-  </metric>
-  <metric name="SquarespacePageLoad" enum="Boolean">
-    <summary>
-      True if the page loaded in the main frame uses the Squarespace CMS.
-    </summary>
-  </metric>
   <metric name="SveltePageLoad" enum="Boolean">
     <summary>
       True if the page loaded in the main frame uses the Svelte JavaScript
@@ -12380,16 +12281,6 @@ be describing additional metrics about the same event.
     <summary>
       True if the page loaded in the main frame uses the VuePress JavaScript
       framework.
-    </summary>
-  </metric>
-  <metric name="WixPageLoad" enum="Boolean">
-    <summary>
-      True if the page loaded in the main frame uses the Wix CMS.
-    </summary>
-  </metric>
-  <metric name="WordPressPageLoad" enum="Boolean">
-    <summary>
-      True if the page loaded in the main frame uses the WordPress CMS.
     </summary>
   </metric>
 </event>
@@ -17730,6 +17621,13 @@ be describing additional metrics about the same event.
       image, and omitted when it is text.
     </summary>
   </metric>
+  <metric name="PaintTiming.LargestContentfulPaintImageDiscoveryTime">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the image LCP element is requested. This metric is
+      not recorded when the LCP element is text or video.
+    </summary>
+  </metric>
   <metric name="PaintTiming.LargestContentfulPaintImageLoadEnd">
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
@@ -22883,7 +22781,11 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="HasFavicons" enum="Boolean">
     <summary>
-      Records whether the site has favicons or not.
+      Records whether the site has non-default favicons or not. Non-default
+      favicons are those which are either explicitly set in the client side, or
+      are icons obtained from the manifest. The default favicon set by chrome,
+      that follows document_url/favicon.ico is not counted as part of this
+      metric.
     </summary>
     <aggregation>
       <history>
@@ -23154,6 +23056,61 @@ be describing additional metrics about the same event.
     <summary>
       Records the navigation id of a soft navigation. It is used to
       differentiate soft navigations.
+    </summary>
+  </metric>
+  <metric name="PaintTiming.LargestContentfulPaint">
+    <summary>
+      Measures the LargestContentfulPaint in milliseconds from the start time of
+      the soft navigation to the LCP time.
+    </summary>
+  </metric>
+  <metric name="PaintTiming.LargestContentfulPaintBPP"
+      enum="BitsPerPixelExponential">
+    <summary>
+      Measures the ratio of image file size (in bits) to displayed pixels for
+      the LCP candidate. Bucketed into roughly exponential intervals to account
+      for the wide range of encountered values (less than 1:100000 to greater
+      than 10000:1). This metric is recorded whenever the LCP candidate is an
+      image, and omitted when it is text.
+    </summary>
+  </metric>
+  <metric name="PaintTiming.LargestContentfulPaintImageDiscoveryTime">
+    <summary>
+      Measures the time in milliseconds from soft navigation's start time to the
+      time when the image LCP element is requested. This metric is not recorded
+      when the LCP element is text or video.
+    </summary>
+  </metric>
+  <metric name="PaintTiming.LargestContentfulPaintImageLoadEnd">
+    <summary>
+      Measures the time in milliseconds from soft navigation's start time to the
+      time when the image LCP element finishes loading. For animated images,
+      this is when the image resource finishes loading completely, not the first
+      frame time. See web.dev/optimize-lcp for more details. This metric is not
+      recorded when the LCP element is text or video.
+    </summary>
+  </metric>
+  <metric name="PaintTiming.LargestContentfulPaintImageLoadStart">
+    <summary>
+      Measures the time in milliseconds from soft navigation's start time to the
+      time when the image LCP element starts loading. See web.dev/optimize-lcp
+      for more details. This metric is not recorded when the LCP element is text
+      or video.
+    </summary>
+  </metric>
+  <metric name="PaintTiming.LargestContentfulPaintRequestPriority"
+      enum="NetRequestPriority">
+    <summary>
+      Resource loading priority used for the LCP candidate. This metric is
+      recorded whenever the LCP candidate is an image, and omitted when it is
+      text or video.
+    </summary>
+  </metric>
+  <metric name="PaintTiming.LargestContentfulPaintType">
+    <summary>
+      Indicates that type of the LargestContentfulPaint candidate. This value is
+      a packed set of flags, defined in
+      third_party/blink/public/common/performance/largest_contentful_paint_type.h
     </summary>
   </metric>
   <metric name="StartTime">

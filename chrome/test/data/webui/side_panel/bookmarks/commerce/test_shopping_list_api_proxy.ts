@@ -12,23 +12,26 @@ export class TestShoppingListApiProxy extends TestBrowserProxy implements
   callbackRouterRemote: PageRemote;
   private products_: BookmarkProductInfo[] = [];
   private product_: ProductInfo = {
-    title: 'Product Foo',
-    clusterTitle: 'Product Cluster Foo',
-    domain: 'foo.com',
-    imageUrl: {url: 'https://foo.com/image'},
-    productUrl: {url: 'https://foo.com/product'},
-    currentPrice: '$12',
-    previousPrice: '$34',
-    clusterId: BigInt(12345),
+    title: '',
+    clusterTitle: '',
+    domain: '',
+    imageUrl: {url: ''},
+    productUrl: {url: ''},
+    currentPrice: '',
+    previousPrice: '',
+    clusterId: BigInt(0),
   };
   private priceInsights_: PriceInsightsInfo = {
-    clusterId: BigInt(123),
-    typicalLowPrice: '$100',
-    typicalHighPrice: '$200',
-    catalogAttributes: 'Unlocked, 4GB',
-    jackpot: {url: 'https://foo.com/jackpot'},
-    bucket: PriceInsightsInfo_PriceBucket.kLow,
-    hasMultipleCatalogs: true,
+    clusterId: BigInt(0),
+    typicalLowPrice: '',
+    typicalHighPrice: '',
+    catalogAttributes: '',
+    jackpot: {url: ''},
+    bucket: PriceInsightsInfo_PriceBucket.kUnknown,
+    hasMultipleCatalogs: false,
+    history: [],
+    locale: '',
+    currencyCode: '',
   };
 
   constructor() {
@@ -40,6 +43,13 @@ export class TestShoppingListApiProxy extends TestBrowserProxy implements
       'getProductInfoForCurrentUrl',
       'getPriceInsightsInfoForCurrentUrl',
       'showInsightsSidePanelUi',
+      'openUrlInNewTab',
+      'showFeedback',
+      'isShoppingListEligible',
+      'getPriceTrackingStatusForCurrentUrl',
+      'setPriceTrackingStatusForCurrentUrl',
+      'getParentBookmarkFolderNameForCurrentUrl',
+      'showBookmarkEditorForCurrentUrl',
     ]);
 
     this.callbackRouter = new PageCallbackRouter();
@@ -82,6 +92,34 @@ export class TestShoppingListApiProxy extends TestBrowserProxy implements
 
   showInsightsSidePanelUi() {
     this.methodCalled('showInsightsSidePanelUi');
+  }
+
+  openUrlInNewTab() {
+    this.methodCalled('openUrlInNewTab');
+  }
+
+  showFeedback() {
+    this.methodCalled('showFeedback');
+  }
+
+  isShoppingListEligible() {
+    return this.methodCalled('isShoppingListEligible');
+  }
+
+  getPriceTrackingStatusForCurrentUrl() {
+    return this.methodCalled('getPriceTrackingStatusForCurrentUrl');
+  }
+
+  setPriceTrackingStatusForCurrentUrl(track: boolean) {
+    this.methodCalled('setPriceTrackingStatusForCurrentUrl', track);
+  }
+
+  getParentBookmarkFolderNameForCurrentUrl() {
+    return this.methodCalled('getParentBookmarkFolderNameForCurrentUrl');
+  }
+
+  showBookmarkEditorForCurrentUrl() {
+    this.methodCalled('showBookmarkEditorForCurrentUrl');
   }
 
   getCallbackRouter() {

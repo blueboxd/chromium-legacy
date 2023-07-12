@@ -1326,9 +1326,9 @@ FileManagerPrivateSearchFilesByHashesFunction::Run() {
   drive::EventLogger* const logger = file_manager::util::GetLogger(profile);
   if (logger) {
     logger->Log(logging::LOG_INFO,
-                "%s[%d] called. (volume id: %s, number of hashes: %zd)", name(),
-                request_id(), params->volume_id.c_str(),
-                params->hash_list.size());
+                "%s[%s] called. (volume id: %s, number of hashes: %zd)", name(),
+                request_uuid().AsLowercaseString().c_str(),
+                params->volume_id.c_str(), params->hash_list.size());
   }
   set_log_on_completion(true);
 
@@ -1737,14 +1737,20 @@ FileManagerPrivateResumeIOTaskFunction::Run() {
   }
 
   file_manager::io_task::ResumeParams io_task_resume_params;
-  io_task_resume_params.conflict_params->conflict_resolve =
-      params->params.conflict_params->conflict_resolve.value_or("");
-  io_task_resume_params.conflict_params->conflict_apply_to_all =
-      params->params.conflict_params->conflict_apply_to_all.value_or(false);
-  absl::optional<policy::Policy> policy =
-      ApiPolicyErrorTypeToChromeEnum(params->params.policy_params->type);
-  if (policy.has_value()) {
-    io_task_resume_params.policy_params->type = policy.value();
+  if (params->params.conflict_params) {
+    io_task_resume_params.conflict_params.emplace();
+    io_task_resume_params.conflict_params->conflict_resolve =
+        params->params.conflict_params->conflict_resolve.value_or("");
+    io_task_resume_params.conflict_params->conflict_apply_to_all =
+        params->params.conflict_params->conflict_apply_to_all.value_or(false);
+  }
+  if (params->params.policy_params) {
+    absl::optional<policy::Policy> policy =
+        ApiPolicyErrorTypeToChromeEnum(params->params.policy_params->type);
+    if (policy.has_value()) {
+      io_task_resume_params.policy_params.emplace();
+      io_task_resume_params.policy_params->type = policy.value();
+    }
   }
 
   volume_manager->io_task_controller()->Resume(

@@ -37,8 +37,8 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -359,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, MediaDeviceIdSalt) {
       frame_host, site_for_cookies, storage_key, future.GetCallback());
   std::string original_salt = future.Get<1>();
 
-  RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_COOKIES);
+  RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_MEDIA_DEVICE_SALTS);
 
   future.Clear();
   content::GetContentClientForTesting()->browser()->GetMediaDeviceIDSalt(
@@ -830,7 +830,7 @@ class BrowsingDataRemoverWithPasswordsAccountStorageBrowserTest
             base::Unretained(GetBrowser()->profile())),
         /*origin=*/origin,
         /*clear_cookies=*/true, /*clear_storage=*/true,
-        /*clear_cache=*/true,
+        /*clear_cache=*/true, /*clear_client_hints=*/true,
         /*storage_buckets_to_remove=*/storage_buckets_to_remove,
         /*avoid_closing_connections=*/true,
         /*cookie_partition_key=*/cookie_partition_key,
@@ -1017,7 +1017,7 @@ class BrowsingDataRemoverStorageBucketsBrowserTest
             base::Unretained(GetBrowser()->profile())),
         /*origin=*/origin,
         /*clear_cookies=*/true, /*clear_storage=*/false,
-        /*clear_cache=*/true,
+        /*clear_cache=*/true, /*clear_client_hints=*/true,
         /*storage_buckets_to_remove=*/storage_buckets_to_remove,
         /*avoid_closing_connections=*/true,
         /*cookie_partition_key=*/absl::nullopt,

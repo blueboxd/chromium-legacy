@@ -28,6 +28,7 @@
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/device_reauth/device_authenticator.h"
 #include "components/device_reauth/mock_device_authenticator.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/mock_webauthn_credentials_delegate.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/passkey_credential.h"
@@ -181,8 +182,10 @@ class TouchToFillControllerAutofillTest
     return touch_to_fill_controller_;
   }
 
-  base::MockCallback<
-      base::RepeatingCallback<void(gfx::NativeWindow, Profile*)>>&
+  base::MockCallback<base::RepeatingCallback<
+      void(gfx::NativeWindow,
+           Profile*,
+           password_manager::metrics_util::PasswordMigrationWarningTriggers)>>&
   show_password_migration_warning() {
     return show_password_migration_warning_;
   }
@@ -229,7 +232,10 @@ class TouchToFillControllerAutofillTest
   ukm::TestAutoSetUkmRecorder test_recorder_;
   TouchToFillController touch_to_fill_controller_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::MockCallback<base::RepeatingCallback<void(gfx::NativeWindow, Profile*)>>
+  base::MockCallback<base::RepeatingCallback<void(
+      gfx::NativeWindow,
+      Profile*,
+      password_manager::metrics_util::PasswordMigrationWarningTriggers)>>
       show_password_migration_warning_;
   raw_ptr<MockPasswordCredentialFiller> weak_filler_;
 };
@@ -351,7 +357,10 @@ TEST_F(TouchToFillControllerAutofillTest,
                                       std::u16string(u"p4ssw0rd")));
   EXPECT_CALL(*last_mock_filler(), UpdateTriggerSubmission(false));
   EXPECT_CALL(client(), StartSubmissionTrackingAfterTouchToFill(_)).Times(0);
-  EXPECT_CALL(show_password_migration_warning(), Run);
+  EXPECT_CALL(show_password_migration_warning(),
+              Run(_, _,
+                  password_manager::metrics_util::
+                      PasswordMigrationWarningTriggers::kTouchToFill));
 
   touch_to_fill_controller().OnCredentialSelected(credentials[0]);
 }

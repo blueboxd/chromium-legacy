@@ -101,6 +101,13 @@ using ScopedWebStateListObservation =
 
 #pragma mark - WebStateListObserving
 
+- (void)willChangeWebStateList:(WebStateList*)webStateList
+                        change:(const WebStateListChangeDetach&)detachChange
+                     selection:(const WebStateSelection&)selection {
+  // Do nothing. Updating the consumer with the new count will be handled in
+  // didChangeWebStateList:change:selection: with kDetach.
+}
+
 - (void)didChangeWebStateList:(WebStateList*)webStateList
                        change:(const WebStateListChange&)change
                     selection:(const WebStateSelection&)selection {
@@ -111,13 +118,14 @@ using ScopedWebStateListObservation =
   }
 
   switch (change.type()) {
-    case WebStateListChange::Type::kSelectionOnly:
+    case WebStateListChange::Type::kSelectionOnly: {
+      CHECK(!selection.pinned_state_change);
       // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason and
-      // webStateList:didChangePinnedStateForWebState:atIndex to here. Note that
-      // here is reachable only when `reason` ==
+      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
+      // here. Note that here is reachable only when `reason` ==
       // ActiveWebStateChangeReason::Activated in didChangeActiveWebState:.
       break;
+    }
     case WebStateListChange::Type::kDetach:
       [_consumer updateInactiveTabsCount:_webStateList->count()];
       break;
@@ -129,33 +137,12 @@ using ScopedWebStateListObservation =
 }
 
 - (void)webStateList:(WebStateList*)webStateList
-    willDetachWebState:(web::WebState*)webState
-               atIndex:(int)index {
-  // No-op. `-didChangeWebStateList:change:selection:` with kDetach will soon be
-  // called and will update the consumer with the new count.
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    willCloseWebState:(web::WebState*)webState
-              atIndex:(int)atIndex
-           userAction:(BOOL)userAction {
-  // No-op. Closed tabs have previously been detached, which means the count has
-  // already been updated.
-}
-
-- (void)webStateList:(WebStateList*)webStateList
     didChangeActiveWebState:(web::WebState*)newWebState
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
                      reason:(ActiveWebStateChangeReason)reason {
   // No-op. This is called when the selected web state is moved (closed and
   // opened elsewhere) from inactive to active.
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didChangePinnedStateForWebState:(web::WebState*)webState
-                            atIndex:(int)index {
-  NOTREACHED();
 }
 
 - (void)webStateListWillBeginBatchOperation:(WebStateList*)webStateList {

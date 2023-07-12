@@ -385,11 +385,11 @@ someone from the OWNERS file.
 ## Histogram Expiry
 
 Histogram expiry is specified by the `expires_after` attribute in histogram
-descriptions in histograms.xml. The attribute can be specified as date in
-**YYYY-MM-DD** format or as Chrome milestone in **M**\*(e.g. M105) format. In
-the latter case, the actual expiry date is about 12 weeks after that branch is
-cut, or basically when it is replaced on the "stable" channel by the following
-release.
+descriptions in histograms.xml. It is a required attribute. The attribute can
+be specified as date in **YYYY-MM-DD** format or as Chrome milestone in
+**M**\*(e.g. M105) format. In the latter case, the actual expiry date is about
+12 weeks after that branch is cut, or basically when it is replaced on the
+"stable" channel by the following release.
 
 After a histogram expires, it ceases to be displayed on the dashboard.
 Follow [these directions](#extending) to extend it.
@@ -412,8 +412,10 @@ reviewed by chromium-metrics-reviews@google.com.
 <!-- expires-never: "heartbeat" metric (internal: go/uma-heartbeats) -->
 ```
 
-For all new histograms, the use of expiry attribute is strongly encouraged and
-enforced by the Chrome Metrics team through reviews.
+It is never appropriate to set the expiry to "never" on a new histogram. Most
+new histograms don't turn out to have the properties the implementer wants,
+whether due to bugs in the implementation or simply an evolving understanding
+of what should be measured.
 
 #### How to choose expiry for histograms
 
@@ -718,8 +720,8 @@ entry became obsolete will be automatically recorded. You can skip this step
 if the histogram removed is already expired or obsolete.
 
 * Add the obsoletion message in the CL description in the format
-  OBSOLETE_HISTOGRAM[histogram name]=obsoletion message (e.g. OBSOLETE_HISTOGRAM
-  [Tab.Count]=Replaced by Tab.Count2).
+  OBSOLETE_HISTOGRAM[histogram name]=obsoletion message (e.g.
+  OBSOLETE_HISTOGRAM[Tab.Count]=Replaced by Tab.Count2).
 * If you want to add the same obsoletion message to all the histograms removed
   in the CL, you can use OBSOLETE_HISTOGRAMS=message (e.g.
   OBSOLETE_HISTOGRAMS=Patterned histogram Hist.{Token} is replaced by

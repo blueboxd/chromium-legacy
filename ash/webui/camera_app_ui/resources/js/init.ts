@@ -2,20 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/*
- * strings.m.js is generated when we enable it via UseStringsJs() in webUI
- * controller. When loading it, it will populate data such as localized strings
- * into |window.loadTimeData|.
- */
-import '/strings.m.js';
-
 import {AppWindow} from './app_window.js';
 import * as Comlink from './lib/comlink.js';
 import {TestBridge} from './test_bridge.js';
 import {
   createUntrustedIframe,
   injectUntrustedJSModule,
-  setGAHelper,
+  setGaHelper,
   setVideoProcessorHelper,
 } from './untrusted_scripts.js';
 
@@ -65,7 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await appWindow.waitUntilReadyOnTastSide();
   }
 
-  setGAHelper(
+  setGaHelper(
       injectUntrustedJSModule(gaHelperIFrame, '/js/untrusted_ga_helper.js'));
   setVideoProcessorHelper(injectUntrustedJSModule(
       videoProcessorHelperIFrame, '/js/untrusted_video_processor_helper.js'));

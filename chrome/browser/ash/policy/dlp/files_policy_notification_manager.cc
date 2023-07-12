@@ -24,8 +24,6 @@
 #include "chrome/browser/ash/file_manager/url_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/policy/dlp/dialogs/files_policy_dialog.h"
-#include "chrome/browser/ash/policy/dlp/dialogs/files_policy_error_dialog.h"
-#include "chrome/browser/ash/policy/dlp/dialogs/files_policy_warn_dialog.h"
 #include "chrome/browser/chromeos/policy/dlp/dialogs/policy_dialog_base.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_file.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
@@ -280,6 +278,17 @@ FilesPolicyNotificationManager::FilesPolicyNotificationManager(
 
 FilesPolicyNotificationManager::~FilesPolicyNotificationManager() = default;
 
+void FilesPolicyNotificationManager::Shutdown() {
+  file_manager::VolumeManager* const volume_manager =
+      file_manager::VolumeManager::Get(Profile::FromBrowserContext(context_));
+  if (volume_manager) {
+    auto* io_task_controller = volume_manager->io_task_controller();
+    if (io_task_controller) {
+      io_task_controller->RemoveObserver(this);
+    }
+  }
+}
+
 void FilesPolicyNotificationManager::ShowDlpBlockedFiles(
     absl::optional<file_manager::io_task::IOTaskId> task_id,
     std::vector<base::FilePath> blocked_files,
@@ -287,9 +296,12 @@ void FilesPolicyNotificationManager::ShowDlpBlockedFiles(
   // If `task_id` has value, the corresponding IOTask should be updated
   // accordingly.
   if (task_id.has_value()) {
+    // Sometimes DLP checks are done before FilesPolicyNotificationManager is
+    // lazily created, so the task is not tracked and the blocked files won't
+    // be added. On the other hand, the IO task may be aborted/canceled
+    // already so the info saved may be not needed anymore.
     if (!HasIOTask(task_id.value())) {
-      // Task already completed and removed.
-      return;
+      AddIOTask(task_id.value(), action);
     }
     for (const auto& file : blocked_files) {
       io_tasks_.at(task_id.value())
@@ -713,11 +725,8 @@ void FilesPolicyNotificationManager::ShowFilesPolicyDialog(
       if (info.blocked_files.empty()) {
         return;
       }
-      // TODO(b/285568353): Remove destination.
-      FilesPolicyDialog::CreateErrorDialog(
-          info.blocked_files,
-          info.destination.value_or(DlpFileDestination("https://example.com")),
-          info.action, modal_parent);
+      FilesPolicyDialog::CreateErrorDialog(info.blocked_files, info.action,
+                                           modal_parent);
       break;
     case FilesDialogType::kWarning:
       if (!info.warning_info.has_value()) {
@@ -726,9 +735,7 @@ void FilesPolicyNotificationManager::ShowFilesPolicyDialog(
       CHECK(!info.warning_info->warning_callback.is_null());
       FilesPolicyDialog::CreateWarnDialog(
           std::move(info.warning_info->dialog_callback),
-          info.warning_info->files,
-          info.destination.value_or(DlpFileDestination("https://example.com")),
-          info.action, modal_parent);
+          info.warning_info->files, info.action, modal_parent);
       break;
   }
   // TODO(ayaelattar): Timeout after total 5 minutes.
@@ -920,17 +927,6 @@ void FilesPolicyNotificationManager::Cancel(
   io_task_controller->Cancel(task_id);
 }
 
-void FilesPolicyNotificationManager::Shutdown() {
-  file_manager::VolumeManager* const volume_manager =
-      file_manager::VolumeManager::Get(Profile::FromBrowserContext(context_));
-  if (volume_manager) {
-    auto* io_task_controller = volume_manager->io_task_controller();
-    if (io_task_controller) {
-      io_task_controller->RemoveObserver(this);
-    }
-  }
-}
-
 void FilesPolicyNotificationManager::ShowDlpBlockNotification(
     std::vector<base::FilePath> blocked_files,
     dlp::FileAction action) {
@@ -1040,8 +1036,8 @@ void FilesPolicyNotificationManager::ShowDlpWarningNotification(
         std::move(callback),
         std::vector<DlpConfidentialFile>{warning_files.begin(),
                                          warning_files.end()},
-        destination, action,
-        /*modal_parent=*/nullptr);
+        action,
+        /*modal_parent=*/nullptr, destination);
   }
   // TODO(ayaelattar): Timeout after total 5 minutes.
 }
@@ -1059,7 +1055,9 @@ void FilesPolicyNotificationManager::PauseIOTask(
     return;
   }
   // Sometimes DLP checks are done before FilesPolicyNotificationManager is
-  // lazily created, so the task is not tracked and the pausing won't happen.
+  // lazily created, so the task is not tracked and the pausing won't happen. On
+  // the other hand, the IO task may be aborted/canceled already so the info
+  // saved may be not needed anymore.
   if (!HasIOTask(task_id)) {
     AddIOTask(task_id, action);
   }

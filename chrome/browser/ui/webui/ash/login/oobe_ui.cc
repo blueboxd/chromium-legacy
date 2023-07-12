@@ -131,6 +131,7 @@
 #include "chrome/grit/oobe_conditional_resources.h"
 #include "chrome/grit/oobe_unconditional_resources.h"
 #include "chrome/grit/oobe_unconditional_resources_map.h"
+#include "chromeos/ash/components/assistant/buildflags.h"
 #include "chromeos/ash/services/auth_factor_config/in_process_instances.h"
 #include "chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom.h"
 #include "chromeos/ash/services/multidevice_setup/multidevice_setup_service.h"
@@ -143,6 +144,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -295,8 +297,16 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
                      features::IsOobeLazyLoadingEnabled());
   // TODO (b/268463435) Cleanup OobeJelly
   source->AddBoolean("isOobeJellyEnabled", features::IsOobeJellyEnabled());
+  source->AddBoolean("isOobeJellyModalEnabled",
+                     features::IsOobeJellyModalEnabled());
   // TODO (b/269117729) Cleanup OobeSimon
   source->AddBoolean("isOobeSimonEnabled", features::IsOobeSimonEnabled());
+  source->AddBoolean(
+      "isChromeVoxHintImprovementsEnabled",
+      ::features::
+          IsExperimentalAccessibilityChromeVoxOobeDialogImprovementsEnabled());
+  source->AddBoolean("isOobeAssistantEnabled",
+                     !features::IsOobeSkipAssistantEnabled());
   source->AddBoolean("isOobeGaiaInfoScreenEnabled",
                      features::IsOobeGaiaInfoScreenEnabled());
   source->AddBoolean("isChoobeEnabled", features::IsOobeChoobeEnabled());
@@ -722,6 +732,9 @@ base::Value::Dict OobeUI::GetLocalizedStrings() {
   // TODO (b/268463435) Cleanup OobeJelly
   if (features::IsOobeJellyEnabled()) {
     oobeClasses += "jelly-enabled ";
+  }
+  if (features::IsOobeJellyModalEnabled()) {
+    oobeClasses += "jelly-modal-enabled ";
   }
   // TODO (b/269117729) Cleanup OobeSimon
   if (features::IsOobeSimonEnabled()) {

@@ -7,14 +7,15 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "build/chromeos_buildflags.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/user_selectable_type.h"
+#include "components/sync/service/sync_prefs.h"
 #include "components/sync/service/sync_type_preference_provider.h"
 #include "components/sync/service/sync_user_settings.h"
 
@@ -47,6 +48,10 @@ class SyncUserSettingsImpl : public SyncUserSettings {
   void SetSelectedTypes(bool sync_everything,
                         UserSelectableTypeSet types) override;
   void SetSelectedType(UserSelectableType type, bool is_type_on) override;
+  bool IsPaymentsIntegrationEnabled() const override;
+  void SetPaymentsIntegrationEnabled(bool enabled) override;
+  void KeepAccountSettingsPrefsOnlyForUsers(
+      const std::vector<signin::GaiaIdHash>& available_gaia_ids) override;
 #if BUILDFLAG(IS_IOS)
   void SetBookmarksAndReadingListAccountStorageOptIn(bool value) override;
 #endif  // BUILDFLAG(IS_IOS)
@@ -84,6 +89,8 @@ class SyncUserSettingsImpl : public SyncUserSettings {
   bool IsEncryptedDatatypeEnabled() const;
 
  private:
+  bool ShouldUsePerAccountPrefs() const;
+
   const raw_ptr<SyncServiceCrypto> crypto_;
   const raw_ptr<SyncPrefs> prefs_;
   const raw_ptr<const SyncTypePreferenceProvider> preference_provider_;

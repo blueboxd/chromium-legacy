@@ -297,6 +297,7 @@
 <translation id="2643064289437760082">언제든지 인터넷 사용 기록을 삭제하여 광고 측정 데이터를 삭제할 수 있습니다.</translation>
 <translation id="2647434099613338025">언어 추가</translation>
 <translation id="2649068648233607930">내 브라우저는 <ph name="DOMAIN" />에서 관리합니다</translation>
+<translation id="2650077116157640844">동기화된 기기에 대해 자세히 알아보기</translation>
 <translation id="2650348088770008516">개인 정보 보호 가이드 설명이 닫힘</translation>
 <translation id="2650408372219180431">이 기기에 저장된 비밀번호 내보내기 및 삭제</translation>
 <translation id="2650751991977523696">파일을 다시 다운로드하시겠습니까?</translation>
@@ -445,7 +446,6 @@
 <translation id="3421726884497337397">타사 쿠키를 차단하는 경우 선택</translation>
 <translation id="3428747202529429621">로그인 상태일 때 Chrome에서 사용자를 보호하고 기타 Google 앱에서 사용자의 보안을 개선하는 데 사용될 수 있습니다.</translation>
 <translation id="3429160811076349561">무료 체험 기능 사용 안함</translation>
-<translation id="3432973700170747422">지난 15분 데이터 삭제</translation>
 <translation id="3435465986463792564">창이 많이 열렸나요? 여기에서 관리할 수 있습니다.</translation>
 <translation id="3435738964857648380">보안</translation>
 <translation id="3443221991560634068">현재 페이지 새로고침</translation>
@@ -479,9 +479,9 @@
 <translation id="3587596251841506391">웹 보안 개선에 참여</translation>
 <translation id="3597179440835065298">추천 기능 개선하기</translation>
 <translation id="3602290021589620013">미리보기</translation>
-<translation id="360901359071773787">지난 15분 동안의 데이터를 삭제하시겠습니까?</translation>
 <translation id="3616113530831147358">오디오</translation>
 <translation id="3622349720008044802">창 관리</translation>
+<translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{외 사이트 1개}other{외 사이트 #개}}</translation>
 <translation id="3631987586758005671"><ph name="DEVICE_NAME" />에 공유하는 중</translation>
 <translation id="363596933471559332">저장된 사용자 인증 정보를 사용하여 자동으로 웹사이트에 로그인합니다. 이 기능이 꺼져 있는 경우에는 웹사이트에 로그인할 때마다 인증 요청 메시지가 표시됩니다.</translation>
 <translation id="3636940436873918441">기본 언어</translation>
@@ -750,6 +750,7 @@
 <translation id="5010886807652684893">시각 뷰</translation>
 <translation id="5011311129201317034"><ph name="SITE" />에서 연결하려고 함</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">최근 15분</translation>
 <translation id="5032430150487044192">QR 코드를 만들 수 없음</translation>
 <translation id="5039804452771397117">허용</translation>
 <translation id="5040262127954254034">개인정보 보호</translation>
@@ -768,7 +769,6 @@
 <translation id="5118713593561876160">관심분야</translation>
 <translation id="5122378528687922675">도움이 필요하면 부모님(<ph name="PARENT_NAME_1" /> 또는 <ph name="PARENT_NAME_2" />)께 요청하세요</translation>
 <translation id="5123685120097942451">시크릿 탭</translation>
-<translation id="5126510351761255129">카드 인증</translation>
 <translation id="5132942445612118989">모든 기기의 비밀번호, 방문 기록 등 동기화</translation>
 <translation id="5139940364318403933">Google Drive 사용 방법 알아보기</translation>
 <translation id="5142281402488957685">새로운 스토리를 보려면 아래로 당겨 새로고침하세요.</translation>
@@ -928,7 +928,6 @@
 <translation id="6011308810877101166">추천 검색어 개선</translation>
 <translation id="6026538407078977628">전체 화면으로 확장</translation>
 <translation id="6030719887161080597">사이트에서 광고 실적을 측정하는 데 사용하는 정보를 관리합니다.</translation>
-<translation id="6034146297924778597">지난 15분 동안의 다음 기록이 삭제됩니다.</translation>
 <translation id="6039379616847168523">다음 탭으로 이동</translation>
 <translation id="6040143037577758943">닫기</translation>
 <translation id="604124094241169006">자동</translation>
@@ -1370,6 +1369,7 @@
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />내 기기<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">다시 시작</translation>
 <translation id="8209050860603202033">이미지 열기</translation>
+<translation id="8210770465353466621">여기에서 탭을 확인할 수 있습니다.</translation>
 <translation id="8215740705341534369">측면 시트</translation>
 <translation id="8218622182176210845">계정 관리</translation>
 <translation id="8221401890884589479">원치 않는 사이트를 차단할 수 있습니다. 또한 Chrome에서는 30일이 지난 사이트도 목록에서 자동 삭제합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>

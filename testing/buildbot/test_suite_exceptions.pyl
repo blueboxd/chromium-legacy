@@ -111,6 +111,12 @@
           'shards': 9,
         },
       },
+      'android-oreo-x86-rel': {
+        'ci_only': True,
+        'swarming': {
+          'shards': 9,
+        },
+      },
       'android-pie-arm64-rel': {
         'args': [
           '--gtest_filter=-ImportantSitesUtilBrowserTest.DSENotConsideredImportantInRegularMode', # https://crbug.com/1034001
@@ -174,6 +180,12 @@
       },
       # If you change this, make similar changes in android-x86-code-coverage below
       'android-nougat-x86-rel': {
+        'ci_only': True,
+        'swarming': {
+          'shards': 2,
+        },
+      },
+      'android-oreo-x86-rel': {
         'ci_only': True,
         'swarming': {
           'shards': 2,
@@ -1090,7 +1102,7 @@
         # These are very slow on the ASAN trybot for some reason.
         # crbug.com/1257927
         'swarming': {
-          'shards': 65,
+          'shards': 120,
         },
       },
       'Linux ChromiumOS MSan Tests': {
@@ -1125,8 +1137,9 @@
       },
       'Linux Tests (dbg)(1)': {
         # crbug.com/1066161
+        # crbug.com/1459645
         'swarming': {
-          'shards': 20,
+          'shards': 27,
         },
       },
       'Mac ASan 64 Tests (1)': {
@@ -1471,14 +1484,6 @@
       'chromeos-jacuzzi-chrome': {
         'experiment_percentage': 100,
       },
-      'chromeos-kevin-chrome': {
-        'swarming': {
-          # Reducing parallelism due to DUT shortage (b/238271231)
-          'shards': 5,
-          # Increased timeout to 3 hours due to shard timeout.
-          'hard_timeout': 10800,
-        }
-      },
       'chromeos-reven-chrome': {
         'args': [
           '--tast-shard-method=hash',
@@ -1556,6 +1561,17 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.chrome_public_test_apk.filter',
         ],
+        'swarming': {
+          'shards': 75,
+          'dimension_sets': [
+            {
+              # use 8-core to shorten runtime
+              'cores': '8',
+            },
+          ],
+        },
+      },
+      'android-oreo-x86-rel': {
         'swarming': {
           'shards': 75,
           'dimension_sets': [
@@ -1740,6 +1756,11 @@
       },
       # If you change this, make similar changes in android-x86-code-coverage below
       'android-nougat-x86-rel': {
+        'swarming': {
+          'shards': 4,
+        },
+      },
+      'android-oreo-x86-rel': {
         'swarming': {
           'shards': 4,
         },
@@ -2015,10 +2036,26 @@
           ],
         },
       },
+      'android-oreo-x86-rel': {
+        'swarming': {
+          'shards': 75,
+          'dimension_sets': [
+            {
+              # use 8-core to shorten runtime
+              'cores': '8',
+            },
+          ],
+        },
+      },
       'android-pie-arm64-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64.content_browsertests_coverage.filter',
         ],
+        'swarming': {
+          # TODO(crbug.com/1462745): Temporarily increase the shard by 3 for the surging number of tests.
+          # Recover to default number of shards(20) after the bug is fixed.
+          'shards': 23,
+        },
       },
       'android-pie-x86-rel': {
         'args': [
@@ -2161,7 +2198,8 @@
   'content_shell_crash_test': {
     'remove_from': [
       'android-nougat-x86-rel', # crbug.com/1084353. If you remove this, also remove android-x86-code-coverage.
-      'android-x86-code-coverage'
+      'android-oreo-x86-rel',
+      'android-x86-code-coverage',
     ],
     'modifications': {
       'Win10 Tests x64 (dbg)': {
@@ -2222,9 +2260,20 @@
           ],
         },
       },
+      'android-oreo-x86-rel': {
+        'swarming': {
+          'shards': 6,
+          'dimension_sets': [
+            {
+              # use 8-core to shorten runtime
+              'cores': '8',
+            },
+          ],
+        },
+      },
       'android-pie-x86-rel': {
         'args': [
-          '--gtest_filter=-ContentViewScrollingTest.testFling',
+          '--gtest_filter=-org.chromium.content.browser.input.ImeInputModeTest.testShowAndHideInputMode*',
         ],
       },
       # Keep this same as android-nougat-x86-rel above
@@ -2472,6 +2521,99 @@
       'android-13-x64-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.device_unittests.filter',
+        ],
+      },
+    },
+  },
+  'expected_color_pixel_passthrough_test': {
+    'modifications': {
+      'Android FYI Release (Pixel 4)': {
+        'args': [
+          # Pixel 4s are weird in that they can output in different color spaces
+          # simultaneously. The readback code for capturing a screenshot assumes
+          # only one color space, so disable wide color gamut for the test to
+          # work around the issue. See https://crbug.com/1166379 for more
+          # information.
+          '--extra-browser-args=--disable-wcg-for-test',
+        ],
+      },
+      'android_optional_gpu_tests_rel': {
+        'args': [
+          # See above.
+          '--extra-browser-args=--disable-wcg-for-test',
+        ],
+      },
+    },
+    'remove_from': [
+      # crbug.com/1458020 for Mac Retina ASAN removal
+      'Mac FYI Retina ASAN (AMD)',
+    ],
+    'replacements': {
+      # The V8 builders pass the V8 revision for ${got_revision}, so instead
+      # use ${got_cr_revision}, which is only set on the V8 bots.
+      'Linux V8 FYI Release (NVIDIA)': {
+        'args': {
+          '--git-revision': '${got_cr_revision}',
+        },
+      },
+      'Linux V8 FYI Release - pointer compression (NVIDIA)': {
+        'args': {
+          '--git-revision': '${got_cr_revision}',
+        },
+      },
+      'Mac V8 FYI Release (Intel)': {
+        'args': {
+          '--git-revision': '${got_cr_revision}',
+        },
+      },
+      'Win V8 FYI Release (NVIDIA)': {
+        'args': {
+          '--git-revision': '${got_cr_revision}',
+        },
+      },
+    },
+  },
+  'expected_color_pixel_validating_test': {
+    'modifications': {
+      'Android FYI Release (Pixel 4)': {
+        'args': [
+          # Pixel 4s are weird in that they can output in different color spaces
+          # simultaneously. The readback code for capturing a screenshot assumes
+          # only one color space, so disable wide color gamut for the test to
+          # work around the issue. See https://crbug.com/1166379 for more
+          # information.
+          '--extra-browser-args=--disable-wcg-for-test',
+        ],
+      },
+      'android_optional_gpu_tests_rel': {
+        'args': [
+          # See above.
+          '--extra-browser-args=--disable-wcg-for-test',
+        ],
+      },
+    },
+    # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
+    # exception once there is enough capacity to run these tests.
+    'remove_from': [
+      'Android FYI Release (Pixel 2)',
+    ],
+    'replacements': {
+      # The V8 builders pass the V8 revision for ${got_revision}, so instead
+      # use ${got_cr_revision}, which is only set on the V8 bots.
+      'Android V8 FYI Release (Nexus 5X)': {
+        'args': {
+          '--git-revision': '${got_cr_revision}',
+        },
+      },
+    },
+  },
+  'expected_color_pixel_validating_test KEVIN_PUBLIC_LKGM': {
+    'modifications': {
+      'ChromeOS FYI Release Skylab (kevin)': {
+        'args': [
+          # Skylab currently doesn't support use of LUCI_CONTEXT, so Gold cannot
+          # automatically get the service account to authenticate with.
+          '--service-account=/creds/service_accounts/skylab-drone.json',
         ],
       },
     },
@@ -2739,7 +2881,7 @@
       # If you change this, make similar changes in android-x86-code-coverage below
       'android-nougat-x86-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.gl_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n_p.gl_tests.filter',
         ],
       },
       'android-pie-arm64-rel': {
@@ -2749,13 +2891,13 @@
       },
       'android-pie-x86-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.gl_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n_p.gl_tests.filter',
         ],
       },
       # Keep this same as android-nougat-x86-rel above
       'android-x86-code-coverage': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.gl_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n_p.gl_tests.filter',
         ],
       },
     },
@@ -2954,6 +3096,11 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.interactive_ui_tests_wayland.filter',
         ],
       },
+      'Linux Tests (dbg)(1)': {
+        'swarming': {
+          'shards': 5,
+        },
+      },
       'Mac ASan 64 Tests (1)': { # https://crbug.com/1251656
         'experiment_percentage': 100,
       },
@@ -3133,6 +3280,7 @@
     'remove_from': [
       # TODO(https://crbug.com/1432753): Runs too slowly in this configuration.
       'android-nougat-x86-rel',
+      'android-oreo-x86-rel',
     ],
   },
   'mac_signing_tests': {
@@ -3141,99 +3289,6 @@
       # this builder.
       'mac-rel-cft',
     ],
-  },
-  'maps_pixel_passthrough_test': {
-    'modifications': {
-      'Android FYI Release (Pixel 4)': {
-        'args': [
-          # Pixel 4s are weird in that they can output in different color spaces
-          # simultaneously. The readback code for capturing a screenshot assumes
-          # only one color space, so disable wide color gamut for the test to
-          # work around the issue. See https://crbug.com/1166379 for more
-          # information.
-          '--extra-browser-args=--disable-wcg-for-test',
-        ],
-      },
-      'android_optional_gpu_tests_rel': {
-        'args': [
-          # See above.
-          '--extra-browser-args=--disable-wcg-for-test',
-        ],
-      },
-    },
-    'remove_from': [
-      # crbug.com/1458020 for Mac Retina ASAN removal
-      'Mac FYI Retina ASAN (AMD)',
-    ],
-    'replacements': {
-      # The V8 builders pass the V8 revision for ${got_revision}, so instead
-      # use ${got_cr_revision}, which is only set on the V8 bots.
-      'Linux V8 FYI Release (NVIDIA)': {
-        'args': {
-          '--git-revision': '${got_cr_revision}',
-        },
-      },
-      'Linux V8 FYI Release - pointer compression (NVIDIA)': {
-        'args': {
-          '--git-revision': '${got_cr_revision}',
-        },
-      },
-      'Mac V8 FYI Release (Intel)': {
-        'args': {
-          '--git-revision': '${got_cr_revision}',
-        },
-      },
-      'Win V8 FYI Release (NVIDIA)': {
-        'args': {
-          '--git-revision': '${got_cr_revision}',
-        },
-      },
-    },
-  },
-  'maps_pixel_validating_test': {
-    'modifications': {
-      'Android FYI Release (Pixel 4)': {
-        'args': [
-          # Pixel 4s are weird in that they can output in different color spaces
-          # simultaneously. The readback code for capturing a screenshot assumes
-          # only one color space, so disable wide color gamut for the test to
-          # work around the issue. See https://crbug.com/1166379 for more
-          # information.
-          '--extra-browser-args=--disable-wcg-for-test',
-        ],
-      },
-      'android_optional_gpu_tests_rel': {
-        'args': [
-          # See above.
-          '--extra-browser-args=--disable-wcg-for-test',
-        ],
-      },
-    },
-    # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
-    # exception once there is enough capacity to run these tests.
-    'remove_from': [
-      'Android FYI Release (Pixel 2)',
-    ],
-    'replacements': {
-      # The V8 builders pass the V8 revision for ${got_revision}, so instead
-      # use ${got_cr_revision}, which is only set on the V8 bots.
-      'Android V8 FYI Release (Nexus 5X)': {
-        'args': {
-          '--git-revision': '${got_cr_revision}',
-        },
-      },
-    },
-  },
-  'maps_pixel_validating_test KEVIN_PUBLIC_LKGM': {
-    'modifications': {
-      'ChromeOS FYI Release Skylab (kevin)': {
-        'args': [
-          # Skylab currently doesn't support use of LUCI_CONTEXT, so Gold cannot
-          # automatically get the service account to authenticate with.
-          '--service-account=/creds/service_accounts/skylab-drone.json',
-        ],
-      },
-    },
   },
   'media_foundation_browser_tests': {
     'remove_from': [
@@ -3322,23 +3377,6 @@
       'fuchsia-code-coverage': {
         'swarming': {
           'shards': 2,
-        },
-      },
-    },
-  },
-  'monochrome_public_test_ar_apk': {
-    'modifications': {
-      # We need to match the Playstore version as well because AR tests fail on
-      # old versions of the Playstore.
-      'Oreo Phone Tester': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'OPR3.170623.008',
-              'device_type': 'marlin',
-              'os': 'Android',
-            },
-          ],
         },
       },
     },
@@ -3867,6 +3905,21 @@
           'shards': 3,
         },
       },
+      'android-oreo-x86-rel': {
+        'ci_only': True,
+        'swarming': {
+          'shards': 3,
+        },
+      },
+      'android-pie-x86-rel': {
+        'args': [
+          # TODO(crbug.com/1264654): Fix the failed tests
+          '--gtest_filter=-PacLibraryTest.ActualPacMyIpAddress*'
+        ],
+        'swarming': {
+          'shards': 2,
+        },
+      },
       # Keep this same as android-nougat-x86-rel above
       'android-x86-code-coverage': {
         'args': [
@@ -4046,6 +4099,9 @@
       'android-nougat-x86-rel': {
         'ci_only': True,
       },
+      'android-oreo-x86-rel': {
+        'ci_only': True,
+      },
       # Keep this same as android-nougat-x86-rel above
       'android-x86-code-coverage': {
         'ci_only': True,
@@ -4056,6 +4112,9 @@
     'modifications': {
       # If you change this, make similar changes in android-x86-code-coverage below
       'android-nougat-x86-rel': {
+        'ci_only': True,
+      },
+      'android-oreo-x86-rel': {
         'ci_only': True,
       },
       # Keep this same as android-nougat-x86-rel above
@@ -4096,6 +4155,14 @@
         ],
         'ci_only': True,
       },
+      'android-oreo-x86-rel': {
+        'args': [
+          # For whatever reason, automatic browser selection on this bot chooses
+          # webview instead of the full browser, so explicitly specify it here.
+          '--browser=android-chromium',
+        ],
+        'ci_only': True,
+      },
       # Keep this same as android-nougat-x86-rel above
       'android-x86-code-coverage': {
         'args': [
@@ -4110,11 +4177,6 @@
           # TODO(crbug.com/1191132): Re-enable.
           '--skip=benchmarks.benchmark_smoke_unittest.BenchmarkSmokeTest.wasmpspdfkit',
         ],
-      },
-      'chromeos-kevin-chrome': {
-        # TODO(crbug.com/1182948): Remove the experiment.
-        # TODO(b/188822176): Restore to 100% when we have additional capacity.
-        'experiment_percentage': 0,
       },
       'linux-rel-cft': {
         'args': [
@@ -4155,7 +4217,6 @@
     'remove_from': [
       # TODO(crbug.com/1141234): Restore when there's more DUTs
       'chromeos-eve-chrome',
-      'chromeos-kevin-chrome',
 
       'Win10 Tests x64',
       'Win11 Tests x64',
@@ -4466,6 +4527,27 @@
       'Linux Tests',  # https://crbug.com/929689, https://crbug.com/936557
       'linux-rel-cft',
     ],
+  },
+  'webengine_support_instrumentation_test_apk': {
+    'modifications': {
+      'android-12-x64-rel': {
+        'ci_only': True,
+      },
+      # If you change this, make similar changes in android-x86-code-coverage below
+      'android-nougat-x86-rel': {
+        'ci_only': True,
+      },
+      'android-oreo-x86-rel': {
+        'ci_only': True,
+      },
+      'android-pie-arm64-rel': {
+        'ci_only': True,
+      },
+      # Keep this same as android-nougat-x86-rel above
+      'android-x86-code-coverage': {
+        'ci_only': True,
+      },
+    },
   },
   'webgl2_conformance_d3d11_passthrough_tests': {
     'remove_from': [
@@ -4923,6 +5005,9 @@
       'android-nougat-x86-rel': {
         'ci_only': True,
       },
+      'android-oreo-x86-rel': {
+        'ci_only': True,
+      },
       'android-pie-arm64-rel': {
         'ci_only': True,
       },
@@ -5017,23 +5102,25 @@
         },
       },
       'android-13-x64-fyi-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_13.webview_instrumentation_test_apk.filter',
-        ],
         'swarming': {
           'shards': 9,
         },
       },
       'android-13-x64-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_13.webview_instrumentation_test_apk.filter',
-        ],
         'swarming': {
           'shards': 9,
         },
       },
       # If you change this, make similar changes in android-x86-code-coverage below
       'android-nougat-x86-rel': {
+        'args': [
+          '--use-persistent-shell',
+        ],
+        'swarming': {
+          'shards': 27,
+        },
+      },
+      'android-oreo-x86-rel': {
         'args': [
           '--use-persistent-shell',
         ],

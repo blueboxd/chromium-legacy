@@ -10,6 +10,7 @@
 #include "ash/accessibility/ui/accessibility_confirmation_dialog.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/display/display_configuration_controller.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
@@ -2010,6 +2011,38 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ClipboardCopySpeech) {
   sm_.Replay();
 }
 
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OrientationChanged) {
+  EnableChromeVox();
+
+  sm_.Call([]() {
+    Shell::Get()->display_configuration_controller()->SetDisplayRotation(
+        ash::Shell::Get()->display_manager()->GetDisplayAt(0).id(),
+        display::Display::ROTATE_90, display::Display::RotationSource::USER);
+  });
+
+  sm_.ExpectSpeech("portrait");
+
+  sm_.Call([]() {
+    Shell::Get()->display_configuration_controller()->SetDisplayRotation(
+        ash::Shell::Get()->display_manager()->GetDisplayAt(0).id(),
+        display::Display::ROTATE_180, display::Display::RotationSource::USER);
+  });
+
+  sm_.ExpectSpeech("landscape");
+
+  sm_.Call([]() {
+    Shell::Get()->display_configuration_controller()->SetDisplayRotation(
+        ash::Shell::Get()->display_manager()->GetDisplayAt(0).id(),
+        display::Display::ROTATE_270, display::Display::RotationSource::USER);
+  });
+
+  sm_.ExpectSpeech("portrait");
+
+  sm_.ExpectHadNoRepeatedSpeech();
+
+  sm_.Replay();
+}
+
 // Spoken feedback tests of the out-of-box experience.
 class OobeSpokenFeedbackTest : public OobeBaseTest {
  public:
@@ -2266,15 +2299,9 @@ class ShortcutsAppSpokenFeedbackTest : public LoggedInSpokenFeedbackTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// TODO(b/288602247): Linux ChromiumOS MSan is flaky for spoken feedback tests
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_ShortcutCustomization DISABLED_ShortcutCustomization
-#else
-#define MAYBE_ShortcutCustomization ShortcutCustomization
-#endif
-
+// TODO(b/288602247): The test is flaky.
 IN_PROC_BROWSER_TEST_F(ShortcutsAppSpokenFeedbackTest,
-                       MAYBE_ShortcutCustomization) {
+                       DISABLED_ShortcutCustomization) {
   EnableChromeVox();
   sm_.Call([this]() {
     ASSERT_TRUE(ui_test_utils::NavigateToURL(

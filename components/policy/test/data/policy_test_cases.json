@@ -689,6 +689,9 @@
   "RemoteAccessHostAllowFileTransfer": {
     "reason_for_missing_test": "Not used by the browser, handled by CRD host."
   },
+  "RemoteAccessHostAllowEnterpriseFileTransfer": {
+    "reason_for_missing_test": "Not used by the browser, handled by CRD host."
+  },
   "RemoteAccessHostEnableUserInterface": {
     "reason_for_missing_test": "Not used by the browser, handled by CRD host."
   },
@@ -23846,6 +23849,97 @@
           "settings.a11y.allow_accessibility_performance_filtering": {
             "value": false,
             "location": "local_state"
+          }
+        }
+      }
+    ]
+  },
+  "DefaultMidiSetting": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "DefaultMidiSetting": 2
+        },
+        "prefs": {
+          "profile.managed_default_content_settings.midi": {
+            "value": 2
+          }
+        }
+      },
+      {
+        "policies": {
+          "DefaultMidiSetting": 3
+        },
+        "prefs": {
+          "profile.managed_default_content_settings.midi": {
+            "value": 3
+          }
+        }
+      }
+    ]
+  },
+  "MidiAllowedForUrls": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "MidiAllowedForUrls": [
+            "[*.]google.com",
+            "http://example.com:1234"
+          ]
+        },
+        "prefs": {
+          "profile.managed_midi_allowed_for_urls": {
+            "value": [
+              "[*.]google.com",
+              "http://example.com:1234"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "MidiBlockedForUrls": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "MidiBlockedForUrls": [
+            "[*.]google.com",
+            "http://example.com:1234"
+          ]
+        },
+        "prefs": {
+          "profile.managed_midi_blocked_for_urls": {
+            "value": [
+              "[*.]google.com",
+              "http://example.com:1234"
+            ]
           }
         }
       }

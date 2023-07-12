@@ -438,12 +438,7 @@ BASE_FEATURE(kContextMenuCopyVideoFrame,
 // playback going to a specific output device in the audio service.
 BASE_FEATURE(kChromeWideEchoCancellation,
              "ChromeWideEchoCancellation",
-#if BUILDFLAG(IS_CHROMEOS_DEVICE)
-    base::FEATURE_DISABLED_BY_DEFAULT
-#else
-    base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-             );
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When audio processing is done in the audio process, at the renderer side IPC
 // is set up to receive audio at the processing sample rate. This is a
@@ -807,7 +802,7 @@ BASE_FEATURE(kVaapiVp9kSVCHWEncoding,
              "VaapiVp9kSVCHWEncoding",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
-#if defined(ARCH_CPU_ARM_FAMILY) && BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
 // Enables the new V4L2StatefulVideoDecoder instead of V4L2VideoDecoder.
 BASE_FEATURE(kV4L2FlatStatelessVideoDecoder,
              "V4L2FlatStatelessVideoDecoder",
@@ -1028,7 +1023,12 @@ BASE_FEATURE(kAllowNonSecureOverlays,
              "AllowNonSecureOverlays",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enable a gesture to make the media controls expaned into the display cutout.
+// Allow FrameInfoHelper to guess coded size information for MediaCodec frames.
+BASE_FEATURE(kMediaCodecCodedSizeGuessing,
+             "MediaCodecCodedSizeGuessing",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enable a gesture to make the media controls expanded into the display cutout.
 // TODO(beccahughes): Remove this.
 BASE_FEATURE(kMediaControlsExpandGesture,
              "MediaControlsExpandGesture",
@@ -1527,14 +1527,6 @@ BASE_FEATURE(kVideoDecodeBatching,
 
 bool IsChromeWideEchoCancellationEnabled() {
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
-#if BUILDFLAG(IS_CHROMEOS_DEVICE)
-  if (base::FeatureList::IsEnabled(kCrOSEnforceSystemAecNsAgc) ||
-      base::FeatureList::IsEnabled(kCrOSEnforceSystemAecNs) ||
-      base::FeatureList::IsEnabled(kCrOSEnforceSystemAecAgc) ||
-      base::FeatureList::IsEnabled(kCrOSEnforceSystemAec)) {
-    return false;
-  }
-#endif
   return base::FeatureList::IsEnabled(kChromeWideEchoCancellation);
 #else
   return false;

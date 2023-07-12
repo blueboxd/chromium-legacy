@@ -446,7 +446,6 @@
 <translation id="3421726884497337397">აირჩიეთ, რა შემთხვევაში დაბლოკოთ მესამე მხარის ქუქი-ჩანაწერები</translation>
 <translation id="3428747202529429621">უზრუნველყოფს თქვენს უსაფრთხოებას Chrome-ში და Google-ის სხვა აპებში, როცა სისტემაში შესული ხართ</translation>
 <translation id="3429160811076349561">საცდელი ფუნქციები გამორთულია</translation>
-<translation id="3432973700170747422">ბოლო 15 წუთის წაშლა</translation>
 <translation id="3435465986463792564">მრავალი ფანჯარა გაქვთ? მათი მართვა აქედან შეგიძლიათ</translation>
 <translation id="3435738964857648380">უსაფრთხოება</translation>
 <translation id="3443221991560634068">მიმდინარე გვერდის გადატვირთვა</translation>
@@ -480,7 +479,6 @@
 <translation id="3587596251841506391">გააუმჯობესეთ ვების უსაფრთხოება</translation>
 <translation id="3597179440835065298">მიიღეთ უკეთესი შემოთავაზებები</translation>
 <translation id="3602290021589620013">გადახედვა</translation>
-<translation id="360901359071773787">წაიშალოს ბოლო 15 წუთი?</translation>
 <translation id="3616113530831147358">აუდიო</translation>
 <translation id="3622349720008044802">მართეთ ფანჯრები</translation>
 <translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{+ 1 საიტი}other{+ # საიტი}}</translation>
@@ -752,6 +750,7 @@
 <translation id="5010886807652684893">ვიზუალური ხედი</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> დაკავშირებას ითხოვს</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">ბოლო 15 წუთი</translation>
 <translation id="5032430150487044192">QR კოდის შექმნა ვერ მოხერხდა</translation>
 <translation id="5039804452771397117">დაშვება</translation>
 <translation id="5040262127954254034">კონფიდენციალურობა</translation>
@@ -770,7 +769,6 @@
 <translation id="5118713593561876160">ინტერესები</translation>
 <translation id="5122378528687922675">საჭიროებისამებრ, დაიხმარეთ მშობელი (<ph name="PARENT_NAME_1" /> ან <ph name="PARENT_NAME_2" />)</translation>
 <translation id="5123685120097942451">ინკოგნიტო ჩანართი</translation>
-<translation id="5126510351761255129">დაადასტურეთ თქვენი ბარათი</translation>
 <translation id="5132942445612118989">მოახდინეთ თქვენი პაროლების, ისტორიისა და სხვა კონტენტის სინქრონიზაცია თქვენს ყველა მოწყობილობაზე</translation>
 <translation id="5139940364318403933">ისწავლეთ Google Drive-ის გამოყენება</translation>
 <translation id="5142281402488957685">ახალი ამბების გასაცნობად ჩამოსწიეთ განახლებისთვის</translation>
@@ -930,7 +928,6 @@
 <translation id="6011308810877101166">ძიების შემოთავაზებების გაუმჯობესება</translation>
 <translation id="6026538407078977628">სრულ ეკრანზე გაფართოება</translation>
 <translation id="6030719887161080597">საიტების მიერ რეკლამის ეფექტურობის განსაზღვრისთვის გამოყენებული ინფორმაციის მართვა</translation>
-<translation id="6034146297924778597">წაიშლება ბოლო 15 წუთის ისტორია:</translation>
 <translation id="6039379616847168523">შემდეგ ჩანართზე გადასვლა</translation>
 <translation id="6040143037577758943">დახურვა</translation>
 <translation id="604124094241169006">ავტომატური</translation>
@@ -1372,6 +1369,7 @@
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />თქვენი მოწყობილობები<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">გაგრძელება</translation>
 <translation id="8209050860603202033">გამოსახულების გახსნა</translation>
+<translation id="8210770465353466621">აქ იპოვით თქვენს ჩანართებს</translation>
 <translation id="8215740705341534369">გვერდითა ფურცელი</translation>
 <translation id="8218622182176210845">თქვენი ანგარიშის სამართავად</translation>
 <translation id="8221401890884589479">შეგიძლიათ დაბლოკოთ არასასურველი საიტები. გარდა ამისა, Chrome ავტომატურად წაშლის სიიდან 30 დღეზე ძველ საიტებს. <ph name="BEGIN_LINK" />შეიტყვეთ მეტი<ph name="END_LINK" /></translation>

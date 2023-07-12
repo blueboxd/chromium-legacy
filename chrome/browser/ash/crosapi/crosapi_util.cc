@@ -39,6 +39,7 @@
 #include "chromeos/ash/components/settings/cros_settings_provider.h"
 #include "chromeos/ash/components/system/statistics_provider.h"
 #include "chromeos/components/cdm_factory_daemon/mojom/browser_cdm_factory.mojom.h"
+#include "chromeos/components/payments/mojom/payment_app.mojom.h"
 #include "chromeos/components/remote_apps/mojom/remote_apps.mojom.h"
 #include "chromeos/components/sensors/mojom/cros_sensor_service.mojom.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -120,6 +121,7 @@
 #include "chromeos/crosapi/mojom/sync.mojom.h"
 #include "chromeos/crosapi/mojom/system_display.mojom.h"
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
+#include "chromeos/crosapi/mojom/telemetry_diagnostic_routine_service.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_event_service.mojom.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
 #include "chromeos/crosapi/mojom/timezone.mojom.h"
@@ -133,6 +135,7 @@
 #include "chromeos/crosapi/mojom/vpn_service.mojom.h"
 #include "chromeos/crosapi/mojom/wallpaper.mojom.h"
 #include "chromeos/crosapi/mojom/web_app_service.mojom.h"
+#include "chromeos/crosapi/mojom/web_kiosk_service.mojom.h"
 #include "chromeos/crosapi/mojom/web_page_info.mojom.h"
 #include "chromeos/services/machine_learning/public/cpp/ml_switches.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
@@ -159,6 +162,7 @@
 #include "services/device/public/mojom/hid.mojom.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/switches.h"
 
@@ -179,6 +183,9 @@ constexpr char kSharedStoragePrefsCapability[] = "b/231890240";
 constexpr char kExtensionControlledPrefObserversCapability[] = "crbug/1334985";
 // Capability to always use ConfirmComposition for input methods.
 constexpr char kAlwaysConfirmCompositionCapability[] = "b/265853952";
+// Capability to pass testing ash extension keeplist data via ash
+// commandline switch.
+constexpr char kAshExtensionKeeplistCmdlineSwitchCapability[] = "crbug/1409199";
 
 // Returns the vector containing policy data of the device account. In case of
 // an error, returns nullopt.
@@ -279,12 +286,13 @@ constexpr InterfaceVersionEntry MakeInterfaceVersionEntry() {
   return {T::Uuid_, T::Version_};
 }
 
-static_assert(crosapi::mojom::Crosapi::Version_ == 110,
+static_assert(crosapi::mojom::Crosapi::Version_ == 113,
               "If you add a new crosapi, please add it to "
               "kInterfaceVersionEntries below.");
 
 constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<chromeos::cdm::mojom::BrowserCdmFactory>(),
+    MakeInterfaceVersionEntry<chromeos::payments::mojom::PaymentAppInstance>(),
     MakeInterfaceVersionEntry<
         chromeos::remote_apps::mojom::RemoteAppsLacrosBridge>(),
     MakeInterfaceVersionEntry<chromeos::sensors::mojom::SensorHalClient>(),
@@ -362,6 +370,8 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::Power>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Prefs>(),
     MakeInterfaceVersionEntry<crosapi::mojom::PrintingMetrics>(),
+    MakeInterfaceVersionEntry<
+        crosapi::mojom::TelemetryDiagnosticRoutinesService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::TelemetryEventService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::TelemetryProbeService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Remoting>(),
@@ -390,6 +400,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::VpnService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Wallpaper>(),
     MakeInterfaceVersionEntry<crosapi::mojom::WebAppService>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::WebKioskService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::WebPageInfoFactory>(),
     MakeInterfaceVersionEntry<device::mojom::HidConnection>(),
     MakeInterfaceVersionEntry<device::mojom::HidManager>(),
@@ -578,6 +589,7 @@ void InjectBrowserInitParams(
       kBrowserManagerReloadBrowserCapability,
       kSharedStoragePrefsCapability,
       kExtensionControlledPrefObserversCapability,
+      kAshExtensionKeeplistCmdlineSwitchCapability,
   };
   // TODO(b/265853952): Remove this once kAlwaysConfirmComposition is enabled by
   // default.
@@ -636,6 +648,8 @@ void InjectBrowserInitParams(
 
   params->is_variable_refresh_rate_enabled =
       ::features::IsVariableRefreshRateEnabled();
+
+  params->is_pdf_ocr_enabled = ::features::IsPdfOcrEnabled();
 }
 
 template <typename BrowserParams>

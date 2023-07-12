@@ -5,12 +5,9 @@
 #ifndef CHROME_BROWSER_STORAGE_ACCESS_API_STORAGE_ACCESS_GRANT_PERMISSION_CONTEXT_H_
 #define CHROME_BROWSER_STORAGE_ACCESS_API_STORAGE_ACCESS_GRANT_PERMISSION_CONTEXT_H_
 
-#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "components/permissions/permission_context_base.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
-
-extern const int kDefaultImplicitGrantLimit;
 
 class GURL;
 
@@ -20,6 +17,7 @@ class PermissionRequestID;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+// Update StorageAccessAPIRequestOutcome in enums.xml when you add entries.
 enum class RequestOutcome {
   // The request was granted because the requesting site and the top level site
   // were in the same First-Party Set.
@@ -47,8 +45,13 @@ enum class RequestOutcome {
   kDeniedByTopLevelInteractionHeuristic = 8,
   // 3p cookies are already allowed by user agent, so there is no need to ask.
   kAllowedByCookieSettings = 9,
+  // The permission was previously granted without user action. E.g. through
+  // FPS.
+  kReusedImplicitGrant = 10,
+  // 3p cookies are blocked by user explicitly, so there is no need to ask.
+  kDeniedByCookieSettings = 11,
 
-  kMaxValue = kAllowedByCookieSettings,
+  kMaxValue = kDeniedByCookieSettings,
 };
 
 class StorageAccessGrantPermissionContext

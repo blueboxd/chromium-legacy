@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
+#include "third_party/blink/renderer/core/dom/node_cloning_data.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
@@ -993,12 +994,15 @@ Node* Node::cloneNode(bool deep, ExceptionState& exception_state) const {
   // 2. Return a clone of this, with the clone children flag set if deep is
   // true, and the clone shadows flag set if this is a DocumentFragment whose
   // host is an HTML template element.
-  auto* fragment = DynamicTo<DocumentFragment>(this);
-  bool clone_shadows_flag = fragment && fragment->IsTemplateContent();
-  return Clone(GetDocument(),
-               deep ? (clone_shadows_flag ? CloneChildrenFlag::kCloneWithShadows
-                                          : CloneChildrenFlag::kClone)
-                    : CloneChildrenFlag::kSkip);
+  NodeCloningData data;
+  if (deep) {
+    data.Put(CloneOption::kIncludeDescendants);
+    auto* fragment = DynamicTo<DocumentFragment>(this);
+    if (fragment && fragment->IsTemplateContent()) {
+      data.Put(CloneOption::kIncludeShadowRoots);
+    }
+  }
+  return Clone(GetDocument(), data);
 }
 
 Node* Node::cloneNode(bool deep) const {
@@ -1615,15 +1619,6 @@ void Node::DetachLayoutTree(bool performing_reattach) {
     ClearNeedsStyleRecalc();
     ClearChildNeedsStyleRecalc();
   }
-}
-
-const ComputedStyle* Node::VirtualEnsureComputedStyle(
-    PseudoId pseudo_element_specifier,
-    const AtomicString& pseudo_argument) {
-  return ParentOrShadowHostNode()
-             ? ParentOrShadowHostNode()->EnsureComputedStyle(
-                   pseudo_element_specifier, pseudo_argument)
-             : nullptr;
 }
 
 void Node::SetForceReattachLayoutTree() {
@@ -2257,13 +2252,11 @@ Node::InsertionNotificationRequest Node::InsertedInto(
          IsContainerNode());
   if (insertion_point.isConnected()) {
     SetFlag(kIsConnectedFlag);
-    // TODO(crbug.com/1453291) This would need to be outside the isConnected
-    // check when DocumentFragments are supported.
-    InvalidateDOMParts();
 #if DCHECK_IS_ON()
     insertion_point.GetDocument().IncrementNodeCount();
 #endif
   }
+  InvalidateDOMParts();
   if (ParentOrShadowHostNode()->IsInShadowTree())
     SetFlag(kIsInShadowTreeFlag);
   if (auto* cache = GetDocument().ExistingAXObjectCache()) {
@@ -2281,13 +2274,11 @@ void Node::RemovedFrom(ContainerNode& insertion_point) {
     ClearNeedsStyleInvalidation();
     ClearChildNeedsStyleInvalidation();
     ClearFlag(kIsConnectedFlag);
-    // TODO(crbug.com/1453291) This would need to be outside the isConnected
-    // check when DocumentFragments are supported.
-    InvalidateDOMParts();
 #if DCHECK_IS_ON()
     insertion_point.GetDocument().DecrementNodeCount();
 #endif
   }
+  InvalidateDOMParts();
   if (IsInShadowTree() && !ContainingTreeScope().RootNode().IsShadowRoot())
     ClearFlag(kIsInShadowTreeFlag);
   if (auto* cache = GetDocument().ExistingAXObjectCache()) {
@@ -2297,7 +2288,7 @@ void Node::RemovedFrom(ContainerNode& insertion_point) {
 
 String Node::DebugName() const {
   StringBuilder name;
-  name.Append(DebugNodeName());
+  name.Append(nodeName());
   if (const auto* this_element = DynamicTo<Element>(this)) {
     if (this_element->HasID()) {
       name.Append(" id=\'");
@@ -2316,10 +2307,6 @@ String Node::DebugName() const {
     }
   }
   return name.ReleaseString();
-}
-
-String Node::DebugNodeName() const {
-  return nodeName();
 }
 
 static void DumpAttributeDesc(const Node& node,

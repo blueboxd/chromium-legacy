@@ -297,6 +297,7 @@ Yksityiset tilamerkit parantavat yksityisyyttä verkossa, eikä sinua voi tunnis
 <translation id="2643064289437760082">Voit poistaa mainosten mittausdataa milloin tahansa poistamalla selausdatasi</translation>
 <translation id="2647434099613338025">Lisää kieli</translation>
 <translation id="2649068648233607930"><ph name="DOMAIN" /> ylläpitää selaintasi</translation>
+<translation id="2650077116157640844">Lisää synkronoiduilla laitteilla</translation>
 <translation id="2650348088770008516">Yksityisyysoppaan selitys suljettuna</translation>
 <translation id="2650408372219180431">Vie ja poista tälle laitteelle tallennetut salasanat</translation>
 <translation id="2650751991977523696">Ladataanko tiedosto uudelleen?</translation>
@@ -445,7 +446,6 @@ Yksityiset tilamerkit parantavat yksityisyyttä verkossa, eikä sinua voi tunnis
 <translation id="3421726884497337397">Valitse, milloin kolmannen osapuolen evästeet estetään</translation>
 <translation id="3428747202529429621">Pitää sinut turvassa Chromessa ja voi parantaa suojaustasi muissa Google-sovelluksissa, kun olet sisäänkirjautuneena</translation>
 <translation id="3429160811076349561">Kokeiluominaisuudet ovat poissa käytöstä</translation>
-<translation id="3432973700170747422">Poista aiemmat 15 minuuttia</translation>
 <translation id="3435465986463792564">Onko monta ikkunaa auki? Voit ylläpitää niitä täältä</translation>
 <translation id="3435738964857648380">Suojaus</translation>
 <translation id="3443221991560634068">Päivitä nykyinen sivu</translation>
@@ -479,9 +479,9 @@ Yksityiset tilamerkit parantavat yksityisyyttä verkossa, eikä sinua voi tunnis
 <translation id="3587596251841506391">Paranna verkon turvallisuutta</translation>
 <translation id="3597179440835065298">Parempia ehdotuksia</translation>
 <translation id="3602290021589620013">Esikatselu</translation>
-<translation id="360901359071773787">Poistetaanko 15 viime minuuttia?</translation>
 <translation id="3616113530831147358">Ääni</translation>
 <translation id="3622349720008044802">Hallitse ikkunoita</translation>
+<translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{+1 sivusto}other{+# sivustoa}}</translation>
 <translation id="3631987586758005671">Jaetaan: <ph name="DEVICE_NAME" /></translation>
 <translation id="363596933471559332">Kirjaudu automaattisesti verkkosivustoille käyttämällä tallennettuja kirjautumistietoja. Jos tämä toiminto ei ole käytössä, sinua pyydetään vahvistamaan kirjautuminen aina, kun kirjaudut sivustolle.</translation>
 <translation id="3636940436873918441">Ensisijaiset kielet</translation>
@@ -750,6 +750,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5010886807652684893">Visuaalinen näkymä</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> haluaa muodostaa yhteyden</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">Viimeiset 15 minuuttia</translation>
 <translation id="5032430150487044192">QR-koodin luominen ei onnistu</translation>
 <translation id="5039804452771397117">Salli</translation>
 <translation id="5040262127954254034">Tietosuoja</translation>
@@ -768,7 +769,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5118713593561876160">Kiinnostuksen kohteet</translation>
 <translation id="5122378528687922675">Kysy tarvittaessa vanhemmaltasi (<ph name="PARENT_NAME_1" /> tai <ph name="PARENT_NAME_2" />) apua</translation>
 <translation id="5123685120097942451">Incognito-välilehti</translation>
-<translation id="5126510351761255129">Vahvista kortti</translation>
 <translation id="5132942445612118989">Synkronoi salasanasi, historiasi ja paljon muuta kaikilla laitteilla</translation>
 <translation id="5139940364318403933">Ohjeet Google Driven käyttöön</translation>
 <translation id="5142281402488957685">Päivitä sisältö vetämällä alas, niin näet uusia juttuja</translation>
@@ -928,7 +928,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="6011308810877101166">Paranna hakuehdotuksia</translation>
 <translation id="6026538407078977628">Laajenna koko näytölle</translation>
 <translation id="6030719887161080597">Ylläpidä tietoja, joita sivustot käyttävät mainostulosten mittaamiseen</translation>
-<translation id="6034146297924778597">15 viime minuutin historia poistetaan:</translation>
 <translation id="6039379616847168523">Siirry seuraavalle välilehdelle</translation>
 <translation id="6040143037577758943">Sulje</translation>
 <translation id="604124094241169006">Automaattinen</translation>
@@ -1370,6 +1369,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />Omat laitteet<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">Jatka</translation>
 <translation id="8209050860603202033">Avaa kuva</translation>
+<translation id="8210770465353466621">Näet välilehtesi täällä</translation>
 <translation id="8215740705341534369">Sivupaneeli</translation>
 <translation id="8218622182176210845">Ylläpidä tiliäsi</translation>
 <translation id="8221401890884589479">Voit estää sivustot, joita et halua. Chrome myös poistaa listalta automaattisesti yli 30 päivää vanhat sivustot. <ph name="BEGIN_LINK" />Lue lisää<ph name="END_LINK" /></translation>

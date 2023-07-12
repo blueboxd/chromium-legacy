@@ -1631,7 +1631,7 @@ Style notes:
       <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_CONFIRMATION_BUTTON" desc="The button text for the nudge that is shown after a user has opted in or out of the speak-on-mute detection feature.">
         Settings
       </message>
-      <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_DISMISS_BUTTON" desc="The cancel button text for the nudge shown so users can opt-in or out of the speak-on-mute detection feature.">
+      <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_FIRST_BUTTON" desc="The cancel button text for the nudge shown so users can opt-in or out of the speak-on-mute detection feature.">
         No thanks
       </message>
       <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_SECOND_BUTTON" desc="The confirmation button text for the nudge shown so users can opt-in or out of the speak-on-mute detection feature.">
@@ -1997,21 +1997,24 @@ Style notes:
         Version <ph name="VERSION_NAME">$1<ex>109.0.5414.125</ex></ph> (<ph name="OFFICIAL_STATUS">$2<ex>Official Build</ex></ph>) <ph name="CHANNEL_NAME">$3<ex>Beta</ex></ph> <ph name="PROCESSOR_VARIATION">$4<ex>(64-bit)</ex></ph>
       </message>
       <message name="IDS_ASH_CPU_IN_LAUNCHER_TITLE" desc="Message content for the title of the answer card with the current CPU system information in the launcher.">
-        CPU current usage: <ph name="CPU_USEAGE">$1<ex>89</ex></ph>%
+        CPU usage snapshot: <ph name="CPU_USEAGE">$1<ex>89</ex></ph>%
       </message>
       <message name="IDS_ASH_CPU_IN_LAUNCHER_DESCRIPTION" desc="Message content for the description of the answer card with the current CPU system information in the launcher.">
         Temperature: <ph name="TEMPERATURE">$1<ex>34</ex></ph>°C - Current speed: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ">$2<ex>1.52</ex></ph>GHz
       </message>
       <message name="IDS_ASH_MEMORY_USAGE_IN_LAUNCHER_DESCRIPTION" desc="Message content for the description of the answer card with the current memory usage information in the launcher.">
-        <ph name="USED_MEMORY">$1<ex>2.4 GB</ex></ph> of <ph name="TOTAL_MEMORY">$2<ex>7.6 GB</ex></ph> available
+        Memory <ph name="USED_MEMORY">$1<ex>2.4 GB</ex></ph> | <ph name="TOTAL_MEMORY">$2<ex>7.6 GB</ex></ph> total
       </message>
-      <message name="IDS_ASH_BATTERY_STATUS_IN_LAUNCHER_TITLE" desc="Message content for the title of the battery answer card while the battery is discharging, showing the battery power as a percentage and the time left until the battery is empty.">
-        <ph name="BATTERY_PERCENTAGE">$1<ex>56</ex></ph>% | <ph name="TIME">$2<ex>2 hours and 20 minutes</ex></ph> left
+      <message name="IDS_ASH_BATTERY_STATUS_IN_LAUNCHER_DESCRIPTION_LEFT_SHORT" desc="Message content for the short description on the left of the battery answer card.">
+        Battery <ph name="BATTERY_PERCENTAGE">$1<ex>56</ex></ph>%
       </message>
-      <message name="IDS_ASH_BATTERY_STATUS_CHARGING_IN_LAUNCHER_TITLE" desc="Message content for the title of the battery answer card while the battery is charging, showing the battery power as a percentage and the time left until the battery is full.">
-        <ph name="BATTERY_PERCENTAGE">$1<ex>56</ex></ph>% | <ph name="TIME">$2<ex>2 hours and 20 minutes</ex></ph> until full
+      <message name="IDS_ASH_BATTERY_STATUS_IN_LAUNCHER_DESCRIPTION_LEFT" desc="Message content for the description on the left of the battery answer card while the battery is discharging, showing the battery power as a percentage and the time left until the battery is empty.">
+        Battery <ph name="BATTERY_PERCENTAGE">$1<ex>56</ex></ph>% | <ph name="TIME">$2<ex>2 hours and 20 minutes</ex></ph> left
       </message>
-      <message name="IDS_ASH_BATTERY_STATUS_IN_LAUNCHER_DESCRIPTION" desc="Message content for the description of the battery answer card, showing the battery health percentage and the cycle count.">
+      <message name="IDS_ASH_BATTERY_STATUS_CHARGING_IN_LAUNCHER_DESCRIPTION_LEFT" desc="Message content for the description on the left of the battery answer card while the battery is charging, showing the battery power as a percentage and the time left until the battery is full.">
+        Battery <ph name="BATTERY_PERCENTAGE">$1<ex>56</ex></ph>% | <ph name="TIME">$2<ex>2 hours and 20 minutes</ex></ph> until full
+      </message>
+      <message name="IDS_ASH_BATTERY_STATUS_IN_LAUNCHER_DESCRIPTION_RIGHT" desc="Message content for the description on the right of the battery answer card, showing the battery health percentage and the cycle count.">
         Battery health <ph name="BATTERY_HEALTH_PERCENTAGE">$1<ex>97</ex></ph>% | Cycle count <ph name="CYCLE_COUNT">$2<ex>15</ex></ph>
       </message>
       <message name="IDS_ASH_STORAGE_STATUS_IN_LAUNCHER_DESCRIPTION" desc="Message content for the description of the storage answer card, showing the amount of storage currently in use and the total storage size.">
@@ -2491,6 +2494,16 @@ Style notes:
         About <ph name="time_left">$1<ex>40 minutes</ex></ph> left (<ph name="percentage">$2<ex>56%</ex></ph>%).
 Connect your device to power.
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_LOW_BATTERY_BSM_TITLE" translateable="false" desc="The title for the notification displayed when device battery level is low, and battery saver mode is enabled.">
+        Low Battery - turning on battery saver
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_LOW_BATTERY_BSM_MESSAGE" translateable="false" desc="The label in the tray dialog to show the remaining battery power as a percent, with additional text stating battery saver mode has been enabled.">
+        About <ph name="time_left">$1<ex>40 minutes</ex></ph> left (<ph name="percentage">$2<ex>56%</ex></ph>%).
+Turning on battery saver to increase your battery life.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_LOW_BATTERY_BSM_BUTTON" translateable="false" desc="The button text on the low power notification to disable battery saver.">
+        Turn off Battery Saver
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_TITLE" desc="The title displayed in a battery status notification.">Battery status</message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT" desc="The label in the tray dialog to show the remaining battery power as a percent.">
         <ph name="percentage">{0,number,percent}<ex>56%</ex></ph> remaining
@@ -2871,6 +2884,9 @@ Connect your device to power.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_LTE_PLUS" desc="The sub label text used when a cellular connection is using the LTE Advanced connectivity type.">
         LTE+
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_FIVE_G" desc="The sub label text used when a cellular connection is using the 5G connectivity type.">
+        5G
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_WEAK_SUBLABEL" desc="The sub label text used when WiFi signal strength is weak (among weak, medium, and strong.) [CHAR_LIMIT=14]">
         Weak
@@ -5363,6 +5379,15 @@ Here are some things you can try to get started.
       <message name="IDS_PRIVACY_HUB_MICROPHONE_AND_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES" desc="Message for a notification shown to the users when an app tries to use the microphone or camera while both are disabled.">
         This allows access for <ph name="APP1_NAME">$1<ex>Camera</ex></ph>, <ph name="APP2_NAME">$2<ex>Google Meet</ex></ph>, and all apps and websites with the camera and microphone permissions
       </message>
+      <message name="IDS_PRIVACY_HUB_MICROPHONE_AND_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_DISCLAIMER" desc="Message for a notification shown to the users when an app tries to use the microphone or camera while both are disabled.">
+        This allows access for all apps and websites with the camera and microphone permissions. You may need to refresh the web page or restart the app.
+      </message>
+      <message name="IDS_PRIVACY_HUB_MICROPHONE_AND_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_ONE_APP_NAME_WITH_DISCLAIMER" desc="Message for a notification shown to the users when an app tries to use the microphone or camera while both are disabled.">
+        This allows access for <ph name="APP_NAME">$1<ex>Camera</ex></ph> and all apps and websites with the camera and microphone permissions. You may need to refresh the web page or restart the app.
+      </message>
+      <message name="IDS_PRIVACY_HUB_MICROPHONE_AND_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES_WITH_DISCLAIMER" desc="Message for a notification shown to the users when an app tries to use the microphone or camera while both are disabled.">
+        This allows access for <ph name="APP1_NAME">$1<ex>Camera</ex></ph>, <ph name="APP2_NAME">$2<ex>Google Meet</ex></ph>, and all apps and websites with the camera and microphone permissions. You may need to refresh the web page or restart the app.
+      </message>
       <message name="IDS_PRIVACY_HUB_MICROPHONE_AND_CAMERA_OFF_NOTIFICATION_BUTTON" desc="Label for an action button that enables microphone and camera.">
         Turn on access
       </message>
@@ -5382,6 +5407,15 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES" desc="Message for a notification shown to the users when an app tries to use the camera while the camera is off.">
         This allows camera access for <ph name="APP1_NAME">$1<ex>Zoom</ex></ph>, <ph name="APP2_NAME">$2<ex>Snapchat</ex></ph>, and all apps and websites with the camera permission
+      </message>
+      <message name="IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_DISCLAIMER" desc="Message for a notification shown to the users when an app tries to use the camera while the camera is off.">
+        This allows camera access for all apps and websites with the camera permission. You may need to refresh the web page or restart the app.
+      </message>
+      <message name="IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_ONE_APP_NAME_WITH_DISCLAIMER" desc="Message for a notification shown to the users when an app tries to use the camera while the camera is off.">
+        This allows camera access for <ph name="APP_NAME">$1<ex>Zoom</ex></ph> and all apps and websites with the camera permission. You may need to refresh the web page or restart the app.
+      </message>
+      <message name="IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES_WITH_DISCLAIMER" desc="Message for a notification shown to the users when an app tries to use the camera while the camera is off.">
+        This allows camera access for <ph name="APP1_NAME">$1<ex>Zoom</ex></ph>, <ph name="APP2_NAME">$2<ex>Snapchat</ex></ph>, and all apps and websites with the camera permission. You may need to refresh the web page or restart the app.
       </message>
       <message name="IDS_PRIVACY_HUB_TURN_ON_CAMERA_ACTION_BUTTON" desc="Label for an action button that enables the camera.">
         Turn on camera access
@@ -5931,9 +5965,6 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_ASH_CLIPBOARD_HISTORY_HEADER_TITLE" desc="The title of the ChromeOS clipboard history menu, which shows the user's most recently copied items.">
         Clipboard
-      </message>
-      <message name="IDS_ASH_CLIPBOARD_HISTORY_REMOVE_ALL_BUTTON" desc="The display text for a button in the top-right corner of the ChromeOS clipboard history menu. Users can activate this button to clear their clipboard history (remove all items from the menu).">
-        Remove all
       </message>
       <message name="IDS_ASH_MULTIPASTE_CONTEXTUAL_NUDGE" desc="The label used for the multipaste nudge, to be seen once the user copies and pastes multiple times in a short time span.">
         Press <ph name="SHORTCUT_KEY_NAME">$1<ex>Launcher</ex></ph> + V to view your clipboard. The last 5 items you've copied are saved to your clipboard.
@@ -6701,17 +6732,17 @@ New install
       </message>
 
       <!-- Glanceables -->
+      <message name="IDS_GLANCEABLES_DUE_TODAY" desc="Classroom glanceable displays upcoming/missed/completed assignments from Google Classroom. Tasks glanceable displays upcoming/missed assignments from Google Tasks. This text is displayed for tasks and assignments that are due today. In other cases date formatter is used and no translation is needed.">
+        Today
+      </message>
       <message name="IDS_GLANCEABLES_WELCOME_LABEL" desc="Personalized greeting / welcome message shown on glanceables surfaces (welcome screen and overview mode).">
         Welcome back, <ph name="GIVEN_NAME">$1<ex>John</ex></ph>
       </message>
-      <message name="IDS_GLANCEABLES_TASKS_DETAILS_FOOTER" desc="The glanceable displays tasks from a task list that's selected in a drop-down box within the glanceable UI. The first placeholder value is the number of tasks visible in the UI. The second placeholder value is the total number of tasks in the selected tasks list, including tasks that are not visible in the UI.">
-        Showing <ph name="NUM_SHOWN_TASKS">$1<ex>5</ex></ph> out of <ph name="NUM_TOTAL_TASKS">$2<ex>10</ex></ph>
+      <message name="IDS_GLANCEABLES_LIST_FOOTER_ITEMS_COUNT_LABEL" desc="The glanceable displays classroom or tasks items fetched from Google Classroom or Google Tasks API. The first placeholder value is the number of items visible in the UI. The second placeholder value is the total number of items returned from API.">
+        Showing <ph name="NUM_SHOWN_ITEMS">$1<ex>5</ex></ph> out of <ph name="NUM_TOTAL_ITEMS">$2<ex>10</ex></ph>
       </message>
-      <message name="IDS_GLANCEABLES_TASKS_ACTION_BUTTON_LABEL" desc="The glanceable displays tasks from a task list that's selected in a drop-down box within the glanceable UI. Interacting with the button and label at the bottom of the glanceable opens the Tasks companion app.">
+      <message name="IDS_GLANCEABLES_LIST_FOOTER_ACTION_BUTTON_LABEL" desc="The glanceable displays classroom or tasks items fetched from Google Classroom or Google Tasks API. Glanceables UI renders only limited number of items, the rest of them can be seen by clicking this button, which will open a corresponding website.">
         See all
-      </message>
-      <message name="IDS_GLANCEABLES_CLASSROOM_ASSIGNMENT_DUE_TODAY" desc="Classroom glanceable displays upcoming/missed/completed assignments from Google Classroom. This text is displayed for assignments that are due today. In other cases date formatter is used and no translation is needed.">
-        Today
       </message>
 
       <!-- Do not disturb notification -->
@@ -6816,6 +6847,18 @@ To shut down the device, press and hold the power button on the device again.
       </message>
       <message name="IDS_ASH_GAME_DASHBOARD_TOOLBAR_TILE_BUTTON_TITLE" translateable="false" desc="The display name for the Game Dashboard toolbar tile.">
         Toolbar
+      </message>
+
+      <!-- TODO(b/286937607): Finalize and translate these strings -->
+      <!-- Input device settings notifications -->
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_ALT_RIGHT_CLICK" translateable="false" desc="">
+        The Alt + click keyboard shortcut has changed. To use your keyboard to right-click, press the Launcher key + click.
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_LAUNCHER_RIGHT_CLICK" translateable="false" desc="">
+        The Launcher + click keyboard shortcut has changed. To use your keyboard to right-click, press the Alt key + click.
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_RIGHT_CLICK_DISABLED" translateable="false" desc="">
+        Simulating a right-click using touchpad and keyboard is disabled, visit device settings to configure.
       </message>
      </messages>
     </release>

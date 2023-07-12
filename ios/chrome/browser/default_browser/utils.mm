@@ -46,11 +46,6 @@ NSString* const kLastHTTPURLOpenTime = @"lastHTTPURLOpenTime";
 NSString* const kLastSignificantUserEventGeneral = @"lastSignificantUserEvent";
 
 // Key in storage containing an array of dates. Each date correspond to
-// a stay safe event of interest for Default Browser Promo modals.
-NSString* const kLastSignificantUserEventStaySafe =
-    @"lastSignificantUserEventStaySafe";
-
-// Key in storage containing an array of dates. Each date correspond to
 // a made for iOS event of interest for Default Browser Promo modals.
 NSString* const kLastSignificantUserEventMadeForIOS =
     @"lastSignificantUserEventMadeForIOS";
@@ -253,6 +248,32 @@ NSString* StorageKeyForDefaultPromoType(DefaultPromoType type) {
 }
 
 // Loads from NSUserDefaults the time of the non-expired events for the
+// given key into the given container.
+void LoadActiveDatesForKey(NSString* key,
+                           base::TimeDelta delay,
+                           std::set<base::Time>& dates_set) {
+  NSArray* dates = GetObjectFromStorageForKey<NSArray>(key);
+  if (!dates) {
+    return;
+  }
+
+  const base::Time now = base::Time::Now();
+  for (NSObject* object : dates) {
+    NSDate* date = base::mac::ObjCCast<NSDate>(object);
+    if (!date) {
+      continue;
+    }
+
+    const base::Time time = base::Time::FromNSDate(date);
+    if (now - time > delay) {
+      continue;
+    }
+
+    dates_set.insert(time.LocalMidnight());
+  }
+}
+
+// Loads from NSUserDefaults the time of the non-expired events for the
 // given key.
 std::vector<base::Time> LoadActiveTimestampsForKey(NSString* key,
                                                    base::TimeDelta delay) {
@@ -389,6 +410,28 @@ int NumDaysSincePromoInteraction() {
   return components.day;
 }
 
+// Returns number of days in past `kTriggerCriteriaExperimentStatExpiration`
+// days when user opened chrome.
+int NumActiveDays() {
+  std::set<base::Time> active_dates;
+
+  LoadActiveDatesForKey(kAllTimestampsAppLaunchColdStart,
+                        kTriggerCriteriaExperimentStatExpiration, active_dates);
+  LoadActiveDatesForKey(kAllTimestampsAppLaunchWarmStart,
+                        kTriggerCriteriaExperimentStatExpiration, active_dates);
+  LoadActiveDatesForKey(kAllTimestampsAppLaunchIndirectStart,
+                        kTriggerCriteriaExperimentStatExpiration, active_dates);
+  return active_dates.size();
+}
+
+// Adds current timestamp in the array of timestamps for the given key.
+void StoreCurrentTimestampForKey(NSString* key) {
+  std::vector<base::Time> timestamps =
+      LoadActiveTimestampsForKey(key, kTriggerCriteriaExperimentStatExpiration);
+  timestamps.push_back(base::Time::Now());
+  StoreTimestampsForKey(key, timestamps);
+}
+
 }  // namespace
 
 NSString* const kLastTimeUserInteractedWithPromo =
@@ -399,6 +442,9 @@ NSString* const kAllTimestampsAppLaunchWarmStart =
     @"AllTimestampsAppLaunchWarmStart";
 NSString* const kAllTimestampsAppLaunchIndirectStart =
     @"AllTimestampsAppLaunchIndirectStart";
+NSString* const kLastSignificantUserEventStaySafe =
+    @"lastSignificantUserEventStaySafe";
+NSString* const kOmniboxUseCount = @"OmniboxUseCount";
 
 void SetObjectIntoStorageForKey(NSString* key, NSObject* data) {
   UpdateStorageWithDictionary(@{key : data});
@@ -604,6 +650,11 @@ void LogUserInteractionWithFirstRunPromo(BOOL openedSettings) {
   });
 }
 
+void LogCopyPasteInOmniboxForDefaultBrowserPromo() {
+  LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeGeneral);
+  StoreCurrentTimestampForKey(kOmniboxUseCount);
+}
+
 bool HasRecentFirstPartyIntentLaunchesAndRecordsCurrentLaunch() {
   const base::TimeDelta max_session_time =
       base::Seconds(GetFeedUnseenRefreshThresholdInSeconds());
@@ -717,6 +768,17 @@ const NSArray<NSString*>* DefaultBrowserUtilsLegacyKeysForTesting() {
   ];
 
   return keysForTesting;
+}
+
+int GetNonModalDefaultBrowserPromoImpressionLimit() {
+  int limit = kNonModalDefaultBrowserPromoImpressionLimitParam.Get();
+
+  // The histogram only supports up to 10 impressions.
+  if (limit > 10) {
+    limit = 10;
+  }
+
+  return limit;
 }
 
 bool HasAppLaunchedOnColdStartAndRecordsLaunch() {
@@ -859,6 +921,7 @@ void CleanupStorageForTriggerExperiment() {
   [defaults removeObjectForKey:kAllTimestampsAppLaunchWarmStart];
   [defaults removeObjectForKey:kAllTimestampsAppLaunchIndirectStart];
 }
+
 void RecordPromoStatsToUMAForActionString(PromoStatistics* promo_stats,
                                           const std::string& action_str) {
   if (!IsDefaultBrowserTriggerCriteraExperimentEnabled()) {
@@ -882,6 +945,12 @@ void RecordPromoStatsToUMAForActionString(PromoStatistics* promo_stats,
   base::UmaHistogramCounts100(
       base::StrCat({histogram_prefix, ".ChromeIndirectStartCount"}),
       promo_stats.chromeIndirectStartCount);
+  base::UmaHistogramCounts100(
+      base::StrCat({histogram_prefix, ".PasswordManagerUseCount"}),
+      promo_stats.passwordManagerUseCount);
+  base::UmaHistogramCounts100(
+      base::StrCat({histogram_prefix, ".OmniboxClipboardUseCount"}),
+      promo_stats.omniboxClipboardUseCount);
 }
 
 PromoStatistics* CalculatePromoStatistics() {
@@ -901,6 +970,12 @@ PromoStatistics* CalculatePromoStatistics() {
   promo_stats.chromeIndirectStartCount = NumRecordedEventForKeyLessThanDelay(
       kAllTimestampsAppLaunchIndirectStart,
       kTriggerCriteriaExperimentStatExpiration);
+  promo_stats.activeDayCount = NumActiveDays();
+  promo_stats.passwordManagerUseCount = NumRecordedEventForKeyLessThanDelay(
+      kLastSignificantUserEventStaySafe,
+      kTriggerCriteriaExperimentStatExpiration);
+  promo_stats.omniboxClipboardUseCount = NumRecordedEventForKeyLessThanDelay(
+      kOmniboxUseCount, kTriggerCriteriaExperimentStatExpiration);
 
   return promo_stats;
 }
@@ -913,13 +988,6 @@ void RecordPromoStatsToUMAForAction(PromoStatistics* promo_stats,
 
 void RecordPromoStatsToUMAForAppear(PromoStatistics* promo_stats) {
   RecordPromoStatsToUMAForActionString(promo_stats, kAppearAction);
-}
-
-void StoreCurrentTimestampForKey(NSString* key) {
-  std::vector<base::Time> timestamps =
-      LoadActiveTimestampsForKey(key, kTriggerCriteriaExperimentStatExpiration);
-  timestamps.push_back(base::Time::Now());
-  StoreTimestampsForKey(key, timestamps);
 }
 
 void LogBrowserLaunched(bool is_cold_start) {

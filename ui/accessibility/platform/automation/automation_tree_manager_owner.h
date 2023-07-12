@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/accessibility/public/mojom/accessibility_service.mojom.h"
+#include "services/accessibility/public/mojom/automation.mojom.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_event_generator.h"
@@ -204,6 +204,7 @@ class COMPONENT_EXPORT(AX_PLATFORM) AutomationTreeManagerOwner
       const ui::AXTreeID& tree_id,
       int32_t node_id,
       const ui::AXRelativeBounds& bounds) override;
+  void DispatchActionResult(const ui::AXActionData& data, bool result) override;
 
   // Mojo receiver to the Automation interface, implemented by this class.
   // Listed as a protected member so that derived classes can reset its status

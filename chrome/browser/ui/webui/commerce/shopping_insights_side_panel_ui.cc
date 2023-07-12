@@ -20,6 +20,7 @@
 #include "chrome/grit/side_panel_shared_resources.h"
 #include "chrome/grit/side_panel_shared_resources_map.h"
 #include "components/commerce/core/commerce_constants.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/mojom/shopping_list.mojom.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
@@ -62,10 +63,14 @@ ShoppingInsightsSidePanelUI::ShoppingInsightsSidePanelUI(content::WebUI* web_ui)
        IDS_SHOPPING_INSIGHTS_SIDE_PANEL_TRACK_PRICE_DESCRIPTION},
       {"trackPriceDone", IDS_SHOPPING_INSIGHTS_SIDE_PANEL_TRACK_PRICE_DONE},
       {"trackPriceError", IDS_SHOPPING_INSIGHTS_SIDE_PANEL_TRACK_PRICE_ERROR},
+      {"yesterday", IDS_PRICE_HISTORY_YESTERDAY_PRICE},
   };
   for (const auto& str : kLocalizedStrings) {
     webui::AddLocalizedString(source, str.name, str.id);
   }
+
+  source->AddBoolean("shouldShowFeedback",
+                     commerce::kPriceInsightsShowFeedback.Get());
 
   webui::SetupWebUIDataSource(source,
                               base::make_span(kSidePanelCommerceResources,
@@ -97,7 +102,7 @@ void ShoppingInsightsSidePanelUI::CreateShoppingListHandler(
   shopping_list_handler_ = std::make_unique<commerce::ShoppingListHandler>(
       std::move(page), std::move(receiver), bookmark_model, shopping_service,
       profile->GetPrefs(), tracker, g_browser_process->GetApplicationLocale(),
-      std::make_unique<commerce::ShoppingUiHandlerDelegate>(this));
+      std::make_unique<commerce::ShoppingUiHandlerDelegate>(this, profile));
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(ShoppingInsightsSidePanelUI)

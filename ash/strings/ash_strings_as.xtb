@@ -185,6 +185,7 @@
 <translation id="1770726142253415363"><ph name="ROW_NUMBER" />তম শাৰী, <ph name="COLUMN_NUMBER" />তম স্তম্ভলৈ নিয়া হৈছে।</translation>
 <translation id="1771761307086386028">সোঁফাললৈ স্ক্ৰ’ল কৰক</translation>
 <translation id="1774796056689732716">কেলেণ্ডাৰ, <ph name="CURRENT_MONTH_YEAR" />, বৰ্তমান <ph name="DATE" /> বাছনি কৰা হৈছে।</translation>
+<translation id="1775598828170459419"><ph name="NUM_TOTAL_ITEMS" /> টাৰ ভিতৰত <ph name="NUM_SHOWN_ITEMS" /> টা দেখুৱাই থকা হৈছে</translation>
 <translation id="1787955149152357925">অফ আছে</translation>
 <translation id="181103072419391116">ছিগনেলৰ ক্ষমতা <ph name="SIGNAL_STRENGTH" />, আপোনাৰ প্ৰশাসকে পৰিচালনা কৰে</translation>
 <translation id="1815245884418711390">হ’টস্প’ট ট’গল কৰক। হটস্পট অফ হৈ আছে।</translation>
@@ -298,6 +299,7 @@
 <translation id="2318576281648121272">আজি <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" /> , সন্ধানৰ ফলাফলৰ শিতান</translation>
 <translation id="2322173485024759474">এটা বৰ্ণ পিছলৈ যাওক</translation>
+<translation id="2335091074961603075">আপোনাৰ Chromebook অথবা ব্লুটুথ ডিভাইচটোৱে ব্লুটুথৰ এটা পুৰণি সংস্কৰণ ব্যৱহাৰ কৰি আছে। উন্নত গুণগত মানৰ অডিঅ’ৰ বাবে অভ্যন্তৰীণ মাইক্ৰ’ফ’ন ব্যৱহাৰ কৰক।</translation>
 <translation id="2339073806695260576">কোনো টোকা লিখিবলৈ, স্ক্ৰীনশ্বট ল’বলৈ, লেজাৰ পইণ্টাৰ বা আতচী কাঁচ ব্যৱহাৰ কৰিবলৈ শ্বেল্ফত থকা ষ্টাইলাছ বুটামটো টিপক।</translation>
 <translation id="2341729377289034582">উলম্ব অৱস্থাত থকাকৈ লক কৰা হ'ল</translation>
 <translation id="2345226652884463045">সম্পাদনাৰ বাবে পাঠ বাছনি কৰিবলৈ এণ্টাৰ অথবা ছাৰ্চ + স্পেছ টিপক।</translation>
@@ -1552,7 +1554,6 @@
 <translation id="7866482334467279021">অন আছে</translation>
 <translation id="7872786842639831132">অফ আছে</translation>
 <translation id="7875575368831396199">আপোনাৰ <ph name="DEVICE_TYPE" />ত ব্লুটুথ অফ কৰি থোৱা আছে যেন লাগিছে। ফ’ন হাব ব্যৱহাৰ কৰিবলৈ অনুগ্ৰহ কৰি ব্লুটুথ অন কৰক।</translation>
-<translation id="7876243839304621966">সকলো আঁতৰাওক</translation>
 <translation id="7877557217297072640">{0,plural, =0{এতিয়াই ডিভাইচটো পূৰ্বৱৰ্তী সংস্কৰণলৈ সলনি কৰক}=1{১ ছেকেণ্ডৰ ভিতৰত ডিভাইচটো পূৰ্বৱৰ্তী সংস্কৰণলৈ সলনি কৰক}one{# ছেকেণ্ডৰ ভিতৰত ডিভাইচটো পূৰ্বৱৰ্তী সংস্কৰণলৈ সলনি কৰক}other{# ছেকেণ্ডৰ ভিতৰত ডিভাইচটো পূৰ্বৱৰ্তী সংস্কৰণলৈ সলনি কৰক}}</translation>
 <translation id="7884446017008693258">হটস্পটৰ ছেটিং</translation>
 <translation id="7884902759927478774">টেব টানি অনাটো বাতিল কৰক</translation>
@@ -1651,7 +1652,6 @@
 <translation id="8255234195843591763">আপডে’ট কৰিবলৈ ৰিছেট কৰক</translation>
 <translation id="8261506727792406068">মচক</translation>
 <translation id="8262312463845990408">প্লে’বেক ট’গল কৰক</translation>
-<translation id="8265826854528868575"><ph name="NUM_TOTAL_TASKS" /> টা কাৰ্যৰ ভিতৰত <ph name="NUM_SHOWN_TASKS" /> টা দেখুৱাই থকা হৈছে</translation>
 <translation id="8270450402312105425">{0,plural, =1{এঘণ্টাৰ ভিতৰত ডিভাইচটো পূৰ্বৱৰ্তী সংস্কৰণলৈ সলনি কৰক}one{# ঘণ্টাৰ ভিতৰত ডিভাইচটো পূৰ্বৱৰ্তী সংস্কৰণলৈ সলনি কৰক}other{# ঘণ্টাৰ ভিতৰত ডিভাইচটো পূৰ্বৱৰ্তী সংস্কৰণলৈ সলনি কৰক}}</translation>
 <translation id="8277261673056602147">আপোনাৰ স্ক্ৰীনত থকা পাঠ হাইলাইট কৰক</translation>
 <translation id="8284362522226889623">পূৰ্বৱৰ্তী ডেস্কখনলৈ সলনি কৰিবলৈ চাৰিটা আঙুলিৰে বাওঁফালে ছোৱাইপ কৰক</translation>
@@ -1759,6 +1759,7 @@
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />। <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8790998409862094015">বেছি</translation>
 <translation id="8792626944327216835">মাইক্ৰ'ফ'ন</translation>
+<translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> ফ’ল্ডাৰ</translation>
 <translation id="880709030178078220">"সহায়"</translation>
 <translation id="8814190375133053267">ৱাই-ফাই</translation>

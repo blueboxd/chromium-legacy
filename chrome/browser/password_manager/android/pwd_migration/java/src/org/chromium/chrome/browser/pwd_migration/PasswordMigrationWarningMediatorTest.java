@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.ACCOUNT_DISPLAY_NAME;
 import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.CURRENT_SCREEN;
 import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.DISMISS_HANDLER;
+import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.SHOULD_OFFER_SYNC;
 import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.VISIBLE;
 
 import androidx.fragment.app.FragmentManager;
@@ -32,13 +33,16 @@ import org.mockito.quality.Strictness;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Batch;
+import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningMediator.MigrationWarningOptionsHandler;
+import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningMediator.PasswordMigrationWarningUserActions;
 import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.MigrationOption;
 import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.ScreenType;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
@@ -52,6 +56,7 @@ import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.sync.SyncService;
+import org.chromium.components.sync.UserSelectableType;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.components.user_prefs.UserPrefsJni;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -107,6 +112,8 @@ public class PasswordMigrationWarningMediatorTest {
     private IdentityManager mIdentityManager;
     @Mock
     private SyncService mSyncService;
+    @Mock
+    private SigninManager mSigninManager;
 
     @Before
     public void setUp() {
@@ -137,6 +144,40 @@ public class PasswordMigrationWarningMediatorTest {
     }
 
     @Test
+    public void testOnDismissedFromIntroScreenRecordsUserAction() {
+        HistogramWatcher histogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(PasswordMigrationWarningMediator
+                                                 .PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
+                                PasswordMigrationWarningUserActions.DISMISS_INTRODUCTION)
+                        .build();
+
+        mModel.set(VISIBLE, true);
+        when(mIdentityServicesProvider.getIdentityManager(mProfile)).thenReturn(mIdentityManager);
+        mMediator.showWarning(ScreenType.INTRO_SCREEN);
+        mMediator.onDismissed(StateChangeReason.SWIPE);
+
+        histogram.assertExpected();
+    }
+
+    @Test
+    public void testOnDismissedFromMoreOptionsScreenRecordsUserAction() {
+        HistogramWatcher histogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(PasswordMigrationWarningMediator
+                                                 .PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
+                                PasswordMigrationWarningUserActions.DISMISS_MORE_OPTIONS)
+                        .build();
+
+        mModel.set(VISIBLE, true);
+        when(mIdentityServicesProvider.getIdentityManager(mProfile)).thenReturn(mIdentityManager);
+        mMediator.showWarning(ScreenType.OPTIONS_SCREEN);
+        mMediator.onDismissed(StateChangeReason.SWIPE);
+
+        histogram.assertExpected();
+    }
+
+    @Test
     public void testDismissHandlerHidesTheSheet() {
         assertNotNull(mModel.get(DISMISS_HANDLER));
         mModel.set(VISIBLE, true);
@@ -153,11 +194,42 @@ public class PasswordMigrationWarningMediatorTest {
     }
 
     @Test
+    public void testOnMoreOptionsRecordsUserAction() {
+        HistogramWatcher histogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(PasswordMigrationWarningMediator
+                                                 .PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
+                                PasswordMigrationWarningUserActions.MORE_OPTIONS)
+                        .build();
+
+        mModel.set(VISIBLE, true);
+        mModel.set(CURRENT_SCREEN, ScreenType.INTRO_SCREEN);
+        mMediator.onMoreOptions();
+
+        histogram.assertExpected();
+    }
+
+    @Test
     public void testOnAcknowledgeHidesTheSheet() {
         when(mUserPrefsJni.get(mProfile)).thenReturn(mPrefService);
         mModel.set(VISIBLE, true);
         mMediator.onAcknowledge(mBottomSheetController);
         assertFalse(mModel.get(VISIBLE));
+    }
+
+    @Test
+    public void testOnAcknowledgeRecordsUserAction() {
+        HistogramWatcher histogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(PasswordMigrationWarningMediator
+                                                 .PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
+                                PasswordMigrationWarningUserActions.GOT_IT)
+                        .build();
+
+        when(mUserPrefsJni.get(mProfile)).thenReturn(mPrefService);
+        mMediator.onAcknowledge(mBottomSheetController);
+
+        histogram.assertExpected();
     }
 
     @Test
@@ -173,6 +245,20 @@ public class PasswordMigrationWarningMediatorTest {
         mModel.set(VISIBLE, true);
         mMediator.onCancel(mBottomSheetController);
         assertFalse(mModel.get(VISIBLE));
+    }
+
+    @Test
+    public void testOnCancelRecordsUserAction() {
+        HistogramWatcher histogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(PasswordMigrationWarningMediator
+                                                 .PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
+                                PasswordMigrationWarningUserActions.CANCEL)
+                        .build();
+
+        mMediator.onCancel(mBottomSheetController);
+
+        histogram.assertExpected();
     }
 
     @Test
@@ -198,10 +284,38 @@ public class PasswordMigrationWarningMediatorTest {
     }
 
     @Test
+    public void testOnNextRecordsSyncUserAction() {
+        HistogramWatcher histogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(PasswordMigrationWarningMediator
+                                                 .PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
+                                PasswordMigrationWarningUserActions.SYNC)
+                        .build();
+
+        mMediator.onNext(MigrationOption.SYNC_PASSWORDS, mFragmentManager);
+
+        histogram.assertExpected();
+    }
+
+    @Test
+    public void testOnNextRecordsExportUserAction() {
+        HistogramWatcher histogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(PasswordMigrationWarningMediator
+                                                 .PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
+                                PasswordMigrationWarningUserActions.EXPORT)
+                        .build();
+
+        mMediator.onNext(MigrationOption.EXPORT_AND_DELETE, mFragmentManager);
+
+        histogram.assertExpected();
+    }
+
+    @Test
     public void testOnNextWithoutPasswordsWithExportingSelectedStartsTheExportFlow() {
         mMediator.onNext(MigrationOption.EXPORT_AND_DELETE, mFragmentManager);
 
-        verify(mOptionsHandler).startExportFlow(mFragmentManager, false);
+        verify(mOptionsHandler).startExportFlow(mFragmentManager);
     }
 
     @Test
@@ -209,7 +323,7 @@ public class PasswordMigrationWarningMediatorTest {
         mMediator.passwordListAvailable(2);
         mMediator.onNext(MigrationOption.EXPORT_AND_DELETE, mFragmentManager);
 
-        verify(mOptionsHandler).startExportFlow(mFragmentManager, true);
+        verify(mOptionsHandler).startExportFlow(mFragmentManager);
     }
 
     @Test
@@ -250,5 +364,40 @@ public class PasswordMigrationWarningMediatorTest {
         mMediator.passwordListAvailable(2);
 
         verify(mOptionsHandler).passwordsAvailable();
+    }
+
+    @Test
+    public void testSyncNotOfferedIfPolicyDisabledSignIn() {
+        when(mIdentityServicesProvider.getIdentityManager(mProfile)).thenReturn(mIdentityManager);
+        when(mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN)).thenReturn(null);
+        when(mIdentityServicesProvider.getSigninManager(mProfile)).thenReturn(mSigninManager);
+        when(mSigninManager.isSigninDisabledByPolicy()).thenReturn(true);
+        mMediator.showWarning(ScreenType.INTRO_SCREEN);
+        assertFalse(mModel.get(SHOULD_OFFER_SYNC));
+    }
+
+    @Test
+    public void testSyncNotOfferedIfPolicyDisabledSync() {
+        when(mIdentityServicesProvider.getIdentityManager(mProfile)).thenReturn(mIdentityManager);
+        when(mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN)).thenReturn(null);
+        when(mIdentityServicesProvider.getSigninManager(mProfile)).thenReturn(mSigninManager);
+        when(mSigninManager.isSigninDisabledByPolicy()).thenReturn(false);
+        when(mSyncService.isSyncDisabledByEnterprisePolicy()).thenReturn(true);
+
+        mMediator.showWarning(ScreenType.INTRO_SCREEN);
+        assertFalse(mModel.get(SHOULD_OFFER_SYNC));
+    }
+
+    @Test
+    public void testSyncNotOfferedIfPolicyDisabledPasswordsSync() {
+        when(mIdentityServicesProvider.getIdentityManager(mProfile)).thenReturn(mIdentityManager);
+        when(mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN)).thenReturn(null);
+        when(mIdentityServicesProvider.getSigninManager(mProfile)).thenReturn(mSigninManager);
+        when(mSigninManager.isSigninDisabledByPolicy()).thenReturn(false);
+        when(mSyncService.isSyncDisabledByEnterprisePolicy()).thenReturn(false);
+        when(mSyncService.isTypeManagedByPolicy(UserSelectableType.PASSWORDS)).thenReturn(true);
+
+        mMediator.showWarning(ScreenType.INTRO_SCREEN);
+        assertFalse(mModel.get(SHOULD_OFFER_SYNC));
     }
 }

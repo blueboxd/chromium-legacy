@@ -13,14 +13,14 @@
 
 namespace flag_descriptions {
 
-// Title and description for the flag to enable add to home screen button in
-// share menu.
-extern const char kAddToHomeScreenName[];
-extern const char kAddToHomeScreenDescription[];
-
 // Title and description for the flag to enable the App Store Rating promo.
 extern const char kAppStoreRatingName[];
 extern const char kAppStoreRatingDescription[];
+
+// Title and description for the flag to enable the App Store Rating promo's
+// loosened trigger requirements.
+extern const char kAppStoreRatingLoosenedTriggersName[];
+extern const char kAppStoreRatingLoosenedTriggersDescription[];
 
 // Title and description for the flag to enable save of profiles in Google
 // Account.
@@ -286,11 +286,6 @@ extern const char kEnableCompromisedPasswordsMutingDescription[];
 extern const char kEnableDiscoverFeedTopSyncPromoName[];
 extern const char kEnableDiscoverFeedTopSyncPromoDescription[];
 
-// Title and description for the flag to enable the email in the snackbar
-// indicating that a new bookmark or reading list item is added.
-extern const char kEnableEmailInBookmarksReadingListSnackbarName[];
-extern const char kEnableEmailInBookmarksReadingListSnackbarDescription[];
-
 // Title and description for the flag to modify the feed header settings.
 extern const char kEnableFeedHeaderSettingsName[];
 extern const char kEnableFeedHeaderSettingsDescription[];
@@ -365,10 +360,6 @@ extern const char kEnableFullscreenAPIDescription[];
 // Password Manager.
 extern const char kPasswordsGroupingName[];
 extern const char kPasswordsGroupingDescription[];
-
-// Title and description for the flag to enable the passwords account storage.
-extern const char kEnablePasswordsAccountStorageName[];
-extern const char kEnablePasswordsAccountStorageDescription[];
 
 // Title and description for the flag to enable the preferences account storage.
 extern const char kEnablePreferencesAccountStorageName[];
@@ -470,11 +461,6 @@ extern const char kHttpsOnlyModeDescription[];
 extern const char kIncognitoNtpRevampName[];
 extern const char kIncognitoNtpRevampDescription[];
 
-// Title and description for the flag to indicate the Account Storage error in
-// the account cell when Sync is turned OFF.
-extern const char kIndicateAccountStorageErrorInAccountCellName[];
-extern const char kIndicateAccountStorageErrorInAccountCellDescription[];
-
 // Title and description for the flag to indicate the identity error in
 // the overflow menu.
 extern const char kIndicateIdentityErrorInOverflowMenuName[];
@@ -489,10 +475,6 @@ extern const char kInProductHelpDemoModeDescription[];
 // menu.
 extern const char kIOSBrowserEditMenuMetricsName[];
 extern const char kIOSBrowserEditMenuMetricsDescription[];
-
-// Title and description for the flag to enable new API for browser edit menu.
-extern const char kIOSCustomBrowserEditMenuName[];
-extern const char kIOSCustomBrowserEditMenuDescription[];
 
 // Title and description for the flag to enable partial translate.
 extern const char kIOSEditMenuPartialTranslateName[];
@@ -515,6 +497,11 @@ extern const char kIOSForceTranslateEnabledDescription[];
 // sign-in prompt.
 extern const char kIOSNewPostRestoreExperienceName[];
 extern const char kIOSNewPostRestoreExperienceDescription[];
+
+// Title and description for the flag to require Biometric Authentication before
+// accessing the Password Manager.
+extern const char kIOSPasswordAuthOnEntryName[];
+extern const char kIOSPasswordAuthOnEntryDescription[];
 
 // Title and description for the flag to enabled displaying and managing
 // compromised, weak and reused credentials in the Password Manager.
@@ -706,6 +693,10 @@ extern const char kOmniboxReportAssistedQueryStatsDescription[];
 extern const char kOmniboxReportSearchboxStatsName[];
 extern const char kOmniboxReportSearchboxStatsDescription[];
 
+// Title and description for improved RTL layout of suggestions.
+extern const char kOmniboxSuggestionsRTLImprovementsName[];
+extern const char kOmniboxSuggestionsRTLImprovementsDescription[];
+
 // Title and description for tail suggestions in the omnibox.
 extern const char kOmniboxTailSuggestName[];
 extern const char kOmniboxTailSuggestDescription[];
@@ -760,11 +751,6 @@ extern const char kOptimizationGuidePushNotificationClientDescription[];
 // experience kit.
 extern const char kOneTapForMapsName[];
 extern const char kOneTapForMapsDescription[];
-
-// Title and description for the flag to enable adding notes to password in
-// settings.
-extern const char kPasswordNotesWithBackupName[];
-extern const char kPasswordNotesWithBackupDescription[];
 
 // Title and description for the flag to enable PhishGuard password reuse
 // detection.
@@ -937,10 +923,6 @@ extern const char kEnableLensInOmniboxCopiedImageDescription[];
 // optimizations (go/bling-session-restoration).
 extern const char kEnableSessionSerializationOptimizationsName[];
 extern const char kEnableSessionSerializationOptimizationsDescription[];
-
-// Title and description for the flag to enable the follow up of the SF Symbols.
-extern const char kSFSymbolsFollowUpName[];
-extern const char kSFSymbolsFollowUpDescription[];
 
 // Title and description for the flag to sort the tab by recency in the TabGrid.
 extern const char kTabGridRecencySortName[];

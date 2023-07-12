@@ -682,6 +682,7 @@
     "prefix": "new-base-url-inheritance-behavior",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/html/infrastructure/urls/base-url"],
+    "exclusive_tests": "ALL",
     "args": ["--enable-features=NewBaseUrlInheritanceBehavior"],
     "expires": "Sep 10, 2023"
   },
@@ -972,7 +973,8 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/client-hints", "wpt_internal/client-hints"],
     "args": ["--disable-features=UserAgentClientHint"],
-    "expires": "Jul 1, 2024"
+    "expires": "Jul 1, 2024",
+    "owners": ["victortan@chromium.org"]
   },
   {
     "prefix": "web-bluetooth-new-permissions-backend",
@@ -1011,6 +1013,7 @@
   },
   {
     "prefix": "streaming-declarative-shadow-dom-disabled",
+    "owners": ["masonf@chromium.org", "dom-dev@chromium.org"],
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "external/wpt/shadow-dom/declarative"
@@ -1020,10 +1023,11 @@
   },
   {
     "prefix": "backface-visibility-interop",
+    "owners": ["dbaron@chromium.org", "paint-dev@chromium.org"],
     "platforms": ["Linux"],
     "bases": [ "external/wpt/css/css-transforms" ],
     "args": [ "--enable-features=BackfaceVisibilityInterop" ],
-    "expires": "Jul 1, 2023"
+    "expires": "Jan 15, 2024"
   },
   {
     "prefix": "portals",
@@ -1098,21 +1102,24 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/html/browsers/windows/post-message"],
     "args": ["--enable-features=PostMessageFirstPartyToThirdPartyDifferentBucketSameOriginBlocked"],
-    "expires": "Jul 1, 2024"
+    "expires": "Jul 1, 2024",
+    "owners": ["arichiv@chromium.org"]
   },
   {
     "prefix": "post-message-third-party-to-first-party-different-bucket-same-origin-blocked",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/html/browsers/windows/post-message"],
     "args": ["--enable-features=PostMessageThirdPartyToFirstPartyDifferentBucketSameOriginBlocked"],
-    "expires": "Jul 1, 2024"
+    "expires": "Jul 1, 2024",
+    "owners": ["arichiv@@chromium.org"]
   },
   {
     "prefix": "post-message-third-party-to-third-party-different-bucket-same-origin-blocked",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/html/browsers/windows/post-message"],
     "args": ["--enable-features=PostMessageThirdPartyToThirdPartyDifferentBucketSameOriginBlocked"],
-    "expires": "Jul 1, 2024"
+    "expires": "Jul 1, 2024",
+    "owners": ["arichiv@@chromium.org"]
   },
 
   "isInputPending requires threaded compositing and layerized iframes",
@@ -1253,10 +1260,13 @@
   {
     "prefix": "view-transition",
     "platforms": ["Linux", "Mac", "Win"],
+    "owners": ["view-transitions-api@chromium.org"],
     "bases": ["external/wpt/css/css-view-transitions",
               "wpt_internal/view-transition",
               "view-transition",
               "inspector-protocol/css/css-get-styles-for-view-transition.js",
+              "inspector-protocol/css/css-get-keyframes-for-view-transitions.js",
+              "inspector-protocol/dom/dom-get-dom-for-view-transition.js",
               "external/wpt/soft-navigation-heuristics/navigation-api-view-transition.tentative.html"],
     "exclusive_tests": "ALL",
     "args": ["--enable-threaded-compositing"],
@@ -1265,6 +1275,7 @@
   {
     "prefix": "view-transition-on-navigation",
     "platforms": ["Linux", "Mac", "Win"],
+    "owners": ["view-transitions-api@chromium.org"],
     "bases": ["wpt_internal/view-transition-on-navigation"],
     "exclusive_tests": "ALL",
     "args": ["--enable-features=ViewTransitionOnNavigation",
@@ -1274,10 +1285,13 @@
   {
     "prefix": "view-transition-wide-gamut",
     "platforms": ["Linux", "Mac", "Win"],
+    "owners": ["view-transitions-api@chromium.org"],
     "bases": ["external/wpt/css/css-view-transitions",
               "wpt_internal/view-transition",
               "view-transition",
-              "inspector-protocol/css/css-get-styles-for-view-transition.js"],
+              "inspector-protocol/css/css-get-styles-for-view-transition.js",
+              "inspector-protocol/css/css-get-keyframes-for-view-transitions.js",
+              "inspector-protocol/dom/dom-get-dom-for-view-transition.js"],
     "exclusive_tests": "ALL",
     "args": ["--enable-threaded-compositing",
              "--force-color-profile=display-p3-d65"],
@@ -1286,10 +1300,13 @@
   {
     "prefix": "view-transition-mpa-serialization",
     "platforms": ["Linux", "Mac", "Win"],
+    "owners": ["view-transitions-api@chromium.org"],
     "bases": ["external/wpt/css/css-view-transitions",
               "wpt_internal/view-transition",
               "view-transition",
               "inspector-protocol/css/css-get-styles-for-view-transition.js",
+              "inspector-protocol/css/css-get-keyframes-for-view-transitions.js",
+              "inspector-protocol/dom/dom-get-dom-for-view-transition.js",
               "external/wpt/soft-navigation-heuristics/navigation-api-view-transition.tentative.html"],
     "exclusive_tests": "ALL",
     "args": ["--enable-threaded-compositing",
@@ -1305,6 +1322,7 @@
   },
   {
     "prefix": "popover-hint-disabled",
+    "owners": ["masonf@chromium.org", "dom-dev@chromium.org"],
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "external/wpt/html/semantics/popovers/popover-anchor-idl-property.html",
@@ -1498,11 +1516,24 @@
     "prefix": "private-aggregation",
     "platforms": ["Linux"],
     "bases": [
-      "external/wpt/private-aggregation",
+      "external/wpt/private-aggregation"
+    ],
+    "exclusive_tests": [
+      "external/wpt/private-aggregation"
+    ],
+    "args": [
+      "--enable-privacy-sandbox-ads-apis",
+      "--enable-features=FencedFramesDefaultMode,PrivacySandboxAggregationService:trusted_server_url/https%3A%2F%2Fweb-platform.test%3A8444%2Fwpt_internal%2Fattribution-reporting%2Fresources%2FpublicKeys"
+    ],
+    "expires": "Jan 1, 2024"
+  },
+  {
+    "prefix": "private-aggregation-developer-mode",
+    "platforms": ["Linux"],
+    "bases": [
       "wpt_internal/private-aggregation"
     ],
     "exclusive_tests": [
-      "external/wpt/private-aggregation",
       "wpt_internal/private-aggregation"
     ],
     "args": [
@@ -1558,7 +1589,8 @@
       "external/wpt/html/anonymous-iframe",
       "external/wpt/fenced-frame",
       "external/wpt/fetch/local-network-access/fenced-frame-subresource-fetch.tentative.https.window.js",
-      "external/wpt/fetch/local-network-access/fenced-frame.tentative.https.window.js"
+      "external/wpt/fetch/local-network-access/fenced-frame.tentative.https.window.js",
+      "external/wpt/fetch/local-network-access/fenced-frame-no-preflight-required.tentative.https.window.js"
     ],
     "exclusive_tests": [
       "http/tests/fenced_frame",
@@ -1566,7 +1598,8 @@
       "external/wpt/fenced-frame",
       "http/tests/inspector-protocol/fenced-frame",
       "external/wpt/fetch/local-network-access/fenced-frame-subresource-fetch.tentative.https.window.js",
-      "external/wpt/fetch/local-network-access/fenced-frame.tentative.https.window.js"
+      "external/wpt/fetch/local-network-access/fenced-frame.tentative.https.window.js",
+      "external/wpt/fetch/local-network-access/fenced-frame-no-preflight-required.tentative.https.window.js"
     ],
     "args": ["--enable-features=FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,NoncedPartitionedCookies,Fledge,InterestGroupStorage,AdInterestGroupAPI,AllowURNsInIframes,BiddingAndScoringDebugReportingAPI,ComputePressure",
              "--enable-blink-features=FencedFramesAPIChanges,FencedFramesDefaultMode"],
@@ -1801,7 +1834,8 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [ "http/tests/inspector-protocol/issues/cookie-domain-non-ascii.js" ],
     "args": ["--enable-features=CookieDomainRejectNonASCII"],
-    "expires": "Jul 1, 2023"
+    "owners": ["johannhof@chromium.org"],
+    "expires": "Jul 1, 2024"
   },
   {
     "prefix": "pending-beacon",
@@ -1827,6 +1861,7 @@
   },
   {
     "prefix": "close-watcher",
+    "owners": ["jarhar@chromium.org", "dom-dev@chromium.org"],
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "external/wpt/close-watcher"
@@ -1848,7 +1883,16 @@
   {
     "prefix": "orb-v02",
     "platforms": ["Linux"],
-    "args": ["--enable-features=OpaqueResponseBlockingV01,OpaqueResponseBlockingV02"],
+    "args": ["--enable-features=OpaqueResponseBlockingV01,OpaqueResponseBlockingV02", "--disable-features=OpaqueResponseBlockingErrorsForAllFetches"],
+    "bases": [
+      "external/wpt/fetch/corb"
+    ],
+    "expires": "Jul 1, 2024"
+  },
+  {
+    "prefix": "orb-errors-for-all-fetches",
+    "platforms": ["Linux"],
+    "args": ["--enable-features=OpaqueResponseBlockingV01,OpaqueResponseBlockingV02,OpaqueResponseBlockingErrorsForAllFetches"],
     "bases": [
       "external/wpt/fetch/corb"
     ],
@@ -1872,6 +1916,7 @@
   },
   {
     "prefix": "scoped-custom-element-registry-disabled",
+    "owners": ["xiaochengh@chromium.org", "dom-dev@chromium.org"],
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/custom-elements/scoped-registry"],
     "args": ["--disable-blink-features=ScopedCustomElementRegistry"],
@@ -1950,6 +1995,7 @@
   },
   {
     "prefix": "date-input-inline-block-disabled",
+    "owners": ["jarhar@chromium.org", "dom-dev@chromium.org"],
     "platforms": ["Linux"],
     "bases": [
       "external/wpt/html/rendering/non-replaced-elements/form-controls/resets.html",
@@ -2077,14 +2123,6 @@
     "expires": "Dec 1, 2023"
   },
   {
-    "prefix": "environment-integrity",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["wpt_internal/environment-integrity"],
-    "exclusive_tests": "ALL",
-    "args": ["--enable-features=WebEnvironmentIntegrity"],
-    "expires": "Dec 1, 2023"
-  },
-  {
     "prefix": "longtask-from-loaf",
     "platforms": ["Linux"],
     "bases": ["external/wpt/longtask-timing"],
@@ -2123,5 +2161,15 @@
     ],
     "args": ["--enable-features=ProduceCompileHints"],
     "expires": "never"
+  },
+  {
+    "prefix": "clear-site-data-client-hints-support",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/client-hints/clear-site-data"
+    ],
+    "args": ["--enable-features=ClearSiteDataClientHintsSupport"],
+    "expires": "Jun 28, 2024",
+    "owners": ["arichiv@chromium.org"]
   }
 ]

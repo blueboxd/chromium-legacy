@@ -519,6 +519,12 @@ export class FileTable extends Table {
 
     self.list.addEventListener(
         'mouseover', self.onMouseOver_.bind(self), {passive: true});
+
+    // Update the item's inline status when it's restored from List's cache.
+    self.list.addEventListener(
+        'cachedItemRestored',
+        (e) => filelist.updateCacheItemInlineStatus(
+            e.detail, self.dataModel, self.metadataModel_));
   }
 
   onMouseOver_(event) {
@@ -831,13 +837,16 @@ export class FileTable extends Table {
     label.appendChild(
         filelist.renderFileNameLabel(this.ownerDocument, entry, locationInfo));
     if (locationInfo && locationInfo.isDriveBased) {
-      label.appendChild(filelist.renderEncryptionStatus(this.ownerDocument));
       label.appendChild(filelist.renderInlineStatus(this.ownerDocument));
     }
     if (!util.isJellyEnabled() && !util.isInlineSyncStatusEnabled()) {
-      const isDlpRestricted = !!metadata.isDlpRestricted;
-      if (isDlpRestricted) {
-        label.appendChild(this.renderDlpManagedIcon_());
+      const isEncrypted = FileType.isEncrypted(entry, metadata.contentMimeType);
+      if (isEncrypted) {
+        label.appendChild(this.renderEncryptedIcon_());
+      }
+      if (util.isDlpEnabled()) {
+        label.appendChild(
+            this.renderDlpManagedIcon_(!!metadata.isDlpRestricted));
       }
     }
     return label;
@@ -938,11 +947,14 @@ export class FileTable extends Table {
       div.appendChild(label);
       label.className = 'date';
       this.updateDate_(label, entry);
-      const metadata =
-          this.metadataModel_.getCache([entry], ['isDlpRestricted'])[0];
-      const isDlpRestricted = !!metadata.isDlpRestricted;
-      if (isDlpRestricted) {
-        div.appendChild(this.renderDlpManagedIcon_());
+      const metadata = this.metadataModel_.getCache(
+          [entry], ['contentMimeType', 'isDlpRestricted'])[0];
+      const isEncrypted = FileType.isEncrypted(entry, metadata.contentMimeType);
+      if (isEncrypted) {
+        div.appendChild(this.renderEncryptedIcon_());
+      }
+      if (util.isDlpEnabled()) {
+        div.appendChild(this.renderDlpManagedIcon_(!!metadata.isDlpRestricted));
       }
     } else {
       div.className = 'date';
@@ -1036,6 +1048,7 @@ export class FileTable extends Table {
                   'syncCompletedTime',
                   'shortcut',
                   'canPin',
+                  'isDlpRestricted',
                 ])[0],
             util.isTeamDriveRoot(entry));
         listItem.toggleAttribute(
@@ -1153,10 +1166,11 @@ export class FileTable extends Table {
 
   /**
    * Renders the DLP managed icon in the detail table.
+   * @param {!boolean} isDlpRestricted Whether the icon should be shown.
    * @return {!HTMLDivElement} Created element.
    * @private
    */
-  renderDlpManagedIcon_() {
+  renderDlpManagedIcon_(isDlpRestricted) {
     const icon = /** @type {!HTMLDivElement} */
         (this.ownerDocument.createElement('div'));
     icon.className = 'dlp-managed-icon';
@@ -1167,6 +1181,24 @@ export class FileTable extends Table {
     icon.dataset['tooltipLinkText'] = str('DLP_MANAGED_ICON_TOOLTIP_LINK');
     icon.setAttribute('aria-label', str('DLP_MANAGED_ICON_TOOLTIP'));
     icon.toggleAttribute('show-card-tooltip');
+    icon.classList.toggle('is-dlp-restricted', isDlpRestricted);
+    icon.toggleAttribute('aria-hidden', isDlpRestricted);
+    return icon;
+  }
+
+  /**
+   * Renders the encrypted icon in the detail table, used to mark Google Drive
+   * CSE files.
+   * @return {!HTMLDivElement} Created element.
+   * @private
+   */
+  renderEncryptedIcon_() {
+    const icon = /** @type {!HTMLDivElement} */
+        (this.ownerDocument.createElement('div'));
+    icon.className = 'encrypted-icon';
+    icon.setAttribute('aria-label', str('ENCRYPTED_ICON_TOOLTIP'));
+    /** @type {!FilesTooltip} */ (document.querySelector('files-tooltip'))
+        .addTarget(icon);
     return icon;
   }
 

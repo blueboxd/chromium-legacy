@@ -57,7 +57,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Histogram.MismatchedConstructionArguments"
-    enum="HistogramNameHash" expires_after="2023-11-01">
+    enum="HistogramNameHash" expires_after="2023-12-31">
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -90,16 +90,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="UMA.AndroidPreNative.ChromeTabbedActivityCounter"
-    enum="ChromeTabbedActivityCounter" expires_after="2024-04-24">
+<histogram name="UMA.AndroidPreNative.ChromeActivityCounter"
+    enum="ChromeActivityCounter" expires_after="2024-04-24">
   <owner>gabrielgs@google.com</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
-    Counts of how many times onPreCreate and onStart were called when a
-    foreground session bigns in the native C++ code. The counters are reset when
-    this histogram is emitted. This histogram is a diagnostic tool for
-    understanding Clank short sessions, by capturing some information about the
-    cases where Java code starts up, but native C++ code is never reached.
+    Counts of how many times onPreCreate and onStart were called (from the
+    ChromeActivity class) when a foreground session begins in the native C++
+    code. The counters are reset when this histogram is emitted. This histogram
+    is a diagnostic tool for understanding Clank short sessions, by capturing
+    some information about the cases where Java code starts up, but native C++
+    code is never reached.
   </summary>
 </histogram>
 
@@ -265,7 +266,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.EntropySourceType" enum="UmaEntropySourceType"
-    expires_after="2023-11-01">
+    expires_after="2023-12-31">
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -275,7 +276,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.ExternalExperiment.GroupCount" units="groups"
-    expires_after="2023-11-01">
+    expires_after="2023-12-31">
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -287,7 +288,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.FileMetricsProvider.AccessResult"
-    enum="FileMetricsProviderAccessResult" expires_after="2023-11-01">
+    enum="FileMetricsProviderAccessResult" expires_after="2023-12-31">
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -593,7 +594,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.NegativeSamples.Histogram" enum="HistogramNameHash"
-    expires_after="2023-11-01">
+    expires_after="2023-12-31">
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -730,7 +731,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.ProtoCompressionRatio" units="%"
-    expires_after="2023-10-15">
+    expires_after="2023-12-31">
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -943,7 +944,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.TruncatedEvents.UserAction" units="events"
-    expires_after="2023-12-24">
+    expires_after="2024-01-07">
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>

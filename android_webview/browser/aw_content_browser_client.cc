@@ -51,6 +51,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
@@ -1068,11 +1069,11 @@ void AwContentBrowserClient::LogWebFeatureForCurrentPage(
       render_frame_host, feature);
 }
 
-bool AwContentBrowserClient::ShouldAllowInsecureLocalNetworkRequests(
+bool AwContentBrowserClient::ShouldAllowInsecurePrivateNetworkRequests(
     content::BrowserContext* browser_context,
     const url::Origin& origin) {
   // Webview does not implement support for deprecation trials, so webview apps
-  // broken by Local Network Access restrictions cannot help themselves by
+  // broken by Private Network Access restrictions cannot help themselves by
   // registering for the trial.
   // See crbug.com/1255675.
   return true;
@@ -1130,9 +1131,22 @@ bool AwContentBrowserClient::IsAttributionReportingOperationAllowed(
     const url::Origin* destination_origin,
     const url::Origin* reporting_origin) {
   // WebView only supports OS-level attribution and not web-attribution.
-  return operation == AttributionReportingOperation::kAny ||
-         operation == AttributionReportingOperation::kOsSource ||
-         operation == AttributionReportingOperation::kOsTrigger;
+  switch (operation) {
+    case AttributionReportingOperation::kAny:
+    case AttributionReportingOperation::kOsSource:
+    case AttributionReportingOperation::kOsTrigger:
+    case AttributionReportingOperation::kOsSourceVerboseDebugReport:
+    case AttributionReportingOperation::kOsTriggerVerboseDebugReport:
+      return true;
+    case AttributionReportingOperation::kSource:
+    case AttributionReportingOperation::kTrigger:
+    case AttributionReportingOperation::kSourceVerboseDebugReport:
+    case AttributionReportingOperation::kTriggerVerboseDebugReport:
+    case AttributionReportingOperation::kReport:
+      return false;
+  }
+
+  NOTREACHED_NORETURN();
 }
 
 bool AwContentBrowserClient::IsWebAttributionReportingAllowed() {

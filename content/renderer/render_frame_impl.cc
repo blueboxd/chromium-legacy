@@ -1457,8 +1457,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
       // This conversion is a little sad, as this often comes from a
       // WebString...
       WebString::FromUTF8(replication_state->name),
-      replication_state->frame_policy.sandbox_flags, base_url,
-      params->coop_forbids_initial_empty_document_to_be_cross_origin_isolated);
+      replication_state->frame_policy.sandbox_flags, base_url);
   if (!params->is_on_initial_empty_document)
     render_frame->frame_->SetIsNotOnInitialEmptyDocument();
 
@@ -2595,7 +2594,6 @@ void RenderFrameImpl::CommitNavigation(
     mojo::PendingRemote<blink::mojom::ResourceCache> resource_cache,
     mojom::CookieManagerInfoPtr cookie_manager_info,
     mojom::StorageInfoPtr storage_info,
-    bool coop_forbids_document_to_be_cross_origin_isolated,
     mojom::NavigationClient::CommitNavigationCallback commit_callback) {
   DCHECK(navigation_client_impl_);
   DCHECK(!blink::IsRendererDebugURL(common_params->url));
@@ -2639,8 +2637,6 @@ void RenderFrameImpl::CommitNavigation(
       ToWebPolicyContainer(std::move(policy_container));
   navigation_params->view_transition_state =
       std::move(commit_params->view_transition_state);
-  navigation_params->coop_forbids_document_to_be_cross_origin_isolated =
-      coop_forbids_document_to_be_cross_origin_isolated;
 
   if (frame_->IsOutermostMainFrame() && permissions_policy) {
     navigation_params->permissions_policy_override = permissions_policy;
@@ -2799,11 +2795,14 @@ void RenderFrameImpl::CommitNavigationWithParams(
   if (commit_params->is_view_source)
     frame_->EnableViewSourceMode(true);
 
-  if (commit_params->not_restored_reasons) {
+  if (frame_->IsOutermostMainFrame()) {
     // Save the Back/Forward Cache NotRestoredReasons struct to WebLocalFrame to
     // report for PerformanceNavigationTiming API.
     frame_->SetNotRestoredReasons(
         std::move(commit_params->not_restored_reasons));
+  } else {
+    // NotRestoredReasons are only set for the outermost main frame.
+    CHECK(!commit_params->not_restored_reasons);
   }
 
   if (commit_params->lcpp_hint) {
@@ -4887,10 +4886,6 @@ void RenderFrameImpl::UpdateStateForCommit(
 
   UpdateNavigationHistory(commit_type);
 
-  if (document_state->must_reset_scroll_and_scale_state()) {
-    GetWebView()->ResetScrollAndScaleState();
-    document_state->set_must_reset_scroll_and_scale_state(false);
-  }
   if (!frame_->Parent()) {  // Only for top frames.
     RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
     if (render_thread_impl) {  // Can be NULL in tests.
@@ -6391,8 +6386,14 @@ WebView* RenderFrameImpl::CreateNewWindow(
   // TODO(dcheng): It's awkward that this is plumbed into Blink but not really
   // used much in Blink, except to enable web testing... perhaps this should
   // be checked directly in the browser side.
-  if (status == mojom::CreateNewWindowStatus::kReuse)
+  if (status == mojom::CreateNewWindowStatus::kReuse) {
+    // In this case, treat javascript: URLs as blocked rather than running them
+    // in a reused main frame in Android WebView. See https://crbug.com/1083819.
+    if (!request.IsNull() && request.Url().ProtocolIs(url::kJavaScriptScheme)) {
+      return nullptr;
+    }
     return GetWebView();
+  }
 
   // Consume the transient user activation in the current renderer.
   consumed_user_gesture = GetWebFrame()->ConsumeTransientUserActivation(
@@ -6445,9 +6446,6 @@ WebView* RenderFrameImpl::CreateNewWindow(
   main_frame_params->subresource_loader_factories =
       base::WrapUnique(static_cast<blink::PendingURLLoaderFactoryBundle*>(
           CloneLoaderFactories()->Clone().release()));
-  main_frame_params
-      ->coop_forbids_initial_empty_document_to_be_cross_origin_isolated =
-      reply->coop_forbids_initial_empty_document_to_be_cross_origin_isolated;
 
   view_params->main_frame =
       mojom::CreateMainFrameUnion::NewLocalParams(std::move(main_frame_params));

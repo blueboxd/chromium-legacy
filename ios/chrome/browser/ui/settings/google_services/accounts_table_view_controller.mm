@@ -156,10 +156,6 @@ constexpr CGFloat kErrorSymbolSize = 22.;
 // AccountManager Service used to retrive identities.
 @property(nonatomic, assign) ChromeAccountManagerService* accountManagerService;
 
-// Stops observing browser state services. This is required during the shutdown
-// phase to avoid observing services for a browser state that is being killed.
-- (void)stopBrowserStateServiceObservers;
-
 @end
 
 @implementation AccountsTableViewController {
@@ -198,15 +194,16 @@ constexpr CGFloat kErrorSymbolSize = 22.;
   return self;
 }
 
+- (void)dealloc {
+  // TODO(crbug.com/1454777)
+  DUMP_WILL_BE_CHECK(!_browser);
+}
+
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.tableView.accessibilityIdentifier = kSettingsAccountsTableViewId;
 
   [self loadModel];
-}
-
-- (void)stopBrowserStateServiceObservers {
-  _identityManagerObserver.reset();
 }
 
 #pragma mark - SettingsControllerProtocol
@@ -226,7 +223,7 @@ constexpr CGFloat kErrorSymbolSize = 22.;
   self.signoutCoordinator = nil;
   [self.removeAccountCoordinator stop];
   self.removeAccountCoordinator = nil;
-  [self stopBrowserStateServiceObservers];
+  _identityManagerObserver.reset();
   _accountManagerServiceObserver.reset();
   _syncObserver.reset();
   _browser = nullptr;
@@ -631,7 +628,7 @@ constexpr CGFloat kErrorSymbolSize = 22.;
 
 - (void)onEndBatchOfRefreshTokenStateChanges {
   DCHECK(_browser) << "-onEndBatchOfRefreshTokenStateChanges called after "
-                      "-stopBrowserStateServiceObservers";
+                      "-settingsWillBeDismissed";
 
   [self reloadData];
   // Only attempt to pop the top-most view controller once the account list

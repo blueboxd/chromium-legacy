@@ -740,8 +740,6 @@ void LocalFrameView::PerformLayout() {
           scrollable_area->ForceVerticalScrollbarForFirstLayout();
       }
     }
-
-    size_ = LayoutSize(GetLayoutSize());
   }
 
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
@@ -1262,6 +1260,27 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
 
 void LocalFrameView::MarkFixedPositionObjectsForLayout(bool width_changed,
                                                        bool height_changed) {
+  if (RuntimeEnabledFeatures::LayoutNewFixedPositionInvalidationEnabled()) {
+    auto* layout_view = GetLayoutView();
+    if (!layout_view || layout_view->NeedsLayout()) {
+      return;
+    }
+
+    for (const auto& fragment : layout_view->PhysicalFragments()) {
+      if (!fragment.HasOutOfFlowFragmentChild()) {
+        continue;
+      }
+      for (const auto& fragment_child : fragment.Children()) {
+        if (fragment_child->IsFixedPositioned()) {
+          layout_view->SetNeedsSimplifiedLayout();
+          return;
+        }
+      }
+    }
+
+    return;
+  }
+
   if (!HasFixedPositionObjects() || !(width_changed || height_changed))
     return;
 
@@ -1270,7 +1289,7 @@ void LocalFrameView::MarkFixedPositionObjectsForLayout(bool width_changed,
     if (width_changed) {
       if (style.UsedWidth().IsFixed() &&
           (style.UsedLeft().IsAuto() || style.UsedRight().IsAuto())) {
-        layout_object->SetNeedsPositionedMovementLayout();
+        layout_object->ContainingBlock()->SetNeedsSimplifiedLayout();
       } else {
         layout_object->SetNeedsLayoutAndFullPaintInvalidation(
             layout_invalidation_reason::kSizeChanged);
@@ -1279,7 +1298,7 @@ void LocalFrameView::MarkFixedPositionObjectsForLayout(bool width_changed,
     if (height_changed) {
       if (style.UsedHeight().IsFixed() &&
           (style.UsedTop().IsAuto() || style.UsedBottom().IsAuto())) {
-        layout_object->SetNeedsPositionedMovementLayout();
+        layout_object->ContainingBlock()->SetNeedsSimplifiedLayout();
       } else {
         layout_object->SetNeedsLayoutAndFullPaintInvalidation(
             layout_invalidation_reason::kSizeChanged);
@@ -3010,12 +3029,12 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
         });
   }
 
-  Vector<const TransformPaintPropertyNode*> anchor_scroll_container_nodes;
+  Vector<const TransformPaintPropertyNode*> anchor_position_scrollers;
   if (!base::FeatureList::IsEnabled(::features::kScrollUnification)) {
-    ForAllNonThrottledLocalFrameViews([&anchor_scroll_container_nodes](
-                                          LocalFrameView& frame_view) {
-      frame_view.GetAnchorScrollContainerNodes(anchor_scroll_container_nodes);
-    });
+    ForAllNonThrottledLocalFrameViews(
+        [&anchor_position_scrollers](LocalFrameView& frame_view) {
+          frame_view.GetAnchorPositionScrollerIds(anchor_position_scrollers);
+        });
   }
 
   WTF::Vector<std::unique_ptr<ViewTransitionRequest>> view_transition_requests;
@@ -3023,7 +3042,7 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
 
   paint_artifact_compositor_->Update(
       paint_controller_->GetPaintArtifactShared(), viewport_properties,
-      scroll_translation_nodes, anchor_scroll_container_nodes,
+      scroll_translation_nodes, anchor_position_scrollers,
       std::move(view_transition_requests));
 
   CreatePaintTimelineEvents();
@@ -4736,8 +4755,8 @@ void LocalFrameView::GetUserScrollTranslationNodes(
   }
 }
 
-void LocalFrameView::GetAnchorScrollContainerNodes(
-    Vector<const TransformPaintPropertyNode*>& anchor_scroll_container_nodes) {
+void LocalFrameView::GetAnchorPositionScrollerIds(
+    Vector<const TransformPaintPropertyNode*>& anchor_position_scrollers) {
   const auto* scrollable_areas = UserScrollableAreas();
   if (!scrollable_areas) {
     return;
@@ -4750,7 +4769,7 @@ void LocalFrameView::GetAnchorScrollContainerNodes(
   // see crbug.com/1378021) and is not performance-sensitive, we choose to just
   // use vector and binary search.
   Vector<cc::ElementId> scroll_container_ids;
-  GetFrame().CollectAnchorScrollContainerIds(&scroll_container_ids);
+  GetFrame().CollectAnchorPositionScrollerIds(&scroll_container_ids);
   std::sort(scroll_container_ids.begin(), scroll_container_ids.end());
   scroll_container_ids.erase(
       std::unique(scroll_container_ids.begin(), scroll_container_ids.end()),
@@ -4769,7 +4788,7 @@ void LocalFrameView::GetAnchorScrollContainerNodes(
               std::lower_bound(scroll_container_ids.begin(),
                                scroll_container_ids.end(), element_id);
           iter != scroll_container_ids.end() && *iter == element_id) {
-        anchor_scroll_container_nodes.push_back(
+        anchor_position_scrollers.push_back(
             paint_properties->ScrollTranslation());
       }
     }

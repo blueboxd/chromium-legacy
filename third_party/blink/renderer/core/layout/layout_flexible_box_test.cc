@@ -285,7 +285,6 @@ TEST_F(LayoutFlexibleBoxTest, GeometriesWithScrollbarsColumnReverseHTB) {
   EXPECT_EQ(gfx::PointF(0, 716), scrollable_area->ScrollPosition());
 
   const auto* child = GetLayoutBoxByElementId("child");
-  EXPECT_EQ(LayoutPoint(90, -686), child->Location());
   EXPECT_EQ(PhysicalOffset(90, -686), child->PhysicalLocation());
 }
 
@@ -455,7 +454,8 @@ TEST_F(LayoutFlexibleBoxTest, ResizedFlexChildRequiresVisualOverflowRecalc) {
   )HTML");
   auto* child1_element = GetElementById("child1");
   auto* child2_element = GetElementById("child2");
-  child2_element->setAttribute(html_names::kStyleAttr, "height: 100px;");
+  child2_element->setAttribute(html_names::kStyleAttr,
+                               AtomicString("height: 100px;"));
   GetDocument().View()->UpdateLifecycleToLayoutClean(
       DocumentUpdateReason::kTest);
 

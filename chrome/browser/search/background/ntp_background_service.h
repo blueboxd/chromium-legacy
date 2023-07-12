@@ -26,6 +26,19 @@ class SimpleURLLoader;
 class SharedURLLoaderFactory;
 }  // namespace network
 
+/**
+ * Types of images that are shown on the New Tab Page's frontend.
+ * This enum must match the numbering for NtpImageType in
+ * enums.xml. These values are persisted to logs. Entries should not be
+ * renumbered, removed or reused.
+ */
+enum class NtpImageType {
+  kBackgroundImage = 0,
+  kCollections = 1,
+  kCollectionImages = 2,
+  kMaxValue = kCollectionImages,
+};
+
 // A service that connects to backends that provide background image
 // information, including collection names, image urls and descriptions.
 class NtpBackgroundService : public KeyedService {
@@ -125,7 +138,8 @@ class NtpBackgroundService : public KeyedService {
   GURL GetNextImageURLForTesting() const;
 
  private:
-  std::string image_options_;
+  std::string default_image_options_;
+  std::string thumbnail_image_options_;
   GURL collections_api_url_;
   GURL collection_images_api_url_;
   GURL next_image_api_url_;
@@ -158,11 +172,13 @@ class NtpBackgroundService : public KeyedService {
   void OnImageURLHeadersFetchComplete(
       ImageURLHeaderLoaderList::iterator it,
       base::OnceCallback<void(int)> image_url_headers_received_callback,
+      base::TimeTicks request_start,
       scoped_refptr<net::HttpResponseHeaders> headers);
   // Callback that refreshes the contents of collection_images_ with images
   // whose resources could be reached.
   void OnCollectionImageURLHeadersReceived(
       ntp::background::Image image,
+      const GURL& thumbnail_image_url,
       base::OnceClosure collection_urls_verification_complete_closure,
       int headers_response_code);
 

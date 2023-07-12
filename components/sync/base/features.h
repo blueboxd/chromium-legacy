@@ -50,6 +50,9 @@ inline constexpr base::FeatureParam<base::TimeDelta> kPasswordNotesAuthValidity{
 // key-bag.
 BASE_DECLARE_FEATURE(kSharingOfferKeyPairBootstrap);
 
+// Kill switch to read sharing-offer related keys.
+BASE_DECLARE_FEATURE(kSharingOfferKeyPairRead);
+
 #if BUILDFLAG(IS_ANDROID)
 BASE_DECLARE_FEATURE(kSyncAndroidLimitNTPPromoImpressions);
 inline constexpr base::FeatureParam<int> kSyncAndroidNTPPromoMaxImpressions{
@@ -160,12 +163,6 @@ BASE_DECLARE_FEATURE(kSyncPollImmediatelyOnEveryStartup);
 // there won't be an additional delay.
 BASE_DECLARE_FEATURE(kSyncPollWithoutDelayOnStartup);
 
-#if BUILDFLAG(IS_IOS)
-// Feature flag to enable indicating the Account Storage error in the Account
-// Cell when Sync is turned OFF (iOS only).
-BASE_DECLARE_FEATURE(kIndicateAccountStorageErrorInAccountCell);
-#endif  // BUILDFLAG(IS_IOS)
-
 #if !BUILDFLAG(IS_ANDROID) || !BUILDFLAG(IS_IOS)
 // Enables syncing the WEBAUTHN_CREDENTIAL data type.
 BASE_DECLARE_FEATURE(kSyncWebauthnCredentials);
@@ -192,6 +189,26 @@ BASE_DECLARE_FEATURE(kReplaceSyncPromosWithSignInPromos);
 
 // Flag to stop call to reconfiguration of datatypes if it's already stopping.
 BASE_DECLARE_FEATURE(kSyncAvoidReconfigurationIfAlreadyStopping);
+
+// If enabled, there will be two different BookmarkModel instances per profile:
+// one instance for "profile" bookmarks and another instance for "account"
+// bookmarks. See https://crbug.com/1404250 for details.
+BASE_DECLARE_FEATURE(kEnableBookmarksAccountStorage);
+
+// Feature flag that controls a technical rollout of a new codepath that doesn't
+// itself cause user-facing changes but sets the foundation for later rollouts
+// namely, `kReadingListEnableSyncTransportModeUponSignIn` below).
+BASE_DECLARE_FEATURE(kReadingListEnableDualReadingListModel);
+
+// Feature flag used for enabling sync (transport mode) for signed-in users that
+// haven't turned on full sync.
+BASE_DECLARE_FEATURE(kReadingListEnableSyncTransportModeUponSignIn);
+
+// Flags to allow AUTOFILL_WALLET_METADATA and AUTOFILL_WALLET_OFFER,
+// respectively, to run in transport mode.
+BASE_DECLARE_FEATURE(kSyncEnableWalletMetadataInTransportMode);
+BASE_DECLARE_FEATURE(kSyncEnableWalletOfferInTransportMode);
+
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_BASE_FEATURES_H_

@@ -340,8 +340,6 @@ const NGLayoutResult* NGBlockNode::Layout(
     const NGBlockBreakToken* break_token,
     const NGEarlyBreak* early_break,
     const NGColumnSpannerPath* column_spanner_path) const {
-  CHECK(CanUseNewLayout());
-
   // The exclusion space internally is a pointer to a shared vector, and
   // equality of exclusion spaces is performed using pointer comparison on this
   // internal shared vector.
@@ -804,7 +802,6 @@ void NGBlockNode::FinishLayout(LayoutBlockFlow* block_flow,
       To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment());
 
   if (box_->IsLayoutReplaced()) {
-    DCHECK(CanUseNewLayout());
     // NG replaced elements are painted with legacy painters. We need to force
     // a legacy "layout" so that paint invalidation flags are updated. But we
     // don't want to use the size that legacy calculates, so we force legacy to
@@ -815,7 +812,6 @@ void NGBlockNode::FinishLayout(LayoutBlockFlow* block_flow,
     input.size = physical_fragment.Size();
     input.border_padding_for_replaced =
         physical_fragment.Borders() + physical_fragment.Padding();
-    box_->ComputeAndSetBlockDirectionMargins(box_->ContainingBlock());
     if (!box_->NeedsLayout()) {
       box_->SetSelfNeedsLayoutForAvailableSpace(true);
     }
@@ -1022,8 +1018,6 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
 
   box_->SetIntrinsicLogicalWidthsDirty(kMarkOnlyThis);
 
-  CHECK(CanUseNewLayout());
-
   const NGBoxStrut border_padding =
       fragment_geometry.border + fragment_geometry.padding;
 
@@ -1140,14 +1134,6 @@ NGBlockNode NGBlockNode::GetFieldsetContent() const {
     return nullptr;
   return NGBlockNode(
       To<LayoutNGFieldset>(box_.Get())->FindAnonymousFieldsetContentBox());
-}
-
-bool NGBlockNode::CanUseNewLayout(const LayoutBox& box) {
-  return box.IsLayoutNGObject() || box.IsLayoutReplaced();
-}
-
-bool NGBlockNode::CanUseNewLayout() const {
-  return CanUseNewLayout(*box_);
 }
 
 LayoutUnit NGBlockNode::EmptyLineBlockSize(
@@ -1836,16 +1822,15 @@ void NGBlockNode::UpdateShapeOutsideInfoIfNeeded(
 
   // The box_ may not have a valid size yet (due to an intermediate layout),
   // use the fragment's size instead.
-  LayoutSize box_size = layout_result.PhysicalFragment().Size().ToLayoutSize();
+  PhysicalSize box_size = layout_result.PhysicalFragment().Size();
 
   // TODO(ikilpatrick): Ideally this should be moved to a NGLayoutResult
   // computing the shape area. There may be an issue with the new fragmentation
   // model and computing the correct sizes of shapes.
   ShapeOutsideInfo* shape_outside = box_->GetShapeOutsideInfo();
-  LayoutBlock* containing_block = box_->ContainingBlock();
+  WritingMode writing_mode = box_->ContainingBlock()->Style()->GetWritingMode();
   shape_outside->SetReferenceBoxLogicalSize(
-      containing_block->IsHorizontalWritingMode() ? box_size
-                                                  : box_size.TransposedSize());
+      box_size.ConvertToLogical(writing_mode));
   shape_outside->SetPercentageResolutionInlineSize(
       percentage_resolution_inline_size);
 }

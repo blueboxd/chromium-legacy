@@ -66,7 +66,7 @@ void LayoutSVGImage::StyleDidChange(StyleDifference diff,
   NOT_DESTROYED();
   TransformHelper::UpdateOffsetPath(*GetElement(), old_style);
   transform_uses_reference_box_ =
-      TransformHelper::DependsOnReferenceBox(StyleRef());
+      TransformHelper::UpdateReferenceBoxDependency(*this);
   LayoutSVGModelObject::StyleDidChange(diff, old_style);
 }
 
@@ -182,7 +182,8 @@ void LayoutSVGImage::UpdateLayout() {
 
   bool update_parent_boundaries = bbox_changed;
   if (needs_transform_update_) {
-    local_transform_ = CalculateLocalTransform();
+    local_transform_ =
+        TransformHelper::ComputeTransformIncludingMotion(*GetElement());
     needs_transform_update_ = false;
     update_parent_boundaries = true;
   }

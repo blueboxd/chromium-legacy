@@ -53,7 +53,12 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/web_applications/test/with_crosapi_param.h"
+#include "components/user_manager/scoped_user_manager.h"
+#include "components/user_manager/user_names.h"
 
 using web_app::test::CrosapiParam;
 using web_app::test::WithCrosapiParam;
@@ -101,11 +106,8 @@ class WebAppRegistrarTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    FakeWebAppProvider* provider = FakeWebAppProvider::Get(profile());
-    command_manager_ =
-        std::make_unique<WebAppCommandManager>(profile(), provider);
-    command_scheduler_ =
-        std::make_unique<WebAppCommandScheduler>(*profile(), provider);
+    command_manager_ = std::make_unique<WebAppCommandManager>(profile());
+    command_scheduler_ = std::make_unique<WebAppCommandScheduler>(*profile());
     registrar_mutable_ = std::make_unique<WebAppRegistrarMutable>(profile());
     sync_bridge_ = std::make_unique<WebAppSyncBridge>(
         registrar_mutable_.get(), mock_processor_.CreateForwardingProcessor());
@@ -965,11 +967,10 @@ TEST_F(WebAppRegistrarTest, CountUserInstalledApps) {
 
   const std::string base_url{"https://example.com/path"};
 
-  for (int i = WebAppManagement::kMinValue + 1;
-       i <= WebAppManagement::kMaxValue; ++i) {
-    auto source = static_cast<WebAppManagement::Type>(i);
+  for (WebAppManagement::Type type : WebAppManagementTypes::All()) {
+    int i = static_cast<int>(type);
     auto web_app =
-        test::CreateWebApp(GURL(base_url + base::NumberToString(i)), source);
+        test::CreateWebApp(GURL(base_url + base::NumberToString(i)), type);
     RegisterApp(std::move(web_app));
   }
 
@@ -1414,11 +1415,31 @@ TEST_F(WebAppRegistrarTest, VerifyPlaceholderFinderBehavior) {
 
 class WebAppRegistrarAshTest : public WebAppTest, public WithCrosapiParam {
  public:
+  void SetUp() override {
+    // Set up user manager to so that Lacros mode can be enabled.
+    // TODO(crbug.com/1463865): Consider setting up a fake user in all Ash web
+    // app tests.
+    auto user_manager = std::make_unique<ash::FakeChromeUserManager>();
+    auto* fake_user_manager = user_manager.get();
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::move(user_manager));
+    auto* user = fake_user_manager->AddUser(user_manager::StubAccountId());
+    fake_user_manager->UserLoggedIn(user_manager::StubAccountId(),
+                                    user->username_hash(),
+                                    /*browser_restart=*/false,
+                                    /*is_child=*/false);
+    // Need to run the WebAppTest::SetUp() after the fake user manager set up
+    // so that the scoped_user_manager can be destructed in the correct order.
+    WebAppTest::SetUp();
+
+    VerifyLacrosStatus();
+  }
   WebAppRegistrarAshTest() = default;
   ~WebAppRegistrarAshTest() override = default;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
 };
 
 TEST_P(WebAppRegistrarAshTest, SourceSupported) {

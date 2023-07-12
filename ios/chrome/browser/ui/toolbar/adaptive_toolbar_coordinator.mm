@@ -113,10 +113,11 @@
 }
 
 - (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {
-  BOOL isNTP = IsVisibleURLNewTabPage(webState);
+  BOOL isNonIncognitoNTP = !self.browser->GetBrowserState()->IsOffTheRecord() &&
+                           IsVisibleURLNewTabPage(webState);
 
   [self.mediator updateConsumerForWebState:webState];
-  [self.viewController updateForSideSwipeSnapshotOnNTP:isNTP];
+  [self.viewController updateForSideSwipeSnapshot:isNonIncognitoNTP];
 }
 
 - (void)resetToolbarAfterSideSwipeSnapshot {
@@ -131,20 +132,6 @@
   FullscreenController::FromBrowser(self.browser)->ExitFullscreen();
 }
 
-#pragma mark - SideSwipeToolbarSnapshotProviding
-
-- (UIImage*)toolbarSideSwipeSnapshotForWebState:(web::WebState*)webState {
-  [self updateToolbarForSideSwipeSnapshot:webState];
-
-  UIImage* toolbarSnapshot = CaptureViewWithOption(
-      [self.viewController view], [[UIScreen mainScreen] scale],
-      kClientSideRendering);
-
-  [self resetToolbarAfterSideSwipeSnapshot];
-
-  return toolbarSnapshot;
-}
-
 #pragma mark - NewTabPageControllerDelegate
 
 - (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {
@@ -154,6 +141,10 @@
 - (UIResponder<UITextInput>*)fakeboxScribbleForwardingTarget {
   // Implemented in `ToolbarCoordinator`.
   return nil;
+}
+
+- (void)didNavigateToNTPOnActiveWebState {
+  // Implemented in `ToolbarCoordinator`.
 }
 
 #pragma mark - ToolbarCommands

@@ -513,11 +513,6 @@ class ComputedStyle : public ComputedStyleBase,
     return base::ValuesEquivalent(AnchorName(), o.AnchorName());
   }
 
-  // anchor-scroll
-  bool AnchorScrollDataEquivalent(const ComputedStyle& o) const {
-    return base::ValuesEquivalent(AnchorScroll(), o.AnchorScroll());
-  }
-
   const FilterOperations& BackdropFilter() const {
     DCHECK(BackdropFilterInternal().Get());
     return BackdropFilterInternal()->operations_;
@@ -898,7 +893,6 @@ class ComputedStyle : public ComputedStyleBase,
   const AtomicString& Locale() const {
     return LayoutLocale::LocaleString(GetFontDescription().Locale());
   }
-  AtomicString LocaleForLineBreakIterator() const;
 
   // letter-spacing
   float LetterSpacing() const { return GetFontDescription().LetterSpacing(); }
@@ -917,9 +911,6 @@ class ComputedStyle : public ComputedStyleBase,
   bool HasMarkers() const {
     return MarkerStartResource() || MarkerMidResource() || MarkerEndResource();
   }
-
-  // paint-order helper
-  EPaintOrderType PaintOrderType(unsigned index) const;
 
   // stroke helpers
   bool HasStroke() const { return !StrokePaint().IsNone(); }
@@ -2918,8 +2909,7 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
       IsAtShadowBoundary is_at_shadow_boundary = kNotAtShadowBoundary) {
     EUserModify current_user_modify = UserModify();
     EUserSelect current_user_select = UserSelect();
-    ComputedStyleBuilderBase::InheritFrom(inherit_parent,
-                                          is_at_shadow_boundary);
+    ComputedStyleBuilderBase::InheritFrom(inherit_parent);
 
     // Even if surrounding content is user-editable, shadow DOM should act as a
     // single unit, and not necessarily be editable

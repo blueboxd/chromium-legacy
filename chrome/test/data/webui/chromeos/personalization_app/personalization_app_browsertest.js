@@ -232,12 +232,21 @@ TEST_F(
       mocha.run();
     });
 
+// TODO(b/282050032): Remove this class and its associated tests when Jelly
+// launches.
 class PersonalizationAppAmbientModeDisallowedBrowserTest extends
     PersonalizationAppBrowserTest {
   /** @override */
   get testGenPreamble() {
     return () => {
       GEN('ash::AmbientClient::Get()->SetAmbientModeAllowedForTesting(false);');
+    };
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      disabled: ['chromeos::features::kJelly'],
     };
   }
 }
@@ -411,7 +420,8 @@ TEST_F(PersonalizationAppWallpaperSubpageBrowserTest.name, 'All', async () => {
     });
   });
 
-  suite('backdrop', function() {
+  // TODO(b/278166473) flaky.
+  suite.skip('backdrop', function() {
     test('selects wallpaper', async () => {
       const wallpaperSelected = getWallpaperSelected();
       const textContainer =
@@ -545,7 +555,8 @@ TEST_F(PersonalizationAppWallpaperSubpageBrowserTest.name, 'All', async () => {
           'album id and is shared param should appear in location.search');
     });
 
-    test('select shared album as daily refresh', async () => {
+    // TODO(b/278166473) flaky.
+    test.skip('select shared album as daily refresh', async () => {
       const sharedAlbumId = 'fake_google_photos_shared_album_id_2';
       await openGooglePhotosSharedAlbumById(sharedAlbumId);
 
@@ -728,7 +739,8 @@ TEST_F(
           assertTrue(getColorSchemeSelector().hidden);
         });
 
-        test('selects static color options', async () => {
+        // TODO(b/277811561) flaky test
+        test.skip('selects static color options', async () => {
           const theme = getRouter()
                             .shadowRoot.querySelector('personalization-main')
                             .shadowRoot.querySelector('personalization-theme');

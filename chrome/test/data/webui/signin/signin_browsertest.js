@@ -61,11 +61,6 @@ var SyncConfirmationInterceptModalTest = class extends SigninBrowserTest {
         `signin/sync_confirmation_test.js&style=` +
         `${SyncConfirmationStyle.SIGNIN_INTERCEPT_MODAL}`;
   }
-
-  /** @override */
-  get featureList() {
-    return {enabled: ['kSyncPromoAfterSigninIntercept']};
-  }
 };
 
 TEST_F('SyncConfirmationInterceptModalTest', 'Dialog', function() {
@@ -139,23 +134,6 @@ var ProfileTypeChoiceTest = class extends SigninBrowserTest {
 };
 
 TEST_F('ProfileTypeChoiceTest', 'Buttons', function() {
-  mocha.run();
-});
-
-
-/**
- * Test fixture for
- * chrome/browser/resources/signin/profile_picker/profile_creation_flow/local_profile_customization.html.
- * This has to be declared as a variable for TEST_F to find it correctly.
- */
-var LocalProfileCustomizationTest = class extends SigninBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://profile-picker/test_loader.html?module=signin/local_profile_customization_test.js';
-  }
-};
-
-TEST_F('LocalProfileCustomizationTest', 'All', function() {
   mocha.run();
 });
 

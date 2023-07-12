@@ -764,6 +764,14 @@ class CONTENT_EXPORT ContentBrowserClient {
       const GURL& scope,
       BrowserContext* browser_context);
 
+  // Returns true if the content layer should attempt to update the service
+  // worker associated with the given `scope`. This can return false if the
+  // service worker is tied to another service that handles the update flow
+  // (today, this is limited to extensions).
+  virtual bool ShouldTryToUpdateServiceWorkerRegistration(
+      const GURL& scope,
+      BrowserContext* browser_context);
+
   // Allows the embedder to enable process-wide blink features before starting a
   // service worker. This is similar to
   // `blink.mojom.CommitNavigationParams.force_enabled_origin_trials` but for
@@ -906,6 +914,8 @@ class CONTENT_EXPORT ContentBrowserClient {
     kTriggerVerboseDebugReport,
     kOsSource,
     kOsTrigger,
+    kOsSourceVerboseDebugReport,
+    kOsTriggerVerboseDebugReport,
     kAny,
   };
 
@@ -1147,6 +1157,9 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns the path to the First-Party Sets directory.
   virtual base::FilePath GetFirstPartySetsDirectory();
+
+  // Returns the path to Local Traces directory.
+  virtual absl::optional<base::FilePath> GetLocalTracesDirectory();
 
   // Notification that a pepper plugin has just been spawned. This allows the
   // embedder to add filters onto the host to implement interfaces.
@@ -2367,7 +2380,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   //
   // |browser_context| must not be nullptr. Caller retains ownership.
   // |origin| is the origin of a navigation ready to commit.
-  virtual bool ShouldAllowInsecureLocalNetworkRequests(
+  virtual bool ShouldAllowInsecurePrivateNetworkRequests(
       BrowserContext* browser_context,
       const url::Origin& origin);
 

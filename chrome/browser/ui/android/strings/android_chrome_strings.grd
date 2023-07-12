@@ -521,9 +521,6 @@ CHAR_LIMIT guidelines:
       <message name="IDS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that describes a Wallet credit card which has been copied to the local Chrome instance.">
          Copied to Chrome
       </message>
-      <message name="IDS_AUTOFILL_PAYMENTS_AUTHENTICATOR_SELECTION_DIALOG_TITLE" desc="Title for the dialog where the user selects an authenticator from a list of options.">
-        Verify your card
-      </message>
       <message name="IDS_AUTOFILL_PAYMENTS_AUTHENTICATOR_SELECTION_DIALOG_FOOTER" desc="Footer for the dialog where the user selects an authenticator from a list of options.">
         Not seeing your current info? Please contact your bank to update it.
       </message>
@@ -1389,6 +1386,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_CLEAR_BROWSING_DATA_TAB_PERIOD_TITLE" desc="Label of the dropdown that selects the time range for which browsing data will be deleted.">
         Time range
       </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_TAB_PERIOD_15_MINUTES" desc="The option to delete browsing data from the last 15 minutes.">
+        Last 15 minutes
+      </message>
       <message name="IDS_CLEAR_BROWSING_DATA_TAB_PERIOD_HOUR" desc="The option to delete browsing data from the last hour.">
         Last hour
       </message>
@@ -1791,9 +1791,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_LANGUAGES_ITEM_OPTION_OFFER_TO_TRANSLATE" desc="Option in language item menu. User can click the 'Offer to translate' option to toggle whether they want Chrome to translate pages in this language. [CHAR_LIMIT=32]">
         Offer to translate
-      </message>
-      <message name="IDS_LANGUAGES_EXPLICIT_ASK_TITLE" desc="Title of the dialog that explicitly asks the user which languages they can read.">
-        What languages do you read?
       </message>
       <message name="IDS_LANGUAGES_SRP_TITLE" desc="Title of the dialog that explicitly asks the user what language they want Chrome on Android to be in.">
         Pick Chrome’s language
@@ -3630,8 +3627,8 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_MENU_HISTORY" desc="Menu item for opening the history page. [CHAR_LIMIT=27]">
         History
       </message>
-      <message name="IDS_MENU_QUICK_DELETE" desc="Menu item for quick delete functionality that allows users to quickly delete their last 15 minutes browsing data. [CHAR_LIMIT=27]">
-        Delete last 15 minutes
+      <message name="IDS_MENU_QUICK_DELETE" desc="Menu item for quick delete functionality that allows users to delete their browsing data. [CHAR_LIMIT=27]">
+        Clear browsing data
       </message>
       <message name="IDS_MENU_DOWNLOADS" desc="Menu item for opening the downloads page. [CHAR_LIMIT=27]">
         Downloads
@@ -4076,6 +4073,12 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Incognito mode
       </message>
 
+      <message name="IDS_TABSWITCHER_NO_TABS_EMPTY_STATE" desc="Text appearing on an empty tab switcher that indicates that tabs opened will appear here.">
+        You’ll find your tabs here
+      </message>
+      <message name="IDS_TABSWITCHER_NO_TABS_OPEN_TO_VISIT_DIFFERENT_PAGES" desc="Text appearing on an empty tab switcher that indicates that users can open tabs here to visit different pages.">
+        Open tabs to visit different pages at the same time
+      </message>
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_TABSWITCHER_TOGGLE_DEFAULT" desc="Placeholder content description for the button that enters or leaves the tab switcher.">
         Switch or close tabs
       </message>
@@ -5732,10 +5735,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
 
        <!-- Quick Delete strings -->
       <message name="IDS_QUICK_DELETE_DIALOG_TITLE" desc="Title of the dialog when asking users to confirm deleting the last 15 minutes of browsing data.">
-        Delete last 15 minutes?
-      </message>
-      <message name="IDS_QUICK_DELETE_DIALOG_DESCRIPTION" desc="Description of the dialog when asking users to confirm deleting the last 15 minutes of browsing data.">
-        History from the last 15 minutes will be deleted:
+        Clear browsing data
       </message>
       <message name="IDS_QUICK_DELETE_DIALOG_TABS_CLOSED_TEXT" desc="Text indicating that the tabs which a user recently used to visit a website within 15 minutes would be closed.">
         {NUM_TABS, plural, =1 {1 tab on this device} other {# tabs on this device}}

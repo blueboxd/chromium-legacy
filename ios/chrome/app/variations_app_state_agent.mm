@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/variations/ios_chrome_variations_seed_fetcher.h"
+#import "ios/chrome/browser/variations/ios_chrome_variations_seed_store.h"
 #import "ios/chrome/common/channel_info.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -40,6 +41,7 @@ const char kIOSSeedExpiryHistogram[] = "IOS.Variations.CreateTrials.SeedExpiry";
 namespace {
 
 using ::variations::HasSeedExpiredSinceTime;
+using ::variations::SeedApplicationStage;
 using ::variations::VariationsSeedExpiry;
 using ::variations::VariationsSeedStore;
 using ::version_info::Channel;
@@ -252,6 +254,17 @@ void SaveFetchTimeOfLatestSeedInLocalState() {
 - (void)appState:(AppState*)appState
     willTransitionToInitStage:(InitStage)nextInitStage {
   if (self.appState.initStage == InitStageBrowserObjectsForBackgroundHandlers) {
+    // Records whether the fetched seed for first run has been applied, and if
+    // not, which stage has the seed application process reached.
+    //
+    // Note that this check is used to makes sure this metric only gets logged
+    // on first run, so that subsequent runs in the `Enabled` group would not
+    // contaminate the data. There is NO field trial group for `kNotFirstRun`.
+    if (_group != IOSChromeVariationsGroup::kNotFirstRun) {
+      base::UmaHistogramEnumeration(
+          "IOS.Variations.FirstRun.SeedApplicationStage",
+          [IOSChromeVariationsSeedStore seedApplicationStage]);
+    }
     ActivateFieldTrialForGroup(_group);
   }
 }

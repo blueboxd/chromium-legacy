@@ -4,9 +4,8 @@
 
 #include "chrome/updater/util/util.h"
 
-#include <cctype>
+#include <cwctype>
 #include <string>
-#include <utility>
 #include <vector>
 
 #if BUILDFLAG(IS_WIN)
@@ -20,6 +19,7 @@
 #include "base/base_paths.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -296,7 +296,7 @@ GURL AppendQueryParameter(const GURL& url,
 
 std::wstring GetTaskNamePrefix(UpdaterScope scope) {
   std::wstring task_name = GetTaskDisplayName(scope);
-  task_name.erase(base::ranges::remove_if(task_name, isspace), task_name.end());
+  base::EraseIf(task_name, std::iswspace);
   return task_name;
 }
 
@@ -355,41 +355,24 @@ void InitializeThreadPool(const char* name) {
   base::ThreadPoolInstance::Get()->Start(init_params);
 }
 
-void ForEachItemInPath(
-    const base::FilePath& path,
-    bool recursive,
-    int file_type,
-    base::RepeatingCallback<void(const base::FilePath&)> callback) {
-  if (path.empty()) {
-    return;
-  }
-  base::FileEnumerator it(path, recursive, file_type);
-  for (base::FilePath name = it.Next(); !name.empty(); name = it.Next()) {
-    callback.Run(name);
-  }
-}
-
 bool DeleteExcept(const absl::optional<base::FilePath>& except) {
   if (!except) {
     return false;
   }
 
   bool delete_success = true;
-  ForEachItemInPath(
+  base::FileEnumerator(
       except->DirName(), false,
-      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES,
-      base::BindRepeating(
-          [](const base::FilePath& except, bool& delete_success,
-             const base::FilePath& item) {
-            if (item != except) {
-              VLOG(2) << __func__ << ": Deleting: " << item;
-              if (!base::DeletePathRecursively(item)) {
-                LOG(ERROR) << __func__ << ": Failed to delete: " << item;
-                delete_success = false;
-              }
-            }
-          },
-          *except, std::ref(delete_success)));
+      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES)
+      .ForEach([&except, &delete_success](const base::FilePath& item) {
+        if (item != *except) {
+          VLOG(2) << __func__ << ": Deleting: " << item;
+          if (!base::DeletePathRecursively(item)) {
+            LOG(ERROR) << __func__ << ": Failed to delete: " << item;
+            delete_success = false;
+          }
+        }
+      });
 
   return delete_success;
 }

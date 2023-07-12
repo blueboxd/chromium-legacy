@@ -173,6 +173,21 @@ shopping_list::mojom::PriceInsightsInfoPtr PriceInsightsInfoToMojoObject(
 
   insights_info->has_multiple_catalogs = info->has_multiple_catalogs;
 
+  for (auto history_price : info->catalog_history_prices) {
+    auto point = shopping_list::mojom::PricePoint::New();
+    point->date = std::get<0>(history_price);
+
+    auto price =
+        static_cast<float>(std::get<1>(history_price)) / kToMicroCurrency;
+    point->price = price;
+    point->formatted_price =
+        base::UTF16ToUTF8(formatter->Format(base::NumberToString(price)));
+    insights_info->history.push_back(std::move(point));
+  }
+
+  insights_info->locale = locale;
+  insights_info->currency_code = info->currency_code;
+
   return insights_info;
 }
 
@@ -311,6 +326,17 @@ void ShoppingListHandler::HandleSubscriptionChange(
 
   std::vector<const bookmarks::BookmarkNode*> bookmarks =
       GetBookmarksWithClusterId(bookmark_model_, cluster_id);
+  // Special handling when the unsubscription is caused by bookmark deletion and
+  // therefore the bookmark can no longer be retrieved.
+  // TODO(crbug.com/1462668): Update mojo call to pass cluster ID and make
+  // BookmarkProductInfo a nullable parameter.
+  if (!bookmarks.size()) {
+    auto bookmark_info = shopping_list::mojom::BookmarkProductInfo::New();
+    bookmark_info->info = shopping_list::mojom::ProductInfo::New();
+    bookmark_info->info->cluster_id = cluster_id;
+    remote_page_->PriceUntrackedForBookmark(std::move(bookmark_info));
+    return;
+  }
   for (auto* node : bookmarks) {
     auto product = BookmarkNodeToMojoProduct(*bookmark_model_, node, locale_);
     if (is_tracking) {
@@ -374,6 +400,48 @@ void ShoppingListHandler::GetProductInfoForCurrentUrl(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void ShoppingListHandler::IsShoppingListEligible(
+    IsShoppingListEligibleCallback callback) {
+  std::move(callback).Run(shopping_service_->IsShoppingListEligible());
+}
+
+void ShoppingListHandler::GetPriceTrackingStatusForCurrentUrl(
+    GetPriceTrackingStatusForCurrentUrlCallback callback) {
+  const GURL current_url = delegate_->GetCurrentTabUrl().value();
+  const bookmarks::BookmarkNode* existing_node =
+      bookmark_model_->GetMostRecentlyAddedUserNodeForURL(current_url);
+  if (!existing_node) {
+    std::move(callback).Run(false);
+    return;
+  }
+  commerce::IsBookmarkPriceTracked(
+      shopping_service_, bookmark_model_, existing_node,
+      base::BindOnce(
+          &ShoppingListHandler::OnGetPriceTrackingStatusForCurrentUrl,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ShoppingListHandler::SetPriceTrackingStatusForCurrentUrl(bool track) {
+  const bookmarks::BookmarkNode* node =
+      delegate_->GetOrAddBookmarkForCurrentUrl();
+  if (track) {
+    TrackPriceForBookmark(node->id());
+  } else {
+    UntrackPriceForBookmark(node->id());
+  }
+}
+
+void ShoppingListHandler::GetParentBookmarkFolderNameForCurrentUrl(
+    GetParentBookmarkFolderNameForCurrentUrlCallback callback) {
+  const GURL current_url = delegate_->GetCurrentTabUrl().value();
+  std::move(callback).Run(
+      commerce::GetBookmarkParentNameOrDefault(bookmark_model_, current_url));
+}
+
+void ShoppingListHandler::ShowBookmarkEditorForCurrentUrl() {
+  delegate_->ShowBookmarkEditorForCurrentUrl();
+}
+
 void ShoppingListHandler::OnFetchProductInfoForCurrentUrl(
     GetProductInfoForCurrentUrlCallback callback,
     const GURL& url,
@@ -409,10 +477,22 @@ void ShoppingListHandler::ShowInsightsSidePanelUI() {
   }
 }
 
-void ShoppingListHandler::SetDelegateForTesting(
-    std::unique_ptr<Delegate> delegate) {
-  delegate_.reset();
-  delegate_ = std::move(delegate);
+void ShoppingListHandler::OnGetPriceTrackingStatusForCurrentUrl(
+    GetPriceTrackingStatusForCurrentUrlCallback callback,
+    bool tracked) {
+  std::move(callback).Run(tracked);
+}
+
+void ShoppingListHandler::OpenUrlInNewTab(const GURL& url) {
+  if (delegate_) {
+    delegate_->OpenUrlInNewTab(url);
+  }
+}
+
+void ShoppingListHandler::ShowFeedback() {
+  if (delegate_) {
+    delegate_->ShowFeedback();
+  }
 }
 
 }  // namespace commerce

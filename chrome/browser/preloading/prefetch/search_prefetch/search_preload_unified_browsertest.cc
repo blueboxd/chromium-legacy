@@ -398,8 +398,8 @@ class SearchPreloadUnifiedBrowserTest : public PlatformBrowserTest,
 
   constexpr static char kSearchDomain[] = "a.test";
   constexpr static char16_t kSearchDomain16[] = u"a.test";
-  raw_ptr<PrerenderManager, DanglingUntriaged> prerender_manager_ = nullptr;
-  raw_ptr<SearchPrefetchService, DanglingUntriaged> search_prefetch_service_ =
+  raw_ptr<PrerenderManager, DanglingAcrossTasks> prerender_manager_ = nullptr;
+  raw_ptr<SearchPrefetchService, DanglingAcrossTasks> search_prefetch_service_ =
       nullptr;
   net::test_server::EmbeddedTestServer search_engine_server_{
       net::test_server::EmbeddedTestServer::TYPE_HTTPS};
@@ -2044,14 +2044,16 @@ class NoCancelSearchPreloadUnifiedFallbackBrowserTest
 // Tests that even when prerendering is not failed, users can open the
 // prefetched result in another tab and activate the prefetched response
 // successfully.
-#if BUILDFLAG(IS_CHROMEOS) && defined(ADDRESS_SANITIZER)
+#if (BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)) && \
+    defined(ADDRESS_SANITIZER)
 #define MAYBE_OpenPrefetchedResponseInBackgroundedTab \
   DISABLED_OpenPrefetchedResponseInBackgroundedTab
 #else
 #define MAYBE_OpenPrefetchedResponseInBackgroundedTab \
   OpenPrefetchedResponseInBackgroundedTab
 #endif
-// TODO(https://crbug.com/1454675): Flaky on chromiumos ASAN LSAN.
+// TODO(https://crbug.com/1454675): Flaky on chromiumos ASAN LSAN and Linux
+// ASAN.
 IN_PROC_BROWSER_TEST_F(NoCancelSearchPreloadUnifiedFallbackBrowserTest,
                        MAYBE_OpenPrefetchedResponseInBackgroundedTab) {
   base::HistogramTester histogram_tester;

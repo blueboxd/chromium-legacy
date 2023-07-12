@@ -448,14 +448,21 @@ sk_sp<SkImage> ReadImage(
             gr_context, plane,
             mip_mapped_for_upload ? GrMipMapped::kYes : GrMipMapped::kNo,
             skgpu::Budgeted::kNo);
-        // Flush the pending upload (no-op if image is null).
+        // Uploading pixels is a heavy operation that might take long and lead
+        // to yields to higher priority scheduler sequences. To ensure upload is
+        // done, perform flush for Ganesh in DDL mode (no-op if image is null).
         SkImages::GetBackendTextureFromImage(plane, /*outTexture=*/nullptr,
                                              /*flushPendingGrContextIO=*/true);
       } else {
         CHECK(graphite_recorder);
         SkImage::RequiredProperties props{.fMipmapped = mip_mapped_for_upload};
+        // Graphite is like Ganesh in DDL mode but Graphite has lower CPU
+        // overhead with modern APIs leading to lesser scheduling concerns.
+        // Also, eventually we want to move tile raster off the GPU main thread.
+        // Based on these reasons, its okay to not flush for Graphite here.
+        // TODO(crbug.com/1463790): Revisit flushes for Graphite here if yield
+        // to scheduler is needed.
         plane = SkImages::TextureFromImage(graphite_recorder, plane, props);
-        // TODO(crbug.com/1434141): Should we flush the graphite recorder here?
       }
       if (!plane) {
         DLOG(ERROR) << "Failed to upload plane pixmap to texture image";
@@ -755,24 +762,21 @@ bool ServiceImageTransferCacheEntry::Deserialize(
 
     // TODO(https://crbug.com/1286088): Pass a shared cache as a parameter.
     gfx::ColorConversionSkFilterCache cache;
-    if (graphite_recorder_) {
-      // TODO(crbug.com/1443068): Add color conversion support for graphite.
-      NOTIMPLEMENTED_LOG_ONCE();
+    // Allow a nullptr context for testing using the software renderer.
+    if (has_gainmap) {
+      image_ = cache.ApplyGainmap(
+          image_, gainmap_image, gainmap_info,
+          target_color_params->hdr_max_luminance_relative,
+          image_->isTextureBacked() ? gr_context_ : nullptr,
+          image_->isTextureBacked() ? graphite_recorder_ : nullptr);
     } else {
-      // Allow a nullptr context for testing using the software renderer.
-      if (has_gainmap) {
-        image_ = cache.ApplyGainmap(
-            image_, gainmap_image, gainmap_info,
-            target_color_params->hdr_max_luminance_relative,
-            image_->isTextureBacked() ? gr_context_ : nullptr);
-      } else {
-        image_ = cache.ConvertImage(
-            image_, target_color_space, target_color_params->hdr_metadata,
-            target_color_params->sdr_max_luminance_nits,
-            target_color_params->hdr_max_luminance_relative,
-            target_color_params->enable_tone_mapping,
-            image_->isTextureBacked() ? gr_context_ : nullptr);
-      }
+      image_ = cache.ConvertImage(
+          image_, target_color_space, target_color_params->hdr_metadata,
+          target_color_params->sdr_max_luminance_nits,
+          target_color_params->hdr_max_luminance_relative,
+          target_color_params->enable_tone_mapping,
+          image_->isTextureBacked() ? gr_context_ : nullptr,
+          image_->isTextureBacked() ? graphite_recorder_ : nullptr);
     }
 
     if (!image_) {

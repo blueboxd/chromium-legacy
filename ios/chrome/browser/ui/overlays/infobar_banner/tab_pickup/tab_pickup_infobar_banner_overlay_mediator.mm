@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/overlays/public/default/default_infobar_overlay_request_config.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/tabs/tab_pickup/tab_pickup_infobar_delegate.h"
+#import "ios/chrome/browser/ui/infobars/banners/infobar_banner_constants.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_consumer.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/infobar_banner_overlay_mediator+consumer_support.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_mediator+subclassing.h"
@@ -21,12 +22,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-
-const CGFloat kFaviconPointSize = 24.0f;
-
-}  // anonymous namespace.
 
 @interface TabPickupBannerOverlayMediator ()
 
@@ -59,7 +54,9 @@ const CGFloat kFaviconPointSize = 24.0f;
 #pragma mark - InfobarOverlayRequestMediator
 
 - (void)bannerInfobarButtonWasPressed:(UIButton*)sender {
-  // TODO(crbug.com/1457175): Implement this.
+  self.tabPickupDelegate->OpenDistantTab();
+
+  [self dismissOverlay];
 }
 
 @end
@@ -81,9 +78,11 @@ const CGFloat kFaviconPointSize = 24.0f;
                                                             ->GetSyncedTime()]];
 
   UIImage* faviconImage = delegate->GetFaviconImage();
-  if (!faviconImage) {
-    faviconImage =
-        DefaultSymbolWithPointSize(kGlobeAmericasSymbol, kFaviconPointSize);
+  if (faviconImage) {
+    [self.consumer setFaviconImage:faviconImage];
+  } else {
+    [self.consumer setIconImage:CustomSymbolWithPointSize(
+                                    kRecentTabsSymbol, kInfobarBannerIconSize)];
   }
 
   [self.consumer setTitleText:title];
@@ -111,11 +110,12 @@ const CGFloat kFaviconPointSize = 24.0f;
 - (NSString*)lastSyncTimeStringFromTime:(base::Time)time {
   NSString* timeString;
   base::TimeDelta lastUsedDelta = base::Time::Now() - time;
+  base::TimeDelta oneMinuteDelta = base::Minutes(1);
 
-  if (lastUsedDelta.InMicroseconds() < base::Time::kMicrosecondsPerMinute) {
-    timeString = l10n_util::GetNSString(IDS_IOS_OPEN_TABS_RECENTLY_SYNCED);
-    // This will return something similar to "Seconds ago".
-    return [NSString stringWithFormat:@"%@", timeString];
+  // If the tab was synchronized within the last minute, set the time delta to 1
+  // minute.
+  if (lastUsedDelta < oneMinuteDelta) {
+    lastUsedDelta = oneMinuteDelta;
   }
 
   NSDate* date = [NSDate dateWithTimeIntervalSince1970:time.ToTimeT()];

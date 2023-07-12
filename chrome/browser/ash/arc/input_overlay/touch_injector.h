@@ -95,6 +95,8 @@ class TouchInjector : public ui::EventRewriter {
   // Set input binding back to original binding.
   void OnBindingRestore();
   void OnProtoDataAvailable(AppDataProto& proto);
+  // Save proto file.
+  void OnSaveProtoFile();
   // Save the input menu state when the menu is closed.
   void OnInputMenuViewRemoved();
   void NotifyFirstTimeLaunch();
@@ -109,13 +111,17 @@ class TouchInjector : public ui::EventRewriter {
   void UpdatePositionsForRegister();
   void UpdateForOverlayBoundsChanged(const gfx::RectF& new_bounds);
 
-  // Add or delete an Action.
-  // Return an action ID (> kMaxDefaultActionID) for adding a new action.
-  int GetNextActionID();
+  // Returns the smallest unused ID (> kMaxDefaultActionID) for adding a new
+  // action.
+  int GetNextNewActionID();
   // Add a new action of type |action_type| from UI without input binding and
   // with default position binding at the center.
   void AddNewAction(ActionType action_type);
   void RemoveAction(Action* action);
+  // Create a new action with guidance from the reference action, and delete
+  // the reference action.
+  void ChangeActionType(Action* reference_action, ActionType action_type);
+  void ChangeActionName(Action* action, std::u16string name);
 
   void AddObserver(TouchInjectorObserver* observer);
   void RemoveObserver(TouchInjectorObserver* observer);
@@ -169,6 +175,7 @@ class TouchInjector : public ui::EventRewriter {
  private:
   friend class ArcInputOverlayManagerTest;
   friend class TouchInjectorTest;
+  friend class ButtonOptionsMenuTest;
 
   struct TouchPointInfo {
     // ID managed by input overlay.
@@ -221,8 +228,6 @@ class TouchInjector : public ui::EventRewriter {
 
   // Convert the customized data to AppDataProto.
   std::unique_ptr<AppDataProto> ConvertToProto();
-  // Save proto file.
-  void OnSaveProtoFile();
 
   // Add the menu state to |proto|.
   void AddMenuStateToProto(AppDataProto& proto);
@@ -237,14 +242,12 @@ class TouchInjector : public ui::EventRewriter {
   void AddSystemVersionToProto(AppDataProto& proto);
   void LoadSystemVersionFromProto(AppDataProto& proto);
 
-  // Create Action by |action_type| without any input bindings.
-  std::unique_ptr<Action> CreateRawAction(ActionType action_type);
-
   // For observers.
   void NotifyActionAdded(Action& action);
   void NotifyActionRemoved(Action& action);
-  void NotifyActionTypeChanged(const Action& action, const Action& new_action);
+  void NotifyActionTypeChanged(Action* action, Action* new_action);
   void NotifyActionUpdated(const Action& action);
+  void NotifyActionNameUpdated(const Action& action);
 
   // For test.
   int GetRewrittenTouchIdForTesting(ui::PointerId original_id);
@@ -255,7 +258,7 @@ class TouchInjector : public ui::EventRewriter {
   // TouchInjector is created when targeted |window_| is created and is
   // registered only when |window_| is focused. And TouchInjector doesn't own
   // |window_| and it is destroyed when |window_| is destroyed.
-  raw_ptr<aura::Window, DanglingUntriaged> window_;
+  raw_ptr<aura::Window, DanglingAcrossTasks> window_;
   std::string package_name_;
   gfx::RectF content_bounds_;
   base::WeakPtr<ui::EventRewriterContinuation> continuation_;
@@ -293,10 +296,6 @@ class TouchInjector : public ui::EventRewriter {
   // Key is the original touch id. Value is a struct containing required info
   // for this touch event.
   base::flat_map<ui::PointerId, TouchPointInfo> rewritten_touch_infos_;
-
-  // This for Action adding or deleting. For default action, ID <=
-  // kMaxDefaultActionID. For custom actions, ID > kMaxDefaultActionID.
-  int next_action_id_ = kMaxDefaultActionID + 1;
 
   base::ReentrantObserverList<TouchInjectorObserver> observers_;
 

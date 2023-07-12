@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.pwd_migration;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -14,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import org.chromium.base.Callback;
@@ -30,7 +32,7 @@ import org.chromium.components.version_info.VersionInfo;
  * This class is responsible for rendering the bottom sheet that shows the passwords
  * migration warning.
  */
-class PasswordMigrationWarningView implements BottomSheetContent {
+public class PasswordMigrationWarningView implements BottomSheetContent {
     private final BottomSheetController mBottomSheetController;
     private Callback<Integer> mDismissHandler;
     private PasswordMigrationWarningOnClickHandler mOnClickHandler;
@@ -39,6 +41,7 @@ class PasswordMigrationWarningView implements BottomSheetContent {
     private Context mContext;
     private String mAccountDisplayName;
     private @ScreenType int mScreenType = ScreenType.NONE;
+    private boolean mShouldOfferSync;
 
     private Runnable mOnResumeExportFlowCallback;
 
@@ -123,30 +126,46 @@ class PasswordMigrationWarningView implements BottomSheetContent {
         mBottomSheetController.expandSheet();
     }
 
+    void setShouldOfferSync(boolean shouldOfferSync) {
+        mShouldOfferSync = shouldOfferSync;
+    }
     private void setFragment() {
         assert mScreenType != ScreenType.NONE;
         if (mScreenType == ScreenType.INTRO_SCREEN) {
+            String introScreenSubtitle =
+                    mContext.getString(R.string.password_migration_warning_subtitle)
+                            .replace("%1$s", getChannelString());
             PasswordMigrationWarningIntroFragment introFragment =
-                    new PasswordMigrationWarningIntroFragment(mContext,
+                    new PasswordMigrationWarningIntroFragment(introScreenSubtitle,
                             ()
                                     -> mOnClickHandler.onAcknowledge(mBottomSheetController),
-                            () -> mOnClickHandler.onMoreOptions(), getChannelString());
+                            () -> mOnClickHandler.onMoreOptions());
             mFragmentManager.beginTransaction()
                     .setReorderingAllowed(true)
                     .replace(R.id.fragment_container_view, introFragment)
                     .commit();
         } else if (mScreenType == ScreenType.OPTIONS_SCREEN) {
+            String exportOptionSubtitle =
+                    mContext.getString(R.string.password_migration_warning_password_export_subtitle)
+                            .replace("%1$s", getChannelString());
             PasswordMigrationWarningOptionsFragment optionsFragment =
-                    new PasswordMigrationWarningOptionsFragment(mContext, mOnClickHandler,
+                    new PasswordMigrationWarningOptionsFragment(exportOptionSubtitle,
+                            mShouldOfferSync, mOnClickHandler,
                             ()
                                     -> mOnClickHandler.onCancel(mBottomSheetController),
-                            getChannelString(), mAccountDisplayName, mFragmentManager,
-                            mOnResumeExportFlowCallback);
+                            mAccountDisplayName, mFragmentManager, mOnResumeExportFlowCallback);
             mFragmentManager.beginTransaction()
                     .setReorderingAllowed(true)
                     .replace(R.id.fragment_container_view, optionsFragment)
                     .commit();
         }
+    }
+
+    void runCreateFileOnDiskIntent(Intent intent) {
+        Fragment fragment = mFragmentManager.findFragmentById(R.id.fragment_container_view);
+        assert fragment instanceof PasswordMigrationWarningOptionsFragment;
+
+        ((PasswordMigrationWarningOptionsFragment) fragment).runCreateFileOnDiskIntent(intent);
     }
 
     void setAccountDisplayName(String accountDisplayName) {

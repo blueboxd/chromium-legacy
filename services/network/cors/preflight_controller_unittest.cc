@@ -239,7 +239,7 @@ TEST(PreflightControllerOptionsTest, CheckOptions) {
       /*client_security_state=*/nullptr,
       /*devtools_observer=*/
       base::WeakPtr<mojo::Remote<mojom::DevToolsObserver>>(), net_log, true,
-      mojo::Remote<mojom::URLLoaderNetworkServiceObserver>());
+      mojo::PendingRemote<mojom::URLLoaderNetworkServiceObserver>());
 
   preflight_controller.PerformPreflightCheck(
       base::BindOnce([](int, absl::optional<CorsErrorStatus>, bool) {}),
@@ -250,7 +250,7 @@ TEST(PreflightControllerOptionsTest, CheckOptions) {
       /*client_security_state=*/nullptr,
       /*devtools_observer=*/
       base::WeakPtr<mojo::Remote<mojom::DevToolsObserver>>(), net_log, true,
-      mojo::Remote<mojom::URLLoaderNetworkServiceObserver>());
+      mojo::PendingRemote<mojom::URLLoaderNetworkServiceObserver>());
 
   ASSERT_EQ(2, url_loader_factory.NumPending());
   EXPECT_EQ(mojom::kURLLoadOptionAsCorsPreflight,
@@ -373,6 +373,9 @@ class MockDevToolsObserver : public mojom::DevToolsObserver {
                    const network::CorsErrorStatus& status,
                    bool is_warning) override {}
 
+  void OnCorbError(const absl::optional<std::string>& devtools_request_id,
+                   const GURL& url) override {}
+
   void Clone(mojo::PendingReceiver<DevToolsObserver> observer) override {
     receivers_.Add(this, std::move(observer));
   }
@@ -478,7 +481,7 @@ class PreflightControllerTest : public testing::Test {
         weak_devtools_observer_factory.GetWeakPtr(),
         net::NetLogWithSource::Make(net::NetLog::Get(),
                                     net::NetLogSourceType::URL_REQUEST),
-        true, mojo::Remote<mojom::URLLoaderNetworkServiceObserver>());
+        true, mojo::PendingRemote<mojom::URLLoaderNetworkServiceObserver>());
     run_loop_->Run();
   }
 

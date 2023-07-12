@@ -20,6 +20,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -76,10 +77,6 @@ enum UserMode { USER_MODE_NORMAL, USER_MODE_INCOGNITO };
 const base::Time kArbitraryTime = base::Time::FromDoubleT(25);
 const base::Time kSomeLaterTime = base::Time::FromDoubleT(1000);
 const base::Time kMuchLaterTime = base::Time::FromDoubleT(5000);
-
-ACTION_P(QuitMessageLoop, loop) {
-  loop->Quit();
-}
 
 class PersonalDataManagerMock : public PersonalDataManager {
  public:
@@ -219,8 +216,7 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
     ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
   }
 
-  // Add 3 credit cards. One local, one masked, one full. Creates two masked
-  // cards on Linux, since full server cards are not supported.
+  // Add 3 credit cards. One local, one masked, one full.
   void SetUpThreeCardTypes() {
     EXPECT_EQ(0U, personal_data_->GetCreditCards().size());
     CreditCard masked_server_card;
@@ -235,14 +231,8 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
     WaitOnceForOnPersonalDataChanged();
     ASSERT_EQ(1U, personal_data_->GetCreditCards().size());
 
-// Cards are automatically remasked on Linux since full server cards are not
-// supported.
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if !(BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
     personal_data_->ResetFullServerCard(
         personal_data_->GetCreditCards()[0]->guid());
-#endif
 
     CreditCard full_server_card;
     test::SetCreditCardInfo(&full_server_card, "Buddy Holly",
@@ -303,7 +293,7 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
   void AddProfileToPersonalDataManager(const AutofillProfile& profile) {
     base::RunLoop run_loop;
     EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
-        .WillOnce(QuitMessageLoop(&run_loop));
+        .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
     EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
         .Times(testing::AnyNumber());
     personal_data_->AddProfile(profile);
@@ -313,7 +303,7 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
   void UpdateProfileOnPersonalDataManager(const AutofillProfile& profile) {
     base::RunLoop run_loop;
     EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
-        .WillOnce(QuitMessageLoop(&run_loop));
+        .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
     EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
         .Times(testing::AnyNumber());
 
@@ -338,7 +328,7 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
       const AutofillProfile& profile) {
     base::RunLoop run_loop;
     EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
-        .WillOnce(QuitMessageLoop(&run_loop));
+        .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
     EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
         .Times(testing::AnyNumber());
     personal_data_->SaveImportedProfile(profile);
@@ -430,7 +420,7 @@ class PersonalDataManagerMockTest : public PersonalDataManagerTestBase,
     base::RunLoop run_loop;
 
     EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
-        .WillOnce(QuitMessageLoop(&run_loop));
+        .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
     EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
         .Times(testing::AnyNumber());
 
@@ -443,7 +433,7 @@ class PersonalDataManagerMockTest : public PersonalDataManagerTestBase,
     base::RunLoop run_loop;
 
     EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
-        .WillOnce(QuitMessageLoop(&run_loop));
+        .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
     EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
         .Times(testing::AnyNumber());
 
@@ -471,7 +461,7 @@ class PersonalDataManagerMockTest : public PersonalDataManagerTestBase,
         .Times(testing::AnyNumber());
     EXPECT_CALL(*personal_data_, FetchImagesForURLs(testing::_))
         .Times(1)
-        .WillOnce(QuitMessageLoop(&run_loop));
+        .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -941,6 +931,28 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
 
   // Verify that we've loaded the profiles from the web database.
   ExpectSameElements(profiles, personal_data_->GetProfiles());
+}
+
+TEST_F(PersonalDataManagerTest, MigrateProfileToAccount) {
+  const AutofillProfile kLocalProfile = test::GetFullProfile();
+  ASSERT_EQ(kLocalProfile.source(), AutofillProfile::Source::kLocalOrSyncable);
+  AddProfileToPersonalDataManager(kLocalProfile);
+
+  personal_data_->MigrateProfileToAccount(kLocalProfile);
+  WaitForOnPersonalDataChanged();
+  const std::vector<AutofillProfile*> profiles = personal_data_->GetProfiles();
+
+  // `kLocalProfile` should be gone and only the migrated account profile should
+  // exist.
+  ASSERT_EQ(profiles.size(), 1u);
+  const AutofillProfile kAccountProfile = *profiles[0];
+  EXPECT_EQ(kAccountProfile.source(), AutofillProfile::Source::kAccount);
+  EXPECT_EQ(kAccountProfile.initial_creator_id(),
+            AutofillProfile::kInitialCreatorOrModifierChrome);
+  EXPECT_EQ(kAccountProfile.last_modifier_id(),
+            AutofillProfile::kInitialCreatorOrModifierChrome);
+  EXPECT_NE(kLocalProfile.guid(), kAccountProfile.guid());
+  EXPECT_EQ(kLocalProfile.Compare(kAccountProfile), 0);
 }
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
@@ -1952,17 +1964,26 @@ TEST_F(PersonalDataManagerTest, GetAutofillOffers) {
 // Tests that GetAutofillOffers does not return any offers if
 // |IsAutofillWalletImportEnabled()| returns |false|.
 TEST_F(PersonalDataManagerMockTest, GetAutofillOffers_WalletImportDisabled) {
+  syncer::TestSyncService sync_service;
+  personal_data_->SetSyncServiceForTest(&sync_service);
+
   // Add a card-linked offer and a promo code offer.
   AddOfferDataForTest(test::GetCardLinkedOfferData1());
   AddOfferDataForTest(test::GetPromoCodeOfferData());
 
   base::RunLoop run_loop;
   EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
-      .WillOnce(QuitMessageLoop(&run_loop));
-  prefs::SetPaymentsIntegrationEnabled(prefs_.get(), false);
+      .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
+
+  ASSERT_EQ(2U, personal_data_->GetAutofillOffers().size());
+
+  sync_service.GetUserSettings()->SetPaymentsIntegrationEnabled(false);
 
   // Should return neither of them as the wallet import pref is disabled.
   EXPECT_EQ(0U, personal_data_->GetAutofillOffers().size());
+
+  // Unregister the Sync observer.
+  personal_data_->OnSyncShutdown(&sync_service);
 }
 
 // Tests that GetAutofillOffers does not return any offers if
@@ -2007,20 +2028,32 @@ TEST_F(PersonalDataManagerTest, GetActiveAutofillPromoCodeOffersForOrigin) {
 // promo code offers if |IsAutofillWalletImportEnabled()| returns |false|.
 TEST_F(PersonalDataManagerMockTest,
        GetActiveAutofillPromoCodeOffersForOrigin_WalletImportDisabled) {
+  syncer::TestSyncService sync_service;
+  personal_data_->SetSyncServiceForTest(&sync_service);
+
   // Add an active promo code offer.
   AddOfferDataForTest(test::GetPromoCodeOfferData(
       /*origin=*/GURL("http://www.example.com")));
 
   base::RunLoop run_loop;
   EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
-      .WillOnce(QuitMessageLoop(&run_loop));
-  prefs::SetPaymentsIntegrationEnabled(prefs_.get(), false);
+      .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
+
+  ASSERT_EQ(1U, personal_data_
+                    ->GetActiveAutofillPromoCodeOffersForOrigin(
+                        GURL("http://www.example.com"))
+                    .size());
+
+  sync_service.GetUserSettings()->SetPaymentsIntegrationEnabled(false);
 
   // Should not return the offer as the wallet import pref is disabled.
   EXPECT_EQ(0U, personal_data_
                     ->GetActiveAutofillPromoCodeOffersForOrigin(
                         GURL("http://www.example.com"))
                     .size());
+
+  // Unregister the Sync observer.
+  personal_data_->OnSyncShutdown(&sync_service);
 }
 
 // Tests that GetActiveAutofillPromoCodeOffersForOrigin does not return any
@@ -3541,7 +3574,7 @@ TEST_F(PersonalDataManagerTest, RecordUseOf) {
   // Use |profile|, then verify usage stats.
   base::RunLoop profile_run_loop;
   EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
-      .WillOnce(QuitMessageLoop(&profile_run_loop));
+      .WillOnce(base::test::RunClosure(profile_run_loop.QuitClosure()));
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(1);
   personal_data_->RecordUseOf(&profile);
   profile_run_loop.Run();
@@ -3556,7 +3589,7 @@ TEST_F(PersonalDataManagerTest, RecordUseOf) {
   // Use |credit_card|, then verify usage stats.
   base::RunLoop credit_card_run_loop;
   EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
-      .WillOnce(QuitMessageLoop(&credit_card_run_loop));
+      .WillOnce(base::test::RunClosure(credit_card_run_loop.QuitClosure()));
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(1);
   personal_data_->RecordUseOf(&credit_card);
   credit_card_run_loop.Run();
@@ -4819,13 +4852,8 @@ TEST_F(PersonalDataManagerTest, LogStoredCreditCardMetrics) {
       "Autofill.StoredCreditCardCount.Server.WithCardArtImage", 3, 1);
 }
 
-// These tests are not applicable on Linux since it does not support full server
-// cards.
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if !(BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
-// Test that setting a null sync service remasks full server cards.
-TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NoSyncService) {
+// Test that setting a null sync service returns only local credit cards.
+TEST_F(PersonalDataManagerTest, GetCreditCards_NoSyncService) {
   base::HistogramTester histogram_tester;
   SetUpThreeCardTypes();
 
@@ -4833,17 +4861,16 @@ TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NoSyncService) {
   personal_data_->SetSyncServiceForTest(nullptr);
   WaitForOnPersonalDataChanged();
 
-  // Check that cards were masked and other were untouched.
-  EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
-  std::vector<CreditCard*> server_cards =
-      personal_data_->GetServerCreditCards();
-  EXPECT_EQ(2U, server_cards.size());
-  for (CreditCard* card : server_cards)
-    EXPECT_TRUE(card->record_type() == CreditCard::MASKED_SERVER_CARD);
+  // No sync service is the same as payments integration being disabled, i.e.
+  // IsAutofillWalletImportEnabled() returning false. Only local credit
+  // cards are shown.
+  EXPECT_EQ(0U, personal_data_->GetServerCreditCards().size());
+  EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
 }
 
-// Test that setting a sync service in auth error remasks full server cards.
-TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NotActiveSyncService) {
+// Test that setting a sync service in auth error returns only local credit
+// cards.
+TEST_F(PersonalDataManagerTest, GetCreditCards_NotActiveSyncService) {
   base::HistogramTester histogram_tester;
   SetUpThreeCardTypes();
 
@@ -4868,7 +4895,6 @@ TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NotActiveSyncService) {
   // SetSyncServiceForTest.
   personal_data_->OnSyncShutdown(&sync_service);
 }
-#endif  // !(BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 
 // Sync Transport mode is only for Win, Mac, and Linux.
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \

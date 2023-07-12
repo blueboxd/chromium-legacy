@@ -30,6 +30,10 @@ const DELEGATE = {
   async showParentalControls() {
     await parentMessagePipe.sendMessage(Message.SHOW_PARENTAL_CONTROLS);
   },
+  async triggerWelcomeTipCallToAction(actionTypeId) {
+    await parentMessagePipe.sendMessage(
+        Message.TRIGGER_WELCOME_TIP_CALL_TO_ACTION, actionTypeId);
+  },
   /**
    * @override
    * @param {!Array<!helpApp.SearchableItem>} data
@@ -62,6 +66,9 @@ const DELEGATE = {
   async updateLauncherSearchIndex(data) {
     await parentMessagePipe.sendMessage(
         Message.UPDATE_LAUNCHER_SEARCH_INDEX, data);
+  },
+  async launchMicrosoft365Setup() {
+    await parentMessagePipe.sendMessage(Message.LAUNCH_MICROSOFT_365_SETUP);
   },
   async maybeShowDiscoverNotification() {
     await parentMessagePipe.sendMessage(

@@ -43,7 +43,6 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       int max_copy_texture_chromium_size,
       bool use_partial_raster,
-      bool use_gpu_memory_buffer_resources,
       int max_staging_buffer_usage_in_bytes,
       const RasterCapabilities& raster_caps);
   OneCopyRasterBufferProvider(const OneCopyRasterBufferProvider&) = delete;
@@ -60,16 +59,15 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
       bool depends_on_at_raster_decodes,
       bool depends_on_hardware_accelerated_jpeg_candidates,
       bool depends_on_hardware_accelerated_webp_candidates) override;
-  void Flush() override;
   viz::SharedImageFormat GetFormat() const override;
   bool IsResourcePremultiplied() const override;
   bool CanPartialRasterIntoProvidedResource() const override;
   bool IsResourceReadyToDraw(
-      const ResourcePool::InUsePoolResource& resource) const override;
+      const ResourcePool::InUsePoolResource& resource) override;
   uint64_t SetReadyToDrawCallback(
       const std::vector<const ResourcePool::InUsePoolResource*>& resources,
       base::OnceClosure callback,
-      uint64_t pending_callback_id) const override;
+      uint64_t pending_callback_id) override;
   void SetShutdownEvent(base::WaitableEvent* shutdown_event) override;
   void Shutdown() override;
 
@@ -89,6 +87,9 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
       const RasterSource::PlaybackSettings& playback_settings,
       uint64_t previous_content_id,
       uint64_t new_content_id);
+
+ protected:
+  void Flush() override;
 
  private:
   class OneCopyGpuBacking;
@@ -162,12 +163,14 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
   raw_ptr<base::WaitableEvent> shutdown_event_ = nullptr;
   const int max_bytes_per_copy_operation_;
   const bool use_partial_raster_;
-  const bool use_gpu_memory_buffer_resources_;
 
   // Context lock must be acquired when accessing this member.
   int bytes_scheduled_since_last_flush_;
 
   const viz::SharedImageFormat tile_format_;
+  const bool tile_overlay_candidate_;
+  const uint32_t tile_texture_target_;
+
   StagingBufferPool staging_pool_;
 };
 

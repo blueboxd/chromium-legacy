@@ -108,14 +108,6 @@ void LayoutSVGModelObject::WillBeDestroyed() {
   LayoutObject::WillBeDestroyed();
 }
 
-AffineTransform LayoutSVGModelObject::CalculateLocalTransform() const {
-  NOT_DESTROYED();
-  auto* element = GetElement();
-  if (element->HasTransform(SVGElement::kIncludeMotionTransform))
-    return element->CalculateTransform(SVGElement::kIncludeMotionTransform);
-  return AffineTransform();
-}
-
 bool LayoutSVGModelObject::CheckForImplicitTransformChange(
     bool bbox_changed) const {
   NOT_DESTROYED();
@@ -170,6 +162,11 @@ void LayoutSVGModelObject::StyleDidChange(StyleDifference diff,
 void LayoutSVGModelObject::InsertedIntoTree() {
   NOT_DESTROYED();
   LayoutObject::InsertedIntoTree();
+  // Ensure that the viewport dependency flag gets set on the ancestor chain.
+  if (SVGSelfOrDescendantHasViewportDependency()) {
+    ClearSVGSelfOrDescendantHasViewportDependency();
+    SetSVGSelfOrDescendantHasViewportDependency();
+  }
   LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(*this,
                                                                          false);
   if (StyleRef().HasSVGEffect())

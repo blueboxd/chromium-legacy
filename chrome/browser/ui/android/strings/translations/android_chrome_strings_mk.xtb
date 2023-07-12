@@ -297,6 +297,7 @@
 <translation id="2643064289437760082">Секогаш може да ги избришете податоците за мерење на рекламите со бришење на податоците од прелистувањето</translation>
 <translation id="2647434099613338025">Додајте јазик</translation>
 <translation id="2649068648233607930"><ph name="DOMAIN" /> управува со прелистувачот</translation>
+<translation id="2650077116157640844">Повеќе на синхронизираните уреди</translation>
 <translation id="2650348088770008516">Објаснувањето за водичот за приватност е затворено</translation>
 <translation id="2650408372219180431">Извезете и избришете ги лозинките што се зачувани на уредов</translation>
 <translation id="2650751991977523696">Дали да се преземе датотеката повторно?</translation>
@@ -445,7 +446,6 @@
 <translation id="3421726884497337397">Изберете кога да се блокираат колачињата од трети страни</translation>
 <translation id="3428747202529429621">Ја чува вашата безбедност на Chrome и може да се користи за да ја подобри безбедноста на други апликации на Google кога сте најавени</translation>
 <translation id="3429160811076349561">Пробните функции се исклучени</translation>
-<translation id="3432973700170747422">Избриши ги последн. 15 мин.</translation>
 <translation id="3435465986463792564">Имате многу прозорци? Може да управувате со нив оттука</translation>
 <translation id="3435738964857648380">Безбедност</translation>
 <translation id="3443221991560634068">Вчитајте ја тековната страница</translation>
@@ -479,9 +479,9 @@
 <translation id="3587596251841506391">Подобра безбедноста на интернет</translation>
 <translation id="3597179440835065298">Добивајте подобри предлози</translation>
 <translation id="3602290021589620013">Преглед</translation>
-<translation id="360901359071773787">Дали да се избришат изминатите 15 минути?</translation>
 <translation id="3616113530831147358">Аудио</translation>
 <translation id="3622349720008044802">Управувајте со прозорци</translation>
+<translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{+ 1 сајт}one{+ # сајт}other{+ # сајтови}}</translation>
 <translation id="3631987586758005671">Се споделува на <ph name="DEVICE_NAME" /></translation>
 <translation id="363596933471559332">Автоматски најавувајте се на веб-сајтови со складирани акредитиви. Кога функцијата е исклучена, ќе се бара проверка од вас секогаш пред најавување на веб-сајт.</translation>
 <translation id="3636940436873918441">Претпочитани јазици</translation>
@@ -750,6 +750,7 @@
 <translation id="5010886807652684893">Визуелен приказ</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> сака да се поврзе</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">Изминатите 15 минути</translation>
 <translation id="5032430150487044192">Не може да се создаде QR-код</translation>
 <translation id="5039804452771397117">Дозволи</translation>
 <translation id="5040262127954254034">Приватност</translation>
@@ -768,7 +769,6 @@
 <translation id="5118713593561876160">Интереси</translation>
 <translation id="5122378528687922675">Ако ти треба помош, прашај го родителот (<ph name="PARENT_NAME_1" /> или <ph name="PARENT_NAME_2" />)</translation>
 <translation id="5123685120097942451">Картичка инкогнито</translation>
-<translation id="5126510351761255129">Потврдете ја картичката</translation>
 <translation id="5132942445612118989">Синхронизирајте ги лозинките, историјата и друго на сите уреди</translation>
 <translation id="5139940364318403933">Дознајте како се користи Google Drive</translation>
 <translation id="5142281402488957685">За нови стории, повлечете надолу за да освежите</translation>
@@ -928,7 +928,6 @@
 <translation id="6011308810877101166">Подобрување на предлозите за пребарување</translation>
 <translation id="6026538407078977628">Прошири на цел екран</translation>
 <translation id="6030719887161080597">Управувајте со податоците што ги користат сајтовите за мерење на перформансите на рекламите</translation>
-<translation id="6034146297924778597">Ќе се избрише историјата од минатите 15 минути:</translation>
 <translation id="6039379616847168523">Скокнете на следната картичка</translation>
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="604124094241169006">Автоматски</translation>
@@ -1370,6 +1369,7 @@
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />Вашите уреди<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">Продолжи</translation>
 <translation id="8209050860603202033">отвори слика</translation>
+<translation id="8210770465353466621">Вашите картички ќе ги најдете тука</translation>
 <translation id="8215740705341534369">Страничен лист</translation>
 <translation id="8218622182176210845">Управувајте со сметката</translation>
 <translation id="8221401890884589479">Може да ги блокирате сајтовите што не ви се допаѓаат. Chrome автоматски ги брише од списокот и сајтовите што се постари од 30 дена. <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>

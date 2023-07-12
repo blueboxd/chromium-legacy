@@ -50,6 +50,19 @@ chromium-metrics-reviews@google.com.
                when a device is released."/>
 </variants>
 
+<variants name="BatterySaverMode">
+<!--
+  Variants indicating if battery saver was enabled when the sample was recorded.
+-->
+
+  <variant name=""
+      summary="all intervals no matter the battery saver mode state"/>
+  <variant name=".BatterySaverDisabled"
+      summary="intervals with battery saver mode disabled."/>
+  <variant name=".BatterySaverEnabled"
+      summary="intervals with battery saver mode enabled."/>
+</variants>
+
 <variants name="IntervalType">
 <!--
     Variants describing if the histogram contains all samples, only the first
@@ -993,7 +1006,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="Power.BatteryDischargeRateMilliwatts6{UsageScenario}{IntervalType}"
+    name="Power.BatteryDischargeRateMilliwatts6{UsageScenario}{IntervalType}{BatterySaverMode}"
     units="milliwatts" expires_after="2024-03-31">
   <owner>etiennep@chromium.org</owner>
   <owner>olivierli@chromium.org</owner>
@@ -1011,13 +1024,16 @@ chromium-metrics-reviews@google.com.
     This is recorded for {UsageScenario}.
 
     This contains {IntervalType}.
+
+    This is recorded for {BatterySaverMode}.
   </summary>
   <token key="UsageScenario" variants="UsageScenario"/>
   <token key="IntervalType" variants="IntervalType"/>
+  <token key="BatterySaverMode" variants="BatterySaverMode"/>
 </histogram>
 
 <histogram
-    name="Power.BatteryDischargeRatePreciseMilliwatts{UsageScenario}{IntervalType}"
+    name="Power.BatteryDischargeRatePreciseMilliwatts{UsageScenario}{IntervalType}{BatterySaverMode}"
     units="milliwatts" expires_after="2024-03-31">
   <owner>pmonette@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
@@ -1037,13 +1053,16 @@ chromium-metrics-reviews@google.com.
     This is recorded for {UsageScenario}.
 
     This contains {IntervalType}.
+
+    This is recorded for {BatterySaverMode}.
   </summary>
   <token key="UsageScenario" variants="UsageScenario"/>
   <token key="IntervalType" variants="IntervalType"/>
+  <token key="BatterySaverMode" variants="BatterySaverMode"/>
 </histogram>
 
 <histogram
-    name="Power.BatteryDischargeRateRelative5{UsageScenario}{IntervalType}"
+    name="Power.BatteryDischargeRateRelative5{UsageScenario}{IntervalType}{BatterySaverMode}"
     units="hundredth of percent" expires_after="2024-03-31">
   <owner>etiennep@chromium.org</owner>
   <owner>olivierli@chromium.org</owner>
@@ -1063,9 +1082,12 @@ chromium-metrics-reviews@google.com.
     This is recorded for {UsageScenario}.
 
     This contains {IntervalType}.
+
+    This is recorded for {BatterySaverMode}.
   </summary>
   <token key="UsageScenario" variants="UsageScenario"/>
   <token key="IntervalType" variants="IntervalType"/>
+  <token key="BatterySaverMode" variants="BatterySaverMode"/>
 </histogram>
 
 <histogram name="Power.BatteryDischargeRateWhileHibernated" units="mW"
@@ -1094,6 +1116,20 @@ chromium-metrics-reviews@google.com.
     while suspended (which would indicate that an AC adapter was connected), and
     if the system was suspended for at least a minute.
   </summary>
+</histogram>
+
+<histogram name="Power.BatteryLife.RollingAverage.{BatteryCapacityType}"
+    units="minute" expires_after="2024-05-12">
+  <owner>puthik@chromium.org</owner>
+  <owner>chromeos-platform-power@google.com</owner>
+  <summary>
+    ChromeOS rolling average of the battery life while in active state, measured
+    in minutes using the {BatteryCapacityType}.
+
+    This is calculated by taking the average of the last 10 samples of the
+    Power.BatteryLife.{BatteryCapacityType} metrics.
+  </summary>
+  <token key="BatteryCapacityType" variants="BatteryCapacityType"/>
 </histogram>
 
 <histogram name="Power.BatteryLife.{BatteryCapacityType}" units="minute"
@@ -1729,21 +1765,6 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Power.IdleScreenDimCountDaily" units="count"
-    expires_after="2022-04-17">
-  <owner>tbroch@chromium.org</owner>
-  <owner>napper@chromium.org</owner>
-  <summary>
-    Number of times that that the screen has been dimmed in response to user
-    inactivity, reported daily. The count is accumulated through the day,
-    spanning reboots, and sent once the system clock indicates that a full day
-    or more has passed since the last report. If the system is suspended or off
-    for more than a day, the current count will be reported immediately the next
-    time the system boots, but the skipped days will not be reported. Chrome OS
-    only.
-  </summary>
-</histogram>
-
 <histogram name="Power.IdleScreenOffCountDaily" units="count"
     expires_after="2022-05-01">
   <owner>tbroch@chromium.org</owner>
@@ -2267,7 +2288,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.DimImminent.Action" enum="PowerMLDimImminentAction"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>napper@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <summary>
@@ -2277,7 +2298,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.ModelDim.Result" enum="PowerMLFinalResult"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>napper@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <summary>

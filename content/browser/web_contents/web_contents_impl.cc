@@ -204,6 +204,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
+#include "ui/wm/core/window_util.h"
 #endif
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
@@ -3758,6 +3759,29 @@ void WebContentsImpl::FullscreenStateChanged(
   if (size_before_deletion != fullscreen_frames_.size())
     FullscreenFrameSetUpdated();
 }
+
+#if defined(USE_AURA)
+void WebContentsImpl::Maximize() {
+  aura::Window* window = GetTopLevelNativeWindow();
+  // TODO(isandrk, b/289028460): This API function currently works only on Aura
+  // platforms (Win/Lin/CrOS/Fuchsia), make it also work on Mac.
+  wm::SetWindowState(window, ui::SHOW_STATE_MAXIMIZED);
+}
+
+void WebContentsImpl::Minimize() {
+  aura::Window* window = GetTopLevelNativeWindow();
+  // TODO(isandrk, b/289028460): This API function currently works only on Aura
+  // platforms (Win/Lin/CrOS/Fuchsia), make it also work on Mac.
+  wm::SetWindowState(window, ui::SHOW_STATE_MINIMIZED);
+}
+
+void WebContentsImpl::Restore() {
+  aura::Window* window = GetTopLevelNativeWindow();
+  // TODO(isandrk, b/289028460): This API function currently works only on Aura
+  // platforms (Win/Lin/CrOS/Fuchsia), make it also work on Mac.
+  wm::SetWindowState(window, ui::SHOW_STATE_NORMAL);
+}
+#endif
 
 void WebContentsImpl::FullscreenFrameSetUpdated() {
   OPTIONAL_TRACE_EVENT0("content",

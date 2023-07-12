@@ -130,6 +130,7 @@
 #include "components/lens/lens_features.h"
 #include "components/lens/lens_metrics.h"
 #include "components/live_caption/caption_util.h"
+#include "components/live_caption/pref_names.h"
 #include "components/media_router/browser/media_router_dialog_controller.h"
 #include "components/media_router/browser/media_router_metrics.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
@@ -481,13 +482,14 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS, 131},
        {IDC_CONTENT_CONTEXT_COPYVIDEOFRAME, 132},
        {IDC_CONTENT_CONTEXT_SAVEPLUGINAS, 133},
+       {IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED, 134},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 134}});
+       {0, 135}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -1103,8 +1105,7 @@ void RenderViewContextMenu::InitMenu() {
 
   // Partial Translate is not supported on ChromeOS.
 #if !BUILDFLAG(IS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(translate::kDesktopPartialTranslate) &&
-      content_type_->SupportsGroup(
+  if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_PARTIAL_TRANSLATE) &&
       search::DefaultSearchProviderIsGoogle(GetProfile()) &&
       CanTranslate(/*menu_logging=*/false)) {
@@ -1906,7 +1907,6 @@ void RenderViewContextMenu::AppendVideoItems() {
   if (base::FeatureList::IsEnabled(media::kContextMenuCopyVideoFrame)) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYVIDEOFRAME,
                                     IDS_CONTENT_CONTEXT_COPYVIDEOFRAME);
-    menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
   }
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
                                   IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);

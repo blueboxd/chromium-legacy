@@ -88,8 +88,8 @@ constexpr PrefsForManagedContentSettingsMapEntry
          CONTENT_SETTING_ALLOW},
         {prefs::kManagedSensorsBlockedForUrls, ContentSettingsType::SENSORS,
          CONTENT_SETTING_BLOCK},
-        {prefs::kManagedInsecureLocalNetworkAllowedForUrls,
-         ContentSettingsType::INSECURE_LOCAL_NETWORK, CONTENT_SETTING_ALLOW},
+        {prefs::kManagedInsecurePrivateNetworkAllowedForUrls,
+         ContentSettingsType::INSECURE_PRIVATE_NETWORK, CONTENT_SETTING_ALLOW},
         {prefs::kManagedJavaScriptJitAllowedForSites,
          ContentSettingsType::JAVASCRIPT_JIT, CONTENT_SETTING_ALLOW},
         {prefs::kManagedJavaScriptJitBlockedForSites,
@@ -109,6 +109,10 @@ constexpr PrefsForManagedContentSettingsMapEntry
         {prefs::kManagedThirdPartyStoragePartitioningBlockedForOrigins,
          ContentSettingsType::THIRD_PARTY_STORAGE_PARTITIONING,
          CONTENT_SETTING_BLOCK},
+        {prefs::kManagedMidiAllowedForUrls, ContentSettingsType::MIDI,
+         CONTENT_SETTING_ALLOW},
+        {prefs::kManagedMidiBlockedForUrls, ContentSettingsType::MIDI,
+         CONTENT_SETTING_BLOCK},
 };
 
 constexpr const char* kManagedPrefs[] = {
@@ -127,7 +131,7 @@ constexpr const char* kManagedPrefs[] = {
     prefs::kManagedImagesBlockedForUrls,
     prefs::kManagedInsecureContentAllowedForUrls,
     prefs::kManagedInsecureContentBlockedForUrls,
-    prefs::kManagedInsecureLocalNetworkAllowedForUrls,
+    prefs::kManagedInsecurePrivateNetworkAllowedForUrls,
     prefs::kManagedJavaScriptAllowedForUrls,
     prefs::kManagedJavaScriptBlockedForUrls,
     prefs::kManagedJavaScriptJitAllowedForSites,
@@ -151,6 +155,8 @@ constexpr const char* kManagedPrefs[] = {
     prefs::kManagedLocalFontsAllowedForUrls,
     prefs::kManagedLocalFontsBlockedForUrls,
     prefs::kManagedThirdPartyStoragePartitioningBlockedForOrigins,
+    prefs::kManagedMidiAllowedForUrls,
+    prefs::kManagedMidiBlockedForUrls,
 };
 
 // The following preferences are only used to indicate if a default content
@@ -168,7 +174,7 @@ constexpr const char* kManagedDefaultPrefs[] = {
     prefs::kManagedDefaultGeolocationSetting,
     prefs::kManagedDefaultImagesSetting,
     prefs::kManagedDefaultInsecureContentSetting,
-    prefs::kManagedDefaultInsecureLocalNetworkSetting,
+    prefs::kManagedDefaultInsecurePrivateNetworkSetting,
     prefs::kManagedDefaultJavaScriptSetting,
     prefs::kManagedDefaultMediaStreamSetting,
     prefs::kManagedDefaultNotificationsSetting,
@@ -182,6 +188,7 @@ constexpr const char* kManagedDefaultPrefs[] = {
     prefs::kManagedDefaultWindowManagementSetting,
     prefs::kManagedDefaultLocalFontsSetting,
     prefs::kManagedDefaultThirdPartyStoragePartitioningSetting,
+    prefs::kManagedDefaultMidi,
 };
 
 }  // namespace
@@ -227,8 +234,8 @@ const PolicyProvider::PrefsForManagedDefaultMapEntry
         {ContentSettingsType::SERIAL_GUARD,
          prefs::kManagedDefaultSerialGuardSetting},
         {ContentSettingsType::SENSORS, prefs::kManagedDefaultSensorsSetting},
-        {ContentSettingsType::INSECURE_LOCAL_NETWORK,
-         prefs::kManagedDefaultInsecureLocalNetworkSetting},
+        {ContentSettingsType::INSECURE_PRIVATE_NETWORK,
+         prefs::kManagedDefaultInsecurePrivateNetworkSetting},
         {ContentSettingsType::JAVASCRIPT_JIT,
          prefs::kManagedDefaultJavaScriptJitSetting},
         {ContentSettingsType::HID_GUARD,
@@ -239,6 +246,7 @@ const PolicyProvider::PrefsForManagedDefaultMapEntry
          prefs::kManagedDefaultLocalFontsSetting},
         {ContentSettingsType::THIRD_PARTY_STORAGE_PARTITIONING,
          prefs::kManagedDefaultThirdPartyStoragePartitioningSetting},
+        {ContentSettingsType::MIDI, prefs::kManagedDefaultMidi},
 };
 
 // static

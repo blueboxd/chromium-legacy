@@ -60,8 +60,12 @@ constexpr webui::LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
     {"eSimProfileDetectDuringActiveCellularConnectionMessage",
      IDS_CELLULAR_SETUP_ESIM_PROFILE_DETECT_DURING_ACTIVE_CELLULAR_CONNECTION_MESSAGE},
     {"scanQRCode", IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE},
-    {"scanQRCodeEnterActivationCode",
-     IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_ENTER_ACTIVATION_CODE},
+    {"scanQRCodeNoProfilesFound",
+     IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_NO_PROFILES_FOUND},
+    {"enterActivationCode",
+     IDS_CELLULAR_SETUP_ESIM_PAGE_ENTER_ACTIVATION_CODE},
+    {"enterActivationCodeNoProfilesFound",
+    IDS_CELLULAR_SETUP_ESIM_PAGE_ENTER_ACTIVATION_CODE_NO_PROFILES_FOUND},
     {"switchCamera", IDS_CELLULAR_SETUP_ESIM_PAGE_SWITCH_CAMERA},
     {"qrCodeA11YCameraOn", IDS_CELLULAR_SETUP_ESIM_PAGE_A11Y_QR_CODE_CAMERA_ON},
     {"qrCodeA11YCameraScanSuccess",
@@ -103,7 +107,9 @@ struct NamedResourceId {
 const std::vector<const NamedBoolean>& GetBooleanValues() {
   static const base::NoDestructor<std::vector<const NamedBoolean>> named_bools(
       {{"useSecondEuicc",
-        base::FeatureList::IsEnabled(features::kCellularUseSecondEuicc)}});
+        base::FeatureList::IsEnabled(features::kCellularUseSecondEuicc)},
+       {"isSmdsSupportEnabled",
+        ash::features::IsSmdsSupportEnabled()}});
   return *named_bools;
 }
 

@@ -190,8 +190,9 @@ IDBRequest* IDBIndex::count(ScriptState* script_state,
 
   IDBRequest* request = IDBRequest::Create(
       script_state, this, transaction_.Get(), std::move(metrics));
-  BackendDB()->Count(transaction_->Id(), object_store_->Id(), Id(), key_range,
-                     request->CreateWebCallbacks().release());
+  BackendDB()->Count(
+      transaction_->Id(), object_store_->Id(), Id(), key_range,
+      WTF::BindOnce(&IDBRequest::OnCount, WrapWeakPersistent(request)));
   return request;
 }
 
@@ -381,8 +382,7 @@ IDBRequest* IDBIndex::GetAllInternal(ScriptState* script_state,
   IDBRequest* request = IDBRequest::Create(
       script_state, this, transaction_.Get(), std::move(metrics));
   BackendDB()->GetAll(transaction_->Id(), object_store_->Id(), Id(), key_range,
-                      max_count, key_only,
-                      request->CreateWebCallbacks().release());
+                      max_count, key_only, request);
   return request;
 }
 
@@ -428,8 +428,7 @@ IDBRequest* IDBIndex::BatchGetAllInternal(
       script_state, this, transaction_.Get(), std::move(metrics));
 
   BackendDB()->BatchGetAll(transaction_->Id(), object_store_->Id(), Id(),
-                           std::move(key_range_ptrs), max_count,
-                           request->CreateWebCallbacks().release());
+                           std::move(key_range_ptrs), max_count, request);
 
   return request;
 }

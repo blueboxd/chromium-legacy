@@ -19,8 +19,8 @@ import {keyToIconNameMap} from './input_key.js';
 import {getShortcutProvider} from './mojo_interface_provider.js';
 import {mojoString16ToString} from './mojo_utils.js';
 import {ModifierKeyCodes} from './shortcut_input.js';
-import {Accelerator, AcceleratorConfigResult, AcceleratorSource, Modifier, ShortcutProviderInterface, StandardAcceleratorInfo} from './shortcut_types.js';
-import {createEmptyAcceleratorInfo, getAccelerator, getModifiersForAcceleratorInfo, isCustomizationDisabled, isFunctionKey} from './shortcut_utils.js';
+import {Accelerator, AcceleratorConfigResult, AcceleratorSource, AcceleratorState, Modifier, ShortcutProviderInterface, StandardAcceleratorInfo} from './shortcut_types.js';
+import {createEmptyAcceleratorInfo, getAccelerator, getModifiersForAcceleratorInfo, isCustomizationDisabled, isFunctionKey, isStandardAcceleratorInfo, keyCodeToModifier} from './shortcut_utils.js';
 
 export interface AcceleratorViewElement {
   $: {
@@ -120,6 +120,12 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
       isFirstAccelerator: {
         type: Boolean,
       },
+
+      isDisabled: {
+        type: Boolean,
+        computed: 'computeIsDisabled(acceleratorInfo.*)',
+        reflectToAttribute: true,
+      },
     };
   }
 
@@ -133,6 +139,7 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
   showEditIcon: boolean;
   categoryIsLocked: boolean;
   isFirstAccelerator: boolean;
+  isDisabled: boolean;
   protected pendingAcceleratorInfo: StandardAcceleratorInfo;
   private modifiers: string[];
   private isCapturing: boolean;
@@ -220,7 +227,34 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
   private onKeyUp(e: KeyboardEvent): void {
     e.preventDefault();
     e.stopPropagation();
-    // TODO(jimmyxgong): Check for errors e.g. accelerator conflicts.
+    const pendingAccelerator = this.pendingAcceleratorInfo.layoutProperties
+                                   .standardAccelerator.accelerator;
+    // Remove the modifier that was just released.
+    if (this.isModifierKey(e)) {
+      const modifier = keyCodeToModifier[e.keyCode];
+      const pendingModifiers = pendingAccelerator.modifiers;
+      // Assert that the released modifier is present in the pending
+      // accelerator.
+      assert(pendingModifiers & modifier);
+      // Remove the released modifier.
+      const updatedModifiers = pendingModifiers - modifier;
+      this.set(
+          'pendingAcceleratorInfo.layoutProperties.standardAccelerator.' +
+              'accelerator.modifiers',
+          updatedModifiers);
+    } else {
+      // Remove the key that was just released.
+      const updatedAccelerator = pendingAccelerator;
+      updatedAccelerator.keyCode = 0;
+      this.set(
+          'pendingAcceleratorInfo.layoutProperties.standardAccelerator.' +
+              'accelerator',
+          updatedAccelerator);
+      this.set(
+          'pendingAcceleratorInfo.layoutProperties.standardAccelerator' +
+              '.keyDisplay',
+          '');
+    }
   }
 
   private handleKey(e: KeyboardEvent): void {
@@ -261,12 +295,16 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
     let result: {result: AcceleratorResultData};
     assert(this.viewState !== ViewState.VIEW);
 
-    if (this.viewState === ViewState.ADD) {
+    // If the accelerator is disabled, we should only add the new accelerator.
+    const isDisabledAccelerator =
+        this.acceleratorInfo.state === AcceleratorState.kDisabledByUser;
+
+    if (this.viewState === ViewState.ADD || isDisabledAccelerator) {
       result = await this.shortcutProvider.addAccelerator(
           this.source, this.action, getAccelerator(pendingAccelInfo));
     }
 
-    if (this.viewState === ViewState.EDIT) {
+    if (this.viewState === ViewState.EDIT && !isDisabledAccelerator) {
       result = await this.shortcutProvider.replaceAccelerator(
           this.source, this.action, getAccelerator(this.acceleratorInfo),
           getAccelerator(pendingAccelInfo));
@@ -414,6 +452,11 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
    * Returns the specified CSS state of the modifier key element.
    */
   private getModifierState(modifier: Modifier): KeyState {
+    // If the accelerator is disabled, we default to the `NOT_SELECTED` state.
+    if (this.isDisabled) {
+      return KeyState.NOT_SELECTED;
+    }
+
     if ((getAccelerator(this.pendingAcceleratorInfo)).modifiers & modifier) {
       return KeyState.MODIFIER;
     }
@@ -474,6 +517,18 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
   }
 
   private fireUpdateEvent(): void {
+    if (this.acceleratorInfo.state === AcceleratorState.kDisabledByUser &&
+        isStandardAcceleratorInfo(this.acceleratorInfo)) {
+      this.dispatchEvent(new CustomEvent('default-conflict-resolved', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          stringifiedAccelerator:
+              JSON.stringify(getAccelerator(this.acceleratorInfo)),
+        },
+      }));
+    }
+
     this.dispatchEvent(new CustomEvent('request-update-accelerator', {
       bubbles: true,
       composed: true,
@@ -512,8 +567,26 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
         new CustomEvent('edit-icon-clicked', {bubbles: true, composed: true}));
   }
 
+  private getAriaLabel(): string {
+    const keyOrIcon =
+        this.acceleratorInfo.layoutProperties.standardAccelerator.keyDisplay;
+    return getModifiersForAcceleratorInfo(this.acceleratorInfo)
+        .join(' ')
+        .concat(` ${this.getAriaKeyDisplay(keyOrIcon)}`);
+  }
+
+  private getAriaKeyDisplay(keyOrIcon: string): string {
+    const iconName = keyToIconNameMap[keyOrIcon];
+    return iconName ? iconName : keyOrIcon;
+  }
+
   static get template(): HTMLTemplateElement {
     return getTemplate();
+  }
+
+  private computeIsDisabled(): boolean {
+    return this.acceleratorInfo.state === AcceleratorState.kDisabledByUser ||
+        this.acceleratorInfo.state === AcceleratorState.kDisabledByConflict;
   }
 }
 

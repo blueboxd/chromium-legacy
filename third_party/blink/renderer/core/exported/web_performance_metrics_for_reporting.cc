@@ -36,14 +36,6 @@
 
 namespace blink {
 
-WebPerformanceMetricsForReporting::WebPerformanceMetricsForReporting() =
-    default;
-
-WebPerformanceMetricsForReporting::WebPerformanceMetricsForReporting(
-    const WebPerformanceMetricsForReporting& p) {
-  Assign(p);
-}
-
 void WebPerformanceMetricsForReporting::Reset() {
   private_.Reset();
 }
@@ -166,6 +158,12 @@ LargestContentfulPaintDetailsForReporting
 WebPerformanceMetricsForReporting::LargestContentfulDetailsForMetrics() const {
   return (private_->timingForReporting()
               ->LargestContentfulPaintDetailsForMetrics());
+}
+
+LargestContentfulPaintDetailsForReporting WebPerformanceMetricsForReporting::
+    SoftNavigationLargestContentfulDetailsForMetrics() const {
+  return (private_->timingForReporting()
+              ->SoftNavigationLargestContentfulPaintDetailsForMetrics());
 }
 
 double WebPerformanceMetricsForReporting::FirstEligibleToPaint() const {

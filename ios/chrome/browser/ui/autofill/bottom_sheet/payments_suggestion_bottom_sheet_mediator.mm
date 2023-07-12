@@ -5,13 +5,25 @@
 #import "ios/chrome/browser/ui/autofill/bottom_sheet/payments_suggestion_bottom_sheet_mediator.h"
 
 #import "base/memory/raw_ptr.h"
+#import "base/strings/sys_string_conversions.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
+#import "components/autofill/ios/browser/credit_card_util.h"
+#import "components/autofill/ios/browser/form_suggestion.h"
+#import "components/autofill/ios/form_util/form_activity_params.h"
+#import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/autofill/bottom_sheet/autofill_bottom_sheet_java_script_feature.h"
+#import "ios/chrome/browser/autofill/bottom_sheet/autofill_bottom_sheet_tab_helper.h"
+#import "ios/chrome/browser/autofill/form_input_suggestions_provider.h"
+#import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
+#import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/shared/model/web_state_list/active_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/ui/autofill/bottom_sheet/payments_suggestion_bottom_sheet_consumer.h"
 #import "ios/chrome/browser/ui/autofill/bottom_sheet/payments_suggestion_bottom_sheet_data.h"
+#import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/web_state_observer_bridge.h"
+#import "ui/base/l10n/l10n_util.h"
 #import "ui/base/resource/resource_bundle.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -26,7 +38,9 @@
 - (instancetype)initWithCreditCard:(const autofill::CreditCard*)creditCard
                               icon:(UIImage*)icon;
 
-@property(nonatomic, assign) const autofill::CreditCard* creditCard;
+@property(nonatomic, strong) NSString* cardNameAndLastFourDigits;
+@property(nonatomic, strong) NSString* expirationDate;
+@property(nonatomic, strong) NSString* backendIdentifier;
 @property(nonatomic, strong) UIImage* icon;
 
 @end
@@ -36,8 +50,13 @@
 - (instancetype)initWithCreditCard:(const autofill::CreditCard*)creditCard
                               icon:(UIImage*)icon {
   if (self = [super init]) {
-    _creditCard = creditCard;
-    _icon = icon;
+    self.cardNameAndLastFourDigits =
+        base::SysUTF16ToNSString(creditCard->CardNameAndLastFourDigits());
+    self.expirationDate = base::SysUTF16ToNSString(
+        creditCard->AbbreviatedExpirationDateForDisplay(
+            /* with_prefix=*/false));
+    self.backendIdentifier = base::SysUTF8ToNSString(creditCard->guid());
+    self.icon = icon;
   }
   return self;
 }
@@ -57,12 +76,29 @@
 
   // Personal Data Manager from which we can get Credit Card information.
   raw_ptr<autofill::PersonalDataManager> _personalDataManager;
+
+  // Whether the field that triggered the bottom sheet will need to refocus when
+  // the bottom sheet is dismissed. Default is true.
+  bool _needsRefocus;
+
+  // Information regarding the triggering form for this bottom sheet.
+  autofill::FormActivityParams _params;
 }
 
+#pragma mark - Properties
+
+@synthesize hasCreditCards = _hasCreditCards;
+
+#pragma mark - Initialization
+
 - (instancetype)initWithWebStateList:(WebStateList*)webStateList
+                              params:(const autofill::FormActivityParams&)params
                  personalDataManager:
                      (autofill::PersonalDataManager*)personalDataManager {
   if (self = [super init]) {
+    _needsRefocus = true;
+    _params = params;
+    _hasCreditCards = NO;
     _webStateList = webStateList;
     _personalDataManager = personalDataManager;
 
@@ -74,10 +110,23 @@
   return self;
 }
 
+#pragma mark - Public
+
 - (void)disconnect {
   _forwarder = nullptr;
   _observer = nullptr;
   _webStateList = nullptr;
+}
+
+- (autofill::CreditCard*)creditCardForIdentifier:(NSString*)identifier {
+  CHECK(identifier);
+  CHECK(_personalDataManager);
+  return _personalDataManager->GetCreditCardByGUID(
+      base::SysNSStringToUTF8(identifier));
+}
+
+- (BOOL)hasCreditCards {
+  return _hasCreditCards;
 }
 
 #pragma mark - Accessors
@@ -100,6 +149,7 @@
     return;
   }
 
+  BOOL hasNonLocalCard = NO;
   NSMutableArray<id<PaymentsSuggestionBottomSheetData>>* creditCardData =
       [[NSMutableArray alloc] initWithCapacity:creditCards.size()];
   for (const auto* creditCard : creditCards) {
@@ -108,9 +158,53 @@
         addObject:[[PaymentsSuggestionBottomSheetCreditCardInfo alloc]
                       initWithCreditCard:creditCard
                                     icon:[self iconForCreditCard:creditCard]]];
+    hasNonLocalCard |= !autofill::IsCreditCardLocal(*creditCard);
   }
 
-  [consumer setCreditCardData:creditCardData];
+  [consumer setCreditCardData:creditCardData showGooglePayLogo:hasNonLocalCard];
+  _hasCreditCards = YES;
+}
+
+#pragma mark - PaymentsSuggestionBottomSheetDelegate
+
+- (void)didSelectCreditCard:(NSString*)backendIdentifier {
+  web::WebState* activeWebState = _webStateList->GetActiveWebState();
+  if (!activeWebState) {
+    return;
+  }
+
+  LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeStaySafe);
+  _needsRefocus = false;
+
+  FormSuggestionTabHelper* tabHelper =
+      FormSuggestionTabHelper::FromWebState(activeWebState);
+  DCHECK(tabHelper);
+
+  id<FormSuggestionClient> client = tabHelper->GetAccessoryViewProvider();
+  DCHECK(client);
+
+  // Create a form suggestion containing the selected credit card's backend id
+  // so that the suggestion provider can properly fill the form.
+  FormSuggestion* suggestion = [FormSuggestion
+             suggestionWithValue:nil
+              displayDescription:nil
+                            icon:nil
+                     popupItemId:autofill::PopupItemId::kCreditCardEntry
+               backendIdentifier:backendIdentifier
+                  requiresReauth:NO
+      acceptanceA11yAnnouncement:
+          base::SysUTF16ToNSString(l10n_util::GetStringUTF16(
+              IDS_AUTOFILL_A11Y_ANNOUNCE_FILLED_FORM))];
+
+  [client didSelectSuggestion:suggestion params:_params];
+}
+
+- (void)disableBottomSheet {
+  if (_webStateList) {
+    web::WebState* activeWebState = _webStateList->GetActiveWebState();
+    AutofillBottomSheetTabHelper::FromWebState(activeWebState)
+        ->DetachPaymentsListenersForAllFrames(_needsRefocus);
+  }
 }
 
 #pragma mark - WebStateListObserving

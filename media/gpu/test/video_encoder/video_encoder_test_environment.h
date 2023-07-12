@@ -31,12 +31,28 @@ class RawVideo;
 // for the entire test run.
 class VideoEncoderTestEnvironment : public VideoTestEnvironment {
  public:
+  enum class TestType {
+    // Validate the encoder output.
+    // video_encode_accelerator_tests
+    kValidation,
+    // Measure the quality performance.
+    // video_encode_accelerator_perf_tests --quality
+    kQualityPerformance,
+    // Measure the speed performance.
+    // video_encode_accelerator_perf_tests --speed
+    kSpeedPerformance,
+    // TODO(b/282878066): Remove this once video_encode_accelerator_perf_tests
+    // forces a user to specify --quality or --speed.
+    // video_encode_accelerator_perf_tests
+    kGeneralPerformance,
+  };
+
   // |read_all_frames_in_video| is weather we read all the frames in
   // |video_path|. If it is false, it reads up to RawVideo::kLimitedReadFrames.
   static VideoEncoderTestEnvironment* Create(
+      TestType test_type,
       const base::FilePath& video_path,
       const base::FilePath& video_metadata_path,
-      bool enable_bitstream_validator,
       const base::FilePath& output_folder,
       const std::string& codec,
       const std::string& svc_mode,
@@ -44,7 +60,6 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
       absl::optional<uint32_t> output_bitrate,
       Bitrate::Mode bitrate_mode,
       bool reverse,
-      bool read_all_frames_in_video,
       const FrameOutputConfig& frame_output_config = FrameOutputConfig(),
       const std::vector<base::test::FeatureRef>& enabled_features = {},
       const std::vector<base::test::FeatureRef>& disabled_features = {});
@@ -55,8 +70,8 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
   media::test::RawVideo* Video() const;
   // Generate the nv12 video from |video_| the test will be ran on.
   media::test::RawVideo* GenerateNV12Video();
-  // Whether bitstream validation is enabled.
-  bool IsBitstreamValidatorEnabled() const;
+  // Gets the running test type.
+  TestType RunTestType() const;
   // Get the output folder.
   const base::FilePath& OutputFolder() const;
   // Get the output codec profile.
@@ -64,7 +79,7 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
   // Get the spatial layers config for SVC. Return empty vector in non SVC mode.
   const std::vector<VideoEncodeAccelerator::Config::SpatialLayer>&
   SpatialLayers() const;
-  VideoEncodeAccelerator::Config::InterLayerPredMode InterLayerPredMode() const;
+  SVCInterLayerPredMode InterLayerPredMode() const;
   // Get the target bitrate (bits/second).
   const VideoBitrateAllocation& BitrateAllocation() const;
   // Whether the encoded bitstream is saved to disk.
@@ -91,12 +106,12 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
   // TODO(crbug.com/1335251): merge |use_vbr| and |bitrate| into a single
   // Bitrate-typed field.
   VideoEncoderTestEnvironment(
+      TestType test_type,
       std::unique_ptr<media::test::RawVideo> video,
-      bool enable_bitstream_validator,
       const base::FilePath& output_folder,
       const base::FilePath& output_bitstream_file_base_name,
       VideoCodecProfile profile,
-      VideoEncodeAccelerator::Config::InterLayerPredMode inter_layer_pred_mode,
+      SVCInterLayerPredMode inter_layer_pred_mode,
       size_t num_temporal_layers,
       size_t num_spatial_layers,
       const media::Bitrate& bitrate,
@@ -106,12 +121,11 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
       const std::vector<base::test::FeatureRef>& enabled_features,
       const std::vector<base::test::FeatureRef>& disabled_features);
 
+  const TestType test_type_;
   // Video file to be used for testing.
   const std::unique_ptr<media::test::RawVideo> video_;
   // NV12 video file to be used for testing.
   std::unique_ptr<media::test::RawVideo> nv12_video_;
-  // Whether bitstream validation should be enabled while testing.
-  const bool enable_bitstream_validator_;
   // Output folder to be used to store test artifacts (e.g. perf metrics).
   const base::FilePath output_folder_;
   // The base name of the file to be used to store the bitstream.
@@ -119,8 +133,7 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
   // VideoCodecProfile to be produced by VideoEncoder.
   const VideoCodecProfile profile_;
   // Inter layer predict mode.
-  const VideoEncodeAccelerator::Config::InterLayerPredMode
-      inter_layer_pred_mode_;
+  const SVCInterLayerPredMode inter_layer_pred_mode_;
   // Targeted bitrate (bits/second) of the stream produced by VideoEncoder.
   const VideoBitrateAllocation bitrate_;
   // The spatial layers of the stream which aligned with |num_spatial_layers_|

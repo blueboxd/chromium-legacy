@@ -8,21 +8,10 @@
 #include <string>
 #include <tuple>
 
-#include "chrome/browser/device_notifications/device_connection_tracker.h"
-#include "chrome/browser/device_notifications/device_system_tray_icon.h"
+#include "chrome/browser/device_notifications/device_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-class MockDeviceConnectionTracker : public DeviceConnectionTracker {
- public:
-  explicit MockDeviceConnectionTracker(Profile* profile);
-  ~MockDeviceConnectionTracker() override;
-  MOCK_METHOD(void, ShowContentSettingsExceptions, (), (override));
-  MOCK_METHOD(void, ShowSiteSettings, (const url::Origin&), (override));
-  MOCK_METHOD(DeviceSystemTrayIcon*, GetSystemTrayIcon, (), (override));
-};
 
 class DeviceSystemTrayIconTestBase : public BrowserWithTestWindowTest {
  public:
@@ -35,8 +24,8 @@ class DeviceSystemTrayIconTestBase : public BrowserWithTestWindowTest {
 
   void TearDown() override;
 
-  // Check if the hid system tray icon is shown and all the action buttons work
-  // correctly with the given |profile_connection_counts|.
+  // Check if the device system tray icon is shown and all the action buttons
+  // work correctly with the given |profile_connection_counts|.
   virtual void CheckIcon(
       const std::vector<ProfileItem>& profile_connection_counts) = 0;
 

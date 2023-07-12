@@ -18,7 +18,6 @@ import 'chrome://resources/cr_components/settings_prefs/prefs.js';
 import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {CrSettingsPrefs} from 'chrome://resources/cr_components/settings_prefs/prefs_types.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -77,8 +76,8 @@ interface ModelArgs {
  */
 const SettingsLanguagesElementBase = PrefsMixin(PolymerElement);
 
-class SettingsLanguagesElement extends SettingsLanguagesElementBase implements
-    LanguageHelper {
+export class SettingsLanguagesElement extends SettingsLanguagesElementBase
+    implements LanguageHelper {
   static get is() {
     return 'settings-languages' as const;
   }
@@ -902,19 +901,13 @@ class SettingsLanguagesElement extends SettingsLanguagesElementBase implements
       return;
     }
 
-    // For CrOS language settings V2 update 2, languages and spell check are
-    // decoupled so there's no need to remove the language from spell check.
-    if (!this.isChromeOsLanguageSettingsV2Update2_()) {
-      this.deletePrefListItem('spellcheck.dictionaries', languageCode);
-    }
+    // Chrome Browser removes the web language from spell check, as web
+    // languages and spell check languages are coupled.
+    // On ChromeOS, we decouple web languages and spell check languages, so
+    // we intentionally omit this behaviour.
 
     // Remove the language from preferred languages.
     this.languageSettingsPrivate_.disableLanguage(languageCode);
-  }
-
-  private isChromeOsLanguageSettingsV2Update2_(): boolean {
-    return loadTimeData.valueExists('enableLanguageSettingsV2Update2') &&
-        loadTimeData.getBoolean('enableLanguageSettingsV2Update2');
   }
 
   isOnlyTranslateBlockedLanguage(languageState: LanguageState): boolean {

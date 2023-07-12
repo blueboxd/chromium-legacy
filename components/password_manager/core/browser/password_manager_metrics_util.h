@@ -309,19 +309,6 @@ enum class IsSyncPasswordHashSaved {
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
-// Metrics: "PasswordManager.CertificateErrorsWhileSeeingForms"
-enum class CertificateError {
-  NONE = 0,
-  OTHER = 1,
-  AUTHORITY_INVALID = 2,
-  DATE_INVALID = 3,
-  COMMON_NAME_INVALID = 4,
-  WEAK_SIGNATURE_ALGORITHM = 5,
-  COUNT
-};
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
 // Metric: "PasswordManager.ReusedPasswordType".
 enum class PasswordType {
   // Passwords saved by password manager.
@@ -649,6 +636,22 @@ enum class PasswordManagementBubbleInteractions {
   kNotePartiallyCopied = 15,
   kNoteFullyCopied = 16,
   kMaxValue = kNoteFullyCopied,
+};
+
+// Represents different causes for showing the password migration warning.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Always keep this enum in sync with the
+// corresponding PasswordMigrationWarningTriggers in enums.xml.
+enum class PasswordMigrationWarningTriggers {
+  kChromeStartup = 0,
+  kPasswordSaveUpdateMessage = 1,
+  kPasswordSettings = 2,
+  kTouchToFill = 3,
+  kKeyboardAcessorySheet = 4,
+  kKeyboardAcessoryBar = 5,
+  kAllPasswords = 6,
+  kMaxValue = kAllPasswords,
 };
 
 // These values are persisted to logs. Entries should not be renumbered and

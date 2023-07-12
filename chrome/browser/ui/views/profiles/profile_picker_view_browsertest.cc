@@ -48,9 +48,9 @@
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/sync/sync_startup_tracker.h"
-#include "chrome/browser/sync/trusted_vault_encryption_keys_tab_helper.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/trusted_vault/trusted_vault_encryption_keys_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -186,7 +186,7 @@ class BrowserAddedWaiter : public BrowserListObserver {
   }
 
   const size_t total_count_;
-  raw_ptr<Browser, DanglingUntriaged> browser_ = nullptr;
+  raw_ptr<Browser, DanglingAcrossTasks> browser_ = nullptr;
   base::RunLoop run_loop_;
 };
 
@@ -399,13 +399,9 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerViewBrowserTest,
 
 class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
  public:
-  explicit ProfilePickerCreationFlowBrowserTest(
-      bool local_profile_creation_dialog_enabled) {
+  ProfilePickerCreationFlowBrowserTest() {
     std::vector<base::test::FeatureRef> enabled_features = {
         feature_engagement::kIPHProfileSwitchFeature};
-    if (local_profile_creation_dialog_enabled) {
-      enabled_features.push_back(kSyncPromoAfterSigninIntercept);
-    }
     feature_list_.InitAndEnableFeatures(enabled_features);
 #if BUILDFLAG(IS_MAC)
     // Ensure the platform is unmanaged
@@ -415,10 +411,6 @@ class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
             policy::EnterpriseManagementAuthority::NONE);
 #endif
   }
-
-  ProfilePickerCreationFlowBrowserTest()
-      : ProfilePickerCreationFlowBrowserTest(
-            /*local_profile_creation_dialog_enabled=*/false) {}
 
   void SetUpInProcessBrowserTestFixture() override {
     ProfilePickerTestBase::SetUpInProcessBrowserTestFixture();
@@ -631,6 +623,37 @@ class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
     return path;
   }
 
+  // Simulates a click on "Continue without an account" to create a local
+  // profile and open the profile customization dialog.
+  void CreateLocalProfile() {
+    base::Value::List args;
+    args.Append(base::Value());
+    profile_picker_handler()->HandleCreateProfileAndOpenCustomizationDialog(
+        args);
+  }
+
+  // Simulates a click on "Done" on the Profile Customization to confirm the
+  // creation of the local profile.
+  void ConfirmLocalProfileCreation(content::WebContents* dialog_web_contents) {
+    base::Value::List args;
+    args.Append(base::Value(kLocalProfileName));
+    dialog_web_contents->GetWebUI()
+        ->GetController()
+        ->GetAs<ProfileCustomizationUI>()
+        ->GetProfileCustomizationHandlerForTesting()
+        ->HandleDone(args);
+  }
+
+  // Simulates a click on "Delete profile" on the Profile Customization to
+  // cancel the creation of the local profile.
+  void DeleteLocalProfile(content::WebContents* dialog_web_contents) {
+    dialog_web_contents->GetWebUI()
+        ->GetController()
+        ->GetAs<ProfileCustomizationUI>()
+        ->GetProfileCustomizationHandlerForTesting()
+        ->HandleDeleteProfile(base::Value::List());
+  }
+
   // Returns profile picker webUI handler. Profile picker must be opened before
   // calling this function.
   ProfilePickerHandler* profile_picker_handler() {
@@ -645,6 +668,12 @@ class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;
   }
+
+ protected:
+  const GURL kLocalProfileCreationUrl = AppendProfileCustomizationQueryParams(
+      GURL("chrome://profile-customization"),
+      ProfileCustomizationStyle::kLocalProfileCreation);
+  const std::string kLocalProfileName = "LocalProfile";
 
  private:
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -1559,17 +1588,118 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   ASSERT_EQ(0u, BrowserList::GetInstance()->size());
 
   // Imitate creating a new profile through the profile picker.
-  ProfilePickerHandler* handler = profile_picker_handler();
-  base::Value::List args;
-  args.Append(u"My Profile");  // Profile name.
-  args.Append(base::Value());  // Profile color.
-  args.Append(0);              // Avatar index.
-  args.Append(false);          // Create shortcut.
-  handler->HandleCreateProfile(args);
+  CreateLocalProfile();
 
   BrowserAddedWaiter(1u).Wait();
   EXPECT_EQ(1u, BrowserList::GetInstance()->size());
   WaitForPickerClosed();
+}
+
+IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
+                       CreateLocalProfile) {
+  ASSERT_EQ(1u, BrowserList::GetInstance()->size());
+  ASSERT_EQ(1u, g_browser_process->profile_manager()
+                    ->GetProfileAttributesStorage()
+                    .GetNumberOfProfiles());
+
+  content::TestNavigationObserver profile_customization_observer(
+      kLocalProfileCreationUrl);
+  profile_customization_observer.StartWatchingNewWebContents();
+  BrowserAddedWaiter waiter = BrowserAddedWaiter(2u);
+
+  ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
+      ProfilePicker::EntryPoint::kProfileMenuAddNewProfile));
+  // Wait until webUI is fully initialized.
+  WaitForLoadStop(GURL("chrome://profile-picker/new-profile"));
+
+  // Simulate clicking the "Continue without an account" button.
+  CreateLocalProfile();
+
+  Browser* new_browser = waiter.Wait();
+  profile_customization_observer.Wait();
+  content::WebContents* dialog_web_contents =
+      new_browser->signin_view_controller()
+          ->GetModalDialogWebContentsForTesting();
+  EXPECT_EQ(dialog_web_contents->GetLastCommittedURL(),
+            kLocalProfileCreationUrl);
+
+  ProfileAttributesEntry* entry =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(new_browser->profile()->GetPath());
+  ASSERT_TRUE(entry->IsEphemeral());
+  EXPECT_FALSE(ProfilePicker::IsOpen());
+  EXPECT_TRUE(new_browser->signin_view_controller()->ShowsModalDialog());
+
+  // Simulate clicking the "Done" button on the profile customization dialog.
+  ConfirmLocalProfileCreation(dialog_web_contents);
+
+  ASSERT_FALSE(entry->IsEphemeral());
+  ASSERT_EQ(kLocalProfileName, base::UTF16ToUTF8(entry->GetLocalProfileName()));
+  ASSERT_EQ(2u, g_browser_process->profile_manager()
+                    ->GetProfileAttributesStorage()
+                    .GetNumberOfProfiles());
+  EXPECT_FALSE(new_browser->signin_view_controller()->ShowsModalDialog());
+}
+
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_CancelLocalProfileCreation DISABLED_CancelLocalProfileCreation
+#else
+#define MAYBE_CancelLocalProfileCreation CancelLocalProfileCreation
+#endif  // BUILDFLAG(IS_MAC)
+IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
+                       MAYBE_CancelLocalProfileCreation) {
+  ASSERT_EQ(1u, BrowserList::GetInstance()->size());
+  ASSERT_EQ(1u, g_browser_process->profile_manager()
+                    ->GetProfileAttributesStorage()
+                    .GetNumberOfProfiles());
+
+  content::TestNavigationObserver profile_customization_observer(
+      kLocalProfileCreationUrl);
+  profile_customization_observer.StartWatchingNewWebContents();
+  BrowserAddedWaiter browser_added_waiter = BrowserAddedWaiter(2u);
+
+  ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
+      ProfilePicker::EntryPoint::kProfileMenuAddNewProfile));
+  // Wait until webUI is fully initialized.
+  WaitForLoadStop(GURL("chrome://profile-picker/new-profile"));
+
+  // Simulate clicking the "Continue without an account" button.
+  CreateLocalProfile();
+
+  Browser* new_browser = browser_added_waiter.Wait();
+  profile_customization_observer.Wait();
+  content::WebContents* dialog_web_contents =
+      new_browser->signin_view_controller()
+          ->GetModalDialogWebContentsForTesting();
+  EXPECT_EQ(dialog_web_contents->GetLastCommittedURL(),
+            kLocalProfileCreationUrl);
+
+  base::FilePath profile_path = new_browser->profile()->GetPath();
+  ProfileAttributesEntry* entry =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile_path);
+  ASSERT_EQ(2u, g_browser_process->profile_manager()
+                    ->GetProfileAttributesStorage()
+                    .GetNumberOfProfiles());
+  ASSERT_TRUE(entry->IsEphemeral());
+  EXPECT_FALSE(ProfilePicker::IsOpen());
+  EXPECT_TRUE(new_browser->signin_view_controller()->ShowsModalDialog());
+
+  // Simulate clicking the "Delete profile" button on the profile customization
+  // dialog.
+  ProfileDeletionObserver observer;
+  DeleteLocalProfile(dialog_web_contents);
+  observer.Wait();
+
+  ASSERT_EQ(1u, g_browser_process->profile_manager()
+                    ->GetProfileAttributesStorage()
+                    .GetNumberOfProfiles());
+  ASSERT_EQ(nullptr, g_browser_process->profile_manager()
+                         ->GetProfileAttributesStorage()
+                         .GetProfileAttributesWithPath(profile_path));
+  EXPECT_TRUE(ProfilePicker::IsOpen());
 }
 
 class ProfilePickerEnterpriseCreationFlowBrowserTest
@@ -2161,158 +2291,6 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Values(ForceEphemeralProfilesPolicy::kUnset,
                     ForceEphemeralProfilesPolicy::kDisabled,
                     ForceEphemeralProfilesPolicy::kEnabled));
-
-class ProfilePickerLocalProfileCreationDialogBrowserTest
-    : public ProfilePickerCreationFlowBrowserTest {
- public:
-  ProfilePickerLocalProfileCreationDialogBrowserTest()
-      : ProfilePickerCreationFlowBrowserTest(
-            /*local_profile_creation_dialog_enabled=*/true) {}
-
-  // Simulates a click on "Continue without an account" to create a local
-  // profile and open the profile customization dialog.
-  void CreateLocalProfile() {
-    base::Value::List args;
-    args.Append(base::Value());
-    profile_picker_handler()->HandleCreateProfileAndOpenCustomizationDialog(
-        args);
-  }
-
-  // Simulates a click on "Done" on the Profile Customization to confirm the
-  // creation of the local profile.
-  void ConfirmLocalProfileCreation(content::WebContents* dialog_web_contents) {
-    base::Value::List args;
-    args.Append(base::Value(kProfileName));
-    dialog_web_contents->GetWebUI()
-        ->GetController()
-        ->GetAs<ProfileCustomizationUI>()
-        ->GetProfileCustomizationHandlerForTesting()
-        ->HandleDone(args);
-  }
-
-  // Simulates a click on "Delete profile" on the Profile Customization to
-  // cancel the creation of the local profile.
-  void DeleteLocalProfile(content::WebContents* dialog_web_contents) {
-    dialog_web_contents->GetWebUI()
-        ->GetController()
-        ->GetAs<ProfileCustomizationUI>()
-        ->GetProfileCustomizationHandlerForTesting()
-        ->HandleDeleteProfile(base::Value::List());
-  }
-
- protected:
-  const GURL kProfileCustomizationUrl = AppendProfileCustomizationQueryParams(
-      GURL("chrome://profile-customization"),
-      ProfileCustomizationStyle::kLocalProfileCreation);
-  const std::string kProfileName = "Test";
-};
-
-IN_PROC_BROWSER_TEST_F(ProfilePickerLocalProfileCreationDialogBrowserTest,
-                       CreateLocalProfile) {
-  ASSERT_EQ(1u, BrowserList::GetInstance()->size());
-  ASSERT_EQ(1u, g_browser_process->profile_manager()
-                    ->GetProfileAttributesStorage()
-                    .GetNumberOfProfiles());
-
-  content::TestNavigationObserver profile_customization_observer(
-      kProfileCustomizationUrl);
-  profile_customization_observer.StartWatchingNewWebContents();
-  BrowserAddedWaiter waiter = BrowserAddedWaiter(2u);
-
-  ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
-      ProfilePicker::EntryPoint::kProfileMenuAddNewProfile));
-  // Wait until webUI is fully initialized.
-  WaitForLoadStop(GURL("chrome://profile-picker/new-profile"));
-
-  // Simulate clicking the "Continue without an account" button.
-  CreateLocalProfile();
-
-  Browser* new_browser = waiter.Wait();
-  profile_customization_observer.Wait();
-  content::WebContents* dialog_web_contents =
-      new_browser->signin_view_controller()
-          ->GetModalDialogWebContentsForTesting();
-  EXPECT_EQ(dialog_web_contents->GetLastCommittedURL(),
-            kProfileCustomizationUrl);
-
-  ProfileAttributesEntry* entry =
-      g_browser_process->profile_manager()
-          ->GetProfileAttributesStorage()
-          .GetProfileAttributesWithPath(new_browser->profile()->GetPath());
-  ASSERT_TRUE(entry->IsEphemeral());
-  EXPECT_FALSE(ProfilePicker::IsOpen());
-  EXPECT_TRUE(new_browser->signin_view_controller()->ShowsModalDialog());
-
-  // Simulate clicking the "Done" button on the profile customization dialog.
-  ConfirmLocalProfileCreation(dialog_web_contents);
-
-  ASSERT_FALSE(entry->IsEphemeral());
-  ASSERT_EQ(kProfileName, base::UTF16ToUTF8(entry->GetLocalProfileName()));
-  ASSERT_EQ(2u, g_browser_process->profile_manager()
-                    ->GetProfileAttributesStorage()
-                    .GetNumberOfProfiles());
-  EXPECT_FALSE(new_browser->signin_view_controller()->ShowsModalDialog());
-}
-
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_CancelLocalProfileCreation DISABLED_CancelLocalProfileCreation
-#else
-#define MAYBE_CancelLocalProfileCreation CancelLocalProfileCreation
-#endif  // BUILDFLAG(IS_MAC)
-IN_PROC_BROWSER_TEST_F(ProfilePickerLocalProfileCreationDialogBrowserTest,
-                       MAYBE_CancelLocalProfileCreation) {
-  ASSERT_EQ(1u, BrowserList::GetInstance()->size());
-  ASSERT_EQ(1u, g_browser_process->profile_manager()
-                    ->GetProfileAttributesStorage()
-                    .GetNumberOfProfiles());
-
-  content::TestNavigationObserver profile_customization_observer(
-      kProfileCustomizationUrl);
-  profile_customization_observer.StartWatchingNewWebContents();
-  BrowserAddedWaiter browser_added_waiter = BrowserAddedWaiter(2u);
-
-  ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
-      ProfilePicker::EntryPoint::kProfileMenuAddNewProfile));
-  // Wait until webUI is fully initialized.
-  WaitForLoadStop(GURL("chrome://profile-picker/new-profile"));
-
-  // Simulate clicking the "Continue without an account" button.
-  CreateLocalProfile();
-
-  Browser* new_browser = browser_added_waiter.Wait();
-  profile_customization_observer.Wait();
-  content::WebContents* dialog_web_contents =
-      new_browser->signin_view_controller()
-          ->GetModalDialogWebContentsForTesting();
-  EXPECT_EQ(dialog_web_contents->GetLastCommittedURL(),
-            kProfileCustomizationUrl);
-
-  base::FilePath profile_path = new_browser->profile()->GetPath();
-  ProfileAttributesEntry* entry =
-      g_browser_process->profile_manager()
-          ->GetProfileAttributesStorage()
-          .GetProfileAttributesWithPath(profile_path);
-  ASSERT_EQ(2u, g_browser_process->profile_manager()
-                    ->GetProfileAttributesStorage()
-                    .GetNumberOfProfiles());
-  ASSERT_TRUE(entry->IsEphemeral());
-  EXPECT_FALSE(ProfilePicker::IsOpen());
-  EXPECT_TRUE(new_browser->signin_view_controller()->ShowsModalDialog());
-
-  // Simulate clicking the "Delete profile" button on the profile customization
-  // dialog.
-  ProfileDeletionObserver observer;
-  DeleteLocalProfile(dialog_web_contents);
-  observer.Wait();
-
-  ASSERT_EQ(1u, g_browser_process->profile_manager()
-                    ->GetProfileAttributesStorage()
-                    .GetNumberOfProfiles());
-  ASSERT_EQ(nullptr, g_browser_process->profile_manager()
-                         ->GetProfileAttributesStorage()
-                         .GetProfileAttributesWithPath(profile_path));
-  EXPECT_TRUE(ProfilePicker::IsOpen());
-}
 
 // Only MacOS has a keyboard shortcut to exit Chrome.
 #if BUILDFLAG(IS_MAC)

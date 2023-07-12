@@ -111,7 +111,10 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
     gfx::NativeView container_view,
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction,
-    base::RepeatingCallback<void(gfx::NativeWindow, Profile*)>
+    base::RepeatingCallback<
+        void(gfx::NativeWindow,
+             Profile*,
+             password_manager::metrics_util::PasswordMigrationWarningTriggers)>
         show_pwd_migration_warning_callback)
     : controller_common_(element_bounds, text_direction, container_view),
       web_contents_(web_contents),
@@ -127,13 +130,14 @@ AutofillPopupControllerImpl::~AutofillPopupControllerImpl() = default;
 
 void AutofillPopupControllerImpl::Show(
     std::vector<Suggestion> suggestions,
-    AutoselectFirstSuggestion autoselect_first_suggestion) {
+    AutofillSuggestionTriggerSource trigger_source) {
   if (IsMouseLocked()) {
     Hide(PopupHidingReason::kMouseLocked);
     return;
   }
 
   SetSuggestions(std::move(suggestions));
+  trigger_source_ = trigger_source;
 
   if (view_) {
     OnSuggestionsChanged();
@@ -153,7 +157,10 @@ void AutofillPopupControllerImpl::Show(
         ->UpdateSourceAvailability(FillingSource::AUTOFILL,
                                    !suggestions_.empty());
 #endif
-    if (!view_.Call(&AutofillPopupView::Show, autoselect_first_suggestion)) {
+    if (!view_.Call(&AutofillPopupView::Show,
+                    AutoselectFirstSuggestion(
+                        trigger_source == AutofillSuggestionTriggerSource::
+                                              kTextFieldDidReceiveKeyDown))) {
       return;
     }
 
@@ -351,7 +358,7 @@ void AutofillPopupControllerImpl::AcceptSuggestionWithoutThreshold(int index) {
     std::ignore = view_.Call(&AutofillPopupView::AxAnnounce, *announcement);
   }
 
-  delegate_->DidAcceptSuggestion(suggestion, index);
+  delegate_->DidAcceptSuggestion(suggestion, index, trigger_source_);
 #if BUILDFLAG(IS_ANDROID)
   if ((suggestion.popup_item_id == PopupItemId::kPasswordEntry ||
        suggestion.popup_item_id == PopupItemId::kUsernameEntry) &&
@@ -360,7 +367,9 @@ void AutofillPopupControllerImpl::AcceptSuggestionWithoutThreshold(int index) {
               kUnifiedPasswordManagerLocalPasswordsMigrationWarning)) {
     show_pwd_migration_warning_callback_.Run(
         web_contents_->GetTopLevelNativeWindow(),
-        Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+        Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
+        password_manager::metrics_util::PasswordMigrationWarningTriggers::
+            kKeyboardAcessoryBar);
   }
 #endif
 }
@@ -471,7 +480,7 @@ void AutofillPopupControllerImpl::SelectSuggestion(
   }
 
   if (index) {
-    delegate_->DidSelectSuggestion(GetSuggestionAt(*index));
+    delegate_->DidSelectSuggestion(GetSuggestionAt(*index), trigger_source_);
   } else {
     delegate_->ClearPreviewedForm();
   }

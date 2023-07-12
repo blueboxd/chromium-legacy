@@ -6,6 +6,7 @@ Date: 2022/11/30
 License: Apache 2.0
 License File: LICENSE
 Security Critical: Yes
+Shipped: yes
 CPEPrefix: unknown
 
 Description:
@@ -43,6 +44,7 @@ Modifications:
 16) Fix dependencies which were moved out of experimental folder.
 17) Fix shim headers being removed in TFLite.
 18) Fix shim headers for Text Embedder and related header/cc files.
+19) Fix shim headers for Image Embedder.
 
 Update Process (internal: http://shortn/_nwz8liqimy):
 1) Run these commands:

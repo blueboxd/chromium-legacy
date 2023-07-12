@@ -203,7 +203,8 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
 }
 
 - (void)dealloc {
-  CHECK(!self.signinPromoViewMediator);
+  // TODO(crbug.com/1454777)
+  DUMP_WILL_BE_CHECK(!self.signinPromoViewMediator);
 }
 
 - (void)viewDidLoad {
@@ -1522,8 +1523,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
       self.searchTerms = @"";
     }
     new_tab_page_uma::RecordAction(
-        self.browserState->IsOffTheRecord(),
-        self.webStateList->GetActiveWebState(),
+        self.isIncognito, self.webStateList->GetActiveWebState(),
         new_tab_page_uma::ACTION_OPENED_FOREIGN_SESSION);
     std::unique_ptr<web::WebState> web_state =
         session_util::CreateWebStateWithNavigationEntries(
@@ -1568,8 +1568,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
         "MobileRecentTabManagerRecentTabOpenedSearchResult"));
   }
   new_tab_page_uma::RecordAction(
-      self.browserState->IsOffTheRecord(),
-      self.webStateList->GetActiveWebState(),
+      self.isIncognito, self.webStateList->GetActiveWebState(),
       new_tab_page_uma::ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
 
   // If RecentTabs is being displayed from incognito, the resulting tab will

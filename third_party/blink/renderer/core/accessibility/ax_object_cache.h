@@ -55,9 +55,9 @@ class HTMLTableElement;
 class HTMLFrameOwnerElement;
 class HTMLSelectElement;
 class LayoutBlockFlow;
-class LayoutRect;
 class LocalFrameView;
 class NGAbstractInlineTextBox;
+struct PhysicalRect;
 
 class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
  public:
@@ -134,6 +134,9 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
                                              Element* new_focused_node) = 0;
   virtual void HandleInitialFocus() = 0;
   virtual void HandleEditableTextContentChanged(Node*) = 0;
+  virtual void HandleDeletionOrInsertionInTextField(
+      const SelectionInDOMTree& changed_selection,
+      bool is_deletion) = 0;
   virtual void HandleTextMarkerDataAdded(Node* start, Node* end) = 0;
   virtual void HandleTextFormControlChanged(Node*) = 0;
   virtual void HandleValueChanged(Node*) = 0;
@@ -167,7 +170,7 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
 
   virtual void SetCanvasObjectBounds(HTMLCanvasElement*,
                                      Element*,
-                                     const LayoutRect&) = 0;
+                                     const PhysicalRect&) = 0;
 
   virtual void InlineTextBoxesUpdated(LayoutObject*) = 0;
 

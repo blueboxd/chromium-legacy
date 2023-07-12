@@ -303,7 +303,7 @@ enum CSSSampleId {
     kGridColumn = 248,
     kGridRow = 249,
     kGridAutoFlow = 250,
-    kWebkitHighlight = 251,
+    // kWebkitHighlight = 251,
     kAliasWebkitHyphenateCharacter = 252,
     // kWebkitHyphenateLimitAfter = 253,
     // kWebkitHyphenateLimitBefore = 254,
@@ -774,7 +774,7 @@ enum CSSSampleId {
     kToggle = 718,
     kAnchorName = 719,
     kPositionFallback = 720,
-    kAnchorScroll = 721,
+    // kAnchorScroll = 721,
     kPopoverShowDelay = 722,
     kPopoverHideDelay = 723,
     kHyphenateCharacter = 724,
@@ -818,6 +818,8 @@ enum CSSSampleId {
     kTimelineScope = 762,
     kScrollbarColor = 763,
     kWordBoundaryDetection = 764,
+    kPositionFallbackBounds = 765,
+    kTransitionAnimationType = 766,
     // 1. Add new features above this line (don't change the assigned numbers of
     //    the existing items).
     // 2. Run the src/tools/metrics/histograms/update_use_counter_css.py script

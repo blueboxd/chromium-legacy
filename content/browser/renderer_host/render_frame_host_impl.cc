@@ -314,7 +314,7 @@ BASE_FEATURE(kEvictOnAXEvents,
 
 BASE_FEATURE(kUnblockSpeechSynthesisForBFCache,
              "UnblockSpeechSynthesisForBFCache",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features
 
@@ -1163,8 +1163,15 @@ class RenderFrameHostImpl::SubresourceLoaderFactoriesConfig {
     result.trust_token_issuance_policy_ =
         DetermineAfterCommitWhetherToForbidTrustTokenOperation(
             frame, network::mojom::TrustTokenOperationType::kIssuance);
-    result.ukm_source_id_ =
-        ukm::SourceIdObj::FromInt64(frame.GetPageUkmSourceId());
+
+    // Our data collection policy disallows collecting UKMs while prerendering.
+    // So, assign a valid ID only when the page is not in the prerendering
+    // state. See //content/browser/preloading/prerender/README.md and ask the
+    // team to explore options to record data for prerendering pages.
+    result.ukm_source_id_ = ukm::SourceIdObj::FromInt64(
+        frame.IsInLifecycleState(LifecycleState::kPrerendering)
+            ? ukm::kInvalidSourceId
+            : frame.GetPageUkmSourceId());
 
     if (frame.GetIsThirdPartyCookiesUserBypassEnabled()) {
       result.cookie_setting_overrides_.Put(
@@ -1848,6 +1855,10 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // state name.
   TRACE_EVENT_END("navigation", perfetto::Track::FromPointer(this));
   TRACE_EVENT_END("navigation", perfetto::Track::FromPointer(this));
+}
+
+const blink::StorageKey& RenderFrameHostImpl::storage_key() const {
+  return storage_key_;
 }
 
 int RenderFrameHostImpl::GetRoutingID() const {
@@ -3000,7 +3011,8 @@ void RenderFrameHostImpl::InitializePolicyContainerHost(
             parent_policies.cross_origin_embedder_policy,
             network::mojom::WebSandboxFlags::kNone,
             /*is_credentialless=*/false,
-            /*can_navigate_top_without_user_gesture=*/true)));
+            /*can_navigate_top_without_user_gesture=*/true,
+            parent_policies.allow_cross_origin_isolation)));
   } else if (owner_->GetOpener()) {
     // During a `window.open(...)` without `noopener`, a new popup is created
     // and always starts from the initial empty document. The opener has
@@ -3010,6 +3022,13 @@ void RenderFrameHostImpl::InitializePolicyContainerHost(
                                ->current_frame_host()
                                ->policy_container_host()
                                ->Clone());
+    const absl::optional<url::Origin>& coop_origin =
+        policy_container_host_->cross_origin_opener_policy().origin;
+    policy_container_host_->SetAllowCrossOriginIsolation(
+        !coop_origin.has_value() ||
+        coop_origin->IsSameOriginWith(owner_->GetOpener()
+                                          ->current_frame_host()
+                                          ->GetLastCommittedOrigin()));
   } else {
     // In all the other cases, there is no environment to inherit policies
     // from. This is "probably" a new top-level about:blank document created by
@@ -4348,7 +4367,7 @@ void RenderFrameHostImpl::SetOriginDependentStateOfNewFrame(
       new_frame_origin, base::OptionalToPtr(isolation_info_.nonce())));
 
   // Apply private network request policy according to our new origin.
-  if (GetContentClient()->browser()->ShouldAllowInsecureLocalNetworkRequests(
+  if (GetContentClient()->browser()->ShouldAllowInsecurePrivateNetworkRequests(
           GetBrowserContext(), new_frame_origin)) {
     local_network_request_policy_ =
         network::mojom::LocalNetworkRequestPolicy::kAllow;
@@ -6485,6 +6504,65 @@ void RenderFrameHostImpl::FullscreenStateChanged(
   delegate_->FullscreenStateChanged(this, is_fullscreen, std::move(options));
 }
 
+#if defined(USE_AURA)
+void RenderFrameHostImpl::Maximize() {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kDesktopPWAsAdditionalWindowingControls)) {
+    mojo::ReportBadMessage(
+        "window.maximize called without the feature enabled.");
+    return;
+  }
+  if (!IsInPrimaryMainFrame()) {
+    mojo::ReportBadMessage(
+        "window.maximize called from a non-primary-main frame.");
+    return;
+  }
+  if (!IsActive()) {
+    return;
+  }
+
+  delegate_->Maximize();
+}
+
+void RenderFrameHostImpl::Minimize() {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kDesktopPWAsAdditionalWindowingControls)) {
+    mojo::ReportBadMessage(
+        "window.minimize called without the feature enabled.");
+    return;
+  }
+  if (!IsInPrimaryMainFrame()) {
+    mojo::ReportBadMessage(
+        "window.minimize called from a non-primary-main frame.");
+    return;
+  }
+  if (!IsActive()) {
+    return;
+  }
+
+  delegate_->Minimize();
+}
+
+void RenderFrameHostImpl::Restore() {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kDesktopPWAsAdditionalWindowingControls)) {
+    mojo::ReportBadMessage(
+        "window.restore called without the feature enabled.");
+    return;
+  }
+  if (!IsInPrimaryMainFrame()) {
+    mojo::ReportBadMessage(
+        "window.restore called from a non-primary-main frame.");
+    return;
+  }
+  if (!IsActive()) {
+    return;
+  }
+
+  delegate_->Restore();
+}
+#endif
+
 void RenderFrameHostImpl::RegisterProtocolHandler(const std::string& scheme,
                                                   const GURL& url,
                                                   bool user_gesture) {
@@ -7951,14 +8029,7 @@ void RenderFrameHostImpl::CreateNewWindow(
   // window.open() will return "window" and navigate it to whatever URL was
   // passed.
   if (!GetOrCreateWebPreferences().supports_multiple_windows) {
-    // See crbug.com/1083819, we should ignore if the URL is javascript: scheme,
-    // previously we already filtered out javascript: scheme and replace the
-    // URL with |kBlockedURL|, so we check against |kBlockedURL| here.
-    if (params->target_url == GURL(kBlockedURL)) {
-      std::move(callback).Run(mojom::CreateNewWindowStatus::kIgnore, nullptr);
-    } else {
-      std::move(callback).Run(mojom::CreateNewWindowStatus::kReuse, nullptr);
-    }
+    std::move(callback).Run(mojom::CreateNewWindowStatus::kReuse, nullptr);
     return;
   }
 
@@ -8082,9 +8153,6 @@ void RenderFrameHostImpl::CreateNewWindow(
   bool wait_for_debugger =
       devtools_instrumentation::ShouldWaitForDebuggerInWindowOpen();
 
-  bool coop_forbids_initial_document_to_be_cross_origin_isolated =
-      new_main_rfh->CoopForbidsDocumentToBeCrossOriginIsolated();
-
   mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New(
       new_main_rfh->GetFrameToken(), new_main_rfh->GetRoutingID(),
       std::move(pending_frame_receiver), std::move(widget_params),
@@ -8095,8 +8163,7 @@ void RenderFrameHostImpl::CreateNewWindow(
       new_main_rfh->policy_container_host()->CreatePolicyContainerForBlink(),
       blink::BrowsingContextGroupInfo(
           new_main_rfh->GetSiteInstance()->browsing_instance_token(),
-          new_main_rfh->GetSiteInstance()->coop_related_group_token()),
-      coop_forbids_initial_document_to_be_cross_origin_isolated);
+          new_main_rfh->GetSiteInstance()->coop_related_group_token()));
 
   std::move(callback).Run(mojom::CreateNewWindowStatus::kSuccess,
                           std::move(reply));
@@ -8125,8 +8192,10 @@ void RenderFrameHostImpl::SendLegacyTechEvent(
 void RenderFrameHostImpl::SendPrivateAggregationRequestsForFencedFrameEvent(
     const std::string& event_type) {
   if (!base::FeatureList::IsEnabled(blink::features::kPrivateAggregationApi) ||
-      !blink::features::kPrivateAggregationApiEnabledInFledge.Get() ||
-      !blink::features::kPrivateAggregationApiFledgeExtensionsEnabled.Get()) {
+      !blink::features::kPrivateAggregationApiEnabledInProtectedAudience
+           .Get() ||
+      !blink::features::kPrivateAggregationApiProtectedAudienceExtensionsEnabled
+           .Get()) {
     mojo::ReportBadMessage(
         "FLEDGE extensions must be enabled to use reportEvent() for private "
         "aggregation events.");
@@ -8391,10 +8460,8 @@ void RenderFrameHostImpl::MaybeSendFencedFrameReportingBeacon(
   // Treat the automatic beacon as if it's being sent by the document that
   // initiated the top-level navigation. (You can think of it like a
   // reportEvent call from that document.)
-  // TODO(crbug.com/1450281): initiator_rfh may be null for some navigations on
-  // Android.
   RenderFrameHostImpl* initiator_rfh = RenderFrameHostImpl::FromFrameToken(
-      navigation_request.GetInitiatorProcessID(),
+      navigation_request.GetInitiatorProcessId(),
       navigation_request.GetInitiatorFrameToken().value());
   if (!initiator_rfh) {
     return;
@@ -8415,7 +8482,9 @@ void RenderFrameHostImpl::MaybeSendFencedFrameReportingBeacon(
   if (navigation_request.GetNavigationInitiatorActivationAndAdStatus() ==
           blink::mojom::NavigationInitiatorActivationAndAdStatus::
               kDidNotStartWithTransientActivation &&
-      !initiator_rfh->HasTransientUserActivation()) {
+      !initiator_rfh->HasTransientUserActivation() &&
+      navigation_request.commit_params().was_activated !=
+          blink::mojom::WasActivatedOption::kYes) {
     return;
   }
 
@@ -8516,13 +8585,16 @@ void RenderFrameHostImpl::SendFencedFrameReportingBeaconInternal(
   }
 
   std::string error_message;
+  // By default, log w/ error severity. Can be overwritten to lower severity
+  // depending on the error.
+  blink::mojom::ConsoleMessageLevel console_message_level =
+      blink::mojom::ConsoleMessageLevel::kError;
   if (!fenced_frame_properties->fenced_frame_reporter_->SendReport(
           event_type, event_data, destination,
           /*request_initiator_frame=*/this,
           attribution_reporting_runtime_features, error_message,
-          initiator_frame_tree_node_id, navigation_id)) {
-    AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kError,
-                        error_message);
+          console_message_level, initiator_frame_tree_node_id, navigation_id)) {
+    AddMessageToConsole(console_message_level, error_message);
   }
 }
 
@@ -11987,6 +12059,15 @@ void RenderFrameHostImpl::SetVisibilityForChildViews(bool visible) {
     if (auto* view = frame_host->GetView())
       return visible ? view->Show() : view->Hide();
   });
+
+  if (base::FeatureList::IsEnabled(
+          network::features::kVisibilityAwareResourceScheduler) &&
+      IsOutermostMainFrame()) {
+    GetStoragePartition()
+        ->GetNetworkContext()
+        ->ResourceSchedulerClientVisibilityChanged(GetTopFrameToken().value(),
+                                                   visible);
+  }
 }
 
 mojom::Frame* RenderFrameHostImpl::GetMojomFrameInRenderer() {
@@ -13265,10 +13346,6 @@ void RenderFrameHostImpl::SendCommitNavigation(
             GetSiteInstance()->coop_related_group_token());
   }
 
-  // For main frames, the check happens before CreateNewWindow.
-  bool coop_forbids_document_to_be_cross_origin_isolated =
-      !is_main_frame() &&
-      GetMainFrame()->CoopForbidsDocumentToBeCrossOriginIsolated();
   commit_params->commit_sent = base::TimeTicks::Now();
   navigation_client->CommitNavigation(
       std::move(common_params), std::move(commit_params),
@@ -13282,7 +13359,6 @@ void RenderFrameHostImpl::SendCommitNavigation(
       std::move(policy_container), std::move(code_cache_host),
       std::move(resource_cache_remote), std::move(cookie_manager_info),
       std::move(storage_info),
-      coop_forbids_document_to_be_cross_origin_isolated,
       BuildCommitNavigationCallback(navigation_request));
   last_commit_navigation_stack_trace_.emplace();
   base::UmaHistogramTimes(
@@ -15015,7 +15091,13 @@ void RenderFrameHostImpl::RecordDocumentCreatedUkmEvent(
 
   bool is_main_frame = IsOutermostMainFrame();
 
-  ukm::SourceId navigation_ukm_source_id = GetPageUkmSourceId();
+  // Our data collection policy disallows collecting UKMs while prerendering.
+  // So, assign a valid ID only when the page is not in the prerendering state.
+  // See //content/browser/preloading/prerender/README.md and ask the team to
+  // explore options to record data for prerendering pages.
+  const ukm::SourceId navigation_ukm_source_id =
+      IsInLifecycleState(LifecycleState::kPrerendering) ? ukm::kInvalidSourceId
+                                                        : GetPageUkmSourceId();
 
   RecordIdentifiabilityDocumentCreatedMetrics(
       document_ukm_source_id, ukm_recorder, navigation_ukm_source_id,
@@ -15474,20 +15556,6 @@ bool RenderFrameHostImpl::LoadedWithCacheControlNoStoreHeader() {
   return GetBackForwardCacheDisablingFeatures().Has(
       blink::scheduler::WebSchedulerTrackedFeature::
           kMainResourceHasCacheControlNoStore);
-}
-
-bool RenderFrameHostImpl::CoopForbidsDocumentToBeCrossOriginIsolated() const {
-  CHECK(is_main_frame());
-
-  // The document cannot be crossOriginIsolated if the COOP was set by a
-  // different origin. This can happen on initial empty documents opened by a
-  // cross-origin iframe.
-  const absl::optional<url::Origin>& coop_origin =
-      policy_container_host_
-          ? policy_container_host_->cross_origin_opener_policy().origin
-          : absl::nullopt;
-  return coop_origin.has_value() &&
-         !coop_origin->IsSameOriginWith(GetLastCommittedOrigin());
 }
 
 }  // namespace content

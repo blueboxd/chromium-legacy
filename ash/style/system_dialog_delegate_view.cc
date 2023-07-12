@@ -148,18 +148,26 @@ class SystemDialogDelegateView::ButtonContainer : public views::FlexLayoutView {
         ViewID::VIEW_ID_STYLE_SYSTEM_DIALOG_DELEGATE_CANCEL_BUTTON);
     cancel_button_->SetProperty(views::kElementIdentifierKey,
                                 kCancelButtonIdForTesting);
+    cancel_button_->SetBackgroundColorId(cros_tokens::kCrosSysPrimaryContainer);
+    cancel_button_->SetButtonTextColorId(
+        cros_tokens::kCrosSysOnPrimaryContainer);
+    cancel_button_->SetIconColorId(cros_tokens::kCrosSysOnPrimaryContainer);
+
     accept_button_->SetID(
         ViewID::VIEW_ID_STYLE_SYSTEM_DIALOG_DELEGATE_ACCEPT_BUTTON);
     accept_button_->SetProperty(views::kElementIdentifierKey,
                                 kAcceptButtonIdForTesting);
+    accept_button_->SetIsDefault(true);
   }
 
   ButtonContainer(const ButtonContainer&) = delete;
   ButtonContainer& operator=(const ButtonContainer&) = delete;
   ~ButtonContainer() override = default;
 
-  const PillButton* accept_button() { return accept_button_; }
-  const PillButton* cancel_button() { return cancel_button_; }
+  const PillButton* accept_button() const { return accept_button_; }
+  PillButton* accept_button() { return accept_button_; }
+  const PillButton* cancel_button() const { return cancel_button_; }
+  PillButton* cancel_button() { return cancel_button_; }
 
   void SetAcceptText(const std::u16string& accept_text) {
     accept_button_->SetText(accept_text);
@@ -266,6 +274,10 @@ SystemDialogDelegateView::SystemDialogDelegateView() {
                                views::MinimumFlexSizeRule::kScaleToMinimum,
                                views::MaximumFlexSizeRule::kUnbounded));
 
+  SetAccessibleWindowRole(ax::mojom::Role::kDialog);
+  // Make dialog initially focus on the accept button.
+  SetInitiallyFocusedView(button_container_->accept_button());
+
   // Register the close callback.
   RegisterWindowClosingCallback(
       base::BindOnce(&SystemDialogDelegateView::Close, base::Unretained(this)));
@@ -282,6 +294,7 @@ void SystemDialogDelegateView::SetIcon(const gfx::VectorIcon& icon) {
 void SystemDialogDelegateView::SetTitleText(const std::u16string& title) {
   title_->SetText(title);
   title_->SetVisible(!title.empty());
+  SetAccessibleTitle(title);
 }
 
 void SystemDialogDelegateView::SetDescription(

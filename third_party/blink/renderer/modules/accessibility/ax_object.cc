@@ -587,8 +587,6 @@ AXObject::AXObject(AXObjectCacheImpl& ax_object_cache)
       cached_is_descendant_of_disabled_node_(false),
       cached_can_set_focus_attribute_(false),
       cached_live_region_root_(nullptr),
-      cached_aria_column_index_(0),
-      cached_aria_row_index_(0),
       ax_object_cache_(&ax_object_cache) {
   ++number_of_live_ax_objects_;
 }
@@ -2718,9 +2716,10 @@ ax::mojom::blink::CheckedState AXObject::CheckedState() const {
   const AtomicString& checked_attribute = GetAOMPropertyOrARIAAttribute(prop);
   if (checked_attribute) {
     if (EqualIgnoringASCIICase(checked_attribute, "mixed")) {
-      // Only checkable role that doesn't support mixed is the switch.
-      if (role != ax::mojom::blink::Role::kSwitch)
-        return ax::mojom::blink::CheckedState::kMixed;
+      // Mixed value is invalid for switch role. Treat as false.
+      return role == ax::mojom::blink::Role::kSwitch
+                 ? ax::mojom::blink::CheckedState::kFalse
+                 : ax::mojom::blink::CheckedState::kMixed;
     }
 
     // Anything other than "false" should be treated as "true".
@@ -2735,13 +2734,17 @@ ax::mojom::blink::CheckedState AXObject::CheckedState() const {
     if (!node)
       return ax::mojom::blink::CheckedState::kNone;
 
-    // Expose native checkbox mixed state as accessibility mixed state. However,
-    // do not expose native radio mixed state as accessibility mixed state.
-    // This would confuse the JAWS screen reader, which reports a mixed radio as
-    // both checked and partially checked, but a native mixed native radio
-    // button simply means no radio buttons have been checked in the group yet.
-    if (IsNativeCheckboxInMixedState(node))
-      return ax::mojom::blink::CheckedState::kMixed;
+    // Expose native checkbox mixed state as accessibility mixed state (unless
+    // the role is switch). However, do not expose native radio mixed state as
+    // accessibility mixed state. This would confuse the JAWS screen reader,
+    // which reports a mixed radio as both checked and partially checked, but a
+    // native mixed native radio button simply means no radio buttons have been
+    // checked in the group yet.
+    if (IsNativeCheckboxInMixedState(node)) {
+      return role == ax::mojom::blink::Role::kSwitch
+                 ? ax::mojom::blink::CheckedState::kFalse
+                 : ax::mojom::blink::CheckedState::kMixed;
+    }
 
     auto* html_input_element = DynamicTo<HTMLInputElement>(node);
     if (html_input_element && html_input_element->ShouldAppearChecked()) {
@@ -2798,6 +2801,14 @@ bool AXObject::IsNonAtomicTextField() const {
   if (IsAtomicTextField())
     return false;
   return HasContentEditableAttributeSet() || IsARIATextField();
+}
+
+AXObject* AXObject::GetTextFieldAncestor() {
+  AXObject* ancestor = this;
+  while (ancestor && !ancestor->IsTextField()) {
+    ancestor = ancestor->ParentObject();
+  }
+  return ancestor;
 }
 
 bool AXObject::IsPasswordField() const {
@@ -3095,8 +3106,6 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
     cached_live_region_root_ = IsLiveRegionRoot() ? const_cast<AXObject*>(this)
                                                   : parent_->LiveRegionRoot();
   }
-  cached_aria_column_index_ = ComputeAriaColumnIndex();
-  cached_aria_row_index_ = ComputeAriaRowIndex();
 
   if (GetLayoutObject() && GetLayoutObject()->IsText()) {
     cached_local_bounding_box_rect_for_accessibility_ =
@@ -5075,10 +5084,12 @@ bool AXObject::ContainerLiveRegionBusy() const {
 
 AXObject* AXObject::ElementAccessibilityHitTest(const gfx::Point& point) const {
   // Check if there are any mock elements that need to be handled.
+  PhysicalOffset physical_point(point);
   for (const auto& child : ChildrenIncludingIgnored()) {
     if (child->IsMockObject() &&
-        child->GetBoundsInFrameCoordinates().Contains(LayoutPoint(point)))
+        child->GetBoundsInFrameCoordinates().Contains(physical_point)) {
       return child->ElementAccessibilityHitTest(point);
+    }
   }
 
   return const_cast<AXObject*>(this);
@@ -6150,16 +6161,6 @@ unsigned AXObject::RowSpan() const {
 }
 
 unsigned AXObject::AriaColumnIndex() const {
-  UpdateCachedAttributeValuesIfNeeded();
-  return cached_aria_column_index_;
-}
-
-unsigned AXObject::AriaRowIndex() const {
-  UpdateCachedAttributeValuesIfNeeded();
-  return cached_aria_row_index_;
-}
-
-unsigned AXObject::ComputeAriaColumnIndex() const {
   // Return the ARIA column index if it has been set. Otherwise return a default
   // value of 0.
   uint32_t col_index = 0;
@@ -6167,7 +6168,7 @@ unsigned AXObject::ComputeAriaColumnIndex() const {
   return col_index;
 }
 
-unsigned AXObject::ComputeAriaRowIndex() const {
+unsigned AXObject::AriaRowIndex() const {
   // Return the ARIA row index if it has been set. Otherwise return a default
   // value of 0.
   uint32_t row_index = 0;
@@ -6360,7 +6361,7 @@ gfx::RectF AXObject::LocalBoundingBoxRectForAccessibility() {
   return cached_local_bounding_box_rect_for_accessibility_;
 }
 
-LayoutRect AXObject::GetBoundsInFrameCoordinates() const {
+PhysicalRect AXObject::GetBoundsInFrameCoordinates() const {
   AXObject* container = nullptr;
   gfx::RectF bounds;
   gfx::Transform transform;
@@ -6375,7 +6376,7 @@ LayoutRect AXObject::GetBoundsInFrameCoordinates() const {
     computed_bounds = transform.MapRect(computed_bounds);
     container->GetRelativeBounds(&container, bounds, transform);
   }
-  return LayoutRect(computed_bounds);
+  return PhysicalRect::FastAndLossyFromRectF(computed_bounds);
 }
 
 //

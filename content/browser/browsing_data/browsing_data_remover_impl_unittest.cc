@@ -1476,10 +1476,7 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
   std::unique_ptr<BrowsingDataFilterBuilder> filter_builder_1(
       BrowsingDataFilterBuilder::Create(
           BrowsingDataFilterBuilder::Mode::kDelete));
-  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder_2(
-      BrowsingDataFilterBuilder::Create(
-          BrowsingDataFilterBuilder::Mode::kPreserve));
-  filter_builder_2->AddRegisterableDomain("example.com");
+  filter_builder_1->AddRegisterableDomain("example.com");
 
   MultipleTasksObserver observer(remover);
   BrowsingDataRemoverCompletionInhibitor completion_inhibitor(remover);
@@ -1673,6 +1670,7 @@ TEST_F(BrowsingDataRemoverImplTest, ClearsTrustTokens) {
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 BrowsingDataRemover::DATA_TYPE_TRUST_TOKENS,
                                 /*include_protected_origins=*/false);
+  set_network_context_override(nullptr);
 }
 
 TEST_F(BrowsingDataRemoverImplTest, PreservesTrustTokens) {
@@ -1686,6 +1684,7 @@ TEST_F(BrowsingDataRemoverImplTest, PreservesTrustTokens) {
       /*include_protected_origins=*/false);
 
   // (The strict mock will fail the test if its mocked method is called.)
+  set_network_context_override(nullptr);
 }
 
 TEST_F(BrowsingDataRemoverImplTest, ClearsTrustTokensForSite) {
@@ -1712,6 +1711,8 @@ TEST_F(BrowsingDataRemoverImplTest, ClearsTrustTokensForSite) {
   BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
                               BrowsingDataRemover::DATA_TYPE_TRUST_TOKENS,
                               std::move(builder));
+
+  set_network_context_override(nullptr);
 }
 
 TEST_F(BrowsingDataRemoverImplTest, ClearsTrustTokensForSiteDespiteTimeRange) {
@@ -1741,6 +1742,8 @@ TEST_F(BrowsingDataRemoverImplTest, ClearsTrustTokensForSiteDespiteTimeRange) {
   BlockUntilOriginDataRemoved(base::Time(), base::Time() + base::Seconds(1),
                               BrowsingDataRemover::DATA_TYPE_TRUST_TOKENS,
                               std::move(builder));
+
+  set_network_context_override(nullptr);
 }
 
 TEST_F(BrowsingDataRemoverImplTest, DeferCookieDeletion) {

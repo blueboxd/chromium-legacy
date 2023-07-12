@@ -13,16 +13,16 @@
 #include "printing/units.h"
 
 #if BUILDFLAG(USE_CUPS)
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
-#include <cups/cups.h>
-#endif
-
 #include "printing/print_job_constants_cups.h"
 #endif  // BUILDFLAG(USE_CUPS)
 
+#if BUILDFLAG(USE_CUPS_IPP)
+#include <cups/cups.h>
+#endif  // BUILDFLAG(USE_CUPS_IPP)
+
 #if BUILDFLAG(IS_WIN)
 #include "printing/mojom/print.mojom.h"
-#endif
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace printing {
 
@@ -197,24 +197,19 @@ void GetColorModelForModel(mojom::ColorModel color_model,
   // The default case is excluded from the above switch statement to ensure that
   // all ColorModel values are determinantly handled.
 }
+#endif  // BUILDFLAG(USE_CUPS)
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(USE_CUPS_IPP)
 std::string GetIppColorModelForModel(mojom::ColorModel color_model) {
   // Accept `kUnknownColorModel` for consistency with GetColorModelForModel().
   if (color_model == mojom::ColorModel::kUnknownColorModel)
     return CUPS_PRINT_COLOR_MODE_MONOCHROME;
 
-  absl::optional<bool> is_color = IsColorModelSelected(color_model);
-  if (!is_color.has_value()) {
-    NOTREACHED();
-    return std::string();
-  }
-
-  return is_color.value() ? CUPS_PRINT_COLOR_MODE_COLOR
-                          : CUPS_PRINT_COLOR_MODE_MONOCHROME;
+  return IsColorModelSelected(color_model).value()
+             ? CUPS_PRINT_COLOR_MODE_COLOR
+             : CUPS_PRINT_COLOR_MODE_MONOCHROME;
 }
-#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
-#endif  // BUILDFLAG(USE_CUPS)
+#endif  // BUILDFLAG(USE_CUPS_IPP)
 
 absl::optional<bool> IsColorModelSelected(mojom::ColorModel color_model) {
   switch (color_model) {
@@ -535,9 +530,15 @@ void PrintSettings::SetCustomMargins(
   margin_type_ = mojom::MarginType::kCustomMargins;
 }
 
+// static
 int PrintSettings::NewCookie() {
   // A cookie of 0 is used to mark a document as unassigned, count from 1.
   return cookie_seq.GetNext() + 1;
+}
+
+// static
+int PrintSettings::NewInvalidCookie() {
+  return 0;
 }
 
 void PrintSettings::SetOrientation(bool landscape) {

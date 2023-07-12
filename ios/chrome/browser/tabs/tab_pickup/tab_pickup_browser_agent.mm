@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/tabs/tab_pickup/tab_pickup_browser_agent.h"
 
 #import "base/metrics/histogram_functions.h"
+#import "components/infobars/core/infobar.h"
 #import "components/sync_sessions/session_sync_service.h"
 #import "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -51,6 +52,9 @@ TabPickupBrowserAgent::TabPickupBrowserAgent(Browser* browser)
 
 TabPickupBrowserAgent::~TabPickupBrowserAgent() {
   DCHECK(!browser_);
+
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:foreground_notification_observer_];
 }
 
 #pragma mark - BrowserObserver
@@ -119,14 +123,13 @@ void TabPickupBrowserAgent::ForeignSessionsChanged() {
   auto const synced_sessions =
       std::make_unique<synced_sessions::SyncedSessions>(session_sync_service_);
   if (synced_sessions->GetSessionCount()) {
-    // Get the last synced tab.
-    const synced_sessions::DistantSession* session =
-        synced_sessions->GetSession(0);
+    // Get the last synced session.
+    session_ = synced_sessions->GetSession(0);
 
     // Check that the last synced tab is yougner than the tab pickup time
     // threshold.
     const base::TimeDelta modified_time =
-        base::Time::Now() - session->modified_time;
+        base::Time::Now() - session_->modified_time;
     if (modified_time < TabPickupTimeThreshold()) {
       SetupInfoBarDelegate();
     }
@@ -137,8 +140,7 @@ void TabPickupBrowserAgent::SetupInfoBarDelegate() {
   DCHECK(IsTabPickupEnabled());
   infobar_in_progress_ = true;
 
-  delegate_ =
-      std::make_unique<TabPickupInfobarDelegate>(browser_->GetBrowserState());
+  delegate_ = std::make_unique<TabPickupInfobarDelegate>(browser_, session_);
   delegate_->FetchFavIconImage(^{
     // Once the favicon image is fetched, display the infobar.
     ShowInfoBar();
@@ -152,18 +154,21 @@ void TabPickupBrowserAgent::ShowInfoBar() {
     return;
   }
 
-  infobars::InfoBarManager* infobar_manager =
-      InfoBarManagerImpl::FromWebState(active_web_state_);
   if (infobar_) {
-    infobar_manager->RemoveInfoBar(infobar_);
+    infobars::InfoBarManager* previous_infobar_manager =
+        InfoBarManagerImpl::FromWebState(infobar_web_state_);
+    previous_infobar_manager->RemoveInfoBar(infobar_);
     DCHECK(!infobar_);
   }
 
+  infobars::InfoBarManager* infobar_manager =
+      InfoBarManagerImpl::FromWebState(active_web_state_);
   infobar_manager_scoped_observation_.Observe(infobar_manager);
   std::unique_ptr<infobars::InfoBar> infobar = std::make_unique<InfoBarIOS>(
       InfobarType::kInfobarTypeTabPickup, std::move(delegate_));
   infobar_ = infobar_manager->AddInfoBar(std::move(infobar),
                                          /*replace_existing=*/true);
+  infobar_web_state_ = active_web_state_;
   infobar_displayed = true;
 }
 

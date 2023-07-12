@@ -208,12 +208,13 @@ class TestExternallyManagedAppManager : public ExternallyManagedAppManager {
   std::unique_ptr<ExternallyManagedAppInstallTask> CreateInstallationTask(
       ExternalInstallOptions install_options) override {
     return std::make_unique<TestExternallyManagedAppInstallTask>(
-        this, profile(), &test_url_loader_, *test_install_task_manager_,
-        std::move(install_options));
+        this, profile(), &test_url_loader_, provider(),
+        *test_install_task_manager_, std::move(install_options));
   }
 
   std::unique_ptr<ExternallyManagedAppRegistrationTaskBase> CreateRegistration(
-      GURL install_url) override {
+      GURL install_url,
+      const base::TimeDelta registration_timeout) override {
     ++registration_run_count_;
     last_registered_install_url_ = install_url;
     return std::make_unique<TestExternallyManagedAppRegistrationTask>(
@@ -278,20 +279,20 @@ class TestExternallyManagedAppManager : public ExternallyManagedAppManager {
         TestExternallyManagedAppManager* externally_managed_app_manager_impl,
         Profile* profile,
         TestWebAppUrlLoader* test_url_loader,
+        WebAppProvider& provider,
         TestExternallyManagedAppInstallTaskManager& test_install_task_manager,
         ExternalInstallOptions install_options)
         : ExternallyManagedAppInstallTask(
               profile,
               test_url_loader,
-              externally_managed_app_manager_impl->ui_manager(),
-              externally_managed_app_manager_impl->finalizer(),
-              externally_managed_app_manager_impl->command_scheduler(),
+              provider,
               /*data_retriever_factory=*/base::NullCallback(),
               std::move(install_options)),
           externally_managed_app_manager_impl_(
               externally_managed_app_manager_impl),
           test_install_task_manager_(test_install_task_manager),
-          profile_(profile) {}
+          profile_(profile),
+          provider_(provider) {}
 
     TestExternallyManagedAppInstallTask(
         const TestExternallyManagedAppInstallTask&) = delete;
@@ -310,15 +311,15 @@ class TestExternallyManagedAppManager : public ExternallyManagedAppManager {
             externally_managed_app_manager_impl_->GetNextInstallationLaunchURL(
                 install_url);
         const auto install_source = install_options().install_source;
-        if (!registrar().IsInstalled(*app_id)) {
+        if (!provider_->registrar_unsafe().IsInstalled(*app_id)) {
           auto web_app =
               test::CreateWebApp(install_url, WebAppManagement::kPolicy);
           {
-            ScopedRegistryUpdate update(&provider().sync_bridge_unsafe());
+            ScopedRegistryUpdate update(&provider_->sync_bridge_unsafe());
             update->CreateApp(std::move(web_app));
           }
           test::AddInstallUrlAndPlaceholderData(
-              profile_->GetPrefs(), &provider().sync_bridge_unsafe(), *app_id,
+              profile_->GetPrefs(), &provider_->sync_bridge_unsafe(), *app_id,
               install_url, install_source, result.did_install_placeholder);
         }
       }
@@ -340,19 +341,13 @@ class TestExternallyManagedAppManager : public ExternallyManagedAppManager {
           }));
     }
 
-   protected:
-    WebAppRegistrar& registrar() { return provider().registrar_unsafe(); }
-
-    FakeWebAppProvider& provider() {
-      return externally_managed_app_manager_impl_->provider();
-    }
-
    private:
     raw_ptr<TestExternallyManagedAppManager>
         externally_managed_app_manager_impl_;
     const raw_ref<TestExternallyManagedAppInstallTaskManager>
         test_install_task_manager_;
     raw_ptr<Profile> profile_;
+    raw_ref<WebAppProvider> provider_;
   };
 
   class TestExternallyManagedAppRegistrationTask
@@ -361,7 +356,8 @@ class TestExternallyManagedAppManager : public ExternallyManagedAppManager {
     TestExternallyManagedAppRegistrationTask(
         const GURL& install_url,
         TestExternallyManagedAppManager* externally_managed_app_manager_impl)
-        : ExternallyManagedAppRegistrationTaskBase(install_url),
+        : ExternallyManagedAppRegistrationTaskBase(install_url,
+                                                   base::Seconds(40)),
           externally_managed_app_manager_impl_(
               externally_managed_app_manager_impl) {
       base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
@@ -432,7 +428,7 @@ class ExternallyManagedAppManagerImplTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    provider_ = web_app::FakeWebAppProvider::Get(profile());
+    provider_ = FakeWebAppProvider::Get(profile());
     auto externally_managed_app_manager_impl =
         std::make_unique<TestExternallyManagedAppManager>(
             profile(), provider(), test_install_task_manager_);
@@ -445,7 +441,7 @@ class ExternallyManagedAppManagerImplTest : public WebAppTest {
     install_finalizer_ = install_finalizer.get();
     provider_->SetInstallFinalizer(std::move(install_finalizer));
 
-    web_app::test::AwaitStartWebAppProviderAndSubsystems(profile());
+    test::AwaitStartWebAppProviderAndSubsystems(profile());
   }
 
   void TearDown() override {

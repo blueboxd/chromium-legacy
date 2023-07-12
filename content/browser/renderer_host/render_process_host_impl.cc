@@ -1318,6 +1318,16 @@ BASE_FEATURE(kCheckNoNewRefCountsWhenRphDeletingSoon,
              "CheckNoNewRefCountsWhenRphDeletingSoon",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Please keep in sync with "RenderProcessHostBlockedURLReason" in
+// tools/metrics/histograms/enums.xml. // These values are persisted to logs.
+// Entries should not be renumbered and numeric values should never be reused.
+enum class BlockedURLReason {
+  kInvalidURL = 0,
+  kFailedCanRequestURLCheck = 1,
+
+  kMaxValue = kFailedCanRequestURLCheck
+};
+
 }  // namespace
 
 // A RenderProcessHostImpl's IO thread implementation of the
@@ -3719,8 +3729,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kLacrosUseChromeosProtectedAv1,
 #endif
   };
-  renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
-                                 std::size(kSwitchNames));
+  renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames);
 
   // |switches::kGaiaConfig| can be set via browser command-line arguments,
   // usually by developers working on signin code. The switch, however, cannot
@@ -4473,6 +4482,10 @@ void RenderProcessHostImpl::FilterURL(RenderProcessHost* rph,
     // (chrome://newtab/) which is exactly what we don't want.
     TRACE_EVENT1("navigation", "RenderProcessHost::FilterURL - invalid URL",
                  "process_id", rph->GetID());
+    VLOG(1) << "Blocked invalid URL";
+    base::UmaHistogramEnumeration("BrowserRenderProcessHost.BlockedByFilterURL",
+                                  BlockedURLReason::kInvalidURL);
+
     *url = GURL(kBlockedURL);
     return;
   }
@@ -4487,6 +4500,9 @@ void RenderProcessHostImpl::FilterURL(RenderProcessHost* rph,
                  "RenderProcessHost::FilterURL - failed CanRequestURL",
                  "process_id", rph->GetID(), "url", url->spec());
     VLOG(1) << "Blocked URL " << url->spec();
+    base::UmaHistogramEnumeration("BrowserRenderProcessHost.BlockedByFilterURL",
+                                  BlockedURLReason::kFailedCanRequestURLCheck);
+
     *url = GURL(kBlockedURL);
   }
 }
@@ -5673,8 +5689,10 @@ void RenderProcessHostImpl::ProvideStatusFileForRenderer() {
 #endif
 
 void RenderProcessHostImpl::ProvideSwapFileForRenderer() {
-  if (!blink::features::IsParkableStringsToDiskEnabled())
+  if (!blink::features::IsParkableStringsToDiskEnabled() &&
+      !blink::features::IsParkableImagesToDiskEnabled()) {
     return;
+  }
 
   // In Incognito, nothing should be written to disk. Don't provide a file..
   if (GetBrowserContext()->IsOffTheRecord())

@@ -151,7 +151,7 @@ const NGPhysicalBoxFragment* NGPhysicalBoxFragment::Create(
 #endif
 
   PhysicalRect layout_overflow = {PhysicalOffset(), physical_size};
-  if (builder->node_ && !builder->is_legacy_layout_root_) {
+  if (builder->node_ && !builder->node_.IsReplaced()) {
     const NGPhysicalBoxStrut scrollbar =
         builder->initial_fragment_geometry_->scrollbar.ConvertToPhysical(
             writing_direction);
@@ -1799,10 +1799,8 @@ void NGPhysicalBoxFragment::CheckSameForSimplifiedLayout(
   // layout. This occurs when an OOF-descendant changes from "fixed" to
   // "absolute" (or visa versa) changing its containing block.
 
-  // Legacy layout can (incorrectly) shift baseline position(s) during
-  // "simplified" layout.
-  DCHECK(IsLegacyLayoutRoot() || FirstBaseline() == other.FirstBaseline());
-  DCHECK(IsLegacyLayoutRoot() || LastBaseline() == other.LastBaseline());
+  DCHECK(FirstBaseline() == other.FirstBaseline());
+  DCHECK(LastBaseline() == other.LastBaseline());
 
   if (IsTableNG()) {
     DCHECK_EQ(TableGridRect(), other.TableGridRect());

@@ -6,9 +6,9 @@
 
 #include "build/chromeos_buildflags.h"
 #include "components/sync/base/passphrase_enums.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/engine/nigori/nigori.h"
+#include "components/sync/service/sync_prefs.h"
 #include "components/sync/service/sync_service.h"
 #include "components/sync/service/sync_user_settings_impl.h"
 #include "components/sync/test/test_sync_service.h"
@@ -79,6 +79,22 @@ void TestSyncUserSettings::SetSelectedType(UserSelectableType type,
     selected_types_.Remove(type);
   }
 }
+
+bool TestSyncUserSettings::IsPaymentsIntegrationEnabled() const {
+  return is_payments_integration_enabled_;
+}
+
+void TestSyncUserSettings::SetPaymentsIntegrationEnabled(bool enabled) {
+  if (is_payments_integration_enabled_ == enabled) {
+    return;
+  }
+
+  is_payments_integration_enabled_ = enabled;
+  service_->FirePaymentsIntegrationEnabledChanged();
+}
+
+void TestSyncUserSettings::KeepAccountSettingsPrefsOnlyForUsers(
+    const std::vector<signin::GaiaIdHash>& available_gaia_ids) {}
 
 #if BUILDFLAG(IS_IOS)
 void TestSyncUserSettings::SetBookmarksAndReadingListAccountStorageOptIn(

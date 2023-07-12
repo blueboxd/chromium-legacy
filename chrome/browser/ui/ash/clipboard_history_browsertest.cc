@@ -382,7 +382,6 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest,
   EXPECT_FALSE(GetHistoryItemViewForIndex(/*index=*/0)
                    ->GetViewByID(MenuViewID::kDeleteButtonViewID)
                    ->GetVisible());
-  EXPECT_EQ(gfx::Size(256, 36), first_menu_item_view->size());
 
   // Move the mouse to the second menu item.
   const views::MenuItemView* const second_menu_item_view =
@@ -722,7 +721,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest, ReorderOnCopy) {
   base::HistogramTester histogram_tester;
   ASSERT_TRUE(clipboard_history_items.empty());
   histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ReorderType",
-                                    /*count=*/0);
+                                    /*expected_count=*/0);
 
   const auto* const clipboard = ui::ClipboardNonBacked::GetForCurrentThread();
   ui::DataTransferEndpoint data_dst(ui::EndpointType::kClipboardHistory);
@@ -738,7 +737,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest, ReorderOnCopy) {
   ASSERT_EQ(clipboard_history_items.size(), 1u);
   EXPECT_EQ(clipboard_history_items.front().data(), clipboard_data_a);
   histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ReorderType",
-                                    /*count=*/0);
+                                    /*expected_count=*/0);
 
   // Write different data to the clipboard.
   {
@@ -751,7 +750,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest, ReorderOnCopy) {
   ASSERT_EQ(clipboard_history_items.size(), 2u);
   EXPECT_EQ(clipboard_history_items.front().data(), clipboard_data_b);
   histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ReorderType",
-                                    /*count=*/0);
+                                    /*expected_count=*/0);
 
   // Write the original data to the clipboard again. Instead of creating a new
   // clipboard history item, this should bump the original item to the top slot.
@@ -884,7 +883,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryPasteTypeBrowserTest,
   // Confirm initial state.
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.PasteType",
-                                    /*count=*/0);
+                                    /*expected_count=*/0);
 
   // Write some things to the clipboard.
   SetClipboardTextAndHtml("A", "<span>A</span>");
@@ -898,156 +897,180 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryPasteTypeBrowserTest,
   ui::ClipboardData clipboard_data(*clipboard->GetClipboardData(&data_dst));
 
   // Open clipboard history and paste the last history item.
-  ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
-  EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
-  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
-  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
-  PressAndRelease(ui::KeyboardCode::VKEY_RETURN);
-  EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
+  {
+    SCOPED_TRACE("Paste by pressing Enter.");
+    ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
+    EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
+    PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+    PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+    PressAndRelease(ui::KeyboardCode::VKEY_RETURN);
+    EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
 
-  WaitForWebContentsPaste("A", /*paste_plain_text=*/false);
-  histogram_tester.ExpectBucketCount(
-      "Ash.ClipboardHistory.PasteType",
-      ClipboardHistoryPasteType::kRichTextKeystroke,
-      /*expected_count=*/1);
-  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.PasteType",
-                                    /*count=*/1);
+    WaitForWebContentsPaste("A", /*paste_plain_text=*/false);
+    histogram_tester.ExpectBucketCount(
+        "Ash.ClipboardHistory.PasteType",
+        ClipboardHistoryPasteType::kRichTextKeystroke,
+        /*expected_count=*/1);
+    histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.PasteType",
+                                      /*expected_count=*/1);
 
-  // Wait for the clipboard buffer to be restored before performing another
-  // paste. In production, this should happen faster than a user is able to
-  // relaunch clipboard history UI (knock on wood).
-  ClipboardDataWaiter().WaitFor(&clipboard_data);
+    // Wait for the clipboard buffer to be restored before performing another
+    // paste. In production, this should happen faster than a user is able to
+    // relaunch clipboard history UI (knock on wood).
+    ClipboardDataWaiter().WaitFor(&clipboard_data);
+  }
 
   // Open clipboard history and paste the last history item while holding down
   // a non-shift key (arbitrarily, the alt key). The item should not paste as
   // plain text.
-  ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
-  EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
-  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
-  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
-  PressAndRelease(ui::KeyboardCode::VKEY_RETURN, ui::EF_ALT_DOWN);
-  EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
+  {
+    SCOPED_TRACE("Paste by pressing Enter with a non-shift key.");
+    ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
+    EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
+    PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+    PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+    PressAndRelease(ui::KeyboardCode::VKEY_RETURN, ui::EF_ALT_DOWN);
+    EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
 
-  WaitForWebContentsPaste("A", /*paste_plain_text=*/false);
-  histogram_tester.ExpectBucketCount(
-      "Ash.ClipboardHistory.PasteType",
-      ClipboardHistoryPasteType::kRichTextKeystroke,
-      /*expected_count=*/2);
-  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.PasteType",
-                                    /*count=*/2);
+    WaitForWebContentsPaste("A", /*paste_plain_text=*/false);
+    histogram_tester.ExpectBucketCount(
+        "Ash.ClipboardHistory.PasteType",
+        ClipboardHistoryPasteType::kRichTextKeystroke,
+        /*expected_count=*/2);
+    histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.PasteType",
+                                      /*expected_count=*/2);
 
-  // Wait for the clipboard buffer to be restored before performing another
-  // paste.
-  ClipboardDataWaiter().WaitFor(&clipboard_data);
+    // Wait for the clipboard buffer to be restored before performing another
+    // paste.
+    ClipboardDataWaiter().WaitFor(&clipboard_data);
+  }
 
   // Open clipboard history and paste the last history item while holding down
   // the shift key. The item should paste as plain text.
-  ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
-  EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
-  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
-  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
-  PressAndRelease(ui::KeyboardCode::VKEY_RETURN, ui::EF_SHIFT_DOWN);
-  EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
+  {
+    SCOPED_TRACE("Paste by pressing Shift+Enter.");
+    ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
+    EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
+    PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+    PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+    PressAndRelease(ui::KeyboardCode::VKEY_RETURN, ui::EF_SHIFT_DOWN);
+    EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
 
-  WaitForWebContentsPaste("A", /*paste_plain_text=*/true);
-  histogram_tester.ExpectBucketCount(
-      "Ash.ClipboardHistory.PasteType",
-      ClipboardHistoryPasteType::kPlainTextKeystroke,
-      /*expected_count=*/1);
-  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.PasteType",
-                                    /*count=*/3);
+    WaitForWebContentsPaste("A", /*paste_plain_text=*/true);
+    histogram_tester.ExpectBucketCount(
+        "Ash.ClipboardHistory.PasteType",
+        ClipboardHistoryPasteType::kPlainTextKeystroke,
+        /*expected_count=*/1);
+    histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.PasteType",
+                                      /*expected_count=*/3);
 
-  // Wait for the clipboard buffer to be restored before performing another
-  // paste.
-  ClipboardDataWaiter().WaitFor(&clipboard_data);
+    // Wait for the clipboard buffer to be restored before performing another
+    // paste.
+    ClipboardDataWaiter().WaitFor(&clipboard_data);
+  }
 
   // Open clipboard history and paste the last history item by toggling the
   // clipboard history menu. The item should not paste as plain text.
-  ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
-  EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
-  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
-  PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
-  ShowContextMenuViaAccelerator(/*wait_for_selection=*/false);
-  EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
+  {
+    SCOPED_TRACE("Paste by pressing Search/Launcher+V.");
+    ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
+    EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
+    PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+    PressAndRelease(ui::KeyboardCode::VKEY_DOWN);
+    ShowContextMenuViaAccelerator(/*wait_for_selection=*/false);
+    EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
 
-  WaitForWebContentsPaste("A", /*paste_plain_text=*/false);
-  histogram_tester.ExpectBucketCount(
-      "Ash.ClipboardHistory.PasteType",
-      ClipboardHistoryPasteType::kRichTextAccelerator,
-      /*expected_count=*/1);
-  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.PasteType",
-                                    /*count=*/4);
+    WaitForWebContentsPaste("A", /*paste_plain_text=*/false);
+    histogram_tester.ExpectBucketCount(
+        "Ash.ClipboardHistory.PasteType",
+        ClipboardHistoryPasteType::kRichTextAccelerator,
+        /*expected_count=*/1);
+    histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.PasteType",
+                                      /*expected_count=*/4);
 
-  // Wait for the clipboard buffer to be restored before performing another
-  // paste.
-  ClipboardDataWaiter().WaitFor(&clipboard_data);
+    // Wait for the clipboard buffer to be restored before performing another
+    // paste.
+    ClipboardDataWaiter().WaitFor(&clipboard_data);
+  }
+
+  const views::MenuItemView* menu_item_view = nullptr;
 
   // Open clipboard history and paste the last history item via mouse click. The
   // item should not paste as plain text.
-  ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
-  EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
-  const auto* menu_item_view =
-      GetContextMenu()->GetMenuItemViewAtForTest(/*index=*/2);
-  GetEventGenerator()->MoveMouseTo(
-      menu_item_view->GetBoundsInScreen().CenterPoint());
-  ASSERT_TRUE(menu_item_view->IsSelected());
-  GetEventGenerator()->ClickLeftButton();
-  EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
+  {
+    SCOPED_TRACE("Paste by clicking with the mouse.");
+    ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
+    EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
+    menu_item_view = GetContextMenu()->GetMenuItemViewAtForTest(/*index=*/2);
+    GetEventGenerator()->MoveMouseTo(
+        menu_item_view->GetBoundsInScreen().CenterPoint());
+    ASSERT_TRUE(menu_item_view->IsSelected());
+    GetEventGenerator()->ClickLeftButton();
+    EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
 
-  WaitForWebContentsPaste("A", /*paste_plain_text=*/false);
-  histogram_tester.ExpectBucketCount("Ash.ClipboardHistory.PasteType",
-                                     ClipboardHistoryPasteType::kRichTextMouse,
-                                     /*expected_count=*/1);
-  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.PasteType",
-                                    /*count=*/5);
+    WaitForWebContentsPaste("A", /*paste_plain_text=*/false);
+    histogram_tester.ExpectBucketCount(
+        "Ash.ClipboardHistory.PasteType",
+        ClipboardHistoryPasteType::kRichTextMouse,
+        /*expected_count=*/1);
+    histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.PasteType",
+                                      /*expected_count=*/5);
 
-  // Wait for the clipboard buffer to be restored before performing another
-  // paste.
-  ClipboardDataWaiter().WaitFor(&clipboard_data);
+    // Wait for the clipboard buffer to be restored before performing another
+    // paste.
+    ClipboardDataWaiter().WaitFor(&clipboard_data);
+  }
 
   // Open clipboard history and paste the last history item via mouse click
   // while holding down the shift key. The item should paste as plain text.
-  ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
-  EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
-  menu_item_view = GetContextMenu()->GetMenuItemViewAtForTest(/*index=*/2);
-  GetEventGenerator()->MoveMouseTo(
-      menu_item_view->GetBoundsInScreen().CenterPoint());
-  ASSERT_TRUE(menu_item_view->IsSelected());
-  GetEventGenerator()->set_flags(ui::EF_SHIFT_DOWN);
-  GetEventGenerator()->ClickLeftButton();
-  GetEventGenerator()->set_flags(ui::EF_NONE);
-  EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
+  {
+    SCOPED_TRACE("Paste by clicking with the mouse with Shift held.");
+    ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
+    EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
+    menu_item_view = GetContextMenu()->GetMenuItemViewAtForTest(/*index=*/2);
+    GetEventGenerator()->MoveMouseTo(
+        menu_item_view->GetBoundsInScreen().CenterPoint());
+    ASSERT_TRUE(menu_item_view->IsSelected());
+    GetEventGenerator()->set_flags(ui::EF_SHIFT_DOWN);
+    GetEventGenerator()->ClickLeftButton();
+    GetEventGenerator()->set_flags(ui::EF_NONE);
+    EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
 
-  WaitForWebContentsPaste("A", /*paste_plain_text=*/true);
-  histogram_tester.ExpectBucketCount("Ash.ClipboardHistory.PasteType",
-                                     ClipboardHistoryPasteType::kPlainTextMouse,
-                                     /*expected_count=*/1);
-  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.PasteType",
-                                    /*count=*/6);
+    WaitForWebContentsPaste("A", /*paste_plain_text=*/true);
+    histogram_tester.ExpectBucketCount(
+        "Ash.ClipboardHistory.PasteType",
+        ClipboardHistoryPasteType::kPlainTextMouse,
+        /*expected_count=*/1);
+    histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.PasteType",
+                                      /*expected_count=*/6);
 
-  // Wait for the clipboard buffer to be restored before performing another
-  // paste.
-  ClipboardDataWaiter().WaitFor(&clipboard_data);
+    // Wait for the clipboard buffer to be restored before performing another
+    // paste.
+    ClipboardDataWaiter().WaitFor(&clipboard_data);
+  }
 
   // Open clipboard history and paste the first history item by toggling the
   // clipboard history menu while holding down the shift key. The item should
   // paste as plain text.
-  ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
-  EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
-  PressAndRelease(ui::KeyboardCode::VKEY_V,
-                  ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
-  EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
+  {
+    SCOPED_TRACE("Paste by pressing Shift+Search/Launcher+V.");
+    ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
+    EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
+    PressAndRelease(ui::KeyboardCode::VKEY_V,
+                    ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
+    EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
 
-  WaitForWebContentsPaste("C", /*paste_plain_text=*/true);
-  histogram_tester.ExpectBucketCount(
-      "Ash.ClipboardHistory.PasteType",
-      ClipboardHistoryPasteType::kPlainTextAccelerator,
-      /*expected_count=*/1);
-  histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.PasteType",
-                                    /*count=*/7);
+    WaitForWebContentsPaste("C", /*paste_plain_text=*/true);
+    histogram_tester.ExpectBucketCount(
+        "Ash.ClipboardHistory.PasteType",
+        ClipboardHistoryPasteType::kPlainTextAccelerator,
+        /*expected_count=*/1);
+    histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.PasteType",
+                                      /*expected_count=*/7);
 
-  // Verify the clipboard buffer is restored to initial state.
-  ClipboardDataWaiter().WaitFor(&clipboard_data);
+    // Verify the clipboard buffer is restored to initial state.
+    ClipboardDataWaiter().WaitFor(&clipboard_data);
+  }
 }
 
 // Regression test for crbug.com/1363828 --- verifies that
@@ -1187,7 +1210,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryTextfieldBrowserTest,
 
   // Tap at the second menu item view. Verify that "A" is pasted.
   histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.PasteType",
-                                    /*count=*/0);
+                                    /*expected_count=*/0);
   const views::MenuItemView* second_menu_item_view =
       GetMenuItemViewForIndex(/*index=*/1);
   GetEventGenerator()->GestureTapAt(
@@ -1214,9 +1237,10 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryTextfieldBrowserTest,
   SetClipboardText("B");
 
   histogram_tester.ExpectTotalCount("Ash.ClipboardHistory.ConsecutivePastes",
-                                    /*count=*/1);
+                                    /*expected_count=*/1);
   histogram_tester.ExpectUniqueSample("Ash.ClipboardHistory.ConsecutivePastes",
-                                      /*sample=*/2, /*count=*/1);
+                                      /*sample=*/2,
+                                      /*expected_bucket_count=*/1);
 }
 
 // Verifies that the delete button should show after its host item view is under
@@ -1773,8 +1797,7 @@ class ClipboardHistoryRefreshEnabledBrowserTest
 };
 
 // Verifies that clicking the clipboard history menu's header does nothing and
-// that tab and arrow key traversal pass over the header.
-// TODO(http://b/267693860): Update this test when the remove-all button works.
+// that tab and arrow key traversal passes over the header.
 IN_PROC_BROWSER_TEST_F(ClipboardHistoryRefreshEnabledBrowserTest,
                        HeaderNotInteractive) {
   // Write some things to the clipboard.
@@ -1791,25 +1814,11 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryRefreshEnabledBrowserTest,
   EXPECT_EQ(menu->GetMenuItemsCount(), 2u);
   ASSERT_EQ(menu->GetModelForTest()->GetItemCount(), 3u);
 
+  // Verify that clicking on the header does nothing.
   EXPECT_TRUE(textfield_->GetText().empty());
   const auto* const header = menu->GetMenuItemViewAtForTest(/*index=*/0u);
   ASSERT_TRUE(header);
-
-  // Verify that clicking on the header's title does nothing.
-  const auto* const title =
-      header->GetViewByID(ash::clipboard_history_util::kMenuTitleViewID);
-  ASSERT_TRUE(title);
-  GetEventGenerator()->MoveMouseTo(title->GetBoundsInScreen().CenterPoint());
-  GetEventGenerator()->ClickLeftButton();
-  EXPECT_TRUE(textfield_->GetText().empty());
-  EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
-
-  // Verify that clicking on the header's remove-all button does nothing.
-  const auto* const remove_all_button =
-      header->GetViewByID(ash::clipboard_history_util::kRemoveAllButtonViewID);
-  ASSERT_TRUE(remove_all_button);
-  GetEventGenerator()->MoveMouseTo(
-      remove_all_button->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->MoveMouseTo(header->GetBoundsInScreen().CenterPoint());
   GetEventGenerator()->ClickLeftButton();
   EXPECT_TRUE(textfield_->GetText().empty());
   EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());

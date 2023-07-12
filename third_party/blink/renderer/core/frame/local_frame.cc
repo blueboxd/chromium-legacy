@@ -155,7 +155,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
-#include "third_party/blink/renderer/core/layout/anchor_scroll_data.h"
+#include "third_party/blink/renderer/core/layout/anchor_position_scroll_data.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
@@ -347,16 +347,12 @@ LocalFrame* LocalFrame::FromFrameToken(const LocalFrameToken& frame_token) {
   return it == local_frames_map.end() ? nullptr : it->value.Get();
 }
 
-void LocalFrame::Init(
-    Frame* opener,
-    const DocumentToken& document_token,
-    std::unique_ptr<PolicyContainer> policy_container,
-    const StorageKey& storage_key,
-    ukm::SourceId document_ukm_source_id,
-    const KURL& creator_base_url,
-    bool coop_forbids_initial_empty_document_to_be_cross_origin_isolated) {
-  coop_forbids_initial_empty_document_to_be_cross_origin_isolated_ =
-      coop_forbids_initial_empty_document_to_be_cross_origin_isolated;
+void LocalFrame::Init(Frame* opener,
+                      const DocumentToken& document_token,
+                      std::unique_ptr<PolicyContainer> policy_container,
+                      const StorageKey& storage_key,
+                      ukm::SourceId document_ukm_source_id,
+                      const KURL& creator_base_url) {
   if (!policy_container)
     policy_container = PolicyContainer::CreateEmpty();
 
@@ -793,8 +789,8 @@ LCPCriticalPathPredictor* LocalFrame::GetLCPP() {
     return nullptr;
   }
 
-  // For now, we only attach LCPP to the main frames.
-  if (!IsMainFrame()) {
+  // For now, we only attach LCPP to the outermost main frames.
+  if (!IsOutermostMainFrame()) {
     return nullptr;
   }
 
@@ -2955,7 +2951,8 @@ void LocalFrame::UpdateFaviconURL() {
   urls.reserve(icon_urls.size());
   for (const auto& icon_url : icon_urls) {
     urls.push_back(mojom::blink::FaviconURL::New(
-        icon_url.icon_url_, icon_url.icon_type_, icon_url.sizes_));
+        icon_url.icon_url_, icon_url.icon_type_, icon_url.sizes_,
+        icon_url.is_default_icon_));
   }
   DCHECK_EQ(icon_urls.size(), urls.size());
 
@@ -3548,11 +3545,6 @@ LocalFrame::GetNotRestoredReasons() {
   return not_restored_reasons_;
 }
 
-void LocalFrame::SetLCPPHint(
-    mojom::blink::LCPCriticalPathPredictorNavigationTimeHintPtr hint) {
-  // TODO(crbug.com/1419756): Pass the hint to `lcpp_`
-}
-
 void LocalFrame::AddScrollSnapshotClient(ScrollSnapshotClient& client) {
   scroll_snapshot_clients_.insert(&client);
 }
@@ -3585,11 +3577,11 @@ void LocalFrame::ScheduleNextServiceForScrollSnapshotClients() {
   }
 }
 
-void LocalFrame::CollectAnchorScrollContainerIds(
+void LocalFrame::CollectAnchorPositionScrollerIds(
     Vector<cc::ElementId>* ids) const {
   for (const auto& client : scroll_snapshot_clients_) {
-    if (const AnchorScrollData* data =
-            DynamicTo<AnchorScrollData>(client.Get());
+    if (const AnchorPositionScrollData* data =
+            DynamicTo<AnchorPositionScrollData>(client.Get());
         data && data->IsActive()) {
       ids->AppendVector(data->ScrollContainerIds());
     }

@@ -96,6 +96,8 @@ export {LocalizedLinkElement} from 'chrome://resources/cr_components/localized_l
 export {SettingsPrefsElement} from 'chrome://resources/cr_components/settings_prefs/prefs.js';
 export {CrSettingsPrefs} from 'chrome://resources/cr_components/settings_prefs/prefs_types.js';
 export {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
+export {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
+export {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 export {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
 export {CrSearchableDropDownElement} from 'chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.js';
 export {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
@@ -183,7 +185,7 @@ export {OsSettingsSearchPageElement} from './os_search_page/os_search_page.js';
 export {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl, SearchEnginesInfo} from './os_search_page/search_engines_browser_proxy.js';
 export {OsSettingsMainElement} from './os_settings_main/os_settings_main.js';
 export {OsSettingsMenuElement} from './os_settings_menu/os_settings_menu.js';
-export {OsSettingsSectionElement} from './os_settings_page/os_settings_section.js';
+export {SettingsCardElement} from './os_settings_page/settings_card.js';
 export {SettingsIdleLoadElement} from './os_settings_page/settings_idle_load.js';
 export {createRoutes as createRoutesForTesting, createSection as createSectionForTesting, createSubpage as createSubpageForTesting, OsSettingsRoutes} from './os_settings_routes.js';
 export {OsSettingsSearchBoxElement} from './os_settings_search_box/os_settings_search_box.js';

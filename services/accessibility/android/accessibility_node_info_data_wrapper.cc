@@ -69,8 +69,22 @@ bool AccessibilityNodeInfoDataWrapper::IsVisibleToUser() const {
   return GetProperty(AXBooleanProperty::VISIBLE_TO_USER);
 }
 
-bool AccessibilityNodeInfoDataWrapper::IsVirtualNode() const {
-  return node_ptr_->is_virtual_node;
+bool AccessibilityNodeInfoDataWrapper::IsWebNode() const {
+  if (is_web_node_.has_value()) {
+    return is_web_node_.value();
+  }
+
+  bool result = false;
+  ax::mojom::Role chrome_role = GetChromeRole();
+  if (chrome_role == ax::mojom::Role::kWebView ||
+      chrome_role == ax::mojom::Role::kRootWebArea) {
+    result = true;
+  } else if (AccessibilityInfoDataWrapper* parent = tree_source_->GetParent(
+                 const_cast<AccessibilityNodeInfoDataWrapper*>(this))) {
+    result = parent->IsWebNode();
+  }
+  is_web_node_ = result;
+  return result;
 }
 
 bool AccessibilityNodeInfoDataWrapper::IsIgnored() const {
@@ -94,7 +108,10 @@ bool AccessibilityNodeInfoDataWrapper::IsIgnored() const {
 }
 
 bool AccessibilityNodeInfoDataWrapper::IsImportantInAndroid() const {
-  return IsVirtualNode() || GetProperty(AXBooleanProperty::IMPORTANCE);
+  // Virtual nodes are not enforced to be set importance. Here, they're always
+  // treated as important.
+  return node_ptr_->is_virtual_node ||
+         GetProperty(AXBooleanProperty::IMPORTANCE);
 }
 
 bool AccessibilityNodeInfoDataWrapper::IsFocusableInFullFocusMode() const {
@@ -110,7 +127,7 @@ bool AccessibilityNodeInfoDataWrapper::IsFocusableInFullFocusMode() const {
 
 bool AccessibilityNodeInfoDataWrapper::IsAccessibilityFocusableContainer()
     const {
-  if (IsVirtualNode()) {
+  if (IsWebNode()) {
     return GetProperty(AXBooleanProperty::SCREEN_READER_FOCUSABLE) ||
            IsFocusable();
   }
@@ -219,19 +236,16 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXRole(
     return;
   }
 
-  std::string chrome_role;
-  if (GetProperty(AXStringProperty::CHROME_ROLE, &chrome_role)) {
-    auto role_value = ui::ParseAXEnum<ax::mojom::Role>(chrome_role.c_str());
-    if (role_value != ax::mojom::Role::kNone) {
-      // The webView and rootWebArea roles differ between Android and Chrome. In
-      // particular, Android includes far fewer attributes which leads to
-      // undesirable behavior. Exclude their direct mapping.
-      out_data->role = (role_value != ax::mojom::Role::kWebView &&
-                        role_value != ax::mojom::Role::kRootWebArea)
-                           ? role_value
-                           : ax::mojom::Role::kGenericContainer;
-      return;
-    }
+  if (ax::mojom::Role chrome_role = GetChromeRole();
+      chrome_role != ax::mojom::Role::kNone) {
+    // The webView and rootWebArea roles differ between Android and Chrome. In
+    // particular, Android includes far fewer attributes which leads to
+    // undesirable behavior. Exclude their direct mapping.
+    out_data->role = (chrome_role != ax::mojom::Role::kWebView &&
+                      chrome_role != ax::mojom::Role::kRootWebArea)
+                         ? chrome_role
+                         : ax::mojom::Role::kGenericContainer;
+    return;
   }
 
 #define MAP_ROLE(android_class_name, chrome_role) \
@@ -762,7 +776,7 @@ bool AccessibilityNodeInfoDataWrapper::HasText() const {
 }
 
 bool AccessibilityNodeInfoDataWrapper::HasAccessibilityFocusableText() const {
-  if (IsVirtualNode()) {
+  if (IsWebNode()) {
     return HasText();
   }
 
@@ -795,7 +809,7 @@ void AccessibilityNodeInfoDataWrapper::ComputeNameFromContents(
 
 void AccessibilityNodeInfoDataWrapper::ComputeNameFromContentsInternal(
     std::vector<std::string>* names) const {
-  if (IsVirtualNode() || IsAccessibilityFocusableContainer()) {
+  if (IsWebNode() || IsAccessibilityFocusableContainer()) {
     return;
   }
 
@@ -807,6 +821,18 @@ void AccessibilityNodeInfoDataWrapper::ComputeNameFromContentsInternal(
         names->push_back(name);
         return;
       }
+    }
+
+    // TalkBack reads role description by default even when reading properties
+    // of descendant nodes. Let's append them here to fill the gap.
+    // This is not in |text_properties_| because when focusing on the node that
+    // has role_description, then ChromeVox selectively reads the role
+    // description if needed.
+    std::string role_description;
+    if (GetProperty(AXStringProperty::ROLE_DESCRIPTION, &role_description) &&
+        !role_description.empty()) {
+      names->push_back(role_description);
+      // don't early return here. subtree may contain more text.
     }
   }
 
@@ -909,6 +935,15 @@ bool AccessibilityNodeInfoDataWrapper::HasImportantPropertyInternal() const {
   }
 
   return false;
+}
+
+ax::mojom::Role AccessibilityNodeInfoDataWrapper::GetChromeRole() const {
+  std::string chrome_role;
+  absl::optional<ax::mojom::Role> result;
+  if (GetProperty(AXStringProperty::CHROME_ROLE, &chrome_role)) {
+    result = ui::MaybeParseAXEnum<ax::mojom::Role>(chrome_role.c_str());
+  }
+  return result.value_or(ax::mojom::Role::kNone);
 }
 
 }  // namespace ax::android

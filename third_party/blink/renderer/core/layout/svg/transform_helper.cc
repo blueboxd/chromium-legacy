@@ -66,6 +66,25 @@ bool TransformHelper::DependsOnReferenceBox(const ComputedStyle& style) {
   return false;
 }
 
+bool TransformHelper::UpdateReferenceBoxDependency(
+    LayoutObject& layout_object) {
+  const bool transform_uses_reference_box =
+      DependsOnReferenceBox(layout_object.StyleRef());
+  UpdateReferenceBoxDependency(layout_object, transform_uses_reference_box);
+  return transform_uses_reference_box;
+}
+
+void TransformHelper::UpdateReferenceBoxDependency(
+    LayoutObject& layout_object,
+    bool transform_uses_reference_box) {
+  if (transform_uses_reference_box &&
+      layout_object.StyleRef().TransformBox() == ETransformBox::kViewBox) {
+    layout_object.SetSVGSelfOrDescendantHasViewportDependency();
+  } else {
+    layout_object.ClearSVGSelfOrDescendantHasViewportDependency();
+  }
+}
+
 gfx::RectF TransformHelper::ComputeReferenceBox(
     const LayoutObject& layout_object) {
   const ComputedStyle& style = layout_object.StyleRef();
@@ -85,12 +104,12 @@ gfx::RectF TransformHelper::ComputeReferenceBox(
 }
 
 AffineTransform TransformHelper::ComputeTransform(
-    const LayoutObject& layout_object,
+    UseCounter& use_counter,
+    const ComputedStyle& style,
+    const gfx::RectF& reference_box,
     ComputedStyle::ApplyTransformOrigin apply_transform_origin) {
-  const ComputedStyle& style = layout_object.StyleRef();
   if (DependsOnReferenceBox(style)) {
-    UseCounter::Count(layout_object.GetDocument(),
-                      WebFeature::kTransformUsesBoxSizeOnSVG);
+    UseCounter::Count(use_counter, WebFeature::kTransformUsesBoxSizeOnSVG);
   }
 
   // CSS transforms operate with pre-scaled lengths. To make this work with SVG
@@ -105,7 +124,6 @@ AffineTransform TransformHelper::ComputeTransform(
   // clipPath. See
   // https://svgwg.org/svg2-draft/coords.html#ObjectBoundingBoxUnits
   gfx::Transform transform;
-  gfx::RectF reference_box = ComputeReferenceBox(layout_object);
   style.ApplyTransform(transform, nullptr, reference_box,
                        ComputedStyle::kIncludeTransformOperations,
                        apply_transform_origin,
@@ -118,10 +136,30 @@ AffineTransform TransformHelper::ComputeTransform(
   return AffineTransform::FromTransform(transform);
 }
 
+AffineTransform TransformHelper::ComputeTransformIncludingMotion(
+    const SVGElement& element,
+    const gfx::RectF& reference_box) {
+  const LayoutObject& layout_object = *element.GetLayoutObject();
+  if (layout_object.HasTransform() || element.HasMotionTransform()) {
+    AffineTransform matrix =
+        ComputeTransform(element.GetDocument(), layout_object.StyleRef(),
+                         reference_box, ComputedStyle::kIncludeTransformOrigin);
+    element.ApplyMotionTransform(matrix);
+    return matrix;
+  }
+  return AffineTransform();
+}
+
+AffineTransform TransformHelper::ComputeTransformIncludingMotion(
+    const SVGElement& element) {
+  const LayoutObject& layout_object = *element.GetLayoutObject();
+  const gfx::RectF reference_box = ComputeReferenceBox(layout_object);
+  return ComputeTransformIncludingMotion(element, reference_box);
+}
+
 gfx::PointF TransformHelper::ComputeTransformOrigin(
-    const LayoutObject& layout_object) {
-  const auto& style = layout_object.StyleRef();
-  gfx::RectF reference_box = ComputeReferenceBox(layout_object);
+    const ComputedStyle& style,
+    const gfx::RectF& reference_box) {
   gfx::PointF origin(FloatValueForLength(style.GetTransformOrigin().X(),
                                          reference_box.width()) +
                          reference_box.x(),

@@ -616,6 +616,8 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPath2DPaintCache);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPaintHolding);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPaintHoldingCrossOrigin);
 
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kParkableImagesToDisk);
+
 // Whether the pending beacon API is enabled or not.
 // https://github.com/WICG/pending-beacon/blob/main/README.md
 // - kPendingBeaconAPI = {true: {"requires_origin_trial": false}} to enable the
@@ -725,9 +727,9 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrivateAggregationApi);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kPrivateAggregationApiEnabledInSharedStorage;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
-    kPrivateAggregationApiEnabledInFledge;
+    kPrivateAggregationApiEnabledInProtectedAudience;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
-    kPrivateAggregationApiFledgeExtensionsEnabled;
+    kPrivateAggregationApiProtectedAudienceExtensionsEnabled;
 
 // If set, HTMLDocumentParser processes data immediately rather than after a
 // delay. This is further controlled by the feature params starting with the
@@ -825,6 +827,12 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kRunTextInputUpdatePostLifecycle);
 // process.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kRuntimeFeatureStateControllerApplyFeatureDiff);
+
+// When enabled, it adds FTP / FTPS / SFTP to the safe list for
+// registerProtocolHandler. This feature is enabled by default and meant to
+// be used as a killswitch.
+// https://html.spec.whatwg.org/multipage/system-state.html#safelisted-scheme
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSafelistFTPToRegisterProtocolHandler);
 
 // These control a major serialization change to include information about
 // exposed interfaces in trailer data, to allow emergency fixes.
@@ -948,6 +956,11 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kSharedStorageSelectURLBitBudgetPerOriginPerPageLoad;
 
+// Additional Shared Storage API features shipped in M117.
+// TODO(crbug.com/1218540): Merge this flag with `kSharedStorageAPI` once
+// shipped.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSharedStorageAPIM117);
+
 // TODO(accessibility): This flag is set to accommodate JAWS on Windows so they
 // can adjust to us not simulating click events on a focus action. It is in the
 // process of being removed completely and is currently disabled by default on
@@ -1050,6 +1063,14 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
 // empty duration (e.g. "0s"), then no top-level user interaction is required.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kStorageAccessAPITopLevelUserInteractionBound;
+// How long an implicit Storage Access API permission grant/denial should last
+// (not taking renewals into account).
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kStorageAccessAPIImplicitPermissionLifetime;
+// How long an explicit Storage Access API permission grant/denial should last
+// (not taking renewals into account).
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kStorageAccessAPIExplicitPermissionLifetime;
 
 // Stylus gestures for editable web content.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kStylusRichGestures);
@@ -1198,6 +1219,8 @@ BLINK_COMMON_EXPORT bool IsMaxUnthrottledTimeoutNestingLevelEnabled();
 BLINK_COMMON_EXPORT bool IsNewBaseUrlInheritanceBehaviorEnabled();
 
 BLINK_COMMON_EXPORT bool IsParkableStringsToDiskEnabled();
+
+BLINK_COMMON_EXPORT bool IsParkableImagesToDiskEnabled();
 
 BLINK_COMMON_EXPORT bool IsPlzDedicatedWorkerEnabled();
 

@@ -36,8 +36,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SharedDictionaryStorage
   SharedDictionaryStorage(const SharedDictionaryStorage&) = delete;
   SharedDictionaryStorage& operator=(const SharedDictionaryStorage&) = delete;
 
-  // Returns a matching SharedDictionary for `url`.
+  // Returns a matching SharedDictionary for `url`. If the metadata has not been
+  // read from the database, this method returns nullptr.
   virtual std::unique_ptr<SharedDictionary> GetDictionary(const GURL& url) = 0;
+
+  // This method waits until the metadata, and calls `callback` with the result
+  // of `GetDictionary()`.
+  virtual void GetDictionaryAsync(
+      const GURL& url,
+      base::OnceCallback<void(std::unique_ptr<SharedDictionary>)> callback) = 0;
 
   // Returns a SharedDictionaryWriter if `headers` has a valid
   // `use-as-dictionary` header, and `access_allowed_check_callback`
@@ -63,7 +70,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SharedDictionaryStorage
 };
 
 // Returns a matching dictionary for `url` from `dictionary_info_map`.
-// This is a template method because SharedDictionaryStorageOnDisk and
+// This is a template method because SharedDictionaryStorageInMemory and
 // SharedDictionaryStorageOnDisk are using different class for
 // DictionaryInfoType.
 template <class DictionaryInfoType>
@@ -84,7 +91,6 @@ DictionaryInfoType* GetMatchingDictionaryFromDictionaryInfoMap(
     // TODO(crbug.com/1413922): base::MatchPattern() is treating '?' in the
     // pattern as an wildcard. We need to introduce a new flag in
     // base::MatchPattern() to treat '?' as a normal character.
-    // TODO(crbug.com/1413922): Need to check the expiration of the dictionary.
     // TODO(crbug.com/1413922): Need support path expansion for relative paths.
     if ((item.first.size() > mached_path_size) &&
         base::MatchPattern(url.path(), item.first)) {

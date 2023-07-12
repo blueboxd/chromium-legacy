@@ -336,6 +336,18 @@ void SessionRestorationBrowserAgent::WebStateActivatedAt(
   SaveSession(/*immediately=*/false);
 }
 
+void SessionRestorationBrowserAgent::WebStateListWillChange(
+    WebStateList* web_state_list,
+    const WebStateListChangeDetach& detach_change,
+    const WebStateSelection& selection) {
+  if (web_state_list->active_index() == selection.index) {
+    return;
+  }
+
+  // Persist the session state if a background tab is detached.
+  SaveSession(/*immediately=*/false);
+}
+
 void SessionRestorationBrowserAgent::WebStateListDidChange(
     WebStateList* web_state_list,
     const WebStateListChange& change,
@@ -382,7 +394,7 @@ void SessionRestorationBrowserAgent::WebStateListDidChange(
     case WebStateListChange::Type::kInsert: {
       const WebStateListChangeInsert& insert_change =
           change.As<WebStateListChangeInsert>();
-      if (selection.activating ||
+      if (selection.active_state_change ||
           insert_change.inserted_web_state()->IsLoading()) {
         return;
       }
@@ -392,17 +404,6 @@ void SessionRestorationBrowserAgent::WebStateListDidChange(
       break;
     }
   }
-}
-
-void SessionRestorationBrowserAgent::WillDetachWebStateAt(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index) {
-  if (web_state_list->active_index() == index)
-    return;
-
-  // Persist the session state if a background tab is detached.
-  SaveSession(/*immediately=*/false);
 }
 
 void SessionRestorationBrowserAgent::WillBeginBatchOperation(

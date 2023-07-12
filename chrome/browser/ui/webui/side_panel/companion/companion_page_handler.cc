@@ -32,6 +32,7 @@
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/lens/buildflags.h"
+#include "components/lens/lens_url_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/unified_consent_service.h"
@@ -264,8 +265,14 @@ void CompanionPageHandler::NotifyURLChanged(bool is_full_reload) {
     page_->UpdateCompanionPage(companion_update_proto);
   }
   if (visual_search_host_) {
-    visual_search_host_->CancelClassification();
+    visual_search_host_->CancelClassification(web_contents()->GetVisibleURL());
   }
+}
+
+void CompanionPageHandler::NotifyLinkOpened(
+    GURL opened_url,
+    side_panel::mojom::LinkOpenMetadataPtr metadata) {
+  page_->NotifyLinkOpen(opened_url, std::move(metadata));
 }
 
 void CompanionPageHandler::OnImageQuery(
@@ -273,6 +280,13 @@ void CompanionPageHandler::OnImageQuery(
   GURL modified_upload_url = url_builder_->AppendCompanionParamsToURL(
       image_query.upload_url, web_contents()->GetVisibleURL(),
       /*text_query=*/"");
+  // Image queries should have the viewport size set in the url params.
+  modified_upload_url = lens::AppendOrReplaceViewportSizeForRequest(
+      modified_upload_url, companion_untrusted_ui_->web_ui()
+                               ->GetWebContents()
+                               ->GetViewBounds()
+                               .size());
+
   image_query.upload_url = modified_upload_url;
   page_->OnImageQuery(image_query.Clone());
 }

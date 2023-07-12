@@ -354,7 +354,7 @@ void DIPSWebContentsObserver::ReportRedirectorsWithoutInteraction(
   }
 
   dips_service_->storage()
-      ->AsyncCall(&DIPSStorage::FilterSitesWithoutInteraction)
+      ->AsyncCall(&DIPSStorage::FilterSitesWithoutInteractionOrWaa)
       .WithArgs(sites)
       .Then(issue_reporting_callback_);
 }
@@ -376,7 +376,9 @@ void DIPSWebContentsObserver::RecordEvent(DIPSRecordedEvent event,
       return;
     }
     case DIPSRecordedEvent::kWebAuthnAssertion: {
-      // TODO(crbug.com/1446678): Record this events in a dedicated db column.
+      dips_service_->storage()
+          ->AsyncCall(&DIPSStorage::RecordWebAuthnAssertion)
+          .WithArgs(url, time, dips_service_->GetCookieMode());
       return;
     }
   }
@@ -591,26 +593,6 @@ void DIPSWebContentsObserver::OnCookiesAccessed(
   detector_.OnClientCookiesAccessed(fpu.value(), details.type);
 }
 
-void DIPSBounceDetector::OnClientCookiesAccessed(const GURL& url,
-                                                 CookieOperation op) {
-  base::Time now = clock_->Now();
-
-  // We might be called for "late" server cookie accesses, not just client
-  // cookies. Before completing other checks, attempt to attribute the cookie
-  // access to the current redirect chain to handle that case.
-  //
-  // TODO(rtarpine): Is it possible for cookie accesses to be reported late for
-  // uncommitted navigations?
-  if (committed_redirect_context_.AddLateCookieAccess(url, op)) {
-    if (op == CookieOperation::kChange) {
-      delegate_->RecordEvent(DIPSRecordedEvent::kStorage, url, now);
-    }
-    return;
-  }
-
-  OnClientSiteDataAccessed(url, op);
-}
-
 void DIPSWebContentsObserver::OnCookiesAccessed(
     NavigationHandle* navigation_handle,
     const content::CookieAccessDetails& details) {
@@ -642,6 +624,26 @@ void DIPSWebContentsObserver::OnCookiesAccessed(
   detector_.OnServerCookiesAccessed(&dips_handle, details.url, details.type);
 }
 
+void DIPSBounceDetector::OnClientCookiesAccessed(const GURL& url,
+                                                 CookieOperation op) {
+  base::Time now = clock_->Now();
+
+  // We might be called for "late" server cookie accesses, not just client
+  // cookies. Before completing other checks, attempt to attribute the cookie
+  // access to the current redirect chain to handle that case.
+  //
+  // TODO(rtarpine): Is it possible for cookie accesses to be reported late for
+  // uncommitted navigations?
+  if (committed_redirect_context_.AddLateCookieAccess(url, op)) {
+    if (op == CookieOperation::kChange) {
+      delegate_->RecordEvent(DIPSRecordedEvent::kStorage, url, now);
+    }
+    return;
+  }
+
+  OnClientSiteDataAccessed(url, op);
+}
+
 void DIPSBounceDetector::OnServerCookiesAccessed(
     DIPSNavigationHandle* navigation_handle,
     const GURL& url,
@@ -653,6 +655,73 @@ void DIPSBounceDetector::OnServerCookiesAccessed(
   if (state) {
     state->filter.AddAccess(url, op);
   }
+}
+
+void DIPSWebContentsObserver::OnServiceWorkerAccessed(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& scope,
+    content::AllowServiceWorkerResult allowed) {
+  if (!IsInPrimaryPage(render_frame_host) || !allowed) {
+    return;
+  }
+
+  const absl::optional<GURL> fpu = GetFirstPartyURL(render_frame_host);
+  if (fpu.has_value()) {
+    detector_.OnWorkerInitialized(fpu.value());
+  }
+}
+
+void DIPSWebContentsObserver::OnServiceWorkerAccessed(
+    content::NavigationHandle* navigation_handle,
+    const GURL& scope,
+    content::AllowServiceWorkerResult allowed) {
+  if (!IsInPrimaryPage(navigation_handle) || !allowed) {
+    return;
+  }
+
+  const absl::optional<GURL> fpu = GetFirstPartyURL(navigation_handle);
+  if (!fpu.has_value()) {
+    return;
+  }
+
+  detector_.OnWorkerInitialized(fpu.value());
+}
+
+void DIPSWebContentsObserver::OnClientAdded(
+    const blink::SharedWorkerToken& token,
+    content::GlobalRenderFrameHostId render_frame_host_id) {
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(render_frame_host_id);
+
+  if (!IsInPrimaryPage(render_frame_host)) {
+    return;
+  }
+
+  const absl::optional<GURL> fpu = GetFirstPartyURL(render_frame_host);
+  if (fpu.has_value()) {
+    detector_.OnWorkerInitialized(fpu.value());
+  }
+}
+
+void DIPSWebContentsObserver::OnWorkerCreated(
+    const blink::DedicatedWorkerToken& worker_token,
+    int worker_process_id,
+    content::GlobalRenderFrameHostId ancestor_render_frame_host_id) {
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(ancestor_render_frame_host_id);
+
+  if (!IsInPrimaryPage(render_frame_host)) {
+    return;
+  }
+
+  const absl::optional<GURL> fpu = GetFirstPartyURL(render_frame_host);
+  if (fpu.has_value()) {
+    detector_.OnWorkerInitialized(fpu.value());
+  }
+}
+
+void DIPSBounceDetector::OnWorkerInitialized(const GURL& url) {
+  delegate_->RecordEvent(DIPSRecordedEvent::kStorage, url, clock_->Now());
 }
 
 void DIPSWebContentsObserver::DidFinishNavigation(

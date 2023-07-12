@@ -29,8 +29,10 @@
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
+#include "components/password_manager/core/browser/affiliation/affiliated_match_helper.h"
+#include "components/password_manager/core/browser/affiliation/fake_affiliation_service.h"
 #include "components/password_manager/core/browser/affiliation/mock_affiliated_match_helper.h"
-#include "components/password_manager/core/browser/affiliation/mock_affiliation_service.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
@@ -371,7 +373,8 @@ class MockFieldInfoManager : public FieldInfoManager {
 };
 
 class FailingPasswordStoreBackend : public FakePasswordStoreBackend {
-  void InitBackend(RemoteChangesReceived remote_form_changes_received,
+  void InitBackend(AffiliatedMatchHelper* affiliated_match_helper,
+                   RemoteChangesReceived remote_form_changes_received,
                    base::RepeatingClosure sync_enabled_or_disabled_cb,
                    base::OnceCallback<void(bool)> completion) override {
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
@@ -392,7 +395,7 @@ class PasswordManagerTest : public testing::Test {
     store_ = base::MakeRefCounted<TestPasswordStore>();
     auto owning_mock_match_helper =
         std::make_unique<testing::NiceMock<MockAffiliatedMatchHelper>>(
-            &mock_affiliation_service_);
+            &fake_affiliation_service_);
     mock_match_helper_ = owning_mock_match_helper.get();
     store_->Init(
         /*prefs=*/nullptr,
@@ -463,6 +466,7 @@ class PasswordManagerTest : public testing::Test {
   }
 
   void TearDown() override {
+    mock_match_helper_ = nullptr;
     if (account_store_) {
       account_store_->ShutdownOnUIThread();
       account_store_ = nullptr;
@@ -647,10 +651,10 @@ class PasswordManagerTest : public testing::Test {
   const GURL test_form_action_{"https://www.google.com/a/Login"};
   const std::string test_signon_realm_ = "https://www.google.com/";
   base::test::SingleThreadTaskEnvironment task_environment_;
-  testing::NiceMock<MockAffiliationService> mock_affiliation_service_;
+  FakeAffiliationService fake_affiliation_service_;
   scoped_refptr<TestPasswordStore> store_;
   scoped_refptr<TestPasswordStore> account_store_;
-  raw_ptr<MockAffiliatedMatchHelper, DanglingUntriaged> mock_match_helper_;
+  raw_ptr<MockAffiliatedMatchHelper> mock_match_helper_ = nullptr;
   MockPasswordReuseManager reuse_manager_;
   testing::NiceMock<MockPasswordManagerClient> client_;
   MockPasswordManagerDriver driver_;
@@ -2718,59 +2722,6 @@ TEST_F(PasswordManagerTest, SaveEnterprisePasswordHash) {
   task_environment_.RunUntilIdle();
 }
 
-// If there are no forms to parse, certificate errors should not be reported.
-TEST_F(PasswordManagerTest, CertErrorReported_NoForms) {
-  const std::vector<FormData> observed;
-  EXPECT_CALL(client_, GetMainFrameCertStatus())
-      .WillRepeatedly(Return(net::CERT_STATUS_AUTHORITY_INVALID));
-
-  base::HistogramTester histogram_tester;
-  manager()->OnPasswordFormsParsed(&driver_, observed);
-  histogram_tester.ExpectTotalCount(
-      "PasswordManager.CertificateErrorsWhileSeeingForms", 0);
-}
-
-TEST_F(PasswordManagerTest, CertErrorReported) {
-  constexpr struct {
-    net::CertStatus cert_status;
-    metrics_util::CertificateError expected_error;
-  } kCases[] = {
-      {0, metrics_util::CertificateError::NONE},
-      {net::CERT_STATUS_SHA1_SIGNATURE_PRESENT,  // not an error
-       metrics_util::CertificateError::NONE},
-      {net::CERT_STATUS_COMMON_NAME_INVALID,
-       metrics_util::CertificateError::COMMON_NAME_INVALID},
-      {net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM,
-       metrics_util::CertificateError::WEAK_SIGNATURE_ALGORITHM},
-      {net::CERT_STATUS_DATE_INVALID,
-       metrics_util::CertificateError::DATE_INVALID},
-      {net::CERT_STATUS_AUTHORITY_INVALID,
-       metrics_util::CertificateError::AUTHORITY_INVALID},
-      {net::CERT_STATUS_WEAK_KEY, metrics_util::CertificateError::OTHER},
-      {net::CERT_STATUS_DATE_INVALID | net::CERT_STATUS_WEAK_KEY,
-       metrics_util::CertificateError::DATE_INVALID},
-      {net::CERT_STATUS_DATE_INVALID | net::CERT_STATUS_AUTHORITY_INVALID,
-       metrics_util::CertificateError::AUTHORITY_INVALID},
-      {net::CERT_STATUS_DATE_INVALID | net::CERT_STATUS_AUTHORITY_INVALID |
-           net::CERT_STATUS_WEAK_KEY,
-       metrics_util::CertificateError::AUTHORITY_INVALID},
-  };
-
-  const std::vector<FormData> observed = {PasswordForm().form_data};
-
-  for (const auto& test_case : kCases) {
-    SCOPED_TRACE(testing::Message("index of test_case = ")
-                 << (&test_case - kCases));
-    EXPECT_CALL(client_, GetMainFrameCertStatus())
-        .WillRepeatedly(Return(test_case.cert_status));
-    base::HistogramTester histogram_tester;
-    manager()->OnPasswordFormsParsed(&driver_, observed);
-    histogram_tester.ExpectUniqueSample(
-        "PasswordManager.CertificateErrorsWhileSeeingForms",
-        test_case.expected_error, 1);
-  }
-}
-
 TEST_F(PasswordManagerTest, CreatingFormManagers) {
   FormData form_data(MakeSimpleFormData());
   std::vector<FormData> observed;
@@ -3654,10 +3605,6 @@ TEST_F(PasswordManagerTest, FillSingleUsername) {
 // in marking the password field as eligible for password generation.
 TEST_F(PasswordManagerTest,
        MarkServerPredictedClearTextPasswordFieldEligibleForGeneration) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      password_manager::features::kEnablePasswordGenerationForClearTextFields);
-
   PasswordFormManager::set_wait_for_server_predictions_for_filling(true);
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(Return(true));

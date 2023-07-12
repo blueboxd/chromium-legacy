@@ -1802,7 +1802,8 @@ void BrowserView::UpdateExclusiveAccessExitBubbleContent(
   }
 
   exclusive_access_bubble_ = std::make_unique<ExclusiveAccessBubbleViews>(
-      this, url, bubble_type, std::move(bubble_first_hide_callback));
+      this, url, bubble_type, notify_download,
+      std::move(bubble_first_hide_callback));
 }
 
 bool BrowserView::IsExclusiveAccessBubbleDisplayed() const {
@@ -2288,13 +2289,6 @@ void BrowserView::FocusAppMenu() {
 }
 
 void BrowserView::RotatePaneFocus(bool forwards) {
-  // If an inactive bubble is showing this intentionally focuses that dialog to
-  // provide an easy access method to these dialogs without requiring additional
-  // keyboard shortcuts or commands. To get back out to pane cycling the dialog
-  // needs to be accepted or dismissed.
-  if (ActivateFirstInactiveBubbleForAccessibility())
-    return;
-
   GetFocusManager()->RotatePaneFocus(
       forwards ? views::FocusManager::Direction::kForward
                : views::FocusManager::Direction::kBackward,
@@ -3833,6 +3827,31 @@ bool BrowserView::ShouldDescendIntoChildForEventHandling(
   }
 
   return true;
+}
+
+bool BrowserView::RotatePaneFocusFromView(views::View* focused_view,
+                                          bool forward,
+                                          bool enable_wrapping) {
+  // If an inactive bubble is showing this intentionally focuses that dialog to
+  // provide an easy access method to these dialogs without requiring additional
+  // keyboard shortcuts or commands. To get back out to pane cycling the dialog
+  // needs to be accepted or dismissed.
+  if (ActivateFirstInactiveBubbleForAccessibility()) {
+    // We only want to signal that we have performed a rotation once for an
+    // accessibility bubble. This is important for ChromeOS because the result
+    // of this operation is used to determine whether or not we should rotate
+    // focus out of the browser.
+    // |enable_wrapping| is overloaded with the start of a rotation. Therefore,
+    // we can use it to ensure that we only return that we have rotated once to
+    // the caller.
+    // TODO(crbug.com/1459355): the overloaded |enable_wrapping| is not
+    // intuitive and confusing. Refactor this so that start of rotation is more
+    // clear and not mangled up with wrapping.
+    return enable_wrapping;
+  }
+
+  return views::WidgetDelegate::RotatePaneFocusFromView(focused_view, forward,
+                                                        enable_wrapping);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

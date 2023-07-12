@@ -413,7 +413,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tab.RendererTermination.TotalTabCount" units="tabs"
-    expires_after="2023-09-17">
+    expires_after="2024-01-07">
   <owner>ajuma@chromium.org</owner>
   <owner>thegreenfrog@chromium.org</owner>
   <summary>
@@ -981,7 +981,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TabManager.Discarding.DiscardCount" units="Discards"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>chrisha@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -1040,7 +1040,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TabManager.Discarding.ReloadCount" units="Reloads"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>chrisha@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -1080,42 +1080,6 @@ chromium-metrics-reviews@google.com.
     needs to be deferred in cases where the system is under memory pressure. The
     metric is not recorded when the session overlaps with background tab opening
     session.
-  </summary>
-</histogram>
-
-<histogram name="TabManager.Heuristics.FromBackgroundedToFirstFaviconUpdated"
-    units="ms" expires_after="M85">
-  <owner>chrisha@chromium.org</owner>
-  <owner>lpy@chromium.org</owner>
-  <summary>
-    Measures the time duration from when the tab is backgrounded to when its
-    favicon is updated. The first-time set of favicon will be ignored; this
-    metric will only be recorded after 5 minutes from main frame navigation
-    committed and when the tab is in the background.
-  </summary>
-</histogram>
-
-<histogram
-    name="TabManager.Heuristics.FromBackgroundedToFirstNonPersistentNotificationCreated"
-    units="ms" expires_after="M78">
-  <owner>chrisha@chromium.org</owner>
-  <owner>lpy@chromium.org</owner>
-  <summary>
-    Measures the time duration from when the tab is backgrounded to when a
-    non-persistent notification is created. Only recorded when the tab is in the
-    background.
-  </summary>
-</histogram>
-
-<histogram name="TabManager.Heuristics.FromBackgroundedToFirstTitleUpdated"
-    units="ms" expires_after="M77">
-  <owner>chrisha@chromium.org</owner>
-  <owner>lpy@chromium.org</owner>
-  <summary>
-    Measures the time duration from when the tab is backgrounded to when its
-    title is updated. The first-time set of title will be ignored; this metric
-    will only be recorded after 5 minutes from main frame navigation committed
-    and when the tab is in the background.
   </summary>
 </histogram>
 
@@ -1566,6 +1530,13 @@ chromium-metrics-reviews@google.com.
     persisted across restarts) in a file. This metric records how long it took
     to save the file in the event of a successful save.
   </summary>
+</histogram>
+
+<histogram name="Tabs.PinnedCountAtStartup" units="tabs"
+    expires_after="2024-06-28">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
+  <summary>[iOS] The number of pinned tabs opened at cold launch.</summary>
 </histogram>
 
 <histogram

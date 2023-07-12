@@ -114,8 +114,6 @@ public abstract class ChromeFeatureList {
             "AndroidSearchEngineChoiceNotification";
     public static final String ANDROID_IMPROVED_BOOKMARKS = "AndroidImprovedBookmarks";
     public static final String ANIMATED_IMAGE_DRAG_SHADOW = "AnimatedImageDragShadow";
-    public static final String APP_LANGUAGE_PROMPT = "AppLanguagePrompt";
-    public static final String APP_LANGUAGE_PROMPT_ULP = "AppLanguagePromptULP";
     public static final String APP_MENU_MOBILE_SITE_OPTION = "AppMenuMobileSiteOption";
     public static final String AUTOFILL_ACCOUNT_PROFILE_STORAGE = "AutofillAccountProfileStorage";
     public static final String AUTOFILL_ADDRESS_PROFILE_SAVE_PROMPT_NICKNAME_SUPPORT =
@@ -159,6 +157,7 @@ public abstract class ChromeFeatureList {
     public static final String BOOKMARKS_REFRESH = "BookmarksRefresh";
     public static final String CACHE_DEPRECATED_SYSTEM_LOCATION_SETTING =
             "CacheDeprecatedSystemLocationSetting";
+    public static final String CACHE_ACTIVITY_TASKID = "CacheActivityTaskID";
     public static final String CAF_MRP_DEFERRED_DISCOVERY = "CafMRPDeferredDiscovery";
     public static final String CAPTIVE_PORTAL_CERTIFICATE_LIST = "CaptivePortalCertificateList";
     public static final String CAST_ANOTHER_CONTENT_WHILE_CASTING =
@@ -166,6 +165,8 @@ public abstract class ChromeFeatureList {
     public static final String CCT_AUTO_TRANSLATE = "CCTAutoTranslate";
     public static final String CCT_BOTTOM_BAR_SWIPE_UP_GESTURE = "CCTBottomBarSwipeUpGesture";
     public static final String CCT_BRAND_TRANSPARENCY = "CCTBrandTransparency";
+    public static final String CCT_BRAND_TRANSPARENCY_MEMORY_IMPROVEMENT =
+            "CCTBrandTransparencyMemoryImprovement";
     public static final String CCT_CLIENT_DATA_HEADER = "CCTClientDataHeader";
     public static final String CCT_FEATURE_USAGE = "CCTFeatureUsage";
     public static final String CCT_INCOGNITO = "CCTIncognito";
@@ -187,9 +188,8 @@ public abstract class ChromeFeatureList {
     public static final String CCT_RESIZABLE_ALLOW_RESIZE_BY_USER_GESTURE =
             "CCTResizableAllowResizeByUserGesture";
     public static final String CCT_RESIZABLE_FOR_THIRD_PARTIES = "CCTResizableForThirdParties";
+    public static final String CCT_RESIZABLE_MULTI_WINDOW_MODE = "CCTResizableMultiWindowMode";
     public static final String CCT_RESIZABLE_SIDE_SHEET = "CCTResizableSideSheet";
-    public static final String CCT_RESIZABLE_SIDE_SHEET_DISCOVER_FEED_SETTINGS =
-            "CCTResizableSideSheetDiscoverFeedSettings";
     public static final String CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES =
             "CCTResizableSideSheetForThirdParties";
     public static final String CCT_RESOURCE_PREFETCH = "CCTResourcePrefetch";
@@ -245,10 +245,10 @@ public abstract class ChromeFeatureList {
     public static final String DNS_OVER_HTTPS = "DnsOverHttps";
     public static final String DOWNLOAD_OFFLINE_CONTENT_PROVIDER =
             "UseDownloadOfflineContentProvider";
+    public static final String DRAG_DROP_INTO_OMNIBOX = "DragDropIntoOmnibox";
     public static final String DRAW_EDGE_TO_EDGE = "DrawEdgeToEdge";
     public static final String EARLY_LIBRARY_LOAD = "EarlyLibraryLoad";
     public static final String EXPERIMENTS_FOR_AGSA = "ExperimentsForAgsa";
-    public static final String EXPLICIT_LANGUAGE_ASK = "ExplicitLanguageAsk";
     public static final String EXPLORE_SITES = "ExploreSites";
     public static final String EMPTY_STATES = "EmptyStates";
     public static final String FEATURE_NOTIFICATION_GUIDE = "FeatureNotificationGuide";
@@ -269,7 +269,6 @@ public abstract class ChromeFeatureList {
     public static final String FOCUS_OMNIBOX_IN_INCOGNITO_TAB_INTENTS =
             "FocusOmniboxInIncognitoTabIntents";
     public static final String FOLDABLE_JANK_FIX = "FoldableJankFix";
-    public static final String FORCE_APP_LANGUAGE_PROMPT = "ForceAppLanguagePrompt";
     public static final String FORCE_DISABLE_EXTENDED_SYNC_PROMOS =
             "ForceDisableExtendedSyncPromos";
     public static final String FORCE_STARTUP_SIGNIN_PROMO = "ForceStartupSigninPromo";
@@ -295,7 +294,6 @@ public abstract class ChromeFeatureList {
     public static final String INTEREST_FEED_V2_HEARTS = "InterestFeedV2Hearts";
     public static final String LENS_CAMERA_ASSISTED_SEARCH = "LensCameraAssistedSearch";
     public static final String LENS_ON_QUICK_ACTION_SEARCH_WIDGET = "LensOnQuickActionSearchWidget";
-    public static final String LOCAL_WEB_APPROVALS = "LocalWebApprovals";
     public static final String LOOKALIKE_NAVIGATION_URL_SUGGESTIONS_UI =
             "LookalikeUrlNavigationSuggestionsUI";
     public static final String MESSAGES_FOR_ANDROID_ADS_BLOCKED = "MessagesForAndroidAdsBlocked";
@@ -329,6 +327,9 @@ public abstract class ChromeFeatureList {
     public static final String OMNIBOX_MODERNIZE_VISUAL_UPDATE = "OmniboxModernizeVisualUpdate";
     public static final String OMNIBOX_MOST_VISITED_TILES_ADD_RECYCLED_VIEW_POOL =
             "OmniboxMostVisitedTilesAddRecycledViewPool";
+
+    public static final String OMNIBOX_NOOP_EDIT_URL_SUGGESTION_CLICKS =
+            "OmniboxNoopEditUrlSuggestionClicks";
     public static final String OMNIBOX_UPDATED_CONNECTION_SECURITY_INDICATORS =
             "OmniboxUpdatedConnectionSecurityIndicators";
     public static final String OMNIBOX_WARM_RECYCLED_VIEW_POOL = "OmniboxWarmRecycledViewPool";
@@ -374,6 +375,7 @@ public abstract class ChromeFeatureList {
     public static final String QUICK_DELETE_FOR_ANDROID = "QuickDeleteForAndroid";
     public static final String QUIET_NOTIFICATION_PROMPTS = "QuietNotificationPrompts";
     public static final String REACHED_CODE_PROFILER = "ReachedCodeProfiler";
+    public static final String READALOUD = "ReadAloud";
     public static final String READER_MODE_IN_CCT = "ReaderModeInCCT";
     public static final String RECORD_SUPPRESSION_METRICS = "RecordSuppressionMetrics";
     public static final String RECOVER_FROM_NEVER_SAVE_ANDROID =
@@ -458,7 +460,6 @@ public abstract class ChromeFeatureList {
     public static final String TOOLBAR_SCROLL_ABLATION_ANDROID = "ToolbarScrollAblationAndroid";
     public static final String TOOLBAR_USE_HARDWARE_BITMAP_DRAW = "ToolbarUseHardwareBitmapDraw";
     public static final String TRANSLATE_ASSIST_CONTENT = "TranslateAssistContent";
-    public static final String TRANSLATE_INTENT = "TranslateIntent";
     public static final String TRANSLATE_MESSAGE_UI = "TranslateMessageUI";
     public static final String TRANSLATE_TFLITE = "TFLiteLanguageDetectionEnabled";
     public static final String TRUSTED_WEB_ACTIVITY_POST_MESSAGE = "TrustedWebActivityPostMessage";
@@ -487,7 +488,6 @@ public abstract class ChromeFeatureList {
     public static final String WEB_FEED_AWARENESS = "WebFeedAwareness";
     public static final String WEB_FEED_ONBOARDING = "WebFeedOnboarding";
     public static final String WEB_FEED_SORT = "WebFeedSort";
-    public static final String WEB_FILTER_INTERSTITIAL_REFRESH = "WebFilterInterstitialRefresh";
     public static final String WEB_OTP_CROSS_DEVICE_SIMPLE_STRING = "WebOtpCrossDeviceSimpleString";
     public static final String XSURFACE_METRICS_REPORTING = "XsurfaceMetricsReporting";
 
@@ -505,8 +505,8 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sCctAutoTranslate = new CachedFlag(CCT_AUTO_TRANSLATE, true);
     public static final CachedFlag sCctBottomBarSwipeUpGesture =
             new CachedFlag(CCT_BOTTOM_BAR_SWIPE_UP_GESTURE, true);
-    public static final CachedFlag sCctBrandTransparency =
-            new CachedFlag(CCT_BRAND_TRANSPARENCY, true);
+    public static final CachedFlag sCctBrandTransparencyMemoryImprovement =
+            new CachedFlag(CCT_BRAND_TRANSPARENCY_MEMORY_IMPROVEMENT, true);
     public static final CachedFlag sCctFeatureUsage = new CachedFlag(CCT_FEATURE_USAGE, false);
     public static final CachedFlag sCctIncognito = new CachedFlag(CCT_INCOGNITO, true);
     public static final CachedFlag sCctIncognitoAvailableToThirdParty =
@@ -519,10 +519,10 @@ public abstract class ChromeFeatureList {
             new CachedFlag(CCT_RESIZABLE_90_MAXIMUM_HEIGHT, false);
     public static final CachedFlag sCctResizableForThirdParties =
             new CachedFlag(CCT_RESIZABLE_FOR_THIRD_PARTIES, true);
+    public static final CachedFlag sCctResizableMultiWindowMode =
+            new CachedFlag(CCT_RESIZABLE_MULTI_WINDOW_MODE, false);
     public static final CachedFlag sCctResizableSideSheet =
             new CachedFlag(CCT_RESIZABLE_SIDE_SHEET, false);
-    public static final CachedFlag sCctResizableSideSheetDiscoverFeedSettings =
-            new CachedFlag(CCT_RESIZABLE_SIDE_SHEET_DISCOVER_FEED_SETTINGS, false);
     public static final CachedFlag sCctResizableSideSheetForThirdParties =
             new CachedFlag(CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES, false);
     public static final CachedFlag sCctRetainableStateInMemory =
@@ -542,6 +542,7 @@ public abstract class ChromeFeatureList {
             new CachedFlag(DELAY_TEMP_STRIP_REMOVAL, true);
     public static final CachedFlag sDiscoverMultiColumn = new CachedFlag(FEED_MULTI_COLUMN, true);
     public static final CachedFlag sEarlyLibraryLoad = new CachedFlag(EARLY_LIBRARY_LOAD, true);
+    public static final CachedFlag sEmptyStates = new CachedFlag(EMPTY_STATES, false);
     public static final CachedFlag sExperimentsForAgsa = new CachedFlag(EXPERIMENTS_FOR_AGSA, true);
     public static final CachedFlag sFeedLoadingPlaceholder =
             new CachedFlag(FEED_LOADING_PLACEHOLDER, false);
@@ -622,7 +623,7 @@ public abstract class ChromeFeatureList {
         sBaselineGm3SurfaceColors,
         sCctAutoTranslate,
         sCctBottomBarSwipeUpGesture,
-        sCctBrandTransparency,
+        sCctBrandTransparencyMemoryImprovement,
         sCctFeatureUsage,
         sCctIncognito,
         sCctIncognitoAvailableToThirdParty,
@@ -630,8 +631,8 @@ public abstract class ChromeFeatureList {
         sCctRemoveRemoteViewIds,
         sCctResizable90MaximumHeight,
         sCctResizableForThirdParties,
+        sCctResizableMultiWindowMode,
         sCctResizableSideSheet,
-        sCctResizableSideSheetDiscoverFeedSettings,
         sCctResizableSideSheetForThirdParties,
         sCctRetainableStateInMemory,
         sCctToolbarCustomizations,
@@ -642,6 +643,7 @@ public abstract class ChromeFeatureList {
         sDelayTempStripRemoval,
         sDiscoverMultiColumn,
         sEarlyLibraryLoad,
+        sEmptyStates,
         sFeedLoadingPlaceholder,
         sFoldableJankFix,
         sIncognitoReauthenticationForAndroid,

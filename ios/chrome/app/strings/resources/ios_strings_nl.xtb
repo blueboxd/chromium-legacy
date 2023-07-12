@@ -255,6 +255,7 @@ Sites mogen geen cookies gebruiken om je browse-activiteit op verschillende site
 <translation id="2595587704210555261">{COUNT,plural, =1{Geopende tabbladen die een dag of langer niet zijn gebruikt, worden verplaatst naar Inactieve tabbladen. Zo kun je je makkelijk focussen op de tabbladen die je het meest gebruikt. Je kunt dit altijd wijzigen in de instellingen.}other{Geopende tabbladen die {COUNT} dagen of langer niet zijn gebruikt, worden verplaatst naar Inactieve tabbladen. Zo kun je je makkelijk focussen op de tabbladen die je het meest gebruikt. Je kunt dit altijd wijzigen in de instellingen.}}</translation>
 <translation id="2600682495497606169">Sitecookies wissen</translation>
 <translation id="2609008503159898744">Alle tabbladen sluiten?</translation>
+<translation id="2617210333344098964">Adres verplaatsen naar account</translation>
 <translation id="2625189173221582860">Wachtwoord gekopieerd</translation>
 <translation id="2626236249646841566">Check je verbinding en probeer opnieuw in te loggen.</translation>
 <translation id="2637313651144986786">Tabbladen doorzoeken...</translation>
@@ -404,7 +405,6 @@ Bekijk de instructies van je zoekmachine voor het verwijderen van je zoekgeschie
 <translation id="3464194322481586217">Kan de prijs niet volgen.</translation>
 <translation id="3469166899695866866">Downloaden stoppen?</translation>
 <translation id="3470502288861289375">Kopiëren...</translation>
-<translation id="3471148582064653480">Synchroniseer je wachtwoorden, geschiedenis en meer.</translation>
 <translation id="3474048842645761983">{COUNT,plural, =1{voor {COUNT} site of app}other{voor {COUNT} sites en apps}}</translation>
 <translation id="3474624961160222204">Doorgaan als <ph name="NAME" /></translation>
 <translation id="3476450923187944815">Krijg toegang tot je wachtwoorden in andere apps.</translation>
@@ -465,6 +465,7 @@ Bekijk de instructies van je zoekmachine voor het verwijderen van je zoekgeschie
 <translation id="3851938967634752633">Wachtwoorden voor <ph name="WEBSITE" />, <ph name="SECOND_WEBSITE" /> en <ph name="NUMBER_OF_ACCOUNTS" /> andere accounts worden verwijderd. Je accounts zelf worden niet verwijderd.</translation>
 <translation id="3858860766373142691">Naam</translation>
 <translation id="3861486700625780712">Niet meer volgen</translation>
+<translation id="3861908220442487587">Dit adres wordt alleen opgeslagen op dit apparaat. Verplaats het naar je Google-account <ph name="USER_EMAIL" /> om het op je andere apparaten te gebruiken</translation>
 <translation id="3863769054730344136">Naar je apparaten sturen</translation>
 <translation id="387280738075653372">Download Chrome hier.</translation>
 <translation id="3875783148670536197">Laten zien</translation>
@@ -649,6 +650,7 @@ Bekijk de instructies van je zoekmachine voor het verwijderen van je zoekgeschie
 <translation id="5083464117946352670">Kan bestandsgrootte niet bepalen.</translation>
 <translation id="5090832849094901128">Als je dit wachtwoord verwijdert, wordt je account op <ph name="WEBSITE" /> niet verwijderd.</translation>
 <translation id="5094827893301452931">Tweet voltooid.</translation>
+<translation id="5109892411553231226">Betaalmethoden beheren</translation>
 <translation id="5118713593561876160">Interesses</translation>
 <translation id="5118764316110575523">Uit</translation>
 <translation id="5119391094379141756">Selecteer Chrome</translation>
@@ -999,6 +1001,7 @@ Als je de incognitomodus gebruikt, kunnen sites geen cookies gebruiken om je bro
 <translation id="7053983685419859001">Blokkeren</translation>
 <translation id="7062545763355031412">Accepteren en account wijzigen</translation>
 <translation id="7080806333218412752">Stuurt URL's naar Safe Browsing om deze te checken. Stuurt ook een klein gedeelte pagina's, downloads, extensie-activiteit en systeeminformatie om nieuwe dreigingen te kunnen detecteren. Koppelt deze gegevens tijdelijk aan je Google-account als je bent ingelogd om je te beschermen binnen de Google-apps.</translation>
+<translation id="7082853213442715471">Als deze optie aanstaat, worden bepaalde webtechnologieën geblokkeerd. Hierdoor kunnen sommige websites trager worden geladen of niet goed werken.</translation>
 <translation id="7095110968493193530">In Google Wachtwoordmanager voor <ph name="EMAIL" /></translation>
 <translation id="7099761977003084116">Recente tabbladen</translation>
 <translation id="7102005569666697658">Downloaden… <ph name="FILE_SIZE" /></translation>
@@ -1058,6 +1061,7 @@ Als je de incognitomodus gebruikt, kunnen sites geen cookies gebruiken om je bro
 <translation id="7531345132340165516">Huidige site</translation>
 <translation id="7537586195939242955">Je pas kan momenteel niet worden geïnstalleerd in Passbook.</translation>
 <translation id="754655535278952384">Gecheckt: <ph name="TIME" /></translation>
+<translation id="7552154146060018538">Laatste tabblad gebruikt op <ph name="SOURCE_DEVICE" /></translation>
 <translation id="7553234618121028547">Open <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" /> en ga naar Wachtwoordopties om dit uit te zetten.</translation>
 <translation id="7554645225856321710">Alles sluiten</translation>
 <translation id="7554791636758816595">Nieuw tabblad</translation>
@@ -1080,6 +1084,7 @@ Als je de incognitomodus gebruikt, kunnen sites geen cookies gebruiken om je bro
 <translation id="7687508192620387263">Agendabestand beschikbaar</translation>
 <translation id="7701040980221191251">Geen</translation>
 <translation id="7711440461521638739">Je hergebruikt geen wachtwoorden</translation>
+<translation id="7719038820139380048">Log in om content op basis van je interesses te krijgen.</translation>
 <translation id="7720410380936703141">OPNIEUW PROBEREN</translation>
 <translation id="7726702057919861819">Menu → Geschiedenis → Browsegegevens wissen</translation>
 <translation id="7733646263819020771"><ph name="BOOKMRK_NAME" />. Alleen op dit apparaat.</translation>
@@ -1189,7 +1194,6 @@ Sites mogen cookies gebruiken om je browse-activiteit op verschillende sites te 
 <translation id="8319076807703933069">Nieuwe zoekopdracht</translation>
 <translation id="8323906514956095947">Tik en houd vast voor meer tabbladopties</translation>
 <translation id="8328777765163860529">Alles sluiten</translation>
-<translation id="8331621926962374866">Als Chrome in de Lockdown-modus staat, worden bepaalde webtechnologieën geblokkeerd. Hierdoor kunnen sommige websites trager worden geladen of niet goed werken.</translation>
 <translation id="8343993175958086504">Maak een back-up van je gegevens en gebruik deze op elk apparaat.</translation>
 <translation id="834783239627985533">Meest bezochte sites</translation>
 <translation id="8378714024927312812">Beheerd door je organisatie</translation>
@@ -1203,6 +1207,7 @@ Sites mogen cookies gebruiken om je browse-activiteit op verschillende sites te 
 <translation id="8428045167754449968">Stad/plaats</translation>
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="8428634594422941299">OK</translation>
+<translation id="8446201778524791138">Acties bewerken</translation>
 <translation id="8446884382197647889">Meer informatie</translation>
 <translation id="8458397775385147834">1 item verwijderd</translation>
 <translation id="8459333855531264009">Niet beveiligd</translation>
@@ -1295,7 +1300,6 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin. Geef de
 <translation id="8976414606286374109">Kaarten worden opgeslagen in je Google-account.</translation>
 <translation id="8981454092730389528">Google-activiteitsopties</translation>
 <translation id="8985320356172329008">Ingelogd bij Google als</translation>
-<translation id="8986567980592931173">Log in met je Google-account om onder andere je wachtwoorden en geschiedenis te synchroniseren.</translation>
 <translation id="8998289560386111590">Niet beschikbaar op je apparaat</translation>
 <translation id="8999545564078155498">Ontgrendelen met Face ID</translation>
 <translation id="9000089900434778519">Je zoekmachine is <ph name="DSE_NAME" />. Bekijk de instructies van je zoekmachine voor het verwijderen van je zoekgeschiedenis (indien van toepassing).</translation>

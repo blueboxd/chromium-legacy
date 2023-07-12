@@ -34,7 +34,9 @@
 #include "ash/system/holding_space/holding_space_ash_test_base.h"
 #include "ash/system/holding_space/holding_space_item_view.h"
 #include "ash/system/holding_space/holding_space_tray_icon_preview.h"
+#include "ash/system/progress_indicator/progress_icon_animation.h"
 #include "ash/system/progress_indicator/progress_indicator.h"
+#include "ash/system/progress_indicator/progress_indicator_animation_registry.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
@@ -52,6 +54,7 @@
 #include "base/test/run_until.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/branding_buildflags.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -80,9 +83,11 @@ namespace ash {
 
 namespace {
 
-using base::test::RunUntil;
-using testing::_;
-using testing::ElementsAre;
+using ::base::test::RunUntil;
+using ::testing::_;
+using ::testing::ElementsAre;
+using ::testing::IsTrue;
+using ::testing::Property;
 
 constexpr char kTestUser[] = "user@test";
 
@@ -3378,17 +3383,19 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest, HasAnimatedProgressIndicators) {
     auto* registry = HoldingSpaceAnimationRegistry::GetInstance();
     ASSERT_TRUE(registry);
 
-    // Confirm any expected `icon_animation` for tray has started.
+    // Confirm any expected icon animation for tray has started.
     auto* controller = HoldingSpaceController::Get();
-    auto* icon_animation = registry->GetProgressIconAnimationForKey(controller);
-    ASSERT_TRUE(icon_animation);
-    EXPECT_TRUE(icon_animation->HasAnimated());
+    const auto controller_key =
+        ProgressIndicatorAnimationRegistry::AsAnimationKey(controller);
+    EXPECT_THAT(registry->GetProgressIconAnimationForKey(controller_key),
+                Property(&ProgressIconAnimation::HasAnimated, IsTrue()));
 
-    // Confirm all expected `icon_animations`'s for `items` have started.
+    // Confirm all expected icon animations for `items` have started.
     for (const auto* item : items) {
-      icon_animation = registry->GetProgressIconAnimationForKey(item);
-      ASSERT_TRUE(icon_animation);
-      EXPECT_TRUE(icon_animation->HasAnimated());
+      const auto item_key =
+          ProgressIndicatorAnimationRegistry::AsAnimationKey(item);
+      EXPECT_THAT(registry->GetProgressIconAnimationForKey(item_key),
+                  Property(&ProgressIconAnimation::HasAnimated, IsTrue()));
     }
   }
 }
@@ -3743,8 +3750,14 @@ TEST_P(HoldingSpaceTrayRefreshTest, HasExpectedBubbleTreatment) {
     // Background.
     auto* background = bubble->GetBackground();
     ASSERT_TRUE(background);
-    EXPECT_EQ(background->get_color(),
-              bubble->GetColorProvider()->GetColor(kColorAshShieldAndBase80));
+    if (chromeos::features::IsJellyEnabled()) {
+      EXPECT_EQ(background->get_color(),
+                bubble->GetColorProvider()->GetColor(
+                    cros_tokens::kCrosSysSystemBaseElevated));
+    } else {
+      EXPECT_EQ(background->get_color(),
+                bubble->GetColorProvider()->GetColor(kColorAshShieldAndBase80));
+    }
     EXPECT_EQ(bubble->layer()->background_blur(),
               ColorProvider::kBackgroundBlurSigma);
 

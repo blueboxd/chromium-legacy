@@ -12,6 +12,7 @@
 #import "components/signin/public/identity_manager/account_info.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
+#import "components/sync/base/features.h"
 #import "components/sync/service/sync_service.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -69,8 +70,7 @@
                     presenter:presenter
            baseViewController:baseViewController];
     _signinPromoViewMediator.consumer = self;
-    if (base::FeatureList::IsEnabled(
-            bookmarks::kEnableBookmarksAccountStorage)) {
+    if (base::FeatureList::IsEnabled(syncer::kEnableBookmarksAccountStorage)) {
       [_signinPromoViewMediator
           setDataTypeToWaitForInitialSync:syncer::ModelType::BOOKMARKS];
     }
@@ -80,7 +80,8 @@
 }
 
 - (void)dealloc {
-  CHECK(!_browser);
+  // TODO(crbug.com/1454777)
+  DUMP_WILL_BE_CHECK(!_browser);
 }
 
 - (void)shutdown {
@@ -120,8 +121,7 @@
   signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(browserState);
   if (!identityManager->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
-    if (base::FeatureList::IsEnabled(
-            bookmarks::kEnableBookmarksAccountStorage)) {
+    if (base::FeatureList::IsEnabled(syncer::kEnableBookmarksAccountStorage)) {
       PrefService* prefs = browserState->GetPrefs();
       const std::string lastSignedInGaiaId =
           prefs->GetString(prefs::kGoogleServicesLastGaiaId);
@@ -140,6 +140,9 @@
     }
     return;
   }
+  // TODO(crbug.com/1462552): Simplify once kSync becomes unreachable or is
+  // deleted from the codebase. See ConsentLevel::kSync documentation for
+  // details.
   if (identityManager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
     // If the user is already syncing, the promo should not be visible.
     self.shouldShowSigninPromo = NO;
@@ -172,12 +175,14 @@
 // Called when a user changes the syncing state.
 - (void)onPrimaryAccountChanged:
     (const signin::PrimaryAccountChangeEvent&)event {
-  if (base::FeatureList::IsEnabled(bookmarks::kEnableBookmarksAccountStorage)) {
+  if (base::FeatureList::IsEnabled(syncer::kEnableBookmarksAccountStorage)) {
     // The account storage promo is not shown if the user is signed-in, so
     // events with sign-in consent level should be captured and handled.
     [self handlePrimaryAccountChange:event
                         consentLevel:signin::ConsentLevel::kSignin];
   } else {
+    // TODO(crbug.com/1462552): This instance of signin::ConsentLevel::kSync
+    // should be removed once `kEnableBookmarksAccountStorage` launches.
     [self handlePrimaryAccountChange:event
                         consentLevel:signin::ConsentLevel::kSync];
   }

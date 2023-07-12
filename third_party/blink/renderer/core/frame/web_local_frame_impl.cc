@@ -227,6 +227,7 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/lcp_critical_path_predictor/lcp_critical_path_predictor.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
@@ -2055,13 +2056,11 @@ WebLocalFrame* WebLocalFrame::CreateMainFrame(
     WebFrame* opener,
     const WebString& name,
     network::mojom::blink::WebSandboxFlags sandbox_flags,
-    const WebURL& creator_base_url,
-    bool coop_forbids_initial_empty_document_to_be_cross_origin_isolated) {
+    const WebURL& creator_base_url) {
   return WebLocalFrameImpl::CreateMainFrame(
       web_view, client, interface_registry, frame_token, opener, name,
       sandbox_flags, document_token, std::move(policy_container),
-      creator_base_url,
-      coop_forbids_initial_empty_document_to_be_cross_origin_isolated);
+      creator_base_url);
 }
 
 WebLocalFrame* WebLocalFrame::CreateProvisional(
@@ -2087,8 +2086,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
     network::mojom::blink::WebSandboxFlags sandbox_flags,
     const DocumentToken& document_token,
     std::unique_ptr<WebPolicyContainer> policy_container,
-    const WebURL& creator_base_url,
-    bool coop_forbids_initial_empty_document_to_be_cross_origin_isolated) {
+    const WebURL& creator_base_url) {
   auto* frame = MakeGarbageCollected<WebLocalFrameImpl>(
       base::PassKey<WebLocalFrameImpl>(),
       mojom::blink::TreeScopeType::kDocument, client, interface_registry,
@@ -2106,8 +2104,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
       page, nullptr, nullptr, nullptr, FrameInsertType::kInsertInConstructor,
       name, opener ? &ToCoreFrame(*opener)->window_agent_factory() : nullptr,
       opener, document_token, std::move(policy_container), storage_key,
-      creator_base_url, sandbox_flags,
-      coop_forbids_initial_empty_document_to_be_cross_origin_isolated);
+      creator_base_url, sandbox_flags);
   return frame;
 }
 
@@ -2263,6 +2260,7 @@ void WebLocalFrameImpl::Trace(Visitor* visitor) const {
   visitor->Trace(frame_widget_);
   visitor->Trace(print_context_);
   visitor->Trace(input_method_controller_);
+  visitor->Trace(current_history_item_);
 }
 
 void WebLocalFrameImpl::SetCoreFrame(LocalFrame* frame) {
@@ -2282,15 +2280,13 @@ void WebLocalFrameImpl::InitializeCoreFrame(
     std::unique_ptr<blink::WebPolicyContainer> policy_container,
     const StorageKey& storage_key,
     const KURL& creator_base_url,
-    network::mojom::blink::WebSandboxFlags sandbox_flags,
-    bool coop_forbids_initial_empty_document_to_be_cross_origin_isolated) {
+    network::mojom::blink::WebSandboxFlags sandbox_flags) {
   InitializeCoreFrameInternal(
       page, owner, parent, previous_sibling, insert_type, name,
       window_agent_factory, opener, document_token,
       PolicyContainer::CreateFromWebPolicyContainer(
           std::move(policy_container)),
-      storage_key, ukm::kInvalidSourceId, creator_base_url, sandbox_flags,
-      coop_forbids_initial_empty_document_to_be_cross_origin_isolated);
+      storage_key, ukm::kInvalidSourceId, creator_base_url, sandbox_flags);
 }
 
 void WebLocalFrameImpl::InitializeCoreFrameInternal(
@@ -2307,8 +2303,7 @@ void WebLocalFrameImpl::InitializeCoreFrameInternal(
     const StorageKey& storage_key,
     ukm::SourceId document_ukm_source_id,
     const KURL& creator_base_url,
-    network::mojom::blink::WebSandboxFlags sandbox_flags,
-    bool coop_forbids_initial_empty_document_to_be_cross_origin_isolated) {
+    network::mojom::blink::WebSandboxFlags sandbox_flags) {
   Frame* parent_frame = parent ? ToCoreFrame(*parent) : nullptr;
   Frame* previous_sibling_frame =
       previous_sibling ? ToCoreFrame(*previous_sibling) : nullptr;
@@ -2345,8 +2340,7 @@ void WebLocalFrameImpl::InitializeCoreFrameInternal(
   // We must call init() after frame_ is assigned because it is referenced
   // during init().
   frame_->Init(opener_frame, document_token, std::move(policy_container),
-               storage_key, document_ukm_source_id, creator_base_url,
-               coop_forbids_initial_empty_document_to_be_cross_origin_isolated);
+               storage_key, document_ukm_source_id, creator_base_url);
 
   if (!owner) {
     // This trace event is needed to detect the main frame of the
@@ -2398,6 +2392,13 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
   // No URL is associated with this frame, but we can still assign UKM events to
   // this identifier.
   ukm::SourceId document_ukm_source_id = ukm::NoURLSourceId();
+
+  // If the document creating a new iframe is a main frame, we only apply
+  // restriction when the document is an initial empty document.
+  if (GetFrame() == GetFrame()->Tree().Top() &&
+      !GetFrame()->Loader().IsOnInitialEmptyDocument()) {
+    policy_container_data->allow_cross_origin_isolation = true;
+  }
 
   auto complete_initialization = [this, owner_element, &policy_container_remote,
                                   &policy_container_data, &name,
@@ -3201,8 +3202,8 @@ void WebLocalFrameImpl::SetAllowsCrossBrowsingInstanceFrameLookup() {
   window->GetMutableSecurityOrigin()->GrantCrossAgentClusterAccess();
 }
 
-const WebHistoryItem& WebLocalFrameImpl::GetCurrentHistoryItem() const {
-  return current_history_item_;
+WebHistoryItem WebLocalFrameImpl::GetCurrentHistoryItem() const {
+  return WebHistoryItem(current_history_item_);
 }
 
 void WebLocalFrameImpl::SetLocalStorageArea(
@@ -3268,8 +3269,21 @@ void WebLocalFrameImpl::SetLCPPHint(
   CHECK(base::FeatureList::IsEnabled(features::kLCPCriticalPathPredictor));
 
   if (LCPCriticalPathPredictor* lcpp = GetFrame()->GetLCPP()) {
-    // TODO(crbug.com/1419756): Consume hint.
-    NOTIMPLEMENTED();
+    Vector<ElementLocator> lcp_element_locators;
+    lcp_element_locators.reserve(
+        base::checked_cast<wtf_size_t>(hint->lcp_element_locators.size()));
+    for (const std::string& serialized_locator : hint->lcp_element_locators) {
+      lcp_element_locators.push_back(ElementLocator());
+      bool result =
+          lcp_element_locators.back().ParseFromString(serialized_locator);
+      if (!result) {
+        // This can happen when the host LCPP database is corrupted or we
+        // updated the ElementLocator schema in an incompatible way.
+        LOG(INFO) << "Ignoring an invalid lcp_element_locator hint.";
+        lcp_element_locators.pop_back();
+      }
+    }
+    lcpp->set_lcp_element_locators(std::move(lcp_element_locators));
   }
 }
 
@@ -3291,7 +3305,7 @@ void WebLocalFrameImpl::SetResourceCacheRemote(
 }
 
 void WebLocalFrameImpl::SetTargetToCurrentHistoryItem(const WebString& target) {
-  current_history_item_.SetTarget(target);
+  current_history_item_->SetTarget(target);
 }
 
 void WebLocalFrameImpl::UpdateCurrentHistoryItem() {
@@ -3300,7 +3314,7 @@ void WebLocalFrameImpl::UpdateCurrentHistoryItem() {
 }
 
 PageState WebLocalFrameImpl::CurrentHistoryItemToPageState() {
-  return current_history_item_.ToPageState();
+  return current_history_item_->ToPageState();
 }
 
 void WebLocalFrameImpl::ScrollFocusedEditableElementIntoView() {

@@ -54,6 +54,12 @@ class ScalableIphDelegate {
   };
 
   struct BubbleParams {
+    BubbleParams();
+    BubbleParams(const BubbleParams&);
+    BubbleParams& operator=(const BubbleParams&);
+    ~BubbleParams();
+
+    std::string bubble_id;
     std::string text;
     BubbleIcon icon = BubbleIcon::kNoIcon;
     Button button;
@@ -63,8 +69,8 @@ class ScalableIphDelegate {
 
   // TODO(b/284158831): Define types of notifications, such as wallpaper,
   // printer, etc.
-  enum class NotificationType {
-    kInvalid = 0,
+  enum class NotificationImageType {
+    kNoImage = 0,
     kWallpaper,
   };
 
@@ -74,7 +80,8 @@ class ScalableIphDelegate {
     NotificationParams& operator=(const NotificationParams&);
     ~NotificationParams();
 
-    NotificationType type = NotificationType::kInvalid;
+    NotificationImageType image_type = NotificationImageType::kNoImage;
+    std::string notification_id;
     std::string title;
     std::string text;
     Button button;

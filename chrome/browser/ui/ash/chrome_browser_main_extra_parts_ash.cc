@@ -77,7 +77,6 @@
 #include "chromeos/ash/services/bluetooth_config/in_process_instance.h"
 #include "chromeos/components/quick_answers/public/cpp/controller/quick_answers_controller.h"
 #include "chromeos/components/quick_answers/quick_answers_client.h"
-#include "components/crash/core/common/crash_key.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
@@ -264,10 +263,8 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
       g_browser_process->shared_url_loader_factory());
   night_light_client_->Start();
 
-  if (ash::features::IsProjectorEnabled()) {
-    projector_app_client_ = std::make_unique<ProjectorAppClientImpl>();
-    projector_client_ = std::make_unique<ProjectorClientImpl>();
-  }
+  projector_app_client_ = std::make_unique<ProjectorAppClientImpl>();
+  projector_client_ = std::make_unique<ProjectorClientImpl>();
 
   desks_client_ = std::make_unique<DesksClient>();
 
@@ -303,12 +300,6 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit(Profile* profile,
   if (ash::features::IsMicMuteNotificationsEnabled()) {
     app_access_notifier_ = std::make_unique<AppAccessNotifier>();
   }
-
-  // Check if Lacros is enabled for crash reporting here to give the user
-  // manager a chance to be initialized first.
-  constexpr char kLacrosEnabledDataKey[] = "lacros-enabled";
-  static crash_reporter::CrashKeyString<4> key(kLacrosEnabledDataKey);
-  key.Set(crosapi::browser_util::IsLacrosEnabled() ? "yes" : "no");
 
   // Instantiate DisplaySettingsHandler after CrosSettings has been
   // initialized.

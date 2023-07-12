@@ -25,7 +25,6 @@ import androidx.annotation.CallSuper;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.SysUtils;
@@ -79,6 +78,10 @@ public abstract class AsyncInitializationActivity
 
     /** Time at which onCreate is called. This is realtime, counted in ms since device boot. */
     private long mOnCreateTimestampMs;
+    /** Time at which onPause is called. */
+    private long mOnPauseTimestampMs;
+    /** Time at which onPause is called before the activity is recreated due to unfolding. */
+    private long mOnPauseBeforeFoldRecreateTimestampMs;
 
     private ActivityWindowAndroid mWindowAndroid;
     private Bundle mSavedInstanceState;
@@ -492,6 +495,23 @@ public abstract class AsyncInitializationActivity
     }
 
     /**
+     * @return The timestamp for OnPause event before activity restarts due to unfolding in ms.
+     */
+    protected long getOnPauseBeforeFoldRecreateTimestampMs() {
+        try (TraceEvent e = TraceEvent.scoped("AsyncInit.getOnPauseBeforeFoldRecreateTimestampMs",
+                     Long.toString(mOnPauseBeforeFoldRecreateTimestampMs))) {
+            return mOnPauseBeforeFoldRecreateTimestampMs;
+        }
+    }
+
+    protected void setOnPauseBeforeFoldRecreateTimestampMs() {
+        try (TraceEvent e = TraceEvent.scoped("AsyncInit.setOnPauseBeforeFoldRecreateTimestampMs",
+                     Long.toString(mOnPauseTimestampMs))) {
+            mOnPauseBeforeFoldRecreateTimestampMs = mOnPauseTimestampMs;
+        }
+    }
+
+    /**
      * @return The saved bundle for the last recorded state.
      */
     public Bundle getSavedInstanceState() {
@@ -537,6 +557,7 @@ public abstract class AsyncInitializationActivity
     @CallSuper
     @Override
     public void onPause() {
+        mOnPauseTimestampMs = SystemClock.uptimeMillis();
         SimpleStartupForegroundSessionDetector.discardSession();
         mNativeInitializationController.onPause();
         super.onPause();
@@ -762,14 +783,8 @@ public abstract class AsyncInitializationActivity
                     (WindowManager) windowManagerContext.getSystemService(Context.WINDOW_SERVICE);
             assert manager != null;
             Rect bounds = ApiHelperForR.getMaximumWindowMetricsBounds(manager);
-            int smallestScreenWidth = DisplayUtil.pxToDp(
+            return DisplayUtil.pxToDp(
                     display, Math.min(bounds.right - bounds.left, bounds.bottom - bounds.top));
-
-            if (BuildInfo.getInstance().isAutomotive) {
-                smallestScreenWidth =
-                        (int) (smallestScreenWidth / DisplayUtil.getUiScalingFactorForAutomotive());
-            }
-            return smallestScreenWidth;
         }
         return DisplayUtil.pxToDp(display, DisplayUtil.getSmallestWidth(display));
     }

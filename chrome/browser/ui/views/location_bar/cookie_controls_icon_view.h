@@ -22,6 +22,7 @@ class CookieControlsIconView
       public content_settings::CookieControlsObserver {
  public:
   METADATA_HEADER(CookieControlsIconView);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kCookieControlsIcon);
   CookieControlsIconView(
       IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
       PageActionIconView::Delegate* page_action_icon_delegate);
@@ -59,13 +60,14 @@ class CookieControlsIconView
 
   CookieControlsStatus status_ = CookieControlsStatus::kUninitialized;
   bool has_blocked_cookies_ = false;
+  bool has_blocked_sites_ = false;
 
   std::unique_ptr<content_settings::CookieControlsController> controller_;
   std::unique_ptr<CookieControlsBubbleCoordinator> bubble_coordinator_ =
       nullptr;
   base::ScopedObservation<content_settings::CookieControlsController,
                           content_settings::OldCookieControlsObserver>
-      observation_{this};
+      old_controller_observation_{this};
   base::ScopedObservation<content_settings::CookieControlsController,
                           content_settings::CookieControlsObserver>
       controller_observation_{this};

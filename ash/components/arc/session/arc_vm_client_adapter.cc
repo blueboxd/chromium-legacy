@@ -61,7 +61,6 @@
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
-#include "chromeos/ash/components/system/statistics_provider.h"
 #include "chromeos/components/sensors/buildflags.h"
 #include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/system/core_scheduling.h"
@@ -208,6 +207,27 @@ void AppendParamsFromStartParams(
           start_params);
 }
 
+int GetDefaultVmMemoryMiB(ArcVmClientAdapterDelegate* delegate) {
+  base::SystemMemoryInfoKB info;
+  if (!delegate->GetSystemMemoryInfo(&info)) {
+    return 0;
+  }
+  const int sys_memory_mb = info.total / 1024;
+  int vm_memory_mb;
+  if (sys_memory_mb >= 4096) {
+    // On devices with >=4GB RAM, reserve 1GB for other processes.
+    vm_memory_mb = sys_memory_mb - 1024;
+  } else {
+    vm_memory_mb = sys_memory_mb / 4 * 3;
+  }
+
+  if (delegate->IsCrosvm32bit()) {
+    vm_memory_mb = std::min(vm_memory_mb, static_cast<int>(k32bitVmRamMaxMib));
+  }
+
+  return vm_memory_mb;
+}
+
 vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
     const std::string& user_id_hash,
     uint32_t cpus,
@@ -216,7 +236,6 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
     const FileSystemStatus& file_system_status,
     bool use_per_vm_core_scheduling,
     const StartParams& start_params,
-    bool is_host_on_vm,
     ArcVmClientAdapterDelegate* delegate) {
   vm_tools::concierge::StartArcVmRequest request;
 
@@ -234,6 +253,12 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   if (should_set_blocksize)
     request.set_rootfs_block_size(kBlockSize);
 
+  // Enable O_DIRECT for ARC system image (rootfs) and vendor image if the
+  // images are formatted with EROFS. (b/287383456)
+  const bool is_arc_erofs_enabled =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(ash::switches::kArcErofs);
+  request.set_rootfs_o_direct(is_arc_erofs_enabled);
+
   // Add /vendor as /dev/block/vdb. The device name has to be consistent with
   // the one in GenerateFirstStageFstab() in platform2/arc/setup/.
   vm_tools::concierge::DiskImage* disk_image = request.add_disks();
@@ -241,6 +266,7 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
   disk_image->set_writable(false);
   disk_image->set_do_mount(true);
+  disk_image->set_o_direct(is_arc_erofs_enabled);
   if (should_set_blocksize)
     disk_image->set_block_size(kBlockSize);
 
@@ -371,7 +397,17 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
 
   if (base::FeatureList::IsEnabled(kGuestZram)) {
     request.set_guest_swappiness(kGuestZramSwappiness.Get());
-    request.set_guest_zram_size(kGuestZramSize.Get());
+    if (kGuestZramSizePercentage.Get() != 0) {
+      // If there's no custom memory_mib set, try to get the default value to
+      // determine the ZRAM size.
+      if (request.memory_mib() == 0) {
+        request.set_memory_mib(GetDefaultVmMemoryMiB(delegate));
+      }
+      request.set_guest_zram_mib(request.memory_mib() *
+                                 kGuestZramSizePercentage.Get() / 100);
+    } else {
+      request.set_guest_zram_mib(kGuestZramSize.Get() / (1024 * 1024));
+    }
   }
 
   if (base::FeatureList::IsEnabled(kMglruReclaim)) {
@@ -534,16 +570,11 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                            public ash::ConciergeClient::Observer,
                            public ConnectionObserver<arc::mojom::AppInstance> {
  public:
-  // Initializing |is_host_on_vm_| is not always very fast.
-  // Try to initialize them in the constructor and in StartMiniArc respectively.
-  // They usually run when the system is not busy.
   ArcVmClientAdapter() : ArcVmClientAdapter(FileSystemStatusRewriter{}) {}
 
   // For testing purposes and the internal use (by the other ctor) only.
   explicit ArcVmClientAdapter(const FileSystemStatusRewriter& rewriter)
       : delegate_(std::make_unique<ArcVmClientAdapterDelegate>()),
-        is_host_on_vm_(
-            ash::system::StatisticsProvider::GetInstance()->IsRunningOnVm()),
         file_system_status_rewriter_for_testing_(rewriter) {
     auto* client = GetConciergeClient();
     client->AddVmObserver(this);
@@ -972,7 +1003,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     auto start_request = CreateStartArcVmRequest(
         user_id_hash_, cpus, demo_session_apps_path, data_disk_path,
         file_system_status, use_per_vm_core_scheduling, start_params_,
-        is_host_on_vm_, delegate_.get());
+        delegate_.get());
 
     VLOG(1) << "Sending request to start ARCVM";
     GetConciergeClient()->StartArcVm(
@@ -1159,8 +1190,6 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
   std::unique_ptr<ArcVmClientAdapterDelegate> delegate_;
 
-  // True when the *host* is running on a VM.
-  const bool is_host_on_vm_;
   // A cryptohome ID of the primary profile.
   cryptohome::Identification cryptohome_id_;
   // A hash of the primary profile user ID.

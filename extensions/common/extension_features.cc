@@ -11,6 +11,11 @@ namespace extensions_features {
 // API Features
 ///////////////////////////////////////////////////////////////////////////////
 
+// Controls the availability of the ReadingList API.
+BASE_FEATURE(kApiReadingList,
+             "ApiReadingList",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Controls the availability of the runtime.getContexts() API.
 BASE_FEATURE(kApiRuntimeGetContexts,
              "ApiRuntimeGetContexts",
@@ -19,7 +24,7 @@ BASE_FEATURE(kApiRuntimeGetContexts,
 // Controls the availability of the sidePanel.open() API.
 BASE_FEATURE(kApiSidePanelOpen,
              "ApiSidePanelOpen",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Other Features

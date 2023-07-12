@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/config/gpu_finch_features.h"
@@ -306,7 +305,9 @@ GrVkImageInfo CreateGrVkImageInfo(VulkanImage* image) {
       (image->format() == VK_FORMAT_R8G8B8A8_UNORM ||
        image->format() == VK_FORMAT_R8G8B8_UNORM ||
        image->format() == VK_FORMAT_B8G8R8A8_UNORM ||
-       image->format() == VK_FORMAT_B8G8R8_UNORM)) {
+       image->format() == VK_FORMAT_B8G8R8_UNORM ||
+       image->format() == VK_FORMAT_R8_UNORM ||
+       image->format() == VK_FORMAT_R8G8_UNORM)) {
     image_info.fImageTiling = VK_IMAGE_TILING_OPTIMAL;
   } else {
     image_info.fImageTiling = image->image_tiling();

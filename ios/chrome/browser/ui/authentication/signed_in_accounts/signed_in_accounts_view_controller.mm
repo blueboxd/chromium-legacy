@@ -109,17 +109,21 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
     authService->ApproveAccountList();
   }
   __weak __typeof(self) weakSelf = self;
-  [self.presentingViewController dismissViewControllerAnimated:YES
-                                                    completion:^{
-                                                      [weakSelf teardownUI];
-                                                      if (completion) {
-                                                        completion();
-                                                      }
-                                                    }];
+  [self.presentingViewController
+      dismissViewControllerAnimated:YES
+                         completion:^{
+                           [weakSelf.delegate
+                               signedInAccountsViewControllerIsDismissed:
+                                   weakSelf];
+                           if (completion) {
+                             completion();
+                           }
+                         }];
 }
 
 - (void)dealloc {
-  CHECK(!_browserState);
+  // TODO(crbug.com/1454777)
+  DUMP_WILL_BE_CHECK(!_browserState);
 }
 
 - (void)teardownUI {
@@ -127,7 +131,6 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
     return;
   }
   [_accountTableView teardownUI];
-  _browserState = nullptr;
   [_primaryButton removeTarget:self
                         action:@selector(onPrimaryButtonPressed:)
               forControlEvents:UIControlEventTouchDown];

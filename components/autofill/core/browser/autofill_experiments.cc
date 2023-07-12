@@ -104,8 +104,7 @@ const char* const kSupportedAdditionalDomains[] = {"aol",
                                                    "yahoo",
                                                    "ymail"};
 
-bool IsCreditCardUploadEnabled(const PrefService* pref_service,
-                               const syncer::SyncService* sync_service,
+bool IsCreditCardUploadEnabled(const syncer::SyncService* sync_service,
                                const std::string& user_email,
                                const std::string& user_country,
                                const AutofillSyncSigninState sync_state,
@@ -135,6 +134,11 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
         log_manager, "SYNC_SERVICE_MISSING_AUTOFILL_WALLET_ACTIVE_DATA_TYPE");
     return false;
   }
+
+  // If syncer::AUTOFILL_WALLET_DATA is active, payments integration must be
+  // enabled due to the logic in
+  // AutofillWalletModelTypeController::GetPreconditionState().
+  CHECK(sync_service->GetUserSettings()->IsPaymentsIntegrationEnabled());
 
   if (sync_service->IsSyncFeatureActive()) {
     if (!sync_service->GetActiveDataTypes().Has(syncer::AUTOFILL_PROFILE)) {
@@ -169,15 +173,6 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     autofill_metrics::LogCardUploadEnabledMetric(
         autofill_metrics::CardUploadEnabled::kLocalSyncEnabled, sync_state);
     LogCardUploadDisabled(log_manager, "USER_ONLY_SYNCING_LOCALLY");
-    return false;
-  }
-
-  // Check Payments integration user setting.
-  if (!prefs::IsPaymentsIntegrationEnabled(pref_service)) {
-    autofill_metrics::LogCardUploadEnabledMetric(
-        autofill_metrics::CardUploadEnabled::kPaymentsIntegrationDisabled,
-        sync_state);
-    LogCardUploadDisabled(log_manager, "PAYMENTS_INTEGRATION_DISABLED");
     return false;
   }
 
@@ -246,7 +241,6 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
 }
 
 bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
-                                  PrefService* pref_service,
                                   syncer::SyncService* sync_service,
                                   bool is_test_mode,
                                   LogManager* log_manager) {
@@ -255,7 +249,7 @@ bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
   // local card migration browsertests.
   if (!is_test_mode &&
       !IsCreditCardUploadEnabled(
-          pref_service, sync_service,
+          sync_service,
           personal_data_manager->GetAccountInfoForPaymentsServer().email,
           personal_data_manager->GetCountryCodeForExperimentGroup(),
           personal_data_manager->GetSyncSigninState(), log_manager)) {

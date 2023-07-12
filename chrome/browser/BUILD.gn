@@ -631,6 +631,8 @@ static_library("browser") {
     "ip_protection/blind_sign_http_impl.h",
     "ip_protection/ip_protection_auth_token_getter.cc",
     "ip_protection/ip_protection_auth_token_getter.h",
+    "ip_protection/ip_protection_auth_token_getter_factory.cc",
+    "ip_protection/ip_protection_auth_token_getter_factory.h",
     "k_anonymity_service/k_anonymity_service_client.cc",
     "k_anonymity_service/k_anonymity_service_client.h",
     "k_anonymity_service/k_anonymity_service_factory.cc",
@@ -686,6 +688,8 @@ static_library("browser") {
     "lookalikes/safety_tip_web_contents_observer.h",
     "media/audio_service_util.cc",
     "media/audio_service_util.h",
+    "media/chrome_media_session_client.cc",
+    "media/chrome_media_session_client.h",
     "media/history/media_history_contents_observer.cc",
     "media/history/media_history_contents_observer.h",
     "media/history/media_history_images_table.cc",
@@ -1068,6 +1072,8 @@ static_library("browser") {
     "password_manager/password_manager_settings_service_factory.h",
     "password_manager/password_manager_settings_service_impl.cc",
     "password_manager/password_manager_settings_service_impl.h",
+    "password_manager/password_receiver_service_factory.cc",
+    "password_manager/password_receiver_service_factory.h",
     "password_manager/password_reuse_manager_factory.cc",
     "password_manager/password_reuse_manager_factory.h",
     "password_manager/password_sender_service_factory.cc",
@@ -1780,8 +1786,6 @@ static_library("browser") {
     "sync/sync_service_factory.h",
     "sync/sync_startup_tracker.cc",
     "sync/sync_startup_tracker.h",
-    "sync/trusted_vault_encryption_keys_tab_helper.cc",
-    "sync/trusted_vault_encryption_keys_tab_helper.h",
     "sync/user_event_service_factory.cc",
     "sync/user_event_service_factory.h",
     "tab_contents/navigation_metrics_recorder.cc",
@@ -1814,6 +1818,10 @@ static_library("browser") {
     "translate/translate_ranker_metrics_provider.h",
     "translate/translate_service.cc",
     "translate/translate_service.h",
+    "trusted_vault/trusted_vault_encryption_keys_tab_helper.cc",
+    "trusted_vault/trusted_vault_encryption_keys_tab_helper.h",
+    "trusted_vault/trusted_vault_service_factory.cc",
+    "trusted_vault/trusted_vault_service_factory.h",
     "undo/bookmark_undo_service_factory.cc",
     "undo/bookmark_undo_service_factory.h",
     "unexpire_flags.cc",
@@ -1937,6 +1945,7 @@ static_library("browser") {
     "//components/safe_browsing:buildflags",
     "//components/services/screen_ai/buildflags",
     "//components/services/storage/public/mojom",
+    "//components/session_proto_db:session_proto_db",
     "//components/sync",
     "//components/sync_device_info",
     "//content/public/browser",
@@ -2034,6 +2043,7 @@ static_library("browser") {
     "//chrome/browser/ui/webui/app_service_internals:mojo_bindings",
     "//chrome/browser/ui/webui/feed:mojo_bindings",
     "//chrome/browser/ui/webui/internals/user_education:mojo_bindings",
+    "//chrome/browser/ui/webui/location_internals:mojo_bindings",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings",
     "//chrome/browser/ui/webui/reset_password:mojo_bindings",
     "//chrome/browser/ui/webui/segmentation_internals:mojo_bindings",
@@ -2049,7 +2059,6 @@ static_library("browser") {
     "//chrome/common/notifications",
     "//chrome/installer/util:with_no_strings",
     "//chrome/services/speech/buildflags",
-    "//chromeos/components/kiosk",
     "//components/assist_ranker",
     "//components/autofill/content/browser",
     "//components/autofill/core/browser",
@@ -2101,6 +2110,7 @@ static_library("browser") {
     "//components/custom_handlers",
     "//components/device_event_log",
     "//components/device_reauth",
+    "//components/device_signals/core/browser:browser",
     "//components/dom_distiller/content/browser",
     "//components/dom_distiller/content/common/mojom",
     "//components/domain_reliability",
@@ -2210,6 +2220,7 @@ static_library("browser") {
     "//components/password_manager/content/browser",
     "//components/password_manager/content/common",
     "//components/password_manager/core/browser",
+    "//components/password_manager/core/browser/features:password_features",
     "//components/password_manager/core/common",
     "//components/payments/content:utils",
     "//components/payments/core",
@@ -2229,6 +2240,7 @@ static_library("browser") {
     "//components/prefs",
     "//components/privacy_sandbox",
     "//components/privacy_sandbox:privacy_sandbox_prefs",
+    "//components/privacy_sandbox/privacy_sandbox_attestations",
     "//components/profile_metrics",
     "//components/proxy_config",
     "//components/query_parser",
@@ -2343,6 +2355,7 @@ static_library("browser") {
     "//components/translate/core/browser",
     "//components/translate/core/browser:translate_model_service",
     "//components/translate/core/common",
+    "//components/trusted_vault",
     "//components/ui_devtools",
     "//components/ukm",
     "//components/ukm:observers",
@@ -2765,6 +2778,15 @@ static_library("browser") {
       "android/partner_browser_customizations.cc",
       "android/partner_browser_customizations.h",
       "android/permissions/permission_settings_bridge.cc",
+      "android/persisted_tab_data/leveldb_persisted_tab_data_storage_android.cc",
+      "android/persisted_tab_data/leveldb_persisted_tab_data_storage_android.h",
+      "android/persisted_tab_data/persisted_tab_data_android.cc",
+      "android/persisted_tab_data/persisted_tab_data_android.h",
+      "android/persisted_tab_data/persisted_tab_data_config_android.cc",
+      "android/persisted_tab_data/persisted_tab_data_config_android.h",
+      "android/persisted_tab_data/persisted_tab_data_storage_android.h",
+      "android/persisted_tab_data/sensitivity_persisted_tab_data_android.cc",
+      "android/persisted_tab_data/sensitivity_persisted_tab_data_android.h",
       "android/policy/policy_auditor.cc",
       "android/policy/policy_auditor_bridge.cc",
       "android/policy/policy_auditor_bridge.h",
@@ -2983,8 +3005,8 @@ static_library("browser") {
       "feed/android/feed_reliability_logging_bridge.h",
       "feed/android/feed_service_bridge.cc",
       "feed/android/feed_service_bridge.h",
-      "feed/android/feed_stream.cc",
-      "feed/android/feed_stream.h",
+      "feed/android/feed_surface_renderer_bridge.cc",
+      "feed/android/feed_surface_renderer_bridge.h",
       "feed/android/jni_translation.cc",
       "feed/android/jni_translation.h",
       "feed/android/refresh_task_scheduler_impl.cc",
@@ -3114,6 +3136,8 @@ static_library("browser") {
       "password_manager/android/password_manager_launcher_android.h",
       "password_manager/android/password_manager_ui_util_android.cc",
       "password_manager/android/password_manager_ui_util_android.h",
+      "password_manager/android/password_migration_warning_startup_launcher.cc",
+      "password_manager/android/password_migration_warning_startup_launcher.h",
       "password_manager/android/password_store_bridge.cc",
       "password_manager/android/password_store_bridge.h",
       "password_manager/android/password_ui_view_android.cc",
@@ -3241,6 +3265,8 @@ static_library("browser") {
       "usb/android/web_usb_chooser_android.h",
       "webapps/web_app_offline_android.cc",
       "webauthn/android/cable_module_android.cc",
+      "webauthn/android/cable_registration_state.cc",
+      "webauthn/android/cable_registration_state.h",
       "webauthn/android/chrome_webauthn_client_android.cc",
       "webauthn/android/chrome_webauthn_client_android.h",
       "webauthn/android/webauthn_request_delegate_android.cc",
@@ -3254,6 +3280,7 @@ static_library("browser") {
       ":delta_file_proto",
       ":fast_checkout_funnels_proto",
       ":profile_token",
+      ":sensitivity_data_proto",
       ":usage_stats_proto",
       "//cc/slim",
       "//chrome/android:jni_headers",
@@ -3442,8 +3469,6 @@ static_library("browser") {
       sources += [
         "supervised_user/android/website_parent_approval.cc",
         "supervised_user/android/website_parent_approval.h",
-        "supervised_user/child_accounts/child_account_feedback_reporter_android.cc",
-        "supervised_user/child_accounts/child_account_feedback_reporter_android.h",
         "supervised_user/child_accounts/child_account_service_android.cc",
         "supervised_user/child_accounts/child_account_service_android.h",
       ]
@@ -4362,6 +4387,12 @@ static_library("browser") {
       "upgrade_detector/upgrade_detector.cc",
       "upgrade_detector/upgrade_detector.h",
       "upgrade_detector/upgrade_observer.h",
+      "usb/usb_connection_tracker.cc",
+      "usb/usb_connection_tracker.h",
+      "usb/usb_connection_tracker_factory.cc",
+      "usb/usb_connection_tracker_factory.h",
+      "usb/usb_system_tray_icon.cc",
+      "usb/usb_system_tray_icon.h",
       "usb/web_usb_chooser_desktop.cc",
       "usb/web_usb_chooser_desktop.h",
       "usb/web_usb_detector.cc",
@@ -4507,6 +4538,8 @@ static_library("browser") {
         "device_notifications/device_status_icon_renderer.h",
         "hid/hid_status_icon.cc",
         "hid/hid_status_icon.h",
+        "usb/usb_status_icon.cc",
+        "usb/usb_status_icon.h",
       ]
     }
     if (!is_chromeos) {
@@ -4857,8 +4890,8 @@ static_library("browser") {
       "nearby_sharing/nearby_share_feature_status.h",
       "nearby_sharing/nearby_share_feature_usage_metrics.cc",
       "nearby_sharing/nearby_share_feature_usage_metrics.h",
-      "nearby_sharing/nearby_share_metrics_logger.cc",
-      "nearby_sharing/nearby_share_metrics_logger.h",
+      "nearby_sharing/nearby_share_metrics.cc",
+      "nearby_sharing/nearby_share_metrics.h",
       "nearby_sharing/nearby_share_profile_info_provider_impl.cc",
       "nearby_sharing/nearby_share_profile_info_provider_impl.h",
       "nearby_sharing/nearby_share_settings.cc",
@@ -5341,6 +5374,8 @@ static_library("browser") {
       "lacros/app_mode/device_local_account_extension_installer_lacros.h",
       "lacros/app_mode/kiosk_session_service_lacros.cc",
       "lacros/app_mode/kiosk_session_service_lacros.h",
+      "lacros/app_mode/web_kiosk_installer_lacros.cc",
+      "lacros/app_mode/web_kiosk_installer_lacros.h",
       "lacros/arc/arc_icon_cache.cc",
       "lacros/arc/arc_icon_cache.h",
       "lacros/arc/arc_intent_helper_mojo_lacros.cc",
@@ -5604,6 +5639,8 @@ static_library("browser") {
       "renderer_context_menu/quick_answers_menu_observer.h",
       "speech/tts_crosapi_util.cc",
       "speech/tts_crosapi_util.h",
+      "usb/usb_pinned_notification.cc",
+      "usb/usb_pinned_notification.h",
       "webshare/chromeos/sharesheet_client.cc",
       "webshare/chromeos/sharesheet_client.h",
     ]
@@ -5620,6 +5657,7 @@ static_library("browser") {
       "//chromeos/components/cdm_factory_daemon:cdm_factory_daemon_browser",
       "//chromeos/components/certificate_provider:certificate_provider",
       "//chromeos/components/disks:prefs",
+      "//chromeos/components/kiosk",
       "//chromeos/components/onc:onc",
       "//chromeos/components/quick_answers:quick_answers",
       "//chromeos/components/quick_answers/public/cpp:cpp",
@@ -6077,12 +6115,12 @@ static_library("browser") {
       "OpenGL.framework",
       "QuartzCore.framework",
       "SecurityInterface.framework",
+      "UserNotifications.framework",
     ]
     weak_frameworks = [
       "AuthenticationServices.framework",  # macOS 10.15
       "SafariServices.framework",  # macOS 10.12
       "UniformTypeIdentifiers.framework",  # macOS 11
-      "UserNotifications.framework",  # macOS 10.14
     ]
     public_deps += [ "//chrome/browser/mac:keystone_glue" ]
   }
@@ -6870,6 +6908,11 @@ static_library("browser") {
       "signin/bound_session_credentials/bound_session_refresh_cookie_fetcher.h",
       "signin/bound_session_credentials/bound_session_refresh_cookie_fetcher_impl.cc",
       "signin/bound_session_credentials/bound_session_refresh_cookie_fetcher_impl.h",
+      "signin/bound_session_credentials/bound_session_registration_fetcher.h",
+      "signin/bound_session_credentials/bound_session_registration_fetcher_impl.cc",
+      "signin/bound_session_credentials/bound_session_registration_fetcher_impl.h",
+      "signin/bound_session_credentials/bound_session_registration_fetcher_param.cc",
+      "signin/bound_session_credentials/bound_session_registration_fetcher_param.h",
       "signin/bound_session_credentials/bound_session_request_throttled_listener_browser_impl.cc",
       "signin/bound_session_credentials/bound_session_request_throttled_listener_browser_impl.h",
       "signin/bound_session_credentials/registration_token_helper.cc",
@@ -7472,10 +7515,7 @@ static_library("browser") {
       "sessions/tab_loader_delegate.cc",
       "sessions/tab_loader_delegate.h",
     ]
-    deps += [
-      "//chromeos/components/kiosk",
-      "//components/tab_groups",
-    ]
+    deps += [ "//components/tab_groups" ]
   }
 
   if (enable_spellcheck) {
@@ -7585,7 +7625,6 @@ static_library("browser") {
       "//components/supervised_user/core/browser:fetcher",
       "//components/supervised_user/core/browser:list_family_members_service",
       "//components/supervised_user/core/browser:supervised_user_preferences",
-      "//components/supervised_user/core/browser/proto",
       "//components/supervised_user/core/common",
     ]
   }
@@ -7751,6 +7790,10 @@ if (is_android) {
 
   proto_library("fast_checkout_funnels_proto") {
     sources = [ "fast_checkout/fast_checkout_funnels.proto" ]
+  }
+
+  proto_library("sensitivity_data_proto") {
+    sources = [ "android/persisted_tab_data/sensitivity_data.proto" ]
   }
 
   proto_library("profile_token") {
@@ -8153,7 +8196,7 @@ static_library("test_support") {
     ]
     deps += [
       "//chrome/browser/apps/app_service",
-      "//components/services/app_service/public/cpp:preferred_apps",
+      "//components/services/app_service",
     ]
   }
 
@@ -8301,15 +8344,8 @@ if (!is_android) {
     deps = [
       ":browser",
       ":browser_process",
-      "//chrome:browser_tests_pak",
       "//chrome/browser/profiles:profile",
-      "//chrome/common:mojo_bindings",
       "//chrome/test/data/webui:web_ui_test_bindings",
-      "//components/metrics:test_support",
-      "//components/password_manager/core/browser:test_support",
-      "//components/signin/public/identity_manager",
-      "//components/sync:test_support",
-      "//components/translate/content/common",
       "//content/test:test_support",
     ]
 

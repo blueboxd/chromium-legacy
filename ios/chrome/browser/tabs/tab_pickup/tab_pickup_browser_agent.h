@@ -23,6 +23,10 @@ namespace sync_sessions {
 class SessionSyncService;
 }
 
+namespace synced_sessions {
+struct DistantSession;
+}
+
 namespace web {
 class WebState;
 }
@@ -83,15 +87,18 @@ class TabPickupBrowserAgent : public BrowserObserver,
   // Tracks if the `IOS.TabPickup.TimeSinceLastCrossDeviceSync` metric has been
   // recorded.
   static bool transition_time_metric_recorded;
-
+  // The currently displayed infobar.
+  raw_ptr<infobars::InfoBar> infobar_ = nullptr;
   // The owning Browser.
   raw_ptr<Browser> browser_ = nullptr;
   // The active webState.
   raw_ptr<web::WebState> active_web_state_ = nullptr;
+  // The infobar's webState.
+  raw_ptr<web::WebState> infobar_web_state_ = nullptr;
   // The infobar's delegate.
   std::unique_ptr<TabPickupInfobarDelegate> delegate_;
-  // The currently displayed infobar.
-  raw_ptr<infobars::InfoBar> infobar_ = nullptr;
+  // The distant session used to display the infobar.
+  raw_ptr<const synced_sessions::DistantSession> session_;
   // KeyedService responsible session sync.
   raw_ptr<sync_sessions::SessionSyncService> session_sync_service_ = nullptr;
   // CallbackListSubscription for the SessionSyncService method.

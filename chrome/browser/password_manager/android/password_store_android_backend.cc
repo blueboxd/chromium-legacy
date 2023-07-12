@@ -32,6 +32,7 @@
 #include "chrome/browser/password_manager/android/password_sync_controller_delegate_bridge_impl.h"
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/password_manager/core/browser/android_backend_error.h"
+#include "components/password_manager/core/browser/get_logins_with_affiliations_request_handler.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_eviction_util.h"
@@ -92,7 +93,8 @@ std::string FormToSignonRealmQuery(const PasswordFormDigest& form,
     // Check PSL matches and matches for exact signon realm.
     return GetRegistryControlledDomain(GURL(form.signon_realm));
   }
-  if (form.scheme == PasswordForm::Scheme::kHtml) {
+  if (form.scheme == PasswordForm::Scheme::kHtml &&
+      !IsValidAndroidFacetURI(form.signon_realm)) {
     // Check federated matches and matches for exact signon realm.
     return form.url.host();
   }
@@ -578,9 +580,11 @@ PasswordStoreAndroidBackend::PasswordStoreAndroidBackend(
 PasswordStoreAndroidBackend::~PasswordStoreAndroidBackend() = default;
 
 void PasswordStoreAndroidBackend::InitBackend(
+    AffiliatedMatchHelper* affiliated_match_helper,
     RemoteChangesReceived remote_form_changes_received,
     base::RepeatingClosure sync_enabled_or_disabled_cb,
     base::OnceCallback<void(bool)> completion) {
+  affiliated_match_helper_ = affiliated_match_helper;
   main_task_runner_ = base::SequencedTaskRunner::GetCurrentDefault();
   stored_passwords_changed_ = std::move(remote_form_changes_received);
   lifecycle_helper_->RegisterObserver(base::BindRepeating(
@@ -592,6 +596,7 @@ void PasswordStoreAndroidBackend::InitBackend(
 
 void PasswordStoreAndroidBackend::Shutdown(
     base::OnceClosure shutdown_completed) {
+  affiliated_match_helper_ = nullptr;
   sync_service_ = nullptr;
   lifecycle_helper_->UnregisterObserver();
   // TODO(https://crbug.com/1229654): Implement (e.g. unsubscribe from GMS).
@@ -651,6 +656,14 @@ void PasswordStoreAndroidBackend::FillMatchingLoginsAsync(
         PasswordStoreOperation::kFillMatchingLoginsAsync);
   }
   std::move(callbacks_chain).Run();
+}
+
+void PasswordStoreAndroidBackend::GetGroupedMatchingLoginsAsync(
+    const PasswordFormDigest& form_digest,
+    LoginsOrErrorReply callback) {
+  // TODO(crbug.com/1428539): Use the new API to get affiliated passwords.
+  GetLoginsWithAffiliationsRequestHandler(
+      form_digest, this, affiliated_match_helper_.get(), std::move(callback));
 }
 
 void PasswordStoreAndroidBackend::AddLoginAsync(

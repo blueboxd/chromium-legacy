@@ -17,7 +17,8 @@
 #include "components/attribution_reporting/aggregatable_dedup_key.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
 #include "components/attribution_reporting/event_trigger_data.h"
-#include "components/attribution_reporting/registration_type.mojom.h"
+#include "components/attribution_reporting/os_registration.h"
+#include "components/attribution_reporting/registration_eligibility.mojom.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_time_config.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
@@ -65,7 +66,7 @@ namespace content {
 namespace {
 
 using ::attribution_reporting::FilterPair;
-using ::attribution_reporting::mojom::RegistrationType;
+using ::attribution_reporting::mojom::RegistrationEligibility;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
@@ -129,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest, SourceRegistered) {
   EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
       .WillOnce(
           [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host,
-              RegistrationType) {
+              RegistrationEligibility) {
             data_host = GetRegisteredDataHost(std::move(host));
             loop.Quit();
           });
@@ -173,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
     EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
         .WillOnce(
             [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host,
-                RegistrationType) {
+                RegistrationEligibility) {
               data_host = GetRegisteredDataHost(std::move(host));
               data_host->receiver().set_disconnect_handler(
                   disconnect_loop.QuitClosure());
@@ -383,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
       .WillOnce(
           [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host,
-              RegistrationType) {
+              RegistrationEligibility) {
             data_host = GetRegisteredDataHost(std::move(host));
             loop.Quit();
           });
@@ -419,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
       .WillOnce(
           [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host,
-              RegistrationType) {
+              RegistrationEligibility) {
             data_host = GetRegisteredDataHost(std::move(host));
             loop.Quit();
           });
@@ -468,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
       .WillOnce(
           [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host,
-              RegistrationType) {
+              RegistrationEligibility) {
             data_host = GetRegisteredDataHost(std::move(host));
             loop.Quit();
           });
@@ -680,7 +681,7 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcBasicTriggerBrowserTest,
   EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
       .WillOnce(
           [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host,
-              RegistrationType) {
+              RegistrationEligibility) {
             data_host = GetRegisteredDataHost(std::move(host));
             loop.Quit();
           });
@@ -742,7 +743,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
       .WillOnce(
           [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host,
-              RegistrationType) {
+              RegistrationEligibility) {
             data_host = GetRegisteredDataHost(std::move(host));
             loop.Quit();
           });
@@ -839,7 +840,7 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcMultipleBackgroundRequestTest,
   EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
       .WillRepeatedly(
           [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host,
-              RegistrationType) {
+              RegistrationEligibility) {
             data_host = GetRegisteredDataHost(std::move(host));
             loop.Quit();
           });
@@ -931,7 +932,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcPrerenderBrowserTest,
   EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
       .WillOnce(
           [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host,
-              RegistrationType) {
+              RegistrationEligibility) {
             data_host = GetRegisteredDataHost(std::move(host));
             loop.Quit();
           });
@@ -1003,7 +1004,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcPrerenderBrowserTest,
   EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
       .WillOnce(
           [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host,
-              RegistrationType) {
+              RegistrationEligibility) {
             data_host = GetRegisteredDataHost(std::move(host));
             loop.Quit();
           });
@@ -1135,7 +1136,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcFencedFrameBrowserTest,
   EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
       .WillOnce(
           [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host,
-              RegistrationType) {
+              RegistrationEligibility) {
             data_host = GetRegisteredDataHost(std::move(host));
             loop.Quit();
           });
@@ -1418,8 +1419,10 @@ IN_PROC_BROWSER_TEST_F(
 struct OsRegistrationTestCase {
   const char* name;
   const char* header;
-  std::vector<std::vector<GURL>> expected_os_sources;
-  std::vector<std::vector<GURL>> expected_os_triggers;
+  std::vector<std::vector<attribution_reporting::OsRegistrationItem>>
+      expected_os_sources;
+  std::vector<std::vector<attribution_reporting::OsRegistrationItem>>
+      expected_os_triggers;
 };
 
 class AttributionSrcCrossAppWebEnabledOsRegistrationBrowserTest
@@ -1436,8 +1439,12 @@ INSTANTIATE_TEST_SUITE_P(
             .expected_os_sources =
                 {
                     {
-                        GURL("https://r1.test/x"),
-                        GURL("https://r2.test/y"),
+                        attribution_reporting::OsRegistrationItem{
+                            .url = GURL("https://r1.test/x")},
+                        attribution_reporting::OsRegistrationItem{
+                            .url = GURL("https://r2.test/y"),
+                            .debug_reporting = true,
+                        },
                     },
                 },
         },
@@ -1447,8 +1454,12 @@ INSTANTIATE_TEST_SUITE_P(
             .expected_os_triggers =
                 {
                     {
-                        GURL("https://r1.test/x"),
-                        GURL("https://r2.test/y"),
+                        attribution_reporting::OsRegistrationItem{
+                            .url = GURL("https://r1.test/x")},
+                        attribution_reporting::OsRegistrationItem{
+                            .url = GURL("https://r2.test/y"),
+                            .debug_reporting = true,
+                        },
                     },
                 },
         }),
@@ -1474,7 +1485,7 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
       .WillOnce(
           [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host,
-              RegistrationType) {
+              RegistrationEligibility) {
             data_host = GetRegisteredDataHost(std::move(host));
             loop.Quit();
           });
@@ -1498,8 +1509,9 @@ IN_PROC_BROWSER_TEST_P(
   register_response->WaitForRequest();
 
   auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
-  http_response->AddCustomHeader(test_case.header,
-                                 R"("https://r1.test/x", "https://r2.test/y")");
+  http_response->AddCustomHeader(
+      test_case.header,
+      R"("https://r1.test/x", "https://r2.test/y"; debug-reporting)");
   register_response->Send(http_response->ToResponseString());
   register_response->Done();
 

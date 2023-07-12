@@ -348,6 +348,9 @@ class OzonePlatformWayland : public OzonePlatform,
           connection_->ShouldUseOverlayDelegation() &&
           connection_->buffer_manager_host()
               ->SupportsNonBackedSolidColorBuffers();
+      properties.supports_single_pixel_buffer =
+          ui::IsWaylandOverlayDelegationEnabled() &&
+          connection_->buffer_manager_host()->SupportsSinglePixelBuffer();
       // Primary planes can be transluscent due to underlay strategy. As a
       // result Wayland server draws contents occluded by an accelerated widget.
       // To prevent this, an opaque background image is stacked below the
@@ -359,12 +362,6 @@ class OzonePlatformWayland : public OzonePlatform,
         properties.supports_activation =
             zaura_shell_get_version(connection_->zaura_shell()->wl_object()) >=
             ZAURA_TOPLEVEL_ACTIVATE_SINCE_VERSION;
-        properties.supports_tooltip =
-            (wl::get_version_of_object(
-                 connection_->zaura_shell()->wl_object()) >=
-             ZAURA_SURFACE_SHOW_TOOLTIP_SINCE_VERSION) &&
-            connection_->zaura_shell()->HasBugFix(1402158) &&
-            connection_->zaura_shell()->HasBugFix(1410676);
       }
 
       if (surface_factory_) {
@@ -379,6 +376,9 @@ class OzonePlatformWayland : public OzonePlatform,
       properties.supports_non_backed_solid_color_buffers =
           buffer_manager_->supports_overlays() &&
           buffer_manager_->supports_non_backed_solid_color_buffers();
+      properties.supports_single_pixel_buffer =
+          ui::IsWaylandOverlayDelegationEnabled() &&
+          buffer_manager_->supports_single_pixel_buffer();
       // See the comment above.
       properties.needs_background_image =
           buffer_manager_->supports_overlays() &&
@@ -386,6 +386,8 @@ class OzonePlatformWayland : public OzonePlatform,
       properties.supports_native_pixmaps =
           surface_factory_->SupportsNativePixmaps();
       properties.supports_clip_rect = buffer_manager_->supports_clip_rect();
+      properties.supports_affine_transform =
+          buffer_manager_->supports_affine_transform();
     }
     return properties;
   }

@@ -516,6 +516,17 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       base::Time end_time,
       mojom::ClearDataFilterPtr filter,
       ClearSharedDictionaryCacheCallback callback) override;
+  void ClearSharedDictionaryCacheForIsolationKey(
+      const net::SharedDictionaryIsolationKey& isolation_key,
+      ClearSharedDictionaryCacheForIsolationKeyCallback callback) override;
+  void GetSharedDictionaryUsageInfo(
+      GetSharedDictionaryUsageInfoCallback callback) override;
+  void GetSharedDictionaryInfo(
+      const net::SharedDictionaryIsolationKey& isolation_key,
+      GetSharedDictionaryInfoCallback callback) override;
+  void ResourceSchedulerClientVisibilityChanged(
+      const base::UnguessableToken& client_token,
+      bool visible) override;
 
   // Destroys |request| when a proxy lookup completes.
   void OnProxyLookupComplete(ProxyLookupRequest* proxy_lookup_request);
@@ -648,6 +659,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   }
 
  private:
+  // To be called back from CookieManager on settings change.
+  void OnCookieManagerSettingsChanged();
+
   URLRequestContextOwner MakeURLRequestContext(
       mojo::PendingRemote<mojom::URLLoaderFactory>
           url_loader_factory_for_cert_net_fetcher,
@@ -740,7 +754,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   std::unique_ptr<ResourceScheduler> resource_scheduler_;
 
-  // Used only when blink::features::kCompressionDictionaryTransportBackend is
+  // Used only when network::features::kCompressionDictionaryTransportBackend is
   // enabled.
   // Note: `url_request_context_owner_` indirectly holds a pointer to
   // `shared_dictionary_manager_` via URLRequestContext and HttpCache and
@@ -798,9 +812,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // PrivacySandboxSettings service.
   bool block_trust_tokens_ = false;
 
-#if !BUILDFLAG(IS_IOS)
+#if BUILDFLAG(ENABLE_WEBSOCKETS)
   std::unique_ptr<WebSocketFactory> websocket_factory_;
-#endif  // !BUILDFLAG(IS_IOS)
+#endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
 
   // These must be below the URLRequestContext, so they're destroyed before it
   // is.

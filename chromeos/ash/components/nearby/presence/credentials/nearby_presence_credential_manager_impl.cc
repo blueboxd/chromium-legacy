@@ -102,9 +102,10 @@ void NearbyPresenceCredentialManagerImpl::Creator::Create(
     return;
   }
 
-  // TODO(b/276307539): Implement the second case where the local device
-  // is already registered and the CredentialManagerFactory needs to
-  // set the metadata.
+  credential_manager_under_initialization_->InitializeDeviceMetadata(
+      base::BindOnce(&NearbyPresenceCredentialManagerImpl::Creator::
+                         OnCredentialManagerInitialized,
+                     base::Unretained(this)));
 }
 
 // static
@@ -135,6 +136,15 @@ void NearbyPresenceCredentialManagerImpl::Creator::
   std::move(on_created_)
       .Run(std::move(credential_manager_under_initialization_));
   credential_manager_under_initialization_ = nullptr;
+}
+
+void NearbyPresenceCredentialManagerImpl::Creator::
+    OnCredentialManagerInitialized() {
+  CHECK(on_created_);
+  CHECK(credential_manager_under_initialization_);
+  CHECK(credential_manager_under_initialization_->IsLocalDeviceRegistered());
+  std::move(on_created_)
+      .Run(std::move(credential_manager_under_initialization_));
 }
 
 NearbyPresenceCredentialManagerImpl::NearbyPresenceCredentialManagerImpl(
@@ -182,6 +192,13 @@ void NearbyPresenceCredentialManagerImpl::RegisterPresence(
 
 void NearbyPresenceCredentialManagerImpl::UpdateCredentials() {
   // TODO(b/276307539): Implement `UpdateCredentials`.
+}
+
+void NearbyPresenceCredentialManagerImpl::InitializeDeviceMetadata(
+    base::OnceClosure on_metadata_initialized_callback) {
+  nearby_presence_->UpdateLocalDeviceMetadata(
+      proto::MetadataToMojom(local_device_data_provider_->GetDeviceMetadata()));
+  std::move(on_metadata_initialized_callback).Run();
 }
 
 void NearbyPresenceCredentialManagerImpl::StartFirstTimeRegistration() {
@@ -265,7 +282,7 @@ void NearbyPresenceCredentialManagerImpl::OnRegistrationRpcSuccess(
   //      5. Save other devices' credentials.
   // Next, kick off Step 2.
   nearby_presence_->UpdateLocalDeviceMetadataAndGenerateCredentials(
-      MetadataToMojom(local_device_data_provider_->GetDeviceMetadata()),
+      proto::MetadataToMojom(local_device_data_provider_->GetDeviceMetadata()),
       base::BindOnce(
           &NearbyPresenceCredentialManagerImpl::OnFirstTimeCredentialsGenerated,
           weak_ptr_factory_.GetWeakPtr()));
@@ -293,7 +310,8 @@ void NearbyPresenceCredentialManagerImpl::OnFirstTimeCredentialsGenerated(
   // changes.
   std::vector<::nearby::internal::SharedCredential> proto_shared_credentials;
   for (const auto& cred : shared_credentials) {
-    proto_shared_credentials.push_back(SharedCredentialFromMojom(cred.get()));
+    proto_shared_credentials.push_back(
+        proto::SharedCredentialFromMojom(cred.get()));
   }
 
   local_device_data_provider_->UpdatePersistedSharedCredentials(
@@ -438,7 +456,8 @@ void NearbyPresenceCredentialManagerImpl::UploadCredentials(
 
   std::vector<ash::nearby::proto::PublicCertificate> public_certificates;
   for (auto cred : credentials) {
-    public_certificates.push_back(PublicCertificateFromSharedCredential(cred));
+    public_certificates.push_back(
+        proto::PublicCertificateFromSharedCredential(cred));
   }
   *(request.mutable_device()->mutable_public_certificates()) = {
       public_certificates.begin(), public_certificates.end()};
@@ -568,7 +587,7 @@ void NearbyPresenceCredentialManagerImpl::OnDownloadCredentialsSuccess(
   std::vector<::nearby::internal::SharedCredential> remote_credentials;
   for (auto public_certificate : response.public_certificates()) {
     remote_credentials.push_back(
-        PublicCertificateToSharedCredential(public_certificate));
+        proto::PublicCertificateToSharedCredential(public_certificate));
   }
 
   HandleDownloadCredentialsResult(download_credentials_result_callback,

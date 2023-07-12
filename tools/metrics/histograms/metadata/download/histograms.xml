@@ -548,7 +548,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Download.IOSDownloadFileUI" enum="DownloadFileUI"
-    expires_after="2023-10-25">
+    expires_after="2024-01-07">
   <owner>sdefresne@chromium.org</owner>
   <owner>ewannpv@chromium.org</owner>
   <owner>mrefaat@chromium.org</owner>
@@ -571,7 +571,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Download.IOSDownloadMimeType" enum="DownloadMimeTypeResult"
-    expires_after="2023-10-25">
+    expires_after="2024-01-07">
   <owner>sdefresne@chromium.org</owner>
   <owner>ewannpv@chromium.org</owner>
   <owner>mrefaat@chromium.org</owner>
@@ -892,15 +892,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records various types of messages representing the state of the downloads as
     they are shown on the download progress infobar on android.
-  </summary>
-</histogram>
-
-<histogram name="Download.QuarantineService.ConnectionError"
-    enum="BooleanConnectionError" expires_after="M80">
-  <owner>pmonette@chromium.org</owner>
-  <owner>alewoolf@microsoft.com</owner>
-  <summary>
-    Whether a connection error has happened for the QuarantineService.
   </summary>
 </histogram>
 

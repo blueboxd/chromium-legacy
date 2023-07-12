@@ -10,7 +10,12 @@ import {
 import {
   getDefaultWindowSize,
 } from './app_window.js';
-import {assert, assertInstanceof} from './assert.js';
+import {
+  assert,
+  assertEnumVariant,
+  assertInstanceof,
+  checkEnumVariant,
+} from './assert.js';
 import * as customEffect from './custom_effect.js';
 import {DEPLOYED_VERSION} from './deployed_version.js';
 import {CameraManager} from './device/index.js';
@@ -152,33 +157,37 @@ export class App {
    * Note `i18n-label` attribute should not be removed from elements.
    */
   private setupTooltip() {
+    tooltip.init();
     const tooltipAttribute = 'i18n-label';
+    const tooltipAttributeSelector = `[${tooltipAttribute}]`;
     const elements =
-        Array.from(dom.getAll(`[${tooltipAttribute}]`, HTMLElement));
-    tooltip.setup(elements);
+        Array.from(dom.getAll(tooltipAttributeSelector, HTMLElement));
+    tooltip.setupElements(elements);
     const observer = new MutationObserver((mutations) => {
       const elements: HTMLElement[] = [];
       for (const mutation of mutations) {
-        if (mutation.type === 'childList') {
-          for (const node of mutation.addedNodes) {
-            if (node instanceof HTMLElement &&
-                node.hasAttribute(tooltipAttribute)) {
-              elements.push(node);
-            }
+        if (mutation.type === 'attributes') {
+          // Check newly added attributes on existing elements.
+          const {target, oldValue} = mutation;
+          if (target instanceof HTMLElement && oldValue === null) {
+            elements.push(target);
           }
-        } else if (mutation.type === 'attributes') {
-          const {target: node, attributeName, oldValue} = mutation;
-          if (node instanceof HTMLElement &&
-              attributeName === tooltipAttribute && oldValue === null) {
-            elements.push(node);
+        } else if (mutation.type === 'childList') {
+          const {target} = mutation;
+          if (target instanceof HTMLElement) {
+            elements.push(
+                ...dom.getAllFrom(
+                    target, tooltipAttributeSelector, HTMLElement),
+            );
           }
         }
       }
-      tooltip.setup(elements);
+      tooltip.setupElements(elements);
     });
     observer.observe(document.body, {
       subtree: true,
       childList: true,
+      attributeFilter: [tooltipAttribute],
       attributes: true,
       attributeOldValue: true,
     });
@@ -198,7 +207,7 @@ export class App {
       function getKey(element: HTMLInputElement) {
         return element.dataset['key'] === undefined ?
             null :
-            util.assertEnumVariant(LocalStorageKey, element.dataset['key']);
+            assertEnumVariant(LocalStorageKey, element.dataset['key']);
       }
       const stateKey = element.dataset['state'] === undefined ?
           null :
@@ -309,7 +318,6 @@ export class App {
     try {
       await filesystem.initialize();
       const cameraDir = filesystem.getCameraDirectory();
-      assert(cameraDir !== null);
 
       // There are three possible cases:
       // 1. Regular instance
@@ -484,9 +492,9 @@ function parseSearchParams(): {
   const url = new URL(window.location.href);
   const params = url.searchParams;
 
-  const facing = util.checkEnumVariant(Facing, params.get('facing'));
+  const facing = checkEnumVariant(Facing, params.get('facing'));
 
-  const mode = util.checkEnumVariant(Mode, params.get('mode'));
+  const mode = checkEnumVariant(Mode, params.get('mode'));
 
   const intent = (() => {
     if (params.get('intentId') === null) {
@@ -504,8 +512,6 @@ function parseSearchParams(): {
 
 /**
  * Preload images to avoid flickering.
- * TODO(pihsun): Remove this and stop including .svg file in CCA once all
- * images are migrated to use data-svg / loadSvgImages.
  */
 function preloadImages() {
   const imagesContainer = document.createElement('div');
@@ -579,7 +585,7 @@ let instance: App|null = null;
 
   metrics.initMetrics();
   if (appWindow !== null) {
-    metrics.setMetricsEnabled(false);
+    metrics.setEnabled(false);
   }
 
   // Setup listener for performance events.

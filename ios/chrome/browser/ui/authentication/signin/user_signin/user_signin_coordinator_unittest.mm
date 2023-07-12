@@ -80,6 +80,8 @@ class UserSigninCoordinatorTest : public PlatformTest {
     EXPECT_OCMOCK_VERIFY((id)base_view_controller_mock_);
     EXPECT_OCMOCK_VERIFY((id)logger_mock_);
     EXPECT_OCMOCK_VERIFY((id)user_signin_view_controller_mock_);
+    [coordinator_ stop];
+    coordinator_ = nil;
     PlatformTest::TearDown();
   }
 
@@ -87,6 +89,7 @@ class UserSigninCoordinatorTest : public PlatformTest {
   void SetupLoggerMock() {
     DCHECK(!logger_mock_);
     logger_mock_ = OCMStrictClassMock([UserSigninLogger class]);
+    OCMStub([logger_mock_ disconnect]);
     OCMStub([logger_mock_ promoAction])
         .andReturn(signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT);
     OCMStub([logger_mock_ accessPoint])
@@ -179,7 +182,7 @@ TEST_F(UserSigninCoordinatorTest, StartAndInterruptCoordinator) {
   EXPECT_NE(nil, coordinator_.unifiedConsentViewController);
   EXPECT_NE(nil, view_controller_present_completion_);
   [coordinator_
-      interruptWithAction:SigninCoordinatorInterruptActionDismissWithAnimation
+      interruptWithAction:SigninCoordinatorInterrupt::DismissWithAnimation
                completion:^{
                  EXPECT_TRUE(completion_done);
                  EXPECT_FALSE(interrupt_done);

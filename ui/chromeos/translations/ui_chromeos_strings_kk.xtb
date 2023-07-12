@@ -37,11 +37,11 @@
 <translation id="1297922636971898492">Google Drive қазір қолжетімді емес. Google Drive қосылғаннан кейін, жүктеп салу процесі автоматты түрде басталады.</translation>
 <translation id="1307931752636661898">Linux файлдарын көру мүмкін емес</translation>
 <translation id="1313405956111467313">Автоматты прокси конфигурациясы</translation>
+<translation id="134645005685694099">Құрылғыңызда файлды синхрондауды қосулы ұстау үшін жад көлемі жеткіліксіз. Жаңа файлдар бұдан былай автоматты түрде синхрондалмайды.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
 <translation id="1358735829858566124">Файл немесе каталог пайдаланылмайды.</translation>
 <translation id="1363028406613469049">Бақылау нөмірі</translation>
 <translation id="1378727793141957596">Google Drive жүйесіне қош келдіңіз!</translation>
-<translation id="1379156577998569384">Жеке Drive файлдарыңыз офлайн қолжетімді</translation>
 <translation id="1379911846207762492">Файлдарды офлайн режимде қолжетімді етіп, интернет байланысы болмаған кезде пайдалануыңызға болады.</translation>
 <translation id="1383876407941801731">Іздеу</translation>
 <translation id="1388045380422025115">Барлық түр</translation>
@@ -131,7 +131,6 @@
 <translation id="2084108471225856927">Құрылғы параметрлері</translation>
 <translation id="2084809735218147718">Рақмет деп ымдап жатқан адам</translation>
 <translation id="2088690981887365033">VPN желісі</translation>
-<translation id="2089751716171649322">Сіз офлайн болғанда Google Drive файлдарын оңай пайдаланыңыз</translation>
 <translation id="2111134541987263231"><ph name="BEGIN_BOLD" />Инкогнито режимінде рұқсат беру<ph name="END_BOLD" /> мүмкіндігін қосу</translation>
 <translation id="2114191879048183086"><ph name="NUMBER_OF_ITEMS" /> элемент жойылады және оларды қалпына келтіре алмайсыз.</translation>
 <translation id="2122305276694332719">Жасырын желіге автоматты түрде қосылсаңыз, басқалар сіздің құрылғыңызды және кейбір желілік параметрлеріңізді көре алады. Сондықтан жасырын желіге автоматты түрде қосылмағаныңыз жөн.</translation>
@@ -182,6 +181,7 @@
 <translation id="2464089476039395325">HTTP прокси-сервері</translation>
 <translation id="2467267713099745100"><ph name="NETWORK_TYPE" /> желісі, өшірулі</translation>
 <translation id="2468402215065996499">Тамагочи</translation>
+<translation id="2468470447085858632">Файлды синхрондау арқылы Google Drive файлдарыңызды офлайн пайдаланыңыз</translation>
 <translation id="2470939964922472929">PIN коды бірнеше рет қате енгізілді. Жаңа PIN кодын орнату үшін, оператор берген 8 цифрлы Жеке бөгеуден шығару кодын (PUK коды) енгізіңіз.</translation>
 <translation id="2500392669976258912">Гуджарати (фонетикалық)</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -351,12 +351,12 @@
 <translation id="3855472144336161447">Неміс (Neo 2)</translation>
 <translation id="3858860766373142691">Аты</translation>
 <translation id="3866249974567520381">Сипаттама</translation>
-<translation id="3866439285517092441">Батарея заряды аз. Сіз қуатқа қосылған кезде синхрондау жалғасады.</translation>
 <translation id="3899991606604168269">Француз (Канада), көптілді пернетақтамен</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> желісіне қосылу</translation>
 <translation id="3906232975181435906">Мобильдік профиль, <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> желі, <ph name="NETWORK_NAME" /> желісі орнатылуда</translation>
 <translation id="3924145049010392604">Мета</translation>
 <translation id="3943857333388298514">Қою</translation>
+<translation id="3950820424414687140">Кіру</translation>
 <translation id="3952872973865944257">Телугу (фонетикалық)</translation>
 <translation id="3958548648197196644">Киви</translation>
 <translation id="397105322502079400">Есептелуде…</translation>
@@ -577,12 +577,10 @@
 <translation id="5494920125229734069">Барлығын таңдау</translation>
 <translation id="5500122897333236901">исланд</translation>
 <translation id="5508696409934741614">Нүктелер</translation>
-<translation id="5519161320735100193">Google Drive параметрлері</translation>
 <translation id="5522908512596376669">Файлдар тізім ретінде көрсетілді.</translation>
 <translation id="5524517123096967210">Файлды оқу мүмкін болмады.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> суреті</translation>
 <translation id="5534520101572674276">Көлемін есептеу</translation>
-<translation id="5536122250858122375">Бұл файл түрін синхрондау мүмкін емес</translation>
 <translation id="554153475311314364">Грек (транслитерация)</translation>
 <translation id="5554171655917412781"><ph name="SELECTED_FOLDERS_COUNT" /> қалта таңдалған</translation>
 <translation id="5580591966435005537">виртуалдық машина</translation>
@@ -606,6 +604,7 @@
 <translation id="5720028165859493293"><ph name="FILE_NAME" /> файлы себетке жіберілді.</translation>
 <translation id="5724172041621205163">Тай (Pattachote пернетақтасымен)</translation>
 <translation id="57383366388012121">Соңғы ай</translation>
+<translation id="575175778971367197">Бұл файлды дәл қазір синхрондау мүмкін емес</translation>
 <translation id="5756666464756035725">Венгр QWERTY пернетақтасы</translation>
 <translation id="5760252553414789727"><ph name="SELECTED_FILES_COUNT" /> элемент таңдалған</translation>
 <translation id="5763377084591234761">Неміс (Швейцария)</translation>
@@ -708,6 +707,7 @@
 <translation id="6558280019477628686">Қате пайда болды. Кейбір элементтер жойылмаған болуы мүмкін.</translation>
 <translation id="656398493051028875">"<ph name="FILENAME" />" жойылуда…</translation>
 <translation id="6581162200855843583">Google Drive сілтемесі</translation>
+<translation id="6588648400954570689">Файлды синхрондау параметрлері</translation>
 <translation id="6594855146910089723">Бұл қалта Linux-пен және Parallels Desktop-пен бөлісіледі.</translation>
 <translation id="6607272825297743757">Файл ақпараты</translation>
 <translation id="6609332149380188670">Parallels Desktop арқылы <ph name="NUMBER_OF_ITEMS" /> қалта бөлісілді.</translation>
@@ -743,7 +743,6 @@
 <translation id="6874758081814639712">Тай-чимен айналысып жатқан адам</translation>
 <translation id="6876155724392614295">Велосипед</translation>
 <translation id="6878261347041253038">Деванагари пернетақтасы (фонетикалық)</translation>
-<translation id="6882444584974399416">Құрылғыңызда файлдарыңызды офлайн қолжетімді сақтау үшін жад көлемі жеткіліксіз. Жаңа файлдар енді автоматты түрде синхрондалмайды.</translation>
 <translation id="6885780034956018177">Ұлу</translation>
 <translation id="6896758677409633944">Көшіру</translation>
 <translation id="6898028766943174120">Тағы басқа ішкі қалталар...</translation>
@@ -833,6 +832,7 @@
 <translation id="7547811415869834682">голланд</translation>
 <translation id="7551643184018910560">Сөреге бекіту</translation>
 <translation id="7553492409867692754">Linux қолданбаларына <ph name="FOLDER_NAME" /> қалтасындағы файлдарды пайдалануға рұқсат беріңіз.</translation>
+<translation id="7555339735447658365">Қазіргі уақытта офлайнсыз. Сіз интернетке қосылған кезде файлды синхрондау жалғасады</translation>
 <translation id="7589661784326793847">Күте тұрыңыз</translation>
 <translation id="7592775719802218421"><ph name="FILE_NAME" /> файлы офлайн режимде қолжетімді етілуде</translation>
 <translation id="7600126690270271294">Серб</translation>
@@ -875,6 +875,7 @@
 <translation id="7814857791038398352">Microsoft OneDrive</translation>
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> ТБ</translation>
 <translation id="7831491651892296503">Желіні конфигурациялауда қате болды</translation>
+<translation id="7832093238954689746">Файлды синхрондау аяқталды. Жеке Drive файлдары офлайн қолжетімді.</translation>
 <translation id="7839804798877833423">Бұл файлдарды алу үшін ұялы деректердің шамамен <ph name="FILE_SIZE" /> пайдаланылады.</translation>
 <translation id="7846076177841592234">Таңдаудан бас тарту</translation>
 <translation id="7853966320808728790">Француз BÉPO</translation>
@@ -923,6 +924,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">Құрылғы үлгісі</translation>
 <translation id="8223479393428528563">Бұл файлдарды желіден тыс сақтау үшін желіге қайта қосылып, файлдарды тінтуірдің оң жағымен басыңыз және <ph name="OFFLINE_CHECKBOX_NAME" /> опциясын таңдаңыз.</translation>
+<translation id="8241139360630443550">Жадты көру</translation>
 <translation id="8249296373107784235">Доғару</translation>
 <translation id="8250690786522693009">Латын</translation>
 <translation id="8250920743982581267">Құжаттар</translation>
@@ -952,8 +954,8 @@
 <translation id="8395901698320285466">Өлшемдер</translation>
 <translation id="8404498045299006085">Барлығын сақтау</translation>
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> желісі, жалғануда</translation>
-<translation id="841387525767317275">Осы қалтадағы файлдар офлайн қолжетімді</translation>
 <translation id="8425213833346101688">Өзгерту</translation>
+<translation id="8428213095426709021">Параметрлер</translation>
 <translation id="8431909052837336408">SIM PIN кодын өзгерту</translation>
 <translation id="8437209419043462667">АҚШ</translation>
 <translation id="8452135315243592079">SIM картасы жоқ</translation>
@@ -980,7 +982,6 @@
 <translation id="8560515948038859357">Кантон</translation>
 <translation id="8561206103590473338">Піл</translation>
 <translation id="8566466896628108558">Желі: <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, сигнал күші: <ph name="SIGNAL_STRENGTH" />%, әкімші бөгеген, мәліметтер</translation>
-<translation id="8567555211227790801">Қазір желіден тыссыз. Сіз интернетке қосылған кезде синхрондау жалғасады.</translation>
 <translation id="8568374623837201676">Бұл файл біржола жойылсын ба?</translation>
 <translation id="8569764466147087991">Ашу үшін файлды таңдаңыз</translation>
 <translation id="8577897833047451336">Хорват</translation>

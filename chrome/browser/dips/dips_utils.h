@@ -78,14 +78,9 @@ constexpr SiteDataAccessType operator|(SiteDataAccessType lhs,
 }
 
 // DIPSCookieMode:
-enum class DIPSCookieMode {
-  kStandard,
-  kOffTheRecord,
-  kBlock3PC,  // block third-party cookies
-  kOffTheRecord_Block3PC
-};
+enum class DIPSCookieMode { kBlock3PC, kOffTheRecord_Block3PC };
 
-DIPSCookieMode GetDIPSCookieMode(bool is_otr, bool block_third_party_cookies);
+DIPSCookieMode GetDIPSCookieMode(bool is_otr);
 base::StringPiece GetHistogramSuffix(DIPSCookieMode mode);
 const char* DIPSCookieModeToString(DIPSCookieMode mode);
 std::ostream& operator<<(std::ostream& os, DIPSCookieMode mode);
@@ -145,13 +140,16 @@ struct StateValue {
   TimestampRange user_interaction_times;
   TimestampRange stateful_bounce_times;
   TimestampRange bounce_times;
+  TimestampRange web_authn_assertion_times;
 };
 
 inline bool operator==(const StateValue& lhs, const StateValue& rhs) {
   return std::tie(lhs.site_storage_times, lhs.user_interaction_times,
-                  lhs.stateful_bounce_times, lhs.bounce_times) ==
+                  lhs.stateful_bounce_times, lhs.bounce_times,
+                  lhs.web_authn_assertion_times) ==
          std::tie(rhs.site_storage_times, rhs.user_interaction_times,
-                  rhs.stateful_bounce_times, rhs.bounce_times);
+                  rhs.stateful_bounce_times, rhs.bounce_times,
+                  rhs.web_authn_assertion_times);
 }
 
 enum class DIPSTriggeringAction { kNone, kStorage, kBounce, kStatefulBounce };
@@ -254,7 +252,11 @@ enum class DIPSErrorCode {
   kRead_OpenEndedRange_NullStart = 1,
   kRead_OpenEndedRange_NullEnd = 2,
   kRead_BounceTimesIsntSupersetOfStatefulBounces = 3,
-  kMaxValue = kRead_BounceTimesIsntSupersetOfStatefulBounces,
+  kRead_EmptySite_InDb = 4,
+  kRead_EmptySite_NotInDb = 5,
+  kWrite_None = 6,
+  kWrite_EmptySite = 7,
+  kMaxValue = kWrite_EmptySite,
 };
 
 // DIPSDeletionAction is used in UMA enum histograms to record the actual
@@ -267,11 +269,12 @@ enum class DIPSErrorCode {
 // numeric values should never be reused.
 enum class DIPSDeletionAction {
   kDisallowed = 0,
-  kExceptedAs1p = 1,
-  kExceptedAs3p = 2,
+  kExceptedAs1p = 1,  // No longer used - merged into 'kExcepted' below.
+  kExceptedAs3p = 2,  // No longer used - merged into 'kExcepted' below.
   kEnforced = 3,
   kIgnored = 4,
-  kMaxValue = kIgnored,
+  kExcepted = 5,
+  kMaxValue = kExcepted,
 };
 
 #endif  // CHROME_BROWSER_DIPS_DIPS_UTILS_H_

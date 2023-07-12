@@ -146,6 +146,7 @@ bool ShouldIgnoreGeneratedEventForAutomation(
     case AXEventGenerator::Event::MULTISELECTABLE_STATE_CHANGED:
     case AXEventGenerator::Event::NAME_CHANGED:
     case AXEventGenerator::Event::OBJECT_ATTRIBUTE_CHANGED:
+    case AXEventGenerator::Event::ORIENTATION_CHANGED:
     case AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
     case AXEventGenerator::Event::PARENT_CHANGED:
     case AXEventGenerator::Event::PLACEHOLDER_CHANGED:
@@ -222,10 +223,10 @@ AutomationEventTypeToAXEventTuple(const char* event_type_string) {
   }
 
   // Otherwise use the AX event type.
-  ax::mojom::Event ax_event = ax::mojom::Event::kNone;
-  MaybeParseAXEnum<ax::mojom::Event>(event_type_string, &ax_event);
+  auto ax_event = MaybeParseAXEnum<ax::mojom::Event>(event_type_string);
   return std::tuple<ax::mojom::Event, AXEventGenerator::Event>(
-      ax_event, AXEventGenerator::Event::NONE);
+      ax_event.value_or(ax::mojom::Event::kNone),
+      AXEventGenerator::Event::NONE);
 }
 
 AXPositionKind StringToAXPositionKind(const std::string& type) {

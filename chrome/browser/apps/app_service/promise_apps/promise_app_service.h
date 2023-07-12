@@ -9,6 +9,7 @@
 
 #include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/apps/app_service/app_icon/icon_effects.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_icon_cache.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -64,13 +65,23 @@ class PromiseAppService {
   // request to the Almanac API to retrieve additional promise app info.
   void OnPromiseApp(PromiseAppPtr delta);
 
+  // Retrieves the icon for a package ID and applies any specified effects.
+  void LoadIcon(const PackageId& package_id,
+                int32_t size_hint_in_dip,
+                apps::IconEffects icon_effects,
+                apps::LoadIconCallback callback);
+
+  // Remove all details about a promise app from the PromiseAppRegistryCache and
+  // PromiseAppIconCache.
+  void RemovePromiseApp(const PackageId& package_id);
+
   // Allows us to skip Almanac implementation when running unit tests that don't
   // care about Almanac responses.
   void SetSkipAlmanacForTesting(bool skip_almanac);
 
-  // Allows us to set a fake image fetcher for mock responses in unit tests.
-  void SetImageFetcherForTesting(
-      std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher);
+  // Allows tests to skip the check of whether the user has an official Google
+  // API key so that we can trigger an Almanac query.
+  void SetSkipApiKeyCheckForTesting(bool skip_almanac);
 
  private:
   // Update a promise app's fields with the info retrieved from the Almanac API.
@@ -81,7 +92,6 @@ class PromiseAppService {
   // Adds an icon to the icon cache and marks the corresponding promise app
   // as ready to show after all the icons are downloaded.
   void OnIconDownloaded(const PackageId& package_id,
-                        PromiseAppIconPtr promise_app_icon,
                         const gfx::Image& image,
                         const image_fetcher::RequestMetadata& metadata);
 
@@ -104,6 +114,7 @@ class PromiseAppService {
   std::map<PackageId, int> pending_download_count_;
 
   bool skip_almanac_for_testing_ = false;
+  bool skip_api_key_check_for_testing_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

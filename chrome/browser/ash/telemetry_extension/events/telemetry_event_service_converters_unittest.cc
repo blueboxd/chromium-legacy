@@ -28,6 +28,16 @@ TEST(TelemetryEventServiceConvertersTest, ConvertStructPtrTakesNullPtr) {
   EXPECT_TRUE(ConvertStructPtr(cros_healthd::mojom::EventInfoPtr()).is_null());
 }
 
+TEST(TelemetryEventServiceConvertersTest, OptionalUint32) {
+  constexpr double kValue = (1ULL << 31) + 1000;
+  EXPECT_EQ(ConvertEventNullablePrimitivePtr(
+                cros_healthd::mojom::NullableUint32Ptr()),
+            absl::nullopt);
+  EXPECT_EQ(ConvertEventNullablePrimitivePtr(
+                cros_healthd::mojom::NullableUint32::New(kValue)),
+            kValue);
+}
+
 TEST(TelemetryEventServiceConvertersTest, ConvertKeyboardConnectionType) {
   EXPECT_EQ(
       Convert(diagnostics::mojom::ConnectionType::kUnmappedEnumField),
@@ -256,6 +266,18 @@ TEST(TelemetryEventServiceConvertersTest, ConvertTelemetryUsbEventInfo_State) {
             crosapi::mojom::TelemetryUsbEventInfo::State::kRemove);
 }
 
+TEST(TelemetryEventServiceConvertersTest, ConvertTelemetryHdmiEventInfo_State) {
+  EXPECT_EQ(
+      Convert(cros_healthd::mojom::HdmiEventInfo::State::kUnmappedEnumField),
+      crosapi::mojom::TelemetryHdmiEventInfo::State::kUnmappedEnumField);
+
+  EXPECT_EQ(Convert(cros_healthd::mojom::HdmiEventInfo::State::kAdd),
+            crosapi::mojom::TelemetryHdmiEventInfo::State::kAdd);
+
+  EXPECT_EQ(Convert(cros_healthd::mojom::HdmiEventInfo::State::kRemove),
+            crosapi::mojom::TelemetryHdmiEventInfo::State::kRemove);
+}
+
 TEST(TelemetryEventServiceConvertersTest,
      ConvertTelemetrySdCardEventInfo_State) {
   EXPECT_EQ(
@@ -302,6 +324,21 @@ TEST(TelemetryEventServiceConvertersTest,
   EXPECT_EQ(
       Convert(cros_healthd::mojom::StylusGarageEventInfo::State::kRemoved),
       crosapi::mojom::TelemetryStylusGarageEventInfo::State::kRemoved);
+}
+
+TEST(TelemetryEventServiceConvertersTest, ConvertStylusTouchPointInfoPtr) {
+  constexpr int kX = 1;
+  constexpr int kY = 2;
+  constexpr int kPressure = 3;
+  EXPECT_EQ(ConvertStructPtr(cros_healthd::mojom::StylusTouchPointInfo::New(
+                kX, kY, nullptr)),
+            crosapi::mojom::TelemetryStylusTouchPointInfo::New(kX, kY,
+                                                               absl::nullopt));
+
+  EXPECT_EQ(
+      ConvertStructPtr(cros_healthd::mojom::StylusTouchPointInfo::New(
+          kX, kY, cros_healthd::mojom::NullableUint32::New(kPressure))),
+      crosapi::mojom::TelemetryStylusTouchPointInfo::New(kX, kY, kPressure));
 }
 
 TEST(TelemetryEventServiceConvertersTest,
@@ -365,6 +402,9 @@ TEST(TelemetryEventServiceConvertersTest, ConvertTelemetryEventCategoryEnum) {
   EXPECT_EQ(Convert(crosapi::mojom::TelemetryEventCategoryEnum::kUsb),
             cros_healthd::mojom::EventCategoryEnum::kUsb);
 
+  EXPECT_EQ(Convert(crosapi::mojom::TelemetryEventCategoryEnum::kHdmi),
+            cros_healthd::mojom::EventCategoryEnum::kHdmi);
+
   EXPECT_EQ(Convert(crosapi::mojom::TelemetryEventCategoryEnum::kSdCard),
             cros_healthd::mojom::EventCategoryEnum::kSdCard);
 
@@ -388,6 +428,13 @@ TEST(TelemetryEventServiceConvertersTest, ConvertTelemetryEventCategoryEnum) {
   EXPECT_EQ(
       Convert(crosapi::mojom::TelemetryEventCategoryEnum::kTouchpadConnected),
       cros_healthd::mojom::EventCategoryEnum::kTouchpad);
+
+  EXPECT_EQ(Convert(crosapi::mojom::TelemetryEventCategoryEnum::kStylusTouch),
+            cros_healthd::mojom::EventCategoryEnum::kStylus);
+
+  EXPECT_EQ(
+      Convert(crosapi::mojom::TelemetryEventCategoryEnum::kStylusConnected),
+      cros_healthd::mojom::EventCategoryEnum::kStylus);
 }
 
 TEST(TelemetryEventServiceConvertersTest, ConvertKeyboardInfo) {
@@ -555,6 +602,14 @@ TEST(TelemetryEventServiceConvertersTest, ConvertTelemetryUsbEventInfoPtr) {
                 crosapi::mojom::TelemetryUsbEventInfo::State::kAdd));
 }
 
+TEST(TelemetryEventServiceConvertersTest, ConvertTelemetryHdmiEventInfoPtr) {
+  auto input = cros_healthd::mojom::HdmiEventInfo::New();
+  input->state = cros_healthd::mojom::HdmiEventInfo::State::kAdd;
+
+  EXPECT_EQ(ConvertStructPtr(std::move(input)),
+            crosapi::mojom::TelemetryHdmiEventInfo::New(
+                crosapi::mojom::TelemetryHdmiEventInfo::State::kAdd));
+}
 TEST(TelemetryEventServiceConvertersTest, ConvertTelemetrySdCardEventInfoPtr) {
   auto input = cros_healthd::mojom::SdCardEventInfo::New();
   input->state = cros_healthd::mojom::SdCardEventInfo::State::kAdd;
@@ -773,6 +828,88 @@ TEST(TelemetryEventServiceConvertersTest,
           crosapi::mojom::TelemetryInputTouchButton::kMiddle,
           crosapi::mojom::TelemetryInputTouchButton::kRight};
   EXPECT_EQ(connected_event_output->buttons, expected_buttons);
+}
+
+TEST(TelemetryEventServiceConvertersTest, ConvertStylusEventInfoTouchEvent) {
+  constexpr int kX = 1;
+  constexpr int kY = 2;
+  constexpr int kPressure = 3;
+  {
+    auto touch_point =
+        cros_healthd::mojom::StylusTouchPointInfo::New(kX, kY, nullptr);
+    auto touch_event_input =
+        cros_healthd::mojom::StylusEventInfo::NewTouchEvent(
+            cros_healthd::mojom::StylusTouchEvent::New(std::move(touch_point)));
+
+    auto input = cros_healthd::mojom::EventInfo::NewStylusEventInfo(
+        std::move(touch_event_input));
+
+    auto result = ConvertStructPtr(std::move(input));
+
+    EXPECT_TRUE(result->is_stylus_touch_event_info());
+    const auto& touch_event_output = result->get_stylus_touch_event_info();
+    EXPECT_FALSE(touch_event_output->touch_point.is_null());
+    EXPECT_EQ(touch_event_output->touch_point,
+              crosapi::mojom::TelemetryStylusTouchPointInfo::New(
+                  kX, kY, absl::nullopt));
+  }
+  {
+    auto touch_point = cros_healthd::mojom::StylusTouchPointInfo::New(
+        kX, kY, cros_healthd::mojom::NullableUint32::New(kPressure));
+    auto touch_event_input =
+        cros_healthd::mojom::StylusEventInfo::NewTouchEvent(
+            cros_healthd::mojom::StylusTouchEvent::New(std::move(touch_point)));
+
+    auto input = cros_healthd::mojom::EventInfo::NewStylusEventInfo(
+        std::move(touch_event_input));
+
+    auto result = ConvertStructPtr(std::move(input));
+
+    EXPECT_TRUE(result->is_stylus_touch_event_info());
+    const auto& touch_event_output = result->get_stylus_touch_event_info();
+    EXPECT_FALSE(touch_event_output->touch_point.is_null());
+    EXPECT_EQ(
+        touch_event_output->touch_point,
+        crosapi::mojom::TelemetryStylusTouchPointInfo::New(kX, kY, kPressure));
+  }
+  {
+    auto touch_event_input =
+        cros_healthd::mojom::StylusEventInfo::NewTouchEvent(
+            cros_healthd::mojom::StylusTouchEvent::New(nullptr));
+
+    auto input = cros_healthd::mojom::EventInfo::NewStylusEventInfo(
+        std::move(touch_event_input));
+
+    auto result = ConvertStructPtr(std::move(input));
+
+    EXPECT_TRUE(result->is_stylus_touch_event_info());
+    const auto& touch_event_output = result->get_stylus_touch_event_info();
+    EXPECT_TRUE(touch_event_output->touch_point.is_null());
+  }
+}
+
+TEST(TelemetryEventServiceConvertersTest,
+     ConvertStylusEventInfoConnectedEvent) {
+  constexpr int kMaxX = 1;
+  constexpr int kMaxY = 2;
+  constexpr int kMaxPressure = 3;
+  auto connected_event_input =
+      cros_healthd::mojom::StylusEventInfo::NewConnectedEvent(
+          cros_healthd::mojom::StylusConnectedEvent::New(kMaxX, kMaxY,
+                                                         kMaxPressure));
+
+  auto input = cros_healthd::mojom::EventInfo::NewStylusEventInfo(
+      std::move(connected_event_input));
+
+  auto result = ConvertStructPtr(std::move(input));
+  EXPECT_TRUE(result->is_stylus_connected_event_info());
+  const auto& connected_event_output =
+      result->get_stylus_connected_event_info();
+
+  EXPECT_EQ(connected_event_output->max_x, static_cast<uint32_t>(kMaxX));
+  EXPECT_EQ(connected_event_output->max_y, static_cast<uint32_t>(kMaxY));
+  EXPECT_EQ(connected_event_output->max_pressure,
+            static_cast<uint32_t>(kMaxPressure));
 }
 
 }  // namespace ash::converters

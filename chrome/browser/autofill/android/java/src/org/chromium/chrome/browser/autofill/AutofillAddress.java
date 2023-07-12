@@ -13,9 +13,8 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.StrictModeContext;
-import org.chromium.chrome.browser.autofill.AutofillProfileBridge.AddressField;
-import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.components.autofill.EditableOption;
+import org.chromium.components.autofill.ServerFieldType;
 import org.chromium.payments.mojom.PaymentAddress;
 
 import java.lang.annotation.Retention;
@@ -252,8 +251,11 @@ public class AutofillAddress extends EditableOption {
         List<Integer> requiredFields = AutofillProfileBridge.getRequiredAddressFields(
                 AutofillAddress.getCountryCode(profile));
         for (int fieldId : requiredFields) {
-            if (fieldId == AddressField.RECIPIENT || fieldId == AddressField.COUNTRY) continue;
-            if (!TextUtils.isEmpty(getProfileField(profile, fieldId))) continue;
+            if (fieldId == ServerFieldType.NAME_FULL
+                    || fieldId == ServerFieldType.ADDRESS_HOME_COUNTRY) {
+                continue;
+            }
+            if (!TextUtils.isEmpty(profile.getInfo(fieldId))) continue;
             completionStatus |= CompletionStatus.INVALID_ADDRESS;
             break;
         }
@@ -261,42 +263,18 @@ public class AutofillAddress extends EditableOption {
         return completionStatus;
     }
 
-    /** @return The given autofill profile field. */
-    public static String getProfileField(AutofillProfile profile, int field) {
-        assert profile != null;
-        switch (field) {
-            case AddressField.COUNTRY:
-                return profile.getCountryCode();
-            case AddressField.ADMIN_AREA:
-                return profile.getRegion();
-            case AddressField.LOCALITY:
-                return profile.getLocality();
-            case AddressField.DEPENDENT_LOCALITY:
-                return profile.getDependentLocality();
-            case AddressField.SORTING_CODE:
-                return profile.getSortingCode();
-            case AddressField.POSTAL_CODE:
-                return profile.getPostalCode();
-            case AddressField.STREET_ADDRESS:
-                return profile.getStreetAddress();
-            case AddressField.ORGANIZATION:
-                return profile.getCompanyName();
-            case AddressField.RECIPIENT:
-                return profile.getFullName();
-        }
-
-        assert false;
-        return null;
-    }
-
     /** @return The country code to use, e.g., when constructing an editor for this address. */
     public static String getCountryCode(@Nullable AutofillProfile profile) {
-        if (sRegionCodePattern == null) sRegionCodePattern = Pattern.compile(REGION_CODE_PATTERN);
-
-        return profile == null || TextUtils.isEmpty(profile.getCountryCode())
-                        || !sRegionCodePattern.matcher(profile.getCountryCode()).matches()
+        if (sRegionCodePattern == null) {
+            sRegionCodePattern = Pattern.compile(REGION_CODE_PATTERN);
+        }
+        if (profile == null) {
+            return Locale.getDefault().getCountry();
+        }
+        final String countryCode = profile.getInfo(ServerFieldType.ADDRESS_HOME_COUNTRY);
+        return TextUtils.isEmpty(countryCode) || !sRegionCodePattern.matcher(countryCode).matches()
                 ? Locale.getDefault().getCountry()
-                : profile.getCountryCode();
+                : countryCode;
     }
 
     /** @return The address for the merchant. */

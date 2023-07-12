@@ -745,8 +745,10 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 
-// Select controls behave differently on Mac/Android, this test doesn't apply.
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC)
+// Select controls behave differently on Mac/Android/iOS-Blink, this test
+// doesn't apply.
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC) && \
+    !(BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK))
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
                        SelectSizeChangeWithOpenedPopupDoesNotCrash) {
   LoadInitialAccessibilityTreeFromHtml(R"HTML(
@@ -802,9 +804,11 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
         "}");
   }
 }
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC) && !(BUILDFLAG(IS_IOS)
+        // && BUILDFLAG(USE_BLINK))
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_APPLE)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC) && \
+    !(BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK))
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
                        GetBoundsRectIframes) {
   LoadInitialAccessibilityTreeFromHtml(std::string(R"HTML(
@@ -910,10 +914,13 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   EXPECT_LT(first_list_item_bounds.y() - select_bounds.y(), 70);
   EXPECT_LT(second_list_item_bounds.y() - select_bounds.y(), 70);
 }
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_APPLE)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC) && !(BUILDFLAG(IS_IOS)
+        // && BUILDFLAG(USE_BLINK))
 
-// Select controls behave differently on Mac/Android, this test doesn't apply.
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC)
+// Select controls behave differently on Mac/Android/iOS-Blink, this test
+// doesn't apply.
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC) && \
+    !(BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK))
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
                        // TODO(crbug.com/1446550): Re-enable this test
                        DISABLED_SelectWithOptgroupActiveDescendant) {
@@ -1079,10 +1086,13 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
     EXPECT_TRUE(option_2->HasState(ax::mojom::State::kInvisible));
   }
 }
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC) && !(BUILDFLAG(IS_IOS)
+        // && BUILDFLAG(USE_BLINK))
 
-// Select controls behave differently on Mac/Android, this test doesn't apply.
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC)
+// Select controls behave differently on Mac/Android/iOS-Blink, this test
+// doesn't apply.
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC) && \
+    !(BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK))
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
                        SelectListWithOptgroupActiveDescendant) {
   LoadInitialAccessibilityTreeFromHtml(R"HTML(
@@ -1126,7 +1136,8 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       ax::mojom::IntAttribute::kActivedescendantId, &active_descendant_id));
   EXPECT_EQ(active_descendant_id, option_2->GetId());
 }
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC) && !(BUILDFLAG(IS_IOS)
+        // && BUILDFLAG(USE_BLINK))
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
                        PlatformIterator) {
@@ -2462,9 +2473,16 @@ IN_PROC_BROWSER_TEST_F(
 // We do not run this test on Android because only the Java code can change the
 // size of the web contents, instead see the associated test in
 // WebContentsAccessibilityTest#testBoundingBoxUpdatesOnWindowResize().
-#if !BUILDFLAG(IS_ANDROID)
+// TODO(https://crbug.com/1458666): Timeout on iOS-Blink
+#if BUILDFLAG(IS_ANDROID) || (BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK))
+#define MAYBE_FlexBoxBoundingBoxUpdatesOnWindowResize \
+  DISABLED_FlexBoxBoundingBoxUpdatesOnWindowResize
+#else
+#define MAYBE_FlexBoxBoundingBoxUpdatesOnWindowResize \
+  FlexBoxBoundingBoxUpdatesOnWindowResize
+#endif
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
-                       FlexBoxBoundingBoxUpdatesOnWindowResize) {
+                       MAYBE_FlexBoxBoundingBoxUpdatesOnWindowResize) {
   // This is an edge case that was discovered on a mobile sign-in page.
   // The size of the outer flexbox is tied to the vertical height of the
   // window, so ensure that the bounding box of the button is correctly
@@ -2502,6 +2520,64 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   // original top coordinate.
   EXPECT_LT(bounds1.y(), bounds0.y() / 2);
 }
-#endif
+
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       TestNotificationTextDeletedInTextfield) {
+  LoadInitialAccessibilityTreeFromHtml(
+      "<input autofocus id='input' aria-label='Input' type='text' value='old "
+      "value'/>");
+
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Input");
+
+  BrowserAccessibility* input_node = FindNode("Input");
+  ASSERT_NE(input_node, nullptr);
+
+  // We select an arbitrary portion of the text.
+  {
+    AccessibilityNotificationWaiter waiter(
+        shell()->web_contents(), ui::kAXModeComplete,
+        ax::mojom::Event::kDocumentSelectionChanged);
+
+    ui::AXActionData action_data;
+    action_data.anchor_node_id = input_node->GetId();
+    action_data.anchor_offset = 1;
+    action_data.focus_node_id = input_node->GetId();
+    action_data.focus_offset = 3;
+    action_data.action = ax::mojom::Action::kSetSelection;
+    input_node->AccessibilityPerformAction(action_data);
+    ASSERT_TRUE(waiter.WaitForNotification());
+  }
+  // We delete the selection and make sure the `kTextDeletedInTextfield` event
+  // is fired
+  {
+    AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                           ui::kAXModeComplete,
+                                           ax::mojom::Event::kValueChanged);
+
+    SimulateKeyPress(shell()->web_contents(), ui::DomKey::BACKSPACE,
+                     ui::DomCode::BACKSPACE, ui::VKEY_BACK, /* control */ false,
+                     /* shift */ false, /* alt */ false,
+                     /* command */ false);
+    ASSERT_TRUE(waiter.WaitForNotification());
+  }
+
+  const BrowserAccessibility* root =
+      GetManager()->GetBrowserAccessibilityRoot();
+  ASSERT_NE(root, nullptr);
+  const BrowserAccessibility* input = FindNode("Input");
+  ASSERT_NE(input, nullptr);
+
+  EXPECT_TRUE(input->HasIntListAttribute(
+      ax::mojom::IntListAttribute::kTextOperationStartOffsets));
+  EXPECT_TRUE(input->HasIntListAttribute(
+      ax::mojom::IntListAttribute::kTextOperationEndOffsets));
+  EXPECT_TRUE(input->HasIntListAttribute(
+      ax::mojom::IntListAttribute::kTextOperationStartAnchorIds));
+  EXPECT_TRUE(input->HasIntListAttribute(
+      ax::mojom::IntListAttribute::kTextOperationEndAnchorIds));
+  EXPECT_TRUE(
+      input->HasIntListAttribute(ax::mojom::IntListAttribute::kTextOperations));
+}
 
 }  // namespace content

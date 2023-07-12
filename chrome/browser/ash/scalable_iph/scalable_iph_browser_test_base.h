@@ -25,11 +25,16 @@ namespace ash {
 
 class ScalableIphBrowserTestBase : public CustomizableTestEnvBrowserTestBase {
  public:
+  static constexpr char kTestNotificationId[] = "test_notification_id";
   static constexpr char kTestNotificationTitle[] = "Test Notification Title";
   static constexpr char kTestNotificationBodyText[] =
       "Test Notification Body Text";
   static constexpr char kTestNotificationButtonText[] =
       "Test Notification Button Text";
+
+  static constexpr char kTestBubbleId[] = "test_bubble_id";
+  static constexpr char kTestBubbleText[] = "Test Bubble Text";
+  static constexpr char kTestBubbleButtonText[] = "Test Bubble Button Text";
 
   ScalableIphBrowserTestBase();
   ~ScalableIphBrowserTestBase() override;
@@ -42,7 +47,10 @@ class ScalableIphBrowserTestBase : public CustomizableTestEnvBrowserTestBase {
  protected:
   // Allow sub-classes to initialize scoped feature list with different values.
   virtual void InitializeScopedFeatureList();
-  void AppendFakeUiParams(base::FieldTrialParams& params);
+  void AppendFakeUiParamsNotification(base::FieldTrialParams& params);
+  void AppendFakeUiParamsBubble(base::FieldTrialParams& params);
+  static std::string FullyQualified(const base::Feature& feature,
+                                    const std::string& param_name);
 
   feature_engagement::test::MockTracker* mock_tracker() {
     return mock_tracker_;

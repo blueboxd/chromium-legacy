@@ -12,6 +12,7 @@ source_set("password") {
   ]
   deps = [
     ":common",
+    ":features",
     ":password_constants",
     ":password_ui",
     "//components/keyed_service/core",
@@ -61,6 +62,7 @@ source_set("common") {
   deps = [
     "//base",
     "//components/password_manager/core/browser",
+    "//components/password_manager/core/browser/features:password_features",
     "//components/password_manager/core/common",
   ]
 }
@@ -161,6 +163,15 @@ source_set("title_view") {
     "UIKit.framework",
     "Foundation.framework",
   ]
+}
+
+source_set("features") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "password_manager_ui_features.h",
+    "password_manager_ui_features.mm",
+  ]
+  public_deps = [ "//base" ]
 }
 
 source_set("test_support") {
@@ -291,6 +302,7 @@ source_set("eg2_tests") {
     "//components/password_manager/core/common:features",
     "//components/policy:generated",
     "//components/strings",
+    "//components/sync/base:features",
     "//components/sync/service",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/credential_provider_promo:features",

@@ -241,7 +241,12 @@ void UpdateServiceImpl::FetchPolicies(base::OnceCallback<void(int)> callback) {
   VLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  config_->GetPolicyService()->FetchPolicies(std::move(callback));
+  if (GetUpdaterScope() == UpdaterScope::kUser) {
+    VLOG(2) << "Policy fetch skipped for user updater.";
+    std::move(callback).Run(0);
+  } else {
+    config_->GetPolicyService()->FetchPolicies(std::move(callback));
+  }
 }
 
 void UpdateServiceImpl::RegisterApp(const RegistrationRequest& request,
@@ -353,7 +358,7 @@ void UpdateServiceImpl::RunPeriodicTasks(base::OnceClosure callback) {
 void UpdateServiceImpl::TaskStart() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!tasks_.empty()) {
-    std::move(tasks_.front()).Run();
+    main_task_runner_->PostTask(FROM_HERE, std::move(tasks_.front()));
   }
 }
 

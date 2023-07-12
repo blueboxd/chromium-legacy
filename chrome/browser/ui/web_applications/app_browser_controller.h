@@ -148,6 +148,10 @@ class AppBrowserController : public ui::ColorProviderKey::InitializerSupplier,
   // Gets the new tab URL for tabbed apps.
   virtual GURL GetAppNewTabUrl() const;
 
+  // Whether the app's tab strip should hide the new tab button, e.g. because
+  // the app has a pinned home tab at the same URL as the new tab URL.
+  virtual bool ShouldHideNewTabButton() const;
+
   // Returns whether the url is within the scope of the tab strip home tab.
   virtual bool IsUrlInHomeTabScope(const GURL& url) const;
 
@@ -261,6 +265,13 @@ class AppBrowserController : public ui::ColorProviderKey::InitializerSupplier,
   }
 
   void SetOnUpdateDraggableRegionForTesting(base::OnceClosure done);
+
+  // Called when this browser is going to receive a reparented web contents
+  // from an installation or intent action. If the initial url is not set or
+  // isn't within the app scope, set it to the app's start_url, allowing the 'x'
+  // button to appear in the toolbar & the user can use it to navigate back to
+  // that location.
+  void MaybeSetInitialUrlOnReparentTab();
 
  protected:
   AppBrowserController(Browser* browser,

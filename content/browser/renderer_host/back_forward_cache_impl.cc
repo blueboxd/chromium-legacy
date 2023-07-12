@@ -60,18 +60,13 @@ class RenderProcessHostInternalObserver;
 
 // Allows overriding the sizes of back/forward cache.
 // Sizes set via this feature's parameters take precedence over others.
+// Enables BackForwardCache size for
+//  - desktop: https://crbug.com/1291435.
+//  - android: https://crbug.com/1395281.
 BASE_FEATURE(kBackForwardCacheSize,
              "BackForwardCacheSize",
-// Sets the BackForwardCache size for desktop.
-// See crbug.com/1291435.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
-    BUILDFLAG(IS_CHROMEOS)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
-// Sets BackForwardCache cache_size=6 per crbug.com/1291435.
+             base::FEATURE_ENABLED_BY_DEFAULT);
+// Sets BackForwardCache cache_size=6.
 const base::FeatureParam<int> kBackForwardCacheSizeCacheSize{
     &kBackForwardCacheSize, "cache_size", 6};
 // Disables EnforceCacheSizeLimitInternal() with foreground_cache_size=0, as
@@ -875,12 +870,7 @@ void BackForwardCacheImpl::PopulateReasonsForMainDocument(
   // GetFutureBackForwardCacheEligibilityPotential as it's not possible to
   // change the HTTP headers, so if it's not possible to cache this page now due
   // to this, it's impossible to cache this page later.
-  // TODO(rakina): Once we move cache-control tracking to RenderFrameHostImpl,
-  // change this part to use the information stored in RenderFrameHostImpl
-  // instead.
-
-  if (rfh->GetBackForwardCacheDisablingFeatures().Has(
-          WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore)) {
+  if (rfh->LoadedWithCacheControlNoStoreHeader()) {
     if (!AllowStoringPagesWithCacheControlNoStore()) {
       // Block pages with cache-control: no-store when
       // |should_cache_control_no_store_enter| flag is false.
@@ -964,8 +954,7 @@ void BackForwardCacheImpl::NotRestoredReasonBuilder::
   // This does not use `IsSameOriginForTreeResult` because we
   // want to be more conservative and react to *any* same-origin frame using it.
   CacheControlNoStoreContext ccns_context = kNotInCCNSContext;
-  if (root_rfh_->GetBackForwardCacheDisablingFeatures().Has(
-          WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore) &&
+  if (root_rfh_->LoadedWithCacheControlNoStoreHeader() &&
       rfh->GetLastCommittedOrigin().IsSameOriginWith(
           root_rfh_->GetLastCommittedOrigin())) {
     ccns_context = kInCCNSContext;

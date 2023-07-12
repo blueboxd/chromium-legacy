@@ -817,6 +817,9 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FEEDBACK" desc="The name of the Autofill Feedback command in the content area context menu">
            Help improve autofill
           </message>
+          <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED" desc="The name of the Autofill manual fallback for unrecognized autocomplete attribute command in the content area context menu.">
+           Addresses and more
+          </message>
         </if>
         <if expr="use_titlecase">
           <message name="IDS_CONTENT_CONTEXT_BACK" desc="In Title Case: The name of the Back command in the content area context menu">
@@ -1094,6 +1097,9 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FEEDBACK" desc="The name of the Autofill Feedback command in the content area context menu">
            Help Improve Autofill
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED" desc="The name of the Autofill manual fallback for unrecognized autocomplete attribute command in the content area context menu.">
+           Addresses and more
           </message>
         </if>
 
@@ -2956,10 +2962,8 @@ are declared in tools/grit/grit_rule.gni.
         Your organization blocked this file because it is too big for a security check. You can open files up to 50 MB.
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_DEEP_SCANNING_PROMPT_UPDATED"
-               desc="Subpage summary of warning for a file where we recommend sending the file for deep scanning.">
-        This file might be a virus or malware.
-
-You can send it to Google Safe Browsing to check if it's unsafe. Scans usually take a few seconds.
+        desc="Subpage summary of warning for a file where we recommend sending the file for deep scanning.">
+        This file might be a virus or malware.<ph name="LINE_BREAK">$1</ph>You can send it to Google Safe Browsing to check if it's unsafe. Scans usually take a few seconds.
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_DEEP_SCANNING_LINK"
         desc="Additional text describing the process of deep scanning a download">
@@ -3653,7 +3657,12 @@ You can send it to Google Safe Browsing to check if it's unsafe. Scans usually t
       <message name="IDS_STORAGE_ACCESS_PERMISSION_BUBBLE_MESSAGE" desc="Text displayed in the omnibox bubble for the StorageAccess permission." translateable="false">
         These sites can use info they’ve saved about you as you browse <ph name="HOST">$1<ex>example.com</ex></ph>.
       </message>
-
+      <message name="IDS_STORAGE_ACCESS_PERMISSION_ALLOWED_TOOLTIP" desc="Tooltip text when storage access for a page is allowed." translateable="false">
+        An embedded service on this site can use info they’ve saved about you
+      </message>
+      <message name="IDS_STORAGE_ACCESS_PERMISSION_BLOCKED_TOOLTIP" desc="Tooltip text when storage access for a page is not allowed." translateable="false">
+        An embedded service on this site can not use info they’ve saved about you
+      </message>
 
       <!-- Cookie controls strings. -->
       <message name="IDS_COOKIE_CONTROLS_DIALOG_TITLE" desc="Title of the dialog that allows users to control cookie blocking.">
@@ -3700,6 +3709,36 @@ You can send it to Google Safe Browsing to check if it's unsafe. Scans usually t
       <message name="IDS_COOKIE_CONTROLS_BUBBLE_COOKIES_ALLOWED_TITLE" translateable="false"  desc="">
         Third-party cookies allowed
       </message>
+      <message name="IDS_COOKIE_CONTROLS_BUBBLE_SITE_NOT_WORKING_TITLE " translateable="false"  desc="">
+        Site not working?
+      </message>
+      <message name="IDS_COOKIE_CONTROLS_BUBBLE_SITE_NOT_WORKING_DESCRIPTION_TEMPORARY" translateable="false"  desc="">
+        Try temporarily allowing third-party cookies, which means less protection but site features are more likely to work
+      </message>
+      <message name="IDS_COOKIE_CONTROLS_BUBBLE_BLOCKING_RESTART_TITLE" translateable="false"  desc="">
+        {COUNT, plural,
+              =1 {1 day until Chrome starts blocking cookies again}
+              other {# days until Chrome starts blocking cookies again}}
+      </message>
+      <message name="IDS_COOKIE_CONTROLS_BUBBLE_BLOCKING_RESTART_DESCRIPTION_TODAY" translateable="false"  desc="">
+        You allowed this site to use third-party cookies. This means that most site features should work, but you have less protection.
+      </message>
+      <message name="IDS_COOKIE_CONTROLS_BUBBLE_PERMANENT_ALLOWED_TITLE" translateable="false"  desc="">
+        You allowed third-party cookies for this site
+      </message>
+      <message name="IDS_COOKIE_CONTROLS_BUBBLE_PERMANENT_ALLOWED_DESCRIPTION" translateable="false"  desc="">
+        This means that most site features should work, but you have less protection
+      </message>
+      <message name="IDS_COOKIE_CONTROLS_BUBBLE_SEND_FEEDBACK_BUTTON_TITLE" translateable="false"  desc="">
+        Send feedback
+      </message>
+      <message name="IDS_COOKIE_CONTROLS_BUBBLE_SEND_FEEDBACK_BUTTON_DESCRIPTION" translateable="false"  desc="">
+        Help us improve Chrome by telling us why you allowed third-party cookies
+      </message>
+      <message name="IDS_COOKIE_CONTROLS_BUBBLE_RELOADING_LABEL" translateable="false" desc="">
+        Reloading <ph name="DOMAIN">$1<ex>example.com</ex></ph>...
+      </message>
+
 
       <!-- Win certificate selector dialog strings.  -->
       <if expr="toolkit_views">
@@ -4906,6 +4945,9 @@ You can send it to Google Safe Browsing to check if it's unsafe. Scans usually t
         </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS" desc="Permission string for access to bookmarks.">
           Read and change your bookmarks
+        </message>
+        <message name="IDS_EXTENSION_PROMPT_WARNING_READING_LIST" desc="Permission string for the Reading List.">
+          Read and change entries in the reading list
         </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD" desc="Permission string for access to clipboard.">
           Read data you copy and paste
@@ -6414,6 +6456,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PASSWORD_GENERATION_SUGGESTION_CONVENIENCE" desc="Text shown next to a generated password describing its convenience.">
           Quickly use a strong password
         </message>
+        <message name="IDS_PASSWORD_GENERATION_EDIT_PASSWORD" desc="Text shown below the generated password describing the action to edit it directly.">
+          Edit password
+        </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_PASSWORD_GENERATION_SUGGESTION_GPM" desc="In Title Case: Text shown next to a generated password describing it as a suggestion.">
@@ -6430,6 +6475,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_PASSWORD_GENERATION_SUGGESTION_CONVENIENCE" desc="Text shown next to a generated password describing its convenience.">
           Quickly Use a Strong Password
+        </message>
+        <message name="IDS_PASSWORD_GENERATION_EDIT_PASSWORD" desc="Text shown below the generated password describing the action to edit it directly.">
+          Edit Password
         </message>
       </if>
 
@@ -9333,6 +9381,11 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         None available
       </message>
 
+      <!-- Media controls -->
+      <message name="IDS_MEDIA_CONTROLS_TITLE_PLACEHOLDER_INCOGNITO" desc="Text used as the placeholder in the OS' media controls' title when the media is being played in an Incognito session.">
+        A site is playing media
+      </message>
+
       <message name="IDS_ZOOMLEVELS_CHROME_ERROR_PAGES_LABEL" desc="Label for zoom level list entry for Chrome error pages.">
         (Chrome error pages)
       </message>
@@ -9577,6 +9630,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         <message name="IDS_TAB_CXMENU_CLOSETABSTOLEFT" desc="The label of the 'Close Tabs to the Left' Tab context menu item. Translate this verbatim, do not localize for RTL languages (we have separate strings for RTL).">
           Close tabs to the left
         </message>
+        <message name="IDS_TAB_CXMENU_CLOSEALLTABS" desc="The label of the 'Close All Tabs' Tab context menu item.">
+          Close all tabs
+        </message>
         <message name="IDS_TAB_CXMENU_FOCUS_THIS_TAB" desc="The label of the 'Focus this tab' Tab context menu item.">
           Focus this tab
         </message>
@@ -9673,6 +9729,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         </message>
         <message name="IDS_TAB_CXMENU_CLOSETABSTOLEFT" desc="In Title Case: The label of the 'Close Tabs to the Left' Tab context menu item. Translate this verbatim, do not localize for RTL languages (we have separate strings for RTL).">
           Close Tabs to the Left
+        </message>
+        <message name="IDS_TAB_CXMENU_CLOSEALLTABS" desc="In Title Case: The label of the 'Close All Tabs' Tab context menu item.">
+          Close All Tabs
         </message>
         <message name="IDS_TAB_CXMENU_FOCUS_THIS_TAB" desc="In Title Case: The label of the 'Focus This Tab' Tab context menu item.">
           Focus This Tab
@@ -13523,6 +13582,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_DEVICE_LOG_TYPE_EXTENSIONS" desc="Checkbox to enable showing events reported by extensions">
         Extensions
       </message>
+      <message name="IDS_DEVICE_LOG_TYPE_DISPLAY" desc="Checkbox to enable showing events of type Display">
+        Display
+      </message>
       <message name="IDS_DEVICE_LOG_FILEINFO" desc="File info checkbox in device event log">
         File Info
       </message>
@@ -13554,12 +13616,18 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </message>
 
     <if expr="not is_android">
-      <!-- WebHID System Tray Icon -->
+      <!-- WebHID and WebUSBSystem Tray Icon -->
       <message name="IDS_WEBHID_SYSTEM_TRAY_ICON_HID_SETTINGS" desc="Text for the WebHID system tray icon button that opens the HID settings page.">
         HID settings
       </message>
       <message name="IDS_WEBHID_SYSTEM_TRAY_ICON_ABOUT_HID_DEVICE" desc="Text for the WebHID system tray icon button that opens the learn more page for the HID device.">
         About HID devices
+      </message>
+      <message name="IDS_WEBUSB_SYSTEM_TRAY_ICON_USB_SETTINGS" desc="Text for the WebUSB system tray icon button that opens the USB settings page.">
+        USB settings
+      </message>
+      <message name="IDS_WEBUSB_SYSTEM_TRAY_ICON_ABOUT_USB_DEVICE" desc="Text for the WebUSB system tray icon button that opens the learn more page for the USB device.">
+        About USB devices
       </message>
       <if expr="is_chromeos">
         <then>
@@ -13569,9 +13637,15 @@ Please help our engineers fix this problem. Tell us what happened right before y
             =2 {Extensions accessing devices: <ph name="EXTENSION1">{1}<ex>Google Translate</ex></ph>, <ph name="EXTENSION2">{2}<ex>Secure Shell</ex></ph>}
             other {Extensions accessing devices: <ph name="EXTENSION1">{1}<ex>Google Translate</ex></ph>, <ph name="EXTENSION2">{2}<ex>Secure Shell</ex></ph> +{3} more}}
           </message>
+          <message name="IDS_WEBUSB_SYSTEM_TRAY_ICON_EXTENSION_LIST" desc="Text for the WebUSB pinned notification message.">
+            {NUM_EXTENSION, plural,
+            =1 {<ph name="EXTENSION1">{1}<ex>Google Translate</ex></ph> is accessing USB devices}
+            =2 {Extensions accessing devices: <ph name="EXTENSION1">{1}<ex>Google Translate</ex></ph>, <ph name="EXTENSION2">{2}<ex>Secure Shell</ex></ph>}
+            other {Extensions accessing devices: <ph name="EXTENSION1">{1}<ex>Google Translate</ex></ph>, <ph name="EXTENSION2">{2}<ex>Secure Shell</ex></ph> +{3} more}}
+          </message>
         </then>
         <else>
-          <message name="IDS_DEVICE_CONNECTED_BY_EXTENSION" desc="Text for the WebHID system tray icon button that displays how many active connections for the extension and opens the extension's site setting page.">
+          <message name="IDS_DEVICE_CONNECTED_BY_EXTENSION" desc="Text for the WebHID or WebUSB system tray icon button that displays how many active connections for the extension and opens the extension's site setting page.">
             {NUM_CONNECTION, plural,
             =0 {Extension "<ph name="EXTENSION">{1}<ex>Google Translate</ex></ph>" was accessing devices}
             =1 {Extension "<ph name="EXTENSION">{1}<ex>Google Translate</ex></ph>" is accessing {0} device}
@@ -15004,7 +15078,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </message>
     <!-- Lens Region Search bubble dialog -->
     <message name="IDS_LENS_REGION_SEARCH_BUBBLE_TEXT" desc="Text that is shown in the Lens Region Search education bubble when starting the feature. Informs the user to drag over the screen to select a region to search with Google Lens.">
-      Select image area to search
+      Select an area to search with Lens
     </message>
     <!-- ChromeLabs Thumbnail Tab Strip -->
     <message name="IDS_THUMBNAIL_TAB_STRIP_EXPERIMENT_NAME" desc="Name for Thumbnail Tab Strip experiment">
@@ -15417,15 +15491,19 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_WAFFLE_PAGE_SUBTITLE" desc="The subtitle for the Waffle page."
         translateable="false">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
       </message>
-      <message name="IDS_WAFFLE_FIRST_BUTTON_TITLE" desc="The title of the first button of the Waffle page."
+      <message name="IDS_WAFFLE_PAGE_SUBTITLE_INFO_LINK" desc="The info link in the subtitle of the Waffle page."
         translateable="false">
-        First button
+        labore
       </message>
-      <message name="IDS_WAFFLE_SECOND_BUTTON_TITLE" desc="The title of the second button of the Waffle page."
+      <message name="IDS_WAFFLE_BUTTON_TITLE" desc="The title of the button of the Waffle page."
         translateable="false">
-        Second button
+        Button
+      </message>
+      <message name="IDS_WAFFLE_INFO_DIALOG_TITLE" desc="The title of the info dialog of the Waffle page."
+        translateable="false">
+        Lorem ipsum dolor sit amet
       </message>
     </if>
   </messages>

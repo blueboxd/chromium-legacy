@@ -126,10 +126,9 @@ class TestCascade {
     DCHECK_LE(current_origin_, origin) << "Please add declarations in order";
     EnsureAtLeast(origin);
     cascade_.MutableMatchResult().AddMatchedProperties(
-        set, AddMatchedPropertiesOptions::Builder()
-                 .SetLinkMatchType(link_match_type)
-                 .SetIsInlineStyle(is_inline_style)
-                 .Build());
+        set, origin,
+        {.link_match_type = link_match_type,
+         .is_inline_style = is_inline_style});
   }
 
   void Apply(CascadeFilter filter = CascadeFilter()) {
@@ -240,21 +239,17 @@ class TestCascade {
   void FinishOrigin() {
     switch (current_origin_) {
       case CascadeOrigin::kUserAgent:
-        cascade_.MutableMatchResult().FinishAddingUARules();
         current_origin_ = CascadeOrigin::kUser;
         break;
       case CascadeOrigin::kUser:
-        cascade_.MutableMatchResult().FinishAddingUserRules();
         current_origin_ = CascadeOrigin::kAuthorPresentationalHint;
         break;
       case CascadeOrigin::kAuthorPresentationalHint:
-        cascade_.MutableMatchResult().FinishAddingPresentationalHints();
         cascade_.MutableMatchResult().BeginAddingAuthorRulesForTreeScope(
             GetDocument());
         current_origin_ = CascadeOrigin::kAuthor;
         break;
       case CascadeOrigin::kAuthor:
-        cascade_.MutableMatchResult().FinishAddingAuthorRulesForTreeScope();
         current_origin_ = CascadeOrigin::kAnimation;
         break;
       case CascadeOrigin::kAnimation:
@@ -337,11 +332,12 @@ class StyleCascadeTest : public PageTestBase {
     UpdateAllLifecyclePhasesForTest();
   }
 
-  const MutableCSSPropertyValueSet* AnimationTaintedSet(AtomicString name,
+  const MutableCSSPropertyValueSet* AnimationTaintedSet(const char* name,
                                                         String value) {
     CSSParserMode mode = kHTMLStandardMode;
     auto* set = MakeGarbageCollected<MutableCSSPropertyValueSet>(mode);
-    set->ParseAndSetCustomProperty(name, value, /* important */ false,
+    set->ParseAndSetCustomProperty(AtomicString(name), value,
+                                   /* important */ false,
                                    SecureContextMode::kSecureContext,
                                    /* context_style_sheet */ nullptr,
                                    /* is_animation_tainted */ true);
@@ -354,9 +350,9 @@ class StyleCascadeTest : public PageTestBase {
     STACK_ALLOCATED();
 
    public:
-    AutoEnv(PageTestBase& test, AtomicString name, String value)
+    AutoEnv(PageTestBase& test, const char* name, String value)
         : document_(&test.GetDocument()), name_(name) {
-      EnsureEnvironmentVariables().SetVariable(name, value);
+      EnsureEnvironmentVariables().SetVariable(name_, value);
     }
     ~AutoEnv() { EnsureEnvironmentVariables().RemoveVariable(name_); }
 
@@ -451,7 +447,8 @@ TEST_F(StyleCascadeTest, ApplyGenerations) {
   EXPECT_EQ("20px", cascade.ComputedValue("width"));
 
   cascade.State().StyleBuilder().SetWidth(Length::Auto());
-  cascade.State().StyleBuilder().SetVariableData("--x", nullptr, true);
+  cascade.State().StyleBuilder().SetVariableData(AtomicString("--x"), nullptr,
+                                                 true);
   EXPECT_EQ(g_null_atom, cascade.ComputedValue("--x"));
   EXPECT_EQ("auto", cascade.ComputedValue("width"));
 
@@ -663,8 +660,8 @@ TEST_F(StyleCascadeTest, DetectCycleByName) {
   TestCascadeResolver resolver;
 
   // Two different CustomProperty instances with the same name:
-  CustomProperty a1("--a", GetDocument());
-  CustomProperty a2("--a", GetDocument());
+  CustomProperty a1(AtomicString("--a"), GetDocument());
+  CustomProperty a2(AtomicString("--a"), GetDocument());
 
   {
     TestCascadeAutoLock lock(a1, resolver);
@@ -682,9 +679,9 @@ TEST_F(StyleCascadeTest, ResolverDetectCycle) {
   TestCascade cascade(GetDocument());
   TestCascadeResolver resolver;
 
-  CustomProperty a("--a", GetDocument());
-  CustomProperty b("--b", GetDocument());
-  CustomProperty c("--c", GetDocument());
+  CustomProperty a(AtomicString("--a"), GetDocument());
+  CustomProperty b(AtomicString("--b"), GetDocument());
+  CustomProperty c(AtomicString("--c"), GetDocument());
 
   {
     TestCascadeAutoLock lock_a(a, resolver);
@@ -710,10 +707,10 @@ TEST_F(StyleCascadeTest, ResolverDetectNoCycle) {
   TestCascade cascade(GetDocument());
   TestCascadeResolver resolver;
 
-  CustomProperty a("--a", GetDocument());
-  CustomProperty b("--b", GetDocument());
-  CustomProperty c("--c", GetDocument());
-  CustomProperty x("--x", GetDocument());
+  CustomProperty a(AtomicString("--a"), GetDocument());
+  CustomProperty b(AtomicString("--b"), GetDocument());
+  CustomProperty c(AtomicString("--c"), GetDocument());
+  CustomProperty x(AtomicString("--x"), GetDocument());
 
   {
     TestCascadeAutoLock lock_a(a, resolver);
@@ -739,7 +736,7 @@ TEST_F(StyleCascadeTest, ResolverDetectCycleSelf) {
   TestCascade cascade(GetDocument());
   TestCascadeResolver resolver;
 
-  CustomProperty a("--a", GetDocument());
+  CustomProperty a(AtomicString("--a"), GetDocument());
 
   {
     TestCascadeAutoLock lock(a, resolver);
@@ -757,10 +754,10 @@ TEST_F(StyleCascadeTest, ResolverDetectMultiCycle) {
   TestCascade cascade(GetDocument());
   TestCascadeResolver resolver;
 
-  CustomProperty a("--a", GetDocument());
-  CustomProperty b("--b", GetDocument());
-  CustomProperty c("--c", GetDocument());
-  CustomProperty d("--d", GetDocument());
+  CustomProperty a(AtomicString("--a"), GetDocument());
+  CustomProperty b(AtomicString("--b"), GetDocument());
+  CustomProperty c(AtomicString("--c"), GetDocument());
+  CustomProperty d(AtomicString("--d"), GetDocument());
 
   {
     AutoLock lock_a(a, resolver);
@@ -799,10 +796,10 @@ TEST_F(StyleCascadeTest, ResolverDetectMultiCycleReverse) {
   TestCascade cascade(GetDocument());
   TestCascadeResolver resolver;
 
-  CustomProperty a("--a", GetDocument());
-  CustomProperty b("--b", GetDocument());
-  CustomProperty c("--c", GetDocument());
-  CustomProperty d("--d", GetDocument());
+  CustomProperty a(AtomicString("--a"), GetDocument());
+  CustomProperty b(AtomicString("--b"), GetDocument());
+  CustomProperty c(AtomicString("--c"), GetDocument());
+  CustomProperty d(AtomicString("--d"), GetDocument());
 
   {
     AutoLock lock_a(a, resolver);
@@ -841,9 +838,9 @@ TEST_F(StyleCascadeTest, CurrentProperty) {
   TestCascade cascade(GetDocument());
   TestCascadeResolver resolver;
 
-  CustomProperty a("--a", GetDocument());
-  CustomProperty b("--b", GetDocument());
-  CustomProperty c("--c", GetDocument());
+  CustomProperty a(AtomicString("--a"), GetDocument());
+  CustomProperty b(AtomicString("--b"), GetDocument());
+  CustomProperty c(AtomicString("--c"), GetDocument());
 
   EXPECT_FALSE(resolver.CurrentProperty());
   {
@@ -869,10 +866,10 @@ TEST_F(StyleCascadeTest, CycleWithExtraEdge) {
   TestCascade cascade(GetDocument());
   TestCascadeResolver resolver;
 
-  CustomProperty a("--a", GetDocument());
-  CustomProperty b("--b", GetDocument());
-  CustomProperty c("--c", GetDocument());
-  CustomProperty d("--d", GetDocument());
+  CustomProperty a(AtomicString("--a"), GetDocument());
+  CustomProperty b(AtomicString("--b"), GetDocument());
+  CustomProperty c(AtomicString("--c"), GetDocument());
+  CustomProperty d(AtomicString("--d"), GetDocument());
 
   {
     AutoLock lock_a(a, resolver);
@@ -3055,8 +3052,8 @@ TEST_F(StyleCascadeTest, MarkReferenced) {
 
   const auto& registry = GetDocument().EnsurePropertyRegistry();
 
-  EXPECT_TRUE(registry.WasReferenced("--x"));
-  EXPECT_FALSE(registry.WasReferenced("--y"));
+  EXPECT_TRUE(registry.WasReferenced(AtomicString("--x")));
+  EXPECT_FALSE(registry.WasReferenced(AtomicString("--y")));
 }
 
 TEST_F(StyleCascadeTest, MarkHasVariableReferenceLonghand) {

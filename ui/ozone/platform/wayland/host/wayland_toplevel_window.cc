@@ -365,19 +365,14 @@ bool WaylandToplevelWindow::CanSetDecorationInsets() const {
 }
 
 void WaylandToplevelWindow::SetOpaqueRegion(
-    const std::vector<gfx::Rect>* region_px) {
-  if (region_px)
-    opaque_region_px_ = *region_px;
-  else
-    opaque_region_px_ = absl::nullopt;
+    absl::optional<std::vector<gfx::Rect>> region_px) {
+  opaque_region_px_ = region_px;
   root_surface()->set_opaque_region(region_px);
 }
 
-void WaylandToplevelWindow::SetInputRegion(const gfx::Rect* region_px) {
-  if (region_px)
-    input_region_px_ = *region_px;
-  else
-    input_region_px_ = absl::nullopt;
+void WaylandToplevelWindow::SetInputRegion(
+    absl::optional<gfx::Rect> region_px) {
+  input_region_px_ = region_px;
   root_surface()->set_input_region(region_px);
 }
 
@@ -435,6 +430,12 @@ void WaylandToplevelWindow::OnRotateFocus(uint32_t serial,
       serial, rotated ? ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_HANDLED
                       : ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_NOT_HANDLED);
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+void WaylandToplevelWindow::OnOverviewModeChanged(bool in_overview) {
+  delegate()->OnOverviewModeChanged(in_overview);
+}
+#endif
 
 void WaylandToplevelWindow::LockFrame() {
   OnFrameLockingChanged(true);
@@ -1140,10 +1141,12 @@ void WaylandToplevelWindow::SetInitialWorkspace() {
 void WaylandToplevelWindow::UpdateWindowMask() {
   std::vector<gfx::Rect> region{gfx::Rect({}, latched_state().size_px)};
   root_surface()->set_opaque_region(
-      opaque_region_px_.has_value() ? &*opaque_region_px_
-                                    : (IsOpaqueWindow() ? &region : nullptr));
-  root_surface()->set_input_region(input_region_px_ ? &*input_region_px_
-                                                    : &*region.begin());
+      opaque_region_px_.has_value()
+          ? opaque_region_px_
+          : (IsOpaqueWindow() ? absl::optional<std::vector<gfx::Rect>>(region)
+                              : absl::nullopt));
+  root_surface()->set_input_region(input_region_px_ ? input_region_px_
+                                                    : *region.begin());
 }
 
 bool WaylandToplevelWindow::GetTabletMode() {

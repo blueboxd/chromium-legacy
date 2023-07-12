@@ -53,6 +53,7 @@
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+class PaymentsSuggestionBottomSheetMediatorTest;
 class Profile;
 class PrefService;
 class RemoveAutofillTester;
@@ -150,6 +151,8 @@ class PersonalDataManager : public KeyedService,
 
   // SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
+  void OnSyncPaymentsIntegrationEnabledChanged(
+      syncer::SyncService* sync) override;
   void OnSyncShutdown(syncer::SyncService* sync) override;
 
   // AccountInfoGetter:
@@ -232,6 +235,15 @@ class PersonalDataManager : public KeyedService,
   // to an unsupported country are not eligible for account storage. This
   // function determines if the `country_code` is eligible.
   bool IsCountryEligibleForAccountStorage(base::StringPiece country_code) const;
+
+  // Migrates a given kLocalOrSyncable `profile` to source kAccount. This has
+  // multiple side-effects for the profile:
+  // - It is stored in a different backend.
+  // - It receives a new GUID.
+  // Like all database operations, the migration happens asynchronously.
+  // `profile` (the kLocalOrSyncable one) will not be available in the
+  // PersonalDataManager anymore once the migrating has finished.
+  void MigrateProfileToAccount(const AutofillProfile& profile);
 
   // Adds `iban` to the web database as a local IBAN. Returns the guid of
   // `iban` if the add is successful, or an empty string otherwise.
@@ -540,7 +552,7 @@ class PersonalDataManager : public KeyedService,
   // Returns the value of the AutofillIBANEnabled pref.
   virtual bool IsAutofillIBANEnabled() const;
 
-  // Returns the value of the AutofillWalletImportEnabled pref.
+  // Returns whether sync's integration with payments is on.
   virtual bool IsAutofillWalletImportEnabled() const;
 
   // Returns true if the PDM is in the off-the-record mode.
@@ -692,6 +704,7 @@ class PersonalDataManager : public KeyedService,
   friend class autofill::PersonalDataManagerFactory;
   friend class AutofillMetricsTest;
   friend class FormDataImporterTestBase;
+  friend class ::PaymentsSuggestionBottomSheetMediatorTest;
   friend class PersonalDataManagerTest;
   friend class PersonalDataManagerTestBase;
   friend class PersonalDataManagerHelper;
@@ -886,9 +899,6 @@ class PersonalDataManager : public KeyedService,
   // Prefers verified profiles over unverified ones.
   std::string MostCommonCountryCodeFromProfiles() const;
 
-  // Called when the value of prefs::kAutofillWalletImportEnabled changes.
-  void EnableWalletIntegrationPrefChanged();
-
   // Called when the value of prefs::kAutofillCreditCardEnabled or
   // prefs::kAutofillProfileEnabled changes.
   void EnableAutofillPrefChanged();
@@ -1033,9 +1043,6 @@ class PersonalDataManager : public KeyedService,
 
   // An observer to listen for changes to prefs::kAutofillProfileEnabled.
   std::unique_ptr<BooleanPrefMember> profile_enabled_pref_;
-
-  // An observer to listen for changes to prefs::kAutofillWalletImportEnabled.
-  std::unique_ptr<BooleanPrefMember> wallet_enabled_pref_;
 
   // The database that is used to count guid-keyed strikes to suppress the
   // migration-prompt of new profiles.

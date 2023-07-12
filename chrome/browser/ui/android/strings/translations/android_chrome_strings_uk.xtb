@@ -297,6 +297,7 @@
 <translation id="2643064289437760082">Ви можете будь-коли видалити відомості про оцінку ефективності реклами, очистивши свої дані веб-перегляду.</translation>
 <translation id="2647434099613338025">Додати мову</translation>
 <translation id="2649068648233607930">Вашим веб-переглядачем керує <ph name="DOMAIN" /></translation>
+<translation id="2650077116157640844">Докладніше про синхронізовані пристрої</translation>
 <translation id="2650348088770008516">Пояснення про посібник щодо конфіденційності закрито</translation>
 <translation id="2650408372219180431">Експортувати й видалити паролі, збережені на цьому пристрої</translation>
 <translation id="2650751991977523696">Завантажити файл ще раз?</translation>
@@ -445,7 +446,6 @@
 <translation id="3421726884497337397">Виберіть, коли потрібно блокувати сторонні файли cookie</translation>
 <translation id="3428747202529429621">Захищає вас у Chrome і може покращувати безпеку в інших додатках Google після входу в обліковий запис</translation>
 <translation id="3429160811076349561">Пробні функції вимкнено</translation>
-<translation id="3432973700170747422">Видалити дані за ост. 15 хв</translation>
 <translation id="3435465986463792564">Забагато вікон? Можете керувати ними тут</translation>
 <translation id="3435738964857648380">Безпека</translation>
 <translation id="3443221991560634068">Оновити поточну сторінку</translation>
@@ -479,9 +479,9 @@
 <translation id="3587596251841506391">Покращувати безпеку в Інтернеті</translation>
 <translation id="3597179440835065298">Отримуйте кращі пропозиції</translation>
 <translation id="3602290021589620013">Попередній перегляд</translation>
-<translation id="360901359071773787">Видалити дані за останні 15 хвилин?</translation>
 <translation id="3616113530831147358">Аудіо</translation>
 <translation id="3622349720008044802">Керувати вікнами</translation>
+<translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{і ще один сайт}one{і ще # сайт}few{і ще # сайти}many{і ще # сайтів}other{і ще # сайту}}</translation>
 <translation id="3631987586758005671">Надсилання на пристрій <ph name="DEVICE_NAME" /></translation>
 <translation id="363596933471559332">Автоматично входити в облікові записи на веб-сайтах за допомогою збережених даних. Якщо цю функцію вимкнено, потрібно вводити облікові дані під час кожного входу.</translation>
 <translation id="3636940436873918441">Вибрані мови</translation>
@@ -750,6 +750,7 @@
 <translation id="5010886807652684893">Візуальний перегляд</translation>
 <translation id="5011311129201317034">Сайт <ph name="SITE" /> хоче підключитися</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">Останні 15 хвилин</translation>
 <translation id="5032430150487044192">Не вдається створити QR-код</translation>
 <translation id="5039804452771397117">Дозволити</translation>
 <translation id="5040262127954254034">Конфіденційність</translation>
@@ -768,7 +769,6 @@
 <translation id="5118713593561876160">Інтереси</translation>
 <translation id="5122378528687922675">Якщо тобі потрібна допомога, звернися до батька або матері (<ph name="PARENT_NAME_1" /> чи <ph name="PARENT_NAME_2" />)</translation>
 <translation id="5123685120097942451">Анонімна вкладка</translation>
-<translation id="5126510351761255129">Підтвердьте дані картки</translation>
 <translation id="5132942445612118989">Синхронізуйте свої паролі, історію тощо на всіх пристроях</translation>
 <translation id="5139940364318403933">Як користуватися Google Диском</translation>
 <translation id="5142281402488957685">Проведіть пальцем униз, щоб оновити стрічку й отримати нові статті</translation>
@@ -928,7 +928,6 @@
 <translation id="6011308810877101166">Покращувати підказки в пошуку</translation>
 <translation id="6026538407078977628">Розгорнути на весь екран</translation>
 <translation id="6030719887161080597">Керуйте інформацією, яку сайти використовують для вимірювання ефективності оголошень</translation>
-<translation id="6034146297924778597">Історію за останні 15 хвилин буде видалено.</translation>
 <translation id="6039379616847168523">Перейти до наступної вкладки</translation>
 <translation id="6040143037577758943">Закрити</translation>
 <translation id="604124094241169006">Автоматично</translation>
@@ -1370,6 +1369,7 @@
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />Ваші пристрої<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">Відновити</translation>
 <translation id="8209050860603202033">Відкрити зображення</translation>
+<translation id="8210770465353466621">Тут відображатимуться ваші вкладки</translation>
 <translation id="8215740705341534369">Бічна панель</translation>
 <translation id="8218622182176210845">Керувати обліковим записом</translation>
 <translation id="8221401890884589479">Ви можете блокувати непотрібні вам сайти. Chrome також автоматично видаляє їх зі списку через 30 днів. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>

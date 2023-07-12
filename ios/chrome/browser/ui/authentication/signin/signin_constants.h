@@ -13,7 +13,7 @@ typedef NS_ENUM(NSUInteger, SigninCoordinatorResult) {
   SigninCoordinatorResultCanceledByUser,
   // Sign-in has been done, but the user didn’t accept nor refuse to sync.
   SigninCoordinatorResultInterrupted,
-  // Sign-in has been done, the user has been explicitly accepted or refused
+  // Sign-in has been done, the user has explicitly accepted or refused
   // sync.
   SigninCoordinatorResultSuccess,
 };
@@ -26,13 +26,17 @@ typedef NS_ENUM(NSUInteger, IdentitySigninState) {
 };
 
 // Action to do when the sign-in dialog needs to be interrupted.
-typedef NS_ENUM(NSUInteger, SigninCoordinatorInterruptAction) {
-  // Stops the sign-in coordinator without dismissing the view.
-  SigninCoordinatorInterruptActionNoDismiss,
+enum class SigninCoordinatorInterrupt {
+  // Stops the sign-in coordinator without dismissing the view. The sign-in
+  // completion block and the interrupt completion block will be called
+  // synchronously.
+  // This should be only used when UI shutdown.
+  // See crbug.com/1455216.
+  UIShutdownNoDismiss,
   // Stops the sign-in coordinator and dismisses the view without animation.
-  SigninCoordinatorInterruptActionDismissWithoutAnimation,
+  DismissWithoutAnimation,
   // Stops the sign-in coordinator and dismisses the view with animation.
-  SigninCoordinatorInterruptActionDismissWithAnimation,
+  DismissWithAnimation,
 };
 
 // Name of accessibility identifier for the skip sign-in button.
@@ -43,6 +47,8 @@ extern NSString* const kAddAccountAccessibilityIdentifier;
 // Name of accessibility identifier for the confirmation "Yes I'm In" sign-in
 // button.
 extern NSString* const kConfirmationAccessibilityIdentifier;
+// Name of the accessibility identifier for the History Sync view.
+extern NSString* const kHistorySyncViewAccessibilityIdentifier;
 // Name of accessibility identifier for the more button in the sign-in flow.
 extern NSString* const kMoreAccessibilityIdentifier;
 // Name of accessibility identifier for the web sign-in consistency sheet.

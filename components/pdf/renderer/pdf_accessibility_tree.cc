@@ -1812,8 +1812,15 @@ void PdfAccessibilityTree::UnserializeNodes() {
   render_accessibility->SetPluginTreeSource(this);
   nodes_.clear();
 
-  base::UmaHistogramBoolean("Accessibility.PDF.HasAccessibleText",
-                            did_get_a_text_run_);
+  if (!did_unserialize_nodes_once_) {
+    // If the user turns on PDF OCR after opening a PDF, its PDF a11y tree gets
+    // created again. `did_unserialize_nodes_once_` helps to determine whether
+    // it's first time to create a PDF a11y tree. When a PDF is opened, the UMA
+    // metric, "Accessibility.PDF.HasAccessibleText", needs be recorded once.
+    did_unserialize_nodes_once_ = true;
+    base::UmaHistogramBoolean("Accessibility.PDF.HasAccessibleText",
+                              did_get_a_text_run_);
+  }
 }
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -2152,8 +2159,6 @@ void PdfAccessibilityTree::OnOcrDataReceived(
   // Copy nodes from `AXTreeUpdate` from OCR results and update their relative
   // bounds. PDF accessibility tree assumes that all nodes have bounds relative
   // to the root node.
-  // TODO(crbug.com/1278249): add an attribute to indicate that these nodes
-  // are auto-generated and have a way to notify the user of that.
   for (const auto& node_from_ocr : tree_update.nodes) {
     std::unique_ptr<ui::AXNodeData> new_node =
         std::make_unique<ui::AXNodeData>(node_from_ocr);

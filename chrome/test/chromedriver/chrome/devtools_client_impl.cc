@@ -294,8 +294,8 @@ Status DevToolsClientImpl::StartBidiServer(std::string bidi_mapper_script,
     base::Value::Dict params;
     params.Set("expression", std::move(bidi_mapper_script));
     base::Value::Dict result;
-    status =
-        SendCommandAndGetResult("Runtime.evaluate", std::move(params), &result);
+    status = SendCommandAndGetResultWithTimeout(
+        "Runtime.evaluate", std::move(params), &timeout, &result);
 
     if (result.contains("exceptionDetails")) {
       std::string description = "unknown";
@@ -1339,8 +1339,12 @@ Status ParseInspectorError(const std::string& error_json) {
   if (maybe_message) {
     std::string error_message = *maybe_message;
     if (error_message == kInspectorDefaultContextError ||
-        error_message == kInspectorContextError) {
-      return Status(kNoSuchWindow);
+        error_message == kInspectorContextError ||
+        error_message == kUniqueContextIdNotFoundError) {
+      // The error messages that can arise during a call to
+      // Runtime.evaluate and Runtime.callFunctionOn if the provided
+      // context does no longer exist.
+      return Status(kNoSuchExecutionContext);
     } else if (error_message == kInspectorInvalidURL) {
       return Status(kInvalidArgument);
     } else if (error_message == kInspectorInsecureContext) {
@@ -1353,11 +1357,6 @@ Status ParseInspectorError(const std::string& error_json) {
       // As the server returns the generic error code: SERVER_ERROR = -32000
       // we have to rely on the error message content.
       return Status(kNoSuchFrame, error_message);
-    } else if (error_message == kUniqueContextIdNotFoundError) {
-      // The error message that can arise during a call to
-      // Runtime.evaluate and Runtime.callFunctionOn if the provided
-      // context does no longer exist.
-      return Status(kNoSuchExecutionContext, error_message);
     } else if (error_message == kNoNodeForBackendNodeIdError ||
                error_message == kNoNodeWithGivenIdFoundError) {
       // The error message that arises during DOM.resolveNode code.

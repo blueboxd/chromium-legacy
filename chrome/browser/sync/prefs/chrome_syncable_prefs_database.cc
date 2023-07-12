@@ -50,7 +50,7 @@ enum {
   // common_syncable_prefs_database.cc and
   // ios_chrome_syncable_prefs_database.cc.
   kAppLanguagePromptShown = 100000,
-  kPrefExplicitLanguageAskShown = 100001,
+  // kPrefExplicitLanguageAskShown = 100001,  // depreccated
   kContextualSearchEnabled = 100002,
   kContextualSearchWasFullyPrivacyEnabled = 100003,
   kAccessibilityImageLabelsEnabledAndroid = 100004,
@@ -260,6 +260,7 @@ enum {
   kiOSPasswordPromoLastImpressionTimestamp = 100206,
   kiOSPasswordPromoImpressionsCounter = 100207,
   kiOSPasswordPromoOptOut = 100208,
+  kDynamicColorUseKMeans = 100209,
   // See components/sync_preferences/README.md about adding new entries here.
   // vvvvv IMPORTANT! vvvvv
   // Note to the reviewer: IT IS YOUR RESPONSIBILITY to ensure that new syncable
@@ -276,9 +277,6 @@ const auto& SyncablePreferences() {
 #if BUILDFLAG(IS_ANDROID)
     {language::prefs::kAppLanguagePromptShown,
      {syncable_prefs_ids::kAppLanguagePromptShown, syncer::PREFERENCES, false}},
-        {translate::TranslatePrefs::kPrefExplicitLanguageAskShown,
-         {syncable_prefs_ids::kPrefExplicitLanguageAskShown,
-          syncer::PREFERENCES, false}},
         {prefs::kContextualSearchEnabled,
          {syncable_prefs_ids::kContextualSearchEnabled, syncer::PREFERENCES,
           false}},
@@ -474,6 +472,9 @@ const auto& SyncablePreferences() {
           false}},
         {ash::prefs::kDynamicColorSeedColor,
          {syncable_prefs_ids::kDynamicColorSeedColor, syncer::OS_PREFERENCES,
+          false}},
+        {ash::prefs::kDynamicColorUseKMeans,
+         {syncable_prefs_ids::kDynamicColorUseKMeans, syncer::OS_PREFERENCES,
           false}},
         {ash::prefs::kEnableAutoScreenLock,
          {syncable_prefs_ids::kEnableAutoScreenLock, syncer::OS_PREFERENCES,

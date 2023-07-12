@@ -414,7 +414,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Net.Certificate.ChangeNotifications"
+<histogram name="Net.Certificate.ChangeNotification"
     enum="CertificateChangeNotificationType" expires_after="never">
 <!-- expires-never: core cert verifier metric; monitored by Chirps -->
 
@@ -766,6 +766,18 @@ chromium-metrics-reviews@google.com.
   <owner>pauljensen@chromium.org</owner>
   <summary>
     For each CONTENT_DECODING_FAILED, record the filter that failed.
+  </summary>
+</histogram>
+
+<histogram name="Net.ContentEncodingType" enum="ContentEncodingType"
+    expires_after="2024-06-26">
+  <owner>nidhijaju@chromium.org</owner>
+  <owner>blink-network-stack@google.com</owner>
+  <summary>
+    For each response stream, record the Content-Encoding type. If multiple
+    encoding types are specified, this histogram only records the last one.
+    Note: Compression Dictionary Transport headers (i.e. &quot;sbr&quot; for
+    Shared Brotli) will be recorded as &quot;Unknown&quot; in this histogram.
   </summary>
 </histogram>
 
@@ -1542,7 +1554,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.SystemTask.FailureTime" units="ms"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>horo@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -1553,7 +1565,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.SystemTask.SuccessTime" units="ms"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>horo@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -1685,16 +1697,6 @@ chromium-metrics-reviews@google.com.
     converted to downloads (unless they fail / are aborted before it's known
     that they would be a download), and requests handled externally (like mailto
     links).
-  </summary>
-</histogram>
-
-<histogram name="Net.ErrorCodesForImages2" enum="NetErrorCodes"
-    expires_after="M85">
-  <owner>skonig@chromium.org</owner>
-  <owner>hbengali@chromium.org</owner>
-  <summary>
-    Net error codes that requests for images end with, including net::OK and
-    net:ERR_ABORTED.
   </summary>
 </histogram>
 
@@ -2624,7 +2626,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicNetworkDegradingDurationTillDisconnected" units="ms"
-    expires_after="2023-09-17">
+    expires_after="2023-12-31">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -3852,6 +3854,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Net.QuicSession.Pushed" units="count"
     expires_after="2024-04-03">
+  <obsolete>
+    Removed 2023-06.
+  </obsolete>
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -3861,6 +3866,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Net.QuicSession.PushedAndClaimed" units="count"
     expires_after="2024-04-03">
+  <obsolete>
+    Removed 2023-06.
+  </obsolete>
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -3870,6 +3878,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Net.QuicSession.PushedAndUnclaimedBytes" units="count"
     expires_after="2024-04-03">
+  <obsolete>
+    Removed 2023-06.
+  </obsolete>
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -3879,6 +3890,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Net.QuicSession.PushedBytes" units="count"
     expires_after="2023-11-19">
+  <obsolete>
+    Removed 2023-06.
+  </obsolete>
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -4679,7 +4693,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.RestrictedCookieManager.GetCookiesString.Count30Seconds"
-    units="IPCs" expires_after="2023-10-31">
+    units="IPCs" expires_after="2023-12-31">
   <owner>carlscab@google.com</owner>
   <owner>olivierli@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -4798,6 +4812,31 @@ chromium-metrics-reviews@google.com.
     SharedDictionaryManagerOnDisk succeeded to store a dictionary in disk cache
     and database.
   </summary>
+</histogram>
+
+<histogram name="Net.SharedDictionaryStorageOnDisk.IsMetadataReadyOnFirstUse"
+    enum="Boolean" expires_after="2023-12-01">
+  <owner>horo@chromium.org</owner>
+  <owner>src/net/extras/shared_dictionary/OWNERS</owner>
+  <summary>
+    Records whether the shared dictionary metadata has been read when
+    GetDictionary() is called for the first time.
+  </summary>
+</histogram>
+
+<histogram name="Net.SharedDictionaryStorageOnDisk.MetadataReadTime.{Result}"
+    units="ms" expires_after="2023-12-01">
+  <owner>horo@chromium.org</owner>
+  <owner>src/net/extras/shared_dictionary/OWNERS</owner>
+  <summary>
+    The time taken to read shared dictionary metadata from the database.
+    Recorded when SharedDictionaryStorageOnDisk receives the result.
+  </summary>
+  <token key="Result">
+    <variant name="Empty"/>
+    <variant name="Failure"/>
+    <variant name="NonEmpty"/>
+  </token>
 </histogram>
 
 <histogram name="Net.SharedDictionaryStore.DictionaryCountPerSiteWhenAdded"
@@ -4990,6 +5029,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Net.SpdySession.PushedAndUnclaimedBytes" units="count"
     expires_after="2024-04-03">
+  <obsolete>
+    Removed 2023-06.
+  </obsolete>
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -4999,6 +5041,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Net.SpdySession.PushedBytes" units="count"
     expires_after="2024-04-03">
+  <obsolete>
+    Removed 2023-06.
+  </obsolete>
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -5079,6 +5124,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Net.SpdyStreamsPushedAndClaimedPerSession" units="units"
     expires_after="2023-12-04">
+  <obsolete>
+    Removed 2023-06.
+  </obsolete>
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -5088,6 +5136,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Net.SpdyStreamsPushedPerSession" units="units"
     expires_after="2024-04-03">
+  <obsolete>
+    Removed 2023-06.
+  </obsolete>
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>The number of push streams received over a single session.</summary>
@@ -5664,6 +5715,38 @@ chromium-metrics-reviews@google.com.
   <summary>
     Negotiated HTTP Datagram version. Recorded when a WebTransport session
     becomes ready.
+  </summary>
+</histogram>
+
+<histogram name="Net.ZstdFilter.CompressionRatio" units="%"
+    expires_after="2024-06-26">
+  <owner>nidhijaju@chromium.org</owner>
+  <owner>blink-network-stack@google.com</owner>
+  <summary>
+    Compressed/Decompressed size ratio as a percentage when using zstd.
+  </summary>
+</histogram>
+
+<histogram name="Net.ZstdFilter.ErrorCode" enum="ZstdFilterErrorCode"
+    expires_after="2024-06-26">
+  <owner>nidhijaju@chromium.org</owner>
+  <owner>blink-network-stack@google.com</owner>
+  <summary>
+    Error code observed after failing to decode a Zstd-compressed response
+    stream from the network. Recorded once per layer of Zstd compression that
+    encountered a decoding error. See Net.ZstdFilter.Status to get the overall
+    error rate.
+  </summary>
+</histogram>
+
+<histogram name="Net.ZstdFilter.Status" enum="ZstdFilterDecodingStatus"
+    expires_after="2024-06-26">
+  <owner>nidhijaju@chromium.org</owner>
+  <owner>blink-network-stack@google.com</owner>
+  <summary>
+    The final state of the ZstdFilter. Recorded once per layer of Zstd
+    compression (usually once per zstd-compressed response), at the end of
+    decoding.
   </summary>
 </histogram>
 

@@ -97,6 +97,7 @@ mojom("mojom") {
     "synced_session_client.mojom",
     "system_display.mojom",
     "task_manager.mojom",
+    "telemetry_diagnostic_routine_service.mojom",
     "telemetry_event_service.mojom",
     "telemetry_extension_exception.mojom",
     "telemetry_keyboard_event.mojom",
@@ -113,6 +114,7 @@ mojom("mojom") {
     "wallpaper.mojom",
     "web_app_service.mojom",
     "web_app_types.mojom",
+    "web_kiosk_service.mojom",
     "web_page_info.mojom",
   ]
   disable_variants = true
@@ -122,6 +124,7 @@ mojom("mojom") {
   public_deps = [
     ":video_capture",
     "//chromeos/components/drivefs/mojom",
+    "//chromeos/components/payments/mojom",
     "//chromeos/components/remote_apps/mojom",
     "//chromeos/components/sensors/mojom",
     "//chromeos/services/machine_learning/public/mojom",
@@ -301,9 +304,6 @@ mojom("mojom") {
         "//chromeos/components/certificate_provider:certificate_provider",
         "//components/policy/core/common:policy_namespace",
         "//components/services/app_service/public/cpp:app_types",
-        "//components/services/app_service/public/cpp:browser_app_instance_registry_update",
-        "//components/services/app_service/public/cpp:icon_types",
-        "//components/services/app_service/public/cpp:preferred_app",
         "//components/tab_groups",
         "//components/webapps/browser:constants",
         "//ui/base:ui_data_pack",
@@ -337,7 +337,7 @@ source_set("unit_tests") {
   deps = [
     ":mojom",
     "//base/test:test_support",
-    "//components/services/app_service/public/cpp:intents",
+    "//components/services/app_service",
     "//mojo/public/cpp/test_support:test_utils",
     "//testing/gtest",
     "//ui/gfx:test_support",

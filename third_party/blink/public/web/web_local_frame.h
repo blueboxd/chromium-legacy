@@ -142,9 +142,7 @@ class BLINK_EXPORT WebLocalFrame : public WebFrame {
       WebFrame* opener = nullptr,
       const WebString& name = WebString(),
       network::mojom::WebSandboxFlags = network::mojom::WebSandboxFlags::kNone,
-      const WebURL& base_url = WebURL(),
-      bool coop_forbids_initial_empty_document_to_be_cross_origin_isolated =
-          true);
+      const WebURL& base_url = WebURL());
 
   // Used to create a provisional local frame. Currently, it's possible for a
   // provisional navigation not to commit (i.e. it might turn into a download),
@@ -908,7 +906,7 @@ class BLINK_EXPORT WebLocalFrame : public WebFrame {
   virtual void SetTargetToCurrentHistoryItem(const WebString& target) = 0;
   virtual void UpdateCurrentHistoryItem() = 0;
   virtual PageState CurrentHistoryItemToPageState() = 0;
-  virtual const WebHistoryItem& GetCurrentHistoryItem() const = 0;
+  virtual WebHistoryItem GetCurrentHistoryItem() const = 0;
   // Reset TextFinder state for the web test runner in between two tests.
   virtual void ClearActiveFindMatchForTesting() = 0;
 

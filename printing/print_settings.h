@@ -50,13 +50,13 @@ COMPONENT_EXPORT(PRINTING)
 void GetColorModelForModel(mojom::ColorModel color_model,
                            std::string* color_setting_name,
                            std::string* color_value);
+#endif  // BUILDFLAG(USE_CUPS)
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(USE_CUPS_IPP)
 // Convert from `color_model` to a print-color-mode value from PWG 5100.13.
 COMPONENT_EXPORT(PRINTING)
 std::string GetIppColorModelForModel(mojom::ColorModel color_model);
-#endif
-#endif  // BUILDFLAG(USE_CUPS)
+#endif  // BUILDFLAG(USE_CUPS_IPP)
 
 class COMPONENT_EXPORT(PRINTING) PrintSettings {
  public:
@@ -296,6 +296,10 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
   // associated `PrintSettings`, to be sure that each generated `PrintedPage`
   // is correctly associated with its corresponding `PrintedDocument`.
   static int NewCookie();
+
+  // Creates an invalid cookie for use in situations where the cookie needs to
+  // be marked as invalid.
+  static int NewInvalidCookie();
 
  private:
 #if BUILDFLAG(IS_MAC)

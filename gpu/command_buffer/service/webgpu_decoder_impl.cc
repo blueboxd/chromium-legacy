@@ -151,6 +151,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
                         base::OnceClosure callback) override {
     NOTREACHED();
   }
+  void CancelAllQueries() override { NOTREACHED(); }
   gles2::GpuFenceManager* GetGpuFenceManager() override {
     NOTREACHED();
     return nullptr;
@@ -414,7 +415,6 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   std::vector<std::string> require_disabled_toggles_;
   bool allow_unsafe_apis_;
   bool tiered_adapter_limits_;
-  bool use_dxc_ = false;
 
   // Isolation key that is necessary for device requests. Optional to
   // differentiate between an empty isolation key, and an unset one.
@@ -560,7 +560,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
           .format = ToWGPUFormat(representation_->format()),
           .mipLevelCount = 1,
           .sampleCount = 1,
-          .viewFormatCount = static_cast<uint32_t>(view_formats.size()),
+          .viewFormatCount = view_formats.size(),
           .viewFormats = view_formats.data(),
       };
 
@@ -1084,8 +1084,6 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
   tiered_adapter_limits_ =
       !base::Contains(require_disabled_toggles_, "tiered_adapter_limits");
 
-  use_dxc_ = base::Contains(require_enabled_toggles_, "use_dxc");
-
   DawnProcTable wire_procs = dawn::native::GetProcs();
   wire_procs.createInstance =
       [](const WGPUInstanceDescriptor*) -> WGPUInstance {
@@ -1163,6 +1161,7 @@ bool WebGPUDecoderImpl::IsFeatureExposed(WGPUAdapter adapter,
     // that 0-copy code path, which explicitly checks this feature, is protected
     // under unsafe apis as well.
     case WGPUFeatureName_DawnMultiPlanarFormats:
+    case WGPUFeatureName_ShaderF16:
       return allow_unsafe_apis_;
     case WGPUFeatureName_Depth32FloatStencil8:
     case WGPUFeatureName_DepthClipControl:
@@ -1173,18 +1172,6 @@ bool WebGPUDecoderImpl::IsFeatureExposed(WGPUAdapter adapter,
     case WGPUFeatureName_RG11B10UfloatRenderable:
     case WGPUFeatureName_BGRA8UnormStorage:
       return true;
-    case WGPUFeatureName_ShaderF16: {
-      if (!use_dxc_) {
-        WGPUAdapterProperties properties{};
-        dawn::native::GetProcs().adapterGetProperties(adapter, &properties);
-        if (properties.backendType == WGPUBackendType_D3D12) {
-          // On D3D12, shader-f16 requires DXC. Hide it if the use_dxc toggle is
-          // not enabled.
-          return false;
-        }
-      }
-      return allow_unsafe_apis_;
-    }
     default:
       return false;
   }
@@ -1521,6 +1508,40 @@ WGPUAdapter WebGPUDecoderImpl::CreatePreferredAdapter(
   adapter_options.forceFallbackAdapter = force_fallback;
   adapter_options.powerPreference = power_preference;
 
+  auto ChainToAdapterOptions =
+      [&adapter_options](WGPUChainedStruct* struct_to_chain) {
+        // Find the next field of the last chained structure...
+        WGPUChainedStruct** tail =
+            const_cast<WGPUChainedStruct**>(&(adapter_options.nextInChain));
+        while (*tail != nullptr) {
+          tail = const_cast<WGPUChainedStruct**>(&(*tail)->next);
+        }
+        // And chain the given structure.
+        *tail = struct_to_chain;
+      };
+
+  // Prepare adapter toggles descriptor based on required toggles
+  WGPUDawnTogglesDescriptor dawn_adapter_toggles = {};
+  std::vector<const char*> require_adapter_enabled_toggles;
+  std::vector<const char*> require_adapter_disabled_toggles;
+
+  for (const std::string& toggles : require_enabled_toggles_) {
+    require_adapter_enabled_toggles.push_back(toggles.c_str());
+  }
+  for (const std::string& toggles : require_disabled_toggles_) {
+    require_adapter_disabled_toggles.push_back(toggles.c_str());
+  }
+  dawn_adapter_toggles.enabledToggles = require_adapter_enabled_toggles.data();
+  dawn_adapter_toggles.enabledTogglesCount =
+      require_adapter_enabled_toggles.size();
+  dawn_adapter_toggles.disabledToggles =
+      require_adapter_disabled_toggles.data();
+  dawn_adapter_toggles.disabledTogglesCount =
+      require_adapter_disabled_toggles.size();
+  dawn_adapter_toggles.chain.sType = WGPUSType_DawnTogglesDescriptor;
+  ChainToAdapterOptions(
+      reinterpret_cast<WGPUChainedStruct*>(&dawn_adapter_toggles));
+
 #if BUILDFLAG(IS_WIN)
   // On Windows, query the LUID of ANGLE's adapter.
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
@@ -1550,8 +1571,8 @@ WGPUAdapter WebGPUDecoderImpl::CreatePreferredAdapter(
   // Chain the LUID from ANGLE.
   dawn::native::d3d::RequestAdapterOptionsLUID adapter_options_luid = {};
   adapter_options_luid.adapterLUID = adapter_desc.AdapterLuid;
-  adapter_options.nextInChain =
-      reinterpret_cast<const WGPUChainedStruct*>(&adapter_options_luid);
+  ChainToAdapterOptions(
+      reinterpret_cast<WGPUChainedStruct*>(&adapter_options_luid));
 #endif
 
   // Build a list of backend types we will search for, in order of preference.

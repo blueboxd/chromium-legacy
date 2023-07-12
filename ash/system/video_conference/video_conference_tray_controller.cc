@@ -204,9 +204,9 @@ void VideoConferenceTrayController::MaybeShowSpeakOnMuteOptInNudge(
   nudge_data.title_text = l10n_util::GetStringUTF16(
       IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_TITLE);
 
-  nudge_data.dismiss_text = l10n_util::GetStringUTF16(
-      IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_DISMISS_BUTTON);
-  nudge_data.dismiss_callback = base::BindRepeating(
+  nudge_data.first_button_text = l10n_util::GetStringUTF16(
+      IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_FIRST_BUTTON);
+  nudge_data.first_button_callback = base::BindRepeating(
       &VideoConferenceTrayController::OnSpeakOnMuteNudgeOptInAction,
       weak_ptr_factory_.GetWeakPtr(), /*opt_in=*/false);
 
@@ -216,7 +216,7 @@ void VideoConferenceTrayController::MaybeShowSpeakOnMuteOptInNudge(
       &VideoConferenceTrayController::OnSpeakOnMuteNudgeOptInAction,
       weak_ptr_factory_.GetWeakPtr(), /*opt_in=*/true);
 
-  nudge_data.has_infinite_duration = true;
+  nudge_data.has_long_duration = true;
   nudge_data.anchored_to_shelf = true;
 
   AnchoredNudgeManager::Get()->Show(nudge_data);
@@ -252,9 +252,9 @@ void VideoConferenceTrayController::OnSpeakOnMuteNudgeOptInAction(bool opt_in) {
               ? IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_CONFIRMATION_BODY
               : IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_OUT_CONFIRMATION_BODY),
       GetVcTrayInActiveWindow()->audio_icon());
-  nudge_data.dismiss_text = l10n_util::GetStringUTF16(
+  nudge_data.first_button_text = l10n_util::GetStringUTF16(
       IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_CONFIRMATION_BUTTON);
-  nudge_data.dismiss_callback = base::BindRepeating([]() {
+  nudge_data.first_button_callback = base::BindRepeating([]() {
     Shell::Get()
         ->system_tray_model()
         ->client()
@@ -357,15 +357,20 @@ bool VideoConferenceTrayController::GetMicrophoneMuted() {
          !pref_service->GetBoolean(prefs::kUserMicrophoneAllowed);
 }
 
+void VideoConferenceTrayController::StopAllScreenShare() {
+  CHECK(video_conference_manager_);
+  video_conference_manager_->StopAllScreenShare();
+}
+
 void VideoConferenceTrayController::GetMediaApps(
     base::OnceCallback<void(MediaApps)> ui_callback) {
-  DCHECK(video_conference_manager_);
+  CHECK(video_conference_manager_);
   video_conference_manager_->GetMediaApps(std::move(ui_callback));
 }
 
 void VideoConferenceTrayController::ReturnToApp(
     const base::UnguessableToken& id) {
-  DCHECK(video_conference_manager_);
+  CHECK(video_conference_manager_);
   video_conference_manager_->ReturnToApp(id);
 }
 
@@ -484,7 +489,7 @@ void VideoConferenceTrayController::OnSpeakOnMuteDetected() {
         /*anchor_view=*/GetVcTrayInActiveWindow()->audio_icon());
     // Opens the privacy hub settings page with the mute nudge focused when
     // clicking on the nudge.
-    nudge_data.nudge_click_callback = base::BindRepeating([]() -> void {
+    nudge_data.click_callback = base::BindRepeating([]() -> void {
       Shell::Get()
           ->system_tray_model()
           ->client()

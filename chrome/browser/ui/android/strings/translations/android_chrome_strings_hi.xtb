@@ -196,7 +196,7 @@
 <translation id="2079545284768500474">पहले जैसा करें</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> में से <ph name="RESULT_NUMBER" /> परिणाम</translation>
 <translation id="2096012225669085171">सभी डिवाइस में सिंक करना और मनमुताबिक बनाना</translation>
-<translation id="2100273922101894616">अपने आप साइन इन करने की सुविधा</translation>
+<translation id="2100273922101894616">अपने-आप साइन इन करने की सुविधा</translation>
 <translation id="2100314319871056947">टेक्स्ट को छोटे-छोटे हिस्सों में शेयर करने की कोशिश करें</translation>
 <translation id="2111511281910874386">पेज पर जाएं</translation>
 <translation id="2119609734654412418">आपको अपने बुकमार्क यहां मिलेंगे</translation>
@@ -297,6 +297,7 @@
 <translation id="2643064289437760082">अपना ब्राउज़िंग डेटा मिटाकर, विज्ञापन की परफ़ॉर्मेंस को मापने वाला डेटा कभी भी मिटाया जा सकता है</translation>
 <translation id="2647434099613338025">भाषा जोड़ें</translation>
 <translation id="2649068648233607930"><ph name="DOMAIN" />, आपके ब्राउज़र को मैनेज करता है</translation>
+<translation id="2650077116157640844">सिंक किए गए डिवाइसों के बारे में ज़्यादा जानकारी</translation>
 <translation id="2650348088770008516">निजता गाइड के बारे में जानकारी देने वाली शीट बंद हो गई है</translation>
 <translation id="2650408372219180431">इस डिवाइस में सेव किए गए पासवर्ड एक्सपोर्ट करें और उन्हें मिटाएं</translation>
 <translation id="2650751991977523696">फ़ाइल दोबारा डाउनलोड करें?</translation>
@@ -445,7 +446,6 @@
 <translation id="3421726884497337397">चुनें कि तीसरे पक्ष की कुकी को कब ब्लॉक करना है</translation>
 <translation id="3428747202529429621">अगर आप Chrome में साइन इन हैं, तो यह सुविधा आपको सुरक्षित रखती है. साथ ही, अन्य Google ऐप्लिकेशन में इसका इस्तेमाल सुरक्षा को बेहतर बनाने में भी हो सकता है</translation>
 <translation id="3429160811076349561">ट्रायल की सुविधाएं बंद हैं</translation>
-<translation id="3432973700170747422">पिछले 15 मिनट का डेटा मिटाएं</translation>
 <translation id="3435465986463792564">कई विंडो खुली हैं? उन सभी को यहां से मैनेज किया जा सकता है</translation>
 <translation id="3435738964857648380">सुरक्षा</translation>
 <translation id="3443221991560634068">वर्तमान पेज फिर से लोड करें</translation>
@@ -479,9 +479,9 @@
 <translation id="3587596251841506391">वेब पर सुरक्षा बेहतर करने में मदद करें</translation>
 <translation id="3597179440835065298">बेहतर सुझाव पाएं</translation>
 <translation id="3602290021589620013">झलक देखें</translation>
-<translation id="360901359071773787">क्या आपको पिछले 15 मिनट का डेटा मिटाना है?</translation>
 <translation id="3616113530831147358">ऑडियो</translation>
 <translation id="3622349720008044802">विंडो मैनेज करें</translation>
+<translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{+ 1 साइट}one{+ # साइट}other{+ # साइटें}}</translation>
 <translation id="3631987586758005671"><ph name="DEVICE_NAME" /> के साथ शेयर किया जा रहा है</translation>
 <translation id="363596933471559332">स्टोर किए गए क्रेडेंशियल का इस्तेमाल करके वेबसाइटों में अपने आप साइन इन करें. सुविधा के बंद होने पर, किसी वेबसाइट में साइन इन करने से पहले आपसे हर बार पुष्टि करने को कहा जाएगा.</translation>
 <translation id="3636940436873918441">पसंदीदा भाषाएं</translation>
@@ -750,11 +750,12 @@
 <translation id="5010886807652684893">विज़ुअल व्यू</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> कनेक्ट करना चाहती है</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">पिछले 15 मिनट का</translation>
 <translation id="5032430150487044192">क्यूआर कोड नहीं बनाया जा सकता</translation>
 <translation id="5039804452771397117">अनुमति दें</translation>
 <translation id="5040262127954254034">निजता</translation>
 <translation id="504456571576643789">इन बातों का ध्यान रखें</translation>
-<translation id="5054455334322721892">जब आप साइन इन रहते हैं, तब हो सकता है कि <ph name="BEGIN_LINK1" />अन्य तरह की गतिविधियां<ph name="END_LINK1" /> आपके Google खाते में सेव हो जाएं. आप किसी भी समय उन्हें मिटा सकते हैं.</translation>
+<translation id="5054455334322721892">हो सकता है कि आपके साइन इन होने पर, <ph name="BEGIN_LINK1" />अन्य तरह की गतिविधियां<ph name="END_LINK1" /> आपके Google खाते में सेव हो जाएं. उन्हें किसी भी समय मिटाया जा सकता है.</translation>
 <translation id="506254248375231072">कोई टैब नहीं है</translation>
 <translation id="5062960805900435602">इस बारे में जानकारी कि पासवर्ड मर्ज करने की सुविधा बंद है</translation>
 <translation id="5091199029769593641">जल्द ही, कोई भी नया टैब खोलते ही आपको <ph name="SITE_NAME" /> से जुड़ी जानकारी दिखेगी. आप जिन साइटों को फ़ॉलो करते हैं वे आपके Google खाते में सेव हो जाती हैं. आप उन्हें डिस्कवर की सेटिंग में मैनेज कर सकते हैं.</translation>
@@ -768,7 +769,6 @@
 <translation id="5118713593561876160">रुचि</translation>
 <translation id="5122378528687922675">अगर आपको मदद चाहिए, तो अपने माता-पिता (<ph name="PARENT_NAME_1" /> या <ph name="PARENT_NAME_2" />) से पूछें</translation>
 <translation id="5123685120097942451">गुप्त टैब</translation>
-<translation id="5126510351761255129">कार्ड की पुष्टि करें</translation>
 <translation id="5132942445612118989">सभी डिवाइस पर अपने पासवर्ड, इतिहास और दूसरी कई चीज़ें सिंक करें</translation>
 <translation id="5139940364318403933">Google डिस्क के इस्तेमाल का तरीका जानें</translation>
 <translation id="5142281402488957685">फ़ीड का कॉन्टेंट रीफ़्रेश करने के लिए, पेज को नीचे खींचें, ताकि नई स्टोरी दिखें</translation>
@@ -928,7 +928,6 @@
 <translation id="6011308810877101166">खोज से जुड़े सुझावों को बेहतर बनाएं</translation>
 <translation id="6026538407078977628">बड़ा करके फ़ुल स्क्रीन पर दिखाएं</translation>
 <translation id="6030719887161080597">विज्ञापन की परफ़ॉर्मेंस मापने के लिए, साइटों की इस्तेमाल की गई जानकारी मैनेज करें</translation>
-<translation id="6034146297924778597">पिछले 15 मिनटों का इतिहास मिटा दिया जाएगा:</translation>
 <translation id="6039379616847168523">सीधे अगले टैब पर जाएं</translation>
 <translation id="6040143037577758943">बंद करें</translation>
 <translation id="604124094241169006">स्वचालित</translation>
@@ -1370,6 +1369,7 @@
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />आपके डिवाइस<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">फिर से शुरू करें</translation>
 <translation id="8209050860603202033">इमेज खोलें</translation>
+<translation id="8210770465353466621">आपको अपने टैब यहां दिखेंगे</translation>
 <translation id="8215740705341534369">साइड शीट</translation>
 <translation id="8218622182176210845">अपना खाता प्रबंधित करें</translation>
 <translation id="8221401890884589479">आपके पास किसी भी साइट को ब्लॉक करने का विकल्प होता है. Chrome, ब्लॉक की गई साइटों की सूची से उन साइटों को भी अपने-आप मिटा देता है जिन्हें 30 दिन पहले इस सूची में जोड़ा गया था. <ph name="BEGIN_LINK" />ज़्यादा जानें<ph name="END_LINK" /></translation>

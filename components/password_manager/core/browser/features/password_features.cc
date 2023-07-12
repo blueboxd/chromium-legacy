@@ -1,0 +1,44 @@
+// Copyright 2023 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/password_manager/core/browser/features/password_features.h"
+
+namespace password_manager::features {
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+// Enables biometric authentication before form filling.
+BASE_FEATURE(kBiometricAuthenticationForFilling,
+             "BiometricAuthenticationForFilling",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
+#if BUILDFLAG(IS_MAC)
+// Enables biometric authentication in settings.
+BASE_FEATURE(kBiometricAuthenticationInSettings,
+             "BiometricAuthenticationInSettings",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
+// Enables Biometrics for the Touch To Fill feature. This only effects Android.
+BASE_FEATURE(kBiometricTouchToFill,
+             "BiometricTouchToFill",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Disables fallback filling if the server or the autocomplete attribute says it
+// is a credit card field.
+BASE_FEATURE(kDisablePasswordsDropdownForCvcFields,
+             "DisablePasswordsDropdownForCvcFields",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables a second, Gaia-account-scoped password store for users who are signed
+// in but not syncing.
+BASE_FEATURE(kEnablePasswordsAccountStorage,
+             "EnablePasswordsAccountStorage",
+#if BUILDFLAG(IS_ANDROID)
+             base::FEATURE_DISABLED_BY_DEFAULT
+#else
+             base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+);
+
+}  // namespace password_manager::features

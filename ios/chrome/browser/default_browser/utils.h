@@ -79,6 +79,14 @@ extern NSString* const kAllTimestampsAppLaunchWarmStart;
 // starts up to allowed maximum number of past events.
 extern NSString* const kAllTimestampsAppLaunchIndirectStart;
 
+// Key in storage containing an array of dates. Each date correspond to
+// a stay safe event of interest for Default Browser Promo modals.
+extern NSString* const kLastSignificantUserEventStaySafe;
+
+// Key in storage containing an array of dates. Each date correspond to
+// a omnibox copy-paste event up to allowed maximum number of past events.
+extern NSString* const kOmniboxUseCount;
+
 // Helper function to set `data` for `key` into the storage object.
 void SetObjectIntoStorageForKey(NSString* key, NSObject* data);
 
@@ -167,6 +175,9 @@ void LogUserInteractionWithNonModalPromo();
 // Logs that the user has interacted with the first run promo.
 void LogUserInteractionWithFirstRunPromo(BOOL openedSettings);
 
+// Logs in NSUserDefaults that user copy-pasted in the omnibox.
+void LogCopyPasteInOmniboxForDefaultBrowserPromo();
+
 // Returns YES if the user has opened the app through first-party intent 2
 // times in the last 7 days, but across 2 user sessions (default 6 hours). Also
 // records that a new launch has happened if the last one was more than one
@@ -206,6 +217,9 @@ bool UserInPromoCooldown();
 // List of all key used to store data in NSUserDefaults. Still used as key
 // in the NSDictionary stored under `kBrowserDefaultsKey`.
 const NSArray<NSString*>* DefaultBrowserUtilsLegacyKeysForTesting();
+
+// Returns the impression limit for the non-modal default browser promo.
+int GetNonModalDefaultBrowserPromoImpressionLimit();
 
 // Returns YES if the app has launched on cold start under
 // `kTimestampAppLaunchOnColdStart`.

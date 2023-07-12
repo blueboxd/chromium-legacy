@@ -8,6 +8,7 @@
 <translation id="1004218526896219317">ਸਾਈਟ ਤੱਕ ਪਹੁੰਚ</translation>
 <translation id="1005274289863221750">ਆਪਣਾ ਮਾਈਕ੍ਰੋਫੋਨ ਅਤੇ ਕੈਮਰਾ ਵਰਤੋ</translation>
 <translation id="1005333234656240382">ਕੀ ADB ਡੀਬੱਗਿੰਗ ਨੂੰ ਚਾਲੂ ਕਰਨਾ ਹੈ?</translation>
+<translation id="1005671386794704751">ਗੁਲਾਬੀ</translation>
 <translation id="1006873397406093306">ਇਹ ਐਕਸਟੈਂਸ਼ਨ ਸਾਈਟਾਂ 'ਤੇ ਮੌਜੂਦ ਤੁਹਾਡਾ ਡਾਟਾ ਪੜ੍ਹ ਅਤੇ ਬਦਲ ਸਕਦੀ ਹੈ। ਤੁਸੀਂ ਸਾਈਟਾਂ ਤੱਕ ਐਕਸਟੈਂਸ਼ਨ ਦੀ ਪਹੁੰਚ ਨੂੰ ਕੰਟਰੋਲ ਕਰ ਸਕਦੇ ਹੋ।</translation>
 <translation id="1007057452468855774">Google Play Store ਚਾਲੂ ਕਰੋ</translation>
 <translation id="1008186147501209563">ਬੁੱਕਮਾਰਕ ਨਿਰਯਾਤ ਕਰੋ</translation>
@@ -177,6 +178,7 @@
 <translation id="114036956334641753">ਆਡੀਓ ਅਤੇ ਸੁਰਖੀਆਂ</translation>
 <translation id="1141949282671776404">ਜਦੋਂ ਇਹ ਟੈਬ ਅਕਿਰਿਆਸ਼ੀਲ ਸੀ, ਤਾਂ ਮੈਮੋਰੀ ਸੇਵਰ ਨੇ ਹੋਰ ਕਾਰਜਾਂ ਲਈ <ph name="MEMORY_VALUE" /> ਮੈਮੋਰੀ ਨੂੰ ਖਾਲੀ ਕੀਤਾ।</translation>
 <translation id="1142002900084379065">ਹਾਲੀਆ ਫ਼ੋਟੋਆਂ</translation>
+<translation id="1142713751288681188">ਪੇਪਰ ਦੀ ਕਿਸਮ</translation>
 <translation id="1143142264369994168">ਪ੍ਰਮਾਣ-ਪੱਤਰ ਸਾਈਨਰ</translation>
 <translation id="1145593918056169051">ਪ੍ਰਿੰਟਰ ਰੁਕ ਗਿਆ ਹੈ</translation>
 <translation id="114571748016232560">ਕੋਈ ਗੜਬੜ ਹੋ ਗਈ। ਇਸਦੀ ਬਜਾਏ ਵਿੰਡੋਆਂ ਨੂੰ ਹੱਥੀਂ ਖੋਲ੍ਹੋ।</translation>
@@ -311,6 +313,7 @@
 <translation id="1244265436519979884">ਇਸ ਵੇਲੇ Linux ਦੀ ਮੁੜ-ਬਹਾਲੀ ਜਾਰੀ ਹੈ</translation>
 <translation id="1244303850296295656">ਐਕਸਟੈਂਸ਼ਨ ਗੜਬੜ</translation>
 <translation id="1244917379075403655">"ਸੈਟਿੰਗਾਂ" 'ਤੇ ਕਲਿੱਕ ਕਰੋ</translation>
+<translation id="1245331638296910488">Microsoft 365 ਵਿੱਚ ਖੋਲ੍ਹਣ 'ਤੇ ਫ਼ਾਈਲਾਂ OneDrive ਵਿੱਚ ਚਲੇ ਜਾਣਗੀਆਂ</translation>
 <translation id="1245628370644070008">ਸਥਾਨਕ ਡਾਟਾ ਰਿਕਵਰੀ</translation>
 <translation id="1246863218384630739"><ph name="VM_NAME" /> ਨੂੰ ਸਥਾਪਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ: ਚਿੱਤਰ URL 'ਤੇ <ph name="HTTP_ERROR" /> ਗੜਬੜ ਕੋਡ ਆਇਆ। ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੇ ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਸੰਪਰਕ ਕਰੋ।</translation>
 <translation id="1247372569136754018">ਮਾਈਕ੍ਰੋਫ਼ੋਨ (ਅੰਦਰੂਨੀ)</translation>
@@ -349,6 +352,7 @@
 <translation id="1278859221870828664">Google Play ਦੀਆਂ ਐਪਾਂ ਅਤੇ ਸੇਵਾਵਾਂ ਦੀ ਸਮੀਖਿਆ ਕਰੋ</translation>
 <translation id="127946606521051357">ਨਜ਼ਦੀਕੀ ਡੀਵਾਈਸ ਡਾਟਾ ਸਾਂਝਾ ਕਰ ਰਿਹਾ ਹੈ</translation>
 <translation id="1280965841156951489">ਫ਼ਾਈਲਾਂ ਦਾ ਸੰਪਾਦਨ ਕਰੋ</translation>
+<translation id="1281746473742296584">{NUM_OF_FILES,plural, =1{ਫ਼ਾਈਲ ਨੂੰ ਨਹੀਂ ਖੋਲ੍ਹਿਆ ਜਾ ਸਕਦਾ}one{ਫ਼ਾਈਲ ਨੂੰ ਨਹੀਂ ਖੋਲ੍ਹਿਆ ਜਾ ਸਕਦਾ}other{ਫ਼ਾਈਲਾਂ ਨੂੰ ਨਹੀਂ ਖੋਲ੍ਹਿਆ ਜਾ ਸਕਦਾ}}</translation>
 <translation id="1282311502488501110">ਸਾਈਨ-ਇਨ ਨਾ ਕਰੋ</translation>
 <translation id="1282465000333679776">ਸਿਸਟਮ ਆਡੀਓ ਸਾਂਝਾ ਕਰੋ</translation>
 <translation id="1284277788676816155">ਡਾਟਾ ਰੱਖਿਅਤ ਕਰਨ ਦੀ ਆਗਿਆ ਨਾ ਦਿਓ</translation>
@@ -389,6 +393,7 @@
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">ਖੁੱਲ੍ਹੀਆਂ ਟੈਬਾਂ ਸਮੇਤ, ਤੁਹਾਨੂੰ ਸਾਰੀਆਂ ਸਾਈਟਾਂ ਤੋਂ ਸਾਈਨ-ਆਊਟ ਕਰ ਦਿੱਤਾ ਜਾਵੇਗਾ</translation>
 <translation id="1313705515580255288">ਤੁਹਾਡੇ ਬੁੱਕਮਾਰਕ, ਇਤਿਹਾਸ ਅਤੇ ਹੋਰ ਸੈਟਿੰਗਾਂ ਨੂੰ ਤੁਹਾਡੇ Google ਖਾਤੇ 'ਤੇ ਸਿੰਕ ਕੀਤਾ ਜਾਵੇਗਾ।</translation>
+<translation id="1315184295353569363">ਗਰੁੱਪ ਨੂੰ ਅਣਰੱਖਿਅਤ ਕਰੋ</translation>
 <translation id="1316136264406804862">ਖੋਜ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ...</translation>
 <translation id="1316248800168909509"><ph name="DEVICE" /> ਨਾਲ ਕਨੈਕਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="1316495628809031177">ਸਿੰਕ ਰੋਕਿਆ ਗਿਆ</translation>
@@ -589,6 +594,7 @@
 <translation id="1484979925941077974">ਸਾਈਟ ਬਲੂਟੁੱਥ ਨੂੰ ਵਰਤ ਰਹੀ ਹੈ</translation>
 <translation id="1485015260175968628">ਇਹ ਹੁਣ ਕਰ ਸਕਦਾ ਹੈ:</translation>
 <translation id="1485141095922496924">ਵਰਜਨ <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
+<translation id="1485197926103629489">Microsoft 365 ਲਈ ਫ਼ਾਈਲਾਂ ਨੂੰ OneDrive ਵਿੱਚ ਸਟੋਰ ਕੀਤੇ ਜਾਣ ਦੀ ਲੋੜ ਹੈ। ਸਥਾਨਕ ਫ਼ਾਈਲਾਂ ਨੂੰ ਲਿਜਾਇਆ ਜਾਵੇਗਾ ਅਤੇ ਹੋਰ ਟਿਕਾਣਿਆਂ ਦੀਆਂ ਫ਼ਾਈਲਾਂ ਨੂੰ ਕਾਪੀ ਕੀਤਾ ਜਾਵੇਗਾ। ਤੁਹਾਡੀਆਂ ਫ਼ਾਈਲਾਂ ਨੂੰ Files ਐਪ ਦੇ Microsoft OneDrive ਫੋਲਡਰ ਵਿੱਚ ਲੱਭਿਆ ਜਾ ਸਕਦਾ ਹੈ।</translation>
 <translation id="1486096554574027028">ਪਾਸਵਰਡ ਖੋਜੋ</translation>
 <translation id="1486486872607808064">ਇਸ QR ਕੋਡ ਨੂੰ ਉਸ ਡੀਵਾਈਸ 'ਤੇ ਕੈਮਰੇ ਨਾਲ ਸਕੈਨ ਕਰੋ ਜਿੱਥੇ ਤੁਸੀਂ <ph name="APP_NAME" /> ਲਈ ਪਾਸਕੀ ਬਣਾਉਣਾ ਚਾਹੁੰਦੇ ਹੋ</translation>
 <translation id="1487335504823219454">ਚਾਲੂ - ਸੈਟਿੰਗਾਂ ਨੂੰ ਵਿਉਂਤਬੱਧ ਕਰੋ</translation>
@@ -671,6 +677,7 @@
 <translation id="1552301827267621511">"<ph name="EXTENSION_NAME" />" ਐਕਸਟੈਂਸ਼ਨ ਨੇ <ph name="SEARCH_PROVIDER_DOMAIN" /> ਨੂੰ ਵਰਤਣ ਲਈ ਖੋਜ ਇੰਜਣ ਨੂੰ ਬਦਲਿਆ</translation>
 <translation id="1552752544932680961">ਐਕਸਟੈਂਸ਼ਨ ਵਿਵਸਥਿਤ ਕਰੋ</translation>
 <translation id="1553538517812678578">ਅਸੀਮਿਤ</translation>
+<translation id="1553947773881524342">ਆਪਣੀ Chromebook 'ਤੇ Microsoft 365 ਬਾਰੇ <ph name="LINK_BEGIN" />ਹੋਰ ਜਾਣੋ<ph name="LINK_END" />।</translation>
 <translation id="1555130319947370107">ਨੀਲਾ</translation>
 <translation id="1556127816860282890">ਬੈਕਗ੍ਰਾਊਂਡ ਸਰਗਰਮੀ ਅਤੇ ਸਹਿਜ ਸਕ੍ਰੋਲ ਵਰਗੇ ਕੁਝ ਦ੍ਰਿਸ਼ਟੀਗਤ ਪ੍ਰਭਾਵਾਂ ਨੂੰ ਸੀਮਤ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ</translation>
 <translation id="1556537182262721003">ਐਕਸਟੈਂਸ਼ਨ ਡਾਇਰੈਕਟਰੀ 'ਚ ਪ੍ਰੋਫਾਈਲ ਦੀ ਹਲਚਲ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ।</translation>
@@ -699,6 +706,7 @@
 <translation id="1576594961618857597">ਪੂਰਵ-ਨਿਰਧਾਰਤ ਸਫ਼ੈਦ ਅਵਤਾਰ</translation>
 <translation id="1576729678809834061">ਇਸ ਖੋਜ ਨਤੀਜੇ ਦੀ ਰਿਪੋਰਟ ਕਰੋ</translation>
 <translation id="1578558981922970608">ਜ਼ਬਰਦਸਤੀ ਬੰਦ ਕਰੋ</translation>
+<translation id="157931050206866263">ਮਾਲਵੇਅਰ ਦੇ ਸਕੈਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ</translation>
 <translation id="1580772913177567930">ਆਪਣੇ ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਸੰਪਰਕ ਕਰੋ</translation>
 <translation id="1581962803218266616">ਫਾਈਂਡਰ ਵਿੱਚ ਦਿਖਾਓ</translation>
 <translation id="1582955169539260415">[<ph name="FINGERPRINT_NAME" />] ਮਿਟਾਓ</translation>
@@ -931,6 +939,7 @@
 <translation id="1757132445735080748">Linux ਦਾ ਸੈੱਟਅੱਪ ਪੂਰਾ ਕਰਨ ਲਈ, ChromeOS Flex ਨੂੰ ਅੱਪਡੇਟ ਕਰ ਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="1757301747492736405">ਅਣਸਥਾਪਨਾ ਵਿਚਾਰ-ਅਧੀਨ</translation>
 <translation id="175772926354468439">ਥੀਮ ਨੂੰ ਚਾਲੂ ਕਰੋ</translation>
+<translation id="1757786065507923842">ਮਾਂ-ਪਿਓ ਦੀ ਇਜਾਜ਼ਤ ਸੰਬੰਧੀ ਬੇਨਤੀ ਅਸਫਲ ਰਹੀ।</translation>
 <translation id="17584710573359123">Chrome ਵੈੱਬ ਸਟੋਰ ਵਿੱਚ ਦੇਖੋ</translation>
 <translation id="1761845175367251960"><ph name="NAME" /> ਦੇ ਖਾਤੇ</translation>
 <translation id="176272781006230109">ਖਰੀਦਦਾਰੀ ਸੰਬੰਧੀ ਸੁਝਾਅ</translation>
@@ -948,6 +957,7 @@
 <translation id="1770407692401984718">ਚਿੱਤਰ ਨੂੰ ਇੱਥੇ ਘਸੀਟੋ ਜਾਂ</translation>
 <translation id="177053719077591686">Google Drive 'ਤੇ Android ਐਪਾਂ ਦਾ ਬੈਕਅੱਪ ਲਓ।</translation>
 <translation id="1771075623623424448">ਕੀ ਬ੍ਰਾਊਜ਼ਰ ਡੀਵਾਈਸ-ਲੌਗ ਪੰਨਾ ਲੱਭ ਰਹੇ ਹੋ? <ph name="BEGIN_LINK" /><ph name="CHROME_DEVICE_LOG_LINK" /><ph name="END_LINK" /> 'ਤੇ ਜਾਓ।</translation>
+<translation id="1773329206876345543">ਹੋਰ ਡੀਵਾਈਸਾਂ ਨੂੰ ਇੰਟਰਨੈੱਟ ਮੁਹੱਈਆ ਕਰਵਾਉਣ ਲਈ ਆਪਣੇ <ph name="DEVICE_TYPE" /> ਦੇ ਮੋਬਾਈਲ ਡਾਟੇ ਦੀ ਵਰਤੋਂ ਕਰ ਕੇ ਵਾਈ-ਫਾਈ ਹੌਟਸਪੌਟ ਬਣਾਓ। <ph name="BEGIN_LINK_LEARN_MORE" />ਹੋਰ ਜਾਣੋ<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="177336675152937177">ਹੋਸਟ ਕੀਤਾ ਐਪ ਡਾਟਾ</translation>
 <translation id="177529472352014190">OneDrive ਨਾਲ ਕਨੈਕਟ ਕਰੋ</translation>
 <translation id="1776712937009046120">ਵਰਤੋਂਕਾਰ ਸ਼ਾਮਲ ਕਰੋ</translation>
@@ -983,6 +993,7 @@
 <translation id="1795214765651529549">ਕਲਾਸਿਕ ਵਰਤੋ</translation>
 <translation id="1796588414813960292">ਜਿਨ੍ਹਾਂ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਨੂੰ ਧੁਨੀ ਦੀ ਲੋੜ ਹੈ ਉਹ ਕੰਮ ਨਹੀਂ ਕਰਨਗੀਆਂ</translation>
 <translation id="1797117170091578105">ਆਪਣੇ Chromebook ਦੇ ਕੀ-ਬੋਰਡ ਦੀ ਵਰਤੋਂ ਕਰ ਕੇ ਖੇਡੋ। ਤੁਸੀਂ ਕਾਰਵਾਈਆਂ ਨੂੰ ਨਿਰਧਾਰਿਤ ਕਰਨ ਲਈ ਕੁੰਜੀਆਂ ਨੂੰ ਵਿਉਂਤਬੱਧ ਕਰ ਸਕਦੇ ਹੋ।</translation>
+<translation id="1801571666562084067">PDF ਚਿੱਤਰਾਂ ਨੂੰ ਲਿਖਤ ਵਿੱਚ ਬਦਲੋ</translation>
 <translation id="180203835522132923">Search + O, ਫਿਰ W</translation>
 <translation id="1802624026913571222">ਕਵਰ ਬੰਦ ਹੋਣ 'ਤੇ ਸਲੀਪ ਮੋਡ ਵਿੱਚ ਜਾਓ</translation>
 <translation id="1802687198411089702">ਇਹ ਪੰਨਾ ਪ੍ਰਤਿਕਿਰਿਆ ਨਹੀਂ ਦੇ ਰਿਹਾ ਹੈ। ਤੁਸੀਂ ਉਡੀਕ ਕਰ ਸਕਦੇ ਹੋ ਜਾਂ ਬਾਹਰ ਜਾ ਸਕਦੇ ਹੋ।</translation>
@@ -1091,6 +1102,7 @@
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{ਟੈਬ ਨੂੰ ਕਿਸੇ ਹੋਰ ਵਿੰਡੋ ਵਿੱਚ ਲਿਜਾਓ}one{ਟੈਬ ਨੂੰ ਕਿਸੇ ਹੋਰ ਵਿੰਡੋ ਵਿੱਚ ਲਿਜਾਓ}other{ਟੈਬਾਂ ਨੂੰ ਕਿਸੇ ਹੋਰ ਵਿੰਡੋ ਵਿੱਚ ਲਿਜਾਓ}}</translation>
 <translation id="1875387611427697908">ਇਸਨੂੰ ਸਿਰਫ਼ <ph name="CHROME_WEB_STORE" /> ਤੋੋਂ ਹੀ ਸ਼ਾਮਲ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ</translation>
 <translation id="1877377290348678128">ਲੇਬਲ (ਵਿਕਲਪਿਕ)</translation>
+<translation id="1877377730633446520">ਇਹ ਲਗਭਗ <ph name="REQUIRED_SPACE" /> ਦੀ ਵਰਤੋਂ ਕਰੇਗਾ। ਫ਼ਿਲਹਾਲ ਤੁਹਾਡੇ ਕੋਲ <ph name="FREE_SPACE" /> ਉਪਲਬਧ ਹੈ।</translation>
 <translation id="1877520246462554164">ਪ੍ਰਮਾਣੀਕਰਨ ਟੋਕਨ ਪ੍ਰਾਪਤ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰਨ ਲਈ ਸਾਈਨ-ਆਊਟ ਹੋਵੋ, ਫਿਰ ਦੁਬਾਰਾ ਸਾਈਨ-ਇਨ ਕਰੋ।</translation>
 <translation id="1877860345998737529">ਕਾਰਵਾਈ ਨੂੰ ਜ਼ਿੰਮੇ ਲਗਾਉਣ ਨੂੰ ਬਦਲਣਾ</translation>
 <translation id="1878155070920054810">ਇੰਝ ਲੱਗਦਾ ਹੈ ਕਿ ਅੱਪਡੇਟ ਪੂਰਾ ਹੋਣ ਤੋਂ ਪਹਿਲਾਂ ਤੁਹਾਡੀ Chromebook ਦੀ ਪਾਵਰ ਖਤਮ ਹੋ ਜਾਵੇਗੀ। ਰੁਕਾਵਟ ਤੋਂ ਬਚਣ ਲਈ ਇਹ ਪੱਕਾ ਕਰੋ ਕਿ ਇਹ ਸਹੀ ਢੰਗ ਨਾਲ ਚਾਰਜ ਹੋ ਰਹੀ ਹੈ।</translation>
@@ -1125,6 +1137,7 @@
 <translation id="1904580727789512086">ਉਹ URL ਤੁਹਾਡੇ Google ਖਾਤੇ 'ਤੇ ਰੱਖਿਅਤ ਕੀਤੇ ਜਾਂਦੇ ਹਨ, ਜਿਨ੍ਹਾਂ 'ਤੇ ਤੁਸੀਂ ਗਏ ਹੋ</translation>
 <translation id="1905375423839394163">Chromebook ਡੀਵਾਈਸ ਦਾ ਨਾਮ</translation>
 <translation id="1906181697255754968">ਸਾਈਟਾਂ ਆਮ ਤੌਰ 'ਤੇ ਤੁਹਾਡੇ ਕੰਮ ਨੂੰ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਰੱਖਿਅਤ ਕਰਨ ਜਿਹੀਆਂ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਲਈ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਵਿਚਲੀਆਂ ਫ਼ਾਈਲਾਂ ਅਤੇ ਫੋਲਡਰਾਂ ਤੱਕ ਪਹੁੰਚ ਕਰਦੀਆਂ ਹਨ</translation>
+<translation id="1906488504371069394"><ph name="BEGIN_LINK" />Chrome ਵੈੱਬ ਸਟੋਰ<ph name="END_LINK" /> 'ਤੇ ਹੋਰ ਐਕਸਟੈਂਸ਼ਨਾਂ ਅਤੇ ਥੀਮ ਖੋਜੋ</translation>
 <translation id="1907044622262489040">ਆਪਣੀ ਅਵਾਜ਼ ਨਾਲ ਟਾਈਪ ਕਰੋ। Search + D ਵਰਤੋ, ਫਿਰ ਬੋਲਣਾ ਸ਼ੁਰੂ ਕਰੋ।</translation>
 <translation id="1908591798274282246">ਬੰਦ ਕੀਤਾ ਗਰੁੱਪ ਟੈਬ ਦੁਬਾਰਾ ਖੋਲ੍ਹੋ</translation>
 <translation id="1909880997794698664">ਕੀ ਤੁਸੀਂ ਪੱਕਾ ਇਸ ਡੀਵਾਈਸ ਨੂੰ ਸਥਾਈ ਤੌਰ 'ਤੇ ਕਿਓਸਕ ਮੋਡ ਵਿੱਚ ਰੱਖਣਾ ਚਾਹੁੰਦੇ ਹੋ?</translation>
@@ -1939,6 +1952,7 @@
 <translation id="2561211427862644160">ਆਪਣੇ ਸਾਰੇ ਬੁੱਕਮਾਰਕ ਇੱਥੇ ਦੇਖੋ</translation>
 <translation id="2564520396658920462">AppleScript ਦੇ ਰਾਹੀਂ JavaScript ਨੂੰ ਚਲਾਉਣਾ ਬੰਦ ਹੈ। ਇਸਨੂੰ ਮੀਨੂ ਬਾਰ ਤੋਂ ਚਲਾਉਣ ਲਈ, ਦ੍ਰਿਸ਼ &gt; ਵਿਕਾਸਕਾਰ &gt; Apple ਇਵੈਂਟਾਂ ਤੋਂ JavaScript ਚੱਲਣ ਦਿਓ 'ਤੇ ਜਾਓ। ਹੋਰ ਜਾਣਕਾਰੀ ਲਈ: https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">ਬਿਹਤਰ ਸ਼ਬਦ-ਜੋੜ ਜਾਂਚ</translation>
+<translation id="2565214867520763227">ਸਕ੍ਰੀਨ ਰੀਡਰ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="2568694057933302218">ਇਨਕੋਗਨਿਟੋ ਮੋਡ ਵਿੱਚ ਹੋਣ ਦੌਰਾਨ, ਸਾਈਟਾਂ ਤੁਹਾਡੀ ਬ੍ਰਾਊਜ਼ਿੰਗ ਸਰਗਰਮੀ ਨੂੰ ਸਾਈਟਾਂ ਵਿਚਾਲੇ ਦੇਖਣ ਲਈ ਤੁਹਾਡੀਆਂ ਕੁਕੀਜ਼ ਦੀ ਵਰਤੋਂ ਨਹੀਂ ਕਰ ਸਕਦੀਆਂ। ਤੁਹਾਡੀ ਬ੍ਰਾਊਜ਼ਿੰਗ ਸਰਗਰਮੀ ਵਿਗਿਆਪਨਾਂ ਨੂੰ ਵਿਅਕਤੀਗਤ ਬਣਾਉਣ ਵਰਗੀਆਂ ਚੀਜ਼ਾਂ ਲਈ ਨਹੀਂ ਵਰਤੀ ਜਾਂਦੀ। ਸ਼ਾਇਦ ਕੁਝ ਸਾਈਟਾਂ 'ਤੇ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਕੰਮ ਨਾ ਕਰਨ।</translation>
 <translation id="2568774940984945469">ਇੰਫੋਬਾਰ ਕੰਟੇਨਰ</translation>
 <translation id="2569972178052279830">ਵਿਕਰੇਤਾ ਦਾ ਨਾਮ</translation>
@@ -1986,6 +2000,7 @@
 <translation id="2610157865375787051">ਸਲੀਪ</translation>
 <translation id="2610260699262139870">ਅ&amp;ਸਲ ਆਕਾਰ</translation>
 <translation id="2610780100389066815">Microsoft Trust List Signing</translation>
+<translation id="261114180663074524">ਆਪਣੇ Microsoft ਖਾਤੇ ਵਿੱਚ ਸਾਈਨ-ਇਨ ਕਰ ਕੇ ਫਿਰ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ</translation>
 <translation id="2611776654555141051">ਆਇਤਾਕਾਰ ਟੂਲ</translation>
 <translation id="2612676031748830579">ਕਾਰਡ ਨੰਬਰ</translation>
 <translation id="2613210758071148851"><ph name="RESTRICTED_SITE" /> 'ਤੇ ਕਿਸੇ ਵੀ ਐਕਸਟੈਂਸ਼ਨ ਨੂੰ ਆਗਿਆ ਨਾ ਦਿਓ</translation>
@@ -2059,6 +2074,7 @@
 <translation id="2671451824761031126">ਤੁਹਾਡੇ ਬੁੱਕਮਾਰਕ ਅਤੇ ਸੈਟਿੰਗਾਂ ਤਿਆਰ ਹਨ</translation>
 <translation id="2672142220933875349">ਖ਼ਰਾਬ crx ਫਾਈਲ, ਅਨਪੈਕ ਕਰਨਾ ਅਸਫਲ।</translation>
 <translation id="2673135533890720193">ਆਪਣਾ ਬ੍ਰਾਊਜ਼ਿੰਗ ਇਤਿਹਾਸ ਪੜ੍ਹੋ</translation>
+<translation id="2673873887296220733">ਕੀ ਖੋਲ੍ਹਣ ਲਈ 1 ਫ਼ਾਈਲ ਨੂੰ <ph name="CLOUD_PROVIDER" /> 'ਤੇ ਕਾਪੀ ਕਰਨਾ ਹੈ?</translation>
 <translation id="2674764818721168631">ਬੰਦ</translation>
 <translation id="2675570801872027281">Bruschetta ਨੂੰ ਹਟਾਉਣ ਦੌਰਾਨ ਗੜਬੜ ਹੋਈ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="2676084251379299915">ਇਸ ਐਕਸਟੈਂਸ਼ਨ ਨੂੰ ਐਂਟਰਪ੍ਰਾਈਜ਼ ਨੀਤੀ ਕਰਕੇ ਬੰਦ ਕੀਤਾ ਗਿਆ ਹੈ ਕਿਉਂਕਿ ਹੁਣ ਇਹ Chrome ਵੈੱਬ ਸਟੋਰ 'ਤੇ ਉਪਲਬਧ ਨਹੀਂ ਹੈ।</translation>
@@ -2079,6 +2095,7 @@
 <translation id="2691385045260836588">ਮਾਡਲ</translation>
 <translation id="2691440343905273290">ਇਨਪੁੱਟ ਸੈਟਿੰਗਾਂ ਬਦਲੋ</translation>
 <translation id="2692503699962701720">ਤੱਤ ਕਿਸਮਾਂ ਅਤੇ ਫਾਰਮੈਟ ਕੀਤੀ ਲਿਖਤ ਨੂੰ ਬੋਲਣ ਵੇਲੇ ਪਿੱਚ ਬਦਲੋ</translation>
+<translation id="2692901429679246677">ਐਕਵਾ</translation>
 <translation id="2693134906590795721">ਚਾਰਜ ਕਰਨ ਦੀਆਂ ਧੁਨੀਆਂ</translation>
 <translation id="2693176596243495071">ਓਹੋ! ਕੋਈ ਅਗਿਆਤ ਗੜਬੜ ਹੋ ਗਈ। ਕਿਰਪਾ ਕਰਕੇ ਬਾਅਦ ਵਿੱਚ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ ਜਾਂ ਜੇਕਰ ਸਮੱਸਿਆ ਬਣੀ ਰਹਿੰਦੀ ਹੈ ਤਾਂ ਆਪਣੇ ਪ੍ਰਸ਼ਾਸਕ ਨਾਲ ਸੰਪਰਕ ਕਰੋ।</translation>
 <translation id="2698147581454716013">ਇਹ ਬੰਡਲ ਡੀਵਾਈਸ ਹੈ ਅਤੇ ਇਸਨੂੰ ਕਿਓਸਕ ਅਤੇ ਸਾਈਨੇਜ ਅੱਪਗ੍ਰੇਡ ਨਾਲ ਦਰਜ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ।</translation>
@@ -2113,6 +2130,7 @@
 <translation id="2721695630904737430">ਨਿਗਰਾਨੀ ਕੀਤੇ ਵਰਤੋਂਕਾਰ ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਦੁਆਰਾ ਅਯੋਗ ਬਣਾਏ ਗਏ ਹਨ।</translation>
 <translation id="2722540561488096675">ਤੁਹਾਡਾ ਡੀਵਾਈਸ <ph name="TIME_LEFT" /> ਵਿੱਚ ਬੰਦ ਹੋ ਜਾਵੇਗਾ। ਆਪਣੇ ਡੀਵਾਈਸ ਨੂੰ ਵਾਪਸ ਚਾਲੂ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ USB ਹਟਾਓ। ਫਿਰ ਤੁਸੀਂ <ph name="DEVICE_OS" /> ਨੂੰ ਵਰਤਣਾ ਸ਼ੁਰੂ ਕਰ ਸਕਦੇ ਹੋ।</translation>
 <translation id="2722547199758472013">ਆਈਡੀ: <ph name="EXTENSION_ID" /></translation>
+<translation id="2723819893410108315">ਸਿਟਰਨ</translation>
 <translation id="2724841811573117416">WebRTC ਲੌਗਸ</translation>
 <translation id="272488616838512378">ਇਕਾਈ ਰੂਪਾਂਤਰਨ</translation>
 <translation id="2725200716980197196">ਨੈੱਟਵਰਕ ਕਨੈਕਟੀਵਿਟੀ ਨੂੰ ਮੁੜ-ਬਹਾਲ ਕੀਤਾ ਗਿਆ</translation>
@@ -2337,6 +2355,7 @@
 <translation id="289695669188700754">ਕੁੰਜੀ ਆਈ.ਡੀ.: <ph name="KEY_ID" /></translation>
 <translation id="2897713966423243833">ਤੁਹਾਡੇ ਵੱਲੋਂ ਆਪਣੀ ਸਾਰੀਆਂ ਇਨਕੋਗਨਿਟੋ ਵਿੰਡੋਆਂ ਨੂੰ ਬੰਦ ਕਰਨ 'ਤੇ ਇਸ ਵਿਉਂਤਬੱਧ ਸੈਟਿੰਗ ਨੂੰ ਹਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ</translation>
 <translation id="2897878306272793870">ਕੀ ਤੁਸੀਂ ਯਕੀਨੀ ਤੌਰ ਤੇ <ph name="TAB_COUNT" /> ਟੈਬਸ ਖੋਲ੍ਹਣੀਆਂ ਹਨ?</translation>
+<translation id="2900247416110050639">Google Docs, Sheets ਅਤੇ Slides ਲਈ ਫ਼ਾਈਲਾਂ ਨੂੰ Google Drive ਵਿੱਚ ਸਟੋਰ ਕੀਤੇ ਜਾਣ ਦੀ ਲੋੜ ਹੁੰਦੀ ਹੈ। ਸਥਾਨਕ ਫ਼ਾਈਲਾਂ ਨੂੰ ਲਿਜਾਇਆ ਜਾਵੇਗਾ ਅਤੇ ਹੋਰ ਟਿਕਾਣਿਆਂ ਦੀਆਂ ਫ਼ਾਈਲਾਂ ਨੂੰ ਕਾਪੀ ਕੀਤਾ ਜਾਵੇਗਾ। ਤੁਹਾਡੀਆਂ ਫ਼ਾਈਲਾਂ ਨੂੰ Files ਐਪ ਦੇ Google Drive ਫੋਲਡਰ ਵਿੱਚ ਲੱਭਿਆ ਜਾ ਸਕਦਾ ਹੈ।</translation>
 <translation id="290105521672621980">ਫ਼ਾਈਲ ਅਸਮਰਥਿਤ ਵਿਸੇਸ਼ਤਾਵਾਂ ਵਰਤਦੀ ਹੈ</translation>
 <translation id="2901348420151309559">ਹਾਲੀਆ ਫ਼ੋਟੋਆਂ ਅਤੇ ਐਪਾਂ</translation>
 <translation id="2902127500170292085"><ph name="EXTENSION_NAME" /> ਇਸ ਪ੍ਰਿੰਟਰ ਨਾਲ ਸੰਚਾਰ ਨਹੀਂ ਕਰ ਸਕਿਆ। ਯਕੀਨੀ ਬਣਾਓ ਕਿ ਪ੍ਰਿੰਟਰ ਪਲਗ ਇਨ ਕੀਤਾ ਹੋਇਆ ਹੈ ਅਤੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
@@ -2434,6 +2453,7 @@
 <translation id="2988018669686457659">ਵਾਧੂ ਰੈਂਡਰਰ</translation>
 <translation id="2988328607561082373">ਤੁਸੀਂ ਕਿਸੇ ਵੀ ਪਾਸਵਰਡ ਦੀ ਮੁੜ-ਵਰਤੋਂ ਨਹੀਂ ਕਰ ਰਹੇ ਹੋ</translation>
 <translation id="2989123969927553766">ਮਾਊਸ ਸਕ੍ਰੋਲ ਐਕਸੈੱਲਰੇਸ਼ਨ</translation>
+<translation id="2989177286941477290">{NUM_OF_FILES,plural, =1{ਇਸ ਫ਼ਾਈਲ ਨੂੰ ਲਿਜਾਉਣ ਲਈ <ph name="CLOUD_PROVIDER" /> ਵਿੱਚ ਜਗ੍ਹਾ ਖਾਲੀ ਕਰੋ}one{ਇਸ ਫ਼ਾਈਲ ਨੂੰ ਲਿਜਾਉਣ ਲਈ <ph name="CLOUD_PROVIDER" /> ਵਿੱਚ ਜਗ੍ਹਾ ਖਾਲੀ ਕਰੋ}other{ਇਨ੍ਹਾਂ ਫ਼ਾਈਲਾਂ ਨੂੰ ਲਿਜਾਉਣ ਲਈ <ph name="CLOUD_PROVIDER" /> ਵਿੱਚ ਜਗ੍ਹਾ ਖਾਲੀ ਕਰੋ}}</translation>
 <translation id="2989474696604907455">ਅਟੈਚ ਨਹੀਂ ਕੀਤਾ</translation>
 <translation id="2989786307324390836">DER-ਐਨਕੋਡ ਕੀਤੀ ਬਾਈਨਰੀ, ਸਿੰਗਲ ਪ੍ਰਮਾਣ-ਪੱਤਰ</translation>
 <translation id="2989805286512600854">ਨਵੀਂ ਟੈਬ ਵਿੱਚ ਖੋਲ੍ਹੋ</translation>
@@ -2641,8 +2661,10 @@
 <translation id="3163511056918491211">ਕਿਸੇ ਵੇਲੇ ਵੀ ਆਪਣੇ ਡਾਟੇ ਨੂੰ ਆਸਾਨੀ ਨਾਲ ਮੁੜ-ਬਹਾਲ ਕਰੋ ਜਾਂ ਡੀਵਾਈਸਾਂ ਨੂੰ ਬਦਲੋ। ਤੁਹਾਡੇ ਬੈਕਅੱਪ Google 'ਤੇ ਅੱਪਲੋਡ ਕੀਤੇ ਜਾਂਦੇ ਹਨ ਅਤੇ ਤੁਹਾਡੇ Google ਖਾਤੇ ਦੇ ਪਾਸਵਰਡ ਦੀ ਵਰਤੋਂ ਕਰ ਕੇ ਇਨਕ੍ਰਿਪਟ ਕੀਤੇ ਜਾਂਦੇ ਹਨ।</translation>
 <translation id="3164329792803560526">ਇਸ ਟੈਬ ਨੂੰ <ph name="APP_NAME" /> ਨਾਲ ਸਾਂਝਾ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ</translation>
 <translation id="3165390001037658081">ਕੁਝ ਕੈਰੀਅਰ ਇਸ ਵਿਸ਼ੇਸ਼ਤਾ ਨੂੰ ਬਲੌਕ ਕਰ ਸਕਦੇ ਹਨ।</translation>
+<translation id="3165734944977250074">ਫ਼ਾਈਲ ਨੂੰ ਲਿਜਾਇਆ ਨਹੀਂ ਜਾ ਸਕਦਾ ਕਿਉਂਕਿ ਇਹ ਹੁਣ ਮੌਜੂਦ ਨਹੀਂ ਹੈ</translation>
 <translation id="3169930038976362151">ਆਪਣੀਆਂ ਲੋੜਾਂ ਮੁਤਾਬਕ ਢੁਕਵਾਂ ਥੀਮ ਚੁਣੋ। ਆਪਣੇ ਥੀਮ, ਵਾਲਪੇਪਰ, ਸਕ੍ਰੀਨ ਸੇਵਰ ਅਤੇ ਹੋਰ ਚੀਜ਼ਾਂ ਨੂੰ ਬਦਲਣ ਲਈ, ਬਸ ਡੈਸਕਟਾਪ 'ਤੇ ਸਪਰਸ਼ ਕਰ ਕੇ ਰੱਖੋ।</translation>
 <translation id="3170072451822350649">ਤੁਸੀਂ ਸਾਈਨ-ਇਨ ਕਰਨਾ ਵੀ ਛੱਡ ਸਕਦੇ ਹੋ ਅਤੇ <ph name="LINK_START" />ਮਹਿਮਾਨ ਦੇ ਤੌਰ 'ਤੇ ਬ੍ਰਾਊਜ਼<ph name="LINK_END" /> ਵੀ ਕਰ ਸਕਦੇ ਹੋ।</translation>
+<translation id="3174311489448105660">ਉਪਲਬਧ ਹੋਣ 'ਤੇ, ਸਕ੍ਰੀਨ ਰੀਡਰ ਲਈ ਸਮੱਗਰੀ ਨੂੰ ਲਿਖਤ ਵਿੱਚ ਬਦਲਣ ਵਾਸਤੇ PDF ਚਿੱਤਰਾਂ ਨੂੰ ਸਕੈਨ ਕਰੋ। ਸਿਰਫ਼ Chrome ਬ੍ਰਾਊਜ਼ਰ 'ਤੇ ਸਮਰਥਿਤ ਹੈ।</translation>
 <translation id="31774765611822736">ਖੱਬੇ ਪਾਸੇ ਵਾਲੀ ਨਵੀਂ ਟੈਬ</translation>
 <translation id="3177909033752230686">ਪੰਨਾ ਭਾਸ਼ਾ:</translation>
 <translation id="3177914167275935955">ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਵਿੱਚ ਇੱਕ Chrome Education ਅੱਪਗ੍ਰੇਡ ਸ਼ਾਮਲ ਹੈ, ਪਰ ਤੁਹਾਡਾ ਵਰਤੋਂਕਾਰ ਨਾਮ Google for Education ਖਾਤੇ ਨਾਲ ਸੰਬੰਧਿਤ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਕਿਸੇ ਸੈਕੰਡਰੀ ਡੀਵਾਈਸ ਵਿੱਚ g.co/workspace/edusignup 'ਤੇ ਜਾ ਕੇ Google for Education ਖਾਤਾ ਬਣਾਓ।</translation>
@@ -2715,6 +2737,7 @@
 <translation id="3251714896659475029"><ph name="SUPERVISED_USER_NAME" /> ਨੂੰ "Ok Google" ਬੋਲ ਕੇ Google Assistant ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦਿਓ</translation>
 <translation id="3251759466064201842">&lt;ਸਰਟੀਫਿਕੇਟ ਦਾ ਭਾਗ ਨਹੀਂ&gt;</translation>
 <translation id="325238099842880997">ਘਰ ਵਿੱਚ ਬੱਚਿਆਂ ਦੇ ਖੇਡਣ, ਪੜਚੋਲ ਅਤੇ ਸਕੂਲ ਦਾ ਕੰਮ ਕਰਨ ਵਿੱਚ ਮਦਦ ਲਈ ਬੁਨਿਆਦੀ ਡਿਜੀਟਲ ਨਿਯਮ ਸੈੱਟ ਕਰੋ</translation>
+<translation id="3253344772044554413">{NUM_OF_FILES,plural, =1{ਇਸ ਫ਼ਾਈਲ ਨੂੰ ਕਾਪੀ ਕਰਨ ਲਈ <ph name="CLOUD_PROVIDER" /> ਵਿੱਚ ਜਗ੍ਹਾ ਖਾਲੀ ਕਰੋ}one{ਇਸ ਫ਼ਾਈਲ ਨੂੰ ਕਾਪੀ ਕਰਨ ਲਈ <ph name="CLOUD_PROVIDER" /> ਵਿੱਚ ਜਗ੍ਹਾ ਖਾਲੀ ਕਰੋ}other{ਇਨ੍ਹਾਂ ਫ਼ਾਈਲਾਂ ਨੂੰ ਕਾਪੀ ਕਰਨ ਲਈ <ph name="CLOUD_PROVIDER" /> ਵਿੱਚ ਜਗ੍ਹਾ ਖਾਲੀ ਕਰੋ}}</translation>
 <translation id="3253448572569133955">ਅਗਿਆਤ ਖਾਤਾ</translation>
 <translation id="3254084468305910013">{COUNT,plural, =0{ਸੁਰੱਖਿਆ ਸੰਬੰਧੀ ਕੋਈ ਸਮੱਸਿਆ ਨਹੀਂ ਮਿਲੀ}=1{ਸੁਰੱਖਿਆ ਸੰਬੰਧੀ {COUNT} ਸਮੱਸਿਆ ਮਿਲੀ}other{ਸੁਰੱਖਿਆ ਸੰਬੰਧੀ {COUNT} ਸਮੱਸਿਆਵਾਂ ਮਿਲੀਆਂ}}</translation>
 <translation id="3254451942070605467"><ph name="FILE_NAME" /> ਨੂੰ ਡਾਊਨਲੋਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ, <ph name="PERCENT_REMAINING" />% ਬਾਕੀ</translation>
@@ -2912,6 +2935,7 @@
 <translation id="3429160811076349561">ਪਰਖ ਸੰਬੰਧੀ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਬੰਦ ਹਨ</translation>
 <translation id="3429271624041785769">ਵੈੱਬ ਸਮੱਗਰੀ ਦੀਆਂ ਭਾਸ਼ਾਵਾਂ</translation>
 <translation id="3429275422858276529">ਇਸ ਪੰਨੇ ਨੂੰ ਬਾਅਦ ਵਿੱਚ ਆਸਾਨੀ ਨਾਲ ਲੱਭਣ ਲਈ ਇਸਨੂੰ ਬੁੱਕਮਾਰਕ ਕਰੋ</translation>
+<translation id="3431715928297727378"><ph name="WINDOW_TITLE" /> - <ph name="MEMORY_VALUE" /> ਮੈਮੋਰੀ ਖਾਲੀ ਕੀਤੀ ਗਈ</translation>
 <translation id="3432762828853624962">ਸਾਂਝੇ ਕੀਤੇ ਗਏ ਵਰਕਰ</translation>
 <translation id="3433507769937235446">Lock-on-leave</translation>
 <translation id="3433621910545056227">ਓਹੋ! ਸਿਸਟਮ ਡੀਵਾਈਸ ਸਥਾਪਨਾ-ਸਮਾਂ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਲਾਕ ਨੂੰ ਸਥਾਪਤ ਕਰਨ ਵਿੱਚ ਅਸਫਲ ਰਿਹਾ।</translation>
@@ -2947,8 +2971,10 @@
 <translation id="3450157232394774192">ਨਿਸ਼ਕਿਰਿਆ ਸਥਿਤੀ ਅਧਿਕਾਰ ਫ਼ੀਸਦ</translation>
 <translation id="3450180775417907283"><ph name="MANAGER" /> ਲਈ ਤੁਹਾਨੂੰ ਹੁਣ ਵਾਈ-ਫਾਈ ਨਾਲ ਕਨੈਕਟ ਹੋ ਕੇ ਅੱਪਡੇਟ ਡਾਊਨਲੋਡ ਕਰਨ ਦੀ ਲੋੜ ਹੈ।</translation>
 <translation id="3452999110156026232">ਮਾਪਿਆਂ ਦੀ ਪਹੁੰਚ</translation>
+<translation id="3453082738208775226">ਕੀ ਆਫ਼ਲਾਈਨ ਸਟੋਰੇਜ ਨੂੰ ਖਾਲੀ ਕਰਨਾ ਹੈ?</translation>
 <translation id="3453612417627951340">ਇਖਤਿਆਰੀਕਰਨ ਦੀ ਲੋੜ ਹੈ</translation>
 <translation id="3454213325559396544">ਇਹ ਇਸ <ph name="DEVICE_TYPE" /> ਲਈ ਆਖਰੀ ਸਵੈਚਲਿਤ ਸਾਫ਼ਟਵੇਅਰ ਅਤੇ ਸੁਰੱਖਿਆ ਅੱਪਡੇਟ ਹੈ। ਭਵਿੱਖ ਵਿੱਚ ਅੱਪਡੇਟਾਂ ਪ੍ਰਾਪਤ ਕਰਨ ਲਈ, ਇੱਕ ਨਵੇਂ ਮਾਡਲ 'ਤੇ ਅੱਪਗ੍ਰੇਡ ਕਰੋ।</translation>
+<translation id="3454818737556063691">ਕੀ ਖੋਲ੍ਹਣ ਲਈ 1 ਫ਼ਾਈਲ ਨੂੰ <ph name="CLOUD_PROVIDER" /> 'ਤੇ ਲਿਜਾਉਣਾ ਹੈ?</translation>
 <translation id="3455436146814891176">ਸਿੰਕ ਇਨਕ੍ਰਿਪਸ਼ਨ ਪਾਸਵਰਡ</translation>
 <translation id="345693547134384690">ਨਵੀਂ ਟੈਬ ਵਿੱਚ &amp;ਚਿੱਤਰ ਖੋਲ੍ਹੋ</translation>
 <translation id="3458451003193188688">ਕਿਸੇ ਨੈੱਟਵਰਕ ਗੜਬੜ ਕਰਕੇ ਆਭਾਸੀ ਮਸ਼ੀਨ ਨੂੰ ਸਥਾਪਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ ਜਾਂ ਆਪਣੇ ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਸੰਪਰਕ ਕਰੋ। ਗੜਬੜ ਕੋਡ: <ph name="ERROR_CODE" />।</translation>
@@ -3045,6 +3071,7 @@
 <translation id="3529851166527095708">ਪਤੇ ਅਤੇ ਹੋਰ</translation>
 <translation id="3532273508346491126">ਸਿੰਕ ਪ੍ਰਬੰਧਨ</translation>
 <translation id="3532521178906420528">ਨੈੱਟਵਰਕ ਕਨੈਕਸ਼ਨ ਸਥਾਪਤ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ ...</translation>
+<translation id="3532852121563960103">{NUM_OF_FILES,plural, =1{1 ਫ਼ਾਈਲ ਨੂੰ <ph name="CLOUD_PROVIDER" /> 'ਤੇ ਲਿਜਾਇਆ ਜਾ ਰਿਹਾ ਹੈ}one{{NUM_OF_FILES} ਫ਼ਾਈਲ ਨੂੰ <ph name="CLOUD_PROVIDER" /> 'ਤੇ ਲਿਜਾਇਆ ਜਾ ਰਿਹਾ ਹੈ}other{{NUM_OF_FILES} ਫ਼ਾਈਲਾਂ ਨੂੰ <ph name="CLOUD_PROVIDER" /> 'ਤੇ ਲਿਜਾਇਆ ਜਾ ਰਿਹਾ ਹੈ}}</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - ਆਡੀਓ ਮਿਊਟ ਕੀਤਾ</translation>
 <translation id="3537881477201137177">ਇਸਨੂੰ ਬਾਅਦ ਵਿੱਚ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਸੋਧਿਆ ਜਾ ਸਕਦਾ ਹੈ</translation>
 <translation id="3538066758857505094">Linux ਅਣਸਥਾਪਤ ਕਰਨ ਵਿੱਚ ਗੜਬੜ ਹੋ ਗਈ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
@@ -3328,6 +3355,7 @@
 <translation id="3771851622616482156">ਖੁੱਲ੍ਹੀਆਂ ਟੈਬਾਂ ਸਮੇਤ, ਤੁਹਾਨੂੰ ਇਸ ਸਾਈਟ ਤੋਂ ਸਾਈਨ-ਆਊਟ ਕਰ ਦਿੱਤਾ ਜਾਵੇਗਾ</translation>
 <translation id="3772046291955677288">ਮੈਂ <ph name="BEGIN_LINK1" />Google ਦੇ ਸੇਵਾ ਦੇ ਨਿਯਮਾਂ<ph name="END_LINK1" /> ਅਤੇ <ph name="BEGIN_LINK2" />Chrome ਅਤੇ ChromeOS ਦੇ ਵਧੀਕ ਸੇਵਾ ਦੇ ਨਿਯਮਾਂ<ph name="END_LINK2" /> ਨੂੰ ਪੜ੍ਹ ਲਿਆ ਹੈ ਅਤੇ ਉਨ੍ਹਾਂ ਨਾਲ ਸਹਿਮਤ ਹਾਂ।</translation>
 <translation id="3774166835015494435">ਹਾਲੀਆ ਫ਼ੋਟੋਆਂ ਅਤੇ ਸੂਚਨਾਵਾਂ</translation>
+<translation id="3774546890772201673"><ph name="NAME" /> ਨੂੰ ਅੱਪਡੇਟ ਕਰੋ।</translation>
 <translation id="3775432569830822555">SSL ਸਰਵਰ ਪ੍ਰਮਾਣ-ਪੱਤਰ</translation>
 <translation id="3775705724665058594">ਆਪਣੇ ਡੀਵਾਈਸਾਂ 'ਤੇ ਭੇਜੋ</translation>
 <translation id="3776508619697147021">ਸਾਈਟਾਂ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਕਈ ਫ਼ਾਈਲਾਂ ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ ਪੁੱਛ ਸਕਦੀਆਂ ਹਨ</translation>
@@ -3345,6 +3373,7 @@
 <translation id="3784472333786002075">ਕੁਕੀਜ਼ ਉਹ ਫ਼ਾਈਲਾਂ ਹਨ ਜੋ ਵੈੱਬਸਾਈਟਾਂ ਵੱਲੋਂ ਬਣਾਈਆਂ ਜਾਂਦੀਆਂ ਹਨ। ਕੁਕੀਜ਼ ਦੋ ਕਿਸਮਾਂ ਦੀਆਂ ਹੁੰਦੀਆਂ ਹਨ: ਪਹਿਲੀ-ਧਿਰ ਦੀਆਂ ਕੁਕੀਜ਼ ਤੁਹਾਡੇ ਵੱਲੋਂ ਦੇਖੀ ਸਾਈਟ ਵੱਲੋਂ ਬਣਾਈਆਂ ਜਾਂਦੀਆਂ ਹਨ। ਸਾਈਟ ਪਤਾ ਬਾਰ 'ਤੇ ਦਿਖਾਈ ਜਾਂਦੀ ਹੈ। ਤੀਜੀ-ਧਿਰ ਦੀਆਂ ਕੁਕੀਜ਼ ਹੋਰ ਸਾਈਟਾਂ ਵੱਲੋਂ ਬਣਾਈਆਂ ਜਾਂਦੀਆਂ ਹਨ। ਇਹ ਸਾਈਟਾਂ ਵਿਗਿਆਪਨਾਂ ਜਾਂ ਚਿੱਤਰਾਂ ਵਰਗੀ ਕੁਝ ਸਮੱਗਰੀ ਦੀਆਂ ਮਾਲਕ ਹੁੰਦੀਆਂ ਹਨ, ਜੋ ਤੁਸੀਂ ਵੈੱਬਸਾਈਟ 'ਤੇ ਦੇਖਦੇ ਹੋ।</translation>
 <translation id="3785308913036335955">ਐਪ ਸ਼ਾਰਟਕੱਟ ਦਿਖਾਓ</translation>
 <translation id="3785727820640310185">ਇਸ ਸਾਈਟ ਲਈ ਰੱਖਿਅਤ ਕੀਤੇ ਪਾਸਵਰਡ</translation>
+<translation id="3786834302860277193">ਰਚਨਾ ਲਿਖਤ ਲਈ ਅੰਡਰਲਾਈਨ ਦਿਖਾਓ</translation>
 <translation id="3787434344076711519">ਅਨੁਵਾਦ ਦੀ ਉਡੀਕ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ</translation>
 <translation id="3788301286821743879">ਕਿਓਸਕ ਐਪਲੀਕੇਸ਼ਨ ਲਾਂਚ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕੀ।</translation>
 <translation id="3788331399335602504">ਇਹ ਫ਼ਾਈਲਾਂ</translation>
@@ -3699,6 +3728,7 @@
 <translation id="4068776064906523561">ਰੱਖਿਅਤ ਕੀਤੇ ਫਿੰਗਰਪ੍ਰਿੰਟ</translation>
 <translation id="407173827865827707">ਕਲਿੱਕ ਕਰਨ 'ਤੇ</translation>
 <translation id="4072701974556190758">ਪਾਸਵਰਡ ਤੁਹਾਡੇ Google ਖਾਤੇ, <ph name="ACCOUNT" />, ਵਿੱਚ ਰੱਖਿਅਤ ਕੀਤਾ ਜਾਵੇਗਾ। ਤੁਹਾਨੂੰ ਇਸ ਨੂੰ ਯਾਦ ਰੱਖਣ ਦੀ ਲੋੜ ਨਹੀਂ ਪਵੇਗੀ।</translation>
+<translation id="4072805772816336153">ਬਾਅਦ ਵਿੱਚ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ</translation>
 <translation id="407520071244661467">ਸਕੇਲ</translation>
 <translation id="407543464472585404"><ph name="NAME" /> ਦੇ ਪ੍ਰੋਫਾਈਲ ਨੂੰ <ph name="EMAIL" /> ਨਾਲ ਲਿੰਕ ਕੀਤਾ ਗਿਆ ਹੈ</translation>
 <translation id="4077917118009885966">ਇਸ ਸਾਈਟ 'ਤੇ ਵਿਗਿਆਪਨ ਬਲਾਕ ਕੀਤੇ ਗਏ ਹਨ</translation>
@@ -3912,7 +3942,6 @@
 <translation id="4267924571297947682">ਮਾਂ-ਪਿਓ ਤੋਂ ਇਜਾਜ਼ਤ ਲਓ</translation>
 <translation id="4267953847983678297">ਸੈਲਿਊਲਰ ਨੈੱਟਵਰਕ ਨਾਲ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਕਨੈਕਟ ਕਰੋ</translation>
 <translation id="4268025649754414643">Key Encipherment</translation>
-<translation id="4268670020635416342">ਕਾਰਜ, ਨਿੱਜੀ ਜਾਂ ਬੱਚੇ ਵਰਗਾ ਨਾਮ ਜਾਂ ਲੇਬਲ ਸ਼ਾਮਲ ਕਰੋ</translation>
 <translation id="4270393598798225102">ਵਰਜਨ <ph name="NUMBER" /></translation>
 <translation id="4274604968379621964">ਗਰੁੱਪ ਰੱਖਿਅਤ ਕਰੋ</translation>
 <translation id="4274667386947315930">ਸਾਈਨ-ਇਨ ਡਾਟਾ</translation>
@@ -3941,6 +3970,7 @@
 <translation id="4290791284969893584">ਕਿਸੇ ਪੰਨੇ ਨੂੰ ਬੰਦ ਕਰਨ ਤੋਂ ਬਾਅਦ, ਤੁਹਾਡੇ ਵੱਲੋਂ ਸ਼ੁਰੂ ਕੀਤੇ ਕਾਰਜ ਸ਼ਾਇਦ ਮੁਕੰਮਲ ਨਾ ਹੋਣ</translation>
 <translation id="4291265871880246274">ਲੌਗ-ਇਨ ਵਿੰਡੋ</translation>
 <translation id="429234155571566255">ਹਾਲ ਹੀ ਵਿੱਚ ਦੇਖੀਆਂ ਗਈਆਂ ਇਹ ਪਕਵਾਨ-ਵਿਧੀਆਂ</translation>
+<translation id="429312253194641664">ਕੋਈ ਸਾਈਟ ਮੀਡੀਆ ਫ਼ਾਈਲ ਨੂੰ ਚਲਾ ਰਹੀ ਹੈ</translation>
 <translation id="4295072614469448764">ਐਪ ਤੁਹਾਡੇ ਟਰਮੀਨਲ ਵਿੱਚ ਉਪਲਬਧ ਹੈ। ਤੁਹਾਡੇ ਲਾਂਚਰ ਵਿੱਚ ਇੱਕ ਪ੍ਰਤੀਕ ਵੀ ਹੋ ਸਕਦਾ ਹੈ।</translation>
 <translation id="4295979599050707005">ਕਿਰਪਾ ਕਰਕੇ ਇਹ ਪੁਸ਼ਟੀ ਕਰਨ ਲਈ ਦੁਬਾਰਾ ਸਾਈਨ-ਇਨ ਕਰੋ ਕਿ ਤੁਹਾਡਾ ਖਾਤਾ <ph name="USER_EMAIL" /> Chrome ਅਤੇ Google Play ਵਿੱਚ ਵੈੱਬਸਾਈਟਾਂ, ਐਪਾਂ ਅਤੇ ਐਕਸਟੈਂਸ਼ਨਾਂ ਨਾਲ ਵਰਤਿਆ ਜਾ ਸਕਦਾ ਹੈ। ਤੁਸੀਂ ਇਹ ਖਾਤਾ ਹਟਾ ਵੀ ਸਕਦੇ ਹੋ। <ph name="LINK_BEGIN" />ਹੋਰ ਜਾਣੋ<ph name="LINK_END" /></translation>
 <translation id="4296424230850377304"><ph name="APP_NAME" /> ਤੋਂ ਸਥਾਪਤ ਅਤੇ ਸਟ੍ਰੀਮ ਕੀਤੀਆਂ ਐਪਾਂ</translation>
@@ -4015,6 +4045,7 @@
 <translation id="4361142739114356624">ਇਸ ਕਲਾਇੰਟ ਪ੍ਰਮਾਣ-ਪੱਤਰ ਲਈ ਨਿੱਜੀ ਮੌਜੂਦ ਜਾਂ ਵੈਧ ਨਹੀਂ ਹੈ</translation>
 <translation id="4361745360460842907">ਟੈਬ ਵਜੋਂ ਖੋਲ੍ਹੋ</translation>
 <translation id="4362675504017386626">ਤੁਹਾਡੇ <ph name="DEVICE_TYPE" /> 'ਤੇ <ph name="ACCOUNT_EMAIL" /> ਪੂਰਵ-ਨਿਰਧਾਰਿਤ ਖਾਤਾ ਹੈ</translation>
+<translation id="4363215264289239958">Bruschetta ਐਪਾਂ</translation>
 <translation id="4363771538994847871">ਕੋਈ ਵੀ ਕਾਸਟ ਮੰਜ਼ਿਲਾਂ ਨਹੀਂ ਮਿਲੀਆਂ। ਕੀ ਮਦਦ ਦੀ ਲੋੜ ਹੈ?</translation>
 <translation id="4364327530094270451">ਖਰਬੂਜ਼ਾ</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> ਸਾਂਝਾ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ।</translation>
@@ -4079,13 +4110,13 @@
 <translation id="4410545552906060960">ਆਪਣੇ ਡੀਵਾਈਸ ਨੂੰ ਅਣਲਾਕ ਕਰਨ ਲਈ ਪਾਸਵਰਡ ਦੀ ਬਜਾਏ ਨੰਬਰ (ਪਿੰਨ) ਵਰਤੋ। ਬਾਅਦ ਵਿੱਚ ਆਪਣਾ ਪਿੰਨ ਸੈੱਟ ਕਰਨ ਲਈ, ਸੈਟਿੰਗਾਂ 'ਤੇ ਜਾਓ।</translation>
 <translation id="4411578466613447185">ਕੋਡ ਸਾਈਨਰ</translation>
 <translation id="4411719918614785832">ਇਨ੍ਹਾਂ ਪਾਸਕੀਆਂ ਨੂੰ ਇਸ ਕੰਪਿਊਟਰ 'ਤੇ ਮੌਜੂਦ Windows Hello ਵਿੱਚ ਰੱਖਿਅਤ ਕੀਤਾ ਗਿਆ ਹੈ। ਉਨ੍ਹਾਂ ਨੂੰ ਤੁਹਾਡੇ Google ਖਾਤੇ ਵਿੱਚ ਰੱਖਿਅਤ ਨਹੀਂ ਕੀਤਾ ਗਿਆ ਹੈ।</translation>
+<translation id="4412275763838812196">ChromeOS, ChromeVox 'ਤੇ ਸਕ੍ਰੀਨ ਰੀਡਰ ਦੀ ਵਰਤੋਂ ਮੁੱਖ ਤੌਰ 'ਤੇ ਅੰਨ੍ਹੇਪਣ ਅਤੇ ਘੱਟ ਨਜ਼ਰ ਨਾਲ ਪੀੜਿਤ ਲੋਕਾਂ ਵੱਲੋਂ ਕੀਤੀ ਜਾਂਦੀ ਹੈ। ChromeVox ਨੂੰ ਚਾਲੂ ਕਰਨ ਲਈ ਸਪੇਸ ਬਾਰ ਨੂੰ ਦਬਾਓ। ChromeVox ਦੇ ਕਿਰਿਆਸ਼ੀਲ ਹੋਣ 'ਤੇ, ਤੁਹਾਨੂੰ ਇਸ ਬਾਰੇ ਤਤਕਾਲ ਜਾਣਕਾਰੀ ਦਿੱਤੀ ਜਾਵੇਗੀ।</translation>
 <translation id="4412632005703201014">Chrome ਐਪਾਂ ਪ੍ਰੋਗਰੈਸਿਵ ਵੈੱਬ ਐਪਾਂ 'ਤੇ ਮਾਈਗ੍ਰੇਟ ਹੋ ਰਹੀਆਂ ਹਨ। ਇਹ Chrome ਐਪ ਤੁਹਾਡੀ ਸੰਸਥਾ ਰਾਹੀਂ ਤੁਹਾਡੇ ਬ੍ਰਾਊਜ਼ਰ 'ਤੇ ਸਥਾਪਤ ਕੀਤੀ ਗਈ ਸੀ। ਐਪਾਂ ਦੀ ਸੂਚੀ ਤੋਂ ਪ੍ਰੋਗਰੈਸਿਵ ਵੈੱਬ ਐਪ ਖੋਲ੍ਹਣ ਲਈ, ਪਹਿਲਾਂ ਆਪਣੇ ਪ੍ਰਸ਼ਾਸਕ ਨਾਲ ਸੰਪਰਕ ਕਰੋ ਅਤੇ ਉਸਨੂੰ Chrome ਐਪ ਅਣਸਥਾਪਤ ਕਰਨ ਲਈ ਕਹੋ। ਇਸੇ ਦੌਰਾਨ, ਤੁਸੀਂ ਵੈੱਬ 'ਤੇ <ph name="EXTENSION_NAME" /> ਖੋਲ੍ਹਣ ਲਈ <ph name="EXTENSION_LAUNCH_URL" /> 'ਤੇ ਜਾ ਸਕਦੇ ਹੋ।</translation>
 <translation id="4412698727486357573">ਮਦਦ ਕੇਂਦਰ</translation>
 <translation id="4412992751769744546">ਤੀਜੀ-ਪਾਰਟੀ ਕੁਕੀਜ਼ ਦੀ ਆਗਿਆ ਦਿਓ</translation>
 <translation id="4413087696295876280">ChromeOS Flex ਦੀ ਡੀਵਾਈਸ ਜਾਣਕਾਰੀ ਅਤੇ ਡਾਟੇ ਨੂੰ ਪੜ੍ਹੋ</translation>
 <translation id="44141919652824029">ਕੀ "<ph name="APP_NAME" />" ਨੂੰ ਅਟੈਚ ਕੀਤੇ ਆਪਣੇ USB ਡੀਵਾਈਸਾਂ ਦੀ ਸੂਚੀ ਪ੍ਰਾਪਤ ਕਰਨ ਦੇਣੀ ਹੈ?</translation>
 <translation id="4414232939543644979">ਨਵੀਂ &amp;ਗੁਮਨਾਮ Window</translation>
-<translation id="4414648713167199100">ਤੁਹਾਡੀ Chromebook ਦੇ ਮੋਬਾਈਲ ਡਾਟੇ ਦੀ ਵਰਤੋਂ ਕਰਦਾ ਹੈ ਅਤੇ ਤੁਹਾਡਾ ਕੈਰੀਅਰ ਵਧੀਕ ਫ਼ੀਸ ਲੈ ਸਕਦਾ ਹੈ। ਬੈਟਰੀ ਵਰਤੋਂ ਵਧ ਸਕਦੀ ਹੈ। <ph name="BEGIN_LINK_LEARN_MORE" />ਹੋਰ ਜਾਣੋ<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="4415213869328311284">ਤੁਸੀਂ ਆਪਣਾ <ph name="DEVICE_TYPE" /> ਵਰਤਣਾ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਤਿਆਰ ਹੋ।</translation>
 <translation id="4415245286584082850">ਕੋਈ ਡੀਵਾਈਸ ਨਹੀਂ ਮਿਲਿਆ। ਇੱਕ ਨਵੀਂ ਟੈਬ ਵਿੱਚ ਕੋਈ ਮਦਦ ਕੇਂਦਰ ਲੇਖ ਖੋਲ੍ਹੋ।</translation>
 <translation id="4415276339145661267">ਆਪਣੇ Google ਖਾਤੇ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ</translation>
@@ -4251,6 +4282,7 @@
 <translation id="4555769855065597957">ਸ਼ੈਡੋ</translation>
 <translation id="4555863373929230635">ਪਾਸਵਰਡਾਂ ਨੂੰ ਆਪਣੇ Google ਖਾਤੇ ਵਿੱਚ ਰੱਖਿਅਤ ਕਰਨ ਲਈ, ਸਾਈਨ-ਇਨ ਕਰੋ ਅਤੇ ਸਿੰਕ ਚਾਲੂ ਕਰੋ।</translation>
 <translation id="4558426062282641716">ਆਟੋ-ਲਾਂਚ ਇਜਾਜ਼ਤ ਦੀ ਬੇਨਤੀ ਕੀਤੀ</translation>
+<translation id="4558542033859106586"><ph name="TARGET_APP" /> ਵਿੱਚ ਖੋਲ੍ਹਿਆ ਜਾ ਰਿਹਾ ਹੈ</translation>
 <translation id="4559617833001311418">ਇਹ ਸਾਈਟ ਤੁਹਾਡੇ ਮੋਸ਼ਨ ਜਾਂ ਲਾਈਟ ਸੈਂਸਰਾਂ ਤੱਕ ਪਹੁੰਚ ਕਰ ਰਹੀ ਹੈ।</translation>
 <translation id="4560728518401799797"><ph name="FOLDER_TITLE" /> ਬੁੱਕਮਾਰਕ ਲਈ ਹੋਰ ਵਿਕਲਪ</translation>
 <translation id="4561893854334016293">ਕੋਈ ਹਾਲੀਆ ਬਦਲੀਆਂ ਇਜਾਜ਼ਤਾਂ ਨਹੀਂ</translation>
@@ -4291,6 +4323,7 @@
 <translation id="4585793705637313973">ਪੰਨੇ ਦਾ ਸੰਪਾਦਨ ਕਰੋ</translation>
 <translation id="4586275095964870617"><ph name="URL" /> ਕਿਸੇ ਵਿਕਲਪਿਕ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਨਹੀਂ ਖੁੱਲ੍ਹ ਸਕਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੇ ਸਿਸਟਮ ਪ੍ਰਸ਼ਾਸਕ ਨਾਲ ਸੰਪਰਕ ਕਰੋ।</translation>
 <translation id="4587589328781138893">ਸਾਈਟਾਂ</translation>
+<translation id="4588882777927162244">ChromeOS Flex, ChromeVox 'ਤੇ ਸਕ੍ਰੀਨ ਰੀਡਰ ਦੀ ਵਰਤੋਂ ਮੁੱਖ ਤੌਰ 'ਤੇ ਅੰਨ੍ਹੇਪਣ ਅਤੇ ਘੱਟ ਨਜ਼ਰ ਨਾਲ ਪੀੜਿਤ ਲੋਕਾਂ ਵੱਲੋਂ ਕੀਤੀ ਜਾਂਦੀ ਹੈ। ChromeVox ਨੂੰ ਚਾਲੂ ਕਰਨ ਲਈ ਸਪੇਸ ਬਾਰ ਨੂੰ ਦਬਾਓ। ChromeVox ਦੇ ਕਿਰਿਆਸ਼ੀਲ ਹੋਣ 'ਤੇ, ਤੁਹਾਨੂੰ ਇਸ ਬਾਰੇ ਤਤਕਾਲ ਜਾਣਕਾਰੀ ਦਿੱਤੀ ਜਾਵੇਗੀ।</translation>
 <translation id="4589713469967853491">ਲੌਗਾਂ ਨੂੰ ਡਾਊਨਲੋਡ ਡਾਇਰੈਕਟਰੀ ਵਿੱਚ ਸਫਲਤਾਪੂਰਕ ਲਿਖਿਆ ਗਿਆ।</translation>
 <translation id="459204634473266369"><ph name="PRIMARY_EMAIL" /> ਵਿੱਚ ਕਿਸੇ ਵੀ ਡੀਵਾਈਸ ਨੂੰ ਰੱਖਿਅਤ ਨਹੀਂ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="4592525994536856567">ਬ੍ਰਾਊਜ਼ ਅਤੇ ਖੋਜ ਕਰਨਾ ਤੇਜ਼ ਹੈ।</translation>
@@ -4496,7 +4529,6 @@
 <translation id="4773112038801431077">Linux ਨੂੰ ਅੱਪਗ੍ਰੇਡ ਕਰੋ</translation>
 <translation id="4774456473286455263">ਆਪਣੇ Android ਫ਼ੋਨ ਨਾਲ ਸੈੱਟਅੱਪ ਕਰੋ</translation>
 <translation id="477548766361111120">ਇਸ ਸਾਈਟ ਨੂੰ ਪੜ੍ਹਨ ਅਤੇ ਬਦਲਣ ਦੀ ਐਕਸਟੈਂਸ਼ਨ ਨੂੰ ਆਗਿਆ ਦਿਓ</translation>
-<translation id="477647109558161443">ਡੈਸਕਟਾਪ ਸ਼ਾਰਟਕੱਟ ਬਣਾਓ</translation>
 <translation id="4776594120007763294">ਬਾਅਦ ਵਿੱਚ ਪੜ੍ਹਨ ਵਾਸਤੇ ਪੰਨਾ ਸ਼ਾਮਲ ਕਰਨ ਲਈ, ਬਟਨ 'ਤੇ ਕਲਿੱਕ ਕਰੋ</translation>
 <translation id="4777458362738635055">ਇਸ ਡੀਵਾਈਸ ਦੇ ਹੋਰ ਵਰਤੋਂਕਾਰ ਇਸ ਨੈੱਟਵਰਕ ਦੀ ਵਰਤੋਂ ਕਰ ਸਕਦੇ ਹਨ</translation>
 <translation id="4777813841994368231">ਚਾਲੂ • ਇਸ ਐਕਸਟੈਂਸ਼ਨ ਨੂੰ ਇਸਦੇ ਵਿਕਾਸਕਾਰ ਵੱਲੋਂ ਅਣਪ੍ਰਕਾਸ਼ਿਤ ਕੀਤਾ ਗਿਆ ਸੀ</translation>
@@ -4519,6 +4551,7 @@
 <translation id="4792510204382653691">ਵੈੱਬ ਸਟੋਰ ਖੋਲ੍ਹੋ</translation>
 <translation id="4792711294155034829">&amp;ਇੱਕ ਸਮੱਸਿਆ ਦੀ ਰਿਪੋਰਟ ਕਰੋ...</translation>
 <translation id="4794810983896241342"><ph name="BEGIN_LINK" />ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ<ph name="END_LINK" /> ਵੱਲੋਂ ਅੱਪਡੇਟਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕੀਤਾ ਜਾਂਦਾ ਹੈ</translation>
+<translation id="4794910597689955457">ਕੀ ਖੋਲ੍ਹਣ ਲਈ <ph name="NUM_OF_FILES" /> ਫ਼ਾਈਲਾਂ ਨੂੰ <ph name="CLOUD_PROVIDER" /> 'ਤੇ ਲਿਜਾਉਣਾ ਹੈ?</translation>
 <translation id="479536056609751218">ਵੈਬਪੇਜ, ਕੇਵਲ HTML</translation>
 <translation id="4796142525425001238">ਹਮੇਸ਼ਾਂ ਮੁੜ-ਬਹਾਲ ਕਰੋ</translation>
 <translation id="4797314204379834752">ਕਾਰਜਾਂ ਦਾ ਪ੍ਰਬੰਧਨ, ਆਨਲਾਈਨ ਖਰੀਦਦਾਰੀ ਅਤੇ ਹੋਰ ਬਹੁਤ ਕੁਝ ਕਰਨ ਲਈ ਟੈਬ ਗਰੁੱਪਾਂ ਨੂੰ ਵਰਤ ਕੇ ਦੇਖੋ</translation>
@@ -4679,6 +4712,7 @@
 <translation id="4918021164741308375"><ph name="ORIGIN" /> ਐਕਸਟੈਂਸ਼ਨ "<ph name="EXTENSION_NAME" />" ਨਾਲ ਸੰਚਾਰ ਕਰਨਾ ਚਾਹੁੰਦਾ ਹੈ</translation>
 <translation id="4918086044614829423">ਸਵੀਕਾਰ ਕਰੋ</translation>
 <translation id="4918134162946436591">ਸੰਕੇਤ ਓਵਰਲੇ ਦਿਖਾਓ</translation>
+<translation id="4918762404810341788">ਕਾਪੀ ਕਰ ਕੇ ਖੋਲ੍ਹੋ</translation>
 <translation id="4921348630401250116">ਲਿਖਤ-ਤੋਂ-ਬੋਲੀ</translation>
 <translation id="492299503953721473">Android ਐਪਾਂ ਹਟਾਓ</translation>
 <translation id="492363500327720082"><ph name="APP_NAME" /> ਨੂੰ ਅਣਸਥਾਪਤ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...</translation>
@@ -4740,6 +4774,7 @@
 <translation id="4977882548591990850"><ph name="CHARACTER_COUNT" />/<ph name="CHARACTER_LIMIT" /></translation>
 <translation id="4977942889532008999">ਪਹੁੰਚ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ</translation>
 <translation id="4979263087381759787">ਵਿਕਾਸਕਾਰ ਚੋਣਾਂ</translation>
+<translation id="4979510648199782334">Microsoft 365 ਦਾ ਸੈੱਟਅੱਪ ਪੂਰਾ ਹੋਇਆ</translation>
 <translation id="4980805016576257426">ਇਸ ਐਕਸਟੈਂਸ਼ਨ ਵਿੱਚ ਮਾਲਵੇਅਰ ਸ਼ਾਮਲ ਹਨ।</translation>
 <translation id="4981449534399733132">ਤੁਹਾਡੇ ਸਾਰੇ ਸਿੰਕ ਕੀਤੇ ਡੀਵਾਈਸਾਂ ਅਤੇ ਤੁਹਾਡੇ 'Google ਖਾਤੇ' ਵਿੱਚੋਂ ਬ੍ਰਾਊਜ਼ਿੰਗ ਡਾਟਾ ਕਲੀਅਰ ਕਰਨ ਲਈ, <ph name="BEGIN_LINK" />ਸਾਈਨ-ਇਨ ਕਰੋ<ph name="END_LINK" />।</translation>
 <translation id="4986706507552097681">ਤੁਸੀਂ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਜਾ ਕੇ ਕਿਸੇ ਵੀ ਵੇਲੇ ਇਹ ਚੁਣ ਸਕਦੇ ਹੋ ਕਿ ਕੀ ਸਿੰਕ ਕਰਨਾ ਹੈ। Google ਤੁਹਾਡੇ ਇਤਿਹਾਸ ਦੇ ਆਧਾਰ 'ਤੇ Search ਅਤੇ ਹੋਰ ਸੇਵਾਵਾਂ ਨੂੰ ਵਿਅਕਤੀਗਤ ਬਣਾ ਸਕਦਾ ਹੈ।</translation>
@@ -4862,6 +4897,7 @@
 <translation id="5093569275467863761">ਪੂਰੇ ਪੰਨੇ ਦੇ ਕੈਸ਼ੇ ਵਿੱਚ ਸਟੋਰ ਕੀਤਾ ਇਨਕੋਗਨਿਟੋ ਸਬਫ੍ਰੇਮ: <ph name="BACK_FORWARD_CACHE_INCOGNITO_PAGE_URL" /></translation>
 <translation id="5094176498302660097">ਤੁਸੀਂ ਆਪਣੇ ਫ਼ਾਈਲ ਐਪ ਜਾਂ ਹੋਰ ਐਪਾਂ ਤੋਂ ਇਸ ਐਪ ਨਾਲ ਸਮਰਥਿਤ ਫ਼ਾਈਲਾਂ ਨੂੰ ਖੋਲ੍ਹ ਸਕਦੇ ਹੋ ਅਤੇ ਉਨ੍ਹਾਂ ਦਾ ਸੰਪਾਦਨ ਕਰ ਸਕਦੇ ਹੋ। ਇਹ ਕੰਟਰੋਲ ਕਰਨ ਲਈ ਕਿ ਕਿਹੜੀਆਂ ਫ਼ਾਈਲਾਂ ਪੂਰਵ-ਨਿਰਧਾਰਿਤ ਤੌਰ 'ਤੇ ਇਸ ਐਪ ਨੂੰ ਖੋਲ੍ਹਣ, ਇਸ ਲਈ <ph name="BEGIN_LINK" />ਆਪਣੇ ਡੀਵਾਈਸ 'ਤੇ ਪੂਰਵ-ਨਿਰਧਾਰਿਤ ਐਪਾਂ ਨੂੰ ਸੈੱਟ ਕਰਨ ਦਾ ਤਰੀਕਾ ਜਾਣੋ<ph name="END_LINK" />।</translation>
 <translation id="5094721898978802975">ਨੇਟਿਵ ਐਪਲੀਕੇਸ਼ਨਾਂ ਨਾਲ ਸਹਿਯੋਗ ਕਰਦੇ ਹੋਏ ਸੰਚਾਰ ਕਰੋੇ</translation>
+<translation id="5095507226704905004">ਫ਼ਾਈਲ ਨੂੰ ਕਾਪੀ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ ਕਿਉਂਕਿ ਇਹ ਹੁਣ ਮੌਜੂਦ ਨਹੀਂ ਹੈ</translation>
 <translation id="5097002363526479830">'<ph name="NAME" />' ਨਾਲ ਕਨੈਕਟ ਕਰਨ ਵਿੱਚ ਅਸਫਲ ਹੋ ਗਿਆ: <ph name="DETAILS" /></translation>
 <translation id="5097306410549350357">ਟਿਕਾਣਾ ਵਰਤਣ ਬਾਰੇ ਹੋਰ ਜਾਣੋ</translation>
 <translation id="5097349930204431044">ਤੁਹਾਡੇ ਵੱਲੋਂ ਦੇਖੀਆਂ ਜਾਣ ਵਾਲੀਆਂ ਸਾਈਟਾਂ ਤੁਹਾਡੀ ਪਸੰਦ ਨੂੰ ਨਿਰਧਾਰਿਤ ਕਰਦੀਆਂ ਹਨ ਅਤੇ ਫਿਰ ਤੁਹਾਡੇ ਵੱਲੋਂ ਬ੍ਰਾਊਜ਼ ਕਰਨਾ ਜਾਰੀ ਰੱਖਣ 'ਤੇ ਵਿਗਿਆਪਨ ਸੰਬੰਧੀ ਸੁਝਾਅ ਦਿੰਦੀਆਂ ਹਨ</translation>
@@ -4880,6 +4916,7 @@
 <translation id="5111692334209731439">&amp;ਬੁੱਕਮਾਰਕ ਪ੍ਰਬੰਧਕ</translation>
 <translation id="5111794652433847656">ਇਸ ਡੀਵਾਈਸ 'ਤੇ <ph name="APP_NAME" /> ਲਈ ਕੋਈ ਪਾਸਕੀ ਮੌਜੂਦ ਨਹੀਂ ਹੈ</translation>
 <translation id="5112577000029535889">&amp;ਵਿਕਾਸਕਾਰ ਟੂਲ</translation>
+<translation id="5112686815928391420">{NUM_OF_FILES,plural, =1{1 ਫ਼ਾਈਲ ਨੂੰ ਲਿਜਾਇਆ ਗਿਆ}one{{NUM_OF_FILES} ਫ਼ਾਈਲ ਨੂੰ ਲਿਜਾਇਆ ਗਿਆ}other{{NUM_OF_FILES} ਫ਼ਾਈਲਾਂ ਨੂੰ ਲਿਜਾਇਆ ਗਿਆ}}</translation>
 <translation id="511313294362309725">ਤੇਜ਼ ਜੋੜਾਬੰਦੀ ਨੂੰ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="5113384440341086023">Play Store ਤੋਂ ਸਥਾਪਤ ਕੀਤੀਆਂ ਐਪਾਂ ਅਤੇ Chrome ਬ੍ਰਾਊਜ਼ਰ ਤੋਂ ਸਥਾਪਤ ਕੀਤੀਆਂ ਵੈੱਬ ਐਪਾਂ</translation>
 <translation id="51143538739122961">ਆਪਣੀ ਸੁਰੱਖਿਆ ਕੁੰਜੀ ਨੂੰ ਪਾ ਕੇ ਇਸਨੂੰ ਸਪਰਸ਼ ਕਰੋ</translation>
@@ -5002,6 +5039,7 @@
 <translation id="5225463052809312700">ਕੈਮਰਾ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="5227679487546032910">ਪੂਰਵ-ਨਿਰਧਾਰਤ ਟੀਲ ਅਵਤਾਰ</translation>
 <translation id="5228579091201413441">ਸਿੰਕ ਚਾਲੂ ਕਰੋ</translation>
+<translation id="5230190638672215545">"ươ" ਨੂੰ ਪ੍ਰਾਪਤ ਕਰਨ ਲਈ "uow" ਟਾਈਪ ਕਰੋ</translation>
 <translation id="5230516054153933099">ਵਿੰਡੋ</translation>
 <translation id="5231427103154766313">ਕਾਸਟ ਕਰਨਾ ਬੰਦ ਕਰਨ ਲਈ ਰਿਮੋਟ ਵਰਤੋ।</translation>
 <translation id="5233019165164992427">NaCl ਡੀਬੱਗ ਪੋਰਟ</translation>
@@ -5073,6 +5111,7 @@
 <translation id="5284445933715251131">ਡਾਊਨਲੋਡ ਕਰਨਾ ਜਾਰੀ ਰੱਖੋ</translation>
 <translation id="5285635972691565180">ਡਿਸਪਲੇ <ph name="DISPLAY_ID" /></translation>
 <translation id="5286194356314741248">ਸਕੈਨ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ</translation>
+<translation id="5287073652040102781">ChromeOS Flex, ChromeVox 'ਤੇ ਸਕ੍ਰੀਨ ਰੀਡਰ ਦੀ ਵਰਤੋਂ ਮੁੱਖ ਤੌਰ 'ਤੇ ਅੰਨ੍ਹੇਪਣ ਅਤੇ ਘੱਟ ਨਜ਼ਰ ਨਾਲ ਪੀੜਿਤ ਲੋਕਾਂ ਵੱਲੋਂ ਕੀਤੀ ਜਾਂਦੀ ਹੈ। ChromeVox ਨੂੰ ਚਾਲੂ ਕਰਨ ਲਈ ਪੰਜ ਸਕਿੰਟਾਂ ਲਈ ਦੋਵੇਂ ਅਵਾਜ਼ੀ ਕੁੰਜੀਆਂ ਨੂੰ ਦਬਾਈ ਰੱਖੋ। ChromeVox ਦੇ ਕਿਰਿਆਸ਼ੀਲ ਹੋਣ 'ਤੇ, ਤੁਹਾਨੂੰ ਇਸ ਬਾਰੇ ਤਤਕਾਲ ਜਾਣਕਾਰੀ ਦਿੱਤੀ ਜਾਵੇਗੀ।</translation>
 <translation id="5287425679749926365">ਤੁਹਾਡੇ ਖਾਤੇ</translation>
 <translation id="5288106344236929384"><ph name="DOMAIN" /> 'ਤੇ <ph name="USERNAME" /> ਲਈ ਹੋਰ ਕਾਰਵਾਈਆਂ, ਪਾਸਕੀ ਦੇ ਵਿਕਲਪ</translation>
 <translation id="5288678174502918605">ਬੰਦ ਟੈਬ ਦੁ&amp;ਬਾਰਾ ਖੋਲ੍ਹੋ</translation>
@@ -5114,6 +5153,7 @@
 <translation id="5319359161174645648">Google, Chrome ਦੀ ਸਿਫ਼ਾਰਸ਼ ਕਰਦਾ ਹੈ</translation>
 <translation id="5319712128756744240">ਨਵਾਂ ਡੀਵਾਈਸ ਜੋੜਾਬੱਧ ਕਰੋ</translation>
 <translation id="5320135788267874712">ਡੀਵਾਈਸ ਦਾ ਨਵਾਂ ਨਾਮ</translation>
+<translation id="5320261549977878764">ਗਰੁੱਪ ਨੂੰ ਅਣਰੱਖਿਅਤ ਕਰੋ</translation>
 <translation id="532247166573571973">ਸਰਵਰ ਸ਼ਾਇਦ ਪਹੁੰਚਯੋਗ ਨਹੀਂ ਹੈ। ਬਾਅਦ ਵਿੱਚ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="5324300749339591280">ਐਪ ਸੂਚੀ</translation>
 <translation id="5324780743567488672">ਆਪਣਾ ਨਿਰਧਾਰਿਤ ਸਥਾਨ ਵਰਤਦੇ ਹੋਏ ਆਟੋਮੈਟਿਕਲੀ ਸਮਾਂ ਜ਼ੋਨ ਸੈੱਟ ਕਰੋ</translation>
@@ -5203,9 +5243,11 @@
 ਤੁਸੀਂ ਕਈ ਸਵਿੱਚਾਂ ਨੂੰ ਇਸ ਕਾਰਵਾਈ ਦੇ ਜ਼ਿੰਮੇ ਲਗਾ ਸਕਦੇ ਹੋ।</translation>
 <translation id="540495485885201800">ਪਿਛਲੇ ਨਾਲ ਬਦਲੋ</translation>
 <translation id="5405146885510277940">ਸੈਟਿੰਗਾਂ ਰੀਸੈੱਟ ਕਰੋ</translation>
+<translation id="5406844893187365798">ਅਨੁਕੂਲ ਟਾਈਪਿੰਗ</translation>
 <translation id="5407167491482639988">ਅਸਪਸ਼ਟ</translation>
 <translation id="5408750356094797285">ਜ਼ੂਮ: <ph name="PERCENT" /></translation>
 <translation id="5409044712155737325">ਤੁਹਾਡੇ Google ਖਾਤੇ ਤੋਂ</translation>
+<translation id="5410889048775606433">ਫਿਊਸ਼ਾ</translation>
 <translation id="5411022484772257615">ਸਕੂਲ ਵਿੱਚ ਦਾਖਲੇ ਦੀ ਪ੍ਰਕਿਰਿਆ ਨੂੰ ਪੂਰਾ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ</translation>
 <translation id="5411856344659127989">ਜੇ ਤੁਸੀਂ ਕਿਸੇ ਹੋਰ ਲਈ ਖਾਤਾ ਸ਼ਾਮਲ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ, ਤਾਂ ਆਪਣੇ <ph name="DEVICE_TYPE" /> ਵਿੱਚ <ph name="LINK_BEGIN" />ਕੋਈ ਨਵਾਂ ਵਿਅਕਤੀ ਸ਼ਾਮਲ ਕਰੋ<ph name="LINK_END" />।
 
@@ -5619,6 +5661,7 @@
 <translation id="5772114492540073460"><ph name="PARALLELS_NAME" /> ਤੁਹਾਨੂੰ ਆਪਣੀ Chromebook 'ਤੇ Windows® ਐਪਾਂ ਨੂੰ ਚਲਾਉਣ ਦਿੰਦਾ ਹੈ। ਸਥਾਪਤ ਕਰਨ ਲਈ <ph name="MINIMUM_SPACE" /> ਖਾਲੀ ਜਗ੍ਹਾ ਦੀ ਸਿਫਾਰਸ਼ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।</translation>
 <translation id="5772265531560382923">{NUM_PAGES,plural, =1{ਤੁਸੀਂ ਇਸਦੇ ਪ੍ਰਤਿਕਿਰਿਆ ਦੇਣ ਤੱਕ ਉਡੀਕ ਕਰ ਸਕਦੇ ਹੋ ਜਾਂ ਪੰਨੇ ਤੋਂ ਬਾਹਰ ਜਾ ਸਕਦੇ ਹੋ।}one{ਤੁਸੀਂ ਇਸਦੇ ਪ੍ਰਤਿਕਿਰਿਆ ਦੇਣ ਤੱਕ ਉਡੀਕ ਕਰ ਸਕਦੇ ਹੋ ਜਾਂ ਪੰਨੇ ਤੋਂ ਬਾਹਰ ਜਾ ਸਕਦੇ ਹੋ।}other{ਤੁਸੀਂ ਇਸਦੇ ਪ੍ਰਤਿਕਿਰਿਆ ਦੇਣ ਤੱਕ ਉਡੀਕ ਕਰ ਸਕਦੇ ਹੋ ਜਾਂ ਪੰਨਿਆਂ ਤੋਂ ਬਾਹਰ ਜਾ ਸਕਦੇ ਹੋ।}}</translation>
 <translation id="5772737134857645901"><ph name="FILE_NAME" /> <ph name="STATUS" /> ਹੋਰ ਵੇਰਵੇ</translation>
+<translation id="577313026359983030">ਮੇਰੀਆਂ ਐਕਸਟੈਂਸ਼ਨਾਂ</translation>
 <translation id="5774295353725270860">Files ਐਪ ਖੋਲ੍ਹੋ</translation>
 <translation id="5776450228446082914">ਉਨ੍ਹਾਂ ਵੈੱਬਸਾਈਟਾਂ ਦੀ ਸੂਚੀ ਜੋ ਕਿਸੇ ਵੀ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਖੁੱਲ੍ਹ ਸਕਦੀਆਂ ਹਨ।</translation>
 <translation id="5776571780337000608">ਤੁਸੀਂ ਆਪਣੇ ਫ਼ਾਈਲ ਬ੍ਰਾਊਜ਼ਰ ਜਾਂ ਹੋਰ ਐਪਾਂ ਤੋਂ ਇਸ ਐਪ ਨਾਲ ਸਮਰਥਿਤ ਫ਼ਾਈਲਾਂ ਨੂੰ ਖੋਲ੍ਹ ਸਕਦੇ ਹੋ ਅਤੇ ਉਨ੍ਹਾਂ ਦਾ ਸੰਪਾਦਨ ਕਰ ਸਕਦੇ ਹੋ। ਇਹ ਕੰਟਰੋਲ ਕਰਨ ਲਈ ਕਿ ਕਿਹੜੀਆਂ ਫ਼ਾਈਲਾਂ ਪੂਰਵ-ਨਿਰਧਾਰਿਤ ਤੌਰ 'ਤੇ ਇਸ ਐਪ ਨੂੰ ਖੋਲ੍ਹਣ, ਇਸ ਲਈ <ph name="BEGIN_LINK" />ਆਪਣੇ ਡੀਵਾਈਸ 'ਤੇ ਪੂਰਵ-ਨਿਰਧਾਰਿਤ ਐਪਾਂ ਨੂੰ ਸੈੱਟ ਕਰਨ ਦਾ ਤਰੀਕਾ ਜਾਣੋ<ph name="END_LINK" />।</translation>
@@ -5674,7 +5717,6 @@
 <translation id="5811614940486072060">ਇਹ ਫ਼ਾਈਲ ਆਮ ਤੌਰ 'ਤੇ ਡਾਊਨਲੋਡ ਨਹੀਂ ਕੀਤੀ ਜਾਂਦੀ ਅਤੇ ਇਹ ਖਤਰਨਾਕ ਹੋ ਸਕਦੀ ਹੈ</translation>
 <translation id="5812674658566766066">ਸਭ ਦਾ ਵਿਸਤਾਰ ਕਰੋ</translation>
 <translation id="5815645614496570556">X.400 ਪਤਾ</translation>
-<translation id="5816166985204777171">ਇਹ ਸਿਸਟਮ ਐਪ ਤੁਹਾਡੇ ਡੀਵਾਈਸ 'ਤੇ ਪਹਿਲਾਂ ਤੋਂ ਸਥਾਪਤ ਹੈ</translation>
 <translation id="5816434091619127343">ਬੇਨਤੀ ਕੀਤੇ ਪ੍ਰਿੰਟਰ ਬਦਲਾਵਾਂ ਨਾਲ ਪ੍ਰਿੰਟਰ ਦੀ ਵਰਤੋਂ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕੇਗੀ।</translation>
 <translation id="581659025233126501">ਸਿੰਕ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="5817069030404929329">ਕੀ ਪਾਸਵਰਡਾਂ ਨੂੰ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਆਪਣੇ Google ਖਾਤੇ ਵਿੱਚ ਲਿਜਾਉਣਾ ਹੈ?</translation>
@@ -5982,7 +6024,6 @@
 <translation id="6065289257230303064">ਪ੍ਰਮਾਣ-ਪੱਤਰ ਵਿਸ਼ਾ ਡਾਇਰੈਕਟਰੀ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ</translation>
 <translation id="6066794465984119824">ਚਿੱਤਰ ਹੈਸ਼ ਸੈੱਟ ਨਹੀਂ ਹੈ</translation>
 <translation id="6069464830445383022">ਤੁਹਾਡੇ Google ਖਾਤੇ ਨਾਲ ਹੀ ਤੁਹਾਡੀ Chromebook ਵਿੱਚ ਸਾਈਨ-ਇਨ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ</translation>
-<translation id="6070311415473175157">ਖੋਜਣ ਲਈ ਚਿੱਤਰ ਦਾ ਖੇਤਰ ਚੁਣੋ</translation>
 <translation id="6071181508177083058">ਪਾਸਵਰਡ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ</translation>
 <translation id="6071576563962215370">ਸਿਸਟਮ ਡੀਵਾਈਸ ਸਥਾਪਨਾ-ਸਮਾਂ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਲਾਕ ਨੂੰ ਸਥਾਪਤ ਕਰਨ ਵਿੱਚ ਅਸਫਲ ਰਿਹਾ।</translation>
 <translation id="6071938745001252305"><ph name="MEMORY_VALUE" /> ਮੈਮੋਰੀ ਬਚਾਈ ਗਈ</translation>
@@ -6016,6 +6057,7 @@
 <translation id="608912389580139775">ਆਪਣੀ ਪੜ੍ਹਨ-ਸੂਚੀ ਵਿੱਚ ਇਹ ਪੰਨਾ ਸ਼ਾਮਲ ਕਰਨ ਲਈ, 'ਬੁੱਕਮਾਰਕ' ਪ੍ਰਤੀਕ 'ਤੇ ਕਲਿੱਕ ਕਰੋ</translation>
 <translation id="6089289670051481345">ਟ੍ਰਾਈਟੈਨੋਮਲੀ</translation>
 <translation id="6090760257419195752">ਖਾਰਜ ਕੀਤੀਆਂ ਗਈਆਂ ਚਿਤਾਵਨੀਆਂ</translation>
+<translation id="609174145569509836">ਸਟੋਰੇਜ ਖਾਲੀ ਕਰੋ</translation>
 <translation id="6091761513005122595">ਸਾਂਝਾਕਰਨ ਨੂੰ ਮਾਊਂਟ ਕਰਨਾ ਸਫਲ ਰਿਹਾ।</translation>
 <translation id="6093803049406781019">ਪ੍ਰੋਫਾਈਲ ਮਿਟਾਓ</translation>
 <translation id="6093888419484831006">ਅੱਪਡੇਟ ਰੱਦ ਕਰ ਰਿਹਾ ਹੈ...</translation>
@@ -6083,6 +6125,7 @@
 <translation id="6148576794665275391">ਹੁਣੇ ਖੋਲ੍ਹੋ</translation>
 <translation id="614890671148262506">ਇਸ ਸਾਈਟ ਤੋਂ ਸੂਚਨਾਵਾਂ ਨੂੰ ਹਮੇਸ਼ਾਂ ਇਜਾਜ਼ਤ ਦਿਓ</translation>
 <translation id="6149015141270619212">ਇੰਟਰਨੈੱਟ ਨਾਲ ਕਨੈਕਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ</translation>
+<translation id="6149791593592044995">ਟੋਨ ਮਾਰਕ ਦੀ ਪਲੇਸਮੈਂਟ ਲਈ ਆਧੁਨਿਕ ਨਿਯਮ ਵਰਤੋ</translation>
 <translation id="6150116777338468525">ਆਡੀਓ ਕੁਆਲਿਟੀ</translation>
 <translation id="6150278227694566734">ਕੁਝ ਸੰਪਰਕ</translation>
 <translation id="6150961653851236686">ਇਹ ਭਾਸ਼ਾ ਪੰਨਿਆਂ ਦਾ ਅਨੁਵਾਦ ਕਰਨ ਵੇਲੇ ਵਰਤੀ ਜਾਂਦੀ ਹੈ</translation>
@@ -6160,6 +6203,7 @@
 <translation id="6216696360484424239">ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਸਾਈਨ-ਇਨ ਕਰੋ</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> ਆਫ਼ਲਾਈਨ ਹੈ। ਇੰਟਰਨੈੱਟ ਨਾਲ ਕਨੈਕਟ ਕਰੋ ਅਤੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="6220413761270491930">ਐਕਸਟੈਂਸ਼ਨ ਲੋਡ ਕਰਨ ਵਿੱਚ ਗੜਬੜ</translation>
+<translation id="622125358038862905">{NUM_OF_FILES,plural, =1{ਫ਼ਾਈਲ ਨੂੰ <ph name="CLOUD_PROVIDER" /> 'ਤੇ ਕਾਪੀ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ}one{ਫ਼ਾਈਲ ਨੂੰ <ph name="CLOUD_PROVIDER" /> 'ਤੇ ਕਾਪੀ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ}other{ਫ਼ਾਈਲਾਂ ਨੂੰ <ph name="CLOUD_PROVIDER" /> 'ਤੇ ਕਾਪੀ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ}}</translation>
 <translation id="6224481128663248237">ਫਾਰਮੈਟਿੰਗ ਸਫਲਤਪੂਰਵਕ ਪੂਰੀ ਹੋਈ!</translation>
 <translation id="622474711739321877">ਇਹ ਕੰਟੇਨਰ ਪਹਿਲਾਂ ਤੋਂ ਹੀ ਮੌਜੂਦ ਹੈ।</translation>
 <translation id="622537739776246443">ਪ੍ਰੋਫਾਈਲ ਨੂੰ ਮਿਟਾਇਆ ਜਾਵੇਗਾ</translation>
@@ -6251,6 +6295,7 @@
 <translation id="6295855836753816081">ਰੱਖਿਅਤ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...</translation>
 <translation id="6298962879096096191">Android ਐਪਾਂ ਸਥਾਪਤ ਕਰਨ ਲਈ Google Play ਦੀ ਵਰਤੋਂ ਕਰੋ</translation>
 <translation id="6300177430812514606">ਡਾਟਾ ਭੇਜਣ ਜਾਂ ਪ੍ਰਾਪਤ ਕਰਨ ਦੀ ਪ੍ਰਕਿਰਿਆ ਪੂਰੀ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ</translation>
+<translation id="6300654006256345126">ਪਾਸਵਰਡ ਦਾ ਸੰਪਾਦਨ ਕਰੋ</translation>
 <translation id="630065524203833229">ਬਾ&amp;ਹਰ ਜਾਓ</translation>
 <translation id="6300718114348072351"><ph name="PRINTER_NAME" /> ਦਾ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਸੰਰੂਪਣ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਉੱਨਤ ਪ੍ਰਿੰਟਰ ਵੇਰਵੇ ਨਿਰਧਾਰਤ ਕਰੋ। <ph name="LINK_BEGIN" />ਹੋਰ ਜਾਣੋ<ph name="LINK_END" /></translation>
 <translation id="6301300352769835063"><ph name="DEVICE_OS" /> ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਵਿੱਚ ਮਦਦ ਕਰਨ ਲਈ Google ਨੂੰ ਤੁਹਾਡੇ ਹਾਰਡਵੇਅਰ ਡਾਟੇ ਦੀ ਵਰਤੋਂ ਕਰਨ ਦਿਓ। ਜੇ ਤੁਸੀਂ ਅਸਵੀਕਾਰ ਕਰਦੇ ਹੋ, ਤਾਂ ਵੀ ਇਹ ਡਾਟਾ Google ਨੂੰ ਉਚਿਤ ਅੱਪਡੇਟ ਨਿਰਧਾਰਿਤ ਕਰਨ ਲਈ ਭੇਜਿਆ ਜਾਂਦਾ ਹੈ, ਪਰ ਨਾ ਹੀ ਇਸਨੂੰ ਸਟੋਰ ਕੀਤਾ ਜਾਂਦਾ ਹੈ ਅਤੇ ਨਾ ਹੀ ਕਿਸੇ ਹੋਰ ਕੰਮ ਲਈ ਵਰਤਿਆ ਜਾਂਦਾ ਹੈ। g.co/flex/HWDataCollection 'ਤੇ ਹੋਰ ਜਾਣੋ।</translation>
@@ -6342,12 +6387,12 @@
 <translation id="6387674443318562538">ਖੜ੍ਹਵੇਂ ਤੌਰ 'ਤੇ ਵੰਡੋ</translation>
 <translation id="6388429472088318283">ਭਾਸ਼ਾਵਾਂ ਖੋਜੋ</translation>
 <translation id="6388577073199278153">ਤੁਹਾਡੇ ਖਾਤੇ ਤੱਕ ਪਹੁੰਚ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ</translation>
+<translation id="639000813364908555">ਪਹੁੰਚ ਅਸਵੀਕਾਰ ਕੀਤੀ ਗਈ</translation>
 <translation id="6390020764191254941">ਟੈਬ ਨੂੰ ਨਵੀਂ ਵਿੰਡੋ ਵਿੱਚ ਲਿਜਾਓ</translation>
 <translation id="6391131092053186625">ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਦਾ IMEI ਨੰਬਰ <ph name="IMEI_NUMBER" /> ਹੈ। ਇਸ ਨੰਬਰ ਦੀ ਵਰਤੋਂ ਸੇਵਾ ਨੂੰ ਕਿਰਿਆਸ਼ੀਲ ਕਰਨ ਲਈ ਕੀਤੀ ਜਾ ਸਕਦੀ ਹੈ।</translation>
 <translation id="6393156038355142111">ਮਜ਼ਬੂਤ ਪਾਸਵਰਡ ਸੁਝਾਓ</translation>
 <translation id="6393550101331051049">ਅਸੁਰੱਖਿਅਤ ਸਮੱਗਰੀ ਦਿਖਾਉਣ ਦੀ ਇਜਾਜ਼ਤ ਹੈ</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />ਸਿਸਟਮ ਜਾਣਕਾਰੀ<ph name="END_LINK1" /> ਅਤੇ <ph name="BEGIN_LINK2" />ਮੀਟਰਿਕਸ<ph name="END_LINK2" /> ਭੇਜੋ</translation>
-<translation id="6396175271241405634">ਸਿਸਟਮ ਐਪ</translation>
 <translation id="6398715114293939307">Google Play Store ਹਟਾਓ</translation>
 <translation id="6398765197997659313">ਪੂਰੀ ਸਕ੍ਰੀਨ ਤੋਂ ਬਾਹਰ ਜਾਓ</translation>
 <translation id="6399675241776343019">ਅਸਵੀਕਾਰ ਕੀਤਾ ਗਿਆ</translation>
@@ -6369,6 +6414,7 @@
 <translation id="6411135999030237579">ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਦੁਹਰਾਉਣ ਲਈ ਕੁੰਜੀ ਨੂੰ ਦਬਾਈ ਰੱਖੋ</translation>
 <translation id="641469293210305670">ਅੱਪਡੇਟ ਅਤੇ ਐਪਾਂ ਨੂੰ ਸਥਾਪਤ ਕਰੋ</translation>
 <translation id="6414878884710400018">ਸਿਸਟਮ ਤਰਜੀਹਾਂ ਖੋਲ੍ਹੋ</translation>
+<translation id="6415757856498750027">"ư" ਪ੍ਰਾਪਤ ਕਰਨ ਲਈ "w" ਟਾਈਪ ਕਰੋ</translation>
 <translation id="6415816101512323589">ਕੀ ਤੁਹਾਡੇ ਡਾਟੇ ਨੂੰ ਸੁਰੱਖਿਅਤ ਰੱਖਣ ਲਈ ਸਥਾਨਕ ਡਾਟਾ ਰਿਕਵਰੀ ਨੂੰ ਚਾਲੂ ਕਰਨਾ ਹੈ?</translation>
 <translation id="6415900369006735853">ਆਪਣੇ ਫ਼ੋਨ ਰਾਹੀਂ ਇੰਟਰਨੈੱਟ ਨਾਲ ਕਨੈਕਟ ਕਰੋ</translation>
 <translation id="6416743254476733475">ਆਪਣੇ ਕੰਪਿਊਟਰ 'ਤੇ ਕਰਨ ਦਿਓ ਜਾਂ ਬਲਾਕ ਕਰੋ।</translation>
@@ -6514,6 +6560,7 @@
 <translation id="6532527800157340614">ਸਾਈਨ-ਇਨ ਅਸਫਲ ਰਿਹਾ ਕਿਉਂਕਿ ਤੁਹਾਡਾ ਪਹੁੰਚ ਟੋਕਨ ਪ੍ਰਾਪਤ ਨਹੀਂ ਹੋ ਸਕਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੇ ਨੈੱਟਵਰਕ ਕਨੈਕਸ਼ਨ ਦੀ ਜਾਂਚ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="6532663472409656417">ਐਂਟਰਪ੍ਰਾਈਜ਼ ਵਜੋਂ ਦਰਜ</translation>
 <translation id="6533315466883598769">Google Translate ਵਰਤੋ</translation>
+<translation id="6533636340637966565">ਚਾਲੂ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...</translation>
 <translation id="6535331821390304775"><ph name="ORIGIN" /> ਨੂੰ ਇਸ ਕਿਸਮ ਦੇ ਲਿੰਕਾਂ ਨੂੰ ਹਮੇਸ਼ਾਂ ਕਿਸੇ ਸੰਬੰਧਿਤ ਐਪ ਵਿੱਚ ਖੋਲ੍ਹਣ ਦਿਓ</translation>
 <translation id="653659894138286600">ਦਸਤਾਵੇਜ਼ਾਂ ਅਤੇ ਚਿੱਤਰਾਂ ਨੂੰ ਸਕੈਨ ਕਰੋ</translation>
 <translation id="6537613839935722475">ਨਾਮ ਲਈ ਅੱਖਰ, ਨੰਬਰ ਅਤੇ ਹਾਈਫਨ (-) ਵਰਤੇ ਜਾ ਸਕਦੇ ਹਨ</translation>
@@ -6621,7 +6668,6 @@
 <translation id="6619801788773578757">ਕਿਓਸਕ ਐਪਲੀਕੇਸ਼ਨ ਸ਼ਾਮਲ ਕਰੋ</translation>
 <translation id="6619990499523117484">ਆਪਣੇ PIN ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ</translation>
 <translation id="6620254580880484313">ਕੰਟੇਨਰ ਦਾ ਨਾਮ</translation>
-<translation id="6620927550847360014">ਕੀ ਆਪਣੀ <ph name="DEVICE_TYPE" /> ਤੋਂ Bruschetta ਨੂੰ ਹਟਾਉਣਾ ਹੈ?</translation>
 <translation id="6621391692573306628">ਇਸ ਟੈਬ ਨੂੰ ਕਿਸੇ ਹੋਰ ਡੀਵਾਈਸ 'ਤੇ ਭੇਜਣ ਲਈ ਦੋਵਾਂ ਡੀਵਾਈਸਾਂ 'ਤੇ Chrome ਵਿੱਚ ਸਾਈਨ-ਇਨ ਕਰੋ</translation>
 <translation id="6622980291894852883">ਚਿੱਤਰ ਬਲੌਕ ਕਰਨਾ ਜਾਰੀ ਰੱਖੋ</translation>
 <translation id="6624036901798307345">ਟੈਬਲੈੱਟ ਮੋਡ ਵਿੱਚ, ਹਰੇਕ ਟੈਬ ਦਾ ਲਘੂ-ਚਿੱਤਰ ਦਿਖਾਉਣ ਵਾਲੀ ਨਵੀਂ ਟੈਬ ਪੱਟੀ ਖੋਲ੍ਹਣ ਲਈ ਟੈਬ ਕਾਊਂਟਰ ਟੂਲਬਾਰ ਬਟਨ 'ਤੇ ਟੈਪ ਕਰੋ।</translation>
@@ -6823,6 +6869,7 @@
 <translation id="6798780071646309401">ਕੈਪਸ ਲੌਕ ਚਾਲੂ</translation>
 <translation id="6798954102094737107">ਪਲੱਗਇਨ: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801129617625983991">ਆਮ ਸੈਟਿੰਗਾਂ</translation>
+<translation id="6801308659697002152">{NUM_EXTENSIONS,plural, =1{ਚੁਣੋ ਕਿ ਕੀ ਇਹ ਐਕਸਟੈਂਸ਼ਨ ਇਸ ਸਾਈਟ ਨੂੰ ਪੜ੍ਹ ਸਕਦੀ ਹੈ ਜਾਂ ਬਦਲ ਸਕਦੀ ਹੈ}one{ਚੁਣੋ ਕਿ ਕੀ ਇਹ ਐਕਸਟੈਂਸ਼ਨ ਇਸ ਸਾਈਟ ਨੂੰ ਪੜ੍ਹ ਸਕਦੀ ਹੈ ਜਾਂ ਬਦਲ ਸਕਦੀ ਹੈ}other{ਚੁਣੋ ਕਿ ਕੀ ਇਹ ਐਕਸਟੈਂਸ਼ਨਾਂ ਇਸ ਸਾਈਟ ਨੂੰ ਪੜ੍ਹ ਸਕਦੀਆਂ ਹਨ ਜਾਂ ਬਦਲ ਸਕਦੀਆਂ ਹਨ}}</translation>
 <translation id="6801435275744557998">ਟੱਚਸਕ੍ਰੀਨ ਨੂੰ ਕੈਲੀਬ੍ਰੇਟ ਕਰੋ</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="680488281839478944">VM "<ph name="DEFAULT_VM_NAME" />" ਮੌਜੂਦ ਹੈ</translation>
@@ -6878,9 +6925,7 @@
 <translation id="6833479554815567477">ਟੈਬ ਨੂੰ <ph name="GROUP_NAME" /> ਗਰੁੱਪ ਵਿੱਚੋਂ ਹਟਾਇਆ ਗਿਆ - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="683373380308365518">ਸਮਾਰਟ ਅਤੇ ਸੁਰੱਖਿਅਤ ਬ੍ਰਾਊਜ਼ਰ 'ਤੇ ਸਵਿੱਚ ਕਰੋ</translation>
 <translation id="6833996806551876956">ਪਰਦੇਦਾਰੀ ਸੈਂਡਬਾਕਸ ਪਰਖ</translation>
-<translation id="6835712061486505758">ਦੂਜੇ ਡੀਵਾਈਸਾਂ ਨੂੰ ਇੰਟਰਨੈੱਟ ਮੁਹੱਈਆ ਕਰਵਾਉਣ ਲਈ ਵਾਈ-ਫਾਈ ਹੌਟਸਪੌਟ ਬਣਾਓ। <ph name="BEGIN_LINK_LEARN_MORE" />ਹੋਰ ਜਾਣੋ<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="6835762382653651563">ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੀ <ph name="DEVICE_TYPE" /> ਨੂੰ ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਇੰਟਰਨੈਟ ਨਾਲ ਕਨੈਕਟ ਕਰੋ।</translation>
-<translation id="6836688241291438278">ਪੱਕਾ ਕਰੋ ਕਿ ਤੁਹਾਡਾ ਪ੍ਰਿੰਟਰ ਉਸੇ Wi-Fi ਨੈੱਟਵਰਕ ਨਾਲ ਕਨੈਕਟ ਹੈ ਜਿਸ ਨਾਲ ਤੁਹਾਡੀ Chromebook ਕਨੈਕਟ ਹੈ ਜਾਂ USB ਕੇਬਲ ਦੀ ਵਰਤੋਂ ਕਰੋ। ਅਨੁਰੂਪਤਾ ਬਾਰੇ ਹੋਰ ਜਾਣੋ।</translation>
 <translation id="6839225236531462745">ਪ੍ਰਮਾਣ-ਪੱਤਰ ਮਿਟਾਉਣ ਵਿੱਚ ਗੜਬੜ</translation>
 <translation id="6839916869147598086">ਸਾਈਨ-ਇਨ ਬਦਲ ਗਿਆ ਹੈ</translation>
 <translation id="6840155290835956714">ਭੇਜਣ ਤੋਂ ਪਹਿਲਾਂ ਪੁੱਛੋ</translation>
@@ -6917,6 +6962,7 @@
 <translation id="68601584151169673">ਰੱਖਿਅਤ ਅਤੇ ਸਾਂਝਾ ਕਰੋ</translation>
 <translation id="6860427144121307915">ਇੱਕ ਟੈਬ ਵਿੱਚ ਖੋਲ੍ਹੋ</translation>
 <translation id="6861179941841598556"><ph name="PROFILE_NAME" /> ਲਈ ਹੋਰ ਕਾਰਵਾਈਆਂ</translation>
+<translation id="6862472520095266519">ਨਾਮ ਵਿੱਚ 32 ਤੋਂ ਵੱਧ ਅੱਖਰ-ਚਿੰਨ੍ਹ ਨਹੀਂ ਹੋ ਸਕਦੇ</translation>
 <translation id="6863496016067551393">ਸਾਰੀਆਂ ਐਕਸਟੈਂਸ਼ਨਾਂ ਦੀ ਆਗਿਆ ਹੈ</translation>
 <translation id="686366188661646310">ਕੀ ਪਾਸਵਰਡ ਮਿਟਾਉਣਾ ਹੈ?</translation>
 <translation id="6865313869410766144">ਆਟੋਫਿਲ ਫ਼ਾਰਮ ਡਾਟਾ</translation>
@@ -7050,6 +7096,7 @@
 <translation id="6978717888677691380">ਤੁਹਾਡੇ ਵੱਲੋਂ ਬਲਾਕ ਕੀਤੀਆਂ ਗਈਆਂ ਸਾਈਟਾਂ</translation>
 <translation id="6979041727349121225">ਊਰਜਾ ਸੇਵਰ</translation>
 <translation id="6979044105893951891">ਪ੍ਰਬੰਧਿਤ ਮਹਿਮਾਨ ਸੈਸ਼ਨ ਲਾਂਚ ਕਰੋ ਅਤੇ ਇਹਨਾਂ ਤੋਂ ਬਾਹਰ ਨਿਕਲੋ</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">ਮਿਊਟ ਕਰੋ (ਪੂਰਵ-ਨਿਰਧਾਰਤ)</translation>
 <translation id="6979737339423435258">ਸਾਰੇ ਸਮੇਂ</translation>
 <translation id="6981553172137913845">ਨਿੱਜੀ ਤੌਰ 'ਤੇ ਬ੍ਰਾਊਜ਼ ਕਰਨ ਲਈ, ਬਿੰਦੀਆਂ ਦੇ ਪ੍ਰਤੀਕ ਵਾਲੇ ਮੀਨੂ 'ਤੇ ਕਲਿੱਕ ਕਰਕੇ ਕੋਈ ਇਨਕੋਗਨਿਟੋ ਵਿੰਡੋ ਖੋਲ੍ਹੋ</translation>
@@ -7240,6 +7287,7 @@
 <translation id="7144856456372460176"><ph name="APP" /> ਨੂੰ &amp;ਸਥਾਪਤ ਕਰੋ...</translation>
 <translation id="7144878232160441200">ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ</translation>
 <translation id="7145413760160421938">ਪਿਛਲੇ ਸੈਸ਼ਨ ਨੂੰ ਮੁੜ-ਚਾਲੂ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ</translation>
+<translation id="7146882055510146554">Microsoft 365, Word, Excel ਅਤੇ PowerPoint ਫ਼ਾਈਲਾਂ ਨੂੰ ਖੋਲ੍ਹਣ ਅਤੇ ਉਨ੍ਹਾਂ ਦਾ ਸੰਪਾਦਨ ਕਰਨ ਲਈ OneDrive ਦੀ ਵਰਤੋਂ ਕਰਦਾ ਹੈ। ਇਨ੍ਹਾਂ ਫ਼ਾਈਲਾਂ ਨੂੰ “Microsoft OneDrive” ਨਾਲ ਲੇਬਲਬੱਧ Files ਐਪ ਦੇ ਸਾਈਡ ਨੈਵੀਗੇਸ਼ਨ ਵਿੱਚ ਲੱਭਿਆ ਜਾ ਸਕਦਾ ਹੈ। ਤੁਹਾਨੂੰ ਆਪਣੇ Microsoft ਖਾਤੇ ਨਾਲ ਸਾਈਨ-ਇਨ ਕਰਨ ਦੀ ਲੋੜ ਹੋਵੇਗੀ। <ph name="LINK_BEGIN" />ਹੋਰ ਜਾਣੋ<ph name="LINK_END" /></translation>
 <translation id="7148426638542880639">ਹੋ ਸਕਦਾ ਹੈ ਕਿ ਸਾਈਟਾਂ ਤੁਹਾਡੀ ਉਮੀਦ ਮੁਤਾਬਕ ਕੰਮ ਨਾ ਕਰਨ। ਜੇ ਤੁਸੀਂ ਆਪਣੇ ਡੀਵਾਈਸ 'ਤੇ ਤੁਹਾਡੇ ਵੱਲੋਂ ਦੇਖੀਆਂ ਗਈਆਂ ਸਾਈਟਾਂ ਬਾਰੇ ਜਾਣਕਾਰੀ ਨਹੀਂ ਛੱਡਣਾ ਚਾਹੁੰਦੇ, ਤਾਂ ਇਸ ਵਿਕਲਪ ਨੂੰ ਚੁਣੋ।</translation>
 <translation id="7149839598364933473">ਇਸ ਡੀਵਾਈਸ ਨੂੰ <ph name="DEVICE_OS" /> ਡੀਵਾਈਸ ਵਿੱਚ ਬਦਲੋ।</translation>
 <translation id="7149893636342594995">ਪਿਛਲੇ 24 ਘੰਟੇ</translation>
@@ -7520,6 +7568,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7400447915166857470">ਕੀ <ph name="OLD_SEARCH_PROVIDER" /> 'ਤੇ ਵਾਪਸ ਜਾਣਾ ਹੈ?</translation>
 <translation id="7400839060291901923">ਆਪਣੇ <ph name="PHONE_NAME" /> 'ਤੇ ਕਨੈਕਸ਼ਨ ਸਥਾਪਤ ਕਰੋ</translation>
+<translation id="7401559588859088661">ਲਿਜਾਓ ਅਤੇ ਖੋਲ੍ਹੋ</translation>
 <translation id="7401778920660465883">ਇਹ ਸੁਨੇਹਾ ਖਾਰਜ ਕਰੋ</translation>
 <translation id="7402198013420237102">ਕੀ ਰੱਖਿਅਤ ਕੀਤੇ ਪਾਸਵਰਡਾਂ ਨੂੰ ਆਪਣੇ Google ਖਾਤੇ ਵਿੱਚ ਲਿਜਾਣਾ ਹੈ?</translation>
 <translation id="740333000181878130">ਡੀਵਾਈਸ ਦੀ ਸ਼ੁਰੂਆਤੀ ਧੁਨੀ</translation>
@@ -8026,9 +8075,11 @@
 <translation id="7797571222998226653">ਬੰਦ</translation>
 <translation id="7798504574384119986">ਵੈੱਬ ਇਜਾਜ਼ਤਾਂ ਦੇਖੋ</translation>
 <translation id="7798844538707273832">ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਬਲਾਕ ਕੀਤੀ ਗਈ <ph name="PERMISSION" /></translation>
+<translation id="7800485561443537737">ਤੁਹਾਡੀ <ph name="DEVICE_TYPE" /> ਦੇ ਮੋਬਾਈਲ ਡਾਟੇ ਦੀ ਵਰਤੋਂ ਕਰਦਾ ਹੈ ਅਤੇ ਤੁਹਾਡਾ ਕੈਰੀਅਰ ਵਧੀਕ ਫ਼ੀਸ ਲੈ ਸਕਦਾ ਹੈ। ਬੈਟਰੀ ਵਰਤੋਂ ਵਧ ਸਕਦੀ ਹੈ। <ph name="BEGIN_LINK_LEARN_MORE" />ਹੋਰ ਜਾਣੋ<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="7800518121066352902">ਕਾ&amp;ਉਂਟਰਕਲੌਕਵਾਈਜ ਰੋਟੇਟ ਕਰੋ</translation>
 <translation id="7801679634091975683">ਤੁਹਾਡੇ ਵੱਲੋਂ ਇੱਥੇ ਕੀਤੀਆਂ ਤਬਦੀਲੀਆਂ ਸਿਰਫ਼ Lacros Chrome ਬ੍ਰਾਊਜ਼ਰ 'ਤੇ ਹੀ ਲਾਗੂ ਹੁੰਦੀਆਂ ਹਨ। ਆਪਣੇ Chrome ਬ੍ਰਾਊਜ਼ਰ ਦੀਆਂ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਤਬਦੀਲੀਆਂ ਕਰਨ ਲਈ, Chrome ਬ੍ਰਾਊਜ਼ਰ ਖੋਲ੍ਹੋ ਅਤੇ ਸੈਟਿੰਗਾਂ 'ਤੇ ਜਾਓ।</translation>
 <translation id="780301667611848630">ਨਹੀਂ ਧੰਨਵਾਦ</translation>
+<translation id="7803267169006795990">ChromeOS, ChromeVox 'ਤੇ ਸਕ੍ਰੀਨ ਰੀਡਰ ਦੀ ਵਰਤੋਂ ਮੁੱਖ ਤੌਰ 'ਤੇ ਅੰਨ੍ਹੇਪਣ ਅਤੇ ਘੱਟ ਨਜ਼ਰ ਨਾਲ ਪੀੜਿਤ ਲੋਕਾਂ ਵੱਲੋਂ ਕੀਤੀ ਜਾਂਦੀ ਹੈ। ChromeVox ਨੂੰ ਚਾਲੂ ਕਰਨ ਲਈ ਪੰਜ ਸਕਿੰਟਾਂ ਲਈ ਦੋਵੇਂ ਅਵਾਜ਼ੀ ਕੁੰਜੀਆਂ ਨੂੰ ਦਬਾਈ ਰੱਖੋ। ChromeVox ਦੇ ਕਿਰਿਆਸ਼ੀਲ ਹੋਣ 'ਤੇ, ਤੁਹਾਨੂੰ ਇਸ ਬਾਰੇ ਤਤਕਾਲ ਜਾਣਕਾਰੀ ਦਿੱਤੀ ਜਾਵੇਗੀ।</translation>
 <translation id="7803657407897251194">ਆਪਣੇ Android ਡੀਵਾਈਸ ਨਾਲ ਸੈੱਟਅੱਪ ਜਾਰੀ ਰੱਖਣ ਲਈ, ਆਪਣੇ <ph name="DEVICE_TYPE" /> ਨੂੰ ਕਿਸੇ ਨੈੱਟਵਰਕ ਨਾਲ ਕਨੈਕਟ ਕਰੋ</translation>
 <translation id="7804072833593604762">ਟੈਬ ਬੰਦ ਹੋਈ</translation>
 <translation id="7805768142964895445">ਸਥਿਤੀ</translation>
@@ -8038,6 +8089,7 @@
 <translation id="7807711621188256451">ਹਮੇਸ਼ਾਂ <ph name="HOST" /> ਨੂੰ ਆਪਣੇ ਕੈਮਰੇ ਤੇ ਪਹੁੰਚ ਦੀ ਆਗਿਆ ਦਿਓ</translation>
 <translation id="7810202088502699111">ਪੌਪ-ਅਪਸ ਇਸ ਸਫ਼ੇ ਤੇ ਬਲੌਕ ਕੀਤੇ ਗਏ ਸੀ।</translation>
 <translation id="7814458197256864873">&amp;ਕਾਪੀ ਕਰੋ</translation>
+<translation id="7814857791038398352">Microsoft OneDrive</translation>
 <translation id="7815583197273433531"><ph name="EXTENSION_NAME" /> ਲਈ <ph name="SHORTCUT" /> ਸ਼ਾਰਟਕੱਟ ਦਾ ਸੰਪਾਦਨ ਕਰੋ</translation>
 <translation id="7815680994978050279">ਖਤਰਨਾਕ ਡਾਊਨਲੋਡ ਨੂੰ ਬਲਾਕ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="7817361223956157679">ਆਨ-ਸਕ੍ਰੀਨ ਕੀ-ਬੋਰਡ ਅਜੇ Linux ਐਪਾਂ ਵਿੱਚ ਕੰਮ ਨਹੀਂ ਕਰਦਾ</translation>
@@ -8053,6 +8105,7 @@
 <translation id="7826254698725248775">ਸਮੱਸਿਆ ਵਾਲਾ ਡੀਵਾਈਸ ਪਛਾਣਕਰਤਾ।</translation>
 <translation id="7828642077514646543">ਗੜਬੜ: ਸਰਟੀਫਿਕੇਟ ਨੂੰ ਡੀਕੋਡ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ</translation>
 <translation id="7829877209233347340">ਸਕੂਲੀ ਖਾਤਾ ਸ਼ਾਮਲ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦੇਣ ਲਈ ਮਾਂ-ਪਿਓ ਵਿੱਚੋਂ ਕਿਸੇ ਇੱਕ ਨੂੰ ਸਾਈਨ-ਇਨ ਕਰਨ ਲਈ ਕਹੋ</translation>
+<translation id="7830833461614351956">ਕੀ ਖੋਲ੍ਹਣ ਲਈ <ph name="NUM_OF_FILES" /> ਫ਼ਾਈਲਾਂ ਨੂੰ <ph name="CLOUD_PROVIDER" /> 'ਤੇ ਕਾਪੀ ਕਰਨਾ ਹੈ?</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
 <translation id="783229689197954457">ਜੇ Google ਨੂੰ ਕੋਈ ਛੋਟ ਮਿਲਦੀ ਹੈ, ਤਾਂ ਇਹ ਤੁਹਾਨੂੰ ਇਸ ਪੰਨੇ 'ਤੇ ਦਿਸੇਗੀ</translation>
 <translation id="7833720883933317473">ਰੱਖਿਅਤ ਕੀਤੇ ਵਿਉਂਤਬੱਧ ਸ਼ਬਦ ਇੱਥੇ ਦਿਖਾਈ ਦੇਣਗੇ</translation>
@@ -8117,7 +8170,6 @@
 <translation id="7881483672146086348">ਖਾਤਾ ਦੇਖੋ</translation>
 <translation id="7883792253546618164">ਕਿਸੇ ਵੀ ਵੇਲੇ ਅਣਸਬਸਕ੍ਰਾਈਬ ਕਰੋ।</translation>
 <translation id="7884372232153418877">{NUM_SITES,plural, =1{ਬਹੁਤ ਸਾਰੀਆਂ ਸੂਚਨਾਵਾਂ ਭੇਜਣ ਵਾਲੀ 1 ਸਾਈਟ ਦੀ ਸਮੀਖਿਆ ਕਰੋ}one{ਬਹੁਤ ਸਾਰੀਆਂ ਸੂਚਨਾਵਾਂ ਭੇਜਣ ਵਾਲੀ {NUM_SITES} ਸਾਈਟ ਦੀ ਸਮੀਖਿਆ ਕਰੋ}other{ਬਹੁਤ ਸਾਰੀਆਂ ਸੂਚਨਾਵਾਂ ਭੇਜਣ ਵਾਲੀਆਂ {NUM_SITES} ਸਾਈਟਾਂ ਦੀ ਸਮੀਖਿਆ ਕਰੋ}}</translation>
-<translation id="7884446017008693258">ਹੌਟਸਪੌਟ ਸੈਟਿੰਗਾਂ</translation>
 <translation id="788453346724465748">ਖਾਤਾ ਜਾਣਕਾਰੀ ਲੋਡ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ...</translation>
 <translation id="7886279613512920452">{COUNT,plural, =1{ਇੱਕ ਆਈਟਮ}one{# ਆਈਟਮ}other{# ਆਈਟਮਾਂ}}</translation>
 <translation id="7886605625338676841">ਈ-ਸਿਮ</translation>
@@ -8152,6 +8204,7 @@
 <translation id="7910768399700579500">&amp;ਨਵਾਂ ਫੋਲਡਰ</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">ਤੁਹਾਡਾ ਪਾਸਵਰਡ ਸਰਵਰ 'ਤੇ ਬਦਲ ਦਿੱਤਾ ਗਿਆ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਸਾਈਨ-ਆਊਟ ਹੋ ਕੇ ਫਿਰ ਦੁਬਾਰਾ ਸਾਈਨ-ਇਨ ਕਰੋ।</translation>
+<translation id="791247712619243506">ਸੈੱਟਅੱਪ ਰੱਦ ਕਰੋ</translation>
 <translation id="7912974581251770345">ਅਨੁਵਾਦ</translation>
 <translation id="7915457674565721553">ਮਾਪਿਆਂ ਦੇ ਕੰਟਰੋਲਾਂ ਦਾ ਸੈੱਟਅੱਪ ਕਰਨ ਲਈ ਇੰਟਰਨੈੱਟ ਨਾਲ ਕਨੈਕਟ ਹੋਵੋ</translation>
 <translation id="7916364730877325865">ਤੁਹਾਡੀ ਸੰਸਥਾ ਤੁਹਾਨੂੰ ਇਸ ਖਾਤੇ ਨਾਲ ਸਿੰਕ ਚਾਲੂ ਕਰਨ ਦੀ ਆਗਿਆ ਨਹੀਂ ਦਿੰਦੀ</translation>
@@ -8224,6 +8277,7 @@
 <translation id="7963001036288347286">ਟੱਚਪੈਡ ਐਕਸੈੱਲਰੇਸ਼ਨ</translation>
 <translation id="7963608432878156675">ਇਹ ਨਾਮ ਬਲੂਟੁੱਥ ਅਤੇ ਨੈੱਟਵਰਕ ਕਨੈਕਸ਼ਨਾਂ ਲਈ ਹੋਰ ਡੀਵਾਈਸਾਂ ਨੂੰ ਦਿਸੇਗਾ</translation>
 <translation id="7963826112438303517">ਤੁਹਾਡੀ Assistant ਇਹਨਾਂ ਰਿਕਾਰਡਿੰਗਾਂ ਅਤੇ ਤੁਹਾਡੀਆਂ ਬੋਲੀਆਂ ਗਈਆਂ ਬੇਨਤੀਆਂ ਦੀ ਵਰਤੋਂ ਤੁਹਾਡੀ ਅਵਾਜ਼ ਦਾ ਮਾਡਲ ਬਣਾਉਣ ਅਤੇ ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਕਰਦੀ ਹੈ, ਜਿਸਨੂੰ ਸਿਰਫ਼ ਉਹਨਾਂ ਡੀਵਾਈਸਾਂ 'ਤੇ ਸਟੋਰ ਕੀਤਾ ਜਾਂਦਾ ਹੈ ਜਿੱਥੇ ਤੁਸੀਂ Voice Match ਨੂੰ ਚਾਲੂ ਕੀਤਾ ਹੈ। Assistant ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਅਵਾਜ਼ੀ ਸਰਗਰਮੀ ਨੂੰ ਮਿਟਾਓ ਜਾਂ ਮੁੜ-ਸਿਖਾਓ।</translation>
+<translation id="7964458523224581615">ਵਿਰੀਡੀਅਨ</translation>
 <translation id="7966241909927244760">ਚਿੱਤਰ ਪਤਾ ਕਾ&amp;ਪੀ ਕਰੋ</translation>
 <translation id="7966571622054096916">{COUNT,plural, =1{ਬੁੱਕਮਾਰਕ ਸੂਚੀ ਵਿੱਚ 1 ਆਈਟਮ}one{ਬੁੱਕਮਾਰਕ ਸੂਚੀ ਵਿੱਚ {COUNT} ਆਈਟਮ}other{ਬੁੱਕਮਾਰਕ ਸੂਚੀ ਵਿੱਚ {COUNT} ਆਈਟਮਾਂ}}</translation>
 <translation id="7968072247663421402">ਪ੍ਰਦਾਨਕ ਵਿਕਲਪ</translation>
@@ -8248,6 +8302,7 @@
 <translation id="7981670705071137488">ਇਸ ਤੋਂ ਬਾਅਦ, ਬੈਕਗ੍ਰਾਊਂਡ ਵਿੱਚ ਸਾਫ਼ਟਵੇਅਰ ਅੱਪਡੇਟ ਹੋਣਗੇ। ਤੁਸੀਂ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਜਾ ਕੇ ਅੱਪਡੇਟ ਸੰਬੰਧੀ ਤਰਜੀਹਾਂ ਦੀ ਸਮੀਖਿਆ ਕਰ ਸਕਦੇ ਹੋ।</translation>
 <translation id="7982083145464587921">ਕਿਰਪਾ ਕਰਕੇ ਇਸ ਗੜਬੜ ਨੂੰ ਠੀਕ ਕਰਨ ਲਈ ਆਪਣਾ ਡੀਵਾਈਸ ਮੁੜ-ਸ਼ੁਰੂ ਕਰੋ।</translation>
 <translation id="7982789257301363584">ਨੈੱਟਵਰਕ</translation>
+<translation id="7982878511129296052">ਬੰਦ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...</translation>
 <translation id="7984068253310542383"><ph name="DISPLAY_NAME" /> ਨੂੰ ਪ੍ਰਤੀਬਿੰਬਤ ਕਰੋ</translation>
 <translation id="7986295104073916105">ਰੱਖਿਅਤ ਕੀਤੀਆਂ ਪਾਸਵਰਡ ਸੈਟਿੰਗਾਂ ਪੜ੍ਹੋ ਅਤੇ ਬਦਲੋ</translation>
 <translation id="7987814697832569482">ਹਮੇਸ਼ਾਂ ਇਸ VPN ਰਾਹੀਂ ਕਨੈਕਟ ਕਰੋ</translation>
@@ -8279,6 +8334,7 @@
 <translation id="8013993649590906847">ਜੇ ਕਿਸੇ ਚਿੱਤਰ ਦਾ ਲਾਭਕਾਰੀ ਵਰਣਨ ਨਹੀਂ ਹੈ, ਤਾਂ Chrome ਤੁਹਾਡੇ ਲਈ ਇੱਕ ਵਰਣਨ ਮੁਹੱਈਆ ਕਰਵਾਉਣ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰੇਗਾ। ਵਰਣਨ ਬਣਾਉਣ ਲਈ, ਚਿੱਤਰ Google ਨੂੰ ਭੇਜੇ ਜਾਂਦੇ ਹਨ।</translation>
 <translation id="8014154204619229810">ਇਸ ਵੇਲੇ ਅਪਡੇਟਰ ਚੱਲ ਰਿਹਾ ਹੈ। ਦੁਬਾਰਾ ਪੜਤਾਲ ਕਰਨ ਲਈ ਇੱਕ ਮਿੰਟ ਵਿੱਚ ਰਿਫ੍ਰੈਸ਼ ਕਰੋ।</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> ਪਿਛਲੇ ਸਥਾਪਤ ਕੀਤੇ ਵਰਜਨ 'ਤੇ ਵਾਪਸ ਸਥਾਪਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੇ ਡੀਵਾਈਸ ਨੂੰ ਪਾਵਰਵਾਸ਼ ਕਰਨ ਲਈ ਦੁਬਾਰਾ ਕੋੋੋੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
+<translation id="8015565302826764056">{NUM_OF_FILES,plural, =1{1 ਫ਼ਾਈਲ ਨੂੰ ਕਾਪੀ ਕੀਤਾ ਗਿਆ}one{{NUM_OF_FILES} ਫ਼ਾਈਲ ਨੂੰ ਕਾਪੀ ਕੀਤਾ ਗਿਆ}other{{NUM_OF_FILES} ਫ਼ਾਈਲਾਂ ਨੂੰ ਕਾਪੀ ਕੀਤਾ ਗਿਆ}}</translation>
 <translation id="8015812716978143">ਸਾਰੇ ਡਾਊਨਲੋਡਾਂ ਨੂੰ ਨਵੀਂ ਟੈਬ ਵਿੱਚ ਦਿਖਾਓ</translation>
 <translation id="8017176852978888182">Linux ਸਾਂਝੀਆਂ ਕੀਤੀਆਂ ਡਾਇਰੈਕਟਰੀਆਂ</translation>
 <translation id="8017679124341497925">ਸ਼ਾਰਟਕੱਟ ਦਾ ਸੰਪਾਦਨ ਕੀਤਾ ਗਿਆ</translation>
@@ -8306,6 +8362,7 @@
 <translation id="8037117027592400564">ਸਿੰਥੇਸਾਈਜ਼ਡ ਸਪੀਚ ਵਰਤਦੇ ਹੋਏ ਬੋਲਿਆ ਗਿਆ ਸਾਰਾ ਟੈਕਸਟ ਪੜ੍ਹੋ</translation>
 <translation id="8037357227543935929">ਪੁੱਛੋ (ਪੂਰਵ-ਨਿਰਧਾਰਤ)</translation>
 <translation id="803771048473350947">ਫਾਈਲ</translation>
+<translation id="8039151841428107077">{NUM_OF_FILES,plural, =1{1 ਫ਼ਾਈਲ ਨੂੰ <ph name="CLOUD_PROVIDER" /> 'ਤੇ ਕਾਪੀ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ}one{{NUM_OF_FILES} ਫ਼ਾਈਲ ਨੂੰ <ph name="CLOUD_PROVIDER" /> 'ਤੇ ਕਾਪੀ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ}other{{NUM_OF_FILES} ਫ਼ਾਈਲਾਂ ਨੂੰ <ph name="CLOUD_PROVIDER" /> 'ਤੇ ਕਾਪੀ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ}}</translation>
 <translation id="8041089156583427627">ਵਿਚਾਰ ਭੇਜੋ</translation>
 <translation id="8041267120753677077">ਆਪਣੇ ਫ਼ੋਨ ਦੀਆਂ ਐਪਾਂ ਨੂੰ ਸਟ੍ਰੀਮ ਕਰੋ</translation>
 <translation id="8042142357103597104">ਲਿਖਤ ਅਪਾਰਦਰਸ਼ਤਾ</translation>
@@ -8358,6 +8415,8 @@
 <translation id="8077120325605624147">ਤੁਹਾਡੇ ਵੱਲੋਂ ਦੇਖੀ ਗਈ ਕੋਈ ਵੀ ਸਾਈਟ ਤੁਹਾਨੂੰ ਕੋਈ ਵੀ ਵਿਗਿਆਪਨ ਦਿਖਾ ਸਕਦੀ ਹੈ</translation>
 <translation id="8077579734294125741">ਹੋਰ Chrome ਪ੍ਰੋਫਾਈਲਾਂ</translation>
 <translation id="80798452873915119">ਸਾਈਟਾਂ ਤੁਹਾਡੀਆਂ ਸਾਰੀਆਂ ਡਿਸਪਲੇਆਂ 'ਤੇ ਵਿੰਡੋਆਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰਨ ਲਈ ਪੁੱਛ ਸਕਦੀਆਂ ਹਨ</translation>
+<translation id="807990231167557618">ਤੁਹਾਡੀ Chromebook ਅੱਪਡੇਟ ਕੀਤੀ ਗਈ ਹੈ।</translation>
+<translation id="8080028325999236607">ਸਾਰੀਆਂ ਟੈਬਸ ਬੰਦ ਕਰੋ</translation>
 <translation id="808089508890593134">Google</translation>
 <translation id="8081623398548615289">ਤੁਹਾਡੇ ਸੈਸ਼ਨ ਦਾ ਪ੍ਰਬੰਧਨ <ph name="MANAGER_NAME" /> ਵੱਲੋਂ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। ਪ੍ਰਸ਼ਾਸਕ ਤੁਹਾਡੇ ਪ੍ਰੋਫਾਈਲ ਨੂੰ ਮਿਟਾ ਸਕਦੇ ਹਨ ਅਤੇ ਤੁਹਾਡੇ ਨੈੱਟਵਰਕ ਟਰੈਫ਼ਿਕ ਦੀ ਨਿਗਰਾਨੀ ਵੀ ਕਰ ਸਕਦੇ ਹਨ।</translation>
 <translation id="8081989000209387414">ਕੀ ADB ਡੀਬੱਗਿੰਗ ਨੂੰ ਬੰਦ ਕਰਨਾ ਹੈ?</translation>
@@ -8375,6 +8434,7 @@
 <translation id="8090234456044969073">ਤੁਹਾਡੀਆਂ ਸਭ ਤੋਂ ਵੱਧ ਵਾਰ ਵਿਜਿਟ ਕੀਤੀਆਂ ਵੈਬਸਾਈਟਾਂ ਦੀ ਇੱਕ ਸੂਚੀ ਪੜ੍ਹੋ</translation>
 <translation id="8090513782447872344">ਇੱਕ ਹੋਰ ਨਜ਼ਰ ਮਾਰਨ ਲਈ ਤੁਸੀਂ ਕਿਸੇ ਵੇਲੇ ਵੀ ਵਾਪਸ ਆ ਸਕਦੇ ਹੋ</translation>
 <translation id="8093359998839330381"><ph name="PLUGIN_NAME" /> ਪ੍ਰਤਿਕਿਰਿਆ ਨਹੀਂ ਦੇ ਰਿਹਾ ਹੈ</translation>
+<translation id="8094536695728193970">ਐਪਰੀਕੋਟ</translation>
 <translation id="8095105960962832018"><ph name="BEGIN_PARAGRAPH1" />Google Drive ਵਿੱਚ ਬੈਕਅੱਪ ਲਓ। ਕਿਸੇ ਵੇਲੇ ਵੀ ਅਸਾਨੀ ਨਾਲ ਆਪਣਾ ਡਾਟਾ ਮੁੜ-ਬਹਾਲ ਕਰੋ ਜਾਂ ਡੀਵਾਈਸਾਂ ਵਿਚਾਲੇ ਅਦਲਾ-ਬਦਲੀ ਕਰੋ। ਤੁਹਾਡੇ ਬੈਕਅੱਪ ਵਿੱਚ ਐਪ ਡਾਟਾ ਸ਼ਾਮਲ ਹੈ।<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />ਤੁਹਾਡੇ ਬੈਕਅੱਪ Google 'ਤੇ ਅੱਪਲੋਡ ਕੀਤੇ ਜਾਂਦੇ ਹਨ ਅਤੇ ਤੁਹਾਡੇ Google ਖਾਤੇ ਦੇ ਪਾਸਵਰਡ ਦੀ ਵਰਤੋਂ ਕਰ ਕੇ ਇਨਕ੍ਰਿਪਟ ਕੀਤੇ ਜਾਂਦੇ ਹਨ।<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />ਐਪ ਡਾਟਾ ਕਿਸੇ ਐਪ ਵੱਲੋਂ (ਵਿਕਾਸਕਾਰ ਸੈਟਿੰਗਾਂ 'ਤੇ ਅਧਾਰਿਤ) ਰੱਖਿਅਤ ਕੀਤਾ ਕੋਈ ਵੀ ਡਾਟਾ ਹੋ ਸਕਦਾ ਹੈ, ਜਿਸ ਵਿੱਚ ਸੰਪਰਕਾਂ, ਸੁਨੇਹਿਆਂ ਅਤੇ ਫ਼ੋਟੋਆਂ ਵਰਗਾ ਡਾਟਾ ਸ਼ਾਮਲ ਹੈ।<ph name="END_PARAGRAPH3" />
@@ -8475,11 +8535,10 @@
 <translation id="8179976553408161302">ਦਰਜ ਕਰੋ</translation>
 <translation id="8180785270975217276">ਊਰਜਾ ਸੇਵਰ ਨੂੰ ਚਾਲੂ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="8180786512391440389">"<ph name="EXTENSION" />" ਸਹੀ ਦਾ ਨਿਸ਼ਾਨ ਲਗਾਏ ਹੋਏ ਨਿਰਧਾਰਿਤ ਸਥਾਨਾਂ ਵਿੱਚ ਚਿੱਤਰ, ਵੀਡਿਓ ਅਤੇ ਅਵਾਜ਼ ਫਾਈਲਾਂ ਪੜ੍ਹ ਸਕਦਾ ਹੈ।</translation>
+<translation id="8180826593917851025"><ph name="DEVICE_TYPE" /> ਹੌਟਸਪੌਟ ਦਾ ਸੰਰੂਪਣ ਕਰੋ</translation>
 <translation id="8181215761849004992">ਡੋਮੇਨ ਸ਼ਾਮਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ। ਇਹ ਦੇਖਣ ਲਈ ਆਪਣੇ ਖਾਤੇ ਦੀ ਜਾਂਚ ਕਰੋ ਕਿ ਤੁਹਾਡੇ ਕੋਲ ਡੀਵਾਈਸਾਂ ਨੂੰ ਸ਼ਾਮਲ ਕਰਨ ਦੇ ਵਿਸ਼ੇਸ਼-ਅਧਿਕਾਰ ਹਨ।</translation>
 <translation id="8182105986296479640">ਐਪਲੀਕੇਸ਼ਨ ਪ੍ਰਤੀਕਿਰਿਆ ਨਹੀਂ ਦੇ ਰਹੀ ਹੈ।</translation>
 <translation id="8182412589359523143">ਇਸ <ph name="DEVICE_TYPE" /> ਵਿੱਚੋਂ ਸਾਰਾ ਡਾਟਾ ਮਿਟਾਉਣ ਲਈ, <ph name="BEGIN_LINK" />ਇੱਥੇ ਕਲਿੱਕ ਕਰੋ<ph name="END_LINK" />।</translation>
-<translation id="8182664696082410784"><ph name="REASON" />
-ਮੈਨੂੰ ਨਹੀਂਂ ਲੱਗਦਾ ਕਿ ਇਹ ਸਾਈਟ ਬਲਾਕ ਕੀਤੀ ਜਾਣੀ ਚਾਹੀਦੀ ਹੈ!</translation>
 <translation id="8183703640399301650">ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਦਾ EID ਨੰਬਰ <ph name="EID_NUMBER" /> ਹੈ ਅਤੇ ਡੀਵਾਈਸ ਦਾ IMEI ਨੰਬਰ <ph name="IMEI_NUMBER" /> ਹੈ। ਇਨ੍ਹਾਂ ਨੰਬਰਾਂ ਦੀ ਵਰਤੋਂ ਸੇਵਾ ਨੂੰ ਕਿਰਿਆਸ਼ੀਲ ਕਰਨ ਲਈ ਕੀਤੀ ਜਾ ਸਕਦੀ ਹੈ।</translation>
 <translation id="8184288427634747179">ਸਵਿੱਚ ਕਰੋ <ph name="AVATAR_NAME" /></translation>
 <translation id="8184318863960255706">ਹੋਰ ਜਾਣਕਾਰੀ</translation>
@@ -8585,6 +8644,7 @@
     <ph name="BEGIN_PARAGRAPH3" />ਮਾਲਕ ਇਸ ਵਿਸ਼ੇਸ਼ਤਾ ਨੂੰ ਸੈਟਿੰਗਾਂ &gt; ਉੱਨਤ &gt; 'Google ਨੂੰ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਤਸ਼ਖੀਸ ਅਤੇ ਵਰਤੋਂ ਡਾਟਾ ਭੇਜੋ' ਤੋੋਂ ਕੰਟਰੋਲ ਕਰ ਸਕਦਾ ਹੈ।<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />ਜੇ ਤੁਹਾਡੇ ਬੱਚੇ ਲਈ ਵਧੀਕ ਵੈੱਬ ਅਤੇ ਐਪ ਸਰਗਰਮੀ ਸੈਟਿੰਗ ਚਾਲੂ ਹੋਵੇ, ਤਾਂ ਇਹ ਡਾਟਾ ਉਨ੍ਹਾਂ ਦੇ Google ਖਾਤੇ ਵਿੱਚ ਰੱਖਿਅਤ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ। families.google.com 'ਤੇ ਇਹਨਾਂ ਸੈਟਿੰਗਾਂ ਅਤੇ ਉਹਨਾਂ ਨੂੰ ਵਿਵਸਥਿਤ ਕਰਨ ਦੇ ਤਰੀਕੇ ਬਾਰੇ ਹੋਰ ਜਾਣੋ।<ph name="END_PARAGRAPH4" /></translation>
 <translation id="826905130698769948">ਅਵੈਧ ਕਲਾਇੰਟ ਪ੍ਰਮਾਣ-ਪੱਤਰ</translation>
+<translation id="8270320981823560179">Drive</translation>
 <translation id="827097179112817503">ਹੋਮ ਬਟਨ ਦਿਖਾਓ</translation>
 <translation id="8271268254812352141">ਲਿਖਤ ਨੂੰ ਸਪਰਸ਼ ਕਰਕੇ ਰੱਖਣ ਜਾਂ ਉਸ 'ਤੇ ਸੱਜਾ-ਕਲਿੱਕ ਕਰਨ 'ਤੇ ਪਰਿਭਾਸ਼ਾਵਾਂ, ਅਨੁਵਾਦ, ਜਾਂ ਇਕਾਈ ਰੂਪਾਂਤਰਨ ਪ੍ਰਾਪਤ ਕਰੋ। ਅਨੁਵਾਦ ਦੀਆਂ ਭਾਸ਼ਾਵਾਂ ਨੂੰ <ph name="LINK_BEGIN" />ਵੈੱਬਸਾਈਟ ਦੀਆਂ ਭਾਸ਼ਾਵਾਂ<ph name="LINK_END" /> ਵਿੱਚ ਵਿਉਂਤਬੱਧ ਕਰੋ।</translation>
 <translation id="8271379370373330993">ਅਗਲੇ ਕੁਝ ਪੜਾਅ ਮਾਪਿਆਂ ਲਈ ਹਨ। ਖਾਤਾ ਸੈੱਟਅੱਪ ਹੋਣ ਤੋਂ ਬਾਅਦ ਤੁਸੀਂ <ph name="DEVICE_TYPE" /> ਬੱਚੇ ਨੂੰ ਵਾਪਸ ਦੇ ਸਕਦੇ ਹੋ।</translation>
@@ -8643,6 +8703,7 @@
 <translation id="8322814362483282060">ਇਹ ਸਫ਼ਾ ਤੁਹਾਡੇ ਮਾਈਕ੍ਰੋਫੋਨ ਤੱਕ ਪਹੁੰਚਣ ਤੋਂ ਬਲੌਕ ਕੀਤਾ ਗਿਆ ਹੈ।</translation>
 <translation id="8323167517179506834">URL ਟਾਈਪ ਕਰੋ</translation>
 <translation id="8323317289166663449">ਆਪਣੇ ਕੰਪਿਊਟਰ ਅਤੇ ਸਾਰੀਆਂ ਵੈੱਬਸਾਈਟਾਂ 'ਤੇ ਆਪਣਾ ਸਾਰਾ ਡਾਟਾ ਪੜ੍ਹੋ ਅਤੇ ਬਦਲੋ</translation>
+<translation id="8324158725704657629">ਦੁਬਾਰਾ ਨਾ ਪੁੱਛੋ</translation>
 <translation id="8324784016256120271">ਸਾਈਟਾਂ ਵੱਖ-ਵੱਖ ਸਾਈਟਾਂ ਵਿਚਲੀ ਤੁਹਾਡੀ ਬ੍ਰਾਊਜ਼ਿੰਗ ਸਰਗਰਮੀ ਦੇਖਣ ਲਈ ਕੁਕੀਜ਼ ਨੂੰ ਵਰਤ ਸਕਦੀਆਂ ਹਨ, ਉਦਾਹਰਨ ਲਈ, ਵਿਗਿਆਪਨਾਂ ਨੂੰ ਵਿਅਕਤੀਗਤ ਬਣਾਉਣ ਲਈ</translation>
 <translation id="8325413836429495820">ਤੁਹਾਡੇ ਕਲਿੱਪਬੋਰਡ ਨੂੰ ਦੇਖਣ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ</translation>
 <translation id="8326478304147373412">PKCS #7, ਪ੍ਰਮਾਣ-ਪੱਤਰ ਚੇਨ</translation>
@@ -8660,6 +8721,7 @@
 <translation id="8336463659890584292">ਜਦੋਂ ਕੋਈ ਸਾਈਟ ਆਪਣੇ ਪੰਨੇ 'ਤੇ ਨਿੱਜੀ ਤੌਰ 'ਤੇ ਲਿੰਕਾਂ ਨੂੰ ਪ੍ਰੀਲੋਡ ਕਰਨ ਲਈ ਕਹਿੰਦੀ ਹੈ, ਤਾਂ Chrome Google ਸਰਵਰਾਂ ਦੀ ਵਰਤੋਂ ਕਰਦਾ ਹੈ। ਇਹ ਪ੍ਰੀਲੋਡ ਕੀਤੀ ਸਾਈਟ ਤੋਂ ਤੁਹਾਡੀ ਪਛਾਣ ਨੂੰ ਲੁਕਾਉਂਦਾ ਹੈ, ਪਰ Google ਨੂੰ ਪਤਾ ਲੱਗ ਜਾਂਦਾ ਹੈ ਕਿ ਕਿਹੜੀਆਂ ਸਾਈਟਾਂ ਨੂੰ ਪ੍ਰੀਲੋਡ ਕੀਤਾ ਗਿਆ ਹੈ।</translation>
 <translation id="8336739000755212683">ਡੀਵਾਈਸ ਦੇ ਖਾਤੇ ਦਾ ਚਿੱਤਰ ਬਦਲੋ</translation>
 <translation id="8337020675372081178">{HOURS,plural, =1{ਇਸ ਡੀਵਾਈਸ ਨੂੰ 1 ਘੰਟੇ ਲਈ ਰੱਖਿਅਤ ਕੀਤਾ ਜਾਵੇਗਾ ਅਤੇ ਅਗਲੀ ਵਾਰ ਤੁਸੀਂ ਬਿਨਾਂ ਕੋਡ ਦੇ ਕਨੈਕਟ ਹੋ ਸਕਦੇ ਹੋ। ਇਸਨੂੰ ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਵੱਲੋਂ ਸੈੱਟ ਕੀਤਾ ਗਿਆ ਹੈ।}one{ਇਸ ਡੀਵਾਈਸ ਨੂੰ {HOURS} ਘੰਟੇ ਲਈ ਰੱਖਿਅਤ ਕੀਤਾ ਜਾਵੇਗਾ ਅਤੇ ਅਗਲੀ ਵਾਰ ਤੁਸੀਂ ਬਿਨਾਂ ਕੋਡ ਦੇ ਕਨੈਕਟ ਹੋ ਸਕਦੇ ਹੋ। ਇਸਨੂੰ ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਵੱਲੋਂ ਸੈੱਟ ਕੀਤਾ ਗਿਆ ਹੈ।}other{ਇਸ ਡੀਵਾਈਸ ਨੂੰ {HOURS} ਘੰਟਿਆ ਲਈ ਰੱਖਿਅਤ ਕੀਤਾ ਜਾਵੇਗਾ ਅਤੇ ਅਗਲੀ ਵਾਰ ਤੁਸੀਂ ਬਿਨਾਂ ਕੋਡ ਦੇ ਕਨੈਕਟ ਹੋ ਸਕਦੇ ਹੋ। ਇਸਨੂੰ ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਵੱਲੋਂ ਸੈੱਟ ਕੀਤਾ ਗਿਆ ਹੈ।}}</translation>
+<translation id="8337399713761067085">ਤੁਸੀਂ ਇਸ ਵੇਲੇ ਆਫ਼ਲਾਈਨ ਹੋ</translation>
 <translation id="8338952601723052325">ਵਿਕਾਸਕਾਰ ਵੈੱਬਸਾਈਟ</translation>
 <translation id="8339288417038613756">ਡਿਸਪਲੇ ਅਤੇ ਲਿਖਤ ਦਾ ਆਕਾਰ</translation>
 <translation id="833986336429795709">ਇਸ ਲਿੰਕ ਨੂੰ ਖੋਲ੍ਹਣ ਲਈ, ਕੋਈ ਐਪ ਚੁਣੋ</translation>
@@ -8708,6 +8770,7 @@
 <translation id="8376752431516546391">Google Search ਦਾ ਸਾਈਡ ਪੈਨਲ</translation>
 <translation id="8377625247046155446">ਇਸ ਪਾਸਕੀ ਨੂੰ ਸਿਰਫ਼ ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਰੱਖਿਅਤ ਕੀਤਾ ਜਾਵੇਗਾ। ਤੁਹਾਡੇ ਵੱਲੋਂ ਸਾਰੀਆਂ ਇਨਕੋਗਨਿਟੋ ਵਿੰਡੋਆਂ ਨੂੰ ਬੰਦ ਕੀਤੇ ਜਾਣ ਤੋਂ ਬਾਅਦ ਵੀ ਇਹ ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਮੌਜੂਦ ਰਹੇਗੀ।</translation>
 <translation id="8378714024927312812">ਤੁਹਾਡੀ ਸੰਸਥਾ ਵੱਲੋਂ ਪ੍ਰਬੰਧਨ ਕੀਤਾ ਜਾਂਦਾ ਹੈ</translation>
+<translation id="8379988659465232385">ਨਾਮ ਵਾਲਾ ਖੇਤਰ ਖਾਲੀ ਨਹੀਂ ਹੋ ਸਕਦਾ</translation>
 <translation id="8379991678458444070">ਇਸ ਟੈਬ ਨੂੰ ਬੁੱਕਮਾਰਕ ਕਰੋ ਤਾਂ ਕਿ ਤੁਸੀਂ ਇੱਥੇ ਤੇਜ਼ੀ ਨਾਲ ਵਾਪਸ ਆ ਸਕੋ</translation>
 <translation id="8380266723152870797">ਵਿੰਡੋ ਦਾ ਨਾਮ</translation>
 <translation id="8380941800586852976">ਖਤਰਨਾਕ</translation>
@@ -8918,6 +8981,7 @@
 <translation id="8569682776816196752">ਕੋਈ ਨਿਯਤ ਥਾਂਵਾਂ ਨਹੀਂ ਮਿਲੀਆਂ</translation>
 <translation id="8571213806525832805">ਪਿਛਲੇ 4 ਹਫ਼ਤੇ</translation>
 <translation id="8571687764447439720">Kerberos ਟਿਕਟ ਸ਼ਾਮਲ ਕਰੋ</translation>
+<translation id="8573111744706778015">"ươ" ਨੂੰ ਪ੍ਰਾਪਤ ਕਰਨ ਲਈ "uo7" ਟਾਈਪ ਕਰੋ</translation>
 <translation id="8574990355410201600">ਹਮੇਸ਼ਾਂ <ph name="HOST" /> 'ਤੇ ਧੁਨੀ ਚਲਾਉਣ ਦਿਓ</translation>
 <translation id="8575286410928791436">ਛੱਡਣ ਲਈ <ph name="KEY_EQUIVALENT" /> ਨੂੰ ਦਬਾਈ ਰੱਖੋ</translation>
 <translation id="8576359558126669548">ਇਨਕੋਗਨਿਟੋ ਮੋਡ ਵਿੱਚ ਤੀਜੀ-ਧਿਰ ਦੀਆਂ ਕੁਕੀਜ਼ ਨੂੰ ਬਲਾਕ ਕਰਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ</translation>
@@ -8938,6 +9002,7 @@
 <translation id="8592141010104017453">ਸੂਚਨਾਵਾਂ ਨੂੰ ਬਿਲਕੁਲ ਵੀ ਨਾ ਦਿਖਾਓ</translation>
 <translation id="859246725979739260">ਇਸ ਸਾਈਟ ਨੂੰ ਤੁਹਾਡੇ ਟਿਕਾਣੇ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਤੋਂ ਬਲਾਕ ਕਰ ਦਿੱਤਾ ਗਿਆ ਹੈ।</translation>
 <translation id="8593121833493516339">ਵਰਤੋਂ ਅਤੇ ਤਸ਼ਖੀਸ ਡਾਟਾ ਭੇਜੋ। Google ਨੂੰ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਤਸ਼ਖੀਸ, ਡੀਵਾਈਸ ਅਤੇ ਐਪ ਵਰਤੋਂ ਡਾਟਾ ਭੇਜ ਕੇ ਆਪਣੇ ਬੱਚੇ ਦਾ Android ਅਨੁਭਵ ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਵਿੱਚ ਮਦਦ ਕਰੋ। ਇਸਦੀ ਵਰਤੋਂ ਤੁਹਾਡੇ ਬੱਚੇ ਦੀ ਪਛਾਣ ਕਰਨ ਲਈ ਨਹੀਂ ਕੀਤੀ ਜਾਵੇਗੀ ਅਤੇ ਸਿਸਟਮ ਅਤੇ ਐਪ ਸਥਿਰਤਾ ਅਤੇ ਹੋਰ ਚੀਜ਼ਾਂ ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਵਿੱਚ ਮਦਦ ਮਿਲੇਗੀ। ਕੁਝ ਏਕੀਕ੍ਰਿਤ ਜਾਣਕਾਰੀ Google ਐਪਾਂ ਅਤੇ ਪਾਰਟਨਰਾਂ, ਜਿਵੇਂ ਕਿ Android ਵਿਕਾਸਕਾਰਾਂ, ਦੀ ਵੀ ਮਦਦ ਕਰੇਗੀ। ਜੇ ਤੁਹਾਡੇ ਬੱਚੇ ਲਈ ਵਧੀਕ 'ਵੈੱਬ ਅਤੇ ਐਪ ਸਰਗਰਮੀ' ਚਾਲੂ ਹੋਵੇ, ਤਾਂ ਇਹ ਡਾਟਾ ਉਸਦੇ Google ਖਾਤੇ ਵਿੱਚ ਰੱਖਿਅਤ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ। <ph name="BEGIN_LINK1" />ਹੋਰ ਜਾਣੋ<ph name="END_LINK1" /></translation>
+<translation id="8593450223647418235">ਸੈੱਟਅੱਪ ਪੂਰਾ ਹੋਣ ਤੱਕ ਤੁਸੀਂ Microsoft 365 ਵਿੱਚ ਫ਼ਾਈਲਾਂ ਨਹੀਂ ਖੋਲ੍ਹ ਸਕੋਗੇ।</translation>
 <translation id="8596540852772265699">ਵਿਉਂਤਬੱਧ ਫਾਈਲਾਂ</translation>
 <translation id="8597845839771543242">ਪ੍ਰਾਪਰਟੀ ਫੌਰਮੈਟ:</translation>
 <translation id="8599681327221583254">ਇੱਕ ਜਾਂ ਇੱਕ ਤੋਂ ਵੱਧ ਨੀਤੀਆਂ ਦਾ ਸਹੀ ਤਰੀਕੇ ਨਾਲ ਸੰਰੂਪਣ ਨਹੀਂ ਕੀਤਾ ਗਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੇ ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਸੰਪਰਕ ਕਰੋ</translation>
@@ -8952,11 +9017,13 @@
 <translation id="8610103157987623234">ਗਲਤ ਫਾਰਮੈਟ, ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ</translation>
 <translation id="8611682088849615761">ਇਸ ਸਾਈਟ ਨੂੰ MIDI ਡੀਵਾਈਸਾਂ 'ਤੇ ਪੂਰੇ ਕੰਟਰੋਲ ਦੀ ਇਜਾਜ਼ਤ ਦੇਣੀ ਜਾਰੀ ਰੱਖੋ</translation>
 <translation id="8613164732773110792">ਸਿਰਫ਼ ਛੋਟੇ ਅੱਖਰ, ਅੰਕ, ਅੰਡਰਸਕੋਰ ਜਾਂ ਡੈਸ਼ਾਂ</translation>
+<translation id="8613504115484579584">ਸਾਈਨ-ਇਨ ਵਿਧੀਆਂ</translation>
 <translation id="8613645710357126807">ਐਕਸਟੈਂਸ਼ਨਾਂ ਦੀ ਵਰਤੋਂ ਕਰਨ ਦੀ ਆਗਿਆ ਨਹੀਂ ਹੈ</translation>
 <translation id="8613786722548417558"><ph name="FILE_NAME" /> ਸੁਰੱਖਿਆ ਜਾਂਚ ਲਈ ਬਹੁਤ ਵੱਡੀ ਹੈ। ਤੁਸੀਂ 50 MB ਤੱਕ ਦੀਆਂ ਫ਼ਾਈਲਾਂ ਖੋਲ੍ਹ ਸਕਦੇ ਹੋ।</translation>
 <translation id="8615618338313291042">ਇਨਕੋਗਨਿਟੋ ਐਪ: <ph name="APP_NAME" /></translation>
 <translation id="8616441548384109662"><ph name="CONTACT_NAME" /> ਨੂੰ ਆਪਣੇ ਸੰਪਰਕਾਂ ਵਿੱਚ ਸ਼ਾਮਲ ਕਰੋ</translation>
 <translation id="8617748779076050570">ਸੁਰੱਖਿਅਤ ਕਨੈਕਸ਼ਨ ਆਈਡੀ: <ph name="CONNECTION_ID" /></translation>
+<translation id="8619000641825875669">OneDrive</translation>
 <translation id="8619803522055190423">ਡ੍ਰੌਪ ਸ਼ੈਡੋ</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8621979332865976405">ਆਪਣੀ ਪੂਰੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰੋ</translation>
@@ -9355,6 +9422,7 @@
 <translation id="8941173171815156065">ਅਨੁਮਤੀ '<ph name="PERMISSION" />' ਰੱਦ ਕਰੋ</translation>
 <translation id="8941688920560496412"><ph name="DEVICE_NAME" /> ਬੰਦ ਹੈ</translation>
 <translation id="894191600409472540">ਮਜ਼ਬੂਤ ਪਾਸਵਰਡ ਬਣਾਓ</translation>
+<translation id="8942714513622077633">ਕੀ Microsoft 365 ਦੇ ਸੈੱਟਅੱਪ ਨੂੰ ਰੱਦ ਕਰਨਾ ਹੈ?</translation>
 <translation id="894360074127026135">Netscape ਅੰਤਰਰਾਸ਼ਟਰੀ ਸਟੈਪ-ਅਪ</translation>
 <translation id="8944099748578356325">ਵਧੇਰੇ ਤੇਜ਼ੀ ਨਾਲ ਬੈਟਰੀ ਵਰਤੇਗਾ (ਇਸ ਸਮੇਂ <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="8944725102565796255">ਜੇ ਤੁਸੀਂ ਇਸ ਖਾਤੇ ਨੂੰ ਸਿਰਫ਼ ਇੱਕ ਵਾਰ ਵਰਤਣਾ ਚਾਹੁੰਦੇ ਹੋ, ਤਾਂ ਤੁਸੀਂ <ph name="GUEST_LINK_BEGIN" />ਡੀਵਾਈਸ ਨੂੰ ਮਹਿਮਾਨ ਵਜੋਂ ਵਰਤ<ph name="GUEST_LINK_END" /> ਸਕਦੇ ਹੋ। ਜੇ ਤੁਸੀਂ ਕਿਸੇ ਹੋਰ ਲਈ ਖਾਤਾ ਸ਼ਾਮਲ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ, ਤਾਂ ਆਪਣੇ <ph name="DEVICE_TYPE" /> ਵਿੱਚ <ph name="LINK_BEGIN" />ਕੋਈ ਨਵਾਂ ਵਿਅਕਤੀ ਸ਼ਾਮਲ ਕਰੋ<ph name="LINK_END" />।
@@ -9403,6 +9471,7 @@
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - ਕ੍ਰੈਸ਼ ਕੀਤਾ</translation>
 <translation id="8981038076986775523">ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਨੂੰ ਵਰਤਣ ਬਾਰੇ ਹੋਰ ਜਾਣੋ</translation>
 <translation id="8981825781894055334">ਕਾਗਜ਼ ਘੱਟ ਹਨ</translation>
+<translation id="8982043802480025357">Word, Excel, ਅਤੇ PowerPoint ਫ਼ਾਈਲਾਂ ਨੂੰ ਖੋਲ੍ਹਣ ਵੇਲੇ, Microsoft 365 ਵਿੱਚ ਖੋਲ੍ਹਣ ਤੋਂ ਪਹਿਲਾਂ ਫ਼ਾਈਲਾਂ Microsoft OneDrive ਵਿੱਚ ਚਲੀਆਂ ਜਾਣਗੀਆਂ</translation>
 <translation id="8983018820925880511">ਇਸ ਨਵੇਂ ਪ੍ਰੋਫਾਈਲ ਦਾ ਪ੍ਰਬੰਧਨ <ph name="DOMAIN" /> ਵੱਲੋਂ ਕੀਤਾ ਜਾਵੇਗਾ। <ph name="BEGIN_LINK" />ਹੋਰ ਜਾਣੋ<ph name="END_LINK" /></translation>
 <translation id="8983632908660087688"><ph name="ORIGIN" /> ਸਾਈਟ <ph name="FILENAME" /> ਦਾ ਸੰਪਾਦਨ ਕਰ ਸਕਦੀ ਹੈ</translation>
 <translation id="8984694057134206124">ਤੁਸੀਂ <ph name="MINUTES" /> ਮਿੰਟ ਲਈ ਹਰ ਕਿਸੇ ਨੂੰ ਦਿਸੋਗੇ। <ph name="LINK_BEGIN" />ਹੋਰ ਜਾਣੋ<ph name="LINK_END" /></translation>
@@ -9546,6 +9615,7 @@
 <translation id="9089416786594320554">ਇਨਪੁਟ ਵਿਧੀਆਂ</translation>
 <translation id="9089959054554410481">ਟੱਚਪੈਡ 'ਤੇ ਸਕ੍ਰੋਲ ਕਰਨ ਦੀ ਦਿਸ਼ਾ ਬਦਲੋ</translation>
 <translation id="9090044809052745245">ਤੁਹਾਡਾ ਡੀਵਾਈਸ ਦੂਜਿਆਂ ਨੂੰ ਇਸ ਤਰ੍ਹਾਂ ਦਾ ਦਿਸਦਾ ਹੈ</translation>
+<translation id="9090295708045818045">{NUM_OF_FILES,plural, =1{ਫ਼ਾਈਲ ਨੂੰ <ph name="CLOUD_PROVIDER" /> 'ਤੇ ਲਿਜਾਇਆ ਨਹੀਂ ਜਾ ਸਕਦਾ}one{ਫ਼ਾਈਲ ਨੂੰ <ph name="CLOUD_PROVIDER" /> 'ਤੇ ਲਿਜਾਇਆ ਨਹੀਂ ਜਾ ਸਕਦਾ}other{ਫ਼ਾਈਲਾਂ ਨੂੰ <ph name="CLOUD_PROVIDER" /> 'ਤੇ ਲਿਜਾਇਆ ਨਹੀਂ ਜਾ ਸਕਦਾ}}</translation>
 <translation id="9093470422440389061">ਵਾਈ-ਫਾਈ ਕਾਰਗੁਜ਼ਾਰੀ ਮਾਪਕ</translation>
 <translation id="9094033019050270033">ਪਾਸਵਰਡ ਅੱਪਡੇਟ ਕਰੋ</translation>
 <translation id="9094038138851891550">ਅਵੈਧ ਵਰਤੋਂਕਾਰ ਨਾਮ</translation>
@@ -9570,6 +9640,7 @@
 <translation id="9108808586816295166">ਸੁਰੱਖਿਅਤ DNS ਸ਼ਾਇਦ ਹਰ ਵੇਲੇ ਉਪਲਬਧ ਨਾ ਹੋਵੇ</translation>
 <translation id="9109122242323516435">ਜਗ੍ਹਾ ਖਾਲੀ ਕਰਨ ਲਈ, ਡੀਵਾਈਸ ਸਟੋਰੇਜ ਵਿੱਚੋਂ ਫ਼ਾਈਲਾਂ ਮਿਟਾਓ।</translation>
 <translation id="9109283579179481106">ਮੋਬਾਈਲ ਨੈੱਟਵਰਕ ਨਾਲ ਕਨੈਕਟ ਕਰੋ</translation>
+<translation id="9110739391922513676">ਫ਼ਾਈਲਾਂ ਖੋਲ੍ਹਣ ਲਈ Microsoft 365 ਦਾ ਸੈੱਟਅੱਪ ਕਰੋ</translation>
 <translation id="9111102763498581341">ਅਣਲਾਕ ਕਰੋ</translation>
 <translation id="9111305600911828693">ਲਾਇਸੰਸ ਦਾ ਸੈੱਟਅੱਪ ਨਹੀਂ ਕੀਤਾ ਹੋਇਆ</translation>
 <translation id="9111395131601239814"><ph name="NETWORKDEVICE" />: <ph name="STATUS" /></translation>
@@ -9692,6 +9763,7 @@
 <translation id="9220820413868316583">ਚੁੱਕੋ ਫਿਰ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="922152298093051471">Chrome ਨੂੰ ਵਿਉਂਤਬੱਧ ਕਰੋ</translation>
 <translation id="923467487918828349">ਸਾਰੇ ਦਿਖਾਓ</translation>
+<translation id="923900195646492191">{NUM_EXTENSIONS,plural, =1{ਇਸਦਾ ਪ੍ਰਬੰਧਨ ਕਰਨ ਲਈ, ਐਕਸਟੈਂਸ਼ਨਾਂ ਖੋਲ੍ਹੋ}one{ਇਸਦਾ ਪ੍ਰਬੰਧਨ ਕਰਨ ਲਈ, ਐਕਸਟੈਂਸ਼ਨਾਂ ਖੋਲ੍ਹੋ}other{ਉਨ੍ਹਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰਨ ਲਈ, ਐਕਸਟੈਂਸ਼ਨਾਂ ਖੋਲ੍ਹੋ}}</translation>
 <translation id="924818813611903184">ChromeOS ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਭਾਸ਼ਾਵਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ</translation>
 <translation id="925270020047573546">ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਡੈਸਕਟਾਪ ਆਡੀਓ ਨੂੰ ਕਾਸਟ ਕਰਨ ਦੀ ਸੁਵਿਧਾ ਨਹੀਂ ਹੈ।</translation>
 <translation id="930268624053534560">ਵਿਸਤ੍ਰਿਤ ਟਾਈਮਸਟੈਂਪਸ</translation>
@@ -9759,6 +9831,7 @@
 <translation id="97905529126098460">ਰੱਦ ਕਰਨ ਦੀ ਪ੍ਰਕਿਰਿਆ ਪੂਰੀ ਹੋਣ ਦੇ ਬਾਅਦ ਇਹ ਵਿੰਡੋ ਬੰਦ ਹੋ ਜਾਵੇਗੀ।</translation>
 <translation id="980731642137034229">ਕਾਰਵਾਈ ਮੀਨੂ ਬਟਨ</translation>
 <translation id="981121421437150478">ਆਫ਼ਲਾਈਨ</translation>
+<translation id="983192555821071799">ਸਾਰੀਆਂ ਟੈਬਸ ਬੰਦ ਕਰੋ</translation>
 <translation id="983511809958454316">VR ਵਿੱਚ ਇਹ ਵਿਸ਼ੇਸ਼ਤਾ ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ</translation>
 <translation id="984275831282074731">ਭੁਗਤਾਨ ਵਿਧੀਆਂ</translation>
 <translation id="984705303330760860">ਸ਼ਬਦ-ਜੋੜ ਜਾਂਚ ਵਾਲੀਆਂ ਭਾਸ਼ਾਵਾਂ ਨੂੰ ਸ਼ਾਮਲ ਕਰੋ</translation>

@@ -71,6 +71,7 @@
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/history_clusters/history_clusters_service_factory.h"
 #include "chrome/browser/image_service/image_service_factory.h"
+#include "chrome/browser/ip_protection/ip_protection_auth_token_getter_factory.h"
 #include "chrome/browser/k_anonymity_service/k_anonymity_service_factory.h"
 #include "chrome/browser/language/accept_languages_service_factory.h"
 #include "chrome/browser/language/language_model_manager_factory.h"
@@ -174,6 +175,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/ui/media_router/cast_notification_controller_lacros_factory.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
+#include "chrome/browser/ui/safety_hub/password_status_check_service_factory.h"
 #include "chrome/browser/ui/tabs/pinned_tab_service_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -214,7 +216,6 @@
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/supervised_user/core/common/buildflags.h"
-#include "components/variations/service/google_groups_updater_service.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/base/media_switches.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -352,6 +353,7 @@
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/safe_browsing/chrome_enterprise_url_lookup_service_factory.h"
+#include "chrome/browser/safe_browsing/client_side_detection_service_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/cloud_binary_upload_service_factory.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/extension_telemetry_service_factory.h"
 #include "chrome/browser/safe_browsing/hash_realtime_service_factory.h"
@@ -692,9 +694,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   GalleryWatchManager::EnsureFactoryBuilt();
   GlobalErrorServiceFactory::GetInstance();
 #endif
-  if (base::FeatureList::IsEnabled(kVariationsGoogleGroupFiltering)) {
-    GoogleGroupsUpdaterServiceFactory::GetInstance();
-  }
+  GoogleGroupsUpdaterServiceFactory::GetInstance();
   HeavyAdServiceFactory::GetInstance();
 #if !BUILDFLAG(IS_ANDROID)
   HidChooserContextFactory::GetInstance();
@@ -716,6 +716,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if !BUILDFLAG(IS_ANDROID)
   InstantServiceFactory::GetInstance();
 #endif
+  IpProtectionAuthTokenGetterFactory::GetInstance();
 #if BUILDFLAG(IS_WIN)
   JumpListFactory::GetInstance();
 #endif
@@ -829,6 +830,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   password_manager::PasswordRequirementsServiceFactory::GetInstance();
   payments::CanMakePaymentQueryFactory::GetInstance();
 #if !BUILDFLAG(IS_ANDROID)
+  PasswordStatusCheckServiceFactory::GetInstance();
   payments::PaymentRequestDisplayManagerFactory::GetInstance();
 #endif
   PasswordManagerSettingsServiceFactory::GetInstance();
@@ -960,6 +962,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::AdvancedProtectionStatusManagerFactory::GetInstance();
   safe_browsing::ChromeEnterpriseRealTimeUrlLookupServiceFactory::GetInstance();
+  safe_browsing::ClientSideDetectionServiceFactory::GetInstance();
   safe_browsing::CloudBinaryUploadServiceFactory::GetInstance();
   safe_browsing::ExtensionTelemetryServiceFactory::GetInstance();
   safe_browsing::HashRealTimeServiceFactory::GetInstance();

@@ -16,7 +16,6 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
-#import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -45,6 +44,8 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_context_menu_provider.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_empty_state_view.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_metrics.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_mutator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_bottom_toolbar.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_new_tab_button.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_page_control.h"
@@ -68,20 +69,6 @@ namespace {
 typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   TabGridConfigurationBottomToolbar = 1,
   TabGridConfigurationFloatingButton,
-};
-
-// Key of the UMA IOS.TabSwitcher.PageChangeInteraction histogram.
-const char kUMATabSwitcherPageChangeInteractionHistogram[] =
-    "IOS.TabSwitcher.PageChangeInteraction";
-
-// Values of the UMA IOS.TabSwitcher.PageChangeInteraction histogram.
-enum class TabSwitcherPageChangeInteraction {
-  kNone = 0,
-  kScrollDrag = 1,
-  kControlTap = 2,
-  kControlDrag = 3,
-  kItemDrag = 4,
-  kMaxValue = kItemDrag,
 };
 
 // Computes the page from the offset and width of `scrollView`.
@@ -169,8 +156,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // mode.
 @property(nonatomic, strong) UIPanGestureRecognizer* searchResultPanRecognizer;
 
-@property(nonatomic, assign, getter=isDragSeesionInProgress)
-    BOOL dragSeesionInProgress;
+@property(nonatomic, assign, getter=isDragSessionInProgress)
+    BOOL dragSessionInProgress;
 
 // YES if it is possible to undo the close all conditions.
 @property(nonatomic, assign) BOOL undoCloseAllAvailable;
@@ -200,7 +187,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
     _pageConfiguration = tabGridPageConfiguration;
-    _dragSeesionInProgress = NO;
+    _dragSessionInProgress = NO;
 
     switch (_pageConfiguration) {
       case TabGridPageConfiguration::kAllPagesEnabled:
@@ -349,9 +336,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       [self broadcastIncognitoContentVisibility];
       [self configureButtonsForActiveAndCurrentPage];
       // Records when the user drags the scrollView to switch pages.
-      [self recordActionSwitchingToPage:_currentPage
-                         withInteration:TabSwitcherPageChangeInteraction::
-                                            kScrollDrag];
+      [self.mutator pageChanged:page
+                    interaction:TabSwitcherPageChangeInteraction::kScrollDrag];
     }
   }
 }
@@ -383,12 +369,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView*)scrollView {
   TabGridPage currentPage = GetPageFromScrollView(scrollView);
-  if (currentPage != self.currentPage && self.isDragSeesionInProgress) {
+  if (currentPage != self.currentPage && self.isDragSessionInProgress) {
     // This happens when the user drags an item from one scroll view into
     // another.
-    [self recordActionSwitchingToPage:currentPage
-                       withInteration:TabSwitcherPageChangeInteraction::
-                                          kItemDrag];
+    [self.mutator pageChanged:currentPage
+                  interaction:TabSwitcherPageChangeInteraction::kItemDrag];
     [self.topToolbar.pageControl setSelectedPage:currentPage animated:YES];
   }
   self.currentPage = currentPage;
@@ -1488,7 +1473,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   BOOL incognitoTabsNeedsAuth =
       (self.currentPage == TabGridPageIncognitoTabs &&
        self.incognitoTabsViewController.contentNeedsAuthentication);
-  enabled = enabled && !incognitoTabsNeedsAuth && !self.isDragSeesionInProgress;
+  enabled = enabled && !incognitoTabsNeedsAuth && !self.isDragSessionInProgress;
 
   [self.topToolbar setCloseAllButtonEnabled:enabled];
   [self.bottomToolbar setCloseAllButtonEnabled:enabled];
@@ -1615,37 +1600,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
 
   [self configureAddToButtonMenuForSelectedItems];
-}
-
-// Records when the user switches between incognito and regular pages in the tab
-// grid. Switching to a different TabGridPage can either be driven by dragging
-// the scrollView or tapping on the pageControl.
-- (void)recordActionSwitchingToPage:(TabGridPage)page
-                     withInteration:
-                         (TabSwitcherPageChangeInteraction)interaction {
-  switch (page) {
-    case TabGridPageIncognitoTabs:
-      // There are duplicate metrics below that correspond to the previous
-      // separate implementations for iPhone and iPad. Having both allow for
-      // comparisons to the previous implementations.
-      base::RecordAction(
-          base::UserMetricsAction("MobileTabGridSelectIncognitoPanel"));
-      break;
-    case TabGridPageRegularTabs:
-      // There are duplicate metrics below that correspond to the previous
-      // separate implementations for iPhone and iPad. Having both allow for
-      // comparisons to the previous implementations.
-      base::RecordAction(
-          base::UserMetricsAction("MobileTabGridSelectRegularPanel"));
-      break;
-    case TabGridPageRemoteTabs:
-      base::RecordAction(
-          base::UserMetricsAction("MobileTabGridSelectRemotePanel"));
-      LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeAllTabs);
-      break;
-  }
-  UMA_HISTOGRAM_ENUMERATION(kUMATabSwitcherPageChangeInteractionHistogram,
-                            interaction);
 }
 
 // Tells the appropriate delegate to create a new item, and then tells the
@@ -2047,7 +2001,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)pinnedViewControllerDragSessionDidEnd:
     (PinnedTabsViewController*)pinnedTabsViewController {
-  self.dragSeesionInProgress = NO;
+  self.dragSessionInProgress = NO;
 
   [self.topToolbar setSearchButtonEnabled:YES];
 
@@ -2177,7 +2131,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)gridViewControllerDragSessionWillBegin:
     (GridViewController*)gridViewController {
-  self.dragSeesionInProgress = YES;
+  self.dragSessionInProgress = YES;
 
   // Actions on both bars should be disabled during dragging.
   [self.topToolbar setDoneButtonEnabled:NO];
@@ -2197,7 +2151,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)gridViewControllerDragSessionDidEnd:
     (GridViewController*)gridViewController {
-  self.dragSeesionInProgress = NO;
+  self.dragSessionInProgress = NO;
 
   [self.topToolbar setSearchButtonEnabled:YES];
 
@@ -2413,9 +2367,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self scrollToPage:newPage animated:YES];
   // Records when the user uses the pageControl to switch pages.
   if (self.currentPage != newPage) {
-    [self recordActionSwitchingToPage:newPage
-                       withInteration:TabSwitcherPageChangeInteraction::
-                                          kControlDrag];
+    [self.mutator pageChanged:newPage
+                  interaction:TabSwitcherPageChangeInteraction::kControlDrag];
   }
 }
 
@@ -2425,9 +2378,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self scrollToPage:newPage animated:YES];
   // Records when the user uses the pageControl to switch pages.
   if (self.currentPage != newPage) {
-    [self recordActionSwitchingToPage:newPage
-                       withInteration:TabSwitcherPageChangeInteraction::
-                                          kControlTap];
+    [self.mutator pageChanged:newPage
+                  interaction:TabSwitcherPageChangeInteraction::kControlTap];
   }
 }
 

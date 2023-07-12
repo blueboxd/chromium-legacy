@@ -110,8 +110,8 @@ class ShortcutsProvider : public AutocompleteProvider,
   // The default max relevance unless overridden by a field trial.
   static const int kShortcutsProviderDefaultMaxRelevance;
 
-  raw_ptr<AutocompleteProviderClient> client_{};
-  scoped_refptr<ShortcutsBackend> backend_{};
+  raw_ptr<AutocompleteProviderClient> client_ = nullptr;
+  scoped_refptr<ShortcutsBackend> backend_;
   bool initialized_{};
 };
 

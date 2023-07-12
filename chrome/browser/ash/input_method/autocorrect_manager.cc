@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/components/kiosk/kiosk_utils.h"
 #include "components/strings/grit/components_strings.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "ui/base/ime/ash/extension_ime_util.h"
@@ -768,7 +769,7 @@ void AutocorrectManager::OnActivate(const std::string& engine_id) {
   auto autocorrect_pref =
       GetPhysicalKeyboardAutocorrectPref(*pref_service, engine_id);
 
-  if (!base::FeatureList::IsEnabled(features::kLacrosSupport) &&
+  if (!crosapi::browser_util::IsLacrosEnabled() &&
       base::FeatureList::IsEnabled(features::kAutocorrectByDefault) &&
       autocorrect_pref == AutocorrectPreference::kDefault &&
       IsUsEnglishId(engine_id) &&
@@ -777,7 +778,7 @@ void AutocorrectManager::OnActivate(const std::string& engine_id) {
       // login screens, guest sessions, etc). Make sure we are only recording
       // this metric when a real user has logged into their profile.
       ProfileHelper::IsUserProfile(profile_) && profile_->IsRegularProfile() &&
-      !profile_->IsGuestSession()) {
+      !profile_->IsGuestSession() && !chromeos::IsKioskSession()) {
     SetPhysicalKeyboardAutocorrectAsEnabledByDefault(pref_service, engine_id);
   }
 }
@@ -1052,7 +1053,7 @@ void AutocorrectManager::UndoAutocorrect() {
 
     if (base::FeatureList::IsEnabled(
             features::kAutocorrectUseReplaceSurroundingText) &&
-        !base::FeatureList::IsEnabled(features::kLacrosSupport)) {
+        !crosapi::browser_util::IsLacrosEnabled()) {
       input_context->ReplaceSurroundingText(
           before, after, pending_autocorrect_->original_text);
     } else {

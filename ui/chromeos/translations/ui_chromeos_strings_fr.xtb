@@ -37,11 +37,11 @@
 <translation id="1297922636971898492">Google Drive n'est pas disponible pour le moment. L'importation reprendra lorsque Google Drive sera à nouveau disponible.</translation>
 <translation id="1307931752636661898">Impossible d'afficher les fichiers Linux</translation>
 <translation id="1313405956111467313">Configuration automatique du proxy</translation>
+<translation id="134645005685694099">L'espace de stockage de votre appareil est insuffisant pour permettre la synchronisation des fichiers. Les nouveaux fichiers ne seront plus synchronisés automatiquement.</translation>
 <translation id="1353686479385938207">"<ph name="PROVIDER_NAME" />" : "<ph name="NETWORK_NAME" />"</translation>
 <translation id="1358735829858566124">Le fichier ou le répertoire ne sont pas utilisables.</translation>
 <translation id="1363028406613469049">Titre</translation>
 <translation id="1378727793141957596">Bienvenue dans Google Drive !</translation>
-<translation id="1379156577998569384">Vos fichiers Mon Drive sont disponibles hors connexion</translation>
 <translation id="1379911846207762492">Lorsque vous n'avez pas de connexion Internet, vous pouvez faire en sorte que les fichiers soient disponibles hors connexion.</translation>
 <translation id="1383876407941801731">Rechercher</translation>
 <translation id="1388045380422025115">Tous les types</translation>
@@ -131,7 +131,6 @@
 <translation id="2084108471225856927">Paramètres de l'appareil</translation>
 <translation id="2084809735218147718">Dit merci en langue des signes</translation>
 <translation id="2088690981887365033">Réseau VPN</translation>
-<translation id="2089751716171649322">Accéder facilement à vos fichiers Google Drive, même hors connexion</translation>
 <translation id="2111134541987263231">Activez l'option <ph name="BEGIN_BOLD" />Autoriser en navigation privée<ph name="END_BOLD" /></translation>
 <translation id="2114191879048183086"><ph name="NUMBER_OF_ITEMS" /> éléments seront supprimés et vous ne pourrez pas les restaurer.</translation>
 <translation id="2122305276694332719">La connexion automatique à un réseau masqué permet à d'autres personnes de voir votre appareil, ainsi que certains paramètres du réseau, ce qui n'est pas recommandé.</translation>
@@ -182,6 +181,7 @@
 <translation id="2464089476039395325">Proxy HTTP</translation>
 <translation id="2467267713099745100">Réseau <ph name="NETWORK_TYPE" />, désactivé</translation>
 <translation id="2468402215065996499">Tamagotchi</translation>
+<translation id="2468470447085858632">Accéder à vos fichiers Google Drive hors connexion avec la synchronisation des fichiers</translation>
 <translation id="2470939964922472929">Vous avez saisi un code PIN erroné trop de fois. Pour définir un nouveau code PIN, saisissez les 8 chiffres du code PUK fourni par votre opérateur.</translation>
 <translation id="2500392669976258912">Gujarati (phonétique)</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -351,12 +351,12 @@
 <translation id="3855472144336161447">Neo 2 allemand</translation>
 <translation id="3858860766373142691">Nom</translation>
 <translation id="3866249974567520381">Description</translation>
-<translation id="3866439285517092441">La batterie est faible. La synchronisation reprendra lorsque l'appareil sera branché à une source d'alimentation.</translation>
 <translation id="3899991606604168269">Français (Canada) avec clavier multilingue</translation>
 <translation id="3901991538546252627">Connexion à <ph name="NAME" /> en cours…</translation>
 <translation id="3906232975181435906">Installation du profil mobile, réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />…</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Coller</translation>
+<translation id="3950820424414687140">Se connecter</translation>
 <translation id="3952872973865944257">Télougou (phonétique)</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="397105322502079400">Calcul en cours…</translation>
@@ -578,12 +578,10 @@
 <translation id="5494920125229734069">Tout sélectionner</translation>
 <translation id="5500122897333236901">Islandais</translation>
 <translation id="5508696409934741614">Points</translation>
-<translation id="5519161320735100193">Paramètres Google Drive</translation>
 <translation id="5522908512596376669">Les fichiers s'affichent désormais sous forme de liste.</translation>
 <translation id="5524517123096967210">Impossible de lire le fichier.</translation>
 <translation id="5533102081734025921">Fichier image <ph name="IMAGE_TYPE" /></translation>
 <translation id="5534520101572674276">Calcul de la taille en cours…</translation>
-<translation id="5536122250858122375">Impossible de synchroniser ce type de fichier</translation>
 <translation id="554153475311314364">Grec (translittération)</translation>
 <translation id="5554171655917412781"><ph name="SELECTED_FOLDERS_COUNT" /> dossiers sélectionnés</translation>
 <translation id="5580591966435005537">machine virtuelle</translation>
@@ -607,6 +605,7 @@
 <translation id="5720028165859493293"><ph name="FILE_NAME" /> déplacé vers la corbeille</translation>
 <translation id="5724172041621205163">Thaï avec clavier Pattachote</translation>
 <translation id="57383366388012121">Le mois dernier</translation>
+<translation id="575175778971367197">Impossible de synchroniser ce fichier pour le moment</translation>
 <translation id="5756666464756035725">Clavier QWERTY hongrois</translation>
 <translation id="5760252553414789727"><ph name="SELECTED_FILES_COUNT" /> éléments sélectionnés</translation>
 <translation id="5763377084591234761">Allemand (Suisse)</translation>
@@ -709,6 +708,7 @@
 <translation id="6558280019477628686">Une erreur s'est produite. Il se peut que certains éléments n'aient pas été supprimés.</translation>
 <translation id="656398493051028875">Suppression de "<ph name="FILENAME" />" en cours...</translation>
 <translation id="6581162200855843583">Lien Google Drive</translation>
+<translation id="6588648400954570689">Paramètres de synchronisation des fichiers</translation>
 <translation id="6594855146910089723">Ce dossier est partagé avec Linux et Parallels Desktop</translation>
 <translation id="6607272825297743757">Informations sur le fichier</translation>
 <translation id="6609332149380188670"><ph name="NUMBER_OF_ITEMS" /> dossiers partagés avec Parallels Desktop</translation>
@@ -744,7 +744,6 @@
 <translation id="6874758081814639712">Personne faisant du tai-chi</translation>
 <translation id="6876155724392614295">Vélo</translation>
 <translation id="6878261347041253038">Clavier dévanâgarî (phonétique)</translation>
-<translation id="6882444584974399416">L'espace de stockage de votre appareil est insuffisant pour permettre l'accès hors connexion à vos fichiers. Les nouveaux fichiers ne seront plus synchronisés automatiquement.</translation>
 <translation id="6885780034956018177">Escargot</translation>
 <translation id="6896758677409633944">Copier</translation>
 <translation id="6898028766943174120">Autres sous-dossiers…</translation>
@@ -834,6 +833,7 @@
 <translation id="7547811415869834682">Néerlandais</translation>
 <translation id="7551643184018910560">Épingler sur l'étagère</translation>
 <translation id="7553492409867692754">Autorisez les applications Linux à accéder aux fichiers du dossier "<ph name="FOLDER_NAME" />"</translation>
+<translation id="7555339735447658365">Vous êtes actuellement hors connexion. La synchronisation des fichiers reprendra lorsque vous serez connecté à Internet.</translation>
 <translation id="7589661784326793847">Veuillez patienter un court instant.</translation>
 <translation id="7592775719802218421">Téléchargement du fichier "<ph name="FILE_NAME" />" pour l'utiliser hors connexion…</translation>
 <translation id="7600126690270271294">Serbe</translation>
@@ -876,6 +876,7 @@
 <translation id="7814857791038398352">Microsoft OneDrive</translation>
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> To</translation>
 <translation id="7831491651892296503">Erreur lors de la configuration du réseau</translation>
+<translation id="7832093238954689746">Synchronisation des fichiers terminée. Les fichiers Mon Drive sont disponibles hors connexion.</translation>
 <translation id="7839804798877833423">L'opération de récupération de ces fichiers consommera environ <ph name="FILE_SIZE" /> de données mobiles.</translation>
 <translation id="7846076177841592234">Annuler la sélection</translation>
 <translation id="7853966320808728790">BÉPO français</translation>
@@ -924,6 +925,7 @@
 <translation id="8179976553408161302">Entrée</translation>
 <translation id="8193175696669055101">Modèle de l'appareil</translation>
 <translation id="8223479393428528563">Pour enregistrer ces fichiers en vue d'une utilisation hors connexion, reconnectez-vous, cliquez sur les fichiers à l'aide du bouton droit de la souris, puis sélectionnez l'option <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
+<translation id="8241139360630443550">Afficher l'espace de stockage</translation>
 <translation id="8249296373107784235">Annuler</translation>
 <translation id="8250690786522693009">Latin</translation>
 <translation id="8250920743982581267">Documents</translation>
@@ -953,8 +955,8 @@
 <translation id="8395901698320285466">Dimensions</translation>
 <translation id="8404498045299006085">Tout conserver</translation>
 <translation id="8408068190360279472">Réseau <ph name="NETWORK_TYPE" /> : connexion…</translation>
-<translation id="841387525767317275">Les fichiers de ce dossier sont disponibles hors connexion</translation>
 <translation id="8425213833346101688">Modifier</translation>
+<translation id="8428213095426709021">Paramètres</translation>
 <translation id="8431909052837336408">Modifier le code de la SIM</translation>
 <translation id="8437209419043462667">Américain</translation>
 <translation id="8452135315243592079">Carte SIM manquante</translation>
@@ -981,7 +983,6 @@
 <translation id="8560515948038859357">Cantonais</translation>
 <translation id="8561206103590473338">Éléphant</translation>
 <translation id="8566466896628108558">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, Force du signal : <ph name="SIGNAL_STRENGTH" /> %, Bloqué par votre administrateur, Détails</translation>
-<translation id="8567555211227790801">Vous êtes actuellement hors connexion. La synchronisation reprendra lorsque vous serez connecté à Internet.</translation>
 <translation id="8568374623837201676">Supprimer définitivement ce fichier ?</translation>
 <translation id="8569764466147087991">Sélectionnez le fichier à ouvrir</translation>
 <translation id="8577897833047451336">Croate</translation>

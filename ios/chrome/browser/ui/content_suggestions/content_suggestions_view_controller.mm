@@ -59,6 +59,7 @@ namespace {
 
 // The bottom padding for the vertical stack view.
 const float kBottomStackViewPadding = 6.0f;
+const float kBottomStackViewExtraPadding = 14.0f;
 
 // The minimum scroll velocity in order to swipe between modules in the Magic
 // Stack.
@@ -174,6 +175,10 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
   // `IsContentSuggestionsUIModuleRefreshEnabled()` is NO, then we add
   // `kBottomStackViewPadding`
   CGFloat bottomSpacing = kBottomStackViewPadding;
+  if (IsMagicStackEnabled()) {
+    // Add more spacing between magic stack and feed header.
+    bottomSpacing = kBottomStackViewExtraPadding;
+  }
   [NSLayoutConstraint activateConstraints:@[
     [self.verticalStackView.leadingAnchor
         constraintEqualToAnchor:self.view.leadingAnchor],
@@ -891,6 +896,7 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
       content_suggestions::ShouldShowWiderMagicStackLayer(self.traitCollection,
                                                           self.view.window);
   _magicStackScrollView.delegate = self;
+  _magicStackScrollView.decelerationRate = UIScrollViewDecelerationRateFast;
   _magicStackScrollView.accessibilityIdentifier =
       kMagicStackScrollViewAccessibilityIdentifier;
   [self addUIElement:_magicStackScrollView

@@ -4,46 +4,45 @@
 
 #include "chrome/browser/web_applications/web_app_utils.h"
 
-#include <bitset>
 #include <iterator>
+#include <map>
 #include <set>
-#include <type_traits>
+#include <string_view>
 #include <utility>
 
 #include "base/base64.h"
 #include "base/check.h"
-#include "base/check_op.h"
 #include "base/containers/contains.h"
+#include "base/containers/enum_set.h"
 #include "base/containers/flat_set.h"
-#include "base/containers/flat_tree.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
+#include "base/functional/identity.h"
 #include "base/memory/weak_ptr.h"
+#include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
-#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
-#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom-shared.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
-#include "chrome/browser/web_applications/web_app_sources.h"
-#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/custom_handlers/protocol_handler.h"
 #include "components/grit/components_resources.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
+#include "components/services/app_service/public/cpp/run_on_os_login_types.h"
 #include "components/site_engagement/content/site_engagement_service.h"
-#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -52,10 +51,10 @@
 #include "content/public/common/alternative_error_page_override_info.mojom.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
-#include "skia/ext/skia_utils_base.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom-shared.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
@@ -502,8 +501,7 @@ std::vector<std::u16string> TransformFileExtensionsForDisplay(
 #if BUILDFLAG(IS_CHROMEOS)
 bool IsWebAppsCrosapiEnabled() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  return base::FeatureList::IsEnabled(features::kWebAppsCrosapi) ||
-         crosapi::browser_util::IsLacrosPrimaryBrowser();
+  return crosapi::browser_util::IsLacrosPrimaryBrowser();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   auto* lacros_service = chromeos::LacrosService::Get();
@@ -567,20 +565,18 @@ ExperimentalWebAppIsolationMode ResolveExperimentalWebAppIsolationFeature() {
 }
 #endif
 
-bool HasAnySpecifiedSourcesAndNoOtherSources(WebAppSources sources,
-                                             WebAppSources specified_sources) {
-  bool has_any_specified_sources = (sources & specified_sources).any();
-  bool has_no_other_sources = (sources & ~specified_sources).none();
+bool HasAnySpecifiedSourcesAndNoOtherSources(
+    WebAppManagementTypes sources,
+    WebAppManagementTypes specified_sources) {
+  bool has_any_specified_sources = sources.HasAny(specified_sources);
+  bool has_no_other_sources =
+      base::Difference(sources, specified_sources).Empty();
   return has_any_specified_sources && has_no_other_sources;
 }
 
-bool CanUserUninstallWebApp(WebAppSources sources) {
-  WebAppSources specified_sources;
-  for (WebAppManagement::Type type : kUserUninstallableSources) {
-    specified_sources.set(type);
-  }
-
-  return HasAnySpecifiedSourcesAndNoOtherSources(sources, specified_sources);
+bool CanUserUninstallWebApp(WebAppManagementTypes sources) {
+  return HasAnySpecifiedSourcesAndNoOtherSources(sources,
+                                                 kUserUninstallableSources);
 }
 
 AppId GetAppIdFromAppSettingsUrl(const GURL& url) {
@@ -640,17 +636,6 @@ apps::LaunchContainer ConvertDisplayModeToAppLaunchContainer(
       return apps::LaunchContainer::kLaunchContainerWindow;
     case DisplayMode::kUndefined:
       return apps::LaunchContainer::kLaunchContainerNone;
-  }
-}
-
-std::string RunOnOsLoginModeToString(RunOnOsLoginMode mode) {
-  switch (mode) {
-    case RunOnOsLoginMode::kWindowed:
-      return "windowed";
-    case RunOnOsLoginMode::kMinimized:
-      return "minimized";
-    case RunOnOsLoginMode::kNotRun:
-      return "not run";
   }
 }
 

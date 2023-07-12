@@ -948,21 +948,19 @@ void SkiaRenderer::FinishDrawingFrame() {
       surface_candidate.color_space = surface_plane.color_space;
       if (current_frame()->root_render_pass->content_color_usage ==
           gfx::ContentColorUsage::kHDR) {
-        surface_candidate.hdr_metadata.emplace();
-        surface_candidate.hdr_metadata->extended_range.emplace();
+        surface_candidate.hdr_metadata.extended_range.emplace();
         // TODO(https://crbug.com/1430768): Track the actual brightness of the
         // content. For now, assume that all HDR content is 1,000 nits.
-        surface_candidate.hdr_metadata->extended_range->desired_headroom =
-            1000.f / gfx::ColorSpace::kDefaultSDRWhiteLevel;
+        surface_candidate.hdr_metadata.extended_range->desired_headroom =
+            gfx::HdrMetadataExtendedRange::kDefaultHdrHeadroom;
       }
       surface_candidate.is_opaque = !surface_plane.enable_blending;
       surface_candidate.opacity = surface_plane.opacity;
       surface_candidate.priority_hint = surface_plane.priority_hint;
       surface_candidate.rounded_corners = surface_plane.rounded_corners;
       surface_candidate.damage_rect =
-          gfx::RectF(surface_plane.damage_rect.value_or(
-              gfx::Rect(surface_plane.resource_size)));
-
+          use_partial_swap_ ? gfx::RectF(swap_buffer_rect_)
+                            : gfx::RectF(surface_plane.resource_size);
       current_frame()->overlay_list.insert(
           current_frame()->overlay_list.begin(), surface_candidate);
     }
@@ -2850,7 +2848,8 @@ void SkiaRenderer::ScheduleOverlays() {
       // If non-backed solid color overlays aren't supported (e.g. Lacros on
       // Linux) then we need to create buffers to send over Wayland.
       if (!output_surface_->capabilities()
-               .supports_non_backed_solid_color_overlays) {
+               .supports_non_backed_solid_color_overlays &&
+          !output_surface_->capabilities().supports_single_pixel_buffer) {
         overlay.mailbox = GetImageMailboxForColor(*overlay.color);
         // This can now be treated as a regular overlay with a mailbox backing.
         overlay.is_solid_color = false;
@@ -3271,8 +3270,12 @@ void SkiaRenderer::UpdateRenderPassTextures(
     }
 
     const RenderPassRequirements& requirements = render_pass_it->second;
-    bool size_appropriate = backing.size.width() == requirements.size.width() &&
-                            backing.size.height() == requirements.size.height();
+    const bool size_is_exact_match = backing.size == requirements.size;
+    const bool size_is_sufficient =
+        backing.size.width() >= requirements.size.width() &&
+        backing.size.height() >= requirements.size.height();
+    bool size_appropriate =
+        backing.is_root ? size_is_exact_match : size_is_sufficient;
     bool mipmap_appropriate =
         !requirements.generate_mipmap || backing.generate_mipmap;
     bool no_change_in_format = requirements.format == backing.format;
@@ -3976,7 +3979,8 @@ void SkiaRenderer::MaybeScheduleBackgroundImage(
 void SkiaRenderer::MaybeDecrementSolidColorBuffers(
     std::vector<OverlayLock>& finished_locks) {
   if (output_surface_->capabilities()
-          .supports_non_backed_solid_color_overlays) {
+          .supports_non_backed_solid_color_overlays ||
+      output_surface_->capabilities().supports_single_pixel_buffer) {
     return;
   }
   for (auto& lock : finished_locks) {

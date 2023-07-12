@@ -333,6 +333,17 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       bool is_fullscreen,
       blink::mojom::FullscreenOptionsPtr options);
 
+#if defined(USE_AURA)
+  // Request to maximize window.
+  virtual void Maximize() {}
+
+  // Request to minimize window.
+  virtual void Minimize() {}
+
+  // Request to restore window.
+  virtual void Restore() {}
+#endif
+
 #if BUILDFLAG(IS_ANDROID)
   // Updates information to determine whether a user gesture should carryover to
   // future navigations. This is needed so navigations within a certain

@@ -871,7 +871,7 @@ class ExtensionURLLoader : public network::mojom::URLLoader {
   mojo::Receiver<network::mojom::URLLoader> loader_{this};
   mojo::Remote<network::mojom::URLLoaderClient> client_;
   network::ResourceRequest request_;
-  const raw_ptr<content::BrowserContext, DanglingUntriaged> browser_context_;
+  const raw_ptr<content::BrowserContext, DanglingAcrossTasks> browser_context_;
   const bool is_web_view_request_;
   const ukm::SourceIdObj ukm_source_id_;
 
@@ -1005,9 +1005,8 @@ class ExtensionURLLoaderFactory : public network::SelfDeletingURLLoaderFactory {
 
     content::BrowserContext* GetBrowserContextToUse(
         content::BrowserContext* context) const override {
-      return ExtensionsBrowserClient::Get()->GetContextForRegularAndIncognito(
-          context, /*force_guest_profile=*/true,
-          /*force_system_profile=*/false);
+      return ExtensionsBrowserClient::Get()->GetContextOwnInstance(
+          context, /*force_guest_profile=*/true);
     }
   };
 

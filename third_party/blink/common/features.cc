@@ -1136,6 +1136,10 @@ BASE_FEATURE(kPaintHoldingCrossOrigin,
              "PaintHoldingCrossOrigin",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kParkableImagesToDisk,
+             "ParkableImagesToDisk",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Enables the use of the PaintCache for Path2D objects that are rasterized
 // out of process.  Has no effect when kCanvasOopRasterization is disabled.
 BASE_FEATURE(kPath2DPaintCache,
@@ -1284,19 +1288,22 @@ BASE_FEATURE(kPrivateAggregationApi,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Selectively allows the JavaScript API to be disabled in just one of the
-// contexts.
+// contexts. The Protected Audience param's name has not been updated (from
+// "fledge") for consistency across versions
 constexpr base::FeatureParam<bool> kPrivateAggregationApiEnabledInSharedStorage{
     &kPrivateAggregationApi, "enabled_in_shared_storage",
     /*default_value=*/true};
-constexpr base::FeatureParam<bool> kPrivateAggregationApiEnabledInFledge{
-    &kPrivateAggregationApi, "enabled_in_fledge",
-    /*default_value=*/true};
+constexpr base::FeatureParam<bool>
+    kPrivateAggregationApiEnabledInProtectedAudience{&kPrivateAggregationApi,
+                                                     "enabled_in_fledge",
+                                                     /*default_value=*/true};
 
 // Selectively allows the Protected Audience-specific extensions to be disabled.
+// The name has not been updated (from "fledge") for consistency across versions
 constexpr base::FeatureParam<bool>
-    kPrivateAggregationApiFledgeExtensionsEnabled{&kPrivateAggregationApi,
-                                                  "fledge_extensions_enabled",
-                                                  /*default_value=*/true};
+    kPrivateAggregationApiProtectedAudienceExtensionsEnabled{
+        &kPrivateAggregationApi, "fledge_extensions_enabled",
+        /*default_value=*/true};
 
 BASE_FEATURE(kProcessHtmlDataImmediately,
              "ProcessHtmlDataImmediately",
@@ -1401,6 +1408,11 @@ BASE_FEATURE(kRuntimeFeatureStateControllerApplyFeatureDiff,
              "RuntimeFeatureStateControllerApplyFeatureDiff",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// https://html.spec.whatwg.org/multipage/system-state.html#safelisted-scheme
+BASE_FEATURE(kSafelistFTPToRegisterProtocolHandler,
+             "SafelistFTPToRegisterProtocolHandler",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kSSVTrailerEnforceExposureAssertion,
              "SSVTrailerEnforceExposureAssertion",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1448,7 +1460,7 @@ BASE_FEATURE(kSendCnameAliasesToSubresourceFilterFromRenderer,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSerializeAccessibilityPostLifecycle,
-             "SerializeAccessibilityPostLifeycle",
+             "SerializeAccessibilityPostLifecycle",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Experiment of the delay from navigation to starting an update of a service
@@ -1520,6 +1532,10 @@ const base::FeatureParam<int>
     kSharedStorageSelectURLBitBudgetPerOriginPerPageLoad = {
         &kSharedStorageSelectURLLimit,
         "SharedStorageSelectURLBitBudgetPerOriginPerPageLoad", 6};
+
+BASE_FEATURE(kSharedStorageAPIM117,
+             "SharedStorageAPIM117",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSimulateClickOnAXFocus,
              "SimulateClickOnAXFocus",
@@ -1661,6 +1677,14 @@ const base::FeatureParam<base::TimeDelta>
     kStorageAccessAPITopLevelUserInteractionBound{
         &kStorageAccessAPI,
         "storage_access_api_top_level_user_interaction_bound", base::Days(30)};
+const base::FeatureParam<base::TimeDelta>
+    kStorageAccessAPIImplicitPermissionLifetime{
+        &kStorageAccessAPI, "storage_access_api_implicit_permission_lifetime",
+        base::Hours(24)};
+const base::FeatureParam<base::TimeDelta>
+    kStorageAccessAPIExplicitPermissionLifetime{
+        &kStorageAccessAPI, "storage_access_api_explicit_permission_lifetime",
+        base::Days(30)};
 
 BASE_FEATURE(kStylusPointerAdjustment,
              "StylusPointerAdjustment",
@@ -1773,7 +1797,12 @@ const base::FeatureParam<base::TimeDelta>
 // Enable borderless mode for desktop PWAs. go/borderless-mode
 BASE_FEATURE(kWebAppBorderless,
              "WebAppBorderless",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_CHROMEOS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // BUILDFLAG(IS_CHROMEOS)
+);
 
 // Controls scope extensions feature in web apps. Controls parsing of
 // "scope_extensions" field in web app manifests. See explainer for more
@@ -1860,7 +1889,7 @@ BASE_FEATURE(kWebRtcIgnoreUnspecifiedColorSpace,
 
 BASE_FEATURE(kWebRtcInitializeEncoderOnFirstFrame,
              "WebRtcInitializeEncoderOnFirstFrame",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kWebRtcMetronome,
              "WebRtcMetronome",
@@ -1946,6 +1975,10 @@ bool IsNewBaseUrlInheritanceBehaviorEnabled() {
 bool IsParkableStringsToDiskEnabled() {
   // Always enabled as soon as compression is enabled.
   return base::FeatureList::IsEnabled(kCompressParkableStrings);
+}
+
+bool IsParkableImagesToDiskEnabled() {
+  return base::FeatureList::IsEnabled(kParkableImagesToDisk);
 }
 
 bool IsSetTimeoutWithoutClampEnabled() {

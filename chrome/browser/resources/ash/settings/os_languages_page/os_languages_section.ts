@@ -17,8 +17,8 @@ import './os_japanese_manage_user_dictionary_page.js';
 import './os_languages_page_v2.js';
 import './smart_inputs_page.js';
 import '../os_settings_page/os_settings_animated_pages.js';
-import '../os_settings_page/os_settings_section.js';
 import '../os_settings_page/os_settings_subpage.js';
+import '../os_settings_page/settings_card.js';
 import '../settings_shared.css.js';
 import '../settings_vars.css.js';
 
@@ -82,8 +82,8 @@ class OsSettingsLanguagesSectionElement extends
       inputPageTitle_: {
         type: String,
         value(this: OsSettingsLanguagesSectionElement): string {
-          const isUpdate2 =
-              loadTimeData.getBoolean('enableLanguageSettingsV2Update2');
+          // TODO: b/263823772 - Inline this variable.
+          const isUpdate2 = true;
           return this.i18n(isUpdate2 ? 'inputPageTitleV2' : 'inputPageTitle');
         },
       },

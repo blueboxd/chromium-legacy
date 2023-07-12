@@ -11,7 +11,6 @@
 #include "base/check_op.h"
 #include "base/logging.h"
 #include "base/notreached.h"
-#include "components/viz/common/resources/resource_format.h"
 
 namespace viz {
 
@@ -370,68 +369,67 @@ SharedImageFormat GetSharedImageFormat(gfx::BufferFormat format) {
 unsigned int SharedImageFormatRestrictedSinglePlaneUtils::ToGLDataFormat(
     SharedImageFormat format) {
   CHECK(format.is_single_plane());
-  static const GLenum format_gl_data_format[] = {
-      GL_RGBA,       // RGBA_8888
-      GL_RGBA,       // RGBA_4444
-      GL_BGRA_EXT,   // BGRA_8888
-      GL_ALPHA,      // ALPHA_8
-      GL_LUMINANCE,  // LUMINANCE_8
-      GL_RGB,        // RGB_565
-      GL_RGB,        // BGR_565
-      GL_RGB,        // ETC1
-      GL_RED_EXT,    // RED_8
-      GL_RG_EXT,     // RG_88
-      GL_LUMINANCE,  // LUMINANCE_F16
-      GL_RGBA,       // RGBA_F16
-      GL_RED_EXT,    // R16_EXT
-      GL_RG_EXT,     // RG16_EXT
-      GL_RGB,        // RGBX_8888
-      GL_RGB,        // BGRX_8888
-      GL_RGBA,       // RGBA_1010102
-      GL_RGBA,       // BGRA_1010102
-      GL_ZERO,       // YVU_420
-      GL_ZERO,       // YUV_420_BIPLANAR
-      GL_ZERO,       // YUVA_420_TRIPLANAR
-      GL_ZERO,       // P010
-  };
-  static_assert(std::size(format_gl_data_format) == (RESOURCE_FORMAT_MAX + 1),
-                "format_gl_data_format does not handle all cases.");
+  if (format == SinglePlaneFormat::kRGBA_8888 ||
+      format == SinglePlaneFormat::kRGBA_4444 ||
+      format == SinglePlaneFormat::kRGBA_F16 ||
+      format == SinglePlaneFormat::kRGBA_1010102 ||
+      format == SinglePlaneFormat::kBGRA_1010102) {
+    return GL_RGBA;
+  } else if (format == SinglePlaneFormat::kBGRA_8888) {
+    return GL_BGRA_EXT;
+  } else if (format == SinglePlaneFormat::kALPHA_8) {
+    return GL_ALPHA;
+  } else if (format == SinglePlaneFormat::kLUMINANCE_8 ||
+             format == SinglePlaneFormat::kLUMINANCE_F16) {
+    return GL_LUMINANCE;
+  } else if (format == SinglePlaneFormat::kRGB_565 ||
+             format == SinglePlaneFormat::kBGR_565 ||
+             format == SinglePlaneFormat::kETC1 ||
+             format == SinglePlaneFormat::kRGBX_8888 ||
+             format == SinglePlaneFormat::kBGRX_8888) {
+    return GL_RGB;
+  } else if (format == SinglePlaneFormat::kR_8 ||
+             format == SinglePlaneFormat::kR_16) {
+    return GL_RED_EXT;
+  } else if (format == SinglePlaneFormat::kRG_88 ||
+             format == SinglePlaneFormat::kRG_1616) {
+    return GL_RG_EXT;
+  }
 
-  return format_gl_data_format[format.resource_format()];
+  return GL_ZERO;
 }
 
 // static
 unsigned int SharedImageFormatRestrictedSinglePlaneUtils::ToGLDataType(
     SharedImageFormat format) {
   CHECK(format.is_single_plane());
-  static const GLenum format_gl_data_type[] = {
-      GL_UNSIGNED_BYTE,                    // RGBA_8888
-      GL_UNSIGNED_SHORT_4_4_4_4,           // RGBA_4444
-      GL_UNSIGNED_BYTE,                    // BGRA_8888
-      GL_UNSIGNED_BYTE,                    // ALPHA_8
-      GL_UNSIGNED_BYTE,                    // LUMINANCE_8
-      GL_UNSIGNED_SHORT_5_6_5,             // RGB_565,
-      GL_UNSIGNED_SHORT_5_6_5,             // BGR_565
-      GL_UNSIGNED_BYTE,                    // ETC1
-      GL_UNSIGNED_BYTE,                    // RED_8
-      GL_UNSIGNED_BYTE,                    // RG_88
-      GL_HALF_FLOAT_OES,                   // LUMINANCE_F16
-      GL_HALF_FLOAT_OES,                   // RGBA_F16
-      GL_UNSIGNED_SHORT,                   // R16_EXT
-      GL_UNSIGNED_SHORT,                   // RG16_EXT
-      GL_UNSIGNED_BYTE,                    // RGBX_8888
-      GL_UNSIGNED_BYTE,                    // BGRX_8888
-      GL_UNSIGNED_INT_2_10_10_10_REV_EXT,  // RGBA_1010102
-      GL_UNSIGNED_INT_2_10_10_10_REV_EXT,  // BGRA_1010102
-      GL_ZERO,                             // YVU_420
-      GL_ZERO,                             // YUV_420_BIPLANAR
-      GL_ZERO,                             // YUVA_420_TRIPLANAR
-      GL_ZERO,                             // P010
-  };
-  static_assert(std::size(format_gl_data_type) == (RESOURCE_FORMAT_MAX + 1),
-                "format_gl_data_type does not handle all cases.");
 
-  return format_gl_data_type[format.resource_format()];
+  if (format == SinglePlaneFormat::kRGBA_8888 ||
+      format == SinglePlaneFormat::kBGRA_8888 ||
+      format == SinglePlaneFormat::kALPHA_8 ||
+      format == SinglePlaneFormat::kLUMINANCE_8 ||
+      format == SinglePlaneFormat::kETC1 || format == SinglePlaneFormat::kR_8 ||
+      format == SinglePlaneFormat::kRG_88 ||
+      format == SinglePlaneFormat::kRGBX_8888 ||
+      format == SinglePlaneFormat::kBGRX_8888) {
+    return GL_UNSIGNED_BYTE;
+  } else if (format == SinglePlaneFormat::kRGBA_4444) {
+    return GL_UNSIGNED_SHORT_4_4_4_4;
+  } else if (format == SinglePlaneFormat::kRGB_565 ||
+             format == SinglePlaneFormat::kRGB_565) {
+    return GL_UNSIGNED_SHORT_5_6_5;
+  } else if (format == SinglePlaneFormat::kLUMINANCE_F16 ||
+             format == SinglePlaneFormat::kRGBA_F16) {
+    return GL_HALF_FLOAT_OES;
+  } else if (format == SinglePlaneFormat::kR_16 ||
+             format == SinglePlaneFormat::kRG_1616) {
+    return GL_UNSIGNED_SHORT;
+  } else if (format == SinglePlaneFormat::kRGBA_1010102 ||
+             format == SinglePlaneFormat::kBGRA_1010102) {
+    return GL_UNSIGNED_INT_2_10_10_10_REV_EXT;
+  }
+
+  return GL_ZERO;
 }
 
 // static
@@ -440,58 +438,55 @@ SharedImageFormatRestrictedSinglePlaneUtils::ToGLTextureStorageFormat(
     SharedImageFormat format,
     bool use_angle_rgbx_format) {
   CHECK(format.is_single_plane());
-  switch (format.resource_format()) {
-    case RGBA_8888:
-      return GL_RGBA8_OES;
-    case BGRA_8888:
-      return GL_BGRA8_EXT;
-    case RGBA_F16:
-      return GL_RGBA16F_EXT;
-    case RGBA_4444:
-      return GL_RGBA4;
-    case ALPHA_8:
-      return GL_ALPHA8_EXT;
-    case LUMINANCE_8:
-      return GL_LUMINANCE8_EXT;
-    case BGR_565:
-    case RGB_565:
-      return GL_RGB565;
-    case RED_8:
-      return GL_R8_EXT;
-    case RG_88:
-      return GL_RG8_EXT;
-    case LUMINANCE_F16:
-      return GL_LUMINANCE16F_EXT;
-    case R16_EXT:
-      return GL_R16_EXT;
-    case RG16_EXT:
-      return GL_RG16_EXT;
-    case RGBX_8888:
-    case BGRX_8888:
-      return use_angle_rgbx_format ? GL_RGBX8_ANGLE : GL_RGB8_OES;
-    case ETC1:
-      return GL_ETC1_RGB8_OES;
-    case P010:
+  if (format == SinglePlaneFormat::kRGBA_8888) {
+    return GL_RGBA8_OES;
+  } else if (format == SinglePlaneFormat::kBGRA_8888) {
+    return GL_BGRA8_EXT;
+  } else if (format == SinglePlaneFormat::kRGBA_F16) {
+    return GL_RGBA16F_EXT;
+  } else if (format == SinglePlaneFormat::kRGBA_4444) {
+    return GL_RGBA4;
+  } else if (format == SinglePlaneFormat::kALPHA_8) {
+    return GL_ALPHA8_EXT;
+  } else if (format == SinglePlaneFormat::kLUMINANCE_8) {
+    return GL_LUMINANCE8_EXT;
+  } else if (format == SinglePlaneFormat::kBGR_565 ||
+             format == SinglePlaneFormat::kRGB_565) {
+    return GL_RGB565;
+  } else if (format == SinglePlaneFormat::kR_8) {
+    return GL_R8_EXT;
+  } else if (format == SinglePlaneFormat::kRG_88) {
+    return GL_RG8_EXT;
+  } else if (format == SinglePlaneFormat::kLUMINANCE_F16) {
+    return GL_LUMINANCE16F_EXT;
+  } else if (format == SinglePlaneFormat::kR_16) {
+    return GL_R16_EXT;
+  } else if (format == SinglePlaneFormat::kRG_1616) {
+    return GL_RG16_EXT;
+  } else if (format == SinglePlaneFormat::kRGBX_8888 ||
+             format == SinglePlaneFormat::kBGRX_8888) {
+    return use_angle_rgbx_format ? GL_RGBX8_ANGLE : GL_RGB8_OES;
+  } else if (format == SinglePlaneFormat::kETC1) {
+    return GL_ETC1_RGB8_OES;
+  } else if (format == LegacyMultiPlaneFormat::kP010) {
 #if BUILDFLAG(IS_APPLE)
-      DLOG(ERROR) << "Sampling of P010 resources must be done per-plane.";
+    DLOG(ERROR) << "Sampling of P010 resources must be done per-plane.";
 #endif
-      return GL_RGB10_A2_EXT;
-    case RGBA_1010102:
-    case BGRA_1010102:
-      return GL_RGB10_A2_EXT;
-    case YVU_420:
-    case YUV_420_BIPLANAR:
+    return GL_RGB10_A2_EXT;
+  } else if (format == SinglePlaneFormat::kRGBA_1010102 ||
+             format == SinglePlaneFormat::kBGRA_1010102) {
+    return GL_RGB10_A2_EXT;
+  } else if (format == LegacyMultiPlaneFormat::kYV12 ||
+             format == LegacyMultiPlaneFormat::kNV12) {
 #if BUILDFLAG(IS_APPLE)
-      DLOG(ERROR) << "Sampling of YUV_420 resources must be done per-plane.";
+    DLOG(ERROR) << "Sampling of YUV_420 resources must be done per-plane.";
 #endif
-      return GL_RGB8_OES;
-    case YUVA_420_TRIPLANAR:
+    return GL_RGB8_OES;
+  } else if (format == LegacyMultiPlaneFormat::kNV12A) {
 #if BUILDFLAG(IS_APPLE)
-      DLOG(ERROR) << "Sampling of YUVA_420 resources must be done per-plane.";
+    DLOG(ERROR) << "Sampling of YUVA_420 resources must be done per-plane.";
 #endif
-      return GL_RGBA8_OES;
-    default:
-      break;
+    return GL_RGBA8_OES;
   }
   NOTREACHED();
   return GL_RGBA8_OES;

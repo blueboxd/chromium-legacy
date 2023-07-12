@@ -297,6 +297,7 @@
 <translation id="2643064289437760082">Դուք միշտ կարող եք ջնջել գովազդի արդյունավետության գնահատման տվյալները՝ ջնջելով այցելությունների պատմությունը</translation>
 <translation id="2647434099613338025">Ավելացնել լեզու</translation>
 <translation id="2649068648233607930">Ձեր դիտարկիչը կառավարվում է <ph name="DOMAIN" /> կայքի կողմից</translation>
+<translation id="2650077116157640844">Եվ այլ տիրույթներ համաժամացված սարքերում</translation>
 <translation id="2650348088770008516">Տվյալների պաշտպանության ուղեցույցի մասին տեղեկությունները փակված են</translation>
 <translation id="2650408372219180431">Արտահանել և ջնջել այս սարքում պահված գաղտնաբառերը</translation>
 <translation id="2650751991977523696">Նորի՞ց ներբեռնել ֆայլը</translation>
@@ -445,7 +446,6 @@
 <translation id="3421726884497337397">Ընտրեք, թե երբ պետք է կողմնակի քուքիները արգելափակվեն</translation>
 <translation id="3428747202529429621">Ապահովում է ձեր անվտանգությունը Chrome-ում և Google հավելվածներում, երբ մտել եք ձեր հաշիվ</translation>
 <translation id="3429160811076349561">Փորձնական գործառույթներն անջատված են</translation>
-<translation id="3432973700170747422">Ջնջել վերջին 15 րոպեն</translation>
 <translation id="3435465986463792564">Շատ պատուհաննե՞ր եք բացել։ Դրանք կարող եք կառավարել այստեղ</translation>
 <translation id="3435738964857648380">Անվտանգություն</translation>
 <translation id="3443221991560634068">Վերաբեռնել ընթացիկ էջը</translation>
@@ -479,9 +479,9 @@
 <translation id="3587596251841506391">Օգնեք բարելավել անվտանգությունը</translation>
 <translation id="3597179440835065298">Ստացեք ավելի լավ առաջարկներ</translation>
 <translation id="3602290021589620013">Նախադիտում</translation>
-<translation id="360901359071773787">Ջնջե՞լ վերջին 15 րոպեն</translation>
 <translation id="3616113530831147358">Աուդիո</translation>
 <translation id="3622349720008044802">Կառավարել պատուհանները</translation>
+<translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{+ 1 կայք}one{+ # կայք}other{+ # կայք}}</translation>
 <translation id="3631987586758005671">Ուղարկվում է <ph name="DEVICE_NAME" /> սարքին</translation>
 <translation id="363596933471559332">Ավտոմատ կերպով մուտք գործել կայքեր՝ պահված մուտքային տվյալների օգնությամբ: Եթե այս գործառույթն անջատված է, ապա ամեն անգամ կայք մտնելիս ձեզանից կպահանջվի հաստատում:</translation>
 <translation id="3636940436873918441">Նախընտրելի լեզուներ</translation>
@@ -750,6 +750,7 @@
 <translation id="5010886807652684893">Վիզուալ տեսք</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> կայքն ուզում է միանալ</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">Վերջին 15 րոպեն</translation>
 <translation id="5032430150487044192">Չհաջողվեց ստեղծել QR կոդը</translation>
 <translation id="5039804452771397117">Թույլ տալ</translation>
 <translation id="5040262127954254034">Գաղտնիություն</translation>
@@ -768,7 +769,6 @@
 <translation id="5118713593561876160">Հետաքրքրություններ</translation>
 <translation id="5122378528687922675">Եթե օգնության կարիք ունենաս, դիմիր ծնողիդ (<ph name="PARENT_NAME_1" /> կամ <ph name="PARENT_NAME_2" />)</translation>
 <translation id="5123685120097942451">Ինկոգնիտո ներդիր</translation>
-<translation id="5126510351761255129">Հաստատեք ձեր քարտը</translation>
 <translation id="5132942445612118989">Համաժամացրեք ձեր գաղտնաբառերը, պատմությունն ու մյուս կարգավորումները ձեր բոլոր սարքերում</translation>
 <translation id="5139940364318403933">Իմացեք, թե ինչպես օգտագործել Google Drive-ը</translation>
 <translation id="5142281402488957685">Նոր պատմություններ տեսնելու համար քաշեք էջը ներքև</translation>
@@ -928,7 +928,6 @@
 <translation id="6011308810877101166">Բարելավել որոնման առաջարկները</translation>
 <translation id="6026538407078977628">Ցուցադրել լիաէկրան ռեժիմում</translation>
 <translation id="6030719887161080597">Կառավարեք կայքերի կողմից օգտագործվող տեղեկությունները՝ գովազդի արդյունավետությունը գնահատելու համար</translation>
-<translation id="6034146297924778597">Վերջին 15 րոպեի պատմությունը կջնջվի․</translation>
 <translation id="6039379616847168523">Անցնել հաջորդ ներդիր</translation>
 <translation id="6040143037577758943">Փակել</translation>
 <translation id="604124094241169006">Ավտոմատ</translation>
@@ -1370,6 +1369,7 @@
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />Ձեր սարքերը<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">Շարունակել</translation>
 <translation id="8209050860603202033">Բացել պատկերը</translation>
+<translation id="8210770465353466621">Ձեր ներդիրները կգտնեք այստեղ</translation>
 <translation id="8215740705341534369">Կողային էկրան</translation>
 <translation id="8218622182176210845">Կառավարեք ձեր հաշիվը</translation>
 <translation id="8221401890884589479">Դուք կարող եք արգելափակել անցանկալի կայքերը։ Chrome-ը նաև ցանկից ավտոմատ ջնջում է այն կայքերը, որոնք ավելացվել են առնվազն 30 օր առաջ։ <ph name="BEGIN_LINK" />Իմանալ ավելին<ph name="END_LINK" /></translation>

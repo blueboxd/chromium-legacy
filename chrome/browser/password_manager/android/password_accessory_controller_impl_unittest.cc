@@ -38,6 +38,7 @@
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/credential_cache.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/mock_password_store_interface.h"
 #include "components/password_manager/core/browser/mock_webauthn_credentials_delegate.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
@@ -528,37 +529,6 @@ TEST_F(PasswordAccessoryControllerTest, CacheChangesReplacePasswords) {
           .AddUserInfo(kExampleSite)
           .AppendField(u"Alf", u"Alf", false, true)
           .AppendField(u"M3lm4k", password_for_str(u"Alf"), true, false)
-          .Build());
-}
-
-TEST_F(PasswordAccessoryControllerTest, HidesEntriesForPSLMatchedOriginsInV1) {
-  CreateSheetController();
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      autofill::features::kAutofillKeyboardAccessory);
-  cache()->SaveCredentialsAndBlocklistedForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get(),
-       CreateEntry("Alf", "R4nd0m", GURL(kExampleSiteMobile), true, false)
-           .get()},
-      CredentialCache::IsOriginBlocklisted(false),
-      url::Origin::Create(GURL(kExampleSite)));
-
-  AccessorySheetData result(AccessoryTabType::PASSWORDS, std::u16string());
-  EXPECT_CALL(mock_manual_filling_controller_, RefreshSuggestions)
-      .WillOnce(SaveArg<0>(&result));
-
-  controller()->RefreshSuggestionsForField(
-      FocusedFieldType::kFillableUsernameField,
-      /*is_manual_generation_available=*/false);
-
-  EXPECT_EQ(
-      result,
-      PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
-          .AddUserInfo(kExampleSite)
-          .AppendField(u"Ben", u"Ben",
-                       /*is_obfuscated=*/false, /*selectable=*/true)
-          .AppendField(u"S3cur3", password_for_str(u"Ben"),
-                       /*is_obfuscated=*/true, /*selectable=*/false)
           .Build());
 }
 
@@ -1200,7 +1170,11 @@ TEST_F(PasswordAccessoryControllerTest,
       /*display_text=*/u"S3cur3", /*text_to_fill=*/u"S3cur3",
       /*a11y_description=*/u"S3cur3", /*id=*/"", /*is_obfuscated=*/true,
       /*selectable=*/true);
-  EXPECT_CALL(show_migration_warning_callback_, Run);
+  EXPECT_CALL(
+      show_migration_warning_callback_,
+      Run(_, _,
+          password_manager::metrics_util::PasswordMigrationWarningTriggers::
+              kKeyboardAcessorySheet));
   controller()->OnFillingTriggered(autofill::FieldGlobalId(), selected_field);
 }
 

@@ -18,7 +18,7 @@ BASE_FEATURE(kPageInfoStoreInfo,
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kPageInfoAboutThisSiteImprovedBottomSheet,
              "PageInfoAboutThisSiteImprovedBottomSheet",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 const char* default_langs[]{"en", "pt", "fr", "it", "nl", "de", "es"};
@@ -33,7 +33,7 @@ extern bool IsAboutThisSiteFeatureEnabled(const std::string& locale) {
 
 BASE_FEATURE(kPageInfoAboutThisSiteNewIcon,
              "PageInfoAboutThisSiteNewIcon",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kPageInfoAboutThisSite,
              "PageInfoAboutThisSite",
@@ -57,14 +57,6 @@ BASE_FEATURE(kPageInfoHistoryDesktop,
 BASE_FEATURE(kPageInfoHideSiteSettings,
              "PageInfoHideSiteSettings",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kPageInfoCookiesSubpage,
-             "PageInfoCookiesSubpage",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kPageSpecificSiteDataDialog,
-             "PageSpecificSiteDataDialog",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #endif
 

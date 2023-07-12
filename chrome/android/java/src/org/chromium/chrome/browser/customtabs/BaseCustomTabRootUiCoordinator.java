@@ -72,7 +72,6 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuBlocker;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController.StatusBarColorProvider;
-import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerFactory;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 import org.chromium.components.feature_engagement.Tracker;
@@ -196,9 +195,7 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
         mNavigationController = customTabNavigationController;
         mIntentDataProvider = intentDataProvider;
 
-        if (CustomTabsConnection.getInstance().isDynamicFeatureEnabled(
-                    ChromeFeatureList.CCT_BRAND_TRANSPARENCY)
-                && intentDataProvider.get().getActivityType() == ActivityType.CUSTOM_TAB
+        if (intentDataProvider.get().getActivityType() == ActivityType.CUSTOM_TAB
                 && !intentDataProvider.get().isOpenedByChrome()
                 && !intentDataProvider.get().isIncognito()) {
             String packageName = mIntentDataProvider.get().getClientPackageName();
@@ -282,7 +279,6 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                         -> mPageInsightsCoordinator.initView(v),
                 mActivity.getWindow(), mWindowAndroid.getKeyboardDelegate(),
                 () -> mActivity.findViewById(R.id.page_insights_hub_container));
-        controller.setAccessibilityUtil(ChromeAccessibilityUtil.get());
 
         mPageInsightsCoordinator = new PageInsightsCoordinator(mActivity, mActivityTabProvider,
                 controller, getBottomSheetController(), mExpandedBottomSheetHelper,

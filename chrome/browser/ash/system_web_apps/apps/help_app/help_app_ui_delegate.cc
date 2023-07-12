@@ -17,15 +17,19 @@
 #include "chrome/browser/ash/crosapi/web_app_service_ash.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/upload_office_to_cloud/upload_office_to_cloud.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/scalable_iph/scalable_iph_factory.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/ash/components/scalable_iph/scalable_iph_constants.h"
 #include "chromeos/crosapi/mojom/web_app_service.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -72,8 +76,46 @@ void ChromeHelpAppUIDelegate::ShowParentalControls() {
       profile, chromeos::settings::mojom::kPeopleSectionPath);
 }
 
+void ChromeHelpAppUIDelegate::TriggerWelcomeTipCallToAction(
+    help_app::mojom::ActionTypeId action_type_id) {
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  scalable_iph::ScalableIph* scalable_iph =
+      ScalableIphFactory::GetForBrowserContext(profile);
+  // If ScalableIph is not available for some reason (e.g. managed account),
+  // do not perform any action.
+  if (!scalable_iph) {
+    return;
+  }
+
+  // If the given action type id does not have a corresponding call-to-action,
+  // do not perform any action.
+  if (static_cast<int>(action_type_id) <=
+          static_cast<int>(scalable_iph::ActionType::kInvalid) ||
+      static_cast<int>(action_type_id) >
+          static_cast<int>(scalable_iph::ActionType::kLastAction)) {
+    DLOG(WARNING) << "The given action type id (" << action_type_id
+                  << ") does not have a corresponding call-to-action.";
+    return;
+  }
+
+  CHECK(false) << "Removing this check requires a review from IPC reviewer. "
+                  "See https://crrev.com/c/4646287 for details";
+
+  scalable_iph->PerformAction(
+      static_cast<scalable_iph::ActionType>(action_type_id));
+}
+
 PrefService* ChromeHelpAppUIDelegate::GetLocalState() {
   return g_browser_process->local_state();
+}
+
+void ChromeHelpAppUIDelegate::LaunchMicrosoft365Setup() {
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  if (!chromeos::IsEligibleAndEnabledUploadOfficeToCloud(profile)) {
+    return;
+  }
+  ash::cloud_upload::LaunchMicrosoft365Setup(
+      profile, web_ui_->GetWebContents()->GetTopLevelNativeWindow());
 }
 
 void ChromeHelpAppUIDelegate::MaybeShowDiscoverNotification() {

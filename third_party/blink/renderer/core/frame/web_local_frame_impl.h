@@ -357,7 +357,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void SetTargetToCurrentHistoryItem(const WebString& target) override;
   void UpdateCurrentHistoryItem() override;
   PageState CurrentHistoryItemToPageState() override;
-  const WebHistoryItem& GetCurrentHistoryItem() const override;
+  WebHistoryItem GetCurrentHistoryItem() const override;
   void SetLocalStorageArea(
       CrossVariantMojoRemote<mojom::StorageAreaInterfaceBase>
           local_storage_area) override;
@@ -420,9 +420,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       const StorageKey& storage_key,
       const KURL& creator_base_url,
       network::mojom::blink::WebSandboxFlags sandbox_flags =
-          network::mojom::blink::WebSandboxFlags::kNone,
-      bool coop_forbids_initial_empty_document_to_be_cross_origin_isolated =
-          true);
+          network::mojom::blink::WebSandboxFlags::kNone);
   LocalFrame* GetFrame() const { return frame_.Get(); }
 
   void WillBeDetached();
@@ -439,8 +437,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       network::mojom::blink::WebSandboxFlags,
       const DocumentToken& document_token,
       std::unique_ptr<WebPolicyContainer>,
-      const WebURL& creator_base_url,
-      bool coop_forbids_initial_empty_document_to_be_cross_origin_isolated);
+      const WebURL& creator_base_url);
   static WebLocalFrameImpl* CreateProvisional(
       WebLocalFrameClient*,
       InterfaceRegistry*,
@@ -639,9 +636,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       ukm::SourceId document_ukm_source_id,
       const KURL& creator_base_url,
       network::mojom::blink::WebSandboxFlags sandbox_flags =
-          network::mojom::blink::WebSandboxFlags::kNone,
-      bool coop_forbids_initial_empty_document_to_be_cross_origin_isolated =
-          true);
+          network::mojom::blink::WebSandboxFlags::kNone);
 
   // This function converts mojom::BackForwardCacheNotRestoredReasonsPtr to
   // mojom::blink::BackForwardCacheNotRestoredReasonsPtr.
@@ -706,7 +701,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   // scrolled and focused editable node.
   bool has_scrolled_focused_editable_node_into_rect_ = false;
 
-  WebHistoryItem current_history_item_;
+  Member<HistoryItem> current_history_item_;
 
   // All the registered observers.
   base::ObserverList<WebLocalFrameObserver, true> observers_;

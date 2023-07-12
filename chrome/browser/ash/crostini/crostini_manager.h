@@ -600,8 +600,7 @@ class CrostiniManager : public KeyedService,
   bool IsUncleanStartup() const;
   void SetUncleanStartupForTesting(bool is_unclean_startup);
   void RemoveUncleanSshfsMounts();
-  void DeallocateForwardedPortsCallback(Profile* profile,
-                                        const guest_os::GuestId& container_id);
+  void DeallocateForwardedPortsCallback(const guest_os::GuestId& container_id);
 
   void CallRestarterStartLxdContainerFinishedForTesting(
       CrostiniManager::RestartId id,
@@ -806,6 +805,9 @@ class CrostiniManager : public KeyedService,
   // Runs things that should happened whenever a container shutdowns e.g.
   // triggering observers.
   void HandleContainerShutdown(const guest_os::GuestId& container_id);
+
+  // Registers a container with the GuestOsService's terminal provider registry.
+  void RegisterContainerTerminal(const guest_os::GuestId& container_id);
 
   // Registers a container with GuestOsService's registries. No-op if it's
   // already registered.

@@ -123,7 +123,6 @@ class UserSigninMediatorTest : public PlatformTest {
     OCMExpect([performer_mock_ fetchManagedStatus:browser_state_.get()
                                       forIdentity:identity_])
         .andDo(^(NSInvocation*) {
-          NSLog(@" fetchManagedStatus ");
           [authentication_flow_ didFetchManagedStatus:nil];
         });
     OCMExpect(
@@ -133,7 +132,6 @@ class UserSigninMediatorTest : public PlatformTest {
             withHostedDomain:nil
               toBrowserState:browser_state_.get()])
         .andDo(^(NSInvocation* invocation) {
-          NSLog(@" signInIdentity ");
           authentication_service()->SignIn(
               identity_, signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
         });
@@ -143,7 +141,6 @@ class UserSigninMediatorTest : public PlatformTest {
               shouldHandleMergeCaseForIdentity:identity_
                              browserStatePrefs:browser_state_->GetPrefs()])
           .andReturn(NO);
-      NSLog(@" shouldHandleMergeCaseForIdentity ");
     }
   }
 
@@ -225,14 +222,9 @@ class UserSigninMediatorTest : public PlatformTest {
   // then the consent is given. The list is ordered according to the position
   // on the screen.
   const std::vector<int> ExpectedConsentStringIds() const {
-    const int sync_dialog_title =
-        base::FeatureList::IsEnabled(
-            password_manager::features::kEnablePasswordsAccountStorage)
-            ? IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_TITLE_WITHOUT_PASSWORDS
-            : IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_TITLE;
     return {
         IDS_IOS_ACCOUNT_UNIFIED_CONSENT_TITLE,
-        sync_dialog_title,
+        IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_TITLE_WITHOUT_PASSWORDS,
         IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_SUBTITLE,
         IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SETTINGS,
     };
@@ -436,6 +428,7 @@ TEST_F(UserSigninMediatorTest,
 
   [mediator_ authenticateWithIdentity:identity_
                    authenticationFlow:authentication_flow_];
+  base::RunLoop().RunUntilIdle();
   __block bool completion_called = false;
   [mediator_ cancelAndDismissAuthenticationFlowAnimated:YES
                                              completion:^() {
@@ -465,6 +458,7 @@ TEST_F(UserSigninMediatorTest,
 
   [mediator_ authenticateWithIdentity:identity_
                    authenticationFlow:authentication_flow_];
+  base::RunLoop().RunUntilIdle();
   __block bool completion_called = false;
   [mediator_ cancelAndDismissAuthenticationFlowAnimated:NO
                                              completion:^() {

@@ -6,7 +6,8 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/mac/scoped_nsobject.h"
+#include <cstdint>
+
 #include "base/strings/sys_string_conversions.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "content/browser/renderer_host/browser_compositor_ios.h"
@@ -27,6 +28,10 @@
 #include "ui/display/screen.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/gfx/geometry/size_conversions.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // Used for settng the requested renderer size when testing.
 constexpr int kDefaultWidthForTesting = 980;
@@ -64,25 +69,11 @@ bool IsTesting() {
 
 @interface RenderWidgetUIView : CALayerFrameSinkProvider {
   raw_ptr<content::RenderWidgetHostViewIOS> _view;
-  absl::optional<gfx::Vector2dF> _view_offset_during_touch_sequence;
+  absl::optional<gfx::Vector2dF> _viewOffsetDuringTouchSequence;
 }
 
 // TextInput state.
 @property(nonatomic, strong) RenderWidgetUIViewTextInput* textInput;
-
-/** The constraint between the top edge of @c contentView and its superview. */
-@property(nonatomic, strong, nonnull)
-    NSLayoutConstraint* contentViewTopConstraint;
-
-/** The constraint between the bottom edge of @c contentView and its superview.
- */
-@property(nonatomic, strong, nonnull)
-    NSLayoutConstraint* contentViewBottomConstraint;
-
-/** The constraint between the trailing edge of @c contentView and its
- * superview. */
-@property(nonatomic, strong, nonnull)
-    NSLayoutConstraint* contentViewTrailingConstraint;
 
 - (void)updateView:(UIScrollView*)view;
 - (void)removeView;
@@ -183,7 +174,7 @@ bool IsTesting() {
 @end
 
 @implementation RenderWidgetUIView
-@synthesize textInput = _text_input;
+@synthesize textInput = _textInput;
 
 - (instancetype)initWithWidget:(content::RenderWidgetHostViewIOS*)view {
   self = [self init];
@@ -192,11 +183,12 @@ bool IsTesting() {
     self.multipleTouchEnabled = YES;
     self.autoresizingMask =
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    _text_input = [[RenderWidgetUIViewTextInput alloc] initWithWidget:view];
-    [self addSubview:_text_input];
+    _textInput = [[RenderWidgetUIViewTextInput alloc] initWithWidget:view];
+    [self addSubview:_textInput];
   }
   return self;
 }
+
 - (void)layoutSubviews {
   [super layoutSubviews];
   _view->UpdateScreenInfo();
@@ -239,9 +231,9 @@ bool IsTesting() {
   for (UITouch* touch in touches) {
     blink::WebTouchEvent webTouchEvent = content::WebTouchEventBuilder::Build(
         blink::WebInputEvent::Type::kTouchStart, touch, event, self,
-        _view_offset_during_touch_sequence);
-    if (!_view_offset_during_touch_sequence) {
-      _view_offset_during_touch_sequence =
+        _viewOffsetDuringTouchSequence);
+    if (!_viewOffsetDuringTouchSequence) {
+      _viewOffsetDuringTouchSequence =
           webTouchEvent.touches[0].PositionInWidget() -
           webTouchEvent.touches[0].PositionInScreen();
     }
@@ -253,10 +245,10 @@ bool IsTesting() {
   for (UITouch* touch in touches) {
     _view->OnTouchEvent(content::WebTouchEventBuilder::Build(
         blink::WebInputEvent::Type::kTouchEnd, touch, event, self,
-        _view_offset_during_touch_sequence));
+        _viewOffsetDuringTouchSequence));
   }
   if (event.allTouches.count == 1) {
-    _view_offset_during_touch_sequence.reset();
+    _viewOffsetDuringTouchSequence.reset();
   }
 }
 
@@ -264,7 +256,7 @@ bool IsTesting() {
   for (UITouch* touch in touches) {
     _view->OnTouchEvent(content::WebTouchEventBuilder::Build(
         blink::WebInputEvent::Type::kTouchMove, touch, event, self,
-        _view_offset_during_touch_sequence));
+        _viewOffsetDuringTouchSequence));
   }
 }
 
@@ -272,9 +264,9 @@ bool IsTesting() {
   for (UITouch* touch in touches) {
     _view->OnTouchEvent(content::WebTouchEventBuilder::Build(
         blink::WebInputEvent::Type::kTouchCancel, touch, event, self,
-        _view_offset_during_touch_sequence));
+        _viewOffsetDuringTouchSequence));
   }
-  _view_offset_during_touch_sequence.reset();
+  _viewOffsetDuringTouchSequence.reset();
 }
 
 - (void)observeValueForKeyPath:(NSString*)keyPath
@@ -315,11 +307,11 @@ bool IsTesting() {
 
 namespace content {
 
-// This class holds a scoped_nsobject so we don't leak that in the header
-// of the RenderWidgetHostViewIOS.
+// This class holds strongly so we don't leak that in the header of the
+// RenderWidgetHostViewIOS.
 class UIViewHolder {
  public:
-  base::scoped_nsobject<RenderWidgetUIView> view_;
+  RenderWidgetUIView* __strong view_;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -333,8 +325,7 @@ RenderWidgetHostViewIOS::RenderWidgetHostViewIOS(RenderWidgetHost* widget)
               content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput})),
           this) {
   ui_view_ = std::make_unique<UIViewHolder>();
-  ui_view_->view_ = base::scoped_nsobject<RenderWidgetUIView>(
-      [[RenderWidgetUIView alloc] initWithWidget:this]);
+  ui_view_->view_ = [[RenderWidgetUIView alloc] initWithWidget:this];
 
   display_tree_ =
       std::make_unique<ui::DisplayCALayerTree>([ui_view_->view_ layer]);
@@ -344,7 +335,7 @@ RenderWidgetHostViewIOS::RenderWidgetHostViewIOS(RenderWidgetHost* widget)
       screen->GetScreenInfosNearestDisplay(screen->GetPrimaryDisplay().id());
 
   browser_compositor_ = std::make_unique<BrowserCompositorIOS>(
-      (__bridge uint64_t)ui_view_->view_.get(), this, host()->is_hidden(),
+      (uint64_t)(__bridge void*)ui_view_->view_, this, host()->is_hidden(),
       host()->GetFrameSinkId());
 
   if (IsTesting()) {
@@ -406,7 +397,7 @@ void RenderWidgetHostViewIOS::InitAsChild(gfx::NativeView parent_view) {}
 void RenderWidgetHostViewIOS::SetSize(const gfx::Size& size) {}
 void RenderWidgetHostViewIOS::SetBounds(const gfx::Rect& rect) {}
 gfx::NativeView RenderWidgetHostViewIOS::GetNativeView() {
-  return gfx::NativeView(ui_view_->view_.get());
+  return gfx::NativeView(ui_view_->view_);
 }
 gfx::NativeViewAccessible RenderWidgetHostViewIOS::GetNativeViewAccessible() {
   return {};

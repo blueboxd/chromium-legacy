@@ -61,6 +61,7 @@
 <translation id="1283039547216852943">ለመዘርጋት መታ ያድርጉ</translation>
 <translation id="1289059016768036948">ወደ Google መለያዎ እንዲገቡ ይጠየቃሉ</translation>
 <translation id="1291207594882862231">ታሪክ፣ ኩኪዎች፣ የጣቢያ ውሂብ፣ መሸጎጫን አጽዳ…</translation>
+<translation id="1293898515599432175">የእርስዎ የይለፍ ቃላት ለChrome <ph name="CHROME_CHANNEL" /> ከGoogle የይለፍ ቃል አስተዳዳሪ ይሰረዛሉ። አሁን ያወረዱትን የይለፍ ቃላት ፋይል ያቆያሉ።</translation>
 <translation id="129553762522093515">በቅርብ ጊዜ የተዘጉ</translation>
 <translation id="1298077576058087471">እስከ 60% ውሂብ ይቆጥቡ፣ የዛሬ ዜና ያንብቡ</translation>
 <translation id="1303339473099049190">ይህንን ይለፍ ቃል ማግኘት አይቻልም። የፊደል አጻጻፍዎን ይፈትሹና እንደገና ይሞክሩ።</translation>
@@ -296,6 +297,7 @@
 <translation id="2643064289437760082">የአሰሳ ውሂብዎን በመሰረዝ የማስታወቂያ ልኬት ውሂብን ሁልጊዜ መሰረዝ ይችላሉ</translation>
 <translation id="2647434099613338025">ቋንቋ አክል</translation>
 <translation id="2649068648233607930">የእርስዎ አሳሽ በ<ph name="DOMAIN" /> የሚተዳደር ነው</translation>
+<translation id="2650077116157640844">የሰመሩ መሣሪያዎች ላይ ተጨማሪ</translation>
 <translation id="2650348088770008516">የግላዊነት መመሪያ ማብራሪያ ተዘግቷል</translation>
 <translation id="2650408372219180431">በዚህ መሣሪያ ላይ የተቀመጡ የይለፍ ቃላትን ወደ ውጭ ይላኩ እና ይሰርዙ</translation>
 <translation id="2650751991977523696">ፋይሉ እንደገና ይውረድ?</translation>
@@ -444,7 +446,6 @@
 <translation id="3421726884497337397">የሶስተኛ ወገን ኩኪዎችን መቼ እንደሚታገዱ ይምረጡ</translation>
 <translation id="3428747202529429621">በChrome ላይ ደህንነትዎን ይጠብቃል፣ እና በመለያ በገቡባቸው ሌሎች የGoogle መተግበሪያዎች ላይ ደህንነትዎን ለማሻሻል ስራ ላይ ሊውል ይችላል።</translation>
 <translation id="3429160811076349561">የሙከራ ባህሪዎች ጠፍተዋል</translation>
-<translation id="3432973700170747422">የመጨረሻዎቹን 15 ደቂቃዎች ሰርዝ</translation>
 <translation id="3435465986463792564">ብዙ መስኮቶች አሉዎት? ከዚህ ሆነው እነሱን ማስተዳደር ይችላሉ።</translation>
 <translation id="3435738964857648380">የደህንነት ጥበቃ</translation>
 <translation id="3443221991560634068">የአሁኑን ገፅ ዳግም ጫን</translation>
@@ -478,9 +479,9 @@
 <translation id="3587596251841506391">ድር ላይ ደህንነትን ለማሻሻል ያግዙ</translation>
 <translation id="3597179440835065298">የተሻሉ ጥቆማዎችን ያግኙ</translation>
 <translation id="3602290021589620013">ቅድመ-ዕይታ</translation>
-<translation id="360901359071773787">የመጨረሻዎቹ 15 ደቂቃዎች ይሰረዙ?</translation>
 <translation id="3616113530831147358">ድምፅ</translation>
 <translation id="3622349720008044802">መስኮቶች ያቀናብሩ</translation>
+<translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{+ 1 ጣቢያ}one{+ # ጣቢያ}other{+ # ጣቢያዎች}}</translation>
 <translation id="3631987586758005671">ለ <ph name="DEVICE_NAME" /> በማጋራት ላይ</translation>
 <translation id="363596933471559332">የተከማቹ ምስክርነቶችን በመጠቀም በራስ-ሰር ወደ የድር ጣቢያዎች መለያ ይግቡ። ባህሪው ሲጠፋ ወደ አንድ ድር ጣቢያ ከመግባትዎ በፊት ማረጋገጫ ይጠየቃሉ።</translation>
 <translation id="3636940436873918441">የተመረጡ ቋንቋዎች</translation>
@@ -509,6 +510,7 @@
 <translation id="3795154175078851242">ምስል ከአገናኝ ጋር ቅዳ</translation>
 <translation id="3810838688059735925">ቪዲዮ</translation>
 <translation id="3810973564298564668">አደራጅ</translation>
+<translation id="381861209280417772">የይለፍ ቃላት ይሰረዙ?</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> የሚወርዱ ተሰርዘዋል</translation>
 <translation id="3819183753496523827">ከመስመር ውጭ ነዎት። የበይነመረብ ግንኙነትዎን ይፈትሹት እና እንደገና ይሞክሩ።</translation>
 <translation id="3830886834687455630">የእርስዎን የይለፍ ቃላት ለመፈተሽ የGoogle Play አገልግሎቶችን ያዘምኑ</translation>
@@ -593,6 +595,7 @@
 <translation id="4249955472157341256">በጊዜ ቅርበት ደርድር</translation>
 <translation id="4250229828105606438">ቅጽበታዊ ገፅ እይታ</translation>
 <translation id="4256782883801055595">የክፍት ምንጭ ፍቃዶች</translation>
+<translation id="4257230861809842349">የይለፍ ቃላት ከGoogle የይለፍ ቃል አስተዳዳሪ ይሰረዙ?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />ምን ውሂብ ጥቅም ላይ እንደሚውል፦<ph name="END_BOLD" /> የአሰሳ ታሪክዎ፣ በዚህ መሣሪያ ላይ Chromeን ተጠቅመው የጎበኟቸው የጣቢያዎች መዝገብ።</translation>
 <translation id="4269820728363426813">የአገናኝ አድራሻ ቅዳ</translation>
 <translation id="4283102315569707115">የዴስክቶፕ ጣቢያዎች በነባሪነት ይጠየቁ?</translation>
@@ -747,6 +750,7 @@
 <translation id="5010886807652684893">ምስላዊ እይታ</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> መገናኘት ይፈልጋል</translation>
 <translation id="5016205925109358554">ሰሪፍ</translation>
+<translation id="5017529052065664584">ያለፉት 15 ደቂቃዎች</translation>
 <translation id="5032430150487044192">የQR ኮድ መፍጠር አልተቻለም</translation>
 <translation id="5039804452771397117">ፍቀድ</translation>
 <translation id="5040262127954254034">ግላዊነት</translation>
@@ -765,7 +769,6 @@
 <translation id="5118713593561876160">ዝንባሌዎች</translation>
 <translation id="5122378528687922675">እገዛ ካስፈለገዎት ወላጅዎን ይጠይቁ (<ph name="PARENT_NAME_1" /> ወይም <ph name="PARENT_NAME_2" />)</translation>
 <translation id="5123685120097942451">ማንነት የማያሳውቅ ትር</translation>
-<translation id="5126510351761255129">የእርስዎን ኮርድ ያረጋግጡ</translation>
 <translation id="5132942445612118989">የእርስዎን የይለፍ ቃላት፣ ታሪክ እና ተጨማሪ ነገሮች በሁሉም መሣሪያዎች ላይ ያስምሩ</translation>
 <translation id="5139940364318403933">እንዴት Google Driveን መጠቀም እንደሚችሉ ይወቁ</translation>
 <translation id="5142281402488957685">ለአዳዲስ ታሪኮች ለማደስ ወደ ታች ይጎትቱ</translation>
@@ -925,7 +928,6 @@
 <translation id="6011308810877101166">የፍለጋ አስተያየት ጥቆማዎችን ያሻሽሉ</translation>
 <translation id="6026538407078977628">ወደ ሙሉ ገፅ ዕይታ ዘርጋ</translation>
 <translation id="6030719887161080597">የማስታወቂያ አፈጻጸምን ለመለካት በጣቢያዎች ጥቅም ላይ የዋለ መረጃን ያስተዳድድሩ</translation>
-<translation id="6034146297924778597">ያለፉት 15 ደቂቃዎች ታሪክ ይሰረዛል፦</translation>
 <translation id="6039379616847168523">ወደ ቀጣዩ ትር ዝለል</translation>
 <translation id="6040143037577758943">ዝጋ</translation>
 <translation id="604124094241169006">ራስ-ሰር</translation>
@@ -1367,6 +1369,7 @@
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />የእርስዎ መሣሪያዎች<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">ከቆመበት ቀጥል</translation>
 <translation id="8209050860603202033">ምስል ክፈት</translation>
+<translation id="8210770465353466621">የእርስዎን ትሮች እዚህ ያገኛሉ</translation>
 <translation id="8215740705341534369">የጎን ሉህ</translation>
 <translation id="8218622182176210845">መለያዎን ያቀናብሩ</translation>
 <translation id="8221401890884589479">የማይፈልጓቸውን ጣቢያዎች ማገድ ይችላሉ። እንዲሁም Chrome ከ30 ቀናት በላይ የሆናቸው ጣቢያዎችን ከዝርዝሩ በራስ-ሰር ይሰርዛል። <ph name="BEGIN_LINK" />የበለጠ ለመረዳት<ph name="END_LINK" /></translation>

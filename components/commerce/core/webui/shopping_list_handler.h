@@ -52,6 +52,14 @@ class ShoppingListHandler : public shopping_list::mojom::ShoppingListHandler,
     virtual absl::optional<GURL> GetCurrentTabUrl() = 0;
 
     virtual void ShowInsightsSidePanelUI() = 0;
+
+    virtual const bookmarks::BookmarkNode* GetOrAddBookmarkForCurrentUrl() = 0;
+
+    virtual void OpenUrlInNewTab(const GURL& url) = 0;
+
+    virtual void ShowBookmarkEditorForCurrentUrl() = 0;
+
+    virtual void ShowFeedback() = 0;
   };
 
   ShoppingListHandler(
@@ -79,6 +87,15 @@ class ShoppingListHandler : public shopping_list::mojom::ShoppingListHandler,
   void GetPriceInsightsInfoForCurrentUrl(
       GetPriceInsightsInfoForCurrentUrlCallback callback) override;
   void ShowInsightsSidePanelUI() override;
+  void IsShoppingListEligible(IsShoppingListEligibleCallback callback) override;
+  void GetPriceTrackingStatusForCurrentUrl(
+      GetPriceTrackingStatusForCurrentUrlCallback callback) override;
+  void SetPriceTrackingStatusForCurrentUrl(bool track) override;
+  void OpenUrlInNewTab(const GURL& url) override;
+  void GetParentBookmarkFolderNameForCurrentUrl(
+      GetParentBookmarkFolderNameForCurrentUrlCallback callback) override;
+  void ShowBookmarkEditorForCurrentUrl() override;
+  void ShowFeedback() override;
 
   // SubscriptionsObserver
   void OnSubscribe(const CommerceSubscription& subscription,
@@ -91,8 +108,6 @@ class ShoppingListHandler : public shopping_list::mojom::ShoppingListHandler,
       bookmarks::BookmarkModel& model,
       const std::vector<const bookmarks::BookmarkNode*>& bookmarks,
       const std::string& locale);
-
-  void SetDelegateForTesting(std::unique_ptr<Delegate> delegate);
 
  private:
   void onPriceTrackResult(int64_t bookmark_id,
@@ -116,6 +131,9 @@ class ShoppingListHandler : public shopping_list::mojom::ShoppingListHandler,
       GetPriceInsightsInfoForCurrentUrlCallback callback,
       const GURL& url,
       const absl::optional<PriceInsightsInfo>& info);
+  void OnGetPriceTrackingStatusForCurrentUrl(
+      GetPriceTrackingStatusForCurrentUrlCallback callback,
+      bool tracked);
 
   mojo::Remote<shopping_list::mojom::Page> remote_page_;
   mojo::Receiver<shopping_list::mojom::ShoppingListHandler> receiver_;

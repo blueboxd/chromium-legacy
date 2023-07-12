@@ -40,11 +40,13 @@ android_resources("java_resources") {
     "java/res/layout/page_info_container.xml",
     "java/res/layout/page_info_row.xml",
     "java/res/layout/page_info_summary.xml",
+    "java/res/layout/page_info_title.xml",
     "java/res/values-night/dimens.xml",
     "java/res/values/dimens.xml",
     "java/res/values/ids.xml",
     "java/res/xml/page_info_ad_personalization_preference.xml",
     "java/res/xml/page_info_cookie_preference.xml",
+    "java/res/xml/page_info_cookie_preference_user_bypass.xml",
   ]
   deps = [
     "//components/browser_ui/strings/android:browser_ui_strings_grd",

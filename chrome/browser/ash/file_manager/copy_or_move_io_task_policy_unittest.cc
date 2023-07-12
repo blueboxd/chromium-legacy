@@ -10,7 +10,6 @@
 #include "base/rand_util.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
-#include "chrome/browser/ash/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_manager/volume_manager_factory.h"
@@ -27,6 +26,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/disks/fake_disk_mount_manager.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
@@ -114,7 +114,7 @@ void ExpectFileContents(base::FilePath path, std::string expected) {
 // Creates a new VolumeManager for tests.
 // By default, VolumeManager KeyedService is null for testing.
 std::unique_ptr<KeyedService> BuildVolumeManager(
-    file_manager::FakeDiskMountManager* disk_mount_manager,
+    ash::disks::FakeDiskMountManager* disk_mount_manager,
     content::BrowserContext* context) {
   return std::make_unique<file_manager::VolumeManager>(
       Profile::FromBrowserContext(context),
@@ -929,7 +929,7 @@ class CopyOrMoveIOTaskWithDLPTest : public testing::Test {
   }
 
   content::BrowserTaskEnvironment task_environment_;
-  file_manager::FakeDiskMountManager disk_mount_manager_;
+  ash::disks::FakeDiskMountManager disk_mount_manager_;
   raw_ptr<policy::MockDlpRulesManager, ExperimentalAsh> mock_rules_manager_ =
       nullptr;
   std::unique_ptr<policy::MockDlpFilesControllerAsh> files_controller_;
@@ -1108,5 +1108,93 @@ TEST_F(CopyOrMoveIOTaskWithDLPTest, DirectoryTransferBlockOne) {
   // Wait for the move to be completed.
   run_loop.Run();
 }
+
+TEST_F(CopyOrMoveIOTaskWithDLPTest, WarnMultipleFiles) {
+  // Create the files.
+  std::string file_contents = base::RandBytesAsString(kTestFileSize);
+  ASSERT_TRUE(
+      base::WriteFile(temp_dir_.GetPath().Append("file1.txt"), file_contents));
+  ASSERT_TRUE(
+      base::WriteFile(temp_dir_.GetPath().Append("file2.txt"), file_contents));
+
+  std::vector<storage::FileSystemURL> source_urls = {
+      CreateFileSystemURL("file1.txt"),
+      CreateFileSystemURL("file2.txt"),
+  };
+
+  auto dest = CreateFileSystemURL("");
+
+  IOTaskId task_id = 1;
+  CopyOrMoveIOTask task(OperationType::kCopy, source_urls, dest, profile_.get(),
+                        file_system_context_);
+  task.SetTaskID(task_id);
+
+  // Pause for warning then proceed.
+  EXPECT_CALL(
+      *files_controller_.get(),
+      CheckIfTransferAllowed(absl::make_optional(task_id), source_urls, dest,
+                             /*is_move=*/false, testing::_))
+      .WillOnce(
+          [&task](absl::optional<file_manager::io_task::IOTaskId> task_id,
+                  const std::vector<storage::FileSystemURL>& transferred_files,
+                  storage::FileSystemURL destination, bool is_move,
+                  policy::DlpFilesControllerAsh::CheckIfTransferAllowedCallback
+                      result_callback) {
+            ASSERT_TRUE(task_id.has_value());
+            // Pause the task.
+            file_manager::io_task::PauseParams pause_params;
+            pause_params.policy_params =
+                file_manager::io_task::PolicyPauseParams(
+                    policy::Policy::kDlp, /*warning_files_count=*/1);
+            task.Pause(std::move(pause_params));
+            // Resume the task.
+            file_manager::io_task::ResumeParams resume_params;
+            resume_params.policy_params =
+                file_manager::io_task::PolicyResumeParams(policy::Policy::kDlp);
+            task.Resume(std::move(resume_params));
+
+            std::move(result_callback).Run({});
+          });
+
+  base::RunLoop run_loop;
+
+  // Setup the expected callbacks.
+  base::MockRepeatingCallback<void(const ProgressStatus&)> progress_callback;
+  base::MockOnceCallback<void(ProgressStatus)> complete_callback;
+
+  // Task is paused.
+  EXPECT_CALL(
+      progress_callback,
+      Run(AllOf(Field(&ProgressStatus::type, OperationType::kCopy),
+                Field(&ProgressStatus::sources, EntryStatusUrls(source_urls)),
+                Property(&ProgressStatus::GetDestinationFolder, dest),
+                Field(&ProgressStatus::state, State::kPaused),
+                Field(&ProgressStatus::bytes_transferred, 0))));
+  // After the task is resumed.
+  EXPECT_CALL(
+      progress_callback,
+      Run(AllOf(Field(&ProgressStatus::type, OperationType::kCopy),
+                Field(&ProgressStatus::sources, EntryStatusUrls(source_urls)),
+                Property(&ProgressStatus::GetDestinationFolder, dest),
+                Field(&ProgressStatus::state, State::kInProgress),
+                Field(&ProgressStatus::bytes_transferred, 1 * kTestFileSize))));
+  // Task is completed.
+  EXPECT_CALL(
+      complete_callback,
+      Run(AllOf(Field(&ProgressStatus::type, OperationType::kCopy),
+                Field(&ProgressStatus::sources, EntryStatusUrls(source_urls)),
+                Property(&ProgressStatus::GetDestinationFolder, dest),
+                Field(&ProgressStatus::total_bytes, 2 * kTestFileSize),
+                Field(&ProgressStatus::state, State::kSuccess),
+                Field(&ProgressStatus::policy_error, absl::nullopt),
+                Field(&ProgressStatus::bytes_transferred, 2 * kTestFileSize))))
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
+
+  // Start the copy.
+  task.Execute(progress_callback.Get(), complete_callback.Get());
+  // Wait for the copy to be completed.
+  run_loop.Run();
+}
+
 }  // namespace io_task
 }  // namespace file_manager

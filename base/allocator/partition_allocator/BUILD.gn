@@ -565,6 +565,8 @@ source_set("raw_ptr") {
       "pointers/raw_ptr_asan_unowned_impl.cc",
       "pointers/raw_ptr_asan_unowned_impl.h",
     ]
+  } else {
+    sources += [ "pointers/raw_ptr_noop_impl.h" ]
   }
   if (use_partition_alloc) {
     public_deps = [ ":partition_alloc" ]

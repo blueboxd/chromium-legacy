@@ -36,6 +36,8 @@ COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kMaskedDomainList);
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kMdnsResponderGeneratedNameListing);
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kOpaqueResponseBlockingV02);
+COMPONENT_EXPORT(NETWORK_CPP)
+BASE_DECLARE_FEATURE(kOpaqueResponseBlockingErrorsForAllFetches);
 
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kAttributionReportingReportVerification);
@@ -142,6 +144,18 @@ COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kGetCookiesStringUma);
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kNetworkServiceEmptyOutOfProcess);
 #endif
+
+COMPONENT_EXPORT(NETWORK_CPP)
+BASE_DECLARE_FEATURE(kCompressionDictionaryTransportBackend);
+COMPONENT_EXPORT(NETWORK_CPP)
+BASE_DECLARE_FEATURE(kCompressionDictionaryTransport);
+
+// Enables visibility aware network service resource scheduler. When enabled,
+// request may be prioritized or de-prioritized based on the visibility of
+// requestors.
+COMPONENT_EXPORT(NETWORK_CPP)
+BASE_DECLARE_FEATURE(kVisibilityAwareResourceScheduler);
+
 }  // namespace features
 }  // namespace network
 

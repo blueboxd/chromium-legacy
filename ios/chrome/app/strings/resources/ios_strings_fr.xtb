@@ -255,6 +255,7 @@ Ils ne peuvent pas non plus en utiliser pour voir votre activité de navigation 
 <translation id="2595587704210555261">{COUNT,plural, =1{Les onglets ouverts inutilisés pendant une journée ou plus sont déplacés vers "Onglets inactifs" afin que vous puissiez facilement vous concentrer sur ceux que vous utilisez le plus. Vous pouvez modifier cette option à tout moment dans les paramètres.}one{Les onglets ouverts inutilisés pendant {COUNT} jour ou plus sont déplacés vers "Onglets inactifs" afin que vous puissiez facilement vous concentrer sur ceux que vous utilisez le plus. Vous pouvez modifier cette option à tout moment dans les paramètres.}other{Les onglets ouverts inutilisés pendant {COUNT} jours ou plus sont déplacés vers "Onglets inactifs" afin que vous puissiez facilement vous concentrer sur ceux que vous utilisez le plus. Vous pouvez modifier cette option à tout moment dans les paramètres.}}</translation>
 <translation id="2600682495497606169">Effacer tous les cookies du site</translation>
 <translation id="2609008503159898744">Fermer tous les onglets ?</translation>
+<translation id="2617210333344098964">Déplacer l'adresse vers le compte</translation>
 <translation id="2625189173221582860">Mot de passe copié</translation>
 <translation id="2626236249646841566">Vérifiez votre connexion et réessayez de vous connecter.</translation>
 <translation id="2637313651144986786">Rechercher dans les onglets…</translation>
@@ -404,7 +405,6 @@ Lisez les instructions du moteur de recherche pour supprimer l'historique de vos
 <translation id="3464194322481586217">Impossible de suivre le prix.</translation>
 <translation id="3469166899695866866">Arrêter le téléchargement ?</translation>
 <translation id="3470502288861289375">Copie en cours…</translation>
-<translation id="3471148582064653480">Synchronisez vos mots de passe, votre historique et plus encore.</translation>
 <translation id="3474048842645761983">{COUNT,plural, =1{pour {COUNT} site ou appli}one{pour {COUNT} site ou appli}other{pour {COUNT} sites ou applis}}</translation>
 <translation id="3474624961160222204">Continuer en tant que <ph name="NAME" /></translation>
 <translation id="3476450923187944815">Retrouvez vos mots de passe dans d'autres applications.</translation>
@@ -465,6 +465,7 @@ Lisez les instructions du moteur de recherche pour supprimer l'historique de vos
 <translation id="3851938967634752633">Les mots de passe pour <ph name="WEBSITE" />, <ph name="SECOND_WEBSITE" /> et <ph name="NUMBER_OF_ACCOUNTS" /> autres seront supprimés. Vos comptes ne seront pas supprimés.</translation>
 <translation id="3858860766373142691">Nom</translation>
 <translation id="3861486700625780712">Se désabonner</translation>
+<translation id="3861908220442487587">Cette adresse n'est enregistrée que sur cet appareil. Pour l'utiliser sur vos autres appareils, déplacez-la vers votre compte Google (<ph name="USER_EMAIL" />)</translation>
 <translation id="3863769054730344136">Envoyer à vos appareils</translation>
 <translation id="387280738075653372">Téléchargez Chrome ici.</translation>
 <translation id="3875783148670536197">Démonstration</translation>
@@ -649,6 +650,7 @@ Lisez les instructions du moteur de recherche pour supprimer l'historique de vos
 <translation id="5083464117946352670">Impos. déterm. taille fichier.</translation>
 <translation id="5090832849094901128">La suppression de ce mot de passe n'entraînera pas celle de votre compte sur <ph name="WEBSITE" />.</translation>
 <translation id="5094827893301452931">Tweet publié.</translation>
+<translation id="5109892411553231226">Gérer les modes de paiement</translation>
 <translation id="5118713593561876160">Centres d'intérêt</translation>
 <translation id="5118764316110575523">Désactivé</translation>
 <translation id="5119391094379141756">Sélectionnez Chrome</translation>
@@ -999,6 +1001,7 @@ Lorsque vous êtes en navigation privée, ils ne peuvent pas utiliser de cookies
 <translation id="7053983685419859001">Bloquer</translation>
 <translation id="7062545763355031412">Accepter et changer de compte</translation>
 <translation id="7080806333218412752">Il envoie des URL à la navigation sécurisée pour les vérifier. Il transmet également un petit échantillon de pages, de téléchargements, d'informations système et de l'activité des extensions afin d'identifier de nouvelles menaces. De même, pour vous protéger dans l'ensemble des applications Google, il associe temporairement ces données à votre compte Google lorsque vous êtes connecté.</translation>
+<translation id="7082853213442715471">Lorsque cette option est activée, certaines technologies Web sont bloquées, ce qui peut ralentir le chargement ou perturber le fonctionnement de certains sites Web.</translation>
 <translation id="7095110968493193530">Dans le Gestionnaire de mots de passe de Google pour <ph name="EMAIL" /></translation>
 <translation id="7099761977003084116">Onglets récents</translation>
 <translation id="7102005569666697658">Téléchargement… <ph name="FILE_SIZE" /></translation>
@@ -1059,6 +1062,7 @@ Lorsque vous êtes en navigation privée, ils ne peuvent pas utiliser de cookies
 <translation id="7531345132340165516">Site actuel</translation>
 <translation id="7537586195939242955">Impossible d'installer votre Pass dans Passbook actuellement.</translation>
 <translation id="754655535278952384">Vérifié <ph name="TIME" /></translation>
+<translation id="7552154146060018538">Dernier onglet utilisé sur <ph name="SOURCE_DEVICE" /></translation>
 <translation id="7553234618121028547">Pour désactiver, ouvrez <ph name="BEGIN_LINK" />Réglages<ph name="END_LINK" />, puis accédez à "Options de mots de passe".</translation>
 <translation id="7554645225856321710">Tout fermer</translation>
 <translation id="7554791636758816595">Nouvel onglet</translation>
@@ -1081,6 +1085,7 @@ Lorsque vous êtes en navigation privée, ils ne peuvent pas utiliser de cookies
 <translation id="7687508192620387263">Fichier d'agenda disponible</translation>
 <translation id="7701040980221191251">Rien</translation>
 <translation id="7711440461521638739">Tous vos mots de passe sont uniques</translation>
+<translation id="7719038820139380048">Connectez-vous pour obtenir des contenus conformes à vos centres d'intérêt.</translation>
 <translation id="7720410380936703141">RÉESSAYER</translation>
 <translation id="7726702057919861819">Menu → Historique → Effacer les données de navigation</translation>
 <translation id="7733646263819020771"><ph name="BOOKMRK_NAME" />. Uniquement sur cet appareil.</translation>
@@ -1190,7 +1195,6 @@ Ils peuvent également s'en servir pour voir votre activité de navigation sur l
 <translation id="8319076807703933069">Nouvelle recherche</translation>
 <translation id="8323906514956095947">Appuyez de manière prolongée pour afficher plus d'options d'onglets</translation>
 <translation id="8328777765163860529">Tout fermer</translation>
-<translation id="8331621926962374866">Lorsque Chrome est en mode Blocage, certaines technologies Web sont bloquées, ce qui peut entraîner un chargement plus lent ou le dysfonctionnement de certains sites.</translation>
 <translation id="8343993175958086504">Sauvegardez vos données et utilisez-les sur n'importe quel appareil.</translation>
 <translation id="834783239627985533">Sites les plus consultés</translation>
 <translation id="8378714024927312812">Géré par votre organisation</translation>
@@ -1204,6 +1208,7 @@ Ils peuvent également s'en servir pour voir votre activité de navigation sur l
 <translation id="8428045167754449968">Ville</translation>
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8428634594422941299">OK</translation>
+<translation id="8446201778524791138">Modifier les actions</translation>
 <translation id="8446884382197647889">En savoir plus</translation>
 <translation id="8458397775385147834">1 élément supprimé.</translation>
 <translation id="8459333855531264009">Non sécurisé</translation>
@@ -1296,7 +1301,6 @@ Vos données ont été chiffrées avec votre phrase secrète le <ph name="TIME" 
 <translation id="8976414606286374109">Les cartes sont enregistrées dans votre compte Google.</translation>
 <translation id="8981454092730389528">Commandes Google relatives à l'activité</translation>
 <translation id="8985320356172329008">Connecté à Google en tant que</translation>
-<translation id="8986567980592931173">Connectez-vous avec votre compte Google pour synchroniser vos mots de passe, votre historique, etc.</translation>
 <translation id="8998289560386111590">Non disponible sur votre appareil</translation>
 <translation id="8999545564078155498">Déverrouiller avec Face ID</translation>
 <translation id="9000089900434778519">Votre moteur de recherche est <ph name="DSE_NAME" />. Lisez les instructions pour supprimer l'historique de vos recherches, le cas échéant.</translation>

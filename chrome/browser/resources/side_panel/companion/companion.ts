@@ -8,7 +8,7 @@ import {assert} from '//resources/js/assert_ts.js';
 import {loadTimeData} from '//resources/js/load_time_data.js';
 import {Url} from '//resources/mojo/url/mojom/url.mojom-webui.js';
 
-import {ImageQuery, MethodType, PromoAction, PromoType, VisualSearchResult} from './companion.mojom-webui.js';
+import {ImageQuery, LinkOpenMetadata, MethodType, PromoAction, PromoType, VisualSearchResult} from './companion.mojom-webui.js';
 import {CompanionProxy, CompanionProxyImpl} from './companion_proxy.js';
 
 /**
@@ -56,6 +56,11 @@ enum ParamType {
   // Arguments for MethodType.kOpenUrlInBrowser
   URL_TO_OPEN = 'urlToOpen',
   USE_NEW_TAB = 'useNewTab',
+
+  // Arguments for MethodType.kNotifyLinkOpen for browser -> iframe
+  // communication.
+  LINK_OPEN_OPENED_URL = 'openedUrl',
+  LINK_OPEN_METADATA = 'openMetadata',
 
   // Arguments for browser -> iframe communication.
   COMPANION_UPDATE_PARAMS = 'companionUpdateParams',
@@ -193,6 +198,12 @@ function initialize() {
               frame.contentWindow.postMessage(message, companionOrigin);
             });
           }
+          // We also repost the same message 2000ms later as a failsafe
+          // to the race condition of loading the iFrame of the companion.
+          window.setTimeout(() => {
+            assert(frame.contentWindow);
+            frame.contentWindow.postMessage(message, companionOrigin);
+          }, 2000);
         }
       });
 
@@ -206,6 +217,23 @@ function initialize() {
     networkErrorOverlay.style.display = 'block';
     frame.style.display = 'none';
   });
+
+  companionProxy.callbackRouter.notifyLinkOpen.addListener(
+      (openedUrl: Url, metadata: LinkOpenMetadata) => {
+        const companionOrigin =
+            new URL(loadTimeData.getString('companion_origin')).origin;
+        const message = {
+          [ParamType.METHOD_TYPE]: MethodType.kNotifyLinkOpen,
+          [ParamType.LINK_OPEN_OPENED_URL]: openedUrl.url,
+          [ParamType.LINK_OPEN_METADATA]: metadata,
+        };
+
+        const frame = document.body.querySelector('iframe');
+        assert(frame);
+        if (frame.contentWindow) {
+          frame.contentWindow.postMessage(message, companionOrigin);
+        }
+      });
 
   companionProxy.handler.showUI();
 }

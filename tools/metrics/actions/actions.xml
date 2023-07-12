@@ -6474,6 +6474,71 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action
+    name="Commerce.PriceTracking.EditedBookmarkFolderFromPriceInsightsSidePanel">
+  <owner>yuezhanggg@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when users click the bookmark folder name shown in the shopping
+    insights side panel to launch the bookmark editor.
+  </description>
+</action>
+
+<action name="Commerce.PriceTracking.EmailConsentDialog.Accepted">
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when a user confirms they would like to receive email notifications
+    when a price drops. The user preference is changed to true in this case.
+  </description>
+</action>
+
+<action name="Commerce.PriceTracking.EmailConsentDialog.Closed">
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when a user dismisses the post price tracking dialog without taking
+    an explicit action. The email settings remain unchanged in this case.
+  </description>
+</action>
+
+<action name="Commerce.PriceTracking.EmailConsentDialog.EmailLinkClicked">
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when a user clicks the linked email address in the price tracking
+    email consent dialog.
+  </description>
+</action>
+
+<action name="Commerce.PriceTracking.EmailConsentDialog.HelpLinkClicked">
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when a user clicks the help article link in the price tracking email
+    consent dialog.
+  </description>
+</action>
+
+<action name="Commerce.PriceTracking.EmailConsentDialog.Rejected">
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when a user rejects the offer to receive email notifications when a
+    price drops. The user preference is changed to false in this case.
+  </description>
+</action>
+
+<action name="Commerce.PriceTracking.EmailConsentDialog.Shown"
+    not_user_triggered="true">
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when the post price tracking email consent dialog is shown to a
+    user.
+  </description>
+</action>
+
 <action name="Commerce.PriceTracking.FirstRunBubbleDismissed">
   <owner>meiliang@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -8338,6 +8403,11 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="DevTools_Close">
+  <owner>dsv@chromium.org</owner>
+  <description>DevTools window is closed in any way.</description>
+</action>
+
 <action name="DevTools_InspectAndroidPage">
   <owner>yangguo@chromium.org</owner>
   <owner>bmeurer@chromium.org</owner>
@@ -8932,6 +9002,26 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Extensions.Menu.ExtensionsSettingsOpened">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user opened chrome://extensions by clicking on the &quot;settings&quot;
+    option in the extensions menu. This is recorded for both keyboard and mouse
+    activations.
+  </description>
+</action>
+
+<action name="Extensions.Menu.HideRequestsInToolbarPressed">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user blocked an extension to show site access requests in the toolbar by
+    toggling the extension's show requests toggle off in the extensions menu.
+    This is recorded for both keyboard and mouse activations.
+  </description>
+</action>
+
 <action name="Extensions.Menu.OnAllSitesSelected">
   <owner>emiliapaz@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
@@ -8962,12 +9052,21 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Extensions.Menu.ShowRequestsInToolbarPressed">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user allowed an extension to show site access requests in the toolbar by
+    toggling the extension's show requests toggle on in the extensions menu.
+    This is recorded for both keyboard and mouse activations.
+  </description>
+</action>
+
 <action name="Extensions.Menu.SitePermissionsPageOpened">
   <owner>emiliapaz@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <description>
     The user opened an extension's site permissions page in the extensions menu.
-    This is recorded for both keyboard and mouse activations.
   </description>
 </action>
 
@@ -12217,6 +12316,14 @@ should be able to be added at any place in this file.
   <description>
     The number of times the user tapped on an underlined phone number and was
     prompted to make a phone call.
+  </description>
+</action>
+
+<action name="IOS.PostRestoreDefaultBrowser.Displayed">
+  <owner>hiramahmood@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    Recorded when the Post Restore Default Browser Promo is displayed. iOS only.
   </description>
 </action>
 
@@ -28605,6 +28712,94 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SafetyCheck.DetailKeepClicked">
+  <owner>psarouthakis@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    User clicked on the Safety Check Keep button in the chrome://extensions
+    Detail page for an extension that triggered a Safety Check warning.
+  </description>
+</action>
+
+<action name="SafetyCheck.DetailRemoveClicked">
+  <owner>psarouthakis@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    User clicks remove on the detail page of an extension that is showing a
+    safety check warning. This warning is shown when the extension needs a
+    safety review.
+  </description>
+</action>
+
+<action name="SafetyCheck.DetailWarningShown" not_user_triggered="true">
+  <owner>psarouthakis@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    User is shown a safety check warning after navigating to the details page of
+    an extension. This warning is shown when the extension needs a safety
+    review.
+  </description>
+</action>
+
+<action name="SafetyCheck.NonTriggeringExtensionRemoved">
+  <owner>psarouthakis@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    User has clicked removed on an extension card while being shown the Safety
+    Check Review Panel on the chrome://extensions page. The extension being
+    removed is NOT one of the extensions listed in the Review Panel.
+  </description>
+</action>
+
+<action name="SafetyCheck.ReviewCompletion" not_user_triggered="true">
+  <owner>psarouthakis@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    User has reviewed all triggering extensions on the Safety Check Review Panel
+    on the chrome://extensions page and has been shown the green check mark
+    completion state.
+  </description>
+</action>
+
+<action name="SafetyCheck.ReviewPanelKeepClicked">
+  <owner>psarouthakis@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    User selected 'Keep this extension' for a Safety Check Review Panel entry in
+    the chrome://extensions page to keep an extension that has triggered a
+    safety check warning.
+  </description>
+</action>
+
+<action name="SafetyCheck.ReviewPanelRemoveAllClicked">
+  <owner>psarouthakis@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    User clicked the Remove All button in the chrome://extensions Safety Check
+    Review Panel to remove all extensions that triggered safety check warnings.
+  </description>
+</action>
+
+<action name="SafetyCheck.ReviewPanelRemoveClicked">
+  <owner>psarouthakis@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    User clicked the trash button for a Safety Check Review Panel entry in the
+    chrome://extensions page to remove an extension that has triggered a safety
+    check warning.
+  </description>
+</action>
+
+<action name="SafetyCheck.ReviewPanelShown" not_user_triggered="true">
+  <owner>psarouthakis@google.com</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    User was shown the Safety Check Review Panel in the chrome://extensions
+    page. This means that there is at least one extension that triggered a
+    safety check warning and should be reviewed by the user.
+  </description>
+</action>
+
 <action name="Save">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -35522,12 +35717,24 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="TabContextMenu_Back">
+  <owner>loubrett@google.com</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <description>User selected Back from tab context menu.</description>
+</action>
+
 <action name="TabContextMenu_BookmarkAllTabs">
   <obsolete>Deprecated due to removal.</obsolete>
   <owner>wittman@chromium.org</owner>
   <description>
     User selected Bookmark All Tabs from the tab context menu.
   </description>
+</action>
+
+<action name="TabContextMenu_CloseAllTabs">
+  <owner>loubrett@google.com</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <description>User selected Close All Tabs from tab context menu.</description>
 </action>
 
 <action name="TabContextMenu_CloseOtherTabs">

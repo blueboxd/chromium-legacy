@@ -248,17 +248,31 @@ prefs when the profile is loaded.  -->
   </summary>
 </histogram>
 
-<histogram name="Signin.AccountTracker.IsAccountIdEmpty" enum="BooleanEmpty"
-    expires_after="2023-12-31">
+<histogram name="Signin.AccountTracker.RefreshAccountInfo.IsTrackingAccount"
+    enum="Boolean" expires_after="2023-12-31">
+  <owner>msarda@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Indicates whether the account was seeded when the account info needs to be
+    refreshed.
+
+    This histogram will be used to decide whether the account needs to be seeded
+    during while refreshing the account info.
+  </summary>
+</histogram>
+
+<histogram name="Signin.AccountTracker.SeedAccountInfo.IsAccountIdEmpty"
+    enum="BooleanEmpty" expires_after="2023-12-31">
+  <owner>msarda@chromium.org</owner>
   <owner>sinhak@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
-    Indicates if the account being tracked by AccountTracker has an empty
-    account id. This is recorded whenever AccountTracker starts tracking a new
-    account.
+    Indicates if the account being seeded by AccountTracker has an empty account
+    id. This is in general an error as the account with an empty id cannot be
+    tracked.
 
     This histogram will be used to decide the severity of AccountTracker
-    receiving malformed account ids.
+    receiving malformed account ids during the seeding process.
   </summary>
 </histogram>
 
@@ -314,7 +328,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AndroidGetAccountIdsTime" units="ms"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>alexilin@chromium.org</owner>
   <owner>bsazonov@chromium.org</owner>
   <summary>
@@ -780,14 +794,14 @@ the browser and content area. -->
 </histogram>
 
 <histogram name="Signin.ListFamilyMembersRequest.Latency" units="ms"
-    expires_after="2023-11-01">
+    expires_after="2023-12-31">
   <owner>tju@google.com</owner>
   <owner>chrome-kids-eng@google.com</owner>
   <summary>Tracks the latency of calls to the Kids Management API.</summary>
 </histogram>
 
 <histogram name="Signin.ListFamilyMembersRequest.Status"
-    enum="SupervisedUserProtoFetcherStatus" expires_after="2023-11-01">
+    enum="SupervisedUserProtoFetcherStatus" expires_after="2023-12-31">
   <owner>tju@google.com</owner>
   <owner>chrome-kids-eng@google.com</owner>
   <summary>The status of the fetch to the Kids Management API.</summary>
@@ -920,6 +934,20 @@ should be kept to monitor/debug signin Multilogin issues-->
   <owner>droger@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <summary>Response status received from gaia Multilogin.</summary>
+</histogram>
+
+<histogram name="Signin.ProcessMirrorHeaders.AllowedFromInitiator.GoIncognito"
+    enum="BooleanAllowed" expires_after="2024-01-14">
+  <owner>bsazonov@chromium.org</owner>
+  <owner>msarda@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Recorded when request intitator is checked after receiving
+    X-Chrome-Connected header with GAIA_SERVICE_TYPE_INCOGNITO. The recorded
+    bucket represents the result of the check (i.e. whether the received
+    initiator origin is allowed to trigger requests that end up sending
+    X-Chrome-Connected header).
+  </summary>
 </histogram>
 
 <histogram name="Signin.Reconciler.AllExternalCcResultCompleted"

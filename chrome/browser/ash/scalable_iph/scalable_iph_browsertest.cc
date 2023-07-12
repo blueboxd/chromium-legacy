@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/system/anchored_nudge_manager.h"
 #include "base/feature_list.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
@@ -30,14 +31,14 @@ using TestEnvironment =
 using UserSessionType =
     ::ash::CustomizableTestEnvBrowserTestBase::UserSessionType;
 
-constexpr char kWallpaperNotificationId[] = "scalable_iph_wallpaper";
-
 class ScalableIphBrowserTestNetworkConnection : public ScalableIphBrowserTest {
  protected:
   void InitializeScopedFeatureList() override {
     base::FieldTrialParams params;
-    AppendFakeUiParams(params);
-    params[scalable_iph::kCustomConditionNetworkConnectionParamName] =
+    AppendFakeUiParamsNotification(params);
+    params[FullyQualified(
+        TestIphFeature(),
+        scalable_iph::kCustomConditionNetworkConnectionParamName)] =
         scalable_iph::kCustomConditionNetworkConnectionOnline;
     base::test::FeatureRefAndParams test_config(TestIphFeature(), params);
 
@@ -63,8 +64,10 @@ class ScalableIphBrowserTestClientAgeBase : public ScalableIphBrowserTest {
  protected:
   void InitializeScopedFeatureList() override {
     base::FieldTrialParams params;
-    AppendFakeUiParams(params);
-    params[scalable_iph::kCustomConditionClientAgeInDaysParamName] =
+    AppendFakeUiParamsNotification(params);
+    params[FullyQualified(
+        TestIphFeature(),
+        scalable_iph::kCustomConditionClientAgeInDaysParamName)] =
         GetClientAgeTestValue();
     base::test::FeatureRefAndParams test_config(TestIphFeature(), params);
 
@@ -143,7 +146,7 @@ class ScalableIphBrowserTestNotification : public ScalableIphBrowserTest {
 
     auto* message_center = message_center::MessageCenter::Get();
     scoped_observation_.Observe(message_center);
-    EXPECT_CALL(mock_, OnNotificationAdded(kWallpaperNotificationId));
+    EXPECT_CALL(mock_, OnNotificationAdded(kTestNotificationId));
 
     mock_delegate()->FakeShowNotification();
   }
@@ -160,6 +163,27 @@ class ScalableIphBrowserTestNotification : public ScalableIphBrowserTest {
   base::ScopedObservation<message_center::MessageCenter,
                           message_center::MessageCenterObserver>
       scoped_observation_{&mock_};
+};
+
+class ScalableIphBrowserTestBubble : public ScalableIphBrowserTest {
+ protected:
+  void SetUpOnMainThread() override {
+    ScalableIphBrowserTest::SetUpOnMainThread();
+
+    mock_delegate()->FakeShowBubble();
+  }
+
+  void InitializeScopedFeatureList() override {
+    base::FieldTrialParams params;
+    AppendFakeUiParamsBubble(params);
+    base::test::FeatureRefAndParams test_config(TestIphFeature(), params);
+
+    base::test::FeatureRefAndParams scalable_iph_feature(
+        ash::features::kScalableIph, {});
+
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {scalable_iph_feature, test_config}, {});
+  }
 };
 
 }  // namespace
@@ -185,6 +209,8 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTest, InvokeIph) {
   EXPECT_CALL(*mock_tracker(), Dismissed(::testing::Ref(TestIphFeature())));
 
   scalable_iph::ScalableIphDelegate::NotificationParams expected_params;
+  expected_params.notification_id =
+      ScalableIphBrowserTestBase::kTestNotificationId;
   expected_params.title = ScalableIphBrowserTestBase::kTestNotificationTitle;
   expected_params.text = ScalableIphBrowserTestBase::kTestNotificationBodyText;
   expected_params.button.text =
@@ -345,17 +371,15 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestNotification, ShowNotification) {
   // Tracker::Dismissed must be called when an IPH gets dismissed.
   EXPECT_CALL(*mock_tracker(), Dismissed(::testing::Ref(TestIphFeature())));
 
-  scalable_iph::ScalableIph* scalable_iph =
-      ScalableIphFactory::GetForBrowserContext(browser()->profile());
-  scalable_iph->set_show_notification_for_testing();
-  scalable_iph->RecordEvent(scalable_iph::ScalableIph::Event::kFiveMinTick);
+  TriggerConditionsCheckWithAFakeEvent();
 
   auto* message_center = message_center::MessageCenter::Get();
   auto* notification =
-      message_center->FindVisibleNotificationById(kWallpaperNotificationId);
+      message_center->FindVisibleNotificationById(kTestNotificationId);
   EXPECT_TRUE(notification);
-  message_center->RemoveNotification(kWallpaperNotificationId,
+  message_center->RemoveNotification(kTestNotificationId,
                                      /*by_user=*/false);
+  testing::Mock::VerifyAndClearExpectations(mock_tracker());
 }
 
 IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestNotification,
@@ -365,17 +389,41 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestNotification,
   // Tracker::Dismissed must be called when an IPH gets dismissed.
   EXPECT_CALL(*mock_tracker(), Dismissed(::testing::Ref(TestIphFeature())));
 
-  scalable_iph::ScalableIph* scalable_iph =
-      ScalableIphFactory::GetForBrowserContext(browser()->profile());
-  scalable_iph->set_show_notification_for_testing();
-  scalable_iph->RecordEvent(scalable_iph::ScalableIph::Event::kFiveMinTick);
+  TriggerConditionsCheckWithAFakeEvent();
 
   auto* message_center = message_center::MessageCenter::Get();
   auto* notification =
-      message_center->FindVisibleNotificationById(kWallpaperNotificationId);
+      message_center->FindVisibleNotificationById(kTestNotificationId);
   EXPECT_TRUE(notification);
   EXPECT_TRUE(notification->delegate());
   notification->delegate()->Click(/*button_index=*/0, /*reply=*/absl::nullopt);
+  testing::Mock::VerifyAndClearExpectations(mock_tracker());
+}
+
+// TODO(b/290307529): Fix the test.
+IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestBubble, DISABLED_ShowBubble) {
+  EnableTestIphFeature();
+
+  // Tracker::Dismissed must be called when an IPH gets dismissed.
+  EXPECT_CALL(*mock_tracker(), Dismissed(::testing::Ref(TestIphFeature())));
+
+  TriggerConditionsCheckWithAFakeEvent();
+  // Default nudge duration is 6 seconds.
+  task_runner()->FastForwardBy(base::Seconds(7));
+  testing::Mock::VerifyAndClearExpectations(mock_tracker());
+  // TODO(b/290066999): Verify the nudge is shown.
+}
+
+IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestBubble, RemoveBubble) {
+  EnableTestIphFeature();
+
+  // Tracker::Dismissed must be called when an IPH gets dismissed.
+  EXPECT_CALL(*mock_tracker(), Dismissed(::testing::Ref(TestIphFeature())));
+
+  TriggerConditionsCheckWithAFakeEvent();
+  ash::AnchoredNudgeManager::Get()->Cancel(kTestBubbleId);
+  testing::Mock::VerifyAndClearExpectations(mock_tracker());
+  // TODO(b/290066999): Verify the nudge is not shown.
 }
 
 INSTANTIATE_TEST_SUITE_P(

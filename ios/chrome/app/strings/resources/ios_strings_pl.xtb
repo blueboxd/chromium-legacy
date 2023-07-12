@@ -255,6 +255,7 @@ Witryny nie mogą używać plików cookie do śledzenia Twojej aktywności zwią
 <translation id="2595587704210555261">{COUNT,plural, =1{Otwarte karty, które nie były używane przez co najmniej 1 dzień, są przenoszone do sekcji Nieaktywne karty, dzięki czemu możesz się skupić na tych, których używasz najczęściej. Możesz to zmienić w dowolnym momencie w ustawieniach.}few{Otwarte karty, które nie były używane przez co najmniej {COUNT} dni, są przenoszone do sekcji Nieaktywne karty, dzięki czemu możesz się skupić na tych, których używasz najczęściej. Możesz to zmienić w dowolnym momencie w ustawieniach.}many{Otwarte karty, które nie były używane przez co najmniej {COUNT} dni, są przenoszone do sekcji Nieaktywne karty, dzięki czemu możesz się skupić na tych, których używasz najczęściej. Możesz to zmienić w dowolnym momencie w ustawieniach.}other{Otwarte karty, które nie były używane przez co najmniej {COUNT} dnia, są przenoszone do sekcji Nieaktywne karty, dzięki czemu możesz się skupić na tych, których używasz najczęściej. Możesz to zmienić w dowolnym momencie w ustawieniach.}}</translation>
 <translation id="2600682495497606169">Wyczyść pliki cookie witryny</translation>
 <translation id="2609008503159898744">Zamknąć wszystkie karty?</translation>
+<translation id="2617210333344098964">Przenieś adres na konto</translation>
 <translation id="2625189173221582860">Hasło zostało skopiowane</translation>
 <translation id="2626236249646841566">Sprawdź połączenie i zaloguj się ponownie.</translation>
 <translation id="2637313651144986786">Wyszukaj karty...</translation>
@@ -404,7 +405,6 @@ Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wys
 <translation id="3464194322481586217">Wystąpił błąd monitorowania ceny.</translation>
 <translation id="3469166899695866866">Czy zatrzymać pobieranie?</translation>
 <translation id="3470502288861289375">Kopiuję...</translation>
-<translation id="3471148582064653480">Synchronizuj swoje hasła, historię i inne dane.</translation>
 <translation id="3474048842645761983">{COUNT,plural, =1{do {COUNT} witryny lub aplikacji}few{do {COUNT} witryn i aplikacji}many{do {COUNT} witryn i aplikacji}other{do {COUNT} witryny i aplikacji}}</translation>
 <translation id="3474624961160222204">Nadal używaj konta użytkownika <ph name="NAME" /></translation>
 <translation id="3476450923187944815">Uzyskaj dostęp do swoich haseł w innych aplikacjach.</translation>
@@ -465,6 +465,7 @@ Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wys
 <translation id="3851938967634752633">Hasła do stron <ph name="WEBSITE" />, <ph name="SECOND_WEBSITE" /> i jeszcze <ph name="NUMBER_OF_ACCOUNTS" /> innych zostaną usunięte. Twoje konta nie zostaną usunięte.</translation>
 <translation id="3858860766373142691">Nazwa</translation>
 <translation id="3861486700625780712">Przestań obserwować</translation>
+<translation id="3861908220442487587">Ten adres jest zapisany tylko na tym urządzeniu. Aby korzystać z niego na innych urządzeniach, przenieś go na swoje konto Google <ph name="USER_EMAIL" /></translation>
 <translation id="3863769054730344136">Wyślij na swoje urządzenia</translation>
 <translation id="387280738075653372">Tutaj możesz pobrać Chrome.</translation>
 <translation id="3875783148670536197">Pokaż jak</translation>
@@ -649,6 +650,7 @@ Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wys
 <translation id="5083464117946352670">Nie można ustalić rozmiaru pliku.</translation>
 <translation id="5090832849094901128">Usunięcie tego hasła nie spowoduje usunięcia Twojego konta w serwisie <ph name="WEBSITE" />.</translation>
 <translation id="5094827893301452931">Tweet opublikowany.</translation>
+<translation id="5109892411553231226">Zarządzaj formami płatności</translation>
 <translation id="5118713593561876160">Zainteresowania</translation>
 <translation id="5118764316110575523">Wyłączono</translation>
 <translation id="5119391094379141756">Wybierz Chrome.</translation>
@@ -999,6 +1001,7 @@ W trybie incognito witryny nie mogą używać plików cookie do śledzenia Twoj
 <translation id="7053983685419859001">Blokuj</translation>
 <translation id="7062545763355031412">Zaakceptuj i przełącz konta</translation>
 <translation id="7080806333218412752">Wysyłaj adresy URL do sprawdzenia przez usługę Bezpieczne przeglądanie. Funkcja wysyła też małe próbki stron, pobieranych plików, aktywności rozszerzeń i informacji o systemie, by pomóc w wykrywaniu nowych zagrożeń. Tymczasowo łączy te dane z Twoim kontem Google, gdy się na nie zalogujesz, by chronić Cię we wszystkich aplikacjach Google.</translation>
+<translation id="7082853213442715471">Gdy jest włączony, niektóre technologie internetowe są blokowane, przez co niektóre strony mogą się ładować wolniej lub nie działać prawidłowo.</translation>
 <translation id="7095110968493193530">W Menedżerze haseł Google w przypadku konta <ph name="EMAIL" /></translation>
 <translation id="7099761977003084116">Ostatnie karty</translation>
 <translation id="7102005569666697658">Pobieram… <ph name="FILE_SIZE" /></translation>
@@ -1058,6 +1061,7 @@ W trybie incognito witryny nie mogą używać plików cookie do śledzenia Twoj
 <translation id="7531345132340165516">Bieżąca witryna</translation>
 <translation id="7537586195939242955">Twojego hasła nie można teraz umieścić w Passbooku.</translation>
 <translation id="754655535278952384">Sprawdzono <ph name="TIME" /></translation>
+<translation id="7552154146060018538">Ostatnia karta otwarta na: <ph name="SOURCE_DEVICE" /></translation>
 <translation id="7553234618121028547">Aby wyłączyć funkcję, otwórz <ph name="BEGIN_LINK" />Ustawienia<ph name="END_LINK" /> i kliknij Opcje haseł.</translation>
 <translation id="7554645225856321710">Zamknij wszystko</translation>
 <translation id="7554791636758816595">Nowa karta</translation>
@@ -1190,7 +1194,6 @@ Witryny mogą używać plików cookie do śledzenia Twojej aktywności związane
 <translation id="8319076807703933069">Nowe wyszukiwanie</translation>
 <translation id="8323906514956095947">Naciśnij i przytrzymaj, by zobaczyć więcej opcji</translation>
 <translation id="8328777765163860529">Zamknij wszystkie</translation>
-<translation id="8331621926962374866">Gdy Chrome jest w trybie blokady, niektóre technologie internetowe są blokowane, przez co niektóre strony mogą się wolniej ładować lub działać nieprawidłowo.</translation>
 <translation id="8343993175958086504">Twórz kopie zapasowe swoich danych i używaj ich na dowolnym urządzeniu.</translation>
 <translation id="834783239627985533">Najczęściej odwiedzane witryny</translation>
 <translation id="8378714024927312812">Zarządzane przez Twoją organizację</translation>
@@ -1204,6 +1207,7 @@ Witryny mogą używać plików cookie do śledzenia Twojej aktywności związane
 <translation id="8428045167754449968">Miejscowość</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="8428634594422941299">OK</translation>
+<translation id="8446201778524791138">Edytuj działania</translation>
 <translation id="8446884382197647889">Więcej informacji</translation>
 <translation id="8458397775385147834">Usunąłeś 1 element</translation>
 <translation id="8459333855531264009">Niebezpieczne</translation>
@@ -1296,7 +1300,6 @@ Dane zostały zaszyfrowane hasłem <ph name="TIME" />. Podaj hasło, aby korzyst
 <translation id="8976414606286374109">Karty zostały zapisane na koncie Google.</translation>
 <translation id="8981454092730389528">Zarządzanie aktywnością w Google</translation>
 <translation id="8985320356172329008">Jesteś zalogowany w Google jako</translation>
-<translation id="8986567980592931173">Zaloguj się na konto Google, aby synchronizować swoje hasła, historię i inne dane.</translation>
 <translation id="8998289560386111590">Niedostępne na Twoim urządzeniu</translation>
 <translation id="8999545564078155498">Odblokuj przez Face ID</translation>
 <translation id="9000089900434778519">Twoja wyszukiwarka to <ph name="DSE_NAME" />. Zapoznaj się z jej instrukcjami, jeśli chcesz usunąć historię wyszukiwania.</translation>

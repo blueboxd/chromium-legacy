@@ -11,12 +11,11 @@
 
 #include "base/containers/span.h"
 #include "base/functional/callback_forward.h"
-#include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
-#include "base/strings/string_piece.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/types/strong_alias.h"
 #include "build/build_config.h"
@@ -28,7 +27,6 @@
 #include "device/fido/cable/v2_constants.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_request_handler_base.h"
-#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/fido_types.h"
 #include "device/fido/pin.h"
 #include "device/fido/public_key_credential_user_entity.h"
@@ -184,6 +182,7 @@ class AuthenticatorRequestDialogModel {
   // user to select between.
   struct Mechanism {
     // These types describe the type of Mechanism.
+    using Credential = base::StrongAlias<class CredentialTag, absl::monostate>;
     using Transport =
         base::StrongAlias<class TransportTag, AuthenticatorTransport>;
     using WindowsAPI = base::StrongAlias<class WindowsAPITag, absl::monostate>;
@@ -191,8 +190,12 @@ class AuthenticatorRequestDialogModel {
         base::StrongAlias<class iCloudKeychainTag, absl::monostate>;
     using Phone = base::StrongAlias<class PhoneTag, std::string>;
     using AddPhone = base::StrongAlias<class AddPhoneTag, absl::monostate>;
-    using Type =
-        absl::variant<Transport, WindowsAPI, Phone, AddPhone, ICloudKeychain>;
+    using Type = absl::variant<Credential,
+                               Transport,
+                               WindowsAPI,
+                               Phone,
+                               AddPhone,
+                               ICloudKeychain>;
 
     Mechanism(Type type,
               std::u16string name,
@@ -207,6 +210,7 @@ class AuthenticatorRequestDialogModel {
     const Type type;
     const std::u16string name;
     const std::u16string short_name;
+    std::u16string description;
     const raw_ref<const gfx::VectorIcon> icon;
     const base::RepeatingClosure callback;
   };
@@ -225,7 +229,8 @@ class AuthenticatorRequestDialogModel {
         PairingSource paired_source,
         const std::string& name,
         size_t contact_id,
-        const std::array<uint8_t, device::kP256X962Length> public_key_x962);
+        const std::array<uint8_t, device::kP256X962Length> public_key_x962,
+        base::Time last_updated);
     ~PairedPhone();
 
     PairedPhone& operator=(const PairedPhone&);
@@ -245,6 +250,9 @@ class AuthenticatorRequestDialogModel {
     size_t contact_id;
     // public_key_x962 is the phone's public key.
     std::array<uint8_t, device::kP256X962Length> public_key_x962;
+    // last_updated is the timestamp for the phone's last sync, or null if the
+    // PairingSource is not kSyncDeviceInfo.
+    base::Time last_updated;
   };
 
   // CableUIType enumerates the different types of caBLE UI that we've ended
@@ -520,13 +528,13 @@ class AuthenticatorRequestDialogModel {
 
   // OnAccountSelected is called when one of the accounts from |SelectAccount|
   // has been picked. |index| is the index of the selected account in
-  // |responses()|.
+  // |creds()|.
   void OnAccountSelected(size_t index);
 
   // OnAccountPreselected is called when the user selects a discoverable
   // credential from a platform authenticator prior to providing user
   // authentication. `crededential_id` must match one of the credentials in
-  // `creds()`.
+  // `transport_availability_.recognized_credentials`.
   void OnAccountPreselected(const std::vector<uint8_t>& credential_id);
 
   // Like `OnAccountPreselected()`, but this takes an index into `creds()`
@@ -536,10 +544,6 @@ class AuthenticatorRequestDialogModel {
   void SetSelectedAuthenticatorForTesting(AuthenticatorReference authenticator);
 
   virtual base::span<const Mechanism> mechanisms() const;
-
-  // current_mechanism returns the index into |mechanisms| of the most recently
-  // activated mechanism, or nullopt if there isn't one.
-  absl::optional<size_t> current_mechanism() const;
 
   // Contacts the "priority" paired phone. This is only valid to call when there
   // is a single phone paired.
@@ -561,9 +565,6 @@ class AuthenticatorRequestDialogModel {
   TransportAvailabilityInfo& transport_availability_for_testing() {
     return transport_availability_;
   }
-
-  void ReplaceCredListForTesting(
-      std::vector<device::DiscoverableCredentialMetadata> creds);
 
   ObservableAuthenticatorList& saved_authenticators() {
     return ephemeral_state_.saved_authenticators_;
@@ -686,24 +687,23 @@ class AuthenticatorRequestDialogModel {
   // Valid action when at step: kNotStarted. kMechanismSelection, and steps
   // where the other transports menu is shown, namely, kUsbInsertAndActivate,
   // kCableActivate.
-  void StartGuidedFlowForTransport(AuthenticatorTransport transport,
-                                   size_t mechanism_index);
+  void StartGuidedFlowForTransport(AuthenticatorTransport transport);
 
   // Starts the flow for adding an unlisted phone by showing a QR code.
-  void StartGuidedFlowForAddPhone(size_t mechanism_index);
+  void StartGuidedFlowForAddPhone();
 
   // Displays a resident-key warning if needed and then calls
   // |HideDialogAndDispatchToNativeWindowsApi|.
-  void StartWinNativeApi(size_t mechanism_index);
+  void StartWinNativeApi();
 
-  void StartICloudKeychain(size_t mechanism_index);
+  void StartICloudKeychain();
 
   // Contacts the "priority" paired phone from sync. At least one sync phone
   // must be available to call this.
   void ContactPrioritySyncedPhone();
 
   // Contacts a paired phone. The phone is specified by name.
-  void ContactPhone(const std::string& name, size_t mechanism_index);
+  void ContactPhone(const std::string& name);
   void ContactPhoneAfterOffTheRecordInterstitial(std::string name);
   void ContactPhoneAfterBleIsPowered(std::string name);
 
@@ -806,10 +806,6 @@ class AuthenticatorRequestDialogModel {
   // priority_mechanism_index_ contains an index in `mechanisms_` for the
   // mechanism that should immediately be triggered, if any.
   absl::optional<size_t> priority_mechanism_index_;
-
-  // current_mechanism_ contains the index of the most recently activated
-  // mechanism.
-  absl::optional<size_t> current_mechanism_;
 
   // cable_ui_type_ contains the type of UI to display for a caBLE transaction.
   absl::optional<CableUIType> cable_ui_type_;

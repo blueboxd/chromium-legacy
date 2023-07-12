@@ -380,6 +380,16 @@
 
 -dontwarn com.google.protobuf.nano.NanoEnumValue
 
+# File: ../../third_party/cardboard/proguard-rules.pro
+# Copyright 2023 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+# Keep classes, methods, and fields that are accessed with JNI.
+-keep class com.google.cardboard.sdk.UsedByNative
+-keepclasseswithmembers,includedescriptorclasses class ** {
+  @com.google.cardboard.sdk.UsedByNative *;
+}
+
 # File: ../../content/public/android/proguard.flags
 # Copyright 2023 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
@@ -409,9 +419,15 @@
 }
 
 # Keep the factory and its public members; it's the main entry point used by the
-# framework.
+# framework. Also keep the factory's constructors as some things are using them
+# via reflection; crbug.com/1462346
 -keep class com.android.webview.chromium.WebViewChromiumFactoryProvider {
     public *;
+    <init>(...);
+}
+-keep class com.android.webview.chromium.WebViewChromiumFactoryProviderFor* {
+    public *;
+    <init>(...);
 }
 
 -keep class * implements android.webkit.WebViewFactoryProvider$Statics {
@@ -419,10 +435,6 @@
 }
 
 -keep class com.android.webview.chromium.ContentSettingsAdapter {
-    public *;
-}
-
--keep class com.android.webview.chromium.WebViewChromiumFactoryProviderFor* {
     public *;
 }
 

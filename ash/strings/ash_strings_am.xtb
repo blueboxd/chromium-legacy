@@ -298,6 +298,7 @@
 <translation id="2318576281648121272">ዛሬ <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" />፣ የፍለጋ ውጤት ምድብ</translation>
 <translation id="2322173485024759474">በደብዳቤ ይመለሱ</translation>
+<translation id="2335091074961603075">የእርስዎ Chromebook ወይም የብሉቱዝ መሣሪያ የድሮ የሆነ የብሉቱዝ ስሪት እየተጠቀመ ነው። ለተሻለ የኦዲዮ ጥራት ውስጣዊ ማይክሮፎን ይጠቀሙ።</translation>
 <translation id="2339073806695260576">ማስታወሻ ለመያዝ፣ ቅጽበታዊ ገፅ እይታን ለማንሳት፣ ሌዘር ጠቋሚውን ወይም ማጉያ መነጽሩን ለመጠቀም በመደርደሪያው ላይ ያለውን የስታይለስ አዝራሩን መታ ያድርጉ።</translation>
 <translation id="2341729377289034582">ወደ አቀባዊ ተቆልፏል</translation>
 <translation id="2345226652884463045">ጽሁፉን ለአርትዖት ለመምረጥ አስገባን ወይም ፈልግ + ክፍት ቦታን ይጫኑ።</translation>
@@ -395,6 +396,7 @@
 <translation id="2750941250130734256">ገባሪ መስኮት ተነቅሏል።</translation>
 <translation id="2761723519669354964">የደመቀ ንጥልን ከመደርደሪያ ክፈት</translation>
 <translation id="2774348302533424868"><ph name="MODIFIER" /><ph name="DELIMITER" /><ph name="KEY_ONE" /> በ<ph name="KEY_TWO" /> በኩል</translation>
+<translation id="2778197796481941784">ctrl+search+s</translation>
 <translation id="2778650143428714839"><ph name="DEVICE_TYPE" /> በ<ph name="MANAGER" /> የሚተዳደር ነው</translation>
 <translation id="2782591952652094792">ከማንሳት ሁነታ ውጣ</translation>
 <translation id="2785499565474703580">1 መሣሪያ ተገናኝቷል</translation>
@@ -458,6 +460,7 @@
 <translation id="3062298103034426069">አይደገፍም</translation>
 <translation id="3068622547379332530">ስሪት <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">መደርደሪያ በስተግራ</translation>
+<translation id="3070639127620815135">search+esc</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">ምናሌ ዘርጋ</translation>
 <translation id="3087734570205094154">ግርጌ</translation>
@@ -471,6 +474,7 @@
 <translation id="3120421559657122717">መሣሪያ ይዘጋ?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">ለማዘመን ዳግም ያስጀምሩ</translation>
+<translation id="3139188263101386725">የተዘመነውን አቋራጭ ይክፈቱ</translation>
 <translation id="3139942575505304791">ዴስክ 1</translation>
 <translation id="315116470104423982">የተንቀሳቃሽ ስልክ ውሂብ</translation>
 <translation id="3151786313568798007">አቀማመጥ</translation>
@@ -606,6 +610,7 @@
         <ph name="END_TIME" />፣
         <ph name="TIME_ZONE" />። ለተጨማሪ ዝርዝሮች በGoogle ቀን መቁጠሪያ ውስጥ ይምረጡ።</translation>
 <translation id="3659444876902283058">(ቀን <ph name="CURRENT_DAY" />/<ph name="TOTAL_DAYS" />)</translation>
+<translation id="3659667652322717492">በኋላ ላይ በማንኛውም ጊዜ የማይክሮፎን ባህሪን መለወጥ ይችላሉ።</translation>
 <translation id="3659814201068740063"><ph name="TIME_LEFT" /> ገደማ ቀርቷል (<ph name="PERCENTAGE" />%)።
 መሣሪያዎን ኃይል ላይ ይሰኩት።</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> የሚተዳደር ተጠቃሚ</translation>
@@ -1049,6 +1054,7 @@
 <translation id="5578188167649348993">ማህደረ ትውስታ</translation>
 <translation id="5580000943347215299">ቤተ-መጽሐፍት</translation>
 <translation id="558849140439112033">ለመቅረጽ አካባቢ ለመምረጥ ይጎትቱ</translation>
+<translation id="5590609058453685222">ድምጸ-ከል ማስታወቂያ በርቷል። ድምፀ-ከል ሆነው ሳለ ካወሩ ማሳወቂያ ይደርስዎታል።</translation>
 <translation id="5596627076506792578">ተጨማሪ አማራጮች</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />፣ <ph name="DATE" /></translation>
 <translation id="5600837773213129531">የሚነገር ግብረመልስን ለማሰናከል Ctrl + Alt + Z ይጫኑ።</translation>
@@ -1202,6 +1208,7 @@
 <translation id="6231419273573514727">የተቀጥላዎች አፈጻጸም የተገደበ ሊሆን ይችላል።</translation>
 <translation id="6232891689835436217"><ph name="APP_NAME" /> አሁን ላይ የእርስዎን ካሜራ እና ማይክሮፎን እየተጠቀመ ነው</translation>
 <translation id="6237231532760393653">1X</translation>
+<translation id="6244986124527896815">በ«<ph name="NEW_SHORTCUT" />» የተግባር መሪ መተግበሪያን ይክፈቱ።</translation>
 <translation id="6247728804802644171">ማሳወቂያዎችን ክፈት</translation>
 <translation id="6254629735336163724">ወደ አግድም ተቆልፏል</translation>
 <translation id="6259254695169772643">ለመጠቀም የእርስዎን ስታይለስ ይጠቀሙ</translation>
@@ -1252,6 +1259,7 @@
 <translation id="6497418457565568043">አትረብሽ በርቷል</translation>
 <translation id="6500896621837555595">አዘምን</translation>
 <translation id="6501401484702599040">ማያ ገጹን ወደ <ph name="RECEIVER_NAME" /> Cast በማድረግ ላይ</translation>
+<translation id="6507042703812908515">በ«<ph name="NEW_SHORTCUT" />» የቁልፍ አቋራጮች መተግበሪያን ይክፈቱ።</translation>
 <translation id="6507618042428827377">ቀጥሎ ወደሚገኘው የግቤት ስልት ይቀይሩ</translation>
 <translation id="6508923215158854599">የእርስዎ Chromebook ከእርስዎ Chromecast መሣሪያ ጋር ተመሳሳይ የሆነ የWi-Fi አውታረ መረብ ላይ እንደሆነ ያረጋግጡ።</translation>
 <translation id="6515727200518652613">ካሜራ ጠፍቷል፣ ዳግም ለማገናኘት በመሞከር ላይ።</translation>
@@ -1277,6 +1285,7 @@
 <translation id="6597278316891651699">ካሜራ ታችኛው ግራ ጥግ ላይ ገጥሟል። ከስርዓት ወለል ጋር ግጭት።</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" />፣ በአስተዳዳሪዎ የሚቀናበር</translation>
 <translation id="6612802754306526077">የማያ ገፅ ቀረጻ ሁነታ ተመርጧል</translation>
+<translation id="6613765291890844037">ማከማቻ <ph name="STORAGE_IN_USE_SIZE" /> በጥቅም ላይ | <ph name="STORAGE_TOTAL_SIZE" /> ጠቅላላ</translation>
 <translation id="6614169507485700968">የግላዊነት ማያ ገፅ በርቷል</translation>
 <translation id="6625718907317144388">የእይታ ጥበቃ ስለበራ የ<ph name="APP_1_TITLE" />፣ <ph name="APP_2_TITLE" /> እና ሌሎች ማሳወቂያዎች ተደብቀዋል</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
@@ -1483,7 +1492,7 @@
 <translation id="7579778809502851308">የማያ ገፅ ቀረጻ</translation>
 <translation id="7593891976182323525">Search ወይም Shift</translation>
 <translation id="7600875258240007829">ሁሉንም ማሳወቂያዎች ይመልከቱ</translation>
-<translation id="7601417191446344542">ድምጸ-ከልን ገፋ ማድረግ ይብራ?</translation>
+<translation id="7601417191446344542">ድምጸ-ከል ማስታወቂያ ይብራ?</translation>
 <translation id="7607002721634913082">ለአፍታ ቆሟል</translation>
 <translation id="7609951632080598826">የቀን መቁጠሪያ እይታ፣ <ph name="DATE" />፣ <ph name="TIME" /></translation>
 <translation id="7611213136657090146">ካሜራ እንደገና ተገናኝቷል።</translation>
@@ -1544,7 +1553,6 @@
 <translation id="7866482334467279021">በርቷል</translation>
 <translation id="7872786842639831132">አጥፋ</translation>
 <translation id="7875575368831396199">ብሉቱዝ በእርስዎ <ph name="DEVICE_TYPE" /> ላይ የጠፋ ይመስላል። የስልክ ሃብን ለመጠቀም እባክዎ ብሉቱዝን ያብሩ።</translation>
-<translation id="7876243839304621966">ሁሉንም አስወግድ</translation>
 <translation id="7877557217297072640">{0,plural, =0{አሁን መሣሪያውን ወደ ቀዳሚው ስሪት ይለውጡ}=1{በ1 ሰከንድ ውስጥ መሣሪያውን ወደ ቀዳሚው ስሪት ይለውጡ}one{በ# ሰከንዶች ውስጥ መሣሪያውን ወደ ቀዳሚው ስሪት ቀይር}other{በ# ሰከንዶች ውስጥ መሣሪያውን ወደ ቀዳሚው ስሪት ቀይር}}</translation>
 <translation id="7884446017008693258">የመገናኛ ነጥብ ቅንብሮች</translation>
 <translation id="7884902759927478774">የትር ማንሸራተትን ይሰርዙ</translation>
@@ -1750,6 +1758,7 @@
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />። <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8790998409862094015">ከባድ</translation>
 <translation id="8792626944327216835">ማይክሮፎን</translation>
+<translation id="8801802992492329306">5ጂ</translation>
 <translation id="8806053966018712535">አቃፊ <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">«እገዛ»</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

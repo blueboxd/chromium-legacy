@@ -699,6 +699,9 @@ interface CSSSkewY : CSSTransformComponent
     getter ay
     method constructor
     setter ay
+interface CSSStartingStyleRule : CSSGroupingRule
+    attribute @@toStringTag
+    method constructor
 interface CSSStyleDeclaration
     attribute @@toStringTag
     getter cssFloat
@@ -930,7 +933,7 @@ interface CanvasRenderingContext2D
     setter textBaseline
     setter textRendering
     setter wordSpacing
-interface CaptureController
+interface CaptureController : EventTarget
     attribute @@toStringTag
     method constructor
     method setFocusBehavior
@@ -6659,7 +6662,10 @@ interface RTCRtpTransceiver
     getter sender
     getter stopped
     method constructor
+    method getHeaderExtensionsToNegotiate
+    method getNegotiatedHeaderExtensions
     method setCodecPreferences
+    method setHeaderExtensionsToNegotiate
     method stop
     setter direction
 interface RTCSctpTransport : EventTarget

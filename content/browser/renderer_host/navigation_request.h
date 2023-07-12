@@ -403,7 +403,7 @@ class CONTENT_EXPORT NavigationRequest
   const absl::optional<blink::Impression>& GetImpression() override;
   const absl::optional<blink::LocalFrameToken>& GetInitiatorFrameToken()
       override;
-  int GetInitiatorProcessID() override;
+  int GetInitiatorProcessId() override;
   const absl::optional<url::Origin>& GetInitiatorOrigin() override;
   const absl::optional<GURL>& GetInitiatorBaseUrl() override;
   const std::vector<std::string>& GetDnsAliases() override;
@@ -1656,7 +1656,7 @@ class CONTENT_EXPORT NavigationRequest
   //
   // Must not be called for same-document navigation requests nor for requests
   // served from the back-forward cache or from prerendered pages.
-  void UpdateLocalNetworkRequestPolicy();
+  void UpdatePrivateNetworkRequestPolicy();
 
   // Called when the navigation is ready to be committed. This will update the
   // |state_| and inform the delegate.

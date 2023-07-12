@@ -303,7 +303,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Translate.PageLoad.InitialSourceLanguage"
-    enum="LocaleCodeISO639" expires_after="2023-11-05">
+    enum="LocaleCodeISO639" expires_after="2024-01-07">
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -541,17 +541,6 @@ chromium-metrics-reviews@google.com.
     Tracks the outcome of attempts to download a Translate Ranker Model. Only
     recorded for profiles where Translate is available (not recorded in System
     profiles nor Ash non-user profiles).
-  </summary>
-</histogram>
-
-<histogram name="Translate.TranslateAssistContentResult"
-    enum="TranslateAssistContentResult" expires_after="2022-06-30">
-  <owner>jds@chromium.org</owner>
-  <owner>chrome-language@google.com</owner>
-  <summary>
-    Android: Records the result of assembling translate data to provide to
-    Assistant via AssistContent. See TranslateAssistContentResult in enums.xml
-    for possible values.
   </summary>
 </histogram>
 

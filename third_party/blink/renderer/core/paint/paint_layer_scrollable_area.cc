@@ -633,10 +633,11 @@ gfx::Vector2d PaintLayerScrollableArea::MaximumScrollOffsetInt() const {
             ->OverflowClipRect(PhysicalOffset(), kIgnoreOverlayScrollbarSize)
             .size);
   } else {
-    visible_size = ToPixelSnappedRect(GetLayoutBox()->OverflowClipRect(
-                                          GetLayoutBox()->Location(),
-                                          kIgnoreOverlayScrollbarSize))
-                       .size();
+    visible_size =
+        ToPixelSnappedRect(
+            GetLayoutBox()->DeprecatedOverflowClipRect(
+                GetLayoutBox()->Location(), kIgnoreOverlayScrollbarSize))
+            .size();
   }
 
   // TODO(skobes): We should really ASSERT that contentSize >= visibleSize
@@ -1467,9 +1468,14 @@ static inline const LayoutObject& ScrollbarStyleSource(
     // propagated to the viewport.
     Element* doc_element = doc.documentElement();
     if (doc_element && doc_element->GetLayoutObject() &&
-        doc_element->GetLayoutObject()->StyleRef().ScrollbarWidth() !=
-            EScrollbarWidth::kAuto)
+        (doc_element->GetLayoutObject()->StyleRef().ScrollbarWidth() !=
+             EScrollbarWidth::kAuto ||
+         doc_element->GetLayoutObject()
+             ->StyleRef()
+             .ScrollbarColor()
+             .has_value())) {
       return *doc_element->GetLayoutObject();
+    }
 
     if (Settings* settings = doc.GetSettings()) {
       LocalFrame* frame = layout_box.GetFrame();
@@ -2215,7 +2221,7 @@ gfx::Vector2d PaintLayerScrollableArea::OffsetFromResizeCorner(
 }
 
 void PaintLayerScrollableArea::Resize(const gfx::Point& pos,
-                                      const LayoutSize& old_offset) {
+                                      const gfx::Vector2d& old_offset) {
   // FIXME: This should be possible on generated content but is not right now.
   if (!InResizeMode() || !GetLayoutBox()->CanResize() ||
       !GetLayoutBox()->GetNode())
@@ -2236,16 +2242,16 @@ void PaintLayerScrollableArea::Resize(const gfx::Point& pos,
   PhysicalSize current_size = GetLayoutBox()->Size();
   current_size.Scale(1 / zoom_factor);
 
-  LayoutSize adjusted_old_offset = old_offset * (1.f / zoom_factor);
+  PhysicalOffset adjusted_old_offset(old_offset);
+  adjusted_old_offset.Scale(1.f / zoom_factor);
   if (GetLayoutBox()->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
     new_offset.set_x(-new_offset.x());
-    adjusted_old_offset.SetWidth(-adjusted_old_offset.Width());
+    adjusted_old_offset.left = -adjusted_old_offset.left;
   }
 
-  PhysicalSize new_size(
-      current_size +
-      PhysicalSize(LayoutUnit(new_offset.x()), LayoutUnit(new_offset.y())) -
-      PhysicalSizeToBeNoop(adjusted_old_offset));
+  PhysicalOffset offset = PhysicalOffset(new_offset) - adjusted_old_offset;
+  PhysicalSize new_size(current_size.width + offset.left,
+                        current_size.height + offset.top);
 
   // Ensure the new size is at least as large as the resize corner.
   gfx::SizeF corner_rect(CornerRect().size());

@@ -11,7 +11,7 @@ import {Origin} from 'chrome://resources/mojo/url/mojom/origin.mojom-webui.js';
 import {AttributionSupport, TriggerVerification} from './attribution.mojom-webui.js';
 import {Factory, HandlerInterface, HandlerRemote, ObserverInterface, ObserverReceiver, ReportID, SourceStatus, WebUIDebugReport, WebUIOsRegistration, WebUIRegistration, WebUIReport, WebUISource, WebUISource_Attributability, WebUISourceRegistration, WebUITrigger, WebUITrigger_Status} from './attribution_internals.mojom-webui.js';
 import {AttributionInternalsTableElement} from './attribution_internals_table.js';
-import {OsRegistrationResult, OsRegistrationType} from './attribution_reporting.mojom-webui.js';
+import {OsRegistrationResult, RegistrationType} from './attribution_reporting.mojom-webui.js';
 import {SourceRegistrationError} from './source_registration_error.mojom-webui.js';
 import {SourceType} from './source_type.mojom-webui.js';
 import {StoreSourceResult} from './store_source_result.mojom-webui.js';
@@ -715,6 +715,7 @@ class OsRegistration {
   topLevelOrigin: string;
   registrationType: string;
   debugKeyAllowed: boolean;
+  debugReporting: boolean;
   result: string;
 
   constructor(mojo: WebUIOsRegistration) {
@@ -722,12 +723,13 @@ class OsRegistration {
     this.registrationUrl = mojo.registrationUrl.url;
     this.topLevelOrigin = originToText(mojo.topLevelOrigin);
     this.debugKeyAllowed = mojo.isDebugKeyAllowed;
+    this.debugReporting = mojo.debugReporting;
 
     switch (mojo.type) {
-      case OsRegistrationType.kSource:
+      case RegistrationType.kSource:
         this.registrationType = 'OS Source';
         break;
-      case OsRegistrationType.kTrigger:
+      case RegistrationType.kTrigger:
         this.registrationType = 'OS Trigger';
         break;
       default:
@@ -774,6 +776,8 @@ class OsRegistrationTableModel extends TableModel<OsRegistration> {
               'Top-Level Origin', (e) => e.topLevelOrigin),
           new ValueColumn<OsRegistration, boolean>(
               'Debug Key Allowed', (e) => e.debugKeyAllowed),
+          new ValueColumn<OsRegistration, boolean>(
+              'Debug Reporting', (e) => e.debugReporting),
           new ValueColumn<OsRegistration, string>('Result', (e) => e.result),
         ],
         0,
@@ -983,6 +987,8 @@ function sourceRegistrationStatusToText(status: SourceStatus): string {
         return 'Rejected: destination global limit reached';
       case StoreSourceResult.kDestinationBothLimitsReached:
         return 'Rejected: destination both limits reached';
+      case StoreSourceResult.kReportingOriginsPerSiteLimitReached:
+        return 'Rejected: excessive reporting origins per source and reporting site';
       default:
         return status.toString();
     }

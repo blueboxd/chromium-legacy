@@ -204,7 +204,7 @@
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/content_settings/core/browser/local_network_settings.h"
+#include "components/content_settings/core/browser/private_network_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
@@ -2105,9 +2105,8 @@ bool ChromeContentBrowserClient::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
   // This is needed to bypass the normal SameSite rules for any chrome:// page
   // embedding a secure origin, regardless of the registrable domains of any
   // intervening frames. For example, this is needed for browser UI to interact
-  // with SameSite cookies on accounts.google.com, which are used for logging
-  // into Cloud Print from chrome://print, for displaying a list of available
-  // accounts on the NTP (chrome://new-tab-page), etc.
+  // with SameSite cookies on accounts.google.com, which is used for displaying
+  // a list of available accounts on the NTP (chrome://new-tab-page), etc.
   if (is_embedded_origin_secure && scheme == content::kChromeUIScheme)
     return true;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -2679,15 +2678,13 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       embedder_support::kUserAgent,
       switches::kUserDataDir,  // Make logs go to the right file.
   };
-  command_line->CopySwitchesFrom(browser_command_line, kCommonSwitchNames,
-                                 std::size(kCommonSwitchNames));
+  command_line->CopySwitchesFrom(browser_command_line, kCommonSwitchNames);
 
   static const char* const kDinosaurEasterEggSwitches[] = {
       error_page::switches::kDisableDinosaurEasterEgg,
   };
   command_line->CopySwitchesFrom(browser_command_line,
-                                 kDinosaurEasterEggSwitches,
-                                 std::size(kDinosaurEasterEggSwitches));
+                                 kDinosaurEasterEggSwitches);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // On Chrome OS need to pass primary user homedir (in multi-profiles session).
@@ -2947,8 +2944,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     }
 #endif
 
-    command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
-                                   std::size(kSwitchNames));
+    command_line->CopySwitchesFrom(browser_command_line, kSwitchNames);
   } else if (process_type == switches::kUtilityProcess) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     static const char* const kSwitchNames[] = {
@@ -2966,8 +2962,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                  << "\" instead";
     }
 
-    command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
-                                   std::size(kSwitchNames));
+    command_line->CopySwitchesFrom(browser_command_line, kSwitchNames);
 #endif
     MaybeAppendSecureOriginsAllowlistSwitch(command_line);
   } else if (process_type == switches::kZygoteProcess) {
@@ -2979,22 +2974,19 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         switches::kVerboseLoggingInNacl,
     };
 
-    command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
-                                   std::size(kSwitchNames));
+    command_line->CopySwitchesFrom(browser_command_line, kSwitchNames);
 #endif
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     // Ensure zygote loads the resource bundle for the right locale.
     static const char* const kMoreSwitchNames[] = {switches::kLang};
-    command_line->CopySwitchesFrom(browser_command_line, kMoreSwitchNames,
-                                   std::size(kMoreSwitchNames));
+    command_line->CopySwitchesFrom(browser_command_line, kMoreSwitchNames);
 #endif
 #if BUILDFLAG(IS_CHROMEOS)
     // This is called before feature flags are parsed, so pass them in their raw
     // form.
     static const char* const kMoreCrOSSwitchNames[] = {
         chromeos::switches::kFeatureFlags};
-    command_line->CopySwitchesFrom(browser_command_line, kMoreCrOSSwitchNames,
-                                   std::size(kMoreCrOSSwitchNames));
+    command_line->CopySwitchesFrom(browser_command_line, kMoreCrOSSwitchNames);
 #endif
   } else if (process_type == switches::kGpuProcess) {
     // If --ignore-gpu-blocklist is passed in, don't send in crash reports
@@ -3009,8 +3001,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     static const char* const kSwitchNames[] = {
         crash_reporter::switches::kCrashLoopBefore,
     };
-    command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
-                                   std::size(kSwitchNames));
+    command_line->CopySwitchesFrom(browser_command_line, kSwitchNames);
   }
 #endif
 
@@ -3111,6 +3102,22 @@ bool ChromeContentBrowserClient::MayDeleteServiceWorkerRegistration(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (!ChromeContentBrowserClientExtensionsPart::
           MayDeleteServiceWorkerRegistration(scope, browser_context)) {
+    return false;
+  }
+#endif
+
+  return true;
+}
+
+bool ChromeContentBrowserClient::ShouldTryToUpdateServiceWorkerRegistration(
+    const GURL& scope,
+    content::BrowserContext* browser_context) {
+  DCHECK(browser_context);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (!ChromeContentBrowserClientExtensionsPart::
+          ShouldTryToUpdateServiceWorkerRegistration(scope, browser_context)) {
     return false;
   }
 #endif
@@ -3257,10 +3264,11 @@ void ChromeContentBrowserClient::FileSystemAccessed(
     bool allow) {
   // Record access to file system for potential display in UI.
   for (const auto& it : render_frames) {
+    auto* rfh = content::RenderFrameHost::FromID(it);
     content_settings::PageSpecificContentSettings::StorageAccessed(
         content_settings::mojom::ContentSettingsManager::StorageType::
             FILE_SYSTEM,
-        it.child_id, it.frame_routing_id, url, !allow);
+        it.child_id, it.frame_routing_id, rfh->storage_key(), !allow);
   }
   std::move(callback).Run(allow);
 }
@@ -3428,6 +3436,7 @@ bool ChromeContentBrowserClient::IsAttributionReportingOperationAllowed(
       return allowed;
     }
     case AttributionReportingOperation::kSourceVerboseDebugReport:
+    case AttributionReportingOperation::kOsSourceVerboseDebugReport:
       DCHECK(source_origin);
       DCHECK(reporting_origin);
       return privacy_sandbox_settings->IsAttributionReportingAllowed(
@@ -3447,6 +3456,7 @@ bool ChromeContentBrowserClient::IsAttributionReportingOperationAllowed(
       return allowed;
     }
     case AttributionReportingOperation::kTriggerVerboseDebugReport:
+    case AttributionReportingOperation::kOsTriggerVerboseDebugReport:
       DCHECK(destination_origin);
       DCHECK(reporting_origin);
       return privacy_sandbox_settings->IsAttributionReportingAllowed(
@@ -4396,6 +4406,16 @@ base::FilePath ChromeContentBrowserClient::GetFirstPartySetsDirectory() {
   return user_data_dir;
 }
 
+absl::optional<base::FilePath>
+ChromeContentBrowserClient::GetLocalTracesDirectory() {
+  base::FilePath user_data_dir;
+  if (!base::PathService::Get(chrome::DIR_LOCAL_TRACES, &user_data_dir)) {
+    return absl::nullopt;
+  }
+  DCHECK(!user_data_dir.empty());
+  return user_data_dir;
+}
+
 void ChromeContentBrowserClient::DidCreatePpapiPlugin(
     content::BrowserPpapiHost* browser_host) {
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -5100,9 +5120,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 #endif
 
 #if BUILDFLAG(IS_MAC)
-  if (__builtin_available(macOS 10.15, *)) {
-    MaybeAddThrottle(MaybeCreateAuthSessionThrottleFor(handle), &throttles);
-  }
+  MaybeAddThrottle(MaybeCreateAuthSessionThrottleFor(handle), &throttles);
 #endif
 
   auto* performance_manager_registry =
@@ -5405,8 +5423,7 @@ void ChromeContentBrowserClient::MaybeCopyDisableWebRtcEncryptionSwitch(
     static const char* const kWebRtcDevSwitchNames[] = {
         switches::kDisableWebRtcEncryption,
     };
-    to_command_line->CopySwitchesFrom(from_command_line, kWebRtcDevSwitchNames,
-                                      std::size(kWebRtcDevSwitchNames));
+    to_command_line->CopySwitchesFrom(from_command_line, kWebRtcDevSwitchNames);
   }
 }
 
@@ -7391,15 +7408,15 @@ bool ChromeContentBrowserClient::
 #endif
 }
 
-bool ChromeContentBrowserClient::ShouldAllowInsecureLocalNetworkRequests(
+bool ChromeContentBrowserClient::ShouldAllowInsecurePrivateNetworkRequests(
     content::BrowserContext* browser_context,
     const url::Origin& origin) {
   // The host content settings map might no be null for some irregular profiles,
   // e.g. the System Profile.
   if (HostContentSettingsMap* service =
           HostContentSettingsMapFactory::GetForProfile(browser_context)) {
-    return content_settings::ShouldAllowInsecureLocalNetworkRequests(service,
-                                                                     origin);
+    return content_settings::ShouldAllowInsecurePrivateNetworkRequests(service,
+                                                                       origin);
   }
 
   return false;

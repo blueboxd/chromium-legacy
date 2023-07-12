@@ -99,6 +99,15 @@ cx_events::UsbEventInfo UncheckedConvertPtr(
   return result;
 }
 
+cx_events::HdmiEventInfo UncheckedConvertPtr(
+    crosapi::TelemetryHdmiEventInfoPtr ptr) {
+  cx_events::HdmiEventInfo result;
+
+  result.event = Convert(ptr->state);
+
+  return result;
+}
+
 cx_events::SdCardEventInfo UncheckedConvertPtr(
     crosapi::TelemetrySdCardEventInfoPtr ptr) {
   cx_events::SdCardEventInfo result;
@@ -177,6 +186,35 @@ cx_events::TouchPointInfo UncheckedConvertPtr(
   result.touch_minor =
       ConvertStructPtr<absl::optional<uint32_t>, crosapi::UInt32ValuePtr>(
           std::move(ptr->touch_minor));
+  return result;
+}
+
+cx_events::StylusTouchPointInfo UncheckedConvertPtr(
+    crosapi::TelemetryStylusTouchPointInfoPtr ptr) {
+  cx_events::StylusTouchPointInfo result;
+  if (ptr.is_null()) {
+    return result;
+  }
+  result.x = ptr->x;
+  result.y = ptr->y;
+  result.pressure = ptr->pressure;
+  return result;
+}
+
+cx_events::StylusTouchEventInfo UncheckedConvertPtr(
+    crosapi::TelemetryStylusTouchEventInfoPtr ptr) {
+  cx_events::StylusTouchEventInfo result;
+  result.touch_point = ConvertStructPtr<cx_events::StylusTouchPointInfo>(
+      std::move(ptr->touch_point));
+  return result;
+}
+
+cx_events::StylusConnectedEventInfo UncheckedConvertPtr(
+    crosapi::TelemetryStylusConnectedEventInfoPtr ptr) {
+  cx_events::StylusConnectedEventInfo result;
+  result.max_x = ptr->max_x;
+  result.max_y = ptr->max_y;
+  result.max_pressure = ptr->max_pressure;
   return result;
 }
 
@@ -366,6 +404,18 @@ cx_events::UsbEvent Convert(crosapi::TelemetryUsbEventInfo::State state) {
   NOTREACHED();
 }
 
+cx_events::HdmiEvent Convert(crosapi::TelemetryHdmiEventInfo::State state) {
+  switch (state) {
+    case crosapi::TelemetryHdmiEventInfo_State::kUnmappedEnumField:
+      return cx_events::HdmiEvent::kNone;
+    case crosapi::TelemetryHdmiEventInfo_State::kAdd:
+      return cx_events::HdmiEvent::kConnected;
+    case crosapi::TelemetryHdmiEventInfo_State::kRemove:
+      return cx_events::HdmiEvent::kDisconnected;
+  }
+  NOTREACHED();
+}
+
 cx_events::SdCardEvent Convert(crosapi::TelemetrySdCardEventInfo::State state) {
   switch (state) {
     case crosapi::TelemetrySdCardEventInfo_State::kUnmappedEnumField:
@@ -431,6 +481,8 @@ crosapi::TelemetryEventCategoryEnum Convert(cx_events::EventCategory input) {
       return crosapi::TelemetryEventCategoryEnum::kLid;
     case cx_events::EventCategory::kUsb:
       return crosapi::TelemetryEventCategoryEnum::kUsb;
+    case cx_events::EventCategory::kHdmi:
+      return crosapi::TelemetryEventCategoryEnum::kHdmi;
     case cx_events::EventCategory::kSdCard:
       return crosapi::TelemetryEventCategoryEnum::kSdCard;
     case cx_events::EventCategory::kPower:
@@ -445,6 +497,10 @@ crosapi::TelemetryEventCategoryEnum Convert(cx_events::EventCategory input) {
       return crosapi::TelemetryEventCategoryEnum::kTouchpadTouch;
     case cx_events::EventCategory::kTouchpadConnected:
       return crosapi::TelemetryEventCategoryEnum::kTouchpadConnected;
+    case cx_events::EventCategory::kStylusTouch:
+      return crosapi::TelemetryEventCategoryEnum::kStylusTouch;
+    case cx_events::EventCategory::kStylusConnected:
+      return crosapi::TelemetryEventCategoryEnum::kStylusConnected;
   }
   NOTREACHED();
 }

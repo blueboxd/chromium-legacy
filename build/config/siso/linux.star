@@ -30,18 +30,34 @@ __handlers.update(nasm.handlers)
 __handlers.update(remote_exec_wrapper.handlers)
 __handlers.update(rewrapper_to_reproxy.handlers)
 
+def __disable_remote_b281663988(step_config):
+    step_config["rules"].extend([
+        {
+            # TODO(b/281663988): remote compiles fail for missing headers.
+            "name": "b/281663988",
+            "action_outs": [
+                "./obj/ui/qt/qt5_shim/qt_shim.o",
+                "./obj/ui/qt/qt6_shim/qt_shim.o",
+                "./obj/ui/qt/qt5_shim/qt5_shim_moc.o",
+                "./obj/ui/qt/qt6_shim/qt6_shim_moc.o",
+                "./obj/ui/qt/qt_interface/qt_interface.o",
+            ],
+            "remote": False,
+        },
+    ])
+    return step_config
+
 def __step_config(ctx, step_config):
     config.check(ctx)
     step_config["platforms"] = {
         "default": {
             "OSFamily": "Linux",
-            "container-image": "docker://gcr.io/chops-private-images-prod/rbe/siso-chromium/linux@sha256:d4fcda628ebcdb3dd79b166619c56da08d5d7bd43d1a7b1f69734904cc7a1bb2",
+            "container-image": "docker://gcr.io/chops-public-images-prod/rbe/siso-chromium/linux@sha256:912808c295e578ccde53b0685bcd0d56c15d7a03e819dcce70694bfe3fdab35e",
             "label:action_default": "1",
         },
-
         "mojo": {
             "OSFamily": "Linux",
-            "container-image": "docker://gcr.io/chops-private-images-prod/rbe/siso-chromium/linux@sha256:d4fcda628ebcdb3dd79b166619c56da08d5d7bd43d1a7b1f69734904cc7a1bb2",
+            "container-image": "docker://gcr.io/chops-public-images-prod/rbe/siso-chromium/linux@sha256:912808c295e578ccde53b0685bcd0d56c15d7a03e819dcce70694bfe3fdab35e",
             # action_mojo pool uses n2-highmem-8 machine as of 2023 Jun and
             # mojo_bindings_generators.py will run faster on n2-highmem-8 than
             # n2-custom-2-3840
@@ -54,8 +70,10 @@ def __step_config(ctx, step_config):
 
     # rewrapper_to_reproxy takes precedence over remote exec wrapper handler if enabled.
     if rewrapper_to_reproxy.enabled(ctx):
+        __disable_remote_b281663988(step_config)
         step_config = rewrapper_to_reproxy.step_config(ctx, step_config)
     elif remote_exec_wrapper.enabled(ctx):
+        __disable_remote_b281663988(step_config)
         step_config = remote_exec_wrapper.step_config(ctx, step_config)
     else:
         if android.enabled(ctx):

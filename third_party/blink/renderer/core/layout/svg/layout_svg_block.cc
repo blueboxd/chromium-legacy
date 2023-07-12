@@ -55,6 +55,11 @@ void LayoutSVGBlock::WillBeDestroyed() {
 void LayoutSVGBlock::InsertedIntoTree() {
   NOT_DESTROYED();
   LayoutBlockFlow::InsertedIntoTree();
+  // Ensure that the viewport dependency flag gets set on the ancestor chain.
+  if (SVGSelfOrDescendantHasViewportDependency()) {
+    ClearSVGSelfOrDescendantHasViewportDependency();
+    SetSVGSelfOrDescendantHasViewportDependency();
+  }
   LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(*this,
                                                                          false);
   if (StyleRef().HasSVGEffect())
@@ -90,6 +95,14 @@ bool LayoutSVGBlock::CheckForImplicitTransformChange(bool bbox_changed) const {
   return false;
 }
 
+void LayoutSVGBlock::UpdateTransformBeforeLayout() {
+  if (!needs_transform_update_) {
+    return;
+  }
+  local_transform_ = TransformHelper::ComputeTransformIncludingMotion(
+      *GetElement(), gfx::RectF());
+}
+
 bool LayoutSVGBlock::UpdateTransformAfterLayout(bool bounds_changed) {
   NOT_DESTROYED();
   // If our transform depends on the reference box, we need to check if it needs
@@ -101,8 +114,9 @@ bool LayoutSVGBlock::UpdateTransformAfterLayout(bool bounds_changed) {
   }
   if (!needs_transform_update_)
     return false;
-  local_transform_ =
-      GetElement()->CalculateTransform(SVGElement::kIncludeMotionTransform);
+  const gfx::RectF reference_box = TransformHelper::ComputeReferenceBox(*this);
+  local_transform_ = TransformHelper::ComputeTransformIncludingMotion(
+      *GetElement(), reference_box);
   needs_transform_update_ = false;
   return true;
 }
@@ -119,7 +133,7 @@ void LayoutSVGBlock::StyleDidChange(StyleDifference diff,
 
   TransformHelper::UpdateOffsetPath(*GetElement(), old_style);
   transform_uses_reference_box_ =
-      TransformHelper::DependsOnReferenceBox(StyleRef());
+      TransformHelper::UpdateReferenceBoxDependency(*this);
 
   if (diff.NeedsFullLayout()) {
     SetNeedsBoundariesUpdate();

@@ -674,6 +674,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameHostImpl* rfh,
       bool is_fullscreen,
       blink::mojom::FullscreenOptionsPtr options) override;
+#if defined(USE_AURA)
+  void Maximize() override;
+  void Minimize() override;
+  void Restore() override;
+#endif
 #if BUILDFLAG(IS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override;
 #endif

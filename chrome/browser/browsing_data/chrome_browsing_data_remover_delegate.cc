@@ -108,11 +108,11 @@
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/field_info_store.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/browser/smart_bubble_stats_store.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/permissions/permission_actions_history.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
@@ -641,10 +641,11 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       if (privacy_sandbox_settings)
         privacy_sandbox_settings->OnCookiesCleared();
 
-      auto* media_device_salt_service =
-          MediaDeviceSaltServiceFactory::GetInstance()->GetForBrowserContext(
-              profile_);
-      if (media_device_salt_service) {
+      // Media Device salts are handled separately, but also resetting them here
+      // to preserve the behavior of the browsingData extension API.
+      if (auto* media_device_salt_service =
+              MediaDeviceSaltServiceFactory::GetInstance()
+                  ->GetForBrowserContext(profile_)) {
         media_device_salt_service->ResetSalt();
       }
 
@@ -1265,6 +1266,25 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       (constants::DATA_TYPE_SITE_DATA | constants::DATA_TYPE_HISTORY)) {
     login_detection::prefs::RemoveLoginDetectionData(prefs);
   }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // DATA_TYPE_MEDIA_DEVICE_SALTS
+  if ((remove_mask &
+       content::BrowsingDataRemover::DATA_TYPE_MEDIA_DEVICE_SALTS) &&
+      (origin_type_mask &
+       content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB) &&
+      filter_builder->MatchesAllOriginsAndDomains()) {
+    // TODO(crbug.com/1410462): Turn into an async action when introducing a
+    // per-storage-key backend.
+    base::ScopedClosureRunner completion_runner(
+        CreateTaskCompletionClosure(TracingDataType::kMediaDeviceSalts));
+
+    if (auto* media_device_salt_service =
+            MediaDeviceSaltServiceFactory::GetInstance()->GetForBrowserContext(
+                profile_)) {
+      media_device_salt_service->ResetSalt();
+    }
+  }
 }
 
 void ChromeBrowsingDataRemoverDelegate::OnTaskStarted(
@@ -1413,6 +1433,8 @@ const char* ChromeBrowsingDataRemoverDelegate::GetHistogramSuffix(
       return "WebAuthnCredentials";
     case TracingDataType::kWebrtcVideoPerfHistory:
       return "WebrtcVideoPerfHistory";
+    case TracingDataType::kMediaDeviceSalts:
+      return "MediaDeviceSalts";
   }
 }
 

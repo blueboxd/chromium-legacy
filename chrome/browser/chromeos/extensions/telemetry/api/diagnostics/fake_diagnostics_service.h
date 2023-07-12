@@ -95,6 +95,9 @@ class FakeDiagnosticsService : public crosapi::mojom::DiagnosticsService {
       crosapi::mojom::UInt32ValuePtr percentage_used_threshold,
       RunSmartctlCheckRoutineCallback callback) override;
   void RunUfsLifetimeRoutine(RunUfsLifetimeRoutineCallback callback) override;
+  void RunPowerButtonRoutine(uint32_t timeout_seconds,
+                             RunPowerButtonRoutineCallback callback) override;
+  void RunAudioDriverRoutine(RunAudioDriverRoutineCallback callback) override;
 
   // Sets the return value for |Run*Routine|.
   void SetRunRoutineResponse(

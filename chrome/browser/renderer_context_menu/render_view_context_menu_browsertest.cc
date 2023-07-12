@@ -525,10 +525,10 @@ class PdfPluginContextMenuBrowserTest : public InProcessBrowserTest {
   content::RenderFrameHost* extension_frame() { return extension_frame_; }
 
  private:
-  raw_ptr<content::RenderFrameHost, DanglingUntriaged> extension_frame_ =
+  raw_ptr<content::RenderFrameHost, DanglingAcrossTasks> extension_frame_ =
       nullptr;
   guest_view::TestGuestViewManagerFactory factory_;
-  raw_ptr<guest_view::TestGuestViewManager, DanglingUntriaged>
+  raw_ptr<guest_view::TestGuestViewManager, DanglingAcrossTasks>
       test_guest_view_manager_;
 };
 
@@ -974,7 +974,13 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextTouchTextImage) {
 }
 
 // Opens a link in a new tab via a "real" context menu.
-IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, RealMenu) {
+// TODO(crbug.com/1462760): Enable the test.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_RealMenu DISABLED_RealMenu
+#else
+#define MAYBE_RealMenu RealMenu
+#endif
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, MAYBE_RealMenu) {
   ContextMenuNotificationObserver menu_observer(
       IDC_CONTENT_CONTEXT_OPENLINKNEWTAB);
   ui_test_utils::AllBrowserTabAddedWaiter add_tab;
@@ -2144,7 +2150,8 @@ class SearchByRegionWithUnifiedSidePanelBrowserTest
     ExpectThatRequestContainsImageData(contents);
   }
 
-  void SimulateDragAndVerifyNonGoogleUrl(RenderViewContextMenu* menu) {
+  void SimulateDragAndVerifyNonGoogleUrlForSidePanel(
+      RenderViewContextMenu* menu) {
     SearchByRegionBrowserBaseTest::SimulateDragAndVerifyOverlayUI(menu);
     content::WebContents* contents =
         GetLensUnifiedSidePanelWebContentsAfterNavigation();
@@ -2158,7 +2165,7 @@ class SearchByRegionWithUnifiedSidePanelBrowserTest
     EXPECT_THAT(
         side_panel_content,
         testing::MatchesRegex(expected_content.substr(0, query_start_pos) +
-                              ".*sideimagesearch=1"));
+                              ".*sideimagesearch=1&vpw=\\d+&vph=\\d+"));
     ExpectThatRequestContainsImageData(contents);
     quit_closure_.Run();
   }
@@ -2195,7 +2202,7 @@ class SearchByRegionWithUnifiedSidePanelBrowserTest
     menu_observer_ = std::make_unique<ContextMenuNotificationObserver>(
         IDC_CONTENT_CONTEXT_WEB_REGION_SEARCH, ui::EF_MOUSE_BUTTON,
         base::BindOnce(&SearchByRegionWithUnifiedSidePanelBrowserTest::
-                           SimulateDragAndVerifyNonGoogleUrl,
+                           SimulateDragAndVerifyNonGoogleUrlForSidePanel,
                        base::Unretained(this)));
     RightClickToOpenContextMenu();
   }
@@ -2577,12 +2584,24 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
   size_t request_attempts_ = 0u;
 };
 
-IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, LoadImage) {
+// TODO(crbug.com/1462760): Enable the test.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_LoadImage DISABLED_LoadImage
+#else
+#define MAYBE_LoadImage LoadImage
+#endif
+IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, MAYBE_LoadImage) {
   SetupAndLoadImagePage("/load_image/image.html", "/load_image/image.png");
   AttemptLoadImage();
 }
 
-IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, LoadImageWithMap) {
+// TODO(crbug.com/1462760): Enable the test.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_LoadImageWithMap DISABLED_LoadImageWithMap
+#else
+#define MAYBE_LoadImageWithMap LoadImageWithMap
+#endif
+IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, MAYBE_LoadImageWithMap) {
   SetupAndLoadImagePage("/load_image/image_with_map.html",
                         "/load_image/image.png");
   AttemptLoadImage();
@@ -2675,14 +2694,26 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, BrowserlessWebContentsCrash) {
       blink::mojom::ContextMenuDataMediaType::kNone, ui::MENU_SOURCE_MOUSE);
 }
 
-IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, GifImageShare) {
+// TODO(crbug.com/1462760): Enable the test.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_GifImageShare DISABLED_GifImageShare
+#else
+#define MAYBE_GifImageShare GifImageShare
+#endif
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, MAYBE_GifImageShare) {
   OpenImagePageAndContextMenu("/google/logo.gif");
   RequestImageAndVerifyResponse(
       gfx::Size(2048, 2048), chrome::mojom::ImageFormat::ORIGINAL,
       gfx::Size(276, 110), gfx::Size(276, 110), ".gif");
 }
 
-IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, GifImageDownscaleToJpeg) {
+// TODO(crbug.com/1462760): Enable the test.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_GifImageDownscaleToJpeg DISABLED_GifImageDownscaleToJpeg
+#else
+#define MAYBE_GifImageDownscaleToJpeg GifImageDownscaleToJpeg
+#endif
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, MAYBE_GifImageDownscaleToJpeg) {
   OpenImagePageAndContextMenu("/google/logo.gif");
   RequestImageAndVerifyResponse(
       gfx::Size(100, 100), chrome::mojom::ImageFormat::ORIGINAL,
@@ -2715,7 +2746,15 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, MAYBE_PngImageDownscaleToPng) {
       gfx::Size(100, 50), ".png");
 }
 
-IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, PngImageOriginalDownscaleToPng) {
+// TODO(crbug.com/1462760): Enable the test.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_PngImageOriginalDownscaleToPng \
+  DISABLED_PngImageOriginalDownscaleToPng
+#else
+#define MAYBE_PngImageOriginalDownscaleToPng PngImageOriginalDownscaleToPng
+#endif
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       MAYBE_PngImageOriginalDownscaleToPng) {
   OpenImagePageAndContextMenu("/image_search/valid.png");
   RequestImageAndVerifyResponse(
       gfx::Size(100, 100), chrome::mojom::ImageFormat::ORIGINAL,
@@ -2735,7 +2774,13 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, MAYBE_JpgImageDownscaleToJpg) {
       gfx::Size(480, 320), gfx::Size(100, /* 100 / 480 * 320 =  */ 66), ".jpg");
 }
 
-IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, JpgImageDownscaleToWebp) {
+// TODO(crbug.com/1462760): Enable the test.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_JpgImageDownscaleToWebp DISABLED_JpgImageDownscaleToWebp
+#else
+#define MAYBE_JpgImageDownscaleToWebp JpgImageDownscaleToWebp
+#endif
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, MAYBE_JpgImageDownscaleToWebp) {
   OpenImagePageAndContextMenu("/android/watch.jpg");
   RequestImageAndVerifyResponse(
       gfx::Size(100, 100), chrome::mojom::ImageFormat::WEBP,

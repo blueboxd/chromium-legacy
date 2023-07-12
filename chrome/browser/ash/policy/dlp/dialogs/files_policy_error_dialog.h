@@ -24,7 +24,6 @@ class FilesPolicyErrorDialog : public FilesPolicyDialog {
 
   FilesPolicyErrorDialog() = delete;
   FilesPolicyErrorDialog(const std::map<DlpConfidentialFile, Policy>& files,
-                         DlpFileDestination destination,
                          dlp::FileAction action,
                          gfx::NativeWindow modal_parent);
   FilesPolicyErrorDialog(const FilesPolicyErrorDialog&) = delete;
@@ -53,7 +52,8 @@ class FilesPolicyErrorDialog : public FilesPolicyDialog {
   // Dismisses the dialog.
   void Dismiss();
 
-  std::map<DlpConfidentialFile, Policy> files_;
+  // Maps each policy reason to the list of files blocked because of it.
+  std::map<Policy, std::vector<DlpConfidentialFile>> files_;
 
   base::WeakPtrFactory<FilesPolicyErrorDialog> weak_factory_{this};
 };

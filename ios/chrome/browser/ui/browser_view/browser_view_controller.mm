@@ -6,6 +6,7 @@
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller+private.h"
 
 #import "base/apple/bundle_locations.h"
+#import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/task/sequenced_task_runner.h"
@@ -14,6 +15,7 @@
 #import "components/ukm/ios/ukm_url_recorder.h"
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/discover_feed/feed_constants.h"
+#import "ios/chrome/browser/find_in_page/util.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
@@ -87,7 +89,6 @@
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
-#import "ios/public/provider/chrome/browser/find_in_page/find_in_page_api.h"
 #import "ios/public/provider/chrome/browser/fullscreen/fullscreen_api.h"
 #import "ios/public/provider/chrome/browser/voice_search/voice_search_controller.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"
@@ -1027,6 +1028,13 @@ enum HeaderBehaviour {
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
 
+#if defined(__IPHONE_17_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_17_0
+  if (base::ios::IsRunningOnIOS17OrLater() &&
+      base::FeatureList::IsEnabled(kEnableTraitCollectionWorkAround)) {
+    [self updateTraitsIfNeeded];
+  }
+#endif
+
   // After `-shutdown` is called, browserState is invalid and will cause a
   // crash.
   if (_isShutdown) {
@@ -1061,7 +1069,7 @@ enum HeaderBehaviour {
   // updateToobar];
   if (ShouldShowCompactToolbar(previousTraitCollection) !=
       ShouldShowCompactToolbar(self)) {
-    if (!ios::provider::IsNativeFindInPageWithSystemFindPanel()) {
+    if (!IsNativeFindInPageAvailable()) {
       [self.findInPageCommandsHandler hideFindUI];
     }
     [self.textZoomHandler hideTextZoomUI];
@@ -1450,6 +1458,11 @@ enum HeaderBehaviour {
       self.toolbarCoordinator.secondaryToolbarViewController.view;
   self.secondaryToolbarHeightConstraint = [toolbarView.heightAnchor
       constraintEqualToConstant:[self secondaryToolbarHeightWithInset]];
+  if (IsBottomOmniboxSteadyStateEnabled()) {
+    // The bottom toolbar can be constraint to the keyboard in some cases.
+    self.secondaryToolbarHeightConstraint.priority =
+        UILayoutPriorityRequired - 1;
+  }
   self.secondaryToolbarHeightConstraint.active = YES;
   AddSameConstraintsToSides(
       self.view, toolbarView,

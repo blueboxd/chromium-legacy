@@ -169,17 +169,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SBClientDownload.DownloadFileHasDmgSignature" enum="Boolean"
-    expires_after="M81">
-  <owner>vakh@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    A Mac-only metric that records whether a given download file is a
-    cryptographically signed DMG archive. This metric is logged before Chrome
-    sends SafeBrowsing download pings.
-  </summary>
-</histogram>
-
 <histogram name="SBClientDownload.DownloadRequestDuration" units="ms"
     expires_after="2023-12-04">
   <owner>vakh@chromium.org</owner>
@@ -603,7 +592,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.BrowserReadyOnClassifierNotReady"
-    enum="BooleanReady" expires_after="2023-07-24">
+    enum="BooleanReady" expires_after="2024-07-24">
   <owner>andysjlim@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -621,6 +610,17 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     The counts for various reasons why an in-progress phishing classification
+    was canceled.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.CancelImageEmbeddingReason"
+    enum="SBClientPhishingCancelImageEmbeddingReason"
+    expires_after="2024-07-05">
+  <owner>andysjlim@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    The counts for various reasons why an in-progress phishing image embedding
     was canceled.
   </summary>
 </histogram>
@@ -659,16 +659,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SBClientPhishing.DOMFeatureTimeout" units="units"
-    expires_after="2023-08-03">
-  <owner>drubery@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    The number of phishing classifications that were aborted because DOM feature
-    extraction took too long.
-  </summary>
-</histogram>
-
 <histogram name="SBClientPhishing.FlatBufferMappedRegionValid"
     enum="BooleanSuccess" expires_after="2022-12-11">
   <owner>drubery@chromium.org</owner>
@@ -687,6 +677,27 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the status when we create a FlatBuffer scorer object for the
     client-side phishing detection classifier.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.ImageEmbedder.Event"
+    enum="SBPhishingClassifierEvent" expires_after="2023-11-12">
+  <owner>drubery@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Records events in the phishing image embedder including reasons that
+    prevents image embedding process to complete on the renderer side.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.ImageEmbeddingModelLoadTime.FlatbufferScorer"
+    units="ms" expires_after="2024-05-11">
+  <owner>andysjlim@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Records how long it takes the Flatbuffer scorer to load the TfLite model
+    file from the memory mapped file into a string. This blocks the main thread,
+    so we need to ensure it is small.
   </summary>
 </histogram>
 
@@ -855,44 +866,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SBClientPhishing.TermFeatureChunkTime" units="ms"
-    expires_after="2023-08-03">
-  <owner>drubery@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    The time that an individual chunk of term feature extraction work took.
-  </summary>
-</histogram>
-
-<histogram name="SBClientPhishing.TermFeatureIterations" units="units"
-    expires_after="2023-08-03">
-  <owner>drubery@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    The number of iterations that the term feature extractor took to finish.
-  </summary>
-</histogram>
-
-<histogram name="SBClientPhishing.TermFeatureTimeout" units="units"
-    expires_after="2023-08-03">
-  <owner>drubery@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    The number of phishing classification that were aborted because term feature
-    extraction took too long.
-  </summary>
-</histogram>
-
-<histogram name="SBClientPhishing.TermFeatureTotalTime" units="ms"
-    expires_after="2023-08-03">
-  <owner>drubery@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    The time that the term feature extarctor took to finish, summed across all
-    chunks of work.
-  </summary>
-</histogram>
-
 <histogram name="SBClientPhishing.TfLiteModelLoadTime.{Scorer}" units="ms"
     expires_after="2022-03-16">
   <obsolete>
@@ -910,15 +883,6 @@ chromium-metrics-reviews@google.com.
     <variant name="FlatbufferScorer" summary="Flatbuffer scorer"/>
     <variant name="ProtobufScorer" summary="Protobuf scorer"/>
   </token>
-</histogram>
-
-<histogram name="SBClientPhishing.URLFeatureTime" units="ms"
-    expires_after="2023-08-03">
-  <owner>drubery@chromium.org</owner>
-  <owner>chrome-counter-abuse-alerts@google.com</owner>
-  <summary>
-    The time taken to extract URL features for the phishing classifier.
-  </summary>
 </histogram>
 
 <histogram name="SBClientPhishing.VisualFeatureTime" units="ms"

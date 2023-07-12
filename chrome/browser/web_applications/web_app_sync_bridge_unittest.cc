@@ -193,11 +193,8 @@ class WebAppSyncBridgeTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    FakeWebAppProvider* provider = FakeWebAppProvider::Get(profile());
-    command_manager_ =
-        std::make_unique<WebAppCommandManager>(profile(), provider);
-    command_scheduler_ =
-        std::make_unique<WebAppCommandScheduler>(*profile(), provider);
+    command_manager_ = std::make_unique<WebAppCommandManager>(profile());
+    command_scheduler_ = std::make_unique<WebAppCommandScheduler>(*profile());
     install_manager_ = std::make_unique<WebAppInstallManager>(profile());
     registrar_mutable_ = std::make_unique<WebAppRegistrarMutable>(profile());
     sync_bridge_ = std::make_unique<WebAppSyncBridge>(
@@ -631,7 +628,7 @@ TEST_F(WebAppSyncBridgeTest, ApplyIncrementalSyncChanges_AddUpdateDelete) {
               // Sync expects that the apps are deleted by the delegate.
               EXPECT_TRUE(app);
               EXPECT_TRUE(app->is_uninstalling());
-              EXPECT_TRUE(app->GetSources().none());
+              EXPECT_TRUE(app->GetSources().Empty());
               registry.erase(app_to_uninstall);
               {
                 ScopedRegistryUpdate update(&sync_bridge());
@@ -701,7 +698,7 @@ TEST_F(WebAppSyncBridgeTest,
     const WebApp* app = registrar().GetAppById(app_to_uninstall);
     EXPECT_TRUE(app);
     EXPECT_TRUE(app->is_uninstalling());
-    EXPECT_TRUE(app->GetSources().none());
+    EXPECT_TRUE(app->GetSources().Empty());
   }
 }
 

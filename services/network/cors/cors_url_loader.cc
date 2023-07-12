@@ -26,6 +26,7 @@
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/header_util.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/record_ontransfersizeupdate_utils.h"
 #include "services/network/public/cpp/request_mode.h"
 #include "services/network/public/cpp/timing_allow_origin_parser.h"
@@ -33,11 +34,13 @@
 #include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/ip_address_space.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "services/network/shared_dictionary/shared_dictionary.h"
 #include "services/network/shared_dictionary/shared_dictionary_access_checker.h"
 #include "services/network/shared_dictionary/shared_dictionary_data_pipe_writer.h"
 #include "services/network/shared_dictionary/shared_dictionary_manager.h"
 #include "services/network/shared_dictionary/shared_dictionary_storage.h"
 #include "services/network/shared_dictionary/shared_dictionary_writer.h"
+#include "services/network/shared_storage/shared_storage_header_utils.h"
 #include "services/network/trust_tokens/trust_token_operation_metrics_recorder.h"
 #include "services/network/url_loader.h"
 #include "services/network/url_loader_factory.h"
@@ -249,6 +252,12 @@ void RecordNetworkLoaderCompletionTime(const char* suffix,
       elapsed);
 }
 
+bool IsSharedDictionaryWriteAllowedMode(mojom::RequestMode mode) {
+  return mode == mojom::RequestMode::kCors ||
+         mode == mojom::RequestMode::kCorsWithForcedPreflight ||
+         mode == mojom::RequestMode::kSameOrigin;
+}
+
 constexpr const char kTimingAllowOrigin[] = "Timing-Allow-Origin";
 
 }  // namespace
@@ -272,7 +281,7 @@ CorsURLLoader::CorsURLLoader(
     const net::IsolationInfo& isolation_info,
     mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer,
     const mojom::ClientSecurityState* factory_client_security_state,
-    mojo::PendingRemote<mojom::URLLoaderNetworkServiceObserver>
+    mojo::Remote<mojom::URLLoaderNetworkServiceObserver>*
         url_loader_network_service_observer,
     const CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
     scoped_refptr<SharedDictionaryStorage> shared_dictionary_storage,
@@ -294,8 +303,7 @@ CorsURLLoader::CorsURLLoader(
       has_factory_override_(has_factory_override),
       isolation_info_(isolation_info),
       factory_client_security_state_(factory_client_security_state),
-      url_loader_network_service_observer_(
-          std::move(url_loader_network_service_observer)),
+      url_loader_network_service_observer_(url_loader_network_service_observer),
       cross_origin_embedder_policy_(cross_origin_embedder_policy),
       devtools_observer_(std::move(devtools_observer)),
       weak_devtools_observer_factory_(&devtools_observer_),
@@ -306,6 +314,7 @@ CorsURLLoader::CorsURLLoader(
       context_(context),
       shared_dictionary_storage_(std::move(shared_dictionary_storage)),
       shared_dictionary_observer_(shared_dictionary_observer) {
+  CHECK(url_loader_network_service_observer_ != nullptr);
   if (ignore_isolated_world_origin)
     request_.isolated_world_origin = absl::nullopt;
 
@@ -315,6 +324,19 @@ CorsURLLoader::CorsURLLoader(
   DCHECK(network_loader_factory_);
   DCHECK(origin_access_list_);
   SetCorsFlagIfNeeded();
+
+  if (shared_dictionary_storage_) {
+    shared_dictionary_storage_->GetDictionaryAsync(
+        request_.url,
+        base::BindOnce(
+            [](base::WeakPtr<CorsURLLoader> loader,
+               std::unique_ptr<SharedDictionary> shared_dictionary) {
+              if (loader) {
+                loader->shared_dictionary_ = std::move(shared_dictionary);
+              }
+            },
+            weak_factory_.GetWeakPtr()));
+  }
 }
 
 CorsURLLoader::~CorsURLLoader() {
@@ -394,6 +416,10 @@ void CorsURLLoader::FollowRedirect(
     request_.cors_exempt_headers.RemoveHeader(name);
   }
   request_.headers.MergeFrom(modified_headers);
+
+  if (base::Contains(removed_headers, kSharedStorageWritableHeader)) {
+    request_.shared_storage_writable = false;
+  }
 
   if (!allow_any_cors_exempt_header_ &&
       !CorsURLLoaderFactory::IsValidCorsExemptHeaders(
@@ -533,12 +559,10 @@ void CorsURLLoader::OnReceiveResponse(
   }
 
   if (request_.shared_dictionary_writer_enabled && shared_dictionary_storage_ &&
-      (IsCorsEnabledRequestMode(request_.mode))) {
-    // The compressed dictionary transport feature currently supports storing
-    // dictionaries only if the request was fetched using Cors enabled mode.
-    // Note: We may extend this support in future (For example, same-origin mode
-    // requests, responses containing a valid Access-Control-Allow-Origin header
-    // even if the request mode was not Cors.)
+      (IsSharedDictionaryWriteAllowedMode(request_.mode))) {
+    // The compressed dictionary transport feature supports storing
+    // dictionaries only if the request was fetched using cors enabled mode or
+    // same-origin mode.
     auto writer = shared_dictionary_storage_->MaybeCreateWriter(
         request_.url, response_head->response_time, *response_head->headers,
         base::BindOnce(
@@ -794,6 +818,20 @@ void CorsURLLoader::StartRequest() {
   // it now to free up the socket.
   network_loader_.reset();
 
+  mojo::PendingRemote<mojom::URLLoaderNetworkServiceObserver> remote_observer;
+  // TODO(https://crbug.com/1338439): Create a base function and clean up all
+  // need_pna_permission check in the code base.
+  const mojom::ClientSecurityState* state = GetClientSecurityState();
+  const bool needs_pna_permission =
+      base::FeatureList::IsEnabled(
+          features::kPrivateNetworkAccessPermissionPrompt) &&
+      state && state->is_web_secure_context &&
+      !IsUrlPotentiallyTrustworthy(request_.url);
+  if (needs_pna_permission &&
+      url_loader_network_service_observer_->is_bound()) {
+    (*url_loader_network_service_observer_)
+        ->Clone(remote_observer.InitWithNewPipeAndPassReceiver());
+  }
   context_->cors_preflight_controller()->PerformPreflightCheck(
       base::BindOnce(&CorsURLLoader::OnPreflightRequestComplete,
                      weak_factory_.GetWeakPtr()),
@@ -805,8 +843,7 @@ void CorsURLLoader::StartRequest() {
       net::NetworkTrafficAnnotationTag(traffic_annotation_),
       network_loader_factory_, isolation_info_, CloneClientSecurityState(),
       weak_devtools_observer_factory_.GetWeakPtr(), net_log_,
-      context_->acam_preflight_spec_conformant(),
-      std::move(url_loader_network_service_observer_));
+      context_->acam_preflight_spec_conformant(), std::move(remote_observer));
 }
 
 void CorsURLLoader::ReportCorsErrorToDevTools(const CorsErrorStatus& status,
@@ -816,6 +853,10 @@ void CorsURLLoader::ReportCorsErrorToDevTools(const CorsErrorStatus& status,
   devtools_observer_->OnCorsError(
       request_.devtools_request_id, request_.request_initiator,
       CloneClientSecurityState(), request_.url, status, is_warning);
+}
+
+void CorsURLLoader::ReportCorbErrorToDevTools() {
+  devtools_observer_->OnCorbError(request_.devtools_request_id, request_.url);
 }
 
 absl::optional<URLLoaderCompletionStatus> CorsURLLoader::ConvertPreflightResult(
@@ -999,6 +1040,9 @@ void CorsURLLoader::HandleComplete(URLLoaderCompletionStatus status) {
 
   if (devtools_observer_ && status.cors_error_status) {
     ReportCorsErrorToDevTools(*status.cors_error_status);
+  }
+  if (devtools_observer_ && status.should_report_corb_blocking) {
+    ReportCorbErrorToDevTools();
   }
 
   // If we detect a private network access when we were not expecting one, we

@@ -24,6 +24,14 @@ static_library("browser") {
     "password_requirements_service_factory.h",
   ]
 
+  if (is_android) {
+    sources += [
+      "keyboard_replacing_surface_visibility_controller.h",
+      "keyboard_replacing_surface_visibility_controller_impl.cc",
+      "keyboard_replacing_surface_visibility_controller_impl.h",
+    ]
+  }
+
   public_deps = [
     "//base",
     "//components/autofill/content/browser",
@@ -48,6 +56,15 @@ source_set("test_support") {
     "content_password_manager_driver_factory_test_api.h",
   ]
 
+  if (is_android) {
+    sources += [
+      "mock_keyboard_replacing_surface_visibility_controller.cc",
+      "mock_keyboard_replacing_surface_visibility_controller.h",
+    ]
+
+    deps = [ "//testing/gmock" ]
+  }
+
   public_deps = [ ":browser" ]
 }
 
@@ -60,6 +77,12 @@ source_set("unit_tests") {
     "password_change_success_tracker_factory_unittest.cc",
     "password_manager_log_router_factory_unittest.cc",
   ]
+
+  if (is_android) {
+    sources +=
+        [ "keyboard_replacing_surface_visibility_controller_impl_unittest.cc" ]
+  }
+
   deps = [
     ":browser",
     ":test_support",

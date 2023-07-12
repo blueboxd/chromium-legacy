@@ -8,11 +8,25 @@
 #import "ios/chrome/browser/shared/ui/bottom_sheet/table_view_bottom_sheet_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/bottom_sheet/payments_suggestion_bottom_sheet_consumer.h"
 
+@protocol PaymentsSuggestionBottomSheetDelegate;
+@protocol PaymentsSuggestionBottomSheetHandler;
+
+class GURL;
+
 // Payments Bottom Sheet UI, which includes a table to display payments
 // suggestions, a button to use a suggestion and a button to revert to
 // using the keyboard to enter the payment information.
 @interface PaymentsSuggestionBottomSheetViewController
     : TableViewBottomSheetViewController <PaymentsSuggestionBottomSheetConsumer>
+
+// Initialize with the delegate used to open payments methods and the URL of the
+// current page.
+- (instancetype)initWithHandler:
+                    (id<PaymentsSuggestionBottomSheetHandler>)handler
+                            URL:(const GURL&)URL;
+
+// The delegate for the bottom sheet view controller.
+@property(nonatomic, strong) id<PaymentsSuggestionBottomSheetDelegate> delegate;
 
 @end
 

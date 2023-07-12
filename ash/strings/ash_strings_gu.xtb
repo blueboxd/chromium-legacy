@@ -298,6 +298,7 @@
 <translation id="2318576281648121272">આજે <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" /> , શોધ પરિણામની કૅટેગરી</translation>
 <translation id="2322173485024759474">એક અક્ષર પાછળ જાઓ</translation>
+<translation id="2335091074961603075">તમારી Chromebook કે બ્લૂટૂથ ડિવાઇસ દ્વારા બ્લૂટૂથના કોઈ જૂના વર્ઝનનો ઉપયોગ કરવામાં આવી રહ્યો છે. બહેતર ઓડિયો ક્વૉલિટી માટે, આંતરિક માઇક્રોફોનનો ઉપયોગ કરો.</translation>
 <translation id="2339073806695260576">એક નોંધ અથવા સ્ક્રીનશૉટ લેવા, લેઝર પૉઇન્ટર અથવા મૅગ્નિફાયિંગ ગ્લાસનો ઉપયોગ કરવા માટે શેલ્ફ પરના સ્ટાઇલસ બટન પર ટૅપ કરો.</translation>
 <translation id="2341729377289034582">ઊભી સ્થિતિ પર લૉક કરેલું છે</translation>
 <translation id="2345226652884463045">ફેરફાર કરવાની ટેક્સ્ટ પસંદ કરવા માટે Enter અથવા Search + Space કી દબાવો.</translation>
@@ -1552,7 +1553,6 @@
 <translation id="7866482334467279021">ચાલુ</translation>
 <translation id="7872786842639831132">બંધ છે</translation>
 <translation id="7875575368831396199">એવું લાગે છે કે તમારા <ph name="DEVICE_TYPE" /> પર બ્લૂટૂથ બંધ કરેલું છે. કૃપા કરીને ફોન હબનો ઉપયોગ કરવા માટે બ્લૂટૂથ ચાલુ કરો.</translation>
-<translation id="7876243839304621966">બધું દૂર કરો</translation>
 <translation id="7877557217297072640">{0,plural, =0{ડિવાઇસને હમણાં જ પાછલા વર્ઝનમાં બદલો}=1{ડિવાઇસને 1 સેકન્ડની અંદર પાછલા વર્ઝનમાં બદલો}one{ડિવાઇસને # સેકન્ડની અંદર પાછલા વર્ઝનમાં બદલો}other{ડિવાઇસને # સેકન્ડની અંદર પાછલા વર્ઝનમાં બદલો}}</translation>
 <translation id="7884446017008693258">હૉટસ્પૉટના સેટિંગ</translation>
 <translation id="7884902759927478774">ટૅબને ખેંચવાનું રદ કરો</translation>
@@ -1651,7 +1651,6 @@
 <translation id="8255234195843591763">અપડેટ કરવા માટે રીસેટ કરો</translation>
 <translation id="8261506727792406068">ડિલીટ કરો</translation>
 <translation id="8262312463845990408">પ્લેબૅક ટૉગલ કરો</translation>
-<translation id="8265826854528868575"><ph name="NUM_TOTAL_TASKS" />માંથી <ph name="NUM_SHOWN_TASKS" /> બતાવી રહ્યું છે</translation>
 <translation id="8270450402312105425">{0,plural, =1{એક કલાકની અંદર ડિવાઇસનું વર્ઝન બદલીને અગાઉનું વર્ઝન કરો}one{# કલાકની અંદર ડિવાઇસનું વર્ઝન બદલીને અગાઉનું વર્ઝન કરો}other{# કલાકની અંદર ડિવાઇસનું વર્ઝન બદલીને અગાઉનું વર્ઝન કરો}}</translation>
 <translation id="8277261673056602147">તમારી સ્ક્રીન પરના ટેક્સ્ટને હાઇલાઇટ કરો</translation>
 <translation id="8284362522226889623">પાછલી ડેસ્ક પર સ્વિચ કરવા માટે ચાર આંગળી વડે ડાબી તરફ સ્વાઇપ કરો</translation>
@@ -1759,6 +1758,7 @@
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8790998409862094015">ભારે</translation>
 <translation id="8792626944327216835">માઇક્રોફોન</translation>
+<translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> ફોલ્ડર</translation>
 <translation id="880709030178078220">"સહાય"</translation>
 <translation id="8814190375133053267">વાઇ-ફાઇ</translation>

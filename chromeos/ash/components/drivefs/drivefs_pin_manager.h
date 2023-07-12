@@ -195,7 +195,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
 
   // Lists the files and calculates the required space and free disk space. This
   // doesn't pin any files and doesn't keep the space calculations up to date.
-  void CalculateRequiredSpace();
+  // Does nothing and returns false if this pin manager is not in the right
+  // stage to start calculating the required space.
+  [[nodiscard]] bool CalculateRequiredSpace();
 
   // Gets the current progress status.
   Progress GetProgress() const {
@@ -217,7 +219,6 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
 
   void RemoveObserver(Observer* const observer) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    DCHECK(HasObserver(observer));
     observers_.RemoveObserver(observer);
   }
 
@@ -264,23 +265,32 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
     completion_callback_ = std::move(f);
   }
 
-  // Sets the flag controlling whether the feature should actually pin files
-  // (default), or whether it should stop after checking the space requirements.
-  void ShouldPin(const bool b) {
+  // Sets the flag controlling whether the feature should actually pin files.
+  void ShouldPin() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    should_pin_ = b;
+    should_pin_ = true;
   }
 
   // Sets the online or offline network status, and starts or pauses the Pin
   // manager accordingly.
   void SetOnline(bool online);
 
-  // Check for free space.
+  // Starts checking for free space.
   void CheckFreeSpace();
 
   // Whether `path` is parented at a path that is untracked (e.g. a shortcut
   // directory residing outside of My drive).
   bool IsUntrackedPath(const Path& path);
+
+  // Whether the supplied `id` is currently being tracked by the PinManager and
+  // that it is unpinned.
+  bool IsTrackedAndUnpinned(Id id) const;
+
+  // For tests don't pin files after enumerating.
+  void SetShouldPinFilesForTesting(bool should_pin_files_for_testing) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    should_pin_files_for_testing_ = should_pin_files_for_testing;
+  }
 
  private:
   // Progress of a file being synced or to be synced.
@@ -463,6 +473,11 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   // `OnSyncingStatusUpdate`.
   bool use_on_item_progress_ GUARDED_BY_CONTEXT(sequence_checker_) = true;
 
+  // Stop at the `PinSomeFiles` stage during testing to perform assertions, this
+  // should always be true and only overridden in browser tests.
+  bool should_pin_files_for_testing_ GUARDED_BY_CONTEXT(sequence_checker_) =
+      true;
+
   // `spaced` daemon client.
   raw_ptr<ash::SpacedClient, ExperimentalAsh> spaced_
       GUARDED_BY_CONTEXT(sequence_checker_) = nullptr;
@@ -530,6 +545,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, OnSearchResult);
   FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, HandleQueryItem);
   FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, DropQuery);
+  FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, CalculateRequiredSpace);
 };
 
 COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS)

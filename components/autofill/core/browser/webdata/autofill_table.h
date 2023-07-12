@@ -713,6 +713,20 @@ class AutofillTable : public WebDatabaseTable,
                               const std::u16string& full_number);
   bool MaskServerCreditCard(const std::string& id);
 
+  // Methods to add, update, remove and clear cvc in the `server_stored_cvc`
+  // table. Return value indicates if the operation is succeeded and value
+  // actually changed. It may return false when operation is success but no data
+  // is changed, e.g. delete an empty table.
+  bool AddServerCvc(int64_t instrument_id, const std::u16string& cvc);
+  bool UpdateServerCvc(int64_t instrument_id, const std::u16string& cvc);
+  bool RemoveServerCvc(int64_t instrument_id);
+  // This will clear all server cvcs.
+  bool ClearServerCvcs();
+  // Methods for getting cvc from server_stored_cvc. For testing purpose only
+  // because CVC is populated to CreditCard via GetServerCreditCards.
+  std::u16string GetServerCvcForTesting(int64_t instrument_id);
+  base::flat_map<int64_t, std::u16string> GetAllServerCvcForTesting();
+
   // Methods to add, update, remove and get the metadata for server cards and
   // addresses.
   bool AddServerCardMetadata(const AutofillMetadata& card_metadata);
@@ -962,6 +976,9 @@ class AutofillTable : public WebDatabaseTable,
       const std::string& guid) const;
   bool GetAutofillProfilesFromLegacyTable(
       std::vector<std::unique_ptr<AutofillProfile>>* profiles) const;
+
+  // Get all server flat_map<instrument_id, cvc> from `server_stored_cvc` table.
+  base::flat_map<int64_t, std::u16string> GetAllServerCvcs() const;
 
   bool InitMainTable();
   bool InitCreditCardsTable();

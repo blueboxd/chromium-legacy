@@ -127,10 +127,9 @@
 
 @implementation PasswordSettingsCoordinator
 
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                                   browser:(Browser*)browser {
-  self = [super initWithBaseViewController:viewController browser:browser];
-  return self;
+- (void)dealloc {
+  // TODO(crbug.com/1454777)
+  DUMP_WILL_BE_CHECK(!_mediator);
 }
 
 #pragma mark - ChromeCoordinator
@@ -196,11 +195,20 @@
   self.passwordsInOtherAppsCoordinator.delegate = nil;
   self.passwordsInOtherAppsCoordinator = nil;
 
+  self.passwordSettingsViewController.presentationDelegate = nil;
+  self.passwordSettingsViewController.delegate = nil;
   self.passwordSettingsViewController = nil;
+  [self.settingsNavigationController cleanUpSettings];
   self.settingsNavigationController = nil;
   _preparingPasswordsAlert = nil;
 
+  _dispatcher = nil;
+  _reauthModule = nil;
+
   [self.mediator disconnect];
+  self.mediator.consumer = nil;
+  self.mediator = nil;
+  _savedPasswordsPresenter.reset();
 }
 
 #pragma mark - PasswordSettingsPresentationDelegate

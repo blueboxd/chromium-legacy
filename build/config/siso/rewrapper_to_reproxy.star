@@ -9,62 +9,16 @@ load("@builtin//lib/gn.star", "gn")
 load("@builtin//struct.star", "module")
 load("./config.star", "config")
 load("./mojo.star", "mojo")
+load("./rewrapper_cfg.star", "rewrapper_cfg")
+load("./clang_code_coverage_wrapper.star", "clang_code_coverage_wrapper")
 
 __filegroups = {}
-
-def __parse_rewrapper_cfg(ctx, cfg_file):
-    if not cfg_file:
-        fail("cfg file expected but none found")
-    if not ctx.fs.exists(cfg_file):
-        fail("cmd specifies rewrapper cfg %s but not found, is download_remoteexec_cfg set in gclient custom_vars?" % cfg_file)
-
-    reproxy_config = {}
-    for line in str(ctx.fs.read(cfg_file)).splitlines():
-        if line.startswith("canonicalize_working_dir="):
-            reproxy_config["canonicalize_working_dir"] = line.removeprefix("canonicalize_working_dir=").lower() == "true"
-
-        reproxy_config["download_outputs"] = True
-        if line.startswith("download_outputs="):
-            reproxy_config["download_outputs"] = line.removeprefix("download_outputs=").lower() == "true"
-
-        if line.startswith("exec_strategy="):
-            reproxy_config["exec_strategy"] = line.removeprefix("exec_strategy=")
-
-        if line.startswith("exec_timeout="):
-            reproxy_config["exec_timeout"] = line.removeprefix("exec_timeout=")
-
-        if line.startswith("inputs="):
-            reproxy_config["inputs"] = line.removeprefix("inputs=").split(",")
-
-        if line.startswith("labels="):
-            if "labels" not in reproxy_config:
-                reproxy_config["labels"] = dict()
-            for label in line.removeprefix("labels=").split(","):
-                label_parts = label.split("=")
-                if len(label_parts) != 2:
-                    fail("not k,v %s" % label)
-                reproxy_config["labels"][label_parts[0]] = label_parts[1]
-
-        if line.startswith("platform="):
-            if "platform" not in reproxy_config:
-                reproxy_config["platform"] = dict()
-            for label in line.removeprefix("platform=").split(","):
-                label_parts = label.split("=")
-                if len(label_parts) != 2:
-                    fail("not k,v %s" % label)
-                reproxy_config["platform"][label_parts[0]] = label_parts[1]
-
-        if line.startswith("remote_wrapper="):
-            reproxy_config["remote_wrapper"] = line.removeprefix("remote_wrapper=")
-
-        if line.startswith("server_address="):
-            reproxy_config["server_address"] = line.removeprefix("server_address=")
-    return reproxy_config
 
 def __rewrite_rewrapper(ctx, cmd):
     # Not all clang actions will have rewrapper.
     if not "rewrapper" in cmd.args[0]:
         return
+
     # Example command:
     #   ../../buildtools/reclient/rewrapper
     #     -cfg=../../buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg
@@ -90,7 +44,7 @@ def __rewrite_rewrapper(ctx, cmd):
         fail("couldn't find rewrapper cfg file in %s" % str(cmd.args))
     ctx.actions.fix(
         args = cmd.args[wrapped_command_pos:],
-        reproxy_config = json.encode(__parse_rewrapper_cfg(ctx, cfg_file)),
+        reproxy_config = json.encode(rewrapper_cfg.parse(ctx, cfg_file)),
     )
 
 # TODO(b/278225415): change gn so this wrapper (and by extension this handler) becomes unnecessary.
@@ -110,16 +64,12 @@ def __rewrite_clang_code_coverage_wrapper(ctx, cmd):
     #   -exec_root: Siso already knows this.
     rewrapper_pos = -1
     wrapped_command_pos = -1
-    coverage_wrapper_inputs = []
     cfg_file = None
     for i, arg in enumerate(cmd.args):
         if i < 2:
             continue
         if rewrapper_pos == -1 and not arg.startswith("-"):
             rewrapper_pos = i
-            continue
-        if rewrapper_pos == -1 and arg.startswith("--files-to-instrument="):
-            coverage_wrapper_inputs.append(ctx.fs.canonpath(arg.removeprefix("--files-to-instrument=")))
             continue
         if rewrapper_pos > 0 and arg.startswith("-cfg="):
             cfg_file = ctx.fs.canonpath(arg.removeprefix("-cfg="))
@@ -133,10 +83,12 @@ def __rewrite_clang_code_coverage_wrapper(ctx, cmd):
         fail("couldn't find first non-arg passed to rewrapper for %s" % str(cmd.args))
     if not cfg_file:
         fail("couldn't find rewrapper cfg file in %s" % str(cmd.args))
+    coverage_wrapper_command = cmd.args[:rewrapper_pos] + cmd.args[wrapped_command_pos:]
+    clang_command = clang_code_coverage_wrapper.run(ctx, list(coverage_wrapper_command))
+
     ctx.actions.fix(
-        args = cmd.args[:rewrapper_pos] + cmd.args[wrapped_command_pos:],
-        tool_inputs = cmd.tool_inputs + coverage_wrapper_inputs,
-        reproxy_config = json.encode(__parse_rewrapper_cfg(ctx, cfg_file)),
+        args = clang_command,
+        reproxy_config = json.encode(rewrapper_cfg.parse(ctx, cfg_file)),
     )
 
 def __rewrite_action_remote_py(ctx, cmd):
@@ -171,7 +123,7 @@ def __rewrite_action_remote_py(ctx, cmd):
         fail("couldn't find action command in %s" % str(cmd.args))
     ctx.actions.fix(
         args = cmd.args[wrapped_command_pos:],
-        reproxy_config = json.encode(__parse_rewrapper_cfg(ctx, cfg_file)),
+        reproxy_config = json.encode(rewrapper_cfg.parse(ctx, cfg_file)),
     )
 
 __handlers = {
@@ -203,8 +155,13 @@ def __step_config(ctx, step_config):
             # TODO(b/278225415): change gn so this wrapper (and by extension this rule) becomes unnecessary.
             "name": "clang-coverage/cxx",
             "command_prefix": "\"python3\" ../../build/toolchain/clang_code_coverage_wrapper.py",
-            # Fall back to rewrapper for now until reclient can recognize clang_code_coverage_wrapper during input processing.
-            "use_remote_exec_wrapper": True,
+            "handler": "rewrite_clang_code_coverage_wrapper",
+        },
+        {
+            # TODO(b/278225415): change gn so this wrapper (and by extension this rule) becomes unnecessary.
+            "name": "clang-coverage-win/cxx",
+            "command_prefix": "python3.exe ../../build/toolchain/clang_code_coverage_wrapper.py",
+            "handler": "rewrite_clang_code_coverage_wrapper",
         },
         {
             "name": "action_remote",

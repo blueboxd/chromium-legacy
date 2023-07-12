@@ -5,9 +5,12 @@
 #include "components/password_manager/core/browser/password_store_built_in_backend.h"
 
 #include "base/functional/bind.h"
+#include "base/notreached.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "components/password_manager/core/browser/affiliation/affiliated_match_helper.h"
+#include "components/password_manager/core/browser/get_logins_with_affiliations_request_handler.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/login_database_async_helper.h"
 #include "components/password_manager/core/browser/password_store_backend.h"
@@ -64,6 +67,7 @@ PasswordStoreBuiltInBackend::~PasswordStoreBuiltInBackend() {
 void PasswordStoreBuiltInBackend::Shutdown(
     base::OnceClosure shutdown_completed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  affiliated_match_helper_ = nullptr;
   if (helper_) {
     background_task_runner_->DeleteSoon(FROM_HERE, std::move(helper_));
     std::move(shutdown_completed).Run();
@@ -71,11 +75,13 @@ void PasswordStoreBuiltInBackend::Shutdown(
 }
 
 void PasswordStoreBuiltInBackend::InitBackend(
+    AffiliatedMatchHelper* affiliated_match_helper,
     RemoteChangesReceived remote_form_changes_received,
     base::RepeatingClosure sync_enabled_or_disabled_cb,
     base::OnceCallback<void(bool)> completion) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(helper_);
+  affiliated_match_helper_ = affiliated_match_helper;
   background_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(
@@ -141,6 +147,16 @@ void PasswordStoreBuiltInBackend::FillMatchingLoginsAsync(
           MetricInfix("FillMatchingLoginsAsync"))
           .Then(base::BindOnce(&GetLoginsOrEmptyListOnFailure))
           .Then(std::move(callback)));
+}
+
+void PasswordStoreBuiltInBackend::GetGroupedMatchingLoginsAsync(
+    const PasswordFormDigest& form_digest,
+    LoginsOrErrorReply callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(helper_);
+
+  GetLoginsWithAffiliationsRequestHandler(
+      form_digest, this, affiliated_match_helper_.get(), std::move(callback));
 }
 
 void PasswordStoreBuiltInBackend::AddLoginAsync(

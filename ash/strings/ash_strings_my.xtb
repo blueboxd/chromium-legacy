@@ -185,6 +185,7 @@
 <translation id="1770726142253415363">အတန်း <ph name="ROW_NUMBER" />၊ ကော်လံ <ph name="COLUMN_NUMBER" /> သို့ ရွှေ့ထားသည်။</translation>
 <translation id="1771761307086386028">ညာသို့ လှိမ့်ရန်</translation>
 <translation id="1774796056689732716">ပြက္ခဒိန်၊ <ph name="CURRENT_MONTH_YEAR" />၊ လက်ရှိ <ph name="DATE" /> ကိုရွေးထားသည်။</translation>
+<translation id="1775598828170459419"><ph name="NUM_TOTAL_ITEMS" /> ခုအနက် <ph name="NUM_SHOWN_ITEMS" /> ခုကို ပြထားသည်</translation>
 <translation id="1787955149152357925">ပိတ်</translation>
 <translation id="181103072419391116">လိုင်းဆွဲအား <ph name="SIGNAL_STRENGTH" />၊ သင့် 'ကြီးကြပ်သူ' က စီမံထားပါသည်</translation>
 <translation id="1815245884418711390">ဟော့စပေါ့ ဖွင့်/ပိတ်လုပ်သည်။ ဟော့စပေါ့ ပိတ်လိုက်သည်။</translation>
@@ -298,6 +299,7 @@
 <translation id="2318576281648121272">ယနေ့ <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" /> ၊ ရှာဖွေမှုရလဒ် အမျိုးအစား</translation>
 <translation id="2322173485024759474">အက္ခရာအလိုက် နောက်ပြန်သွားရန်</translation>
+<translation id="2335091074961603075">သင့် Chromebook (သို့) ဘလူးတုသ်သုံးစက်သည် ဘလူးတုသ် ဗားရှင်းဟောင်းကို သုံးနေသည်။ အသံအရည်အသွေး ပိုကောင်းရန် စက်တွင်းပါ မိုက်ခရိုဖုန်းကို သုံးပါ။</translation>
 <translation id="2339073806695260576">မှတ်စုရေးရန်၊ ဖန်သားပြင်ဓာတ်ပုံရိုက်ရန်၊ လေဆာပွိုင်တာ သို့မဟုတ် မှန်ဘီလူးကိုသုံးရန် ခုံးနေသည့် စတိုင်လပ်စ်ခလုတ်ကို တို့ပါ။</translation>
 <translation id="2341729377289034582">ထောင်လိုက်မုဒ်အဖြစ် လော့ခ်ချထားသည်</translation>
 <translation id="2345226652884463045">ပြင်ဆင်ရန်အတွက် စာသားရွေးရန် enter နှိပ်ပါ (သို့) search + space နှိပ်ပါ။</translation>
@@ -1552,7 +1554,6 @@
 <translation id="7866482334467279021">ဖွင့်</translation>
 <translation id="7872786842639831132">ပိတ်</translation>
 <translation id="7875575368831396199">သင့် <ph name="DEVICE_TYPE" /> တွင် ဘလူးတုသ် ပိတ်ထားပုံရသည်။ 'ဖုန်းစင်တာ' အသုံးပြုရန် ဘလူးတုသ် ဖွင့်ပါ။</translation>
-<translation id="7876243839304621966">အားလုံး ဖယ်ရှား</translation>
 <translation id="7877557217297072640">{0,plural, =0{စက်ကို ယခင်ဗားရှင်းသို့ ယခုပြောင်းပါ}=1{စက်ကို ယခင်ဗားရှင်းသို့ 1 စက္ကန့်အတွင်း ပြောင်းပါ}other{စက်ကို ယခင်ဗားရှင်းသို့ # စက္ကန့်အတွင်း ပြောင်းပါ}}</translation>
 <translation id="7884446017008693258">ဟော့စပေါ့ ဆက်တင်</translation>
 <translation id="7884902759927478774">တဘ်ဖိဆွဲခြင်း မလုပ်တော့</translation>
@@ -1651,7 +1652,6 @@
 <translation id="8255234195843591763">အပ်ဒိတ်လုပ်ရန် ပြင်ဆင်သတ်မှတ်ပါ</translation>
 <translation id="8261506727792406068">ဖျက်ရန်</translation>
 <translation id="8262312463845990408">ဖွင့်ရန် ခလုတ်</translation>
-<translation id="8265826854528868575"><ph name="NUM_TOTAL_TASKS" /> ခုအနက် <ph name="NUM_SHOWN_TASKS" /> ခုကို ပြထားသည်</translation>
 <translation id="8270450402312105425">{0,plural, =1{စက်ကို ယခင်ဗားရှင်းသို့ တစ်နာရီအတွင်း ပြောင်းပါ}other{စက်ကို ယခင်ဗားရှင်းသို့ # နာရီအတွင်း ပြောင်းပါ}}</translation>
 <translation id="8277261673056602147">သင့်ဖန်သားပြင်ပေါ်ရှိ စာသားကို မြင်သာအောင်လုပ်ရန်</translation>
 <translation id="8284362522226889623">ယခင်မျက်နှာပြင်နေရာသို့ ပြောင်းရန် လက်လေးချောင်းဖြင့် ဘယ်သို့ပွတ်ဆွဲပါ</translation>
@@ -1759,6 +1759,7 @@
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />။ <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8790998409862094015">များ</translation>
 <translation id="8792626944327216835">မိုက်ခရိုဖုန်း</translation>
+<translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535">ဖိုလ်ဒါ <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">"အကူအညီယူရန်"</translation>
 <translation id="8814190375133053267">ကြိုးမဲ့</translation>

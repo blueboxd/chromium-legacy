@@ -255,6 +255,7 @@ Saytlar müxtəlif saytlarda baxış fəaliyyətinizi görmək üçün kukiləri
 <translation id="2595587704210555261">{COUNT,plural, =1{Ən çox istifadə etdiyiniz tablara fokuslanmaq üçün ən az bir gün istifadə edilməyən açıq tablar Deaktiv Tablara köçürülür. İstənilən vaxt ayarlarda dəyişə bilərsiniz.}other{Ən çox istifadə etdiyiniz tablara fokuslanmaq üçün ən az {COUNT} gün istifadə edilməyən açıq tablar Deaktiv Tablara köçürülür. İstənilən vaxt ayarlarda dəyişə bilərsiniz.}}</translation>
 <translation id="2600682495497606169">Sayt Kukilərini Silin</translation>
 <translation id="2609008503159898744">Bütün Tablar Bağlansın?</translation>
+<translation id="2617210333344098964">Ünvanı hesaba köçürün</translation>
 <translation id="2625189173221582860">Parol kopyalandı</translation>
 <translation id="2626236249646841566">Bağlantını yoxlayın və yenidən daxil olmağa cəhd edin.</translation>
 <translation id="2637313651144986786">Tabları axtarın...</translation>
@@ -404,7 +405,6 @@ Axtarış tarixçənizi silmək üçün axtarış mexanizminizin təlimatlarına
 <translation id="3464194322481586217">Qiyməti izləmək mümkün olmadı.</translation>
 <translation id="3469166899695866866">Endirmə dayandırılsın?</translation>
 <translation id="3470502288861289375">Kopyalanır...</translation>
-<translation id="3471148582064653480">Parol, tarixçə və s. sinxronlaşdırın.</translation>
 <translation id="3474048842645761983">{COUNT,plural, =1{{COUNT} sayt və ya tətbiq üçün}other{{COUNT} sayt və ya tətbiq üçün}}</translation>
 <translation id="3474624961160222204"><ph name="NAME" /> olaraq davam edin</translation>
 <translation id="3476450923187944815">Digər tətbiqlərdə parollarınıza giriş.</translation>
@@ -465,6 +465,7 @@ Axtarış tarixçənizi silmək üçün axtarış mexanizminizin təlimatlarına
 <translation id="3851938967634752633"><ph name="WEBSITE" />, <ph name="SECOND_WEBSITE" /> və digər <ph name="NUMBER_OF_ACCOUNTS" /> hesab üçün parollar silinəcək. Hesablarınız silinməyəcək.</translation>
 <translation id="3858860766373142691">Ad</translation>
 <translation id="3861486700625780712">İzləməyin</translation>
+<translation id="3861908220442487587">Bu ünvan yalnız bu cihazda saxlanır. Onu digər cihazlarda istifadə etmək üçün Google Hesabına (<ph name="USER_EMAIL" />) köçürün</translation>
 <translation id="3863769054730344136">Cihazlara göndərin</translation>
 <translation id="387280738075653372">Chrome'u buradan endirin.</translation>
 <translation id="3875783148670536197">İstifadə Qaydasını Göstərin</translation>
@@ -649,6 +650,7 @@ Axtarış tarixçənizi silmək üçün axtarış mexanizminizin təlimatlarına
 <translation id="5083464117946352670">Fayl ölçüsünü müəyyənləşdirmək olmur.</translation>
 <translation id="5090832849094901128">Bu parolu sildikdə <ph name="WEBSITE" /> saytında hesabınız silinməyəcək.</translation>
 <translation id="5094827893301452931">Tweet tamamlandı.</translation>
+<translation id="5109892411553231226">Ödəniş Metodlarını idarə edin</translation>
 <translation id="5118713593561876160">Maraqlar</translation>
 <translation id="5118764316110575523">Deaktiv</translation>
 <translation id="5119391094379141756">Chrome seçin</translation>
@@ -999,6 +1001,7 @@ Anonim rejimdə olduqda saytlar müxtəlif saytlarda baxış tarixçənizi görm
 <translation id="7053983685419859001">Bloklayın</translation>
 <translation id="7062545763355031412">Qəbul edin və hesablar arasında keçid edin</translation>
 <translation id="7080806333218412752">URL'ləri yoxlamaq üçün onları Təhlükəsiz Baxışa göndərir. Həmçinin yeni təhlükələri aşkarlamaqda kömək məqsədilə səhifə, endirmə, artırma fəaliyyətindən ibarət kiçik nümunə göndərir. Daxil olduğunuzda sizi Google tətbiqlərində qorumaq üçün bu datanı Google Hesabınız ilə müvəqqəti olaraq əlaqələndirir.</translation>
+<translation id="7082853213442715471">Aktiv edildikdə müəyyən veb-texnologiyalar bloklanır ki, bu da bəzi veb-saytların asta yüklənməsinə, yaxud düzgün işləməməsinə səbəb ola bilər.</translation>
 <translation id="7095110968493193530"><ph name="EMAIL" /> üçün Google Parol Menecerinə</translation>
 <translation id="7099761977003084116">Ən Son İstifadə Olunan Tablar</translation>
 <translation id="7102005569666697658">Endirilir… <ph name="FILE_SIZE" /></translation>
@@ -1058,6 +1061,7 @@ Anonim rejimdə olduqda saytlar müxtəlif saytlarda baxış tarixçənizi görm
 <translation id="7531345132340165516">Cari sayt</translation>
 <translation id="7537586195939242955">Üzr istəyirik, Parolunuz indi Passbook'a yüklənilə bilmir.</translation>
 <translation id="754655535278952384"><ph name="TIME" /> yoxlanıb</translation>
+<translation id="7552154146060018538">Son tab <ph name="SOURCE_DEVICE" /> cihazında istifadə edilib</translation>
 <translation id="7553234618121028547">Deaktiv etmək üçün <ph name="BEGIN_LINK" />Ayarları<ph name="END_LINK" /> açın və Parol Seçmlərinə keçin.</translation>
 <translation id="7554645225856321710">Hamısını Bağlayın</translation>
 <translation id="7554791636758816595">Yeni Panel</translation>
@@ -1190,7 +1194,6 @@ Saytlar müxtəlif saytlarda baxış fəaliyyətinizi görmək üçün kukilərd
 <translation id="8319076807703933069">Yeni Axtarış</translation>
 <translation id="8323906514956095947">Əlavə tab seçimləri üçün basıb saxlayın</translation>
 <translation id="8328777765163860529">Hamısını Bağlayın</translation>
-<translation id="8331621926962374866">Chrome Kilidləmə rejimində olduqda müəyyən veb-texnologiyalar bloklanır ki, bu da bəzi veb-saytların asta yüklənməsinə, yaxud düzgün işləməməsinə səbəb ola bilər.</translation>
 <translation id="8343993175958086504">Elementləri yedəkləyin və istənilən cihazda istifadə edin.</translation>
 <translation id="834783239627985533">Çox daxil olunan saytlar</translation>
 <translation id="8378714024927312812">Təşkilatınız tərəfindən idarə olunur</translation>
@@ -1204,6 +1207,7 @@ Saytlar müxtəlif saytlarda baxış fəaliyyətinizi görmək üçün kukilərd
 <translation id="8428045167754449968">Şəhər / Kənd</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8428634594422941299">Anladım</translation>
+<translation id="8446201778524791138">Əməliyyatları redaktə edin</translation>
 <translation id="8446884382197647889">Ətraflı Məlumat</translation>
 <translation id="8458397775385147834">1 element silindi</translation>
 <translation id="8459333855531264009">Təhlükəsiz deyil</translation>
@@ -1296,7 +1300,6 @@ Data <ph name="TIME" /> tarixində parol ifadəsi ilə şifrələnib. Google Hes
 <translation id="8976414606286374109">Kartlar Google Hesabınızda saxlanılır.</translation>
 <translation id="8981454092730389528">Google Fəaliyyət Nəzarəti</translation>
 <translation id="8985320356172329008">Google'a bu cür daxil olunub</translation>
-<translation id="8986567980592931173">Parol, tarixçə və s. sinxronlaşdırmaq üçün Google Hesabı ilə daxil olun.</translation>
 <translation id="8998289560386111590">Cihazınızda əlçatan deyil</translation>
 <translation id="8999545564078155498">Üz ID-si ilə kiliddən çıxarın</translation>
 <translation id="9000089900434778519">Axtarış sisteminiz: <ph name="DSE_NAME" />. Axtarış tarixçənizi silmək üçün onun təlimatlarına (təmin edilibsə) baxın.</translation>

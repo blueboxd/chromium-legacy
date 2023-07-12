@@ -283,6 +283,10 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
                          Session* session,
                          const base::Value::Dict& params,
                          std::unique_ptr<base::Value>* value) {
+  if (!bound_params.device_manager) {
+    return Status{kSessionNotCreated, "device manager cannot be null"};
+  }
+
   const base::Value::Dict* desired_caps;
   base::Value::Dict merged_caps;
 
@@ -324,9 +328,9 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
 
   status =
       LaunchChrome(bound_params.url_loader_factory, bound_params.socket_factory,
-                   bound_params.device_manager, capabilities,
-                   std::move(devtools_event_listeners), &session->chrome,
-                   session->w3c_compliant);
+                   *bound_params.device_manager, capabilities,
+                   std::move(devtools_event_listeners), session->w3c_compliant,
+                   session->chrome);
 
   if (status.IsError())
     return status;
@@ -475,8 +479,9 @@ Status ConfigureSession(Session* session,
 
 Status ConfigureHeadlessSession(Session* session,
                                 const Capabilities& capabilities) {
-  if (!session->chrome->GetBrowserInfo()->is_headless)
+  if (!session->chrome->GetBrowserInfo()->is_headless_shell) {
     return Status(kOk);
+  }
 
   const std::string* download_directory = nullptr;
   if (capabilities.prefs) {

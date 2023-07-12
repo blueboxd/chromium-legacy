@@ -1368,11 +1368,11 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       autofill::PersonalDataManagerFactory::GetForProfile(profile);
   html_source->AddBoolean(
       "migrationEnabled",
-      !is_guest_mode && autofill::IsCreditCardMigrationEnabled(
-                            personal_data, profile->GetPrefs(),
-                            SyncServiceFactory::GetForProfile(profile),
-                            /*is_test_mode=*/false,
-                            /*log_manager=*/nullptr));
+      !is_guest_mode &&
+          autofill::IsCreditCardMigrationEnabled(
+              personal_data, SyncServiceFactory::GetForProfile(profile),
+              /*is_test_mode=*/false,
+              /*log_manager=*/nullptr));
 
   html_source->AddBoolean("showIbansSettings",
                           autofill::ShouldShowIbanOnSettingsPage(
@@ -1903,6 +1903,9 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "driveSuggestAvailable",
       base::FeatureList::IsEnabled(omnibox::kDocumentProvider));
+  html_source->AddBoolean(
+      "driveSuggestNoSetting",
+      base::FeatureList::IsEnabled(omnibox::kDocumentProviderNoSetting));
 
   bool show_secure_dns = IsSecureDnsAvailable();
   bool link_secure_dns = ShouldLinkSecureDnsOsSettings();
@@ -2451,6 +2454,10 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_TOAST_LABEL},
       {"safetyCheckUnusedSitePermissionsUndoLabel",
        IDS_SETTINGS_SAFETY_CHECK_TOAST_UNDO_BUTTON_LABEL},
+      {"safetyCheckUnusedSitePermissionsSettingLabel",
+       IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_SETTING_LABEL},
+      {"safetyCheckUnusedSitePermissionsSettingSublabel",
+       IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_SETTING_SUBLABEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }

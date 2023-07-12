@@ -339,6 +339,18 @@ void AddInputMethodOptionsStrings(
        IDS_SETTINGS_INPUT_METHOD_OPTIONS_KEYBOARD_DVORAK},
       {"inputMethodOptionsColemakKeyboard",
        IDS_SETTINGS_INPUT_METHOD_OPTIONS_KEYBOARD_COLEMAK},
+      {"inputMethodOptionsVietnameseModernToneMarkPlacement",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_MODERN_TONE_MARK_PLACEMENT},
+      {"inputMethodOptionsVietnameseFlexibleTyping",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_FLEXIBLE_TYPING},
+      {"inputMethodOptionsVietnameseVniUoHookShortcut",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_VNI_UO_HOOK_SHORTCUT},
+      {"inputMethodOptionsVietnameseTelexUoHookShortcut",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_TELEX_UO_HOOK_SHORTCUT},
+      {"inputMethodOptionsVietnameseTelexWShortcut",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_TELEX_W_SHORTCUT},
+      {"inputMethodOptionsVietnameseShowUnderline",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIETNAMESE_SHOW_UNDERLINE},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
   html_source->AddBoolean("isPhysicalKeyboardAutocorrectAllowed",
@@ -357,6 +369,9 @@ void AddInputMethodOptionsStrings(
   html_source->AddBoolean(
       "autocorrectEnableByDefault",
       base::FeatureList::IsEnabled(features::kAutocorrectByDefault));
+  html_source->AddBoolean(
+      "allowFirstPartyVietnameseInput",
+      base::FeatureList::IsEnabled(features::kFirstPartyVietnameseInput));
 }
 
 void AddLanguagesPageStringsV2(content::WebUIDataSource* html_source) {
@@ -515,8 +530,9 @@ LanguagesSection::LanguagesSection(Profile* profile,
 
   if (IsEmojiSuggestionAllowed()) {
     updater.AddSearchTags(GetSmartInputsSearchConcepts());
-    if (IsEmojiSuggestionAllowed())
+    if (IsEmojiSuggestionAllowed()) {
       updater.AddSearchTags(GetEmojiSuggestionSearchConcepts());
+    }
   }
   updater.AddSearchTags(GetAutoCorrectionSearchConcepts());
 }
@@ -557,7 +573,6 @@ void LanguagesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   AddLanguagesPageStringsV2(html_source);
   AddInputPageStringsV2(html_source);
 
-  html_source->AddBoolean("enableLanguageSettingsV2Update2", true);
   html_source->AddBoolean(
       "onDeviceGrammarCheckEnabled",
       base::FeatureList::IsEnabled(features::kOnDeviceGrammarCheck));

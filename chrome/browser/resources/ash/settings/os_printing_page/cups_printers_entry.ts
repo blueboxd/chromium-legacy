@@ -88,6 +88,15 @@ export class SettingsCupsPrintersEntryElement extends
         },
         readOnly: true,
       },
+
+      /** @protected {boolean} */
+      isJellyEnabled_: {
+        type: Boolean,
+        value: () => {
+          return loadTimeData.getBoolean('isJellyEnabled');
+        },
+        readOnly: true,
+      },
     };
   }
 
@@ -98,6 +107,7 @@ export class SettingsCupsPrintersEntryElement extends
   private hasHighSeverityError_: boolean;
   private isPrinterSettingsRevampEnabled_: boolean;
   private isPrinterSettingsPrinterStatusEnabled_: boolean;
+  private isJellyEnabled_: boolean;
 
   /**
    * Fires a custom event when the menu button is clicked. Sends the details of
@@ -203,17 +213,27 @@ export class SettingsCupsPrintersEntryElement extends
     return this.showNearbyPrinterIcon_() || this.showPrinterStatusIcon_();
   }
 
+  // True if a printer or managed icon needs to be shown.
+  // TODO(b/278621575): Remove this function once Printer Settings Revamp flag
+  // is enabled because every entry will show either a printer or managed icon.
+  private showAnyIcon_(): boolean {
+    return this.showPrinterIcon_() || this.printerEntry.printerInfo.isManaged;
+  }
+
   private getPrinterIcon_(): string {
+    const printerStatusIcon = this.isJellyEnabled_ ?
+        `os-settings:printer-status-illo` :
+        `os-settings:printer-status`;
+
     // Only saved printers need to display an icon with printer status.
     if (!this.isSavedPrinter_()) {
-      // TODO(b/278621575): Replace with standard printer icon once available.
-      return `os-settings:printer-status-green`;
+      return 'os-settings:printer-plain';
     }
 
     const printerStatusReason = this.printerStatusReasonCache.get(
         this.printerEntry.printerInfo.printerId);
     if (printerStatusReason === undefined || printerStatusReason === null) {
-      return `os-settings:printer-status-grey`;
+      return `${printerStatusIcon}-grey`;
     }
 
     let iconColor = '';
@@ -222,7 +242,6 @@ export class SettingsCupsPrintersEntryElement extends
         iconColor = 'green';
         break;
       case PrinterState.LOW_SEVERITY_ERROR:
-        // TODO(b/278621575): Replace with orange printer icon once available.
         iconColor = 'orange';
         break;
       case PrinterState.HIGH_SEVERITY_ERROR:
@@ -234,7 +253,7 @@ export class SettingsCupsPrintersEntryElement extends
       default:
         assertNotReached('Invalid PrinterState');
     }
-    return `os-settings:printer-status-${iconColor}`;
+    return `${printerStatusIcon}-${iconColor}`;
   }
 
   private getStatusReasonString_(): TrustedHTML {

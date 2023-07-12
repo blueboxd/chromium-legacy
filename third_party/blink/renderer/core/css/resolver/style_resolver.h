@@ -258,7 +258,6 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
                                     PseudoId,
                                     const AtomicString& view_transition_name,
                                     unsigned rules_to_include);
-  void MatchRuleSets(ElementRuleCollector&, const MatchRequest&);
   void MatchUARules(const Element&, ElementRuleCollector&);
   void MatchUserRules(ElementRuleCollector&);
   void MatchPresentationalHints(StyleResolverState&, ElementRuleCollector&);
@@ -310,12 +309,15 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
     bool IsUsableAfterApplyInheritedOnly(const ComputedStyleBuilder&) const;
   };
 
-  CacheSuccess ApplyMatchedCache(StyleResolverState&, const MatchResult&);
+  CacheSuccess ApplyMatchedCache(StyleResolverState&,
+                                 const StyleRequest&,
+                                 const MatchResult&);
   void MaybeAddToMatchedPropertiesCache(StyleResolverState&,
                                         const CacheSuccess&,
                                         const MatchResult&);
 
   void CascadeAndApplyMatchedProperties(StyleResolverState&,
+                                        const StyleRequest&,
                                         StyleCascade& cascade);
 
   bool ApplyAnimatedStyle(StyleResolverState&, StyleCascade&);

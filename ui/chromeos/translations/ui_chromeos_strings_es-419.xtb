@@ -37,11 +37,11 @@
 <translation id="1297922636971898492">Actualmente, Google Drive no está disponible. La carga se reiniciará automáticamente cuando vuelva a estar disponible.</translation>
 <translation id="1307931752636661898">No se pueden ver los archivos de Linux</translation>
 <translation id="1313405956111467313">Configuración automática de proxy</translation>
+<translation id="134645005685694099">Tu dispositivo no tiene suficiente espacio de almacenamiento para mantener activada la sincronización de archivos. Los archivos nuevos ya no se sincronizarán de forma automática.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
 <translation id="1358735829858566124">No se puede utilizar el archivo o el directorio.</translation>
 <translation id="1363028406613469049">Seguimiento</translation>
 <translation id="1378727793141957596">Te damos la bienvenida a Google Drive</translation>
-<translation id="1379156577998569384">Tus archivos de Mi unidad están disponibles sin conexión</translation>
 <translation id="1379911846207762492">Puedes hacer que los archivos estén disponibles sin conexión para cuando no tengas conexión a Internet.</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1388045380422025115">Todos los tipos</translation>
@@ -92,7 +92,7 @@
 <translation id="1742316578210444689">Hebreo (transliteración)</translation>
 <translation id="1747761757048858544">Holandés (Países Bajos)</translation>
 <translation id="174937106936716857">Cantidad total de archivos</translation>
-<translation id="1755345808328621801">Este archivo está diseñado para PCs que utilizan software de Windows, por lo que no es compatible con tu dispositivo, el cual ejecuta Chrome OS. Busca una aplicación equivalente adecuada en Chrome Web Store.</translation>
+<translation id="1755345808328621801">Este archivo está diseñado para PCs que utilizan software de Windows, por lo que no es compatible con tu dispositivo, el cual ejecuta ChromeOS. Busca una aplicación equivalente adecuada en Chrome Web Store.</translation>
 <translation id="1757915090001272240">Wide Latin</translation>
 <translation id="1773212559869067373">Certificado de autenticación rechazado de forma local</translation>
 <translation id="1775381402323441512">Información del video</translation>
@@ -131,7 +131,6 @@
 <translation id="2084108471225856927">Configuración del dispositivo</translation>
 <translation id="2084809735218147718">Persona agradeciendo</translation>
 <translation id="2088690981887365033">Red VPN</translation>
-<translation id="2089751716171649322">Accede fácilmente a tus archivos de Google Drive cuando estés sin conexión</translation>
 <translation id="2111134541987263231">Activa la opción <ph name="BEGIN_BOLD" />Permitir en modo incógnito<ph name="END_BOLD" />.</translation>
 <translation id="2114191879048183086">Se borrarán <ph name="NUMBER_OF_ITEMS" /> elementos y no podrás restablecerlos.</translation>
 <translation id="2122305276694332719">Si permites que tu dispositivo se conecte a una red oculta de forma automática, otras personas podrán ver tu dispositivo y algunas opciones de configuración de red, lo cual no es recomendable.</translation>
@@ -182,6 +181,7 @@
 <translation id="2464089476039395325">Proxy HTTP</translation>
 <translation id="2467267713099745100">Red <ph name="NETWORK_TYPE" />, desactivada</translation>
 <translation id="2468402215065996499">Tamagotchi</translation>
+<translation id="2468470447085858632">Accede a tus archivos de Google Drive sin conexión con la sincronización de archivos</translation>
 <translation id="2470939964922472929">Se ingresó el PIN de forma incorrecta demasiadas veces. Para configurar un PIN nuevo, ingresa la clave personal de desbloqueo (PUK) de 8 dígitos que te proporcionó tu proveedor.</translation>
 <translation id="2500392669976258912">Guyaratí (fonético)</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -235,7 +235,7 @@
 <translation id="2949781154072577687">Formateando <ph name="DRIVE_NAME" />…</translation>
 <translation id="2951236788251446349">Medusa</translation>
 <translation id="2958458230122209142">Hay poco almacenamiento; queda <ph name="REMAINING_PERCENTAGE" />% de <ph name="TOTAL_SPACE" /> del almacenamiento individual.</translation>
-<translation id="2977940621473452797">Este archivo está diseñado para computadoras que utilizan software de Macintosh, por lo que no es compatible con tu dispositivo, el cual ejecuta Chrome OS. Busca una aplicación equivalente adecuada en Chrome Web Store.</translation>
+<translation id="2977940621473452797">Este archivo está diseñado para computadoras que utilizan software de Macintosh, por lo que no es compatible con tu dispositivo, el cual ejecuta ChromeOS. Busca una aplicación equivalente adecuada en Chrome Web Store.</translation>
 <translation id="2984337792991268709">Hoy a las <ph name="TODAY_DAYTIME" /></translation>
 <translation id="299638574917407533">Francés (Canadá)</translation>
 <translation id="3003189754374775221">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />%, conectar</translation>
@@ -351,12 +351,12 @@
 <translation id="3855472144336161447">Alemán (Neo 2)</translation>
 <translation id="3858860766373142691">Nombre</translation>
 <translation id="3866249974567520381">Descripción</translation>
-<translation id="3866439285517092441">La batería tiene poca carga. La sincronización se reanudará cuando te conectes a una fuente de alimentación.</translation>
 <translation id="3899991606604168269">Francés (Canadá) con teclado multilingüe</translation>
 <translation id="3901991538546252627">Conectando con: <ph name="NAME" /></translation>
 <translation id="3906232975181435906">Se está instalando el perfil móvil, red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Pegar</translation>
+<translation id="3950820424414687140">Acceder</translation>
 <translation id="3952872973865944257">Télugu (fonético)</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="397105322502079400">Calculando...</translation>
@@ -453,7 +453,7 @@
 <translation id="4694604912444486114">Mono</translation>
 <translation id="469612310041132144">Chino (rápido)</translation>
 <translation id="4697043402264950621">La lista de archivos se organiza por <ph name="COLUMN_NAME" /> en orden ascendente.</translation>
-<translation id="469897186246626197">Este archivo se diseñó para PCs que usan software Windows. No es compatible con tu dispositivo, el cual ejecuta Chrome OS. <ph name="BEGIN_LINK_HELP" />Obtén más información<ph name="END_LINK_HELP" /> para abrir archivos en Chrome OS.</translation>
+<translation id="469897186246626197">Este archivo se diseñó para PCs que usan software Windows. No es compatible con tu dispositivo, el cual ejecuta ChromeOS. <ph name="BEGIN_LINK_HELP" />Obtén más información<ph name="END_LINK_HELP" /> para abrir archivos en ChromeOS.</translation>
 <translation id="4706042980341760088">Tamil con teclado Typewriter</translation>
 <translation id="4711094779914110278">Turco</translation>
 <translation id="4712283082407695269">Abriendo "<ph name="PATH" />"</translation>
@@ -578,12 +578,10 @@
 <translation id="5494920125229734069">Seleccionar todo</translation>
 <translation id="5500122897333236901">Islandés</translation>
 <translation id="5508696409934741614">Puntos</translation>
-<translation id="5519161320735100193">Configuración de Google Drive</translation>
 <translation id="5522908512596376669">La lista de archivos cambió a la vista de lista.</translation>
 <translation id="5524517123096967210">No se pudo leer el archivo.</translation>
 <translation id="5533102081734025921">Imagen de <ph name="IMAGE_TYPE" /></translation>
 <translation id="5534520101572674276">Calculando tamaño...</translation>
-<translation id="5536122250858122375">No se puede sincronizar este tipo de archivo</translation>
 <translation id="554153475311314364">Griego (transliteración)</translation>
 <translation id="5554171655917412781">Se seleccionaron <ph name="SELECTED_FOLDERS_COUNT" /> carpetas</translation>
 <translation id="5580591966435005537">máquina virtual</translation>
@@ -592,7 +590,7 @@
 <translation id="5596627076506792578">Más opciones</translation>
 <translation id="5602622065581044566">Búlgaro con teclado fonético</translation>
 <translation id="5605830556594064952">Inglés (Estados Unidos; Dvorak)</translation>
-<translation id="5618330573454123917">Este archivo se diseñó para computadoras que usan software Macintosh. No es compatible con tu dispositivo, el cual ejecuta Chrome OS. <ph name="BEGIN_LINK_HELP" />Obtén más información<ph name="END_LINK_HELP" /> para abrir archivos en Chrome OS.</translation>
+<translation id="5618330573454123917">Este archivo se diseñó para computadoras que usan software Macintosh. No es compatible con tu dispositivo, el cual ejecuta ChromeOS. <ph name="BEGIN_LINK_HELP" />Obtén más información<ph name="END_LINK_HELP" /> para abrir archivos en ChromeOS.</translation>
 <translation id="5625294776298156701">Tamil con teclado Tamil99</translation>
 <translation id="5633226425545095130">Si mueves este elemento, se compartirá con las personas que pueden ver la carpeta compartida "<ph name="DESTINATION_NAME" />".</translation>
 <translation id="5649768706273821470">Escuchar</translation>
@@ -607,6 +605,7 @@
 <translation id="5720028165859493293">Se movió <ph name="FILE_NAME" /> a la papelera</translation>
 <translation id="5724172041621205163">Tailandés con teclado pattachote</translation>
 <translation id="57383366388012121">Último mes</translation>
+<translation id="575175778971367197">No se puede sincronizar este archivo por el momento</translation>
 <translation id="5756666464756035725">QWERTY húngaro</translation>
 <translation id="5760252553414789727">Se seleccionaron <ph name="SELECTED_FILES_COUNT" /> elementos</translation>
 <translation id="5763377084591234761">Alemán (Suiza)</translation>
@@ -709,6 +708,7 @@
 <translation id="6558280019477628686">Se produjo un error. Es posible que no se hayan borrado algunos elementos.</translation>
 <translation id="656398493051028875">Eliminando "<ph name="FILENAME" />"…</translation>
 <translation id="6581162200855843583">Vínculo de Google Drive</translation>
+<translation id="6588648400954570689">Configuración de sincronización de archivos</translation>
 <translation id="6594855146910089723">Esta carpeta se comparte con Linux y Parallels Desktop</translation>
 <translation id="6607272825297743757">Información del archivo</translation>
 <translation id="6609332149380188670">Se compartieron <ph name="NUMBER_OF_ITEMS" /> carpetas con Parallels Desktop</translation>
@@ -726,7 +726,7 @@
 <translation id="6740270213273127264">Compartir carpeta con Bruschetta</translation>
 <translation id="6750737795876287924">Directorio actual</translation>
 <translation id="6751256176799620176">1 carpeta seleccionada</translation>
-<translation id="6755827872271341378">Dispositivo Chrome OS Flex</translation>
+<translation id="6755827872271341378">Dispositivo ChromeOS Flex</translation>
 <translation id="6790428901817661496">Reproducir</translation>
 <translation id="6794539005637808366">Restablece el elemento o arrástralo a una nueva carpeta fuera de la papelera</translation>
 <translation id="6795884519221689054">Panda</translation>
@@ -744,7 +744,6 @@
 <translation id="6874758081814639712">Persona practicando tai chi</translation>
 <translation id="6876155724392614295">Bicicleta</translation>
 <translation id="6878261347041253038">Teclado devanagari (fonético)</translation>
-<translation id="6882444584974399416">Tu dispositivo no tiene suficiente espacio de almacenamiento para que tus archivos estén disponibles sin conexión. Los archivos nuevos ya no se sincronizarán de forma automática.</translation>
 <translation id="6885780034956018177">Caracol</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6898028766943174120">Más subcarpetas…</translation>
@@ -808,11 +807,11 @@
 <translation id="7309413087278791451">Alemán (Bélgica)</translation>
 <translation id="7339898014177206373">Nueva ventana</translation>
 <translation id="7343393116438664539">Vietnamita (Télex)</translation>
-<translation id="7357762654218998920">Este tipo de archivo no es compatible. <ph name="BEGIN_LINK_HELP" />Obtén más información<ph name="END_LINK_HELP" /> para abrir archivos en Chrome OS.</translation>
+<translation id="7357762654218998920">Este tipo de archivo no es compatible. <ph name="BEGIN_LINK_HELP" />Obtén más información<ph name="END_LINK_HELP" /> para abrir archivos en ChromeOS.</translation>
 <translation id="7359359531237882347">Copiando <ph name="NUMBER_OF_ITEMS" /> elementos…</translation>
 <translation id="7375951387215729722">La lista de archivos se organiza por <ph name="COLUMN_NAME" /> en orden descendente.</translation>
 <translation id="7377161162143020057">La política del administrador no permite copiar este archivo</translation>
-<translation id="7402503521691663770">Dispositivos Chrome OS Flex</translation>
+<translation id="7402503521691663770">Dispositivos ChromeOS Flex</translation>
 <translation id="7408870451288633753">Checo</translation>
 <translation id="7417453074306512035">Teclado etíope</translation>
 <translation id="7417705661718309329">Mapa de Google</translation>
@@ -834,6 +833,7 @@
 <translation id="7547811415869834682">Holandés</translation>
 <translation id="7551643184018910560">Fijar en la barra</translation>
 <translation id="7553492409867692754">Permitir que las apps de Linux accedan a los archivos de la carpeta <ph name="FOLDER_NAME" />.</translation>
+<translation id="7555339735447658365">Actualmente, no tienes conexión. La sincronización de archivos se reanudará cuando te conectes a Internet.</translation>
 <translation id="7589661784326793847">Espera un momento.</translation>
 <translation id="7592775719802218421">Permitiendo que <ph name="FILE_NAME" /> esté disponible sin conexión</translation>
 <translation id="7600126690270271294">Serbio</translation>
@@ -876,6 +876,7 @@
 <translation id="7814857791038398352">Microsoft OneDrive</translation>
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7831491651892296503">Se produjo un error cuando se configuraba la red</translation>
+<translation id="7832093238954689746">Se completó la sincronización de archivos. Los archivos de Mi unidad están disponibles sin conexión.</translation>
 <translation id="7839804798877833423">Para recuperar estos archivos, se utilizará aproximadamente <ph name="FILE_SIZE" /> de los datos móviles.</translation>
 <translation id="7846076177841592234">Cancelar la selección</translation>
 <translation id="7853966320808728790">Francés BÉPO</translation>
@@ -924,6 +925,7 @@
 <translation id="8179976553408161302">Intro</translation>
 <translation id="8193175696669055101">Modelo de dispositivo</translation>
 <translation id="8223479393428528563">Para guardar estos archivos para su uso sin conexión, conéctate nuevamente, haz clic con el botón derecho en los archivos y selecciona la opción <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
+<translation id="8241139360630443550">Ver almacenamiento</translation>
 <translation id="8249296373107784235">Anular</translation>
 <translation id="8250690786522693009">Latino</translation>
 <translation id="8250920743982581267">Documentos</translation>
@@ -953,8 +955,8 @@
 <translation id="8395901698320285466">Dimensiones</translation>
 <translation id="8404498045299006085">Conservar todo</translation>
 <translation id="8408068190360279472">Red <ph name="NETWORK_TYPE" />, conectando</translation>
-<translation id="841387525767317275">Los archivos de esta carpeta están disponibles sin conexión</translation>
 <translation id="8425213833346101688">Cambiar</translation>
+<translation id="8428213095426709021">Configuración</translation>
 <translation id="8431909052837336408">Cambiar el PIN de la tarjeta SIM</translation>
 <translation id="8437209419043462667">Inglés (Estados Unidos)</translation>
 <translation id="8452135315243592079">Falta la tarjeta SIM</translation>
@@ -981,7 +983,6 @@
 <translation id="8560515948038859357">Cantonés</translation>
 <translation id="8561206103590473338">Elefante</translation>
 <translation id="8566466896628108558">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />%, bloqueada por tu administrador, detalles</translation>
-<translation id="8567555211227790801">Actualmente, no tienes conexión. La sincronización se reanudará cuando te conectes a Internet.</translation>
 <translation id="8568374623837201676">¿Quieres borrar este archivo de forma permanente?</translation>
 <translation id="8569764466147087991">Seleccionar un archivo para abrir</translation>
 <translation id="8577897833047451336">Croata</translation>

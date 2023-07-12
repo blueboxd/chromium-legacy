@@ -34,9 +34,7 @@ class CullRectUpdaterTest : public PaintControllerPaintTest {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          CullRectUpdaterTest,
-                         ::testing::Values(0,
-                                           kScrollUnification,
-                                           kCompositeScrollAfterPaint));
+                         ::testing::Values(0, kCompositeScrollAfterPaint));
 
 TEST_P(CullRectUpdaterTest, SimpleCullRect) {
   SetBodyInnerHTML(R"HTML(
@@ -186,7 +184,8 @@ TEST_P(CullRectUpdaterTest, OptimizeNonCompositedTransformUpdate) {
   // On subsequent paints, fall back to an infinite cull rect.
   GetDocument()
       .getElementById(AtomicString("target"))
-      ->setAttribute(html_names::kStyleAttr, "transform: rotate(10deg);");
+      ->setAttribute(html_names::kStyleAttr,
+                     AtomicString("transform: rotate(10deg);"));
   UpdateAllLifecyclePhasesForTest();
   EXPECT_TRUE(GetCullRect("target").IsInfinite());
 }
@@ -1017,31 +1016,31 @@ class CullRectUpdateOnPaintPropertyChangeTest : public CullRectUpdaterTest {
         << old_style << " -> " << new_style;
   }
 
-  void TestTargetChange(const AtomicString& old_style,
-                        const AtomicString& new_style,
+  void TestTargetChange(const char* old_style,
+                        const char* new_style,
                         bool expected_needs_repaint,
                         bool expected_needs_cull_rect_update,
                         bool expected_needs_repaint_after_cull_rect_update) {
     SetBodyInnerHTML(html_);
     auto* target = GetDocument().getElementById(AtomicString("target"));
-    target->setAttribute(html_names::kStyleAttr, old_style);
+    target->setAttribute(html_names::kStyleAttr, AtomicString(old_style));
     UpdateAllLifecyclePhasesForTest();
-    target->setAttribute(html_names::kStyleAttr, new_style);
+    target->setAttribute(html_names::kStyleAttr, AtomicString(new_style));
     Check(old_style, new_style, expected_needs_repaint,
           expected_needs_cull_rect_update,
           expected_needs_repaint_after_cull_rect_update);
   }
 
-  void TestChildChange(const AtomicString& old_style,
-                       const AtomicString& new_style,
+  void TestChildChange(const char* old_style,
+                       const char* new_style,
                        bool expected_needs_repaint,
                        bool expected_needs_cull_rect_update,
                        bool expected_needs_repaint_after_cull_rect_update) {
     SetBodyInnerHTML(html_);
     auto* child = GetDocument().getElementById(AtomicString("child"));
-    child->setAttribute(html_names::kStyleAttr, old_style);
+    child->setAttribute(html_names::kStyleAttr, AtomicString(old_style));
     UpdateAllLifecyclePhasesForTest();
-    child->setAttribute(html_names::kStyleAttr, new_style);
+    child->setAttribute(html_names::kStyleAttr, AtomicString(new_style));
     Check(old_style, new_style, expected_needs_repaint,
           expected_needs_cull_rect_update,
           expected_needs_repaint_after_cull_rect_update);
@@ -1082,7 +1081,7 @@ class CullRectUpdateOnPaintPropertyChangeTest : public CullRectUpdaterTest {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          CullRectUpdateOnPaintPropertyChangeTest,
-                         ::testing::Values(0, kScrollUnification));
+                         ::testing::Values(0));
 
 TEST_P(CullRectUpdateOnPaintPropertyChangeTest, Opacity) {
   TestTargetChange("opacity: 0.2", "opacity: 0.8", false, false, false);

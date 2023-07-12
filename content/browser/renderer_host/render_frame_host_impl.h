@@ -388,6 +388,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   ~RenderFrameHostImpl() override;
 
   // RenderFrameHost
+  const blink::StorageKey& storage_key() const override;
   int GetRoutingID() const override;
   const blink::LocalFrameToken& GetFrameToken() const override;
   const base::UnguessableToken& GetReportingSource() override;
@@ -851,11 +852,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
     // loadDataWithBaseURL API or not.
     bool was_loaded_from_load_data_with_base_url = false;
   };
-
-  // Returns the storage key for the last committed document in this
-  // RenderFrameHostImpl. It is used for partitioning storage by the various
-  // storage APIs.
-  const blink::StorageKey& storage_key() const { return storage_key_; }
 
   // Returns the http method of the last committed navigation.
   const std::string& last_http_method() { return last_http_method_; }
@@ -2288,6 +2284,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void FullscreenStateChanged(
       bool is_fullscreen,
       blink::mojom::FullscreenOptionsPtr options) override;
+#if defined(USE_AURA)
+  void Maximize() override;
+  void Minimize() override;
+  void Restore() override;
+#endif
   void RegisterProtocolHandler(const std::string& scheme,
                                const GURL& url,
                                bool user_gesture) override;
@@ -2968,11 +2969,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns if the RenderFrameHostImpl is loaded with the "Cache-Control:
   // no-store" header.
   bool LoadedWithCacheControlNoStoreHeader();
-
-  // When this is true, the document or its children cannot be
-  // crossOriginIsolated.
-  // Can only be called by a main frame.
-  bool CoopForbidsDocumentToBeCrossOriginIsolated() const;
 
  protected:
   friend class RenderFrameHostFactory;

@@ -137,6 +137,9 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
       protocol::Maybe<double> timestamp,
       std::unique_ptr<DispatchTouchEventCallback> callback) override;
 
+  void CancelDragging(
+      std::unique_ptr<CancelDraggingCallback> callback) override;
+
   Response EmulateTouchFromMouseEvent(const std::string& type,
                                       int x,
                                       int y,
@@ -201,7 +204,10 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
 
     // You should call this whenever dragging needs to be cancelled (perhaps an
     // invalid state or desired by the user).
-    void CancelDragging();
+    void CancelDragging(base::OnceClosure callback);
+
+    // Returns `true` if we are currently dragging.
+    bool IsDragging() { return !!drag_state_; }
 
    private:
     struct DragState;
@@ -244,7 +250,7 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
     std::unique_ptr<blink::WebMouseEvent> last_mouse_move_ = nullptr;
     base::WeakPtr<RenderWidgetHostImpl> last_widget_host_ = nullptr;
 
-    std::unique_ptr<DragState> drag_state_ = nullptr;
+    std::unique_ptr<DragState> drag_state_;
 
     base::WeakPtrFactory<DragController> weak_factory_{this};
   };

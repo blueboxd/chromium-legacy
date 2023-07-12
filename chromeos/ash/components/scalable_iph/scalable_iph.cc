@@ -7,11 +7,13 @@
 #include <memory>
 #include <vector>
 
+#include "base/check.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/no_destructor.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/scalable_iph/iph_session.h"
@@ -25,6 +27,7 @@ namespace {
 
 using NotificationParams =
     ::scalable_iph::ScalableIphDelegate::NotificationParams;
+using BubbleParams = ::scalable_iph::ScalableIphDelegate::BubbleParams;
 
 constexpr char kFunctionCallAfterKeyedServiceShutdown[] =
     "Function call after keyed service shutdown.";
@@ -61,11 +64,35 @@ const std::vector<const base::Feature*>& GetFeatureListConstant() {
 
 constexpr base::TimeDelta kTimeTickEventInterval = base::Minutes(5);
 
+std::string GetParamValue(const base::Feature& feature,
+                          const std::string& param_name) {
+  std::string fully_qualified_param_name =
+      base::StrCat({feature.name, "_", param_name});
+  std::string value = base::GetFieldTrialParamValueByFeature(
+      feature, fully_qualified_param_name);
+
+  // Non-fully-qualified name field must always be empty.
+  DCHECK(base::GetFieldTrialParamValueByFeature(feature, param_name).empty())
+      << param_name
+      << " is specified in a non-fully-qualified way. It should be specified "
+         "as "
+      << fully_qualified_param_name
+      << ". It's often the case in Scalable Iph to enable multiple features at "
+         "once. To avoid an unexpected fall-back behavior, non-fully-qualified "
+         "name is not accepted. Parameter names of custom fields must be "
+         "specified in a fully qualified way: [Feature Name]_[Parameter Name]";
+
+  return value;
+}
+
 UiType ParseUiType(const base::Feature& feature) {
-  std::string ui_type =
-      base::GetFieldTrialParamValueByFeature(feature, kCustomUiTypeParamName);
-  CHECK(ui_type == kCustomUiTypeValueNotification);
-  return UiType::kNotification;
+  std::string ui_type = GetParamValue(feature, kCustomUiTypeParamName);
+  CHECK(ui_type == kCustomUiTypeValueNotification ||
+        ui_type == kCustomUiTypeValueBubble);
+  if (ui_type == kCustomUiTypeValueNotification) {
+    return UiType::kNotification;
+  }
+  return UiType::kBubble;
 }
 
 NotificationParams ParseNotificationParams(const base::Feature& feature) {
@@ -73,18 +100,44 @@ NotificationParams ParseNotificationParams(const base::Feature& feature) {
   // show an IPH for the case instead of CHECK failure. Config is served from
   // the server. This is not a constraint coming from client side.
   NotificationParams param;
-  param.title = base::GetFieldTrialParamValueByFeature(
-      feature, kCustomNotificationTitleParamName);
+  param.notification_id =
+      GetParamValue(feature, kCustomNotificationIdParamName);
+  CHECK(!param.notification_id.empty())
+      << kCustomNotificationIdParamName << " is a required field";
+  param.title = GetParamValue(feature, kCustomNotificationTitleParamName);
   CHECK(!param.title.empty())
       << kCustomNotificationTitleParamName << " is a required field";
-  param.text = base::GetFieldTrialParamValueByFeature(
-      feature, kCustomNotificationBodyTextParamName);
+  param.text = GetParamValue(feature, kCustomNotificationBodyTextParamName);
   CHECK(!param.text.empty())
       << kCustomNotificationBodyTextParamName << " is a required field";
-  param.button.text = base::GetFieldTrialParamValueByFeature(
-      feature, kCustomNotificationButtonTextParamName);
+  param.button.text =
+      GetParamValue(feature, kCustomNotificationButtonTextParamName);
   CHECK(!param.button.text.empty())
       << kCustomNotificationButtonTextParamName << " is a required field";
+
+  std::string image_type =
+      GetParamValue(feature, kCustomNotificationImageTypeParamName);
+  param.image_type = ScalableIphDelegate::NotificationImageType::kNoImage;
+  if (image_type == kCustomNotificationImageTypeValueWallpaper) {
+    param.image_type = ScalableIphDelegate::NotificationImageType::kWallpaper;
+  }
+  return param;
+}
+
+BubbleParams ParseBubbleParams(const base::Feature& feature) {
+  // TODO(b/288167957): Implement a fallback for an invalid config, e.g. Do not
+  // show an IPH for the case instead of CHECK failure. Config is served from
+  // the server. This is not a constraint coming from client side.
+  BubbleParams param;
+  param.bubble_id = GetParamValue(feature, kCustomBubbleIdParamName);
+  CHECK(!param.bubble_id.empty())
+      << kCustomBubbleIdParamName << " is a required field";
+  param.text = GetParamValue(feature, kCustomBubbleTextParamName);
+  CHECK(!param.text.empty())
+      << kCustomBubbleTextParamName << " is a required field";
+  param.button.text = GetParamValue(feature, kCustomBubbleButtonTextParamName);
+  CHECK(!param.button.text.empty())
+      << kCustomBubbleButtonTextParamName << " is a required field";
   return param;
 }
 
@@ -128,6 +181,10 @@ void ScalableIph::OnConnectionChanged(bool online) {
   tracker_->AddOnInitializedCallback(
       base::BindOnce(&ScalableIph::CheckTriggerConditionsOnInitSuccess,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ScalableIph::PerformActionForIphSession(ActionType action_type) {
+  PerformAction(action_type);
 }
 
 void ScalableIph::OverrideFeatureListForTesting(
@@ -219,25 +276,21 @@ void ScalableIph::CheckTriggerConditions() {
     // TODO(b/289267799): Check our custom extension version number.
     if (CheckCustomConditions(*feature) &&
         tracker_->ShouldTriggerHelpUI(*feature)) {
-      // TODO(b/289286456): Set up browser test and clean up.
-      if (show_notification_for_testing_) {
-        // Only show notification once in the test for now.
-        show_notification_for_testing_ = false;
-        ScalableIphDelegate::NotificationParams notification_params;
-        notification_params.type =
-            ScalableIphDelegate::NotificationType::kWallpaper;
-        notification_params.button.text = "test";
-        delegate_->ShowNotification(
-            notification_params,
-            std::make_unique<IphSession>(*feature, tracker_));
-      } else {
-        // TODO(b/284053005): Support other ui types.
-        UiType ui_type = ParseUiType(*feature);
-        CHECK(ui_type == UiType::kNotification)
-            << "Only Notification is implemented now";
-        delegate_->ShowNotification(
-            ParseNotificationParams(*feature),
-            std::make_unique<IphSession>(*feature, tracker_));
+      // TODO(b/284053005): Support other ui types.
+      UiType ui_type = ParseUiType(*feature);
+      switch (ui_type) {
+        case UiType::kNotification:
+          delegate_->ShowNotification(
+              ParseNotificationParams(*feature),
+              std::make_unique<IphSession>(*feature, tracker_, this));
+          break;
+        case UiType::kBubble:
+          delegate_->ShowBubble(
+              ParseBubbleParams(*feature),
+              std::make_unique<IphSession>(*feature, tracker_, this));
+          break;
+        case UiType::kHelpApp:
+          CHECK(false) << "Help App Scalable IPH is not supported";
       }
     }
   }
@@ -248,8 +301,8 @@ bool ScalableIph::CheckCustomConditions(const base::Feature& feature) {
 }
 
 bool ScalableIph::CheckNetworkConnection(const base::Feature& feature) {
-  std::string connection_condition = base::GetFieldTrialParamValueByFeature(
-      feature, kCustomConditionNetworkConnectionParamName);
+  std::string connection_condition =
+      GetParamValue(feature, kCustomConditionNetworkConnectionParamName);
   if (connection_condition.empty()) {
     return true;
   }
@@ -266,8 +319,8 @@ bool ScalableIph::CheckNetworkConnection(const base::Feature& feature) {
 }
 
 bool ScalableIph::CheckClientAge(const base::Feature& feature) {
-  std::string client_age_condition = base::GetFieldTrialParamValueByFeature(
-      feature, kCustomConditionClientAgeInDaysParamName);
+  std::string client_age_condition =
+      GetParamValue(feature, kCustomConditionClientAgeInDaysParamName);
   if (client_age_condition.empty()) {
     return true;
   }

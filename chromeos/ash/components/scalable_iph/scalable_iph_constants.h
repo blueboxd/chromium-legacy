@@ -11,15 +11,17 @@ enum class ActionType {
   // `kInvalid` is reserved to be used as an initial value. This must not be
   // used in prod.
   kInvalid = 0,
-  kOpenChrome,
-  kOpenPersonalizationApp,
-  kOpenPlayStore,
-  kOpenGoogleDocs,
-  kOpenGooglePhotos,
-  kOpenSettingsPrinter,
-  kOpenPhoneHub,
-  kOpenYouTube,
-  kOpenFileManager,
+  kOpenChrome = 1,
+  kOpenLauncher = 2,  // Not implemented for V1 of Scalable IPH
+  kOpenPersonalizationApp = 3,
+  kOpenPlayStore = 4,
+  kOpenGoogleDocs = 5,
+  kOpenGooglePhotos = 6,
+  kOpenSettingsPrinter = 7,
+  kOpenPhoneHub = 8,
+  kOpenYouTube = 9,
+  kOpenFileManager = 10,
+  kLastAction = kOpenFileManager,
 };
 
 // Constants for events.
@@ -67,6 +69,7 @@ constexpr char kCustomConditionClientAgeInDaysParamName[] =
 // Notification is the only value supported now.
 constexpr char kCustomUiTypeParamName[] = "x_CustomUiType";
 constexpr char kCustomUiTypeValueNotification[] = "Notification";
+constexpr char kCustomUiTypeValueBubble[] = "Bubble";
 
 enum class UiType {
   kNotification,
@@ -75,15 +78,29 @@ enum class UiType {
 };
 
 // Parameters for a notification UI. All fields are required field.
+// - Notification ID: the id used to add and remove a notification.
 // - Title: a title text of a notification.
 // - Body text: a body text of a notification.
 // - Button text: a text of a button in a notification.
+// - Image type: a type of preview image(s) in a notification.
+constexpr char kCustomNotificationIdParamName[] = "x_CustomNotificationId";
 constexpr char kCustomNotificationTitleParamName[] =
     "x_CustomNotificationTitle";
 constexpr char kCustomNotificationBodyTextParamName[] =
     "x_CustomNotificationBodyText";
 constexpr char kCustomNotificationButtonTextParamName[] =
     "x_CustomNotificationButtonText";
+constexpr char kCustomNotificationImageTypeParamName[] =
+    "x_CustomNotificationImageType";
+constexpr char kCustomNotificationImageTypeValueWallpaper[] = "Wallpaper";
+
+// Parameters for a bubble UI. All fields are required field.
+// - Bubble ID: the id used to add and remove a bubble.
+// - Text: a text of a bubble.
+// - Button text: a text of a button in a bubble.
+constexpr char kCustomBubbleIdParamName[] = "x_CustomBubbleId";
+constexpr char kCustomBubbleTextParamName[] = "x_CustomBubbleText";
+constexpr char kCustomBubbleButtonTextParamName[] = "x_CustomBubbleButtonText";
 
 }  // namespace scalable_iph
 

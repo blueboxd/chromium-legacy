@@ -89,7 +89,12 @@ void Shadow::SetShadowStyle(gfx::ShadowStyle style) {
     return;
 
   style_ = style;
-  RecreateShadowLayer();
+  UpdateLayerBounds();
+}
+
+void Shadow::SetElevationToColorsMap(const ElevationToColorsMap& color_map) {
+  color_map_ = color_map;
+  UpdateLayerBounds();
 }
 
 void Shadow::OnImplicitAnimationsCompleted() {
@@ -143,19 +148,28 @@ void Shadow::UpdateLayerBounds() {
   const int size_adjusted_elevation =
       std::min((smaller_dimension - 2 * rounded_corner_radius_) / 4,
                static_cast<int>(desired_elevation_));
-  const auto& details = gfx::ShadowDetails::Get(size_adjusted_elevation,
-                                                rounded_corner_radius_, style_);
+
+  auto iter = color_map_.find(desired_elevation_);
+  const auto& details =
+      (iter == color_map_.end())
+          ? gfx::ShadowDetails::Get(size_adjusted_elevation,
+                                    rounded_corner_radius_, style_)
+          : gfx::ShadowDetails::Get(
+                size_adjusted_elevation, rounded_corner_radius_,
+                /*key_color=*/iter->second.first,
+                /*ambient_color=*/iter->second.second, style_);
+
   gfx::Insets blur_region = gfx::ShadowValue::GetBlurRegion(details.values) +
                             gfx::Insets(rounded_corner_radius_);
   // Update |shadow_layer()| if details changed and it has been updated in
   // the past (|details_| is set), or elevation is non-zero.
   if ((&details != details_) && (details_ || size_adjusted_elevation)) {
-    shadow_layer()->UpdateNinePatchLayerImage(details.ninebox_image);
+    shadow_layer()->UpdateNinePatchLayerImage(details.nine_patch_image);
     // The ninebox grid is defined in terms of the image size. The shadow blurs
     // in both inward and outward directions from the edge of the contents, so
     // the aperture goes further inside the image than the shadow margins (which
     // represent exterior blur).
-    gfx::Rect aperture(details.ninebox_image.size());
+    gfx::Rect aperture(details.nine_patch_image.size());
     aperture.Inset(blur_region);
     shadow_layer()->UpdateNinePatchLayerAperture(aperture);
     details_ = &details;

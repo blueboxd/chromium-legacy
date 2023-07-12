@@ -9,6 +9,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -44,6 +45,7 @@ import org.chromium.blink.mojom.PublicKeyCredentialDescriptor;
 import org.chromium.blink.mojom.PublicKeyCredentialRequestOptions;
 import org.chromium.blink.mojom.ResidentKeyRequirement;
 import org.chromium.components.webauthn.CredManMetricsHelper;
+import org.chromium.components.webauthn.CredManMetricsHelper.CredManCreateRequestEnum;
 import org.chromium.components.webauthn.CredManMetricsHelper.CredManGetRequestEnum;
 import org.chromium.components.webauthn.CredManMetricsHelper.CredManPrepareRequestEnum;
 import org.chromium.components.webauthn.Fido2ApiCallHelper;
@@ -173,6 +175,8 @@ public class Fido2CredentialRequestRobolectricTest {
         assertThat(credManRequest.getCandidateQueryData().containsKey("com.android.chrome.CHANNEL"))
                 .isTrue();
         assertThat(mCallback.getStatus()).isEqualTo(Integer.valueOf(AuthenticatorStatus.SUCCESS));
+        verify(mMetricsHelper, times(1))
+                .recordCredManCreateRequestHistogram(CredManCreateRequestEnum.SUCCESS);
     }
 
     @Test
@@ -244,6 +248,7 @@ public class Fido2CredentialRequestRobolectricTest {
                         -> mCallback.onRegisterResponse(responseStatus, response),
                 errorStatus -> mCallback.onError(errorStatus));
         assertThat(mFido2ApiCallHelper.mMakeCredentialCalled).isTrue();
+        verify(mMetricsHelper, times(0)).recordCredManCreateRequestHistogram(anyInt());
     }
 
     @Test
@@ -261,6 +266,29 @@ public class Fido2CredentialRequestRobolectricTest {
                 errorStatus -> mCallback.onError(errorStatus));
         assertThat(mCallback.getStatus())
                 .isEqualTo(Integer.valueOf(AuthenticatorStatus.NOT_ALLOWED_ERROR));
+        verify(mMetricsHelper, times(1))
+                .recordCredManCreateRequestHistogram(CredManCreateRequestEnum.CANCELLED);
+    }
+
+    @Test
+    @SmallTest
+    public void testMakeCredential_credManEnabledInvalidStateError_credentialExcluded() {
+        // Calls to `context.getMainExecutor()` require API level 28 or higher.
+        Assume.assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P);
+
+        mCredentialManager.setErrorResponse(new FakeAndroidCredManException(
+                Fido2CredentialRequest
+                        .CRED_MAN_EXCEPTION_CREATE_CREDENTIAL_TYPE_INVALID_STATE_ERROR,
+                "Message"));
+        mRequest.handleMakeCredentialRequest(mActivity, mCreationOptions, mFrameHost,
+                /*maybeClientDataHash=*/null, mOrigin,
+                (responseStatus, response)
+                        -> mCallback.onRegisterResponse(responseStatus, response),
+                errorStatus -> mCallback.onError(errorStatus));
+        assertThat(mCallback.getStatus())
+                .isEqualTo(Integer.valueOf(AuthenticatorStatus.CREDENTIAL_EXCLUDED));
+        verify(mMetricsHelper, times(1))
+                .recordCredManCreateRequestHistogram(CredManCreateRequestEnum.SUCCESS);
     }
 
     @Test
@@ -278,6 +306,8 @@ public class Fido2CredentialRequestRobolectricTest {
                 errorStatus -> mCallback.onError(errorStatus));
         assertThat(mCallback.getStatus())
                 .isEqualTo(Integer.valueOf(AuthenticatorStatus.UNKNOWN_ERROR));
+        verify(mMetricsHelper, times(1))
+                .recordCredManCreateRequestHistogram(CredManCreateRequestEnum.FAILURE);
     }
 
     @Test
@@ -556,6 +586,7 @@ public class Fido2CredentialRequestRobolectricTest {
                 .recordCredmanPrepareRequestHistogram(eq(CredManPrepareRequestEnum.SENT_REQUEST));
         verify(mMetricsHelper, times(1))
                 .recordCredmanPrepareRequestHistogram(eq(CredManPrepareRequestEnum.FAILURE));
+        verify(mMetricsHelper, times(0)).recordCredmanPrepareRequestDuration(anyLong());
     }
 
     @Test
@@ -593,6 +624,7 @@ public class Fido2CredentialRequestRobolectricTest {
                 (responseStatus, response)
                         -> mCallback.onSignResponse(responseStatus, response),
                 errorStatus -> mCallback.onError(errorStatus));
+        verify(mMetricsHelper, times(1)).recordCredmanPrepareRequestDuration(anyLong());
 
         mCredentialManager.setErrorResponse(new FakeAndroidCredManException(
                 "android.credentials.GetCredentialException.TYPE_USER_CANCELED", "Message"));
@@ -622,6 +654,7 @@ public class Fido2CredentialRequestRobolectricTest {
                 (responseStatus, response)
                         -> mCallback.onSignResponse(responseStatus, response),
                 errorStatus -> mCallback.onError(errorStatus));
+        verify(mMetricsHelper, times(1)).recordCredmanPrepareRequestDuration(anyLong());
 
         FakeAndroidCredManGetRequest credManRequest = mCredentialManager.getGetRequest();
         assertThat(credManRequest).isNotNull();
@@ -645,6 +678,9 @@ public class Fido2CredentialRequestRobolectricTest {
                 .isEqualTo("androidx.credentials.TYPE_PUBLIC_KEY_CREDENTIAL");
         assertThat(credentialOptions.get(1).getType())
                 .isEqualTo("android.credentials.TYPE_PASSWORD_CREDENTIAL");
+        assertThat(credentialOptions.get(1).getCandidateQueryData().containsKey(
+                           "com.android.chrome.PASSWORDS_ONLY_FOR_THE_CHANNEL"))
+                .isTrue();
 
         verify(mBrowserBridgeMock, never()).onCredManUiClosed(any(), anyBoolean());
         // A password is selected, the callback will not be signed.

@@ -14,16 +14,34 @@ WebStateListObserverBridge::WebStateListObserverBridge(
 
 WebStateListObserverBridge::~WebStateListObserverBridge() {}
 
+void WebStateListObserverBridge::WebStateListWillChange(
+    WebStateList* web_state_list,
+    const WebStateListChangeDetach& detach_change,
+    const WebStateSelection& selection) {
+  const SEL selector = @selector(willChangeWebStateList:change:selection:);
+  if (![observer_ respondsToSelector:selector]) {
+    return;
+  }
+
+  [observer_ willChangeWebStateList:web_state_list
+                             change:detach_change
+                          selection:selection];
+}
+
 void WebStateListObserverBridge::WebStateListDidChange(
     WebStateList* web_state_list,
     const WebStateListChange& change,
     const WebStateSelection& selection) {
   switch (change.type()) {
-    case WebStateListChange::Type::kSelectionOnly:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // WebStateActivatedAt() to here. Note that here is reachable only when
-      // `reason` == ActiveWebStateChangeReason::Activated.
-      break;
+    case WebStateListChange::Type::kSelectionOnly: {
+      if (!selection.pinned_state_change) {
+        // TODO(crbug.com/1442546): Move the implementation from
+        // WebStateActivatedAt() to here. Note that here is reachable only when
+        // `reason` == ActiveWebStateChangeReason::Activated.
+        return;
+      }
+      [[fallthrough]];
+    }
     case WebStateListChange::Type::kDetach:
       [[fallthrough]];
     case WebStateListChange::Type::kMove:
@@ -44,37 +62,6 @@ void WebStateListObserverBridge::WebStateListDidChange(
   }
 }
 
-void WebStateListObserverBridge::WillDetachWebStateAt(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index) {
-  const SEL selector = @selector(webStateList:willDetachWebState:atIndex:);
-  if (![observer_ respondsToSelector:selector]) {
-    return;
-  }
-
-  [observer_ webStateList:web_state_list
-       willDetachWebState:web_state
-                  atIndex:index];
-}
-
-void WebStateListObserverBridge::WillCloseWebStateAt(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index,
-    bool user_action) {
-  const SEL selector = @selector(webStateList:
-                            willCloseWebState:atIndex:userAction:);
-  if (![observer_ respondsToSelector:selector]) {
-    return;
-  }
-
-  [observer_ webStateList:web_state_list
-        willCloseWebState:web_state
-                  atIndex:index
-               userAction:(user_action ? YES : NO)];
-}
-
 void WebStateListObserverBridge::WebStateActivatedAt(
     WebStateList* web_state_list,
     web::WebState* old_web_state,
@@ -92,21 +79,6 @@ void WebStateListObserverBridge::WebStateActivatedAt(
                   oldWebState:old_web_state
                       atIndex:active_index
                        reason:reason];
-}
-
-void WebStateListObserverBridge::WebStatePinnedStateChanged(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index) {
-  const SEL selector = @selector(webStateList:
-              didChangePinnedStateForWebState:atIndex:);
-  if (![observer_ respondsToSelector:selector]) {
-    return;
-  }
-
-  [observer_ webStateList:web_state_list
-      didChangePinnedStateForWebState:web_state
-                              atIndex:index];
 }
 
 void WebStateListObserverBridge::WillBeginBatchOperation(

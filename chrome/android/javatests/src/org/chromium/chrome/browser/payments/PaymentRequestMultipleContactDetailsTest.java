@@ -15,8 +15,8 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.autofill.AutofillProfile;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
-import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
@@ -205,6 +205,9 @@ public class PaymentRequestMultipleContactDetailsTest {
 
         // Set up the profile use stats.
         for (int i = 0; i < guids.size(); i++) {
+            // TODO(crbug.com/1463732): Update Disabled Test Callsites of
+            // SetProfileUseStatsForTesting and SetCreditCardUseStatsForTesting since the underlying
+            // logic has changed.
             helper.setProfileUseStatsForTesting(guids.get(i), mCountsToSet[i], mDatesToSet[i]);
         }
 

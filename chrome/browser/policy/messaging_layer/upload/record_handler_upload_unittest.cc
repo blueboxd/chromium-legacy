@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/time/time.h"
 #include "chrome/browser/policy/messaging_layer/upload/record_handler_impl.h"
 
 #include "base/memory/scoped_refptr.h"
@@ -47,6 +48,7 @@ using ::testing::Lt;
 using ::testing::Not;
 using ::testing::NotNull;
 using ::testing::Property;
+using ::testing::SizeIs;
 using ::testing::StrEq;
 using ::testing::WithArgs;
 
@@ -149,11 +151,10 @@ class RecordHandlerUploadTest : public ::testing::Test {
         base::MakeRefCounted<ResourceManager>(4u * 1024LLu * 1024LLu);  // 4 MiB
 
     // Create a queue and post event, in order to let ReportClient set storage.
-    auto config_result = ReportQueueConfiguration::Create(
-        EventType::kDevice, LOG_UPLOAD,
-        /*policy_check_callback=*/base::BindRepeating([]() {
-          return Status::StatusOK();
-        }));
+    auto config_result =
+        ReportQueueConfiguration::Create(
+            {.event_type = EventType::kDevice, .destination = LOG_UPLOAD})
+            .Build();
     EXPECT_OK(config_result) << config_result.status();
     test::TestEvent<StatusOr<std::unique_ptr<ReportQueue>>> create_queue_event;
     ReportQueueProvider::CreateQueue(std::move(config_result.ValueOrDie()),
@@ -178,6 +179,16 @@ class RecordHandlerUploadTest : public ::testing::Test {
     test_reporting_.reset();
 
     EXPECT_THAT(memory_resource_->GetUsed(), Eq(0uL));
+  }
+
+  void VerifyUploadRequestAndRespond() {
+    task_environment_.RunUntilIdle();
+
+    ASSERT_THAT(*test_env_.url_loader_factory()->pending_requests(), SizeIs(1));
+    base::Value::Dict request_body = test_env_.request_body(0);
+    EXPECT_THAT(request_body, IsDataUploadRequestValid());
+
+    test_env_.SimulateResponseForRequest(0);
   }
 
   content::BrowserTaskEnvironment task_environment_{
@@ -214,7 +225,7 @@ EncryptedRecord ComposeEncryptedRecord(
   auto* sequence_information = encrypted_record.mutable_sequence_information();
   sequence_information->set_generation_id(kGenerationId);
   sequence_information->set_sequencing_id(0);
-  sequence_information->set_priority(Priority::IMMEDIATE);
+  sequence_information->set_priority(Priority::SECURITY);
   {
     auto* const record_copy = encrypted_record.mutable_record_copy();
     record_copy->set_destination(Destination::LOG_UPLOAD);
@@ -303,11 +314,6 @@ TEST_F(RecordHandlerUploadTest, SuccessfulInitiation) {
       .sequence_information = init_encrypted_record.sequence_information(),
       .force_confirm = false};
 
-  EXPECT_CALL(*test_env_.client(),
-              UploadEncryptedReport(IsDataUploadRequestValid(), _, _))
-      .WillOnce(MakeUploadEncryptedReportAction(
-          std::move(ResponseBuilder().SetSuccess(true))));
-
   test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
   test::TestEvent<CompletionResponse> responder_event;
 
@@ -322,7 +328,7 @@ TEST_F(RecordHandlerUploadTest, SuccessfulInitiation) {
   EXPECT_CALL(*delegate_, DoNextStep).Times(0);
   EXPECT_CALL(*delegate_, DoFinalize).Times(0);
 
-  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::IMMEDIATE), _, _))
+  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::SECURITY), _, _))
       .WillOnce(Invoke([](Priority priority, Record record,
                           StorageModuleInterface::EnqueueCallback callback) {
         EXPECT_TRUE(record.needs_local_unencrypted_copy());
@@ -340,6 +346,7 @@ TEST_F(RecordHandlerUploadTest, SuccessfulInitiation) {
                           std::vector(1, std::move(init_encrypted_record)),
                           std::move(record_reservation), responder_event.cb(),
                           encryption_key_attached_event.repeating_cb());
+  VerifyUploadRequestAndRespond();
   auto response = responder_event.result();
   EXPECT_THAT(response, ResponseEquals(expected_response));
 }
@@ -353,11 +360,6 @@ TEST_F(RecordHandlerUploadTest, SuccessfulNextStep) {
   const SuccessfulUploadResponse expected_response{
       .sequence_information = next_step_encrypted_record.sequence_information(),
       .force_confirm = false};
-
-  EXPECT_CALL(*test_env_.client(),
-              UploadEncryptedReport(IsDataUploadRequestValid(), _, _))
-      .WillOnce(MakeUploadEncryptedReportAction(
-          std::move(ResponseBuilder().SetSuccess(true))));
 
   test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
   test::TestEvent<CompletionResponse> responder_event;
@@ -376,7 +378,7 @@ TEST_F(RecordHandlerUploadTest, SuccessfulNextStep) {
           });
   EXPECT_CALL(*delegate_, DoFinalize).Times(0);
 
-  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::IMMEDIATE), _, _))
+  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::SECURITY), _, _))
       .WillOnce(Invoke([](Priority priority, Record record,
                           StorageModuleInterface::EnqueueCallback callback) {
         EXPECT_TRUE(record.needs_local_unencrypted_copy());
@@ -393,6 +395,7 @@ TEST_F(RecordHandlerUploadTest, SuccessfulNextStep) {
                           std::vector(1, std::move(next_step_encrypted_record)),
                           std::move(record_reservation), responder_event.cb(),
                           encryption_key_attached_event.repeating_cb());
+  VerifyUploadRequestAndRespond();
   auto response = responder_event.result();
   EXPECT_THAT(response, ResponseEquals(expected_response));
 }
@@ -406,11 +409,6 @@ TEST_F(RecordHandlerUploadTest, SuccessfulFinalize) {
   const SuccessfulUploadResponse expected_response{
       .sequence_information = fin_encrypted_record.sequence_information(),
       .force_confirm = false};
-
-  EXPECT_CALL(*test_env_.client(),
-              UploadEncryptedReport(IsDataUploadRequestValid(), _, _))
-      .WillOnce(MakeUploadEncryptedReportAction(
-          std::move(ResponseBuilder().SetSuccess(true))));
 
   test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
   test::TestEvent<CompletionResponse> responder_event;
@@ -426,7 +424,7 @@ TEST_F(RecordHandlerUploadTest, SuccessfulFinalize) {
           }));
   EXPECT_CALL(*delegate_, DoDeleteFile(StrEq(kUploadFileName))).Times(1);
 
-  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::IMMEDIATE), _, _))
+  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::SECURITY), _, _))
       .WillOnce(Invoke([](Priority priority, Record record,
                           StorageModuleInterface::EnqueueCallback callback) {
         EXPECT_FALSE(record.needs_local_unencrypted_copy());
@@ -443,6 +441,7 @@ TEST_F(RecordHandlerUploadTest, SuccessfulFinalize) {
                           std::vector(1, std::move(fin_encrypted_record)),
                           std::move(record_reservation), responder_event.cb(),
                           encryption_key_attached_event.repeating_cb());
+  VerifyUploadRequestAndRespond();
   auto response = responder_event.result();
   EXPECT_THAT(response, ResponseEquals(expected_response));
 }
@@ -457,11 +456,6 @@ TEST_F(RecordHandlerUploadTest, AlreadyFinalized) {
       .sequence_information = fin_encrypted_record.sequence_information(),
       .force_confirm = false};
 
-  EXPECT_CALL(*test_env_.client(),
-              UploadEncryptedReport(IsDataUploadRequestValid(), _, _))
-      .WillOnce(MakeUploadEncryptedReportAction(
-          std::move(ResponseBuilder().SetSuccess(true))));
-
   test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
   test::TestEvent<CompletionResponse> responder_event;
 
@@ -475,6 +469,7 @@ TEST_F(RecordHandlerUploadTest, AlreadyFinalized) {
                           std::vector(1, std::move(fin_encrypted_record)),
                           std::move(record_reservation), responder_event.cb(),
                           encryption_key_attached_event.repeating_cb());
+  VerifyUploadRequestAndRespond();
   auto response = responder_event.result();
   EXPECT_THAT(response, ResponseEquals(expected_response));
 }
@@ -488,11 +483,6 @@ TEST_F(RecordHandlerUploadTest, FailedProcessing) {
   const SuccessfulUploadResponse expected_response{
       .sequence_information = next_step_encrypted_record.sequence_information(),
       .force_confirm = false};
-
-  EXPECT_CALL(*test_env_.client(),
-              UploadEncryptedReport(IsDataUploadRequestValid(), _, _))
-      .WillOnce(MakeUploadEncryptedReportAction(
-          std::move(ResponseBuilder().SetSuccess(true))));
 
   test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
   test::TestEvent<CompletionResponse> responder_event;
@@ -511,7 +501,7 @@ TEST_F(RecordHandlerUploadTest, FailedProcessing) {
   EXPECT_CALL(*delegate_, DoFinalize).Times(0);
   EXPECT_CALL(*delegate_, DoDeleteFile(StrEq(kUploadFileName))).Times(1);
 
-  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::IMMEDIATE), _, _))
+  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::SECURITY), _, _))
       .WillOnce(Invoke([](Priority priority, Record record,
                           StorageModuleInterface::EnqueueCallback callback) {
         EXPECT_FALSE(record.needs_local_unencrypted_copy());
@@ -528,6 +518,7 @@ TEST_F(RecordHandlerUploadTest, FailedProcessing) {
                           std::vector(1, std::move(next_step_encrypted_record)),
                           std::move(record_reservation), responder_event.cb(),
                           encryption_key_attached_event.repeating_cb());
+  VerifyUploadRequestAndRespond();
   auto response = responder_event.result();
   EXPECT_THAT(response, ResponseEquals(expected_response));
 }
@@ -541,12 +532,6 @@ TEST_F(RecordHandlerUploadTest, RepeatedInitiationAttempts) {
       .sequence_information = init_encrypted_record.sequence_information(),
       .force_confirm = false};
 
-  EXPECT_CALL(*test_env_.client(),
-              UploadEncryptedReport(IsDataUploadRequestValid(), _, _))
-      .Times(kNumTestRecords)
-      .WillRepeatedly(MakeUploadEncryptedReportAction(
-          std::move(ResponseBuilder().SetSuccess(true))));
-
   EXPECT_CALL(*delegate_, DoInitiate(StrEq(kUploadFileName), Not(IsEmpty()), _))
       .WillOnce(Invoke(
           [](base::StringPiece origin_path, base::StringPiece upload_parameters,
@@ -558,7 +543,7 @@ TEST_F(RecordHandlerUploadTest, RepeatedInitiationAttempts) {
   EXPECT_CALL(*delegate_, DoNextStep).Times(0);
   EXPECT_CALL(*delegate_, DoFinalize).Times(0);
 
-  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::IMMEDIATE), _, _))
+  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::SECURITY), _, _))
       .WillOnce(Invoke([](Priority priority, Record record,
                           StorageModuleInterface::EnqueueCallback callback) {
         EXPECT_TRUE(record.needs_local_unencrypted_copy());
@@ -581,6 +566,7 @@ TEST_F(RecordHandlerUploadTest, RepeatedInitiationAttempts) {
                             std::vector(1, init_encrypted_record),
                             std::move(record_reservation), responder_event.cb(),
                             encryption_key_attached_event.repeating_cb());
+    VerifyUploadRequestAndRespond();
     auto response = responder_event.result();
     EXPECT_THAT(response, ResponseEquals(expected_response));
     init_encrypted_record.mutable_sequence_information()->set_sequencing_id(
@@ -598,11 +584,6 @@ TEST_F(RecordHandlerUploadTest, InitiationFailureTriggersRetry) {
       .sequence_information = init_encrypted_record.sequence_information(),
       .force_confirm = false};
 
-  EXPECT_CALL(*test_env_.client(),
-              UploadEncryptedReport(IsDataUploadRequestValid(), _, _))
-      .WillOnce(MakeUploadEncryptedReportAction(
-          std::move(ResponseBuilder().SetSuccess(true))));
-
   // Simulate delegate failure initiating the job.
   EXPECT_CALL(*delegate_, DoInitiate(StrEq(kUploadFileName), Not(IsEmpty()), _))
       .WillOnce(Invoke(
@@ -616,7 +597,7 @@ TEST_F(RecordHandlerUploadTest, InitiationFailureTriggersRetry) {
   EXPECT_CALL(*delegate_, DoFinalize).Times(0);
 
   // Record retry event and then original with status.
-  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::IMMEDIATE), _, _))
+  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::SECURITY), _, _))
       .WillOnce(Invoke([](Priority priority, Record record,
                           StorageModuleInterface::EnqueueCallback callback) {
         // Expect retry event (starting a new job) - no tracker.
@@ -654,6 +635,7 @@ TEST_F(RecordHandlerUploadTest, InitiationFailureTriggersRetry) {
                             std::vector(1, std::move(init_encrypted_record)),
                             std::move(record_reservation), responder_event.cb(),
                             encryption_key_attached_event.repeating_cb());
+    VerifyUploadRequestAndRespond();
     auto response = responder_event.result();
     EXPECT_THAT(response, ResponseEquals(expected_response));
   }
@@ -668,12 +650,6 @@ TEST_F(RecordHandlerUploadTest, RepeatedNextStepAttempts) {
   SuccessfulUploadResponse expected_response{
       .sequence_information = next_step_encrypted_record.sequence_information(),
       .force_confirm = false};
-
-  EXPECT_CALL(*test_env_.client(),
-              UploadEncryptedReport(IsDataUploadRequestValid(), _, _))
-      .Times(kNumTestRecords)
-      .WillRepeatedly(MakeUploadEncryptedReportAction(
-          std::move(ResponseBuilder().SetSuccess(true))));
 
   EXPECT_CALL(*delegate_, DoInitiate).Times(0);
   // Simulate delegate failure making the next step of the job,
@@ -690,7 +666,7 @@ TEST_F(RecordHandlerUploadTest, RepeatedNextStepAttempts) {
           });
   EXPECT_CALL(*delegate_, DoFinalize).Times(0);
 
-  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::IMMEDIATE), _, _))
+  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::SECURITY), _, _))
       .WillOnce(Invoke([](Priority priority, Record record,
                           StorageModuleInterface::EnqueueCallback callback) {
         EXPECT_TRUE(record.needs_local_unencrypted_copy());
@@ -713,6 +689,7 @@ TEST_F(RecordHandlerUploadTest, RepeatedNextStepAttempts) {
                             std::vector(1, next_step_encrypted_record),
                             std::move(record_reservation), responder_event.cb(),
                             encryption_key_attached_event.repeating_cb());
+    VerifyUploadRequestAndRespond();
     auto response = responder_event.result();
     EXPECT_THAT(response, ResponseEquals(expected_response));
     next_step_encrypted_record.mutable_sequence_information()
@@ -732,11 +709,6 @@ TEST_F(RecordHandlerUploadTest, NextStepFailureTriggersRetry) {
       .sequence_information = next_step_encrypted_record.sequence_information(),
       .force_confirm = false};
 
-  EXPECT_CALL(*test_env_.client(),
-              UploadEncryptedReport(IsDataUploadRequestValid(), _, _))
-      .WillOnce(MakeUploadEncryptedReportAction(
-          std::move(ResponseBuilder().SetSuccess(true))));
-
   EXPECT_CALL(*delegate_, DoInitiate).Times(0);
   EXPECT_CALL(*delegate_,
               DoNextStep(Eq(300L), Eq(100L), StrEq(kSessionToken), _, _))
@@ -751,7 +723,7 @@ TEST_F(RecordHandlerUploadTest, NextStepFailureTriggersRetry) {
   EXPECT_CALL(*delegate_, DoFinalize).Times(0);
 
   // Record retry event and then original with status.
-  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::IMMEDIATE), _, _))
+  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::SECURITY), _, _))
       .WillOnce(Invoke([](Priority priority, Record record,
                           StorageModuleInterface::EnqueueCallback callback) {
         // Expect retry event (starting a new job) - no tracker.
@@ -790,6 +762,7 @@ TEST_F(RecordHandlerUploadTest, NextStepFailureTriggersRetry) {
         std::vector(1, std::move(next_step_encrypted_record)),
         std::move(record_reservation), responder_event.cb(),
         encryption_key_attached_event.repeating_cb());
+    VerifyUploadRequestAndRespond();
     auto response = responder_event.result();
     EXPECT_THAT(response, ResponseEquals(expected_response));
   }
@@ -805,12 +778,6 @@ TEST_F(RecordHandlerUploadTest, RepeatedFinalizeAttempts) {
       .sequence_information = fin_encrypted_record.sequence_information(),
       .force_confirm = false};
 
-  EXPECT_CALL(*test_env_.client(),
-              UploadEncryptedReport(IsDataUploadRequestValid(), _, _))
-      .Times(kNumTestRecords)
-      .WillRepeatedly(MakeUploadEncryptedReportAction(
-          std::move(ResponseBuilder().SetSuccess(true))));
-
   EXPECT_CALL(*delegate_, DoInitiate).Times(0);
   EXPECT_CALL(*delegate_, DoNextStep).Times(0);
   EXPECT_CALL(*delegate_, DoFinalize(StrEq(kSessionToken), _))
@@ -822,7 +789,7 @@ TEST_F(RecordHandlerUploadTest, RepeatedFinalizeAttempts) {
           }));
 
   // Record added only once!
-  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::IMMEDIATE), _, _))
+  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::SECURITY), _, _))
       .WillOnce(Invoke([](Priority priority, Record record,
                           StorageModuleInterface::EnqueueCallback callback) {
         EXPECT_FALSE(record.needs_local_unencrypted_copy());
@@ -848,6 +815,7 @@ TEST_F(RecordHandlerUploadTest, RepeatedFinalizeAttempts) {
                             std::vector(1, fin_encrypted_record),
                             std::move(record_reservation), responder_event.cb(),
                             encryption_key_attached_event.repeating_cb());
+    VerifyUploadRequestAndRespond();
     auto response = responder_event.result();
     EXPECT_THAT(response, ResponseEquals(expected_response));
     fin_encrypted_record.mutable_sequence_information()->set_sequencing_id(
@@ -865,11 +833,6 @@ TEST_F(RecordHandlerUploadTest, FinalizeFailureTriggersRetry) {
       .sequence_information = fin_encrypted_record.sequence_information(),
       .force_confirm = false};
 
-  EXPECT_CALL(*test_env_.client(),
-              UploadEncryptedReport(IsDataUploadRequestValid(), _, _))
-      .WillOnce(MakeUploadEncryptedReportAction(
-          std::move(ResponseBuilder().SetSuccess(true))));
-
   EXPECT_CALL(*delegate_, DoInitiate).Times(0);
   EXPECT_CALL(*delegate_, DoNextStep).Times(0);
   // Simulate delegate failure finalizing the job.
@@ -882,7 +845,7 @@ TEST_F(RecordHandlerUploadTest, FinalizeFailureTriggersRetry) {
           }));
 
   // Record retry event and then original with status.
-  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::IMMEDIATE), _, _))
+  EXPECT_CALL(*test_storage_, AddRecord(Eq(Priority::SECURITY), _, _))
       .WillOnce(Invoke([](Priority priority, Record record,
                           StorageModuleInterface::EnqueueCallback callback) {
         // Expect retry event (starting a new job) - no tracker.
@@ -920,6 +883,7 @@ TEST_F(RecordHandlerUploadTest, FinalizeFailureTriggersRetry) {
                             std::vector(1, std::move(fin_encrypted_record)),
                             std::move(record_reservation), responder_event.cb(),
                             encryption_key_attached_event.repeating_cb());
+    VerifyUploadRequestAndRespond();
     auto response = responder_event.result();
     EXPECT_THAT(response, ResponseEquals(expected_response));
   }

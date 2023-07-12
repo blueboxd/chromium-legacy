@@ -441,6 +441,10 @@ GURL AppBrowserController::GetAppNewTabUrl() const {
   return GetAppStartUrl();
 }
 
+bool AppBrowserController::ShouldHideNewTabButton() const {
+  return false;
+}
+
 bool AppBrowserController::IsUrlInHomeTabScope(const GURL& url) const {
   return false;
 }
@@ -606,6 +610,13 @@ void AppBrowserController::UpdateDraggableRegion(const SkRegion& region) {
 void AppBrowserController::SetOnUpdateDraggableRegionForTesting(
     base::OnceClosure done) {
   on_draggable_region_set_for_testing_ = std::move(done);
+}
+
+void AppBrowserController::MaybeSetInitialUrlOnReparentTab() {
+  if (initial_url_.is_empty() || !IsUrlInAppScope(initial_url_)) {
+    initial_url_ = GURL();
+    SetInitialURL(GetAppStartUrl());
+  }
 }
 
 void AppBrowserController::UpdateThemePack() {

@@ -348,10 +348,20 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      raw_ref(features::kPrivacySandboxAdsAPIsOverride), kSetOnlyIfOverridden},
     {"AndroidDownloadableFontsMatching",
      raw_ref(features::kAndroidDownloadableFontsMatching)},
+#if BUILDFLAG(IS_ANDROID)
+    {"CCTNewRFMPushBehavior", raw_ref(blink::features::kCCTNewRFMPushBehavior)},
+#endif
+    {"CompressionDictionaryTransport",
+     raw_ref(network::features::kCompressionDictionaryTransport)},
+    {"CompressionDictionaryTransportBackend",
+     raw_ref(network::features::kCompressionDictionaryTransportBackend)},
     {"Fledge", raw_ref(blink::features::kFledge), kSetOnlyIfOverridden},
     {"Fledge", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
      kSetOnlyIfOverridden},
     {"Fledge", raw_ref(features::kPrivacySandboxAdsAPIsM1Override),
+     kSetOnlyIfOverridden},
+    {"FledgeBiddingAndAuctionServer",
+     raw_ref(blink::features::kFledgeBiddingAndAuctionServer),
      kSetOnlyIfOverridden},
     {"FledgeBiddingAndAuctionServer",
      raw_ref(features::kPrivacySandboxAdsAPIsOverride), kSetOnlyIfOverridden},
@@ -521,12 +531,12 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
     if (value ==
         blink::switches::
             kBeforeunloadEventCancelByPreventDefaultPolicy_ForceEnable) {
-      WebRuntimeFeatures::EnableOffsetParentNewSpecBehavior(true);
+      WebRuntimeFeatures::EnableBeforeunloadEventCancelByPreventDefault(true);
     }
     if (value ==
         blink::switches::
             kBeforeunloadEventCancelByPreventDefaultPolicy_ForceDisable) {
-      WebRuntimeFeatures::EnableOffsetParentNewSpecBehavior(false);
+      WebRuntimeFeatures::EnableBeforeunloadEventCancelByPreventDefault(false);
     }
   }
 }

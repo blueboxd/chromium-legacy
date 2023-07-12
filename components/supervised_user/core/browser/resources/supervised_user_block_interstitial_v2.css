@@ -2,19 +2,19 @@
    Use of this source code is governed by a BSD-style license that can be
    found in the LICENSE file. */
 
-/* This is the stylesheet for the interstitial when the
-   "WebFilterInterstitialRefresh" flag is enabled. */
-
 .banner {
   align-items: center;
   box-shadow: 0 0 2px rgba(60, 64, 67, 0.12), 0 0 6px rgba(60, 64, 67, 0.15);
   border-radius: 4px;
   display: flex;
   flex-direction: row;
-  padding: 16px;
+  padding: 0px 20px;
   margin-bottom: 24px;
  }
 
+ #banner-message {
+   padding: 12px 0px;
+ }
 body {
   --avatar-stroke-color: var(--google-gray-50);
   --custodian-name-color: #333333;
@@ -85,20 +85,22 @@ button:active {
 }
 
 #family-link-kite-icon {
-  height: 24px;
-  width: 24px;
-  padding: 16px;
+  height: 20px;
+  width: 20px;
+  padding-right: 16px;
 }
 
 .banner-header {
   color: var(--header-color);
   line-height: 24px;
   margin-top: 0;
+  font-size: 13px;
 }
 
 .banner-content {
   line-height: 20px;
   margin-top: 0;
+  font-size: 13px;
 }
 
 h1,
@@ -109,7 +111,6 @@ p,
 
 h1 {
   color: var(--header-color);
-  font-family: "Google Sans", sans-serif;
   font-size: 24px;
   font-weight: normal;
   margin: 0 0 16px;
@@ -294,7 +295,7 @@ button:focus-visible {
   }
 
     #family-link-kite-icon {
-    fill: var(--google-gray-500);
+    fill: #F1F3F4;
   }
 
   .secondary-button {

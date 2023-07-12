@@ -9,9 +9,12 @@
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/public/cpp/notification_utils.h"
+#include "ash/public/cpp/system/anchored_nudge_data.h"
+#include "ash/public/cpp/system/anchored_nudge_manager.h"
 #include "ash/scalable_iph/wallpaper_ash_notification_view.h"
 #include "ash/system/message_center/message_view_factory.h"
 #include "base/notreached.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/components/scalable_iph/iph_session.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph_delegate.h"
@@ -32,12 +35,12 @@ using ::chromeos::network_config::mojom::NetworkType;
 using Observer = ::scalable_iph::ScalableIphDelegate::Observer;
 using NotificationParams =
     ::scalable_iph::ScalableIphDelegate::NotificationParams;
-using NotificationType = ::scalable_iph::ScalableIphDelegate::NotificationType;
+using NotificationImageType =
+    ::scalable_iph::ScalableIphDelegate::NotificationImageType;
 
 constexpr char kNotificationSourceName[] = "ChromeOS";
 constexpr char kWallpaperNotificationType[] = "wallpaper_notification_type";
 constexpr char kNotifierId[] = "scalable_iph";
-constexpr char kWallpaperNotificationId[] = "scalable_iph_wallpaper";
 constexpr char kButtonIndex = 0;
 
 bool HasOnlineNetwork(const std::vector<NetworkStatePropertiesPtr>& networks) {
@@ -66,26 +69,16 @@ message_center::NotifierId GetNotifierId() {
 }
 
 bool IsWallpaperNotification(const NotificationParams& params) {
-  return params.type == NotificationType::kWallpaper;
+  return params.image_type == NotificationImageType::kWallpaper;
 }
 
 message_center::NotificationType GetNotificationType(
     const NotificationParams& params) {
-  switch (params.type) {
-    case NotificationType::kWallpaper:
+  switch (params.image_type) {
+    case NotificationImageType::kWallpaper:
       return message_center::NOTIFICATION_TYPE_CUSTOM;
-    case NotificationType::kInvalid:
-      CHECK(false);
-  }
-  NOTREACHED_NORETURN();
-}
-
-std::string GetNotificationId(const NotificationParams& params) {
-  switch (params.type) {
-    case NotificationType::kWallpaper:
-      return kWallpaperNotificationId;
-    case NotificationType::kInvalid:
-      CHECK(false);
+    case NotificationImageType::kNoImage:
+      return message_center::NOTIFICATION_TYPE_SIMPLE;
   }
   NOTREACHED_NORETURN();
 }
@@ -153,7 +146,25 @@ ScalableIphDelegateImpl::~ScalableIphDelegateImpl() {
 void ScalableIphDelegateImpl::ShowBubble(
     const scalable_iph::ScalableIphDelegate::BubbleParams& params,
     std::unique_ptr<scalable_iph::IphSession> iph_session) {
-  // TODO(b/284158855): Add implementation.
+  // It will be no-op if the `bubble_id_` is an empty string when the first time
+  // to show a bubble.
+  ash::AnchoredNudgeManager::Get()->Cancel(bubble_id_);
+  bubble_id_ = params.bubble_id;
+  bubble_iph_session_ = std::move(iph_session);
+
+  ash::AnchoredNudgeData nudge_data(
+      params.bubble_id, NudgeCatalogName::kScalableIphBubble,
+      base::UTF8ToUTF16(params.text), /*anchor_view=*/nullptr);
+
+  nudge_data.first_button_text = base::UTF8ToUTF16(params.button.text);
+  nudge_data.first_button_callback =
+      base::BindRepeating(&ScalableIphDelegateImpl::OnNudgeButtonClicked,
+                          weak_ptr_factory_.GetWeakPtr(), params.bubble_id,
+                          params.button.action.action_type);
+  nudge_data.dismiss_callback =
+      base::BindRepeating(&ScalableIphDelegateImpl::OnNudgeDismissed,
+                          weak_ptr_factory_.GetWeakPtr(), params.bubble_id);
+  ash::AnchoredNudgeManager::Get()->Show(nudge_data);
 }
 
 void ScalableIphDelegateImpl::ShowNotification(
@@ -174,13 +185,13 @@ void ScalableIphDelegateImpl::ShowNotification(
 
   std::unique_ptr<message_center::Notification> notification =
       ash::CreateSystemNotificationPtr(
-          GetNotificationType(params), GetNotificationId(params),
+          GetNotificationType(params), params.notification_id,
           base::UTF8ToUTF16(notification_title),
           base::UTF8ToUTF16(notification_text),
           base::UTF8ToUTF16(notification_source_name), GURL(), GetNotifierId(),
           rich_notification_data,
           base::MakeRefCounted<ScalableIphNotificationDelegate>(
-              std::move(iph_session), GetNotificationId(params)),
+              std::move(iph_session), params.notification_id),
           gfx::kNoneIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   if (IsWallpaperNotification(params)) {
@@ -239,6 +250,27 @@ void ScalableIphDelegateImpl::QueryOnlineNetworkState() {
 void ScalableIphDelegateImpl::OnNetworkStateList(
     std::vector<NetworkStatePropertiesPtr> networks) {
   SetHasOnlineNetwork(HasOnlineNetwork(networks));
+}
+
+void ScalableIphDelegateImpl::OnNudgeButtonClicked(
+    const std::string& bubble_id,
+    scalable_iph::ActionType action_type) {
+  if (bubble_id_ != bubble_id) {
+    DCHECK(false) << "Callback for an obsolete bubble id gets called "
+                  << bubble_id;
+    return;
+  }
+  bubble_iph_session_->PerformAction(action_type);
+}
+
+void ScalableIphDelegateImpl::OnNudgeDismissed(const std::string& bubble_id) {
+  if (bubble_id_ != bubble_id) {
+    DCHECK(false) << "Callback for an obsolete bubble id gets called "
+                  << bubble_id;
+    return;
+  }
+  bubble_iph_session_.reset();
+  bubble_id_ = "";
 }
 
 }  // namespace ash

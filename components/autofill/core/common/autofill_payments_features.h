@@ -14,7 +14,6 @@ namespace features {
 
 // All features in alphabetical order.
 BASE_DECLARE_FEATURE(kAutofillAlwaysReturnCloudTokenizedCard);
-BASE_DECLARE_FEATURE(kAutofillAutoTriggerManualFallbackForCards);
 BASE_DECLARE_FEATURE(kAutofillEnableCardArtImage);
 BASE_DECLARE_FEATURE(kAutofillEnableCardArtServerSideStretching);
 BASE_DECLARE_FEATURE(kAutofillEnableCardProductName);
@@ -24,10 +23,16 @@ BASE_DECLARE_FEATURE(kAutofillEnableFIDOProgressDialog);
 BASE_DECLARE_FEATURE(kAutofillEnableIbanClientSideUrlFiltering);
 BASE_DECLARE_FEATURE(kAutofillEnableManualFallbackForVirtualCards);
 BASE_DECLARE_FEATURE(kAutofillEnableMerchantOptOutClientSideUrlFiltering);
+BASE_DECLARE_FEATURE(kAutofillEnableMovingGPayLogoToTheRightOnDesktop);
 BASE_DECLARE_FEATURE(kAutofillEnableNewCardArtAndNetworkImages);
 BASE_DECLARE_FEATURE(kAutofillEnableNewSaveCardBubbleUi);
 BASE_DECLARE_FEATURE(kAutofillEnableOfferNotificationForPromoCodes);
 BASE_DECLARE_FEATURE(kAutofillEnableOffersInClankKeyboardAccessory);
+
+#if BUILDFLAG(IS_ANDROID)
+BASE_DECLARE_FEATURE(kAutofillEnablePaymentsAndroidBottomSheet);
+#endif
+
 BASE_DECLARE_FEATURE(kAutofillEnablePaymentsMandatoryReauth);
 BASE_DECLARE_FEATURE(kAutofillEnableRemadeDownstreamMetrics);
 BASE_DECLARE_FEATURE(kAutofillEnableStickyManualFallbackForCards);

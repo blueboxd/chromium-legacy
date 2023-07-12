@@ -37,11 +37,11 @@
 <translation id="1297922636971898492">এই মুহূর্তে Google ড্রাইভ উপলব্ধ নেই৷ একবার Google ড্রাইভ উপলব্ধ হলেই আপলোড করার কাজটি স্বয়ংক্রিয়ভাবে পুনরায় চালু হবে৷</translation>
 <translation id="1307931752636661898">Linux ফাইল দেখা যায়নি</translation>
 <translation id="1313405956111467313">স্বয়ংক্রিয় প্রক্সি কনফিগারেশন</translation>
+<translation id="134645005685694099">ফাইল সিঙ্ক করার প্রসেস চালু রাখার জন্য আপনার ডিভাইসে পর্যাপ্ত স্টোরেজের জায়গা নেই। নতুন ফাইল আর অটোমেটিক সিঙ্ক করা হবে না।</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" /> : <ph name="NETWORK_NAME" /></translation>
 <translation id="1358735829858566124">ফাইল বা ডিরেক্টরি ব্যবহারযোগ্য নয়৷</translation>
 <translation id="1363028406613469049">ট্র্যাক</translation>
 <translation id="1378727793141957596">Google ড্রাইভে স্বাগতম!</translation>
-<translation id="1379156577998569384">আপনার Google Drive ফাইল অফলাইনেও উপলভ্য হয়</translation>
 <translation id="1379911846207762492">ইন্টারনেট কানেকশন না থাকলে, ফাইল অফলাইনে অ্যাক্সেস করার জন্য উপলভ্য করতে পারেন।</translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1388045380422025115">সব ধরনের</translation>
@@ -131,7 +131,6 @@
 <translation id="2084108471225856927">ডিভাইস সেটিংস</translation>
 <translation id="2084809735218147718">ধন্যবাদ জানাচ্ছেন এমন ব্যক্তির ছবি</translation>
 <translation id="2088690981887365033">ভিপিএন নেটওয়ার্ক</translation>
-<translation id="2089751716171649322">অফলাইন থাকাকালীন সহজেই আপনার Google Drive ফাইল অ্যাক্সেস করুন</translation>
 <translation id="2111134541987263231"><ph name="BEGIN_BOLD" />ছদ্মবেশী মোডে অনুমতি দিন<ph name="END_BOLD" /> বিকল্প চালু করুন</translation>
 <translation id="2114191879048183086"><ph name="NUMBER_OF_ITEMS" />টি আইটেম মুছে ফেলা হবে এবং আপনি সেগুলি আর ফিরিয়ে আনতে পারবেন না।</translation>
 <translation id="2122305276694332719">কোনও লুকানো নেটওয়ার্কে অটোমেটিক কানেক্ট করলে, অন্যরা আপনার ডিভাইস ও নেটওয়ার্কের কিছু সেটিংস দেখার সুযোগ পান। তাই, এটি সাজেস্ট করা হয় না।</translation>
@@ -182,6 +181,7 @@
 <translation id="2464089476039395325">HTTP প্রক্সী</translation>
 <translation id="2467267713099745100"><ph name="NETWORK_TYPE" /> নেটওয়ার্ক, বন্ধ আছে</translation>
 <translation id="2468402215065996499">তামাগচি</translation>
+<translation id="2468470447085858632">ফাইল সিঙ্ক করার প্রসেসের মাধ্যমে আপনার Google Drive-এর ফাইল অফলাইনে অ্যাক্সেস করুন</translation>
 <translation id="2470939964922472929">একটি ভুল পিন অনেকবার লেখা হয়েছে। নতুন একটি পিন সেট করতে আপনার পরিষেবা প্রদানকারীর থেকে পাওয়া ৮-সংখ্যার 'পার্সোনাল আনব্লকিং কী' (PUK) লিখুন।</translation>
 <translation id="2500392669976258912">গুজরাতি ফোনেটিক</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -351,12 +351,12 @@
 <translation id="3855472144336161447">জার্মান নিও ২</translation>
 <translation id="3858860766373142691">নাম</translation>
 <translation id="3866249974567520381">বর্ণনা</translation>
-<translation id="3866439285517092441">ব্যাটারিতে চার্জ কমে গেছে। আপনি পাওয়ারের সাথে কানেক্ট করলে, সিঙ্ক প্রসেস আবার চালু হবে।</translation>
 <translation id="3899991606604168269">ফরাসি (কানাডা) ভাষায় মাল্টিলিঙ্গুয়াল কীবোর্ড</translation>
 <translation id="3901991538546252627"><ph name="NAME" />-এ সংযোগ করা হচ্ছে</translation>
 <translation id="3906232975181435906">মোবাইল প্রোফাইল ইনস্টল করা হচ্ছে, <ph name="NETWORK_COUNT" />টির মধ্যে <ph name="NETWORK_INDEX" /> নম্বর নেটওয়ার্ক, <ph name="NETWORK_NAME" /></translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">পেস্ট করুন</translation>
+<translation id="3950820424414687140">সাইন-ইন করুন</translation>
 <translation id="3952872973865944257">তেলুগু ফোনেটিক</translation>
 <translation id="3958548648197196644">কিউই</translation>
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
@@ -566,6 +566,7 @@
 <translation id="5422221874247253874">অ্যাক্সেস পয়েন্ট</translation>
 <translation id="5428105026674456456">স্প্যানিশ</translation>
 <translation id="5438282218546237410"><ph name="SEARCH_TERM" />-এর জন্য কোনও ফলাফল পাওয়া যায়নি।</translation>
+<translation id="5447680084201416734">পর্যাপ্ত স্টোরেজ নেই।</translation>
 <translation id="5449551289610225147">ভুল পাসওয়ার্ড</translation>
 <translation id="5459064203055649751">"<ph name="FILENAME" />" নামের ফাইল আগে থেকেই আছে। আপনি কি এটিকে একটি ফাইল দিয়ে পরিবর্তন করতে চান যা বর্তমানে আছে?</translation>
 <translation id="5463231940765244860">লিখুন</translation>
@@ -576,12 +577,10 @@
 <translation id="5494920125229734069">সকল বেছে নিন</translation>
 <translation id="5500122897333236901">আইসল্যান্ডিক</translation>
 <translation id="5508696409934741614">বিন্দু</translation>
-<translation id="5519161320735100193">Google Drive সেটিংস</translation>
 <translation id="5522908512596376669">লিস্ট ভিউতে ফাইলের তালিকা পরিবর্তিত হয়েছে।</translation>
 <translation id="5524517123096967210">ফাইল পড়া যায়নি৷</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> ছবি</translation>
 <translation id="5534520101572674276">আকার গণনা করা হচ্ছে</translation>
-<translation id="5536122250858122375">এই ধরনের ফাইল সিঙ্ক করা যাবে না</translation>
 <translation id="554153475311314364">গ্রিক লিপ্যন্তর</translation>
 <translation id="5554171655917412781"><ph name="SELECTED_FOLDERS_COUNT" />টি ফোল্ডার বেছে নেওয়া হয়েছে</translation>
 <translation id="5580591966435005537">ভার্চুয়াল মেশিন</translation>
@@ -605,6 +604,7 @@
 <translation id="5720028165859493293"><ph name="FILE_NAME" /> ট্র্যাশে সরানো হয়েছে</translation>
 <translation id="5724172041621205163">থাই ভাষায় পাট্টাচোটে কীবোর্ড</translation>
 <translation id="57383366388012121">গত এক মাসের</translation>
+<translation id="575175778971367197">এই মুহূর্তে এই ফাইল সিঙ্ক করা যাচ্ছে না</translation>
 <translation id="5756666464756035725">হাঙ্গেরিয়ান কোয়ের্টি</translation>
 <translation id="5760252553414789727"><ph name="SELECTED_FILES_COUNT" />টি আইটেম বেছে নেওয়া হয়েছে</translation>
 <translation id="5763377084591234761">জার্মান (সুইজারল্যান্ড)</translation>
@@ -694,6 +694,7 @@
 <translation id="6423031066725912715">ভিয়েতনামি ভাষায় টিসিভিএন (TCVN) কীবোর্ড</translation>
 <translation id="6430271654280079150">আপনি আর ১ বার চেষ্টা করতে পারেন।</translation>
 <translation id="643243556292470964">মুছে ফেলা ফাইলগুলি এখন ট্র্যাশে সরানো হয়েছে</translation>
+<translation id="6438480100790416671">স্টোরেজের জায়গা চেক করা হচ্ছে…</translation>
 <translation id="6485131920355264772">স্থান তথ্য পুনরুদ্ধার করতে ব্যর্থ হয়েছে</translation>
 <translation id="6495925982925244349"><ph name="NETWORK_COUNT" />টির মধ্যে <ph name="NETWORK_INDEX" /> নম্বর নেটওয়ার্ক, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" /> সিগন্যাল: <ph name="SIGNAL_STRENGTH" />%, আপনার অ্যাডমিনিস্ট্রেটর ম্যানেজ করে, বিবরণ</translation>
 <translation id="649877868557234318"><ph name="FOLDER_NAME" />-এ <ph name="FILE_NAME" /> এক্সট্যাক্ট করা হচ্ছে</translation>
@@ -706,6 +707,7 @@
 <translation id="6558280019477628686">একটি ত্রুটি হয়েছে৷ কিছু আইটেম হয়ত মোছা যায়নি।</translation>
 <translation id="656398493051028875">"<ph name="FILENAME" />" মোছা হচ্ছে...</translation>
 <translation id="6581162200855843583">Google ড্রাইভ লিঙ্ক</translation>
+<translation id="6588648400954570689">ফাইল সিঙ্ক করা সম্পর্কিত সেটিংস</translation>
 <translation id="6594855146910089723">এই ফোল্ডার Linux ও Parallels Desktop-এর সাথে শেয়ার করা হয়েছে</translation>
 <translation id="6607272825297743757">ফাইলের তথ্য</translation>
 <translation id="6609332149380188670">Parallels Desktop-এর সাথে <ph name="NUMBER_OF_ITEMS" /> ফোল্ডার শেয়ার করা হয়েছে</translation>
@@ -741,7 +743,6 @@
 <translation id="6874758081814639712">তাই চি করছে এমন ব্যক্তির ছবি</translation>
 <translation id="6876155724392614295">সাইকেল</translation>
 <translation id="6878261347041253038">দেবনাগরী কীবোর্ড (ফোনেটিক)</translation>
-<translation id="6882444584974399416">আপনার ফাইল অফলাইনে উপলভ্য রাখার জন্য যে স্টোরেজের জায়গার প্রয়োজন তা ডিভাইসে নেই। নতুন ফাইল আর অটোমেটিক সিঙ্ক করা হবে না।</translation>
 <translation id="6885780034956018177">শামুক</translation>
 <translation id="6896758677409633944">কপি</translation>
 <translation id="6898028766943174120">আরও সাব-ফোল্ডার...</translation>
@@ -831,6 +832,7 @@
 <translation id="7547811415869834682">ডাচ</translation>
 <translation id="7551643184018910560">শেল্ফে পিন করুন</translation>
 <translation id="7553492409867692754">Linux অ্যাপকে <ph name="FOLDER_NAME" /> ফোল্ডারের ফাইল অ্যাক্সেস করার অনুমতি দিন</translation>
+<translation id="7555339735447658365">আপনি বর্তমানে অফলাইন আছেন। আপনি ইন্টারনেটের সাথে কানেক্ট করলে, ফাইল সিঙ্ক করার প্রসেস আবার চালু হবে</translation>
 <translation id="7589661784326793847">এক সেকেন্ড অপেক্ষা করুন</translation>
 <translation id="7592775719802218421">অফলাইনে দেখার জন্য <ph name="FILE_NAME" /> ডাউনলোড করা হচ্ছে</translation>
 <translation id="7600126690270271294">সার্বিয়ান</translation>
@@ -873,6 +875,7 @@
 <translation id="7814857791038398352">Microsoft OneDrive</translation>
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> টিবি</translation>
 <translation id="7831491651892296503">নেটওয়ার্ক কনফিগার করার সময় ত্রুটি</translation>
+<translation id="7832093238954689746">ফাইল সিঙ্ক করার প্রসেস সম্পূর্ণ হয়েছে। 'আমার ড্রাইভ'-এর ফাইল এখন অফলাইনে উপলভ্য।</translation>
 <translation id="7839804798877833423">এই ফাইলগুলি আনতে আনুমানিক মোবাইল ডেটা <ph name="FILE_SIZE" /> ব্যবহার হবে</translation>
 <translation id="7846076177841592234">নির্বাচন বাতিল করুন</translation>
 <translation id="7853966320808728790">ফরাসি BÉPO</translation>
@@ -897,6 +900,7 @@
 <translation id="8000066093800657092">কোনও নেটওয়ার্ক নেই</translation>
 <translation id="8008366997883261463">জ্যাক রাসেল ক্ষুদ্রকায় কুকুর</translation>
 <translation id="8028993641010258682">সাইজ</translation>
+<translation id="8034974485549318493">প্রাথমিক সেট-আপের জন্য, আপনাকে ইন্টারনেটের সাথে কানেক্ট করতে হবে যাতে ফাইল সিঙ্ক করা যায়।</translation>
 <translation id="803771048473350947">ফাইল</translation>
 <translation id="8038111231936746805">(ডিফল্ট)</translation>
 <translation id="8042602468072383151"><ph name="AUDIO_TYPE" /> অডিও</translation>
@@ -920,6 +924,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">ডিভাইস মডেল</translation>
 <translation id="8223479393428528563">অফলাইনে ব্যবহারের জন্য এই ফাইলগুলি সেভ করতে অনলাইনে ফিরে আসুন, ফাইলগুলিতে ডান-ক্লিক করুন এবং <ph name="OFFLINE_CHECKBOX_NAME" /> বিকল্পটি নির্বাচন করুন৷</translation>
+<translation id="8241139360630443550">স্টোরেজ দেখুন</translation>
 <translation id="8249296373107784235">বাতিল</translation>
 <translation id="8250690786522693009">ল্যাটিন</translation>
 <translation id="8250920743982581267">দস্তাবেজগুলি</translation>
@@ -949,8 +954,8 @@
 <translation id="8395901698320285466">আয়তন</translation>
 <translation id="8404498045299006085">সবগুলি রাখুন</translation>
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> নেটওয়ার্ক, কানেক্ট করা হচ্ছে</translation>
-<translation id="841387525767317275">এই ফোল্ডারে থাকা ফাইল অফলাইনেও উপলভ্য</translation>
 <translation id="8425213833346101688">পরিবর্তন</translation>
+<translation id="8428213095426709021">সেটিংস</translation>
 <translation id="8431909052837336408">সিম পিন পরিবর্তন করুন</translation>
 <translation id="8437209419043462667">মার্কিন যুক্তরাষ্ট্রীয়</translation>
 <translation id="8452135315243592079">সিম কার্ড পাওয়া যাচ্ছে না</translation>
@@ -977,7 +982,6 @@
 <translation id="8560515948038859357">ক্যান্টনিজ</translation>
 <translation id="8561206103590473338">হাতি</translation>
 <translation id="8566466896628108558"><ph name="NETWORK_COUNT" />টি নেটওয়ার্কের মধ্যে <ph name="NETWORK_INDEX" /> নম্বর নেটওয়ার্ক, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, সিগন্যাল ক্ষমতা <ph name="SIGNAL_STRENGTH" />%, আপনার অ্যাডমিনিস্ট্রেটর ব্লক করেছেন, বিবরণ</translation>
-<translation id="8567555211227790801">আপনি বর্তমানে অফলাইন আছেন। আপনি ইন্টারনেটের সাথে কানেক্ট করলে, সিঙ্ক প্রসেস আবার চালু হবে।</translation>
 <translation id="8568374623837201676">এই ফাইলটি স্থায়ীভাবে মুছে ফেলতে চান?</translation>
 <translation id="8569764466147087991">খুলতে একটি স্ক্রিপ্ট বেছে নিন</translation>
 <translation id="8577897833047451336">ক্রোয়েশিয়ান</translation>

@@ -96,65 +96,13 @@ void ApplyGM3OmniboxBackgroundColor(ui::ColorMixer& mixer,
 
   // Apply omnibox background color updates only to non-themed clients.
   if (gm3_background_color_enabled && !key.custom_theme) {
-    // Retrieve GM3 omnibox background color params (Dark Mode).
-    const std::string dark_background_color_param =
-        omnibox::kOmniboxDarkBackgroundColor.Get();
-    const std::string dark_background_color_hovered_param =
-        omnibox::kOmniboxDarkBackgroundColorHovered.Get();
+    mixer[kColorLocationBarBackground] = {ui::kColorSysBaseContainer};
+    mixer[kColorLocationBarBackgroundHovered] =
+        ui::GetResultingPaintColor(ui::kColorSysStateHoverBrightBlendProtection,
+                                   kColorLocationBarBackground);
 
-    // Retrieve GM3 omnibox background color params (Light Mode).
-    const std::string light_background_color_param =
-        omnibox::kOmniboxLightBackgroundColor.Get();
-    const std::string light_background_color_hovered_param =
-        omnibox::kOmniboxLightBackgroundColorHovered.Get();
-
-    const auto string_to_skcolor = [](const std::string& rgb_str,
-                                      SkColor* result) {
-      // Valid color strings are of the form 0xRRGGBB or 0xAARRGGBB.
-      const bool valid =
-          result && (rgb_str.size() == 8 || rgb_str.size() == 10);
-      if (!valid) {
-        return false;
-      }
-
-      uint32_t parsed = 0;
-      const bool success = base::HexStringToUInt(rgb_str, &parsed);
-      if (success) {
-        *result = SkColorSetA(static_cast<SkColor>(parsed), SK_AlphaOPAQUE);
-      }
-      return success;
-    };
-
-    SkColor dark_background_color = 0;
-    SkColor dark_background_color_hovered = 0;
-
-    SkColor light_background_color = 0;
-    SkColor light_background_color_hovered = 0;
-
-    const bool success = string_to_skcolor(dark_background_color_param,
-                                           &dark_background_color) &&
-                         string_to_skcolor(dark_background_color_hovered_param,
-                                           &dark_background_color_hovered) &&
-                         string_to_skcolor(light_background_color_param,
-                                           &light_background_color) &&
-                         string_to_skcolor(light_background_color_hovered_param,
-                                           &light_background_color_hovered);
-
-    if (!success) {
-      return;
-    }
-
-    const auto selected_background_color = ui::SelectBasedOnDarkInput(
-        kColorToolbar, dark_background_color, light_background_color);
-
-    mixer[kColorLocationBarBackground] = {selected_background_color};
-
-    const auto selected_background_color_hovered =
-        ui::SelectBasedOnDarkInput(kColorToolbar, dark_background_color_hovered,
-                                   light_background_color_hovered);
-
-    mixer[kColorLocationBarBackgroundHovered] = {
-        selected_background_color_hovered};
+    // Update colors to account for "mismatched input/URL" in the omnibox.
+    mixer[kColorLocationBarBorderOnMismatch] = {ui::kColorSysNeutralOutline};
   }
 }
 
@@ -323,12 +271,15 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorLocationBarBackgroundHovered] = {
       kColorToolbarBackgroundSubtleEmphasisHovered};
 
-  // Override Omnibox background color tokens per GM3 spec when appropriate.
-  ApplyGM3OmniboxBackgroundColor(mixer, key);
-
   mixer[kColorLocationBarBorder] = {SkColorSetA(SK_ColorBLACK, 0x4D)};
   mixer[kColorLocationBarBorderOpaque] =
       ui::GetResultingPaintColor(kColorLocationBarBorder, kColorToolbar);
+
+  mixer[kColorLocationBarBorderOnMismatch] = {kColorLocationBarBorder};
+
+  // Override Omnibox background color tokens per GM3 spec when appropriate.
+  ApplyGM3OmniboxBackgroundColor(mixer, key);
+
   mixer[kColorMediaRouterIconActive] =
       PickGoogleColor(ui::kColorAccent, kColorToolbar,
                       color_utils::kMinimumVisibleContrastRatio);
@@ -609,6 +560,7 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
                                                    : gfx::kGoogleGrey050};
   mixer[kColorTabHoverCardForeground] = {dark_mode ? gfx::kGoogleGrey700
                                                    : gfx::kGoogleGrey300};
+  mixer[kColorTabHoverCardSecondaryText] = {ui::kColorLabelForeground};
   mixer[kColorTabStrokeFrameActive] = {kColorToolbarTopSeparatorFrameActive};
   mixer[kColorTabStrokeFrameInactive] = {
       kColorToolbarTopSeparatorFrameInactive};
@@ -718,6 +670,7 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorToolbarFeaturePromoHighlight] =
       ui::PickGoogleColor(ui::kColorAccent, kColorToolbar,
                           color_utils::kMinimumVisibleContrastRatio);
+  mixer[kColorToolbarIconContainerBorder] = {kColorToolbarButtonBorder};
   mixer[kColorToolbarInkDrop] = ui::GetColorWithMaxContrast(kColorToolbar);
   mixer[kColorToolbarInkDropHover] =
       ui::SetAlpha(kColorToolbarInkDrop, kToolbarInkDropHighlightVisibleAlpha);

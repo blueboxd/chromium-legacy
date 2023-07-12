@@ -297,6 +297,7 @@
 <translation id="2643064289437760082">תמיד אפשר למחוק את נתוני המדידה של ביצועי המודעות על ידי מחיקה של נתוני הגלישה</translation>
 <translation id="2647434099613338025">להוספת שפה</translation>
 <translation id="2649068648233607930">הדפדפן שלך מנוהל על ידי <ph name="DOMAIN" /></translation>
+<translation id="2650077116157640844">עוד במכשירים מסונכרנים</translation>
 <translation id="2650348088770008516">ההסבר על המדריך בנושא פרטיות נסגר</translation>
 <translation id="2650408372219180431">ייצוא ומחיקה של הסיסמאות שנשמרו במכשיר הזה</translation>
 <translation id="2650751991977523696">האם להוריד את הקובץ שוב?</translation>
@@ -445,7 +446,6 @@
 <translation id="3421726884497337397">‏אפשר לקבוע מתי קובצי cookie של צד שלישי ייחסמו</translation>
 <translation id="3428747202529429621">‏מגן עליך ב-Chrome וייתכן שייעשה בו שימוש לשיפור האבטחה באפליקציות אחרות של Google שבהן נכנסת לחשבון</translation>
 <translation id="3429160811076349561">התכונות הניסיוניות מושבתות</translation>
-<translation id="3432973700170747422">מחיקה של 15 הדקות האחרונות</translation>
 <translation id="3435465986463792564">פתוחים אצלך הרבה חלונות? יש לך אפשרות לנהל את כולם מכאן.</translation>
 <translation id="3435738964857648380">אבטחה</translation>
 <translation id="3443221991560634068">טעינה מחדש של הדף הנוכחי</translation>
@@ -479,9 +479,9 @@
 <translation id="3587596251841506391">סיוע לשיפור האבטחה באינטרנט</translation>
 <translation id="3597179440835065298">קבלת הצעות טובות יותר</translation>
 <translation id="3602290021589620013">תצוגה מקדימה</translation>
-<translation id="360901359071773787">למחוק את 15 הדקות האחרונות?</translation>
 <translation id="3616113530831147358">אודיו</translation>
 <translation id="3622349720008044802">ניהול החלונות</translation>
+<translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{ועוד אתר אחד}one{ועוד # אתרים}two{ועוד # אתרים}other{ועוד # אתרים}}</translation>
 <translation id="3631987586758005671">השיתוף עם <ph name="DEVICE_NAME" /> מתבצע</translation>
 <translation id="363596933471559332">כניסה אוטומטית לאתרים באמצעות פרטי כניסה מאוחסנים. כשתכונה זו כבויה, יהיה עליך לבצע אימות לפני כל כניסה לאתר.</translation>
 <translation id="3636940436873918441">השפות המועדפות</translation>
@@ -750,6 +750,7 @@
 <translation id="5010886807652684893">תצוגה מורחבת</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> מבקש להתחבר אל</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">15 הדקות האחרונות</translation>
 <translation id="5032430150487044192">‏לא ניתן ליצור קוד QR</translation>
 <translation id="5039804452771397117">זה בסדר</translation>
 <translation id="5040262127954254034">פרטיות</translation>
@@ -768,7 +769,6 @@
 <translation id="5118713593561876160">תחומי עניין</translation>
 <translation id="5122378528687922675">אם צריך עזרה, אפשר לבקש עזרה מהורה (<ph name="PARENT_NAME_1" /> או <ph name="PARENT_NAME_2" />)</translation>
 <translation id="5123685120097942451">כרטיסייה אנונימית</translation>
-<translation id="5126510351761255129">אימות הכרטיס</translation>
 <translation id="5132942445612118989">סנכרון הסיסמאות, ההיסטוריה ונתונים נוספים בכל המכשירים</translation>
 <translation id="5139940364318403933">‏איך משתמשים ב-Google Drive</translation>
 <translation id="5142281402488957685">לכתבות חדשות, יש למשוך למטה כדי לרענן</translation>
@@ -928,7 +928,6 @@
 <translation id="6011308810877101166">שיפור של ההצעות לחיפוש</translation>
 <translation id="6026538407078977628">הרחבה למסך מלא</translation>
 <translation id="6030719887161080597">ניהול המידע שמשמש אתרים למדידת ביצועי מודעות</translation>
-<translation id="6034146297924778597">ההיסטוריה מ-15 הדקות האחרונות תימחק:</translation>
 <translation id="6039379616847168523">מעבר לכרטיסייה הבאה</translation>
 <translation id="6040143037577758943">סגירה</translation>
 <translation id="604124094241169006">אוטומטי</translation>
@@ -1370,6 +1369,7 @@
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />המכשירים שלך<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">חידוש</translation>
 <translation id="8209050860603202033">פתיחת התמונה</translation>
+<translation id="8210770465353466621">הכרטיסיות יופיעו כאן</translation>
 <translation id="8215740705341534369">גיליון צד</translation>
 <translation id="8218622182176210845">ניהול החשבון</translation>
 <translation id="8221401890884589479">‏אפשר לחסום אתרים שלא רוצים לתת להם הרשאה. בנוסף, אתרים שנוספו לפני יותר מ-30 יום נמחקים מהרשימה ב-Chrome באופן אוטומטי. <ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /></translation>

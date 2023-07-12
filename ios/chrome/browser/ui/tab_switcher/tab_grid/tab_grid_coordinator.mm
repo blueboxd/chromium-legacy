@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/bring_android_tabs/features.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
+#import "ios/chrome/browser/find_in_page/util.h"
 #import "ios/chrome/browser/main/browser_util.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/reading_list/reading_list_browser_agent.h"
@@ -94,7 +95,6 @@
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/grit/ios_strings.h"
-#import "ios/public/provider/chrome/browser/find_in_page/find_in_page_api.h"
 #import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -107,7 +107,7 @@ namespace {
 // active in the current web state of `browser`, this returns true. Otherwise,
 // returns false.
 bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
-  if (!ios::provider::IsNativeFindInPageWithSystemFindPanel()) {
+  if (!IsNativeFindInPageAvailable()) {
     return false;
   }
 
@@ -635,6 +635,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
   baseViewController.tabPresentationDelegate = self;
   baseViewController.layoutGuideCenter = LayoutGuideCenterForBrowser(nil);
   baseViewController.delegate = self;
+  baseViewController.mutator = [[TabGridMediator alloc] initWithConsumer:nil];
   _baseViewController = baseViewController;
 
   _toolbarsCoordinator =
@@ -871,7 +872,8 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 }
 
 - (void)dealloc {
-  CHECK(!_recentTabsContextMenuHelper);
+  // TODO(crbug.com/1454777)
+  DUMP_WILL_BE_CHECK(!_recentTabsContextMenuHelper);
 }
 
 #pragma mark - TabPresentationDelegate

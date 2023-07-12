@@ -759,14 +759,14 @@ bool GM2TabStyleViews::ShouldExtendHitTest() const {
 }
 
 bool GM2TabStyleViews::IsHoverActive() const {
-  if (!hover_controller_)
-    return false;
-  return hover_controller_->ShouldDraw();
+  return tab_->mouse_hovered() ||
+         (hover_controller_ && hover_controller_->ShouldDraw());
 }
 
 double GM2TabStyleViews::GetHoverAnimationValue() const {
-  if (!hover_controller_)
-    return 0.0;
+  if (!hover_controller_) {
+    return IsHoverActive() ? 1.0 : 0.0;
+  }
   return hover_controller_->GetAnimationValue();
 }
 
@@ -962,6 +962,10 @@ void GM2TabStyleViews::PaintTabBackgroundFill(
 
 void GM2TabStyleViews::PaintBackgroundHover(gfx::Canvas* canvas,
                                             float scale) const {
+  if (!hover_controller_) {
+    return;
+  }
+
   SkPoint hover_location(gfx::PointToSkPoint(hover_controller_->location()));
   hover_location.scale(SkFloatToScalar(scale));
   const SkScalar kMinHoverRadius = 16;
@@ -1134,9 +1138,10 @@ SkPath ChromeRefresh2023TabStyleViews::GetPath(
   const int stroke_thickness = GetStrokeThickness(force_active);
 
   const TabStyle::TabSelectionState state = GetCurrentSelectionState();
-  // Active fill for CR23 is the same as GM2. Selected/hover is a detached tab.
+  // Active tab fill for CR23 is the same 'folio' style as GM2. Selected, hover,
+  // and inactive tab fills are a detached squarcle tab.
   if ((path_type == TabStyle::PathType::kFill &&
-       state == TabStyle::TabSelectionState::kSelected) ||
+       state != TabStyle::TabSelectionState::kActive) ||
       (path_type == TabStyle::PathType::kHighlight)) {
     // TODO (crbug.com/1451400): This constant should be unified with
     // kCRtabstripRegionViewControlPadding in tab_strip_region_view.

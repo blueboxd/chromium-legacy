@@ -239,20 +239,31 @@ void InjectNTP(Browser* browser) {
 }  // namespace
 
 @interface SceneController () <AppStateObserver,
+                               HistoryCoordinatorDelegate,
+                               IncognitoInterstitialCoordinatorDelegate,
                                PolicyWatcherBrowserAgentObserving,
                                SettingsNavigationControllerDelegate,
                                SceneUIProvider,
-                               HistoryCoordinatorDelegate,
                                SceneURLLoadingServiceDelegate,
+                               SignedInAccountsViewControllerDelegate,
                                TabGridCoordinatorDelegate,
-                               WebStateListObserving,
-                               IncognitoInterstitialCoordinatorDelegate> {
+                               WebStateListObserving> {
   std::unique_ptr<WebStateListObserverBridge> _webStateListForwardingObserver;
   std::unique_ptr<PolicyWatcherBrowserAgentObserverBridge>
       _policyWatcherObserverBridge;
   // View controller presents the signed in accounts when they have changed
   // while the application was in background.
-  __weak SignedInAccountsViewController* _accountsViewController;
+  SignedInAccountsViewController* _accountsViewController;
+  std::unique_ptr<
+      base::ScopedObservation<WebStateList, WebStateListObserverBridge>>
+      _incognitoWebStateObserver;
+  std::unique_ptr<
+      base::ScopedObservation<WebStateList, WebStateListObserverBridge>>
+      _mainWebStateObserver;
+  std::unique_ptr<
+      base::ScopedObservation<PolicyWatcherBrowserAgent,
+                              PolicyWatcherBrowserAgentObserverBridge>>
+      _policyWatcherObserver;
 }
 
 // Navigation View controller for the settings.
@@ -325,6 +336,9 @@ void InjectNTP(Browser* browser) {
 // `closePresentedViews`.
 @property(nonatomic, strong)
     IncognitoInterstitialCoordinator* incognitoInterstitialCoordinator;
+
+// YES if the Settings view is being dismissed.
+@property(nonatomic, assign) BOOL dismissingSettings;
 
 @end
 
@@ -854,9 +868,7 @@ void InjectNTP(Browser* browser) {
   DefaultBrowserPromoSceneAgent* defaultBrowserAgent =
       [[DefaultBrowserPromoSceneAgent alloc]
           initWithCommandDispatcher:mainCommandDispatcher];
-  if (IsDefaultBrowserInPromoManagerEnabled()) {
-    defaultBrowserAgent.promosManager = promosManager;
-  }
+  defaultBrowserAgent.promosManager = promosManager;
   [self.sceneState addAgent:defaultBrowserAgent];
   [self.sceneState
       addAgent:[[NonModalDefaultBrowserPromoSchedulerSceneAgent alloc] init]];
@@ -907,7 +919,10 @@ void InjectNTP(Browser* browser) {
   // changes.
   PolicyWatcherBrowserAgent* policyWatcherAgent =
       PolicyWatcherBrowserAgent::FromBrowser(self.mainInterface.browser);
-  policyWatcherAgent->AddObserver(_policyWatcherObserverBridge.get());
+  _policyWatcherObserver = std::make_unique<base::ScopedObservation<
+      PolicyWatcherBrowserAgent, PolicyWatcherBrowserAgentObserverBridge>>(
+      _policyWatcherObserverBridge.get());
+  _policyWatcherObserver->Observe(policyWatcherAgent);
   policyWatcherAgent->Initialize(policyChangeCommandsHandler);
 
   self.screenshotDelegate = [[ScreenshotDelegate alloc]
@@ -997,10 +1012,15 @@ void InjectNTP(Browser* browser) {
   UrlLoadingBrowserAgent::FromBrowser(self.incognitoInterface.browser)
       ->SetSceneService(self.sceneURLLoadingService);
   // Observe the web state lists for both browsers.
-  self.mainInterface.browser->GetWebStateList()->AddObserver(
+  _incognitoWebStateObserver = std::make_unique<
+      base::ScopedObservation<WebStateList, WebStateListObserverBridge>>(
       _webStateListForwardingObserver.get());
-  self.incognitoInterface.browser->GetWebStateList()->AddObserver(
+  _incognitoWebStateObserver->Observe(
+      self.incognitoInterface.browser->GetWebStateList());
+  _mainWebStateObserver = std::make_unique<
+      base::ScopedObservation<WebStateList, WebStateListObserverBridge>>(
       _webStateListForwardingObserver.get());
+  _mainWebStateObserver->Observe(self.mainInterface.browser->GetWebStateList());
 
   // Enables UI initializations to query the keyWindow's size.
   [self.sceneState.window makeKeyAndVisible];
@@ -1158,21 +1178,16 @@ void InjectNTP(Browser* browser) {
   }
 }
 
-// This method completely destroys all of the UI. It should be called when the
-// scene is disconnected.
 - (void)teardownUI {
-  if (!self.sceneState.UIEnabled) {
-    return;  // Nothing to do.
-  }
-
   [_accountsViewController teardownUI];
+  _accountsViewController.delegate = nil;
   _accountsViewController = nil;
 
   // The UI should be stopped before the models they observe are stopped.
   // SigninCoordinator teardown is performed by the `signinCompletion` on
   // termination of async events, do not add additional teardown here.
   [self.signinCoordinator
-      interruptWithAction:SigninCoordinatorInterruptActionNoDismiss
+      interruptWithAction:SigninCoordinatorInterrupt::UIShutdownNoDismiss
                completion:nil];
 
   [self.historyCoordinator stop];
@@ -1186,15 +1201,9 @@ void InjectNTP(Browser* browser) {
   [_mainCoordinator stop];
   _mainCoordinator = nil;
 
-  // Stop observing web state list changes before tearing down the web state
-  // lists.
-  self.mainInterface.browser->GetWebStateList()->RemoveObserver(
-      _webStateListForwardingObserver.get());
-  self.incognitoInterface.browser->GetWebStateList()->RemoveObserver(
-      _webStateListForwardingObserver.get());
-
-  PolicyWatcherBrowserAgent::FromBrowser(self.mainInterface.browser)
-      ->RemoveObserver(_policyWatcherObserverBridge.get());
+  _incognitoWebStateObserver.reset();
+  _mainWebStateObserver.reset();
+  _policyWatcherObserver.reset();
 
   // TODO(crbug.com/1229306): Consider moving this at the beginning of
   // teardownUI to indicate that the UI is about to be torn down and that the
@@ -1208,10 +1217,13 @@ void InjectNTP(Browser* browser) {
   self.browserViewWrangler = nil;
 
   [self.sceneState.appState removeObserver:self];
+  _sceneURLLoadingService = nullptr;
 }
 
 - (void)dealloc {
-  CHECK(!self.sceneState.UIEnabled);
+  // TODO(crbug.com/1454777)
+  DUMP_WILL_BE_CHECK(!self.sceneState.UIEnabled);
+  DUMP_WILL_BE_CHECK(!_sceneURLLoadingService);
 }
 
 // Formats string for display on iPadOS application switcher with the
@@ -1514,6 +1526,21 @@ void InjectNTP(Browser* browser) {
   self.settingsNavigationController =
       [SettingsNavigationController autofillProfileControllerForBrowser:browser
                                                                delegate:self];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
+}
+
+- (void)showPrivacySettingsFromViewController:
+    (UIViewController*)baseViewController {
+  if (self.settingsNavigationController) {
+    return;
+  }
+
+  Browser* browser = self.mainInterface.browser;
+  self.settingsNavigationController =
+      [SettingsNavigationController privacyControllerForBrowser:browser
+                                                       delegate:self];
   [baseViewController presentViewController:self.settingsNavigationController
                                    animated:YES
                                  completion:nil];
@@ -2948,19 +2975,19 @@ void InjectNTP(Browser* browser) {
 
 - (void)presentSignedInAccountsViewControllerForBrowserState:
     (ChromeBrowserState*)browserState {
+  CHECK(!_accountsViewController);
   UMA_HISTOGRAM_BOOLEAN("Signin.SignedInAccountsViewImpression", true);
   id<ApplicationSettingsCommands> settingsHandler =
       HandlerForProtocol(self.mainInterface.browser->GetCommandDispatcher(),
                          ApplicationSettingsCommands);
-  SignedInAccountsViewController* accountsViewController =
-      [[SignedInAccountsViewController alloc]
-          initWithBrowserState:browserState
-                    dispatcher:settingsHandler];
+  _accountsViewController = [[SignedInAccountsViewController alloc]
+      initWithBrowserState:browserState
+                dispatcher:settingsHandler];
   [[self topPresentedViewController]
-      presentViewController:accountsViewController
+      presentViewController:_accountsViewController
                    animated:YES
                  completion:nil];
-  _accountsViewController = accountsViewController;
+  _accountsViewController.delegate = self;
 }
 
 // Close Settings, or Signin or the 3rd-party intents Incognito interstitial.
@@ -2983,19 +3010,17 @@ void InjectNTP(Browser* browser) {
     strongSelf.dismissingSigninPromptFromExternalTrigger = NO;
   };
 
-  if (self.settingsNavigationController) {
-    __weak SettingsNavigationController* settingsNavigationController =
-        self.settingsNavigationController;
-    self.settingsNavigationController = nil;
+  if (self.settingsNavigationController && !self.dismissingSettings) {
+    self.dismissingSettings = YES;
     // Store a reference to the presentingViewController in case the user
     // is dismissing the Signin screen and then dismisses Settings before
     // the Signin screen is done animating, which will delay the execution of
     // the `dismissSettings` block stopping the code from accessing
     // the `presentingViewController` property.
     __weak UIViewController* weakPresentingViewController =
-        [settingsNavigationController presentingViewController];
+        [self.settingsNavigationController presentingViewController];
     ProceduralBlock dismissSettings = ^() {
-      [settingsNavigationController cleanUpSettings];
+      [weakSelf.settingsNavigationController cleanUpSettings];
       UIViewController* strongPresentingViewController =
           weakPresentingViewController;
       if (strongPresentingViewController) {
@@ -3006,6 +3031,8 @@ void InjectNTP(Browser* browser) {
         // The view is already dismissed. Completion should still be called.
         completion();
       }
+      weakSelf.settingsNavigationController = nil;
+      weakSelf.dismissingSettings = NO;
     };
     // `self.signinCoordinator` can be presented on top of the settings, to
     // present the Trusted Vault reauthentication `self.signinCoordinator` has
@@ -3039,9 +3066,9 @@ void InjectNTP(Browser* browser) {
 - (void)interruptSigninCoordinatorAnimated:(BOOL)animated
                                 completion:(ProceduralBlock)completion {
   DCHECK(self.signinCoordinator);
-  SigninCoordinatorInterruptAction action =
-      animated ? SigninCoordinatorInterruptActionDismissWithAnimation
-               : SigninCoordinatorInterruptActionDismissWithoutAnimation;
+  SigninCoordinatorInterrupt action =
+      animated ? SigninCoordinatorInterrupt::DismissWithAnimation
+               : SigninCoordinatorInterrupt::DismissWithoutAnimation;
 
   self.dismissingSigninPromptFromExternalTrigger = YES;
   [self.signinCoordinator interruptWithAction:action completion:completion];
@@ -3130,6 +3157,16 @@ void InjectNTP(Browser* browser) {
       };
 
   [self.signinCoordinator start];
+}
+
+#pragma mark - SignedInAccountsViewControllerDelegate
+
+- (void)signedInAccountsViewControllerIsDismissed:
+    (SignedInAccountsViewController*)signedInAccountsViewController {
+  CHECK_EQ(_accountsViewController, signedInAccountsViewController);
+  [_accountsViewController teardownUI];
+  _accountsViewController.delegate = nil;
+  _accountsViewController = nil;
 }
 
 #pragma mark - WebStateListObserving
@@ -3457,8 +3494,7 @@ void InjectNTP(Browser* browser) {
         ->SetLoggingEnabled(false);
   }
 
-  self.incognitoInterface.browser->GetWebStateList()->RemoveObserver(
-      _webStateListForwardingObserver.get());
+  _incognitoWebStateObserver.reset();
   [self.browserViewWrangler willDestroyIncognitoBrowserState];
 }
 
@@ -3469,9 +3505,11 @@ void InjectNTP(Browser* browser) {
   // so set the scene URL loading service on it.
   UrlLoadingBrowserAgent::FromBrowser(self.incognitoInterface.browser)
       ->SetSceneService(self.sceneURLLoadingService);
-  self.incognitoInterface.browser->GetWebStateList()->AddObserver(
+  _incognitoWebStateObserver = std::make_unique<
+      base::ScopedObservation<WebStateList, WebStateListObserverBridge>>(
       _webStateListForwardingObserver.get());
-
+  _incognitoWebStateObserver->Observe(
+      self.incognitoInterface.browser->GetWebStateList());
   if (self.currentInterface.incognito) {
     [self activateBVCAndMakeCurrentBVCPrimary];
   }

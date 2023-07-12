@@ -115,6 +115,8 @@ public final class ProductionSupportedFlagList {
                     "Enables WebView to check for app recovery mitigations."),
             Flag.baseFeature(BlinkFeatures.USER_AGENT_CLIENT_HINT,
                     "Enables user-agent client hints in WebView."),
+            Flag.baseFeature(BlinkFeatures.PERMISSIONS_POLICY_UNLOAD,
+                    "Enables unload as a Permissions-Policy."),
             Flag.baseFeature("DefaultPassthroughCommandDecoder",
                     "Use the passthrough GLES2 command decoder."),
             Flag.baseFeature(GpuFeatures.WEBVIEW_VULKAN,
@@ -145,6 +147,8 @@ public final class ProductionSupportedFlagList {
                             + " app package names."),
             Flag.baseFeature(AwFeatures.WEBVIEW_BROTLI_SUPPORT,
                     "Enables brotli compression support in WebView."),
+            Flag.baseFeature(NetFeatures.ZSTD_CONTENT_ENCODING,
+                    "Enables zstd content-encoding support in the browser."),
             Flag.baseFeature(AwFeatures.WEBVIEW_EXTRA_HEADERS_SAME_ORIGIN_ONLY,
                     "Only allow extra headers added via loadUrl() to be sent to the same origin "
                             + "as the original request."),
@@ -351,6 +355,8 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(ContentSwitches.DISABLE_DOMAIN_BLOCKING_FOR3DAP_IS,
                     "Disable the per-domain blocking for 3D APIs after GPU reset. "
                             + "This switch is intended only for tests."),
+            Flag.baseFeature(MetricsFeatures.SUBPROCESS_METRICS_ASYNC,
+                    "Controls whether to merge subprocess metrics asynchronously."),
             Flag.baseFeature(MetricsFeatures.METRICS_SERVICE_ALLOW_EARLY_LOG_CLOSE,
                     "Controls whether a log is allowed to be closed when Chrome"
                             + " is backgrounded/foregrounded early."),
@@ -453,8 +459,14 @@ public final class ProductionSupportedFlagList {
                     "This flag won't block MIDI by default in WebView. In fact "
                             + "it makes sure the changes made to do so in "
                             + "Chromium won't affect WebView."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_PROPAGATE_NETWORK_SIGNALS,
+                    "This flag will allow webView to propagate networking signals to the networking stack. "
+                            + "Only onNetwork(Connected|Disconnected|SoonToDisconnect|MadeDefault) signals are propagated."),
             Flag.baseFeature(BlinkFeatures.REMOVE_NON_STANDARD_APPEARANCE_VALUE,
                     "Remove non-standard CSS appearance values."),
+            Flag.baseFeature(ContentFeatures.WEB_ENVIRONMENT_INTEGRITY,
+                    "Enables Web Environment Integrity APIs. "
+                            + "See https://chromestatus.com/feature/5796524191121408."),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

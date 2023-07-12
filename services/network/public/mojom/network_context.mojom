@@ -36,6 +36,7 @@ import "services/network/public/mojom/net_log.mojom";
 import "services/network/public/mojom/network_isolation_key.mojom";
 import "services/network/public/mojom/network_anonymization_key.mojom";
 import "services/network/public/mojom/oblivious_http_request.mojom";
+import "services/network/public/mojom/hash_value.mojom";
 import "services/network/public/mojom/isolation_info.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/parsed_headers.mojom";
@@ -46,6 +47,8 @@ import "services/network/public/mojom/proxy_resolving_socket.mojom";
 import "services/network/public/mojom/reporting_service.mojom";
 import "services/network/public/mojom/restricted_cookie_manager.mojom";
 import "services/network/public/mojom/shared_dictionary_access_observer.mojom";
+import "services/network/public/mojom/shared_dictionary_isolation_key.mojom";
+import "services/network/public/mojom/shared_dictionary_usage_info.mojom";
 import "services/network/public/mojom/site_for_cookies.mojom";
 import "services/network/public/mojom/socket_broker.mojom";
 import "services/network/public/mojom/ssl_config.mojom";
@@ -320,6 +323,9 @@ struct NetworkContextParams {
 
   // Whether Brotli content-encoding should be enabled for HTTPS responses.
   bool enable_brotli = true;
+
+  // Whether Zstd content-encoding should be enabled for HTTPS responses.
+  bool enable_zstd = false;
 
   // QUIC user agent.
   string quic_user_agent_id;
@@ -596,6 +602,17 @@ struct NetworkConditions {
   // Maximal aggregated upload throughput (bytes/sec). <=0 disables upload
   // throttling.
   double upload_throughput;
+};
+
+// Represents a shared dictionary.
+struct SharedDictionaryInfo {
+  string match;
+  url.mojom.Url dictionary_url;
+  mojo_base.mojom.Time response_time;
+  mojo_base.mojom.TimeDelta expiration;
+  mojo_base.mojom.Time last_used_time;
+  uint64 size;
+  SHA256HashValue hash;
 };
 
 // Represents a signed exchange report.
@@ -1097,6 +1114,11 @@ interface NetworkContext {
                              mojo_base.mojom.Time end_time,
                              ClearDataFilter? filter) => ();
 
+  // Clears dictionaries registered for `isolation_key` from the shared
+  // dictionary cache.
+  ClearSharedDictionaryCacheForIsolationKey(
+      SharedDictionaryIsolationKey isolation_key) => ();
+
   // Configures per-resource reporting endpoints set with the
   // Reporting-Endpoints header.
   // |reporting_source| is a token which identifies the document or worker with
@@ -1581,6 +1603,19 @@ interface NetworkContext {
   [EnableIf=enable_reporting]
   AddReportingApiObserver(pending_remote<ReportingApiObserver> observer);
 
+  // Get the usage information of shared dictionaries.
+  GetSharedDictionaryUsageInfo()
+      => (array<SharedDictionaryUsageInfo> usage_info);
+
+  // Get shared dictionaries information for `isolation_key`.
+  GetSharedDictionaryInfo(SharedDictionaryIsolationKey isolation_key)
+      => (array<SharedDictionaryInfo> dictionaries);
+
   // Sets maximum size of the shared dictionary cache.
   SetSharedDictionaryCacheMaxSize(uint64 cache_max_size);
+
+  // Called when visibility of ResourceSchedulerClient has changed.
+  // `client_token` identifies which client has changed its visibility.
+  ResourceSchedulerClientVisibilityChanged(
+      mojo_base.mojom.UnguessableToken client_token, bool visible);
 };

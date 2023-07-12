@@ -4,6 +4,7 @@
 
 #include "content/browser/interest_group/interest_group_auction_reporter.h"
 
+#include <limits>
 #include <map>
 #include <memory>
 #include <string>
@@ -1848,7 +1849,8 @@ TEST_F(
   // when collecting PA requests and sending to InterestGroupAuctionReporter,
   // and a compromised worklet can send PA requests to browser process when
   // feature param
-  // `blink::features::kPrivateAggregationApiFledgeExtensionsEnabled` is false.
+  // `blink::features::kPrivateAggregationApiProtectedAudienceExtensionsEnabled`
+  // is false.
   private_aggregation_event_map_["event_type"].push_back(
       kWinningBidderGenerateBidPrivateAggregationRequest.Clone());
   private_aggregation_event_map_["event_type2"].push_back(
@@ -1874,7 +1876,8 @@ TEST_F(
   // The non-reserved aggregation requests from the bidder's reportWin() method
   // should not be passed along neither. reportWin() could only return PA
   // requests if the worklet is compromised when feature param
-  // `blink::features::kPrivateAggregationApiFledgeExtensionsEnabled` is false.
+  // `blink::features::kPrivateAggregationApiProtectedAudienceExtensionsEnabled`
+  // is false.
   WaitForReportWinAndRunCallback(
       /*report_url=*/absl::nullopt, /*ad_beacon_map=*/{},
       MakeRequestPtrVector(
@@ -1939,6 +1942,45 @@ TEST(InterestGroupAuctionReporterStochasticRounding, IsNonDeterministic) {
         InterestGroupAuctionReporter::RoundStochasticallyToKBits(kInput, 8);
     EXPECT_THAT(result, testing::AnyOf(0.298828125, 0.30078125));
     seen.insert(result);
+  }
+}
+
+TEST(InterestGroupAuctionReporterStochasticRounding, RoundsUpAndDown) {
+  const double inputs[] = {129.3, 129.8};
+  for (auto input : inputs) {
+    SCOPED_TRACE(input);
+    base::flat_set<double> seen;
+    while (seen.size() < 2) {
+      double result =
+          InterestGroupAuctionReporter::RoundStochasticallyToKBits(input, 8);
+      ASSERT_THAT(result, testing::AnyOf(129.0, 130.0));
+      seen.insert(result);
+    }
+  }
+}
+
+TEST(InterestGroupAuctionReporterStochasticRounding, HandlesOverflow) {
+  double max_value =
+      std::ldexp(0.998046875, std::numeric_limits<int8_t>::max());
+  double expected_value =
+      std::ldexp(0.99609375, std::numeric_limits<int8_t>::max());
+  const double inputs[] = {
+      max_value,
+      -max_value,
+  };
+  for (auto input : inputs) {
+    SCOPED_TRACE(input);
+    base::flat_set<double> seen;
+    while (seen.size() < 2) {
+      double result =
+          InterestGroupAuctionReporter::RoundStochasticallyToKBits(input, 8);
+      ASSERT_THAT(
+          result,
+          testing::AnyOf(
+              std::copysign(expected_value, input),
+              std::copysign(std::numeric_limits<double>::infinity(), input)));
+      seen.insert(result);
+    }
   }
 }
 

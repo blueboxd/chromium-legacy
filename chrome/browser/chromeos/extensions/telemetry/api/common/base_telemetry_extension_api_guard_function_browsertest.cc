@@ -69,6 +69,14 @@ std::string GetServiceWorkerForError(const std::string& error) {
         );
         chrome.test.succeed();
       },
+      async function getDisplayInfo() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.telemetry.getDisplayInfo(),
+            'Error: Unauthorized access to chrome.os.telemetry.' +
+            'getDisplayInfo. %s'
+        );
+        chrome.test.succeed();
+      },
       async function getInternetConnectivityInfo() {
         await chrome.test.assertPromiseRejects(
             chrome.os.telemetry.getInternetConnectivityInfo(),
@@ -187,6 +195,15 @@ std::string GetServiceWorkerForError(const std::string& error) {
             ),
             'Error: Unauthorized access to ' +
             'chrome.os.diagnostics.runAcPowerRoutine. ' +
+            '%s'
+        );
+        chrome.test.succeed();
+      },
+      async function runAudioDriverRoutine() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.diagnostics.runAudioDriverRoutine(),
+            'Error: Unauthorized access to ' +
+            'chrome.os.diagnostics.runAudioDriverRoutine. ' +
             '%s'
         );
         chrome.test.succeed();
@@ -398,6 +415,19 @@ std::string GetServiceWorkerForError(const std::string& error) {
             ),
             'Error: Unauthorized access to ' +
             'chrome.os.diagnostics.runNvmeWearLevelRoutine. ' +
+            '%s'
+        );
+        chrome.test.succeed();
+      },
+      async function runPowerButtonRoutine() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.diagnostics.runPowerButtonRoutine(
+              {
+                timeout_seconds: 10
+              }
+            ),
+            'Error: Unauthorized access to ' +
+            'chrome.os.diagnostics.runPowerButtonRoutine. ' +
             '%s'
         );
         chrome.test.succeed();

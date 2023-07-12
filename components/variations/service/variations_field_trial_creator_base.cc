@@ -198,7 +198,7 @@ VariationsFieldTrialCreatorBase::VariationsFieldTrialCreatorBase(
       has_platform_override_(false),
       platform_override_(Study::PLATFORM_WINDOWS) {}
 
-VariationsFieldTrialCreatorBase::~VariationsFieldTrialCreatorBase() {}
+VariationsFieldTrialCreatorBase::~VariationsFieldTrialCreatorBase() = default;
 
 std::string VariationsFieldTrialCreatorBase::GetLatestCountry() const {
   const std::string override_country =
@@ -501,6 +501,8 @@ void VariationsFieldTrialCreatorBase::ApplyFieldTrialTestingConfig(
 #endif  // BUILDFLAG(FIELDTRIAL_TESTING_ENABLED)
 
 bool VariationsFieldTrialCreatorBase::HasSeedExpired(bool is_safe_seed) {
+  // TODO(crbug/1462588): Consider comparing the server-provided fetch time with
+  // the network time.
   const base::Time fetch_time = is_safe_seed
                                     ? GetSeedStore()->GetSafeSeedFetchTime()
                                     : GetSeedStore()->GetLastFetchTime();

@@ -14,7 +14,9 @@
 #include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace ash::cloud_upload {
 namespace {
@@ -27,6 +29,15 @@ using file_system_provider::ProviderId;
 using file_system_provider::Service;
 
 }  // namespace
+
+std::string GetGenericErrorMessage() {
+  return l10n_util::GetStringUTF8(IDS_OFFICE_UPLOAD_ERROR_GENERIC);
+}
+
+std::string GetReauthenticationRequiredMessage() {
+  return l10n_util::GetStringUTF8(
+      IDS_OFFICE_UPLOAD_ERROR_REAUTHENTICATION_REQUIRED);
+}
 
 storage::FileSystemURL FilePathToFileSystemURL(
     Profile* profile,
@@ -136,7 +147,9 @@ void OnODFSMetadataActions(GetODFSMetadataCallback callback,
                            const Actions& actions,
                            base::File::Error result) {
   if (result != base::File::Error::FILE_OK) {
-    LOG(ERROR) << "Failed to get actions: " << result;
+    LOG(ERROR) << "Unexpectedly failed to get ODFS metadata actions as these "
+                  "should always be returned: "
+               << result;
     std::move(callback).Run(base::unexpected(result));
     return;
   }

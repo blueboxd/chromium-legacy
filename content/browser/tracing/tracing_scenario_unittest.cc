@@ -38,6 +38,10 @@ class TestTracingScenarioDelegate : public TracingScenario::Delegate {
   MOCK_METHOD(void, OnScenarioActive, (TracingScenario * scenario), (override));
   MOCK_METHOD(void, OnScenarioIdle, (TracingScenario * scenario), (override));
   MOCK_METHOD(void,
+              OnScenarioRecording,
+              (TracingScenario * scenario),
+              (override));
+  MOCK_METHOD(void,
               SaveTrace,
               (TracingScenario * scenario, std::string trace_data),
               (override));
@@ -151,7 +155,7 @@ class TracingScenarioForTesting : public TracingScenario {
  public:
   TracingScenarioForTesting(const perfetto::protos::gen::ScenarioConfig& config,
                             TestTracingScenarioDelegate* delegate)
-      : TracingScenario(config, delegate) {}
+      : TracingScenario(config, delegate, nullptr) {}
 
  protected:
   std::unique_ptr<perfetto::TracingSession> CreateTracingSession() override {
@@ -175,9 +179,16 @@ perfetto::protos::gen::ScenarioConfig ParseScenarioConfigFromText(
 }
 
 class TracingScenarioTest : public testing::Test {
+ public:
+  TracingScenarioTest()
+      : background_tracing_manager_(
+            content::BackgroundTracingManager::CreateInstance()) {}
+
  protected:
   BrowserTaskEnvironment task_environment;
   TestTracingScenarioDelegate delegate;
+  std::unique_ptr<content::BackgroundTracingManager>
+      background_tracing_manager_;
 };
 
 }  // namespace

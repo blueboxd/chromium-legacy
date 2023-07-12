@@ -298,12 +298,8 @@ crbug.com/950932 [ android-webview-instrumentation android-nexus-5x ] * [ RetryO
 crbug.com/984734 [ android android-webview-instrumentation android-nexus-5x ] Pixel_Video_Context_Loss_VP9 [ Failure ]
 
 # Failing on Linux and Windows, both Intel HD 630 and NVIDIA Quadro P400
-crbug.com/974380 [ amd-0x7340 angle-vulkan display-server-x linux no-clang-coverage release renderer-skia-vulkan ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Failure ]
 crbug.com/974380 [ angle-vulkan display-server-x linux nvidia-0x2184 renderer-skia-vulkan ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Failure ]
-crbug.com/974380 [ angle-vulkan display-server-x intel-0x9bc5 linux no-clang-coverage release renderer-skia-vulkan ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Failure ]
-crbug.com/974380 [ amd-0x7340 angle-vulkan display-server-x linux no-clang-coverage release renderer-skia-vulkan ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Failure ]
 crbug.com/974380 [ angle-vulkan display-server-x linux nvidia-0x2184 renderer-skia-vulkan ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Failure ]
-crbug.com/974380 [ angle-vulkan display-server-x intel-0x9bc5 linux no-clang-coverage release renderer-skia-vulkan ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Failure ]
 
 # Failing on Lacros x64 Release Intel
 crbug.com/1458976 [ linux angle-opengles display-server-wayland intel passthrough release renderer-skia-gl no-clang-coverage ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Failure ]
@@ -317,7 +313,7 @@ crbug.com/1230619 [ android-chromium android-pie android-pixel-2 angle-disabled 
 crbug.com/1230619 [ android-chromium android-pixel-6 android-t angle-disabled arm no-clang-coverage no-passthrough renderer-skia-vulkan target-cpu-64 ] Pixel_WebGLFloat [ Failure ]
 crbug.com/1230619 [ android-chromium android-s angle-disabled no-clang-coverage no-passthrough renderer-skia-gl target-cpu-32 ] Pixel_WebGLFloat [ Failure ]
 crbug.com/1230619 [ android-nexus-5x android-nougat android-webview-instrumentation angle-opengles no-clang-coverage no-passthrough qualcomm renderer-skia-gl target-cpu-64 ] Pixel_WebGLFloat [ Failure ]
-crbug.com/1230619 [ android-pixel-4 android-r no-clang-coverage no-passthrough qualcomm renderer-skia-gl target-cpu-32 ] Pixel_WebGLFloat [ Failure ]
+crbug.com/1230619 [ android-chromium android-pixel-4 android-r angle-disabled no-clang-coverage no-passthrough qualcomm renderer-skia-gl target-cpu-32 ] Pixel_WebGLFloat [ Failure ]
 crbug.com/1230619 [ chromeos chromeos-board-kevin ] Pixel_WebGLFloat [ Failure ]
 
 
@@ -325,12 +321,9 @@ crbug.com/1230619 [ chromeos chromeos-board-kevin ] Pixel_WebGLFloat [ Failure ]
 crbug.com/1420067 [ fuchsia fuchsia-board-astro ] Pixel_Video* [ Failure ]
 crbug.com/1420067 [ fuchsia fuchsia-board-sherlock ] Pixel_Video* [ Failure ]
 
-# WebGPU pixel tests flakily hang in the metal shader compiler on Mac.
-crbug.com/1268120 [ mac asan ] Pixel_WebGPUToDataURL [ Failure ]
-crbug.com/1268120 [ mac asan ] Pixel_WebGPUDisplayP3 [ Failure ]
 
 # Pixel_WebGPUDisplayP3 socket timeout on Mac FYI Retina Release (NVIDIA)
-crbug.com/1392819 [ mac nvidia no-asan ] Pixel_WebGPUDisplayP3 [ Failure ]
+crbug.com/1392819 [ mojave no-asan nvidia ] Pixel_WebGPUDisplayP3 [ Failure ]
 
 # Failures on Sherlock
 # These two tests causes a crash on Swarming. Skipping so that we have a signal for other tests.
@@ -376,11 +369,9 @@ crbug.com/1401962 [ android android-sm-a135m ] Pixel_BackgroundImage [ RetryOnFa
 crbug.com/1376927 [ win10 target-cpu-32 nvidia-0x2184 ] Pixel_MediaFoundationClearDirectComposition [ Failure ]
 
 # Pixel_MediaRecorderFromVideoElement fails on several FYI bots
-crbug.com/1382332 [ angle-opengles arm chromeos chromeos-board-jacuzzi display-server-x lacros-chrome passthrough target-cpu-32 ] Pixel_MediaRecorderFromVideoElement [ Failure ]
 crbug.com/1382332 [ chromeos target-cpu-64 ] Pixel_MediaRecorderFromVideoElement [ Failure ]
 crbug.com/1382332 [ angle-disabled chromeos chromeos-board-amd64-generic cros-chrome no-passthrough target-cpu-64 ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
 crbug.com/1382332 [ angle-opengles arm chromeos chromeos-board-jacuzzi display-server-x lacros-chrome passthrough target-cpu-32 ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
-crbug.com/1382332 [ android-chromium android-s android-sm-a135m angle-disabled arm no-passthrough renderer-skia-gl target-cpu-32 ] Pixel_MediaRecorderFromVideoElement [ Failure ]
 crbug.com/1382332 [ android-chromium android-s android-sm-a135m angle-disabled arm no-clang-coverage no-passthrough renderer-skia-gl target-cpu-32 ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
 crbug.com/1382332 [ android-nexus-5x android-nougat angle-disabled no-clang-coverage no-passthrough qualcomm renderer-skia-gl target-cpu-64 ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
 crbug.com/1382332 [ android-pixel-4 android-r no-clang-coverage qualcomm renderer-skia-gl target-cpu-32 ] Pixel_MediaRecorderFromVideoElement [ Failure ]
@@ -408,7 +399,7 @@ crbug.com/1392806 [ chromeos lacros-chrome chromeos-board-jacuzzi ] Pixel_Video_
 crbug.com/1444804 [ android-pixel-4 android-r angle-disabled no-passthrough ] Pixel_Video_VP9 [ Failure ]
 
 # Flake on Linux NVIDIA
-crbug.com/1453989 [ linux nvidia ] Pixel_VideoStreamFrom2DAlphaCanvas_DisableOOPRaster [ RetryOnFailure ]
+crbug.com/1453989 [ linux nvidia release ] Pixel_VideoStreamFrom2DAlphaCanvas_DisableOOPRaster [ RetryOnFailure ]
 
 crbug.com/1456360 [ chromeos chromeos-board-amd64-generic ] Pixel_WebGLCopyImage [ Skip ]
 crbug.com/1456360 [ chromeos chromeos-board-amd64-generic ] Pixel_WebGLSadCanvas [ Skip ]

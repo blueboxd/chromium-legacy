@@ -15,6 +15,7 @@
 
 #include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "base/check.h"
+#include "base/check_is_test.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
@@ -33,7 +34,9 @@
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_system_provider/service.h"
+#include "chrome/browser/ash/policy/dlp/dlp_extract_io_task_observer.h"
 #include "chrome/browser/ash/policy/dlp/dlp_files_event_storage.h"
 #include "chrome/browser/ash/policy/dlp/files_policy_notification_manager.h"
 #include "chrome/browser/ash/policy/dlp/files_policy_notification_manager_factory.h"
@@ -356,6 +359,24 @@ void ShowDlpBlockedFiles(
                             action);
 }
 
+file_manager::io_task::IOTaskController* GetIOTaskController() {
+  auto* profile = ProfileManager::GetPrimaryUserProfile();
+  if (!profile) {
+    // May not be available in some tests.
+    CHECK_IS_TEST();
+    return nullptr;
+  }
+
+  file_manager::VolumeManager* const volume_manager =
+      file_manager::VolumeManager::Get(profile);
+  if (!volume_manager) {
+    LOG(ERROR) << "FilesPolicyNotificationManager failed to find "
+                  "file_manager::VolumeManager";
+    return nullptr;
+  }
+  return volume_manager->io_task_controller();
+}
+
 }  // namespace
 
 // static
@@ -371,9 +392,11 @@ DlpFilesControllerAsh* DlpFilesControllerAsh::GetForPrimaryProfile() {
 
 DlpFilesControllerAsh::DlpFileMetadata::DlpFileMetadata(
     const std::string& source_url,
+    const std::string& referrer_url,
     bool is_dlp_restricted,
     bool is_restricted_for_destination)
     : source_url(source_url),
+      referrer_url(referrer_url),
       is_dlp_restricted(is_dlp_restricted),
       is_restricted_for_destination(is_restricted_for_destination) {}
 
@@ -389,17 +412,20 @@ DlpFilesControllerAsh::DlpFileRestrictionDetails::operator=(
 DlpFilesControllerAsh::DlpFileRestrictionDetails::~DlpFileRestrictionDetails() =
     default;
 
-DlpFilesControllerAsh::FileDaemonInfo::FileDaemonInfo(
-    ino64_t inode,
-    const base::FilePath& path,
-    const std::string& source_url)
-    : inode(inode), path(path), source_url(source_url) {}
-
 DlpFilesControllerAsh::DlpFilesControllerAsh(
     const DlpRulesManager& rules_manager)
     : DlpFilesController(rules_manager),
       event_storage_(std::make_unique<DlpFilesEventStorage>(kCooldownTimeout,
-                                                            kEntriesLimit)) {}
+                                                            kEntriesLimit)) {
+  auto* io_task_controller = GetIOTaskController();
+  if (!io_task_controller) {
+    LOG(ERROR) << "DlpFilesControllerAsh failed to find "
+                  "file_manager::io_task::IOTaskController";
+    return;
+  }
+  extract_io_task_observer_ =
+      std::make_unique<DlpExtractIOTaskObserver>(*io_task_controller);
+}
 
 DlpFilesControllerAsh::~DlpFilesControllerAsh() = default;
 
@@ -537,7 +563,9 @@ void DlpFilesControllerAsh::CheckIfDownloadAllowed(
     return;
   }
 
-  FileDaemonInfo file_info({}, file_path, download_src.url_or_path().value());
+  // TODO(b/290200170): Check whether referrer_url could be set too.
+  FileDaemonInfo file_info({}, file_path, download_src.url_or_path().value(),
+                           /*referrer_url=*/"");
   IsFilesTransferRestricted(
       absl::nullopt, {std::move(file_info)},
       DlpFileDestination(file_path.value()), dlp::FileAction::kDownload,
@@ -1089,19 +1117,19 @@ void DlpFilesControllerAsh::ReturnDlpMetadata(
 
     metadata_map.emplace(
         metadata.inode(),
-        DlpFileMetadata(metadata.source_url(), is_dlp_restricted,
-                        is_restricted_for_destination));
+        DlpFileMetadata(metadata.source_url(), metadata.referrer_url(),
+                        is_dlp_restricted, is_restricted_for_destination));
   }
 
   std::vector<DlpFileMetadata> result;
   for (const auto& inode : inodes) {
     if (!inode.has_value()) {
-      result.emplace_back("", false, false);
+      result.emplace_back("", "", false, false);
       continue;
     }
     auto metadata_itr = metadata_map.find(inode.value());
     if (metadata_itr == metadata_map.end()) {
-      result.emplace_back("", false, false);
+      result.emplace_back("", "", false, false);
     } else {
       result.emplace_back(metadata_itr->second);
     }

@@ -1272,9 +1272,14 @@ base::Value::Dict SerializeSafeBrowsingClientProperties(
     case ClientSafeBrowsingReportRequest::REAL_TIME:
       url_api_type = "REAL_TIME";
       break;
-    default:
+    case ClientSafeBrowsingReportRequest::PVER5_NATIVE_REAL_TIME:
+      url_api_type = "PVER5_NATIVE_REAL_TIME";
+      break;
+    case ClientSafeBrowsingReportRequest::PVER3_NATIVE:
+    case ClientSafeBrowsingReportRequest::FLYWHEEL:
       NOTREACHED();
       url_api_type = "";
+      break;
   }
   client_properties_dict.Set("url_api_type", url_api_type);
   return client_properties_dict;
@@ -1518,6 +1523,9 @@ std::string SerializeCSBRR(const ClientSafeBrowsingReportRequest& report) {
         break;
       case ClientSafeBrowsingReportRequest::HASH_PREFIX_REAL_TIME_EXPERIMENT:
         report_type = "HASH_PREFIX_REAL_TIME_EXPERIMENT";
+        break;
+      case ClientSafeBrowsingReportRequest::PHISHY_SITE_INTERACTIONS:
+        report_type = "PHISHY_SITE_INTERACTIONS";
         break;
     }
     report_request.Set("type", report_type);

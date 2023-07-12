@@ -17,8 +17,8 @@
 #import "components/policy/policy_constants.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/base/features.h"
-#import "components/sync/base/sync_prefs.h"
 #import "components/sync/base/user_selectable_type.h"
+#import "components/sync/service/sync_prefs.h"
 #import "ios/chrome/browser/credential_provider_promo/features.h"
 #import "ios/chrome/browser/metrics/metrics_app_interface.h"
 #import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
@@ -454,23 +454,6 @@ void CopyPasswordDetailWithID(int detail_id) {
         password_manager::features::kPasswordsGrouping);
   }
 
-  if ([self isRunningTest:@selector
-            (testAccountStorageSwitchHiddenIfSignedInAndFlagDisabled)]) {
-    config.features_disabled.push_back(
-        password_manager::features::kEnablePasswordsAccountStorage);
-  }
-  if ([self isRunningTest:@selector
-            (testAccountStorageSwitchShownIfSignedInAndFlagEnabled)] ||
-      [self
-          isRunningTest:@selector
-          (testAccountStorageSwitchDisabledIfBlockedByPolicyAndFlagEnabled)] ||
-      [self isRunningTest:@selector(testMovePasswordToAccount)] ||
-      [self isRunningTest:@selector
-            (testMovePasswordToAccountWithOnlyIncognitoTabOpen)]) {
-    config.features_enabled.push_back(
-        password_manager::features::kEnablePasswordsAccountStorage);
-  }
-
   if ([self notesEnabled]) {
     config.features_enabled.push_back(syncer::kPasswordNotesWithBackup);
   } else {
@@ -488,6 +471,19 @@ void CopyPasswordDetailWithID(int detail_id) {
   // TODO(crbug.com/1448574): Re-enable CPE promo and update
   // testCopyPasswordToast and testCopyPasswordMenuItem to check for the promo.
   config.features_disabled.push_back(kCredentialProviderExtensionPromo);
+
+  if ([self isRunningTest:@selector
+            (testAccountStorageSwitchDisabledByPolicy_SyncToSigninDisabled)] ||
+      [self isRunningTest:@selector
+            (testAccountStorageSwitchShownIfSignedIn_SyncToSigninDisabled)]) {
+    config.features_disabled.push_back(
+        syncer::kReplaceSyncPromosWithSignInPromos);
+  }
+  if ([self isRunningTest:@selector
+            (testAccountStorageSwitchHiddenIfSignedIn_SyncToSigninEnabled)]) {
+    config.features_enabled.push_back(
+        syncer::kReplaceSyncPromosWithSignInPromos);
+  }
 
   return config;
 }
@@ -1872,24 +1868,7 @@ void CopyPasswordDetailWithID(int detail_id) {
                                    IDS_IOS_EXPORT_PASSWORDS)]
       assertWithMatcher:exportButtonStatusMatcher];
 
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    // Tap outside the activity view to dismiss it, because it is not
-    // accompanied by a "Cancel" button on iPad.
-    [[EarlGrey selectElementWithMatcher:
-                   chrome_test_util::ButtonWithAccessibilityLabelId(
-                       IDS_IOS_EXPORT_PASSWORDS)] performAction:grey_tap()];
-  } else {
-    // Tap on the "Cancel" or "X" button accompanying the activity view to
-    // dismiss it.
-    NSString* dismissLabel = @"Close";
-    [[EarlGrey
-        selectElementWithMatcher:grey_allOf(
-                                     ButtonWithAccessibilityLabel(dismissLabel),
-                                     grey_not(grey_accessibilityTrait(
-                                         UIAccessibilityTraitNotEnabled)),
-                                     grey_interactable(), nullptr)]
-        performAction:grey_tap()];
-  }
+  [ChromeEarlGrey closeActivitySheet];
 
   // Wait until the activity view is dismissed.
   [ChromeEarlGreyUI waitForAppToIdle];
@@ -3128,20 +3107,7 @@ void CopyPasswordDetailWithID(int detail_id) {
       performAction:grey_tap()];
 }
 
-- (void)testAccountStorageSwitchHiddenIfSignedInAndFlagDisabled {
-  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
-
-  OpenPasswordManager();
-  OpenSettingsSubmenu();
-
-  [[EarlGrey selectElementWithMatcher:
-                 grey_accessibilityID(
-                     kPasswordSettingsAccountStorageSwitchTableViewId)]
-      assertWithMatcher:grey_nil()];
-}
-
-- (void)testAccountStorageSwitchShownIfSignedInAndFlagEnabled {
+- (void)testAccountStorageSwitchShownIfSignedIn_SyncToSigninDisabled {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
 
@@ -3172,7 +3138,20 @@ void CopyPasswordDetailWithID(int detail_id) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-- (void)testAccountStorageSwitchDisabledIfBlockedByPolicyAndFlagEnabled {
+- (void)testAccountStorageSwitchHiddenIfSignedIn_SyncToSigninEnabled {
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
+
+  OpenPasswordManager();
+  OpenSettingsSubmenu();
+
+  [[EarlGrey selectElementWithMatcher:
+                 grey_accessibilityID(
+                     kPasswordSettingsAccountStorageSwitchTableViewId)]
+      assertWithMatcher:grey_nil()];
+}
+
+- (void)testAccountStorageSwitchDisabledByPolicy_SyncToSigninDisabled {
   policy_test_utils::SetPolicy(std::string("[\"passwords\"]"),
                                policy::key::kSyncTypesListDisabled);
 

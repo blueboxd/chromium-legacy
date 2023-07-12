@@ -255,6 +255,7 @@ Eles também não podem usar cookies para ver sua atividade de navegação em di
 <translation id="2595587704210555261">{COUNT,plural, =1{As guias abertas que não forem usadas por um dia ou mais serão movidas para as guias inativas. Assim, você pode se concentrar nas que mais usa. É possível mudar isso a qualquer momento nas configurações.}one{As guias abertas que não forem usadas por {COUNT} dia ou mais serão movidas para as guias inativas. Assim, você pode se concentrar nas que mais usa. É possível mudar isso a qualquer momento nas configurações.}other{As guias abertas que não forem usadas por {COUNT} dias ou mais serão movidas para as guias inativas. Assim, você pode se concentrar nas que mais usa. É possível mudar isso a qualquer momento nas configurações.}}</translation>
 <translation id="2600682495497606169">Apagar cookies do site</translation>
 <translation id="2609008503159898744">Fechar todas as guias?</translation>
+<translation id="2617210333344098964">Transferir o endereço para a conta</translation>
 <translation id="2625189173221582860">Senha copiada</translation>
 <translation id="2626236249646841566">Verifique sua conexão e tente fazer login novamente.</translation>
 <translation id="2637313651144986786">Pesquisar guias…</translation>
@@ -404,7 +405,6 @@ Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de p
 <translation id="3464194322481586217">Não foi possível monitorar o preço.</translation>
 <translation id="3469166899695866866">Interromper o download?</translation>
 <translation id="3470502288861289375">Copiando...</translation>
-<translation id="3471148582064653480">Sincronize suas senhas, seu histórico e muito mais.</translation>
 <translation id="3474048842645761983">{COUNT,plural, =1{de {COUNT} site ou app}one{de {COUNT} site ou app}other{de {COUNT} sites ou apps}}</translation>
 <translation id="3474624961160222204">Continuar como <ph name="NAME" /></translation>
 <translation id="3476450923187944815">Acesse as suas senhas em outros apps.</translation>
@@ -465,6 +465,7 @@ Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de p
 <translation id="3851938967634752633">As senhas de <ph name="WEBSITE" />, <ph name="SECOND_WEBSITE" /> e mais <ph name="NUMBER_OF_ACCOUNTS" /> outras contas vão ser excluídas. Suas contas não serão excluídas.</translation>
 <translation id="3858860766373142691">Nome</translation>
 <translation id="3861486700625780712">Parar de seguir</translation>
+<translation id="3861908220442487587">O endereço está salvo apenas neste dispositivo. Para usar em outros dispositivos, transfira-o para sua Conta do Google <ph name="USER_EMAIL" />.</translation>
 <translation id="3863769054730344136">Enviar para seus dispositivos</translation>
 <translation id="387280738075653372">Faça o download do Chrome aqui.</translation>
 <translation id="3875783148670536197">Me ajude a fazer isso</translation>
@@ -649,6 +650,7 @@ Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de p
 <translation id="5083464117946352670">Não é possível saber o tamanho do arquivo.</translation>
 <translation id="5090832849094901128">Remover a senha não excluirá a conta em <ph name="WEBSITE" />.</translation>
 <translation id="5094827893301452931">Tweet concluído.</translation>
+<translation id="5109892411553231226">Gerenciar formas de pagamento</translation>
 <translation id="5118713593561876160">Interesses</translation>
 <translation id="5118764316110575523">Desativado</translation>
 <translation id="5119391094379141756">Selecione o Chrome</translation>
@@ -999,6 +1001,7 @@ Na navegação anônima, eles não podem usar cookies para ver suas atividades d
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7062545763355031412">Aceitar e alternar entre contas</translation>
 <translation id="7080806333218412752">Envia URLs para a verificação pelo Navegação segura. Também envia uma pequena amostra de páginas, downloads, atividades de extensões e informações do sistema para ajudar a descobrir novas ameaças. Vincula temporariamente esses dados à sua Conta do Google quando ela está conectada para proteger você nos apps do Google.</translation>
+<translation id="7082853213442715471">Quando ativado, bloqueia algumas tecnologias da Web, o que pode causar lentidão no carregamento de sites ou impedir o funcionamento normal.</translation>
 <translation id="7095110968493193530">No Gerenciador de senhas do Google da conta <ph name="EMAIL" /></translation>
 <translation id="7099761977003084116">Guias recentes</translation>
 <translation id="7102005569666697658">Fazendo o download… <ph name="FILE_SIZE" /></translation>
@@ -1058,6 +1061,7 @@ Na navegação anônima, eles não podem usar cookies para ver suas atividades d
 <translation id="7531345132340165516">Site atual</translation>
 <translation id="7537586195939242955">Impossível instalar senha no livro de senhas no momento.</translation>
 <translation id="754655535278952384">Verificada <ph name="TIME" /></translation>
+<translation id="7552154146060018538">Última guia usada no dispositivo <ph name="SOURCE_DEVICE" /></translation>
 <translation id="7553234618121028547">Para desativar, abra <ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" /> e acesse "Opções de senha".</translation>
 <translation id="7554645225856321710">Fechar todas</translation>
 <translation id="7554791636758816595">Nova guia</translation>
@@ -1080,6 +1084,7 @@ Na navegação anônima, eles não podem usar cookies para ver suas atividades d
 <translation id="7687508192620387263">Arquivo do Google Agenda disponível</translation>
 <translation id="7701040980221191251">Nenhuma</translation>
 <translation id="7711440461521638739">Você não está reutilizando senhas</translation>
+<translation id="7719038820139380048">Faça login para acessar conteúdo com base nos seus interesses.</translation>
 <translation id="7720410380936703141">TENTAR NOVAMENTE</translation>
 <translation id="7726702057919861819">Menu → Histórico → Remover dados de navegação</translation>
 <translation id="7733646263819020771"><ph name="BOOKMRK_NAME" />. Somente neste dispositivo.</translation>
@@ -1189,7 +1194,6 @@ Eles também podem usar cookies para ver sua atividade de navegação em diferen
 <translation id="8319076807703933069">Nova pesquisa</translation>
 <translation id="8323906514956095947">Toque no botão e mantenha-o pressionado para ver mais opções da guia</translation>
 <translation id="8328777765163860529">Fechar todos</translation>
-<translation id="8331621926962374866">O modo de bloqueio total no Chrome bloqueia algumas tecnologias da Web, o que pode causar lentidão no carregamento de sites ou impedir o funcionamento normal.</translation>
 <translation id="8343993175958086504">Faça backup e use seus dados em qualquer dispositivo.</translation>
 <translation id="834783239627985533">Sites mais visitados</translation>
 <translation id="8378714024927312812">Gerenciado pela sua organização</translation>
@@ -1203,6 +1207,7 @@ Eles também podem usar cookies para ver sua atividade de navegação em diferen
 <translation id="8428045167754449968">Cidade</translation>
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="8428634594422941299">Entendi</translation>
+<translation id="8446201778524791138">Editar ações</translation>
 <translation id="8446884382197647889">Saiba mais</translation>
 <translation id="8458397775385147834">1 item excluído</translation>
 <translation id="8459333855531264009">Não seguro</translation>
@@ -1295,7 +1300,6 @@ Seus dados foram criptografados com a senha longa em <ph name="TIME" />. Digite-
 <translation id="8976414606286374109">Os cartões são salvos na sua Conta do Google.</translation>
 <translation id="8981454092730389528">Controles de atividades do Google</translation>
 <translation id="8985320356172329008">Conectado(a) ao Google como</translation>
-<translation id="8986567980592931173">Faça login com sua Conta do Google para sincronizar senhas, histórico e muito mais.</translation>
 <translation id="8998289560386111590">Indisponível no seu dispositivo</translation>
 <translation id="8999545564078155498">Desbloquear com o Face ID</translation>
 <translation id="9000089900434778519">Seu mecanismo de pesquisa é o <ph name="DSE_NAME" />. Veja as instruções para excluir o histórico de pesquisa, se aplicável.</translation>

@@ -20,6 +20,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "dbus/bus.h"
 #include "dbus/dbus_statistics.h"
+#include "dbus/error.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/scoped_dbus_error.h"
@@ -130,7 +131,7 @@ ObjectProxy::~ObjectProxy() {
 std::unique_ptr<Response> ObjectProxy::CallMethodAndBlockWithErrorDetails(
     MethodCall* method_call,
     int timeout_ms,
-    ScopedDBusError* error) {
+    Error* error) {
   bus_->AssertOnDBusThread();
 
   if (!bus_->Connect() || !method_call->SetDestination(service_name_) ||
@@ -138,29 +139,25 @@ std::unique_ptr<Response> ObjectProxy::CallMethodAndBlockWithErrorDetails(
     return nullptr;
   }
 
-  DBusMessage* request_message = method_call->raw_message();
-
   // Send the message synchronously.
-  DBusMessage* response_message =
-      bus_->SendWithReplyAndBlock(request_message, timeout_ms, error->get());
-
+  auto result =
+      bus_->SendWithReplyAndBlock(method_call->raw_message(), timeout_ms);
   statistics::AddBlockingSentMethodCall(
       service_name_, method_call->GetInterface(), method_call->GetMember());
-
-  if (!response_message) {
+  if (!result.has_value()) {
     LogMethodCallFailure(method_call->GetInterface(), method_call->GetMember(),
-                         error->is_set() ? error->name() : "unknown error type",
-                         error->is_set() ? error->message() : "");
+                         result.error().name(), result.error().message());
+    *error = std::move(result.error());
     return nullptr;
   }
 
-  return Response::FromRawMessage(response_message);
+  return std::move(result.value());
 }
 
 std::unique_ptr<Response> ObjectProxy::CallMethodAndBlock(
     MethodCall* method_call,
     int timeout_ms) {
-  ScopedDBusError error;
+  Error error;
   return CallMethodAndBlockWithErrorDetails(method_call, timeout_ms, &error);
 }
 
@@ -301,9 +298,9 @@ void ObjectProxy::Detach() {
     bus_->RemoveFilterFunction(&ObjectProxy::HandleMessageThunk, this);
 
   for (const auto& match_rule : match_rules_) {
-    ScopedDBusError error;
-    bus_->RemoveMatch(match_rule, error.get());
-    if (error.is_set()) {
+    Error error;
+    bus_->RemoveMatch(match_rule, &error);
+    if (error.IsValid()) {
       // There is nothing we can do to recover, so just print the error.
       LOG(ERROR) << "Failed to remove match rule: " << match_rule;
     }
@@ -625,9 +622,9 @@ bool ObjectProxy::AddMatchRuleWithCallback(
   bus_->AssertOnDBusThread();
 
   if (match_rules_.find(match_rule) == match_rules_.end()) {
-    ScopedDBusError error;
-    bus_->AddMatch(match_rule, error.get());
-    if (error.is_set()) {
+    dbus::Error error;
+    bus_->AddMatch(match_rule, &error);
+    if (error.IsValid()) {
       LOG(ERROR) << "Failed to add match rule \"" << match_rule << "\". Got "
                  << error.name() << ": " << error.message();
       return false;
@@ -638,11 +635,11 @@ bool ObjectProxy::AddMatchRuleWithCallback(
       method_table_[absolute_signal_name].push_back(signal_callback);
       return true;
     }
-  } else {
-    // We already have the match rule.
-    method_table_[absolute_signal_name].push_back(signal_callback);
-    return true;
   }
+
+  // We already have the match rule.
+  method_table_[absolute_signal_name].push_back(signal_callback);
+  return true;
 }
 
 bool ObjectProxy::AddMatchRuleWithoutCallback(
@@ -655,9 +652,9 @@ bool ObjectProxy::AddMatchRuleWithoutCallback(
   if (match_rules_.find(match_rule) != match_rules_.end())
     return true;
 
-  ScopedDBusError error;
-  bus_->AddMatch(match_rule, error.get());
-  if (error.is_set()) {
+  Error error;
+  bus_->AddMatch(match_rule, &error);
+  if (error.IsValid()) {
     LOG(ERROR) << "Failed to add match rule \"" << match_rule << "\". Got "
                << error.name() << ": " << error.message();
     return false;

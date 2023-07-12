@@ -446,7 +446,6 @@ Token keadaan sulit meningkatkan privasi pada web dan tidak boleh digunakan untu
 <translation id="3421726884497337397">Pilih masa untuk menyekat kuki pihak ketiga</translation>
 <translation id="3428747202529429621">Memastikan anda selamat pada Chrome dan mungkin digunakan untuk meningkatkan keselamatan anda dalam apl Google yang lain apabila anda log masuk</translation>
 <translation id="3429160811076349561">Ciri percubaan dimatikan</translation>
-<translation id="3432973700170747422">Padamkan 15 minit terakhir</translation>
 <translation id="3435465986463792564">Ada banyak tetingkap? Anda boleh mengurus tetingkap tersebut dari sini</translation>
 <translation id="3435738964857648380">Keselamatan</translation>
 <translation id="3443221991560634068">Muat semula halaman semasa</translation>
@@ -480,7 +479,6 @@ Token keadaan sulit meningkatkan privasi pada web dan tidak boleh digunakan untu
 <translation id="3587596251841506391">Tingkatkan keselamatan pada web</translation>
 <translation id="3597179440835065298">Dapatkan cadangan yang lebih baik</translation>
 <translation id="3602290021589620013">Pratonton</translation>
-<translation id="360901359071773787">Padamkan 15 minit terakhir?</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3622349720008044802">Urus tetingkap</translation>
 <translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{+ 1 laman}other{+ # laman}}</translation>
@@ -752,6 +750,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5010886807652684893">Paparan visual</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> ingin menyambung</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5017529052065664584">15 minit yang lalu</translation>
 <translation id="5032430150487044192">Tidak dapat membuat Kod QR</translation>
 <translation id="5039804452771397117">Benarkan</translation>
 <translation id="5040262127954254034">Privasi</translation>
@@ -770,7 +769,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5118713593561876160">Minat</translation>
 <translation id="5122378528687922675">Jika anda memerlukan bantuan, minta daripada ibu/bapa anda (<ph name="PARENT_NAME_1" /> atau <ph name="PARENT_NAME_2" />)</translation>
 <translation id="5123685120097942451">Tab Inkognito</translation>
-<translation id="5126510351761255129">Sahkan kad anda</translation>
 <translation id="5132942445612118989">Segerakkan kata laluan, sejarah &amp; pelbagai lagi pada semua peranti</translation>
 <translation id="5139940364318403933">Ketahui cara menggunakan Google Drive</translation>
 <translation id="5142281402488957685">Untuk mendapatkan cerita baharu, tarik ke bawah untuk muat semula</translation>
@@ -930,7 +928,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="6011308810877101166">Tingkatkan cadangan carian</translation>
 <translation id="6026538407078977628">Kembangkan kepada skrin penuh</translation>
 <translation id="6030719887161080597">Urus maklumat yang digunakan oleh laman untuk mengukur prestasi iklan</translation>
-<translation id="6034146297924778597">Sejarah dari 15 minit yang terakhir akan dipadamkan:</translation>
 <translation id="6039379616847168523">Lompat ke tab seterusnya</translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="604124094241169006">Automatik</translation>
@@ -1372,6 +1369,7 @@ Sebagai contoh, sesetengah laman web mungkin memberi respons kepada permintaan i
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />Peranti anda<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">Sambung semula</translation>
 <translation id="8209050860603202033">Buka imej</translation>
+<translation id="8210770465353466621">Anda akan menemukan tab anda di sini</translation>
 <translation id="8215740705341534369">Helaian sisi</translation>
 <translation id="8218622182176210845">Urus akaun anda</translation>
 <translation id="8221401890884589479">Anda boleh menyekat laman yang anda tidak mahu. Chrome juga memadamkan laman yang disimpan melebihi 30 hari daripada senarai secara automatik. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>

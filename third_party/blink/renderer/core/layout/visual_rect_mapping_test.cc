@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace blink {
 
@@ -1288,7 +1289,7 @@ TEST_P(VisualRectMappingTest, PerspectiveWithAnonymousTable) {
   EXPECT_EQ(gfx::Rect(1, -1, 8, 12), ToEnclosingRect(rect));
 }
 
-TEST_P(VisualRectMappingTest, AnchorScroll) {
+TEST_P(VisualRectMappingTest, AnchorPositionScroll) {
   ScopedCSSAnchorPositioningForTest enabled_scope(true);
 
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
@@ -1322,7 +1323,7 @@ TEST_P(VisualRectMappingTest, AnchorScroll) {
         bottom: anchor(--anchor top);
         width: 50px;
         height: 50px;
-        anchor-scroll: --anchor;
+        anchor-default: --anchor;
       }
     </style>
     <div id=cb>
@@ -1344,7 +1345,7 @@ TEST_P(VisualRectMappingTest, AnchorScroll) {
       GetScrollableArea(To<LayoutBlock>(GetLayoutBoxByElementId("scroller")));
   scrollable_area->ScrollToAbsolutePosition(gfx::PointF(400, 0));
 
-  // Simulates a frame to update anchor-scroll snapshots.
+  // Simulates a frame to update snapshotted scroll offset.
   GetPage().Animator().ServiceScriptedAnimations(
       GetAnimationClock().CurrentTime() + base::Milliseconds(100));
   UpdateAllLifecyclePhasesForTest();

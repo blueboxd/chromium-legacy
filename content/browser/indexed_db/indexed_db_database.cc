@@ -410,7 +410,7 @@ void IndexedDBDatabase::ScheduleOpenConnection(
 
 void IndexedDBDatabase::ScheduleDeleteDatabase(
     IndexedDBBucketStateHandle bucket_state_handle,
-    scoped_refptr<IndexedDBCallbacks> callbacks,
+    std::unique_ptr<IndexedDBCallbacks> callbacks,
     base::OnceClosure on_deletion_complete) {
   connection_coordinator_.ScheduleDeleteDatabase(
       std::move(bucket_state_handle), std::move(callbacks),
@@ -606,7 +606,6 @@ void IndexedDBDatabase::RenameObjectStoreAbortOperation(
 
 Status IndexedDBDatabase::VersionChangeOperation(
     int64_t version,
-    scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* transaction) {
   TRACE_EVENT1("IndexedDB", "IndexedDBDatabase::VersionChangeOperation",
                "txn.id", transaction->id());
@@ -1175,7 +1174,9 @@ Status IndexedDBDatabase::PutOperation(
     key = std::move(params->key);
   }
 
-  DCHECK(key->IsValid());
+  if (!key->IsValid()) {
+    return leveldb::Status::InvalidArgument("Invalid key");
+  }
 
   IndexedDBBackingStore::RecordIdentifier record_identifier;
   if (params->put_mode == blink::mojom::IDBPutMode::AddOnly) {
@@ -1570,14 +1571,15 @@ Status IndexedDBDatabase::CountOperation(
     int64_t object_store_id,
     int64_t index_id,
     std::unique_ptr<IndexedDBKeyRange> key_range,
-    scoped_refptr<IndexedDBCallbacks> callbacks,
+    blink::mojom::IDBDatabase::CountCallback callback,
     IndexedDBTransaction* transaction) {
   TRACE_EVENT1("IndexedDB", "IndexedDBDatabase::CountOperation", "txn.id",
                transaction->id());
 
-  if (!IsObjectStoreIdAndMaybeIndexIdInMetadata(object_store_id, index_id))
+  if (!IsObjectStoreIdAndMaybeIndexIdInMetadata(object_store_id, index_id)) {
     return leveldb::Status::InvalidArgument(
         "Invalid object_store_id and/or index_id.");
+  }
 
   uint32_t count = 0;
   std::unique_ptr<IndexedDBBackingStore::Cursor> backing_store_cursor;
@@ -1596,18 +1598,17 @@ Status IndexedDBDatabase::CountOperation(
     DLOG(ERROR) << "Unable perform count operation: " << s.ToString();
     return s;
   }
-  if (!backing_store_cursor) {
-    callbacks->OnSuccess(count);
-    return s;
+
+  if (backing_store_cursor) {
+    do {
+      if (!s.ok()) {
+        return s;
+      }
+      ++count;
+    } while (backing_store_cursor->Continue(&s));
   }
 
-  do {
-    if (!s.ok())
-      return s;
-    ++count;
-  } while (backing_store_cursor->Continue(&s));
-
-  callbacks->OnSuccess(count);
+  std::move(callback).Run(/*success=*/true, count);
   return s;
 }
 
@@ -1637,7 +1638,7 @@ Status IndexedDBDatabase::DeleteRangeOperation(
 
 Status IndexedDBDatabase::GetKeyGeneratorCurrentNumberOperation(
     int64_t object_store_id,
-    scoped_refptr<IndexedDBCallbacks> callbacks,
+    std::unique_ptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* transaction) {
   if (!IsObjectStoreIdInMetadata(object_store_id)) {
     callbacks->OnError(CreateError(blink::mojom::IDBException::kDataError,

@@ -1040,11 +1040,14 @@ void MenuItemView::PaintBackground(gfx::Canvas* canvas,
                                    bool paint_as_selected) {
   if (menu_item_background_.has_value()) {
     MenuItemBackground background_info = menu_item_background_.value();
+    constexpr int kAdditionalBackgroundMargins = 4;
     gfx::Rect bounds = GetLocalBounds();
-    bounds.set_width(bounds.width() - background_info.horizontal_margin * 2);
-    bounds.set_x(bounds.x() + background_info.horizontal_margin);
-    bounds.set_height(bounds.height() - background_info.vertical_margin * 2);
-    bounds.set_y(bounds.y() + background_info.vertical_margin);
+    int horizontal_border_padding =
+        MenuConfig::instance().item_horizontal_border_padding;
+    bounds.set_width(bounds.width() - horizontal_border_padding * 2 -
+                     kAdditionalBackgroundMargins * 2);
+    bounds.set_x(bounds.x() + horizontal_border_padding +
+                 kAdditionalBackgroundMargins);
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setStyle(cc::PaintFlags::kFill_Style);
@@ -1257,9 +1260,15 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
 
   const gfx::FontList& font_list = GetFontList();
 
-  const int standard_width = GetLabelStartForThisItem() +
-                             gfx::GetStringWidth(title_, font_list) +
-                             trailing_padding_;
+  const int title_width = gfx::GetStringWidth(title_, font_list);
+  int standard_width =
+      GetLabelStartForThisItem() + title_width + trailing_padding_;
+  // Add additional padding to ensure that titles have enough space between
+  // themselves and child views.
+  if (child_size.width() > 0 && title_width > 0) {
+    standard_width += LayoutProvider::Get()->GetDistanceMetric(
+        views::DISTANCE_RELATED_LABEL_HORIZONTAL);
+  }
   if (GetMenuController() && GetMenuController()->use_ash_system_ui_layout()) {
     dimensions.height = menu_config.touchable_menu_height;
 

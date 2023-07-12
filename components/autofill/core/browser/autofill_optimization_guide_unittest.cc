@@ -16,10 +16,11 @@
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/form_data.h"
-#include "components/optimization_guide/core/new_optimization_guide_decider.h"
+#include "components/optimization_guide/core/optimization_guide_decider.h"
 #include "components/optimization_guide/core/optimization_guide_decision.h"
 #include "components/optimization_guide/core/optimization_metadata.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/test/test_sync_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -27,7 +28,7 @@
 namespace autofill {
 
 class MockOptimizationGuideDecider
-    : public optimization_guide::NewOptimizationGuideDecider {
+    : public optimization_guide::OptimizationGuideDecider {
  public:
   MOCK_METHOD(void,
               RegisterOptimizationTypes,
@@ -73,7 +74,7 @@ class AutofillOptimizationGuideTest : public testing::Test {
         /*local_state=*/pref_service_.get(),
         /*identity_manager=*/nullptr,
         /*history_service=*/nullptr,
-        /*sync_service=*/nullptr,
+        /*sync_service=*/&sync_service_,
         /*strike_database=*/nullptr,
         /*image_fetcher=*/nullptr,
         /*is_off_the_record=*/false);
@@ -84,6 +85,7 @@ class AutofillOptimizationGuideTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   test::AutofillUnitTestEnvironment autofill_test_environment_;
   std::unique_ptr<PrefService> pref_service_;
+  syncer::TestSyncService sync_service_;
   std::unique_ptr<MockOptimizationGuideDecider> decider_;
   std::unique_ptr<TestPersonalDataManager> personal_data_manager_;
   std::unique_ptr<AutofillOptimizationGuide> autofill_optimization_guide_;

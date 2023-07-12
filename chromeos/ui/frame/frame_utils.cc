@@ -112,18 +112,30 @@ SnapDirection GetSnapDirectionForWindow(aura::Window* window, bool left_top) {
 }
 
 int GetFrameCornerRadius(const aura::Window* native_window) {
-  const chromeos::WindowStateType window_state =
-      native_window->GetProperty(chromeos::kWindowStateTypeKey);
-
-  if (window_state == chromeos::WindowStateType::kPip) {
-    return chromeos::kPipRoundedCornerRadius;
+  // In overview mode, the native window is displayed in `ash::WindowMiniView`
+  // with its own `ash::WindowMiniViewHeaderView`. This mini view has its own
+  // rounded corners. Therefore we do not need to round the native window.
+  // Apart from redundant rounding, rounding the native frame is problematic for
+  // browsers. For packaged apps, we hide the frame header but for browsers, we
+  // still show the header since the tab strip is rendered over the header. In
+  // overview mode, the header becomes a part of contents of WindowMiniView and
+  // rounding the header ends up rounding the top corners of the contents.
+  if (native_window->GetProperty(kIsShowingInOverviewKey)) {
+    return 0;
   }
 
-  if (chromeos::IsNormalWindowStateType(
-          native_window->GetProperty(chromeos::kWindowStateTypeKey))) {
-    return chromeos::features::IsRoundedWindowsEnabled()
-               ? chromeos::features::RoundedWindowsRadius()
-               : chromeos::kTopCornerRadiusWhenRestored;
+  const WindowStateType window_state =
+      native_window->GetProperty(kWindowStateTypeKey);
+
+  if (window_state == WindowStateType::kPip) {
+    return kPipRoundedCornerRadius;
+  }
+
+  if (IsNormalWindowStateType(window_state) ||
+      window_state == WindowStateType::kFloated) {
+    return features::IsRoundedWindowsEnabled()
+               ? features::RoundedWindowsRadius()
+               : kTopCornerRadiusWhenRestored;
   }
 
   return 0;

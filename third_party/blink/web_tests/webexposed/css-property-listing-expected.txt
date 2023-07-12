@@ -14,7 +14,6 @@ All changes to this list should go through Blink's feature review process: http:
     -webkit-box-pack
     -webkit-box-reflect
     -webkit-font-smoothing
-    -webkit-highlight
     -webkit-line-break
     -webkit-line-clamp
     -webkit-locale
@@ -59,7 +58,6 @@ All changes to this list should go through Blink's feature review process: http:
     all
     anchor-default
     anchor-name
-    anchor-scroll
     animation-composition
     animation-delay
     animation-direction
@@ -312,6 +310,7 @@ All changes to this list should go through Blink's feature review process: http:
     popover-show-delay
     position
     position-fallback
+    position-fallback-bounds
     quotes
     r
     resize
@@ -407,6 +406,7 @@ All changes to this list should go through Blink's feature review process: http:
     transform-box
     transform-origin
     transform-style
+    transition-animation-type
     transition-delay
     transition-duration
     transition-property

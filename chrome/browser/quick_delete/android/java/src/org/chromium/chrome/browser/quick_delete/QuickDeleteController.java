@@ -15,10 +15,12 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
+import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.MutableFlagWithSafeDefault;
 import org.chromium.chrome.browser.layouts.LayoutManager;
 import org.chromium.chrome.browser.layouts.LayoutType;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
@@ -28,7 +30,7 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
 /**
  *  A controller responsible for setting up quick delete.
  */
-public class QuickDeleteController {
+public class QuickDeleteController implements QuickDeleteBridge.DomainVisitsCallback {
     private static final MutableFlagWithSafeDefault sQuickDeleteForAndroidFlag =
             new MutableFlagWithSafeDefault(ChromeFeatureList.QUICK_DELETE_FOR_ANDROID, false);
 
@@ -43,14 +45,14 @@ public class QuickDeleteController {
     /**
      * Constructor for the QuickDeleteController with a dialog and confirmation snackbar.
      *
-     * @param context The associated {@link Context}.
-     * @param delegate A {@link QuickDeleteDelegate} to perform the quick delete.
+     * @param context            The associated {@link Context}.
+     * @param delegate           A {@link QuickDeleteDelegate} to perform the quick delete.
      * @param modalDialogManager A {@link ModalDialogManager} to show the quick delete modal dialog.
-     * @param snackbarManager A {@link SnackbarManager} to show the quick delete snackbar.
-     * @param layoutManager {@link LayoutManager} to use for showing the regular overview mode.
-     * @param tabModelSelector {@link TabModelSelector} to use for opening the links in search
-     *         history disambiguation notice.
-     * @param animationView The {@link View} to use to show the quick delete animation.
+     * @param snackbarManager    A {@link SnackbarManager} to show the quick delete snackbar.
+     * @param layoutManager      {@link LayoutManager} to use for showing the regular overview mode.
+     * @param tabModelSelector   {@link TabModelSelector} to use for opening the links in search
+     *                           history disambiguation notice.
+     * @param animationView      The {@link View} to use to show the quick delete animation.
      */
     public QuickDeleteController(@NonNull Context context, @NonNull QuickDeleteDelegate delegate,
             @NonNull ModalDialogManager modalDialogManager,
@@ -62,21 +64,21 @@ public class QuickDeleteController {
         mLayoutManager = layoutManager;
         mDeleteTabsFilter =
                 new QuickDeleteTabsFilter(tabModelSelector.getModel(/*incognito=*/false));
-        mDialogDelegate = new QuickDeleteDialogDelegate(
-                context, modalDialogManager, this::onDialogDismissed, tabModelSelector);
+        Profile profile = tabModelSelector.getCurrentModel().getProfile();
+        mDialogDelegate =
+                new QuickDeleteDialogDelegate(context, modalDialogManager, this::onDialogDismissed,
+                        tabModelSelector, profile, mDelegate.getSettingsLauncher());
 
         mAnimationView = animationView;
         mAnimationView.setBackgroundResource(R.drawable.quick_delete_animation);
 
-        // TODO(crbug.com/1412087): Fetch the domain related data.
-        QuickDeleteDialogDelegate.QuickDeleteDialogData data =
-                new QuickDeleteDialogDelegate.QuickDeleteDialogData(
-                        mDeleteTabsFilter.getListOfTabsToBeClosed().size());
-        mDialogDelegate.showDialog(data);
+        // Update the time period here to make it derived from the spinner.
+        new QuickDeleteBridge(profile).getLastVisitedDomainAndUniqueDomainCount(
+                TimePeriod.LAST_15_MINUTES, this);
     }
 
     /**
-     * @return True, if quick delete feature flag is enabled, false otherwise.
+     * @return True, if quick delete feature flag is enabled, false otherwise
      */
     public static boolean isQuickDeleteEnabled() {
         return sQuickDeleteForAndroidFlag.isEnabled();
@@ -90,8 +92,20 @@ public class QuickDeleteController {
             case DialogDismissalCause.POSITIVE_BUTTON_CLICKED:
                 QuickDeleteMetricsDelegate.recordHistogram(
                         QuickDeleteMetricsDelegate.QuickDeleteAction.DELETE_CLICKED);
-                mDeleteTabsFilter.closeTabsFilteredForQuickDelete();
-                mDelegate.performQuickDelete(this::onQuickDeleteFinished);
+                @TimePeriod
+                int timePeriod = mDialogDelegate.getCurrentTimePeriodOption().getTimePeriod();
+                // TODO(crbug.com/1412087): This is hardcoded to work on 15 minutes time range.
+                // Update this to take into account |timePeriod| and also deletion of any remaining
+                // tabs inside |mDeleteTabsFilter|. For example, when the quick delete dialog was
+                // shown and the user didn't interact with they come back to do an action after some
+                // time, then calling QuickDeleteTabFilter#closeTabsFilteredForQuickDelete method
+                // would only delete tabs in the last 15 minutes and may miss the tabs in
+                // |mDeleteTabsFilter|.
+                mDeleteTabsFilter.closeTabsFilteredForQuickDelete(timePeriod);
+                // TODO(crbug.com/1412087): This may have similar considerations as above and
+                // therefore may need to be revisited based on what Clear browsing data is doing
+                // today.
+                mDelegate.performQuickDelete(this::onQuickDeleteFinished, timePeriod);
                 break;
             case DialogDismissalCause.NEGATIVE_BUTTON_CLICKED:
                 QuickDeleteMetricsDelegate.recordHistogram(
@@ -154,5 +168,29 @@ public class QuickDeleteController {
             }
         });
         deleteAnimation.start();
+    }
+
+    /**
+     * Called when the domain count and last visited domain are fetched from local history.
+     * This method passes the data needed for constructing the dialog and shows the quick
+     * delete dialog.
+     * @param lastVisitedDomain The synced last visited domain on all devices in the last 15
+     *                          minutes.
+     * @param domainCount The number of synced unique domains visited on all devices in the
+     *                    last 15 minutes.
+     */
+    @Override
+    public void onLastVisitedDomainAndUniqueDomainCountReady(
+            String lastVisitedDomain, int domainCount) {
+        QuickDeleteDialogDelegate
+                .QuickDeleteDialogData data = new QuickDeleteDialogDelegate.QuickDeleteDialogData(
+                new QuickDeleteDialogDelegate.DomainVisitsData(lastVisitedDomain, domainCount),
+                mDeleteTabsFilter
+                        .getListOfTabsToBeClosed(
+                                mDialogDelegate.getCurrentTimePeriodOption().getTimePeriod())
+                        .size());
+        // TODO(crbug.com/1412087): Add support to dynamically refresh the dialog on changes to time
+        // period.
+        mDialogDelegate.showDialog(data);
     }
 }

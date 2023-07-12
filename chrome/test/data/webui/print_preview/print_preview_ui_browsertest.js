@@ -688,6 +688,23 @@ var PrintPreviewPrinterSetupInfoCrosTest = class extends PrintPreviewTest {
 TEST_F('PrintPreviewPrinterSetupInfoCrosTest', 'ElementDisplays', function() {
   this.runMochaTest(printer_setup_info_cros_test.TestNames.ElementDisplays);
 });
+
+TEST_F('PrintPreviewPrinterSetupInfoCrosTest', 'ButtonLocalized', function() {
+  this.runMochaTest(printer_setup_info_cros_test.TestNames.ButtonLocalized);
+});
+
+TEST_F(
+    'PrintPreviewPrinterSetupInfoCrosTest', 'ManagePrintersButton', function() {
+      this.runMochaTest(
+          printer_setup_info_cros_test.TestNames.ManagePrintersButton);
+    });
+
+TEST_F(
+    'PrintPreviewPrinterSetupInfoCrosTest', 'MessageMatchesMessageType',
+    function() {
+      this.runMochaTest(
+          printer_setup_info_cros_test.TestNames.MessageMatchesMessageType);
+    });
 GEN('#endif')
 
 GEN('#if BUILDFLAG(IS_CHROMEOS)');
@@ -851,6 +868,14 @@ var PrintPreviewPreviewAreaTest = class extends PrintPreviewTest {
 TEST_F('PrintPreviewPreviewAreaTest', 'StateChanges', function() {
   this.runMochaTest(preview_area_test.TestNames.StateChanges);
 });
+
+GEN('#if BUILDFLAG(IS_CHROMEOS)');
+TEST_F(
+    'PrintPreviewPreviewAreaTest', 'StateChangesPrinterSetupCros', function() {
+      this.runMochaTest(
+          preview_area_test.TestNames.StateChangesPrinterSetupCros);
+    });
+GEN('#endif');
 
 TEST_F('PrintPreviewPreviewAreaTest', 'ViewportSizeChanges', function() {
   this.runMochaTest(preview_area_test.TestNames.ViewportSizeChanges);

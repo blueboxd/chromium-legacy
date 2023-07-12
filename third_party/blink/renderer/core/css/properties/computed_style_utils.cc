@@ -794,8 +794,8 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
                     PhysicalOffset(container->ClientLeft(),
                                    container->ClientTop())
               : PhysicalOffset(box->LocationOffset() -
-                               LayoutSize(container->ClientLeft(),
-                                          container->ClientTop()));
+                               DeprecatedLayoutSize(container->ClientLeft(),
+                                                    container->ClientTop()));
 
       LayoutUnit position;
 
@@ -2163,8 +2163,8 @@ gfx::SizeF ComputedStyleUtils::UsedBoxSize(const LayoutObject& layout_object) {
   }
   const auto& box = To<LayoutBox>(layout_object);
   return gfx::SizeF(box.StyleRef().BoxSizing() == EBoxSizing::kBorderBox
-                        ? box.BorderBoxRect().Size()
-                        : box.ComputedCSSContentBoxRect().Size());
+                        ? box.PhysicalBorderBoxRect().size
+                        : box.ComputedCSSContentBoxRect().size);
 }
 
 CSSValue* ComputedStyleUtils::RenderTextDecorationFlagsToCSSValue(
@@ -2990,6 +2990,29 @@ CSSValue* ComputedStyleUtils::ValueForTransitionProperty(
     }
   } else {
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kAll));
+  }
+  return list;
+}
+
+CSSValue* ComputedStyleUtils::ValueForTransitionAnimationType(
+    const CSSTransitionData* transition_data) {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  if (transition_data) {
+    for (const auto& mode : transition_data->ModeList()) {
+      CSSValueID value_id = CSSValueID::kInvalid;
+      switch (mode) {
+        case CSSTransitionData::CSSTransitionAnimationType::kNormal:
+          value_id = CSSValueID::kNormal;
+          break;
+        case CSSTransitionData::CSSTransitionAnimationType::kDiscrete:
+          value_id = CSSValueID::kDiscrete;
+          break;
+      }
+      CHECK_NE(value_id, CSSValueID::kInvalid);
+      list->Append(*CSSIdentifierValue::Create(value_id));
+    }
+  } else {
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kNormal));
   }
   return list;
 }

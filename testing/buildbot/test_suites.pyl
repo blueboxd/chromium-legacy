@@ -196,6 +196,7 @@
         },
       },
       'viz_unittests': {},
+      'webengine_support_instrumentation_test_apk': {},
       'webview_instrumentation_test_apk': {
         'swarming': {
           'shards': 7,
@@ -278,6 +279,7 @@
           '--test-machine-name',
           '${buildername}',
           '$$MAGIC_SUBSTITUTION_GPUTelemetryNoRootForUnrootedDevices',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'mixins': [
           'skia_gold_test',
@@ -658,6 +660,16 @@
       },
     },
 
+    # Test suite for running disabled Tast tests to collect data to re-enable
+    # them. The test suite should not be critical to builders.
+    'chromeos_chrome_disabled_tast_tests': {
+      'chrome_disabled_tast_tests': {
+        'test_level_retries': 1,
+        'timeout_sec': 7200,
+        'experiment_percentage': 100,
+      },
+    },
+
     # GTests to run on Chrome OS devices, but not Chrome OS VMs. Any differences
     # between this and chromeos_system_friendly_gtests below should only be due
     # to resource constraints (ie: not enough devices).
@@ -716,37 +728,6 @@
         },
         'test': 'browser_tests',
       }
-    },
-
-    'chromeos_remote_device_isolated_tests': {
-      'telemetry_perf_unittests': {
-        'args': [
-          '--browser=cros-chrome',
-          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
-          '--xvfb',
-        ],
-        'swarming': {
-          'idempotent': False,  # https://crbug.com/549140
-          'shards': 2,
-        },
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-      },
-      'telemetry_unittests': {
-        'args': [
-          '--browser=cros-chrome',
-          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
-          '--jobs=1',
-        ],
-        'swarming': {
-          'idempotent': False,  # https://crbug.com/549140
-          'shards': 10,
-        },
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-      },
     },
 
     # Tests that run on Chrome OS systems (ie: VMs, Chromebooks), *not*
@@ -833,6 +814,7 @@
           '--test-launcher-jobs=1',
         ],
       },
+      'rust_gtest_interop_unittests': {},
       'sql_unittests': {},
       'url_unittests': {},
       'vaapi_unittest': {
@@ -885,6 +867,7 @@
       'content_unittests': {},
       'interactive_ui_tests': {},
       'net_unittests': {},
+      'rust_gtest_interop_unittests': {},
       'unit_tests': {},
     },
 
@@ -946,6 +929,7 @@
           ],
         },
       },
+      'rust_gtest_interop_unittests': {},
       'unit_tests': {
         'swarming': {
           'dimension_sets': [
@@ -1023,6 +1007,8 @@
         },
       },
       'perfetto_unittests': {},
+       # TODO(crbug.com/1459686): Enable this.
+       # 'rust_gtest_interop_unittests': {},
       'services_unittests': {},
       'shell_dialogs_unittests': {},
       'skia_unittests': {},
@@ -1193,6 +1179,13 @@
           'nougat-x86-emulator',
         ],
       },
+      'weblayer_junit_tests': {
+        'remove_mixins': [
+          'nougat-x86-emulator',
+        ],
+        # Experimental until we're sure these are stable.
+        'experiment_percentage': 100
+      },
     },
 
     'chromium_junit_tests_scripts': {
@@ -1205,6 +1198,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1217,6 +1211,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1229,6 +1224,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1241,6 +1237,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1253,6 +1250,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1265,6 +1263,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1277,6 +1276,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1289,6 +1289,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1301,6 +1302,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1313,6 +1315,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1325,6 +1328,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1337,6 +1341,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1349,6 +1354,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1361,6 +1367,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1373,6 +1380,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1385,6 +1393,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1397,6 +1406,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1409,6 +1419,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1421,6 +1432,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1433,6 +1445,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1445,6 +1458,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -1457,6 +1471,7 @@
         'remove_mixins': [
           'emulator-4-cores',
           'nougat-x86-emulator',
+          'oreo-x86-emulator',
         ],
         'use_isolated_scripts_api': True,
       },
@@ -2495,6 +2510,8 @@
       },
       'ozone_unittests': {},
       'perfetto_unittests': {},
+      # TODO(crbug.com/1459686): Enable this.
+      # 'rust_gtest_interop_unittests': {},
       'service_manager_unittests': {},
       'services_unittests': {
         'args': [
@@ -3205,6 +3222,35 @@
           'has_native_resultdb_integration',
         ],
       },
+      'expected_color_passthrough': {
+        'name': 'expected_color_pixel_passthrough_test',
+        'telemetry_test_name': 'expected_color',
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--test-machine-name',
+          '${buildername}',
+          '--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle',
+        ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
+          '$$MAGIC_SUBSTITUTION_GPUTelemetryNoRootForUnrootedDevices',
+        ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
+        'lacros_args': [
+          '--extra-browser-args=--enable-features=UseOzonePlatform --ozone-platform=wayland',
+          '--xvfb',
+          '--no-xvfb',
+          '--use-weston',
+          '--weston-use-gl',
+        ],
+        'mixins': [
+          'skia_gold_test',
+          'has_native_resultdb_integration',
+        ],
+      },
       'gpu_process': {
         'name': 'gpu_process_launch_tests',
         'android_args': [
@@ -3242,35 +3288,6 @@
           'has_native_resultdb_integration',
         ],
       },
-      'maps_passthrough': {
-        'name': 'maps_pixel_passthrough_test',
-        'telemetry_test_name': 'maps',
-        'args': [
-          '--dont-restore-color-profile-after-test',
-          '--test-machine-name',
-          '${buildername}',
-          '--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle',
-        ],
-        'android_args': [
-          # TODO(crbug.com/1093085): Remove this once we fix the tests.
-          '--extra-browser-args=--force-online-connection-state-for-indicator',
-          '$$MAGIC_SUBSTITUTION_GPUTelemetryNoRootForUnrootedDevices',
-        ],
-        'chromeos_args': [
-          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
-        ],
-        'lacros_args': [
-          '--extra-browser-args=--enable-features=UseOzonePlatform --ozone-platform=wayland',
-          '--xvfb',
-          '--no-xvfb',
-          '--use-weston',
-          '--weston-use-gl',
-        ],
-        'mixins': [
-          'skia_gold_test',
-          'has_native_resultdb_integration',
-        ],
-      },
       'pixel_skia_passthrough': {
         'name': 'pixel_skia_gold_passthrough_test',
         'args': [
@@ -3278,6 +3295,7 @@
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'android_args': [
           # TODO(crbug.com/1093085): Remove this once we fix the tests.
@@ -3329,9 +3347,9 @@
     },
 
     'gpu_pixel_passthrough_telemetry_tests': {
-      'maps_passthrough': {
-        'name': 'maps_pixel_passthrough_test',
-        'telemetry_test_name': 'maps',
+      'expected_color_passthrough': {
+        'name': 'expected_color_pixel_passthrough_test',
+        'telemetry_test_name': 'expected_color',
         'args': [
           '--dont-restore-color-profile-after-test',
           '--test-machine-name',
@@ -3353,6 +3371,7 @@
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'chromeos_args': [
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
@@ -3373,6 +3392,7 @@
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=Vulkan --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'android_args': [
           # TODO(crbug.com/1093085): Remove this once we fix the tests.
@@ -3408,6 +3428,35 @@
           '--extra-browser-args=--use-cmd-decoder=validating',
         ],
         'mixins': [
+          'has_native_resultdb_integration',
+        ],
+      },
+      'expected_color_validating': {
+        'name': 'expected_color_pixel_validating_test',
+        'telemetry_test_name': 'expected_color',
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--test-machine-name',
+          '${buildername}',
+          '--extra-browser-args=--use-cmd-decoder=validating',
+        ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
+          '$$MAGIC_SUBSTITUTION_GPUTelemetryNoRootForUnrootedDevices',
+        ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
+        'lacros_args': [
+          '--extra-browser-args=--enable-features=UseOzonePlatform --ozone-platform=wayland',
+          '--xvfb',
+          '--no-xvfb',
+          '--use-weston',
+          '--weston-use-gl',
+        ],
+        'mixins': [
+          'skia_gold_test',
           'has_native_resultdb_integration',
         ],
       },
@@ -3448,35 +3497,6 @@
           'has_native_resultdb_integration',
         ],
       },
-      'maps_validating': {
-        'name': 'maps_pixel_validating_test',
-        'telemetry_test_name': 'maps',
-        'args': [
-          '--dont-restore-color-profile-after-test',
-          '--test-machine-name',
-          '${buildername}',
-          '--extra-browser-args=--use-cmd-decoder=validating',
-        ],
-        'android_args': [
-          # TODO(crbug.com/1093085): Remove this once we fix the tests.
-          '--extra-browser-args=--force-online-connection-state-for-indicator',
-          '$$MAGIC_SUBSTITUTION_GPUTelemetryNoRootForUnrootedDevices',
-        ],
-        'chromeos_args': [
-          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
-        ],
-        'lacros_args': [
-          '--extra-browser-args=--enable-features=UseOzonePlatform --ozone-platform=wayland',
-          '--xvfb',
-          '--no-xvfb',
-          '--use-weston',
-          '--weston-use-gl',
-        ],
-        'mixins': [
-          'skia_gold_test',
-          'has_native_resultdb_integration',
-        ],
-      },
       'pixel_skia_validating': {
         'name': 'pixel_skia_gold_validating_test',
         'args': [
@@ -3484,6 +3504,7 @@
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--use-cmd-decoder=validating',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
         'android_args': [
           # TODO(crbug.com/1093085): Remove this once we fix the tests.
@@ -4049,6 +4070,8 @@
       'net_unittests': {},
       'services_unittests': {},
       'sql_unittests': {},
+      # TODO(https://bugs.chromium.org/p/gn/issues/detail?id=340): Enable this.
+      # 'rust_gtest_interop_unittests': {},
       'url_unittests': {},
     },
 
@@ -4537,6 +4560,8 @@
       'cronet_unittests':{},
       'device_unittests':{},
       'net_unittests':{},
+      # TODO(crbug.com/1459686): Enable this.
+      # 'rust_gtest_interop_unittests': {},
     },
 
     'mac_specific_chromium_gtests': {
@@ -5368,6 +5393,11 @@
       'web_engine_unittests': {},
     },
 
+    'webengine_android_gtests': {
+      'webengine_support_instrumentation_test_apk': {},
+      'weblayer_browsertests': {},
+    },
+
     'webrtc_chromium_baremetal_gtests': {
       # Run capture unittests on bots that have real webcams.
       'capture_unittests': {
@@ -5882,6 +5912,7 @@
       'linux_flavor_specific_chromium_gtests',
       'vr_android_specific_chromium_tests',
       'vr_platform_specific_chromium_gtests',
+      'webengine_android_gtests',
     ],
 
     'android_nougat_emulator_gtests': [
@@ -5894,6 +5925,7 @@
       'chromium_gtests_for_devices_with_graphical_output',
       'linux_flavor_specific_chromium_gtests',
       'system_webview_shell_instrumentation_tests', # Not an experimental test
+      'webengine_android_gtests',
       'webview_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
     ],
@@ -5919,6 +5951,7 @@
       'chrome_public_tests',
       'vr_android_specific_chromium_tests',
       'webview_ui_instrumentation_tests',
+      'webengine_android_gtests',
     ],
 
     'android_pie_gtests': [
@@ -5945,6 +5978,7 @@
       'system_webview_shell_instrumentation_tests', # Not an experimental test
       'webview_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
+      'webengine_android_gtests',
     ],
 
     'android_pie_rel_gtests': [
@@ -5963,6 +5997,7 @@
     #   'vr_platform_specific_chromium_gtests',
       'webview_64_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
+      'webengine_android_gtests',
     ],
 
     'bfcache_android_gtests': [
@@ -6829,6 +6864,7 @@
       'chromium_gtests_for_devices_with_graphical_output': {},
       'linux_flavor_specific_chromium_gtests': {},
       'system_webview_shell_instrumentation_tests': {}, # Not an experimental test
+      'webengine_android_gtests': {},
       'webview_trichrome_cts_tests': {
         'variants': [
           'WEBVIEW_TRICHROME_FULL_CTS_TESTS',
@@ -6854,6 +6890,7 @@
       'fieldtrial_webview_tests': {},
       'linux_flavor_specific_chromium_gtests': {},
       'system_webview_shell_instrumentation_tests': {}, # Not an experimental test
+      'webengine_android_gtests': {},
       'webview_trichrome_64_cts_tests': {
         'variants': [
           'WEBVIEW_TRICHROME_FULL_CTS_TESTS',
@@ -6872,6 +6909,7 @@
       'chromium_gtests_for_devices_with_graphical_output': {},
       'linux_flavor_specific_chromium_gtests': {},
       'system_webview_shell_instrumentation_tests': {}, # Not an experimental test
+      'webengine_android_gtests': {},
       'webview_ui_instrumentation_tests': {},
     },
 
@@ -6897,12 +6935,17 @@
     'chromeos_brya_skylab_tests': {
       'chromeos_chrome_all_tast_tests': {
         'variants': [
-          'CROS_BRYA_RELEASE_LKGM',
+          'CROS_BRYA_RELEASE_ASH_LKGM',
         ]
       },
       'chromeos_chrome_criticalstaging_tast_tests': {
         'variants': [
-          'CROS_BRYA_RELEASE_LKGM',
+          'CROS_BRYA_RELEASE_ASH_LKGM',
+        ]
+      },
+      'chromeos_chrome_disabled_tast_tests': {
+        'variants': [
+          'CROS_BRYA_RELEASE_ASH_LKGM',
         ]
       },
     },
@@ -6910,7 +6953,7 @@
     'chromeos_jacuzzi_skylab_tests': {
       'chromeos_chrome_all_tast_tests': {
         'variants': [
-          'CROS_JACUZZI_RELEASE_CHROME_FROM_TLS_LKGM',
+          'CROS_JACUZZI_RELEASE_CHROME_FROM_TLS_ASH_LKGM',
         ]
       },
     },
@@ -6918,7 +6961,7 @@
     'chromeos_kevin_skylab_tests': {
       'chromeos_chrome_all_tast_tests': {
         'variants': [
-          'CROS_KEVIN_RELEASE_CHROME_FROM_TLS_LKGM',
+          'CROS_KEVIN_RELEASE_CHROME_FROM_TLS_ASH_LKGM',
         ]
       },
     },
@@ -6926,7 +6969,7 @@
     'chromeos_octopus_skylab_tests': {
       'chromeos_chrome_all_tast_tests': {
         'variants': [
-          'CROS_OCTOPUS_RELEASE_CHROME_FROM_TLS_LKGM',
+          'CROS_OCTOPUS_RELEASE_CHROME_FROM_TLS_ASH_LKGM',
         ]
       },
     },
@@ -6934,7 +6977,7 @@
     'chromeos_trogdor_skylab_tests': {
       'chromeos_chrome_all_tast_tests': {
         'variants': [
-          'CROS_TROGDOR_RELEASE_LKGM',
+          'CROS_TROGDOR_RELEASE_ASH_LKGM',
         ]
       },
     },
@@ -6942,7 +6985,7 @@
     'chromeos_volteer_skylab_tests': {
       'chromeos_chrome_all_tast_tests': {
         'variants': [
-          'CROS_VOLTEER_RELEASE_LKGM',
+          'CROS_VOLTEER_RELEASE_ASH_LKGM',
         ]
       },
     },

@@ -72,6 +72,7 @@
   _tableViewIsMinimized = YES;
 
   self.titleView = [self setUpTitleView];
+  self.customSpacing = 0;
 
   // Set the properties read by the super when constructing the
   // views in `-[ConfirmationAlertViewController viewDidLoad]`.
@@ -80,7 +81,7 @@
   self.primaryActionString =
       l10n_util::GetNSString(IDS_IOS_PASSWORD_BOTTOM_SHEET_USE_PASSWORD);
   self.secondaryActionString =
-      l10n_util::GetNSString(IDS_IOS_PASSWORD_BOTTOM_SHEET_USE_KEYBOARD);
+      l10n_util::GetNSString(IDS_IOS_PASSWORD_BOTTOM_SHEET_NO_THANKS);
 
   [super viewDidLoad];
 }
@@ -103,6 +104,7 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated {
+  [self.view layoutIfNeeded];
   // When this is called (when the view appears), the table view is minimized,
   // and its height is the (dynamic) height of just one cell.
   CGFloat effectiveRowHeight = [self tableViewHeight];

@@ -311,6 +311,9 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, InstallingPinsHomeTab) {
   // The URL of the pinned home tab should include the query params.
   EXPECT_EQ(tab_strip->GetWebContentsAt(0)->GetVisibleURL(), start_url);
   EXPECT_EQ(tab_strip->active_index(), 0);
+
+  // App should have a new tab button.
+  EXPECT_FALSE(app_browser->app_controller()->ShouldHideNewTabButton());
 }
 
 // Tests that the monochrome app icon is used on the home tab and it is
@@ -554,6 +557,29 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, OpenInChrome) {
   // 'Open in Chrome' menu item should be enabled for other tabs.
   EXPECT_TRUE(
       app_browser->command_controller()->IsCommandEnabled(IDC_OPEN_IN_CHROME));
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, WebAppMenuModelTabbedApp) {
+  GURL start_url =
+      embedded_test_server()->GetURL("/web_apps/tab_strip_customizations.html");
+  AppId app_id = InstallWebAppFromPage(browser(), start_url);
+  Browser* app_browser = LaunchWebAppBrowser(app_id);
+
+  WebAppMenuModel model(nullptr, app_browser);
+  model.Init();
+  // Check menu contains 'New Tab'.
+  EXPECT_TRUE(model.GetIndexOfCommandId(IDC_NEW_TAB).has_value());
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, WebAppMenuModelNonTabbedApp) {
+  GURL start_url = embedded_test_server()->GetURL("/web_apps/basic.html");
+  AppId app_id = InstallWebAppFromPage(browser(), start_url);
+  Browser* app_browser = LaunchWebAppBrowser(app_id);
+
+  WebAppMenuModel model(nullptr, app_browser);
+  model.Init();
+  // Check menu does not contain 'New Tab'.
+  EXPECT_FALSE(model.GetIndexOfCommandId(IDC_NEW_TAB).has_value());
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
@@ -974,6 +1000,49 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, HomeTabScopeWildcardString) {
   EXPECT_EQ(tab_strip->count(), 2);
   EXPECT_EQ(tab_strip->active_index(), 0);
   EXPECT_EQ(tab_strip->GetActiveWebContents()->GetVisibleURL(), start_url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, CloseAllTabsCommand) {
+  GURL start_url =
+      embedded_test_server()->GetURL("/web_apps/tab_strip_customizations.html");
+  AppId app_id = InstallWebAppFromPage(browser(), start_url);
+  Browser* app_browser = FindWebAppBrowser(browser()->profile(), app_id);
+  TabStripModel* tab_strip = app_browser->tab_strip_model();
+
+  EXPECT_TRUE(registrar().IsTabbedWindowModeEnabled(app_id));
+
+  // Expect app opened with pinned home tab.
+  EXPECT_EQ(tab_strip->count(), 1);
+  EXPECT_TRUE(tab_strip->IsTabPinned(0));
+  EXPECT_EQ(tab_strip->GetWebContentsAt(0)->GetVisibleURL(), start_url);
+  EXPECT_EQ(tab_strip->active_index(), 0);
+
+  chrome::NewTab(app_browser);
+  chrome::NewTab(app_browser);
+  chrome::NewTab(app_browser);
+
+  EXPECT_EQ(tab_strip->count(), 4);
+
+  tab_strip->ExecuteContextMenuCommand(
+      2, TabStripModel::ContextMenuCommand::CommandCloseAllTabs);
+
+  // Expect all tabs closed except the home tab.
+  EXPECT_EQ(tab_strip->count(), 1);
+  EXPECT_TRUE(tab_strip->IsTabPinned(0));
+  EXPECT_EQ(tab_strip->GetWebContentsAt(0)->GetVisibleURL(), start_url);
+  EXPECT_EQ(tab_strip->active_index(), 0);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
+                       NewTabButtonUrlInHomeTabScope) {
+  GURL start_url = embedded_test_server()->GetURL(
+      "/web_apps/get_manifest.html?tab_strip_wildcard_home_scope.json");
+  AppId app_id = InstallWebAppFromPage(browser(), start_url);
+  Browser* app_browser = LaunchWebAppBrowser(app_id);
+
+  EXPECT_TRUE(registrar().IsTabbedWindowModeEnabled(app_id));
+
+  EXPECT_TRUE(app_browser->app_controller()->ShouldHideNewTabButton());
 }
 
 }  // namespace web_app

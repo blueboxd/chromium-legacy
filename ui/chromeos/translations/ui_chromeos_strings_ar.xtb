@@ -37,11 +37,11 @@
 <translation id="1297922636971898492">‏Google Drive غير متاح في الوقت الحالي. ستتم إعادة تشغيل التحميل تلقائيًا فور توفر Google Drive.</translation>
 <translation id="1307931752636661898">‏يتعذّر عرض ملفات نظام التشغيل Linux</translation>
 <translation id="1313405956111467313">ضبط تلقائي للخادم الوكيل</translation>
+<translation id="134645005685694099">لا تتوفّر مساحة تخزين كافية على جهازك لتظل مزامنة الملفات مفعّلة. ولن تتم مزامنة الملفات الجديدة تلقائيًا.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
 <translation id="1358735829858566124">الملف أو الدليل غير قابل للاستخدام.</translation>
 <translation id="1363028406613469049">مقطع صوتي</translation>
 <translation id="1378727793141957596">‏مرحبًا بك في Google Drive!</translation>
-<translation id="1379156577998569384">ملفاتك في مجلد "ملفاتي" متاحة على جهازك بلا اتصال بالإنترنت.</translation>
 <translation id="1379911846207762492">يمكنك إتاحة الوصول إلى الملفات بلا إنترنت عند عدم توفّر اتصال بالإنترنت.</translation>
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1388045380422025115">جميع الأنواع</translation>
@@ -131,7 +131,6 @@
 <translation id="2084108471225856927">إعدادات الجهاز</translation>
 <translation id="2084809735218147718">شخص يقول "شكرًا لك" بلغة الإشارة</translation>
 <translation id="2088690981887365033">الشبكة الافتراضية الخاصة</translation>
-<translation id="2089751716171649322">‏الوصول بسهولة إلى ملفات Google Drive بلا إنترنت</translation>
 <translation id="2111134541987263231">تفعيل <ph name="BEGIN_BOLD" />السماح بالإضافة في وضع التصفّح المتخفي<ph name="END_BOLD" /></translation>
 <translation id="2114191879048183086">سيتم حذف <ph name="NUMBER_OF_ITEMS" /> ملف أو دليل، ولن تتمكّن من استعادتها.</translation>
 <translation id="2122305276694332719">يسمح الاتصال تلقائيًا بشبكة مخفية للمستخدمين الآخرين رؤية جهازك وبعض إعدادات الشبكة، ولا ننصح بذلك.</translation>
@@ -182,6 +181,7 @@
 <translation id="2464089476039395325">‏خادم وكيل HTTP</translation>
 <translation id="2467267713099745100">شبكة <ph name="NETWORK_TYPE" />، متوقفة</translation>
 <translation id="2468402215065996499">تماغوتشي</translation>
+<translation id="2468470447085858632">‏الوصول إلى ملفات Google Drive بلا اتصال بالإنترنت باستخدام مزامنة الملفات</translation>
 <translation id="2470939964922472929">‏لقد أدخلت رقم تعريف شخصي غير صحيح عدّة مرات. لإعداد رقم تعريف شخصي جديد، أدخِل مفتاح إزالة حظر رقم التعريف الشخصي (PUK) المكوّن من 8 أرقام والمتوفّر من خلال مشغّل شبكة الجوّال.</translation>
 <translation id="2500392669976258912">الغوجاراتية الصوتية</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -351,12 +351,12 @@
 <translation id="3855472144336161447">‏الألمانية Neo 2</translation>
 <translation id="3858860766373142691">الاسم</translation>
 <translation id="3866249974567520381">الوصف</translation>
-<translation id="3866439285517092441">طاقة البطارية منخفضة. سيتم استئناف المزامنة عند توصيل الجهاز بمصدر طاقة.</translation>
 <translation id="3899991606604168269">الفرنسية (كندا) باستخدام لوحة مفاتيح متعددة اللغات</translation>
 <translation id="3901991538546252627">جارٍ الاتصال بـ <ph name="NAME" /></translation>
 <translation id="3906232975181435906">‏جارٍ تثبيت الملف الشخصي لشريحة eSIM على الجهاز الجوّال، الشبكة رقم <ph name="NETWORK_INDEX" /> من <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" /></translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">لصق</translation>
+<translation id="3950820424414687140">تسجيل الدخول</translation>
 <translation id="3952872973865944257">التيلوغوية الصوتية</translation>
 <translation id="3958548648197196644">كيوي</translation>
 <translation id="397105322502079400">جارٍ الحساب...</translation>
@@ -567,6 +567,7 @@
 <translation id="5422221874247253874">نقطة الوصول</translation>
 <translation id="5428105026674456456">الإسبانية</translation>
 <translation id="5438282218546237410">لا توجد نتائج تخص <ph name="SEARCH_TERM" />.</translation>
+<translation id="5447680084201416734">مساحة التخزين غير كافية.</translation>
 <translation id="5449551289610225147">كلمة المرور غير صالحة</translation>
 <translation id="5459064203055649751">هناك ملف آخر يحمل الاسم "<ph name="FILENAME" />". هل تريد استبداله بالملف الذي تنقله؟</translation>
 <translation id="5463231940765244860">إدخال</translation>
@@ -577,12 +578,10 @@
 <translation id="5494920125229734069">اختيار الكل</translation>
 <translation id="5500122897333236901">الأيسلندية</translation>
 <translation id="5508696409934741614">نقاط</translation>
-<translation id="5519161320735100193">‏إعدادات Google Drive</translation>
 <translation id="5522908512596376669">تم تغيير قائمة الملفات إلى عرض القائمة.</translation>
 <translation id="5524517123096967210">تعذرت قراءة الملف.</translation>
 <translation id="5533102081734025921">صورة <ph name="IMAGE_TYPE" /></translation>
 <translation id="5534520101572674276">جارٍ حساب الحجم</translation>
-<translation id="5536122250858122375">تتعذّر مزامنة نوع الملف هذا.</translation>
 <translation id="554153475311314364">تحويل صوتي إلى اللغة اليونانية</translation>
 <translation id="5554171655917412781">تم اختيار <ph name="SELECTED_FOLDERS_COUNT" /> مجلد.</translation>
 <translation id="5580591966435005537">جهاز افتراضي</translation>
@@ -606,6 +605,7 @@
 <translation id="5720028165859493293">تم نقل <ph name="FILE_NAME" /> إلى "المهملات".</translation>
 <translation id="5724172041621205163">‏التايلاندية باستخدام لوحة مفاتيح Pattachote</translation>
 <translation id="57383366388012121">الشهر الماضي</translation>
+<translation id="575175778971367197">لا يمكن مزامنة هذا الملف في الوقت الحالي.</translation>
 <translation id="5756666464756035725">‏QWERTY المجرية</translation>
 <translation id="5760252553414789727">تم اختيار <ph name="SELECTED_FILES_COUNT" /> عنصر.</translation>
 <translation id="5763377084591234761">الألمانية (سويسرا)</translation>
@@ -695,6 +695,7 @@
 <translation id="6423031066725912715">‏الفيتنامية باستخدام لوحة مفاتيح TCVN</translation>
 <translation id="6430271654280079150">يتبقى لديك محاولة واحدة.</translation>
 <translation id="643243556292470964">يجري الآن نقل الملفات المحذوفة إلى المهملات.</translation>
+<translation id="6438480100790416671">جارٍ التحقّق من مساحة التخزين…</translation>
 <translation id="6485131920355264772">تعذّر جلب معلومات المساحة</translation>
 <translation id="6495925982925244349">الشبكة <ph name="NETWORK_INDEX" /> من <ph name="NETWORK_COUNT" />، الشبكة <ph name="NETWORK_NAME" />، حالة الأمان <ph name="SECURITY_STATUS" />، حالة الاتصال <ph name="CONNECTION_STATUS" />، قوة الإشارة <ph name="SIGNAL_STRENGTH" />%، يديرها المشرف، التفاصيل</translation>
 <translation id="649877868557234318">جارٍ استخراج الملف <ph name="FILE_NAME" /> إلى المجلّد <ph name="FOLDER_NAME" /></translation>
@@ -707,6 +708,7 @@
 <translation id="6558280019477628686">حدث خطأ ما. ربما لم يتمّ حذف بعض العناصر.</translation>
 <translation id="656398493051028875">جارٍ حذف "<ph name="FILENAME" />"...</translation>
 <translation id="6581162200855843583">‏رابط Google Drive</translation>
+<translation id="6588648400954570689">إعدادات مزامنة الملفات</translation>
 <translation id="6594855146910089723">‏تمّت مشاركة هذا المجلد مع نظامَي التشغيل Linux وParallels Desktop.</translation>
 <translation id="6607272825297743757">معلومات الملف</translation>
 <translation id="6609332149380188670">‏تمّت مشاركة <ph name="NUMBER_OF_ITEMS" /> مجلد مع نظام Parallels Desktop.</translation>
@@ -742,7 +744,6 @@
 <translation id="6874758081814639712">شخص يمارس تمارين "تاي تشي"</translation>
 <translation id="6876155724392614295">دراجة</translation>
 <translation id="6878261347041253038">لوحة المفاتيح الديفانغارية (صوتية)</translation>
-<translation id="6882444584974399416">لا تتوفّر مساحة تخزين كافية على جهازك للاحتفاظ بملفاتك وإتاحتها بلا اتصال بالإنترنت. لن تتم مزامنة الملفات الجديدة تلقائيًا بعد الآن.</translation>
 <translation id="6885780034956018177">حلزون</translation>
 <translation id="6896758677409633944">نسخ</translation>
 <translation id="6898028766943174120">المزيد من المجلدات الفرعية...</translation>
@@ -832,6 +833,7 @@
 <translation id="7547811415869834682">الهولندية</translation>
 <translation id="7551643184018910560">تثبيت في الرف</translation>
 <translation id="7553492409867692754">‏يمكنك منح التطبيقات التي تعمل بنظام التشغيل Linux الإذن للوصول إلى الملفات في مجلد <ph name="FOLDER_NAME" />.</translation>
+<translation id="7555339735447658365">جهازك غير متصل بالإنترنت حاليًا. سيتم استئناف مزامنة الملفات بعدما يتصل جهازك بالإنترنت.</translation>
 <translation id="7589661784326793847">انتظر قليلاً</translation>
 <translation id="7592775719802218421">إتاحة <ph name="FILE_NAME" /> بدون اتصال بالإنترنت</translation>
 <translation id="7600126690270271294">الصربية</translation>
@@ -874,6 +876,7 @@
 <translation id="7814857791038398352">Microsoft OneDrive</translation>
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> تيرابايت</translation>
 <translation id="7831491651892296503">حدث خطأ أثناء إعداد الشبكة</translation>
+<translation id="7832093238954689746">اكتملت مزامنة الملفات. أصبحت الملفات ضِمن مجلد "ملفاتي" متاحة بلا اتصال بالإنترنت.</translation>
 <translation id="7839804798877833423">سيؤدي جلب هذه الملفات إلى استخدام حوالي <ph name="FILE_SIZE" /> من بيانات الجوال.</translation>
 <translation id="7846076177841592234">إلغاء الاختيار</translation>
 <translation id="7853966320808728790">‏BÉPO الفرنسية</translation>
@@ -898,6 +901,7 @@
 <translation id="8000066093800657092">لا شبكة</translation>
 <translation id="8008366997883261463">كلب</translation>
 <translation id="8028993641010258682">الحجم</translation>
+<translation id="8034974485549318493">لإجراء الإعداد الأوّلي، عليك الاتصال بالإنترنت كي تتم مزامنة الملفات.</translation>
 <translation id="803771048473350947">ملف</translation>
 <translation id="8038111231936746805">(تلقائي)</translation>
 <translation id="8042602468072383151">ملف صوت <ph name="AUDIO_TYPE" /></translation>
@@ -921,6 +925,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">طراز الجهاز</translation>
 <translation id="8223479393428528563">لحفظ هذه الملفات بلا اتصال، عليك العودة للاتصال انقر بزر الماوس الأيمن على الملفات، وحدد خيار <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
+<translation id="8241139360630443550">عرض مساحة التخزين</translation>
 <translation id="8249296373107784235">إلغاء</translation>
 <translation id="8250690786522693009">اللاتينية</translation>
 <translation id="8250920743982581267">المستندات</translation>
@@ -950,8 +955,8 @@
 <translation id="8395901698320285466">الأبعاد</translation>
 <translation id="8404498045299006085">الإبقاء على الكل</translation>
 <translation id="8408068190360279472">شبكة <ph name="NETWORK_TYPE" />، جارٍ الاتصال</translation>
-<translation id="841387525767317275">ملفات هذا المجلد متاحة على جهازك بلا اتصال بالإنترنت.</translation>
 <translation id="8425213833346101688">تغيير</translation>
+<translation id="8428213095426709021">الإعدادات</translation>
 <translation id="8431909052837336408">‏تغيير رمز PIN لشريحة SIM</translation>
 <translation id="8437209419043462667">الأمريكية</translation>
 <translation id="8452135315243592079">‏شريحة SIM مفقودة</translation>
@@ -978,7 +983,6 @@
 <translation id="8560515948038859357">الكانتونية</translation>
 <translation id="8561206103590473338">فيل</translation>
 <translation id="8566466896628108558">الشبكة <ph name="NETWORK_INDEX" /> من <ph name="NETWORK_COUNT" />، الشبكة <ph name="NETWORK_NAME" />، حالة الأمان <ph name="SECURITY_STATUS" />، قوة الإشارة %<ph name="SIGNAL_STRENGTH" />، تم حظر هذه الشبكة من قِبَل المشرف، التفاصيل</translation>
-<translation id="8567555211227790801">جهازك غير متصل بالإنترنت حاليًا. سيتم استئناف المزامنة عند اتصالك بالإنترنت.</translation>
 <translation id="8568374623837201676">هل تريد حذف هذا الملف نهائيًا؟</translation>
 <translation id="8569764466147087991">اختيار ملف لفتحه</translation>
 <translation id="8577897833047451336">الكرواتية</translation>

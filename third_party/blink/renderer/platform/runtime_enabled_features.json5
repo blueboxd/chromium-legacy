@@ -178,6 +178,9 @@
 
     // browser_process_read_access indicates the runtime feature state should be
     // readable in the browserprocess via RuntimeFeatureStateReadContext.
+    // TODO(crbug.com/1377000): this feature does not support origin trial
+    // tokens provided in HTTP headers. Any tokens provided via HTTP header will
+    // be dropped.
     browser_process_read_access: {
       default: false,
       value_type: "bool",
@@ -185,6 +188,9 @@
 
     // browser_process_read_write_access indicates the runtime feature state
     // should be writable in the browserprocess via RuntimeFeatureStateContext.
+    // TODO(crbug.com/1377000): this feature does not support origin trial
+    // tokens provided in HTTP headers. Any tokens provided via HTTP header will
+    // be dropped.
     browser_process_read_write_access: {
       default: false,
       value_type: "bool",
@@ -571,10 +577,21 @@
       base_feature: "none",
     },
     {
+      name: "CapturedMouseEvents",
+      "depends_on": ["CaptureController"],
+      status: {"Android": "", "default": "test"},
+    },
+    {
       name: "CaptureHandle",
       depends_on: ["GetDisplayMedia"],
       status: {"Android": "", "default": "stable"},
       base_feature: "none",
+    },
+    {
+      // Kill switch for changes to RenderFrameMetadataObserverImpl in connection with Engagement
+      // Signals. See https://crrev.com/c/4544201 and https://crbug.com/1458640.
+      name: "CCTNewRFMPushBehavior",
+      base_feature_status: "enabled",
     },
     {
       name: "checkVisibility",
@@ -657,14 +674,13 @@
     },
     {
       name: "CompressionDictionaryTransport",
-      base_feature_status: "enabled",
-      copied_from_base_feature_if: "overridden",
+      base_feature: "none",
       origin_trial_feature_name: "CompressionDictionaryTransport",
       public: true,
     },
     {
       name: "CompressionDictionaryTransportBackend",
-      base_feature_status: "disabled",
+      base_feature: "none",
       public: true,
     },
     {
@@ -786,6 +802,10 @@
       base_feature: "none",
     },
     {
+      name: "CSSCapFontUnits",
+      status: "experimental",
+    },
+    {
       // Support case-sensitive attribute selector modifier
       // https://drafts.csswg.org/selectors-4/#attribute-case
       name: "CSSCaseSensitiveSelector",
@@ -804,7 +824,7 @@
     },
     {
       name: "CSSContainIntrinsicSizeAutoNone",
-      status: "experimental",
+      status: "stable",
     },
     // Ablation study to try to measure very roughly memory savings from not saving
     // pretokenized strings in CSS custom properties.
@@ -1084,7 +1104,7 @@
     {
       // https://drafts.csswg.org/css-transitions-2/#defining-before-change-style-the-starting-style-rule
       name: "CSSStartingStyle",
-      status: "experimental",
+      status: "stable",
     },
     {
       // Explainer: https://drafts.csswg.org/css-values/#round-func
@@ -1130,8 +1150,8 @@
     // Use the `NGSCoreLineBreaker` for `text-wrap: balance`. crbug.com/1451205
     {
       name: "CSSTextWrapBalanceByScore",
-      status: "test",
-      depends_on: ["CSSTextWrapPretty"],
+      status: "stable",
+      depends_on: ["CSSTextWrap", "CSSWhiteSpaceShorthand"],
     },
     // `text-wrap: pretty`. crbug.com/1432798
     {
@@ -1754,8 +1774,7 @@
     },
     {
       name: "FontVariantPosition",
-      status: "experimental",
-      base_feature: "none",
+      status: "stable",
     },
     {
       // TODO(crbug.com/1231644): This flag is being kept (even though the
@@ -2022,6 +2041,11 @@
       "name": "IntersectionOptimization",
     },
     {
+      name: "JavaScriptCompileHintsMagicRuntime",
+      status: "experimental",
+      origin_trial_feature_name: "JavaScriptCompileHintsMagic",
+    },
+    {
       name: "KeyboardAccessibleTooltip",
       status: "experimental",
       base_feature: "none",
@@ -2059,13 +2083,17 @@
       status: "stable",
     },
     {
+      name: "LayoutNewFixedPositionInvalidation",
+      status: "stable",
+    },
+    {
       name: "LayoutNewTextAreaScrollbar",
       status: "stable",
     },
     {
       // crbug.com/1353190
       name: "LayoutNGNoCopyBack",
-      depends_on: ["LayoutNGNoLocation", "RemoveConvertToLayerCoords", "ScrollableAreaNoSnapping"],
+      depends_on: ["LayoutNGNoLocation", "ScrollableAreaNoSnapping"],
       status: "test",
     },
     {
@@ -2080,7 +2108,7 @@
     },
     {
       name: "LayoutNGSubgrid",
-      status: "experimental",
+      status: "stable",
       base_feature: "none",
     },
     {
@@ -2886,11 +2914,6 @@
       base_feature: "none",
     },
     {
-      // crbug.com/1432839
-      name: "RemoveConvertToLayerCoords",
-      status: "stable",
-    },
-    {
       name: "RemoveDanglingMarkupInTarget",
       status: "experimental",
       base_feature: "none",
@@ -2998,13 +3021,12 @@
       status: "experimental",
       base_feature: "none",
     },
-    // Enables the use of |RTCRtpTransceiver::setOfferedRtpHeaderExtensions|,
-    // |RTCRtpTransceiver::headerExtensionsToOffer|, and
-    // |RTCRtpTransceiver::headerExtensionsNegotiated|.
+    // Enables the use of |RTCRtpTransceiver::getHeaderExtensionsToNegotiate|,
+    // |RTCRtpTransceiver::setHeaderExtensionsToNegotiate|, and
+    // |RTCRtpTransceiver::getNegotiatedHeaderExtensions|.
     {
       name: "RTCRtpHeaderExtensionControl",
-      status: "experimental",
-      base_feature: "none",
+      status: "stable",
     },
     {
       name: "RTCStatsRelativePacketArrivalDelay",
@@ -3399,6 +3421,10 @@
       status: "stable",
     },
     {
+      name: "SvgNoPixelSnappingScaleAdjustment",
+      status: "stable",
+    },
+    {
       name: "SvgRasterOptimizations",
       status: "experimental",
     },
@@ -3668,6 +3694,10 @@
       name: "ViewTransition",
       status: "stable",
       implied_by: ["ViewTransitionOnNavigation"],
+    },
+    {
+      name: "ViewTransitionLayoutObjectVisualOverflow",
+      status: "stable",
     },
     {
       // If enabled, ViewTransition API is supported for navigations including

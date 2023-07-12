@@ -81,7 +81,6 @@
 #import "ios/components/security_interstitials/safe_browsing/safe_browsing_unsafe_resource_container.h"
 #import "ios/components/webui/web_ui_url_constants.h"
 #import "ios/net/protocol_handler_util.h"
-#import "ios/public/provider/chrome/browser/find_in_page/find_in_page_api.h"
 #import "ios/public/provider/chrome/browser/url_rewriters/url_rewriters_api.h"
 #import "ios/web/common/features.h"
 #import "ios/web/common/user_agent.h"
@@ -196,13 +195,17 @@ NSString* GetSupervisedUserErrorPageHTML(web::WebState* web_state,
   SupervisedUserErrorContainer::SupervisedUserErrorInfo& info =
       container->GetSupervisedUserErrorInfo();
 
+  container->CreateSupervisedUserInterstitial();
+  // TODO(b/264669960): Pass ownership of the intersitial to the appropriate
+  // handler of its lifecycle (tracking the navigation).
+
   ChromeBrowserState* browser_state =
       ChromeBrowserState::FromBrowserState(web_state->GetBrowserState());
   std::string error_page_content =
       supervised_user::SupervisedUserInterstitial::GetHTMLContents(
           SupervisedUserServiceFactory::GetForBrowserState(browser_state),
           browser_state->GetPrefs(), info.filtering_behavior_reason(),
-          info.is_already_requested(), info.is_main_frame(),
+          container->IsRemoteApprovalPendingForUrl(url), info.is_main_frame(),
           GetApplicationContext()->GetApplicationLocale());
   return base::SysUTF8ToNSString(error_page_content);
 }
@@ -531,23 +534,6 @@ bool ChromeWebClient::IsPointingToSameDocument(const GURL& url1,
   GURL url_to_compare1 = GetOnlineUrl(url1);
   GURL url_to_compare2 = GetOnlineUrl(url2);
   return url_to_compare1 == url_to_compare2;
-}
-
-id<CRWFindSession> ChromeWebClient::CreateFindSessionForWebState(
-    web::WebState* web_state) const API_AVAILABLE(ios(16)) {
-  id<UITextSearching> searchable_object =
-      ios::provider::GetSearchableObjectForWebState(web_state);
-  UIFindSession* UIFindSession = [[UITextSearchingFindSession alloc]
-      initWithSearchableObject:searchable_object];
-  return [[CRWFindSession alloc] initWithUIFindSession:UIFindSession];
-}
-
-void ChromeWebClient::StartTextSearchInWebState(web::WebState* web_state) {
-  ios::provider::StartTextSearchInWebState(web_state);
-}
-
-void ChromeWebClient::StopTextSearchInWebState(web::WebState* web_state) {
-  ios::provider::StopTextSearchInWebState(web_state);
 }
 
 bool ChromeWebClient::IsMixedContentAutoupgradeEnabled(

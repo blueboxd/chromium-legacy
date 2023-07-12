@@ -37,11 +37,11 @@
 <translation id="1297922636971898492">Hindi available sa ngayon ang Google Drive. Awtomatikong magre-restart ang pag-a-upload sa sandaling bumalik na ang Google Drive.</translation>
 <translation id="1307931752636661898">Hindi matingnan ang mga Linux file</translation>
 <translation id="1313405956111467313">Awtomatikong proxy configuration</translation>
+<translation id="134645005685694099">Walang sapat na storage space ang iyong device para mapanatiling naka-on ang pag-sync ng file. Hindi na awtomatikong masi-sync ang mga bagong file.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
 <translation id="1358735829858566124">Hindi nagagamit ang file o ang direktoryo.</translation>
 <translation id="1363028406613469049">Track</translation>
 <translation id="1378727793141957596">Maligayang pagdating sa Google Drive!</translation>
-<translation id="1379156577998569384">Available offline ang iyong mga file sa Aking Drive</translation>
 <translation id="1379911846207762492">Puwede mong gawing available offline ang mga file para ma-access ang mga ito kapag wala kang koneksyon sa internet.</translation>
 <translation id="1383876407941801731">Hanapin</translation>
 <translation id="1388045380422025115">Lahat ng uri</translation>
@@ -131,7 +131,6 @@
 <translation id="2084108471225856927">Mga setting ng device</translation>
 <translation id="2084809735218147718">Sumesenyas ng salamat</translation>
 <translation id="2088690981887365033">VPN network</translation>
-<translation id="2089751716171649322">Madaling ma-access ang iyong mga file sa Google Drive kapag offline ka</translation>
 <translation id="2111134541987263231">I-on ang <ph name="BEGIN_BOLD" />Payagan sa Incognito<ph name="END_BOLD" />.</translation>
 <translation id="2114191879048183086"><ph name="NUMBER_OF_ITEMS" /> (na) item ang ide-delete at hindi mo mare-restore ang mga ito.</translation>
 <translation id="2122305276694332719">Ang awtomatikong pagkonekta sa nakatagong network ay nagbibigay-daan sa ibang tao na makita ang iyong device at ibang setting ng network, at hindi ito inirerekomenda.</translation>
@@ -182,6 +181,7 @@
 <translation id="2464089476039395325">HTTP Proxy</translation>
 <translation id="2467267713099745100"><ph name="NETWORK_TYPE" /> network, naka-off</translation>
 <translation id="2468402215065996499">Tamagotchi</translation>
+<translation id="2468470447085858632">I-access ang iyong mga file sa Google Drive offline gamit ang pag-sync ng file</translation>
 <translation id="2470939964922472929">Napakaraming beses nang naglagay ng maling PIN. Para mag-set up ng bagong PIN, ilagay ang 8 digit na Personal Unblocking Key (PUK) na ibinigay ng iyong carrier.</translation>
 <translation id="2500392669976258912">Gujarati Phonetic</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -351,12 +351,12 @@
 <translation id="3855472144336161447">German Neo 2</translation>
 <translation id="3858860766373142691">Pangalan</translation>
 <translation id="3866249974567520381">Paglalarawan</translation>
-<translation id="3866439285517092441">Paubos na ang baterya. Magpapatuloy ang pag-sync kapag nakakonekta ka sa kuryente.</translation>
 <translation id="3899991606604168269">French (Canada) na may Multilingual keyboard</translation>
 <translation id="3901991538546252627">Kumokonekta sa <ph name="NAME" /></translation>
 <translation id="3906232975181435906">Ini-install ang profile ng mobile, Network <ph name="NETWORK_INDEX" /> sa <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">I-paste</translation>
+<translation id="3950820424414687140">Mag-sign in</translation>
 <translation id="3952872973865944257">Telugu Phonetic</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="397105322502079400">Kinakalkula...</translation>
@@ -578,12 +578,10 @@
 <translation id="5494920125229734069">Piliin ang lahat</translation>
 <translation id="5500122897333236901">Icelandic</translation>
 <translation id="5508696409934741614">Mga Dot</translation>
-<translation id="5519161320735100193">Mga setting ng Google Drive</translation>
 <translation id="5522908512596376669">Naging list view ang listahan ng file.</translation>
 <translation id="5524517123096967210">Hindi mabasa ang file.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> na larawan</translation>
 <translation id="5534520101572674276">Kinakalkula ang laki</translation>
-<translation id="5536122250858122375">Hindi masi-sync ang uri ng file na ito</translation>
 <translation id="554153475311314364">Greek Transliteration</translation>
 <translation id="5554171655917412781"><ph name="SELECTED_FOLDERS_COUNT" /> (na) folder ang napili</translation>
 <translation id="5580591966435005537">virtual machine</translation>
@@ -607,6 +605,7 @@
 <translation id="5720028165859493293">Inilipat ang <ph name="FILE_NAME" /> sa trash</translation>
 <translation id="5724172041621205163">Thai na may Pattachote keyboard</translation>
 <translation id="57383366388012121">Nakaraang buwan</translation>
+<translation id="575175778971367197">Hindi ma-sync ang file na ito sa ngayon</translation>
 <translation id="5756666464756035725">Hungarian na QWERTY</translation>
 <translation id="5760252553414789727"><ph name="SELECTED_FILES_COUNT" /> (na) item ang napili</translation>
 <translation id="5763377084591234761">German (Switzerland)</translation>
@@ -709,6 +708,7 @@
 <translation id="6558280019477628686">Nagka-error. Maaaring may ilang item na hindi na-delete.</translation>
 <translation id="656398493051028875">Tinatanggal ang "<ph name="FILENAME" />"...</translation>
 <translation id="6581162200855843583">link ng Google Drive</translation>
+<translation id="6588648400954570689">Mga setting ng pag-sync ng file</translation>
 <translation id="6594855146910089723">Nakabahagi sa Linux at Parallels Desktop ang folder na ito</translation>
 <translation id="6607272825297743757">Impormasyon ng file</translation>
 <translation id="6609332149380188670"><ph name="NUMBER_OF_ITEMS" /> (na) folder ang ibinahagi sa Parallels Desktop</translation>
@@ -744,7 +744,6 @@
 <translation id="6874758081814639712">Taong nagta-tai chi</translation>
 <translation id="6876155724392614295">Bisikleta</translation>
 <translation id="6878261347041253038">Devanagari keyboard (Phonetic)</translation>
-<translation id="6882444584974399416">Walang sapat na storage space ang iyong device para panatilihing available offline ang mga file mo. Hindi na awtomatikong isi-sync ang mga bagong file.</translation>
 <translation id="6885780034956018177">Suso</translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="6898028766943174120">Higit pang sub-folder...</translation>
@@ -834,6 +833,7 @@
 <translation id="7547811415869834682">Dutch</translation>
 <translation id="7551643184018910560">I-pin sa shelf</translation>
 <translation id="7553492409867692754">Bigyan ng pahintulot ang mga Linux app na ma-access ang mga file sa folder na <ph name="FOLDER_NAME" /></translation>
+<translation id="7555339735447658365">Kasalukuyan kang offline. Magpapatuloy ang pag-sync ng file kapag nakakonekta ka sa internet</translation>
 <translation id="7589661784326793847">Maghintay lamang ng isang segundo</translation>
 <translation id="7592775719802218421">Ginagawang available offline ang <ph name="FILE_NAME" /></translation>
 <translation id="7600126690270271294">Serbian</translation>
@@ -876,6 +876,7 @@
 <translation id="7814857791038398352">Microsoft OneDrive</translation>
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7831491651892296503">Nagkaroon ng error sa pag-configure sa network</translation>
+<translation id="7832093238954689746">Tapos na ang pag-sync. Available offline ang mga file sa Aking Drive.</translation>
 <translation id="7839804798877833423">Ang pagkuha sa mga file na ito ay gagamit ng humigit-kumulang <ph name="FILE_SIZE" /> (na) mobile data.</translation>
 <translation id="7846076177841592234">Kanselahin ang pinili</translation>
 <translation id="7853966320808728790">French na BÉPO</translation>
@@ -924,6 +925,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">Modelo ng device</translation>
 <translation id="8223479393428528563">Upang i-save ang mga file na ito para sa offline na paggamit, mag-online muli, i-right click ang mga file at piliin ang opsyong <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
+<translation id="8241139360630443550">Tingnan ang storage</translation>
 <translation id="8249296373107784235">I-abort</translation>
 <translation id="8250690786522693009">Latin</translation>
 <translation id="8250920743982581267">Mga Dokumento</translation>
@@ -953,8 +955,8 @@
 <translation id="8395901698320285466">Mga Sakop</translation>
 <translation id="8404498045299006085">Panatilihin lahat</translation>
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> network, kumokonekta</translation>
-<translation id="841387525767317275">Available offline ang mga file sa folder na ito</translation>
 <translation id="8425213833346101688">Baguhin</translation>
+<translation id="8428213095426709021">Mga Setting</translation>
 <translation id="8431909052837336408">Palitan ang PIN ng SIM</translation>
 <translation id="8437209419043462667">US</translation>
 <translation id="8452135315243592079">Walang nakalagay na SIM card</translation>
@@ -981,7 +983,6 @@
 <translation id="8560515948038859357">Cantonese</translation>
 <translation id="8561206103590473338">Elepante</translation>
 <translation id="8566466896628108558">Network <ph name="NETWORK_INDEX" /> sa <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, Lakas ng Signal <ph name="SIGNAL_STRENGTH" />%, Na-block ng iyong Administrator, Mga Detalye</translation>
-<translation id="8567555211227790801">Kasalukuyan kang offline. Magpapatuloy ang pag-sync kapag nakakonekta ka sa internet.</translation>
 <translation id="8568374623837201676">Permanenteng i-delete ang file na ito?</translation>
 <translation id="8569764466147087991">Piliin ang isang file para buksan</translation>
 <translation id="8577897833047451336">Croatian</translation>

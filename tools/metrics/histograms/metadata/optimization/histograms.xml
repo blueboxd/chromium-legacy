@@ -55,6 +55,8 @@ chromium-metrics-reviews@google.com.
   <variant name="PainfulPageLoad" summary="Painful page load"/>
   <variant name="SegmentationAdaptiveToolbar"
       summary="Segmentation: Adaptive toolbar button"/>
+  <variant name="SegmentationBottomToolbar"
+      summary="Segmentation: Bottom toolbar user"/>
   <variant name="SegmentationChromeLowUserEngagement"
       summary="Segmentation: Low user engagement with Chrome"/>
   <variant name="SegmentationChromeStartAndroid"
@@ -137,6 +139,9 @@ chromium-metrics-reviews@google.com.
   <variant name="ThankCreatorEligible"
       summary="This optimization provides information for whether a page is
                eligible for the 'Thank Creator' feature."/>
+  <variant name="V8CompileHints"
+      summary="Information about which JavaScript functions should be eager
+               compiled."/>
   <variant name="VcnMerchantOptOutVisa"
       summary="This optimization provides information about whether a
                merchant is opted-out of Visa virtual cards for a URL."/>
@@ -175,20 +180,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     The decision made for whether {OptimizationType} can be applied on the page
     load.
-  </summary>
-  <token key="OptimizationType" variants="OptimizationType"/>
-</histogram>
-
-<histogram name="OptimizationGuide.ApplyDecisionAsync.{OptimizationType}"
-    enum="OptimizationGuideOptimizationTypeDecision" expires_after="M121">
-  <owner>sophiechang@chromium.org</owner>
-  <owner>mcrouse@chromium.org</owner>
-  <summary>
-    Records the decision made for whether {OptimizationType} can be applied on a
-    page load when all information for that page load has been sufficiently
-    gathered. This will be recorded once per callback registered, so if two
-    callbacks were registered for {OptimizationType} on the same page load, this
-    will be recorded twice for that case.
   </summary>
   <token key="OptimizationType" variants="OptimizationType"/>
 </histogram>

@@ -298,6 +298,7 @@
 <translation id="2318576281648121272">आज <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060">खोज के नतीजों की <ph name="CATEGORY" /> कैटगरी</translation>
 <translation id="2322173485024759474">एक वर्ण पीछे जाएं</translation>
+<translation id="2335091074961603075">आपके Chromebook या ब्लूटूथ डिवाइस में, ब्लूटूथ के पुराने वर्शन का इस्तेमाल किया जा रहा है. बेहतर ऑडियो क्वालिटी के लिए, इंटरनल माइक्रोफ़ोन का इस्तेमाल करें.</translation>
 <translation id="2339073806695260576">नोट लेने, स्क्रीनशॉट लेने, लेज़र पॉइंटर या आवर्धक ग्लास का इस्तेमाल करने के लिए शेल्फ़ पर मौजूद स्टाइलस बटन पर टैप करें.</translation>
 <translation id="2341729377289034582">लंबवत पर लॉक किया गया</translation>
 <translation id="2345226652884463045">जिस टेक्स्ट में बदलाव करना है उसे चुनने के लिए Enter या Search + Space दबाएं.</translation>
@@ -395,6 +396,7 @@
 <translation id="2750941250130734256">चालू विंडो को अनडॉक किया गया है.</translation>
 <translation id="2761723519669354964">शेल्फ़ से हाइलाइट किया गया आइटम खोलने के लिए</translation>
 <translation id="2774348302533424868"><ph name="MODIFIER" /><ph name="DELIMITER" /><ph name="KEY_ONE" /> से <ph name="KEY_TWO" /></translation>
+<translation id="2778197796481941784">Ctrl+Search+S</translation>
 <translation id="2778650143428714839"><ph name="DEVICE_TYPE" /> को <ph name="MANAGER" /> मैनेज करता है</translation>
 <translation id="2782591952652094792">कैप्चर मोड बंद करें</translation>
 <translation id="2785499565474703580">1 डिवाइस कनेक्ट है</translation>
@@ -458,6 +460,7 @@
 <translation id="3062298103034426069">काम नहीं करता</translation>
 <translation id="3068622547379332530">वर्शन <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">शेल्फ़ बाईं ओर है</translation>
+<translation id="3070639127620815135">Search+Esc</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">मेन्यू बड़ा करें</translation>
 <translation id="3087734570205094154">नीचे</translation>
@@ -471,6 +474,7 @@
 <translation id="3120421559657122717">क्या डिवाइस को शट डाउन करना है?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">अपडेट करने के लिए रीस्टार्ट करें</translation>
+<translation id="3139188263101386725">अपडेट किए गए शॉर्टकट का इस्तेमाल करें</translation>
 <translation id="3139942575505304791">डेस्क 1</translation>
 <translation id="315116470104423982">मोबाइल डेटा</translation>
 <translation id="3151786313568798007">ओरिएंटेशन</translation>
@@ -606,6 +610,7 @@
         <ph name="END_TIME" />,
         <ph name="TIME_ZONE" />. ज़्यादा जानकारी के लिए, Google Calendar में जाकर यह एंट्री चुनें.</translation>
 <translation id="3659444876902283058">(<ph name="CURRENT_DAY" />/<ph name="TOTAL_DAYS" /> दिन)</translation>
+<translation id="3659667652322717492">माइक के काम करने का तरीका कभी भी बदला जा सकता है.</translation>
 <translation id="3659814201068740063">डिवाइस करीब <ph name="TIME_LEFT" /> और चलेगा (<ph name="PERCENTAGE" />%).
 अपने डिवाइस को चार्ज करें.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> प्रबंधित उपयोगकर्ता</translation>
@@ -1050,6 +1055,7 @@
 <translation id="5578188167649348993">मेमोरी</translation>
 <translation id="5580000943347215299">लाइब्रेरी</translation>
 <translation id="558849140439112033">कैप्चर की जाने वाली जगह चुनने के लिए खींचें और छोड़ें</translation>
+<translation id="5590609058453685222">म्यूट नज की सुविधा चालू है. माइक के म्यूट रहते हुए बात करने पर, आपको इसकी सूचना दी जाएगी.</translation>
 <translation id="5596627076506792578">ज़्यादा विकल्प</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">बोला गया फ़ीडबैक अक्षम करने के लिए Ctrl + Alt + Z दबाएं.</translation>
@@ -1203,6 +1209,7 @@
 <translation id="6231419273573514727">हो सकता है कि सहायक डिवाइस पूरी तरह काम न करें</translation>
 <translation id="6232891689835436217"><ph name="APP_NAME" />, फ़िलहाल आपके कैमरे और माइक्रोफ़ोन का इस्तेमाल कर रहा है</translation>
 <translation id="6237231532760393653">1X</translation>
+<translation id="6244986124527896815">"<ph name="NEW_SHORTCUT" />" से Task Manager ऐप्लिकेशन खोलें.</translation>
 <translation id="6247728804802644171">सूचनाएं खोलने के लिए</translation>
 <translation id="6254629735336163724">क्षैतिज पर लॉक किया गया</translation>
 <translation id="6259254695169772643">चुनने के लिए अपने स्टाइलस का इस्तेमाल करें</translation>
@@ -1253,6 +1260,7 @@
 <translation id="6497418457565568043">'परेशान न करें' सुविधा चालू है</translation>
 <translation id="6500896621837555595">अपडेट करें</translation>
 <translation id="6501401484702599040">स्‍क्रीन को <ph name="RECEIVER_NAME" /> पर कास्‍ट किया जा रहा है</translation>
+<translation id="6507042703812908515">"<ph name="NEW_SHORTCUT" />" से Keyboard Shortcuts ऐप्लिकेशन खोलें.</translation>
 <translation id="6507618042428827377">इनपुट का अगला मौजूद तरीका चुनें</translation>
 <translation id="6508923215158854599">पक्का करें कि आपका Chromebook उसी वाई-फ़ाई नेटवर्क से जुड़ा हो जिससे आपका Chromecast डिवाइस जुड़ा है.</translation>
 <translation id="6515727200518652613">कैमरा डिसकनेक्ट हो गया है. हम इसे फिर से कनेक्ट कर रहे हैं.</translation>
@@ -1485,7 +1493,7 @@
 <translation id="7579778809502851308">स्क्रीन कैप्चर</translation>
 <translation id="7593891976182323525">Search या Shift</translation>
 <translation id="7600875258240007829">सभी सूचनाएं देखें</translation>
-<translation id="7601417191446344542">क्या आपको म्यूट रिमाइंडर चालू करना है?</translation>
+<translation id="7601417191446344542">क्या आपको म्यूट नज सुविधा चालू करनी है?</translation>
 <translation id="7607002721634913082">रोका गया</translation>
 <translation id="7609951632080598826">कैलेंडर व्यू, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">कैमरा फिर से कनेक्ट हो गया है.</translation>
@@ -1546,7 +1554,6 @@
 <translation id="7866482334467279021">चालू</translation>
 <translation id="7872786842639831132">बंद है</translation>
 <translation id="7875575368831396199">ऐसा लगता है कि आपके <ph name="DEVICE_TYPE" /> पर ब्लूटूथ बंद है. फ़ोन हब का इस्तेमाल करने के लिए, कृपया ब्लूटूथ चालू करें.</translation>
-<translation id="7876243839304621966">सभी को निकालें</translation>
 <translation id="7877557217297072640">{0,plural, =0{डिवाइस को पिछले वर्शन पर अभी ले जाएं}=1{डिवाइस को 1 सेकंड के अंदर पिछले वर्शन पर ले जाएं}one{डिवाइस को # सेकंड के अंदर पिछले वर्शन पर ले जाएं}other{डिवाइस को # सेकंड के अंदर पिछले वर्शन पर ले जाएं}}</translation>
 <translation id="7884446017008693258">हॉटस्पॉट सेटिंग</translation>
 <translation id="7884902759927478774">टैब को खींचकर छोड़ने की कार्रवाई रद्द करें</translation>
@@ -1752,6 +1759,7 @@
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8790998409862094015">बहुत ज़्यादा</translation>
 <translation id="8792626944327216835">माइक्रोफ़ोन</translation>
+<translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> फ़ोल्डर</translation>
 <translation id="880709030178078220">"सहायता"</translation>
 <translation id="8814190375133053267">वाई-फ़ाई </translation>

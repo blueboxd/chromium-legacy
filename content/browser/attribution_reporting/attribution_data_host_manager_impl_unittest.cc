@@ -30,7 +30,7 @@
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/event_trigger_data.h"
-#include "components/attribution_reporting/registration_type.mojom.h"
+#include "components/attribution_reporting/registration_eligibility.mojom.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "components/attribution_reporting/source_registration_time_config.mojom.h"
@@ -72,7 +72,7 @@ using ::attribution_reporting::FilterPair;
 using ::attribution_reporting::SourceRegistration;
 using ::attribution_reporting::SuitableOrigin;
 using ::attribution_reporting::TriggerRegistration;
-using ::attribution_reporting::mojom::RegistrationType;
+using ::attribution_reporting::mojom::RegistrationEligibility;
 using ::attribution_reporting::mojom::SourceRegistrationError;
 using ::attribution_reporting::mojom::SourceType;
 
@@ -151,8 +151,9 @@ TEST_F(AttributionDataHostManagerImplTest, SourceDataHost_SourceRegistered) {
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterDataHost(
       data_host_remote.BindNewPipeAndPassReceiver(), page_origin,
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
 
   task_environment_.FastForwardBy(base::Milliseconds(1));
 
@@ -191,8 +192,9 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterDataHost(
       data_host_remote.BindNewPipeAndPassReceiver(), page_origin,
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
 
   SourceRegistration source_data(*DestinationSet::Create({destination_site}));
   data_host_remote->SourceDataAvailable(reporting_origin, source_data);
@@ -260,8 +262,8 @@ TEST_F(AttributionDataHostManagerImplTest, TriggerDataHost_TriggerRegistered) {
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterDataHost(
       data_host_remote.BindNewPipeAndPassReceiver(), destination_origin,
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId,
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
       /*last_navigation_id=*/kNavigationId);
 
   TriggerRegistration trigger_data;
@@ -308,7 +310,8 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterDataHost(
       data_host_remote.BindNewPipeAndPassReceiver(), destination_origin,
-      /*is_within_fenced_frame=*/false, RegistrationType::kTrigger, kFrameId,
+      /*is_within_fenced_frame=*/false, RegistrationEligibility::kTrigger,
+      kFrameId,
       /*last_navigation_id=*/kNavigationId);
 
   TriggerRegistration trigger_data;
@@ -339,12 +342,12 @@ TEST_F(AttributionDataHostManagerImplTest,
               "AttributionDataHost: Not eligible for source.");
   }
 
-    checkpoint.Call(3);
+  checkpoint.Call(3);
 
-    data_host_remote->TriggerDataAvailable(std::move(reporting_origin),
-                                           std::move(trigger_data),
-                                           /*verifications=*/{});
-    data_host_remote.FlushForTesting();
+  data_host_remote->TriggerDataAvailable(std::move(reporting_origin),
+                                         std::move(trigger_data),
+                                         /*verifications=*/{});
+  data_host_remote.FlushForTesting();
 }
 
 TEST_F(AttributionDataHostManagerImplTest,
@@ -371,8 +374,8 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterDataHost(
       data_host_remote.BindNewPipeAndPassReceiver(), page_origin,
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId,
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
       /*last_navigation_id=*/kNavigationId);
 
   SourceRegistration source_data(*DestinationSet::Create({destination_site}));
@@ -423,7 +426,8 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterDataHost(
       data_host_remote.BindNewPipeAndPassReceiver(), page_origin,
-      /*is_within_fenced_frame=*/false, RegistrationType::kSource, kFrameId,
+      /*is_within_fenced_frame=*/false, RegistrationEligibility::kSource,
+      kFrameId,
       /*last_navigation_id=*/kNavigationId);
 
   SourceRegistration source_data(*DestinationSet::Create({destination_site}));
@@ -450,11 +454,11 @@ TEST_F(AttributionDataHostManagerImplTest,
               "AttributionDataHost: Not eligible for trigger.");
   }
 
-    checkpoint.Call(3);
+  checkpoint.Call(3);
 
-    data_host_remote->SourceDataAvailable(std::move(reporting_origin),
-                                          std::move(source_data));
-    data_host_remote.FlushForTesting();
+  data_host_remote->SourceDataAvailable(std::move(reporting_origin),
+                                        std::move(source_data));
+  data_host_remote.FlushForTesting();
 }
 
 TEST_F(AttributionDataHostManagerImplTest,
@@ -499,13 +503,12 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterNavigationDataHost(
-      data_host_remote.BindNewPipeAndPassReceiver(), attribution_src_token,
-      AttributionInputEvent());
+      data_host_remote.BindNewPipeAndPassReceiver(), attribution_src_token);
 
   task_environment_.FastForwardBy(base::Milliseconds(1));
 
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token, page_origin,
+      attribution_src_token, AttributionInputEvent(), page_origin,
       /*is_within_fenced_frame=*/false, kFrameId,
       /*navigation_id=*/kNavigationId);
 
@@ -552,8 +555,7 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterNavigationDataHost(
-      data_host_remote.BindNewPipeAndPassReceiver(), attribution_src_token,
-      AttributionInputEvent());
+      data_host_remote.BindNewPipeAndPassReceiver(), attribution_src_token);
 
   SourceRegistration source_data(*DestinationSet::Create(
       {net::SchemefulSite::Deserialize("https://trigger.example")}));
@@ -578,7 +580,7 @@ TEST_F(AttributionDataHostManagerImplTest,
   task_environment_.FastForwardBy(base::Milliseconds(1));
 
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token, page_origin,
+      attribution_src_token, AttributionInputEvent(), page_origin,
       /*is_within_fenced_frame=*/false, kFrameId,
       /*navigation_id=*/kNavigationId);
   task_environment_.RunUntilIdle();
@@ -598,8 +600,9 @@ TEST_F(AttributionDataHostManagerImplTest, NoSourceOrTrigger) {
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterDataHost(
       data_host_remote.BindNewPipeAndPassReceiver(), page_origin,
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
   data_host_remote.reset();
   task_environment_.RunUntilIdle();
 
@@ -609,12 +612,12 @@ TEST_F(AttributionDataHostManagerImplTest, NoSourceOrTrigger) {
 
 TEST_F(AttributionDataHostManagerImplTest,
        SourceModeReceiverConnected_TriggerNotDelayed) {
-  constexpr RegistrationType kTestCases[] = {
-      RegistrationType::kSourceOrTrigger,
-      RegistrationType::kSource,
+  constexpr RegistrationEligibility kTestCases[] = {
+      RegistrationEligibility::kSourceOrTrigger,
+      RegistrationEligibility::kSource,
   };
 
-  for (auto registration_type : kTestCases) {
+  for (auto registration_eligibility : kTestCases) {
     base::HistogramTester histograms;
     EXPECT_CALL(mock_manager_, HandleTrigger).Times(1);
 
@@ -622,15 +625,16 @@ TEST_F(AttributionDataHostManagerImplTest,
     data_host_manager_.RegisterDataHost(
         source_data_host_remote.BindNewPipeAndPassReceiver(),
         *SuitableOrigin::Deserialize("https://page1.example"),
-        /*is_within_fenced_frame=*/false, registration_type, kFrameId,
+        /*is_within_fenced_frame=*/false, registration_eligibility, kFrameId,
         /*last_navigation_id=*/kNavigationId);
 
     mojo::Remote<blink::mojom::AttributionDataHost> trigger_data_host_remote;
     data_host_manager_.RegisterDataHost(
         trigger_data_host_remote.BindNewPipeAndPassReceiver(),
         *SuitableOrigin::Deserialize("https://page2.example"),
-        /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-        kFrameId, /*last_navigation_id=*/kNavigationId);
+        /*is_within_fenced_frame=*/false,
+        RegistrationEligibility::kSourceOrTrigger, kFrameId,
+        /*last_navigation_id=*/kNavigationId);
 
     task_environment_.FastForwardBy(base::Milliseconds(1));
 
@@ -656,14 +660,16 @@ TEST_F(AttributionDataHostManagerImplTest,
   data_host_manager_.RegisterDataHost(
       data_host_remote1.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page1.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kTrigger, kFrameId,
+      /*is_within_fenced_frame=*/false, RegistrationEligibility::kTrigger,
+      kFrameId,
       /*last_navigation_id=*/kNavigationId);
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote2;
   data_host_manager_.RegisterDataHost(
       data_host_remote2.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page2.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kTrigger, kFrameId,
+      /*is_within_fenced_frame=*/false, RegistrationEligibility::kTrigger,
+      kFrameId,
       /*last_navigation_id=*/kNavigationId);
 
   // Because there is no data host in source mode, this trigger should not be
@@ -691,20 +697,23 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> source_data_host_remote;
   data_host_manager_.RegisterNavigationDataHost(
       source_data_host_remote.BindNewPipeAndPassReceiver(),
-      attribution_src_token, AttributionInputEvent());
+      attribution_src_token);
 
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token,
+      attribution_src_token, AttributionInputEvent(),
       *SuitableOrigin::Deserialize("https://page1.example"),
       /*is_within_fenced_frame=*/false, kFrameId,
       /*navigation_id=*/kNavigationId);
+  data_host_manager_.NotifyNavigationRegistrationCompleted(
+      attribution_src_token);
 
   mojo::Remote<blink::mojom::AttributionDataHost> trigger_data_host_remote;
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page2.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
 
   // Because there is a connected data host in source mode, this trigger should
   // be delayed.
@@ -739,13 +748,17 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> source_data_host_remote;
   data_host_manager_.RegisterNavigationDataHost(
       source_data_host_remote.BindNewPipeAndPassReceiver(),
-      attribution_src_token, AttributionInputEvent());
+      attribution_src_token);
 
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token,
+      attribution_src_token, AttributionInputEvent(),
       *SuitableOrigin::Deserialize("https://page1.example"),
       /*is_within_fenced_frame=*/false, kFrameId,
       /*navigation_id=*/kNavigationId);
+  // We complete the foreground navigation immediately to avoid trigger being
+  // delayed due to waiting on foreground registrations.
+  data_host_manager_.NotifyNavigationRegistrationCompleted(
+      attribution_src_token);
 
   std::vector<mojo::Remote<blink::mojom::AttributionDataHost>>
       trigger_data_hosts;
@@ -754,8 +767,9 @@ TEST_F(AttributionDataHostManagerImplTest,
     data_host_manager_.RegisterDataHost(
         trigger_data_host_remote.BindNewPipeAndPassReceiver(),
         *SuitableOrigin::Deserialize("https://page2.example"),
-        /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-        kFrameId, /*last_navigation_id=*/kNavigationId);
+        /*is_within_fenced_frame=*/false,
+        RegistrationEligibility::kSourceOrTrigger, kFrameId,
+        /*last_navigation_id=*/kNavigationId);
     trigger_data_host_remote->TriggerDataAvailable(
         /*reporting_origin=*/*SuitableOrigin::Deserialize(
             "https://report.test"),
@@ -793,18 +807,19 @@ TEST_F(AttributionDataHostManagerImplTest,
   // 1 - There is a background attribution request
   data_host_manager_.RegisterNavigationDataHost(
       source_data_host_remote.BindNewPipeAndPassReceiver(),
-      attribution_src_token, AttributionInputEvent());
+      attribution_src_token);
 
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token, source_origin,
+      attribution_src_token, AttributionInputEvent(), source_origin,
       /*is_within_fenced_frame=*/false, kFrameId,
       /*navigation_id=*/kNavigationId);
 
   mojo::Remote<blink::mojom::AttributionDataHost> trigger_data_host_remote;
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote.BindNewPipeAndPassReceiver(), source_origin,
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
   trigger_data_host_remote->TriggerDataAvailable(
       /*reporting_origin=*/reporting_origin, TriggerRegistration(),
       /*verifications=*/{});
@@ -814,11 +829,8 @@ TEST_F(AttributionDataHostManagerImplTest,
   headers->SetHeader(kAttributionReportingRegisterSourceHeader,
                      kRegisterSourceJson);
   data_host_manager_.NotifyNavigationRegistrationData(
-      attribution_src_token, headers.get(), reporting_origin, source_origin,
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-      network::AttributionReportingRuntimeFeatures(),
-      /*is_final_response=*/true);
+      attribution_src_token, headers.get(), reporting_origin,
+      network::AttributionReportingRuntimeFeatures());
 
   // 3 - The background attribution request completes
   source_data_host_remote.reset();
@@ -826,6 +838,8 @@ TEST_F(AttributionDataHostManagerImplTest,
   // 4- We are still parsing the foreground registration headers, so the trigger
   //    should not have been processed yet.
   checkpoint.Call(1);
+  data_host_manager_.NotifyNavigationRegistrationCompleted(
+      attribution_src_token);
 
   // 5 - Parsing completes, the trigger gets handled.
   task_environment_.RunUntilIdle();
@@ -850,10 +864,10 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> source_data_host_remote;
   data_host_manager_.RegisterNavigationDataHost(
       source_data_host_remote.BindNewPipeAndPassReceiver(),
-      attribution_src_token, AttributionInputEvent());
+      attribution_src_token);
 
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token,
+      attribution_src_token, AttributionInputEvent(),
       *SuitableOrigin::Deserialize("https://page1.example"),
       /*is_within_fenced_frame=*/false, kFrameId,
       /*navigation_id=*/kNavigationId);
@@ -862,8 +876,9 @@ TEST_F(AttributionDataHostManagerImplTest,
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page2.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
 
   trigger_data_host_remote->TriggerDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
@@ -899,17 +914,22 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> source_data_host_remote;
   data_host_manager_.RegisterNavigationDataHost(
       source_data_host_remote.BindNewPipeAndPassReceiver(),
-      attribution_src_token, AttributionInputEvent());
+      attribution_src_token);
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token,
+      attribution_src_token, AttributionInputEvent(),
       *SuitableOrigin::Deserialize("https://page1.example"),
       /*is_within_fenced_frame=*/false, kFrameId, /*navigation_id=*/1);
+  // We complete the foreground navigation immediately to avoid trigger being
+  // delayed due to waiting on foreground registrations.
+  data_host_manager_.NotifyNavigationRegistrationCompleted(
+      attribution_src_token);
   mojo::Remote<blink::mojom::AttributionDataHost> trigger_data_host_remote;
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page2.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/1);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/1);
   trigger_data_host_remote->TriggerDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
       TriggerRegistration(), /*verifications=*/{});
@@ -919,17 +939,20 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> source_data_host_remote_2;
   data_host_manager_.RegisterNavigationDataHost(
       source_data_host_remote_2.BindNewPipeAndPassReceiver(),
-      attribution_src_token_2, AttributionInputEvent());
+      attribution_src_token_2);
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token_2,
+      attribution_src_token_2, AttributionInputEvent(),
       *SuitableOrigin::Deserialize("https://page1.example"),
       /*is_within_fenced_frame=*/false, kFrameId, /*navigation_id=*/2);
+  data_host_manager_.NotifyNavigationRegistrationCompleted(
+      attribution_src_token_2);
   mojo::Remote<blink::mojom::AttributionDataHost> trigger_data_host_remote_2;
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote_2.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page2.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/2);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/2);
   trigger_data_host_remote_2->TriggerDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
       TriggerRegistration(), /*verifications=*/{});
@@ -941,17 +964,20 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> source_data_host_remote_3;
   data_host_manager_.RegisterNavigationDataHost(
       source_data_host_remote_3.BindNewPipeAndPassReceiver(),
-      attribution_src_token_3, AttributionInputEvent());
+      attribution_src_token_3);
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token_3,
+      attribution_src_token_3, AttributionInputEvent(),
       *SuitableOrigin::Deserialize("https://page1.example"),
       /*is_within_fenced_frame=*/false, kFrameId, /*navigation_id=*/3);
+  data_host_manager_.NotifyNavigationRegistrationCompleted(
+      attribution_src_token_3);
   mojo::Remote<blink::mojom::AttributionDataHost> trigger_data_host_remote_3;
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote_3.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page2.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/3);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/3);
   trigger_data_host_remote_3->TriggerDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
       TriggerRegistration(), /*verifications=*/{});
@@ -985,10 +1011,10 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> source_data_host_remote;
   data_host_manager_.RegisterNavigationDataHost(
       source_data_host_remote.BindNewPipeAndPassReceiver(),
-      attribution_src_token, AttributionInputEvent());
+      attribution_src_token);
 
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token,
+      attribution_src_token, AttributionInputEvent(),
       *SuitableOrigin::Deserialize("https://page1.example"),
       /*is_within_fenced_frame=*/false, kFrameId,
       /*navigation_id=*/kNavigationId);
@@ -999,8 +1025,9 @@ TEST_F(AttributionDataHostManagerImplTest,
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page2.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/2);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/2);
 
   trigger_data_host_remote->TriggerDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
@@ -1021,24 +1048,18 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   const blink::AttributionSrcToken attribution_src_token;
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token, source_site,
+      attribution_src_token, AttributionInputEvent(), source_site,
       /*is_within_fenced_frame=*/false, kFrameId,
       /*navigation_id=*/kNavigationId);
   data_host_manager_.NotifyNavigationRegistrationData(
-      attribution_src_token, headers.get(), reporter, source_site,
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-      network::AttributionReportingRuntimeFeatures(),
-      /*is_final_response=*/false);
+      attribution_src_token, headers.get(), reporter,
+      network::AttributionReportingRuntimeFeatures());
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());
 
   data_host_manager_.NotifyNavigationRegistrationData(
-      attribution_src_token, /*headers=*/nullptr, reporter, source_site,
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-      network::AttributionReportingRuntimeFeatures(),
-      /*is_final_response=*/true);
+      attribution_src_token, /*headers=*/nullptr, reporter,
+      network::AttributionReportingRuntimeFeatures());
 }
 
 TEST_F(AttributionDataHostManagerImplTest,
@@ -1060,13 +1081,13 @@ TEST_F(AttributionDataHostManagerImplTest,
                      R"("https://r.test/x")");
 
   const blink::AttributionSrcToken attribution_src_token;
+  data_host_manager_.NotifyNavigationRegistrationStarted(
+      attribution_src_token, AttributionInputEvent(), source_site,
+      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId);
   data_host_manager_.NotifyNavigationRegistrationData(
-      attribution_src_token, headers.get(), reporter, source_site,
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
+      attribution_src_token, headers.get(), reporter,
       // The cross to web runtime feature defaults to false.
-      network::AttributionReportingRuntimeFeatures(),
-      /*is_final_response=*/false);
+      network::AttributionReportingRuntimeFeatures());
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());
 }
@@ -1082,23 +1103,25 @@ TEST_F(AttributionDataHostManagerImplTest, NavigationRedirectOsSource) {
   const auto reporter = *SuitableOrigin::Deserialize("https://report.test");
   const auto source_site = *SuitableOrigin::Deserialize("https://source.test");
 
-  EXPECT_CALL(mock_manager_,
-              HandleOsRegistration(
-                  OsRegistration(GURL("https://r.test/x"), *source_site,
-                                 AttributionInputEvent()),
-                  kFrameId));
+  EXPECT_CALL(
+      mock_manager_,
+      HandleOsRegistration(
+          OsRegistration(GURL("https://r.test/x"), /*debug_reporting=*/false,
+                         *source_site, AttributionInputEvent(),
+                         /*is_within_fenced_frame=*/false),
+          kFrameId));
 
   auto headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
   headers->SetHeader(kAttributionReportingRegisterOsSourceHeader,
                      R"("https://r.test/x")");
 
   const blink::AttributionSrcToken attribution_src_token;
+  data_host_manager_.NotifyNavigationRegistrationStarted(
+      attribution_src_token, AttributionInputEvent(), source_site,
+      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId);
   data_host_manager_.NotifyNavigationRegistrationData(
-      attribution_src_token, headers.get(), reporter, source_site,
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-      {network::AttributionReportingRuntimeFeature::kCrossAppWeb},
-      /*is_final_response=*/false);
+      attribution_src_token, headers.get(), reporter,
+      {network::AttributionReportingRuntimeFeature::kCrossAppWeb});
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());
 }
@@ -1121,12 +1144,12 @@ TEST_F(AttributionDataHostManagerImplTest,
   headers->SetHeader(kAttributionReportingRegisterOsSourceHeader, "!");
 
   const blink::AttributionSrcToken attribution_src_token;
+  data_host_manager_.NotifyNavigationRegistrationStarted(
+      attribution_src_token, AttributionInputEvent(), source_site,
+      /*is_within_fenced_frame*/ false, kFrameId, kNavigationId);
   data_host_manager_.NotifyNavigationRegistrationData(
-      attribution_src_token, headers.get(), reporter, source_site,
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-      {network::AttributionReportingRuntimeFeature::kCrossAppWeb},
-      /*is_final_response=*/false);
+      attribution_src_token, headers.get(), reporter,
+      {network::AttributionReportingRuntimeFeature::kCrossAppWeb});
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());
 }
@@ -1145,31 +1168,35 @@ TEST_F(AttributionDataHostManagerImplTest, NavigationRedirectOsSource_InOrder) {
   {
     InSequence seq;
 
-    EXPECT_CALL(mock_manager_,
-                HandleOsRegistration(
-                    OsRegistration(GURL("https://b.test/"), *source_site,
-                                   AttributionInputEvent()),
-                    kFrameId));
-    EXPECT_CALL(mock_manager_,
-                HandleOsRegistration(
-                    OsRegistration(GURL("https://a.test/"), *source_site,
-                                   AttributionInputEvent()),
-                    kFrameId));
+    EXPECT_CALL(
+        mock_manager_,
+        HandleOsRegistration(
+            OsRegistration(GURL("https://b.test/"), /*debug_reporting=*/true,
+                           *source_site, AttributionInputEvent(),
+                           /*is_within_fenced_frame=*/false),
+            kFrameId));
+    EXPECT_CALL(
+        mock_manager_,
+        HandleOsRegistration(
+            OsRegistration(GURL("https://a.test/"), /*debug_reporting=*/false,
+                           *source_site, AttributionInputEvent(),
+                           /*is_within_fenced_frame=*/true),
+            kFrameId));
   }
 
   const blink::AttributionSrcToken attribution_src_token;
+  data_host_manager_.NotifyNavigationRegistrationStarted(
+      attribution_src_token, AttributionInputEvent(), source_site,
+      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId);
 
   {
     auto headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
     headers->SetHeader(kAttributionReportingRegisterOsSourceHeader,
-                       R"("https://b.test/")");
+                       R"("https://b.test/"; debug-reporting)");
 
     data_host_manager_.NotifyNavigationRegistrationData(
-        attribution_src_token, headers.get(), reporter, source_site,
-        AttributionInputEvent(),
-        /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-        {network::AttributionReportingRuntimeFeature::kCrossAppWeb},
-        /*is_final_response=*/false);
+        attribution_src_token, headers.get(), reporter,
+        {network::AttributionReportingRuntimeFeature::kCrossAppWeb});
   }
 
   {
@@ -1178,11 +1205,8 @@ TEST_F(AttributionDataHostManagerImplTest, NavigationRedirectOsSource_InOrder) {
                        R"("https://a.test/")");
 
     data_host_manager_.NotifyNavigationRegistrationData(
-        attribution_src_token, headers.get(), reporter, source_site,
-        AttributionInputEvent(),
-        /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-        {network::AttributionReportingRuntimeFeature::kCrossAppWeb},
-        /*is_final_response=*/false);
+        attribution_src_token, headers.get(), reporter,
+        {network::AttributionReportingRuntimeFeature::kCrossAppWeb});
   }
 
   // Wait for parsing to finish.
@@ -1209,11 +1233,8 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   const blink::AttributionSrcToken attribution_src_token;
   data_host_manager_.NotifyNavigationRegistrationData(
-      attribution_src_token, headers.get(), reporter, source_site,
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-      {network::AttributionReportingRuntimeFeature::kCrossAppWeb},
-      /*is_final_response=*/false);
+      attribution_src_token, headers.get(), reporter,
+      {network::AttributionReportingRuntimeFeature::kCrossAppWeb});
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());
 }
@@ -1230,12 +1251,12 @@ TEST_F(AttributionDataHostManagerImplTest,
                      kRegisterSourceJson);
 
   const blink::AttributionSrcToken attribution_src_token;
+  data_host_manager_.NotifyNavigationRegistrationStarted(
+      attribution_src_token, AttributionInputEvent(), source_site,
+      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId);
   data_host_manager_.NotifyNavigationRegistrationData(
-      attribution_src_token, headers.get(), reporter, source_site,
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-      network::AttributionReportingRuntimeFeatures(),
-      /*is_final_response=*/true);
+      attribution_src_token, headers.get(), reporter,
+      network::AttributionReportingRuntimeFeatures());
 
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());
@@ -1262,6 +1283,9 @@ TEST_F(AttributionDataHostManagerImplTest, NavigationRedirectSource_InOrder) {
 
   const blink::AttributionSrcToken attribution_src_token;
 
+  data_host_manager_.NotifyNavigationRegistrationStarted(
+      attribution_src_token, AttributionInputEvent(), source_site,
+      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId);
   {
     auto headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
     headers->SetHeader(
@@ -1269,11 +1293,8 @@ TEST_F(AttributionDataHostManagerImplTest, NavigationRedirectSource_InOrder) {
         R"json({"source_event_id":"2","destination":"https://dest.test"})json");
 
     data_host_manager_.NotifyNavigationRegistrationData(
-        attribution_src_token, headers.get(), reporter, source_site,
-        AttributionInputEvent(),
-        /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-        network::AttributionReportingRuntimeFeatures(),
-        /*is_final_response=*/false);
+        attribution_src_token, headers.get(), reporter,
+        network::AttributionReportingRuntimeFeatures());
   }
 
   {
@@ -1283,11 +1304,8 @@ TEST_F(AttributionDataHostManagerImplTest, NavigationRedirectSource_InOrder) {
         R"json({"source_event_id":"1","destination":"https://dest.test"})json");
 
     data_host_manager_.NotifyNavigationRegistrationData(
-        attribution_src_token, headers.get(), reporter, source_site,
-        AttributionInputEvent(),
-        /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-        network::AttributionReportingRuntimeFeatures(),
-        /*is_final_response=*/false);
+        attribution_src_token, headers.get(), reporter,
+        network::AttributionReportingRuntimeFeatures());
   }
 
   // Wait for parsing to finish.
@@ -1310,25 +1328,19 @@ TEST_F(AttributionDataHostManagerImplTest,
   const blink::AttributionSrcToken attribution_src_token;
 
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token, source_site,
+      attribution_src_token, AttributionInputEvent(), source_site,
       /*is_within_fenced_frame=*/false, kFrameId,
       /*navigation_id=*/kNavigationId);
 
   data_host_manager_.NotifyNavigationRegistrationData(
-      attribution_src_token, headers.get(), reporter, source_site,
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-      network::AttributionReportingRuntimeFeatures(),
-      /*is_final_response=*/false);
+      attribution_src_token, headers.get(), reporter,
+      network::AttributionReportingRuntimeFeatures());
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());
 
   data_host_manager_.NotifyNavigationRegistrationData(
-      attribution_src_token, headers.get(), reporter, source_site,
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-      network::AttributionReportingRuntimeFeatures(),
-      /*is_final_response=*/false);
+      attribution_src_token, headers.get(), reporter,
+      network::AttributionReportingRuntimeFeatures());
 
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());
@@ -1350,7 +1362,7 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   const blink::AttributionSrcToken attribution_src_token;
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token, source_site,
+      attribution_src_token, AttributionInputEvent(), source_site,
       /*is_within_fenced_frame=*/false, kFrameId,
       /*navigation_id=*/kNavigationId);
 
@@ -1359,22 +1371,16 @@ TEST_F(AttributionDataHostManagerImplTest,
   headers->SetHeader(kAttributionReportingRegisterSourceHeader,
                      "!!!invalid json");
   data_host_manager_.NotifyNavigationRegistrationData(
-      attribution_src_token, headers.get(), reporter, source_site,
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-      network::AttributionReportingRuntimeFeatures(),
-      /*is_final_response=*/false);
+      attribution_src_token, headers.get(), reporter,
+      network::AttributionReportingRuntimeFeatures());
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());
 
   headers->SetHeader(kAttributionReportingRegisterSourceHeader,
                      kRegisterSourceJson);
   data_host_manager_.NotifyNavigationRegistrationData(
-      attribution_src_token, headers.get(), reporter, source_site,
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-      network::AttributionReportingRuntimeFeatures(),
-      /*is_final_response=*/false);
+      attribution_src_token, headers.get(), reporter,
+      network::AttributionReportingRuntimeFeatures());
 
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());
@@ -1401,7 +1407,7 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   const blink::AttributionSrcToken attribution_src_token;
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token, source_site,
+      attribution_src_token, AttributionInputEvent(), source_site,
       /*is_within_fenced_frame=*/false, kFrameId,
       /*navigation_id=*/kNavigationId);
 
@@ -1409,29 +1415,26 @@ TEST_F(AttributionDataHostManagerImplTest,
   headers->SetHeader(kAttributionReportingRegisterSourceHeader,
                      kRegisterSourceJson);
   data_host_manager_.NotifyNavigationRegistrationData(
-      attribution_src_token, headers.get(), reporter, source_site,
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId,
-      /*navigation_id=*/kNavigationId,
-      network::AttributionReportingRuntimeFeatures(),
-      /*is_final_response=*/false);
+      attribution_src_token, headers.get(), reporter,
+      network::AttributionReportingRuntimeFeatures());
 
   mojo::Remote<blink::mojom::AttributionDataHost> trigger_data_host_remote;
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page2.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
   trigger_data_host_remote->TriggerDataAvailable(reporter,
                                                  TriggerRegistration(),
                                                  /*verifications=*/{});
   data_host_manager_.NotifyNavigationRegistrationData(
-      attribution_src_token, /*headers=*/nullptr, reporter, source_site,
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId,
-      /*navigation_id=*/kNavigationId,
-      network::AttributionReportingRuntimeFeatures(),
-      /*is_final_response=*/true);
+      attribution_src_token, /*headers=*/nullptr, reporter,
+      network::AttributionReportingRuntimeFeatures());
+  // We complete the foreground navigation immediately to avoid trigger being
+  // delayed due to waiting on foreground registrations.
+  data_host_manager_.NotifyNavigationRegistrationCompleted(
+      attribution_src_token);
   // The redirection source is still being processed by the data decoder. The
   // registration is also linked to the trigger registration last navigation as
   // such, the trigger should be delayed until the source is done processing.
@@ -1464,21 +1467,15 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   const blink::AttributionSrcToken attribution_src_token;
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token, source_site,
+      attribution_src_token, AttributionInputEvent(), source_site,
       /*is_within_fenced_frame=*/false, kFrameId,
       /*navigation_id=*/kNavigationId);
   data_host_manager_.NotifyNavigationRegistrationData(
-      attribution_src_token, headers.get(), reporter, source_site,
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-      network::AttributionReportingRuntimeFeatures(),
-      /*is_final_response=*/false);
+      attribution_src_token, headers.get(), reporter,
+      network::AttributionReportingRuntimeFeatures());
   data_host_manager_.NotifyNavigationRegistrationData(
-      attribution_src_token, headers.get(), reporter, source_site,
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-      network::AttributionReportingRuntimeFeatures(),
-      /*is_final_response=*/false);
+      attribution_src_token, headers.get(), reporter,
+      network::AttributionReportingRuntimeFeatures());
 
   // Wait for parsing.
   task_environment_.FastForwardBy(base::TimeDelta());
@@ -1489,65 +1486,9 @@ TEST_F(AttributionDataHostManagerImplTest,
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page2.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
-
-  trigger_data_host_remote->TriggerDataAvailable(
-      /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
-      TriggerRegistration(), /*verifications=*/{});
-  trigger_data_host_remote.FlushForTesting();
-}
-
-TEST_F(AttributionDataHostManagerImplTest,
-       NavigationRedirectSource_ParsingAfterNavigationFinishedQueueSkipped) {
-  base::HistogramTester histograms;
-
-  Checkpoint checkpoint;
-  {
-    InSequence seq;
-
-    EXPECT_CALL(mock_manager_, HandleSource).Times(2);
-    EXPECT_CALL(mock_manager_, HandleTrigger).Times(0);
-    EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(mock_manager_, HandleTrigger);
-  }
-
-  auto reporter = *SuitableOrigin::Deserialize("https://report.test");
-  auto source_site = *SuitableOrigin::Deserialize("https://source.test");
-
-  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-  headers->SetHeader(kAttributionReportingRegisterSourceHeader,
-                     kRegisterSourceJson);
-
-  const blink::AttributionSrcToken attribution_src_token;
-  data_host_manager_.NotifyNavigationRegistrationData(
-      attribution_src_token, headers.get(), reporter, source_site,
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-      network::AttributionReportingRuntimeFeatures(),
-      /*is_final_response=*/false);
-  data_host_manager_.NotifyNavigationRegistrationData(
-      attribution_src_token, headers.get(), reporter, source_site,
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-      network::AttributionReportingRuntimeFeatures(),
-      /*is_final_response=*/false);
-
-  // Wait for parsing.
-  data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token, source_site,
-      /*is_within_fenced_frame=*/false, kFrameId,
-      /*navigation_id=*/kNavigationId);
-
-  task_environment_.FastForwardBy(base::TimeDelta());
-  checkpoint.Call(1);
-
-  mojo::Remote<blink::mojom::AttributionDataHost> trigger_data_host_remote;
-  data_host_manager_.RegisterDataHost(
-      trigger_data_host_remote.BindNewPipeAndPassReceiver(),
-      *SuitableOrigin::Deserialize("https://page2.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
 
   trigger_data_host_remote->TriggerDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
@@ -1564,15 +1505,17 @@ TEST_F(AttributionDataHostManagerImplTest, TwoTriggerReceivers) {
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote1.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page1.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
 
   mojo::Remote<blink::mojom::AttributionDataHost> trigger_data_host_remote2;
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote2.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page2.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
 
   auto reporting_origin = *SuitableOrigin::Deserialize("https://report.test");
 
@@ -1601,24 +1544,24 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> source_data_host_remote;
   data_host_manager_.RegisterNavigationDataHost(
       source_data_host_remote.BindNewPipeAndPassReceiver(),
-      attribution_src_token, AttributionInputEvent());
+      attribution_src_token);
   mojo::Remote<blink::mojom::AttributionDataHost> trigger_data_host_remote;
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote.BindNewPipeAndPassReceiver(), source_origin,
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
 
-  // `AttributionDataHostManager::NotifyNavigationRegistrationStartedForDataHost()`
+  // `AttributionDataHostManager::NotifyNavigationRegistrationStarted()`
   // is not called, therefore the data host is not bound.
 
   task_environment_.FastForwardBy(base::Milliseconds(1));
 
   data_host_manager_.NotifyNavigationRegistrationData(
       attribution_src_token, /*headers=*/nullptr, reporting_origin,
-      source_origin, AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-      network::AttributionReportingRuntimeFeatures(),
-      /*is_final_response=*/true);
+      network::AttributionReportingRuntimeFeatures());
+  data_host_manager_.NotifyNavigationRegistrationCompleted(
+      attribution_src_token);
 
   trigger_data_host_remote->TriggerDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
@@ -1663,10 +1606,10 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> source_data_host_remote;
   data_host_manager_.RegisterNavigationDataHost(
       source_data_host_remote.BindNewPipeAndPassReceiver(),
-      attribution_src_token, AttributionInputEvent());
+      attribution_src_token);
 
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token,
+      attribution_src_token, AttributionInputEvent(),
       *SuitableOrigin::Deserialize("https://page1.example"),
       /*is_within_fenced_frame=*/false, kFrameId,
       /*navigation_id=*/kNavigationId);
@@ -1675,8 +1618,9 @@ TEST_F(AttributionDataHostManagerImplTest,
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page2.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
 
   auto send_trigger = [&](const SuitableOrigin& reporting_origin) {
     trigger_data_host_remote->TriggerDataAvailable(
@@ -1708,15 +1652,17 @@ TEST_F(AttributionDataHostManagerImplTest,
   data_host_manager_.RegisterDataHost(
       source_data_host_remote.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page1.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
 
   mojo::Remote<blink::mojom::AttributionDataHost> trigger_data_host_remote;
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page2.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
 
   trigger_data_host_remote->TriggerDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
@@ -1733,7 +1679,7 @@ TEST_F(AttributionDataHostManagerImplTest, NavigationDataHostNotRegistered) {
 
   const blink::AttributionSrcToken attribution_src_token;
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token,
+      attribution_src_token, AttributionInputEvent(),
       *SuitableOrigin::Deserialize("https://page.example"),
       /*is_within_fenced_frame=*/false, kFrameId,
       /*navigation_id=*/kNavigationId);
@@ -1751,11 +1697,11 @@ TEST_F(AttributionDataHostManagerImplTest,
   const blink::AttributionSrcToken attribution_src_token;
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterNavigationDataHost(
-      data_host_remote.BindNewPipeAndPassReceiver(), attribution_src_token,
-      AttributionInputEvent());
+      data_host_remote.BindNewPipeAndPassReceiver(), attribution_src_token);
 
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token, *SuitableOrigin::Deserialize("https://s.test"),
+      attribution_src_token, AttributionInputEvent(),
+      *SuitableOrigin::Deserialize("https://s.test"),
       /*is_within_fenced_frame=*/false, kFrameId,
       /*navigation_id=*/kNavigationId);
 
@@ -1787,14 +1733,12 @@ TEST_F(AttributionDataHostManagerImplTest,
     base::HistogramTester histograms;
 
     EXPECT_TRUE(data_host_manager_.RegisterNavigationDataHost(
-        data_host_remote1.BindNewPipeAndPassReceiver(), attribution_src_token,
-        AttributionInputEvent()));
+        data_host_remote1.BindNewPipeAndPassReceiver(), attribution_src_token));
 
     // This one should not be registered, as `attribution_src_token` is already
     // associated with a receiver.
     EXPECT_FALSE(data_host_manager_.RegisterNavigationDataHost(
-        data_host_remote2.BindNewPipeAndPassReceiver(), attribution_src_token,
-        AttributionInputEvent()));
+        data_host_remote2.BindNewPipeAndPassReceiver(), attribution_src_token));
 
     // kRegistered = 0.
     histograms.ExpectUniqueSample(kNavigationDataHostStatusHistogram, 0, 1);
@@ -1804,7 +1748,7 @@ TEST_F(AttributionDataHostManagerImplTest,
       net::SchemefulSite::Deserialize("https://trigger.example");
 
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token,
+      attribution_src_token, AttributionInputEvent(),
       *SuitableOrigin::Deserialize("https://page.example"),
       /*is_within_fenced_frame=*/false, kFrameId,
       /*navigation_id=*/kNavigationId);
@@ -1847,8 +1791,9 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterDataHost(
       data_host_remote.BindNewPipeAndPassReceiver(), page_origin,
-      /*is_within_fenced_frame=*/true, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/true,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
 
   task_environment_.FastForwardBy(base::Milliseconds(1));
 
@@ -1875,8 +1820,9 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterDataHost(
       data_host_remote.BindNewPipeAndPassReceiver(), destination_origin,
-      /*is_within_fenced_frame=*/true, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/true,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
 
   data_host_remote->TriggerDataAvailable(
       reporting_origin, TriggerRegistration(), /*verifications=*/{});
@@ -1892,11 +1838,10 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
 
   data_host_manager_.RegisterNavigationDataHost(
-      data_host_remote.BindNewPipeAndPassReceiver(), attribution_src_token,
-      AttributionInputEvent());
+      data_host_remote.BindNewPipeAndPassReceiver(), attribution_src_token);
 
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token,
+      attribution_src_token, AttributionInputEvent(),
       /*source_origin=*/*SuitableOrigin::Deserialize("https://source.test"),
       /*is_within_fenced_frame=*/true, kFrameId,
       /*navigation_id=*/kNavigationId);
@@ -1918,14 +1863,14 @@ TEST_F(AttributionDataHostManagerImplTest,
                      kRegisterSourceJson);
 
   const blink::AttributionSrcToken attribution_src_token;
+  data_host_manager_.NotifyNavigationRegistrationStarted(
+      attribution_src_token, AttributionInputEvent(),
+      /*source_origin=*/*SuitableOrigin::Deserialize("https://source.test"),
+      /*is_within_fenced_frame=*/true, kFrameId, kNavigationId);
   data_host_manager_.NotifyNavigationRegistrationData(
       attribution_src_token, headers.get(),
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
-      /*source_origin=*/*SuitableOrigin::Deserialize("https://source.test"),
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/true, kFrameId, kNavigationId,
-      network::AttributionReportingRuntimeFeatures(),
-      /*is_final_response=*/false);
+      network::AttributionReportingRuntimeFeatures());
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());
 }
@@ -1965,11 +1910,13 @@ TEST_F(AttributionDataHostManagerImplTest,
   auto reporting_origin = url::Origin::Create(GURL("https://report.test"));
   auto source_origin = *SuitableOrigin::Deserialize("https://source.test");
 
-  EXPECT_CALL(mock_manager_,
-              HandleOsRegistration(
-                  OsRegistration(GURL("https://r.test/x"), *source_origin,
-                                 AttributionInputEvent()),
-                  kFrameId));
+  EXPECT_CALL(
+      mock_manager_,
+      HandleOsRegistration(
+          OsRegistration(GURL("https://r.test/x"), /*debug_reporting=*/false,
+                         *source_origin, AttributionInputEvent(),
+                         /*is_within_fenced_frame=*/false),
+          kFrameId));
 
   auto headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
   headers->SetHeader(kAttributionReportingRegisterOsSourceHeader,
@@ -2043,7 +1990,7 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   // This is irrelevant to beacon source registrations.
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      blink::AttributionSrcToken(), source_origin,
+      blink::AttributionSrcToken(), AttributionInputEvent(), source_origin,
       /*is_within_fenced_frame=*/false, kFrameId,
       /*navigation_id=*/kNavigationId);
 }
@@ -2070,8 +2017,9 @@ TEST_F(AttributionDataHostManagerImplTest,
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page2.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
 
   // Because we are waiting for beacon data linked to the same navigation, the
   // trigger should be delayed.
@@ -2133,8 +2081,9 @@ TEST_F(AttributionDataHostManagerImplTest,
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page2.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
   trigger_data_host_remote->TriggerDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
       TriggerRegistration(), /*verifications=*/{});
@@ -2194,18 +2143,19 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> source_data_host_remote;
   data_host_manager_.RegisterNavigationDataHost(
       source_data_host_remote.BindNewPipeAndPassReceiver(),
-      attribution_src_token, AttributionInputEvent());
+      attribution_src_token);
 
   data_host_manager_.NotifyNavigationRegistrationStarted(
-      attribution_src_token, source_origin,
+      attribution_src_token, AttributionInputEvent(), source_origin,
       /*is_within_fenced_frame=*/false, kFrameId,
       /*navigation_id=*/kNavigationId);
 
   mojo::Remote<blink::mojom::AttributionDataHost> trigger_data_host_remote;
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote.BindNewPipeAndPassReceiver(), source_origin,
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
   trigger_data_host_remote->TriggerDataAvailable(
       /*reporting_origin=*/reporting_origin, TriggerRegistration(),
       /*verifications=*/{});
@@ -2215,11 +2165,8 @@ TEST_F(AttributionDataHostManagerImplTest,
   headers->SetHeader(kAttributionReportingRegisterSourceHeader,
                      kRegisterSourceJson);
   data_host_manager_.NotifyNavigationRegistrationData(
-      attribution_src_token, headers.get(), reporting_origin, source_origin,
-      AttributionInputEvent(),
-      /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-      network::AttributionReportingRuntimeFeatures(),
-      /*is_final_response=*/true);
+      attribution_src_token, headers.get(), reporting_origin,
+      network::AttributionReportingRuntimeFeatures());
 
   // 3 - Sources can be registered via a Fenced Frame beacon
   data_host_manager_.NotifyFencedFrameReportingBeaconStarted(
@@ -2233,6 +2180,8 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   // 5 - The foreground registration completes
   task_environment_.RunUntilIdle();
+  data_host_manager_.NotifyNavigationRegistrationCompleted(
+      attribution_src_token);
   checkpoint.Call(2);
 
   // 6 - Beacon registrations complete, the trigger can now be registered.
@@ -2277,8 +2226,9 @@ TEST_F(AttributionDataHostManagerImplTest,
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page2.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
   trigger_data_host_remote->TriggerDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
       TriggerRegistration(), /*verifications=*/{});
@@ -2358,8 +2308,9 @@ TEST_F(AttributionDataHostManagerImplTest,
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page2.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
 
   trigger_data_host_remote->TriggerDataAvailable(
       *SuitableOrigin::Create(std::move(reporting_origin)),
@@ -2389,8 +2340,9 @@ TEST_F(AttributionDataHostManagerImplTest,
   data_host_manager_.RegisterDataHost(
       trigger_data_host_remote.BindNewPipeAndPassReceiver(),
       *SuitableOrigin::Deserialize("https://page2.example"),
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/false,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
 
   trigger_data_host_remote->TriggerDataAvailable(
       *SuitableOrigin::Create(std::move(reporting_origin)),
@@ -2428,19 +2380,23 @@ TEST_F(AttributionDataHostManagerImplTest, OsSourceAvailable) {
   const auto kTopLevelOrigin = *SuitableOrigin::Deserialize("https://a.test");
   const GURL kRegistrationUrl("https://b.test/x");
 
-  EXPECT_CALL(
-      mock_manager_,
-      HandleOsRegistration(OsRegistration(kRegistrationUrl, *kTopLevelOrigin,
-                                          AttributionInputEvent()),
-                           kFrameId));
+  EXPECT_CALL(mock_manager_,
+              HandleOsRegistration(
+                  OsRegistration(kRegistrationUrl, /*debug_reporting=*/true,
+                                 *kTopLevelOrigin, AttributionInputEvent(),
+                                 /*is_within_fenced_frame=*/true),
+                  kFrameId));
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterDataHost(
       data_host_remote.BindNewPipeAndPassReceiver(), kTopLevelOrigin,
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/true,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
 
-  data_host_remote->OsSourceDataAvailable({kRegistrationUrl});
+  data_host_remote->OsSourceDataAvailable(
+      {attribution_reporting::OsRegistrationItem{.url = kRegistrationUrl,
+                                                 .debug_reporting = true}});
   data_host_remote.FlushForTesting();
 }
 
@@ -2450,17 +2406,22 @@ TEST_F(AttributionDataHostManagerImplTest, OsTriggerAvailable) {
 
   EXPECT_CALL(
       mock_manager_,
-      HandleOsRegistration(OsRegistration(kRegistrationUrl, *kTopLevelOrigin,
-                                          /*input_event=*/absl::nullopt),
-                           kFrameId));
+      HandleOsRegistration(
+          OsRegistration(
+              kRegistrationUrl, /*debug_reporting=*/true, *kTopLevelOrigin,
+              /*input_event=*/absl::nullopt, /*is_within_fenced_frame=*/true),
+          kFrameId));
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterDataHost(
       data_host_remote.BindNewPipeAndPassReceiver(), kTopLevelOrigin,
-      /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger,
-      kFrameId, /*last_navigation_id=*/kNavigationId);
+      /*is_within_fenced_frame=*/true,
+      RegistrationEligibility::kSourceOrTrigger, kFrameId,
+      /*last_navigation_id=*/kNavigationId);
 
-  data_host_remote->OsTriggerDataAvailable({kRegistrationUrl});
+  data_host_remote->OsTriggerDataAvailable(
+      {attribution_reporting::OsRegistrationItem{.url = kRegistrationUrl,
+                                                 .debug_reporting = true}});
   data_host_remote.FlushForTesting();
 }
 
@@ -2480,17 +2441,17 @@ TEST_F(AttributionDataHostManagerImplTest, WebDisabled_SourceNotRegistered) {
 
     EXPECT_CALL(mock_manager_, HandleSource).Times(0);
 
+    const blink::AttributionSrcToken attribution_src_token;
+    data_host_manager_.NotifyNavigationRegistrationStarted(
+        attribution_src_token, AttributionInputEvent(), source_site,
+        /*is_within_fenced_frame=*/false, kFrameId, kNavigationId);
     auto headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
     headers->SetHeader(kAttributionReportingRegisterSourceHeader,
                        kRegisterSourceJson);
 
-    const blink::AttributionSrcToken attribution_src_token;
     data_host_manager_.NotifyNavigationRegistrationData(
-        attribution_src_token, headers.get(), reporter, source_site,
-        AttributionInputEvent(),
-        /*is_within_fenced_frame=*/false, kFrameId, kNavigationId,
-        network::AttributionReportingRuntimeFeatures(),
-        /*is_final_response=*/false);
+        attribution_src_token, headers.get(), reporter,
+        network::AttributionReportingRuntimeFeatures());
     // Wait for parsing to finish.
     task_environment_.FastForwardBy(base::TimeDelta());
   }

@@ -46,6 +46,7 @@
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/page_info/core/features.h"
 #include "components/paint_preview/features/features.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/permissions/features.h"
 #include "components/policy/core/common/features.h"
@@ -171,6 +172,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kBackGestureRefactorAndroid,
     &kBackgroundThreadPool,
     &kBaselineGM3SurfaceColors,
+    &kCacheActivityTaskID,
     &kCastDeviceFilter,
     &kClearOmniboxFocusAfterNavigation,
     &kCloseTabSuggestions,
@@ -180,6 +182,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTBackgroundTab,
     &kCCTBottomBarSwipeUpGesture,
     &kCCTBrandTransparency,
+    &kCCTBrandTransparencyMemoryImprovement,
     &kCCTClientDataHeader,
     &kCCTFeatureUsage,
     &kCCTIncognito,
@@ -196,8 +199,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTReportParallelRequestStatus,
     &kCCTResizable90MaximumHeight,
     &kCCTResizableForThirdParties,
+    &kCCTResizableMultiWindowMode,
     &kCCTResizableSideSheet,
-    &kCCTResizableSideSheetDiscoverFeedSettings,
     &kCCTResizableSideSheetForThirdParties,
     &kCCTRetainingStateInMemory,
     &kCCTResourcePrefetch,
@@ -226,6 +229,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kDeferNotifyInMotion,
     &kDelayTempStripRemoval,
     &kDelayTransitionsForAnimation,
+    &kDragDropIntoOmnibox,
     &kDrawEdgeToEdge,
     &kEmptyStates,
     &kExperimentsForAgsa,
@@ -252,12 +256,14 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kOmniboxAdaptNarrowTabletWindows,
     &kOmniboxCacheSuggestionResources,
     &kOmniboxConsumesImeInsets,
+    &kOmniboxNoopEditUrlSuggestionClicks,
     &kOmniboxWarmRecycledViewPool,
     &kOpaqueOriginForIncomingIntents,
     &kPartnerCustomizationsUma,
     &kProbabilisticCryptidRenderer,
     &kQuickDeleteForAndroid,
     &kReachedCodeProfiler,
+    &kReadAloud,
     &kReaderModeInCCT,
     &kRecordSuppressionMetrics,
     &kReduceToolbarUpdatesForSameDocNavigations,
@@ -336,14 +342,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kDnsOverHttps,
     &notifications::features::kUseChimeAndroidSdk,
     &paint_preview::kPaintPreviewDemo,
-    &language::kAppLanguagePrompt,
-    &language::kAppLanguagePromptULP,
     &language::kCctAutoTranslate,
     &language::kDetailedLanguageSettings,
-    &language::kExplicitLanguageAsk,
-    &language::kForceAppLanguagePrompt,
-    &language::kTranslateAssistContent,
-    &language::kTranslateIntent,
     &media_router::kCafMRPDeferredDiscovery,
     &media_router::kCastAnotherContentWhileCasting,
     &messages::kMessagesForAndroidInfrastructure,
@@ -387,9 +387,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &send_tab_to_self::kSendTabToSelfSigninPromo,
     &send_tab_to_self::kSendTabToSelfV2,
     &share::kScreenshotsForAndroidV2,
-    &supervised_user::kLocalWebApprovals,
-    &supervised_user::kSynchronousSignInChecking,
-    &supervised_user::kWebFilterInterstitialRefresh,
     &switches::kForceStartupSigninPromo,
     &switches::kIdentityStatusConsistency,
     &switches::kForceDisableExtendedSyncPromos,
@@ -483,6 +480,10 @@ BASE_FEATURE(kBaselineGM3SurfaceColors,
              "BaselineGM3SurfaceColors",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kCacheActivityTaskID,
+             "CacheActivityTaskID",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Used in downstream code.
 BASE_FEATURE(kCastDeviceFilter,
              "CastDeviceFilter",
@@ -518,6 +519,10 @@ BASE_FEATURE(kCCTBackgroundTab,
 
 BASE_FEATURE(kCCTBrandTransparency,
              "CCTBrandTransparency",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCCTBrandTransparencyMemoryImprovement,
+             "CCTBrandTransparencyMemoryImprovement",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTClientDataHeader,
@@ -582,12 +587,12 @@ BASE_FEATURE(kCCTResizableForThirdParties,
              "CCTResizableForThirdParties",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kCCTResizableSideSheet,
-             "CCTResizableSideSheet",
+BASE_FEATURE(kCCTResizableMultiWindowMode,
+             "CCTResizableMultiWindowMode",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kCCTResizableSideSheetDiscoverFeedSettings,
-             "CCTResizableSideSheetDiscoverFeedSettings",
+BASE_FEATURE(kCCTResizableSideSheet,
+             "CCTResizableSideSheet",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTResizableSideSheetForThirdParties,
@@ -718,6 +723,10 @@ BASE_FEATURE(kDownloadHomeForExternalApp,
              "DownloadHomeForExternalApp",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kDragDropIntoOmnibox,
+             "DragDropIntoOmnibox",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kDrawEdgeToEdge,
              "DrawEdgeToEdge",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -819,6 +828,10 @@ BASE_FEATURE(kOmniboxConsumesImeInsets,
              "OmniboxConsumesImeInsets",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kOmniboxNoopEditUrlSuggestionClicks,
+             "OmniboxNoopEditUrlSuggestionClicks",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kOmniboxWarmRecycledViewPool,
              "OmniboxWarmRecycledViewPool",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -841,6 +854,8 @@ BASE_FEATURE(kQuickDeleteForAndroid,
 BASE_FEATURE(kReachedCodeProfiler,
              "ReachedCodeProfiler",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kReadAloud, "ReadAloud", base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kReaderModeInCCT,
              "ReaderModeInCCT",
@@ -932,7 +947,7 @@ BASE_FEATURE(kRequestDesktopSiteDefaultsLogging,
 
 BASE_FEATURE(kRequestDesktopSitePerSiteIph,
              "RequestDesktopSitePerSiteIph",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRestoreTabsOnFRE,
              "RestoreTabsOnFRE",

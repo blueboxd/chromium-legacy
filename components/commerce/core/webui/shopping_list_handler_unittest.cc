@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -56,6 +57,13 @@ class MockDelegate : public ShoppingListHandler::Delegate {
 
   MOCK_METHOD(absl::optional<GURL>, GetCurrentTabUrl, (), (override));
   MOCK_METHOD(void, ShowInsightsSidePanelUI, (), (override));
+  MOCK_METHOD(void, OpenUrlInNewTab, (const GURL& url), (override));
+  MOCK_METHOD(void, ShowFeedback, (), (override));
+  MOCK_METHOD(const bookmarks::BookmarkNode*,
+              GetOrAddBookmarkForCurrentUrl,
+              (),
+              (override));
+  MOCK_METHOD(void, ShowBookmarkEditorForCurrentUrl, (), (override));
 
   void SetCurrentTabUrl(const GURL& url) {
     ON_CALL(*this, GetCurrentTabUrl)
@@ -96,6 +104,12 @@ MATCHER_P(MojoBookmarkInfoWithId, expected_id, "") {
   return arg->bookmark_id == expected_id;
 }
 
+// A matcher for checking if a mojo bookmark info has the specified cluster ID
+// (uint64_t).
+MATCHER_P(MojoBookmarkInfoWithClusterId, expected_id, "") {
+  return arg->info->cluster_id == expected_id;
+}
+
 class ShoppingListHandlerTest : public testing::Test {
  public:
   ShoppingListHandlerTest() { features_.InitAndEnableFeature(kShoppingList); }
@@ -107,11 +121,14 @@ class ShoppingListHandlerTest : public testing::Test {
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     RegisterPrefs(pref_service_->registry());
     SetShoppingListEnterprisePolicyPref(pref_service_.get(), true);
+
+    auto delegate = std::make_unique<MockDelegate>();
+    delegate_ = delegate.get();
     handler_ = std::make_unique<commerce::ShoppingListHandler>(
         page_.BindAndGetRemote(),
         mojo::PendingReceiver<shopping_list::mojom::ShoppingListHandler>(),
         bookmark_model_.get(), shopping_service_.get(), pref_service_.get(),
-        &tracker_, "en-us", std::make_unique<MockDelegate>());
+        &tracker_, "en-us", std::move(delegate));
   }
 
   MockPage page_;
@@ -119,6 +136,7 @@ class ShoppingListHandlerTest : public testing::Test {
   std::unique_ptr<MockShoppingService> shopping_service_;
   std::unique_ptr<commerce::ShoppingListHandler> handler_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  base::raw_ptr<MockDelegate> delegate_;
   feature_engagement::test::MockTracker tracker_;
   base::test::TaskEnvironment task_environment_;
   base::test::ScopedFeatureList features_;
@@ -306,6 +324,17 @@ TEST_F(ShoppingListHandlerTest, PageUpdateForPriceTrackChange) {
   task_environment_.RunUntilIdle();
 }
 
+TEST_F(ShoppingListHandlerTest, TestUnsubscribeCausedByBookmarkDeletion) {
+  int64_t cluster_id = 123L;
+  EXPECT_CALL(page_, PriceUntrackedForBookmark(
+                         MojoBookmarkInfoWithClusterId(cluster_id)))
+      .Times(1);
+
+  handler_->OnUnsubscribe(CreateUserTrackedSubscription(cluster_id), true);
+
+  task_environment_.RunUntilIdle();
+}
+
 TEST_F(ShoppingListHandlerTest, TestGetProductInfo_FeatureEnabled) {
   EXPECT_CALL(tracker_, NotifyEvent("price_tracking_side_panel_shown"));
 
@@ -414,6 +443,8 @@ TEST_F(ShoppingListHandlerTest, TestGetPriceInsightsInfoForCurrentUrl) {
   info->jackpot_url = GURL("http://example.com/jackpot");
   info->price_bucket = PriceBucket::kHighPrice;
   info->has_multiple_catalogs = true;
+  info->catalog_history_prices.emplace_back("2021-01-01", 3330000);
+  info->catalog_history_prices.emplace_back("2021-01-02", 4440000);
 
   shopping_service_->SetResponseForGetPriceInsightsInfoForUrl(info);
 
@@ -428,6 +459,15 @@ TEST_F(ShoppingListHandlerTest, TestGetPriceInsightsInfoForCurrentUrl) {
         ASSERT_EQ(shopping_list::mojom::PriceInsightsInfo::PriceBucket::kHigh,
                   info->bucket);
         ASSERT_EQ(true, info->has_multiple_catalogs);
+        ASSERT_EQ(2, (int)info->history.size());
+        ASSERT_EQ("2021-01-01", info->history[0]->date);
+        ASSERT_EQ(3.33f, info->history[0]->price);
+        ASSERT_EQ("$3.33", info->history[0]->formatted_price);
+        ASSERT_EQ("2021-01-02", info->history[1]->date);
+        ASSERT_EQ(4.44f, info->history[1]->price);
+        ASSERT_EQ("$4.44", info->history[1]->formatted_price);
+        ASSERT_EQ("en-us", info->locale);
+        ASSERT_EQ("usd", info->currency_code);
         run_loop->Quit();
       },
       &run_loop));
@@ -436,11 +476,121 @@ TEST_F(ShoppingListHandlerTest, TestGetPriceInsightsInfoForCurrentUrl) {
 }
 
 TEST_F(ShoppingListHandlerTest, TestShowInsightsSidePanelUI) {
-  auto delegate = std::make_unique<MockDelegate>();
-  EXPECT_CALL(*delegate, ShowInsightsSidePanelUI).Times(1);
+  EXPECT_CALL(*delegate_, ShowInsightsSidePanelUI).Times(1);
 
-  handler_->SetDelegateForTesting(std::move(delegate));
   handler_->ShowInsightsSidePanelUI();
+}
+
+TEST_F(ShoppingListHandlerTest, TestOpenUrlInNewTab) {
+  const GURL url = GURL("http://example.com/");
+  EXPECT_CALL(*delegate_, OpenUrlInNewTab(url)).Times(1);
+
+  handler_->OpenUrlInNewTab(url);
+}
+
+TEST_F(ShoppingListHandlerTest, TestShowFeedback) {
+  EXPECT_CALL(*delegate_, ShowFeedback).Times(1);
+
+  handler_->ShowFeedback();
+}
+
+TEST_F(ShoppingListHandlerTest, TestIsShoppingListEligible) {
+  base::RunLoop run_loop;
+  shopping_service_->SetIsShoppingListEligible(true);
+
+  handler_->IsShoppingListEligible(base::BindOnce(
+      [](base::RunLoop* run_loop, bool eligible) {
+        ASSERT_TRUE(eligible);
+        run_loop->Quit();
+      },
+      &run_loop));
+
+  run_loop.Run();
+}
+
+TEST_F(ShoppingListHandlerTest,
+       TestGetPriceTrackingStatusForCurrentUrl_WithBookmark) {
+  base::RunLoop run_loop;
+  const GURL current_url = GURL("http://example.com/1");
+  delegate_->SetCurrentTabUrl(current_url);
+
+  AddProductBookmark(bookmark_model_.get(), u"product 1", current_url, 123L,
+                     true, 1230000, "usd");
+  EXPECT_CALL(*shopping_service_, IsSubscribed(testing::_, testing::_))
+      .Times(1);
+
+  handler_->GetPriceTrackingStatusForCurrentUrl(base::BindOnce(
+      [](base::RunLoop* run_loop, bool tracked) {
+        ASSERT_TRUE(tracked);
+        run_loop->Quit();
+      },
+      &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ShoppingListHandlerTest,
+       TestGetPriceTrackingStatusForCurrentUrl_WithoutBookmark) {
+  base::RunLoop run_loop;
+
+  EXPECT_CALL(*shopping_service_, IsSubscribed(testing::_, testing::_))
+      .Times(0);
+
+  handler_->GetPriceTrackingStatusForCurrentUrl(base::BindOnce(
+      [](base::RunLoop* run_loop, bool tracked) {
+        ASSERT_FALSE(tracked);
+        run_loop->Quit();
+      },
+      &run_loop));
+
+  run_loop.Run();
+}
+
+TEST_F(ShoppingListHandlerTest, TestTrackPriceForCurrentUrl) {
+  const bookmarks::BookmarkNode* product = AddProductBookmark(
+      bookmark_model_.get(), u"product 1", GURL("http://example.com/1"), 123L,
+      false, 1230000, "usd");
+  EXPECT_CALL(*delegate_, GetOrAddBookmarkForCurrentUrl)
+      .Times(1)
+      .WillOnce(testing::Return(product));
+  EXPECT_CALL(*shopping_service_,
+              Subscribe(VectorHasSubscriptionWithId("123"), testing::_))
+      .Times(1);
+
+  handler_->SetPriceTrackingStatusForCurrentUrl(true);
+}
+
+TEST_F(ShoppingListHandlerTest, TestUntrackPriceForCurrentUrl) {
+  const bookmarks::BookmarkNode* product = AddProductBookmark(
+      bookmark_model_.get(), u"product 1", GURL("http://example.com/1"), 123L,
+      false, 1230000, "usd");
+  EXPECT_CALL(*delegate_, GetOrAddBookmarkForCurrentUrl)
+      .Times(1)
+      .WillOnce(testing::Return(product));
+  EXPECT_CALL(*shopping_service_,
+              Unsubscribe(VectorHasSubscriptionWithId("123"), testing::_))
+      .Times(1);
+
+  handler_->SetPriceTrackingStatusForCurrentUrl(false);
+}
+
+TEST_F(ShoppingListHandlerTest, TestGetParentBookmarkFolderNameForCurrentUrl) {
+  base::RunLoop run_loop;
+  const std::u16string& parent_name = bookmark_model_->other_node()->GetTitle();
+  handler_->GetParentBookmarkFolderNameForCurrentUrl(base::BindOnce(
+      [](base::RunLoop* run_loop, const std::u16string& parent_name,
+         const std::u16string& name) {
+        ASSERT_EQ(parent_name, name);
+        run_loop->Quit();
+      },
+      &run_loop, parent_name));
+
+  run_loop.Run();
+}
+
+TEST_F(ShoppingListHandlerTest, TestShowBookmarkEditorForCurrentUrl) {
+  EXPECT_CALL(*delegate_, ShowBookmarkEditorForCurrentUrl).Times(1);
+
+  handler_->ShowBookmarkEditorForCurrentUrl();
 }
 
 class ShoppingListHandlerFeatureDisableTest : public testing::Test {

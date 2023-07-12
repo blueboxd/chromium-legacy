@@ -60,6 +60,11 @@ BASE_DECLARE_FEATURE(kAutofillPredictionsForAutocompleteUnrecognized);
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<bool>
     kAutofillImportFromAutocompleteUnrecognized;
+COMPONENT_EXPORT(AUTOFILL)
+BASE_DECLARE_FEATURE(kAutofillFallbackForAutocompleteUnrecognized);
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::FeatureParam<bool>
+    kAutofillFallForAutocompleteUnrecognizedOnAllAddressField;
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillDisableFilling);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillDisableAddressImport);
 COMPONENT_EXPORT(AUTOFILL)
@@ -139,6 +144,8 @@ extern const base::FeatureParam<PrecedenceOverAutocompleteScope>
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillIgnoreUnmappableAutocompleteValues);
 COMPONENT_EXPORT(AUTOFILL)
+BASE_DECLARE_FEATURE(kAutofillLocalHeuristicsOverrides);
+COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillHighlightOnlyChangedValuesInPreviewMode);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillLabelAffixRemoval);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillPageLanguageDetection);
@@ -152,8 +159,6 @@ extern const base::FeatureParam<std::string>
     kAutofillParsingPatternActiveSource;
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillAlwaysParsePlaceholders);
-COMPONENT_EXPORT(AUTOFILL)
-BASE_DECLARE_FEATURE(kAutofillPopupUseThresholdForKeyboardAndMobileAccept);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillPreventOverridingPrefilledValues);
 COMPONENT_EXPORT(AUTOFILL)
@@ -192,9 +197,6 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<bool> kAutofillSectioningModeCreateGaps;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<bool> kAutofillSectioningModeExpand;
-COMPONENT_EXPORT(AUTOFILL)
-extern const base::FeatureParam<bool>
-    kAutofillSectioningModeExpandOverUnfocusableFields;
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillRefillByFormRendererId);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillEnableAblationStudy);
@@ -244,11 +246,6 @@ extern const char kAutofillUseMobileLabelDisambiguationParameterShowAll[];
 COMPONENT_EXPORT(AUTOFILL)
 bool IsMacViewsAutofillPopupExperimentEnabled();
 #endif  // BUILDFLAG(IS_APPLE)
-
-#if BUILDFLAG(IS_ANDROID)
-COMPONENT_EXPORT(AUTOFILL)
-bool IsAutofillManualFallbackEnabled();
-#endif  // BUILDFLAG(IS_ANDROID)
 
 // The features in this namespace contains are not meant to be rolled out. They
 // are are only intended for manual testing purposes.

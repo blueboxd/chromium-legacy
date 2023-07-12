@@ -4,18 +4,15 @@
 
 package org.chromium.chrome.browser.readaloud;
 
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-
 /** Empty implementation of ReadAloudReadabilityHooks. */
 public class ReadAloudReadabilityHooksImpl implements ReadAloudReadabilityHooks {
     @Override
-    boolean isEnabled() {
+    public boolean isEnabled() {
         return false;
     }
 
     @Override
-    ListenableFuture<byte[]> isPageReadable(byte[] checkSupportedRequest) {
-        return Futures.immediateFuture(null);
+    public void isPageReadable(String url, ReadabilityCallback callback) {
+        return;
     }
 }

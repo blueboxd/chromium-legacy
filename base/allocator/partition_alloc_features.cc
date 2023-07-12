@@ -34,7 +34,9 @@ const base::FeatureParam<UnretainedDanglingPtrMode>
 
 BASE_FEATURE(kPartitionAllocDanglingPtr,
              "PartitionAllocDanglingPtr",
-#if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_FEATURE_FLAG)
+#if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_FEATURE_FLAG) ||                   \
+    (BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS) && BUILDFLAG(IS_LINUX) && \
+     !defined(NDEBUG))
              FEATURE_ENABLED_BY_DEFAULT
 #else
              FEATURE_DISABLED_BY_DEFAULT
@@ -145,19 +147,15 @@ const base::FeatureParam<BackupRefPtrRefCountSize>
 constexpr FeatureParam<BackupRefPtrMode>::Option kBackupRefPtrModeOptions[] = {
     {BackupRefPtrMode::kDisabled, "disabled"},
     {BackupRefPtrMode::kEnabled, "enabled"},
-    {BackupRefPtrMode::kEnabledWithMemoryReclaimer,
-     "enabled-with-memory-reclaimer"},
     {BackupRefPtrMode::kDisabledButSplitPartitions2Way,
      "disabled-but-2-way-split"},
-    {BackupRefPtrMode::kDisabledButSplitPartitions2WayWithMemoryReclaimer,
-     "disabled-but-2-way-split-with-memory-reclaimer"},
     {BackupRefPtrMode::kDisabledButSplitPartitions3Way,
      "disabled-but-3-way-split"},
 };
 
 const base::FeatureParam<BackupRefPtrMode> kBackupRefPtrModeParam{
-    &kPartitionAllocBackupRefPtr, "brp-mode",
-    BackupRefPtrMode::kEnabledWithMemoryReclaimer, &kBackupRefPtrModeOptions};
+    &kPartitionAllocBackupRefPtr, "brp-mode", BackupRefPtrMode::kEnabled,
+    &kBackupRefPtrModeOptions};
 
 BASE_FEATURE(kPartitionAllocMemoryTagging,
              "PartitionAllocMemoryTagging",
@@ -222,6 +220,10 @@ const base::FeatureParam<BucketDistributionMode>
 #endif  // BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_32_BITS)
       &kPartitionAllocBucketDistributionOption
 };
+
+BASE_FEATURE(kPartitionAllocMemoryReclaimer,
+             "PartitionAllocMemoryReclaimer",
+             FEATURE_ENABLED_BY_DEFAULT);
 
 // Configures whether we set a lower limit for renderers that do not have a main
 // frame, similar to the limit that is already done for backgrounded renderers.

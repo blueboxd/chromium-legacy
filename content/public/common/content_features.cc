@@ -262,6 +262,12 @@ BASE_FEATURE(kConsolidatedMovementXY,
              "ConsolidatedMovementXY",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// When enabled, the Clear-Site-Data HTTP Response header supports clearing the
+// client hints cache. When disabled, this header cannot clear the cache.
+BASE_FEATURE(kClearSiteDataClientHintsSupport,
+             "ClearSiteDataClientHintsSupport",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables Blink cooperative scheduling.
 BASE_FEATURE(kCooperativeScheduling,
              "CooperativeScheduling",
@@ -1481,6 +1487,10 @@ BASE_FEATURE(kAccessibilityPageZoom,
              "AccessibilityPageZoom",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Allows the use of "Smart Zoom", an alternative form of page zoom, and
+// enables the associated UI.
+BASE_FEATURE(kSmartZoom, "SmartZoom", base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Automatically disables accessibility on Android when no assistive
 // technologies are present
 BASE_FEATURE(kAutoDisableAccessibilityV2,
@@ -1509,6 +1519,11 @@ BASE_FEATURE(kOnDemandAccessibilityEvents,
 // setting and peripheral setting.
 BASE_FEATURE(kRequestDesktopSiteAdditions,
              "RequestDesktopSiteAdditions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Request Desktop Site based on window width for Android.
+BASE_FEATURE(kRequestDesktopSiteWindowSetting,
+             "RequestDesktopSiteWindowSetting",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Request Desktop Site zoom for Android. Apply a pre-defined page zoom level

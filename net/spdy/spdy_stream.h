@@ -95,12 +95,9 @@ class NET_EXPORT_PRIVATE SpdyStream {
     virtual void OnEarlyHintsReceived(
         const spdy::Http2HeaderBlock& headers) = 0;
 
-    // Called when response headers have been received.  In case of a pushed
-    // stream, the pushed request headers are also passed.
-    // TODO(https://crbug.com/1426477): Remove.
+    // Called when response headers have been received.
     virtual void OnHeadersReceived(
-        const spdy::Http2HeaderBlock& response_headers,
-        const spdy::Http2HeaderBlock* pushed_request_headers) = 0;
+        const spdy::Http2HeaderBlock& response_headers) = 0;
 
     // Called when data is received.  |buffer| may be NULL, which signals EOF.
     // May cause the stream to be closed.
@@ -272,11 +269,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
                          base::Time response_time,
                          base::TimeTicks recv_first_byte_time);
 
-  // Called by the SpdySession when a frame carrying request headers opening a
-  // push stream is received. Stream transits to STATE_RESERVED_REMOTE state.
-  // TODO(https://crbug.com/1426477): Remove.
-  void OnPushPromiseHeadersReceived(spdy::Http2HeaderBlock headers, GURL url);
-
   // Called by the SpdySession when response data has been received
   // for this stream.  This callback may be called multiple times as
   // data arrives from the network, and will never be called prior to
@@ -396,8 +388,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
   int64_t raw_received_bytes() const { return raw_received_bytes_; }
   int64_t raw_sent_bytes() const { return raw_sent_bytes_; }
   int recv_bytes() const { return recv_bytes_; }
-  // TODO(https://crbug.com/1426477): Remove.
-  bool ShouldRetryRSTPushStream() const;
 
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const;
 

@@ -350,10 +350,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kBlockNewForbiddenHeaders);
 NET_EXPORT BASE_DECLARE_FEATURE(kPlatformKeyProbeSHA256);
 #endif
 
-// Enable support for HTTP extensible priorities (RFC 9218)
-// https://crbug.com/1362031
-NET_EXPORT BASE_DECLARE_FEATURE(kPriorityIncremental);
-
 // Prefetch to follow normal semantics instead of 5-minute rule
 // https://crbug.com/1345207
 NET_EXPORT BASE_DECLARE_FEATURE(kPrefetchFollowsNormalCacheSemantics);
@@ -367,6 +363,9 @@ NET_EXPORT BASE_DECLARE_FEATURE(kKerberosInBrowserRedirect);
 
 // A flag to use asynchronous session creation for new QUIC sessions.
 NET_EXPORT BASE_DECLARE_FEATURE(kAsyncQuicSession);
+
+// A flag to make multiport context creation asynchronous.
+NET_EXPORT BASE_DECLARE_FEATURE(kAsyncMultiPortPath);
 
 // Enables custom proxy configuration for the IP Protection experimental proxy.
 NET_EXPORT BASE_DECLARE_FEATURE(kEnableIpProtectionProxy);
@@ -410,6 +409,12 @@ NET_EXPORT BASE_DECLARE_FEATURE(kAsyncCacheLock);
 
 // Enables Early Hints on HTTP/1.1.
 NET_EXPORT BASE_DECLARE_FEATURE(kEnableEarlyHintsOnHttp11);
+
+// Enables draft-07 version of WebTransport over HTTP/3.
+NET_EXPORT BASE_DECLARE_FEATURE(kEnableWebTransportDraft07);
+
+// Enables Zstandard Content-Encoding support.
+NET_EXPORT BASE_DECLARE_FEATURE(kZstdContentEncoding);
 
 }  // namespace net::features
 

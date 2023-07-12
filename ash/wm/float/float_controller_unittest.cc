@@ -33,6 +33,7 @@
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/splitview/split_view_metrics_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/test/test_non_client_frame_view_ash.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -120,43 +121,6 @@ class WindowLayerRecreatedCounter : public aura::WindowObserver {
 
   base::ScopedObservation<aura::Window, aura::WindowObserver>
       window_observation_{this};
-};
-
-// A subclass of `NonClientFrameViewAsh` that allows us to set a custom minimum
-// size.
-class TestNonClientFrameView : public NonClientFrameViewAsh {
- public:
-  explicit TestNonClientFrameView(views::Widget* widget)
-      : NonClientFrameViewAsh(widget) {}
-  TestNonClientFrameView(const TestNonClientFrameView&) = delete;
-  TestNonClientFrameView& operator=(const TestNonClientFrameView&) = delete;
-  ~TestNonClientFrameView() override = default;
-
-  void SetMinimumSize(const gfx::Size& size) {
-    minimum_size_ = size;
-    frame()->OnSizeConstraintsChanged();
-  }
-
-  // NonClientFrameViewAsh:
-  gfx::Size GetMinimumSize() const override { return minimum_size_; }
-
- private:
-  gfx::Size minimum_size_;
-};
-
-// A test widget delegate that creates `TestNonClientFrameView` as its frame.
-class TestWidgetDelegate : public views::WidgetDelegate {
- public:
-  TestWidgetDelegate() { SetHasWindowSizeControls(true); }
-  TestWidgetDelegate(const TestWidgetDelegate& other) = delete;
-  TestWidgetDelegate& operator=(const TestWidgetDelegate& other) = delete;
-  ~TestWidgetDelegate() override = default;
-
-  // views::WidgetDelegateView:
-  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
-      views::Widget* widget) override {
-    return std::make_unique<TestNonClientFrameView>(widget);
-  }
 };
 
 }  // namespace
@@ -277,7 +241,8 @@ TEST_F(WindowFloatTest, WindowFloatingResize) {
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
   EXPECT_TRUE(window_state->IsFloated());
   gfx::Rect default_float_bounds =
-      FloatController::GetPreferredFloatWindowClamshellBounds(window.get());
+      FloatController::GetFloatWindowClamshellBounds(
+          window.get(), chromeos::FloatStartLocation::kBottomRight);
   EXPECT_EQ(default_float_bounds, window->GetBoundsInScreen());
   // Unfloat.
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
@@ -290,8 +255,8 @@ TEST_F(WindowFloatTest, WindowFloatingResize) {
   EXPECT_TRUE(window_state->IsFullscreen());
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
   EXPECT_TRUE(window_state->IsFloated());
-  default_float_bounds =
-      FloatController::GetPreferredFloatWindowClamshellBounds(window.get());
+  default_float_bounds = FloatController::GetFloatWindowClamshellBounds(
+      window.get(), chromeos::FloatStartLocation::kBottomRight);
   EXPECT_EQ(default_float_bounds, window->GetBoundsInScreen());
   // Unfloat.
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
@@ -348,6 +313,41 @@ TEST_F(WindowFloatTest, WindowFloatingResize) {
             window_state2->GetStateType());
 }
 
+// Tests that manually resized floated bounds (by dragging the caption area) are
+// restored across desk switches.
+TEST_F(WindowFloatTest, RestoreResizeBounds) {
+  auto* desks_controller = DesksController::Get();
+  NewDesk();
+  ASSERT_EQ(2u, desks_controller->desks().size());
+
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+
+  // Drag the floated window away from its default bounds.
+  auto* event_generator = GetEventGenerator();
+  chromeos::HeaderView* header_view = GetHeaderView(window.get());
+  event_generator->set_current_screen_location(
+      header_view->GetBoundsInScreen().CenterPoint());
+  event_generator->DragMouseTo(gfx::Point(100, 100));
+  const gfx::Rect resize_bounds(window->bounds());
+
+  // Switch to desk 2.
+  ActivateDesk(desks_controller->desks()[1].get());
+  ASSERT_TRUE(WindowState::Get(window.get())->IsFloated());
+  ASSERT_FALSE(window->IsVisible());
+
+  // Switch back to desk 1. Test that the new floated bounds are restored.
+  ActivateDesk(desks_controller->desks()[0].get());
+  ASSERT_TRUE(WindowState::Get(window.get())->IsFloated());
+  ASSERT_TRUE(window->IsVisible());
+  EXPECT_EQ(resize_bounds, window->bounds());
+
+  // Test that minimizing and unminimizing also restores resized bounds.
+  auto* window_state = WindowState::Get(window.get());
+  window_state->Minimize();
+  window_state->Restore();
+  EXPECT_EQ(resize_bounds, window->bounds());
+}
+
 // Test that the float acclerator does not work on a non-floatable window.
 TEST_F(WindowFloatTest, CantFloatAccelerator) {
   // Test window is NON_APP by default, which cannot be floated.
@@ -369,8 +369,7 @@ TEST_F(WindowFloatTest, DragToOtherDisplayThenMaximize) {
   // Drag the window to the secondary display. Note that the event generator
   // does not update the display associated with the cursor, so we have to
   // manually do it here.
-  auto* frame = NonClientFrameViewAsh::Get(window.get());
-  chromeos::HeaderView* header_view = frame->GetHeaderView();
+  chromeos::HeaderView* header_view = GetHeaderView(window.get());
   auto* event_generator = GetEventGenerator();
   event_generator->set_current_screen_location(
       header_view->GetBoundsInScreen().CenterPoint());
@@ -1059,16 +1058,23 @@ TEST_F(WindowFloatMetricsTest, FloatWindowDuration) {
   histogram_tester_.ExpectBucketCount(kHistogramName, 3, 4);
 }
 
-// Test that the size of preferred bounds for unresizable windows is not
-// different from the size of the original window bounds.
-TEST_F(WindowFloatTest, PreferredBoundsForUnresizableWindow) {
+// Test bounds for a floated unresizable window.
+TEST_F(WindowFloatTest, BoundsForUnresizableWindow) {
   std::unique_ptr<aura::Window> window = CreateAppWindow(gfx::Rect(600, 600));
   window->SetProperty(aura::client::kResizeBehaviorKey,
                       aura::client::kResizeBehaviorNone);
-  EXPECT_EQ(
-      FloatController::GetPreferredFloatWindowClamshellBounds(window.get())
-          .size(),
-      window->GetBoundsInScreen().size());
+  const gfx::Size window_size = window->GetBoundsInScreen().size();
+
+  // Float the window. Test that the size does not change, and that it is
+  // roughly in the bottom right.
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(WindowState::Get(window.get())->IsFloated());
+  const gfx::Rect work_area_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+  const gfx::Rect window_bounds = window->GetBoundsInScreen();
+  EXPECT_EQ(window_size, window_bounds.size());
+  EXPECT_NEAR(window_bounds.bottom(), work_area_bounds.bottom(), 10);
+  EXPECT_NEAR(window_bounds.right(), work_area_bounds.right(), 10);
 }
 
 class TabletWindowFloatTest : public WindowFloatTest,
@@ -1290,14 +1296,11 @@ TEST_F(TabletWindowFloatTest, MinimumSizeChangeOnTablet) {
 
   // Create a window in clamshell mode without a minimum size, and larger than
   // its tablet minimum size.
-  auto test_widget_delegate = std::make_unique<TestWidgetDelegate>();
-  auto window = CreateAppWindow(gfx::Rect(500, 500), AppType::SYSTEM_APP,
-                                kShellWindowId_DeskContainerA,
-                                test_widget_delegate.get());
-  auto* custom_frame = static_cast<TestNonClientFrameView*>(
-      views::Widget::GetWidgetForNativeWindow(window.get())
-          ->non_client_view()
-          ->frame_view());
+  auto window =
+      CreateAppWindow(gfx::Rect(500, 500), AppType::SYSTEM_APP,
+                      kShellWindowId_DeskContainerA, new TestWidgetDelegateAsh);
+  auto* custom_frame = static_cast<TestNonClientFrameViewAsh*>(
+      NonClientFrameViewAsh::Get(window.get()));
   wm::ActivateWindow(window.get());
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
   ASSERT_TRUE(WindowState::Get(window.get())->IsFloated());

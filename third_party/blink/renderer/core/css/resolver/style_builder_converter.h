@@ -63,7 +63,6 @@
 
 namespace blink {
 
-class AnchorSpecifierValue;
 class ClipPathOperation;
 class CSSToLengthConversionData;
 class Font;
@@ -216,12 +215,12 @@ class StyleBuilderConverter {
                             const CSSValue&);  // clamps to [0,1]
   static ScopedCSSName* ConvertNoneOrCustomIdent(StyleResolverState&,
                                                  const CSSValue&);
+  static ScopedCSSName* ConvertNormalOrCustomIdent(StyleResolverState&,
+                                                   const CSSValue&);
   static ScopedCSSName* ConvertCustomIdent(StyleResolverState&,
                                            const CSSValue&);
   static ScopedCSSName* ConvertAnchorDefault(StyleResolverState&,
                                              const CSSValue&);
-  static AnchorSpecifierValue* ConvertAnchorScroll(StyleResolverState&,
-                                                   const CSSValue&);
   static StyleInitialLetter ConvertInitialLetter(StyleResolverState&,
                                                  const CSSValue&);
   static StyleOffsetRotation ConvertOffsetRotate(StyleResolverState&,

@@ -38,6 +38,7 @@
 #include "components/device_reauth/device_authenticator.h"
 #include "components/device_reauth/mock_device_authenticator.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/mock_password_feature_manager.h"
 #include "components/password_manager/core/browser/mock_webauthn_credentials_delegate.h"
 #include "components/password_manager/core/browser/passkey_credential.h"
@@ -294,7 +295,7 @@ autofill::AutofillClient::PopupOpenArgs CreateReopenArgsWithTestSuggestions(
   return {gfx::RectF(), base::i18n::LEFT_TO_RIGHT,
           CreateTestSuggestions(has_opt_in_and_fill, has_opt_in_and_generate,
                                 has_re_signin),
-          autofill::AutoselectFirstSuggestion(false)};
+          autofill::AutofillSuggestionTriggerSource::kPasswordManager};
 }
 
 }  // namespace
@@ -600,7 +601,8 @@ TEST_F(PasswordAutofillManagerTest, ShowOptInAndFillButton) {
                   autofill::PopupItemId::kSeparator,
 #endif
                   autofill::PopupItemId::kAllSavedPasswordsEntry));
-  EXPECT_FALSE(open_args.autoselect_first_suggestion);
+  EXPECT_EQ(open_args.trigger_source,
+            autofill::AutofillSuggestionTriggerSource::kPasswordManager);
 }
 
 // Test that a popup without entries doesn't show "Manage all Passwords".
@@ -622,7 +624,8 @@ TEST_F(PasswordAutofillManagerTest, SuppressManageAllWithoutPasswords) {
   EXPECT_THAT(open_args.suggestions,
               SuggestionVectorIdsAre(
                   autofill::PopupItemId::kPasswordAccountStorageOptIn));
-  EXPECT_FALSE(open_args.autoselect_first_suggestion);
+  EXPECT_EQ(open_args.trigger_source,
+            autofill::AutofillSuggestionTriggerSource::kPasswordManager);
 }
 
 // Test that the popup is updated once account-stored suggestions are unlocked.
@@ -647,7 +650,8 @@ TEST_F(PasswordAutofillManagerTest, ShowResigninButton) {
                   autofill::PopupItemId::kSeparator,
 #endif
                   autofill::PopupItemId::kAllSavedPasswordsEntry));
-  EXPECT_FALSE(open_args.autoselect_first_suggestion);
+  EXPECT_EQ(open_args.trigger_source,
+            autofill::AutofillSuggestionTriggerSource::kPasswordManager);
 }
 
 // Test that the popup is updated once "opt in and fill" is clicked.
@@ -1120,7 +1124,8 @@ TEST_F(PasswordAutofillManagerTest, PrettifiedAndroidRealmsAreShownAsLabels) {
       open_args.suggestions,
       SuggestionVectorLabelsContains(std::vector<std::vector<Suggestion::Text>>{
           {Suggestion::Text(u"android://com.example1.android/")}}));
-  EXPECT_FALSE(open_args.autoselect_first_suggestion);
+  EXPECT_EQ(open_args.trigger_source,
+            autofill::AutofillSuggestionTriggerSource::kPasswordManager);
 }
 
 TEST_F(PasswordAutofillManagerTest, FillSuggestionPasswordField) {
@@ -1153,7 +1158,8 @@ TEST_F(PasswordAutofillManagerTest, FillSuggestionPasswordField) {
 #endif
           Suggestion::Text(GetManagePasswordsTitle(),
                            Suggestion::Text::IsPrimary(true))));
-  EXPECT_FALSE(open_args.autoselect_first_suggestion);
+  EXPECT_EQ(open_args.trigger_source,
+            autofill::AutofillSuggestionTriggerSource::kPasswordManager);
 }
 
 // Verify that typing "foo" into the username field will match usernames
@@ -1197,7 +1203,8 @@ TEST_F(PasswordAutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
 #endif
                   Suggestion::Text(GetManagePasswordsTitle(),
                                    Suggestion::Text::IsPrimary(true))));
-  EXPECT_FALSE(open_args.autoselect_first_suggestion);
+  EXPECT_EQ(open_args.trigger_source,
+            autofill::AutofillSuggestionTriggerSource::kPasswordManager);
 }
 
 // Verify that typing "oo" into the username field will not match any usernames
@@ -1273,7 +1280,8 @@ TEST_F(PasswordAutofillManagerTest,
 #endif
                   Suggestion::Text(GetManagePasswordsTitle(),
                                    Suggestion::Text::IsPrimary(true))));
-  EXPECT_FALSE(open_args.autoselect_first_suggestion);
+  EXPECT_EQ(open_args.trigger_source,
+            autofill::AutofillSuggestionTriggerSource::kPasswordManager);
 }
 
 // Verify that typing "example" into the username field will match and order
@@ -1319,8 +1327,8 @@ TEST_F(PasswordAutofillManagerTest,
 #endif
                   Suggestion::Text(GetManagePasswordsTitle(),
                                    Suggestion::Text::IsPrimary(true))));
-
-  EXPECT_FALSE(open_args.autoselect_first_suggestion);
+  EXPECT_EQ(open_args.trigger_source,
+            autofill::AutofillSuggestionTriggerSource::kPasswordManager);
 }
 
 TEST_F(PasswordAutofillManagerTest, PreviewAndFillEmptyUsernameSuggestion) {
@@ -1457,7 +1465,8 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnNonPasswordField) {
 #endif
           Suggestion::Text(GetManagePasswordsTitle(),
                            Suggestion::Text::IsPrimary(true))));
-  EXPECT_FALSE(open_args.autoselect_first_suggestion);
+  EXPECT_EQ(open_args.trigger_source,
+            autofill::AutofillSuggestionTriggerSource::kPasswordManager);
 }
 
 TEST_F(PasswordAutofillManagerTest,
@@ -1642,7 +1651,8 @@ TEST_F(PasswordAutofillManagerTest, DisplayAccountSuggestionsIndicatorIcon) {
   ASSERT_THAT(open_args.suggestions.size(),
               testing::Ge(1u));  // No footer on Android.
   EXPECT_THAT(open_args.suggestions[0].trailing_icon, "google");
-  EXPECT_FALSE(open_args.autoselect_first_suggestion);
+  EXPECT_EQ(open_args.trigger_source,
+            autofill::AutofillSuggestionTriggerSource::kPasswordManager);
 }
 
 TEST_F(PasswordAutofillManagerTest, FillsSuggestionIfAuthNotAvailable) {

@@ -127,7 +127,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Chaps.ReinitializingToken"
-    enum="ChapsReinitializingToken" expires_after="2023-11-05">
+    enum="ChapsReinitializingToken" expires_after="2024-01-07">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -136,7 +136,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Chaps.Session.Decrypt" enum="ChapsSessionStatus"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -169,7 +169,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Chaps.Session.Sign" enum="ChapsSessionStatus"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -191,7 +191,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Chaps.TokenManager.LoadToken"
-    enum="TokenManagerStatus" expires_after="2023-11-05">
+    enum="TokenManagerStatus" expires_after="2024-01-07">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -213,7 +213,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Chaps.TPMAvailability" enum="ChapsTPMAvailability"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>Each sample is the TPM Availability status.</summary>
@@ -242,7 +242,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.CrOS.CrashSenderRemoveReason"
-    enum="CrosCrashSenderRemoveReason" expires_after="2023-08-08">
+    enum="CrosCrashSenderRemoveReason" expires_after="2024-07-10">
   <owner>iby@chromium.org</owner>
   <owner>mutexlox@chromium.org</owner>
   <owner>cros-telemetry@google.com</owner>
@@ -637,17 +637,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.Hibernate.Duration.HibernateResumeReady"
-    units="seconds" expires_after="2024-06-08">
-  <owner>mka@chromium.org</owner>
-  <owner>bgeffon@chromium.org</owner>
-  <owner>chromeos-hibernate@google.com</owner>
-  <summary>
-    The duration in seconds we waited for the hibernate Resume Signal Ready from
-    powerd on ChromeOS devices. Reported at resume from hibernate.
-  </summary>
-</histogram>
-
 <histogram name="Platform.Hibernate.Event" enum="CrosHibernateCycleEvent"
     expires_after="2024-06-08">
   <owner>mka@chromium.org</owner>
@@ -781,6 +770,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Platform.Hibernate.ResumeTime.HibernateResumeReady" units="ms"
+    expires_after="2024-06-08">
+  <owner>mka@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
+  <owner>chromeos-hibernate@google.com</owner>
+  <summary>
+    The duration in milliseconds we waited for the HibernateResumeReady signal
+    from powerd on ChromeOS devices. Reported at resume from hibernate.
+  </summary>
+</histogram>
+
 <histogram name="Platform.Hibernate.ResumeTime.KernelResume" units="ms"
     expires_after="2024-06-08">
   <owner>mka@chromium.org</owner>
@@ -909,16 +909,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Time elapsed between the last two kernel crashes. Sent after every kernel
     crash.
-  </summary>
-</histogram>
-
-<histogram name="Platform.KmsVncMethod" enum="KmsVncMethodEnum"
-    expires_after="2022-02-02">
-  <owner>uekawa@chromium.org</owner>
-  <owner>shaochuan@chromium.org</owner>
-  <summary>
-    KmsVnc graphics method in use, depending on command line flags and
-    auto-detected kernel graphics features. Recorded at start up of VNC server.
   </summary>
 </histogram>
 
@@ -1348,6 +1338,16 @@ chromium-metrics-reviews@google.com.
     usage is not expected to be high and any usage beyond 100% is considered to
     be in the overflow bucket. This is reported once every 10 minutes and only
     if the Missive daemon is running.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Missive.KeyDeliveryResult"
+    enum="EnterpriseCloudReportingStatusCode" expires_after="2024-07-10">
+  <owner>jrhilke@chromium.org</owner>
+  <owner>cros-reporting-team@google.com</owner>
+  <summary>
+    Recorded when missive recieves a response to its request for an encryption
+    key from the server. Counts the success/failures of key requests.
   </summary>
 </histogram>
 
@@ -1868,7 +1868,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.DictionaryAttackResetStatus"
-    enum="CrosTPMDictionaryAttackResetStatusEnum" expires_after="2023-11-05">
+    enum="CrosTPMDictionaryAttackResetStatusEnum" expires_after="2024-01-07">
   <owner>yich@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -1953,7 +1953,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.PowerWashResult" enum="TPMPowerWashResult"
-    expires_after="2023-11-05">
+    expires_after="2024-01-07">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -2059,7 +2059,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Trunks.FirstTimeoutWritingCommand"
-    enum="TPMCommandCode" expires_after="2023-11-05">
+    enum="TPMCommandCode" expires_after="2024-01-07">
   <owner>chingkang@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>Command code of the first timeout writing TPM command</summary>
@@ -2229,7 +2229,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.WriteSectorsShort" units="sectors per second"
-    expires_after="2023-10-27">
+    expires_after="2023-12-31">
   <owner>gwendal@google.com</owner>
   <owner>chromeos-storage@google.com</owner>
   <summary>

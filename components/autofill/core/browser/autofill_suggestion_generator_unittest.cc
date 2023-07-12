@@ -30,6 +30,7 @@
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/test/test_sync_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/mock_resource_bundle_delegate.h"
@@ -79,7 +80,7 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
                           /*local_state=*/autofill_client_.GetPrefs(),
                           /*identity_manager=*/nullptr,
                           /*history_service=*/nullptr,
-                          /*sync_service=*/nullptr,
+                          /*sync_service=*/&sync_service_,
                           /*strike_database=*/nullptr,
                           /*image_fetcher=*/nullptr,
                           /*is_off_the_record=*/false);
@@ -159,6 +160,7 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
       base::test::TaskEnvironment::TimeSource::SYSTEM_TIME};
   test::AutofillUnitTestEnvironment autofill_test_environment_;
   TestAutofillClient autofill_client_;
+  syncer::TestSyncService sync_service_;
   std::unique_ptr<TestAutofillSuggestionGenerator> suggestion_generator_;
   scoped_refptr<AutofillWebDataService> database_;
   testing::NiceMock<ui::MockResourceBundleDelegate> mock_resource_delegate_;
@@ -786,15 +788,9 @@ TEST_F(AutofillSuggestionGeneratorTest,
 // suggestions. It covers suggestions on Desktop/Android dropdown, and on
 // Android keyboard accessory.
 class AutofillCreditCardSuggestionContentTest
-    : public AutofillSuggestionGeneratorTest,
-      public testing::WithParamInterface<bool> {
+    : public AutofillSuggestionGeneratorTest {
  public:
   AutofillCreditCardSuggestionContentTest() {
-#if BUILDFLAG(IS_ANDROID)
-    keyboard_accessory_enabled_ = GetParam();
-    feature_list_keyboard_accessory_.InitWithFeatureState(
-        features::kAutofillKeyboardAccessory, keyboard_accessory_enabled_);
-#endif
     feature_list_metadata_.InitWithFeatures(
         /*enabled_features=*/{features::kAutofillEnableVirtualCardMetadata,
                               features::kAutofillEnableCardProductName},
@@ -805,7 +801,7 @@ class AutofillCreditCardSuggestionContentTest
 
   bool keyboard_accessory_enabled() const {
 #if BUILDFLAG(IS_ANDROID)
-    return keyboard_accessory_enabled_;
+    return true;
 #else
     return false;
 #endif
@@ -825,20 +821,12 @@ class AutofillCreditCardSuggestionContentTest
 #endif
 
  private:
-#if BUILDFLAG(IS_ANDROID)
-  bool keyboard_accessory_enabled_;
-  base::test::ScopedFeatureList feature_list_keyboard_accessory_;
-#endif
   base::test::ScopedFeatureList feature_list_metadata_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         AutofillCreditCardSuggestionContentTest,
-                         testing::Bool());
-
 // Verify that the suggestion's texts are populated correctly for a virtual card
 // suggestion when the cardholder name field is focused.
-TEST_P(AutofillCreditCardSuggestionContentTest,
+TEST_F(AutofillCreditCardSuggestionContentTest,
        CreateCreditCardSuggestion_VirtualCardMetadata_NameField) {
   CreditCard server_card = CreateServerCard();
 
@@ -902,7 +890,7 @@ TEST_P(AutofillCreditCardSuggestionContentTest,
 
 // Verify that the suggestion's texts are populated correctly for a virtual card
 // suggestion when the card number field is focused.
-TEST_P(AutofillCreditCardSuggestionContentTest,
+TEST_F(AutofillCreditCardSuggestionContentTest,
        CreateCreditCardSuggestion_VirtualCardMetadata_NumberField) {
   CreditCard server_card = CreateServerCard();
 
@@ -950,7 +938,7 @@ TEST_P(AutofillCreditCardSuggestionContentTest,
 
 // Verify that the suggestion's texts are populated correctly for a masked
 // server card suggestion when the cardholder name field is focused.
-TEST_P(AutofillCreditCardSuggestionContentTest,
+TEST_F(AutofillCreditCardSuggestionContentTest,
        CreateCreditCardSuggestion_MaskedServerCardMetadata_NameField) {
   CreditCard server_card = CreateServerCard();
 
@@ -993,7 +981,7 @@ TEST_P(AutofillCreditCardSuggestionContentTest,
 
 // Verify that the suggestion's texts are populated correctly for a masked
 // server card suggestion when the card number field is focused.
-TEST_P(AutofillCreditCardSuggestionContentTest,
+TEST_F(AutofillCreditCardSuggestionContentTest,
        CreateCreditCardSuggestion_MaskedServerCardMetadata_NumberField) {
   CreditCard server_card = CreateServerCard();
 
@@ -1287,13 +1275,10 @@ class AutofillSuggestionGeneratorTestForOffer
     keyboard_accessory_offer_enabled_ = GetParam();
     if (keyboard_accessory_offer_enabled_) {
       scoped_feature_keyboard_accessory_offer_.InitWithFeatures(
-          {features::kAutofillKeyboardAccessory,
-           features::kAutofillEnableOffersInClankKeyboardAccessory},
-          {});
+          {features::kAutofillEnableOffersInClankKeyboardAccessory}, {});
     } else {
       scoped_feature_keyboard_accessory_offer_.InitWithFeatures(
-          {}, {features::kAutofillKeyboardAccessory,
-               features::kAutofillEnableOffersInClankKeyboardAccessory});
+          {}, {features::kAutofillEnableOffersInClankKeyboardAccessory});
     }
 #endif
   }

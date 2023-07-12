@@ -34,10 +34,6 @@ WaylandOzoneUIControlsTestHelper::WaylandOzoneUIControlsTestHelper() {
 
 WaylandOzoneUIControlsTestHelper::~WaylandOzoneUIControlsTestHelper() = default;
 
-bool WaylandOzoneUIControlsTestHelper::Initialize() {
-  return input_emulate_->Initialize();
-}
-
 void WaylandOzoneUIControlsTestHelper::Reset() {
   // There's nothing to do here, as the both Exo and Weston automatically reset
   // the state when we close the connection.
@@ -68,7 +64,7 @@ void WaylandOzoneUIControlsTestHelper::SendKeyEvents(
     int key_event_types,
     int accelerator_state,
     base::OnceClosure closure) {
-  DCHECK(!(accelerator_state & ui_controls::kCommand))
+  CHECK(!(accelerator_state & ui_controls::kCommand))
       << "No Command key on Wayland";
 
   uint32_t request_id = GetNextRequestId();

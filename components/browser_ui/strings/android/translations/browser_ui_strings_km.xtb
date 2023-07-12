@@ -67,6 +67,7 @@
 <translation id="2238944249568001759">ការស្វែងរក​ដែលបានណែនាំ​ផ្អែកលើ​ផ្ទាំង​ចុងក្រោយ​របស់អ្នក</translation>
 <translation id="2241634353105152135">ម្តងប៉ុណ្ណោះ</translation>
 <translation id="2253414712144136228">ដក <ph name="NAME_OF_LIST_ITEM" /> ចេញ</translation>
+<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{បានទប់ស្កាត់គេហទំព័រ​ចំនួន 1}other{បានទប់ស្កាត់គេហទំព័រ​ចំនួន #}}</translation>
 <translation id="228293613124499805">គេហទំព័រ​ភាគ​ច្រើន​ដែល​អ្នក​ចូលមើល​ប្រហែលជា​រក្សាទុក​ទិន្នន័យ​ទៅ​ក្នុង​ឧបករណ៍​របស់​អ្នក ជារឿយៗដើម្បី​កែលម្អ​បទពិសោធន៍​របស់​អ្នក ដោយ​រក្សាទុក​ចំណូលចិត្ត​របស់​អ្នក ឬ​ព័ត៌មាន​ដែល​អ្នក​ចែករំលែក​ជា​មួយ​គេហទំព័រ។ យើង​សូមណែនាំ​ឱ្យ​បន្ត​បើក​ការ​កំណត់នេះ។</translation>
 <translation id="2289270750774289114">សួរនៅពេលគេហទំព័រ​ចង់ស្វែងរកឧបករណ៍​ប៊្លូធូសដែលនៅជិត (បានណែនាំ)</translation>
 <translation id="2315043854645842844">ការជ្រើសរើសវិញ្ញាបនបត្រសម្រាប់ម៉ាស៊ីនកូនមិនគាំទ្រដោយប្រព័ន្ធដំណើរការនេះទេ។</translation>
@@ -302,7 +303,6 @@
 <translation id="6467852467360539617">សម្អាតទិន្នន័យ និងកំណត់ការអនុញ្ញាតឡើងវិញ</translation>
 <translation id="6527303717912515753">ចែករំលែក</translation>
 <translation id="6545864417968258051">ការស្កេនប៊្លូធូស</translation>
-<translation id="6552691050538553146">ជម្រើស​ច្រើនទៀត <ph name="BANNER_TITLE" /></translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{បានទប់ស្កាត់ <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> និង <ph name="NUM_MORE" /> ទៀត}other{បានទប់ស្កាត់ <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> និង <ph name="NUM_MORE" /> ទៀត}}</translation>
 <translation id="6554732001434021288">បានចូលមើល​លើកចុងក្រោយ​កាលពី <ph name="NUM_DAYS" /> ថ្ងៃមុន</translation>
 <translation id="6561560012278703671">ប្រើ​ការផ្ញើសារ​ស្ងាត់​ជាងមុន (ទប់ស្កាត់​សារ​ជូនដំណឹង​មិនឱ្យ​រំខាន​អ្នក)</translation>
@@ -384,6 +384,7 @@
 <translation id="8068648041423924542">មិនអាចជ្រើសរើសវិញ្ញាបនបត្រទេ</translation>
 <translation id="8077120325605624147">គ្រប់គេហទំព័រដែល​អ្នក​ចូលមើល អាច​បង្ហាញ​ការ​ផ្សាយពាណិជ្ជកម្ម​ណាក៏បាន​ដល់​អ្នក</translation>
 <translation id="8087000398470557479">មាតិកានេះបានពី <ph name="DOMAIN_NAME" /> ដែលចែកចាយដោយ Google។</translation>
+<translation id="8088603949666785339">ជម្រើសច្រើនទៀតនៅក្នុង <ph name="BANNER_TITLE" /></translation>
 <translation id="8116925261070264013">បានបិទសំឡេង</translation>
 <translation id="813082847718468539">មើលព័ត៌មានគេហទំព័រ</translation>
 <translation id="8131740175452115882">អះអាង</translation>
@@ -430,6 +431,7 @@
 <translation id="8719283222052720129">បើកការអនុញ្ញាត​សម្រាប់ <ph name="APP_NAME" /> នៅក្នុង​<ph name="BEGIN_LINK" />ការកំណត់ Android<ph name="END_LINK" />។</translation>
 <translation id="8725066075913043281">ព្យាយាមម្តងទៀត</translation>
 <translation id="8730621377337864115">រួចរាល់</translation>
+<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{បានអនុញ្ញាតគេហទំព័រ​ចំនួន 1}other{បានអនុញ្ញាតគេហទំព័រ​ចំនួន #}}</translation>
 <translation id="8737217482364735741">សកម្មភាព​នេះនឹងសម្អាត​ទិន្នន័យ និងខូគីទាំងអស់​ដែល <ph name="ORIGIN" /> បានរក្សាទុក។</translation>
 <translation id="8751914237388039244">ជ្រើសរើស​រូបភាព</translation>
 <translation id="8801436777607969138">ទប់ស្កាត់ JavaScript សម្រាប់គេហទំព័រជាក់លាក់។</translation>

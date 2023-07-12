@@ -121,6 +121,7 @@
     case kHistorySync:
     case kTangibleSync:
     case kDefaultBrowserPromo:
+    case kChoice:
     case kStepsCompleted:
       NOTREACHED() << "Type of screen not supported." << static_cast<int>(type);
       break;
@@ -156,7 +157,7 @@
 
 #pragma mark - SigninCoordinator
 
-- (void)interruptWithAction:(SigninCoordinatorInterruptAction)action
+- (void)interruptWithAction:(SigninCoordinatorInterrupt)action
                  completion:(ProceduralBlock)completion {
   __weak __typeof(self) weakSelf = self;
   ProceduralBlock finishCompletion = ^() {
@@ -167,19 +168,17 @@
   };
   BOOL animated = NO;
   switch (action) {
-    case SigninCoordinatorInterruptActionNoDismiss: {
+    case SigninCoordinatorInterrupt::UIShutdownNoDismiss: {
       [self.childCoordinator
-          interruptWithAction:SigninCoordinatorInterruptActionNoDismiss
-                   completion:^{
-                     finishCompletion();
-                   }];
+          interruptWithAction:SigninCoordinatorInterrupt::UIShutdownNoDismiss
+                   completion:finishCompletion];
       return;
     }
-    case SigninCoordinatorInterruptActionDismissWithoutAnimation: {
+    case SigninCoordinatorInterrupt::DismissWithoutAnimation: {
       animated = NO;
       break;
     }
-    case SigninCoordinatorInterruptActionDismissWithAnimation: {
+    case SigninCoordinatorInterrupt::DismissWithAnimation: {
       animated = YES;
       break;
     }
@@ -188,8 +187,7 @@
   // Interrupt the child coordinator UI first before dismissing the forced
   // sign-in navigation controller.
   [self.childCoordinator
-      interruptWithAction:
-          SigninCoordinatorInterruptActionDismissWithoutAnimation
+      interruptWithAction:SigninCoordinatorInterrupt::DismissWithoutAnimation
                completion:^{
                  [weakSelf.navigationController.presentingViewController
                      dismissViewControllerAnimated:animated

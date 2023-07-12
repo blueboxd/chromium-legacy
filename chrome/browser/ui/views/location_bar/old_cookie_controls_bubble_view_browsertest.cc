@@ -32,13 +32,14 @@
 #include "ui/views/view.h"
 #include "url/gurl.h"
 
-class CookieControlsBubbleViewTest : public DialogBrowserTest {
+class OldCookieControlsBubbleViewTest : public DialogBrowserTest {
  public:
-  CookieControlsBubbleViewTest() = default;
+  OldCookieControlsBubbleViewTest() = default;
 
-  CookieControlsBubbleViewTest(const CookieControlsBubbleViewTest&) = delete;
-  CookieControlsBubbleViewTest& operator=(const CookieControlsBubbleViewTest&) =
+  OldCookieControlsBubbleViewTest(const OldCookieControlsBubbleViewTest&) =
       delete;
+  OldCookieControlsBubbleViewTest& operator=(
+      const OldCookieControlsBubbleViewTest&) = delete;
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -149,18 +150,18 @@ class CookieControlsBubbleViewTest : public DialogBrowserTest {
   PageActionIconView* cookie_controls_icon() { return cookie_controls_icon_; }
 
  private:
-  raw_ptr<PageActionIconView, DanglingUntriaged> cookie_controls_icon_;
+  raw_ptr<PageActionIconView, DanglingAcrossTasks> cookie_controls_icon_;
 };
 
 // Test that cookie icon is not shown when cookies are not blocked.
-IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest, NoCookiesBlocked) {
+IN_PROC_BROWSER_TEST_F(OldCookieControlsBubbleViewTest, NoCookiesBlocked) {
   NavigateToUrlWithThirdPartyCookies();
   EXPECT_FALSE(cookie_controls_icon()->GetVisible());
 }
 
 // Test opening cookie controls bubble and clicking on "not working" link.
 // Check that accepting the bubble unblocks 3p cookies for this origin.
-IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest, NotWorkingClicked) {
+IN_PROC_BROWSER_TEST_F(OldCookieControlsBubbleViewTest, NotWorkingClicked) {
   // Block 3p cookies.
   SetThirdPartyCookieBlocking(true);
   GURL origin = embedded_test_server()->GetURL("a.com", "/");
@@ -176,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest, NotWorkingClicked) {
 
 // Test that opening cookie controls bubble sets
 // `prefs::kInContextCookieControlsOpened`.
-IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest,
+IN_PROC_BROWSER_TEST_F(OldCookieControlsBubbleViewTest,
                        InContextCookieControlsOpenedRecorded) {
   // Block 3p cookies.
   SetThirdPartyCookieBlocking(true);
@@ -197,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest,
 
 // Test opening cookie controls bubble while 3p cookies are allowed for this
 // page. Check that accepting the bubble blocks cookies again.
-IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest, BlockingDisabled) {
+IN_PROC_BROWSER_TEST_F(OldCookieControlsBubbleViewTest, BlockingDisabled) {
   // Block 3p cookies in general but allow them for this site.
   SetThirdPartyCookieBlocking(true);
   GURL origin = embedded_test_server()->GetURL("a.com", "/");
@@ -213,6 +214,30 @@ IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest, BlockingDisabled) {
   EXPECT_FALSE(cookie_settings()->IsThirdPartyAccessAllowed(origin, nullptr));
 }
 
+IN_PROC_BROWSER_TEST_F(OldCookieControlsBubbleViewTest, NonAllowedCookieSite) {
+  // Regression test for crbug.com/1459383. Activating a tab where cookies are
+  // blocked, such as an internal chrome:// url, while the UI is shown, should
+  // not crash.
+  SetThirdPartyCookieBlocking(true);
+
+  // Open chrome://about in the background.
+  ASSERT_TRUE(ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("chrome://about"),
+      WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP));
+
+  // Navigate current tab and open bubble on the page with 3PC blocked.
+  ShowUi("NotWorkingClicked");
+
+  // While bubble is open, activate the chrome://about tab.
+  browser()->tab_strip_model()->ActivateTabAt(1);
+
+  // The crash would have already occurred, but navigate to another chrome://
+  // url to be sure.
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL("chrome://version")));
+}
+
 // ==================== Pixel tests ====================
 
 // Test opening cookie controls bubble with blocked cookies present.
@@ -222,7 +247,7 @@ IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest, BlockingDisabled) {
 #else
 #define MAYBE_InvokeUi_CookiesBlocked InvokeUi_CookiesBlocked
 #endif
-IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest,
+IN_PROC_BROWSER_TEST_F(OldCookieControlsBubbleViewTest,
                        MAYBE_InvokeUi_CookiesBlocked) {
   SetThirdPartyCookieBlocking(true);
   ShowAndVerifyUi();
@@ -235,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest,
 #else
 #define MAYBE_InvokeUi_StatefulBounce InvokeUi_StatefulBounce
 #endif
-IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest,
+IN_PROC_BROWSER_TEST_F(OldCookieControlsBubbleViewTest,
                        MAYBE_InvokeUi_StatefulBounce) {
   SetThirdPartyCookieBlocking(true);
   ShowAndVerifyUi();
@@ -248,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest,
 #else
 #define MAYBE_InvokeUi_NotWorkingClicked InvokeUi_NotWorkingClicked
 #endif
-IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest,
+IN_PROC_BROWSER_TEST_F(OldCookieControlsBubbleViewTest,
                        MAYBE_InvokeUi_NotWorkingClicked) {
   // Block 3p cookies.
   SetThirdPartyCookieBlocking(true);
@@ -265,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest,
 #else
 #define MAYBE_InvokeUi_BlockingDisabled InvokeUi_BlockingDisabled
 #endif
-IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest,
+IN_PROC_BROWSER_TEST_F(OldCookieControlsBubbleViewTest,
                        MAYBE_InvokeUi_BlockingDisabled) {
   // Block 3p cookies in general but allow them for this site.
   SetThirdPartyCookieBlocking(true);
@@ -277,7 +302,8 @@ IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest,
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest, IconViewAccessibleName) {
+IN_PROC_BROWSER_TEST_F(OldCookieControlsBubbleViewTest,
+                       IconViewAccessibleName) {
   EXPECT_FALSE(cookie_controls_icon()->GetVisible());
   EXPECT_EQ(cookie_controls_icon()->GetAccessibleName(),
             l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_TOOLTIP));

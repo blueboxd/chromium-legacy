@@ -14,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.OutcomeReceiver;
 import android.os.Parcel;
+import android.os.SystemClock;
 import android.util.Base64;
 import android.util.Pair;
 
@@ -42,6 +43,7 @@ import org.chromium.blink.mojom.PublicKeyCredentialType;
 import org.chromium.blink.mojom.ResidentKeyRequirement;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.version_info.VersionInfo;
+import org.chromium.components.webauthn.CredManMetricsHelper.CredManCreateRequestEnum;
 import org.chromium.components.webauthn.CredManMetricsHelper.CredManGetRequestEnum;
 import org.chromium.components.webauthn.CredManMetricsHelper.CredManPrepareRequestEnum;
 import org.chromium.content_public.browser.ClientDataJson;
@@ -77,6 +79,10 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
             ComponentName.createRelative("com.google.android.gms",
                     ".auth.api.credentials.credman.service.PasswordAndPasskeyService");
     private static final String CHANNEL_KEY = "com.android.chrome.CHANNEL";
+    private static final String PASSWORDS_ONLY_FOR_THE_CHANNEL =
+            "com.android.chrome.PASSWORDS_ONLY_FOR_THE_CHANNEL";
+    private static final String PASSWORDS_WITH_NO_USERNAME_INCLUDED =
+            "com.android.chrome.PASSWORDS_WITH_NO_USERNAME_INCLUDED";
     private static final String TYPE_PASSKEY = CRED_MAN_PREFIX + "TYPE_PUBLIC_KEY_CREDENTIAL";
     static final String NON_EMPTY_ALLOWLIST_ERROR_MSG =
             "Authentication request must have non-empty allowList";
@@ -88,6 +94,11 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
     static final String LOW_LEVEL_ERROR_MSG = "Low level error 0x6a80";
     static final String CRED_MAN_EXCEPTION_CREATE_CREDENTIAL_TYPE_USER_CANCEL =
             "android.credentials.CreateCredentialException.TYPE_USER_CANCELED";
+    // This value is formed differently because it comes from the Jetpack
+    // library, not the framework.
+    @VisibleForTesting
+    public static final String CRED_MAN_EXCEPTION_CREATE_CREDENTIAL_TYPE_INVALID_STATE_ERROR =
+            "androidx.credentials.TYPE_CREATE_PUBLIC_KEY_CREDENTIAL_DOM_EXCEPTIONandroidx.credentials.TYPE_CREATE_PUBLIC_KEY_CREDENTIAL_INVALID_STATE_ERROR";
     static final String CRED_MAN_EXCEPTION_GET_CREDENTIAL_TYPE_USER_CANCEL =
             "android.credentials.GetCredentialException.TYPE_USER_CANCELED";
     static final String CRED_MAN_EXCEPTION_GET_CREDENTIAL_TYPE_NO_CREDENTIAL =
@@ -899,6 +910,8 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
                         /*topOrigin=*/null);
         if (clientDataHash == null) {
             returnErrorAndResetCallback(AuthenticatorStatus.NOT_ALLOWED_ERROR);
+            mMetricsHelper.recordCredManCreateRequestHistogram(
+                    CredManCreateRequestEnum.COULD_NOT_SEND_REQUEST);
             return;
         }
 
@@ -929,12 +942,22 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
                         errorType + " (" + e.getMessage() + ")");
                 if (errorType.equals(CRED_MAN_EXCEPTION_CREATE_CREDENTIAL_TYPE_USER_CANCEL)) {
                     returnErrorAndResetCallback(AuthenticatorStatus.NOT_ALLOWED_ERROR);
+                    mMetricsHelper.recordCredManCreateRequestHistogram(
+                            CredManCreateRequestEnum.CANCELLED);
+                } else if (errorType.equals(
+                                   CRED_MAN_EXCEPTION_CREATE_CREDENTIAL_TYPE_INVALID_STATE_ERROR)) {
+                    returnErrorAndResetCallback(AuthenticatorStatus.CREDENTIAL_EXCLUDED);
+                    // This is successful from the point of view of the user.
+                    mMetricsHelper.recordCredManCreateRequestHistogram(
+                            CredManCreateRequestEnum.SUCCESS);
                 } else {
                     // Includes:
                     //  * CreateCredentialException.TYPE_UNKNOWN
                     //  * CreateCredentialException.TYPE_NO_CREATE_OPTIONS
                     //  * CreateCredentialException.TYPE_INTERRUPTED
                     returnErrorAndResetCallback(AuthenticatorStatus.UNKNOWN_ERROR);
+                    mMetricsHelper.recordCredManCreateRequestHistogram(
+                            CredManCreateRequestEnum.FAILURE);
                 }
             }
 
@@ -947,6 +970,8 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
                 } catch (ReflectiveOperationException e) {
                     Log.e(TAG, "Reflection failed; are you running on Android 14?", e);
                     returnErrorAndResetCallback(AuthenticatorStatus.UNKNOWN_ERROR);
+                    mMetricsHelper.recordCredManCreateRequestHistogram(
+                            CredManCreateRequestEnum.FAILURE);
                     return;
                 }
 
@@ -957,6 +982,8 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
                 if (responseSerialized == null) {
                     Log.e(TAG, "Failed to convert response from CredMan to Mojo object: %s", json);
                     returnErrorAndResetCallback(AuthenticatorStatus.UNKNOWN_ERROR);
+                    mMetricsHelper.recordCredManCreateRequestHistogram(
+                            CredManCreateRequestEnum.FAILURE);
                     return;
                 }
                 MakeCredentialAuthenticatorResponse response =
@@ -965,6 +992,8 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
                 if (response == null) {
                     Log.e(TAG, "Failed to parse Mojo object");
                     returnErrorAndResetCallback(AuthenticatorStatus.UNKNOWN_ERROR);
+                    mMetricsHelper.recordCredManCreateRequestHistogram(
+                            CredManCreateRequestEnum.FAILURE);
                     return;
                 }
                 response.info.clientDataJson = mClientDataJson;
@@ -972,6 +1001,8 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
                     response.echoCredProps = true;
                 }
                 mMakeCredentialCallback.onRegisterResponse(AuthenticatorStatus.SUCCESS, response);
+                mMetricsHelper.recordCredManCreateRequestHistogram(
+                        CredManCreateRequestEnum.SUCCESS);
                 mMakeCredentialCallback = null;
             }
         };
@@ -993,10 +1024,13 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
                             android.os.CancellationSignal.class,
                             java.util.concurrent.Executor.class, OutcomeReceiver.class)
                     .invoke(manager, mContext, request, null, mContext.getMainExecutor(), receiver);
+            mMetricsHelper.recordCredManCreateRequestHistogram(
+                    CredManCreateRequestEnum.SENT_REQUEST);
         } catch (ReflectiveOperationException e) {
             Log.e(TAG, "Reflection failed; are you running on Android 14?", e);
             returnErrorAndResetCallback(AuthenticatorStatus.UNKNOWN_ERROR);
-            return;
+            mMetricsHelper.recordCredManCreateRequestHistogram(
+                    CredManCreateRequestEnum.COULD_NOT_SEND_REQUEST);
         }
     }
 
@@ -1185,6 +1219,7 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private void prefetchCredentialsViaCredMan(
             PublicKeyCredentialRequestOptions options, Origin origin, byte[] maybeClientDataHash) {
+        long startTimeMs = SystemClock.elapsedRealtime();
         // The Android 14 APIs have to be called via reflection until Chromium
         // builds with the Android 14 SDK by default.
         OutcomeReceiver<Object, Throwable> receiver = new OutcomeReceiver<>() {
@@ -1240,6 +1275,8 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
                 mMetricsHelper.recordCredmanPrepareRequestHistogram(hasPublicKeyCredentials
                                 ? CredManPrepareRequestEnum.SUCCESS_HAS_RESULTS
                                 : CredManPrepareRequestEnum.SUCCESS_NO_RESULTS);
+                mMetricsHelper.recordCredmanPrepareRequestDuration(
+                        SystemClock.elapsedRealtime() - startTimeMs);
             }
         };
 
@@ -1417,6 +1454,8 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
         Object passwordCredentialOption;
         Bundle passwordOptionBundle = new Bundle();
         passwordOptionBundle.putString(CHANNEL_KEY, getChannel());
+        passwordOptionBundle.putBoolean(PASSWORDS_ONLY_FOR_THE_CHANNEL, true);
+        passwordOptionBundle.putBoolean(PASSWORDS_WITH_NO_USERNAME_INCLUDED, true);
 
         final Class<?> credentialOptionBuilderClass = credManCredentialOptionBuilderClass();
         final Object credentialOptionBuilder =
@@ -1430,6 +1469,12 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
                 credentialOptionBuilderClass.getMethod("build").invoke(credentialOptionBuilder);
 
         return passwordCredentialOption;
+    }
+
+    protected void destroyBridge() {
+        if (mBrowserBridge == null) return;
+        mBrowserBridge.destroy();
+        mBrowserBridge = null;
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)

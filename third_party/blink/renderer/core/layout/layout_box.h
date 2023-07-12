@@ -54,12 +54,13 @@ class NGConstraintSpace;
 class NGEarlyBreak;
 class NGLayoutResult;
 class ShapeOutsideInfo;
+class WritingModeConverter;
 enum class NGLayoutCacheStatus;
 struct BoxLayoutExtraInput;
 struct NGFragmentGeometry;
 struct NGPhysicalBoxStrut;
+struct NonOverflowingScrollRange;
 struct PaintInfo;
-struct PhysicalScrollRange;
 
 enum SizeType { kMainOrPreferredSize, kMinSize, kMaxSize };
 enum AvailableLogicalHeightType {
@@ -307,16 +308,18 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       SetWidth(size);
   }
 
-  virtual LayoutPoint Location() const {
+  // Location() is deprecated.  Use PhysicalLocation() instead.
+  LayoutPoint Location() const {
     NOT_DESTROYED();
-    return frame_location_;
+    DCHECK(!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled());
+    return LocationInternal();
   }
   // LocationOffset() is deprecated.  Use PhysicalLocation() instead.
-  LayoutSize LocationOffset() const {
+  DeprecatedLayoutSize LocationOffset() const {
     NOT_DESTROYED();
     DCHECK(!RuntimeEnabledFeatures::LayoutNGNoLocationEnabled());
     auto location = Location();
-    return LayoutSize(location.X(), location.Y());
+    return DeprecatedLayoutSize(location.X(), location.Y());
   }
   virtual PhysicalSize Size() const;
 
@@ -430,12 +433,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   PhysicalRect PhysicalBackgroundRect(BackgroundRectType) const;
 
   // This returns the content area of the box (excluding padding and border).
-  // The only difference with contentBoxRect is that computedCSSContentBoxRect
+  // The only difference with contentBoxRect is that ComputedCSSContentBoxRect
   // does include the intrinsic padding in the content box as this is what some
   // callers expect (like getComputedStyle).
-  LayoutRect ComputedCSSContentBoxRect() const {
+  PhysicalRect ComputedCSSContentBoxRect() const {
     NOT_DESTROYED();
-    return LayoutRect(
+    return PhysicalRect(
         BorderLeft() + ComputedCSSPaddingLeft(),
         BorderTop() + ComputedCSSPaddingTop(),
         ClientWidth() - ComputedCSSPaddingLeft() - ComputedCSSPaddingRight(),
@@ -503,10 +506,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     NOT_DESTROYED();
     return FlipForWritingMode(LayoutOverflowRect());
   }
-  LayoutSize MaxLayoutOverflow() const {
-    NOT_DESTROYED();
-    return LayoutSize(LayoutOverflowRect().MaxX(), LayoutOverflowRect().MaxY());
-  }
 
   LayoutRect VisualOverflowRect() const;
   PhysicalRect PhysicalVisualOverflowRect() const final {
@@ -520,13 +519,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // functions pretend there is no visual overflow when it is not computed.
   // TODO(crbug.com/1205708): Audit the usages and fix issues.
 #if DCHECK_IS_ON()
-  LayoutRect VisualOverflowRectAllowingUnset() const;
   PhysicalRect PhysicalVisualOverflowRectAllowingUnset() const;
 #else
-  ALWAYS_INLINE LayoutRect VisualOverflowRectAllowingUnset() const {
-    NOT_DESTROYED();
-    return VisualOverflowRect();
-  }
   ALWAYS_INLINE PhysicalRect PhysicalVisualOverflowRectAllowingUnset() const {
     NOT_DESTROYED();
     return PhysicalVisualOverflowRect();
@@ -592,13 +586,14 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   NGPhysicalBoxStrut ComputeVisualEffectOverflowOutsets();
   void AddVisualOverflowFromChild(const LayoutBox& child) {
     NOT_DESTROYED();
-    LayoutSize delta = RuntimeEnabledFeatures::LayoutNGNoLocationEnabled()
-                           ? PhysicalLocation().ToLayoutSize()
-                           : child.LocationOffset();
+    DeprecatedLayoutSize delta =
+        RuntimeEnabledFeatures::LayoutNGNoLocationEnabled()
+            ? PhysicalLocation().ToLayoutSize()
+            : child.LocationOffset();
     AddVisualOverflowFromChild(child, delta);
   }
   void AddVisualOverflowFromChild(const LayoutBox& child,
-                                  const LayoutSize& delta);
+                                  const DeprecatedLayoutSize& delta);
 
   void ClearLayoutOverflow();
   void ClearVisualOverflow();
@@ -795,20 +790,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return margin_box_outsets_.right;
   }
   void SetMargin(const NGPhysicalBoxStrut&);
-  void SetMarginBefore(LayoutUnit value, const ComputedStyle& override_style) {
-    NOT_DESTROYED();
-    WritingDirectionMode mode = override_style.GetWritingDirection();
-    NGBoxStrut logical_margin = margin_box_outsets_.ConvertToLogical(mode);
-    logical_margin.block_start = value;
-    margin_box_outsets_ = logical_margin.ConvertToPhysical(mode);
-  }
-  void SetMarginAfter(LayoutUnit value, const ComputedStyle& override_style) {
-    NOT_DESTROYED();
-    WritingDirectionMode mode = override_style.GetWritingDirection();
-    NGBoxStrut logical_margin = margin_box_outsets_.ConvertToLogical(mode);
-    logical_margin.block_end = value;
-    margin_box_outsets_ = logical_margin.ConvertToPhysical(mode);
-  }
 
   void AbsoluteQuads(Vector<gfx::QuadF>&,
                      MapCoordinatesFlags mode = 0) const override;
@@ -915,9 +896,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                                   LayoutUnit& margin_end,
                                   Length margin_start_length,
                                   Length margin_start_end) const;
-
-  // Used to resolve margins in the containing block's block-flow direction.
-  void ComputeAndSetBlockDirectionMargins(const LayoutBlock* containing_block);
 
   enum PageBoundaryRule { kAssociateWithFormerPage, kAssociateWithLatterPage };
 
@@ -1271,9 +1249,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   // This version is for legacy code that has not switched to the new physical
   // geometry yet.
-  LayoutRect OverflowClipRect(const LayoutPoint& location,
-                              OverlayScrollbarClipBehavior behavior =
-                                  kIgnoreOverlayScrollbarSize) const {
+  LayoutRect DeprecatedOverflowClipRect(const LayoutPoint& location,
+                                        OverlayScrollbarClipBehavior behavior =
+                                            kIgnoreOverlayScrollbarSize) const {
     NOT_DESTROYED();
     return OverflowClipRect(PhysicalOffset(location), behavior).ToLayoutRect();
   }
@@ -1342,6 +1320,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   PhysicalOffset OffsetPoint(const Element* parent) const;
   LayoutUnit OffsetLeft(const Element*) const final;
   LayoutUnit OffsetTop(const Element*) const final;
+
+  // Create a new WritingModeConverter to handle offsets and rectangles inside
+  // this container. This ignores TextDirection.
+  WritingModeConverter CreateWritingModeConverter() const;
 
   [[nodiscard]] LayoutUnit FlipForWritingMode(
       LayoutUnit position,
@@ -1671,8 +1653,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // See StickyPositionScrollingConstraints::constraining_rect.
   PhysicalRect ComputeStickyConstrainingRect() const;
 
-  bool HasAnchorScrollTranslation() const;
-  PhysicalOffset AnchorScrollTranslationOffset() const;
+  bool HasAnchorPositionScrollTranslation() const;
+  PhysicalOffset AnchorPositionScrollTranslationOffset() const;
 
   bool HasScrollbarGutters(ScrollbarOrientation orientation) const;
 
@@ -1690,8 +1672,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   // Returns position fallback results for anchor positioned element.
   absl::optional<wtf_size_t> PositionFallbackIndex() const;
-  const Vector<PhysicalScrollRange>* PositionFallbackNonOverflowingRanges()
-      const;
+  const Vector<NonOverflowingScrollRange>*
+  PositionFallbackNonOverflowingRanges() const;
 
   const NGBoxStrut& OutOfFlowInsetsForGetComputedStyle() const;
 
@@ -1739,9 +1721,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   void InvalidatePaint(const PaintInvalidatorContext&) const override;
 
-  bool ColumnFlexItemHasStretchAlignment() const;
-  bool IsStretchingColumnFlexItem() const;
-
   void ExcludeScrollbars(
       PhysicalRect&,
       OverlayScrollbarClipBehavior = kIgnoreOverlayScrollbarSize,
@@ -1770,6 +1749,14 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       const LayoutBox* containing_block);
 
   PhysicalRect LocalVisualRectIgnoringVisibility() const override;
+
+  virtual LayoutPoint LocationInternal() const {
+    NOT_DESTROYED();
+    return frame_location_;
+  }
+  // Allow LayoutMultiColumnSpannerPlaceholder to call LocationInternal() of
+  // other instances.
+  friend class LayoutMultiColumnSpannerPlaceholder;
 
   PhysicalOffset OffsetFromContainerInternal(
       const LayoutObject*,
@@ -1890,7 +1877,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       const LayoutBox* container_box) const {
     NOT_DESTROYED();
     DCHECK_EQ(container_box, LocationContainer());
-    LayoutPoint location = Location();
+    LayoutPoint location = LocationInternal();
     if (LIKELY(!container_box || !container_box->HasFlippedBlocksWritingMode()))
       return PhysicalOffset(location);
 

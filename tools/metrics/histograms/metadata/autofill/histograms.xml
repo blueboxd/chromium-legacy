@@ -546,7 +546,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Autocomplete.PredictionCollisionState"
-    enum="PredictionStateAutocompleteStatePair" expires_after="2023-10-31">
+    enum="PredictionStateAutocompleteStatePair" expires_after="2023-12-31">
   <owner>koerber@google.com</owner>
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-team@google.com</owner>
@@ -1062,7 +1062,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.CardUploadDecisionMetric"
-    enum="AutofillCardUploadDecisionMetric" expires_after="2023-11-05">
+    enum="AutofillCardUploadDecisionMetric" expires_after="2024-01-07">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
@@ -3466,7 +3466,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.NewProfileDecision"
-    enum="AutofillProfileImportDecision" expires_after="2023-11-05">
+    enum="AutofillProfileImportDecision" expires_after="2024-01-07">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -3587,7 +3587,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.UpdateProfileDecision"
-    enum="AutofillProfileImportDecision" expires_after="2023-11-05">
+    enum="AutofillProfileImportDecision" expires_after="2024-01-07">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -3939,8 +3939,10 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
     The number of fields per section after sectioning a form using
-    kAutofillUseParameterizedSectioning. Emitted once per section every time
-    sectioning is done.
+    kAutofillUseParameterizedSectioning. Only considers fields that may actually
+    be autofilled: fields that (a) are either focusable or a select field, and
+    (b) have a fillable type (e.g., UNKNOWN_TYPE and NUMERIC_QUANTITY are not
+    fillable). Emitted once per section every time sectioning is done.
   </summary>
 </histogram>
 
@@ -3951,7 +3953,10 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
     The number of sections after sectioning a form using
-    kAutofillUseParameterizedSectioning. Emitted every time sectioning is done.
+    kAutofillUseParameterizedSectioning. Only considers fields that may actually
+    be autofilled: fields that (a) are either focusable or a select field, and
+    (b) have a fillable type (e.g., UNKNOWN_TYPE and NUMERIC_QUANTITY are not
+    fillable). Emitted every time sectioning is done.
   </summary>
 </histogram>
 

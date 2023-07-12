@@ -13,12 +13,9 @@ namespace {
 
 class MockBlindSignAuth : public quiche::BlindSignAuthInterface {
  public:
-  using BlindSignTokenCallback =
-      std::function<void(absl::StatusOr<absl::Span<quiche::BlindSignToken>>)>;
-
-  void GetTokens(absl::string_view oauth_token,
+  void GetTokens(std::string oauth_token,
                  int num_tokens,
-                 BlindSignTokenCallback callback) override {
+                 quiche::SignedTokenCallback callback) override {
     get_tokens_called_ = true;
     oauth_token_ = oauth_token;
     num_tokens_ = num_tokens;
@@ -33,7 +30,7 @@ class MockBlindSignAuth : public quiche::BlindSignAuthInterface {
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(
-            [](BlindSignTokenCallback callback,
+            [](quiche::SignedTokenCallback callback,
                absl::StatusOr<absl::Span<quiche::BlindSignToken>> result) {
               std::move(callback)(std::move(result));
             },
@@ -74,6 +71,7 @@ class IpProtectionAuthTokenGetterTest : public testing::Test {
  protected:
   using TokensResult =
       absl::optional<std::vector<network::mojom::BlindSignedAuthTokenPtr>>;
+
   IpProtectionAuthTokenGetterTest()
       : absl_expiration_time_(absl::Now() + absl::Hours(1)),
         base_expiration_time_(
@@ -86,13 +84,13 @@ class IpProtectionAuthTokenGetterTest : public testing::Test {
 
   // Call `TryGetAuthTokens()` with `TokensCallback()` and run until it
   // completes.
-  void TryGetAuthTokens(int num_tokens, IpProtectionAuthTokenGetter& getter) {
+  void TryGetAuthTokens(int num_tokens, IpProtectionAuthTokenGetter* getter) {
     if (primary_account_behavior_ != PrimaryAccountBehavior::kNone) {
       identity_test_env_.MakePrimaryAccountAvailable(
           "test@example.com", signin::ConsentLevel::kSignin);
     }
 
-    getter.TryGetAuthTokens(num_tokens, tokens_future_.GetCallback());
+    getter->TryGetAuthTokens(num_tokens, tokens_future_.GetCallback());
 
     switch (primary_account_behavior_) {
       case PrimaryAccountBehavior::kNone:
@@ -135,12 +133,12 @@ class IpProtectionAuthTokenGetterTest : public testing::Test {
 TEST_F(IpProtectionAuthTokenGetterTest, Success) {
   primary_account_behavior_ = PrimaryAccountBehavior::kExists;
   auto bsa = MockBlindSignAuth();
-  auto getter =
-      IpProtectionAuthTokenGetter::CreateForTesting(IdentityManager(), &bsa);
+  IpProtectionAuthTokenGetter getter(IdentityManager());
+  getter.SetBlindSignAuthInterfaceForTesting(&bsa);
   bsa.tokens_ = {{"single-use-1", absl_expiration_time_},
                  {"single-use-2", absl_expiration_time_}};
 
-  TryGetAuthTokens(2, getter);
+  TryGetAuthTokens(2, &getter);
 
   EXPECT_TRUE(bsa.get_tokens_called_);
   EXPECT_EQ(bsa.oauth_token_, "access_token");
@@ -157,10 +155,10 @@ TEST_F(IpProtectionAuthTokenGetterTest, Success) {
 TEST_F(IpProtectionAuthTokenGetterTest, NoTokens) {
   primary_account_behavior_ = PrimaryAccountBehavior::kExists;
   auto bsa = MockBlindSignAuth();
-  auto getter =
-      IpProtectionAuthTokenGetter::CreateForTesting(IdentityManager(), &bsa);
+  IpProtectionAuthTokenGetter getter(IdentityManager());
+  getter.SetBlindSignAuthInterfaceForTesting(&bsa);
 
-  TryGetAuthTokens(1, getter);
+  TryGetAuthTokens(1, &getter);
 
   EXPECT_TRUE(bsa.get_tokens_called_);
   EXPECT_EQ(bsa.num_tokens_, 1);
@@ -172,11 +170,11 @@ TEST_F(IpProtectionAuthTokenGetterTest, NoTokens) {
 TEST_F(IpProtectionAuthTokenGetterTest, BlindSignedTokenError) {
   primary_account_behavior_ = PrimaryAccountBehavior::kExists;
   auto bsa = MockBlindSignAuth();
-  auto getter =
-      IpProtectionAuthTokenGetter::CreateForTesting(IdentityManager(), &bsa);
+  IpProtectionAuthTokenGetter getter(IdentityManager());
+  getter.SetBlindSignAuthInterfaceForTesting(&bsa);
   bsa.status_ = absl::NotFoundError("uhoh");
 
-  TryGetAuthTokens(1, getter);
+  TryGetAuthTokens(1, &getter);
 
   EXPECT_TRUE(bsa.get_tokens_called_);
   EXPECT_EQ(bsa.num_tokens_, 1);
@@ -188,10 +186,10 @@ TEST_F(IpProtectionAuthTokenGetterTest, BlindSignedTokenError) {
 TEST_F(IpProtectionAuthTokenGetterTest, AuthTokenError) {
   primary_account_behavior_ = PrimaryAccountBehavior::kTokenFetchError;
   auto bsa = MockBlindSignAuth();
-  auto getter =
-      IpProtectionAuthTokenGetter::CreateForTesting(IdentityManager(), &bsa);
+  IpProtectionAuthTokenGetter getter(IdentityManager());
+  getter.SetBlindSignAuthInterfaceForTesting(&bsa);
 
-  TryGetAuthTokens(1, getter);
+  TryGetAuthTokens(1, &getter);
 
   EXPECT_FALSE(bsa.get_tokens_called_);
   EXPECT_EQ(tokens_future_.Get(), absl::nullopt);
@@ -201,10 +199,10 @@ TEST_F(IpProtectionAuthTokenGetterTest, AuthTokenError) {
 TEST_F(IpProtectionAuthTokenGetterTest, NoPrimary) {
   primary_account_behavior_ = PrimaryAccountBehavior::kNone;
   auto bsa = MockBlindSignAuth();
-  auto getter =
-      IpProtectionAuthTokenGetter::CreateForTesting(IdentityManager(), &bsa);
+  IpProtectionAuthTokenGetter getter(IdentityManager());
+  getter.SetBlindSignAuthInterfaceForTesting(&bsa);
 
-  TryGetAuthTokens(1, getter);
+  TryGetAuthTokens(1, &getter);
 
   EXPECT_FALSE(bsa.get_tokens_called_);
   EXPECT_EQ(tokens_future_.Get(), absl::nullopt);

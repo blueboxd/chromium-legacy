@@ -12,7 +12,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/attribution_reporting/registration_type.mojom.h"
+#include "components/attribution_reporting/registration_eligibility.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "content/browser/attribution_reporting/attribution_beacon_id.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
@@ -68,7 +68,7 @@ using ::testing::_;
 using ::testing::Optional;
 using ::testing::Return;
 
-using ::attribution_reporting::mojom::RegistrationType;
+using ::attribution_reporting::mojom::RegistrationEligibility;
 
 const char kConversionUrl[] = "https://b.com";
 
@@ -182,7 +182,7 @@ TEST_F(AttributionHostTest, ValidAttributionSrc_ForwardedToManager) {
 
   EXPECT_CALL(*mock_data_host_manager(),
               NotifyNavigationRegistrationStarted(
-                  impression.attribution_src_token,
+                  impression.attribution_src_token, _,
                   *SuitableOrigin::Deserialize("https://secure_impression.com"),
                   /*is_within_fenced_frame=*/false, main_rfh()->GetGlobalId(),
                   /*navigation_id=*/_));
@@ -216,27 +216,76 @@ TEST_F(AttributionHostTest, ValidSourceRegistrations_ForwardedToManager) {
   GlobalRenderFrameHostId frame_id = main_rfh()->GetGlobalId();
   EXPECT_CALL(*mock_data_host_manager(),
               NotifyNavigationRegistrationStarted(
-                  impression.attribution_src_token, source_origin,
+                  impression.attribution_src_token, _, source_origin,
                   /*is_within_fenced_frame=*/false, frame_id,
                   /*navigation_id=*/_));
   EXPECT_CALL(*mock_data_host_manager(),
               NotifyNavigationRegistrationData(
                   impression.attribution_src_token, redirect_headers.get(),
-                  /*reporting_origin=*/b_origin, source_origin, _,
-                  /*is_within_fenced_frame=*/false, frame_id, _, _,
-                  /*is_final_response=*/false));
+                  /*reporting_origin=*/b_origin, _));
   EXPECT_CALL(*mock_data_host_manager(),
               NotifyNavigationRegistrationData(
                   impression.attribution_src_token, redirect_headers.get(),
-                  /*reporting_origin=*/c_origin, source_origin, _,
-                  /*is_within_fenced_frame=*/false, frame_id, _, _,
-                  /*is_final_response=*/false));
+                  /*reporting_origin=*/c_origin, _));
   EXPECT_CALL(*mock_data_host_manager(),
               NotifyNavigationRegistrationData(
                   impression.attribution_src_token, headers.get(),
-                  /*reporting_origin=*/d_origin, source_origin, _,
-                  /*is_within_fenced_frame=*/false, frame_id, _, _,
-                  /*is_final_response=*/true));
+                  /*reporting_origin=*/d_origin, _));
+  EXPECT_CALL(*mock_data_host_manager(), NotifyNavigationRegistrationCompleted(
+                                             impression.attribution_src_token));
+
+  contents()->NavigateAndCommit(GURL("https://secure_impression.com"));
+
+  auto navigation =
+      NavigationSimulatorImpl::CreateRendererInitiated(b_url, main_rfh());
+  navigation->SetInitiatorFrame(main_rfh());
+  navigation->set_impression(std::move(impression));
+  navigation->SetRedirectHeaders(redirect_headers);
+  navigation->Redirect(c_url);
+  navigation->SetRedirectHeaders(redirect_headers);
+  navigation->Redirect(d_url);
+  navigation->SetResponseHeaders(headers);
+  navigation->Commit();
+}
+
+TEST_F(AttributionHostTest,
+       ValidAndInvalidSourceRegistrations_ForwardedToManager) {
+  blink::Impression impression;
+
+  auto redirect_headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+
+  const SuitableOrigin source_origin =
+      *SuitableOrigin::Deserialize("https://secure_impression.com");
+
+  const GURL b_url(kConversionUrl);
+  const SuitableOrigin b_origin = *SuitableOrigin::Create(b_url);
+
+  const GURL c_url("https://c.com");
+  const SuitableOrigin c_origin = *SuitableOrigin::Create(c_url);
+
+  const GURL d_url("http://d.com");
+
+  GlobalRenderFrameHostId frame_id = main_rfh()->GetGlobalId();
+  EXPECT_CALL(*mock_data_host_manager(),
+              NotifyNavigationRegistrationStarted(
+                  impression.attribution_src_token, _, source_origin,
+                  /*is_within_fenced_frame=*/false, frame_id,
+                  /*navigation_id=*/_));
+  EXPECT_CALL(*mock_data_host_manager(),
+              NotifyNavigationRegistrationData(
+                  impression.attribution_src_token, redirect_headers.get(),
+                  /*reporting_origin=*/b_origin, _));
+  EXPECT_CALL(*mock_data_host_manager(),
+              NotifyNavigationRegistrationData(
+                  impression.attribution_src_token, redirect_headers.get(),
+                  /*reporting_origin=*/c_origin, _));
+  // Expect no call for origin d as the reporting origin is not suitable.
+
+  // Expect that `NotifyNavigationRegistrationCompleted` gets called even if the
+  // last reporting_origin was not suitable.
+  EXPECT_CALL(*mock_data_host_manager(), NotifyNavigationRegistrationCompleted(
+                                             impression.attribution_src_token));
 
   contents()->NavigateAndCommit(GURL("https://secure_impression.com"));
 
@@ -272,10 +321,15 @@ TEST_F(AttributionHostTest, ImpressionInSubframe_Ignored) {
 }
 
 // Test that if we cannot access the initiator frame of the navigation, we
-// ignore the associated impression.
+// ignore the associated impression but still notify when the navigation
+// completes.
 TEST_F(AttributionHostTest, ImpressionNavigationWithDeadInitiator_Ignored) {
   EXPECT_CALL(*mock_data_host_manager(), NotifyNavigationRegistrationStarted)
       .Times(0);
+  EXPECT_CALL(*mock_data_host_manager(), NotifyNavigationRegistrationData)
+      .Times(0);
+  EXPECT_CALL(*mock_data_host_manager(), NotifyNavigationRegistrationCompleted)
+      .Times(1);
 
   base::HistogramTester histograms;
 
@@ -298,8 +352,7 @@ TEST_F(AttributionHostTest,
 
   EXPECT_CALL(*mock_data_host_manager(),
               NotifyNavigationRegistrationData(impression.attribution_src_token,
-                                               _, _, _, _, _, _, _, _,
-                                               /*is_final_response=*/true));
+                                               _, _, _));
 
   contents()->NavigateAndCommit(GURL("https://secure_impression.com"));
 
@@ -316,8 +369,7 @@ TEST_F(AttributionHostTest, AttributionSrcNavigationAborts_Notified) {
 
   EXPECT_CALL(*mock_data_host_manager(),
               NotifyNavigationRegistrationData(impression.attribution_src_token,
-                                               _, _, _, _, _, _, _, _,
-                                               /*is_final_response=*/true));
+                                               _, _, _));
 
   contents()->NavigateAndCommit(GURL("https://secure_impression.com"));
 
@@ -396,11 +448,12 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::ValuesIn(kOriginTrustworthyChecksTestCases));
 
 TEST_F(AttributionHostTest, DataHost_RegisteredWithContext) {
-  EXPECT_CALL(*mock_data_host_manager(),
-              RegisterDataHost(
-                  _, *SuitableOrigin::Deserialize("https://top.example"),
-                  /*is_within_fenced_frame=*/false, RegistrationType::kSource,
-                  main_rfh()->GetGlobalId(), /*last_navigation_id=*/_));
+  EXPECT_CALL(
+      *mock_data_host_manager(),
+      RegisterDataHost(_, *SuitableOrigin::Deserialize("https://top.example"),
+                       /*is_within_fenced_frame=*/false,
+                       RegistrationEligibility::kSource,
+                       main_rfh()->GetGlobalId(), /*last_navigation_id=*/_));
 
   contents()->NavigateAndCommit(GURL("https://top.example"));
   ScopedAttributionHostTargetFrame frame_scope(attribution_host(), main_rfh());
@@ -411,7 +464,8 @@ TEST_F(AttributionHostTest, DataHost_RegisteredWithContext) {
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   attribution_host_mojom()->RegisterDataHost(
-      data_host_remote.BindNewPipeAndPassReceiver(), RegistrationType::kSource);
+      data_host_remote.BindNewPipeAndPassReceiver(),
+      RegistrationEligibility::kSource);
 
   // Run loop to allow the bad message code to run if a bad message was
   // triggered.
@@ -430,7 +484,8 @@ TEST_F(AttributionHostTest, DISABLED_DataHostOnInsecurePage_BadMessage) {
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   attribution_host_mojom()->RegisterDataHost(
-      data_host_remote.BindNewPipeAndPassReceiver(), RegistrationType::kSource);
+      data_host_remote.BindNewPipeAndPassReceiver(),
+      RegistrationEligibility::kSource);
 
   EXPECT_EQ(
       "blink.mojom.AttributionHost can only be used with a secure top-level "
@@ -482,11 +537,12 @@ TEST_F(AttributionHostTest, DuplicateAttributionSrcToken_BadMessage) {
 }
 
 TEST_F(AttributionHostTest, DataHostInSubframe_ContextIsOutermostFrame) {
-  EXPECT_CALL(*mock_data_host_manager(),
-              RegisterDataHost(
-                  _, *SuitableOrigin::Deserialize("https://top.example"),
-                  /*is_within_fenced_frame=*/false, RegistrationType::kSource,
-                  main_rfh()->GetGlobalId(), /*last_navigation_id=*/_));
+  EXPECT_CALL(
+      *mock_data_host_manager(),
+      RegisterDataHost(_, *SuitableOrigin::Deserialize("https://top.example"),
+                       /*is_within_fenced_frame=*/false,
+                       RegistrationEligibility::kSource,
+                       main_rfh()->GetGlobalId(), /*last_navigation_id=*/_));
 
   contents()->NavigateAndCommit(GURL("https://top.example"));
 
@@ -503,7 +559,8 @@ TEST_F(AttributionHostTest, DataHostInSubframe_ContextIsOutermostFrame) {
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   attribution_host_mojom()->RegisterDataHost(
-      data_host_remote.BindNewPipeAndPassReceiver(), RegistrationType::kSource);
+      data_host_remote.BindNewPipeAndPassReceiver(),
+      RegistrationEligibility::kSource);
 
   // Run loop to allow the bad message code to run if a bad message was
   // triggered.
@@ -529,7 +586,8 @@ TEST_F(AttributionHostTest,
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   attribution_host_mojom()->RegisterDataHost(
-      data_host_remote.BindNewPipeAndPassReceiver(), RegistrationType::kSource);
+      data_host_remote.BindNewPipeAndPassReceiver(),
+      RegistrationEligibility::kSource);
 
   EXPECT_EQ(
       "blink.mojom.AttributionHost can only be used with a secure top-level "
@@ -538,11 +596,12 @@ TEST_F(AttributionHostTest,
 }
 
 TEST_F(AttributionHostTest, DataHost_RegisteredWithFencedFrame) {
-  EXPECT_CALL(*mock_data_host_manager(),
-              RegisterDataHost(
-                  _, *SuitableOrigin::Deserialize("https://top.example"),
-                  /*is_within_fenced_frame=*/true, RegistrationType::kSource,
-                  main_rfh()->GetGlobalId(), /*last_navigation_id=*/_));
+  EXPECT_CALL(
+      *mock_data_host_manager(),
+      RegisterDataHost(_, *SuitableOrigin::Deserialize("https://top.example"),
+                       /*is_within_fenced_frame=*/true,
+                       RegistrationEligibility::kSource,
+                       main_rfh()->GetGlobalId(), /*last_navigation_id=*/_));
 
   contents()->NavigateAndCommit(GURL("https://top.example"));
   RenderFrameHost* fenced_frame =
@@ -561,7 +620,8 @@ TEST_F(AttributionHostTest, DataHost_RegisteredWithFencedFrame) {
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   attribution_host_mojom()->RegisterDataHost(
-      data_host_remote.BindNewPipeAndPassReceiver(), RegistrationType::kSource);
+      data_host_remote.BindNewPipeAndPassReceiver(),
+      RegistrationEligibility::kSource);
 
   // Run loop to allow the bad message code to run if a bad message was
   // triggered.
@@ -739,22 +799,18 @@ TEST_F(AttributionHostTest, InsecureTaintTracking) {
   GlobalRenderFrameHostId frame_id = main_rfh()->GetGlobalId();
   EXPECT_CALL(*mock_data_host_manager(),
               NotifyNavigationRegistrationStarted(
-                  impression.attribution_src_token, source_origin,
+                  impression.attribution_src_token, _, source_origin,
                   /*is_within_fenced_frame=*/false, frame_id,
                   /*navigation_id=*/_));
   EXPECT_CALL(*mock_data_host_manager(),
               NotifyNavigationRegistrationData(
                   impression.attribution_src_token, redirect_headers.get(),
-                  /*reporting_origin=*/b_origin, source_origin, _,
-                  /*is_within_fenced_frame=*/false, frame_id, _, _,
-                  /*is_final_response=*/false))
+                  /*reporting_origin=*/b_origin, _))
       .WillOnce(Return(true));
   EXPECT_CALL(*mock_data_host_manager(),
               NotifyNavigationRegistrationData(
                   impression.attribution_src_token, headers.get(),
-                  /*reporting_origin=*/d_origin, source_origin, _,
-                  /*is_within_fenced_frame=*/false, frame_id, _, _,
-                  /*is_final_response=*/true))
+                  /*reporting_origin=*/d_origin, _))
       .WillOnce(Return(true));
 
   contents()->NavigateAndCommit(GURL("https://secure_impression.com"));

@@ -228,8 +228,7 @@ static_library("common_lib") {
     "//components/safe_browsing:buildflags",
     "//components/safe_browsing/core/common",
     "//components/safe_search_api",
-    "//components/services/app_service/public/cpp:app_share_target",
-    "//components/services/app_service/public/cpp:app_types",
+    "//components/services/app_service",
     "//components/services/heap_profiling/public/cpp",
     "//components/strings",
     "//components/supervised_user/core/common:buildflags",
@@ -593,7 +592,6 @@ static_library("constants") {
     "chrome_result_codes.h",
     "pref_font_script_names-inl.h",
     "pref_font_webkit_names.h",
-    "pref_names.cc",
     "pref_names.h",
   ]
 

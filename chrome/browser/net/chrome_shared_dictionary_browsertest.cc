@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/shared_dictionary_access_observer.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -24,7 +25,7 @@
 
 namespace {
 
-const std::string kTestDictionaryString = "A dictionary";
+constexpr char kTestDictionaryString[] = "A dictionary";
 
 class SharedDictionaryAccessObserver : public content::WebContentsObserver {
  public:
@@ -74,9 +75,9 @@ class ChromeSharedDictionaryBrowserTest : public InProcessBrowserTest {
  public:
   ChromeSharedDictionaryBrowserTest() {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{blink::features::
-                                  kCompressionDictionaryTransportBackend,
-                              blink::features::kCompressionDictionaryTransport},
+        /*enabled_features=*/
+        {network::features::kCompressionDictionaryTransportBackend,
+         network::features::kCompressionDictionaryTransport},
         /*disabled_features=*/{});
 
     embedded_test_server()->RegisterRequestHandler(
@@ -149,6 +150,31 @@ class ChromeSharedDictionaryBrowserTest : public InProcessBrowserTest {
     return CheckResultOfDictionaryHeaderAndObserver(
         EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
                "document.body.innerText")
+            .ExtractString(),
+        loop, observer, expect_blocked);
+  }
+
+  bool CheckDictionaryHeaderByIframeNavigation(const GURL& url,
+                                               bool expect_blocked) {
+    base::RunLoop loop;
+    SharedDictionaryAccessObserver observer(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        loop.QuitClosure());
+
+    return CheckResultOfDictionaryHeaderAndObserver(
+        EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+               content::JsReplace(R"(
+  (async () => {
+    const iframe = document.createElement('iframe');
+    iframe.src = $1;
+    const promise =
+        new Promise(resolve => { iframe.addEventListener('load', resolve); });
+    document.body.appendChild(iframe);
+    await promise;
+    return iframe.contentDocument.body.innerText;
+  })()
+           )",
+                                  url))
             .ExtractString(),
         loop, observer, expect_blocked);
   }
@@ -293,6 +319,27 @@ IN_PROC_BROWSER_TEST_F(ChromeSharedDictionaryBrowserTest,
                              CONTENT_SETTING_BLOCK);
 
   EXPECT_FALSE(CheckDictionaryHeaderByNavigation(
+      embedded_test_server()->GetURL("/path/check_header2.html"),
+      /*expect_blocked=*/true));
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeSharedDictionaryBrowserTest,
+                       BlockReadingWhileIframeNavigation) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/title1.html")));
+  EXPECT_TRUE(TryRegisterDictionary(*embedded_test_server()));
+  WaitForDictionaryReady(*embedded_test_server());
+
+  EXPECT_TRUE(CheckDictionaryHeaderByIframeNavigation(
+      embedded_test_server()->GetURL("/path/check_header1.html"),
+      /*expect_blocked=*/false));
+
+  content_settings::CookieSettings* settings =
+      CookieSettingsFactory::GetForProfile(browser()->profile()).get();
+  settings->SetCookieSetting(embedded_test_server()->GetURL("/"),
+                             CONTENT_SETTING_BLOCK);
+
+  EXPECT_FALSE(CheckDictionaryHeaderByIframeNavigation(
       embedded_test_server()->GetURL("/path/check_header2.html"),
       /*expect_blocked=*/true));
 }

@@ -25,6 +25,10 @@
 @property(readonly) BOOL accessibilityDisplayShouldReduceMotion;
 @end
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace content {
 
 namespace {
@@ -39,7 +43,7 @@ void SetupAccessibilityDisplayOptionsNotifier() {
   //
   // BrowserAccessibilityStateImpl is a deliberately leaked singleton, so we
   // don't need to record the notification token for later cleanup.
-  [[[NSWorkspace sharedWorkspace] notificationCenter]
+  [NSWorkspace.sharedWorkspace.notificationCenter
       addObserverForName:
           NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
                   object:nil

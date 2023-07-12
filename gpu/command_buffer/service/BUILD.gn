@@ -368,7 +368,7 @@ target(link_target_type, "gles2_sources") {
     "//build:chromecast_buildflags",
     "//build:chromeos_buildflags",
     "//components/crash/core/common",
-    "//components/viz/common:resource_format_utils",
+    "//components/viz/common:shared_image_format",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/config",
@@ -399,8 +399,6 @@ target(link_target_type, "gles2_sources") {
 
   if (use_ozone) {
     sources += [
-      "shared_image/gl_image_native_pixmap.cc",
-      "shared_image/gl_image_native_pixmap.h",
       "shared_image/gl_ozone_image_representation.cc",
       "shared_image/gl_ozone_image_representation.h",
       "shared_image/ozone_image_backing.cc",

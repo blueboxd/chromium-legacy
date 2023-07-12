@@ -241,8 +241,8 @@ cx_telem::InternetConnectivityInfo UncheckedConvertPtr(
     bool has_mac_address_permission) {
   cx_telem::InternetConnectivityInfo result;
   for (auto& network : input->networks) {
-    auto converted_network = converters::ConvertPtr<cx_telem::NetworkInfo>(
-        std::move(network), has_mac_address_permission);
+    auto converted_network =
+        ConvertPtr(std::move(network), has_mac_address_permission);
 
     // Don't include networks with an undefined type.
     if (converted_network.type != cx_telem::NetworkType::kNone) {
@@ -317,15 +317,13 @@ cx_telem::TpmInfo UncheckedConvertPtr(crosapi::ProbeTpmInfoPtr input) {
   cx_telem::TpmInfo result;
 
   if (input->version) {
-    result.version =
-        ConvertPtr<cx_telem::TpmVersion>(std::move(input->version));
+    result.version = ConvertPtr(std::move(input->version));
   }
   if (input->status) {
-    result.status = ConvertPtr<cx_telem::TpmStatus>(std::move(input->status));
+    result.status = ConvertPtr(std::move(input->status));
   }
   if (input->dictionary_attack) {
-    result.dictionary_attack = ConvertPtr<cx_telem::TpmDictionaryAttack>(
-        std::move(input->dictionary_attack));
+    result.dictionary_attack = ConvertPtr(std::move(input->dictionary_attack));
   }
 
   return result;
@@ -385,8 +383,7 @@ cx_telem::UsbBusInfo UncheckedConvertPtr(crosapi::ProbeUsbBusInfoPtr input) {
         std::move(input->interfaces.value()));
   }
   result.fwupd_firmware_version_info =
-      ConvertPtr<cx_telem::FwupdFirmwareVersionInfo>(
-          std::move(input->fwupd_firmware_version_info));
+      ConvertPtr(std::move(input->fwupd_firmware_version_info));
   result.version = Convert(input->version);
   result.spec_speed = Convert(input->spec_speed);
 
@@ -405,6 +402,63 @@ chromeos::api::os_telemetry::VpdInfo UncheckedConvertPtr(
   if (has_serial_number_permission) {
     result.serial_number = std::move(input->serial_number);
   }
+
+  return result;
+}
+
+cx_telem::DisplayInfo UncheckedConvertPtr(crosapi::ProbeDisplayInfoPtr input) {
+  cx_telem::DisplayInfo result;
+
+  result.edp_info = converters::ConvertPtr(std::move(input->edp_info));
+  if (input->dp_infos.has_value()) {
+    result.dp_infos =
+        converters::ConvertPtrVector<cx_telem::ExternalDisplayInfo>(
+            std::move(input->dp_infos.value()));
+  }
+
+  return result;
+}
+
+cx_telem::EmbeddedDisplayInfo UncheckedConvertPtr(
+    crosapi::ProbeEmbeddedDisplayInfoPtr input) {
+  cx_telem::EmbeddedDisplayInfo result;
+
+  result.privacy_screen_supported = std::move(input->privacy_screen_supported);
+  result.privacy_screen_enabled = std::move(input->privacy_screen_enabled);
+  result.display_width = std::move(input->display_width);
+  result.display_height = std::move(input->display_height);
+  result.resolution_horizontal = std::move(input->resolution_horizontal);
+  result.resolution_vertical = std::move(input->resolution_vertical);
+  result.refresh_rate = std::move(input->refresh_rate);
+  result.manufacturer = std::move(input->manufacturer);
+  result.model_id = std::move(input->model_id);
+  result.serial_number = std::move(input->serial_number);
+  result.manufacture_week = std::move(input->manufacture_week);
+  result.manufacture_year = std::move(input->manufacture_year);
+  result.edid_version = std::move(input->edid_version);
+  result.input_type = Convert(input->input_type);
+  result.display_name = (input->display_name);
+
+  return result;
+}
+
+cx_telem::ExternalDisplayInfo UncheckedConvertPtr(
+    crosapi::ProbeExternalDisplayInfoPtr input) {
+  cx_telem::ExternalDisplayInfo result;
+
+  result.display_width = std::move(input->display_width);
+  result.display_height = std::move(input->display_height);
+  result.resolution_horizontal = std::move(input->resolution_horizontal);
+  result.resolution_vertical = std::move(input->resolution_vertical);
+  result.refresh_rate = std::move(input->refresh_rate);
+  result.manufacturer = std::move(input->manufacturer);
+  result.model_id = std::move(input->model_id);
+  result.serial_number = std::move(input->serial_number);
+  result.manufacture_week = std::move(input->manufacture_week);
+  result.manufacture_year = std::move(input->manufacture_year);
+  result.edid_version = std::move(input->edid_version);
+  result.input_type = Convert(input->input_type);
+  result.display_name = std::move(input->display_name);
 
   return result;
 }
@@ -549,6 +603,18 @@ cx_telem::UsbSpecSpeed Convert(crosapi::ProbeUsbSpecSpeed input) {
       return cx_telem::UsbSpecSpeed::kN10Gbps;
     case crosapi::ProbeUsbSpecSpeed::k20Gbps:
       return cx_telem::UsbSpecSpeed::kN20Gbps;
+  }
+  NOTREACHED();
+}
+
+cx_telem::DisplayInputType Convert(crosapi::ProbeDisplayInputType input) {
+  switch (input) {
+    case crosapi::ProbeDisplayInputType::kUnmappedEnumField:
+      return cx_telem::DisplayInputType::kUnknown;
+    case crosapi::ProbeDisplayInputType::kDigital:
+      return cx_telem::DisplayInputType::kDigital;
+    case crosapi::ProbeDisplayInputType::kAnalog:
+      return cx_telem::DisplayInputType::kAnalog;
   }
   NOTREACHED();
 }

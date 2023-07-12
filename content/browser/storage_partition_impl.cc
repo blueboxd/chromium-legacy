@@ -1551,8 +1551,10 @@ void StoragePartitionImpl::Initialize(
                        : path.Append(storage::kSharedStoragePath);
     shared_storage_manager_ = std::make_unique<storage::SharedStorageManager>(
         shared_storage_path, special_storage_policy_);
-    shared_storage_header_observer_ =
-        std::make_unique<SharedStorageHeaderObserver>(this);
+    if (base::FeatureList::IsEnabled(blink::features::kSharedStorageAPIM117)) {
+      shared_storage_header_observer_ =
+          std::make_unique<SharedStorageHeaderObserver>(this);
+    }
   }
 
   if (base::FeatureList::IsEnabled(blink::features::kPrivateAggregationApi)) {
@@ -3256,7 +3258,7 @@ void StoragePartitionImpl::InitNetworkContext() {
   cors_exempt_header_list_ = context_params->cors_exempt_header_list;
 
   if (base::FeatureList::IsEnabled(
-          blink::features::kCompressionDictionaryTransportBackend)) {
+          network::features::kCompressionDictionaryTransportBackend)) {
     context_params->shared_dictionary_enabled = true;
     if (!is_in_memory()) {
       // Some callers may already initialize NetworkContextFilePaths, and we

@@ -46,10 +46,16 @@ message BlinkTaskScope {
 }
 
 message ChromeTaskAnnotator {
+  enum DelayPolicy {
+    FLEXIBLE_NO_SOONER = 0;
+    FLEXIBLE_PREFER_EARLY = 1;
+    PRECISE = 2;
+  }
   optional uint32 ipc_hash = 1;
   // The delay in microseconds that was specified, if any, when this task was
   // posted. This is only valid for delayed tasks.
   optional uint64 task_delay_us = 2;
+  optional DelayPolicy delay_policy = 3;
 }
 
 message ChromeBrowserContext {
@@ -1208,9 +1214,76 @@ message ScrollDeltas {
   repeated float segregated_predicted_deltas_in_gpu_frame_y = 14;
 }
 
+// Debug information for system layer of audio rendering on Windows.
+message WinRenderAudioFromSource {
+  // Buffer size used by the platform.
+  optional uint32 iaudioclient_buffer_size_frames = 1;
+  // Number of available frames in the platform buffer.
+  optional uint32 iaudioclient_buffer_unfilled_frames = 2;
+  // Number of frames requested from the audio stream client.
+  optional uint32 packet_size_frames = 3;
+  // Total number of frames requested from the client and written to the
+  // platform buffer during the stream lifetime.
+  optional uint64 num_written_frames = 4;
+  // Total number of frames played by the platform during the stream lifetime.
+  optional uint64 num_played_out_frames = 5;
+  // Device frequency reported by the platform; used to convert the stream
+  // position to frames.
+  optional uint64 iaudioclock_device_frequency = 6;
+  // Stream position reported by the platform.
+  optional uint64 iaudioclock_stream_position = 7;
+  // Performance counter position reported by the platform.
+  optional uint64 iaudioclock_qpc_position = 8;
+  // Stream position increase since the last call, converted to milliseconds.
+  optional int64 iaudioclock_stream_position_increase_ms = 9;
+  // Performance counter position since the last call, converted to
+  // milliseconds.
+  optional int64 iaudioclock_qpc_position_increase_ms = 10;
+  // Estimated playout delay, milliseconds.
+  optional int64 playout_delay_ms = 11;
+};
+
+// Debug information for system layer of audio rendering on Mac.
+message MacAUHALStream {
+  // The number of frames that the stream requests from the audio source.
+  optional int32 input_buffer_size = 1;
+  // The number of frames that the OS requests for playout.
+  optional uint32 output_buffer_size = 2;
+  // Sample rate of the stream.
+  optional int32 sample_rate = 3;
+  // The time that the audio requested by the OS is expected to play out.
+  optional int64 os_request_playout_timeticks_us = 4;
+  // Total number of frames requested from the audio source.
+  optional int32 source_request_frames = 5;
+  // The delay between the request for audio from the source and when the audio
+  // is expected to be played out.
+  optional int64 source_request_playout_delay_us = 6;
+  // The time when the audio that is requested from the source is expected to
+  // play out.
+  optional int64 source_request_playout_timeticks_us = 7;
+  // The time when audio audio is requested from the source.
+  optional int64 source_request_current_timeticks_us = 8;
+  // The audio playout latency that comes from hardware, in milliseconds.
+  optional int64 hardware_latency_us = 9;
+  // Whether the kAudioTimeStampHostTimeValid is set on the output
+  // AudioTimeStamp.
+  optional bool audiotimestamp_host_time_valid = 10;
+  // The playout time based on the machine time from AudioTimeStamp.
+  optional int64 audiotimestamp_mach_timeticks_us = 11;
+  // The time that the audio requested by the os is expected to be consumed by
+  // the hardware. Measured in frames since the start of playout.
+  optional double audiotimestamp_sample_time_frames = 12;
+  // The time that the previous audio requested by the os was expected to be
+  // consumed by the hardware. Measured in frames since the start of playout.
+  optional double audiotimestamp_last_sample_time_frames = 13;
+  // The duration of audio that was estimated to be lost in the case of a
+  // glitch.
+  optional int64 lost_audio_duration_us = 14;
+};
+
 message ChromeTrackEvent {
   // Extension range for Chrome: 1000-1999
-  // Next ID: 1048
+  // Next ID: 1050
   extend TrackEvent {
     optional ChromeAppState chrome_app_state = 1000;
 
@@ -1312,5 +1385,9 @@ message ChromeTrackEvent {
     optional TabSwitchMeasurement tab_switch_measurement = 1046;
 
     optional ScrollDeltas scroll_deltas = 1047;
+
+    optional WinRenderAudioFromSource win_render_audio_from_source = 1048;
+
+    optional MacAUHALStream mac_auhal_stream = 1049;
   }
 }

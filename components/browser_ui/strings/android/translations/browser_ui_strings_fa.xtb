@@ -67,6 +67,7 @@
 <translation id="2238944249568001759">جستجوهای پیشنهادی براساس آخرین برگه شما</translation>
 <translation id="2241634353105152135">فقط یک بار</translation>
 <translation id="2253414712144136228">برداشتن <ph name="NAME_OF_LIST_ITEM" /></translation>
+<translation id="2253989982043948086">{NUM_SELECTED,plural, =1{یک سایت مسدود است}one{# سایت مسدود است}other{# سایت مسدود هستند}}</translation>
 <translation id="228293613124499805">اکثر سایت‌هایی که بازدید می‌کنید احتمالاً در دستگاهتان داده ذخیره می‌کنند و هدف از این کار، اغلب بهبود تجربه شما با ذخیره اولویت‌ها یا اطلاعاتی است که با سایت هم‌رسانی می‌کنید. توصیه می‌کنیم این تنظیم را روشن نگه دارید.</translation>
 <translation id="2289270750774289114">وقتی سایتی می‌خواهد دستگا‌ه‌های بلوتوث اطراف را پیدا کند، سؤال شود (توصیه می‌شود)</translation>
 <translation id="2315043854645842844">انتخاب گواهی سمت کلاینت توسط سیستم‌عامل پشتیبانی نمی‌شود.</translation>
@@ -149,7 +150,7 @@
 <translation id="3602290021589620013">پیش‌نمایش</translation>
 <translation id="3628308229821498208">جستجوهای پیشنهادی</translation>
 <translation id="3707034683772193706">‏سایتی که از آن بازدید می‌کنید می‌تواند مقدار کمی از اطلاعات را در Chrome ذخیره کند. این کار عمدتاً برای تأیید اینکه شما روبات نیستید انجام می‌شود</translation>
-<translation id="3721953990244350188">رد شدن و نمایش کنش دردسترس بعدی</translation>
+<translation id="3721953990244350188">بستن و نمایش کنش دردسترس بعدی</translation>
 <translation id="3744111561329211289">همگام‌سازی پس‌زمینه</translation>
 <translation id="3763247130972274048">در سمت راست یا چپ ویدیو دو ضربه سریع بزنید تا ۱۰ ثانیه رد شود</translation>
 <translation id="3794286421982011626">سایتی که بازدید می‌کنید می‌تواند اطلاعاتی درباره کاری که انجام می‌دهید ذخیره کند تا عملکردی مطابق انتظار شما داشته باشد — برای مثال، برای اینکه در سیستم سایت باقی بمانید یا برای ذخیره کردن مواردی که در سبد خریدتان است. سایت‌ها در اغلب موارد این اطلاعات را به‌صورت موقتی در دستگاه ذخیره می‌کنند.</translation>
@@ -302,7 +303,6 @@
 <translation id="6467852467360539617">پاک کردن داده‌ها و بازنشانی اجازه‌ها</translation>
 <translation id="6527303717912515753">اشتراک‌گذاری</translation>
 <translation id="6545864417968258051">اسکن کردن بلوتوث</translation>
-<translation id="6552691050538553146">گزینه‌های بیشتر <ph name="BANNER_TITLE" /></translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />، <ph name="PERMISSION_2" />، و <ph name="NUM_MORE" /> اجازه دیگر مسدود هستند}one{<ph name="PERMISSION_1" />، <ph name="PERMISSION_2" />، و <ph name="NUM_MORE" /> اجازه دیگر مسدود هستند}other{<ph name="PERMISSION_1" />، <ph name="PERMISSION_2" />، و <ph name="NUM_MORE" /> اجازه دیگر مسدود هستند}}</translation>
 <translation id="6554732001434021288">آخرین بازدید: <ph name="NUM_DAYS" /> روز پیش</translation>
 <translation id="6561560012278703671">استفاده از پیام‌رسانی کم‌صداتر (درخواست‌های اعلان را مسدود می‌کند تا مزاحمتان نشود)</translation>
@@ -384,6 +384,7 @@
 <translation id="8068648041423924542">انتخاب گواهی ممکن نیست.</translation>
 <translation id="8077120325605624147">هر سایتی که بازدید کنید می‌تواند هر نوع آگهی را به شما نمایش دهد</translation>
 <translation id="8087000398470557479">‏این محتوا از <ph name="DOMAIN_NAME" /> است و توسط Google ارائه می‌شود.</translation>
+<translation id="8088603949666785339">گزینه‌های بیشتر در <ph name="BANNER_TITLE" /></translation>
 <translation id="8116925261070264013">صامت‌شده</translation>
 <translation id="813082847718468539">مشاهدهٔ اطلاعات سایت</translation>
 <translation id="8131740175452115882">تأیید</translation>
@@ -430,6 +431,7 @@
 <translation id="8719283222052720129">‏اجازه <ph name="APP_NAME" /> را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> روشن کنید.</translation>
 <translation id="8725066075913043281">سعی مجدد</translation>
 <translation id="8730621377337864115">تمام</translation>
+<translation id="8736193154595564524">{NUM_SELECTED,plural, =1{یک سایت اجازه دارد}one{# سایت اجازه دارد}other{# سایت اجازه دارند}}</translation>
 <translation id="8737217482364735741">با این کار همه داده‌ها و کوکی‌های ذخیره‌شده توسط <ph name="ORIGIN" /> پاک می‌شود.</translation>
 <translation id="8751914237388039244">تصویری انتخاب کنید</translation>
 <translation id="8801436777607969138">مسدود کردن جاوااسکریپت برای سایتی خاص.</translation>

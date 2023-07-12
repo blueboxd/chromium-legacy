@@ -43,6 +43,11 @@ inline constexpr char kBookmarksAndReadingListAccountStorageOptIn[] =
     "sync.bookmarks_and_reading_list_account_storage_opt_in";
 #endif  // BUILDFLAG(IS_IOS)
 
+// Dict specifying the selected types per account for signed-in, non-syncing
+// users only.
+inline constexpr char kSelectedTypesPerAccount[] =
+    "sync.selected_types_per_account";
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Boolean specifying whether to automatically sync all Chrome OS specific data
@@ -64,7 +69,8 @@ inline constexpr char kSyncAppsEnabledByOs[] = "sync.apps_enabled_by_os";
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 // Booleans specifying whether the user has selected to sync the following
-// user selectable types.
+// user selectable types. Which are also used as keys within
+// "sync.selected_types_per_account".
 inline constexpr char kSyncApps[] = "sync.apps";
 inline constexpr char kSyncAutofill[] = "sync.autofill";
 inline constexpr char kSyncBookmarks[] = "sync.bookmarks";
@@ -76,6 +82,12 @@ inline constexpr char kSyncTabs[] = "sync.tabs";
 inline constexpr char kSyncThemes[] = "sync.themes";
 inline constexpr char kSyncTypedUrls[] = "sync.typed_urls";
 inline constexpr char kSyncSavedTabGroups[] = "sync.saved_tab_groups";
+
+// Historic artifact for payment methods, which were implemented differently.
+// It represents a boolean that's true when payments integration is enabled by
+// the user.
+inline constexpr char kAutofillWalletImportEnabled[] =
+    "autofill.wallet_import_enabled";
 
 // Boolean used by enterprise configuration management in order to lock down
 // sync.

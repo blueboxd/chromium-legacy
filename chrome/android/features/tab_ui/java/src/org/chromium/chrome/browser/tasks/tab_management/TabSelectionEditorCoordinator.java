@@ -164,7 +164,7 @@ class TabSelectionEditorCoordinator {
                             .inflate(R.layout.tab_selection_editor_layout, parentView, false)
                             .findViewById(R.id.selectable_list);
 
-            TabListMediator.ThumbnailProvider thumbnailProvider =
+            ThumbnailProvider thumbnailProvider =
                     initThumbnailProvider(displayGroups, tabContentManager);
             PseudoTab.TitleProvider titleProvider = displayGroups ? this::getTitle : null;
 
@@ -174,7 +174,7 @@ class TabSelectionEditorCoordinator {
             mTabListCoordinator = new TabListCoordinator(mode, activity, mTabModelSelector,
                     thumbnailProvider, titleProvider, displayGroups, null, null,
                     TabProperties.UiType.SELECTABLE, this::getSelectionDelegate, null,
-                    mTabSelectionEditorLayout, false, COMPONENT_NAME, rootView, null);
+                    mTabSelectionEditorLayout, false, COMPONENT_NAME, rootView, null, false);
 
             // Note: The TabSelectionEditorCoordinator is always created after native is
             // initialized.
@@ -287,7 +287,7 @@ class TabSelectionEditorCoordinator {
         return TabGroupTitleEditor.getDefaultTitle(context, numRelatedTabs);
     }
 
-    private TabListMediator.ThumbnailProvider initThumbnailProvider(
+    private ThumbnailProvider initThumbnailProvider(
             boolean displayGroups, TabContentManager tabContentManager) {
         if (displayGroups) {
             mMultiThumbnailCardProvider =

@@ -234,13 +234,17 @@ static_library("browser") {
     "sharing/incoming_password_sharing_invitation_sync_bridge.h",
     "sharing/outgoing_password_sharing_invitation_sync_bridge.cc",
     "sharing/outgoing_password_sharing_invitation_sync_bridge.h",
+    "sharing/password_receiver_service.cc",
+    "sharing/password_receiver_service.h",
+    "sharing/password_receiver_service_interface.h",
     "sharing/password_sender_service.h",
     "sharing/password_sender_service_impl.cc",
     "sharing/password_sender_service_impl.h",
     "sharing/password_sharing_recipients_downloader.cc",
     "sharing/password_sharing_recipients_downloader.h",
-    "sharing_invitations.cc",
-    "sharing_invitations.h",
+    "sharing/recipients_fetcher.h",
+    "sharing/sharing_invitations.cc",
+    "sharing/sharing_invitations.h",
     "smart_bubble_stats_store.h",
     "sql_table_builder.cc",
     "sql_table_builder.h",
@@ -314,6 +318,7 @@ static_library("browser") {
     "//components/favicon/core",
     "//components/keyed_service/core",
     "//components/os_crypt/sync",
+    "//components/password_manager/core/browser/features:password_features",
     "//components/password_manager/core/browser/form_parsing",
     "//components/password_manager/core/browser/import:csv",
     "//components/password_manager/core/browser/leak_detection:leak_detection",
@@ -326,6 +331,7 @@ static_library("browser") {
     "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/security_state/core",
+    "//components/signin/public/base",
     "//components/signin/public/identity_manager",
     "//components/strings",
     "//components/strings:components_strings",
@@ -453,6 +459,7 @@ source_set("password_form") {
     "//base",
     "//components/autofill/core/common",
     "//components/autofill/core/common/mojom:mojo_types_shared",
+    "//components/signin/public/base",
     "//url",
   ]
 }
@@ -463,7 +470,10 @@ static_library("password_generator") {
     "generation/password_generator.h",
   ]
   public_deps = [ "//components/autofill/core/browser/proto" ]
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//components/password_manager/core/common:features",
+  ]
 }
 
 if (is_android) {
@@ -688,6 +698,7 @@ source_set("unit_tests") {
     "password_ui_utils_unittest.cc",
     "possible_username_data_unittest.cc",
     "psl_matching_helper_unittest.cc",
+    "sharing/password_receiver_service_unittest.cc",
     "sharing/password_sharing_recipients_downloader_unittest.cc",
     "sql_table_builder_unittest.cc",
     "statistics_table_unittest.cc",
@@ -752,6 +763,7 @@ source_set("unit_tests") {
     "//components/os_crypt/sync",
     "//components/os_crypt/sync:test_support",
     "//components/password_manager/core/browser:affiliation_proto",
+    "//components/password_manager/core/browser/features:password_features",
     "//components/password_manager/core/browser/form_parsing:form_parsing",
     "//components/password_manager/core/browser/form_parsing:unit_tests",
     "//components/password_manager/core/browser/form_parsing/fuzzer:unit_tests",
@@ -768,6 +780,7 @@ source_set("unit_tests") {
     "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/security_state/core",
+    "//components/signin/public/base",
     "//components/signin/public/identity_manager:test_support",
     "//components/strings",
     "//components/sync:test_support",

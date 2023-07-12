@@ -10,6 +10,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
+#include "components/browsing_data/core/features.h"
 #include "components/content_settings/browser/test_page_specific_content_settings_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -25,6 +26,8 @@
 #include "content/public/test/web_contents_tester.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
+#include "net/extras/shared_dictionary/shared_dictionary_isolation_key.h"
+#include "services/network/public/mojom/shared_dictionary_access_observer.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -67,11 +70,19 @@ class MockPageSpecificContentSettingsDelegate
   MOCK_METHOD(void, OnContentBlocked, (ContentSettingsType type));
 };
 
+blink::StorageKey CreateFirstPartyStorageKey(const GURL& url) {
+  return blink::StorageKey::CreateFirstParty(url::Origin::Create(url));
+}
+
 }  // namespace
 
 class PageSpecificContentSettingsTest
     : public content::RenderViewHostTestHarness {
  public:
+  PageSpecificContentSettingsTest()
+      : content::RenderViewHostTestHarness(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
     HostContentSettingsMap::RegisterProfilePrefs(prefs_.registry());
@@ -154,11 +165,11 @@ TEST_F(PageSpecificContentSettingsTest, BlockedContent) {
 #endif
   content_settings->OnContentBlocked(ContentSettingsType::POPUPS);
   PageSpecificContentSettings::MicrophoneCameraState
-      blocked_microphone_camera_state =
-          PageSpecificContentSettings::MICROPHONE_ACCESSED |
-          PageSpecificContentSettings::MICROPHONE_BLOCKED |
-          PageSpecificContentSettings::CAMERA_ACCESSED |
-          PageSpecificContentSettings::CAMERA_BLOCKED;
+      blocked_microphone_camera_state = {
+          PageSpecificContentSettings::kMicrophoneAccessed,
+          PageSpecificContentSettings::kMicrophoneBlocked,
+          PageSpecificContentSettings::kCameraAccessed,
+          PageSpecificContentSettings::kCameraBlocked};
   content_settings->OnMediaStreamPermissionSet(
       GURL("http://google.com"), blocked_microphone_camera_state, std::string(),
       std::string(), std::string(), std::string());
@@ -242,21 +253,19 @@ TEST_F(PageSpecificContentSettingsTest, BlockedContent) {
 
 TEST_F(PageSpecificContentSettingsTest, BlockedFileSystems) {
   NavigateAndCommit(GURL("http://google.com"));
+  auto* rfh = web_contents()->GetPrimaryMainFrame();
   PageSpecificContentSettings* content_settings =
-      PageSpecificContentSettings::GetForFrame(
-          web_contents()->GetPrimaryMainFrame());
-
+      PageSpecificContentSettings::GetForFrame(rfh);
+  auto google_storage_key = rfh->storage_key();
   // Access a file system.
   content_settings->OnStorageAccessed(StorageType::FILE_SYSTEM,
-                                      GURL("http://google.com"), false,
-                                      web_contents()->GetPrimaryMainFrame());
+                                      google_storage_key, false, rfh);
   EXPECT_FALSE(
       content_settings->IsContentBlocked(ContentSettingsType::COOKIES));
 
   // Block access to a file system.
   content_settings->OnStorageAccessed(StorageType::FILE_SYSTEM,
-                                      GURL("http://google.com"), true,
-                                      web_contents()->GetPrimaryMainFrame());
+                                      google_storage_key, true, rfh);
   EXPECT_TRUE(content_settings->IsContentBlocked(ContentSettingsType::COOKIES));
 }
 
@@ -399,9 +408,9 @@ TEST_F(PageSpecificContentSettingsTest, EmptyCookieList) {
 
 TEST_F(PageSpecificContentSettingsTest, SiteDataObserver) {
   NavigateAndCommit(GURL("http://google.com"));
+  auto* rfh = web_contents()->GetPrimaryMainFrame();
   PageSpecificContentSettings* content_settings =
-      PageSpecificContentSettings::GetForFrame(
-          web_contents()->GetPrimaryMainFrame());
+      PageSpecificContentSettings::GetForFrame(rfh);
   MockSiteDataObserver mock_observer(web_contents());
   EXPECT_CALL(mock_observer, OnSiteDataAccessed).Times(6);
 
@@ -426,23 +435,21 @@ TEST_F(PageSpecificContentSettingsTest, SiteDataObserver) {
                                    absl::nullopt /* cookie_partition_key */));
   ASSERT_TRUE(other_cookie);
 
-  content::RenderFrameHost* rfh = web_contents()->GetPrimaryMainFrame();
   cookie_list.push_back(*other_cookie);
   GetHandle()->OnCookiesAccessed(
       rfh,
       {content::CookieAccessDetails::Type::kRead, GURL("http://google.com"),
        GURL("http://google.com"), cookie_list, blocked_by_policy});
-  content_settings->OnStorageAccessed(StorageType::FILE_SYSTEM,
-                                      GURL("http://google.com"),
-                                      blocked_by_policy, rfh);
-  content_settings->OnStorageAccessed(StorageType::INDEXED_DB,
-                                      GURL("http://google.com"),
-                                      blocked_by_policy, rfh);
-  content_settings->OnStorageAccessed(StorageType::LOCAL_STORAGE,
-                                      GURL("http://google.com"),
-                                      blocked_by_policy, rfh);
+
+  auto google_storage_key = rfh->storage_key();
   content_settings->OnStorageAccessed(
-      StorageType::DATABASE, GURL("http://google.com"), blocked_by_policy, rfh);
+      StorageType::FILE_SYSTEM, google_storage_key, blocked_by_policy, rfh);
+  content_settings->OnStorageAccessed(
+      StorageType::INDEXED_DB, google_storage_key, blocked_by_policy, rfh);
+  content_settings->OnStorageAccessed(
+      StorageType::LOCAL_STORAGE, google_storage_key, blocked_by_policy, rfh);
+  content_settings->OnStorageAccessed(StorageType::DATABASE, google_storage_key,
+                                      blocked_by_policy, rfh);
 }
 
 TEST_F(PageSpecificContentSettingsTest, LocalSharedObjectsContainer) {
@@ -461,21 +468,26 @@ TEST_F(PageSpecificContentSettingsTest, LocalSharedObjectsContainer) {
                                   GURL("http://google.com"),
                                   {*cookie},
                                   blocked_by_policy});
-  content_settings->OnStorageAccessed(StorageType::FILE_SYSTEM,
-                                      GURL("https://www.google.com"),
-                                      blocked_by_policy, rfh);
-  content_settings->OnStorageAccessed(StorageType::INDEXED_DB,
-                                      GURL("https://localhost"),
-                                      blocked_by_policy, rfh);
-  content_settings->OnStorageAccessed(StorageType::LOCAL_STORAGE,
-                                      GURL("http://maps.google.com:8080"),
-                                      blocked_by_policy, rfh);
-  content_settings->OnStorageAccessed(StorageType::LOCAL_STORAGE,
-                                      GURL("http://example.com"),
-                                      blocked_by_policy, rfh);
-  content_settings->OnStorageAccessed(StorageType::DATABASE,
-                                      GURL("http://192.168.0.1"),
-                                      blocked_by_policy, rfh);
+  content_settings->OnStorageAccessed(
+      StorageType::FILE_SYSTEM,
+      CreateFirstPartyStorageKey(GURL("https://www.google.com")),
+      blocked_by_policy, rfh);
+  content_settings->OnStorageAccessed(
+      StorageType::INDEXED_DB,
+      CreateFirstPartyStorageKey(GURL("https://localhost")), blocked_by_policy,
+      rfh);
+  content_settings->OnStorageAccessed(
+      StorageType::LOCAL_STORAGE,
+      CreateFirstPartyStorageKey(GURL("http://maps.google.com:8080")),
+      blocked_by_policy, rfh);
+  content_settings->OnStorageAccessed(
+      StorageType::LOCAL_STORAGE,
+      CreateFirstPartyStorageKey(GURL("http://example.com")), blocked_by_policy,
+      rfh);
+  content_settings->OnStorageAccessed(
+      StorageType::DATABASE,
+      CreateFirstPartyStorageKey(GURL("http://192.168.0.1")), blocked_by_policy,
+      rfh);
   content_settings->OnSharedWorkerAccessed(
       GURL("http://youtube.com/worker.js"), "worker",
       blink::StorageKey::CreateFromStringForTesting("https://youtube.com"),
@@ -606,6 +618,165 @@ TEST_F(PageSpecificContentSettingsTest,
                                            *allowed_browsing_data_model));
 }
 
+TEST_F(PageSpecificContentSettingsTest, BrowsingDataModelSharedDictionary) {
+  NavigateAndCommit(GURL("http://google.com"));
+
+  PageSpecificContentSettings* pscs = PageSpecificContentSettings::GetForFrame(
+      web_contents()->GetPrimaryMainFrame());
+  auto* allowed_browsing_data_model = pscs->allowed_browsing_data_model();
+  auto* blocked_browsing_data_model = pscs->blocked_browsing_data_model();
+
+  // Before Shared Dictionary accesses, there should be no objects here.
+  EXPECT_EQ(
+      0, browsing_data::GetUniqueHostCount(pscs->allowed_local_shared_objects(),
+                                           *allowed_browsing_data_model));
+  EXPECT_EQ(
+      0, browsing_data::GetUniqueHostCount(pscs->blocked_local_shared_objects(),
+                                           *blocked_browsing_data_model));
+  const url::Origin origin = url::Origin::Create(GURL("http://google.com/"));
+  net::SharedDictionaryIsolationKey isolation_key(origin,
+                                                  net::SchemefulSite(origin));
+  // Access a Shared Dictionary.
+  network::mojom::SharedDictionaryAccessDetailsPtr details =
+      network::mojom::SharedDictionaryAccessDetails::New(
+          network::mojom::SharedDictionaryAccessDetails::Type::kRead,
+          GURL("http://test.example/target"), isolation_key,
+          /*is_blocked=*/false);
+  GetHandle()->OnSharedDictionaryAccessed(web_contents()->GetPrimaryMainFrame(),
+                                          *details);
+
+  EXPECT_EQ(
+      1, browsing_data::GetUniqueHostCount(pscs->allowed_local_shared_objects(),
+                                           *allowed_browsing_data_model));
+  EXPECT_EQ(
+      0, browsing_data::GetUniqueHostCount(pscs->blocked_local_shared_objects(),
+                                           *blocked_browsing_data_model));
+  ASSERT_EQ(1u, allowed_browsing_data_model->size());
+  EXPECT_EQ("google.com",
+            *absl::get_if<std::string>(
+                &*(*allowed_browsing_data_model->begin()).data_owner));
+}
+
+TEST_F(PageSpecificContentSettingsTest,
+       BrowsingDataModelSharedDictionaryBlocked) {
+  NavigateAndCommit(GURL("http://google.com"));
+
+  PageSpecificContentSettings* pscs = PageSpecificContentSettings::GetForFrame(
+      web_contents()->GetPrimaryMainFrame());
+  auto* allowed_browsing_data_model = pscs->allowed_browsing_data_model();
+  auto* blocked_browsing_data_model = pscs->blocked_browsing_data_model();
+
+  // Before Shared Dictionary accesses, there should be no objects here.
+  EXPECT_EQ(
+      0, browsing_data::GetUniqueHostCount(pscs->allowed_local_shared_objects(),
+                                           *allowed_browsing_data_model));
+  EXPECT_EQ(
+      0, browsing_data::GetUniqueHostCount(pscs->blocked_local_shared_objects(),
+                                           *blocked_browsing_data_model));
+  const url::Origin origin = url::Origin::Create(GURL("http://google.com/"));
+  net::SharedDictionaryIsolationKey isolation_key(origin,
+                                                  net::SchemefulSite(origin));
+  // Blocked a Shared Dictionary access.
+  network::mojom::SharedDictionaryAccessDetailsPtr details =
+      network::mojom::SharedDictionaryAccessDetails::New(
+          network::mojom::SharedDictionaryAccessDetails::Type::kRead,
+          GURL("http://test.example/target"), isolation_key,
+          /*is_blocked=*/true);
+  GetHandle()->OnSharedDictionaryAccessed(web_contents()->GetPrimaryMainFrame(),
+                                          *details);
+
+  EXPECT_EQ(
+      0, browsing_data::GetUniqueHostCount(pscs->allowed_local_shared_objects(),
+                                           *allowed_browsing_data_model));
+  EXPECT_EQ(
+      1, browsing_data::GetUniqueHostCount(pscs->blocked_local_shared_objects(),
+                                           *blocked_browsing_data_model));
+  ASSERT_EQ(1u, blocked_browsing_data_model->size());
+  EXPECT_EQ("google.com",
+            *absl::get_if<std::string>(
+                &*(*blocked_browsing_data_model->begin()).data_owner));
+}
+
+TEST_F(PageSpecificContentSettingsTest,
+       BrowsingDataModelSharedDictionaryPendingNavigation) {
+  NavigateAndCommit(GURL("http://google.com"));
+
+  std::unique_ptr<content::NavigationSimulator> simulator =
+      content::NavigationSimulator::CreateBrowserInitiated(
+          GURL("http://other.com"), web_contents());
+  simulator->SetTransition(ui::PAGE_TRANSITION_LINK);
+  simulator->Start();
+
+  // Access a Shared Dictionary.
+  const url::Origin origin = url::Origin::Create(GURL("http://google.com/"));
+  net::SharedDictionaryIsolationKey isolation_key(origin,
+                                                  net::SchemefulSite(origin));
+  network::mojom::SharedDictionaryAccessDetailsPtr details =
+      network::mojom::SharedDictionaryAccessDetails::New(
+          network::mojom::SharedDictionaryAccessDetails::Type::kRead,
+          GURL("http://test.example/target"), isolation_key,
+          /*is_blocked=*/false);
+  GetHandle()->OnSharedDictionaryAccessed(simulator->GetNavigationHandle(),
+                                          *details);
+  simulator->Commit();
+
+  PageSpecificContentSettings* pscs = PageSpecificContentSettings::GetForFrame(
+      simulator->GetFinalRenderFrameHost());
+  auto* allowed_browsing_data_model = pscs->allowed_browsing_data_model();
+  auto* blocked_browsing_data_model = pscs->blocked_browsing_data_model();
+
+  EXPECT_EQ(
+      1, browsing_data::GetUniqueHostCount(pscs->allowed_local_shared_objects(),
+                                           *allowed_browsing_data_model));
+  EXPECT_EQ(
+      0, browsing_data::GetUniqueHostCount(pscs->blocked_local_shared_objects(),
+                                           *blocked_browsing_data_model));
+  ASSERT_EQ(1u, allowed_browsing_data_model->size());
+  EXPECT_EQ("google.com",
+            *absl::get_if<std::string>(
+                &*(*allowed_browsing_data_model->begin()).data_owner));
+}
+
+TEST_F(PageSpecificContentSettingsTest,
+       BrowsingDataModelSharedDictionaryPendingNavigationBlocked) {
+  NavigateAndCommit(GURL("http://google.com"));
+
+  std::unique_ptr<content::NavigationSimulator> simulator =
+      content::NavigationSimulator::CreateBrowserInitiated(
+          GURL("http://other.com"), web_contents());
+  simulator->SetTransition(ui::PAGE_TRANSITION_LINK);
+  simulator->Start();
+
+  // Blocked a Shared Dictionary access.
+  const url::Origin origin = url::Origin::Create(GURL("http://google.com/"));
+  net::SharedDictionaryIsolationKey isolation_key(origin,
+                                                  net::SchemefulSite(origin));
+  network::mojom::SharedDictionaryAccessDetailsPtr details =
+      network::mojom::SharedDictionaryAccessDetails::New(
+          network::mojom::SharedDictionaryAccessDetails::Type::kRead,
+          GURL("http://test.example/target"), isolation_key,
+          /*is_blocked=*/true);
+  GetHandle()->OnSharedDictionaryAccessed(simulator->GetNavigationHandle(),
+                                          *details);
+  simulator->Commit();
+
+  PageSpecificContentSettings* pscs = PageSpecificContentSettings::GetForFrame(
+      simulator->GetFinalRenderFrameHost());
+  auto* allowed_browsing_data_model = pscs->allowed_browsing_data_model();
+  auto* blocked_browsing_data_model = pscs->blocked_browsing_data_model();
+
+  EXPECT_EQ(
+      0, browsing_data::GetUniqueHostCount(pscs->allowed_local_shared_objects(),
+                                           *allowed_browsing_data_model));
+  EXPECT_EQ(
+      1, browsing_data::GetUniqueHostCount(pscs->blocked_local_shared_objects(),
+                                           *blocked_browsing_data_model));
+  ASSERT_EQ(1u, blocked_browsing_data_model->size());
+  EXPECT_EQ("google.com",
+            *absl::get_if<std::string>(
+                &*(*blocked_browsing_data_model->begin()).data_owner));
+}
+
 TEST_F(PageSpecificContentSettingsTest, LocalSharedObjectsContainerHostsCount) {
   NavigateAndCommit(GURL("http://google.com"));
   PageSpecificContentSettings* content_settings =
@@ -653,19 +824,24 @@ TEST_F(PageSpecificContentSettingsTest, LocalSharedObjectsContainerHostsCount) {
                                   {*cookie4},
                                   blocked_by_policy});
   content_settings->OnStorageAccessed(
-      StorageType::FILE_SYSTEM, GURL("https://www.google.com"),
+      StorageType::FILE_SYSTEM,
+      CreateFirstPartyStorageKey(GURL("https://www.google.com")),
       blocked_by_policy, web_contents()->GetPrimaryMainFrame());
   content_settings->OnStorageAccessed(
-      StorageType::INDEXED_DB, GURL("https://localhost"), blocked_by_policy,
+      StorageType::INDEXED_DB,
+      CreateFirstPartyStorageKey(GURL("https://localhost")), blocked_by_policy,
       web_contents()->GetPrimaryMainFrame());
   content_settings->OnStorageAccessed(
-      StorageType::LOCAL_STORAGE, GURL("http://maps.google.com:8080"),
+      StorageType::LOCAL_STORAGE,
+      CreateFirstPartyStorageKey(GURL("http://maps.google.com:8080")),
       blocked_by_policy, web_contents()->GetPrimaryMainFrame());
   content_settings->OnStorageAccessed(
-      StorageType::LOCAL_STORAGE, GURL("http://example.com"), blocked_by_policy,
+      StorageType::LOCAL_STORAGE,
+      CreateFirstPartyStorageKey(GURL("http://example.com")), blocked_by_policy,
       web_contents()->GetPrimaryMainFrame());
   content_settings->OnStorageAccessed(
-      StorageType::DATABASE, GURL("http://192.168.0.1"), blocked_by_policy,
+      StorageType::DATABASE,
+      CreateFirstPartyStorageKey(GURL("http://192.168.0.1")), blocked_by_policy,
       web_contents()->GetPrimaryMainFrame());
   content_settings->OnSharedWorkerAccessed(
       GURL("http://youtube.com/worker.js"), "worker",
@@ -762,6 +938,46 @@ TEST_F(PageSpecificContentSettingsTest, AllowedSitesCountedFromBothModels) {
                                            *allowed_browsing_data_model));
 }
 
+class PageSpecificContentSettingsWithBDMTest
+    : public PageSpecificContentSettingsTest {
+ public:
+  PageSpecificContentSettingsWithBDMTest() {
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        /*enabled_features=*/
+        {{browsing_data::features::kMigrateStorageToBDM, {}},
+         {browsing_data::features::kDeprecateCookiesTreeModel, {}}},
+        /*disabled_features=*/{});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(PageSpecificContentSettingsWithBDMTest, BrowsingDataModelStorageAccess) {
+  NavigateAndCommit(GURL("http://google.com"));
+  PageSpecificContentSettings* content_settings =
+      PageSpecificContentSettings::GetForFrame(
+          web_contents()->GetPrimaryMainFrame());
+  bool blocked_by_policy = false;
+
+  content_settings->OnBrowsingDataAccessed(
+      CreateFirstPartyStorageKey(GURL("https://www.google.com")),
+      BrowsingDataModel::StorageType::kQuotaStorage, blocked_by_policy);
+  content_settings->OnBrowsingDataAccessed(
+      CreateFirstPartyStorageKey(GURL("http://example.com")),
+      BrowsingDataModel::StorageType::kLocalStorage, blocked_by_policy);
+  content_settings->OnBrowsingDataAccessed(
+      CreateFirstPartyStorageKey(GURL("https://www.youtube.com")),
+      BrowsingDataModel::StorageType::kSessionStorage, blocked_by_policy);
+
+  const auto* allowed_browsing_data_model =
+      content_settings->allowed_browsing_data_model();
+
+  EXPECT_EQ(3, browsing_data::GetUniqueHostCount(
+                   content_settings->allowed_local_shared_objects(),
+                   *allowed_browsing_data_model));
+}
+
 class PageSpecificContentSettingsWithPrerenderTest
     : public PageSpecificContentSettingsTest {
  public:
@@ -845,7 +1061,6 @@ TEST_F(PageSpecificContentSettingsWithPrerenderTest,
   EXPECT_CALL(*mock_delegate, OnContentBlocked).Times(0);
 
   const GURL url = GURL("http://google.com");
-  const url::Origin origin = url::Origin::Create(url);
   auto cookie = net::CanonicalCookie::Create(
       url, "k=v", base::Time::Now(), absl::nullopt /* server_time */,
       absl::nullopt /* cookie_partition_key */);
@@ -854,7 +1069,8 @@ TEST_F(PageSpecificContentSettingsWithPrerenderTest,
                            url,
                            {*cookie},
                            /*blocked_by_policy=*/false});
-  pscs->OnStorageAccessed(StorageType::INDEXED_DB, url,
+  pscs->OnStorageAccessed(StorageType::INDEXED_DB,
+                          prerender_frame->storage_key(),
                           /*blocked_by_policy=*/true, prerender_frame);
 
   EXPECT_CALL(*mock_delegate, OnContentAllowed(ContentSettingsType::COOKIES))
@@ -1027,7 +1243,8 @@ TEST_F(PageSpecificContentSettingsWithFencedFrameTest, DelegateUpdatesSent) {
                               ff_url,
                               {*cookie},
                               /*blocked_by_policy=*/false});
-  ff_pscs->OnStorageAccessed(StorageType::INDEXED_DB, ff_url,
+  ff_pscs->OnStorageAccessed(StorageType::INDEXED_DB,
+                             fenced_frame_root->storage_key(),
                              /*blocked_by_policy=*/true, fenced_frame_root);
 }
 
@@ -1050,6 +1267,108 @@ TEST_F(PageSpecificContentSettingsWithFencedFrameTest,
 
   ff_pscs->OnContentBlocked(ContentSettingsType::JAVASCRIPT);
   ff_pscs->OnContentAllowed(ContentSettingsType::COOKIES);
+}
+
+TEST_F(PageSpecificContentSettingsTest, MediaIndicatorsMinHoldDurationDelay) {
+  NavigateAndCommit(GURL("http://google.com"));
+
+  PageSpecificContentSettings* pscs = PageSpecificContentSettings::GetForFrame(
+      web_contents()->GetPrimaryMainFrame());
+  ASSERT_NE(pscs, nullptr);
+
+  EXPECT_FALSE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kCameraAccessed));
+  pscs->OnCapturingStateChanged(ContentSettingsType::MEDIASTREAM_CAMERA, true);
+
+  EXPECT_TRUE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kCameraAccessed));
+
+  pscs->OnCapturingStateChanged(ContentSettingsType::MEDIASTREAM_CAMERA, false);
+
+  // `kCameraAccessed` is true because of min hold duration.
+  EXPECT_TRUE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kCameraAccessed));
+
+  // Min hold duration equals to 5 seconds.
+  task_environment()->AdvanceClock(base::Seconds(2));
+  base::RunLoop().RunUntilIdle();
+
+  // `kCameraAccessed` is still true because only 2 seconds passed.
+  EXPECT_TRUE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kCameraAccessed));
+
+  task_environment()->AdvanceClock(base::Seconds(4));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kCameraAccessed));
+}
+
+TEST_F(PageSpecificContentSettingsTest,
+       MediaIndicatorsHoldAfterUseDurationDelay) {
+  NavigateAndCommit(GURL("http://google.com"));
+
+  PageSpecificContentSettings* pscs = PageSpecificContentSettings::GetForFrame(
+      web_contents()->GetPrimaryMainFrame());
+  ASSERT_NE(pscs, nullptr);
+
+  EXPECT_FALSE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kCameraAccessed));
+  pscs->OnCapturingStateChanged(ContentSettingsType::MEDIASTREAM_CAMERA, true);
+
+  EXPECT_TRUE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kCameraAccessed));
+
+  // Min hold duration equals to 5 seconds.
+  task_environment()->AdvanceClock(base::Seconds(6));
+  base::RunLoop().RunUntilIdle();
+
+  pscs->OnCapturingStateChanged(ContentSettingsType::MEDIASTREAM_CAMERA, false);
+
+  // `kCameraAccessed` is true because of hold after use duration.
+  EXPECT_TRUE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kCameraAccessed));
+
+  // Hold after use duration equals to 1 seconds.
+  task_environment()->AdvanceClock(base::Seconds(2));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kCameraAccessed));
+}
+
+TEST_F(PageSpecificContentSettingsTest,
+       MediaIndicatorsReenableCameraWhileMinHoldDurationDelay) {
+  NavigateAndCommit(GURL("http://google.com"));
+
+  PageSpecificContentSettings* pscs = PageSpecificContentSettings::GetForFrame(
+      web_contents()->GetPrimaryMainFrame());
+  ASSERT_NE(pscs, nullptr);
+
+  EXPECT_FALSE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kCameraAccessed));
+  pscs->OnCapturingStateChanged(ContentSettingsType::MEDIASTREAM_CAMERA, true);
+
+  EXPECT_TRUE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kCameraAccessed));
+
+  pscs->OnCapturingStateChanged(ContentSettingsType::MEDIASTREAM_CAMERA, false);
+
+  // `kCameraAccessed` is true because of the min hold duration.
+  EXPECT_TRUE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kCameraAccessed));
+
+  // Reenabling a camera indicator
+  pscs->OnCapturingStateChanged(ContentSettingsType::MEDIASTREAM_CAMERA, true);
+
+  EXPECT_TRUE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kCameraAccessed));
+
+  task_environment()->AdvanceClock(base::Seconds(6));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kCameraAccessed));
 }
 
 }  // namespace content_settings

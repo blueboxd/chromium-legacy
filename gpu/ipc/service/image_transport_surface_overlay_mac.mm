@@ -218,7 +218,8 @@ bool ImageTransportSurfaceOverlayMacEGL::ScheduleOverlayPlane(
     gl::OverlayImage image,
     std::unique_ptr<gfx::GpuFence> gpu_fence,
     const gfx::OverlayPlaneData& overlay_plane_data) {
-  if (overlay_plane_data.plane_transform != gfx::OVERLAY_TRANSFORM_NONE) {
+  if (absl::get<gfx::OverlayTransform>(overlay_plane_data.plane_transform) !=
+      gfx::OVERLAY_TRANSFORM_NONE) {
     DLOG(ERROR) << "Invalid overlay plane transform.";
     return false;
   }
@@ -240,8 +241,8 @@ bool ImageTransportSurfaceOverlayMacEGL::ScheduleOverlayPlane(
       /*background_color=*/SkColors::kTransparent,
       /*edge_aa_mask=*/0,
       /*opacity=*/1.f,
-      /*nearest_neighbor_filter=*/GL_LINEAR, gfx::HDRMode::kDefault,
-      /*hdr_metadata=*/absl::nullopt,
+      /*nearest_neighbor_filter=*/GL_LINEAR,
+      /*hdr_metadata=*/gfx::HDRMetadata(),
       /*protected_video_type=*/gfx::ProtectedVideoType::kClear);
   return ca_layer_tree_coordinator_->GetPendingCARendererLayerTree()
       ->ScheduleCALayer(overlay_as_calayer_params);

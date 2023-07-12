@@ -12,6 +12,7 @@
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
 #include "components/reading_list/features/reading_list_switches.h"
+#include "components/sync/base/features.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "url/gurl.h"
 
@@ -68,7 +69,7 @@ DualReadingListModel::GetSyncControllerDelegateForTransportMode() {
   // made more sophisticated by enabling it only if the user opted in (possibly
   // pref-based).
   if (base::FeatureList::IsEnabled(
-          switches::kReadingListEnableSyncTransportModeUponSignIn)) {
+          syncer::kReadingListEnableSyncTransportModeUponSignIn)) {
     return account_model_->GetSyncControllerDelegate();
   }
 
@@ -493,6 +494,11 @@ void DualReadingListModel::AddObserver(ReadingListModelObserver* observer) {
 void DualReadingListModel::RemoveObserver(ReadingListModelObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.RemoveObserver(observer);
+}
+
+void DualReadingListModel::RecordCountMetricsOnUMAUpload() const {
+  local_or_syncable_model_->RecordCountMetricsOnUMAUpload();
+  account_model_->RecordCountMetricsOnUMAUpload();
 }
 
 void DualReadingListModel::ReadingListModelBeganBatchUpdates(

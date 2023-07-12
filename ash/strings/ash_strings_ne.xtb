@@ -298,6 +298,7 @@
 <translation id="2318576281648121272">आज <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" /> , खोज परिणामको कोटी</translation>
 <translation id="2322173485024759474">कर्सरलाई एक अक्षर पछाडि लैजानुहोस्</translation>
+<translation id="2335091074961603075">तपाईंको Chromebook वा ब्लुटुथ डिभाइसमा ब्लुटुथको पुरानो संस्करण चलिरहेको छ। अझ गुणस्तरीय अडियोका लागि आन्तरिक माइक्रोफोन प्रयोग गर्नुहोस्।</translation>
 <translation id="2339073806695260576">टिपोट गर्न, स्क्रिनसट खिच्न, लेजर पोइन्टर वा म्याग्निफाइङ्ग ग्लासको प्रयोग गर्न सेल्फमा रहेको स्टाइलस बटनमा ट्याप गर्नुहोस्।</translation>
 <translation id="2341729377289034582">ठाडो अवस्थामा लक गरियो</translation>
 <translation id="2345226652884463045">सम्पादन गर्नु पर्ने टेक्स्ट चयन गर्न इन्टर की वा खोज बटन + स्पेस की थिच्नुहोस्</translation>
@@ -395,6 +396,7 @@
 <translation id="2750941250130734256">सक्रिय विन्डो अनडक गरिएको छ।</translation>
 <translation id="2761723519669354964">सेल्फबाट हाइलाइट गरिएको वस्तु खोल्नुहोस्</translation>
 <translation id="2774348302533424868"><ph name="MODIFIER" /><ph name="DELIMITER" /><ph name="KEY_ONE" /> देखि <ph name="KEY_TWO" /> सम्म थिच्नुहोस्</translation>
+<translation id="2778197796481941784">ctrl+search+s</translation>
 <translation id="2778650143428714839"><ph name="MANAGER" /> ले <ph name="DEVICE_TYPE" /> व्यवस्थापन गर्छ</translation>
 <translation id="2782591952652094792">क्याप्चर मोडबाट बाहिर निस्कनुहोस्</translation>
 <translation id="2785499565474703580">एउटा डिभाइस कनेक्ट गरिएको छ</translation>
@@ -458,6 +460,7 @@
 <translation id="3062298103034426069">यसमा काम गर्दैन</translation>
 <translation id="3068622547379332530">संस्करण <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">सेल्फ बायाँतिर छ</translation>
+<translation id="3070639127620815135">search+esc</translation>
 <translation id="3077734595579995578">शिफ्ट</translation>
 <translation id="3081696990447829002">मेनु विस्तृत गर्नुहोस्</translation>
 <translation id="3087734570205094154">तल</translation>
@@ -471,6 +474,7 @@
 <translation id="3120421559657122717">यो डिभाइस सट डाउन गर्ने हो?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">अपडेट गर्न पुनः सुरु गर्नुहोस्</translation>
+<translation id="3139188263101386725">अपडेट गरिएको सर्टकट प्रयोग गर्नुहोस्</translation>
 <translation id="3139942575505304791">डेस्क १</translation>
 <translation id="315116470104423982">मोबाइल डाटा</translation>
 <translation id="3151786313568798007">अभिमुखीकरण</translation>
@@ -606,6 +610,7 @@
         <ph name="END_TIME" /> सम्म,
         <ph name="TIME_ZONE" />। थप विवरण हेर्न Google पात्रोमा गई चयन गर्नुहोस्।</translation>
 <translation id="3659444876902283058">(<ph name="TOTAL_DAYS" /> मध्ये <ph name="CURRENT_DAY" /> औँ दिन)</translation>
+<translation id="3659667652322717492">तपाईं पछि जुनसुकै बेला MIC ले काम गर्ने तरिका बदल्न सक्नुहुन्छ।</translation>
 <translation id="3659814201068740063">लगभग <ph name="TIME_LEFT" /> बाँकी (<ph name="PERCENTAGE" />%)।
 आफ्नो डिभाइस बिजुलीको स्रोतमा जोड्नुहोस्।</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> व्यवस्थापन गरिएका प्रयोगकर्ता</translation>
@@ -1049,6 +1054,7 @@
 <translation id="5578188167649348993">मेमोरी</translation>
 <translation id="5580000943347215299">लाइब्रेरी</translation>
 <translation id="558849140439112033">फोटो खिच्ने कुनै क्षेत्र चयन गर्न ड्र्याग गर्नुहोस्</translation>
+<translation id="5590609058453685222">म्युटसम्बन्धी सूचना अन छ। तपाईं म्युट गरिएका बेला बोल्नुभयो भने तपाईंलाई सूचित गरिने छ।</translation>
 <translation id="5596627076506792578">अन्य विकल्पहरू</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">बोली प्रतिक्रिया असक्षम पार्न Ctrl + Alt + Z थिच्नुहोस्।</translation>
@@ -1202,6 +1208,7 @@
 <translation id="6231419273573514727">सहायक यन्त्रले पूर्ण रूपमा काम नगर्न सक्छ</translation>
 <translation id="6232891689835436217"><ph name="APP_NAME" /> ले हाल तपाईंको क्यामेरा र माइक्रोफोन प्रयोग गरिरहेको छ</translation>
 <translation id="6237231532760393653">1X</translation>
+<translation id="6244986124527896815">"<ph name="NEW_SHORTCUT" />" प्रयोग गरी टास्क म्यानेजर एप खोल्नुहोस्।</translation>
 <translation id="6247728804802644171">सूचनाहरू खोल्नुहोस्</translation>
 <translation id="6254629735336163724">तेर्सो अवस्थामा लक गरियो</translation>
 <translation id="6259254695169772643">चयन गर्न आफ्नो स्टाइलस प्रयोग गर्नुहोस्</translation>
@@ -1252,6 +1259,7 @@
 <translation id="6497418457565568043">Do Not Disturb अन छ</translation>
 <translation id="6500896621837555595">अपडेट गर्नुहोस्</translation>
 <translation id="6501401484702599040">स्क्रिन <ph name="RECEIVER_NAME" /> मा cast गर्दै</translation>
+<translation id="6507042703812908515">"<ph name="NEW_SHORTCUT" />" प्रयोग गरी की सर्टकट एप खोल्नुहोस्।</translation>
 <translation id="6507618042428827377">अर्को उपलब्ध इनपुट विधि प्रयोग गर्नुहोस्</translation>
 <translation id="6508923215158854599">Chromebook तपाईंको Chromecast डिभाइस कनेक्ट गरिएकै Wi-Fi नेटवर्कमा कनेक्ट गरिएको छ भन्ने कुरा सुनिश्चित गर्नुहोस्।</translation>
 <translation id="6515727200518652613">क्यामेरा डिस्कनेक्ट भयो। पुनः कनेक्ट गर्ने प्रयास गरिँदै छ।</translation>
@@ -1545,7 +1553,6 @@
 <translation id="7866482334467279021">अन छ</translation>
 <translation id="7872786842639831132">अफ छ</translation>
 <translation id="7875575368831396199">तपाईंको <ph name="DEVICE_TYPE" /> मा ब्लुटुथ अफ गरिएको छ जस्तो देखिन्छ। फोन हब नामक सुविधा प्रयोग गर्न कृपया ब्लुटुथ अन गर्नुहोस्।</translation>
-<translation id="7876243839304621966">सबै हटाउनुहोस्</translation>
 <translation id="7877557217297072640">{0,plural, =0{अहिले नै यो डिभाइसमा अघिल्लो संस्करण रिस्टोर गर्नुहोस्}=1{१ सेकेन्डभित्र यो डिभाइसमा अघिल्लो संस्करण रिस्टोर गर्नुहोस्}other{# सेकेन्डभित्र यो डिभाइसमा अघिल्लो संस्करण रिस्टोर गर्नुहोस्}}</translation>
 <translation id="7884446017008693258">हटस्पटसम्बन्धी सेटिङ</translation>
 <translation id="7884902759927478774">ट्याब ड्र्याग गर्ने कार्य रद्द गर्नुहोस्</translation>
@@ -1751,6 +1758,7 @@
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />। <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8790998409862094015">अत्यन्त धेरै</translation>
 <translation id="8792626944327216835">माइक्रोफोन</translation>
+<translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535">फोल्डर <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">"मद्दत गर"</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

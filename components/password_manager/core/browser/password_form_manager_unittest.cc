@@ -25,7 +25,6 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/autofill/core/common/gaia_id_hash.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
@@ -55,6 +54,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/signin/public/base/gaia_id_hash.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -71,7 +71,6 @@ using autofill::FormFieldData;
 using autofill::FormRendererId;
 using autofill::FormSignature;
 using autofill::FormStructure;
-using autofill::GaiaIdHash;
 using autofill::NOT_USERNAME;
 using autofill::PasswordFormFillData;
 using autofill::PasswordFormGenerationData;
@@ -80,6 +79,7 @@ using autofill::ServerFieldTypeSet;
 using autofill::SINGLE_USERNAME;
 using autofill::UNKNOWN_TYPE;
 using autofill::password_generation::PasswordGenerationType;
+using signin::GaiaIdHash;
 using testing::_;
 using testing::AllOf;
 using testing::Contains;
@@ -3074,7 +3074,7 @@ class MockPasswordSaveManager : public PasswordSaveManager {
   }
   MOCK_METHOD1(MoveCredentialsToAccountStore,
                void(metrics_util::MoveToAccountStoreTrigger));
-  MOCK_METHOD1(BlockMovingToAccountStoreFor, void(const autofill::GaiaIdHash&));
+  MOCK_METHOD1(BlockMovingToAccountStoreFor, void(const signin::GaiaIdHash&));
 };
 
 class PasswordFormManagerTestWithMockedSaver : public PasswordFormManagerTest {
@@ -3125,14 +3125,19 @@ class PasswordFormManagerTestWithMockedSaver : public PasswordFormManagerTest {
         std::move(mock_password_save_manager));
   }
 
+  void ResetFormManager() {
+    mock_password_save_manager_ = nullptr;
+    form_manager_.reset();
+  }
+
  private:
-  raw_ptr<NiceMock<MockPasswordSaveManager>, DanglingUntriaged>
-      mock_password_save_manager_;
+  raw_ptr<NiceMock<MockPasswordSaveManager>> mock_password_save_manager_ =
+      nullptr;
 };
 
 TEST_F(
     PasswordFormManagerTestWithMockedSaver,
-    ProviosnallySaveShouldCreatePendingPasswordFormManagerTestWithMockedSaverCredentials) {
+    ProvisionallySaveShouldCreatePendingPasswordFormManagerTestWithMockedSaverCredentials) {
   EXPECT_CALL(*mock_password_save_manager(),
               CreatePendingCredentials(_, _, _, _, _));
   EXPECT_TRUE(
@@ -3176,7 +3181,7 @@ TEST_F(PasswordFormManagerTestWithMockedSaver, SaveCredentials) {
   EXPECT_EQ(submitted_form.fields[kPasswordFieldIndex].name,
             updated_form.password_element);
   // Check UKM metrics.
-  form_manager_.reset();
+  ResetFormManager();
   ExpectedGenerationUKM expected_metrics = {
       {} /* shown manually */,
       0 /* password generated */,
@@ -3429,7 +3434,7 @@ TEST_F(PasswordFormManagerTestWithMockedSaver, PasswordNoLongerGenerated) {
       .WillByDefault(Return(false));
   EXPECT_FALSE(form_manager_->HasGeneratedPassword());
   // Check UKM metrics.
-  form_manager_.reset();
+  ResetFormManager();
   ExpectedGenerationUKM expected_metrics = {
       absl::make_optional(2u) /* shown manually */,
       0 /* password generated */,

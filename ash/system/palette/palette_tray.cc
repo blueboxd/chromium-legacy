@@ -144,7 +144,8 @@ class BatteryView : public views::View {
     if (stylus_battery_delegate_.ShouldShowBatteryStatus() != GetVisible())
       SetVisible(stylus_battery_delegate_.ShouldShowBatteryStatus());
 
-    icon_->SetImage(stylus_battery_delegate_.GetBatteryImage());
+    icon_->SetImage(
+        stylus_battery_delegate_.GetBatteryImage(icon_->GetColorProvider()));
     label_->SetVisible(stylus_battery_delegate_.IsBatteryLevelLow() &&
                        stylus_battery_delegate_.IsBatteryStatusEligible() &&
                        !stylus_battery_delegate_.IsBatteryStatusStale() &&
@@ -440,12 +441,10 @@ void PaletteTray::OnLockStateChanged(bool locked) {
 }
 
 void PaletteTray::OnShellInitialized() {
-  if (features::IsProjectorEnabled()) {
-    ProjectorControllerImpl* projector_controller =
-        Shell::Get()->projector_controller();
-    projector_session_observation_.Observe(
-        projector_controller->projector_session());
-  }
+  ProjectorControllerImpl* projector_controller =
+      Shell::Get()->projector_controller();
+  projector_session_observation_.Observe(
+      projector_controller->projector_session());
 }
 
 void PaletteTray::OnShellDestroying() {

@@ -68,7 +68,6 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/guest_view_events.h"
-#include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/warning_service.h"
@@ -138,6 +137,13 @@ enum class WebRequestEventResponse {
 };
 
 constexpr char kWebRequestEventPrefix[] = "webRequest.";
+constexpr char kWebViewEventPrefix[] = "webViewInternal.";
+constexpr char kEventMessage[] = "webViewInternal.onMessage";
+
+constexpr size_t kWebRequestEventPrefixLen =
+    std::char_traits<char>::length(kWebRequestEventPrefix);
+constexpr size_t kWebViewEventPrefixLen =
+    std::char_traits<char>::length(kWebViewEventPrefix);
 
 // List of all the webRequest events. Note: this doesn't include
 // "onActionIgnored" which is not related to a request's lifecycle and is
@@ -213,15 +219,10 @@ ExtensionWebRequestEventRouter::EventTypes GetEventTypeFromEventName(
        {keys::kOnCompleted, ExtensionWebRequestEventRouter::kOnCompleted}});
   static_assert(kRequestStageMap.size() == std::size(kWebRequestEvents));
 
-  static constexpr size_t kWebRequestEventPrefixLen =
-      std::char_traits<char>::length(kWebRequestEventPrefix);
-  static const size_t kWebViewEventPrefixLen =
-      strlen(webview::kWebViewEventPrefix);
-
   // Canonicalize the |event_name| to the request stage.
   if (base::StartsWith(event_name, kWebRequestEventPrefix)) {
     event_name.remove_prefix(kWebRequestEventPrefixLen);
-  } else if (base::StartsWith(event_name, webview::kWebViewEventPrefix)) {
+  } else if (base::StartsWith(event_name, kWebViewEventPrefix)) {
     event_name.remove_prefix(kWebViewEventPrefixLen);
   } else {
     return ExtensionWebRequestEventRouter::kInvalidEvent;
@@ -333,7 +334,7 @@ void SendOnMessageEventOnUI(
     event_filtering_info->has_instance_id = true;
     event_filtering_info->instance_id = web_view_instance_id;
     histogram_value = events::WEB_VIEW_INTERNAL_ON_MESSAGE;
-    event_name = webview::kEventMessage;
+    event_name = kEventMessage;
   } else {
     histogram_value = events::DECLARATIVE_WEB_REQUEST_ON_MESSAGE;
     event_name = declarative_keys::kOnMessage;
@@ -642,15 +643,13 @@ WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
     event_router->RegisterObserver(this, event_name);
 
     // Also observe the corresponding webview event.
-    event_name.replace(
-        0, sizeof(kWebRequestEventPrefix) - 1, webview::kWebViewEventPrefix);
+    event_name.replace(0, kWebRequestEventPrefixLen, kWebViewEventPrefix);
     event_router->RegisterObserver(this, event_name);
   }
   extensions::ExtensionRegistry::Get(browser_context_)->AddObserver(this);
 }
 
-WebRequestAPI::~WebRequestAPI() {
-}
+WebRequestAPI::~WebRequestAPI() = default;
 
 void WebRequestAPI::Shutdown() {
   proxies_.reset();
@@ -1082,8 +1081,7 @@ ExtensionWebRequestEventRouter::EventResponse::EventResponse(
       cancel(false) {
 }
 
-ExtensionWebRequestEventRouter::EventResponse::~EventResponse() {
-}
+ExtensionWebRequestEventRouter::EventResponse::~EventResponse() = default;
 
 ExtensionWebRequestEventRouter::RequestFilter::RequestFilter()
     : tab_id(-1), window_id(-1) {}
@@ -1665,8 +1663,7 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
   listeners_to_dispatch->reserve(listeners.size());
   for (EventListener* listener : listeners) {
     listeners_to_dispatch->push_back(listener->id);
-    if (listener->extra_info_spec &
-        (ExtraInfoSpec::BLOCKING | ExtraInfoSpec::ASYNC_BLOCKING)) {
+    if (listener->IsBlocking()) {
       listener->blocked_requests.insert(request->id);
       ++num_handlers_blocking;
     }
@@ -1904,14 +1901,14 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
     is_reactivated = erased > 0u;
   }
 
-  data_[browser_context_id].active_listeners[event_name].push_back(
-      std::move(listener));
-
   // If the listener was previously registered, there's no need to adjust the
   // extra headers count.
-  if (!is_reactivated && extra_info_spec & ExtraInfoSpec::EXTRA_HEADERS) {
+  if (!is_reactivated && listener->HasExtraHeaders()) {
     IncrementExtraHeadersListenerCount(browser_context);
   }
+
+  data_[browser_context_id].active_listeners[event_name].push_back(
+      std::move(listener));
 
   return true;
 }
@@ -2071,7 +2068,7 @@ void ExtensionWebRequestEventRouter::CleanUpForListener(
   // Update the extra headers count and clear the cache only if the listener is
   // fully removed; otherwise, these values are still correct.
   if (update_type == ListenerUpdateType::kRemove) {
-    if (listener.extra_info_spec & ExtraInfoSpec::EXTRA_HEADERS) {
+    if (listener.HasExtraHeaders()) {
       DecrementExtraHeadersListenerCount(listener.id.browser_context);
     }
     helpers::ClearCacheOnNavigation();
@@ -2238,8 +2235,6 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
     const std::string& event_name,
     const WebRequestInfo* request,
     int* extra_info_spec) {
-  // TODO(mpcomplete): handle browser_context == NULL (should collect all
-  // listeners).
   *extra_info_spec = 0;
 
   bool is_request_from_extension =
@@ -2247,8 +2242,8 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
 
   std::string web_request_event_name(event_name);
   if (request->is_web_view) {
-    web_request_event_name.replace(
-        0, sizeof(kWebRequestEventPrefix) - 1, webview::kWebViewEventPrefix);
+    web_request_event_name.replace(0, kWebRequestEventPrefixLen,
+                                   kWebViewEventPrefix);
   }
 
   RawListeners matching_listeners;
@@ -2354,10 +2349,6 @@ bool ExtensionWebRequestEventRouter::ListenerMatchesRequest(
     }
   }
 
-  bool blocking_listener =
-      (listener.extra_info_spec &
-       (ExtraInfoSpec::BLOCKING | ExtraInfoSpec::ASYNC_BLOCKING)) != 0;
-
   // We do not want to notify extensions about XHR requests that are
   // triggered by themselves. This is a workaround to prevent deadlocks
   // in case of synchronous XHR requests that block the extension renderer
@@ -2367,7 +2358,7 @@ bool ExtensionWebRequestEventRouter::ListenerMatchesRequest(
   bool synchronous_xhr_from_extension =
       !request.is_async && is_request_from_extension &&
       request.web_request_type == WebRequestResourceType::XHR;
-  return !blocking_listener || !synchronous_xhr_from_extension;
+  return !listener.IsBlocking() || !synchronous_xhr_from_extension;
 }
 
 void ExtensionWebRequestEventRouter::GetMatchingListenersForRequest(

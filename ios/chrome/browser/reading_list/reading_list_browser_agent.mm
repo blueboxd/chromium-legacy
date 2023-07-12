@@ -65,9 +65,7 @@ void ReadingListBrowserAgent::AddURLsToReadingList(
 
   NSString* snackbar_text = nil;
   MDCSnackbarMessageAction* snackbar_action = nil;
-  if (!account_info.IsEmpty() &&
-      base::FeatureList::IsEnabled(
-          kEnableEmailInBookmarksReadingListSnackbar)) {
+  if (!account_info.IsEmpty()) {
     std::u16string pattern = l10n_util::GetStringUTF16(
         IDS_IOS_READING_LIST_SNACKBAR_MESSAGE_FOR_ACCOUNT);
     std::u16string utf16Text =
@@ -87,7 +85,6 @@ void ReadingListBrowserAgent::AddURLsToReadingList(
       [MDCSnackbarMessage messageWithText:snackbar_text];
   message.accessibilityLabel = snackbar_text;
   message.action = snackbar_action;
-  message.duration = 2.0;
 
   CommandDispatcher* dispatcher = browser_->GetCommandDispatcher();
   id<SnackbarCommands> snackbar_commands_handler =

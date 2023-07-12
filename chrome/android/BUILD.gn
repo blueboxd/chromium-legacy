@@ -314,6 +314,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/battery/android:java",
       "//chrome/browser/bluetooth/android:java",
       "//chrome/browser/browser_controls/android:java",
+      "//chrome/browser/browsing_data/android:java",
       "//chrome/browser/commerce/android:java",
       "//chrome/browser/commerce/merchant_viewer/android:java",
       "//chrome/browser/commerce/price_tracking/android:java",
@@ -371,6 +372,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/privacy_sandbox/android:java",
       "//chrome/browser/profiles/android:java",
       "//chrome/browser/quick_delete:java",
+      "//chrome/browser/readaloud/android:java",
       "//chrome/browser/recent_tabs:factory_java",
       "//chrome/browser/recent_tabs:helper_java",
       "//chrome/browser/recent_tabs:java",
@@ -843,13 +845,6 @@ if (current_toolchain == default_toolchain) {
   robolectric_binary("chrome_junit_tests") {
     # Needed by androidx.test.core.app.ActivityScenario
     android_manifest = "//chrome/android/junit/AndroidManifest.xml"
-
-    # This target OOMs with the default 1G, and hits CodeCache errors with
-    # default 4 shards (crbug.com/1453254).
-    # TODO(crbug.com/1383650): Remove once test runner shards by SDK.
-    max_heap_size = "3600M"
-    extra_args = [ "--shards=7" ]
-
     package_name = chrome_public_manifest_package
 
     # From java_sources.gni.
@@ -972,6 +967,8 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/profiles/android:junit",
       "//chrome/browser/quick_delete:java",
       "//chrome/browser/quick_delete:junit",
+      "//chrome/browser/readaloud/android:java",
+      "//chrome/browser/readaloud/android:junit",
       "//chrome/browser/recent_tabs:java",
       "//chrome/browser/recent_tabs:junit",
       "//chrome/browser/recent_tabs/internal:junit",
@@ -1048,7 +1045,9 @@ if (current_toolchain == default_toolchain) {
       "//components/bookmarks/common/android:bookmarks_java",
       "//components/browser_ui/accessibility/android:java",
       "//components/browser_ui/accessibility/android:junit",
+      "//components/browser_ui/bottomsheet/android:factory_java",
       "//components/browser_ui/bottomsheet/android:java",
+      "//components/browser_ui/bottomsheet/android:manager_java",
       "//components/browser_ui/display_cutout/android:java",
       "//components/browser_ui/media/android:java",
       "//components/browser_ui/media/android:java_resources",
@@ -1496,6 +1495,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/back_press/android:java",
       "//chrome/browser/banners/android:java",
       "//chrome/browser/browser_controls/android:java",
+      "//chrome/browser/browsing_data/android:java",
       "//chrome/browser/commerce/android:java",
       "//chrome/browser/commerce/android:javatests",
       "//chrome/browser/commerce/merchant_viewer/android:java",
@@ -1544,6 +1544,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/password_entry_edit/android/internal:javatests",
       "//chrome/browser/password_manager/android:java",
       "//chrome/browser/password_manager/android:test_support_java",
+      "//chrome/browser/password_manager/android/pwd_migration:java",
       "//chrome/browser/policy/android:java",
       "//chrome/browser/preferences:java",
       "//chrome/browser/prefetch/android:java",
@@ -1988,6 +1989,7 @@ if (current_toolchain == default_toolchain) {
 
         if (enable_cardboard) {
           sources += [
+            "javatests/src/org/chromium/chrome/browser/vr/WebXrVrCardboardDeviceTest.java",
             "javatests/src/org/chromium/chrome/browser/vr/WebXrVrCardboardPermissionTest.java",
             "javatests/src/org/chromium/chrome/browser/vr/WebXrVrCardboardTabTest.java",
             "javatests/src/org/chromium/chrome/browser/vr/rules/ChromeTabbedActivityVrCardboardTestRule.java",
@@ -3307,6 +3309,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/autofill/AutofillLogger.java",
     "java/src/org/chromium/chrome/browser/autofill/AutofillNameFixFlowBridge.java",
     "java/src/org/chromium/chrome/browser/autofill/AutofillPopupBridge.java",
+    "java/src/org/chromium/chrome/browser/autofill/AutofillSaveCardBottomSheetBridge.java",
     "java/src/org/chromium/chrome/browser/autofill/AutofillSnackbarController.java",
     "java/src/org/chromium/chrome/browser/autofill/CardUnmaskBridge.java",
     "java/src/org/chromium/chrome/browser/autofill/CreditCardScannerBridge.java",
@@ -3459,7 +3462,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/status_indicator/StatusIndicatorSceneLayer.java",
     "java/src/org/chromium/chrome/browser/suggestions/mostvisited/MostVisitedSites.java",
     "java/src/org/chromium/chrome/browser/suggestions/mostvisited/MostVisitedSitesBridge.java",
-    "java/src/org/chromium/chrome/browser/supervised_user/ChildAccountFeedbackReporter.java",
     "java/src/org/chromium/chrome/browser/supervised_user/ChildAccountService.java",
     "java/src/org/chromium/chrome/browser/sync/TrustedVaultClient.java",
     "java/src/org/chromium/chrome/browser/tab/TabBrowserControlsConstraintsHelper.java",

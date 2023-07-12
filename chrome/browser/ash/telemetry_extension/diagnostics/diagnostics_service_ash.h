@@ -59,6 +59,7 @@ class DiagnosticsServiceAsh : public crosapi::mojom::DiagnosticsService {
       crosapi::mojom::DiagnosticsAcPowerStatusEnum expected_status,
       const absl::optional<std::string>& expected_power_type,
       RunAcPowerRoutineCallback callback) override;
+  void RunAudioDriverRoutine(RunAudioDriverRoutineCallback callback) override;
   void RunBatteryCapacityRoutine(
       RunBatteryCapacityRoutineCallback callback) override;
   void RunBatteryChargeRoutine(
@@ -112,6 +113,8 @@ class DiagnosticsServiceAsh : public crosapi::mojom::DiagnosticsService {
       crosapi::mojom::UInt32ValuePtr percentage_used_threshold,
       RunSmartctlCheckRoutineCallback callback) override;
   void RunUfsLifetimeRoutine(RunUfsLifetimeRoutineCallback callback) override;
+  void RunPowerButtonRoutine(uint32_t timeout_seconds,
+                             RunPowerButtonRoutineCallback callback) override;
 
   // Pointer to real implementation.
   mojo::Remote<cros_healthd::mojom::CrosHealthdDiagnosticsService> service_;

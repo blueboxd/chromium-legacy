@@ -2332,7 +2332,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DomDistiller.ReaderShownForPageLoad" enum="Boolean"
-    expires_after="2023-09-10">
+    expires_after="2024-01-07">
   <owner>mdjones@chromium.org</owner>
   <summary>
     Records if the panel became visible at any point after a page was navigated.
@@ -2371,20 +2371,6 @@ chromium-metrics-reviews@google.com.
     is not visible. This is not recorded when the user opens a distillable page
     but does not switch to Reader Mode from that page (via the omnibox icon or
     menu option).
-  </summary>
-</histogram>
-
-<histogram name="DomDistiller.Time.ActivelyViewingReaderModePage" units="ms"
-    expires_after="2021-08-19">
-  <owner>katie@chromium.org</owner>
-  <owner>chrome-a11y-core@chromium.org</owner>
-  <summary>
-    Records the amount of active time a user spent on a Reader Mode page. Active
-    time is the time the Reader Mode page was visible, not the total time the
-    page was open: the timer is paused when the page is not visible. This is
-    recorded regardless of how a user enters the page: e.g. using the
-    forward/back buttons, entering the URL directly, or coming from a
-    distillable page all start the timer equally.
   </summary>
 </histogram>
 
@@ -2449,16 +2435,6 @@ chromium-metrics-reviews@google.com.
   <owner>yfriedman@chromium.org</owner>
   <summary>
     Time spent in DomDistiller's processing of article metadata.
-  </summary>
-</histogram>
-
-<histogram name="DomDistiller.Time.RunJavaScript" units="ms"
-    expires_after="M77">
-  <owner>wychen@chromium.org</owner>
-  <summary>
-    Time spent in ExecuteJavaScript() in DomDistiller. It includes JavaScript
-    code transmission through IPC, parsing, compilation, execution, and
-    returning the JSON back through IPC.
   </summary>
 </histogram>
 

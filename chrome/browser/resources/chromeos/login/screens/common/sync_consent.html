@@ -4,7 +4,7 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<style include="oobe-dialog-host-styles">
+<style include="oobe-dialog-host-styles cros-color-overrides">
   :host {
     --iron-icon-height: var(--oobe-adaptive-dialog-icon-size);
     --iron-icon-width: var(--oobe-adaptive-dialog-icon-size);
@@ -112,19 +112,37 @@ found in the LICENSE file.
                 0 4px 8px var(--cros-separator-color);
     width: 444px;
   }
+
+  #bottomButtons {
+    width:100%;
+  }
+
+  #minorBottomButtons {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  #ordinaryBottomButtons {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  #rightButtons {
+    display: flex;
+  }
 </style>
 
 <oobe-adaptive-dialog id="syncConsentOverviewDialog" role="dialog"
     aria-label$="[[i18nDynamic(locale, 'syncConsentScreenTitle')]]"
     for-step="ash-sync">
   <iron-icon slot="icon" icon="sync-consent-32:googleg"></iron-icon>
-  <h1 slot="title" consent-description hidden="[[isArcRestricted_]]">
+  <h1 slot="title" consent-description hidden="[[isLacrosEnabled_]]">
     [[i18nDynamic(locale, 'syncConsentScreenTitle')]]
   </h1>
-  <h1 slot="title" consent-description hidden="[[!isArcRestricted_]]">
+  <h1 slot="title" consent-description hidden="[[!isLacrosEnabled_]]">
     [[i18nDynamic(locale, 'syncConsentScreenTitleArcRestrictions')]]
   </h1>
-  <div slot="subtitle" consent-description hidden="[[isArcRestricted_]]">
+  <div slot="subtitle" consent-description hidden="[[isLacrosEnabled_]]">
     [[i18nDynamic(locale, 'syncConsentScreenSubtitle')]]
   </div>
   <iron-icon slot="subtitle"  icon="oobe-illos:sync-consent-illo" class="illustration-jelly">
@@ -132,7 +150,7 @@ found in the LICENSE file.
   </div>
   <div slot="content" class="landscape-header-aligned">
     <div class="overview-list-item layout horizontal"
-        hidden="[[isArcRestricted_]]">
+        hidden="[[isLacrosEnabled_]]">
       <img class="overview-list-item-icon" src="images/settings_gear.svg"
           width="24" height="24" aria-hidden="true">
       <div class="flex layout vertical center-justified">
@@ -143,7 +161,7 @@ found in the LICENSE file.
       </div>
     </div>
     <div class="overview-list-item layout horizontal"
-        hidden="[[isArcRestricted_]]">
+        hidden="[[isLacrosEnabled_]]">
       <img class="overview-list-item-icon" src="images/browser_sync.svg"
           width="24" height="24" aria-hidden="true">
       <div class="flex layout vertical center-justified">
@@ -157,14 +175,14 @@ found in the LICENSE file.
         </div>
       </div>
     </div>
-    <div hidden="[[!isArcRestricted_]]" consent-description>
+    <div hidden="[[!isLacrosEnabled_]]" consent-description>
       [[i18nDynamic(locale,
           'syncConsentScreenOsSyncDescriptionArcRestrictions')]]
     </div>
 
     <cr-checkbox id="reviewSettingsBox" hidden="[[isMinorMode_]]"
         consent-description>
-      [[getReviewSettingText_(locale, isArcRestricted_)]]
+      [[getReviewSettingText_(locale, isLacrosEnabled_)]]
     </cr-checkbox>
   </div>
   <div slot="bottom-buttons">
@@ -210,22 +228,53 @@ found in the LICENSE file.
     <iron-icon icon="oobe-illos:sync-consent-illo" class="illustration-jelly">
     </iron-icon>
   </div>
-  <div slot="bottom-buttons">
-    <oobe-text-button id="manageButton"
-        on-click="onManageClicked_"
-        label-for-aria="[[i18nDynamic(locale, 'syncConsentScreenManage')]]">
-      <div slot="text" consent-description consent-confirmation>
-        [[i18nDynamic(locale, 'syncConsentScreenManage')]]
+  <div id="bottomButtons" slot="bottom-buttons">
+    <div id="regularBottomeButtons" hidden="[[isMinorMode_]]">
+      <oobe-text-button id="manageButtonRegularUser"
+          on-click="onManageClicked_"
+          label-for-aria="[[i18nDynamic(locale, 'syncConsentScreenManage')]]">
+        <div slot="text" consent-description consent-confirmation>
+          [[i18nDynamic(locale, 'syncConsentScreenManage')]]
+        </div>
+      </oobe-text-button>
+      <oobe-text-button class="focus-on-show" inverse
+          id="syncEverythingButton"
+          on-click="onSyncEverything_"
+          label-for-aria="[[i18nDynamic(locale, 'syncConsentTurnOnSync')]]">
+        <div slot="text" consent-description consent-confirmation>
+          [[i18nDynamic(locale, 'syncConsentTurnOnSync')]]
+        </div>
+      </oobe-text-button>
+    </div>
+    <div id="minorBottomButtons" hidden="[[!isMinorMode_]]">
+      <div id="leftButton">
+        <oobe-text-button id="manageButtonMinorUser"
+            on-click="onManageClicked_"
+            label-for-aria="[[i18nDynamic(locale, 'syncConsentScreenManage')]]">
+          <div slot="text" consent-description consent-confirmation>
+            [[i18nDynamic(locale, 'syncConsentScreenManage')]]
+          </div>
+        </oobe-text-button>
       </div>
-    </oobe-text-button>
-    <oobe-text-button class="focus-on-show" inverse="[[!isMinorMode_]]"
-        id="syncEverythingButton"
-        on-click="onSyncEverything_"
-        label-for-aria="[[i18nDynamic(locale, 'syncConsentTurnOnSync')]]">
-      <div slot="text" consent-description consent-confirmation>
-        [[i18nDynamic(locale, 'syncConsentTurnOnSync')]]
+      <div id="rightButtons">
+        <oobe-text-button id="declineLacrosButton"
+            on-click="onLacrosDeclineClicked_"
+            label-for-aria="[[i18nDynamic(locale,
+                                            'syncConsentScreenDecline')]]">
+          <div slot="text" consent-description consent-confirmation>
+            [[i18nDynamic(locale, 'syncConsentScreenDecline')]]
+          </div>
+        </oobe-text-button>
+        <oobe-text-button class="focus-on-show"
+            id="syncEverythingButton"
+            on-click="onSyncEverything_"
+            label-for-aria="[[i18nDynamic(locale, 'syncConsentTurnOnSync')]]">
+          <div slot="text" consent-description consent-confirmation>
+            [[i18nDynamic(locale, 'syncConsentTurnOnSync')]]
+          </div>
+        </oobe-text-button>
       </div>
-    </oobe-text-button>
+    </div>
   </div>
 </oobe-adaptive-dialog>
 

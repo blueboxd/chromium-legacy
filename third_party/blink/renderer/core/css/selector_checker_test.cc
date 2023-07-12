@@ -662,17 +662,16 @@ TEST_P(MatchFlagsShadowTest, Host) {
 
 class EasySelectorCheckerTest : public PageTestBase {
  protected:
-  bool Matches(const String& selector_text, const AtomicString& id);
+  bool Matches(const String& selector_text, const char* id);
   static bool IsEasy(const String& selector_text);
 };
 
 bool EasySelectorCheckerTest::Matches(const String& selector_text,
-                                      const AtomicString& id) {
+                                      const char* id) {
   StyleRule* rule = To<StyleRule>(
       css_test_helpers::ParseRule(GetDocument(), selector_text + " {}"));
   CHECK(EasySelectorChecker::IsEasy(rule->FirstSelector()));
-  return EasySelectorChecker::Match(rule->FirstSelector(),
-                                    GetDocument().getElementById(id));
+  return EasySelectorChecker::Match(rule->FirstSelector(), GetElementById(id));
 }
 
 #if DCHECK_IS_ON()  // Requires all_rules_, to find back the rules we add.
@@ -792,6 +791,33 @@ TEST_F(SelectorCheckerTest, PseudoTrue) {
   SelectorChecker checker(SelectorChecker::kResolvingStyle);
   SelectorChecker::SelectorCheckingContext context(foo);
   context.selector = &selector;
+
+  SelectorChecker::MatchResult result;
+  EXPECT_TRUE(checker.Match(context, result));
+}
+
+TEST_F(SelectorCheckerTest, PseudoTrueMatchesHost) {
+  GetDocument().body()->setInnerHTMLWithDeclarativeShadowDOMForTesting(R"HTML(
+    <div id=host>
+      <template shadowroot=open>
+      </template>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  CSSSelector selector;
+  selector.SetTrue();
+  selector.SetLastInComplexSelector(true);
+
+  Element* host = GetElementById("host");
+  ASSERT_TRUE(host);
+  ShadowRoot* shadow = host->GetShadowRoot();
+  ASSERT_TRUE(shadow);
+
+  SelectorChecker checker(SelectorChecker::kResolvingStyle);
+  SelectorChecker::SelectorCheckingContext context(host);
+  context.selector = &selector;
+  context.scope = shadow;
 
   SelectorChecker::MatchResult result;
   EXPECT_TRUE(checker.Match(context, result));

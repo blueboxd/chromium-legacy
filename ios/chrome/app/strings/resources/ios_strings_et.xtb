@@ -255,6 +255,7 @@ Saidid ei saa küpsisefailide abil eri saitidel teie sirvimistegevust jälgida (
 <translation id="2595587704210555261">{COUNT,plural, =1{Avatud vahelehed, mida vähemalt päeva jooksul ei kasutata, teisaldatakse inaktiivsete vahelehtede hulka, et saaksite hõlpsalt keskenduda vahelehtedele, mida kõige enam kasutate. Saate seda menüüs Seaded alati muuta.}other{Avatud vahelehed, mida vähemalt {COUNT} päeva jooksul ei kasutata, teisaldatakse inaktiivsete vahelehtede hulka, et saaksite hõlpsalt keskenduda vahelehtedele, mida kõige enam kasutate. Saate seda menüüs Seaded alati muuta.}}</translation>
 <translation id="2600682495497606169">Kustuta saidi küpsisefailid</translation>
 <translation id="2609008503159898744">Kas soovite kõik vahelehed sulgeda?</translation>
+<translation id="2617210333344098964">Teisaldage aadress kontole</translation>
 <translation id="2625189173221582860">Parool on kopeeritud</translation>
 <translation id="2626236249646841566">Kontrollige ühendust ja proovige uuesti sisse logida.</translation>
 <translation id="2637313651144986786">Otsige vahelehtedelt …</translation>
@@ -404,7 +405,6 @@ Vaadake oma otsingumootori juhiseid otsinguajaloo kustutamise kohta, kui see on 
 <translation id="3464194322481586217">Hinda ei õnnestunud jälgida.</translation>
 <translation id="3469166899695866866">Kas peatada allalaadimine?</translation>
 <translation id="3470502288861289375">Kopeerimine ...</translation>
-<translation id="3471148582064653480">Sünkroonige oma paroolid, ajalugu ja muudki.</translation>
 <translation id="3474048842645761983">{COUNT,plural, =1{{COUNT} saidi või rakenduse puhul}other{{COUNT} saidi või rakenduse puhul}}</translation>
 <translation id="3474624961160222204">Jätka kasutajana <ph name="NAME" /></translation>
 <translation id="3476450923187944815">Juurdepääs oma paroolidele teistes rakendustes.</translation>
@@ -465,6 +465,7 @@ Vaadake oma otsingumootori juhiseid otsinguajaloo kustutamise kohta, kui see on 
 <translation id="3851938967634752633">Teenuste <ph name="WEBSITE" />, <ph name="SECOND_WEBSITE" /> ja veel <ph name="NUMBER_OF_ACCOUNTS" /> paroolid kustutatakse. Teie kontosid ei kustutata.</translation>
 <translation id="3858860766373142691">Nimi</translation>
 <translation id="3861486700625780712">Lõpeta jälgimine</translation>
+<translation id="3861908220442487587">See aadress salvestatakse vaid sellesse seadmesse. Kui soovite seda teistes seadmetes kasutada, teisaldage see oma Google'i kontole <ph name="USER_EMAIL" />.</translation>
 <translation id="3863769054730344136">Saatmine teie seadmetesse</translation>
 <translation id="387280738075653372">Laadige Chrome alla siin.</translation>
 <translation id="3875783148670536197">Kuva juhised</translation>
@@ -649,6 +650,7 @@ Vaadake oma otsingumootori juhiseid otsinguajaloo kustutamise kohta, kui see on 
 <translation id="5083464117946352670">Failisuurust ei saa tuvastada.</translation>
 <translation id="5090832849094901128">Selle parooli eemaldamisel ei kustutata teie kontot saidil <ph name="WEBSITE" />.</translation>
 <translation id="5094827893301452931">Säuts on valmis.</translation>
+<translation id="5109892411553231226">Makseviiside haldamine</translation>
 <translation id="5118713593561876160">Huvid</translation>
 <translation id="5118764316110575523">Väljas</translation>
 <translation id="5119391094379141756">Valige Chrome</translation>
@@ -999,6 +1001,7 @@ Inkognito režiimis ei saa saidid küpsisefailide abil eri saitidel teie sirvimi
 <translation id="7053983685419859001">Blokeeri</translation>
 <translation id="7062545763355031412">Nõustu ja vaheta kontosid</translation>
 <translation id="7080806333218412752">Saadab URL-id kontrollimiseks teenusesse Google'i ohutu sirvimine. Saadab ka lehtede, allalaadimiste, laienduste tegevuse ja süsteemiteabe näidiseid, et aidata uusi ohte tuvastada. Kui olete sisse logitud, lingitakse andmed ajutiselt teie Google'i kontoga, et kaitsta teid kõigis Google'i rakendustes.</translation>
+<translation id="7082853213442715471">Kui see on sisse lülitatud, on teatud veebitehnoloogiad blokeeritud, mistõttu võib juhtuda, et veebisaitide laadimine võtab kauem aega või veebisaidid ei tööta õigesti.</translation>
 <translation id="7095110968493193530">Konto <ph name="EMAIL" /> Google'i paroolihaldurile</translation>
 <translation id="7099761977003084116">Hiljutised vahelehed</translation>
 <translation id="7102005569666697658">Allalaadimine … <ph name="FILE_SIZE" /></translation>
@@ -1058,6 +1061,7 @@ Inkognito režiimis ei saa saidid küpsisefailide abil eri saitidel teie sirvimi
 <translation id="7531345132340165516">Praegune sait</translation>
 <translation id="7537586195939242955">Kahjuks ei saa teie Passi praegu Passbooki installida.</translation>
 <translation id="754655535278952384">Kontrolliti <ph name="TIME" /></translation>
+<translation id="7552154146060018538">Viimane seadmes <ph name="SOURCE_DEVICE" /> kasutatud vaheleht</translation>
 <translation id="7553234618121028547">Väljalülitamiseks avage jaotis <ph name="BEGIN_LINK" />Seaded<ph name="END_LINK" /> ja tehke valik Paroolivalikud.</translation>
 <translation id="7554645225856321710">Sule kõik</translation>
 <translation id="7554791636758816595">Uus vaheleht</translation>
@@ -1080,6 +1084,7 @@ Inkognito režiimis ei saa saidid küpsisefailide abil eri saitidel teie sirvimi
 <translation id="7687508192620387263">Saadaval on kalendrifail</translation>
 <translation id="7701040980221191251">Pole</translation>
 <translation id="7711440461521638739">Te ei kasuta ühtegi parooli mitu korda</translation>
+<translation id="7719038820139380048">Logige sisse, et näha oma huvidel põhinevat sisu.</translation>
 <translation id="7720410380936703141">PROOVIGE UUESTI</translation>
 <translation id="7726702057919861819">Menüü → Ajalugu → Kustuta brauseri andmed</translation>
 <translation id="7733646263819020771"><ph name="BOOKMRK_NAME" />. Ainult selles seadmes.</translation>
@@ -1189,7 +1194,6 @@ Saidid saavad küpsisefailide abil eri saitidel teie sirvimistegevust jälgida, 
 <translation id="8319076807703933069">Uus otsing</translation>
 <translation id="8323906514956095947">Vahelehtede lisavalikute nägemiseks puudutage ja hoidke</translation>
 <translation id="8328777765163860529">Sule kõik</translation>
-<translation id="8331621926962374866">Kui Chrome on lukustamisrežiimis, on teatud veebitehnoloogiad blokeeritud, mistõttu võib juhtuda, et veebisaitide laadimine võtab kauem aega või veebisaidid ei tööta õigesti.</translation>
 <translation id="8343993175958086504">Varundage oma sisu ja kasutage seda mis tahes seadmes.</translation>
 <translation id="834783239627985533">Enim külastatavad saidid</translation>
 <translation id="8378714024927312812">Haldab teie organisatsioon</translation>
@@ -1203,6 +1207,7 @@ Saidid saavad küpsisefailide abil eri saitidel teie sirvimistegevust jälgida, 
 <translation id="8428045167754449968">Linn</translation>
 <translation id="8428213095426709021">Seaded</translation>
 <translation id="8428634594422941299">Selge</translation>
+<translation id="8446201778524791138">Toimingute muutmine</translation>
 <translation id="8446884382197647889">Lisateave</translation>
 <translation id="8458397775385147834">1 üksus on kustutatud</translation>
 <translation id="8459333855531264009">Pole turvaline</translation>
@@ -1295,7 +1300,6 @@ Teie andmed krüpteeriti teie parooliga kuupäeval <ph name="TIME" />. Chrome’
 <translation id="8976414606286374109">Kaardid salvestatakse teie Google'i kontole.</translation>
 <translation id="8981454092730389528">Google'i kontotegevuste haldus</translation>
 <translation id="8985320356172329008">Google'isse sisse logitud kasutajana</translation>
-<translation id="8986567980592931173">Paroolide, ajaloo ja muu sisu sünkroonimiseks logige sisse oma Google'i kontoga.</translation>
 <translation id="8998289560386111590">Pole teie seadmes saadaval</translation>
 <translation id="8999545564078155498">Face ID-ga avamine</translation>
 <translation id="9000089900434778519">Teie otsingumootor on <ph name="DSE_NAME" />. Vaadake selle juhiseid otsinguajaloo kustutamise kohta, kui see on asjakohane.</translation>

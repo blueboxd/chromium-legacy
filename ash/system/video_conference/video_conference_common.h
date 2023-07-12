@@ -13,6 +13,8 @@
 
 namespace ash {
 
+constexpr int kVideoConferenceBubbleHorizontalPadding = 12;
+
 // This struct provides aggregated attributes of media apps
 // from one or more clients.
 struct VideoConferenceMediaState {
@@ -50,6 +52,9 @@ class VideoConferenceManagerBase {
   virtual void SetSystemMediaDeviceStatus(
       crosapi::mojom::VideoConferenceMediaDevice device,
       bool disabled) = 0;
+
+  // Stops all screen sharing.
+  virtual void StopAllScreenShare() = 0;
 
   virtual ~VideoConferenceManagerBase() = default;
 };

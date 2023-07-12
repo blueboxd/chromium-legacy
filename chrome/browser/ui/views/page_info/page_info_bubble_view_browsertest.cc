@@ -175,8 +175,7 @@ class PageInfoBubbleViewBrowserTest : public InProcessBrowserTest {
     // launched. Disable features for the new version of "Cookies in use"
     // dialog. The new UI is covered by
     // PageInfoBubbleViewBrowserTestCookiesSubpage.
-    feature_list_.InitWithFeatures({}, {page_info::kPageSpecificSiteDataDialog,
-                                        page_info::kPageInfoCookiesSubpage});
+    feature_list_.InitWithFeatures({}, {});
   }
 
   PageInfoBubbleViewBrowserTest(const PageInfoBubbleViewBrowserTest& test) =
@@ -601,7 +600,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   run_loop.Run();
 
   views::View* cookies_button = GetView(
-      PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG);
+      PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIES_SUBPAGE);
   PerformMouseClickOnView(cookies_button);
 }
 
@@ -1165,10 +1164,7 @@ class PageInfoBubbleViewBrowserTestCookiesSubpage
  public:
   PageInfoBubbleViewBrowserTestCookiesSubpage() {
     feature_list_.InitWithFeatures(
-        {page_info::kPageInfoCookiesSubpage,
-         page_info::kPageSpecificSiteDataDialog,
-         privacy_sandbox::kPrivacySandboxFirstPartySetsUI},
-        {});
+        {privacy_sandbox::kPrivacySandboxFirstPartySetsUI}, {});
   }
 
   void SetUpOnMainThread() override {
@@ -1213,7 +1209,14 @@ class PageInfoBubbleViewBrowserTestCookiesSubpage
     run_loop2.Run();
     EXPECT_EQ(
         user_actions_stats.GetActionCount("PageInfo.CookiesSubpage.Opened"), 1);
-    EXPECT_TRUE(prefs_->GetBoolean(prefs::kInContextCookieControlsOpened));
+
+    // The preference should only be recorded when blocking 3P cookies.
+    const bool block_third_party =
+        prefs_->GetInteger(prefs::kCookieControlsMode) ==
+        static_cast<int>(
+            content_settings::CookieControlsMode::kBlockThirdParty);
+    EXPECT_EQ(prefs_->GetBoolean(prefs::kInContextCookieControlsOpened),
+              block_third_party);
   }
 
  private:

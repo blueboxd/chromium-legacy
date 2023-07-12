@@ -144,6 +144,7 @@
   E_CPONLY(kColorLocationBarBackground) \
   E_CPONLY(kColorLocationBarBackgroundHovered) \
   E_CPONLY(kColorLocationBarBorder) \
+  E_CPONLY(kColorLocationBarBorderOnMismatch) \
   E_CPONLY(kColorLocationBarBorderOpaque) \
   E_CPONLY(kColorLocationBarClearAllButtonIcon) \
   E_CPONLY(kColorLocationBarClearAllButtonIconDisabled) \
@@ -477,6 +478,7 @@
   E_CPONLY(kColorTabDividerFrameInactive) \
   E_CPONLY(kColorTabHoverCardBackground) \
   E_CPONLY(kColorTabHoverCardForeground) \
+  E_CPONLY(kColorTabHoverCardSecondaryText) \
   /* The colors used for tab groups in the tabstrip. */ \
   E_CPONLY(kColorTabGroupTabStripFrameActiveGrey) \
   E_CPONLY(kColorTabGroupTabStripFrameActiveBlue) \
@@ -581,6 +583,7 @@
   E_CPONLY(kColorToolbarExtensionSeparatorDisabled) \
   E_CPONLY(kColorToolbarExtensionSeparatorEnabled) \
   E_CPONLY(kColorToolbarFeaturePromoHighlight) \
+  E_CPONLY(kColorToolbarIconContainerBorder) \
   E_CPONLY(kColorToolbarInkDrop) \
   E_CPONLY(kColorToolbarInkDropHover) \
   E_CPONLY(kColorToolbarInkDropRipple) \

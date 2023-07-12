@@ -298,6 +298,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="2318576281648121272">Heute <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" />, Suchergebniskategorie</translation>
 <translation id="2322173485024759474">Zurück um einen Buchstaben</translation>
+<translation id="2335091074961603075">Auf deinem Chromebook oder Bluetooth-Gerät wird eine ältere Bluetooth-Version genutzt. Verwende für eine bessere Audioqualität das interne Mikrofon.</translation>
 <translation id="2339073806695260576">Tippe auf die Eingabestift-Schaltfläche in der Ablage, um Notizen oder Screenshots zu erstellen, den Laserpointer oder die Vergrößerungsfunktion zu verwenden.</translation>
 <translation id="2341729377289034582">Vertikale Ausrichtung aktiv</translation>
 <translation id="2345226652884463045">Eingabetaste oder Suchtaste + Leertaste drücken, um den zu bearbeitenden Text auszuwählen.</translation>
@@ -395,6 +396,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="2750941250130734256">Fixierung des aktiven Fensters rückgängig gemacht.</translation>
 <translation id="2761723519669354964">Hervorgehobenes Element in der Ablage öffnen</translation>
 <translation id="2774348302533424868"><ph name="MODIFIER" /> <ph name="DELIMITER" /> <ph name="KEY_ONE" /> bis <ph name="KEY_TWO" /></translation>
+<translation id="2778197796481941784">Strg + Suchtaste + S</translation>
 <translation id="2778650143428714839"><ph name="DEVICE_TYPE" /> verwaltet von <ph name="MANAGER" /></translation>
 <translation id="2782591952652094792">Aufnahmemodus beenden</translation>
 <translation id="2785499565474703580">1 Gerät verbunden</translation>
@@ -458,6 +460,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="3062298103034426069">Wird nicht unterstützt</translation>
 <translation id="3068622547379332530">Version <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">Ablage links</translation>
+<translation id="3070639127620815135">Suchtaste + Esc</translation>
 <translation id="3077734595579995578">Umschalttaste</translation>
 <translation id="3081696990447829002">Menü maximieren</translation>
 <translation id="3087734570205094154">Unten</translation>
@@ -471,6 +474,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="3120421559657122717">Gerät herunterfahren?</translation>
 <translation id="3126026824346185272">Strg</translation>
 <translation id="3126069444801937830">Zum Aktualisieren neu starten</translation>
+<translation id="3139188263101386725">Aktualisierte Tastenkombination verwenden</translation>
 <translation id="3139942575505304791">Desktop 1</translation>
 <translation id="315116470104423982">Mobile Daten</translation>
 <translation id="3151786313568798007">Ausrichtung</translation>
@@ -605,6 +609,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
         <ph name="END_TIME" />,
         <ph name="TIME_ZONE" />. Für weitere Details Termin in Google Kalender auswählen.</translation>
 <translation id="3659444876902283058">(Tag <ph name="CURRENT_DAY" />/<ph name="TOTAL_DAYS" />)</translation>
+<translation id="3659667652322717492">Du kannst das Verhalten des Mikrofons später jederzeit ändern.</translation>
 <translation id="3659814201068740063">Ungefähr <ph name="TIME_LEFT" /> verbleibend (<ph name="PERCENTAGE" /> %).
 Schließe dein Gerät an eine Steckdose an.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Verwalteter Nutzer</translation>
@@ -1048,6 +1053,7 @@ Schließe dein Gerät an eine Steckdose an.</translation>
 <translation id="5578188167649348993">Arbeitsspeicher</translation>
 <translation id="5580000943347215299">Bibliothek</translation>
 <translation id="558849140439112033">Ziehen, um einen Bereich für die Aufnahme auszuwählen</translation>
+<translation id="5590609058453685222">„Erinnerung an Stummschaltung“ ist aktiviert. Du wirst benachrichtigt, wenn du zu sprechen anfängst, während das Mikrofon stummgeschaltet ist.</translation>
 <translation id="5596627076506792578">Weitere Optionen</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Zum Deaktivieren des gesprochenen Feedbacks drücke Strg + Alt + Z.</translation>
@@ -1201,6 +1207,7 @@ Schließe dein Gerät an eine Steckdose an.</translation>
 <translation id="6231419273573514727">Die Leistung der Peripheriegeräte ist möglicherweise eingeschränkt</translation>
 <translation id="6232891689835436217"><ph name="APP_NAME" /> verwendet gerade deine Kamera und dein Mikrofon</translation>
 <translation id="6237231532760393653">1X</translation>
+<translation id="6244986124527896815">Öffne den Task-Manager mit „<ph name="NEW_SHORTCUT" />“.</translation>
 <translation id="6247728804802644171">Benachrichtigungen öffnen</translation>
 <translation id="6254629735336163724">Horizontale Ausrichtung aktiv</translation>
 <translation id="6259254695169772643">Verwende den Eingabestift, um deine Auswahl zu treffen</translation>
@@ -1251,6 +1258,7 @@ Schließe dein Gerät an eine Steckdose an.</translation>
 <translation id="6497418457565568043">„Bitte nicht stören“ ist aktiviert</translation>
 <translation id="6500896621837555595">Aktualisieren</translation>
 <translation id="6501401484702599040">Bildschirm wird an <ph name="RECEIVER_NAME" /> gestreamt</translation>
+<translation id="6507042703812908515">Öffne die App für Tastenkombinationen mit „<ph name="NEW_SHORTCUT" />“.</translation>
 <translation id="6507618042428827377">Zur nächsten verfügbaren Eingabemethode wechseln</translation>
 <translation id="6508923215158854599">Dein Chromebook muss mit demselben WLAN wie dein Chromecast verbunden sein.</translation>
 <translation id="6515727200518652613">Verbindung zur Kamera getrennt. Es wird versucht, die Verbindung wiederherzustellen.</translation>
@@ -1544,7 +1552,6 @@ Halte zum Herunterfahren des Geräts die Ein-/Aus-Taste noch einmal gedrückt.</
 <translation id="7866482334467279021">an</translation>
 <translation id="7872786842639831132">Aus</translation>
 <translation id="7875575368831396199">Bluetooth ist auf deinem Gerät (<ph name="DEVICE_TYPE" />) deaktiviert. Bluetooth aktivieren, um Phone Hub zu nutzen.</translation>
-<translation id="7876243839304621966">Alle entfernen</translation>
 <translation id="7877557217297072640">{0,plural, =0{Gerät jetzt auf eine frühere Version zurücksetzen}=1{Gerät innerhalb von einer Sekunde auf eine frühere Version zurücksetzen}other{Gerät innerhalb von # Sekunden auf eine frühere Version zurücksetzen}}</translation>
 <translation id="7884446017008693258">Hotspot-Einstellungen</translation>
 <translation id="7884902759927478774">Ziehen des Tabs abbrechen</translation>
@@ -1750,6 +1757,7 @@ Halte zum Herunterfahren des Geräts die Ein-/Aus-Taste noch einmal gedrückt.</
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8790998409862094015">Stark</translation>
 <translation id="8792626944327216835">Mikrofon</translation>
+<translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535">Ordner <ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">„Hilfe“</translation>
 <translation id="8814190375133053267">WLAN</translation>

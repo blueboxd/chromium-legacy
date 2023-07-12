@@ -91,6 +91,8 @@ class V8ScrollStateCallback;
 class V8UnionNodeOrStringOrTrustedScript;
 class V8UnionStringOrTrustedScript;
 class WebPluginContainerImpl;
+
+struct NodeCloningData;
 struct PhysicalRect;
 
 const int kElementNamespaceTypeShift = 5;
@@ -134,8 +136,6 @@ enum class SlotChangeType {
   kSignalSlotChangeEvent,
   kSuppressSlotChangeEvent,
 };
-
-enum class CloneChildrenFlag { kSkip, kClone, kCloneWithShadows };
 
 // LinkHighlight determines the largest enclosing node with hand cursor set.
 enum class LinkHighlightCandidate {
@@ -292,7 +292,7 @@ class CORE_EXPORT Node : public EventTargetWithInlineData {
   bool hasChildren() const { return firstChild(); }
   Node* cloneNode(bool deep, ExceptionState&) const;
   // https://dom.spec.whatwg.org/#concept-node-clone
-  virtual Node* Clone(Document&, CloneChildrenFlag) const = 0;
+  virtual Node* Clone(Document&, NodeCloningData&) const = 0;
   // This is not web-exposed. We should rename it or remove it.
   Node* cloneNode(bool deep) const;
   void normalize();
@@ -773,13 +773,6 @@ class CORE_EXPORT Node : public EventTargetWithInlineData {
   inline const ComputedStyle& ComputedStyleRef() const;
   bool ShouldSkipMarkingStyleDirty() const;
 
-  const ComputedStyle* EnsureComputedStyle(
-      PseudoId pseudo_element_specifier = kPseudoIdNone,
-      const AtomicString& pseudo_argument = g_null_atom) {
-    return VirtualEnsureComputedStyle(pseudo_element_specifier,
-                                      pseudo_argument);
-  }
-
   // ---------------------------------------------------------------------------
   // Notification of document structure changes (see container_node.h for more
   // notification methods)
@@ -954,8 +947,10 @@ class CORE_EXPORT Node : public EventTargetWithInlineData {
 
   void AddDOMPart(Part& part) { EnsureRareData().AddDOMPart(part); }
   void RemoveDOMPart(Part& part) { EnsureRareData().RemoveDOMPart(part); }
-  bool HasDOMParts() { return HasRareData() && RareData()->HasDOMParts(); }
-  HeapHashSet<Member<Part>> GetDOMParts() { return RareData()->GetDOMParts(); }
+  bool HasDOMParts() const {
+    return HasRareData() && RareData()->HasDOMParts();
+  }
+  PartsList GetDOMParts() const { return RareData()->GetDOMParts(); }
   void InvalidateDOMParts();
 
   // For the imperative slot distribution API.
@@ -1152,13 +1147,6 @@ class CORE_EXPORT Node : public EventTargetWithInlineData {
   inline const ComputedStyle* GetComputedStyleAssumingElement() const;
 
  private:
-  // Gets nodeName without caching AtomicStrings. Used by
-  // debugName. Compositor may call debugName from the "impl" thread
-  // during "commit". The main thread is stopped at that time, but
-  // it is not safe to cache AtomicStrings because those are
-  // per-thread.
-  virtual String DebugNodeName() const;
-
   Node* ToNode() final;
 
   bool IsUserActionElementActive() const;
@@ -1171,10 +1159,6 @@ class CORE_EXPORT Node : public EventTargetWithInlineData {
   void SetStyleChange(StyleChangeType change_type) {
     node_flags_ = (node_flags_ & ~kStyleChangeMask) | change_type;
   }
-
-  virtual const ComputedStyle* VirtualEnsureComputedStyle(
-      PseudoId = kPseudoIdNone,
-      const AtomicString& pseudo_argument = g_null_atom);
 
   // Used exclusively by |EnsureRareData|.
   NodeRareData& CreateRareData();

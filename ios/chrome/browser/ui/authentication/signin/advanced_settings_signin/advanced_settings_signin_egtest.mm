@@ -8,6 +8,7 @@
 #import "base/time/time.h"
 #import "components/bookmarks/common/bookmark_features.h"
 #import "components/strings/grit/components_strings.h"
+#import "components/sync/base/features.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin/advanced_settings_signin/advanced_settings_signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
@@ -80,9 +81,12 @@ void WaitForSettingDoneButton() {
   AppLaunchConfiguration config;
   if ([self isRunningTest:@selector
             (testInterruptAdvancedSigninBookmarksFromAdvancedSigninSettings)]) {
-    // TODO(crbug.com/1455018): Re-enable the flag for non-legacy tests.
+    // When kReplaceSyncPromosWithSignInPromos is enabled, the advanced sync
+    // setup doesn't exist.
     config.features_disabled.push_back(
-        bookmarks::kEnableBookmarksAccountStorage);
+        syncer::kReplaceSyncPromosWithSignInPromos);
+    // TODO(crbug.com/1455018): Re-enable the flag for non-legacy tests.
+    config.features_disabled.push_back(syncer::kEnableBookmarksAccountStorage);
   }
   return config;
 }
@@ -365,6 +369,7 @@ void WaitForSettingDoneButton() {
 // Tests interrupting sign-in by opening an URL from another app.
 // Sign-in opened from: bookmark view.
 // Interrupted at: advanced sign-in.
+// kReplaceSyncPromosWithSignInPromos is disabled.
 - (void)testInterruptAdvancedSigninBookmarksFromAdvancedSigninSettings {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];

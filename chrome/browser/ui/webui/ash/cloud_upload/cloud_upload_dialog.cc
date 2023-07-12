@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -36,10 +37,12 @@
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload.mojom-shared.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload.mojom.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_ui.h"
+#include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_util.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/drive_upload_handler.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/one_drive_upload_handler.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/user_manager/user_manager.h"
@@ -171,31 +174,31 @@ void HandleSignInClick(Profile* profile, absl::optional<int> button_index) {
 }
 
 // TODO(b/288038136): Use a notification manager to handle error notifications.
-// Show system error notification to communicate why their file can't be opened.
-// If the user needs to reauthenticate to OneDrive, prompt the user to
+// Show system error notification to communicate that their file can't be
+// opened. If the user needs to reauthenticate to OneDrive, prompt the user to
 // reauthenticate to ODFS via a "Sign in" button.
-void ShowUnableToOpenNotification(Profile* profile, base::File::Error error) {
-  std::string message;
+void ShowUnableToOpenNotification(Profile* profile,
+                                  bool reauthentication_required = false) {
+  std::string message = GetGenericErrorMessage();
   std::vector<message_center::ButtonInfo> notification_buttons;
-  switch (error) {
-    case base::File::Error::FILE_ERROR_ACCESS_DENIED:
-      // TODO(b/288022200 b/275911611): Distinguish between reauthentication
-      // required and generic error.
-      message = kReauthenticationRequiredMessage;
-      //  Add "Sign in" button.
-      notification_buttons.emplace_back(u"Sign in");
-      break;
-    default:
-      message = kGenericErrorMessage;
+
+  // Special case of |FILE_ERROR_ACCESS_DENIED| where the user needs to
+  // reauthenticate to OneDrive.
+  if (reauthentication_required) {
+    message = GetReauthenticationRequiredMessage();
+    //  Add "Sign in" button.
+    notification_buttons.emplace_back(
+        l10n_util::GetStringUTF16(IDS_OFFICE_NOTIFICATION_SIGN_IN_BUTTON));
   }
 
-  // TODO(b/254586358): i18n these strings.
   auto notification = ash::CreateSystemNotificationPtr(
       /*type=*/message_center::NOTIFICATION_TYPE_SIMPLE,
       /*id=*/kNotificationId,
       // TODO(b/242685536) Use "files" for multi-files when support for
       // multi-files is added.
-      /*title=*/u"Can't open file",
+      /*title=*/
+      l10n_util::GetPluralStringFUTF16(IDS_OFFICE_UPLOAD_ERROR_CANT_OPEN_FILE,
+                                       1),
       /*message=*/base::UTF8ToUTF16(message),
       /*display_source=*/
       l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_SYSTEM_APP_NAME_FILES),
@@ -218,6 +221,35 @@ void ShowUnableToOpenNotification(Profile* profile, base::File::Error error) {
                                 /*metadata=*/nullptr);
 }
 
+// Check if reauthentication to OneDrive is required from the ODFS metadata
+// and show the reuathentication is required notification if true. Otherwise
+// show the generic access error notification.
+void OnGetReauthenticationRequired(
+    Profile* profile,
+    base::expected<ODFSMetadata, base::File::Error> metadata_or_error) {
+  if (!metadata_or_error.has_value()) {
+    LOG(ERROR) << "Failed to get reauthentication required state: "
+               << metadata_or_error.error();
+    return;
+  }
+  ShowUnableToOpenNotification(profile,
+                               metadata_or_error->reauthentication_required);
+}
+
+// Show the correct error notification for base::File::FILE_ERROR_ACCESS_DENIED.
+// Request ODFS metadata and show the correct notification in the
+// |OnGetReauthenticationRequired| callback.
+void ShowAccessDeniedNotification(Profile* profile) {
+  absl::optional<file_system_provider::ProvidedFileSystemInterface*>
+      file_system = GetODFS(profile);
+  if (!file_system.has_value()) {
+    ShowUnableToOpenNotification(profile, /*reauthentication_required=*/false);
+    return;
+  }
+  GetODFSMetadata(file_system.value(),
+                  base::BindOnce(&OnGetReauthenticationRequired, profile));
+}
+
 // Open file with |file_path| from ODFS |file_system|. Open in the OneDrive PWA
 // without link capturing.
 void OpenFileFromODFS(
@@ -234,8 +266,12 @@ void OpenFileFromODFS(
             if (!profile) {
               return;
             }
+            if (result == base::File::Error::FILE_ERROR_ACCESS_DENIED) {
+              ShowAccessDeniedNotification(profile);
+              return;
+            }
             if (result != base::File::Error::FILE_OK) {
-              ShowUnableToOpenNotification(profile, result);
+              ShowUnableToOpenNotification(profile);
               return;
             }
             for (const file_system_provider::Action& action : actions) {
@@ -709,8 +745,7 @@ absl::optional<ODFSFileSystemAndPath> AndroidOneDriveUrlToODFS(
 
 void CloudOpenTask::CheckEmailAndOpenURLs(
     const std::string& android_onedrive_email,
-    base::expected<cloud_upload::ODFSMetadata, base::File::Error>
-        metadata_or_error) {
+    base::expected<ODFSMetadata, base::File::Error> metadata_or_error) {
   if (!metadata_or_error.has_value()) {
     LOG(ERROR) << "Failed to get user email: " << metadata_or_error.error();
     return;
@@ -846,7 +881,8 @@ mojom::DialogArgsPtr CloudOpenTask::CreateDialogArgs(
     args->file_names.push_back(file_url.path().BaseName().value());
   }
   args->dialog_page = dialog_page;
-  args->first_time_setup = !HaveExplicitFileHandlers(profile_, file_urls_);
+  args->set_office_as_default_handler =
+      !HaveExplicitFileHandlers(profile_, file_urls_);
   const file_manager::io_task::OperationType operation_type =
       GetOperationTypeForUpload(profile_, file_urls_[0]);
   switch (operation_type) {
@@ -1296,7 +1332,33 @@ bool ShowConnectOneDriveDialog(gfx::NativeWindow modal_parent) {
 }
 
 void LaunchMicrosoft365Setup(Profile* profile, gfx::NativeWindow modal_parent) {
-  // TODO(b/283171260) Implement setup flow.
+  mojom::DialogPage dialog_page = mojom::DialogPage::kOneDriveSetup;
+  mojom::DialogArgsPtr args = mojom::DialogArgs::New();
+  args->dialog_page = dialog_page;
+  std::set<std::string> office_extensions =
+      file_manager::file_tasks::WordGroupExtensions();
+  office_extensions.merge(file_manager::file_tasks::ExcelGroupExtensions());
+  office_extensions.merge(
+      file_manager::file_tasks::PowerPointGroupExtensions());
+  // If `set_office_as_default_handler` is false, it indicates that we already
+  // ran the Office setup and set file handler preferences for all handled
+  // Office file types, or that the user has pre-existing preferences for these
+  // file types.
+  args->set_office_as_default_handler = !std::all_of(
+      office_extensions.begin(), office_extensions.end(),
+      [profile](const std::string& extension) {
+        return file_manager::file_tasks::HasExplicitDefaultFileHandler(
+            profile, extension);
+      });
+
+  // This CloudUploadDialog pointer is managed by an instance of
+  // `views::WebDialogView` and deleted in
+  // `SystemWebDialogDelegate::OnDialogClosed`.
+  CloudUploadDialog* dialog =
+      new CloudUploadDialog(std::move(args), base::DoNothing(), dialog_page,
+                            /*office_move_confirmation_shown=*/false);
+
+  dialog->ShowSystemDialog(modal_parent);
 }
 
 }  // namespace ash::cloud_upload

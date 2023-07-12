@@ -71,6 +71,7 @@
 #include "chrome/browser/ash/login/saml/password_sync_token_verifier.h"
 #include "chrome/browser/ash/login/saml/password_sync_token_verifier_factory.h"
 #include "chrome/browser/ash/login/screens/display_size_screen.h"
+#include "chrome/browser/ash/login/screens/drive_pinning_screen.h"
 #include "chrome/browser/ash/login/screens/sync_consent_screen.h"
 #include "chrome/browser/ash/login/security_token_session_controller_factory.h"
 #include "chrome/browser/ash/login/session/user_session_initializer.h"
@@ -83,6 +84,7 @@
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/notifications/update_notification.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/handlers/adb_sideloading_allowance_mode_policy_handler.h"
 #include "chrome/browser/ash/policy/handlers/minimum_version_policy_handler.h"
@@ -110,7 +112,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 #include "chrome/browser/sync/desk_sync_service_factory.h"
-#include "chrome/browser/sync/sync_service_factory.h"
+#include "chrome/browser/trusted_vault/trusted_vault_service_factory.h"
 #include "chrome/browser/ui/startup/launch_mode_recorder.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/channel_info.h"
@@ -158,7 +160,8 @@
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/signin/public/identity_manager/tribool.h"
 #include "components/supervised_user/core/browser/child_account_service.h"
-#include "components/sync/service/sync_service.h"
+#include "components/trusted_vault/trusted_vault_client.h"
+#include "components/trusted_vault/trusted_vault_service.h"
 #include "components/user_manager/common_types.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
@@ -429,21 +432,21 @@ void SaveSyncTrustedVaultKeysToProfile(
     const std::string& gaia_id,
     const SyncTrustedVaultKeys& trusted_vault_keys,
     Profile* profile) {
-  syncer::SyncService* sync_service =
-      SyncServiceFactory::GetForProfile(profile);
-  if (!sync_service) {
+  trusted_vault::TrustedVaultService* trusted_vault_service =
+      TrustedVaultServiceFactory::GetForProfile(profile);
+  if (!trusted_vault_service) {
     return;
   }
 
   if (!trusted_vault_keys.encryption_keys().empty()) {
-    sync_service->AddTrustedVaultDecryptionKeysFromWeb(
+    trusted_vault_service->GetTrustedVaultClient()->StoreKeys(
         gaia_id, trusted_vault_keys.encryption_keys(),
         trusted_vault_keys.last_encryption_key_version());
   }
 
   for (const SyncTrustedVaultKeys::TrustedRecoveryMethod& method :
        trusted_vault_keys.trusted_recovery_methods()) {
-    sync_service->AddTrustedVaultRecoveryMethodFromWeb(
+    trusted_vault_service->GetTrustedVaultClient()->AddTrustedRecoveryMethod(
         gaia_id, method.public_key, method.type_hint, base::DoNothing());
   }
 }
@@ -2088,6 +2091,9 @@ void UserSessionManager::StartTetherServiceIfPossible(Profile* profile) {
 }
 
 void UserSessionManager::ShowNotificationsIfNeeded(Profile* profile) {
+  // TODO(b/284978852): Show update notification in the correct order.
+  MaybeShowUpdateNotification();
+
   // Check to see if this profile should show TPM Firmware Update Notification
   // and show the message accordingly.
   tpm_firmware_update::ShowNotificationIfNeeded(profile);
@@ -2121,6 +2127,9 @@ void UserSessionManager::PerformPostBrowserLaunchOOBEActions(Profile* profile) {
   SyncConsentScreen::MaybeLaunchSyncConsentSettings(profile);
   if (features::IsOobeDisplaySizeEnabled()) {
     DisplaySizeScreen::MaybeUpdateZoomFactor(profile);
+  }
+  if (features::IsOobeDrivePinningEnabled()) {
+    DrivePinningScreen::ApplyDrivePinningPerf(profile);
   }
 }
 
@@ -2522,6 +2531,13 @@ void UserSessionManager::MaybeShowU2FNotification() {
   if (!u2f_notification_) {
     u2f_notification_ = std::make_unique<U2FNotification>();
     u2f_notification_->Check();
+  }
+}
+
+void UserSessionManager::MaybeShowUpdateNotification() {
+  if (features::IsUpdateNotificationEnabled() && !update_notification_) {
+    update_notification_ = std::make_unique<UpdateNotification>();
+    update_notification_->ShowNotification();
   }
 }
 

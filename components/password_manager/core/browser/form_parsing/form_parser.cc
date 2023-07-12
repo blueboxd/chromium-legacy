@@ -26,6 +26,7 @@
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/unique_ids.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/common/password_manager_constants.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -152,13 +153,6 @@ bool IsNotPasswordField(const ProcessedField& field,
 // Returns true if the |field| is suspected to be not the username field.
 bool IsNotUsernameField(const ProcessedField& field) {
   return field.server_hints_not_username;
-}
-
-// Checks if the Finch experiment for offering password generation for
-// server-predicted clear-text fields is enabled.
-bool IsPasswordGenerationForClearTextFieldsEnabled() {
-  return base::FeatureList::IsEnabled(
-      password_manager::features::kEnablePasswordGenerationForClearTextFields);
 }
 
 // Returns true iff |field_type| is one of password types.
@@ -477,10 +471,6 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
         if (!result->new_password) {
           processed_field = FindField(processed_fields, prediction);
           if (processed_field) {
-            if (!IsPasswordGenerationForClearTextFieldsEnabled() &&
-                !processed_field->is_password) {
-              continue;
-            }
             result->new_password = processed_field->field;
             processed_field->is_predicted_as_password = true;
           }
@@ -489,10 +479,6 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
       case CredentialFieldType::kConfirmationPassword:
         processed_field = FindField(processed_fields, prediction);
         if (processed_field) {
-          if (!IsPasswordGenerationForClearTextFieldsEnabled() &&
-              !processed_field->is_password) {
-            continue;
-          }
           result->confirmation_password = processed_field->field;
           processed_field->is_predicted_as_password = true;
         }

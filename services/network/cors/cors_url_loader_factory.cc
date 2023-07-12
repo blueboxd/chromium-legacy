@@ -103,6 +103,24 @@ base::debug::CrashKeyString* GetRequestInitiatorOriginLockCrashKey() {
   return crash_key;
 }
 
+bool IsTrustedNavigationRequestFromSecureContext(
+    const ResourceRequest& request) {
+  if (!request.trusted_params) {
+    return false;
+  }
+  if (request.mode != mojom::RequestMode::kNavigate) {
+    return false;
+  }
+
+  // `client_security_state` is not set for top-level navigation requests.
+  // TODO(crbug.com/1129326): Remove this when we set it for top-level
+  // navigation requests.
+  if (!request.trusted_params->client_security_state) {
+    return request.url.SchemeIsCryptographic();
+  }
+  return request.trusted_params->client_security_state->is_web_secure_context;
+}
+
 }  // namespace
 
 class CorsURLLoaderFactory::FactoryOverride final {
@@ -355,6 +373,20 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
     if (isolation_info)
       isolation_info_ptr = &isolation_info.value();
 
+    scoped_refptr<SharedDictionaryStorage> shared_dictionary_storage =
+        shared_dictionary_storage_;
+    if (context_->GetSharedDictionaryManager() &&
+        IsTrustedNavigationRequestFromSecureContext(resource_request)) {
+      // For trusted navigation requests, we need to get a storage using
+      // `isolation_info_ptr`.
+      absl::optional<net::SharedDictionaryIsolationKey> isolation_key =
+          net::SharedDictionaryIsolationKey::MaybeCreate(*isolation_info_ptr);
+      if (isolation_key) {
+        shared_dictionary_storage =
+            context_->GetSharedDictionaryManager()->GetStorage(*isolation_key);
+      }
+    }
+
     mojo::PendingRemote<mojom::URLLoaderNetworkServiceObserver> observer_remote;
     if (url_loader_network_service_observer_.is_bound()) {
       url_loader_network_service_observer_->Clone(
@@ -372,8 +404,8 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
         origin_access_list_, GetAllowAnyCorsExemptHeaderForBrowser(),
         HasFactoryOverride(!!factory_override_), *isolation_info_ptr,
         std::move(devtools_observer), client_security_state_.get(),
-        std::move(observer_remote), cross_origin_embedder_policy_,
-        shared_dictionary_storage_,
+        &url_loader_network_service_observer_, cross_origin_embedder_policy_,
+        shared_dictionary_storage,
         shared_dictionary_observer_ ? shared_dictionary_observer_.get()
                                     : nullptr,
         context_);
@@ -423,7 +455,13 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
                                           uint32_t options) {
   if (request.url.SchemeIs(url::kDataScheme)) {
     LOG(WARNING) << "CorsURLLoaderFactory doesn't support `data` scheme.";
-    mojo::ReportBadMessage("CorsURLLoaderFactory: data: URL is not supported.");
+    mojo::ReportBadMessage(
+        "CorsURLLoaderFactory: data: URL is not supported."
+#if BUILDFLAG(IS_ANDROID)
+        " Request created location is " +
+        request.created_location
+#endif
+    );
     return false;
   }
 

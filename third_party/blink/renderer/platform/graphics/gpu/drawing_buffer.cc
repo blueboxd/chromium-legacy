@@ -327,6 +327,9 @@ void DrawingBuffer::SetIsInHiddenPage(bool hidden) {
   if (is_hidden_)
     recycled_color_buffer_queue_.clear();
 
+  // Make sure to interrupt pixel local storage.
+  ScopedStateRestorer scoped_state_restorer(this);
+
   if (base::FeatureList::IsEnabled(features::kCanvasFreeMemoryWhenHidden)) {
     auto* context_support = ContextProvider()->ContextSupport();
     if (context_support)
@@ -337,13 +340,10 @@ void DrawingBuffer::SetIsInHiddenPage(bool hidden) {
   gl_->Flush();
 }
 
-void DrawingBuffer::SetHDRConfiguration(
-    gfx::HDRMode hdr_mode,
-    absl::optional<gfx::HDRMetadata> hdr_metadata) {
-  hdr_mode_ = hdr_mode;
+void DrawingBuffer::SetHdrMetadata(const gfx::HDRMetadata& hdr_metadata) {
   hdr_metadata_ = hdr_metadata;
   if (layer_)
-    layer_->SetHDRConfiguration(hdr_mode_, hdr_metadata_);
+    layer_->SetHdrMetadata(hdr_metadata_);
 }
 
 void DrawingBuffer::SetFilterQuality(
@@ -1175,7 +1175,7 @@ cc::Layer* DrawingBuffer::CcLayer() {
       layer_->SetPremultipliedAlpha(requested_alpha_type_ !=
                                     kUnpremul_SkAlphaType);
     }
-    layer_->SetHDRConfiguration(hdr_mode_, hdr_metadata_);
+    layer_->SetHdrMetadata(hdr_metadata_);
     layer_->SetNearestNeighbor(filter_quality_ ==
                                cc::PaintFlags::FilterQuality::kNone);
 
@@ -2086,6 +2086,12 @@ DrawingBuffer::ScopedStateRestorer::ScopedStateRestorer(
   // If this is a nested restorer, save the previous restorer.
   previous_state_restorer_ = drawing_buffer->state_restorer_;
   drawing_buffer_->state_restorer_ = this;
+
+  Client* client = drawing_buffer_->client_;
+  if (!client) {
+    return;
+  }
+  client->DrawingBufferClientInterruptPixelLocalStorage();
 }
 
 DrawingBuffer::ScopedStateRestorer::~ScopedStateRestorer() {
@@ -2111,6 +2117,7 @@ DrawingBuffer::ScopedStateRestorer::~ScopedStateRestorer() {
     client->DrawingBufferClientRestorePixelUnpackBufferBinding();
   if (pixel_pack_buffer_binding_dirty_)
     client->DrawingBufferClientRestorePixelPackBufferBinding();
+  client->DrawingBufferClientRestorePixelLocalStorage();
 }
 
 bool DrawingBuffer::ShouldUseChromiumImage() {

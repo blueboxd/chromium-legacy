@@ -4,10 +4,12 @@
 
 #include "ash/glanceables/classroom/glanceables_classroom_item_view.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "ash/glanceables/classroom/glanceables_classroom_client.h"
 #include "ash/glanceables/classroom/glanceables_classroom_types.h"
+#include "ash/glanceables/common/glanceables_view_id.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -17,15 +19,18 @@
 #include "ash/system/time/calendar_utils.h"
 #include "ash/system/time/date_helper.h"
 #include "base/check.h"
+#include "base/functional/callback_forward.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/types/cxx23_to_underlying.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -61,8 +66,7 @@ std::u16string GetFormattedDueDate(const base::Time& due) {
   const auto midnight_tomorrow = midnight_today + base::Days(1);
 
   if (midnight_today <= due && due < midnight_tomorrow) {
-    return l10n_util::GetStringUTF16(
-        IDS_GLANCEABLES_CLASSROOM_ASSIGNMENT_DUE_TODAY);
+    return l10n_util::GetStringUTF16(IDS_GLANCEABLES_DUE_TODAY);
   }
 
   const auto midnight_in_7_days_from_today = midnight_today + base::Days(7);
@@ -99,7 +103,7 @@ std::unique_ptr<views::ImageView> BuildIcon() {
   return views::Builder<views::ImageView>()
       .SetBackground(views::CreateThemedRoundedRectBackground(
           cros_tokens::kCrosSysSystemOnBase1, kIconViewBackgroundRadius))
-      .SetID(GlanceablesClassroomItemView::kIconViewId)
+      .SetID(base::to_underlying(GlanceablesViewId::kClassroomItemIcon))
       .SetImage(ui::ImageModel::FromVectorIcon(
           kGlanceablesClassroomAssignmentIcon, cros_tokens::kCrosSysOnSurface,
           kIconSize))
@@ -109,7 +113,7 @@ std::unique_ptr<views::ImageView> BuildIcon() {
 }
 
 std::unique_ptr<views::BoxLayoutView> BuildAssignmentTitleLabels(
-    const GlanceablesClassroomStudentAssignment* assignment) {
+    const GlanceablesClassroomAssignment* assignment) {
   const auto* const typography_provider = TypographyProvider::Get();
 
   return views::Builder<views::BoxLayoutView>()
@@ -120,18 +124,19 @@ std::unique_ptr<views::BoxLayoutView> BuildAssignmentTitleLabels(
           views::kFlexBehaviorKey,
           views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                    views::MaximumFlexSizeRule::kUnbounded))
-      .AddChild(
-          views::Builder<views::Label>()
-              .SetText(base::UTF8ToUTF16(assignment->course_work_title))
-              .SetID(GlanceablesClassroomItemView::kCourseWorkTitleLabelId)
-              .SetEnabledColorId(cros_tokens::kCrosSysOnSurface)
-              .SetFontList(typography_provider->ResolveTypographyToken(
-                  TypographyToken::kCrosButton2))
-              .SetLineHeight(typography_provider->ResolveLineHeight(
-                  TypographyToken::kCrosButton2)))
+      .AddChild(views::Builder<views::Label>()
+                    .SetText(base::UTF8ToUTF16(assignment->course_work_title))
+                    .SetID(base::to_underlying(
+                        GlanceablesViewId::kClassroomItemCourseWorkTitleLabel))
+                    .SetEnabledColorId(cros_tokens::kCrosSysOnSurface)
+                    .SetFontList(typography_provider->ResolveTypographyToken(
+                        TypographyToken::kCrosButton2))
+                    .SetLineHeight(typography_provider->ResolveLineHeight(
+                        TypographyToken::kCrosButton2)))
       .AddChild(views::Builder<views::Label>()
                     .SetText(base::UTF8ToUTF16(assignment->course_title))
-                    .SetID(GlanceablesClassroomItemView::kCourseTitleLabelId)
+                    .SetID(base::to_underlying(
+                        GlanceablesViewId::kClassroomItemCourseTitleLabel))
                     .SetEnabledColorId(cros_tokens::kCrosSysOnSurfaceVariant)
                     .SetFontList(typography_provider->ResolveTypographyToken(
                         TypographyToken::kCrosAnnotation1))
@@ -141,7 +146,7 @@ std::unique_ptr<views::BoxLayoutView> BuildAssignmentTitleLabels(
 }
 
 std::unique_ptr<views::BoxLayoutView> BuildDueLabels(
-    const GlanceablesClassroomStudentAssignment* assignment) {
+    const GlanceablesClassroomAssignment* assignment) {
   const auto* const typography_provider = TypographyProvider::Get();
 
   return views::Builder<views::BoxLayoutView>()
@@ -151,7 +156,8 @@ std::unique_ptr<views::BoxLayoutView> BuildDueLabels(
       .SetProperty(views::kMarginsKey, kDueLabelsMargin)
       .AddChild(views::Builder<views::Label>()
                     .SetText(GetFormattedDueDate(assignment->due.value()))
-                    .SetID(GlanceablesClassroomItemView::kDueDateLabelId)
+                    .SetID(base::to_underlying(
+                        GlanceablesViewId::kClassroomItemDueDateLabel))
                     .SetEnabledColorId(cros_tokens::kCrosSysOnSurfaceVariant)
                     .SetFontList(typography_provider->ResolveTypographyToken(
                         TypographyToken::kCrosAnnotation1))
@@ -159,7 +165,8 @@ std::unique_ptr<views::BoxLayoutView> BuildDueLabels(
                         TypographyToken::kCrosAnnotation1)))
       .AddChild(views::Builder<views::Label>()
                     .SetText(GetFormattedDueTime(assignment->due.value()))
-                    .SetID(GlanceablesClassroomItemView::kDueTimeLabelId)
+                    .SetID(base::to_underlying(
+                        GlanceablesViewId::kClassroomItemDueTimeLabel))
                     .SetEnabledColorId(cros_tokens::kCrosSysOnSurfaceVariant)
                     .SetFontList(typography_provider->ResolveTypographyToken(
                         TypographyToken::kCrosAnnotation1))
@@ -171,13 +178,19 @@ std::unique_ptr<views::BoxLayoutView> BuildDueLabels(
 }  // namespace
 
 GlanceablesClassroomItemView::GlanceablesClassroomItemView(
-    const GlanceablesClassroomStudentAssignment* assignment) {
+    const GlanceablesClassroomAssignment* assignment,
+    base::RepeatingClosure pressed_callback)
+    : views::Button(std::move(pressed_callback)) {
   CHECK(assignment);
 
+  auto* const layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
+  layout->SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
+  layout->SetInteriorMargin(kInteriorMargin);
+
+  // TODO(b/283370862): update accessible name.
+  SetAccessibleName(base::UTF8ToUTF16(assignment->course_work_title));
   SetBackground(views::CreateThemedRoundedRectBackground(
       cros_tokens::kCrosSysSystemOnBase, kBackgroundRadius));
-  SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
-  SetInteriorMargin(kInteriorMargin);
 
   AddChildView(BuildIcon());
   AddChildView(BuildAssignmentTitleLabels(assignment));
@@ -189,6 +202,20 @@ GlanceablesClassroomItemView::GlanceablesClassroomItemView(
 GlanceablesClassroomItemView::~GlanceablesClassroomItemView() = default;
 
 BEGIN_METADATA(GlanceablesClassroomItemView, views::View)
+END_METADATA
+
+GlanceablesClassroomTeacherItemView::GlanceablesClassroomTeacherItemView(
+    const GlanceablesClassroomAssignment* assignment,
+    base::RepeatingClosure pressed_callback)
+    : GlanceablesClassroomItemView(assignment, std::move(pressed_callback)) {
+  // TODO(b/283371064): Add grading/submission status for assignments in teacher
+  // glanceable UI
+}
+
+GlanceablesClassroomTeacherItemView::~GlanceablesClassroomTeacherItemView() =
+    default;
+
+BEGIN_METADATA(GlanceablesClassroomTeacherItemView, views::View)
 END_METADATA
 
 }  // namespace ash

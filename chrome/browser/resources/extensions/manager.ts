@@ -77,7 +77,7 @@ function compareExtensions(
 
 declare global {
   interface HTMLElementEventMap {
-    'load-error': CustomEvent<chrome.developerPrivate.LoadError>;
+    'load-error': CustomEvent<Error|chrome.developerPrivate.LoadError>;
   }
 }
 
@@ -402,6 +402,15 @@ export class ExtensionsManagerElement extends ExtensionsManagerElementBase {
       case EventType.UNINSTALLED:
         this.removeItem_(eventData.item_id);
         break;
+      case EventType.CONFIGURATION_CHANGED:
+        const index = this.getIndexInList_('extensions_', eventData.item_id);
+        this.updateItem_(
+            'extensions_', index,
+            Object.assign({}, this.getData_(eventData.item_id), {
+              acknowledgeSafetyCheckWarning:
+                  eventData.extensionInfo?.acknowledgeSafetyCheckWarning,
+            }));
+        break;
       default:
         assertNotReached();
     }
@@ -550,7 +559,8 @@ export class ExtensionsManagerElement extends ExtensionsManagerElementBase {
     }
   }
 
-  private onLoadError_(e: CustomEvent<chrome.developerPrivate.LoadError>) {
+  private onLoadError_(
+      e: CustomEvent<Error|chrome.developerPrivate.LoadError>) {
     this.showLoadErrorDialog_ = true;
     setTimeout(() => {
       const dialog = this.shadowRoot!.querySelector('extensions-load-error')!;

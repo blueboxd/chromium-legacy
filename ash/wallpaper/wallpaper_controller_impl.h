@@ -411,7 +411,7 @@ class ASH_EXPORT WallpaperControllerImpl
   FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest, BasicReparenting);
   FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest,
                            WallpaperMovementDuringUnlock);
-  friend class WallpaperControllerTest;
+  friend class WallpaperControllerTestBase;
   friend class WallpaperControllerTestApi;
   friend class KeyboardBacklightColorControllerTest;
 
@@ -621,7 +621,7 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // Used as the callback of wallpaper decoding. (Wallpapers of type
   // `WallpaperType::kOnline`, `WallpaperType::kDefault`,
-  // `WallpaperType::kCustom`, and `Wallpapertype::kDevice` should use their
+  // `WallpaperType::kCustomized`, and `Wallpapertype::kDevice` should use their
   // corresponding `*Decoded`, and all other types should use this.) Shows the
   // wallpaper immediately if `show_wallpaper` is true. Otherwise, only updates
   // the cache.
@@ -837,8 +837,6 @@ class ASH_EXPORT WallpaperControllerImpl
   base::OneShotTimer timer_;
 
   base::TimeDelta wallpaper_reload_delay_;
-
-  bool is_wallpaper_blurred_for_lock_state_ = false;
 
   // The wallpaper animation duration. An empty value disables the animation.
   base::TimeDelta animation_duration_;

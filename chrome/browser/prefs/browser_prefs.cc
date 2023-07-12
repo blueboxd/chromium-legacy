@@ -129,7 +129,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/performance_manager/public/user_tuning/prefs.h"
-#include "components/permissions/permission_actions_history.h"
+#include "components/permissions/pref_names.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/url_blocklist_manager.h"
 #include "components/policy/core/common/management/management_service.h"
@@ -157,8 +157,8 @@
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
 #include "components/supervised_user/core/common/buildflags.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/service/glue/sync_transport_data_prefs.h"
+#include "components/sync/service/sync_prefs.h"
 #include "components/sync_device_info/device_info_prefs.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_sessions/session_sync_prefs.h"
@@ -902,9 +902,25 @@ const char kGaiaLastOnlineSignInTime[] = "gaia.last_online_sign_in_time";
 const char kSAMLLastGAIASignInTime[] = "saml.last_gaia_sign_in_time";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+// Deprecated 07/2023
+#if !BUILDFLAG(IS_ANDROID)
+const char kLegacyHoverCardImagesEnabled[] = "browser.hovercard_images_enabled";
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 #if BUILDFLAG(ENABLE_FEED_V2)
 const char kVideoPreviewsType[] = "ntp_snippets.video_previews_type";
 #endif  // BUILDFLAG(ENABLE_FEED_V2)
+
+// Deprecated 06/2023.
+#if BUILDFLAG(IS_ANDROID)
+const char kPrefExplicitLanguageAskShown[] =
+    "translate_explicit_language_ask_shown";
+#endif  // BUILDFLAG(IS_ANDROID)
+
+// Deprecated 07/2023.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+const char kUnifiedConsentMigrationState[] = "unified_consent.migration_state";
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Register local state used only for migration (clearing or moving to a new
 // key).
@@ -1031,6 +1047,11 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kSupervisedUserNeedPasswordUpdate);
   registry->RegisterDictionaryPref(kSupervisedUserIncompleteKey);
 #endif
+
+// Deprecated 07/2023
+#if !BUILDFLAG(IS_ANDROID)
+  registry->RegisterBooleanPref(kLegacyHoverCardImagesEnabled, false);
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 // Register prefs used only for migration (clearing or moving to a new key).
@@ -1299,8 +1320,17 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterTimePref(kGaiaLastOnlineSignInTime, base::Time());
   registry->RegisterTimePref(kSAMLLastGAIASignInTime, base::Time());
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-}
 
+  // Deprecated 06/2023.
+#if BUILDFLAG(IS_ANDROID)
+  registry->RegisterBooleanPref(kPrefExplicitLanguageAskShown, false);
+#endif  // BUILDFLAG(IS_ANDROID)
+
+// Deprecated 07/2023.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterIntegerPref(kUnifiedConsentMigrationState, 0);
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+}
 }  // namespace
 
 void RegisterLocalState(PrefRegistrySimple* registry) {
@@ -1596,7 +1626,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   password_manager::PasswordManager::RegisterProfilePrefs(registry);
   payments::RegisterProfilePrefs(registry);
   performance_manager::user_tuning::prefs::RegisterProfilePrefs(registry);
-  permissions::PermissionActionsHistory::RegisterProfilePrefs(registry);
+  permissions::RegisterProfilePrefs(registry);
   PermissionBubbleMediaAccessHandler::RegisterProfilePrefs(registry);
   PlatformNotificationServiceImpl::RegisterProfilePrefs(registry);
   policy::URLBlocklistManager::RegisterProfilePrefs(registry);
@@ -1904,6 +1934,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   registry->RegisterBooleanPref(
       webauthn::pref_names::kRemoteProxiedRequestsAllowed, false);
 
+  registry->RegisterStringPref(
+      webauthn::pref_names::kLastUsedPairingFromSyncPublicKey, "");
+
   side_panel_prefs::RegisterProfilePrefs(registry);
 #endif
 
@@ -2101,6 +2134,11 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
 
   local_state->ClearPref(kSupervisedUserNeedPasswordUpdate);
   local_state->ClearPref(kSupervisedUserIncompleteKey);
+#endif
+
+// Added 07/2023.
+#if !BUILDFLAG(IS_ANDROID)
+  local_state->ClearPref(kLegacyHoverCardImagesEnabled);
 #endif
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
@@ -2429,6 +2467,16 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kGaiaLastOnlineSignInTime);
   profile_prefs->ClearPref(kSAMLLastGAIASignInTime);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  // Added 06/2023.
+#if BUILDFLAG(IS_ANDROID)
+  profile_prefs->ClearPref(kPrefExplicitLanguageAskShown);
+#endif  // BUILDFLAG(IS_ANDROID)
+
+// Added 07/2023.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  profile_prefs->ClearPref(kUnifiedConsentMigrationState);
+#endif
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

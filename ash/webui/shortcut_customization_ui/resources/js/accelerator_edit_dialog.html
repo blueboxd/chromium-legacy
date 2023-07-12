@@ -77,7 +77,8 @@
   </div>
   <div slot="body">
     <div id="acceleratorViewList">
-      <template id="viewList" is="dom-repeat" items="[[getSortedAccelerators(acceleratorInfos)]]">
+      <template id="viewList" is="dom-repeat"
+          items="[[getSortedFilteredAccelerators(acceleratorInfos)]]">
         <accelerator-edit-view class="acceleratorItem"
             accelerator-info=[[item]]
             action=[[action]]
@@ -110,7 +111,8 @@
   <div slot="button-container">
     <div>
       <cr-button id="restoreDefault" on-click="onRestoreDefaultButtonClicked"
-          hidden$="[[isAcceleratorCapturing]]">
+          hidden$="[[shouldHideRestoreDefaults(isAcceleratorCapturing,
+              observableDefaultAcceleratorsWithConflict.*)]]">
         [[i18n('restoreDefaults')]]
       </cr-button>
     </div>

@@ -95,7 +95,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -138,7 +138,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -182,7 +182,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -217,7 +217,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -254,7 +254,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -289,7 +289,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -329,7 +329,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -367,7 +367,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -407,7 +407,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -443,7 +443,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -485,7 +485,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -520,7 +520,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -555,7 +555,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -590,7 +590,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -625,7 +625,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -661,7 +661,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -696,7 +696,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -731,7 +731,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -780,7 +780,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -817,7 +817,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -853,7 +853,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -888,7 +888,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -923,7 +923,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -960,7 +960,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -995,7 +995,42 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
+              "pool": "chrome.tests"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "cros_vm",
+              "path": "magic_cros_vm_cache"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "cros_vm"
+              }
+            ]
+          },
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "rust_gtest_interop_unittests",
+        "test_id_prefix": "ninja://testing/rust_gtest_interop:rust_gtest_interop_unittests/"
+      },
+      {
+        "args": [
+          "--magic-vm-cache=magic_cros_vm_cache"
+        ],
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "dimension_sets": [
+            {
+              "cpu": "x86",
+              "gce": "1",
+              "kvm": "1",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -1030,7 +1065,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -1073,7 +1108,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -1121,7 +1156,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -1168,7 +1203,7 @@
               "cpu": "x86",
               "gce": "1",
               "kvm": "1",
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests"
             }
           ],
@@ -1375,130 +1410,6 @@
       "chromiumos_preflight"
     ]
   },
-  "chromeos-kevin-chrome": {
-    "additional_compile_targets": [
-      "chromiumos_preflight"
-    ],
-    "gtest_tests": [
-      {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.base_unittests.filter"
-        ],
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "dimension_sets": [
-            {
-              "device_type": "kevin",
-              "os": "ChromeOS",
-              "pool": "chrome.tests"
-            }
-          ],
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "base_unittests",
-        "test_id_prefix": "ninja://base:base_unittests/",
-        "trigger_script": {
-          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
-        }
-      },
-      {
-        "args": [
-          "--tast-retries=1"
-        ],
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "dimension_sets": [
-            {
-              "device_type": "kevin",
-              "os": "ChromeOS",
-              "pool": "chrome.tests"
-            }
-          ],
-          "hard_timeout": 10800,
-          "idempotent": false,
-          "io_timeout": 3600,
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 5
-        },
-        "test": "chrome_all_tast_tests",
-        "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/",
-        "trigger_script": {
-          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
-        }
-      },
-      {
-        "args": [
-          "--strip-chrome"
-        ],
-        "merge": {
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "dimension_sets": [
-            {
-              "device_type": "kevin",
-              "os": "ChromeOS",
-              "pool": "chrome.tests"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "disk_usage_tast_test",
-        "test_id_prefix": "ninja://chromeos:disk_usage_tast_test/",
-        "trigger_script": {
-          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
-        }
-      }
-    ],
-    "isolated_scripts": [
-      {
-        "args": [
-          "--browser=cros-chrome",
-          "--remote=variable_chromeos_device_hostname",
-          "--xvfb"
-        ],
-        "experiment_percentage": 0,
-        "isolate_name": "telemetry_perf_unittests",
-        "merge": {
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "telemetry_perf_unittests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "dimension_sets": [
-            {
-              "device_type": "kevin",
-              "os": "ChromeOS",
-              "pool": "chrome.tests"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_perf_unittests/",
-        "trigger_script": {
-          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
-        }
-      }
-    ]
-  },
   "chromeos-octopus-chrome": {
     "additional_compile_targets": [
       "chromiumos_preflight"
@@ -1514,7 +1425,7 @@
       {
         "autotest_name": "tast.chrome-from-tls",
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R117-15511.0.0",
+        "cros_img": "octopus-release/R117-15519.0.0",
         "name": "chrome_all_tast_tests OCTOPUS_RELEASE_CHROME_FROM_TLS_LKGM",
         "shards": 10,
         "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !informational)",

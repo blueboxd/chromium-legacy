@@ -1770,11 +1770,6 @@ config("default_warnings") {
           # TODO(crbug.com/1412713) Evaluate and possibly enable.
           "-Wno-deprecated-this-capture",
         ]
-
-        if (llvm_force_head_revision) {
-          # TODO(https://crbug.com/1448905): Evaluate and possibly enable.
-          cflags += [ "-Wno-builtin-macro-redefined" ]
-        }
       }
     }
   }
@@ -1987,7 +1982,7 @@ config("no_chromium_code") {
 config("noshadowing") {
   # This flag has to be disabled for nacl because the nacl compiler is too
   # strict about shadowing.
-  if (is_clang && (!is_nacl || is_nacl_saigo) && !llvm_force_head_revision) {
+  if (is_clang && (!is_nacl || is_nacl_saigo)) {
     cflags = [ "-Wshadow" ]
   }
 }
@@ -2489,6 +2484,14 @@ config("afdo") {
       if (use_profi) {
         cflags += [ "-fsample-profile-use-profi" ]
       }
+
+      # crbug.com/1459429: ARM builds see failures due to -Wbackend-plugin.
+      # These seem to be false positives - the complaints are about functions
+      # marked with `__nodebug__` not having associated debuginfo. In the case
+      # where this was observed, the `__nodebug__` function was also marked
+      # `__always_inline__` and had no branches, so AFDO info is likely useless
+      # there.
+      cflags += [ "-Wno-backend-plugin" ]
       inputs = [ _clang_sample_profile ]
     }
   } else if (auto_profile_path != "" && is_a_target_toolchain) {

@@ -57,21 +57,13 @@ class MODULES_EXPORT WebIDBDatabase final {
               const IDBKeyRange*,
               int64_t max_count,
               bool key_only,
-              WebIDBCallbacks*);
-  void GetAllCallback(
-      std::unique_ptr<WebIDBCallbacks> callbacks,
-      bool key_only,
-      mojo::PendingReceiver<mojom::blink::IDBDatabaseGetAllResultSink>
-          receiver);
+              IDBRequest*);
   void BatchGetAll(int64_t transaction_id,
                    int64_t object_store_id,
                    int64_t index_id,
                    Vector<mojom::blink::IDBKeyRangePtr> key_ranges,
                    uint32_t max_count,
-                   WebIDBCallbacks*);
-  void BatchGetAllCallback(
-      std::unique_ptr<WebIDBCallbacks> callbacks,
-      mojom::blink::IDBDatabaseBatchGetAllResultPtr result);
+                   IDBRequest* request);
   void SetIndexKeys(int64_t transaction_id,
                     int64_t object_store_id,
                     std::unique_ptr<IDBKey> primary_key,
@@ -90,21 +82,21 @@ class MODULES_EXPORT WebIDBDatabase final {
              int64_t object_store_id,
              int64_t index_id,
              const IDBKeyRange*,
-             WebIDBCallbacks*);
+             mojom::blink::IDBDatabase::CountCallback callback);
   void Delete(int64_t transaction_id,
               int64_t object_store_id,
               const IDBKey* primary_key,
-              base::OnceCallback<void(bool)> success_callback);
+              mojom::blink::IDBDatabase::DeleteRangeCallback callback);
   void DeleteRange(int64_t transaction_id,
                    int64_t object_store_id,
                    const IDBKeyRange*,
-                   base::OnceCallback<void(bool)> success_callback);
+                   mojom::blink::IDBDatabase::DeleteRangeCallback callback);
   void GetKeyGeneratorCurrentNumber(int64_t transaction_id,
                                     int64_t object_store_id,
                                     WebIDBCallbacks*);
   void Clear(int64_t transaction_id,
              int64_t object_store_id,
-             mojom::blink::IDBDatabase::ClearCallback success_callback);
+             mojom::blink::IDBDatabase::ClearCallback callback);
   void CreateIndex(int64_t transaction_id,
                    int64_t object_store_id,
                    int64_t index_id,

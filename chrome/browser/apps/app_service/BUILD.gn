@@ -18,6 +18,7 @@ source_set("app_service") {
     "app_icon/app_icon_util.h",
     "app_icon/dip_px_util.cc",
     "app_icon/dip_px_util.h",
+    "app_icon/icon_effects.h",
     "app_icon/icon_key_util.cc",
     "app_icon/icon_key_util.h",
     "app_service_proxy.h",
@@ -246,7 +247,8 @@ source_set("app_service") {
       "//components/image_fetcher/core",
       "//components/metrics/structured:structured_events",
       "//components/resources:components_resources",
-      "//components/services/app_service/public/cpp/shortcut",
+      "//components/services/app_service/public/cpp:instance_update",
+      "//components/services/app_service/public/cpp:macros",
       "//components/ukm",
       "//components/webapps/browser",
       "//services/metrics/public/cpp:ukm_builders",
@@ -310,8 +312,7 @@ source_set("constants") {
 
   deps = [
     "//base",
-    "//components/services/app_service/public/cpp:app_types",
-    "//components/services/app_service/public/cpp:intents",
+    "//components/services/app_service",
     "//ui/base:types",
     "//ui/display/types",
     "//ui/gfx/geometry",

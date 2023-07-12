@@ -29,7 +29,7 @@ import static org.chromium.chrome.browser.autofill.editors.EditorProperties.Fiel
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.ItemType.DROPDOWN;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.ItemType.TEXT_INPUT;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.SHOW_REQUIRED_INDICATOR;
-import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_INPUT_TYPE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_FIELD_TYPE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.setDropdownKey;
 
 import android.app.Activity;
@@ -54,19 +54,18 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillAddress;
+import org.chromium.chrome.browser.autofill.AutofillProfile;
 import org.chromium.chrome.browser.autofill.AutofillProfileBridge;
-import org.chromium.chrome.browser.autofill.AutofillProfileBridge.AddressField;
-import org.chromium.chrome.browser.autofill.AutofillProfileBridge.AddressUiComponent;
+import org.chromium.chrome.browser.autofill.AutofillProfileBridge.AutofillAddressUiComponent;
 import org.chromium.chrome.browser.autofill.AutofillProfileBridgeJni;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
-import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PhoneNumberUtil;
 import org.chromium.chrome.browser.autofill.PhoneNumberUtilJni;
 import org.chromium.chrome.browser.autofill.editors.EditorDialogView;
 import org.chromium.chrome.browser.autofill.editors.EditorProperties.DropdownKeyValue;
 import org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldItem;
-import org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.autofill.ServerFieldType;
 import org.chromium.ui.base.TestActivity;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -84,23 +83,29 @@ import java.util.stream.StreamSupport;
 @Config(manifest = Config.NONE)
 public class AddressEditorTest {
     private static final Locale DEFAULT_LOCALE = Locale.getDefault();
-    private static final List<AddressUiComponent> SUPPORTED_ADDRESS_FIELDS = List.of(
-            new AddressUiComponent(AddressField.RECIPIENT, /*label=*/"full name label",
+    private static final List<AutofillAddressUiComponent> SUPPORTED_ADDRESS_FIELDS = List.of(
+            new AutofillAddressUiComponent(ServerFieldType.NAME_FULL, /*label=*/"full name label",
                     /*isRequired=*/false, /*isFullLine=*/true),
-            new AddressUiComponent(AddressField.ADMIN_AREA, /*label=*/"admin area label",
+            new AutofillAddressUiComponent(ServerFieldType.ADDRESS_HOME_STATE,
+                    /*label=*/"admin area label",
                     /*isRequired=*/true, /*isFullLine=*/true),
-            new AddressUiComponent(AddressField.LOCALITY, /*label=*/"locality label",
+            new AutofillAddressUiComponent(ServerFieldType.ADDRESS_HOME_CITY,
+                    /*label=*/"locality label",
                     /*isRequired=*/true, /*isFullLine=*/false),
-            new AddressUiComponent(AddressField.DEPENDENT_LOCALITY,
+            new AutofillAddressUiComponent(ServerFieldType.ADDRESS_HOME_DEPENDENT_LOCALITY,
                     /*label=*/"dependent locality label", /*isRequired=*/true,
                     /*isFullLine=*/false),
-            new AddressUiComponent(AddressField.ORGANIZATION, /*label=*/"organization label",
+            new AutofillAddressUiComponent(ServerFieldType.COMPANY_NAME,
+                    /*label=*/"organization label",
                     /*isRequired=*/false, /*isFullLine=*/true),
-            new AddressUiComponent(AddressField.SORTING_CODE, /*label=*/"sorting code label",
+            new AutofillAddressUiComponent(ServerFieldType.ADDRESS_HOME_SORTING_CODE,
+                    /*label=*/"sorting code label",
                     /*isRequired=*/false, /*isFullLine=*/false),
-            new AddressUiComponent(AddressField.POSTAL_CODE, /*label=*/"postal code label",
+            new AutofillAddressUiComponent(ServerFieldType.ADDRESS_HOME_ZIP,
+                    /*label=*/"postal code label",
                     /*isRequired=*/true, /*isFullLine=*/false),
-            new AddressUiComponent(AddressField.STREET_ADDRESS, /*label=*/"street address label",
+            new AutofillAddressUiComponent(ServerFieldType.ADDRESS_HOME_STREET_ADDRESS,
+                    /*label=*/"street address label",
                     /*isRequired=*/true, /*isFullLine=*/true));
 
     private static final AutofillProfile sProfile = AutofillProfile.builder()
@@ -155,8 +160,10 @@ public class AddressEditorTest {
         mJniMocker.mock(AutofillProfileBridgeJni.TEST_HOOKS, mAutofillProfileBridgeJni);
         doAnswer(invocation -> {
             List<Integer> requiredFields = (List<Integer>) invocation.getArguments()[1];
-            requiredFields.addAll(List.of(AddressField.RECIPIENT, AddressField.LOCALITY,
-                    AddressField.DEPENDENT_LOCALITY, AddressField.POSTAL_CODE));
+            requiredFields.addAll(
+                    List.of(ServerFieldType.NAME_FULL, ServerFieldType.ADDRESS_HOME_CITY,
+                            ServerFieldType.ADDRESS_HOME_DEPENDENT_LOCALITY,
+                            ServerFieldType.ADDRESS_HOME_ZIP));
             return null;
         })
                 .when(mAutofillProfileBridgeJni)
@@ -197,14 +204,14 @@ public class AddressEditorTest {
     }
 
     private void setUpAddressUiComponents(
-            List<AddressUiComponent> addressUiComponents, String countryCode) {
+            List<AutofillAddressUiComponent> addressUiComponents, String countryCode) {
         doAnswer(invocation -> {
             List<Integer> componentIds = (List<Integer>) invocation.getArguments()[3];
             List<String> componentNames = (List<String>) invocation.getArguments()[4];
             List<Integer> componentRequired = (List<Integer>) invocation.getArguments()[5];
             List<Integer> componentLength = (List<Integer>) invocation.getArguments()[6];
 
-            for (AddressUiComponent component : addressUiComponents) {
+            for (AutofillAddressUiComponent component : addressUiComponents) {
                 componentIds.add(component.id);
                 componentNames.add(component.label);
                 componentRequired.add(component.isRequired ? 1 : 0);
@@ -217,15 +224,14 @@ public class AddressEditorTest {
                         anyList(), anyList(), anyList());
     }
 
-    private static void validateTextField(FieldItem fieldItem, String value,
-            @TextInputType int textInputType, String label, boolean isRequired,
-            boolean isFullLine) {
+    private static void validateTextField(FieldItem fieldItem, String value, int textFieldType,
+            String label, boolean isRequired, boolean isFullLine) {
         assertEquals(TEXT_INPUT, fieldItem.type);
         assertEquals(isFullLine, fieldItem.isFullLine);
 
         PropertyModel field = fieldItem.model;
         assertEquals(value, field.get(VALUE));
-        assertEquals(textInputType, field.get(TEXT_INPUT_TYPE));
+        assertEquals(textFieldType, field.get(TEXT_FIELD_TYPE));
         assertEquals(label, field.get(LABEL));
         assertEquals(isRequired, field.get(IS_REQUIRED));
     }
@@ -246,16 +252,16 @@ public class AddressEditorTest {
         assertEquals(10, editorFields.size());
 
         // Fields obtained from backend must be placed after the country dropdown.
-        validateTextField(editorFields.get(1), profile.getFullName(),
-                TextInputType.PERSON_NAME_INPUT,
+        validateTextField(editorFields.get(1), profile.getFullName(), ServerFieldType.NAME_FULL,
                 /*label=*/"full name label",
                 /*isRequired=*/true, /*isFullLine=*/true);
-        validateTextField(editorFields.get(2), profile.getRegion(), TextInputType.REGION_INPUT,
+        validateTextField(editorFields.get(2), profile.getRegion(),
+                ServerFieldType.ADDRESS_HOME_STATE,
                 /*label=*/"admin area label",
                 /*isRequired=*/true, /*isFullLine=*/true);
         // Locality field is forced to occupy full line.
         validateTextField(editorFields.get(3), profile.getLocality(),
-                TextInputType.PLAIN_TEXT_INPUT,
+                ServerFieldType.ADDRESS_HOME_CITY,
                 /*label=*/"locality label",
                 /*isRequired=*/true, /*isFullLine=*/true);
 
@@ -264,25 +270,26 @@ public class AddressEditorTest {
         // the existing address profile is empty. It is considered required for new address
         // profiles.
         validateTextField(editorFields.get(4), profile.getDependentLocality(),
-                TextInputType.PLAIN_TEXT_INPUT, /*label=*/"dependent locality label",
+                ServerFieldType.ADDRESS_HOME_DEPENDENT_LOCALITY,
+                /*label=*/"dependent locality label",
                 /*isRequired=*/true, /*isFullLine=*/true);
 
         validateTextField(editorFields.get(5), profile.getCompanyName(),
-                TextInputType.PLAIN_TEXT_INPUT,
+                ServerFieldType.COMPANY_NAME,
                 /*label=*/"organization label",
                 /*isRequired=*/false, /*isFullLine=*/true);
 
         validateTextField(editorFields.get(6), profile.getSortingCode(),
-                TextInputType.ALPHA_NUMERIC_INPUT, /*label=*/"sorting code label",
+                ServerFieldType.ADDRESS_HOME_SORTING_CODE, /*label=*/"sorting code label",
                 /*isRequired=*/false, /*isFullLine=*/false);
         validateTextField(editorFields.get(7), profile.getPostalCode(),
-                TextInputType.ALPHA_NUMERIC_INPUT, /*label=*/"postal code label",
+                ServerFieldType.ADDRESS_HOME_ZIP, /*label=*/"postal code label",
                 /*isRequired=*/true, /*isFullLine=*/false);
         validateTextField(editorFields.get(8), profile.getStreetAddress(),
-                TextInputType.STREET_ADDRESS_INPUT, /*label=*/"street address label",
+                ServerFieldType.ADDRESS_HOME_STREET_ADDRESS, /*label=*/"street address label",
                 /*isRequired=*/true, /*isFullLine=*/true);
         validateTextField(editorFields.get(9), profile.getPhoneNumber(),
-                TextInputType.PHONE_NUMBER_INPUT,
+                ServerFieldType.PHONE_HOME_WHOLE_NUMBER,
                 mActivity.getString(R.string.autofill_profile_editor_phone_number),
                 /*isRequired=*/true, /*isFullLine=*/true);
     }
@@ -344,7 +351,7 @@ public class AddressEditorTest {
                 containsInAnyOrder(countryDropdown.get(DROPDOWN_KEY_VALUE_LIST).toArray()));
 
         validateTextField(editorFields.get(1), sProfile.getPhoneNumber(),
-                TextInputType.PHONE_NUMBER_INPUT,
+                ServerFieldType.PHONE_HOME_WHOLE_NUMBER,
                 mActivity.getString(R.string.autofill_profile_editor_phone_number),
                 /*isRequired=*/true, /*isFullLine=*/true);
     }
@@ -353,9 +360,9 @@ public class AddressEditorTest {
     @SmallTest
     public void validateAdminAreaDropdown() {
         // Configure only admin area field to keep the test focused.
-        setUpAddressUiComponents(
-                List.of(new AddressUiComponent(AddressField.ADMIN_AREA, "admin area label",
-                        /*isRequired=*/true, /*isFullLine=*/true)),
+        setUpAddressUiComponents(List.of(new AutofillAddressUiComponent(
+                                         ServerFieldType.ADDRESS_HOME_STATE, "admin area label",
+                                         /*isRequired=*/true, /*isFullLine=*/true)),
                 /*countryCode=*/"US");
         doAnswer(unused -> {
             mAddressEditor.onSubKeysReceived(new String[] {"CA", "NY", "TX"},
@@ -432,11 +439,13 @@ public class AddressEditorTest {
     @SmallTest
     public void edit_ChangeCountry_FieldsSetChanges() {
         setUpAddressUiComponents(
-                List.of(new AddressUiComponent(AddressField.SORTING_CODE, "sorting code label",
+                List.of(new AutofillAddressUiComponent(ServerFieldType.ADDRESS_HOME_SORTING_CODE,
+                        "sorting code label",
                         /*isRequired=*/false, /*isFullLine=*/true)),
                 /*countryCode=*/"US");
         setUpAddressUiComponents(
-                List.of(new AddressUiComponent(AddressField.STREET_ADDRESS, "street address label",
+                List.of(new AutofillAddressUiComponent(ServerFieldType.ADDRESS_HOME_STREET_ADDRESS,
+                        "street address label",
                         /*isRequired=*/true, /*isFullLine=*/true)),
                 /*countryCode=*/"DE");
         doAnswer(unused -> {
@@ -462,10 +471,10 @@ public class AddressEditorTest {
                                            editorFields.iterator(), Spliterator.ORDERED),
                                    false)
                            .skip(1)
-                           .map(item -> { return item.model.get(TEXT_INPUT_TYPE); })
+                           .map(item -> { return item.model.get(TEXT_FIELD_TYPE); })
                            .collect(Collectors.toList()),
-                containsInAnyOrder(
-                        TextInputType.ALPHA_NUMERIC_INPUT, TextInputType.PHONE_NUMBER_INPUT));
+                containsInAnyOrder(ServerFieldType.ADDRESS_HOME_SORTING_CODE,
+                        ServerFieldType.PHONE_HOME_WHOLE_NUMBER));
         PropertyModel countryDropdown = editorFields.get(0).model;
 
         setDropdownKey(countryDropdown, "DE");
@@ -480,10 +489,10 @@ public class AddressEditorTest {
                                            editorFieldsGermany.iterator(), Spliterator.ORDERED),
                                    false)
                            .skip(1)
-                           .map(item -> { return item.model.get(TEXT_INPUT_TYPE); })
+                           .map(item -> { return item.model.get(TEXT_FIELD_TYPE); })
                            .collect(Collectors.toList()),
-                containsInAnyOrder(
-                        TextInputType.STREET_ADDRESS_INPUT, TextInputType.PHONE_NUMBER_INPUT));
+                containsInAnyOrder(ServerFieldType.ADDRESS_HOME_STREET_ADDRESS,
+                        ServerFieldType.PHONE_HOME_WHOLE_NUMBER));
     }
 
     @Test

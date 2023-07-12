@@ -79,7 +79,7 @@ void LayoutSVGShape::StyleDidChange(StyleDifference diff,
 
   TransformHelper::UpdateOffsetPath(*GetElement(), old_style);
   transform_uses_reference_box_ =
-      TransformHelper::DependsOnReferenceBox(StyleRef());
+      TransformHelper::UpdateReferenceBoxDependency(*this);
   SVGResources::UpdatePaints(*this, old_style, StyleRef());
 
   // Most of the stroke attributes (caps, joins, miters, width, etc.) will cause
@@ -136,8 +136,9 @@ void LayoutSVGShape::UpdateShapeFromElement() {
 
   if (HasNonScalingStroke()) {
     // NonScalingStrokeTransform may depend on LocalTransform which in turn may
-    // depend on ObjectBoundingBox, thus we need to call them in this order.
-    local_transform_ = CalculateLocalTransform();
+    // depend on the reference box, thus we need to call them in this order.
+    local_transform_ =
+        TransformHelper::ComputeTransformIncludingMotion(*GetElement());
     UpdateNonScalingStrokeData();
   }
 
@@ -330,7 +331,8 @@ void LayoutSVGShape::UpdateLayout() {
   }
 
   if (needs_transform_update_) {
-    local_transform_ = CalculateLocalTransform();
+    local_transform_ =
+        TransformHelper::ComputeTransformIncludingMotion(*GetElement());
     needs_transform_update_ = false;
     update_parent_boundaries = true;
   }

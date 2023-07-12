@@ -297,6 +297,7 @@ Les jetons de confiance valides améliorent la confidentialité sur le Web et ne
 <translation id="2643064289437760082">Vous pouvez toujours supprimer les données de la mesure des annonces en supprimant vos données de navigation</translation>
 <translation id="2647434099613338025">Ajouter une langue</translation>
 <translation id="2649068648233607930">Votre navigateur est géré par <ph name="DOMAIN" /></translation>
+<translation id="2650077116157640844">En savoir plus sur les appareils synchronisés</translation>
 <translation id="2650348088770008516">Explication du guide sur la confidentialité fermée</translation>
 <translation id="2650408372219180431">Exporter et supprimer les mots de passe enregistrés sur cet appareil</translation>
 <translation id="2650751991977523696">Télécharger de nouveau le fichier?</translation>
@@ -445,7 +446,6 @@ Les jetons de confiance valides améliorent la confidentialité sur le Web et ne
 <translation id="3421726884497337397">Choisir le moment où les témoins tiers doivent être bloqués</translation>
 <translation id="3428747202529429621">Il vous protège dans Chrome et peut être utilisé pour améliorer votre sécurité dans d'autres applications Google lorsque vous êtes connecté à votre compte</translation>
 <translation id="3429160811076349561">Les fonctionnalités d'essai sont désactivées</translation>
-<translation id="3432973700170747422">Supprimer les 15 dernières minutes</translation>
 <translation id="3435465986463792564">Vous avez de nombreuses fenêtres ouvertes? Vous pouvez les gérer à partir d'ici</translation>
 <translation id="3435738964857648380">Sécurité</translation>
 <translation id="3443221991560634068">Actualiser la page actuelle</translation>
@@ -479,9 +479,9 @@ Les jetons de confiance valides améliorent la confidentialité sur le Web et ne
 <translation id="3587596251841506391">Contribuer à la sécurité sur le Web</translation>
 <translation id="3597179440835065298">Obtenez de meilleures suggestions</translation>
 <translation id="3602290021589620013">Aperçu</translation>
-<translation id="360901359071773787">Supprimer les 15 dernières minutes?</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3622349720008044802">Gérer les fenêtres</translation>
+<translation id="3623240789707551553">{DOMAIN_COUNT,plural, =1{+ 1 site}one{+ # site}other{+ # sites}}</translation>
 <translation id="3631987586758005671">Partage avec <ph name="DEVICE_NAME" /></translation>
 <translation id="363596933471559332">Connexion automatique à des sites Web à l'aide d'authentifiants enregistrés. Lorsque la fonctionnalité est désactivée, une vérification est effectuée avant chaque connexion à un site Web.</translation>
 <translation id="3636940436873918441">Langues préférées</translation>
@@ -750,6 +750,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5010886807652684893">Vue visuelle</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> veut se connecter</translation>
 <translation id="5016205925109358554">Avec empattement</translation>
+<translation id="5017529052065664584">Les 15 dernières minutes</translation>
 <translation id="5032430150487044192">Impossible de créer un code QR</translation>
 <translation id="5039804452771397117">Autoriser</translation>
 <translation id="5040262127954254034">Confidentialité</translation>
@@ -768,7 +769,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5118713593561876160">Centres d'intérêt</translation>
 <translation id="5122378528687922675">Si tu as besoin d'aide, demande à tes parents (<ph name="PARENT_NAME_1" /> ou <ph name="PARENT_NAME_2" />)</translation>
 <translation id="5123685120097942451">Onglet de navigation privée</translation>
-<translation id="5126510351761255129">Vérifier votre carte</translation>
 <translation id="5132942445612118989">Synchronisez vos mots de passe, votre historique et plus encore sur tous vos appareils</translation>
 <translation id="5139940364318403933">Apprenez à utiliser Google Disque</translation>
 <translation id="5142281402488957685">Pour obtenir de nouvelles histoires, tirez la page vers le bas pour l'actualiser</translation>
@@ -928,7 +928,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="6011308810877101166">Améliorer les suggestions de recherche</translation>
 <translation id="6026538407078977628">Ouvrir la fenêtre en plein écran</translation>
 <translation id="6030719887161080597">Gérer les informations utilisées par les sites pour mesurer les performances des annonces</translation>
-<translation id="6034146297924778597">L'historique des 15 dernières minutes sera supprimé :</translation>
 <translation id="6039379616847168523">Accéder à l'onglet suivant</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="604124094241169006">Automatique</translation>
@@ -1370,6 +1369,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />Vos appareils<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8200772114523450471">Reprendre</translation>
 <translation id="8209050860603202033">Ouvrir l'image</translation>
+<translation id="8210770465353466621">Vous trouverez vos onglets ici</translation>
 <translation id="8215740705341534369">Feuille latérale</translation>
 <translation id="8218622182176210845">Gérer votre compte</translation>
 <translation id="8221401890884589479">Vous pouvez bloquer les annonces des sites de votre choix. En outre, Chrome supprime automatiquement les sites de la liste datant de plus de 30 jours. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>

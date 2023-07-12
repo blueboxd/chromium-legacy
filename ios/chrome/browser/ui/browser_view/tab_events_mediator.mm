@@ -128,6 +128,15 @@
 
 #pragma mark - WebStateListObserving methods
 
+- (void)willChangeWebStateList:(WebStateList*)webStateList
+                        change:(const WebStateListChangeDetach&)detachChange
+                     selection:(const WebStateSelection&)selection {
+  // When the active webState is detached, the view should be reset.
+  if (detachChange.detached_web_state() == _webStateList->GetActiveWebState()) {
+    [self.consumer resetTab];
+  }
+}
+
 - (void)didChangeWebStateList:(WebStateList*)webStateList
                        change:(const WebStateListChange&)change
                     selection:(const WebStateSelection&)selection {
@@ -138,9 +147,20 @@
       // here. Note that here is reachable only when `reason` ==
       // ActiveWebStateChangeReason::Activated.
       break;
-    case WebStateListChange::Type::kDetach:
-      // Do nothing when a WebState is detached.
+    case WebStateListChange::Type::kDetach: {
+      // When an NTP web state is closed, check if the coordinator should be
+      // stopped.
+      const WebStateListChangeDetach& detachChange =
+          change.As<WebStateListChangeDetach>();
+      if (detachChange.is_closing()) {
+        NewTabPageTabHelper* NTPTabHelper = NewTabPageTabHelper::FromWebState(
+            detachChange.detached_web_state());
+        if (NTPTabHelper->IsActive()) {
+          [self stopNTPIfNeeded];
+        }
+      }
       break;
+    }
     case WebStateListChange::Type::kMove:
       // Do nothing when a WebState is moved.
       break;
@@ -168,34 +188,11 @@
       // If a tab is inserted in the background (not activating), trigger an
       // animation. (The animation for foreground tab insertion is handled in
       // `didChangeActiveWebState`).
-      if (!selection.activating) {
+      if (!selection.active_state_change) {
         [self.consumer initiateNewTabBackgroundAnimation];
       }
       break;
     }
-  }
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    willDetachWebState:(web::WebState*)webState
-               atIndex:(int)atIndex {
-  // When the active webState is detached, the view should be reset.
-  web::WebState* currentWebState = _webStateList->GetActiveWebState();
-  if (webState == currentWebState) {
-    [self.consumer resetTab];
-  }
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    willCloseWebState:(web::WebState*)webState
-              atIndex:(int)atIndex
-           userAction:(BOOL)userAction {
-  // When an NTP web state is closed, check if the coordinator should be
-  // stopped.
-  NewTabPageTabHelper* NTPTabHelper =
-      NewTabPageTabHelper::FromWebState(webState);
-  if (NTPTabHelper->IsActive()) {
-    [self stopNTPIfNeeded];
   }
 }
 

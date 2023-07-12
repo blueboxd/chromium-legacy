@@ -4,6 +4,7 @@
 
 import {assert} from 'chrome://resources/ash/common/assert.js';
 
+import {ArrayDataModel} from '../../../common/js/array_data_model.js';
 import {FileType} from '../../../common/js/file_type.js';
 import {str, strf, util} from '../../../common/js/util.js';
 import {EntryLocation} from '../../../externs/entry_location.js';
@@ -371,6 +372,7 @@ filelist.decorateListItem = (li, entry, metadataModel, volumeManager) => {
     'contentMimeType',
     'shortcut',
     'canPin',
+    'isDlpRestricted',
   ])[0];
   filelist.updateListItemExternalProps(
       li, entry, externalProps, util.isTeamDriveRoot(entry));
@@ -490,23 +492,6 @@ filelist.renderFileNameLabel = (doc, entry, locationInfo) => {
 };
 
 /**
- * Renders the drive encryption status (CSE files) in the detail table.
- * @param {!Document} doc Owner document.
- * @return {!HTMLDivElement} Created element.
- */
-filelist.renderEncryptionStatus = (doc) => {
-  const box = /** @type {!HTMLDivElement} */ (doc.createElement('div'));
-  box.className = 'encryption-status';
-
-  const encryptedIcon = doc.createElement('xf-icon');
-  encryptedIcon.size = 'extra_small';
-  encryptedIcon.type = 'encrypted';
-  box.appendChild(encryptedIcon);
-
-  return box;
-};
-
-/**
  * Renders the drive inline status in the detail table.
  * @param {!Document} doc Owner document.
  * @return {!HTMLDivElement} Created element.
@@ -550,12 +535,14 @@ filelist.updateListItemExternalProps =
               'dim-encrypted',
               FileType.isEncrypted(entry, externalProps.contentMimeType));
         }
+        const dlpIcon = li.querySelector('.dlp-managed-icon');
+        if (dlpIcon) {
+          dlpIcon.classList.toggle(
+              'is-dlp-restricted', externalProps.isDlpRestricted);
+        }
       }
 
       li.classList.toggle('pinned', externalProps.pinned);
-      li.classList.toggle(
-          'encrypted',
-          FileType.isEncrypted(entry, externalProps.contentMimeType));
       li.classList.toggle('shortcut', !!externalProps.shortcut);
 
       const iconDiv = li.querySelector('.detail-icon');
@@ -996,6 +983,32 @@ filelist.focusParentList = event => {
 };
 
 /**
+ * Update the item's inline status when it's restored from List's cache..
+ * @param {!ListItem} restoredItem Item being restored from the List cache.
+ * @param {ArrayDataModel} dataModel Data model corresponding to the item.
+ * @param {MetadataModel} metadataModel Cache to retrieve metadata.
+ */
+filelist.updateCacheItemInlineStatus =
+    (restoredItem, dataModel, metadataModel) => {
+      if (!dataModel || !metadataModel) {
+        console.error('dataModel or metadataModel unavailable.');
+        return;
+      }
+
+      const entry = dataModel.item(restoredItem.listIndex);
+
+      const metadata = metadataModel.getCache([entry], [
+        'availableOffline',
+        'pinned',
+        'syncStatus',
+        'progress',
+        'syncCompletedTime',
+      ])[0];
+
+      filelist.updateInlineStatus(restoredItem, metadata);
+    };
+
+/**
  * Update status icon for file or directory entry.
  * @param {!HTMLLIElement} li The grid item.
  * @param {?MetadataItem} metadata Metadata.
@@ -1018,8 +1031,7 @@ filelist.updateInlineStatus = (li, metadata) => {
   if (util.isDriveFsBulkPinningEnabled()) {
     const inlineIcon = inlineStatus.querySelector('xf-icon');
 
-    if (!util.isNullOrUndefined(metadata.canPin) &&
-        !metadata.canPin) {
+    if (!util.isNullOrUndefined(metadata.canPin) && !metadata.canPin) {
       // Items that can't be pinned should show a dashed icon to indicate
       // they cannot be used offline (e.g. google forms can't be made
       // available offline).
@@ -1066,20 +1078,6 @@ filelist.updateInlineStatus = (li, metadata) => {
       inlineStatus.setAttribute(
           'aria-label',
           strf('IN_PROGRESS_PERCENTAGE_LABEL', (progress * 100).toFixed(0)));
-      break;
-    case chrome.fileManagerPrivate.SyncStatus.NOT_FOUND:
-      // Files can have a sync status of "not_found" even though they
-      // are actually "queued". This can happen due to a delay in the
-      // "queued" status being communicated from DriveFS. In this case
-      // though, they would also be considered dirty (meaning they have
-      // unsynced changes so will eventually get queued for syncing).
-      // Hence, let's display a status "not_found" that is also "dirty"
-      // as "queued".
-      if (metadata.dirty) {
-        progress = 0;
-        syncStatus = chrome.fileManagerPrivate.SyncStatus.QUEUED;
-        inlineStatus.setAttribute('aria-label', str('QUEUED_LABEL'));
-      }
       break;
     default:
       break;

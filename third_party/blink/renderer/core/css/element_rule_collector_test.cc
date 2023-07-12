@@ -72,7 +72,8 @@ class ElementRuleCollectorTest : public PageTestBase {
     MatchRequest request(rule_set, scope);
 
     collector.CollectMatchingRules(request);
-    collector.SortAndTransferMatchedRules(/*is_vtt_embedded_style=*/false,
+    collector.SortAndTransferMatchedRules(CascadeOrigin::kNone,
+                                          /*is_vtt_embedded_style=*/false,
                                           /*tracker=*/nullptr);
 
     const MatchedPropertiesVector& vector = result.GetMatchedProperties();
@@ -117,7 +118,8 @@ class ElementRuleCollectorTest : public PageTestBase {
 
     collector.SetMode(SelectorChecker::kCollectingCSSRules);
     collector.CollectMatchingRules(request);
-    collector.SortAndTransferMatchedRules(/*is_vtt_embedded_style=*/false,
+    collector.SortAndTransferMatchedRules(CascadeOrigin::kAuthor,
+                                          /*is_vtt_embedded_style=*/false,
                                           /*tracker=*/nullptr);
 
     return collector.MatchedCSSRuleList();
@@ -316,7 +318,7 @@ TEST_F(ElementRuleCollectorTest, MatchesNonUniversalHighlights) {
       "</body></html>";
   scoped_refptr<SharedBuffer> data =
       SharedBuffer::Create(markup.Utf8().data(), markup.length());
-  GetFrame().ForceSynchronousDocumentInstall("text/xml", data);
+  GetFrame().ForceSynchronousDocumentInstall(AtomicString("text/xml"), data);
 
   // Creates a StyleSheetContents with selector and optional default @namespace,
   // matches rules for originating element, then returns the non-universal flag
@@ -326,7 +328,8 @@ TEST_F(ElementRuleCollectorTest, MatchesNonUniversalHighlights) {
     auto* parser_context = MakeGarbageCollected<CSSParserContext>(
         kHTMLStandardMode, SecureContextMode::kInsecureContext);
     auto* sheet = MakeGarbageCollected<StyleSheetContents>(parser_context);
-    sheet->ParserAddNamespace("bar", "http://example.org/bar");
+    sheet->ParserAddNamespace(AtomicString("bar"),
+                              AtomicString("http://example.org/bar"));
     if (defaultNamespace) {
       sheet->ParserAddNamespace(g_null_atom, *defaultNamespace);
     }
@@ -366,7 +369,7 @@ TEST_F(ElementRuleCollectorTest, MatchesNonUniversalHighlights) {
   Element& none = *body.QuerySelector(AtomicString("none"));
   Element& bar = *body.QuerySelector(AtomicString("bar"));
   Element& def = *body.QuerySelector(AtomicString("default"));
-  AtomicString defNs = "http://example.org/default";
+  AtomicString defNs("http://example.org/default");
 
   // Cases that only make sense without a default @namespace.
   // ::selection kSubSelector :window-inactive

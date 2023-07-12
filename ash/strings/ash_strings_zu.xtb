@@ -185,6 +185,7 @@ Nazi ezinye zezinto ongazama ukuziqalisa.</translation>
 <translation id="1770726142253415363">Ihanjiswe emgqeni <ph name="ROW_NUMBER" />, ikholomu<ph name="COLUMN_NUMBER" />.</translation>
 <translation id="1771761307086386028">Skrolela ngakwesokudla</translation>
 <translation id="1774796056689732716">Ikhalenda, <ph name="CURRENT_MONTH_YEAR" />, okwamanje umhla ka-<ph name="DATE" /> ukhethiwe.</translation>
+<translation id="1775598828170459419">Ibonisa okungu-<ph name="NUM_SHOWN_ITEMS" /> kokungu-<ph name="NUM_TOTAL_ITEMS" /></translation>
 <translation id="1787955149152357925">Valiwe</translation>
 <translation id="181103072419391116">Amandla esignali <ph name="SIGNAL_STRENGTH" />, Kuphethwe umlawuli wakho</translation>
 <translation id="1815245884418711390">Guqula I-hotspot. I-hotspot ivaliwe.</translation>
@@ -298,6 +299,7 @@ Nazi ezinye zezinto ongazama ukuziqalisa.</translation>
 <translation id="2318576281648121272">Namuhla <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" /> , isigaba somphumela wosesho</translation>
 <translation id="2322173485024759474">Emuva ngohlamvu</translation>
+<translation id="2335091074961603075">Idivayisi yakho ye-Chromebook noma ye-Bluetooth isebenzisa uhlobo lwakudala lwe-Bluetooth. Sebenzisa imakrofoni yangaphakathi ukuthola ikhwalithi yomsindo engcono.</translation>
 <translation id="2339073806695260576">Thepha inkinobho ye-stylus kushelufu ukuze uthathe inothi, isithombe-skrini sebenzisa isikhombi se-laser, noma ingilazi yokusondeza</translation>
 <translation id="2341729377289034582">Kukhiywe ngokuvundlile</translation>
 <translation id="2345226652884463045">Cindezela okuthi faka noma sesha + isikhala ukuze ukhethe umbhalo ozowuhlela.</translation>
@@ -1552,7 +1554,6 @@ Ukuze uvale idivayisi, cindezela futhi ubambe inkinobho yamandla kudivayisi futh
 <translation id="7866482334467279021">ku-</translation>
 <translation id="7872786842639831132">Valiwe</translation>
 <translation id="7875575368831396199">Kubonakala sengathi i-Bluetooth ivaliwe ku-<ph name="DEVICE_TYPE" /> yakho. Sicela uvule i-Bluetooth ukuze usebenzise Ihabhu yefoni.</translation>
-<translation id="7876243839304621966">Susa konke</translation>
 <translation id="7877557217297072640">{0,plural, =0{Shintsha idivayisi ibe wuhlobo lwangaphambilini manje}=1{Shintsha idivayisi ibe wuhlobo lwangaphambilini phakathi nomzuzwana o-1}one{Shintsha idivayisi ibe wuhlobo lwangaphambilini phakathi nemizuzwana engu-#}other{Shintsha idivayisi ibe wuhlobo lwangaphambilini phakathi nemizuzwana engu-#}}</translation>
 <translation id="7884446017008693258">Amasethingi e-Hotspot</translation>
 <translation id="7884902759927478774">Khansela ukuhudula ithebhu</translation>
@@ -1651,7 +1652,6 @@ Ukuze uvale idivayisi, cindezela futhi ubambe inkinobho yamandla kudivayisi futh
 <translation id="8255234195843591763">Setha kabusha ukuze ubuyekeze</translation>
 <translation id="8261506727792406068">Susa</translation>
 <translation id="8262312463845990408">Guqula Ukudlala</translation>
-<translation id="8265826854528868575">Ibonisa okungu-<ph name="NUM_SHOWN_TASKS" /> kokungu-<ph name="NUM_TOTAL_TASKS" /></translation>
 <translation id="8270450402312105425">{0,plural, =1{Shintsha idivayisi ibe wuhlobo lwangaphambilini phakathi nehora}one{Shintsha idivayisi ibe wuhlobo lwangaphambilini phakathi namahora angu-#}other{Shintsha idivayisi ibe wuhlobo lwangaphambilini phakathi namahora angu-#}}</translation>
 <translation id="8277261673056602147">Gqamisa umbhalo esikrinini sakho</translation>
 <translation id="8284362522226889623">Swayiphela ngakwesokunxele ngeminwe emine ukuze ushintshele kudeski langaphambilini</translation>
@@ -1759,6 +1759,7 @@ Ukuze uvale idivayisi, cindezela futhi ubambe inkinobho yamandla kudivayisi futh
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8790998409862094015">Okusindayo</translation>
 <translation id="8792626944327216835">imakrofoni</translation>
+<translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535">Ifolda ye-<ph name="FOLDER_NAME" /></translation>
 <translation id="880709030178078220">"Siza"</translation>
 <translation id="8814190375133053267">I-Wi-Fi</translation>

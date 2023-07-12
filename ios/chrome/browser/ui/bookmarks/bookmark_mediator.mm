@@ -177,6 +177,9 @@ using bookmarks::BookmarkNode;
   std::u16string result;
   id<SystemIdentity> identity =
       _authenticationService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
+  // TODO(crbug.com/1462552): Simplify once kSync becomes unreachable or is
+  // deleted from the codebase. See ConsentLevel::kSync documentation for
+  // details.
   BOOL hasSyncConsent =
       _authenticationService->HasPrimaryIdentity(signin::ConsentLevel::kSync);
   // The bookmark is saved in the account if either following condition is true:
@@ -186,9 +189,7 @@ using bookmarks::BookmarkNode;
       (storageType == bookmarks::StorageType::kAccount) ||
       (hasSyncConsent && _syncSetupService->IsDataTypePreferred(
                              syncer::UserSelectableType::kBookmarks));
-  if (base::FeatureList::IsEnabled(
-          kEnableEmailInBookmarksReadingListSnackbar) &&
-      saveIntoAccount) {
+  if (saveIntoAccount) {
     std::u16string email = base::SysNSStringToUTF16(identity.userEmail);
     if (addFolder) {
       std::u16string title = base::SysNSStringToUTF16(folderTitle);

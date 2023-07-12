@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/bruschetta/bruschetta_util.h"
 
 #include "chrome/browser/ash/bruschetta/bruschetta_pref_names.h"
+#include "chrome/browser/ash/guest_os/guest_id.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/ash/guest_os/virtual_machines/virtual_machines_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,7 +18,13 @@ absl::optional<const base::Value::Dict*> GetConfigWithEnabledLevel(
     const Profile* profile,
     const std::string& config_id,
     prefs::PolicyEnabledState enabled_level) {
-  if (!virtual_machines::AreVirtualMachinesAllowedByPolicy()) {
+  // If virtual machines are disabled, we should treat every policy as
+  // BLOCKED. If the caller is looking for an enabled level of RUN_ALLOWED
+  // or higher we should return nothing, but it can still be useful in
+  // some places to retrieve a config even if it's currently BLOCKED e.g. for
+  // display names.
+  if (!virtual_machines::AreVirtualMachinesAllowedByPolicy() &&
+      enabled_level > prefs::PolicyEnabledState::BLOCKED) {
     return absl::nullopt;
   }
 
@@ -37,16 +44,8 @@ const char kToolsDlc[] = "termina-tools-dlc";
 const char kUefiDlc[] = "edk2-ovmf-dlc";
 
 const char kBruschettaVmName[] = "bru";
-const char kBruschettaDisplayName[] = "Bruschetta";
 
 const char kBruschettaPolicyId[] = "glinux-latest";
-
-const char kBruschettaInstallerDownloadStrategyFlag[] =
-    "bruschetta-installer-download-strategy";
-const char kBruschettaInstallerDownloadStrategySimpleURLLoader[] =
-    "SimpleURLLoader";
-const char kBruschettaInstallerDownloadStrategyDownloadService[] =
-    "DownloadService";
 
 const char* BruschettaResultString(const BruschettaResult res) {
 #define ENTRY(name)            \
@@ -150,6 +149,21 @@ std::string GetVmUsername(const Profile* profile) {
   // std::string::npos if it can't find the token this will return the full
   // username in that case.
   return username.substr(0, username.find("@"));
+}
+
+absl::optional<const base::Value::Dict*> GetConfigForGuest(
+    Profile* profile,
+    const guest_os::GuestId& guest_id,
+    prefs::PolicyEnabledState enabled_level) {
+  const auto* config_id_val = guest_os::GetContainerPrefValue(
+      profile, guest_id, guest_os::prefs::kBruschettaConfigId);
+  if (!config_id_val) {
+    return absl::nullopt;
+  }
+
+  const auto& config_id = config_id_val->GetString();
+
+  return GetConfigWithEnabledLevel(profile, config_id, enabled_level);
 }
 
 }  // namespace bruschetta

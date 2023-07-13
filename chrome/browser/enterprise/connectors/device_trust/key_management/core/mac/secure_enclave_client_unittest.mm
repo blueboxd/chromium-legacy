@@ -45,6 +45,9 @@ using test::MockSecureEnclaveHelper;
 class SecureEnclaveClientTest : public testing::Test {
  protected:
   void SetUp() override {
+    if (@available(macOS 10.15, *))
+      data_protection_keychain_ = true;
+
     auto mock_secure_enclave_helper =
         std::make_unique<MockSecureEnclaveHelper>();
     mock_secure_enclave_helper_ = mock_secure_enclave_helper.get();
@@ -90,6 +93,7 @@ class SecureEnclaveClientTest : public testing::Test {
       mock_secure_enclave_helper_ = nullptr;
   std::unique_ptr<SecureEnclaveClient> secure_enclave_client_;
   base::ScopedCFTypeRef<SecKeyRef> test_key_;
+  bool data_protection_keychain_ = false;
 };
 
 // Tests that the CreatePermanentKey method invokes both the SE helper's
@@ -201,8 +205,10 @@ TEST_F(SecureEnclaveClientTest, CopyStoredKey_KeyNotFound) {
   EXPECT_FALSE(secure_enclave_client_->CopyStoredKey(
       SecureEnclaveClient::KeyType::kTemporary));
 
-  auto status = SecureEnclaveOperationStatus::
-      kCopySecureKeyRefDataProtectionKeychainFailed;
+  auto status = data_protection_keychain_
+                    ? SecureEnclaveOperationStatus::
+                          kCopySecureKeyRefDataProtectionKeychainFailed
+                    : SecureEnclaveOperationStatus::kCopySecureKeyRefFailed;
 
   // Should expect one copy key reference failure metric for the permanent key.
   histogram_tester.ExpectUniqueSample(kPermanentStatusHistogramName, status, 1);
@@ -264,8 +270,10 @@ TEST_F(SecureEnclaveClientTest,
       SecureEnclaveClient::KeyType::kPermanent,
       SecureEnclaveClient::KeyType::kTemporary));
 
-  auto status = SecureEnclaveOperationStatus::
-      kUpdateSecureKeyLabelDataProtectionKeychainFailed;
+  auto status = data_protection_keychain_
+                    ? SecureEnclaveOperationStatus::
+                          kUpdateSecureKeyLabelDataProtectionKeychainFailed
+                    : SecureEnclaveOperationStatus::kUpdateSecureKeyLabelFailed;
 
   // Should expect an update failure metric for the permanent key.
   histogram_tester.ExpectUniqueSample(kPermanentStatusHistogramName, status, 1);
@@ -327,8 +335,10 @@ TEST_F(SecureEnclaveClientTest,
       SecureEnclaveClient::KeyType::kTemporary,
       SecureEnclaveClient::KeyType::kPermanent));
 
-  auto status = SecureEnclaveOperationStatus::
-      kUpdateSecureKeyLabelDataProtectionKeychainFailed;
+  auto status = data_protection_keychain_
+                    ? SecureEnclaveOperationStatus::
+                          kUpdateSecureKeyLabelDataProtectionKeychainFailed
+                    : SecureEnclaveOperationStatus::kUpdateSecureKeyLabelFailed;
 
   // Should expect an update failure metric for the temporary key.
   histogram_tester.ExpectUniqueSample(kTemporaryStatusHistogramName, status, 1);
@@ -369,8 +379,10 @@ TEST_F(SecureEnclaveClientTest, DeleteKey_TempKeyLabel_Failure) {
   EXPECT_FALSE(secure_enclave_client_->DeleteKey(
       SecureEnclaveClient::KeyType::kTemporary));
 
-  auto status = SecureEnclaveOperationStatus::
-      kDeleteSecureKeyDataProtectionKeychainFailed;
+  auto status = data_protection_keychain_
+                    ? SecureEnclaveOperationStatus::
+                          kDeleteSecureKeyDataProtectionKeychainFailed
+                    : SecureEnclaveOperationStatus::kDeleteSecureKeyFailed;
 
   // Should expect one delete key failure metric for the temporary key.
   histogram_tester.ExpectUniqueSample(kTemporaryStatusHistogramName, status, 1);
@@ -410,8 +422,10 @@ TEST_F(SecureEnclaveClientTest, DeleteKey_PermanentKeyLabel_Failure) {
   EXPECT_FALSE(secure_enclave_client_->DeleteKey(
       SecureEnclaveClient::KeyType::kPermanent));
 
-  auto status = SecureEnclaveOperationStatus::
-      kDeleteSecureKeyDataProtectionKeychainFailed;
+  auto status = data_protection_keychain_
+                    ? SecureEnclaveOperationStatus::
+                          kDeleteSecureKeyDataProtectionKeychainFailed
+                    : SecureEnclaveOperationStatus::kDeleteSecureKeyFailed;
 
   // Should expect one delete key failure metric for the permanent key.
   histogram_tester.ExpectUniqueSample(kPermanentStatusHistogramName, status, 1);
@@ -462,8 +476,10 @@ TEST_F(SecureEnclaveClientTest, GetStoredKeyLabel_TemporaryKeyNotFound) {
   std::vector<uint8_t> expected_output;
   EXPECT_EQ(expected_output, output);
 
-  auto status = SecureEnclaveOperationStatus::
-      kCopySecureKeyRefDataProtectionKeychainFailed;
+  auto status = data_protection_keychain_
+                    ? SecureEnclaveOperationStatus::
+                          kCopySecureKeyRefDataProtectionKeychainFailed
+                    : SecureEnclaveOperationStatus::kCopySecureKeyRefFailed;
 
   // Should expect one copy key failure metric for the temporary key.
   histogram_tester.ExpectUniqueSample(kTemporaryStatusHistogramName, status, 1);
@@ -513,8 +529,10 @@ TEST_F(SecureEnclaveClientTest, GetStoredKeyLabel_PermanentKeyNotFound) {
   std::vector<uint8_t> expected_output;
   EXPECT_EQ(expected_output, output);
 
-  auto status = SecureEnclaveOperationStatus::
-      kCopySecureKeyRefDataProtectionKeychainFailed;
+  auto status = data_protection_keychain_
+                    ? SecureEnclaveOperationStatus::
+                          kCopySecureKeyRefDataProtectionKeychainFailed
+                    : SecureEnclaveOperationStatus::kCopySecureKeyRefFailed;
 
   // Should expect one copy key failure metric for the permanent key.
   histogram_tester.ExpectUniqueSample(kPermanentStatusHistogramName, status, 1);

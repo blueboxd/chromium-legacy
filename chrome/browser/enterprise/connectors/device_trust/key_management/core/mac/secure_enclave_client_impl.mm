@@ -49,22 +49,31 @@ enum Operation {
 void LogKeyOperationFailure(Operation operation,
                             SecureEnclaveClient::KeyType type) {
   SecureEnclaveOperationStatus status;
+  bool data_protection_keychain = false;
+  if (@available(macOS 10.15, *))
+    data_protection_keychain = true;
 
   switch (operation) {
     case Operation::CREATE:
       status = SecureEnclaveOperationStatus::kCreateSecureKeyFailed;
       break;
     case Operation::COPY:
-      status = SecureEnclaveOperationStatus::
-          kCopySecureKeyRefDataProtectionKeychainFailed;
+      status = data_protection_keychain
+                   ? SecureEnclaveOperationStatus::
+                         kCopySecureKeyRefDataProtectionKeychainFailed
+                   : SecureEnclaveOperationStatus::kCopySecureKeyRefFailed;
       break;
     case Operation::DELETE:
-      status = SecureEnclaveOperationStatus::
-          kDeleteSecureKeyDataProtectionKeychainFailed;
+      status = data_protection_keychain
+                   ? SecureEnclaveOperationStatus::
+                         kDeleteSecureKeyDataProtectionKeychainFailed
+                   : SecureEnclaveOperationStatus::kDeleteSecureKeyFailed;
       break;
     case Operation::UPDATE:
-      status = SecureEnclaveOperationStatus::
-          kUpdateSecureKeyLabelDataProtectionKeychainFailed;
+      status = data_protection_keychain
+                   ? SecureEnclaveOperationStatus::
+                         kUpdateSecureKeyLabelDataProtectionKeychainFailed
+                   : SecureEnclaveOperationStatus::kUpdateSecureKeyLabelFailed;
       break;
   }
 
@@ -133,7 +142,13 @@ base::ScopedCFTypeRef<CFMutableDictionaryRef> CreateQueryForKey(
   CFDictionarySetValue(query, kSecAttrLabel,
                        base::SysUTF8ToCFStringRef(GetLabelFromKeyType(type)));
   CFDictionarySetValue(query, kSecReturnRef, kCFBooleanTrue);
-  CFDictionarySetValue(query, kSecUseDataProtectionKeychain, kCFBooleanTrue);
+
+  // Specifying to query the data protection keychain is only available on
+  // macOS 10.15 or newer. This forces a query to the correct keychain since
+  // Secure Enclave keys are stored in the data protection keychain.
+  if (@available(macOS 10.15, *)) {
+    CFDictionarySetValue(query, kSecUseDataProtectionKeychain, kCFBooleanTrue);
+  }
   return query;
 }
 

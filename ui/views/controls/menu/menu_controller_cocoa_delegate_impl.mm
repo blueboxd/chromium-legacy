@@ -7,7 +7,6 @@
 #include "base/apple/bridging.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/mac/mac_util.h"
 #import "base/message_loop/message_pump_mac.h"
 #import "skia/ext/skia_utils_mac.h"
@@ -137,7 +136,7 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
               views::BadgePainter::kBadgeInternalPaddingTopMac);
       [badge_attr_string drawAtPoint:badge_text_location];
       [badge_image unlockFocus];
-      return [badge_image retain];
+      return badge_image;
     }
 }
 
@@ -170,7 +169,7 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
     [dot_color set];
     [dot_path fill];
     [dot_image unlockFocus];
-    return [dot_image retain];
+    return dot_image;
   }
 }
 
@@ -251,10 +250,6 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
   for (NSObject* obj in _menuObservers) {
     [[NSNotificationCenter defaultCenter] removeObserver:obj];
   }
-
-  [_menuObservers release];
-
-  [super dealloc];
 }
 
 - (void)setAnchorRect:(gfx::Rect)rect {
@@ -266,16 +261,16 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
                       atIndex:(size_t)index
             withColorProvider:(const ui::ColorProvider*)colorProvider {
   if (model->IsNewFeatureAt(index)) {
-    NSMutableAttributedString* attrTitle = [[[NSMutableAttributedString alloc]
-        initWithString:menuItem.title] autorelease];
+    NSMutableAttributedString* attrTitle = [[NSMutableAttributedString alloc]
+        initWithString:menuItem.title];
 
     // /!\ WARNING /!\ Do not update this to use NSTextAttachment.image until
     // macOS 10.15 is the minimum required OS. See the details on the class
     // comment above.
     NSTextAttachment* attachment =
-        [[[NSTextAttachment alloc] init] autorelease];
-    attachment.attachmentCell = [[[NewTagAttachmentCell alloc]
-        initWithColorProvider:colorProvider] autorelease];
+        [[NSTextAttachment alloc] init];
+    attachment.attachmentCell = [[NewTagAttachmentCell alloc]
+        initWithColorProvider:colorProvider];
 
     [attrTitle
         appendAttributedString:[NSAttributedString

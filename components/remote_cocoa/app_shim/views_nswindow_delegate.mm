@@ -209,16 +209,16 @@
       // window that is closing and -performSelector: won't retain the argument
       // (putting |window| on the stack above causes this block to retain it).
       base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-          FROM_HERE, base::BindOnce(base::RetainBlock(^{
+          FROM_HERE, base::BindOnce(^{
             [sheetParent endSheet:window];
-          })));
+          }));
     }
   } else {
     if([(NSWindow*)[notification object] isSheet]) {
       base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-          FROM_HERE, base::BindOnce(base::RetainBlock(^{
+          FROM_HERE, base::BindOnce(^{
             [NSApp endSheet:window];
-          })));
+          }));
     }
   }
   DCHECK([window isEqual:[notification object]]);

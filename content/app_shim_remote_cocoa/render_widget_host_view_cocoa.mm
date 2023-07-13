@@ -174,13 +174,6 @@ void ExtractUnderlines(NSAttributedString* string,
 
 // Private methods:
 @interface RenderWidgetHostViewCocoa ()
-
-  API_AVAILABLE(macos(10.12.2))
-  base::scoped_nsobject<NSCandidateListTouchBarItem> _candidateListTouchBarItem;
-  NSInteger _textSuggestionsSequenceNumber;
-  BOOL _shouldRequestTextSubstitutions;
-  BOOL _substitutionWasApplied;
-}
 @property(readonly) NSSpellChecker* spellChecker;
 
 @property(getter=isAutomaticTextReplacementEnabled)
@@ -363,6 +356,7 @@ void ExtractUnderlines(NSAttributedString* string,
   bool _keyboardLockActive;
   absl::optional<base::flat_set<ui::DomCode>> _lockedKeys;
 
+  API_AVAILABLE(macos(10.12.2))
   NSCandidateListTouchBarItem* __strong _candidateListTouchBarItem;
   NSInteger _textSuggestionsSequenceNumber;
   BOOL _shouldRequestTextSubstitutions;

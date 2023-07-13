@@ -65,13 +65,13 @@ using content::DropData;
     DCHECK(_contentsView);
 
     _dropData = std::make_unique<DropData>(*dropData);
-    DCHECK(_dropData.get());
+    DCHECK(_dropData);
 
-    _dragImage.reset([image retain]);
+    _dragImage = image;
     _imageOffset = offset;
 
-    _pasteboard.reset([pboard retain]);
-    DCHECK(_pasteboard.get());
+    _pasteboard = pboard;
+    DCHECK(_pasteboard);
 
     _dragOperationMask = dragOperationMask;
 
@@ -112,7 +112,7 @@ using content::DropData;
 
   // URL.
   } else if ([type isEqualToString:NSURLPboardType] ||
-             [type isEqualToString:base::mac::CFToNSCast(kUTTypeURL)]) {
+             [type isEqualToString:base::apple::CFToNSPtrCast(kUTTypeURL)]) {
     DCHECK(_dropData->url.is_valid());
     NSURL* url = [NSURL URLWithString:SysUTF8ToNSString(_dropData->url.spec())];
     // If NSURL creation failed, check for a badly-escaped JavaScript URL.
@@ -131,10 +131,10 @@ using content::DropData;
               forType:ui::kUTTypeURLName];
 
   // File contents.
-  } else if ([type isEqualToString:base::mac::CFToNSCast(_fileUTI)]) {
+  } else if ([type isEqualToString:base::apple::CFToNSPtrCast(_fileUTI)]) {
     [pboard setData:[NSData dataWithBytes:_dropData->file_contents.data()
                                    length:_dropData->file_contents.length()]
-            forType:base::mac::CFToNSCast(_fileUTI.get())];
+            forType:base::apple::CFToNSPtrCast(_fileUTI)];
 
   // Plain text.
   } else if ([type isEqualToString:NSStringPboardType]) {
@@ -193,7 +193,7 @@ using content::DropData;
   if (_dragImage) {
     position.x -= _imageOffset.x;
     // Deal with Cocoa's flipped coordinate system.
-    position.y -= [_dragImage.get() size].height - _imageOffset.y;
+    position.y -= [_dragImage size].height - _imageOffset.y;
   }
   // Per kwebster, offset arg is ignored, see -_web_DragImageForElement: in
   // third_party/WebKit/Source/WebKit/mac/Misc/WebNSViewExtras.m.
@@ -214,7 +214,7 @@ using content::DropData;
   if (_dragImage) {
     screenPoint.x += _imageOffset.x;
     // Deal with Cocoa's flipped coordinate system.
-    screenPoint.y += [_dragImage.get() size].height - _imageOffset.y;
+    screenPoint.y += [_dragImage size].height - _imageOffset.y;
   }
 
   // Convert |screenPoint| to view coordinates and flip it.
@@ -268,7 +268,7 @@ using content::DropData;
   if (!_contentsView)
     return;
 
-  DCHECK(_pasteboard.get());
+  DCHECK(_pasteboard);
 
   _changeCount = [_pasteboard declareTypes:@[ ui::kChromeDragDummyPboardType ]
                                      owner:self];
@@ -276,7 +276,7 @@ using content::DropData;
   // URL (and title).
   if (_dropData->url.is_valid()) {
     [_pasteboard addTypes:@[
-      NSURLPboardType, ui::kUTTypeURLName, base::mac::CFToNSCast(kUTTypeURL)
+      NSURLPboardType, ui::kUTTypeURLName, base::apple::CFToNSPtrCast(kUTTypeURL)
     ]
                     owner:self];
   }
@@ -325,8 +325,8 @@ using content::DropData;
     if (!mimeType.empty()) {
       base::ScopedCFTypeRef<CFStringRef> mimeTypeCF(
           base::SysUTF8ToCFStringRef(mimeType));
-      _fileUTI.reset(UTTypeCreatePreferredIdentifierForTag(
-          kUTTagClassMIMEType, mimeTypeCF.get(), NULL));
+      _fileUTI = UTTypeCreatePreferredIdentifierForTag(
+          kUTTagClassMIMEType, mimeTypeCF, NULL);
 
       // File (HFS) promise.
       // There are two ways to drag/drop files. NSFilesPromisePboardType is the
@@ -348,7 +348,7 @@ using content::DropData;
       //   right of the desktop rather than at the position at which it was
       //   dropped. <http://crbug.com/284942> <rdar://14943881>
       //   <http://openradar.me/14943881>
-      NSArray* fileUTIList = @[ base::mac::CFToNSCast(_fileUTI.get()) ];
+      NSArray* fileUTIList = @[ base::apple::CFToNSPtrCast(_fileUTI) ];
       [_pasteboard addTypes:@[ NSFilesPromisePboardType ] owner:self];
       [_pasteboard setPropertyList:fileUTIList
                            forType:NSFilesPromisePboardType];
@@ -369,7 +369,7 @@ using content::DropData;
   // an image drop, but the MIME time is tested anyway for paranoia's sake.)
   bool hasImageData = !_dropData->file_contents.empty() &&
                       _fileUTI &&
-                      UTTypeConformsTo(_fileUTI.get(), kUTTypeImage);
+                      UTTypeConformsTo(_fileUTI, kUTTypeImage);
   if (hasHTMLData) {
     if (hasImageData) {
       [_pasteboard addTypes:@[ ui::kChromeDragImageHTMLPboardType ] owner:self];
@@ -399,7 +399,6 @@ using content::DropData;
 
 - (void)dealloc {
   [self clearPasteboard];
-  [super dealloc];
 }
 
 @end  // @implementation WebDragSource (Private)

@@ -22,6 +22,12 @@
 #error "This file requires ARC support."
 #endif
 
+@interface NSWindow (Private)
+// Available in later point releases of 10.10. On 10.11+, use the public
+// -performWindowDragWithEvent: instead.
+- (void)beginWindowDragWithEvent:(NSEvent*)event;
+@end
+
 namespace {
 
 bool AreWindowShadowsDisabled() {
@@ -636,17 +642,17 @@ NSPoint clickedLocation;
   if (![self _isConsideredOpenForPersistentState])
     return;
 
-  base::scoped_nsobject<NSMutableData> restorableStateData(
+  NSMutableData* restorableStateData(
       [[NSMutableData alloc] init]);
-  base::scoped_nsobject<NSKeyedArchiver> encoder([[NSKeyedArchiver alloc]
+  NSKeyedArchiver* encoder([[NSKeyedArchiver alloc]
       initForWritingWithMutableData:restorableStateData]);
-  encoder.get().delegate = self;
+  encoder.delegate = self;
   [self encodeRestorableStateWithCoder:encoder];
   [encoder finishEncoding];
 
-  auto* bytes = static_cast<uint8_t const*>(restorableStateData.get().bytes);
+  auto* bytes = static_cast<uint8_t const*>(restorableStateData.bytes);
   _bridge->host()->OnWindowStateRestorationDataChanged(
-      std::vector<uint8_t>(bytes, bytes + restorableStateData.get().length));
+      std::vector<uint8_t>(bytes, bytes + restorableStateData.length));
   _willUpdateRestorableState = NO;
 }
 

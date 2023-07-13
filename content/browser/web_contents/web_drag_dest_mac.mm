@@ -7,7 +7,6 @@
 #include <AppKit/AppKit.h>
 #import <Carbon/Carbon.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"

@@ -7,7 +7,6 @@
 
 #import <os/availability.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "services/shape_detection/public/mojom/textdetection.mojom.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

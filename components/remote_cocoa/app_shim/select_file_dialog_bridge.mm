@@ -42,7 +42,7 @@ NSString* GetDescriptionFromExtension(const base::FilePath::StringType& ext) {
       UTTypeCopyDescription(uti.get()));
 
   if (description && CFStringGetLength(description))
-    return [[base::mac::CFToNSCast(description.get()) retain] autorelease];
+    return base::apple::CFToNSPtrCast(description.get());
 
   // In case no description is found, create a description based on the
   // unknown extension type (i.e. if the extension is .qqq, the we create
@@ -55,7 +55,7 @@ NSString* GetDescriptionFromExtension(const base::FilePath::StringType& ext) {
 NSView* CreateAccessoryView() {
   static constexpr CGFloat kControlPadding = 2;
 
-  base::scoped_nsobject<NSView> view(
+  NSView* view(
       [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 350, 60)]);
 
   // Create the label and center it vertically.
@@ -72,12 +72,12 @@ NSView* CreateAccessoryView() {
   // Create the pop-up button, positioning it to the right of the label.
   // Its X position needs to be slightly below the label's, so that the text
   // baselines are aligned.
-  base::scoped_nsobject<NSPopUpButton> pop_up_button([[NSPopUpButton alloc]
+  NSPopUpButton* pop_up_button([[NSPopUpButton alloc]
       initWithFrame:NSMakeRect(NSWidth(label_frame) + kControlPadding,
                                NSMinY(label_frame) - 5, 230, 25)
           pullsDown:NO]);
   [pop_up_button setTag:kFileTypePopupTag];
-  [view addSubview:pop_up_button.get()];
+  [view addSubview:pop_up_button];
 
   // Resize the containing view to fit the controls.
   CGFloat total_width = NSMaxX([pop_up_button frame]);
@@ -106,7 +106,7 @@ NSSavePanel* __weak g_last_created_panel_for_testing = nil;
 
   // An array whose each item corresponds to an array of different extensions in
   // an extension group.
-  base::scoped_nsobject<NSArray> _fileTypeLists;
+  NSArray* _fileTypeLists;
 }
 
 - (instancetype)initWithDialog:(NSSavePanel*)dialog
@@ -342,7 +342,7 @@ void SelectFileDialogBridge::SetAccessoryView(
       // https://crbug.com/630101 and rdar://27490414.
       base::ScopedCFTypeRef<CFStringRef> uti(CreateUTIFromExtension(ext));
       if (uti) {
-        NSString* uti_ns = base::mac::CFToNSCast(uti.get());
+        NSString* uti_ns = base::apple::CFToNSPtrCast(uti.get());
         if (![file_type_array containsObject:uti_ns])
           [file_type_array addObject:uti_ns];
       }
@@ -353,7 +353,7 @@ void SelectFileDialogBridge::SetAccessoryView(
       // See https://crbug.com/148840, https://openradar.appspot.com/12316273
       base::ScopedCFTypeRef<CFStringRef> ext_cf(
           base::SysUTF8ToCFStringRef(ext));
-      NSString* ext_ns = base::mac::CFToNSCast(ext_cf.get());
+      NSString* ext_ns = base::apple::CFToNSPtrCast(ext_cf.get());
       if (![file_type_array containsObject:ext_ns])
         [file_type_array addObject:ext_ns];
     }
@@ -370,9 +370,9 @@ void SelectFileDialogBridge::SetAccessoryView(
     }
   }
 
-  extension_dropdown_handler_.reset([[ExtensionDropdownHandler alloc]
-      initWithDialog:dialog
-       fileTypeLists:file_type_lists]);
+  extension_dropdown_handler_ = [[ExtensionDropdownHandler alloc]
+      initWithDialog:panel_
+       fileTypeLists:file_type_lists];
 
   // This establishes a weak reference to handler. Hence we persist it as part
   // of dialog_data_list_.
@@ -388,7 +388,7 @@ void SelectFileDialogBridge::SetAccessoryView(
     [extension_dropdown_handler_ popupAction:popup];
   } else if (!default_extension.empty() && default_extension_index != -1) {
     [popup selectItemAtIndex:default_extension_index];
-    [dialog
+    [panel_
         setAllowedFileTypes:@[ base::SysUTF8ToNSString(default_extension) ]];
   } else {
     // Select the first item.
@@ -398,7 +398,7 @@ void SelectFileDialogBridge::SetAccessoryView(
 
   // There's no need for a popup unless there are at least two choices.
   if (popup.numberOfItems >= 2)
-    dialog.accessoryView = accessory_view.get();
+    panel_.accessoryView = accessory_view;
 }
 
 void SelectFileDialogBridge::OnPanelEnded(bool did_cancel) {

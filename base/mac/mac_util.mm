@@ -99,8 +99,10 @@ class LoginItemsFileList {
           if (item_url && [item_url isEqual:url]) {
             return ScopedCFTypeRef<LSSharedFileListItemRef>(
                 item, base::scoped_policy::RETAIN);
+          }
       }
     }
+
     return ScopedCFTypeRef<LSSharedFileListItemRef>();
   }
 

@@ -42,13 +42,13 @@ CONTENT_EXPORT
   std::unique_ptr<content::DropData> _dropData;
 
   // The image to show as drag image. Can be nil.
-  base::scoped_nsobject<NSImage> _dragImage;
+  NSImage* _dragImage;
 
   // The offset to draw |dragImage_| at.
   NSPoint _imageOffset;
 
   // Our pasteboard.
-  base::scoped_nsobject<NSPasteboard> _pasteboard;
+  NSPasteboard* _pasteboard;
 
   // Change count associated with this pasteboard owner change.
   int _changeCount;
@@ -63,7 +63,7 @@ CONTENT_EXPORT
   GURL _downloadURL;
 
   // The file UTI associated with the file drag, if any.
-  base::ScopedCFTypeRef<CFStringRef> _fileUTI;
+  CFStringRef _fileUTI;
 }
 
 // Initialize a WebDragSource object for a drag (originating on the given

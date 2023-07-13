@@ -159,7 +159,7 @@
           [NSMenu instanceMethodSignatureForSelector:sel];
       NSInvocation* invocation =
           [NSInvocation invocationWithMethodSignature:signature];
-      [invocation setTarget:_menu.get()];
+      [invocation setTarget:_menu];
       [invocation setSelector:sel];
       [invocation setArgument:&direction atIndex:2];
       [invocation invoke];

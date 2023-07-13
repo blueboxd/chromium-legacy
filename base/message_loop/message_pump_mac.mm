@@ -214,17 +214,6 @@ void MessagePumpCFRunLoopBase::ScheduleDelayedWork(
   } else {
     const double delay_seconds = next_work_info.remaining_delay().InSecondsF();
 
-    typedef void (*CFRunLoopTimerSetTolerancePtr)(CFRunLoopTimerRef, CFTimeInterval);
-    static const CFRunLoopTimerSetTolerancePtr CFRunLoopTimerSetToleranceFuncPtr =
-        reinterpret_cast<CFRunLoopTimerSetTolerancePtr>(dlsym(((void *) -2), "CFRunLoopTimerSetTolerance"));
-    if(CFRunLoopTimerSetToleranceFuncPtr) {
-      // The tolerance needs to be set before the fire date or it may be ignored.
-      if (timer_slack_ == TIMER_SLACK_MAXIMUM) {
-        CFRunLoopTimerSetTolerance(delayed_work_timer_, delay_seconds * 0.5);
-      } else {
-        CFRunLoopTimerSetTolerance(delayed_work_timer_, 0);
-      }
-    }
     CFRunLoopTimerSetNextFireDate(delayed_work_timer_,
                                   CFAbsoluteTimeGetCurrent() + delay_seconds);
   }
@@ -255,7 +244,12 @@ MessagePumpCFRunLoopBase::MessagePumpCFRunLoopBase(int initial_mode_mask) {
                            /*order=*/0,
                            /*callout=*/RunDelayedWorkTimer,
                            /*context=*/&timer_context));
-  CFRunLoopTimerSetTolerance(delayed_work_timer_, 0);
+  typedef void (*CFRunLoopTimerSetTolerancePtr)(CFRunLoopTimerRef, CFTimeInterval);
+  static const CFRunLoopTimerSetTolerancePtr CFRunLoopTimerSetToleranceFuncPtr =
+      reinterpret_cast<CFRunLoopTimerSetTolerancePtr>(dlsym(((void *) -2), "CFRunLoopTimerSetTolerance"));
+  if(CFRunLoopTimerSetToleranceFuncPtr) {
+    CFRunLoopTimerSetToleranceFuncPtr(delayed_work_timer_, 0);
+  }
 
   CFRunLoopSourceContext source_context = {0};
   source_context.info = this;

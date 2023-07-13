@@ -254,13 +254,13 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
   NSPasteboard* pasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
   [pasteboard clearContents];
 
-  _dragSource.reset([[WebDragSource alloc] initWithHost:_host
+  _dragSource = [[WebDragSource alloc] initWithHost:_host
                                                    view:self
                                                dropData:&dropData
                                                   image:image
                                                  offset:offset
                                              pasteboard:pasteboard
-                                      dragOperationMask:operationMask]);
+                                      dragOperationMask:operationMask];
   [_dragSource startDrag];
 }
 
@@ -284,7 +284,7 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
       endDragAt:screenPoint
       operation:ui::DragDropTypes::NSDragOperationToDragOperation(operation)];
 
-  WebDragSource* currentDragSource = _dragSource.get();
+  WebDragSource* currentDragSource = _dragSource;
   NSPoint localPoint = NSZeroPoint;
   if (self.window) {
     NSPoint basePoint =
@@ -295,12 +295,12 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
   dispatch_after(
       dispatch_time(DISPATCH_TIME_NOW, (int64_t)kPasteboardClearDelay),
       dispatch_get_main_queue(), ^{
-        if (_dragSource.get() == currentDragSource) {
+        if (_dragSource == currentDragSource) {
           // Clear the drag pasteboard. Even though this is called in dealloc,
           // we need an explicit call because NSPasteboard can retain the drag
           // source.
           [_dragSource clearPasteboard];
-          _dragSource.reset();
+          _dragSource = nil;
         }
       });
 }

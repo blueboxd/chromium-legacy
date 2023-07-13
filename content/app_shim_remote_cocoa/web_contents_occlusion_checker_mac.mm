@@ -53,8 +53,8 @@ bool IsBrowserProcess() {
 @end
 
 @implementation WebContentsOcclusionCheckerMac {
-  NSWindow* __weak _windowResizingOrMoving;
-  NSWindow* __weak _windowReceivingFullscreenTransitionNotifications;
+  NSWindow* __unsafe_unretained _windowResizingOrMoving;
+  NSWindow* __unsafe_unretained _windowReceivingFullscreenTransitionNotifications;
   BOOL _displaysAreAsleep;
   BOOL _occlusionStateUpdatesAreScheduled;
   BOOL _updatingOcclusionStates;

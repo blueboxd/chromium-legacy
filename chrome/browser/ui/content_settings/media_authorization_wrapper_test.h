@@ -10,6 +10,13 @@
 #include "base/functional/callback.h"
 #include "chrome/browser/media/webrtc/media_authorization_wrapper_mac.h"
 
+enum AuthStatus {
+  kNotDetermined,
+  kRestricted,
+  kDenied,
+  kAllowed,
+};
+
 class MediaAuthorizationWrapperTest final
     : public system_media_permissions::MediaAuthorizationWrapper {
  public:
@@ -20,16 +27,15 @@ class MediaAuthorizationWrapperTest final
       const MediaAuthorizationWrapperTest&) = delete;
 
   ~MediaAuthorizationWrapperTest() override = default;
-  void SetMockMediaPermissionStatus(AVAuthorizationStatus status);
+  void SetMockMediaPermissionStatus(AuthStatus status);
 
   // MediaAuthorizationWrapper:
-  AVAuthorizationStatus AuthorizationStatusForMediaType(
-      NSString* media_type) override;
+  NSInteger AuthorizationStatusForMediaType(NSString* media_type) override;
   void RequestAccessForMediaType(NSString* media_type,
                                  base::OnceClosure callback) override {}
 
  private:
-  AVAuthorizationStatus permission_status_ = AVAuthorizationStatusNotDetermined;
+  AuthStatus permission_status_ = kNotDetermined;
 };
 
 #endif  // CHROME_BROWSER_UI_CONTENT_SETTINGS_MEDIA_AUTHORIZATION_WRAPPER_TEST_H_

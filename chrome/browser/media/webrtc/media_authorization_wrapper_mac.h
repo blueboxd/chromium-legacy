@@ -5,8 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_WEBRTC_MEDIA_AUTHORIZATION_WRAPPER_MAC_H_
 #define CHROME_BROWSER_MEDIA_WEBRTC_MEDIA_AUTHORIZATION_WRAPPER_MAC_H_
 
-#import <AVFoundation/AVFoundation.h>
-#import <Foundation/Foundation.h>
+#import <Foundation/NSString.h>
 
 #include "base/functional/callback_forward.h"
 
@@ -16,8 +15,9 @@ class MediaAuthorizationWrapper {
  public:
   virtual ~MediaAuthorizationWrapper() {}
 
-  virtual AVAuthorizationStatus AuthorizationStatusForMediaType(
-      NSString* media_type) = 0;
+  // NB: NSInteger is used rather than AVAuthorizationStatus; when macOS 10.14
+  // is the minimum requirement for Chromium, switch types.
+  virtual NSInteger AuthorizationStatusForMediaType(NSString* media_type) = 0;
   virtual void RequestAccessForMediaType(NSString* media_type,
                                          base::OnceClosure callback) = 0;
 };

@@ -96,8 +96,9 @@ AVAuthorizationStatus MediaAuthorizationStatus(AVMediaType media_type) {
 }
 
 SystemPermission CheckSystemMediaCapturePermission(AVMediaType media_type) {
-  if (UsingFakeMediaDevices())
+  if (UsingFakeMediaDevices()) {
     return SystemPermission::kAllowed;
+  }
 
   if (@available(macOS 10.14, *)) {
     AVAuthorizationStatus auth_status = MediaAuthorizationStatus(media_type);
@@ -163,11 +164,11 @@ SystemPermission CheckSystemScreenCapturePermission() {
                                   : SystemPermission::kDenied;
 }
 
-void RequestSystemAudioCapturePermisson(base::OnceClosure callback) {
+void RequestSystemAudioCapturePermission(base::OnceClosure callback) {
   RequestSystemMediaCapturePermission(AVMediaTypeAudio, std::move(callback));
 }
 
-void RequestSystemVideoCapturePermisson(base::OnceClosure callback) {
+void RequestSystemVideoCapturePermission(base::OnceClosure callback) {
   RequestSystemMediaCapturePermission(AVMediaTypeVideo, std::move(callback));
 }
 

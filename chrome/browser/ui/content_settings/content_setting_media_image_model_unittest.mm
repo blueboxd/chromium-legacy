@@ -110,19 +110,18 @@ TEST_F(ContentSettingMediaImageModelTest, MediaUpdate) {
     content_settings->OnMediaStreamPermissionSet(
         kTestOrigin, {PageSpecificContentSettings::kCameraAccessed},
         std::string(), GetDefaultVideoDevice(), std::string(), std::string());
-    auth_wrapper.SetMockMediaPermissionStatus(AVAuthorizationStatusAuthorized);
+    auth_wrapper.SetMockMediaPermissionStatus(kAllowed);
     content_setting_image_model->Update(web_contents());
     ExpectImageModelState(
         *content_setting_image_model, /*is_visible=*/true, /*has_icon=*/true,
         l10n_util::GetStringUTF16(IDS_CAMERA_ACCESSED), 0, &gfx::kNoneIcon);
-    auth_wrapper.SetMockMediaPermissionStatus(AVAuthorizationStatusDenied);
+    auth_wrapper.SetMockMediaPermissionStatus(kDenied);
     content_setting_image_model->Update(web_contents());
     ExpectImageModelState(
         *content_setting_image_model, /*is_visible=*/true, /*has_icon=*/true,
         l10n_util::GetStringUTF16(IDS_CAMERA_BLOCKED), IDS_CAMERA_TURNED_OFF,
         &vector_icons::kBlockedBadgeIcon);
-    auth_wrapper.SetMockMediaPermissionStatus(
-        AVAuthorizationStatusNotDetermined);
+    auth_wrapper.SetMockMediaPermissionStatus(kNotDetermined);
     content_setting_image_model->Update(web_contents());
     EXPECT_FALSE(content_setting_image_model->is_visible());
   }
@@ -132,19 +131,18 @@ TEST_F(ContentSettingMediaImageModelTest, MediaUpdate) {
     content_settings->OnMediaStreamPermissionSet(
         kTestOrigin, {PageSpecificContentSettings::kMicrophoneAccessed},
         std::string(), GetDefaultVideoDevice(), std::string(), std::string());
-    auth_wrapper.SetMockMediaPermissionStatus(AVAuthorizationStatusAuthorized);
+    auth_wrapper.SetMockMediaPermissionStatus(kAllowed);
     content_setting_image_model->Update(web_contents());
     ExpectImageModelState(
         *content_setting_image_model, /*is_visible=*/true, /*has_icon=*/true,
         l10n_util::GetStringUTF16(IDS_MICROPHONE_ACCESSED), 0, &gfx::kNoneIcon);
-    auth_wrapper.SetMockMediaPermissionStatus(AVAuthorizationStatusDenied);
+    auth_wrapper.SetMockMediaPermissionStatus(kDenied);
     content_setting_image_model->Update(web_contents());
     ExpectImageModelState(*content_setting_image_model, /*is_visible=*/true,
                           /*has_icon=*/true,
                           l10n_util::GetStringUTF16(IDS_MICROPHONE_BLOCKED),
                           IDS_MIC_TURNED_OFF, &vector_icons::kBlockedBadgeIcon);
-    auth_wrapper.SetMockMediaPermissionStatus(
-        AVAuthorizationStatusNotDetermined);
+    auth_wrapper.SetMockMediaPermissionStatus(kNotDetermined);
     content_setting_image_model->Update(web_contents());
     EXPECT_FALSE(content_setting_image_model->is_visible());
   }
@@ -156,32 +154,29 @@ TEST_F(ContentSettingMediaImageModelTest, MediaUpdate) {
         {PageSpecificContentSettings::kMicrophoneAccessed,
          PageSpecificContentSettings::kCameraAccessed},
         std::string(), GetDefaultVideoDevice(), std::string(), std::string());
-    auth_wrapper.SetMockMediaPermissionStatus(AVAuthorizationStatusAuthorized);
-    auth_wrapper.SetMockMediaPermissionStatus(AVAuthorizationStatusAuthorized);
+    auth_wrapper.SetMockMediaPermissionStatus(kAllowed);
+    auth_wrapper.SetMockMediaPermissionStatus(kAllowed);
     content_setting_image_model->Update(web_contents());
     ExpectImageModelState(
         *content_setting_image_model, /*is_visible=*/true, /*has_icon=*/true,
         l10n_util::GetStringUTF16(IDS_MICROPHONE_CAMERA_ALLOWED), 0,
         &gfx::kNoneIcon);
-    auth_wrapper.SetMockMediaPermissionStatus(AVAuthorizationStatusDenied);
-    auth_wrapper.SetMockMediaPermissionStatus(AVAuthorizationStatusDenied);
+    auth_wrapper.SetMockMediaPermissionStatus(kDenied);
+    auth_wrapper.SetMockMediaPermissionStatus(kDenied);
     content_setting_image_model->Update(web_contents());
     ExpectImageModelState(
         *content_setting_image_model, /*is_visible=*/true, /*has_icon=*/true,
         l10n_util::GetStringUTF16(IDS_MICROPHONE_CAMERA_BLOCKED),
         IDS_CAMERA_TURNED_OFF, &vector_icons::kBlockedBadgeIcon);
-    auth_wrapper.SetMockMediaPermissionStatus(
-        AVAuthorizationStatusNotDetermined);
-    auth_wrapper.SetMockMediaPermissionStatus(
-        AVAuthorizationStatusNotDetermined);
+    auth_wrapper.SetMockMediaPermissionStatus(kNotDetermined);
+    auth_wrapper.SetMockMediaPermissionStatus(kNotDetermined);
     content_setting_image_model->Update(web_contents());
     EXPECT_EQ(content_setting_image_model->is_visible(), false);
   }
 
   // Test that system permissions being allowed do not affect the image view,
   // when the per site permission is denied.
-  for (const auto system_state :
-       {AVAuthorizationStatusAuthorized, AVAuthorizationStatusDenied}) {
+  for (const auto system_state : {kAllowed, kDenied}) {
     SCOPED_TRACE(system_state);
     auth_wrapper.SetMockMediaPermissionStatus(system_state);
     auth_wrapper.SetMockMediaPermissionStatus(system_state);

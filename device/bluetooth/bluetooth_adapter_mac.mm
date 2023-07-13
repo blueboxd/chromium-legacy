@@ -175,15 +175,21 @@ bool BluetoothAdapterMac::IsPresent() const {
 
 BluetoothAdapter::PermissionStatus BluetoothAdapterMac::GetOsPermissionStatus()
     const {
-  switch (CBCentralManager.authorization) {
-    case CBManagerAuthorizationNotDetermined:
-      return PermissionStatus::kUndetermined;
-    case CBManagerAuthorizationRestricted:
-    case CBManagerAuthorizationDenied:
-      return PermissionStatus::kDenied;
-    case CBManagerAuthorizationAllowedAlways:
-      return PermissionStatus::kAllowed;
+  if (@available(macOS 10.15.0, *)) {
+    switch (CBCentralManager.authorization) {
+      case CBManagerAuthorizationNotDetermined:
+        return PermissionStatus::kUndetermined;
+      case CBManagerAuthorizationRestricted:
+      case CBManagerAuthorizationDenied:
+        return PermissionStatus::kDenied;
+      case CBManagerAuthorizationAllowedAlways:
+        return PermissionStatus::kAllowed;
+    }
   }
+
+  // There are no Core Bluetooth permissions before macOS 10.15 so assume we
+  // always have permission.
+  return PermissionStatus::kAllowed;
 }
 
 bool BluetoothAdapterMac::IsPowered() const {

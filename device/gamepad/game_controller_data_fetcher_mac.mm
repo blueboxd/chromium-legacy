@@ -36,14 +36,16 @@ bool IsSupported(GCController* controller) {
   // applications to detect the new devices. These gamepads are already
   // supported in Chrome through other data fetchers and must be blocked here to
   // avoid double-enumeration.
-  NSString* product_category = controller.productCategory;
-  if ([product_category isEqualToString:@"HID"] ||
-      [product_category isEqualToString:@"Xbox One"] ||
-      [product_category isEqualToString:@"DualShock 4"] ||
-      [product_category isEqualToString:@"DualSense"] ||
-      [product_category isEqualToString:@"Switch Pro Controller"] ||
-      [product_category isEqualToString:@"Nintendo Switch JoyCon (L/R)"]) {
-    return false;
+  if (@available(macOS 10.15, *)) {
+    NSString* product_category = controller.productCategory;
+    if ([product_category isEqualToString:@"HID"] ||
+        [product_category isEqualToString:@"Xbox One"] ||
+        [product_category isEqualToString:@"DualShock 4"] ||
+        [product_category isEqualToString:@"DualSense"] ||
+        [product_category isEqualToString:@"Switch Pro Controller"] ||
+        [product_category isEqualToString:@"Nintendo Switch JoyCon (L/R)"]) {
+      return false;
+    }
   }
 
   return true;

@@ -134,9 +134,9 @@ const std::vector<CVImageTransferFn>& GetSupportedImageTransferFn() {
               {kCVImageBufferTransferFunction_ITU_R_2100_HLG,
                kCMFormatDescriptionTransferFunction_ITU_R_2100_HLG,
                gfx::ColorSpace::TransferID::HLG});
-          supported_transfer_funcs.push_back(
-              {kCVImageBufferTransferFunction_sRGB, nullptr,
-               gfx::ColorSpace::TransferID::SRGB});
+          supported_transfer_funcs.push_back({kCVImageBufferTransferFunction_sRGB,
+                                              nullptr,
+                                              gfx::ColorSpace::TransferID::SRGB});
         }
         if (@available(macos 10.14, *)) {
           supported_transfer_funcs.push_back(

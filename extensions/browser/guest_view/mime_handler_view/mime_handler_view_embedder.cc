@@ -185,13 +185,13 @@ void MimeHandlerViewEmbedder::CreateMimeHandlerViewGuest(
   if (!manager) {
     manager = guest_view::GuestViewManager::CreateWithDelegate(
         browser_context,
-        ExtensionsAPIClient::Get()->CreateGuestViewManagerDelegate(
-            browser_context));
+        ExtensionsAPIClient::Get()->CreateGuestViewManagerDelegate());
   }
+  CHECK(render_frame_host_);
   base::Value::Dict create_params;
   create_params.Set(mime_handler_view::kStreamId, stream_id_);
   manager->CreateGuestAndTransferOwnership(
-      MimeHandlerViewGuest::Type, web_contents(), create_params,
+      MimeHandlerViewGuest::Type, render_frame_host_, create_params,
       base::BindOnce(&MimeHandlerViewEmbedder::DidCreateMimeHandlerViewGuest,
                      weak_factory_.GetWeakPtr(),
                      std::move(before_unload_control_remote)));
@@ -214,7 +214,6 @@ void MimeHandlerViewEmbedder::DidCreateMimeHandlerViewGuest(
   DCHECK(render_frame_host_);
   DCHECK_EQ(placeholder_rfh_for_inner_contents_->GetParent(),
             render_frame_host_);
-  guest_view->SetEmbedderFrame(render_frame_host_->GetGlobalId());
 
   const int embedder_frame_process_id =
       render_frame_host_->GetProcess()->GetID();

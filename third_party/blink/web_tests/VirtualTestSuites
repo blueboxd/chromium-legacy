@@ -1556,7 +1556,7 @@
     "exclusive_tests": [
       "external/wpt/shared-storage"
     ],
-    "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,FencedFramesAPIChanges,FencedFramesDefaultMode"],
+    "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,FencedFramesAPIChanges,FencedFramesDefaultMode,SharedStorageAPIM117"],
     "expires": "Jan 1, 2024"
   },
   {
@@ -2150,6 +2150,15 @@
       "--enable-blink-features=FontPaletteAnimation"
     ],
     "expires": "Dec 1, 2023"
+  },
+  {
+    "prefix": "soft-navigation-fp-fcp",
+    "platforms": ["Linux"],
+    "bases": [
+      "external/wpt/soft-navigation-heuristics"
+    ],
+    "args": ["--enable-blink-features=SoftNavigationHeuristicsExposeFPAndFCP"],
+    "expires": "Dec 31, 2023"
   },
   {
     "prefix": "produce-compile-hints",

@@ -584,6 +584,7 @@ const char kImportDataSubPage[] = "importData";
 const char kLanguagesSubPage[] = "languages/details";
 const char kLanguageOptionsSubPage[] = "languages";
 const char kOnStartupSubPage[] = "onStartup";
+const char kPasskeysSubPage[] = "passkeys";
 const char kPasswordCheckSubPage[] = "passwords/check?start=true";
 const char kPasswordManagerSubPage[] = "passwords";
 const char kPaymentsSubPage[] = "payments";
@@ -821,12 +822,12 @@ const char* const kChromeDebugURLs[] = {
     blink::kChromeUIBrowserCrashURL,
     blink::kChromeUIBrowserDcheckURL,
     blink::kChromeUICrashURL,
-#if BUILDFLAG(BUILD_RUST_CRASH)
+#if BUILDFLAG(ENABLE_RUST_CRASH)
     blink::kChromeUICrashRustURL,
 #if defined(ADDRESS_SANITIZER)
     blink::kChromeUICrashRustOverflowURL,
 #endif
-#endif  // BUILDFLAG(BUILD_RUST_CRASH)
+#endif  // BUILDFLAG(ENABLE_RUST_CRASH)
     blink::kChromeUIDumpURL,
     blink::kChromeUIKillURL,
     blink::kChromeUIHangURL,

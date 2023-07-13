@@ -7,12 +7,14 @@ package org.chromium.chrome.browser.bookmarks;
 import static org.chromium.components.browser_ui.widget.listmenu.BasicListMenu.buildMenuListItem;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -41,6 +43,7 @@ import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableRecyclerViewAdapter;
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableRecyclerViewAdapter.DragListener;
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableRecyclerViewAdapter.DraggabilityProvider;
@@ -1073,23 +1076,42 @@ class BookmarkManagerMediator
         BookmarkItem item = bookmarkListEntry.getBookmarkItem();
         BookmarkId id = item.getId();
         PowerBookmarkMeta meta = bookmarkListEntry.getPowerBookmarkMeta();
+        final @BookmarkRowDisplayPref int displayPref =
+                mBookmarkUiPrefs.getBookmarkRowDisplayPref();
 
         propertyModel.set(BookmarkManagerProperties.BOOKMARK_LIST_ENTRY, bookmarkListEntry);
         propertyModel.set(BookmarkManagerProperties.BOOKMARK_ID, id);
-        propertyModel.set(ImprovedBookmarkRowProperties.TITLE, item.getTitle());
-        propertyModel.set(ImprovedBookmarkRowProperties.DESCRIPTION,
-                item.isFolder() ? BookmarkUtils.getFolderDescriptionText(
-                        id, mBookmarkModel, mContext.getResources())
-                                : item.getUrlForDisplay());
+
+        // Title
+        if (displayPref == BookmarkRowDisplayPref.COMPACT && item.isFolder()) {
+            propertyModel.set(ImprovedBookmarkRowProperties.TITLE,
+                    String.format(item.getTitle() + " (%s)",
+                            BookmarkUtils.getChildCountForDisplay(id, mBookmarkModel)));
+        } else {
+            propertyModel.set(ImprovedBookmarkRowProperties.TITLE, item.getTitle());
+        }
+
+        // Description
+        propertyModel.set(ImprovedBookmarkRowProperties.DESCRIPTION_VISIBLE, !item.isFolder());
+        // Only bookmarks have descriptions.
+        if (!item.isFolder()) {
+            propertyModel.set(ImprovedBookmarkRowProperties.DESCRIPTION, item.getUrlForDisplay());
+        }
+
+        // Icon
         resolveIconForBookmark(item, propertyModel);
+
+        // Menu
         propertyModel.set(
                 ImprovedBookmarkRowProperties.POPUP_LISTENER, this::onBookmarkItemMenuOpened);
-        propertyModel.set(ImprovedBookmarkRowProperties.SELECTED, false);
-        propertyModel.set(ImprovedBookmarkRowProperties.SELECTION_ACTIVE, false);
-        propertyModel.set(ImprovedBookmarkRowProperties.DRAG_ENABLED, false);
         // TODO(crbug.com/1442044): Investigate caching ModelList for the menu.
         propertyModel.set(ImprovedBookmarkRowProperties.LIST_MENU_BUTTON_DELEGATE,
                 () -> createListMenuForBookmark(propertyModel));
+
+        // Selection and drag state
+        propertyModel.set(ImprovedBookmarkRowProperties.SELECTED, false);
+        propertyModel.set(ImprovedBookmarkRowProperties.SELECTION_ACTIVE, false);
+        propertyModel.set(ImprovedBookmarkRowProperties.DRAG_ENABLED, false);
         propertyModel.set(ImprovedBookmarkRowProperties.EDITABLE, item.isEditable());
         propertyModel.set(
                 ImprovedBookmarkRowProperties.OPEN_BOOKMARK_CALLBACK, () -> openBookmarkId(id));
@@ -1142,10 +1164,20 @@ class BookmarkManagerMediator
                 folderDrawable = BookmarkUtils.getFolderIcon(mContext, type, displayPref);
             }
 
-            model.set(ImprovedBookmarkRowProperties.START_AREA_BACKGROUND_COLOR,
-                    BookmarkUtils.getFolderIconBackgroundColor(mContext, type));
-            model.set(ImprovedBookmarkRowProperties.START_ICON_TINT,
-                    BookmarkUtils.getFolderIconTint(mContext, type));
+            if (isSpecialFolder) {
+                model.set(ImprovedBookmarkRowProperties.START_AREA_BACKGROUND_COLOR,
+                        SemanticColorUtils.getColorPrimaryContainer(mContext));
+                model.set(ImprovedBookmarkRowProperties.START_ICON_TINT,
+                        ColorStateList.valueOf(
+                                SemanticColorUtils.getDefaultIconColorAccent1(mContext)));
+            } else {
+                model.set(ImprovedBookmarkRowProperties.START_AREA_BACKGROUND_COLOR,
+                        ChromeColors.getSurfaceColor(mContext, R.dimen.default_elevation_1));
+                model.set(ImprovedBookmarkRowProperties.START_ICON_TINT,
+                        AppCompatResources.getColorStateList(
+                                mContext, R.color.default_icon_color_secondary_tint_list));
+            }
+
             model.set(ImprovedBookmarkRowProperties.START_ICON_DRAWABLE, folderDrawable);
         } else {
             model.set(ImprovedBookmarkRowProperties.START_AREA_BACKGROUND_COLOR,

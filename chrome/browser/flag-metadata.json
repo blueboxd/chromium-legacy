@@ -832,6 +832,11 @@
     "expiry_milestone": 100
   },
   {
+    "name": "bluetooth-telephony",
+    "owners": [ "whalechang@google.com", "chromeos-audio-sw@google.com" ],
+    "expiry_milestone": 130
+  },
+  {
     "name": "bluetooth-use-floss",
     "owners": ["sonnysasaka", "abhishekpandit", "chromeos-bt-champs@google.com"],
     "expiry_milestone": 120
@@ -1664,13 +1669,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "disable-threaded-scrolling",
-    "owners": [ "bokan", "input-dev" ],
-    // This flag is a useful debugging control when investigating scrolling
-    // issues.
-    "expiry_milestone": -1
-  },
-  {
     "name": "disable-virtual-keyboard",
     "owners": [ "dvallet", "essential-inputs-team@google.com" ],
     "expiry_milestone": 116
@@ -2000,6 +1998,14 @@
     "name": "enable-autofill-virtual-cards-on-touch-to-fill",
     "owners": ["vishwasuppoor"],
     "expiry_milestone": 120
+  },
+  {
+    "name": "enable-autofill-virtual-view-structure",
+    "owners": [
+      "fhorschig",
+      "//components/autofill/android/OWNERS"
+    ],
+    "expiry_milestone": 123
   },
   {
     "name": "enable-automatic-snooze",
@@ -2645,6 +2651,11 @@
     "name": "enable-fenced-frames-developer-mode",
     "owners": [ "dom", "shivanisha", "chrome-fenced-frames@google.com" ],
     "expiry_milestone": 119
+  },
+  {
+    "name": "enable-file-backed-blob-factory",
+    "owners": [ "chromeos-dlp@google.com", "accorsi" ],
+    "expiry_milestone": 130
   },
   {
     "name": "enable-first-party-sets",
@@ -5361,6 +5372,11 @@
     "expiry_milestone": 120
   },
   {
+    "name": "mouse-and-trackpad-dropdown-menu",
+    "owners": [ "wbjacksonjr" ],
+    "expiry_milestone": 120
+  },
+  {
     "name": "multi-zone-rgb-keyboard",
     "owners": [ "jasontt", "assistive-eng@google.com"],
     "expiry_milestone": 120
@@ -7504,6 +7520,11 @@
     "expiry_milestone": 121
   },
   {
+    "name": "tab-resumption",
+    "owners": [ "ewannpv", "gambard", "bling-flags@google.com" ],
+    "expiry_milestone": 122
+  },
+  {
     "name": "tab-scrolling-button-position",
     "owners": [ "chrome-desktop-ui-sea@google.com", "dpenning" ],
     "expiry_milestone": 120
@@ -7871,6 +7892,11 @@
     "name": "vc-segmentation-model",
     "owners": [ "ardoerlemans", "jmpollock", "nbowe" ],
     "expiry_milestone": 116
+  },
+  {
+    "name": "vc-web-api",
+    "owners": [ "chenjih", "charleszhao" ],
+    "expiry_milestone": 120
   },
   {
     "name": "verbose-logging-in-nacl",

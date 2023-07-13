@@ -96,7 +96,7 @@ MergePerformanceEntryVectors(const PerformanceEntryVector& first_entry_vector,
                              const PerformanceEntryVector& second_entry_vector,
                              const AtomicString& maybe_name);
 
-class CORE_EXPORT Performance : public EventTargetWithInlineData {
+class CORE_EXPORT Performance : public EventTarget {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -318,6 +318,10 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void SetClocksForTesting(const base::Clock* clock,
                            const base::TickClock* tick_clock);
   void ResetTimeOriginForTesting(base::TimeTicks time_origin);
+
+  // TODO(https://crbug.com/1457049): remove this once visited links are
+  // partitioned.
+  bool softNavPaintMetricsSupported() const;
 
  private:
   void AddPaintTiming(PerformancePaintTiming::PaintType,

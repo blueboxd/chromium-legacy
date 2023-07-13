@@ -10,6 +10,7 @@
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/prevent_close_test_base.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_id.h"
@@ -24,11 +25,6 @@
 #include "content/public/test/browser_test.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(IS_WIN)
-#include "base/base_paths_win.h"
-#include "base/test/scoped_path_override.h"
-#endif  // BUILDFLAG(IS_WIN)
 
 namespace {
 constexpr char kCalculatorAppUrl[] = "https://calculator.apps.chrome/";
@@ -49,80 +45,7 @@ constexpr bool kShouldPreventClose = false;
 
 }  // namespace
 
-class TabStripModelPreventCloseTest : public policy::PolicyTest {
- public:
-  TabStripModelPreventCloseTest() {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kDesktopPWAsEnforceWebAppSettingsPolicy,
-                              features::kDesktopPWAsPreventClose},
-        /*disabled_features=*/{});
-  }
-  TabStripModelPreventCloseTest(const TabStripModelPreventCloseTest&) = delete;
-  TabStripModelPreventCloseTest& operator=(
-      const TabStripModelPreventCloseTest&) = delete;
-  ~TabStripModelPreventCloseTest() override = default;
-
-  void SetUpInProcessBrowserTestFixture() override {
-    provider_.SetDefaultReturns(
-        /*is_initialization_complete_return=*/true,
-        /*is_first_policy_load_complete_return=*/true);
-    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
-  }
-
-  void TearDownInProcessBrowserTestFixture() override {
-    ClearWebAppSettings();
-    policy::PolicyTest::TearDownInProcessBrowserTestFixture();
-  }
-
-  void SetWebAppSettings(base::StringPiece config) {
-    policy::PolicyMap policies;
-    SetPolicy(&policies, policy::key::kWebAppSettings,
-              ReturnPolicyValueFromJson(config));
-    provider_.UpdateChromePolicy(policies);
-  }
-
-  void ClearWebAppSettings() { SetWebAppSettings(/*config=*/"[]"); }
-
-  void InstallPWA(const GURL& app_url, const web_app::AppId& app_id) {
-    auto web_app_info = std::make_unique<web_app::WebAppInstallInfo>();
-    web_app_info->start_url = app_url;
-    web_app_info->scope = app_url.GetWithoutFilename();
-    web_app::AppId installed_app_id = web_app::test::InstallWebApp(
-        browser()->profile(), std::move(web_app_info));
-    EXPECT_EQ(app_id, installed_app_id);
-  }
-
-  Browser* LaunchPWA(const web_app::AppId& app_id, bool launch_in_window) {
-    return launch_in_window
-               ? web_app::LaunchWebAppBrowserAndWait(
-                     profile(), app_id, WindowOpenDisposition::NEW_WINDOW)
-               : web_app::LaunchBrowserForWebAppInTab(profile(), app_id);
-  }
-
-  base::Value ReturnPolicyValueFromJson(base::StringPiece policy) {
-    auto result = base::JSONReader::ReadAndReturnValueWithError(
-        policy, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
-    DCHECK(result.has_value()) << result.error().message;
-    DCHECK(result->is_list());
-    return std::move(*result);
-  }
-
-  Profile* profile() { return browser()->profile(); }
-
- private:
-#if BUILDFLAG(IS_WIN)
-  // This prevents SetRunOnOsLoginMode from leaving shortcuts in the Windows
-  // startup directory that cause Chrome to get launched when Windows starts on
-  // a bot. It needs to be in the class so that the override lasts until the
-  // test object is destroyed, because tasks can keep running after the test
-  // method finishes.
-  // See https://crbug.com/1239809
-  base::ScopedPathOverride override_user_startup_{base::DIR_USER_STARTUP};
-#endif  // BUILDFLAG(IS_WIN)
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-  testing::NiceMock<policy::MockConfigurationPolicyProvider> provider_;
-};
+using TabStripModelPreventCloseTest = PreventCloseTestBase;
 
 IN_PROC_BROWSER_TEST_F(TabStripModelPreventCloseTest,
                        PreventCloseEnforedByPolicy) {

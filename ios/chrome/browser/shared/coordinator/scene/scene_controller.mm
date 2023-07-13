@@ -1801,6 +1801,9 @@ void InjectNTP(Browser* browser) {
     // crbug.com/1293305.
     return;
   }
+  if (!signin::ShouldPresentWebSignin(self.mainInterface.browserState)) {
+    return;
+  }
   self.signinCoordinator = [SigninCoordinator
       consistencyPromoSigninCoordinatorWithBaseViewController:baseViewController
                                                       browser:self.mainInterface
@@ -1812,10 +1815,8 @@ void InjectNTP(Browser* browser) {
     return;
   }
   __weak SceneController* weakSelf = self;
-
   // Copy the URL so it can be safely captured in the block.
   GURL copiedURL = url;
-
   [self startSigninCoordinatorWithCompletion:^(BOOL success) {
     // If the sign-in is not successful or the scene controller is shut down do
     // not load the continuation URL.
@@ -2976,7 +2977,6 @@ void InjectNTP(Browser* browser) {
 - (void)presentSignedInAccountsViewControllerForBrowserState:
     (ChromeBrowserState*)browserState {
   CHECK(!_accountsViewController);
-  UMA_HISTOGRAM_BOOLEAN("Signin.SignedInAccountsViewImpression", true);
   id<ApplicationSettingsCommands> settingsHandler =
       HandlerForProtocol(self.mainInterface.browser->GetCommandDispatcher(),
                          ApplicationSettingsCommands);

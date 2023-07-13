@@ -2248,10 +2248,6 @@ HitTestResult LayoutObject::HitTestForOcclusion(
                                                           this, true);
 }
 
-void LayoutObject::DirtyLinesFromChangedChild(LayoutObject*, MarkingBehavior) {
-  NOT_DESTROYED();
-}
-
 std::ostream& operator<<(std::ostream& out, const LayoutObject& object) {
   String info;
 #if DCHECK_IS_ON()
@@ -2645,6 +2641,7 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
         ContainingBlock()->SetNeedsSimplifiedLayout();
       } else {
         ContainingBlock()->SetChildNeedsLayout();
+        Parent()->DirtyLinesFromChangedChild(this);
       }
     }
   }
@@ -4465,6 +4462,12 @@ void LayoutObject::SetNeedsBoundariesUpdate() {
 }
 
 gfx::RectF LayoutObject::ObjectBoundingBox() const {
+  NOT_DESTROYED();
+  NOTREACHED();
+  return gfx::RectF();
+}
+
+gfx::RectF LayoutObject::StrokeBoundingBox() const {
   NOT_DESTROYED();
   NOTREACHED();
   return gfx::RectF();

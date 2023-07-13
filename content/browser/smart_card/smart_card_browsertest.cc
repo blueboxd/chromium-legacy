@@ -43,9 +43,11 @@ using device::mojom::SmartCardResult;
 using device::mojom::SmartCardShareMode;
 using device::mojom::SmartCardStatus;
 using device::mojom::SmartCardSuccess;
+using device::mojom::SmartCardTransaction;
 using ::testing::_;
 using testing::Exactly;
 using testing::InSequence;
+using testing::StrictMock;
 
 namespace content {
 
@@ -90,6 +92,35 @@ class MockSmartCardConnection : public device::mojom::SmartCardConnection {
               BeginTransaction,
               (BeginTransactionCallback callback),
               (override));
+
+  void ExpectBeginTransaction(
+      mojo::AssociatedReceiver<SmartCardTransaction>& transaction_receiver) {
+    EXPECT_CALL(*this, BeginTransaction(_))
+        .WillOnce([&transaction_receiver](
+                      SmartCardConnection::BeginTransactionCallback callback) {
+          std::move(callback).Run(
+              device::mojom::SmartCardTransactionResult::NewTransaction(
+                  transaction_receiver.BindNewEndpointAndPassRemote()));
+        });
+  }
+};
+
+class MockSmartCardTransaction : public SmartCardTransaction {
+ public:
+  MOCK_METHOD(void,
+              EndTransaction,
+              (SmartCardDisposition disposition,
+               EndTransactionCallback callback),
+              (override));
+
+  void ExpectEndTransaction(SmartCardDisposition disposition) {
+    EXPECT_CALL(*this, EndTransaction(disposition, _))
+        .WillOnce([](SmartCardDisposition disposition,
+                     SmartCardTransaction::EndTransactionCallback callback) {
+          std::move(callback).Run(
+              SmartCardResult::NewSuccess(SmartCardSuccess::kOk));
+        });
+  }
 };
 
 class FakeSmartCardDelegate : public SmartCardDelegate {
@@ -142,6 +173,49 @@ class SmartCardTest : public ContentBrowserTest {
   FakeSmartCardDelegate& GetFakeSmartCardDelegate() {
     return *static_cast<FakeSmartCardDelegate*>(
         test_client_->GetSmartCardDelegate(nullptr));
+  }
+
+  void TestEmptyTransaction(std::string expected_result,
+                            std::string transaction_callback) {
+    ASSERT_TRUE(NavigateToURL(shell(), GetIsolatedContextUrl()));
+
+    MockSmartCardContextFactory& mock_context_factory =
+        GetFakeSmartCardDelegate().mock_context_factory;
+    MockSmartCardConnection mock_connection;
+    mojo::Receiver<SmartCardConnection> connection_receiver(&mock_connection);
+
+    MockSmartCardTransaction mock_transaction;
+    mojo::AssociatedReceiver<SmartCardTransaction> transaction_receiver(
+        &mock_transaction);
+
+    {
+      InSequence s;
+
+      mock_context_factory.ExpectConnectFakeReaderSharedT1(connection_receiver);
+      mock_connection.ExpectBeginTransaction(transaction_receiver);
+      mock_transaction.ExpectEndTransaction(SmartCardDisposition::kLeave);
+    }
+
+    std::string js_snippet = std::format(R"(
+      (async () => {{
+        let context = await navigator.smartCard.establishContext();
+
+        let connection = await context.connect("Fake reader", "shared", ["t1"]);
+
+        let transaction = {};
+
+        let transactionPromise = connection.startTransaction(transaction);
+        try {{
+          await transactionPromise;
+        }} catch (e) {{
+          return `startTransaction: ${{e.name}}, ${{e.message}}`;
+        }}
+
+        return "ok";
+      }})())",
+                                         transaction_callback);
+
+    EXPECT_EQ(expected_result, EvalJs(shell(), js_snippet));
   }
 
  private:
@@ -586,6 +660,7 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, GetStatusChange) {
             EXPECT_FALSE(states_in[0]->current_state->inuse);
             EXPECT_FALSE(states_in[0]->current_state->mute);
             EXPECT_FALSE(states_in[0]->current_state->unpowered);
+            EXPECT_EQ(states_in[0]->current_count, 6u);
 
             auto state_flags = SmartCardReaderStateFlags::New();
             state_flags->unaware = false;
@@ -602,7 +677,7 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, GetStatusChange) {
 
             std::vector<SmartCardReaderStateOutPtr> states_out;
             states_out.push_back(SmartCardReaderStateOut::New(
-                "Fake Reader", std::move(state_flags),
+                "Fake Reader", std::move(state_flags), 7,
                 std::vector<uint8_t>({1u, 2u, 3u, 4u})));
             auto result =
                 device::mojom::SmartCardStatusChangeResult::NewReaderStates(
@@ -615,12 +690,13 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, GetStatusChange) {
   EXPECT_EQ(
       "Fake Reader, {unaware=false, ignore=false, changed=false, "
       "unknown=false, unavailable=false, empty=false, present=true, "
-      "exclusive=false, inuse=true, mute=false, unpowered=false}, {1,2,3,4}",
+      "exclusive=false, inuse=true, mute=false, unpowered=false}, 7, {1,2,3,4}",
       EvalJs(shell(), R"((async () => {
        let context = await navigator.smartCard.establishContext();
 
        let readerStates = [{readerName: "Fake Reader",
-                            currentState: {empty: true}}];
+                            currentState: {empty: true},
+                            currentCount: 6 }];
        let statesOut = await context.getStatusChange(
            readerStates,
            AbortSignal.timeout(4321));
@@ -644,7 +720,7 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, GetStatusChange) {
            + `, unpowered=${flags.unpowered}`;
 
        return `${statesOut[0].readerName}, {${eventStateString}}` +
-         `, {${atrString}}`;
+         `, ${statesOut[0].eventCount}, {${atrString}}`;
      })())"));
 }
 
@@ -759,6 +835,250 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, Connect) {
       let connection = await context.connect("Fake reader", "shared",
           ["t0", "t1"]);
       return `${connection}`;
+    })())"));
+}
+
+IN_PROC_BROWSER_TEST_F(SmartCardTest, StartTransaction) {
+  ASSERT_TRUE(NavigateToURL(shell(), GetIsolatedContextUrl()));
+
+  MockSmartCardContextFactory& mock_context_factory =
+      GetFakeSmartCardDelegate().mock_context_factory;
+  MockSmartCardConnection mock_connection;
+  mojo::Receiver<SmartCardConnection> connection_receiver(&mock_connection);
+
+  MockSmartCardTransaction mock_transaction;
+  mojo::AssociatedReceiver<SmartCardTransaction> transaction_receiver(
+      &mock_transaction);
+
+  {
+    InSequence s;
+
+    mock_context_factory.ExpectConnectFakeReaderSharedT1(connection_receiver);
+
+    mock_connection.ExpectBeginTransaction(transaction_receiver);
+
+    EXPECT_CALL(mock_connection, Transmit(SmartCardProtocol::kT1, _, _))
+        .WillOnce([](SmartCardProtocol protocol,
+                     const std::vector<uint8_t>& data,
+                     SmartCardConnection::TransmitCallback callback) {
+          EXPECT_EQ(data, std::vector<uint8_t>({3u, 2u, 1u}));
+          std::move(callback).Run(
+              device::mojom::SmartCardDataResult::NewData({12u, 34u}));
+        });
+
+    mock_transaction.ExpectEndTransaction(SmartCardDisposition::kReset);
+  }
+
+  EXPECT_EQ("ok", EvalJs(shell(), R"(
+    (async () => {
+      let context = await navigator.smartCard.establishContext();
+
+      let connection = await context.connect("Fake reader", "shared", ["t1"]);
+
+      let transaction = async () => {
+        let apdu = new Uint8Array([0x03, 0x02, 0x01]);
+        await connection.transmit(apdu);
+        return "reset";
+      }
+
+      await connection.startTransaction(transaction);
+
+      return "ok";
+    })())"));
+}
+
+IN_PROC_BROWSER_TEST_F(SmartCardTest, TransactionCallbackRejects) {
+  TestEmptyTransaction("startTransaction: Error, Oops!", R"(
+      async () => { throw new Error('Oops!'); }
+    )");
+}
+
+IN_PROC_BROWSER_TEST_F(SmartCardTest, TransactionCallbackThrows) {
+  TestEmptyTransaction("startTransaction: Error, Oops!", R"(
+      () => { throw new Error('Oops!'); }
+    )");
+}
+
+IN_PROC_BROWSER_TEST_F(SmartCardTest, TransactionCallbackReturnsEmptyPromise) {
+  TestEmptyTransaction("ok", R"( async () => {} )");
+}
+
+IN_PROC_BROWSER_TEST_F(SmartCardTest, TransactionCallbackReturnsNothing) {
+  TestEmptyTransaction("ok", R"( () => {} )");
+}
+
+// A transaction callback must return a SmartCardDisposition.
+// Check that if the callback returns something else, startTransaction() returns
+// an appropriate error.
+IN_PROC_BROWSER_TEST_F(SmartCardTest, TransactionCallbackReturnsInvalidValue) {
+  TestEmptyTransaction(
+      "startTransaction: TypeError, Failed to execute 'startTransaction' on "
+      "'SmartCardConnection': The provided value '[object Object]' is not a "
+      "valid enum value of type SmartCardDisposition.",
+      R"(
+      async () => {
+        // Return some random object instead of a SmartCardDisposition
+        return {foo: 'bar', hello: 42};
+      }
+      )");
+}
+
+IN_PROC_BROWSER_TEST_F(SmartCardTest, EndTransactionFails) {
+  ASSERT_TRUE(NavigateToURL(shell(), GetIsolatedContextUrl()));
+
+  MockSmartCardContextFactory& mock_context_factory =
+      GetFakeSmartCardDelegate().mock_context_factory;
+  MockSmartCardConnection mock_connection;
+  mojo::Receiver<SmartCardConnection> connection_receiver(&mock_connection);
+
+  MockSmartCardTransaction mock_transaction;
+  mojo::AssociatedReceiver<SmartCardTransaction> transaction_receiver(
+      &mock_transaction);
+
+  {
+    InSequence s;
+
+    mock_context_factory.ExpectConnectFakeReaderSharedT1(connection_receiver);
+    mock_connection.ExpectBeginTransaction(transaction_receiver);
+
+    EXPECT_CALL(mock_transaction,
+                EndTransaction(SmartCardDisposition::kEject, _))
+        .WillOnce([](SmartCardDisposition disposition,
+                     SmartCardTransaction::EndTransactionCallback callback) {
+          std::move(callback).Run(
+              SmartCardResult::NewError(SmartCardError::kResetCard));
+        });
+  }
+
+  EXPECT_EQ(
+      "startTransaction: SmartCardError, The smart card has been reset, so any "
+      "shared state information is invalid.",
+      EvalJs(shell(), R"(
+    (async () => {
+      let context = await navigator.smartCard.establishContext();
+
+      let connection = await context.connect("Fake reader", "shared", ["t1"]);
+
+      let transaction = async () => {
+        return "eject";
+      }
+
+      transactionPromise = connection.startTransaction(transaction);
+      try {
+        await transactionPromise;
+      } catch (e) {
+        return `startTransaction: ${e.name}, ${e.message}`;
+      }
+
+      return "startTransaction did not throw";
+    })())"));
+}
+
+IN_PROC_BROWSER_TEST_F(SmartCardTest, DisconnectedOnTransactionReturn) {
+  ASSERT_TRUE(NavigateToURL(shell(), GetIsolatedContextUrl()));
+
+  MockSmartCardContextFactory& mock_context_factory =
+      GetFakeSmartCardDelegate().mock_context_factory;
+  MockSmartCardConnection mock_connection;
+  mojo::Receiver<SmartCardConnection> connection_receiver(&mock_connection);
+
+  StrictMock<MockSmartCardTransaction> mock_transaction;
+  mojo::AssociatedReceiver<SmartCardTransaction> transaction_receiver(
+      &mock_transaction);
+
+  {
+    InSequence s;
+
+    mock_context_factory.ExpectConnectFakeReaderSharedT1(connection_receiver);
+    mock_connection.ExpectBeginTransaction(transaction_receiver);
+
+    EXPECT_CALL(mock_connection, Disconnect(SmartCardDisposition::kLeave, _))
+        .WillOnce([](SmartCardDisposition disposition,
+                     SmartCardConnection::DisconnectCallback callback) {
+          std::move(callback).Run(
+              SmartCardResult::NewSuccess(SmartCardSuccess::kOk));
+        });
+  }
+
+  EXPECT_EQ(
+      "startTransaction: InvalidStateError, Failed to execute "
+      "'startTransaction' on 'SmartCardConnection': Cannot end transaction "
+      "with an invalid connection.",
+      EvalJs(shell(), R"(
+    (async () => {
+      let context = await navigator.smartCard.establishContext();
+
+      let connection = await context.connect("Fake reader", "shared", ["t1"]);
+
+      let transaction = async () => {
+        await connection.disconnect();
+        return "eject";
+      }
+
+      transactionPromise = connection.startTransaction(transaction);
+      try {
+        await transactionPromise;
+      } catch (e) {
+        return `startTransaction: ${e.name}, ${e.message}`;
+      }
+
+      return "startTransaction did not throw";
+    })())"));
+}
+
+IN_PROC_BROWSER_TEST_F(SmartCardTest, OngoingTransmitOnTransactionReturn) {
+  ASSERT_TRUE(NavigateToURL(shell(), GetIsolatedContextUrl()));
+
+  MockSmartCardContextFactory& mock_context_factory =
+      GetFakeSmartCardDelegate().mock_context_factory;
+  MockSmartCardConnection mock_connection;
+  mojo::Receiver<SmartCardConnection> connection_receiver(&mock_connection);
+
+  StrictMock<MockSmartCardTransaction> mock_transaction;
+  mojo::AssociatedReceiver<SmartCardTransaction> transaction_receiver(
+      &mock_transaction);
+
+  {
+    InSequence s;
+
+    mock_context_factory.ExpectConnectFakeReaderSharedT1(connection_receiver);
+    mock_connection.ExpectBeginTransaction(transaction_receiver);
+
+    EXPECT_CALL(mock_connection, Transmit(SmartCardProtocol::kT1, _, _))
+        .WillOnce([](SmartCardProtocol protocol,
+                     const std::vector<uint8_t>& data,
+                     SmartCardConnection::TransmitCallback callback) {
+          EXPECT_EQ(data, std::vector<uint8_t>({3u, 2u, 1u}));
+          std::move(callback).Run(
+              device::mojom::SmartCardDataResult::NewData({12u, 34u}));
+        });
+
+    mock_transaction.ExpectEndTransaction(SmartCardDisposition::kEject);
+  }
+
+  EXPECT_EQ(
+      "startTransaction: InvalidStateError, Transaction callback returned "
+      "while an operation was still in progress.",
+      EvalJs(shell(), R"(
+    (async () => {
+      let context = await navigator.smartCard.establishContext();
+
+      let connection = await context.connect("Fake reader", "shared", ["t1"]);
+
+      let transaction = async () => {
+        // Return before the transmit() completes.
+        let apdu = new Uint8Array([0x03, 0x02, 0x01]);
+        connection.transmit(apdu);
+        return "eject";
+      }
+
+      transactionPromise = connection.startTransaction(transaction);
+      try {
+        await transactionPromise;
+      } catch (e) {
+        return `startTransaction: ${e.name}, ${e.message}`;
+      }
+      return "ok";
     })())"));
 }
 

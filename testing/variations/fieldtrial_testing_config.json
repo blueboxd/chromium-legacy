@@ -1415,6 +1415,25 @@
             ]
         }
     ],
+    "AutofillMoveLegalTermsAndIconForNewCardEnrollment": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillMoveLegalTermsAndIconForNewCardEnrollment"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillOfferToSaveCardWithSameLastFour": [
         {
             "platforms": [
@@ -3645,6 +3664,21 @@
             ]
         }
     ],
+    "ConsistencyNewAccountInterface": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ConsistencyNewAccountInterface"
+                    ]
+                }
+            ]
+        }
+    ],
     "ConsolidatedIPCForProxyCreation": [
         {
             "platforms": [
@@ -5428,6 +5462,22 @@
                     "name": "Enabled_114_20230710",
                     "enable_features": [
                         "EnablePreferencesAccountStorage"
+                    ]
+                }
+            ]
+        }
+    ],
+    "EnableReportingStorageControlledDegradation": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableReportingStorageControlledDegradation"
                     ]
                 }
             ]
@@ -9559,21 +9609,6 @@
                     "name": "Enabled_OnlyBatched",
                     "enable_features": [
                         "OnBeginFrameAcks"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OnDemandAT": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OnDemandAccessibilityEvents"
                     ]
                 }
             ]
@@ -15843,6 +15878,28 @@
                     "name": "Enabled_20230222",
                     "enable_features": [
                         "ZeroCopyTabCapture"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ZstdContentEncoding": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "fuchsia",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ZstdContentEncoding"
                     ]
                 }
             ]

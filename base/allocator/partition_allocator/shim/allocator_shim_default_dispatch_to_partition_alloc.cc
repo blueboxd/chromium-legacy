@@ -178,6 +178,8 @@ partition_alloc::PartitionRoot* Allocator() {
 // Original g_root_ if it was replaced by ConfigurePartitions().
 std::atomic<partition_alloc::PartitionRoot*> g_original_root(nullptr);
 
+std::atomic<bool> g_roots_finalized = false;
+
 class AlignedPartitionConstructor {
  public:
   static partition_alloc::PartitionRoot* New(void* buffer) {
@@ -194,6 +196,10 @@ partition_alloc::PartitionRoot* OriginalAllocator() {
 
 partition_alloc::PartitionRoot* AlignedAllocator() {
   return g_aligned_root.Get();
+}
+
+bool AllocatorConfigurationFinalized() {
+  return g_roots_finalized.load();
 }
 
 void* AllocateAlignedMemory(size_t alignment, size_t size) {
@@ -499,6 +505,11 @@ void PartitionTryFreeDefault(const AllocatorDispatch*,
 #endif  // BUILDFLAG(IS_APPLE)
 
 // static
+bool PartitionAllocMalloc::AllocatorConfigurationFinalized() {
+  return ::AllocatorConfigurationFinalized();
+}
+
+// static
 partition_alloc::PartitionRoot* PartitionAllocMalloc::Allocator() {
   return ::Allocator();
 }
@@ -530,6 +541,7 @@ void EnablePartitionAllocMemoryReclaimer() {
   // There is only one PartitionAlloc-Everywhere partition at the moment. Any
   // additional partitions will be created in ConfigurePartitions() and
   // registered for memory reclaimer there.
+  PA_DCHECK(!AllocatorConfigurationFinalized());
   PA_DCHECK(OriginalAllocator() == nullptr);
   PA_DCHECK(AlignedAllocator() == Allocator());
 }
@@ -551,15 +563,12 @@ void ConfigurePartitions(
   // Can't split out the aligned partition, without splitting the main one.
   PA_CHECK(!use_dedicated_aligned_partition || split_main_partition);
 
-  static bool configured = false;
-  PA_CHECK(!configured);
-  configured = true;
-
   // Calling Get() is actually important, even if the return values weren't
   // used, because it has a side effect of initializing the variables, if they
   // weren't already.
   auto* current_root = g_root.Get();
   auto* current_aligned_root = g_aligned_root.Get();
+  PA_DCHECK(current_root == current_aligned_root);
 
   if (!split_main_partition) {
     switch (use_alternate_bucket_distribution) {
@@ -568,12 +577,12 @@ void ConfigurePartitions(
         break;
       case AlternateBucketDistribution::kDenser:
         current_root->SwitchToDenserBucketDistribution();
-        current_aligned_root->SwitchToDenserBucketDistribution();
         break;
     }
     PA_DCHECK(!enable_brp);
     PA_DCHECK(!use_dedicated_aligned_partition);
     PA_DCHECK(!current_root->settings.with_thread_cache);
+    PA_CHECK(!g_roots_finalized.exchange(true));  // Ensure configured once.
     return;
   }
 
@@ -629,14 +638,9 @@ void ConfigurePartitions(
   }
 
   // Now switch traffic to the new partitions.
+  g_original_root = current_root;
   g_aligned_root.Replace(new_aligned_root);
   g_root.Replace(new_root);
-
-  // g_original_root has to be set after g_root, because other code doesn't
-  // handle well both pointing to the same root.
-  // TODO(bartekn): Reorder, once handled well. It isn't ideal for one
-  // partition to be invisible temporarily.
-  g_original_root = current_root;
 
   // No need for g_original_aligned_root, because in cases where g_aligned_root
   // is replaced, it must've been g_original_root.
@@ -652,10 +656,14 @@ void ConfigurePartitions(
       // We start in the 'default' case.
       break;
     case AlternateBucketDistribution::kDenser:
-      g_root.Get()->SwitchToDenserBucketDistribution();
-      g_aligned_root.Get()->SwitchToDenserBucketDistribution();
+      new_root->SwitchToDenserBucketDistribution();
+      if (new_aligned_root != new_root) {
+        new_aligned_root->SwitchToDenserBucketDistribution();
+      }
       break;
   }
+
+  PA_CHECK(!g_roots_finalized.exchange(true));  // Ensure configured once.
 }
 
 // No synchronization provided: `PartitionRoot.flags` is only written
@@ -672,6 +680,7 @@ uint32_t GetMainPartitionRootExtrasSize() {
 void EnablePCScan(partition_alloc::internal::PCScan::InitConfig config) {
   partition_alloc::internal::PCScan::Initialize(config);
 
+  PA_CHECK(AllocatorConfigurationFinalized());
   partition_alloc::internal::PCScan::RegisterScannableRoot(Allocator());
   if (OriginalAllocator() != nullptr) {
     partition_alloc::internal::PCScan::RegisterScannableRoot(

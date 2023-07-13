@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/css/style_attribute_mutation_scope.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
@@ -2004,7 +2005,7 @@ DispatchEventResult Animation::DispatchEventInternal(Event& event) {
     pending_cancelled_event_ = nullptr;
   if (pending_remove_event_ == &event)
     pending_remove_event_ = nullptr;
-  return EventTargetWithInlineData::DispatchEventInternal(event);
+  return EventTarget::DispatchEventInternal(event);
 }
 
 double Animation::playbackRate() const {
@@ -2876,8 +2877,7 @@ void Animation::NotifyAnimationStarted(base::TimeDelta monotonic_time,
 void Animation::AddedEventListener(
     const AtomicString& event_type,
     RegisteredEventListener& registered_listener) {
-  EventTargetWithInlineData::AddedEventListener(event_type,
-                                                registered_listener);
+  EventTarget::AddedEventListener(event_type, registered_listener);
   if (event_type == event_type_names::kFinish)
     UseCounter::Count(GetExecutionContext(), WebFeature::kAnimationFinishEvent);
 }
@@ -3187,6 +3187,12 @@ void Animation::commitStyles(ExceptionState& exception_state) {
   ActiveInterpolationsMap interpolations_map =
       To<KeyframeEffect>(effect())->InterpolationsForCommitStyles();
 
+  // `inline_style` must be an inline style declaration, which is a subclass of
+  // `AbstractPropertySetCSSStyleDeclaration`.
+  CHECK(inline_style->IsAbstractPropertySet());
+  StyleAttributeMutationScope style_attr_mutation_scope(
+      To<AbstractPropertySetCSSStyleDeclaration>(inline_style));
+
   AnimationUtils::ForEachInterpolatedPropertyValue(
       target, animation_properties, interpolations_map,
       WTF::BindRepeating(
@@ -3259,7 +3265,7 @@ void Animation::Trace(Visitor* visitor) const {
   visitor->Trace(compositor_animation_);
   visitor->Trace(style_dependent_range_start_);
   visitor->Trace(style_dependent_range_end_);
-  EventTargetWithInlineData::Trace(visitor);
+  EventTarget::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }
 

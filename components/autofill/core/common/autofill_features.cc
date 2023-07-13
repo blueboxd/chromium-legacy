@@ -626,17 +626,17 @@ BASE_FEATURE(kAutofillKeyboardAccessory,
              "AutofillKeyboardAccessory_LAUNCHED",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Controls whether the Autofill manual fallback for Addresses and Payments is
-// present on Android.
-BASE_FEATURE(kAutofillManualFallbackAndroid,
-             "AutofillManualFallbackAndroid_LAUNCHED",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Controls whether the touch to fill surface is shown for credit cards on
 // Android.
 BASE_FEATURE(kAutofillTouchToFillForCreditCardsAndroid,
              "AutofillTouchToFillForCreditCardsAndroid",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Controls the whether the Chrome may provide a virtual view structure for
+// Android Autofill.
+BASE_FEATURE(kAutofillVirtualViewStructureAndroid,
+             "AutofillVirtualViewStructureAndroid",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #endif  // BUILDFLAG(IS_ANDROID)
 

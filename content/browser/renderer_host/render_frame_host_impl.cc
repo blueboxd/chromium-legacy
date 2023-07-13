@@ -1606,7 +1606,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
 
   InitializePolicyContainerHost(renderer_initiated_creation_of_main_frame);
 
-  InitializeLocalNetworkRequestPolicy();
+  InitializePrivateNetworkRequestPolicy();
 
   unload_event_monitor_timeout_ =
       std::make_unique<TimeoutMonitor>(base::BindRepeating(
@@ -3094,14 +3094,14 @@ void RenderFrameHostImpl::SetPolicyContainerHost(
   CHECK(parent_ || !IsCredentialless());
 }
 
-void RenderFrameHostImpl::InitializeLocalNetworkRequestPolicy() {
+void RenderFrameHostImpl::InitializePrivateNetworkRequestPolicy() {
   if (!policy_container_host_) {
     // Only speculative RFHs may lack a policy container.
     DCHECK_EQ(lifecycle_state_, LifecycleStateImpl::kSpeculative);
     return;
   }
 
-  local_network_request_policy_ = DerivePrivateNetworkRequestPolicy(
+  private_network_request_policy_ = DerivePrivateNetworkRequestPolicy(
       policy_container_host_->policies(),
       PrivateNetworkRequestContext::kSubresource);
 }
@@ -4369,8 +4369,8 @@ void RenderFrameHostImpl::SetOriginDependentStateOfNewFrame(
   // Apply private network request policy according to our new origin.
   if (GetContentClient()->browser()->ShouldAllowInsecurePrivateNetworkRequests(
           GetBrowserContext(), new_frame_origin)) {
-    local_network_request_policy_ =
-        network::mojom::LocalNetworkRequestPolicy::kAllow;
+    private_network_request_policy_ =
+        network::mojom::PrivateNetworkRequestPolicy::kAllow;
   }
 
   // Construct the frame's permissions policy only once we know its initial
@@ -7979,10 +7979,6 @@ void RenderFrameHostImpl::CreateNewWindow(
   bool no_javascript_access = false;
 
   // Filter out URLs to which navigation is disallowed from this context.
-  //
-  // Note that currently, "javascript:" URLs and empty strings (both of which
-  // are legal arguments to window.open) make it here; FilterURL rewrites them
-  // to "about:blank" -- they shouldn't be cancelled.
   GetProcess()->FilterURL(false, &params->target_url);
 
   bool effective_transient_activation_state =
@@ -12141,7 +12137,7 @@ RenderFrameHostImpl::BuildClientSecurityState() const {
         std::move(coep),
         /*is_web_secure_context=*/false,
         network::mojom::IPAddressSpace::kUnknown,
-        network::mojom::LocalNetworkRequestPolicy::kBlock);
+        network::mojom::PrivateNetworkRequestPolicy::kBlock);
   }
 
   auto client_security_state = network::mojom::ClientSecurityState::New();
@@ -12150,8 +12146,8 @@ RenderFrameHostImpl::BuildClientSecurityState() const {
   client_security_state->is_web_secure_context = policies.is_web_secure_context;
   client_security_state->ip_address_space = policies.ip_address_space;
 
-  client_security_state->local_network_request_policy =
-      local_network_request_policy_;
+  client_security_state->private_network_request_policy =
+      private_network_request_policy_;
   client_security_state->cross_origin_embedder_policy =
       policies.cross_origin_embedder_policy;
 
@@ -12162,7 +12158,7 @@ network::mojom::ClientSecurityStatePtr
 RenderFrameHostImpl::BuildClientSecurityStateForWorkers() const {
   auto client_security_state = BuildClientSecurityState();
 
-  client_security_state->local_network_request_policy =
+  client_security_state->private_network_request_policy =
       DerivePrivateNetworkRequestPolicy(
           client_security_state->ip_address_space,
           client_security_state->is_web_secure_context,
@@ -12237,7 +12233,7 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   // filenames it can't access in a future session restore.
   if (!CanAccessFilesOfPageState(params->page_state)) {
     bad_message::ReceivedBadMessage(
-        process, bad_message::RFH_CAN_ACCESS_FILES_OF_PAGE_STATE);
+        process, bad_message::RFH_CAN_ACCESS_FILES_OF_PAGE_STATE_AT_COMMIT);
     return false;
   }
 
@@ -13110,8 +13106,8 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
     return;
   }
 
-  local_network_request_policy_ =
-      navigation_request->local_network_request_policy();
+  private_network_request_policy_ =
+      navigation_request->private_network_request_policy();
 
   reporting_endpoints_.clear();
   DCHECK(navigation_request);

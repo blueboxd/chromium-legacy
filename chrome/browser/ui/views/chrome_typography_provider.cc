@@ -220,6 +220,11 @@ int ChromeTypographyProvider::GetLineHeight(int context, int style) const {
       GetFont(CONTEXT_DIALOG_BODY_TEXT_SMALL, kTemplateStyle).GetHeight() -
       kBodyTextSmallPlatformHeight + kBodyHeight;
 
+  if (style > views::style::STYLE_OVERRIDE_TYPOGRAPHY_START &&
+      style < views::style::STYLE_OVERRIDE_TYPOGRAPHY_END) {
+    return TypographyProvider::GetLineHeight(context, style);
+  }
+
   switch (context) {
     case views::style::CONTEXT_BUTTON:
     case views::style::CONTEXT_BUTTON_MD:
@@ -242,8 +247,10 @@ int ChromeTypographyProvider::GetLineHeight(int context, int style) const {
 
 bool ChromeTypographyProvider::StyleAllowedForContext(int context,
                                                       int style) const {
-  if (context == CONTEXT_TAB_HOVER_CARD_TITLE)
-    return style == views::style::STYLE_PRIMARY;
+  if (context == CONTEXT_TAB_HOVER_CARD_TITLE) {
+    return style == views::style::STYLE_PRIMARY ||
+           style == views::style::STYLE_BODY_3_EMPHASIS;
+  }
 
   if (style == views::style::STYLE_EMPHASIZED ||
       style == views::style::STYLE_EMPHASIZED_SECONDARY) {

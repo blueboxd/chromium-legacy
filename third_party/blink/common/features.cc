@@ -1398,7 +1398,7 @@ BASE_FEATURE(kResamplingScrollEvents,
 
 BASE_FEATURE(kRetriggerPreloadingOnBFCacheRestoration,
              "RetriggerPreloadingOnBFCacheRestoration",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRunTextInputUpdatePostLifecycle,
              "RunTextInputUpdatePostLifecycle",
@@ -1753,6 +1753,10 @@ BASE_FEATURE(kUseBlinkSchedulerTaskRunnerWithCustomDeleter,
              "UseBlinkSchedulerTaskRunnerWithCustomDeleter",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kEnableFileBackedBlobFactory,
+             "EnableFileBackedBlobFactory",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Whether to use 'TexImage2D' instead of 'TexStorage2DEXT' when creating a
 // staging texture for |DrawingBuffer|. This is a killswitch; remove when
 // launched.
@@ -1780,12 +1784,6 @@ BASE_FEATURE(kUseThreadPoolForMediaStreamVideoTaskRunner,
 BASE_FEATURE(kUserLevelMemoryPressureSignal,
              "UserLevelMemoryPressureSignal",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Prevents workers from sending IsolateInBackgroundNotification to V8
-// and thus instructs V8 to favor performance over memory on workers.
-BASE_FEATURE(kV8OptimizeWorkersForPerformance,
-             "V8OptimizeWorkersForPerformance",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kVSyncDecoding,
              "VSyncDecoding",

@@ -777,13 +777,6 @@ BASE_FEATURE(kEnforceAshExtensionKeeplist,
              "EnforceAshExtensionKeeplist",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enforces enrollment nudging for managed users during OOBE. This is a
-// temporary flag for WIP feature to until we implement required DM server
-// controls.
-BASE_FEATURE(kEnrollmentNudgingForTesting,
-             "EnrollmentNudgingForTesting",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables access to the chrome://enterprise-reporting WebUI.
 BASE_FEATURE(kEnterpriseReportingUI,
              "EnterpriseReportingUI",
@@ -960,6 +953,9 @@ BASE_FEATURE(kFeatureManagement16Desks,
 // controlled by the feature management module.
 BASE_FEATURE(kFeatureManagementUpdateNotification,
              "FeatureManagementUpdateNotification",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kUpdateNotification,
+             "UpdateNotification",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Allows borealis on certain boards whose features are determined by
@@ -2457,6 +2453,9 @@ BASE_FEATURE(kVcLightIntensity,
              "VCLightIntensity",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables or disables web API support for ChromeOS video conferencing.
+BASE_FEATURE(kVcWebApi, "VcWebApi", base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enable or disable multitouch for virtual keyboard on ChromeOS.
 BASE_FEATURE(kVirtualKeyboardMultitouch,
              "VirtualKeyboardMultitouch",
@@ -2664,7 +2663,8 @@ bool Is16DesksEnabled() {
 }
 
 bool IsUpdateNotificationEnabled() {
-  return base::FeatureList::IsEnabled(kFeatureManagementUpdateNotification);
+  return base::FeatureList::IsEnabled(kFeatureManagementUpdateNotification) &&
+         base::FeatureList::IsEnabled(kUpdateNotification);
 }
 
 bool IsAdaptiveChargingEnabled() {
@@ -3241,10 +3241,6 @@ bool IsEducationEnrollmentOobeFlowEnabled() {
   return base::FeatureList::IsEnabled(kEducationEnrollmentOobeFlow);
 }
 
-bool IsEnrollmentNudgingForTestingEnabled() {
-  return base::FeatureList::IsEnabled(kEnrollmentNudgingForTesting);
-}
-
 bool IsGameDashboardEnabled() {
   if (!base::FeatureList::IsEnabled(kGameDashboard)) {
     return false;
@@ -3758,6 +3754,10 @@ bool IsVcPortraitRelightEnabled() {
 
 bool IsVcControlsUiFakeEffectsEnabled() {
   return base::FeatureList::IsEnabled(kVcControlsUiFakeEffects);
+}
+
+bool IsVcWebApiEnabled() {
+  return base::FeatureList::IsEnabled(kVcWebApi) && IsVideoConferenceEnabled();
 }
 
 bool IsWallpaperFastRefreshEnabled() {

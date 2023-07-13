@@ -14,7 +14,7 @@
 #include "components/autofill/core/browser/test_utils/vote_uploads_test_matchers.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
-#include "components/password_manager/core/browser/form_parsing/form_parser.h"
+#include "components/password_manager/core/browser/form_parsing/form_data_parser.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
@@ -316,6 +316,8 @@ class PasswordSaveManagerImplTestBase : public testing::Test {
   }
 
   void DestroySaveManagerAndMetricsRecorder() {
+    mock_account_form_saver_ = nullptr;
+    mock_profile_form_saver_ = nullptr;
     password_save_manager_impl_.reset();
     metrics_recorder_.reset();
   }
@@ -402,10 +404,8 @@ class PasswordSaveManagerImplTestBase : public testing::Test {
   // needs to outlive the latter.
   std::unique_ptr<FakeFormFetcher> fetcher_;
   std::unique_ptr<PasswordSaveManagerImpl> password_save_manager_impl_;
-  raw_ptr<NiceMock<MockFormSaver>, DanglingUntriaged> mock_account_form_saver_ =
-      nullptr;
-  raw_ptr<NiceMock<MockFormSaver>, DanglingUntriaged> mock_profile_form_saver_ =
-      nullptr;
+  raw_ptr<NiceMock<MockFormSaver>> mock_account_form_saver_ = nullptr;
+  raw_ptr<NiceMock<MockFormSaver>> mock_profile_form_saver_ = nullptr;
   NiceMock<MockAutofillDownloadManager> mock_autofill_download_manager_;
 };
 

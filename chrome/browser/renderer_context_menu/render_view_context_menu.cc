@@ -42,6 +42,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/companion/core/features.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -483,13 +484,14 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_COPYVIDEOFRAME, 132},
        {IDC_CONTENT_CONTEXT_SAVEPLUGINAS, 133},
        {IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED, 134},
+       {IDC_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB, 135},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 135}});
+       {0, 136}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -523,13 +525,14 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_ADD_A_NOTE, 26},
        {IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHWEB, 27},
        {IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS, 28},
+       {IDC_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB, 29},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the ContextMenuOptionDesktop enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 29}});
+       {0, 30}});
 
   return *(type == UmaEnumIdLookupType::GeneralEnumId ? kGeneralMap
                                                       : kSpecificMap);
@@ -947,12 +950,9 @@ void RenderViewContextMenu::AppendCurrentExtensionItems() {
                                            render_frame_id_));
   MenuItem::ExtensionKey key;
   if (web_view_guest) {
-    key = MenuItem::ExtensionKey(extension->id(),
-                                 web_view_guest->owner_web_contents()
-                                     ->GetPrimaryMainFrame()
-                                     ->GetProcess()
-                                     ->GetID(),
-                                 web_view_guest->view_instance_id());
+    key = MenuItem::ExtensionKey(
+        extension->id(), web_view_guest->owner_rfh()->GetProcess()->GetID(),
+        web_view_guest->view_instance_id());
   } else {
     key = MenuItem::ExtensionKey(extension->id());
   }
@@ -2148,6 +2148,19 @@ void RenderViewContextMenu::AppendSearchProvider() {
                                      printable_selection_text));
       if (companion::IsSearchWebInCompanionSidePanelSupported(GetBrowser())) {
         menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
+        // Add an "in new tab" item performing the non-side panel behavior.
+        if (base::FeatureList::IsEnabled(
+                companion::features::
+                    kCompanionEnableSearchWebInNewTabContextMenuItem) &&
+            selection_navigation_url_ != params_.link_url &&
+            ChildProcessSecurityPolicy::GetInstance()->IsWebSafeScheme(
+                selection_navigation_url_.scheme())) {
+          menu_model_.AddItem(
+              IDC_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB,
+              l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB,
+                                         default_provider->short_name(),
+                                         printable_selection_text));
+        }
       }
     }
   } else {
@@ -2636,6 +2649,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return IsPrintPreviewEnabled();
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
+    case IDC_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB:
     case IDC_CONTENT_CONTEXT_GOTOURL:
       return IsOpenLinkAllowedByDlp(selection_navigation_url_);
 
@@ -2881,7 +2895,11 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_SAVELINKAS:
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+      CheckSupervisedUserURLFilterAndSaveLinkAs();
+#else
       ExecSaveLinkAs();
+#endif
       break;
 
     case IDC_CONTENT_CONTEXT_SAVEAVAS:
@@ -3120,6 +3138,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       }
       ABSL_FALLTHROUGH_INTENDED;
     }
+    case IDC_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB:
     case IDC_CONTENT_CONTEXT_GOTOURL: {
       auto disposition = ui::DispositionFromEventFlags(
           event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB);
@@ -3389,6 +3408,11 @@ bool RenderViewContextMenu::IsSaveLinkAsEnabled() const {
       supervised_user_service->IsURLFilteringEnabled()) {
     supervised_user::SupervisedUserURLFilter* url_filter =
         supervised_user_service->GetURLFilter();
+    // Use the URL filter's synchronous call to check if a site has been
+    // manually blocked for the user. This does not filter websites that are
+    // blocked by SafeSites API for having mature content. The mature content
+    // filter requires an async call. This call is made if the user selects
+    // "Save link as" and blocks the download.
     if (url_filter->GetFilteringBehaviorForURL(params_.link_url) !=
         supervised_user::SupervisedUserURLFilter::FilteringBehavior::ALLOW) {
       return false;
@@ -3753,6 +3777,38 @@ void RenderViewContextMenu::ExecInspectBackgroundPage() {
 
   extensions::devtools_util::InspectBackgroundPage(platform_app, GetProfile());
 }
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+void RenderViewContextMenu::CheckSupervisedUserURLFilterAndSaveLinkAs() {
+  Profile* const profile = Profile::FromBrowserContext(browser_context_);
+  supervised_user::SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(profile);
+
+  if (supervised_user_service &&
+      supervised_user_service->IsURLFilteringEnabled()) {
+    supervised_user::SupervisedUserURLFilter* url_filter =
+        supervised_user_service->GetURLFilter();
+    url_filter->GetFilteringBehaviorForURLWithAsyncChecks(
+        params_.link_url,
+        base::BindOnce(&RenderViewContextMenu::OnSupervisedUserURLFilterChecked,
+                       weak_pointer_factory_.GetWeakPtr()),
+        /* skip_manual_parent_filter= */ false);
+    return;
+  }
+  ExecSaveLinkAs();
+}
+
+void RenderViewContextMenu::OnSupervisedUserURLFilterChecked(
+    supervised_user::SupervisedUserURLFilter::FilteringBehavior
+        filtering_behavior,
+    supervised_user::FilteringBehaviorReason reason,
+    bool uncertain) {
+  if (filtering_behavior ==
+      supervised_user::SupervisedUserURLFilter::FilteringBehavior::ALLOW) {
+    ExecSaveLinkAs();
+  }
+}
+#endif
 
 void RenderViewContextMenu::ExecSaveLinkAs() {
   RenderFrameHost* render_frame_host = GetRenderFrameHost();

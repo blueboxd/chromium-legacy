@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CHILD_NODE_PART_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CHILD_NODE_PART_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/v8_node_part_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_part_init.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_node_string_trustedscript.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
@@ -29,34 +29,43 @@ class CORE_EXPORT ChildNodePart : public Part, public PartRoot {
   static ChildNodePart* Create(PartRootUnion* root_union,
                                Node* previous_sibling,
                                Node* next_sibling,
-                               const NodePartInit* init,
+                               const PartInit* init,
                                ExceptionState& exception_state);
   ChildNodePart(PartRoot& root,
                 Node& previous_sibling,
                 Node& next_sibling,
-                const NodePartInit* init = nullptr);
+                const PartInit* init)
+      : ChildNodePart(root,
+                      previous_sibling,
+                      next_sibling,
+                      init && init->hasMetadata() ? init->metadata()
+                                                  : Vector<String>()) {}
+  ChildNodePart(PartRoot& root,
+                Node& previous_sibling,
+                Node& next_sibling,
+                const Vector<String> metadata);
   ChildNodePart(const ChildNodePart&) = delete;
   ~ChildNodePart() override = default;
 
   void Trace(Visitor* visitor) const override;
   bool IsValid() const override;
   Node* NodeToSortBy() const override;
-  void Clone(NodeCloningData&) const override;
+  Part* ClonePart(NodeCloningData&) const override;
   Document& GetDocument() const override;
 
   // ChildNodePart API
   void disconnect() override;
-  PartRootUnion* clone() const;
+  PartRootUnion* clone(ExceptionState& exception_state) const;
   ContainerNode* rootContainer() const override;
-
+  ContainerNode* parentElement() const {
+    return previous_sibling_->parentElement();
+  }
   Node* previousSibling() const { return previous_sibling_; }
   Node* nextSibling() const { return next_sibling_; }
-  // TODO(crbug.com/1453291) Implement this method.
-  HeapVector<Member<Node>> children() const {
-    return HeapVector<Member<Node>>();
-  }
-  // TODO(crbug.com/1453291) Implement this method.
-  void replaceChildren(const HeapVector<Member<V8UnionNodeOrString>>& nodes) {}
+  HeapVector<Member<Node>> children() const;
+  void replaceChildren(
+      const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
+      ExceptionState& exception_state);
 
  protected:
   const PartRoot* GetParentPartRoot() const override {

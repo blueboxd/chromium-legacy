@@ -81,6 +81,7 @@ source_set("backend") {
   deps = [
     ":jni_headers",
     "//components/autofill/core/browser:browser",
+    "//components/password_manager/core/browser:affiliation",
     "//components/password_manager/core/browser:browser",
     "//components/password_manager/core/browser:password_form",
     "//components/password_manager/core/browser:unified_password_manager_proto",
@@ -462,6 +463,7 @@ source_set("unit_tests") {
     "//components/device_reauth:test_support",
     "//components/messages/android:test_support",
     "//components/password_manager/content/browser",
+    "//components/password_manager/content/browser:test_support",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/browser:test_support",
     "//components/password_manager/core/browser/features:password_features",

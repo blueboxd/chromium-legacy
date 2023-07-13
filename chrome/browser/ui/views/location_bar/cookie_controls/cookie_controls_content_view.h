@@ -6,36 +6,55 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_COOKIE_CONTROLS_COOKIE_CONTROLS_CONTENT_VIEW_H_
 
 #include "base/memory/raw_ptr.h"
+#include "ui/base/interaction/element_identifier.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/views/view.h"
+
+class RichControlsContainerView;
 
 namespace views {
 class Label;
+class ToggleButton;
 }  // namespace views
 
 // Content view used to display the cookie Controls.
 class CookieControlsContentView : public views::View {
  public:
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kTitle);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kDescription);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kToggleButton);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kFeedbackButton);
   CookieControlsContentView();
 
   ~CookieControlsContentView() override;
 
-  void UpdateContentLabels(const std::u16string& title,
-                           const std::u16string& description);
+  virtual void UpdateContentLabels(const std::u16string& title,
+                                   const std::u16string& description);
 
-  void SetFeedbackSectionVisibility(bool visible);
+  void SetToggleIsOn(bool is_on);
+  void SetToggleIcon(const gfx::VectorIcon& icon);
 
+  virtual void SetFeedbackSectionVisibility(bool visible);
+
+  base::CallbackListSubscription RegisterToggleButtonPressedCallback(
+      base::RepeatingCallback<void(bool)> callback);
   base::CallbackListSubscription RegisterFeedbackButtonPressedCallback(
       base::RepeatingClosureList::CallbackType callback);
 
  private:
+  void NotifyToggleButtonPressedCallback();
   void NotifyFeedbackButtonPressedCallback();
 
   void AddContentLabels();
+  void AddToggleRow();
   void AddFeedbackSection();
   raw_ptr<views::Label> title_ = nullptr;
   raw_ptr<views::Label> description_ = nullptr;
+  raw_ptr<RichControlsContainerView> toggle_row_ = nullptr;
+  raw_ptr<views::ToggleButton> toggle_button_ = nullptr;
   raw_ptr<views::View> feedback_section_ = nullptr;
 
+  base::RepeatingCallbackList<void(bool)> toggle_button_callback_list_;
   base::RepeatingClosureList feedback_button_callback_list_;
 };
 

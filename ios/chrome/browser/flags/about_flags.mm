@@ -706,6 +706,7 @@ const FeatureEntry::Choice kReplaceSyncPromosWithSignInPromosChoices[] = {
      "ReadingListEnableSyncTransportModeUponSignIn,"
      "ConsistencyNewAccountInterface,"
      "AutofillAccountProfileStorage,"
+     "FeedBottomSyncStringRemoval,"
      "SyncEnableHistoryDataType"},
 };
 
@@ -903,12 +904,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::
              kAutofillAddressProfileSavePromptAddressVerificationSupport)},
-    {"filling-across-affiliated-websites",
-     flag_descriptions::kFillingAcrossAffiliatedWebsitesName,
-     flag_descriptions::kFillingAcrossAffiliatedWebsitesDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kFillingAcrossAffiliatedWebsites)},
     {"incognito-ntp-revamp", flag_descriptions::kIncognitoNtpRevampName,
      flag_descriptions::kIncognitoNtpRevampDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kIncognitoNtpRevamp)},
@@ -1606,6 +1601,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIOSPasswordAuthOnEntryName,
      flag_descriptions::kIOSPasswordAuthOnEntryDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kIOSPasswordAuthOnEntry)},
+    {"tab-resumption", flag_descriptions::kTabResumptionName,
+     flag_descriptions::kTabResumptionDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kTabResumption)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

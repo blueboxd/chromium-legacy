@@ -218,6 +218,7 @@ fast/canvas/OffscreenCanvas-2d-pattern.html
 fast/canvas/OffscreenCanvas-2d-placeholder-willReadFrequently.html
 fast/canvas/OffscreenCanvas-copyImage.html
 fast/canvas/canvas-clearRect-first.html
+fast/canvas/canvas-clearRect-with-clip.html
 fast/canvas/canvas-composite-alpha.html
 fast/canvas/canvas-composite-video-shadow.html
 fast/canvas/canvas-composite-video.html
@@ -1057,7 +1058,6 @@ http/tests/devtools/profiler/heap-profiler-profiling.js
 http/tests/devtools/profiler/heap-snapshot-comparison-expansion-preserved-when-sorting.js
 http/tests/devtools/profiler/heap-snapshot-comparison-shown-node-count-preserved-when-sorting.js
 http/tests/devtools/profiler/heap-snapshot-loader.js
-http/tests/devtools/profiler/heap-snapshot-location.js
 http/tests/devtools/profiler/heap-snapshot-summary-expand-collapse.js
 http/tests/devtools/profiler/heap-snapshot-summary-show-next.js
 http/tests/devtools/profiler/heap-snapshot-summary-show-ranges.js
@@ -1831,7 +1831,6 @@ virtual/gpu-rasterization/images/jpeg-with-non-interleaved-dc-channels.html
 virtual/gpu-rasterization/images/jpeg-yuv-image-decoding.html
 virtual/gpu-rasterization/images/jpeg-yuv-progressive-image.html
 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-layer.html
-virtual/gpu/fast/canvas/canvas-clearRect-with-clip.html
 virtual/gpu/fast/canvas/canvas-createImageBitmap-svg-image.html
 virtual/gpu/fast/canvas/color-space/canvas-drawImage-offscreenCanvas.html
 virtual/gpu/fast/canvas/downsample-quality.html

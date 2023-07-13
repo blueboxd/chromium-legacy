@@ -2048,9 +2048,6 @@ bool SyncServiceImpl::HasSyncConsent() const {
 
 void SyncServiceImpl::SetInvalidationsForSessionsEnabled(bool enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (engine_ && engine_->IsInitialized()) {
-    engine_->SetInvalidationsForSessionsEnabled(enabled);
-  }
 
   sessions_invalidations_enabled_ = enabled;
   UpdateDataTypesForInvalidations();
@@ -2338,6 +2335,11 @@ void SyncServiceImpl::DownloadStatusRecorder::OnTimeout() {
 
   // Delete current object after all the histograms are recorded.
   std::move(on_finished_callback_).Run();
+}
+
+void SyncServiceImpl::GetTypesWithUnsyncedData(
+    base::OnceCallback<void(ModelTypeSet)> callback) const {
+  engine_->GetTypesWithUnsyncedData(std::move(callback));
 }
 
 }  // namespace syncer

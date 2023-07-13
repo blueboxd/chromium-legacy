@@ -98,6 +98,9 @@ class FakeSyncEngine : public SyncEngine,
 
   const SyncStatus& GetDetailedStatus() const override;
 
+  void GetTypesWithUnsyncedData(
+      base::OnceCallback<void(ModelTypeSet)> cb) const override;
+
   void HasUnsyncedItemsForTest(
       base::OnceCallback<void(bool)> cb) const override;
   void GetThrottledDataTypesForTest(
@@ -108,7 +111,6 @@ class FakeSyncEngine : public SyncEngine,
 
   void OnCookieJarChanged(bool account_mismatch,
                           base::OnceClosure callback) override;
-  void SetInvalidationsForSessionsEnabled(bool enabled) override;
   bool IsNextPollTimeInThePast() const override;
   void GetNigoriNodeForDebugging(AllNodesCallback callback) override;
 

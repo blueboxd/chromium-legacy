@@ -270,7 +270,7 @@ void BrowsingTopicsCalculator::DeriveTopTopics(
     do {
       int taxonomy_version =
           blink::features::kBrowsingTopicsTaxonomyVersion.Get();
-      int padded_topic_index_decision = GenerateRandUint64();
+      uint64_t padded_topic_index_decision = GenerateRandUint64();
       padded_topic = semantic_tree.GetRandomTopic(taxonomy_version,
                                                   padded_topic_index_decision);
     } while (base::Contains(top_topics, padded_topic));
@@ -463,7 +463,7 @@ void BrowsingTopicsCalculator::OnGetTopicsForHostsCompleted(
   OnCalculateCompleted(
       CalculatorResultStatus::kSuccess,
       EpochTopics(std::move(top_topics_and_observing_domains),
-                  padded_top_topics_start_index,
+                  padded_top_topics_start_index, CurrentConfigVersion(),
                   blink::features::kBrowsingTopicsTaxonomyVersion.Get(),
                   model_version, calculation_time_, is_manually_triggered_));
 }

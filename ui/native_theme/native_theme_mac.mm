@@ -547,16 +547,16 @@ NativeThemeMac::NativeThemeMac(bool configure_web_instance,
     if (!IsForcedHighContrast()) {
       SetPreferredContrast(CalculatePreferredContrast());
       __block auto theme = this;
-      high_contrast_notification_token_.reset(
+      high_contrast_notification_token_ =
           [NSWorkspace.sharedWorkspace.notificationCenter
               addObserverForName:
-                  *NSWorkspaceAccessibilityDisplayOptionsDidChangeNotificationStr
+                  NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
                           object:nil
                            queue:nil
                       usingBlock:^(NSNotification* notification) {
                         theme->SetPreferredContrast(CalculatePreferredContrast());
                         theme->NotifyOnNativeThemeUpdated();
-                      }]);
+                      }];
     }
   }
   if (configure_web_instance)
@@ -586,12 +586,12 @@ void NativeThemeMac::InitializeDarkModeStateAndObserver() {
   __block auto theme = this;
   set_use_dark_colors(IsDarkMode());
   set_preferred_color_scheme(CalculatePreferredColorScheme());
-  appearance_observer_.reset(
+  appearance_observer_ =
       [[NativeThemeEffectiveAppearanceObserver alloc] initWithHandler:^{
         theme->set_use_dark_colors(IsDarkMode());
         theme->set_preferred_color_scheme(CalculatePreferredColorScheme());
         theme->NotifyOnNativeThemeUpdated();
-      }]);
+      }];
 }
 
 void NativeThemeMac::ConfigureWebInstance() {

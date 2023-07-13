@@ -339,6 +339,14 @@ const char kUseCustomMessagesDomainDescription[] =
     "Use a custom URL as part of the \"Messages\" feature under "
     "\"Connected Devices\" settings.";
 
+const char kEnableFileBackedBlobFactoryName[] =
+    "Enable registration of file backed blobs through the "
+    "FileBackedBlobFactory interface";
+const char kEnableFileBackedBlobFactoryDescription[] =
+    "Use the FileBackedBlobFactory interface to register file backed blobs. "
+    "This allows to identify the URL where the blob is uploaded and it enables "
+    "Data Leak Prevention checks for managed users having file restrictions.";
+
 const char kUseDMSAAForTilesName[] = "Use DMSAA for tiles";
 const char kUseDMSAAForTilesDescription[] =
     "Switches skia to use DMSAA instead of MSAA for tile raster";
@@ -656,6 +664,12 @@ const char kAutofillVirtualCardsOnTouchToFillAndroidName[] =
 const char kAutofillVirtualCardsOnTouchToFillAndroidDescription[] =
     "When enabled, virtual credit card suggestions are shown on the Touch To "
     "Fill bottomsheet for credit cards.";
+
+const char kAutofillVirtualViewStructureAndroidName[] =
+    "Enable the setting to provide a virtual view structure for Autofill";
+const char kAutofillVirtualViewStructureAndroidDescription[] =
+    "When enabled, a setting allows to switch to using Android Autofill. Chrome"
+    " then provides a virtual view structure but no own suggestions.";
 
 const char kBackForwardCacheName[] = "Back-forward cache";
 const char kBackForwardCacheDescription[] =
@@ -1808,6 +1822,12 @@ const char kHiddenNetworkMigrationName[] = "Hidden Network Migration";
 const char kHiddenNetworkMigrationDescription[] =
     "Enables a privacy improvement that removes wrongly configured hidden"
     "networks and mitigates the creation of these networks.";
+
+const char kHideIncognitoMediaMetadataName[] =
+    "Hide media metadata when in Incognito";
+const char kHideIncognitoMediaMetadataDescription[] =
+    "When enabled, media metadata will be hidden from your OS' media player "
+    "if you are in an Incognito session.";
 
 const char kTabAudioMutingName[] = "Tab audio muting UI control";
 const char kTabAudioMutingDescription[] =
@@ -3224,13 +3244,6 @@ const char kTopChromeTouchUiName[] = "Touch UI Layout";
 const char kTopChromeTouchUiDescription[] =
     "Enables touch UI layout in the browser's top chrome.";
 
-const char kThreadedScrollingName[] = "Threaded scrolling";
-const char kThreadedScrollingDescription[] =
-    "Threaded handling of scroll-related input events. Disabling this will "
-    "force all such scroll events to be handled on the main thread. Note that "
-    "this can dramatically hurt scrolling performance of most websites and is "
-    "intended for testing purposes only.";
-
 const char kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesName[] =
     "Throttle non-visible cross-origin iframes";
 const char
@@ -3371,6 +3384,10 @@ const char kVcSegmentationModelDescription[] =
 const char kVcLightIntensityName[] = "VC relighting intensity";
 const char kVcLightIntensityDescription[] =
     "Allows different light intenisty to be used for relighting.";
+
+const char kVcWebApiName[] = "VC web API";
+const char kVcWebApiDescription[] =
+    "Allows web API support for video conferencing on chromebooks.";
 
 const char kV8VmFutureName[] = "Future V8 VM features";
 const char kV8VmFutureDescription[] =
@@ -3826,12 +3843,6 @@ const char kDrawEdgeToEdgeName[] = "DrawEdgeToEdge";
 const char kDrawEdgeToEdgeDescription[] =
     "Enables the Android feature Edge-to-Edge to draw below the Nav Bar.";
 
-const char kAutofillManualFallbackAndroidName[] =
-    "Enable Autofill manual fallback for Addresses and Payments (Android)";
-const char kAutofillManualFallbackAndroidDescription[] =
-    "If enabled, adds toggle for addresses and payments bottom sheet to the "
-    "keyboard accessory.";
-
 const char kEnableCommandLineOnNonRootedName[] =
     "Enable command line on non-rooted devices";
 const char kEnableCommandLineOnNoRootedDescription[] =
@@ -3970,6 +3981,12 @@ const char kMobilePWAInstallPromptMlName[] =
 const char kMobilePWAInstallPromptMlDescription[] =
     "When enabled, will use ML result to decide whether mobile PWA install "
     "prompt should be shown.";
+
+const char kMouseAndTrackpadDropdownMenuName[] =
+    "Android Mouse & Trackpad Drop-down Text Selection Menu";
+const char kMouseAndTrackpadDropdownMenuDescription[] =
+    "When enabled, shows a dropdown menu for mouse and trackpad secondary "
+    "clicks (i.e. right click) with respect to text selection.";
 
 const char kNetworkServiceInProcessName[] =
     "Run the network service on the browser process";
@@ -4561,12 +4578,6 @@ const char kHeuristicMemorySaverDescription[] =
     "When enabled, Memory Saver will take multiple signals into account before "
     "discarding a tab rather than doing it after a fixed amount of time in the "
     "background.";
-
-const char kHideIncognitoMediaMetadataName[] =
-    "Hide media metadata when in Incognito";
-const char kHideIncognitoMediaMetadataDescription[] =
-    "When enabled, media metadata will be hidden from your OS' media player "
-    "if you are in an Incognito session.";
 
 const char kHighEfficiencyMultistateModeAvailableName[] =
     "Enable the multi-state option for Memory Saver Mode.";
@@ -5349,6 +5360,11 @@ const char kBluetoothFixA2dpPacketSizeName[] = "Bluetooth fix A2DP packet size";
 const char kBluetoothFixA2dpPacketSizeDescription[] =
     "Fixes Bluetooth A2DP packet size to a smaller default value to improve "
     "audio quality and may fix audio stutter.";
+
+const char kBluetoothTelephonyName[] = "Bluetooth Telephony";
+const char kBluetoothTelephonyDescription[] =
+    "Enable Floss to create a Bluetooth HID device that allows applications to "
+    "access Bluetooth telephony functions through WebHID.";
 
 const char kBluetoothQualityReportName[] = "Bluetooth Quality Report";
 const char kBluetoothQualityReportDescription[] =

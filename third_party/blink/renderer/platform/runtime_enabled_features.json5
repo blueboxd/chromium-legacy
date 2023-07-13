@@ -1137,6 +1137,11 @@
       status: "experimental",
     },
     {
+      // crbug.com/1463890: CSS `text-autospace` property
+      name: "CSSTextAutoSpace",
+      status: "test",
+    },
+    {
       // TODO(https://crbug.com/1411581):
       // https://w3c.github.io/csswg-drafts/css-inline-3/#propdef-leading-trim
       name: "CSSTextBoxTrim",
@@ -1156,7 +1161,7 @@
     // `text-wrap: pretty`. crbug.com/1432798
     {
       name: "CSSTextWrapPretty",
-      status: "experimental",
+      status: "stable",
       depends_on: ["CSSTextWrap", "CSSWhiteSpaceShorthand"],
     },
     // Support for CSS Toggles, https://tabatkins.github.io/css-toggle/
@@ -1174,6 +1179,12 @@
       //
       // See: https://github.com/w3c/csswg-drafts/issues/8189
       name: "CSSTopLayerForTransitions",
+      status: "stable",
+    },
+    {
+      // Support for the 'border-box', 'content-box' and 'stroke-box' keywords
+      // for the 'transform-box' property.
+      name: "CSSTransformBoxAdditionalKeywords",
       status: "stable",
     },
     {
@@ -1258,6 +1269,7 @@
       public: true,
       status: "stable",
       base_feature: "none",
+      origin_trial_feature_name: "WebSQL",
     },
     {
       name: "DateInputInlineBlock",
@@ -2614,6 +2626,10 @@
       base_feature: "none",
     },
     {
+      name: "PaintNewReplacedInvalidation",
+      status: "stable",
+    },
+    {
       name: "PaintUnderInvalidationChecking",
       base_feature: "none",
       settable_from_internals: true,
@@ -3278,6 +3294,9 @@
       status: "experimental",
       depends_on: ["NavigationId"],
       origin_trial_feature_name: "SoftNavigationHeuristics",
+    },
+    {
+      name: "SoftNavigationHeuristicsExposeFPAndFCP",
     },
     {
       name: "SolidColorLayers",

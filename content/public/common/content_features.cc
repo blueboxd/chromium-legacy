@@ -622,12 +622,6 @@ BASE_FEATURE(kLogJsConsoleMessages,
 #endif
 );
 
-// Configures whether we set a lower limit for renderers that do not have a main
-// frame, similar to the limit that is already done for backgrounded renderers.
-BASE_FEATURE(kLowerV8MemoryLimitForNonMainRenderers,
-             "LowerV8MemoryLimitForNonMainRenderers",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables a fix for a macOS IME Live Conversion issue. crbug.com/1328530.
 BASE_FEATURE(kMacImeLiveConversionFix,
              "MacImeLiveConversionFix",
@@ -1509,11 +1503,17 @@ BASE_FEATURE(kReduceGpuPriorityOnBackground,
              "ReduceGpuPriorityOnBackground",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, shows a dropdown menu for mouse and trackpad secondary
+// clicks (i.e. right click) with respect to text selection.
+BASE_FEATURE(kMouseAndTrackpadDropdownMenu,
+             "MouseAndTrackpadDropdownMenu",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Allows the use of an experimental feature to drop any AccessibilityEvents
 // that are not relevant to currently enabled accessibility services.
 BASE_FEATURE(kOnDemandAccessibilityEvents,
              "OnDemandAccessibilityEvents",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Request Desktop Site secondary settings for Android; including display
 // setting and peripheral setting.

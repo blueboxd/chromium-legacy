@@ -957,6 +957,71 @@ TEST_F(AcceleratorConfigurationProviderTest,
                                mojo_observer.config());
 }
 
+TEST_F(AcceleratorConfigurationProviderTest, AliasWithOriginalAccelerator) {
+  // Add a fake keyboard.
+  ui::KeyboardDevice fake_keyboard(
+      /*id=*/1, /*type=*/ui::InputDeviceType::INPUT_DEVICE_USB,
+      /*name=*/"fake_Keyboard");
+  fake_keyboard.sys_path = base::FilePath("path1");
+  fake_keyboard_manager_->AddFakeKeyboard(fake_keyboard, "");
+
+  // Disable TopRowKeysAreFKeys, which is enabled by default for external
+  // keyboards.
+  if (!features::IsInputDeviceSettingsSplitEnabled()) {
+    Shell::Get()->session_controller()->GetActivePrefService()->SetBoolean(
+        prefs::kSendFunctionKeys, false);
+    EXPECT_FALSE(Shell::Get()->keyboard_capability()->TopRowKeysAreFKeys());
+  } else {
+    auto settings = Shell::Get()
+                        ->input_device_settings_controller()
+                        ->GetKeyboardSettings(fake_keyboard.id)
+                        ->Clone();
+    settings->top_row_are_fkeys = false;
+    Shell::Get()->input_device_settings_controller()->SetKeyboardSettings(
+        fake_keyboard.id, std::move(settings));
+  }
+
+  FakeAcceleratorsUpdatedMojoObserver mojo_observer;
+  SetUpObserver(&mojo_observer);
+  EXPECT_EQ(0, mojo_observer.num_times_notified());
+
+  const AcceleratorData initial_test_data[] = {
+      {/*trigger_on_press=*/true, ui::VKEY_F1, ui::EF_ALT_DOWN,
+       AcceleratorAction::kToggleFullscreen},
+  };
+
+  Shell::Get()->ash_accelerator_configuration()->Initialize(initial_test_data);
+  base::RunLoop().RunUntilIdle();
+
+  const AcceleratorData expected_test_data[] = {
+      {/*trigger_on_press=*/true, ui::VKEY_BROWSER_BACK,
+       ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
+       AcceleratorAction::kToggleFullscreen},
+  };
+
+  // Notified after instantiating the accelerators.
+  EXPECT_EQ(1, mojo_observer.num_times_notified());
+  // Verify observer received the correct accelerators.
+  ExpectMojomAcceleratorsEqual(mojom::AcceleratorSource::kAsh,
+                               expected_test_data, mojo_observer.config());
+
+  // Verify the generated accelerator infos.
+  const std::vector<mojom::AcceleratorInfoPtr>& accelerator_infos =
+      mojo::Clone(mojo_observer.config()
+                      .at(mojom::AcceleratorSource::kAsh)
+                      .at(AcceleratorAction::kToggleFullscreen));
+  EXPECT_EQ(1u, accelerator_infos.size());
+  // Verify that the generated alias accelerator has `original_accelerator`
+  // populated correctly.
+  absl::optional<ui::Accelerator> original_accelerator =
+      accelerator_infos[0]
+          ->layout_properties->get_standard_accelerator()
+          ->original_accelerator;
+  EXPECT_TRUE(original_accelerator.has_value());
+  EXPECT_EQ(ui::Accelerator(ui::VKEY_F1, ui::EF_ALT_DOWN),
+            original_accelerator.value());
+}
+
 TEST_F(AcceleratorConfigurationProviderTest, InputMethodChanged) {
   FakeAcceleratorsUpdatedMojoObserver mojo_observer;
   SetUpObserver(&mojo_observer);
@@ -1605,6 +1670,57 @@ TEST_F(AcceleratorConfigurationProviderTest, AddAcceleratorNoConflict) {
       {/*trigger_on_press=*/true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN,
        AcceleratorAction::kToggleMirrorMode},
       {/*trigger_on_press=*/true, ui::VKEY_M, ui::EF_COMMAND_DOWN,
+       AcceleratorAction::kToggleMirrorMode},
+  };
+  AcceleratorConfigurationProvider::AcceleratorConfigurationMap actual_config =
+      observer.config();
+  ExpectMojomAcceleratorsEqual(mojom::AcceleratorSource::kAsh,
+                               updated_test_data, actual_config);
+}
+
+TEST_F(AcceleratorConfigurationProviderTest, AddHiddenAccelerator) {
+  FakeAcceleratorsUpdatedMojoObserver observer;
+  SetUpObserver(&observer);
+
+  // Initialize default accelerators.
+  const AcceleratorData test_data[] = {
+      {/*trigger_on_press=*/true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN,
+       AcceleratorAction::kToggleMirrorMode},
+      // Hidden accelerator, which has no associated layout info.
+      {/*trigger_on_press=*/true, ui::VKEY_U,
+       ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+       AcceleratorAction::kPrintUiHierarchies},
+  };
+
+  AshAcceleratorConfiguration* config =
+      Shell::Get()->ash_accelerator_configuration();
+  config->Initialize(test_data);
+
+  const ui::Accelerator browser_accelerator(ui::VKEY_H, ui::EF_CONTROL_DOWN);
+  NonConfigurableActionsMap non_config_map = {
+      {NonConfigurableActions::kBrowserShowHistory,
+       NonConfigurableAcceleratorDetails({browser_accelerator})}};
+
+  base::RunLoop().RunUntilIdle();
+
+  // Ctrl + Alt + Shift + U is used by `AcceleratorAction::PrintUiHierarchies`,
+  // which is a hidden accelerator (not shown).
+  const ui::Accelerator hidden_accelerator(
+      ui::VKEY_U, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN);
+  AcceleratorResultDataPtr result;
+  ash::shortcut_customization::mojom::
+      AcceleratorConfigurationProviderAsyncWaiter(provider_.get())
+          .AddAccelerator(mojom::AcceleratorSource::kAsh,
+                          AcceleratorAction::kToggleMirrorMode,
+                          hidden_accelerator, &result);
+
+  EXPECT_EQ(mojom::AcceleratorConfigResult::kSuccess, result->result);
+
+  const AcceleratorData updated_test_data[] = {
+      {/*trigger_on_press=*/true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN,
+       AcceleratorAction::kToggleMirrorMode},
+      {/*trigger_on_press=*/true, ui::VKEY_U,
+       ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
        AcceleratorAction::kToggleMirrorMode},
   };
   AcceleratorConfigurationProvider::AcceleratorConfigurationMap actual_config =

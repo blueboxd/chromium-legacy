@@ -23,6 +23,7 @@
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/aura/aura_window_properties.h"
@@ -102,9 +103,14 @@ class CustomWindowTargeter : public aura::WindowTargeter {
 // SurfaceTreeHost, public:
 
 SurfaceTreeHost::SurfaceTreeHost(const std::string& window_name)
-    : host_window_(
-          std::make_unique<aura::Window>(nullptr,
-                                         aura::client::WINDOW_TYPE_CONTROL)),
+    : SurfaceTreeHost(window_name, nullptr) {}
+
+SurfaceTreeHost::SurfaceTreeHost(const std::string& window_name,
+                                 std::unique_ptr<aura::Window> host_window)
+    : host_window_(host_window ? std::move(host_window)
+                               : std::make_unique<aura::Window>(
+                                     nullptr,
+                                     aura::client::WINDOW_TYPE_CONTROL)),
       frame_sink_holder_factory_(
           base::BindRepeating(&SurfaceTreeHost::CreateLayerTreeFrameSinkHolder,
                               base::Unretained(this))) {
@@ -207,13 +213,6 @@ void SurfaceTreeHost::SubmitCompositorFrameForTesting(
   active_presentation_callbacks_[frame.metadata.frame_token] =
       PresentationCallbacks();
   layer_tree_frame_sink_holder_->SubmitCompositorFrame(std::move(frame));
-}
-
-void SurfaceTreeHost::SetHostWindowForTesting(
-    std::unique_ptr<aura::Window> test_host_window,
-    const std::string& window_name) {
-  host_window_ = std::move(test_host_window);
-  InitHostWindow(window_name);
 }
 
 void SurfaceTreeHost::SetLayerTreeFrameSinkHolderFactoryForTesting(
@@ -404,6 +403,7 @@ void SurfaceTreeHost::UpdateHostWindowBounds() {
 
   const gfx::Rect& bounds = root_surface_->surface_hierarchy_content_bounds();
   if (previous_content_bounds_ != bounds) {
+    const viz::LocalSurfaceId old_id = host_window_->GetLocalSurfaceId();
     previous_content_bounds_ = bounds;
     gfx::Size size = bounds.size();
     if (client_submits_surfaces_in_pixel_coordinates_) {
@@ -413,8 +413,11 @@ void SurfaceTreeHost::UpdateHostWindowBounds() {
     if (scaled_bounds != host_window_->bounds()) {
       // DP size has changed, set new bounds.
       host_window_->SetBounds({host_window_->bounds().origin(), size});
-    } else {
-      // DP size has not changed, but pixel size has - allocate new surface id.
+    }
+
+    if (host_window_->GetLocalSurfaceId() == old_id) {
+      // Explicitly allocate local surface id if it's not updated since pixel
+      // bounds has changed.
       host_window_->AllocateLocalSurfaceId();
     }
   }

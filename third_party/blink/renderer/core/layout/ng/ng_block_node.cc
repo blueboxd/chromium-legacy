@@ -79,6 +79,7 @@
 #include "third_party/blink/renderer/core/mathml/mathml_under_over_element.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/paint/transform_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -813,7 +814,8 @@ void NGBlockNode::FinishLayout(LayoutBlockFlow* block_flow,
     input.border_padding_for_replaced =
         physical_fragment.Borders() + physical_fragment.Padding();
     if (!box_->NeedsLayout()) {
-      box_->SetSelfNeedsLayoutForAvailableSpace(true);
+      box_->SetNeedsLayout(layout_invalidation_reason::kSizeChanged,
+                           kMarkOnlyThis);
     }
     box_->LayoutIfNeeded();
   }
@@ -1707,8 +1709,9 @@ absl::optional<gfx::Transform> NGBlockNode::GetTransformForChildFragment(
     // us. Calculate it now.
     fragment_transform.emplace();
     fragment_transform->MakeIdentity();
+    const PhysicalRect reference_box = ComputeReferenceBox(child_fragment);
     child_fragment.Style().ApplyTransform(
-        *fragment_transform, box_, child_fragment.Size(),
+        *fragment_transform, box_, reference_box,
         ComputedStyle::kIncludeTransformOperations,
         ComputedStyle::kIncludeTransformOrigin,
         ComputedStyle::kIncludeMotionPath,

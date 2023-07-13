@@ -21,6 +21,7 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -164,9 +165,7 @@ bool SwapGoogleUpdate(UpdaterScope scope,
 }
 
 // Uninstall the GoogleUpdate services, run values, scheduled tasks, and files.
-bool UninstallGoogleUpdate(UpdaterScope scope,
-                           const base::FilePath& temp_path,
-                           HKEY root) {
+bool UninstallGoogleUpdate(UpdaterScope scope) {
   VLOG(2) << __func__;
 
   if (IsSystemInstall(scope)) {
@@ -243,7 +242,9 @@ scoped_refptr<ComServerApp> AppServerSingletonInstance() {
 }
 
 ComServerApp::ComServerApp() = default;
-ComServerApp::~ComServerApp() = default;
+ComServerApp::~ComServerApp() {
+  NOTREACHED();  // The instance of this class is a leaky singleton.
+}
 
 void ComServerApp::Stop() {
   VLOG(2) << __func__ << ": COM server is shutting down.";
@@ -381,10 +382,11 @@ bool ComServerApp::SwapInNewVersion() {
     return false;
   }
 
-  LOG_IF(ERROR, UninstallGoogleUpdate(updater_scope(), temp_dir->GetPath(),
-                                      UpdaterScopeToHKeyRoot(updater_scope())));
+  VLOG_IF(1, !UninstallGoogleUpdate(updater_scope()))
+      << "UninstallGoogleUpdate() failed.";
   if (!IsSystemInstall(updater_scope())) {
-    LOG_IF(ERROR, DeleteLegacyEntriesPerUser());
+    VLOG_IF(1, !DeleteLegacyEntriesPerUser())
+        << "DeleteLegacyEntriesPerUser() failed.";
   }
 
   return true;

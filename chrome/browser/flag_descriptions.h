@@ -222,6 +222,9 @@ extern const char kUseMessagesStagingUrlDescription[];
 extern const char kUseCustomMessagesDomainName[];
 extern const char kUseCustomMessagesDomainDescription[];
 
+extern const char kEnableFileBackedBlobFactoryName[];
+extern const char kEnableFileBackedBlobFactoryDescription[];
+
 extern const char kEnableAutoDisableAccessibilityName[];
 extern const char kEnableAutoDisableAccessibilityDescription[];
 
@@ -363,6 +366,9 @@ extern const char kAutofillUseImprovedLabelDisambiguationDescription[];
 
 extern const char kAutofillVirtualCardsOnTouchToFillAndroidName[];
 extern const char kAutofillVirtualCardsOnTouchToFillAndroidDescription[];
+
+extern const char kAutofillVirtualViewStructureAndroidName[];
+extern const char kAutofillVirtualViewStructureAndroidDescription[];
 
 extern const char kBackForwardCacheName[];
 extern const char kBackForwardCacheDescription[];
@@ -1027,6 +1033,9 @@ extern const char kStorageBucketsDescription[];
 
 extern const char kHiddenNetworkMigrationName[];
 extern const char kHiddenNetworkMigrationDescription[];
+
+extern const char kHideIncognitoMediaMetadataName[];
+extern const char kHideIncognitoMediaMetadataDescription[];
 
 extern const char kHttpsOnlyModeName[];
 extern const char kHttpsOnlyModeDescription[];
@@ -1873,9 +1882,6 @@ extern const char kTintCompositedContentDescription[];
 extern const char kTopChromeTouchUiName[];
 extern const char kTopChromeTouchUiDescription[];
 
-extern const char kThreadedScrollingName[];
-extern const char kThreadedScrollingDescription[];
-
 extern const char
     kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesName[];
 extern const char
@@ -1945,6 +1951,9 @@ extern const char kVcSegmentationModelDescription[];
 
 extern const char kVcLightIntensityName[];
 extern const char kVcLightIntensityDescription[];
+
+extern const char kVcWebApiName[];
+extern const char kVcWebApiDescription[];
 
 extern const char kV8VmFutureName[];
 extern const char kV8VmFutureDescription[];
@@ -2222,9 +2231,6 @@ extern const char kDragDropIntoOmniboxDescription[];
 extern const char kDrawEdgeToEdgeName[];
 extern const char kDrawEdgeToEdgeDescription[];
 
-extern const char kAutofillManualFallbackAndroidName[];
-extern const char kAutofillManualFallbackAndroidDescription[];
-
 extern const char kEnableAndroidGamepadVibrationName[];
 extern const char kEnableAndroidGamepadVibrationDescription[];
 
@@ -2324,6 +2330,9 @@ extern const char kMessagesForAndroidStackingAnimationDescription[];
 
 extern const char kMobilePWAInstallPromptMlName[];
 extern const char kMobilePWAInstallPromptMlDescription[];
+
+extern const char kMouseAndTrackpadDropdownMenuName[];
+extern const char kMouseAndTrackpadDropdownMenuDescription[];
 
 extern const char kNetworkServiceInProcessName[];
 extern const char kNetworkServiceInProcessDescription[];
@@ -2628,9 +2637,6 @@ extern const char kGlobalMediaControlsCastStartStopDescription[];
 
 extern const char kHeuristicMemorySaverName[];
 extern const char kHeuristicMemorySaverDescription[];
-
-extern const char kHideIncognitoMediaMetadataName[];
-extern const char kHideIncognitoMediaMetadataDescription[];
 
 extern const char kHighEfficiencyMultistateModeAvailableName[];
 extern const char kHighEfficiencyMultistateModeAvailableDescription[];
@@ -3087,6 +3093,9 @@ extern const char kAvatarsCloudMigrationDescription[];
 
 extern const char kBluetoothFixA2dpPacketSizeName[];
 extern const char kBluetoothFixA2dpPacketSizeDescription[];
+
+extern const char kBluetoothTelephonyName[];
+extern const char kBluetoothTelephonyDescription[];
 
 extern const char kBluetoothQualityReportName[];
 extern const char kBluetoothQualityReportDescription[];

@@ -1167,7 +1167,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.Image.OpenFileTime.AllExpired" units="ms"
-    expires_after="2023-08-08">
+    expires_after="2023-12-17">
   <owner>shuyng@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1187,7 +1187,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.Image.OpenFileTime.FirstAttempt" units="ms"
-    expires_after="2023-08-08">
+    expires_after="2023-12-17">
   <owner>shuyng@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1201,7 +1201,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.Image.OpenFileTime.FirstExpired" units="ms"
-    expires_after="2023-08-08">
+    expires_after="2023-12-17">
   <owner>shuyng@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1220,7 +1220,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.Image.OpenFileTime.LastAttempt" units="ms"
-    expires_after="2023-08-08">
+    expires_after="2023-12-17">
   <owner>shuyng@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1236,7 +1236,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.Image.Size" units="KB"
-    expires_after="2023-08-08">
+    expires_after="2023-12-17">
   <owner>shuyng@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1247,7 +1247,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.Image.UriCreatedInterval" units="ms"
-    expires_after="2023-08-08">
+    expires_after="2023-12-17">
   <owner>shuyng@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -3236,7 +3236,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.RequestDesktopSite.DomainSettingChanged"
-    enum="Boolean" expires_after="2023-11-19">
+    enum="Boolean" expires_after="2023-12-17">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -3248,7 +3248,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.RequestDesktopSite.PerSiteIphDismissed.AppMenuOpened"
-    enum="Boolean" expires_after="2023-11-12">
+    enum="Boolean" expires_after="2023-12-17">
   <owner>aishwaryarj@google.com</owner>
   <owner>shuyng@google.com</owner>
   <summary>
@@ -3258,7 +3258,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.RequestDesktopSite.SubDomainSettingChanged"
-    enum="Boolean" expires_after="2023-08-13">
+    enum="Boolean" expires_after="2023-12-17">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -3306,7 +3306,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.RequestDesktopSite.UserSwitchToDesktop.DomainSettingAdded"
-    enum="Boolean" expires_after="2023-11-12">
+    enum="Boolean" expires_after="2023-12-17">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -3319,7 +3319,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.RequestDesktopSite.UserSwitchToDesktop.SubDomainSettingAdded"
-    enum="Boolean" expires_after="2023-12-10">
+    enum="Boolean" expires_after="2023-12-17">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -3666,7 +3666,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Tab.CreateNewTabDuration.{TabLaunchType}" units="ms"
-    expires_after="2023-07-10">
+    expires_after="2023-12-10">
   <owner>sreejakshetty@chromium.org</owner>
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
@@ -4571,6 +4571,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="Android.WebView.Gfx.InitialMakeANGLEContextCurrentMicroseconds"
+    units="microseconds" expires_after="2023-12-01">
+  <owner>blundell@chromium.org</owner>
+  <owner>vasilyt@chromium.org</owner>
+  <summary>
+    Tracks the amount of time that it took for WebView to initially make the
+    ANGLE context current (recorded only when using ANGLE). Recorded only on the
+    first time saving HWUI state when drawing with GL. This is recorded only on
+    devices that support high resolution timers.
+  </summary>
+</histogram>
+
 <histogram name="Android.WebView.Gfx.MakeANGLEContextCurrentMicroseconds"
     units="microseconds" expires_after="2023-12-01">
   <owner>blundell@chromium.org</owner>
@@ -4580,6 +4593,19 @@ chromium-metrics-reviews@google.com.
     ANGLE context current (recorded only when using ANGLE). Recorded once per
     saving of HWUI state when drawing with GL. This is recorded only on devices
     that support high resolution timers.
+  </summary>
+</histogram>
+
+<histogram
+    name="Android.WebView.Gfx.NonInitialMakeANGLEContextCurrentMicroseconds"
+    units="microseconds" expires_after="2023-12-01">
+  <owner>blundell@chromium.org</owner>
+  <owner>vasilyt@chromium.org</owner>
+  <summary>
+    Tracks the amount of time that it took for WebView to initially make the
+    ANGLE context current (recorded only when using ANGLE). Recorded only if
+    *not* the first time saving HWUI state when drawing with GL. This is
+    recorded only on devices that support high resolution timers.
   </summary>
 </histogram>
 
@@ -5239,7 +5265,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.SupportLibrary.ClientIsCompat"
-    enum="WebViewClientTypeEnum" expires_after="2023-08-23">
+    enum="WebViewClientTypeEnum" expires_after="2024-08-23">
   <owner>pbirk@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>

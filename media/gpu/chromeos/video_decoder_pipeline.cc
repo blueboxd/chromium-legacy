@@ -351,6 +351,13 @@ VideoDecoderPipeline::GetSupportedConfigs(
     });
   }
 
+  if (workarounds.disable_accelerated_h264_decode) {
+    base::EraseIf(configs.value(), [](const auto& config) {
+      return config.profile_min >= H264PROFILE_MIN &&
+             config.profile_max <= H264PROFILE_MAX;
+    });
+  }
+
   return configs;
 }
 
@@ -927,7 +934,7 @@ void VideoDecoderPipeline::PrepareChangeResolution() {
 
 void VideoDecoderPipeline::CallApplyResolutionChangeIfNeeded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DVLOGF(3);
+  DVLOGF(4);
 
   if (need_apply_new_resolution && !HasPendingFrames()) {
     need_apply_new_resolution = false;
@@ -936,7 +943,6 @@ void VideoDecoderPipeline::CallApplyResolutionChangeIfNeeded() {
 }
 
 DmabufVideoFramePool* VideoDecoderPipeline::GetVideoFramePool() const {
-  DVLOGF(3);
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
 
   // TODO(andrescj): consider returning a WeakPtr instead. That way, if callers

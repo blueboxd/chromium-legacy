@@ -20,7 +20,7 @@ import {getShortcutProvider} from './mojo_interface_provider.js';
 import {mojoString16ToString} from './mojo_utils.js';
 import {ModifierKeyCodes} from './shortcut_input.js';
 import {Accelerator, AcceleratorConfigResult, AcceleratorSource, AcceleratorState, Modifier, ShortcutProviderInterface, StandardAcceleratorInfo} from './shortcut_types.js';
-import {createEmptyAcceleratorInfo, getAccelerator, getModifiersForAcceleratorInfo, isCustomizationDisabled, isFunctionKey, isStandardAcceleratorInfo, keyCodeToModifier} from './shortcut_utils.js';
+import {createEmptyAcceleratorInfo, getAccelerator, getModifiersForAcceleratorInfo, isCustomizationDisabled, isFunctionKey, isStandardAcceleratorInfo, keyCodeToModifier, LWIN_KEY, META_KEY} from './shortcut_utils.js';
 
 export interface AcceleratorViewElement {
   $: {
@@ -305,8 +305,13 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
     }
 
     if (this.viewState === ViewState.EDIT && !isDisabledAccelerator) {
+      const originalAccelerator: Accelerator|undefined =
+          this.acceleratorInfo.layoutProperties.standardAccelerator
+              ?.originalAccelerator;
+      const acceleratorToEdit =
+          originalAccelerator || getAccelerator(this.acceleratorInfo);
       result = await this.shortcutProvider.replaceAccelerator(
-          this.source, this.action, getAccelerator(this.acceleratorInfo),
+          this.source, this.action, acceleratorToEdit,
           getAccelerator(pendingAccelInfo));
     }
     this.handleAcceleratorResultData(result!.result);
@@ -317,9 +322,7 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
     switch (result.result) {
       // Shift is the only modifier.
       case AcceleratorConfigResult.kShiftOnlyNotAllowed: {
-        this.statusMessage =
-            'Shortcut is not valid. Shift can not be used as the only ' +
-            'modifier key. Press a new shortcut.';
+        this.statusMessage = this.i18n('shiftOnlyNotAllowedStatusMessage');
         this.hasError = true;
         return;
       }
@@ -328,16 +331,13 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
         // This is a backup check, since only valid accelerators are processed
         // and a valid accelerator will have modifier(s) and a key or is
         // function key.
-        this.statusMessage =
-            'Shortcut is not valid. Must include at lease one modifier key. ' +
-            'Press a new shortcut.';
+        this.statusMessage = this.i18n('missingModifierStatusMessage');
         this.hasError = true;
         return;
       }
       // Top row key used as activation keys(no search key pressed).
       case AcceleratorConfigResult.kKeyNotAllowed: {
-        this.statusMessage =
-            'Shortcut with top row keys need to include the search key.';
+        this.statusMessage = this.i18n('keyNotAllowedStatusMessage');
         this.hasError = true;
         return;
       }
@@ -360,7 +360,7 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
       }
       // Limit to only 5 accelerators allowed.
       case AcceleratorConfigResult.kMaximumAcceleratorsReached: {
-        this.statusMessage = 'Maximum accelerators have reached.';
+        this.statusMessage = this.i18n('maxAcceleratorsReachedHint');
         this.hasError = true;
         return;
       }
@@ -568,11 +568,21 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
   }
 
   private getAriaLabel(): string {
-    const keyOrIcon =
+    let keyOrIcon =
         this.acceleratorInfo.layoutProperties.standardAccelerator.keyDisplay;
-    return getModifiersForAcceleratorInfo(this.acceleratorInfo)
-        .join(' ')
-        .concat(` ${this.getAriaKeyDisplay(keyOrIcon)}`);
+    const metaKeyAriaLabel = this.lookupManager.getHasLauncherButton() ?
+        this.i18n('iconLabelOpenLauncher') :
+        this.i18n('iconLabelOpenSearch');
+    // LWIN_KEY is not a modifier, but it is displayed as a meta icon.
+    keyOrIcon = keyOrIcon === LWIN_KEY ? metaKeyAriaLabel : keyOrIcon;
+    const modifiers =
+        getModifiersForAcceleratorInfo(this.acceleratorInfo)
+            .map(
+                // Update modifiers if it includes META_KEY.
+                modifier =>
+                    modifier === META_KEY ? metaKeyAriaLabel : modifier);
+
+    return [...modifiers, this.getAriaKeyDisplay(keyOrIcon)].join(' ');
   }
 
   private getAriaKeyDisplay(keyOrIcon: string): string {

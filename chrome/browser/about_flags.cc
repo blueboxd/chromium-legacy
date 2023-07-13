@@ -4062,6 +4062,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrasSplitAlsaUsbInternalName,
      flag_descriptions::kCrasSplitAlsaUsbInternalDescription, kOsCrOS,
      PLATFORM_FEATURE_NAME_TYPE("CrOSLateBootCrasSplitAlsaUSBInternal")},
+    {"bluetooth-telephony", flag_descriptions::kBluetoothTelephonyName,
+     flag_descriptions::kBluetoothTelephonyDescription, kOsCrOS,
+     PLATFORM_FEATURE_NAME_TYPE("CrOSLateBootBluetoothTelephony")},
     {"disable-explicit-dma-fences",
      flag_descriptions::kDisableExplicitDmaFencesName,
      flag_descriptions::kDisableExplicitDmaFencesDescription, kOsCrOS,
@@ -4673,9 +4676,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kInProductHelpUseClientConfigName,
      flag_descriptions::kInProductHelpUseClientConfigDescription, kOsAll,
      FEATURE_VALUE_TYPE(feature_engagement::kUseClientConfigIPH)},
-    {"disable-threaded-scrolling", flag_descriptions::kThreadedScrollingName,
-     flag_descriptions::kThreadedScrollingDescription, kOsAll,
-     SINGLE_DISABLE_VALUE_TYPE(blink::switches::kDisableThreadedScrolling)},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-lock-screen-notification",
      flag_descriptions::kLockScreenNotificationName,
@@ -5630,6 +5630,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillTouchToFillForCreditCardsAndroid)},
+    {"enable-autofill-virtual-view-structure",
+     flag_descriptions::kAutofillVirtualViewStructureAndroidName,
+     flag_descriptions::kAutofillVirtualViewStructureAndroidDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillVirtualViewStructureAndroid)},
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -9314,6 +9320,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(ash::features::kVcLightIntensity,
                                     kVcLightIntensityVariations,
                                     "VCLightIntensity")},
+    {"vc-web-api", flag_descriptions::kVcWebApiName,
+     flag_descriptions::kVcWebApiDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kVcWebApi)},
 
 #endif
 
@@ -9844,11 +9853,6 @@ const FeatureEntry kFeatureEntries[] = {
          kHeuristicMemorySaverVariations,
          "HeuristicMemorySaver")},
 
-    {"hide-incognito-media-metadata",
-     flag_descriptions::kHideIncognitoMediaMetadataName,
-     flag_descriptions::kHideIncognitoMediaMetadataDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(media::kHideIncognitoMediaMetadata)},
-
     {"memory-saver-multi-state-mode",
      flag_descriptions::kHighEfficiencyMultistateModeAvailableName,
      flag_descriptions::kHighEfficiencyMultistateModeAvailableDescription,
@@ -10335,6 +10339,11 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop, FEATURE_VALUE_TYPE(::features::kGetTheMostOutOfChrome)},
 #endif
 
+    {"enable-file-backed-blob-factory",
+     flag_descriptions::kEnableFileBackedBlobFactoryName,
+     flag_descriptions::kEnableFileBackedBlobFactoryDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kEnableFileBackedBlobFactory)},
+
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
     {"autofill-enable-payments-mandatory-reauth",
      flag_descriptions::kAutofillEnablePaymentsMandatoryReauthName,
@@ -10569,6 +10578,13 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
+    {"mouse-and-trackpad-dropdown-menu",
+     flag_descriptions::kMouseAndTrackpadDropdownMenuName,
+     flag_descriptions::kMouseAndTrackpadDropdownMenuDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kMouseAndTrackpadDropdownMenu)},
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
     {"autofill-enable-payments-android-bottom-sheet",
      flag_descriptions::kAutofillEnablePaymentsAndroidBottomSheetName,
      flag_descriptions::kAutofillEnablePaymentsAndroidBottomSheetDescription,
@@ -10587,6 +10603,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReadAloudDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kReadAloud)},
 #endif
+
+    {"hide-incognito-media-metadata",
+     flag_descriptions::kHideIncognitoMediaMetadataName,
+     flag_descriptions::kHideIncognitoMediaMetadataDescription, kOsAll,
+     FEATURE_VALUE_TYPE(media::kHideIncognitoMediaMetadata)},
 };
 
 class FlagsStateSingleton : public flags_ui::FlagsState::Delegate {

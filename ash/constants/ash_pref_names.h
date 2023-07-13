@@ -58,6 +58,13 @@ inline constexpr char kESimRefreshedEuiccs[] = "cros_esim.refreshed_euiccs";
 // by serializing a CellularESimProfile.
 inline constexpr char kESimProfiles[] = "cros_esim.esim_profiles";
 
+// Pref which stores metadata about enterprise managed cellular networks. The
+// metadata includes the name of the network that was provided by policy, the
+// activation code that was used to install an eSIM profile for this network,
+// and the ICCID of the installed profile.
+inline constexpr char kManagedCellularESimMetadata[] =
+    "cros_esim.managed_esim_metadata";
+
 // Pref which stores a dictionary of Integrated Circuit Card IDentifier (ICCID)
 // and Subscription Management - Data Preparation (SMDP+) address pair for each
 // managed cellular network.
@@ -1674,6 +1681,14 @@ inline constexpr char kInputForceRespectUiGainsEnabled[] =
 // A boolean pref indicating whether the glanceables feature is allowed to be
 // used for managed device.
 inline constexpr char kGlanceablesEnabled[] = "ash.glanceables_enabled";
+
+// An integer pref that tracks how many times (3) we'll show the user a
+// notification when an incoming event would have been remapped to a right
+// click but either the user's setting is inconsistent with the matched
+// modifier key or remapping to right click is disabled before hiding new
+// notifications.
+inline constexpr char kRemapToRightClickNotificationsRemaining[] =
+    "ash.settings.remap_to_right_click_notifications_remaining";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

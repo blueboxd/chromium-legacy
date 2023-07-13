@@ -159,6 +159,9 @@ extern const char kExtensionControlledSettingLearnMoreURL[];
 // URL used to indicate that an extension resource load request was invalid.
 extern const char kExtensionInvalidRequestURL[];
 
+// Link for creating family group with Google Families.
+extern const char kFamilyGroupSiteURL[];
+
 // "Learn more" URL for first party sets.
 extern const char kFirstPartySetsLearnMoreURL[];
 
@@ -451,6 +454,8 @@ extern const char kSmbSharesLearnMoreURL[];
 
 // The URL for the "Learn more" page when the user tries to clean up their
 // Google Drive offline storage in the OS settings page.
+extern const char kGoogleDriveCleanUpStorageLearnMoreURL[];
+
 extern const char kGoogleDriveOfflineLearnMoreURL[];
 
 // The URL for the "Learn more" page for Speak-on-mute Detection in the privacy

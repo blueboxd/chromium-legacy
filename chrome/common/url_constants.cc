@@ -149,6 +149,8 @@ const char kExtensionControlledSettingLearnMoreURL[] =
 
 const char kExtensionInvalidRequestURL[] = "chrome-extension://invalid/";
 
+const char kFamilyGroupSiteURL[] = "https://families.google.com/families/";
+
 const char kFirstPartySetsLearnMoreURL[] =
     "https://developer.chrome.com/docs/privacy-sandbox/first-party-sets/";
 
@@ -473,9 +475,11 @@ const char kSmartPrivacySettingsLearnMoreURL[] =
 const char kSmbSharesLearnMoreURL[] =
     "https://support.google.com/chromebook?p=network_file_shares";
 
-// TODO(b/289450495): Update this to a p link once we have it.
+const char kGoogleDriveCleanUpStorageLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=cleanup_offline_files";
+
 const char kGoogleDriveOfflineLearnMoreURL[] =
-    "https://support.google.com/chromebook/answer/2809731";
+    "https://support.google.com/chromebook?p=my_drive_cbx";
 
 const char kSpeakOnMuteDetectionLearnMoreURL[] =
     "https://support.google.com/chromebook?p=mic-mute";

@@ -813,23 +813,12 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   }
 
   TestGuestViewManager* GetGuestViewManager() {
-    TestGuestViewManager* manager = static_cast<TestGuestViewManager*>(
-        TestGuestViewManager::FromBrowserContext(browser()->profile()));
-    // Test code may access the TestGuestViewManager before it would be created
-    // during creation of the first guest.
-    if (!manager) {
-      manager = static_cast<TestGuestViewManager*>(
-          GuestViewManager::CreateWithDelegate(
-              browser()->profile(),
-              ExtensionsAPIClient::Get()->CreateGuestViewManagerDelegate(
-                  browser()->profile())));
-    }
-    return manager;
+    return factory_.GetOrCreateTestGuestViewManager(
+        browser()->profile(),
+        ExtensionsAPIClient::Get()->CreateGuestViewManagerDelegate());
   }
 
-  WebViewTest() : guest_view_(nullptr), embedder_web_contents_(nullptr) {
-    GuestViewManager::set_factory_for_testing(&factory_);
-  }
+  WebViewTest() = default;
 
   ~WebViewTest() override = default;
 
@@ -852,8 +841,9 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
 
   TestGuestViewManagerFactory factory_;
   // Note that these are only set if you launch app using LoadAppWithGuest().
-  raw_ptr<guest_view::GuestViewBase, DanglingAcrossTasks> guest_view_;
-  raw_ptr<content::WebContents, DanglingAcrossTasks> embedder_web_contents_;
+  raw_ptr<guest_view::GuestViewBase, DanglingAcrossTasks> guest_view_ = nullptr;
+  raw_ptr<content::WebContents, DanglingAcrossTasks> embedder_web_contents_ =
+      nullptr;
 };
 
 // The following test suites are created to group tests based on specific
@@ -4204,10 +4194,7 @@ IN_PROC_BROWSER_TEST_P(
   Profile* profile = browser()->profile();
   int rules_registry_id =
       extensions::WebViewGuest::GetOrGenerateRulesRegistryID(
-          guest_view->owner_web_contents()
-              ->GetPrimaryMainFrame()
-              ->GetProcess()
-              ->GetID(),
+          guest_view->owner_rfh()->GetProcess()->GetID(),
           guest_view->view_instance_id());
 
   extensions::RulesRegistryService* registry_service =
@@ -4248,10 +4235,7 @@ IN_PROC_BROWSER_TEST_P(WebViewChannelTest,
       extensions::RulesRegistryService::Get(profile);
   int rules_registry_id =
       extensions::WebViewGuest::GetOrGenerateRulesRegistryID(
-          guest_view->owner_web_contents()
-              ->GetPrimaryMainFrame()
-              ->GetProcess()
-              ->GetID(),
+          guest_view->owner_rfh()->GetProcess()->GetID(),
           guest_view->view_instance_id());
 
   // Get an existing registered rule for the guest.
@@ -5654,6 +5638,32 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ShutdownWithUnshownPopup) {
                               "window.open(location.href);");
   run_loop.Run();
   CloseAppWindow(GetFirstAppWindow());
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, InsertIntoIframe) {
+  TestHelper("testInsertIntoIframe", "web_view/shim", NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, CreateAndInsertInIframe) {
+  TestHelper("testCreateAndInsertInIframe", "web_view/shim", NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, InsertIntoMainFrameFromIframe) {
+  TestHelper("testInsertIntoMainFrameFromIframe", "web_view/shim",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, InsertIntoOtherWindow) {
+  TestHelper("testInsertIntoOtherWindow", "web_view/shim", NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, CreateAndInsertInOtherWindow) {
+  TestHelper("testCreateAndInsertInOtherWindow", "web_view/shim",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, InsertFromOtherWindow) {
+  TestHelper("testInsertFromOtherWindow", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, InsertIntoDetachedIframe) {

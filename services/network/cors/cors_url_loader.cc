@@ -326,7 +326,11 @@ CorsURLLoader::CorsURLLoader(
   SetCorsFlagIfNeeded();
 
   if (shared_dictionary_storage_) {
-    shared_dictionary_storage_->GetDictionaryAsync(
+    // This is intended to load the dictionary as soon as possible. Without
+    // this, the dictionary will be loaded from the disk when
+    // `HttpNetworkTransaction` builds the request header just before sending it
+    // to the server.
+    shared_dictionary_storage_->GetDictionary(
         request_.url,
         base::BindOnce(
             [](base::WeakPtr<CorsURLLoader> loader,
@@ -1230,8 +1234,8 @@ mojom::ClientSecurityStatePtr CorsURLLoader::CloneClientSecurityState() const {
 
 bool CorsURLLoader::ShouldIgnorePrivateNetworkAccessErrors() const {
   const mojom::ClientSecurityState* state = GetClientSecurityState();
-  return state && state->local_network_request_policy ==
-                      mojom::LocalNetworkRequestPolicy::kPreflightWarn;
+  return state && state->private_network_request_policy ==
+                      mojom::PrivateNetworkRequestPolicy::kPreflightWarn;
 }
 
 PrivateNetworkAccessPreflightBehavior

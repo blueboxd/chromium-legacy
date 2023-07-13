@@ -1699,18 +1699,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="V8.WasmCompileFunctionPeakMemoryBytes" units="bytes"
-    expires_after="2022-06-19">
-  <owner>ecmziegler@chromium.org</owner>
-  <owner>adamk@chromium.org</owner>
-  <owner>clemensb@chromium.org</owner>
-  <owner>wasm-v8@google.com</owner>
-  <summary>
-    Peak memory used to compile a WebAssembly function. Recorded for each
-    TurboFan compilation of a WebAssembly function.
-  </summary>
-</histogram>
-
 <histogram name="V8.WasmCompileHugeFunctionMilliSeconds" units="ms"
     expires_after="2023-11-12">
   <owner>clemensb@chromium.org</owner>
@@ -1988,18 +1976,6 @@ chromium-metrics-reviews@google.com.
     The percentage of WebAssembly code freed by garbage collection (ratio of
     total freed code to total generated code so far). Recorded for each live
     module after each full GC.
-  </summary>
-</histogram>
-
-<histogram name="V8.WasmModuleCodeSizeTopTierMiB" units="MB"
-    expires_after="M102">
-  <owner>ecmziegler@chromium.org</owner>
-  <owner>adamk@chromium.org</owner>
-  <owner>clemensb@chromium.org</owner>
-  <owner>wasm-v8@google.com</owner>
-  <summary>
-    The amount of generated code in MiB for one WebAssembly module. Recorded
-    when top-tier compilation finished.
   </summary>
 </histogram>
 

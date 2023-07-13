@@ -58,6 +58,10 @@
 namespace android_webview {
 namespace {
 
+BASE_FEATURE(kWebViewUseOutputSurfaceClipRect,
+             "WebViewUseOutputSurfaceClipRect",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 class ScopedCurrentContext {
  public:
   explicit ScopedCurrentContext(gpu::SharedContextState* state,
@@ -276,13 +280,21 @@ void HardwareRenderer::OnViz::DrawAndSwapOnViz(
                       gfx::Transform());
   render_pass->has_transparent_background = false;
 
+  const bool use_output_surface_clip_rect =
+      base::FeatureList::IsEnabled(kWebViewUseOutputSurfaceClipRect);
+
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   quad_state->quad_to_target_transform = transform;
   quad_state->quad_layer_rect = gfx::Rect(frame_size);
   quad_state->visible_quad_layer_rect = gfx::Rect(frame_size);
-  quad_state->clip_rect = clip;
   quad_state->opacity = 1.f;
+
+  // We don't need to clip render pass if we apply clip on the viz::Display
+  // level.
+  if (!use_output_surface_clip_rect) {
+    quad_state->clip_rect = clip;
+  }
 
   viz::SurfaceDrawQuad* surface_quad =
       render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
@@ -369,6 +381,11 @@ void HardwareRenderer::OnViz::DrawAndSwapOnViz(
   }
 
   display_->Resize(viewport);
+
+  if (use_output_surface_clip_rect) {
+    display_->SetOutputSurfaceClipRect(clip);
+  }
+
   auto now = base::TimeTicks::Now();
   display_->DrawAndSwap({now, now});
 
@@ -560,12 +577,23 @@ void HardwareRenderer::DrawAndSwap(const HardwareRendererDrawParams& params,
       output_surface_provider_.shared_context_state().get(),
       output_surface_provider_.gl_surface().get());
 
+  static bool first_make_context_current = true;
   if (!IsUsingVulkan() && gl::GLSurfaceEGL::GetGLDisplayEGL()
                               ->IsANGLEExternalContextAndSurfaceSupported()) {
+    auto delta = base::TimeTicks::Now() - make_context_current_start_time;
     UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-        "Android.WebView.Gfx.MakeANGLEContextCurrentMicroseconds",
-        base::TimeTicks::Now() - make_context_current_start_time,
+        "Android.WebView.Gfx.MakeANGLEContextCurrentMicroseconds", delta,
         base::Microseconds(1), base::Seconds(1), 100);
+    if (first_make_context_current) {
+      UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+          "Android.WebView.Gfx.InitialMakeANGLEContextCurrentMicroseconds",
+          delta, base::Microseconds(1), base::Seconds(1), 100);
+      first_make_context_current = false;
+    } else {
+      UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+          "Android.WebView.Gfx.NonInitialMakeANGLEContextCurrentMicroseconds",
+          delta, base::Microseconds(1), base::Seconds(1), 100);
+    }
   }
 
   viz::FrameTimingDetailsMap timing_details;

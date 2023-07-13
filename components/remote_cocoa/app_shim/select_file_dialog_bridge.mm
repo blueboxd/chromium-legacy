@@ -52,7 +52,7 @@ NSString* GetDescriptionFromExtension(const base::FilePath::StringType& ext) {
                                  base::i18n::ToUpper(ext_name), ext_name);
 }
 
-base::scoped_nsobject<NSView> CreateAccessoryView() {
+NSView* CreateAccessoryView() {
   static constexpr CGFloat kControlPadding = 2;
 
   base::scoped_nsobject<NSView> view(

@@ -16,7 +16,7 @@
 namespace blink {
 
 class Node;
-struct NodeCloningData;
+class NodeCloningData;
 
 // Implementation of the Part class, which is part of the DOM Parts API.
 class CORE_EXPORT Part : public ScriptWrappable {
@@ -28,7 +28,7 @@ class CORE_EXPORT Part : public ScriptWrappable {
   void Trace(Visitor* visitor) const override;
   virtual bool IsValid() const { return root_; }
   virtual Node* NodeToSortBy() const = 0;
-  virtual void Clone(NodeCloningData&) const = 0;
+  virtual Part* ClonePart(NodeCloningData&) const = 0;
   PartRoot* root() const { return root_; }
   virtual Document& GetDocument() const = 0;
 
@@ -36,12 +36,11 @@ class CORE_EXPORT Part : public ScriptWrappable {
   PartRootUnion* rootForBindings() const {
     return PartRoot::GetUnionFromPartRoot(root_);
   }
-  // TODO(1453291) Populate metadata_.
-  Vector<String>& metadata() { return metadata_; }
+  const Vector<String>& metadata() const { return metadata_; }
   virtual void disconnect();
 
  protected:
-  explicit Part(PartRoot& root);
+  Part(PartRoot& root, const Vector<String> metadata);
 
  private:
   Member<PartRoot> root_;

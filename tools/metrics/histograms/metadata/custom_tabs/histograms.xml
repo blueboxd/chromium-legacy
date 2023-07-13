@@ -154,23 +154,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="CustomTabs.CloseButton.ChildTab.ScopeAlgorithm.ClosesOneTab"
-    enum="BooleanCloseJustCurrentTab" expires_after="M114">
-  <owner>peconn@chromium.org</owner>
-  <owner>
-    src/chrome/android/java/src/org/chromium/chrome/browser/browserservices/OWNERS
-  </owner>
-  <summary>
-    Records whether the CustomTab/TrustedWebActivity &quot;navigate to landing
-    page&quot; algorithm for child tabs - e.g. tabs opened via window.open() -
-    produces the same behaviour (closes the current tab) as the webapp
-    &quot;close current tab&quot; algorithm. Recorded when the user clicks the
-    CustomTab/TrustedWebActivity close button on a child tab. Starting with M84
-    this is is also recorded for webapps/WebAPKs. Filter the platform for just
-    CCT/TWA data.
-  </summary>
-</histogram>
-
 <histogram name="CustomTabs.CloseCause" enum="CustomTabsCloseCause"
     expires_after="2023-12-24">
   <owner>jinsukkim@chromium.org</owner>
@@ -449,6 +432,19 @@ chromium-metrics-reviews@google.com.
     successful and false otherwise. A true value emitted here doesn't mean the
     request cannot fail later; and a false value may be the result of multiple
     things, e.g. the warmup hasn't been called.
+  </summary>
+</histogram>
+
+<histogram
+    name="CustomTabs.PostMessage.RequestPostMessageChannelWithTargetOrigin"
+    enum="Boolean" expires_after="2024-03-22">
+  <owner>elabadysayed@chromium.org</owner>
+  <owner>chrome-connective-tissue@google.com</owner>
+  <summary>
+    Android only. Recorded when the CCT client calls requestPostMessageChannel
+    to establish a two way postMessage channel. Emits true if the request is
+    with targetOrigin specified and false otherwise. That should determine if we
+    can to delete the old API (Without targetOrigin) or not.
   </summary>
 </histogram>
 

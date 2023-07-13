@@ -6115,12 +6115,12 @@ static_library("browser") {
       "OpenGL.framework",
       "QuartzCore.framework",
       "SecurityInterface.framework",
-      "UserNotifications.framework",
     ]
     weak_frameworks = [
       "AuthenticationServices.framework",  # macOS 10.15
       "SafariServices.framework",  # macOS 10.12
       "UniformTypeIdentifiers.framework",  # macOS 11
+      "UserNotifications.framework",  # macOS 10.14
     ]
     public_deps += [ "//chrome/browser/mac:keystone_glue" ]
   }

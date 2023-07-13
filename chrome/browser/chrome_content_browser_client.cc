@@ -5120,7 +5120,9 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 #endif
 
 #if BUILDFLAG(IS_MAC)
-  MaybeAddThrottle(MaybeCreateAuthSessionThrottleFor(handle), &throttles);
+  if (__builtin_available(macOS 10.15, *)) {
+    MaybeAddThrottle(MaybeCreateAuthSessionThrottleFor(handle), &throttles);
+  }
 #endif
 
   auto* performance_manager_registry =

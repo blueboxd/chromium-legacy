@@ -1109,7 +1109,8 @@ const char kMacCoreLocationBackendDescription[] =
 const char kNewMacNotificationAPIName[] =
     "Determines which notification API to use on macOS devices";
 const char kNewMacNotificationAPIDescription[] =
-    "Enables the usage of Apple's new notification API";
+    "Enables the usage of Apple's new notification API which will run on macOS "
+    "10.14+";
 
 const char kWinrtGeolocationImplementationName[] =
     "WinRT Geolocation Implementation";

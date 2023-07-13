@@ -60,10 +60,20 @@ void OpenFileOnMainThread(const base::FilePath& full_path) {
   if (!url)
     return;
 
-  [[NSWorkspace sharedWorkspace]
-                openURL:url
-          configuration:[NSWorkspaceOpenConfiguration configuration]
-      completionHandler:nil];
+  if (@available(macOS 10.15, *)) {
+    [[NSWorkspace sharedWorkspace]
+                  openURL:url
+            configuration:[NSWorkspaceOpenConfiguration configuration]
+        completionHandler:nil];
+  } else {
+    const NSWorkspaceLaunchOptions launch_options =
+        NSWorkspaceLaunchAsync | NSWorkspaceLaunchWithErrorPresentation;
+    [[NSWorkspace sharedWorkspace] openURLs:@[ url ]
+                    withAppBundleIdentifier:nil
+                                    options:launch_options
+             additionalEventParamDescriptor:nil
+                          launchIdentifiers:nil];
+  }
 }
 
 namespace internal {

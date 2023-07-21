@@ -15,10 +15,12 @@
 #import "components/bookmarks/browser/bookmark_utils.h"
 #import "components/pref_registry/pref_registry_syncable.h"
 #import "components/prefs/pref_service.h"
+#import "components/sync/driver/sync_service.h"
+#import "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
-#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/url_with_title.h"
@@ -35,12 +37,6 @@
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
-namespace {
-
-const int64_t kLastUsedFolderNone = -1;
-
-}  // namespace
-
 @implementation BookmarkMediator {
   // Profile bookmark model for this mediator.
   base::WeakPtr<bookmarks::BookmarkModel> _profileBookmarkModel;
@@ -53,24 +49,32 @@ const int64_t kLastUsedFolderNone = -1;
   // Authentication service for this mediator.
   base::WeakPtr<AuthenticationService> _authenticationService;
 
+  // Sync service for this mediator.
+  syncer::SyncService* _syncService;
+
   // The setup service for this mediator.
   SyncSetupService* _syncSetupService;
 }
 
 + (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry {
-  registry->RegisterInt64Pref(prefs::kIosBookmarkFolderDefault,
-                              kLastUsedFolderNone);
+  registry->RegisterInt64Pref(
+      prefs::kIosBookmarkLastUsedFolderReceivingBookmarks,
+      kLastUsedBookmarkFolderNone);
+  registry->RegisterIntegerPref(
+      prefs::kIosBookmarkLastUsedStorageReceivingBookmarks,
+      static_cast<int>(bookmarks::StorageType::kLocalOrSyncable));
 }
 
-- (instancetype)initWithWithProfileBookmarkModel:
-                    (bookmarks::BookmarkModel*)profileBookmarkModel
-                            accountBookmarkModel:
-                                (bookmarks::BookmarkModel*)accountBookmarkModel
-                                           prefs:(PrefService*)prefs
-                           authenticationService:
-                               (AuthenticationService*)authenticationService
-                                syncSetupService:
-                                    (SyncSetupService*)syncSetupService {
+- (instancetype)
+    initWithWithProfileBookmarkModel:
+        (bookmarks::BookmarkModel*)profileBookmarkModel
+                accountBookmarkModel:
+                    (bookmarks::BookmarkModel*)accountBookmarkModel
+                               prefs:(PrefService*)prefs
+               authenticationService:
+                   (AuthenticationService*)authenticationService
+                         syncService:(syncer::SyncService*)syncService
+                    syncSetupService:(SyncSetupService*)syncSetupService {
   self = [super init];
   if (self) {
     _profileBookmarkModel = profileBookmarkModel->AsWeakPtr();
@@ -79,6 +83,7 @@ const int64_t kLastUsedFolderNone = -1;
     }
     _prefs = prefs;
     _authenticationService = authenticationService->GetWeakPtr();
+    _syncService = syncService;
     _syncSetupService = syncSetupService;
   }
   return self;
@@ -89,6 +94,7 @@ const int64_t kLastUsedFolderNone = -1;
   _accountBookmarkModel = nullptr;
   _prefs = nullptr;
   _authenticationService = nullptr;
+  _syncService = nullptr;
   _syncSetupService = nullptr;
 }
 
@@ -98,7 +104,9 @@ const int64_t kLastUsedFolderNone = -1;
   base::RecordAction(base::UserMetricsAction("BookmarkAdded"));
   LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeAllTabs);
 
-  const BookmarkNode* defaultFolder = [self folderForNewBookmarks];
+  const BookmarkNode* defaultFolder = GetDefaultBookmarkFolder(
+      _prefs, bookmark_utils_ios::IsAccountBookmarkStorageOptedIn(_syncService),
+      _profileBookmarkModel.get(), _accountBookmarkModel.get());
   _profileBookmarkModel->AddNewURL(defaultFolder,
                                    defaultFolder->children().size(),
                                    base::SysNSStringToUTF16(title), URL);
@@ -110,12 +118,13 @@ const int64_t kLastUsedFolderNone = -1;
 
   NSString* folderTitle =
       bookmark_utils_ios::TitleForBookmarkNode(defaultFolder);
-  BOOL usesDefaultFolder =
-      (_prefs->GetInt64(prefs::kIosBookmarkFolderDefault) ==
-       kLastUsedFolderNone);
-  NSString* text = [self messageForAddingBookmarksInFolder:!usesDefaultFolder
-                                                     title:folderTitle
-                                                     count:1];
+  bookmarks::StorageType storageType = bookmark_utils_ios::GetBookmarkModelType(
+      defaultFolder, _profileBookmarkModel.get(), _accountBookmarkModel.get());
+  NSString* text = [self
+      messageForAddingBookmarksInFolder:!IsLastUsedBookmarkFolderSet(_prefs)
+                      folderStorageType:storageType
+                                  title:folderTitle
+                                  count:1];
   TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
   MDCSnackbarMessage* message = [MDCSnackbarMessage messageWithText:text];
   message.action = action;
@@ -135,7 +144,10 @@ const int64_t kLastUsedFolderNone = -1;
   }
 
   NSString* folderTitle = bookmark_utils_ios::TitleForBookmarkNode(folder);
+  bookmarks::StorageType storageType = bookmark_utils_ios::GetBookmarkModelType(
+      folder, _profileBookmarkModel.get(), _accountBookmarkModel.get());
   NSString* text = [self messageForAddingBookmarksInFolder:(folderTitle.length)
+                                         folderStorageType:storageType
                                                      title:folderTitle
                                                      count:URLs.count];
   TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
@@ -146,37 +158,35 @@ const int64_t kLastUsedFolderNone = -1;
 
 #pragma mark - Private
 
-- (const BookmarkNode*)folderForNewBookmarks {
-  const BookmarkNode* defaultFolder = _profileBookmarkModel->mobile_node();
-  int64_t node_id = _prefs->GetInt64(prefs::kIosBookmarkFolderDefault);
-  if (node_id == kLastUsedFolderNone) {
-    node_id = defaultFolder->id();
-  }
-  const BookmarkNode* result =
-      bookmarks::GetBookmarkNodeByID(_profileBookmarkModel.get(), node_id);
-
-  if (result && result->is_folder()) {
-    return result;
-  }
-
-  return defaultFolder;
-}
-
 // The localized strings for adding bookmarks.
 // `addFolder`: whether the folder name should appear in the message
 // `folderTitle`: The name of the folder. Assumed to be non-nil if `addFolder`
 // is true. `count`: the number of bookmarks. Used for localization.
 - (NSString*)messageForAddingBookmarksInFolder:(BOOL)addFolder
+                             folderStorageType:
+                                 (bookmarks::StorageType)storageType
                                          title:(NSString*)folderTitle
                                          count:(int)count {
   std::u16string result;
+  id<SystemIdentity> identity =
+      _authenticationService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
+  BOOL hasSyncConsent =
+      _authenticationService->HasPrimaryIdentity(signin::ConsentLevel::kSync);
+  // TODO(crbug.com/1442345): Once `kEnableEmailInBookmarksReadingListSnackbar`
+  // and `kEnableBookmarksAccountStorage` are removed, `saveIntoAccount` can be
+  // set with the value from `ShouldDisplayCloudSlashIconForProfileModel()`. We
+  // will need to rename the function to something like:
+  // `IsLocalOrSyncableModelSynced()`.
+  // The bookmark is saved in the account if either following condition is true:
+  // * the saved folder is in the account model,
+  // * the sync consent has been granted and the bookmark data type is enabled
+  BOOL saveIntoAccount =
+      (storageType == bookmarks::StorageType::kAccount) ||
+      (hasSyncConsent && _syncSetupService->IsDataTypePreferred(
+                             syncer::UserSelectableType::kBookmarks));
   if (base::FeatureList::IsEnabled(
           kEnableEmailInBookmarksReadingListSnackbar) &&
-      _syncSetupService->IsSyncRequested() &&
-      _syncSetupService->IsDataTypePreferred(syncer::ModelType::BOOKMARKS)) {
-    id<SystemIdentity> identity =
-        _authenticationService->GetPrimaryIdentity(signin::ConsentLevel::kSync);
-    DCHECK(identity);
+      saveIntoAccount) {
     std::u16string email = base::SysNSStringToUTF16(identity.userEmail);
     if (addFolder) {
       std::u16string title = base::SysNSStringToUTF16(folderTitle);

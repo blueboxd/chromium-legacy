@@ -88,7 +88,7 @@
 <translation id="1509486075633541495">वेबसाइटवर साइन इन करा</translation>
 <translation id="1509960214886564027">अनेक साइटवरील वैशिष्ट्यांमध्ये खंड पडू शकतो</translation>
 <translation id="152234381334907219">कधीही सेव्ह न केलेले</translation>
-<translation id="1523341279170789507">सर्व कुकीना परवानगी द्या</translation>
+<translation id="1523341279170789507">सर्व कुकीजना परवानगी द्या</translation>
 <translation id="1531836666020185856">वैशिष्ट्यीकृत</translation>
 <translation id="1535268707340844072">तुमच्या सद्य सेटिंगमुळे काही साइट खंडित होऊ शकतात. सर्व साइटसाठी कुकी व्यवस्थापित करण्यासाठी <ph name="BEGIN_LINK" />कुकी सेटिंग्ज<ph name="END_LINK" /> पहा.</translation>
 <translation id="1540800554400757039">पत्ता 1</translation>
@@ -113,6 +113,7 @@
 <translation id="1657011748321897393">सामायिकरण अयशस्वी झाले कारण तुम्ही नेटवर्कशी कनेक्ट केलेले नाही.</translation>
 <translation id="1657641691196698092">ब्लॉक केलेल्या कुकी</translation>
 <translation id="165877110639533037">कोणतेही टॅब उघडे नाहीत</translation>
+<translation id="166310177317698233">टॅब दाखवा बटणावर टॅप करून तुम्ही तुमचे पिन केलेले टॅब शोधू शकता.</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> ते <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">मोबाइल साइट ची विनंती करा</translation>
 <translation id="168715261339224929">तुमच्या सर्व डिव्हाइसवर तुमचे बुकमार्क मिळवण्यासाठी, सिंक सुरू करा.</translation>
@@ -407,6 +408,7 @@
 <translation id="3638472932233958418">वेबपृष्ठे प्रीलोड करा</translation>
 <translation id="3661160521073045932">प्रोफाइल कॉंफिगरेशन उपलब्ध आहे</translation>
 <translation id="3670030362669914947">नंबर</translation>
+<translation id="3700134753671613714">आपल्या सर्व डिव्हाइसेस वरील तुमचे बुकमार्क मिळविण्यासाठी साइन इन करा.</translation>
 <translation id="3709582977625132201">न वाचलेले म्हणून मार्क करा</translation>
 <translation id="371230970611282515">धोकादायक घटना घडण्याआधी त्यांचे पूर्वानुमान करतो आणि त्यांबद्दल तुम्हाला चेतावणी देतो.</translation>
 <translation id="37207012422556617">ट्रेंडिंग शोध</translation>
@@ -536,7 +538,7 @@
 <translation id="4606247758155004938">तुमचा ब्राउझर तुमच्या संस्थेद्वारे व्यवस्थापित केला जातो.</translation>
 <translation id="461440297010471931">Google ने शोधत आहे</translation>
 <translation id="4619564267100705184">हे तुम्हीच असल्याची पडताळणी करा</translation>
-<translation id="4619615317237390068">अन्य डिव्हाइसमधील टॅब</translation>
+<translation id="4619615317237390068">अन्य डिव्हाइसेसमधील टॅब</translation>
 <translation id="4620246317052452550">तुम्ही वाचलेली पृष्‍ठे</translation>
 <translation id="4620888520263267479">लिंकची पूर्वावलोकने दाखवा</translation>
 <translation id="4630540211544979320">पेजचे भाषांतर करा</translation>
@@ -546,7 +548,6 @@
 <translation id="4642472735733036929">किमतीचा माग ठेवणे थांबले आहे</translation>
 <translation id="4650125387981512669"><ph name="FIRST_RUN_ACCOUNT_NAME" /> म्हणून पुढे सुरू ठेवा</translation>
 <translation id="4652817563047461855">तुमचे पासवर्ड सुरक्षित असल्याची खात्री करा, ते धोक्यात असल्यास शोधा आणि ऑनलाइन असताना स्वतःचे संरक्षण करण्यात मदत करण्यासाठी सल्ला मिळवा. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">तुम्ही तुमच्या Google खात्यामध्ये साइन इन केल्यावर, हे वैशिष्ट्य सुरू केले जाते.</translation>
 <translation id="4659667755519643272">टॅब स्विचर प्रविष्‍ट करा</translation>
 <translation id="46614316059270592">पासवर्ड सेव्ह करा</translation>
 <translation id="4666531726415300315"><ph name="EMAIL" /> म्हणून साइन इन केले.
@@ -588,7 +589,6 @@
 <translation id="4844899002472726590">तुम्हाला स्वारस्य असलेले विषय पहा आणि ते संपादित करा</translation>
 <translation id="4848999860252535517"><ph name="WEBSITE" /> चा पासवर्ड हटवायचा आहे का?</translation>
 <translation id="4854345657858711387">पासकोड सेट करा</translation>
-<translation id="4856498338299082007">तुमच्या Google खाते मध्ये</translation>
 <translation id="4858786880085262208">शक्य असेल, तेव्हा HTTPS वर अपग्रेड करा. सुरक्षित साइट कदाचित सुरक्षित नसलेला आशय एम्बेड करू शकतात.</translation>
 <translation id="4860895144060829044">कॉल करा</translation>
 <translation id="4872323082491632254">पासवर्ड तपासा</translation>
@@ -667,7 +667,8 @@
 <translation id="543338862236136125">पासवर्ड संपादित करा</translation>
 <translation id="5433691172869980887">वापरकर्ता नाव कॉपी केले</translation>
 <translation id="5439599923922718668">वारंवार भेट दिलेली</translation>
-<translation id="54401264925851789">पेज सुरक्षेबाबत माहिती</translation>
+<translation id="5439618055789623719"><ph name="USER_EMAIL" /> म्हणून साइन इन केले आहे</translation>
+<translation id="54401264925851789">पृष्‍ठ सुरक्षितता माहिती</translation>
 <translation id="5443952882982198570">क्रेडिट कार्ड</translation>
 <translation id="5444892875087332195">बुकमार्क</translation>
 <translation id="5457226814769348910">ऑफलाइन आवृत्ती उघडा</translation>
@@ -834,7 +835,7 @@
 <translation id="6383719166112032471">स्थान उघडा…</translation>
 <translation id="6387994324662817823">पासवर्ड फक्त या डिव्हाइसवर Google पासवर्ड व्यवस्थापक यामध्ये सेव्ह केले जातात.</translation>
 <translation id="6389470377220713856">कार्डवरील नाव</translation>
-<translation id="6406506848690869874">सिंक करा</translation>
+<translation id="6406506848690869874">Sync</translation>
 <translation id="6410390304316730527">तुम्हाला फसवून द्वेषयुक्त सॉफ्टवेअर इंस्टॉल करणे किंवा पासवर्ड, फोन नंबर किंवा क्रेडिट कार्डसारखी वैयक्तिक माहिती उघड करणे यांसारखी एखादी धोकादायक गोष्ट करायला लावणार्‍या हल्लेखोरांपासून सुरक्षित ब्राउझिंग तुमचे संरक्षण करते. तुम्ही ते बंद केल्यास, अनोळखी किंवा अप्रतिष्ठित साइट ब्राउझ करताना सावध रहा.</translation>
 <translation id="6410883413783534063">एकाच वेळी वेगवेगळ्या पेजना भेट देण्यासाठी टॅब उघडा</translation>
 <translation id="641799622251403418"><ph name="EMAIL" /> म्हणून साइन इन केले.
@@ -1122,7 +1123,6 @@
 <translation id="8248969482078657578">इनॅक्टिव्ह टॅब तुम्हाला लक्ष केंद्रित करण्यात मदत करतात</translation>
 <translation id="8261506727792406068">हटवा</translation>
 <translation id="8264966119170358612">तुमचे सेव्ह केलेले काही पासवर्ड हे Google ऐवजी तृतीय पक्षाच्या डेटा भंगामध्ये उघड झाले होते. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">फक्त या डिव्हाइसवर</translation>
 <translation id="826614135184049678">तुमच्या iPad रीसेटचा भाग म्हणून तुम्हाला <ph name="USER_NAME" /> खात्यामधून साइन आउट केले गेले होते. पुन्हा साइन इन करण्यासाठी, खाली "पुढे सुरू ठेवा" वर टॅप करा.</translation>
 <translation id="8271720166617117963">स्वीकार करा आणि साइन इन करा</translation>
 <translation id="8278938988428169257">शब्द किंवा वाक्य एंटर करा</translation>

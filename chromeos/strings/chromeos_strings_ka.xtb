@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">DNS-ის დარეგულირება ვერ ხერხდება</translation>
 <translation id="1018656279737460067">გაუქმდა</translation>
 <translation id="1022433422498218992">მართვის ზოგადი საშუალებები</translation>
-<translation id="1022628058306505708">ხმელეთის ნაკადი</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> ნაკადი, <ph name="CPU_MAX_CLOCK_SPEED" /> გჰც)</translation>
 <translation id="1047773237499189053">ხელმისაწვდომია ახალი ფუნქცია, დამატებითი ინფორმაციისთვის გამოიყენეთ კლავიში ზემოთ მიმართული ისრით.</translation>
 <translation id="1059913517121127803">სკანირების დაწყება ვერ მოხერხდა</translation>
@@ -235,7 +234,6 @@
 <translation id="2902312830803030883">სხვა ქმედებები</translation>
 <translation id="2926057806159140518">შეიყვანეთ თქვენი მომხმარებლის სახელი და პაროლი ან დაასკანირეთ თქვენი QR კოდი</translation>
 <translation id="2940811910881150316">მოწყობილობის შემოწმება ვერ ხერხდება. შესამოწმებლად ხელახლა გახსენით თავსახური.</translation>
-<translation id="2981143481017883351">თქვენთვის ამიერიდან ხელმისაწვდომია Chromebook-ისთვის ექსკლუზიური რესურსები</translation>
 <translation id="3008341117444806826">განახლება</translation>
 <translation id="3009958530611748826">აირჩიეთ საქაღალდე, რომელშიც უნდა შეინახოს</translation>
 <translation id="3017079585324758401">ფონი</translation>
@@ -280,7 +278,6 @@
 <translation id="3360306038446926262">ფანჯრები</translation>
 <translation id="3368922792935385530">დაკავშირებული</translation>
 <translation id="3369013195428705271">ნამდვილად გსურთ ბეჭდვის ისტორიის მთლიანად გასუფთავება? ბეჭდვის მიმდინარე დავალებები არ წაიშლება.</translation>
-<translation id="3386675685417744672">ექსკლუზიურად Chromebook-ზე</translation>
 <translation id="3404249063913988450">ეკრანმზოგის ჩართვა</translation>
 <translation id="3413935475507503304">განახლების გასაგრძელებლად დაწკაპუნებით აირჩიეთ „შემდეგი“.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
@@ -295,6 +292,7 @@
 <translation id="3484914941826596830">ჩაშენებული პროგრამული უზრუნველყოფის განახლების პროცესში არ გამოაერთოთ ეს გარე მოწყობილობა ან არ გამორთოთ კომპიუტერი. შეგიძლიათ ამ ფანჯრის ჩაკეცვა. ამ განახლებას შეიძლება დასჭირდეს რამდენიმე წუთი და გარე მოწყობილობამ შეიძლება ამ დროს არ იმუშაოს.</translation>
 <translation id="3486220673238053218">განსაზღვრება</translation>
 <translation id="3488065109653206955">ნაწილობრივ გააქტიურებული</translation>
+<translation id="3502426834823382181">ყველა აპის ნახვა</translation>
 <translation id="3510890413042482857"><ph name="BEGIN_LINK1" />ეფექტურობის ტრასირების მონაცემების<ph name="END_LINK1" /> გაგზავნა</translation>
 <translation id="3517001332549868749">ChromeOS განახლება</translation>
 <translation id="3527036260304016759">ვერ მოხერხდა — უცნობი შეცდომა</translation>
@@ -358,7 +356,6 @@
 <translation id="404928562651467259">გაფრთხილება</translation>
 <translation id="4054683689023980771">მიმდინარეობს სურათის ჩამოტვირთვა</translation>
 <translation id="4060260348856573701">ახალი APN</translation>
-<translation id="4079743696465895866">აირჩიეთ ექსკლუზიურად Chromebook-ზე ხელმისაწვდომი ნამუშევრები</translation>
 <translation id="4093865285251893588">პროფილის სურათი</translation>
 <translation id="409427325554347132">შემოწმების დეტალების შენახვა</translation>
 <translation id="4095829376260267438">WPA2WPA3</translation>
@@ -625,7 +622,6 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">ბატარეის მოცულობა იკლებს მისი გამოყენების შესაბამისად</translation>
 <translation id="6191293864534840972">სახელების სერვერი არასწორად არის ფორმირებული</translation>
-<translation id="6205145102504628069">ღრუბლების ნაკადი</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223066887782788441">სრულეკრანიანი რეჟიმიდან გასვლა</translation>
 <translation id="6223752125779001553">სკანერები მიუწვდომელია</translation>
@@ -636,6 +632,7 @@
 <translation id="6278428485366576908">თემა</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">მუქი თემის გააქტიურება</translation>
+<translation id="6285899124799306373">გამშვების გახსნა</translation>
 <translation id="6302401976930124515">ტესტი „<ph name="TEST_NAME" />“ გაუქმდა</translation>
 <translation id="631063167932043783">გაცნობის აპი</translation>
 <translation id="6319207335391420837">განაახლეთ ჩაშენებული პროგრამული უზრუნველყოფა <ph name="DEVICE_NAME" />-ზე</translation>
@@ -651,6 +648,7 @@
 <translation id="6382182670717268353">ეკანმზოგის გადახედვა</translation>
 <translation id="6388847657025262518">სკანერის დოკუმენტების მიმწოდი გაიჭედა. შეამოწმეთ მიმწოდი და ცადეთ ხელახლა.</translation>
 <translation id="6394634179843537518">ფაილის დამატება</translation>
+<translation id="6401427872449207797">ბრაუზერში ძიება</translation>
 <translation id="6410257289063177456">გამოსახულების ფაილები</translation>
 <translation id="641081527798843608">თემის თანხვედრა</translation>
 <translation id="6412715219990689313">ჩაშენებული კლავიატურა</translation>
@@ -666,7 +664,6 @@
 <translation id="6494974875566443634">მორგება</translation>
 <translation id="6500818810472529210">იხილეთ შედეგები Google Search-ში</translation>
 <translation id="650266656685499220">ალბომების შესაქმნელად გადადით Google Photos-ზე</translation>
-<translation id="6505750420152840539">მზის ამოსვლიდან მზის ჩასვლამდე</translation>
 <translation id="6516990319416533844">ბატარეის დატენის სიჩქარის შესამოწმებლად ჯერ დაცალეთ ბატარეა გარკვეული დროის განმავლობაში</translation>
 <translation id="6517239166834772319">გაცნობა</translation>
 <translation id="6526200165918397681">ფონის დამთხვევა</translation>
@@ -875,6 +872,7 @@
 <translation id="8312330582793120272">მედიის დაკვრა</translation>
 <translation id="8318753676953949627">სურათები არ არის</translation>
 <translation id="8329018942023753850">კალკულატორის აპი</translation>
+<translation id="8335869473001018124">ძიების გახსნა</translation>
 <translation id="8336739000755212683">მოწყობილობის ანგარიშის სურათის შეცვლა</translation>
 <translation id="8347227221149377169">ბეჭდვის დავალებები</translation>
 <translation id="8351855506390808906">კლავიშთა დანიშვნის შეხების წერტილი</translation>

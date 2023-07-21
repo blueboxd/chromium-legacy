@@ -4,11 +4,10 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 
-#include "accelerator_notifications.h"
+#include "ash/accelerators/accelerator_notifications.h"
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/magnifier/docked_magnifier_controller.h"
 #include "ash/accessibility/magnifier/fullscreen_magnifier_controller.h"
-#include "ash/ambient/ambient_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/capture_mode/capture_mode_camera_controller.h"
@@ -26,7 +25,6 @@
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/media/media_controller_impl.h"
-#include "ash/public/cpp/ambient/ambient_client.h"
 #include "ash/public/cpp/app_types_util.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/new_window_delegate.h"
@@ -63,6 +61,8 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/screen_pinning_controller.h"
+#include "ash/wm/snap_group/snap_group.h"
+#include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_multitask_menu_event_handler.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
@@ -474,6 +474,27 @@ bool CanLock() {
   return Shell::Get()->session_controller()->CanLockScreen();
 }
 
+bool CanMinimizeSnapGroupWindows() {
+  return Shell::Get()->snap_group_controller();
+}
+
+void MinimizeWindowsInSnapGroup() {
+  aura::Window* top_window = GetTargetWindow();
+  SnapGroupController* snap_group_controller =
+      Shell::Get()->snap_group_controller();
+  if (!top_window || !snap_group_controller) {
+    return;
+  }
+
+  SnapGroup* snap_group =
+      snap_group_controller->GetSnapGroupForGivenWindow(top_window);
+  if (!snap_group) {
+    return;
+  }
+
+  snap_group->MinimizeWindows();
+}
+
 bool CanMinimizeTopWindowOnBack() {
   return window_util::ShouldMinimizeTopWindowOnBack();
 }
@@ -488,17 +509,14 @@ bool CanPerformMagnifierZoom() {
 }
 
 bool CanScreenshot(bool take_screenshot) {
-  // |TAKE_SCREENSHOT| is allowed when user session is blocked.
+  // |AcceleratorAction::kTakeScreenshot| is allowed when user session is
+  // blocked.
   return take_screenshot ||
          !Shell::Get()->session_controller()->IsUserSessionBlocked();
 }
 
 bool CanShowStylusTools() {
   return GetPaletteTray()->ShouldShowPalette();
-}
-
-bool CanStartAmbientMode() {
-  return AmbientClient::Get() && AmbientClient::Get()->IsAmbientModeAllowed();
 }
 
 bool CanSwapPrimaryDisplay() {
@@ -521,7 +539,7 @@ bool CanToggleGameDashboard() {
     return false;
   }
   aura::Window* window = GetTargetWindow();
-  return window && GameDashboardController::Get()->IsSupported(window);
+  return window && chromeos::wm::IsGameWindow(window);
 }
 
 bool CanToggleMultitaskMenu() {
@@ -612,9 +630,9 @@ void ActivateDesk(bool activate_left) {
 }
 
 void ActivateDeskAtIndex(AcceleratorAction action) {
-  DCHECK_GE(action, DESKS_ACTIVATE_0);
-  DCHECK_LE(action, DESKS_ACTIVATE_7);
-  const size_t target_index = action - DESKS_ACTIVATE_0;
+  DCHECK_GE(action, AcceleratorAction::kDesksActivate0);
+  DCHECK_LE(action, AcceleratorAction::kDesksActivate7);
+  const size_t target_index = action - AcceleratorAction::kDesksActivate0;
   auto* desks_controller = DesksController::Get();
   // Only 1 desk animation can occur at a time so ignore this action if there's
   // an ongoing desk animation.
@@ -1085,10 +1103,6 @@ void TakeScreenshot(bool from_snapshot_key) {
     return;
   }
   capture_mode_controller->CaptureScreenshotsOfAllDisplays();
-}
-
-void ToggleAmbientMode() {
-  Shell::Get()->ambient_controller()->ToggleInSessionUi();
 }
 
 void ToggleAssignToAllDesk() {
@@ -1622,7 +1636,7 @@ void WindowSnap(AcceleratorAction action) {
   Shell* shell = Shell::Get();
   const bool in_tablet = shell->tablet_mode_controller()->InTabletMode();
   const bool in_overview = shell->overview_controller()->InOverviewSession();
-  if (action == WINDOW_CYCLE_SNAP_LEFT) {
+  if (action == AcceleratorAction::kWindowCycleSnapLeft) {
     if (in_tablet) {
       RecordWindowSnapAcceleratorAction(
           WindowSnapAcceleratorAction::kCycleLeftSnapInTablet);
@@ -1645,17 +1659,15 @@ void WindowSnap(AcceleratorAction action) {
           WindowSnapAcceleratorAction::kCycleRightSnapInClamshellNoOverview);
     }
   }
-
-  const WMEvent event(action == WINDOW_CYCLE_SNAP_LEFT
-                          ? WM_EVENT_CYCLE_SNAP_PRIMARY
-                          : WM_EVENT_CYCLE_SNAP_SECONDARY);
+  const WindowSnapWMEvent event(
+      action == AcceleratorAction::kWindowCycleSnapLeft
+          ? WM_EVENT_CYCLE_SNAP_PRIMARY
+          : WM_EVENT_CYCLE_SNAP_SECONDARY,
+      WindowSnapActionSource::kKeyboardShortcutToSnap);
   aura::Window* window = GetTargetWindow();
   DCHECK(window);
 
-  auto* window_state = WindowState::Get(window);
-  window_state->set_snap_action_source(
-      WindowSnapActionSource::kKeyboardShortcutToSnap);
-  window_state->OnWMEvent(&event);
+  WindowState::Get(window)->OnWMEvent(&event);
 }
 
 bool ZoomDisplay(bool up) {

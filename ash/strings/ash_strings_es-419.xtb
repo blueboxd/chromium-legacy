@@ -221,6 +221,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="1961239773406905488">La vista previa de la cámara esta oculta</translation>
 <translation id="1961832440516943645"><ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="1962969542251276847">Bloquear pantalla</translation>
+<translation id="1962972976741217487">Hay 1 dispositivo conectado al hotspot de tu <ph name="DEVICE_NAME" /></translation>
 <translation id="1967970931040389207">Activa el hotspot</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Hola, <ph name="USERNAME" /></translation>
@@ -301,7 +302,6 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="2367972762794486313">Mostrar aplicaciones</translation>
 <translation id="2369165858548251131">"Hola" en chino</translation>
 <translation id="2386292613071805067">Seleccionar todo en la página</translation>
-<translation id="2390318262976603432">Configuración regional</translation>
 <translation id="2397416548179033562">Mostrar el menú de Chrome</translation>
 <translation id="240006516586367791">Controles multimedia</translation>
 <translation id="2402411679569069051">Para desbloquear la Chromebook, utiliza la huella dactilar o desbloquea el teléfono</translation>
@@ -382,6 +382,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="2791421900609674576">Verás recomendaciones para continuar desde donde dejaste. Para quitarlas, manténlas presionadas.</translation>
 <translation id="2792498699870441125">Alt+tecla de búsqueda</translation>
 <translation id="2797741504905337289">Grupo de barras</translation>
+<translation id="2802938996245446490">Se seleccionó <ph name="BUTTON_LABEL" /></translation>
 <translation id="2805756323405976993">Aplicaciones</translation>
 <translation id="2814448776515246190">Captura parcial</translation>
 <translation id="2819276065543622893">Saldrás de la sesión ahora.</translation>
@@ -600,6 +601,7 @@ Conecta tu dispositivo a la corriente.</translation>
 <translation id="3735740477244556633">Ordenar por</translation>
 <translation id="3738664582935948253">Ahora puedes mostrar los clics y las combinaciones de teclas en las grabaciones de pantalla.</translation>
 <translation id="3742055079367172538">Captura de pantalla tomada</translation>
+<translation id="3756485814916578707">Transmitiendo pantalla</translation>
 <translation id="3765841986579723851">Se editó hoy</translation>
 <translation id="3773700760453577392">Un administrador inhabilitó el acceso múltiple para <ph name="USER_EMAIL" />.
 Todos los usuarios deben salir de sus cuentas para continuar.</translation>
@@ -822,6 +824,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4777825441726637019">Play Store</translation>
 <translation id="4778095205580009397">El Asistente de Google no está disponible en la sesión de demostración.</translation>
 <translation id="4789348252524569426">No se pueden instalar los archivos de voz. Debes actualizar el dispositivo. Reinicia el dispositivo y vuelve a intentarlo.</translation>
+<translation id="478959186716341421">Transmitiendo</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="4814539958450445987">Pantalla de acceso</translation>
@@ -929,6 +932,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5297704307811127955">No</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5302048478445481009">Idioma</translation>
+<translation id="5303783651764314393">Hay <ph name="DEVICECOUNT" /> dispositivos conectados al hotspot de tu <ph name="DEVICE_NAME" /></translation>
 <translation id="5308380583665731573">Conectar</translation>
 <translation id="5313326810920013265">Configuración de Bluetooth</translation>
 <translation id="5314219114274263156">Se registró una grabación de pantalla</translation>
@@ -997,7 +1001,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Presiona Ctrl + Alt + Z para inhabilitar los comentarios por voz.</translation>
 <translation id="5601503069213153581">PIN</translation>
-<translation id="5601571553788043181">Abrir el archivo en el navegador Chrome</translation>
 <translation id="5618148318840095371">Te cambiamos a una red mejor</translation>
 <translation id="5619862035903135339">La política del administrador inhabilita el modo de captura de pantalla.</translation>
 <translation id="5625955975703555628">LTE+</translation>
@@ -1118,6 +1121,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6137566720514957455">Abrir el diálogo para quitar la cuenta <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Confirmar la descarga</translation>
 <translation id="6154006699632741460">El dispositivo periférico no es compatible</translation>
+<translation id="6156960295318603523">Configuración de idioma</translation>
 <translation id="615957422585914272">Mostrar el teclado en pantalla</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6166852626429024716">Buscar en el dispositivo, en su configuración y apps, y en la Web…</translation>
@@ -1336,6 +1340,7 @@ Nueva instalación</translation>
 <translation id="7165278925115064263">Alt+mayúscula+K</translation>
 <translation id="7168224885072002358">Se revertirá a la resolución anterior en <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="7180611975245234373">Actualizar</translation>
+<translation id="7187711731540696127">El hotspot de tu <ph name="DEVICE_NAME" /> está activado y no hay dispositivos conectados</translation>
 <translation id="7188494361780961876">El menú se movió a la esquina superior izquierda de la pantalla.</translation>
 <translation id="7189412385142492784">A qué distancia está Venus</translation>
 <translation id="7198435252016571249">Se ajustó la cámara a la esquina inferior derecha. Entra en conflicto con la superficie del sistema.</translation>
@@ -1393,6 +1398,7 @@ Nueva instalación</translation>
 <translation id="7497767806359279797">Elegir idioma y teclado</translation>
 <translation id="7508690557411636492">Se abrió el mes pasado</translation>
 <translation id="7509246181739783082">Verifica tu identidad</translation>
+<translation id="7512726380443357693">No se seleccionó <ph name="BUTTON_LABEL" /></translation>
 <translation id="7513622367902644023">Se seleccionó el modo de captura de pantalla</translation>
 <translation id="7513922695575567867">Calendario, semana del <ph name="DATE" />, se seleccionó <ph name="SELECTED_DATE" />.</translation>
 <translation id="7514365320538308">Descargar</translation>
@@ -1414,7 +1420,6 @@ Para apagarlo, vuelve a mantener presionado el botón de encendido.</translation
 <translation id="7569509451529460200">Se habilitaron el braille y ChromeVox</translation>
 <translation id="7573585051776738856">Se ancló la ventana activa en la derecha.</translation>
 <translation id="7579778809502851308">Captura de pantalla</translation>
-<translation id="7590883480672980941">Configuración de entradas</translation>
 <translation id="7593891976182323525">Tecla de búsqueda o Mayús</translation>
 <translation id="7600875258240007829">Ver todas las notificaciones</translation>
 <translation id="7607002721634913082">Detenido</translation>
@@ -1556,6 +1561,7 @@ Para apagarlo, vuelve a mantener presionado el botón de encendido.</translation
 <translation id="8185090165691050712">Activar o desactivar el menú para cambiar el tamaño del modo bloqueado</translation>
 <translation id="8192202700944119416">Las notificaciones están ocultas.</translation>
 <translation id="8196787716797768628">Usa gestos para cambiar rápidamente de app o interactuar con la Chromebook en el modo tablet.</translation>
+<translation id="8198456017687137612">Pestaña de transmisión</translation>
 <translation id="8200772114523450471">Reanudar</translation>
 <translation id="8203795194971602413">Clic con botón derecho</translation>
 <translation id="8209010265547628927">Restablecer</translation>

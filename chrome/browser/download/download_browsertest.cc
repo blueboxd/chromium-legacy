@@ -50,6 +50,7 @@
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/download/download_item_web_app_data.h"
 #include "chrome/browser/download/download_manager_utils.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_request_limiter.h"
@@ -72,6 +73,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -988,12 +991,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
   // Try to start the download via Javascript and wait for the corresponding
   // load stop event.
   content::TestNavigationObserver observer(web_contents);
-  bool download_attempted;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "window.domAutomationController.send(startDownload());",
-      &download_attempted));
-  ASSERT_TRUE(download_attempted);
+  ASSERT_EQ(true, content::EvalJs(
+                      browser()->tab_strip_model()->GetActiveWebContents(),
+                      "startDownload();"));
   observer.Wait();
 
   // Check that we did not download the file.
@@ -1038,12 +1038,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest,
   tab_download_state->set_download_seen();
   tab_download_state->SetDownloadStatusAndNotify(
       url::Origin::Create(url), DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
-  bool download_attempted;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "window.domAutomationController.send(startDownload1());",
-      &download_attempted));
-  ASSERT_TRUE(download_attempted);
+  ASSERT_EQ(true, content::EvalJs(
+                      browser()->tab_strip_model()->GetActiveWebContents(),
+                      "startDownload1();"));
   can_download_observer.WaitForNumberOfDecisions(1);
   EXPECT_FALSE(can_download_observer.GetDecisions().front());
   can_download_observer.Reset();
@@ -1053,11 +1050,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest,
       CreateWaiter(browser(), 1));
   tab_download_state->SetDownloadStatusAndNotify(
       url::Origin::Create(url), DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS);
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "window.domAutomationController.send(startDownload2());",
-      &download_attempted));
-  ASSERT_TRUE(download_attempted);
+  ASSERT_EQ(true, content::EvalJs(
+                      browser()->tab_strip_model()->GetActiveWebContents(),
+                      "startDownload2();"));
   can_download_observer.WaitForNumberOfDecisions(1);
   EXPECT_TRUE(can_download_observer.GetDecisions().front());
 
@@ -1745,14 +1740,14 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ChromeURLAfterDownload) {
   WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
-  bool webui_responded = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      contents,
-      R"(chrome.developerPrivate.getExtensionsInfo(function(info) {
-           domAutomationController.send(!!info && !chrome.runtime.lastError);
-         });)",
-      &webui_responded));
-  EXPECT_TRUE(webui_responded);
+  EXPECT_EQ(true, content::EvalJs(contents,
+                                  R"(
+        new Promise(resolve => {
+          chrome.developerPrivate.getExtensionsInfo(function(info) {
+            resolve(!!info && !chrome.runtime.lastError);
+          });
+        });
+        )"));
 }
 
 // Test for crbug.com/12745. This tests that if a download is initiated from
@@ -1768,13 +1763,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, BrowserCloseAfterDownload) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), downloads_url));
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
-  bool result = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      contents,
-      "window.onunload = function() { var do_nothing = 0; }; "
-      "window.domAutomationController.send(true);",
-      &result));
-  EXPECT_TRUE(result);
+  EXPECT_EQ(true, content::EvalJs(
+                      contents,
+                      "window.onunload = function() { var do_nothing = 0; }; "
+                      "true;"));
 
   DownloadAndWait(browser(), download_url);
 
@@ -4828,7 +4820,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithFakeSafeBrowsingNewCsbrrTrigger,
 // use (crbug.com/1323505 is tracking Download Bubble on ChromeOS).
 #if !BUILDFLAG(IS_CHROMEOS)
 // Test that the download surface is shown by starting a download.
-IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadAndWait) {
+//
+// TODO(crbug.com/1440818): This test is flaky. Perhaps because it depends on
+// focus, in which case it should be an interactive ui test instead of a
+// browser test?
+IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DownloadAndWait) {
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/downloads/a_zip_file.zip");
@@ -5114,3 +5110,26 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstallClosesSurface) {
   EXPECT_FALSE(IsDownloadSurfaceVisible(browser()->window()));
 }
 #endif  // BUILDFLAG(IS_CHROMEOS)
+
+// Test that web app info is properly attached to the download.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadFromWebApp) {
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/downloads/a_zip_file.zip");
+
+  // Load an app.
+  web_app::AppId app_id = web_app::test::InstallDummyWebApp(
+      browser()->profile(), "testapp", embedded_test_server()->GetURL("/"));
+  Browser* app_browser =
+      web_app::LaunchWebAppBrowserAndWait(browser()->profile(), app_id);
+
+  DownloadAndWait(app_browser, url);
+
+  DownloadManager* manager = DownloadManagerForBrowser(app_browser);
+  std::vector<DownloadItem*> all_downloads;
+  manager->GetAllDownloads(&all_downloads);
+  ASSERT_EQ(all_downloads.size(), 1u);
+  auto* web_app_data = DownloadItemWebAppData::Get(all_downloads[0]);
+  EXPECT_NE(web_app_data, nullptr);
+  EXPECT_EQ(web_app_data->id(), app_id);
+}

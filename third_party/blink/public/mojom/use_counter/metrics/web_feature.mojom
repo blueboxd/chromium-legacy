@@ -2257,7 +2257,6 @@ enum WebFeature {
   kLazyLoadFrameLoadingAttributeLazy = 2933,
   kLazyLoadImageLoadingAttributeEager = 2934,
   kLazyLoadImageLoadingAttributeLazy = 2935,
-  kLazyLoadImageMissingDimensionsForLazy = 2936,
   kPeriodicBackgroundSyncGetTags = 2937,
   kPeriodicBackgroundSyncUnregister = 2938,
   kCreateObjectURLMediaSourceFromWorker = 2939,
@@ -3887,7 +3886,19 @@ enum WebFeature {
   kAttributionReportingCrossAppWeb = 4546,
   kSecurePaymentConfirmationActivationlessShow = 4547,
   kServiceWorkerBypassFetchHandlerForAllWithRaceNetworkRequest = 4548,
+  kFlexIntrinsicSizesCacheMiss = 4549,
+  kCSSStyleContainerQuery = 4550,
+  kCSSValueAppearanceMediaSlider = 4551,
+  kCSSValueAppearanceMediaSliderthumb = 4552,
+  kCSSValueAppearanceMediaVolumeSlider = 4553,
+  kCSSValueAppearanceMediaVolumeSliderthumb = 4554,
+  kCSSValueAppearanceSliderHorizontal = 4555,
+  kCSSValueAppearanceSliderVertical = 4556,
+  kCSSValueAppearanceSliderthumbHorizontal = 4557,
+  kCSSValueAppearanceSliderthumbVertical = 4558,
   kServiceWorkerBypassFetchHandlerForAllWithRaceNetworkRequestByOriginTrial = 4559,
+  kEventTimingPaintedPresentationPromiseResolvedWithEarlierPromiseUnresolved = 4560,
+  kLinkRelPreloadAsFont = 4561,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

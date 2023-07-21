@@ -221,6 +221,7 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="1961239773406905488">Fotoaparato peržiūra paslėpta</translation>
 <translation id="1961832440516943645"><ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="1962969542251276847">Užrakinti ekraną</translation>
+<translation id="1962972976741217487">Prie „<ph name="DEVICE_NAME" />“ viešosios interneto prieigos taško prijungtas vienas įrenginys</translation>
 <translation id="1967970931040389207">Įjungti viešosios interneto prieigos tašką</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Sveiki, <ph name="USERNAME" />!</translation>
@@ -301,7 +302,6 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="2367972762794486313">Rodyti programas</translation>
 <translation id="2369165858548251131">„Labas“ kinų kalba</translation>
 <translation id="2386292613071805067">Pasirinkti viską puslapyje</translation>
-<translation id="2390318262976603432">Lokalės nustatymai</translation>
 <translation id="2397416548179033562">Rodyti „Chrome“ meniu</translation>
 <translation id="240006516586367791">Medijos valdikliai</translation>
 <translation id="2402411679569069051">Kad atrakintumėte „Chromebook“, naudokite kontrolinį kodą arba atrakinkite telefoną</translation>
@@ -382,6 +382,7 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="2791421900609674576">Matysite rekomendacijas, kad galėtumėte tęsti nuo ten, kur baigėte. Palieskite ir palaikykite, jei norite pašalinti rekomendacijas.</translation>
 <translation id="2792498699870441125">„Alt“ + paieškos klavišas</translation>
 <translation id="2797741504905337289">Shelf Party</translation>
+<translation id="2802938996245446490">„<ph name="BUTTON_LABEL" />“, pasirinkta</translation>
 <translation id="2805756323405976993">Taikomosios programos</translation>
 <translation id="2814448776515246190">Dalinio vaizdo užfiksavimas</translation>
 <translation id="2819276065543622893">Būsite atjungti.</translation>
@@ -600,6 +601,7 @@ Prijunkite įrenginį prie maitinimo šaltinio.</translation>
 <translation id="3735740477244556633">Rūšiuoti pagal</translation>
 <translation id="3738664582935948253">Dabar ekrano vaizdo įrašuose galite rodyti paspaudimus ir sparčiuosius klavišus</translation>
 <translation id="3742055079367172538">Ekrano kopija padaryta</translation>
+<translation id="3756485814916578707">Perduodamas ekranas</translation>
 <translation id="3765841986579723851">Redaguota šiandien</translation>
 <translation id="3773700760453577392">Administratorius neleido <ph name="USER_EMAIL" /> prisijungti prie kelių paskyrų. Norėdami tęsti, visi naudotojai turi atsijungti.</translation>
 <translation id="3779139509281456663">Susiejamas įrenginys „<ph name="NAME" />“</translation>
@@ -821,6 +823,7 @@ Prijunkite įrenginį prie maitinimo šaltinio.</translation>
 <translation id="4777825441726637019">„Play“ parduotuvė</translation>
 <translation id="4778095205580009397">„Google“ padėjėjas nepasiekiamas demonstracinėje sesijoje.</translation>
 <translation id="4789348252524569426">Nepavyko įdiegti kalbos failų. Reikia atnaujinti įrenginį. Paleiskite įrenginį iš naujo ir bandykite dar kartą.</translation>
+<translation id="478959186716341421">Perduodama</translation>
 <translation id="479989351350248267">ieškoti</translation>
 <translation id="4804818685124855865">Atsijungti</translation>
 <translation id="4814539958450445987">Prisijungimo ekranas</translation>
@@ -928,6 +931,7 @@ Prijunkite įrenginį prie maitinimo šaltinio.</translation>
 <translation id="5297704307811127955">Išjungta</translation>
 <translation id="5300589172476337783">Rodyti</translation>
 <translation id="5302048478445481009">Kalba</translation>
+<translation id="5303783651764314393">Prie „<ph name="DEVICE_NAME" />“ viešosios interneto prieigos taško prijungta tiek įrenginių: <ph name="DEVICECOUNT" /></translation>
 <translation id="5308380583665731573">Prisijungti</translation>
 <translation id="5313326810920013265">„Bluetooth“ nustatymai</translation>
 <translation id="5314219114274263156">Ekrano vaizdas įrašytas</translation>
@@ -996,7 +1000,6 @@ Prijunkite įrenginį prie maitinimo šaltinio.</translation>
 <translation id="5597451508971090205"><ph name="DATE" />, <ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">Paspauskite „Ctrl“ + „Alt“ + Z, kad išjungtumėte ekrano skaitymą balsu.</translation>
 <translation id="5601503069213153581">PIN kodas</translation>
-<translation id="5601571553788043181">Atidaryti failą „Chrome“ naršyklėje</translation>
 <translation id="5618148318840095371">Prijungėme jus prie geresnio tinklo</translation>
 <translation id="5619862035903135339">Ekrano fiksavimo funkcija yra išjungta remiantis administratoriaus politika</translation>
 <translation id="5625955975703555628">LTE+</translation>
@@ -1013,7 +1016,7 @@ Prijunkite įrenginį prie maitinimo šaltinio.</translation>
 <translation id="5679050765726761783">Prijungtas mažos galios adapteris</translation>
 <translation id="5682642926269496722">„Google Assistant“ nepasiekiamas dabartinėje naudotojo paskyroje.</translation>
 <translation id="5689633613396158040">Naudojant „Nakties šviesos“ funkciją bus patogiau žiūrėti į ekraną ar skaityti prietemoje. Palieskite, kad pakeistumėte, kokiu metu įjungiama funkcija „Nakties šviesa“, arba ją visiškai išjungtumėte.</translation>
-<translation id="5691772641933328258">Piršto atspaudas neatpažintas</translation>
+<translation id="5691772641933328258">Kontrolinis kodas neatpažintas</translation>
 <translation id="5693255400847650006">Naudojamas mikrofonas</translation>
 <translation id="5699366815052349604">Priskirti aktyvų langą visiems darbalaukiams</translation>
 <translation id="570390244361237317">„Visos programos“; naudokite rodyklių klavišus, kad pasiektumėte visas programas</translation>
@@ -1117,6 +1120,7 @@ Prijunkite įrenginį prie maitinimo šaltinio.</translation>
 <translation id="6137566720514957455">Atidaryti <ph name="USER_EMAIL_ADDRESS" /> pašalinimo dialogo langą</translation>
 <translation id="6141988275892716286">Atsisiuntimo patvirtinimas</translation>
 <translation id="6154006699632741460">Išoriniai įrenginiai nepalaikomi</translation>
+<translation id="6156960295318603523">Kalbos nustatymai</translation>
 <translation id="615957422585914272">Rodyti ekrano klaviatūrą</translation>
 <translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="6166852626429024716">Ieškokite įrenginyje, programose, nustatymuose, žiniatinklyje...</translation>
@@ -1335,6 +1339,7 @@ Naujas įdiegimas</translation>
 <translation id="7165278925115064263">„Alt“ + „Shift“ + K</translation>
 <translation id="7168224885072002358">Po <ph name="TIMEOUT_SECONDS" /> bus grąžinta sena skyra</translation>
 <translation id="7180611975245234373">Atnaujinti</translation>
+<translation id="7187711731540696127">„<ph name="DEVICE_NAME" />“ viešosios interneto prieigos taškas įjungtas, nėra jokių susietų įrenginių</translation>
 <translation id="7188494361780961876">Meniu perkeltas į viršutinį kairįjį ekrano kampą.</translation>
 <translation id="7189412385142492784">Kaip toli yra Venera</translation>
 <translation id="7198435252016571249">Fotoaparato peržiūra pridėta apatiniame dešiniajame kampe. Nesuderinama su sistemos platforma.</translation>
@@ -1392,6 +1397,7 @@ Naujas įdiegimas</translation>
 <translation id="7497767806359279797">Pasirinkti kalbą ir klaviatūros išdėstymą</translation>
 <translation id="7508690557411636492">Atidaryta per pastarąjį mėnesį</translation>
 <translation id="7509246181739783082">Tapatybės patvirtinimas</translation>
+<translation id="7512726380443357693">„<ph name="BUTTON_LABEL" />“, nepasirinkta</translation>
 <translation id="7513622367902644023">Pasirinktas ekrano kopijos režimas</translation>
 <translation id="7513922695575567867">Kalendorius, <ph name="DATE" /> savaitė, šiuo metu pasirinkta <ph name="SELECTED_DATE" />.</translation>
 <translation id="7514365320538308">Atsisiųsti</translation>
@@ -1413,7 +1419,6 @@ Jei norite išjungti įrenginį, dar kartą paspauskite ir palaikykite įrengini
 <translation id="7569509451529460200">Brailio rašmenys ir „ChromeVox“ įgalinti</translation>
 <translation id="7573585051776738856">Aktyvus langas įstatytas dešinėje.</translation>
 <translation id="7579778809502851308">Ekrano fiksavimas</translation>
-<translation id="7590883480672980941">Įvesties nustatymai</translation>
 <translation id="7593891976182323525">Paieškos arba „Shift“</translation>
 <translation id="7600875258240007829">Žr. visus pranešimus</translation>
 <translation id="7607002721634913082">Pristabdyta</translation>
@@ -1555,6 +1560,7 @@ Jei norite išjungti įrenginį, dar kartą paspauskite ir palaikykite įrengini
 <translation id="8185090165691050712">Įjungti ir (arba) išjungti meniu norint pakeisti užrakinimo režimo dydį</translation>
 <translation id="8192202700944119416">Pranešimai yra paslėpti.</translation>
 <translation id="8196787716797768628">Naudodami gestus greitai perjunkite programas ir naudokite „Chromebook“ planšetinio kompiuterio režimu.</translation>
+<translation id="8198456017687137612">Perduodamas skirtukas</translation>
 <translation id="8200772114523450471">Atnaujinti</translation>
 <translation id="8203795194971602413">Spustelėti dešiniuoju klavišu</translation>
 <translation id="8209010265547628927">Nustatyti iš naujo</translation>

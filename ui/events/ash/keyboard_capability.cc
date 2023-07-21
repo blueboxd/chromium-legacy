@@ -12,6 +12,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/check_is_test.h"
+#include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/containers/fixed_flat_set.h"
@@ -32,6 +33,7 @@
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/input_device_event_observer.h"
+#include "ui/events/devices/keyboard_device.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/dom_us_layout_data.h"
@@ -67,6 +69,32 @@ constexpr KeyboardCode kMaxCustomTopRowLayoutFKeyCode = VKEY_F15;
 constexpr size_t kNumCustomTopRowFKeys =
     (kMaxCustomTopRowLayoutFKeyCode - VKEY_F1) + 1;
 
+// Map used to convert VKEY -> TopRowActionKey and vice versa.
+constexpr auto kVKeyToTopRowActionKeyMap =
+    base::MakeFixedFlatMap<ui::KeyboardCode, TopRowActionKey>({
+        {VKEY_BROWSER_BACK, TopRowActionKey::kBack},
+        {VKEY_BROWSER_FORWARD, TopRowActionKey::kForward},
+        {VKEY_BROWSER_REFRESH, TopRowActionKey::kRefresh},
+        {VKEY_ZOOM, TopRowActionKey::kFullscreen},
+        {VKEY_MEDIA_LAUNCH_APP1, TopRowActionKey::kOverview},
+        {VKEY_SNAPSHOT, TopRowActionKey::kScreenshot},
+        {VKEY_BRIGHTNESS_DOWN, TopRowActionKey::kScreenBrightnessDown},
+        {VKEY_BRIGHTNESS_UP, TopRowActionKey::kScreenBrightnessUp},
+        {VKEY_MICROPHONE_MUTE_TOGGLE, TopRowActionKey::kMicrophoneMute},
+        {VKEY_VOLUME_MUTE, TopRowActionKey::kVolumeMute},
+        {VKEY_VOLUME_DOWN, TopRowActionKey::kVolumeDown},
+        {VKEY_VOLUME_UP, TopRowActionKey::kVolumeUp},
+        {VKEY_KBD_BACKLIGHT_TOGGLE, TopRowActionKey::kKeyboardBacklightToggle},
+        {VKEY_KBD_BRIGHTNESS_DOWN, TopRowActionKey::kKeyboardBacklightDown},
+        {VKEY_KBD_BRIGHTNESS_UP, TopRowActionKey::kKeyboardBacklightUp},
+        {VKEY_MEDIA_NEXT_TRACK, TopRowActionKey::kNextTrack},
+        {VKEY_MEDIA_PREV_TRACK, TopRowActionKey::kPreviousTrack},
+        {VKEY_MEDIA_PLAY_PAUSE, TopRowActionKey::kPlayPause},
+        {VKEY_ALL_APPLICATIONS, TopRowActionKey::kAllApplications},
+        {VKEY_EMOJI_PICKER, TopRowActionKey::kEmojiPicker},
+        {VKEY_DICTATE, TopRowActionKey::kDictation},
+    });
+
 class StubKeyboardCapabilityDelegate : public KeyboardCapability::Delegate {
  public:
   StubKeyboardCapabilityDelegate() = default;
@@ -84,7 +112,7 @@ class StubKeyboardCapabilityDelegate : public KeyboardCapability::Delegate {
   void SetPrivacyScreenSupportedForTesting(bool is_supported) override {}
 };
 
-absl::optional<InputDevice> FindKeyboardWithId(int device_id) {
+absl::optional<KeyboardDevice> FindKeyboardWithId(int device_id) {
   const auto& keyboards =
       DeviceDataManager::GetInstance()->GetKeyboardDevices();
   for (const auto& keyboard : keyboards) {
@@ -141,7 +169,7 @@ std::vector<uint32_t> ParseCustomTopRowLayoutScancodes(
 
 // Returns true if |value| is replaced with the specific device attribute value
 // without getting an error. |device_path| should be obtained from the
-// |InputDevice.sys_path| field.
+// |KeyboardDevice.sys_path| field.
 bool GetDeviceAttributeRecursive(const base::FilePath& device_path,
                                  const char* key,
                                  std::string& value) {
@@ -160,7 +188,7 @@ bool GetDeviceAttributeRecursive(const base::FilePath& device_path,
   return true;
 }
 
-base::ScopedFD GetEventDeviceNameFd(const InputDevice& keyboard) {
+base::ScopedFD GetEventDeviceNameFd(const KeyboardDevice& keyboard) {
   const char kDevNameProperty[] = "DEVNAME";
   std::string dev_name;
   if (!GetDeviceProperty(keyboard.sys_path, kDevNameProperty, dev_name) ||
@@ -197,7 +225,7 @@ absl::optional<uint32_t> ConvertScanCodeToEvdevKey(const base::ScopedFD& fd,
   return keymap_entry.keycode;
 }
 
-bool GetCustomTopRowLayoutAttribute(const InputDevice& keyboard,
+bool GetCustomTopRowLayoutAttribute(const KeyboardDevice& keyboard,
                                     std::string& out_prop) {
   bool result = GetDeviceAttributeRecursive(
       keyboard.sys_path, kCustomTopRowLayoutAttribute, out_prop);
@@ -211,7 +239,8 @@ bool GetCustomTopRowLayoutAttribute(const InputDevice& keyboard,
   return false;
 }
 
-bool GetCustomTopRowLayout(const InputDevice& keyboard, std::string& out_prop) {
+bool GetCustomTopRowLayout(const KeyboardDevice& keyboard,
+                           std::string& out_prop) {
   if (GetCustomTopRowLayoutAttribute(keyboard, out_prop)) {
     return true;
   }
@@ -219,7 +248,7 @@ bool GetCustomTopRowLayout(const InputDevice& keyboard, std::string& out_prop) {
                            out_prop);
 }
 
-std::vector<uint32_t> GetTopRowScanCodeVector(const InputDevice& keyboard) {
+std::vector<uint32_t> GetTopRowScanCodeVector(const KeyboardDevice& keyboard) {
   std::string layout;
   if (!GetCustomTopRowLayout(keyboard, layout) || layout.empty()) {
     return {};
@@ -228,7 +257,7 @@ std::vector<uint32_t> GetTopRowScanCodeVector(const InputDevice& keyboard) {
   return ParseCustomTopRowLayoutScancodes(layout);
 }
 
-bool GetTopRowLayoutProperty(const InputDevice& keyboard_device,
+bool GetTopRowLayoutProperty(const KeyboardDevice& keyboard_device,
                              std::string& out_prop) {
   return GetDeviceProperty(keyboard_device.sys_path, kLayoutProperty, out_prop);
 }
@@ -264,7 +293,7 @@ bool ParseKeyboardTopRowLayout(const std::string& layout_string,
 // row has "action" keys (such as back, refresh, etc.) instead of the
 // standard F1-F12 keys.
 KeyboardCapability::DeviceType IdentifyKeyboardType(
-    const InputDevice& keyboard_device,
+    const KeyboardDevice& keyboard_device,
     bool has_chromeos_top_row) {
   if (keyboard_device.vendor_id == kHotrodRemoteVendorId &&
       keyboard_device.product_id == kHotrodRemoteProductId) {
@@ -334,7 +363,7 @@ KeyboardCapability::DeviceType IdentifyKeyboardType(
 }
 
 std::tuple<DeviceType, KeyboardTopRowLayout, std::vector<uint32_t>>
-IdentifyKeyboardInfo(const InputDevice& keyboard) {
+IdentifyKeyboardInfo(const KeyboardDevice& keyboard) {
   std::string layout_string;
   KeyboardTopRowLayout layout;
   std::vector<uint32_t> top_row_scan_codes = GetTopRowScanCodeVector(keyboard);
@@ -355,7 +384,7 @@ IdentifyKeyboardInfo(const InputDevice& keyboard) {
 std::vector<TopRowActionKey> IdentifyCustomTopRowActionKeys(
     const KeyboardCapability::ScanCodeToEvdevKeyConverter&
         scan_code_to_evdev_key_converter,
-    const InputDevice& keyboard,
+    const KeyboardDevice& keyboard,
     const std::vector<uint32_t>& top_row_scan_codes) {
   base::ScopedFD fd = GetEventDeviceNameFd(keyboard);
 
@@ -397,7 +426,7 @@ std::vector<TopRowActionKey> IdentifyCustomTopRowActionKeys(
 std::vector<TopRowActionKey> IdentifyTopRowActionKeys(
     const KeyboardCapability::ScanCodeToEvdevKeyConverter&
         scan_code_to_evdev_key_converter,
-    const InputDevice& keyboard,
+    const KeyboardDevice& keyboard,
     DeviceType device_type,
     KeyboardTopRowLayout layout,
     const std::vector<uint32_t>& top_row_scan_codes) {
@@ -416,8 +445,18 @@ std::vector<TopRowActionKey> IdentifyTopRowActionKeys(
   }
 }
 
-bool IsInternalKeyboard(const ui::InputDevice& keyboard) {
+bool IsInternalKeyboard(const ui::KeyboardDevice& keyboard) {
   return keyboard.type == INPUT_DEVICE_INTERNAL;
+}
+
+bool HasExternalKeyboardConnected() {
+  for (const ui::KeyboardDevice& keyboard :
+       ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
+    if (!keyboard.suspected_imposter && !IsInternalKeyboard(keyboard)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -458,7 +497,7 @@ KeyboardCapability::CreateStubKeyboardCapability() {
 // static
 std::unique_ptr<EventDeviceInfo>
 KeyboardCapability::CreateEventDeviceInfoFromInputDevice(
-    const InputDevice& keyboard) {
+    const KeyboardDevice& keyboard) {
   base::ScopedFD fd = GetEventDeviceNameFd(keyboard);
   if (fd.get() < 0) {
     return nullptr;
@@ -478,35 +517,21 @@ KeyboardCapability::CreateEventDeviceInfoFromInputDevice(
 // static
 absl::optional<TopRowActionKey> KeyboardCapability::ConvertToTopRowActionKey(
     ui::KeyboardCode key_code) {
-  static constexpr auto kVKeyToTopRowActionKeyMap =
-      base::MakeFixedFlatMap<ui::KeyboardCode, TopRowActionKey>({
-          {VKEY_BROWSER_BACK, TopRowActionKey::kBack},
-          {VKEY_BROWSER_FORWARD, TopRowActionKey::kForward},
-          {VKEY_BROWSER_REFRESH, TopRowActionKey::kRefresh},
-          {VKEY_ZOOM, TopRowActionKey::kFullscreen},
-          {VKEY_MEDIA_LAUNCH_APP1, TopRowActionKey::kOverview},
-          {VKEY_SNAPSHOT, TopRowActionKey::kScreenshot},
-          {VKEY_BRIGHTNESS_DOWN, TopRowActionKey::kScreenBrightnessDown},
-          {VKEY_BRIGHTNESS_UP, TopRowActionKey::kScreenBrightnessUp},
-          {VKEY_MICROPHONE_MUTE_TOGGLE, TopRowActionKey::kMicrophoneMute},
-          {VKEY_VOLUME_MUTE, TopRowActionKey::kVolumeMute},
-          {VKEY_VOLUME_DOWN, TopRowActionKey::kVolumeDown},
-          {VKEY_VOLUME_UP, TopRowActionKey::kVolumeUp},
-          {VKEY_KBD_BACKLIGHT_TOGGLE,
-           TopRowActionKey::kKeyboardBacklightToggle},
-          {VKEY_KBD_BRIGHTNESS_DOWN, TopRowActionKey::kKeyboardBacklightDown},
-          {VKEY_KBD_BRIGHTNESS_UP, TopRowActionKey::kKeyboardBacklightUp},
-          {VKEY_MEDIA_NEXT_TRACK, TopRowActionKey::kNextTrack},
-          {VKEY_MEDIA_PREV_TRACK, TopRowActionKey::kPreviousTrack},
-          {VKEY_MEDIA_PLAY_PAUSE, TopRowActionKey::kPlayPause},
-          {VKEY_ALL_APPLICATIONS, TopRowActionKey::kAllApplications},
-          {VKEY_EMOJI_PICKER, TopRowActionKey::kEmojiPicker},
-          {VKEY_DICTATE, TopRowActionKey::kDictation},
-      });
   const auto* action_key = kVKeyToTopRowActionKeyMap.find(key_code);
   return (action_key != kVKeyToTopRowActionKeyMap.end())
              ? absl::make_optional<TopRowActionKey>(action_key->second)
              : absl::nullopt;
+}
+
+// static
+absl::optional<KeyboardCode> KeyboardCapability::ConvertToKeyboardCode(
+    TopRowActionKey action_key) {
+  for (const auto& [key_code, mapped_action_key] : kVKeyToTopRowActionKeyMap) {
+    if (mapped_action_key == action_key) {
+      return key_code;
+    }
+  }
+  return absl::nullopt;
 }
 
 void KeyboardCapability::AddObserver(Observer* observer) {
@@ -547,7 +572,7 @@ bool KeyboardCapability::IsReversedSixPackKey(const KeyboardCode& key_code) {
 
 absl::optional<KeyboardCode> KeyboardCapability::GetMappedFKeyIfExists(
     const KeyboardCode& key_code,
-    const InputDevice& keyboard) const {
+    const KeyboardDevice& keyboard) const {
   // TODO(zhangwenyu): Cache the layout for currently connected keyboards and
   // observe the keyboard changes.
   KeyboardTopRowLayout layout = GetTopRowLayout(keyboard);
@@ -577,7 +602,7 @@ absl::optional<KeyboardCode> KeyboardCapability::GetMappedFKeyIfExists(
 }
 
 absl::optional<KeyboardCode> KeyboardCapability::GetCorrespondingFunctionKey(
-    const InputDevice& keyboard,
+    const KeyboardDevice& keyboard,
     TopRowActionKey action_key) const {
   auto* keyboard_info = GetKeyboardInfo(keyboard);
   if (!keyboard_info) {
@@ -594,15 +619,36 @@ absl::optional<KeyboardCode> KeyboardCapability::GetCorrespondingFunctionKey(
                                      iter)];
 }
 
+absl::optional<TopRowActionKey>
+KeyboardCapability::GetCorrespondingActionKeyForFKey(
+    const KeyboardDevice& keyboard,
+    KeyboardCode key_code) const {
+  auto* keyboard_info = GetKeyboardInfo(keyboard);
+  if (!keyboard_info) {
+    return absl::nullopt;
+  }
+
+  if (key_code > VKEY_F24 || key_code < VKEY_F1) {
+    return absl::nullopt;
+  }
+
+  const size_t index = key_code - VKEY_F1;
+  if (keyboard_info->top_row_action_keys.size() <= index) {
+    return absl::nullopt;
+  }
+
+  return keyboard_info->top_row_action_keys[index];
+}
+
 bool KeyboardCapability::HasLauncherButton(
-    const absl::optional<InputDevice>& keyboard) {
+    const absl::optional<KeyboardDevice>& keyboard) {
   // Use current implementation. If keyboard is provided, launcher button
   // depends on if this keyboard is layout2 type. If keyboard is not provided,
   // launcher button depends on if any keyboard in DeviceDataManager is layout2
   // type.
   // TODO(zhangwenyu): Handle edge cases.
   if (!keyboard.has_value()) {
-    for (const InputDevice& keyboard_iter :
+    for (const KeyboardDevice& keyboard_iter :
          DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
       if (GetTopRowLayout(keyboard_iter) ==
           KeyboardCapability::KeyboardTopRowLayout::kKbdTopRowLayout2) {
@@ -646,7 +692,7 @@ bool KeyboardCapability::IsTopRowKey(const KeyboardCode& key_code) {
 }
 
 // static
-bool KeyboardCapability::HasSixPackKey(const InputDevice& keyboard) {
+bool KeyboardCapability::HasSixPackKey(const KeyboardDevice& keyboard) {
   // If the keyboard is an internal keyboard, return false. Otherwise, return
   // true. This is correct for most of the keyboards. Edge cases will be handled
   // later.
@@ -656,7 +702,7 @@ bool KeyboardCapability::HasSixPackKey(const InputDevice& keyboard) {
 
 // static
 bool KeyboardCapability::HasSixPackOnAnyKeyboard() {
-  for (const ui::InputDevice& keyboard :
+  for (const ui::KeyboardDevice& keyboard :
        ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
     if (ui::KeyboardCapability::HasSixPackKey(keyboard)) {
       return true;
@@ -696,7 +742,7 @@ bool KeyboardCapability::IsTopRowActionKey(ui::KeyboardCode code) {
 }
 
 std::vector<mojom::ModifierKey> KeyboardCapability::GetModifierKeys(
-    const InputDevice& keyboard) const {
+    const KeyboardDevice& keyboard) const {
   // This set of modifier keys is available on every keyboard.
   std::vector<mojom::ModifierKey> modifier_keys = {
       mojom::ModifierKey::kBackspace, mojom::ModifierKey::kControl,
@@ -717,9 +763,7 @@ std::vector<mojom::ModifierKey> KeyboardCapability::GetModifierKeys(
     modifier_keys.push_back(mojom::ModifierKey::kCapsLock);
   }
 
-  // Assistant key can be checked by querying evdev properties.
-  if (keyboard_info && keyboard_info->event_device_info &&
-      keyboard_info->event_device_info->HasKeyEvent(KEY_ASSISTANT)) {
+  if (HasAssistantKey(keyboard)) {
     modifier_keys.push_back(mojom::ModifierKey::kAssistant);
   }
 
@@ -727,7 +771,7 @@ std::vector<mojom::ModifierKey> KeyboardCapability::GetModifierKeys(
 }
 
 DeviceType KeyboardCapability::GetDeviceType(
-    const InputDevice& keyboard) const {
+    const KeyboardDevice& keyboard) const {
   const auto* keyboard_info = GetKeyboardInfo(keyboard);
   if (!keyboard_info) {
     return DeviceType::kDeviceUnknown;
@@ -746,7 +790,7 @@ DeviceType KeyboardCapability::GetDeviceType(int device_id) const {
 }
 
 KeyboardTopRowLayout KeyboardCapability::GetTopRowLayout(
-    const InputDevice& keyboard) const {
+    const KeyboardDevice& keyboard) const {
   const auto* keyboard_info = GetKeyboardInfo(keyboard);
   if (!keyboard_info) {
     return KeyboardTopRowLayout::kKbdTopRowLayoutDefault;
@@ -764,13 +808,14 @@ KeyboardTopRowLayout KeyboardCapability::GetTopRowLayout(int device_id) const {
   return GetTopRowLayout(*keyboard);
 }
 
-void KeyboardCapability::SetKeyboardInfoForTesting(const InputDevice& keyboard,
-                                                   KeyboardInfo keyboard_info) {
+void KeyboardCapability::SetKeyboardInfoForTesting(
+    const KeyboardDevice& keyboard,
+    KeyboardInfo keyboard_info) {
   keyboard_info_map_.insert_or_assign(keyboard.id, std::move(keyboard_info));
 }
 
 const KeyboardCapability::KeyboardInfo* KeyboardCapability::GetKeyboardInfo(
-    const InputDevice& keyboard) const {
+    const KeyboardDevice& keyboard) const {
   auto iter = keyboard_info_map_.find(keyboard.id);
   if (iter != keyboard_info_map_.end()) {
     return &iter->second;
@@ -783,14 +828,6 @@ const KeyboardCapability::KeyboardInfo* KeyboardCapability::GetKeyboardInfo(
   keyboard_info.top_row_action_keys = IdentifyTopRowActionKeys(
       scan_code_to_evdev_key_converter_, keyboard, keyboard_info.device_type,
       keyboard_info.top_row_layout, keyboard_info.top_row_scan_codes);
-  // Enable only when flag is enabled to avoid crashing while problem is
-  // addressed. This issue exists the `EventDeviceInfo` objects are only allowed
-  // to be created on a thread that allows blocking. See b/272960076
-  if (ash::features::IsInputDeviceSettingsSplitEnabled() ||
-      features::IsShortcutCustomizationAppEnabled()) {
-    keyboard_info.event_device_info =
-        CreateEventDeviceInfoFromInputDevice(keyboard);
-  }
 
   // If we are unable to identify the device, erase the entry from the map.
   if (keyboard_info.device_type == DeviceType::kDeviceUnknown) {
@@ -802,7 +839,7 @@ const KeyboardCapability::KeyboardInfo* KeyboardCapability::GetKeyboardInfo(
 }
 
 const std::vector<uint32_t>* KeyboardCapability::GetTopRowScanCodes(
-    const InputDevice& keyboard) const {
+    const KeyboardDevice& keyboard) const {
   const KeyboardInfo* keyboard_info = GetKeyboardInfo(keyboard);
   if (!keyboard_info) {
     return nullptr;
@@ -821,7 +858,7 @@ const std::vector<uint32_t>* KeyboardCapability::GetTopRowScanCodes(
   return GetTopRowScanCodes(*keyboard);
 }
 
-bool KeyboardCapability::HasGlobeKey(const InputDevice& keyboard) const {
+bool KeyboardCapability::HasGlobeKey(const KeyboardDevice& keyboard) const {
   const KeyboardInfo* keyboard_info = GetKeyboardInfo(keyboard);
   if (!keyboard_info) {
     return false;
@@ -837,7 +874,7 @@ bool KeyboardCapability::HasGlobeKey(const InputDevice& keyboard) const {
 }
 
 bool KeyboardCapability::HasGlobeKeyOnAnyKeyboard() const {
-  for (const ui::InputDevice& keyboard :
+  for (const ui::KeyboardDevice& keyboard :
        ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
     if (HasGlobeKey(keyboard)) {
       return true;
@@ -846,38 +883,95 @@ bool KeyboardCapability::HasGlobeKeyOnAnyKeyboard() const {
   return false;
 }
 
-bool KeyboardCapability::HasCalculatorKey(const InputDevice& keyboard) const {
-  const KeyboardInfo* keyboard_info = GetKeyboardInfo(keyboard);
-  if (!keyboard_info) {
-    return false;
-  }
-
+bool KeyboardCapability::HasCalculatorKey(
+    const KeyboardDevice& keyboard) const {
   // TODO(dpad): Many external keyboards do not have this key, but currently we
   // do not have a good way to detect these situations.
   return !IsInternalKeyboard(keyboard);
 }
 
 bool KeyboardCapability::HasCalculatorKeyOnAnyKeyboard() const {
-  for (const ui::InputDevice& keyboard :
-       ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
-    if (HasCalculatorKey(keyboard)) {
-      return true;
-    }
-  }
-  return false;
+  // TODO(dpad): Many external keyboards do not have this key, but currently we
+  // do not have a good way to detect these situations.
+  return HasExternalKeyboardConnected();
+}
+
+bool KeyboardCapability::HasBrowserSearchKey(
+    const KeyboardDevice& keyboard) const {
+  // TODO(dpad): Many external keyboards do not have this key, but currently we
+  // do not have a good way to detect these situations.
+  return !IsInternalKeyboard(keyboard);
+}
+
+bool KeyboardCapability::HasBrowserSearchKeyOnAnyKeyboard() const {
+  // TODO(dpad): Many external keyboards do not have this key, but currently we
+  // do not have a good way to detect these situations.
+  return HasExternalKeyboardConnected();
+}
+
+bool KeyboardCapability::HasHelpKey(const KeyboardDevice& keyboard) const {
+  // TODO(dpad): Many external keyboards do not have this key, but currently we
+  // do not have a good way to detect these situations.
+  return !IsInternalKeyboard(keyboard);
+}
+
+bool KeyboardCapability::HasHelpKeyOnAnyKeyboard() const {
+  // TODO(dpad): Many external keyboards do not have this key, but currently we
+  // do not have a good way to detect these situations.
+  return HasExternalKeyboardConnected();
+}
+
+bool KeyboardCapability::HasSettingsKey(const KeyboardDevice& keyboard) const {
+  // TODO(dpad): Many external keyboards do not have this key, but currently we
+  // do not have a good way to detect these situations.
+  return !IsInternalKeyboard(keyboard);
+}
+
+bool KeyboardCapability::HasSettingsKeyOnAnyKeyboard() const {
+  // TODO(dpad): Many external keyboards do not have this key, but currently we
+  // do not have a good way to detect these situations.
+  return HasExternalKeyboardConnected();
+}
+
+bool KeyboardCapability::HasMediaKeys(const KeyboardDevice& keyboard) const {
+  // TODO(dpad): Many external keyboards do not have these keys, but currently
+  // we do not have a good way to detect these situations.
+  return !IsInternalKeyboard(keyboard);
+}
+
+bool KeyboardCapability::HasMediaKeysOnAnyKeyboard() const {
+  // TODO(dpad): Many external keyboards do not have these keys, but currently
+  // we do not have a good way to detect these situations.
+  return HasExternalKeyboardConnected();
 }
 
 bool KeyboardCapability::HasPrivacyScreenKey(
-    const InputDevice& keyboard) const {
+    const KeyboardDevice& keyboard) const {
   return GetTopRowLayout(keyboard) ==
              KeyboardTopRowLayout::kKbdTopRowLayoutDrallion &&
          delegate_->IsPrivacyScreenSupported();
 }
 
 bool KeyboardCapability::HasPrivacyScreenKeyOnAnyKeyboard() const {
-  for (const ui::InputDevice& keyboard :
+  for (const ui::KeyboardDevice& keyboard :
        ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
     if (HasPrivacyScreenKey(keyboard)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool KeyboardCapability::HasAssistantKey(const KeyboardDevice& keyboard) const {
+  // Some external keyboards falsely claim to have assistant keys. However, this
+  // can be trusted for internal + ChromeOS external keyboards.
+  return keyboard.has_assistant_key && IsChromeOSKeyboard(keyboard);
+}
+
+bool KeyboardCapability::HasAssistantKeyOnAnyKeyboard() const {
+  for (const ui::KeyboardDevice& keyboard :
+       ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
+    if (HasAssistantKey(keyboard)) {
       return true;
     }
   }
@@ -898,32 +992,32 @@ void KeyboardCapability::OnInputDeviceConfigurationChanged(
 void KeyboardCapability::TrimKeyboardInfoMap() {
   auto sorted_keyboards =
       DeviceDataManager::GetInstance()->GetKeyboardDevices();
-  base::ranges::sort(sorted_keyboards, [](const ui::InputDevice& device1,
-                                          const ui::InputDevice& device2) {
+  base::ranges::sort(sorted_keyboards, [](const ui::KeyboardDevice& device1,
+                                          const ui::KeyboardDevice& device2) {
     return device1.id < device2.id;
   });
 
   // Generate a vector with only the device ids from the
   // `keyboard_info_map_` map. Guaranteed to be sorted as flat_map is always
   // in sorted order by key.
-  std::vector<int> cached_event_device_info_ids;
-  cached_event_device_info_ids.reserve(keyboard_info_map_.size());
+  std::vector<int> cached_keyboard_info_ids;
+  cached_keyboard_info_ids.reserve(keyboard_info_map_.size());
   base::ranges::transform(keyboard_info_map_,
-                          std::back_inserter(cached_event_device_info_ids),
+                          std::back_inserter(cached_keyboard_info_ids),
                           [](const auto& pair) { return pair.first; });
-  DCHECK(base::ranges::is_sorted(cached_event_device_info_ids));
+  DCHECK(base::ranges::is_sorted(cached_keyboard_info_ids));
 
-  // Compares the `cached_event_device_info_ids` to the id field of
-  // `sorted_keyboards`. Ids that are in `cached_event_device_info_ids` but not
+  // Compares the `cached_keyboard_info_ids` to the id field of
+  // `sorted_keyboards`. Ids that are in `cached_keyboard_info_ids` but not
   // in `sorted_keyboards` are inserted into `keyboard_ids_to_remove`.
-  // `sorted_keyboards` and `cached_event_device_info_ids` must be sorted.
+  // `sorted_keyboards` and `cached_keyboard_info_ids` must be sorted.
   std::vector<int> keyboard_ids_to_remove;
   base::ranges::set_difference(
-      cached_event_device_info_ids, sorted_keyboards,
+      cached_keyboard_info_ids, sorted_keyboards,
       std::back_inserter(keyboard_ids_to_remove),
       /*Comp=*/base::ranges::less(),
       /*Proj1=*/base::identity(),
-      /*Proj2=*/[](const InputDevice& device) { return device.id; });
+      /*Proj2=*/[](const KeyboardDevice& device) { return device.id; });
 
   for (const auto& id : keyboard_ids_to_remove) {
     keyboard_info_map_.erase(id);
@@ -931,7 +1025,7 @@ void KeyboardCapability::TrimKeyboardInfoMap() {
 }
 
 bool KeyboardCapability::HasKeyEvent(const KeyboardCode& key_code,
-                                     const InputDevice& keyboard) const {
+                                     const KeyboardDevice& keyboard) const {
   // Handle top row keys.
   if (IsTopRowKey(key_code)) {
     KeyboardTopRowLayout layout = GetTopRowLayout(keyboard);
@@ -956,9 +1050,7 @@ bool KeyboardCapability::HasKeyEvent(const KeyboardCode& key_code,
 
   // Handle assistant key.
   if (key_code == KeyboardCode::VKEY_ASSISTANT) {
-    const KeyboardInfo* keyboard_info = GetKeyboardInfo(keyboard);
-    return keyboard_info && keyboard_info->event_device_info &&
-           keyboard_info->event_device_info->HasKeyEvent(KEY_ASSISTANT);
+    return HasAssistantKey(keyboard);
   }
 
   // TODO(zhangwenyu): check other specific keys, e.g. assistant key.
@@ -967,7 +1059,7 @@ bool KeyboardCapability::HasKeyEvent(const KeyboardCode& key_code,
 
 bool KeyboardCapability::HasKeyEventOnAnyKeyboard(
     const KeyboardCode& key_code) const {
-  for (const ui::InputDevice& keyboard :
+  for (const ui::KeyboardDevice& keyboard :
        ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
     if (HasKeyEvent(key_code, keyboard)) {
       return true;
@@ -976,7 +1068,7 @@ bool KeyboardCapability::HasKeyEventOnAnyKeyboard(
   return false;
 }
 
-bool KeyboardCapability::HasTopRowActionKey(const InputDevice& keyboard,
+bool KeyboardCapability::HasTopRowActionKey(const KeyboardDevice& keyboard,
                                             TopRowActionKey action_key) const {
   const auto* keyboard_info = GetKeyboardInfo(keyboard);
   if (!keyboard_info) {
@@ -988,13 +1080,20 @@ bool KeyboardCapability::HasTopRowActionKey(const InputDevice& keyboard,
 
 bool KeyboardCapability::HasTopRowActionKeyOnAnyKeyboard(
     TopRowActionKey action_key) const {
-  for (const ui::InputDevice& keyboard :
+  for (const ui::KeyboardDevice& keyboard :
        ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
     if (HasTopRowActionKey(keyboard, action_key)) {
       return true;
     }
   }
   return false;
+}
+
+bool KeyboardCapability::IsChromeOSKeyboard(
+    const ui::KeyboardDevice& keyboard) const {
+  const auto device_type = GetDeviceType(keyboard);
+  return device_type == DeviceType::kDeviceInternalKeyboard ||
+         device_type == DeviceType::kDeviceExternalChromeOsKeyboard;
 }
 
 }  // namespace ui

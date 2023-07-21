@@ -10,12 +10,10 @@ import {decorate, define as crUiDefine} from '../../../common/js/ui.js';
 import {str, strf, util} from '../../../common/js/util.js';
 import {AllowedPaths} from '../../../common/js/volume_manager_types.js';
 import {BreadcrumbContainer} from '../../../containers/breadcrumb_container.js';
+import {CloudPanelContainer} from '../../../containers/cloud_panel_container.js';
 import {NudgeContainer} from '../../../containers/nudge_container.js';
 import {SearchContainer} from '../../../containers/search_container.js';
-import {Store} from '../../../externs/ts/store.js';
 import {VolumeManager} from '../../../externs/volume_manager.js';
-import {updateBulkPinProgress} from '../../../state/actions/bulk_pinning.js';
-import {getStore} from '../../../state/store.js';
 import {XfConflictDialog} from '../../../widgets/xf_conflict_dialog.js';
 import {XfDlpRestrictionDetailsDialog} from '../../../widgets/xf_dlp_restriction_details_dialog.js';
 import {XfSplitter} from '../../../widgets/xf_splitter.js';
@@ -430,11 +428,6 @@ export class FileManagerUI {
      * @public {boolean}
      */
     this.dragInProcess = false;
-
-    /**
-     * @private {!Store}
-     */
-    this.store_ = getStore();
   }
 
   /**
@@ -531,6 +524,15 @@ export class FileManagerUI {
         queryRequiredElement('#search-options-container', this.element),
         queryRequiredElement('#path-display-container', this.element));
 
+    if (util.isDriveFsBulkPinningEnabled()) {
+      /**
+       * @type {!CloudPanelContainer}
+       * @const
+       */
+      this.cloudPanelContainer_ = new CloudPanelContainer(
+          queryRequiredElement('xf-cloud-panel', this.element));
+    }
+
     // Init context menus.
     contextMenuHandler.setContextMenu(grid, this.fileContextMenu);
     contextMenuHandler.setContextMenu(table.list, this.fileContextMenu);
@@ -583,14 +585,6 @@ export class FileManagerUI {
     // and this.layoutChanged_() is used to clamp their size to the viewport.
     const resizeObserver = new ResizeObserver(() => this.layoutChanged_());
     resizeObserver.observe(queryRequiredElement('div.dialog-header'));
-
-    // When bulk pin progress events are received, dispatch an action to the
-    // store containing the updated data.
-    // TODO(b/275635808): Depending on the users corpus size, this API could be
-    // quite chatty, consider wrapping it in a concurrency model.
-    chrome.fileManagerPrivate.onBulkPinProgress.addListener((progress) => {
-      this.store_.dispatch(updateBulkPinProgress(progress));
-    });
   }
 
   /**
@@ -610,14 +604,6 @@ export class FileManagerUI {
 
     if (targetElement) {
       targetElement.focus();
-    }
-
-    if (util.isDriveFsBulkPinningEnabled()) {
-      const cloudBtnEl = document.getElementById('cloud-button');
-      cloudBtnEl.removeAttribute('hidden');
-      const cloudPanelEl = document.querySelector('xf-cloud-panel');
-      cloudBtnEl.addEventListener(
-          'click', () => cloudPanelEl.showAt(cloudBtnEl));
     }
   }
 

@@ -2834,7 +2834,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ClientHints.FetchLatency{OperationType}" units="microseconds"
-    expires_after="2023-06-25">
+    expires_after="2023-10-31">
   <owner>miketaylr@chromium.org</owner>
   <owner>potassium-katabolism@google.com</owner>
   <summary>
@@ -2869,7 +2869,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ClientHints.StoreLatency" units="ms"
-    expires_after="2023-08-27">
+    expires_after="2023-10-31">
   <owner>miketaylr@chromium.org</owner>
   <owner>potassium-katabolism@google.com</owner>
   <summary>
@@ -2879,11 +2879,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ClientHints.UpdateEventCount" units="count"
-    expires_after="2023-04-30">
-  <owner>yoavweiss@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
-  <owner>mkwst@chromium.org</owner>
-  <owner>aarontag@chromium.org</owner>
+    expires_after="2023-10-31">
+  <owner>victortan@chromium.org</owner>
+  <owner>potassium-katabolism@google.com</owner>
   <summary>
     Count of events when the client hints needs to be persisted to the disk by
     the browser. Collected while navigation responses are being processed.
@@ -2891,11 +2889,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ClientHints.UpdateSize" units="count"
-    expires_after="2023-07-02">
-  <owner>yoavweiss@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
-  <owner>mkwst@chromium.org</owner>
-  <owner>aarontag@chromium.org</owner>
+    expires_after="2023-10-31">
+  <owner>victortan@chromium.org</owner>
+  <owner>potassium-katabolism@google.com</owner>
   <summary>
     Count of client hints that need to be persisted to the disk. Recorded by the
     renderer. Collected while navigation responses are being processed.
@@ -3455,7 +3451,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Conversions.AggregatableReport.NumContributionsPerReport"
+<histogram name="Conversions.AggregatableReport.NumContributionsPerReport2"
     units="contribution" expires_after="2023-10-08">
   <owner>linnan@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
@@ -3934,6 +3930,86 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Conversions.ReportVerification.DestinationOriginStatus"
+    enum="ConversionsTriggerVerificationDestinationOriginStatus"
+    expires_after="M117">
+  <owner>anthonygarant@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records the top_frame origin status when an attempting to complete a trigger
+    verification. In the attribution context, the origin represents the
+    destination origin which is required to complete the verification operation.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.ReportVerification.Duration.{TimeSpan}.{Outcome}"
+    units="ms" expires_after="M117">
+  <owner>anthonygarant@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Time taken to execute various parts of a Trigger Verification operation: [1]
+    GetKeyCommitment = time taken to retrieve the issuer's key commitment. [2]
+    InitializeCryptographer = time taken to initialize the BoringSSL
+    cryptographer with the issuer's keys. [3] BlindMessage = time taken by the
+    cryptographer to blind the message. [4] Issuer = time from the end of the
+    outbound BlindMessage half to the beginning of the inbound UnblindSignature
+    half. [5] UnblindSignature = time taken to unblind the blind signature
+    received from the issuer. [6] Total = GetKeyCommitment +
+    InitializeCryptographer + BlindMessage + UnblindSignature (only recorded for
+    operations that see issuer's responses)
+
+    Each part of the operation can be a Failure or a Success. e.g. if we are
+    unable to retrieve key commitment for an issuer, it is a failure. The
+    metrics are recorded when the verification operation finish.
+  </summary>
+  <token key="TimeSpan">
+    <variant name="BlindMessage"/>
+    <variant name="GetKeyCommitment"/>
+    <variant name="InitializeCryptographer"/>
+    <variant name="SignBlindMessage"/>
+    <variant name="Total"/>
+    <variant name="UnblindSignature"/>
+  </token>
+  <token key="Outcome">
+    <variant name="Failure"/>
+    <variant name="Success"/>
+  </token>
+</histogram>
+
+<histogram name="Conversions.ReportVerification.GetHeadersStatus"
+    enum="ConversionTriggerVerificationGetHeadersStatus" expires_after="M117">
+  <owner>anthonygarant@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records the status of the initial part of a verification operation which
+    attempts to retrieve verification headers to be added to a trigger
+    registration request.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.ReportVerification.ProcessVerificationStatus"
+    enum="ConversionTriggerVerificationProcessVerificationStatus"
+    expires_after="M117">
+  <owner>anthonygarant@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records the status of the second part of a verification operation which
+    processes the private state issuer's signature to generate a verification
+    token.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.ReportVerification.ReportHasVerification"
+    enum="Boolean" expires_after="M117">
+  <owner>anthonygarant@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records whether an aggregatable report is sent with a verification token or
+    not. Only recorded for reports if the Report Verification feature is
+    enabled.
+  </summary>
+</histogram>
+
 <histogram name="Conversions.SchedulerReportDelay" units="ms"
     expires_after="2023-10-08">
   <owner>linnan@chromium.org</owner>
@@ -3946,6 +4022,17 @@ chromium-metrics-reviews@google.com.
     rather than initial report time assigned by the API. Accounts for any delays
     in Chrome scheduling the report. Recorded when an event-level report is to
     be sent.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.SourceAllowedByDestinationWindowLimit"
+    enum="BooleanAllowed" expires_after="2023-10-08">
+  <owner>csharrison@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    For every successfully parsed attribution source that is also allowed by
+    browser policy, records true if the time-based destination limit allows the
+    source to proceed to the storage layer.
   </summary>
 </histogram>
 
@@ -4053,86 +4140,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Conversions.TriggerAttestation.DestinationOriginStatus"
-    enum="ConversionsTriggerAttestationDestinationOriginStatus"
-    expires_after="M117">
-  <owner>anthonygarant@chromium.org</owner>
-  <owner>measurement-api-dev+metrics@google.com</owner>
-  <summary>
-    Records the top_frame origin status when an attempting to complete a trigger
-    attestation. In the attribution context, the origin represents the
-    destination origin which is required to complete the attestation operation.
-  </summary>
-</histogram>
-
-<histogram name="Conversions.TriggerAttestation.Duration.{TimeSpan}.{Outcome}"
-    units="ms" expires_after="M117">
-  <owner>anthonygarant@chromium.org</owner>
-  <owner>measurement-api-dev+metrics@google.com</owner>
-  <summary>
-    Time taken to execute various parts of a Trigger Attestation operation: [1]
-    GetKeyCommitment = time taken to retrieve the issuer's key commitment. [2]
-    InitializeCryptographer = time take to initialize the BoringSSL
-    cryptographer with the issuer's keys. [3] BlindMessage = time taken by the
-    cryptographer to blind the message. [4] Issuer = time from the end of the
-    outbound BlindMessage half to the beginning of the inbound UnblindSignature
-    half. [5] UnblindSignature = time taken to unblind the blind signature
-    received from the issuer. [6] Total = GetKeyCommitment +
-    InitializeCryptographer + BlindMessage + UnblindSignature (only recorded for
-    operations that see issuer's responses)
-
-    Each part of the operation can be a Failure or a Success. e.g. if we are
-    unable to retrieve key commitment for an issuer, it is a failure. The
-    metrics are recorded when the attestation operation finish.
-  </summary>
-  <token key="TimeSpan">
-    <variant name="BlindMessage"/>
-    <variant name="GetKeyCommitment"/>
-    <variant name="InitializeCryptographer"/>
-    <variant name="SignBlindMessage"/>
-    <variant name="Total"/>
-    <variant name="UnblindSignature"/>
-  </token>
-  <token key="Outcome">
-    <variant name="Failure"/>
-    <variant name="Success"/>
-  </token>
-</histogram>
-
-<histogram name="Conversions.TriggerAttestation.GetHeadersStatus"
-    enum="ConversionTriggerAttestationGetHeadersStatus" expires_after="M117">
-  <owner>anthonygarant@chromium.org</owner>
-  <owner>measurement-api-dev+metrics@google.com</owner>
-  <summary>
-    Records the status of the initial part of an attestation operation which
-    attempts to retrieve attestation headers to be added to a trigger
-    registration request.
-  </summary>
-</histogram>
-
-<histogram name="Conversions.TriggerAttestation.ProcessAttestationStatus"
-    enum="ConversionTriggerAttestationProcessAttestationStatus"
-    expires_after="M117">
-  <owner>anthonygarant@chromium.org</owner>
-  <owner>measurement-api-dev+metrics@google.com</owner>
-  <summary>
-    Records the status of the second part of an attestation operation which
-    processes the private state issuer's signature to generate an attestation
-    token.
-  </summary>
-</histogram>
-
-<histogram name="Conversions.TriggerAttestation.ReportHasAttestation"
-    enum="Boolean" expires_after="M117">
-  <owner>anthonygarant@chromium.org</owner>
-  <owner>measurement-api-dev+metrics@google.com</owner>
-  <summary>
-    Records whether or not an aggregatable report is sent with an attestation or
-    not. Only recorded for reports if the Attestation feature is enabled.
-  </summary>
-</histogram>
-
-<histogram name="Conversions.TriggerRegistrationError4"
+<histogram name="Conversions.TriggerRegistrationError5"
     enum="ConversionTriggerRegistrationError" expires_after="M117">
   <owner>linnan@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
@@ -8203,14 +8211,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="MultiProfile.TeleportWindowType"
-    enum="MultiProfileTeleportWindowType" expires_after="2020-05-31">
-  <owner>skuhne@chromium.org</owner>
-  <summary>
-    Counts the number of teleported windows by types in separated desktop mode.
-  </summary>
-</histogram>
-
 <histogram name="MultiProfile.UsersPerSessionIncremental" units="units"
     expires_after="2022-04-10">
   <owner>skuhne@chromium.org</owner>
@@ -10945,24 +10945,6 @@ should be kept until we remove incident reporting. -->
   </summary>
 </histogram>
 
-<histogram name="SBIRS.DownloadMetadata.DeleteSuccess" enum="BooleanSuccess"
-    expires_after="2018-08-30">
-  <owner>caitkp@chromium.org</owner>
-  <summary>The result of deleting a profile's download metadata file.</summary>
-</histogram>
-
-<histogram name="SBIRS.DownloadMetadata.ReadResult" enum="MetadataReadResult"
-    expires_after="2018-08-30">
-  <owner>caitkp@chromium.org</owner>
-  <summary>The result of reading a profile's download metadata file.</summary>
-</histogram>
-
-<histogram name="SBIRS.DownloadMetadata.WriteResult" enum="MetadataWriteResult"
-    expires_after="2018-08-30">
-  <owner>caitkp@chromium.org</owner>
-  <summary>The result of writing a profile's download metadata file.</summary>
-</histogram>
-
 <histogram name="SBIRS.DroppedIncident" enum="IncidentType"
     expires_after="never">
 <!-- expires-never: This tracks health of the incident reporting feature and
@@ -11858,6 +11840,17 @@ should be kept until we remove incident reporting. -->
   </summary>
 </histogram>
 
+<histogram name="SiteIsolatedCodeCache.JS.WebUI.Behaviour"
+    enum="SiteIsolatedCodeCacheJSBehaviour" expires_after="2024-04-03">
+  <owner>temao@chromium.org</owner>
+  <owner>tluk@chromium.org</owner>
+  <summary>
+    The behaviour of site isolated WebUI JS code cache recorded for each cache
+    transaction. It records if the request was serviced and if serviced how it
+    was serviced for ex: hit, miss, update.
+  </summary>
+</histogram>
+
 <histogram name="SiteIsolatedCodeCache.WASM.Behaviour"
     enum="SiteIsolatedCodeCacheWASMBehaviour" expires_after="2024-04-03">
   <owner>awillia@chromium.org</owner>
@@ -12065,12 +12058,30 @@ should be kept until we remove incident reporting. -->
 
 <histogram name="SpellCheck.Enabled" enum="BooleanEnabled"
     expires_after="2023-09-09">
+  <obsolete>
+    Logged on profile open, including for profiles that do not use this setting
+    (such as &quot;system&quot; profiles) and for profiles that do not allow the
+    profile-owner to to configure this setting (such as &quot;guest&quot;
+    profiles). When logged in such cases, reported the default value. Replaced
+    in M-114 with the histogram SpellCheck.Enabled2, which is similar yet only
+    emitted for regular profiles.
+  </obsolete>
   <owner>basiaz@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
     The number of sessions that started with spellchecking enabled.
 
     Warning: this histogram was expired from M83 to M107; data may be missing.
+  </summary>
+</histogram>
+
+<histogram name="SpellCheck.Enabled2" enum="BooleanEnabled"
+    expires_after="2023-09-09">
+  <owner>basiaz@google.com</owner>
+  <owner>chrome-language@google.com</owner>
+  <summary>
+    The number of sessions that started with spellchecking enabled. Recorded
+    only for regular profiles. (Not recorded on guest profiles for example.)
   </summary>
 </histogram>
 
@@ -12129,12 +12140,32 @@ should be kept until we remove incident reporting. -->
 
 <histogram name="SpellCheck.SpellingService.Enabled" enum="BooleanEnabled"
     expires_after="2023-09-09">
+  <obsolete>
+    Logged on profile open, including for profiles that do not use this setting
+    (such as &quot;system&quot; profiles) and for profiles that do not allow the
+    profile-owner to to configure this setting (such as &quot;guest&quot;
+    profiles). When logged in such cases, reported the default value. Replaced
+    in M-114 with the histogram SpellCheck.SpellingService.Enabled2, which is
+    similar yet only emitted for regular profiles.
+  </obsolete>
   <owner>groby@chromium.org</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
     Whether the user has opted in to asking Google for spelling suggestions.
     Recorded both when spelling is initialized and when the preference is
     changed.
+  </summary>
+</histogram>
+
+<histogram name="SpellCheck.SpellingService.Enabled2" enum="BooleanEnabled"
+    expires_after="2023-09-09">
+  <owner>groby@chromium.org</owner>
+  <owner>chrome-language@google.com</owner>
+  <summary>
+    Whether the user has opted in to asking Google for spelling suggestions.
+    Recorded only for regular profiles. (Not recorded on guest profiles for
+    example.) Recorded both when spelling is initialized and when the preference
+    is changed.
   </summary>
 </histogram>
 
@@ -12181,6 +12212,14 @@ should be kept until we remove incident reporting. -->
 
 <histogram base="true" name="Spellcheck.Windows.ChromeLocalesSupport"
     units="locales" expires_after="2023-09-17">
+  <obsolete>
+    Logged on profile open, including for profiles that do not use this setting
+    (such as &quot;system&quot; profiles) and for profiles that do not allow the
+    profile-owner to to configure this setting (such as &quot;guest&quot;
+    profiles). When logged in such cases, reported the default value. Replaced
+    in M-114 with the histogram Spellcheck.Windows.ChromeLocalesSupport2.*,
+    which are similar yet only emitted for regular profiles.
+  </obsolete>
   <owner>gujen@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -12199,13 +12238,60 @@ should be kept until we remove incident reporting. -->
   </summary>
 </histogram>
 
+<histogram base="true" name="Spellcheck.Windows.ChromeLocalesSupport2"
+    units="locales" expires_after="2023-09-17">
+  <owner>gujen@google.com</owner>
+  <owner>chrome-language@google.com</owner>
+  <summary>
+    Counts how many languages are added to Chrome by the user but are not
+    supported for spell check (today Chrome only supports a hard-coded list of
+    locales for spell check). Recorded only for regular profiles. (Not recorded
+    on guest profiles for example.)
+
+    This is a measure of the potential impact of adding support for non-Hunspell
+    locales in the spell check settings. This also helps answer the following
+    question: should the Chrome spell check settings raise awareness of Windows
+    language packs and / or link to documentation describing how to install a
+    Windows language pack?
+
+    This is recorded once during spell check initialization, and then once each
+    time the user changes their Chrome languages.
+  </summary>
+</histogram>
+
 <histogram base="true" name="Spellcheck.Windows.SpellcheckLocalesSupport"
+    units="locales" expires_after="2023-09-30">
+  <obsolete>
+    Logged on profile open, including for profiles that do not use this setting
+    (such as &quot;system&quot; profiles) and for profiles that do not allow the
+    profile-owner to to configure this setting (such as &quot;guest&quot;
+    profiles). When logged in such cases, reported the default value. Replaced
+    in M-114 with the histogram Spellcheck.Windows.SpellcheckLocalesSupport2.*,
+    which are similar yet only emitted for regular profiles.
+  </obsolete>
+  <owner>gujen@google.com</owner>
+  <owner>chrome-language@google.com</owner>
+  <summary>
+    Of all the currently enabled spell check languages, counts how many are
+    supported by the different spell checkers (Hunspell and the Windows OS).
+
+    This helps measure the impact and reach of the native spell checker
+    integration.
+
+    This is recorded once during spell check initialization, and then once each
+    time the user changes their enabled spell check languages.
+  </summary>
+</histogram>
+
+<histogram base="true" name="Spellcheck.Windows.SpellcheckLocalesSupport2"
     units="locales" expires_after="2023-09-30">
   <owner>gujen@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
     Of all the currently enabled spell check languages, counts how many are
     supported by the different spell checkers (Hunspell and the Windows OS).
+    Recorded only for regular profiles. (Not recorded on guest profiles for
+    example.)
 
     This helps measure the impact and reach of the native spell checker
     integration.
@@ -13747,7 +13833,11 @@ regressions. -->
 </histogram>
 
 <histogram name="VoiceInteraction.AssistantActionPerformed{Source}"
-    enum="AssistantActionPerformed" expires_after="2023-07-05">
+    enum="AssistantActionPerformed" expires_after="2023-04-20">
+  <obsolete>
+    Deprecated as of 2023/04 as the Assistant integration project has been
+    calcelled
+  </obsolete>
   <owner>basiaz@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -13768,7 +13858,11 @@ regressions. -->
 </histogram>
 
 <histogram name="VoiceInteraction.AssistantIntent.TranslateExtrasAttached"
-    enum="BooleanSuccess" expires_after="2023-07-05">
+    enum="BooleanSuccess" expires_after="2023-04-10">
+  <obsolete>
+    Deprecated as of 2023/04 as the Assistant integration project has been
+    calcelled
+  </obsolete>
   <owner>basiaz@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -14100,25 +14194,6 @@ regressions. -->
   </summary>
 </histogram>
 
-<histogram name="WebDatabase.FailedMigrationToVersion" units="version"
-    expires_after="2023-12-01">
-  <owner>battre@chromium.org</owner>
-  <owner>asully@chromium.org</owner>
-  <summary>
-    If a migration to a new WebDatabase schema fails, this histogram records the
-    target version to which the migration failed.
-  </summary>
-</histogram>
-
-<histogram name="WebDatabase.InitResult" enum="WebDatabaseInitResult"
-    expires_after="2023-12-01">
-  <owner>battre@chromium.org</owner>
-  <owner>asully@chromium.org</owner>
-  <summary>
-    Records whether WebDatabase::Init succeeds or otherwise a failure reason.
-  </summary>
-</histogram>
-
 <histogram name="WebFont.BlankTextShownTime" units="ms"
     expires_after="2023-10-01">
   <owner>kenjibaheux@chromium.org</owner>
@@ -14347,6 +14422,16 @@ regressions. -->
     The elapsed time for URL requests made through the WebUIURLLoaderFactory.
     The reported duration is the time spent in the browser process from the
     reception of the mojo request up to the content delivery through mojo call.
+  </summary>
+</histogram>
+
+<histogram name="WebUICodeCache.FeatureEnabled" units="Boolean"
+    expires_after="2024-04-12">
+  <owner>temao@chromium.org</owner>
+  <owner>tluk@chromium.org</owner>
+  <summary>
+    True if WebUICodeCache feature is enabled. This counts the number of times
+    generated WebUICodeCache JS code cache is instantiated.
   </summary>
 </histogram>
 
@@ -14691,22 +14776,6 @@ regressions. -->
   <summary>
     Records occurence of async XHR during page dismissal state (unload,
     beforeunload, pagehide etc).
-  </summary>
-</histogram>
-
-<histogram name="XHR.Sync.BlockingTime.MainThread" units="ms"
-    expires_after="2021-01-01">
-  <owner>foolip@chromium.org</owner>
-  <summary>
-    Records the time spent in sync XHR requests on the main thread.
-  </summary>
-</histogram>
-
-<histogram name="XHR.Sync.BlockingTime.WorkerThread" units="ms"
-    expires_after="2021-01-01">
-  <owner>foolip@chromium.org</owner>
-  <summary>
-    Records the time spent in sync XHR requests in a worker thread.
   </summary>
 </histogram>
 

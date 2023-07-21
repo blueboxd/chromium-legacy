@@ -54,15 +54,6 @@
     "expires": "Jul 1, 2023"
   },
   {
-    "prefix": "lna-allow-potentially-trustworthy-same-origin",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/fetch/local-network-access"],
-    "args": [
-      "--enable-features=LocalNetworkAccessAllowPotentiallyTrustworthySameOrigin"
-    ],
-    "expires": "Jul 1, 2023"
-  },
-  {
     "prefix": "reduce-accept-language",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["http/tests/navigation/language",
@@ -161,6 +152,8 @@
               "fast/backgrounds",
               "paint/background",
               "paint/invalidation/background",
+              "external/wpt/acid/acid2/reftest.html",
+              "external/wpt/css/CSS2/backgrounds",
               "external/wpt/css/css-backgrounds",
               "external/wpt/css/css-break/background-image-000.html",
               "external/wpt/css/css-break/background-image-001.html",
@@ -176,7 +169,7 @@
     "bases": ["wpt_internal/attribution-reporting"],
     "exclusive_tests": "ALL",
     "args": ["--attribution-reporting-debug-mode",
-             "--enable-features=AttributionReportingCrossAppWeb,AttributionReportingTriggerAttestation",
+             "--enable-features=AttributionReportingCrossAppWeb,AttributionReportingReportVerification",
              "--additional-private-state-token-key-commitments={\"https://web-platform.test:8444\":{\"PrivateStateTokenV3VOPRF\":{\"protocol_version\":\"PrivateStateTokenV3VOPRF\",\"id\":1,\"batchsize\":1,\"keys\":{\"0\":{\"Y\":\"AAAAAASqh8oivosFN46xxx7zIK10bh07Younm5hZ90HgglQqOFUC8l2/VSlsOlReOHJ2CrfJ6CG1adnTkKJhZ0BtbSPWBwviQtdl64MWJc7sSg9HPvWfTjDigX5ihbzihG8V8aA=\",\"expiry\":\"253402300799000000\"}}}}}"],
     "expires": "Jul 1, 2023"
   },
@@ -374,7 +367,8 @@
   {
     "prefix": "compute-pressure",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/compute-pressure"],
+    "bases": ["external/wpt/compute-pressure",
+              "wpt_internal/compute-pressure"],
     "exclusive_tests": "ALL",
     "args": ["--enable-features=ComputePressure"],
     "expires": "Jul 1, 2023"
@@ -800,7 +794,7 @@
     "platforms": ["Linux"],
     "bases": ["http/tests/inspector-protocol/issues/payment-request-csp-violation-issue.js"],
     "args": ["--enable-blink-features=IgnoreCSPInWebPaymentAPI"],
-    "expires": "Jul 1, 2023"
+    "expires": "May 30, 2023"
   },
   {
     "prefix": "payment-request-mandatory-total",
@@ -1270,7 +1264,7 @@
   {
     "prefix": "popover-hint-disabled",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": [],
+    "bases": ["external/wpt/html/semantics/popovers/"],
     "args": ["--enable-blink-features=HTMLPopoverAttribute",
       "--disable-blink-features=HTMLPopoverHint"],
     "expires": "Jan 1, 2024"
@@ -1685,7 +1679,7 @@
     "exclusive_tests": "ALL",
     "args": [
       "--enable-blink-features=SpeculationRulesPrefetchProxy,SpeculationRulesFetchFromHeader,SpeculationRulesDocumentRules,NoVarySearchPrefetch,SpeculationRulesEagerness,SpeculationRulesDocumentRulesSelectorMatches",
-      "--enable-features=SpeculationRulesPrefetchProxy,PrefetchUseContentRefactor:block_until_head_eager_prefetch/true",
+      "--enable-features=SpeculationRulesPrefetchProxy,PrefetchUseContentRefactor",
       "--bypass-prefetch-proxy-for-host=not-web-platform.test"
     ],
     "expires": "Jul 1, 2023"
@@ -1699,7 +1693,7 @@
     "exclusive_tests": "ALL",
     "args": [
       "--enable-blink-features=NoVarySearchPrefetch",
-      "--enable-features=PrefetchUseContentRefactor:block_until_head_eager_prefetch/true"
+      "--enable-features=PrefetchUseContentRefactor"
     ],
     "expires": "Jul 1, 2023"
   },
@@ -1881,7 +1875,7 @@
       "fast/forms/week/week-appearance-pseudo-elements.html"
     ],
     "args": ["--disable-blink-features=DateInputInlineBlock"],
-    "expires": "Jul 1, 2023"
+    "expires": "Jun 1, 2023"
   },
   {
     "prefix": "allow-rtc-encoded-video-frame-set-metadata-all-fields",
@@ -1957,7 +1951,7 @@
       "http/tests/inspector-protocol/network/is-same-site.js",
       "http/tests/priority-hints/image-initial-load.html"
     ],
-    "args": ["--enable-features=BoostImagePriority"]
+    "args": ["--disable-features=BoostImagePriority"]
   },
   {
     "prefix": "html-pattern-regexp-unicodesets",
@@ -1973,6 +1967,24 @@
     "platforms": ["Linux"],
     "bases": ["external/wpt/fetch/api/response"],
     "args": ["--disable-features=ReadableStreamTeeCloneForBranch2"],
+    "expires": "Aug 1, 2023"
+  },
+  {
+    "prefix": "main-thread-high-priority-image-loading",
+    "platforms": ["Linux"],
+    "bases": [
+      "images/image-change-src.html"
+    ],
+    "args": [
+      "--enable-features=MainThreadHighPriorityImageLoading"
+    ],
+    "expires": "Dec 1, 2023"
+  },
+  {
+    "prefix": "longtask-from-loaf",
+    "platforms": ["Linux"],
+    "bases": ["external/wpt/longtask-timing"],
+    "args": ["--enable-blink-features=LongTaskFromLongAnimationFrame"],
     "expires": "Aug 1, 2023"
   }
 ]

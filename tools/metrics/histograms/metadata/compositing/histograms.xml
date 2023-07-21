@@ -661,31 +661,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram
-    name="Compositing.Renderer.FirstSurfaceActivationUpdateDuration.{Surface}"
-    units="ms" expires_after="2023-04-28">
-  <owner>jonross@chromium.org</owner>
-  <owner>chrome-gpu-metrics@google.com</owner>
-  <summary>
-    The cumulative time spent performing visual updates for the {Surface}.
-
-    The time is measured in the Renderer. The result is reported in the Browser
-    when it is notified that the first Surface for a Renderer has been activated
-    by the GPU process. This is only reported for the first Surface that is
-    activated, and not for subsequent Surfaces.
-  </summary>
-  <token key="Surface">
-    <variant name="CurrentSurface"
-        summary="current surface which was activated. This time overlaps with
-                 when paint holding is deferring commits, and so is an upper
-                 bound"/>
-    <variant name="PreviousSurfaces"
-        summary="previous surfaces which were not activated. This time might
-                 overlap with when paint holding is deferring commits, and so
-                 is an upper bound"/>
-  </token>
-</histogram>
-
 <histogram name="Compositing.Renderer.LayersUpdateTime" units="microseconds"
     expires_after="2023-08-27">
   <owner>pdr@chromium.org</owner>
@@ -896,7 +871,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="CompositorLatency.CompositorOnlyFrame{InteractionType}.{StageType}"
-    units="microseconds" expires_after="2023-03-01">
+    units="microseconds" expires_after="2024-05-05">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -906,6 +881,8 @@ chromium-metrics-reviews@google.com.
 
     This metric uses base::Histogram::FactoryMicrosecondsTimeGet so only users
     with high resolution clocks will report this metric.
+
+    Note: This metric was expired from 2023-03-01 to 2023-05-05.
   </summary>
   <token key="InteractionType">
     <variant name=""/>
@@ -1240,13 +1217,15 @@ chromium-metrics-reviews@google.com.
     This is a new implementation of the older
     Graphics.Smoothness.PercentDroppedFrames.AllInteractions metric.
 
+    See http://shortn/_ItBDdHoyCf (internal only) for more details.
+
     This histogram is of special interest to the chrome-analysis-team@. Do not
     change its semantics or retire it without talking to them first.
   </summary>
 </histogram>
 
 <histogram name="Graphics.Smoothness.PercentDroppedFrames3.{Thread}{Sequence}"
-    units="%" expires_after="2023-05-11">
+    units="%" expires_after="2024-05-11">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>

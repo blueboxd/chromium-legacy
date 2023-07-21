@@ -158,19 +158,6 @@ isso não impede capturas de tela com apps do sistema operacional ou de terceiro
             * ntlm.
             Deixar essa opção vazia permitirá que os três esquemas sejam usados.</translation>
 <translation id="1153306961094113710">Permitir a depuração remota</translation>
-<translation id="1156636278540386588">Controle se as extensões do Manifest v2 podem ser usadas pelo navegador.
-
-O suporte às extensões do Manifest v2 vai ser descontinuado, e todas as extensões precisarão
-ser migradas para a v3. Confira outras informações e o cronograma da
-migração em https://developer.chrome.com/docs/extensions/mv3/mv2-sunset/ (link em inglês).
-
-Se a política for definida como <ph name="DEFAULT" /> (0) ou for deixada sem definição, o carregamento das extensões da v2 vai ser decidido pelo navegador, seguindo o cronograma acima.
-Se definida como <ph name="DISABLE" /> (1), a instalação de extensões da v2 será bloqueada, e as atuais, desativadas. A opção será tratada da mesma forma que seria se a política não fosse definida após a desativação do suporte à v2 por padrão.
-Se a política for definida como <ph name="ENABLE" /> (2), as extensões da v2 vão ser permitidas. A opção será tratada da mesma forma que seria se a política não fosse definida antes da desativação do suporte à v2 por padrão.
-Se a política for definida como <ph name="ENABLE_FOR_FORCED_EXTENSIONS" /> (3), as extensões da v2 instaladas vão ser permitidas. Isso inclui extensões listadas por <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> ou <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> com <ph name="INSTALLATION_MODE" /> "force_installed" ou "normal_installed". Todas as outras extensões v2 são desativadas. A opção será tratada da mesma forma que seria se a política não fosse definida antes da desativação do suporte à v2 por padrão.
-
-
-A disponibilidade das extensões ainda é controlada por outras políticas.</translation>
 <translation id="115699958189272121">Informar eventos da <ph name="CHROME_REMOTE_DESKTOP_PRODUCT_NAME" /></translation>
 <translation id="1157003104143964656">Esta configuração ativa ou desativa a interceptação de login.
 
@@ -328,7 +315,6 @@ Se a política for deixada sem definição, a <ph name="ASK_WINDOW_MANAGEMENT_PO
 
 Isso substitui a política <ph name="DEFAULT_WINDOW_PLACEMENT_SETTING_POLICY_NAME" /> descontinuada.</translation>
 <translation id="129206366270737897">Desativa qualquer método assíncrono de <ph name="FILE_SYSTEM_SYNC_ACCESS_HANDLE" />.</translation>
-<translation id="129392056654547767">Imagem de firmware do UEFI usada pela VM. Essa é uma medida temporária enquanto o empacotamos como um conteúdo transferido por download do ChromeOS.</translation>
 <translation id="1294263471858445589">Ativar a autenticação pelo SO em sessões normais e anônimas.</translation>
 <translation id="1295737447968372331">Ativa o ditado na tela de login</translation>
 <translation id="1297182715641689552">Usar um script de proxy .pac</translation>
@@ -612,7 +598,6 @@ Se você desativar a política, essa rolagem será desativada.</translation>
       No <ph name="MS_WIN_NAME" />, essa funcionalidade está disponível apenas em instâncias associadas a um domínio do <ph name="MS_AD_NAME" />, executadas no Windows 10 Pro ou registradas no Gerenciamento de nuvem do navegador Chrome. No <ph name="MAC_OS_NAME" />, ela está disponível apenas em instâncias gerenciadas por MDM ou associadas a um domínio via MCX.</translation>
 <translation id="1530812829012954197">Sempre renderizar os seguintes padrões de URL no navegador do host</translation>
 <translation id="1542491165152947087">Permitir que os usuários ativem ou desativem a configuração do <ph name="PRIVACY_SANDBOX_NAME" /> para temas de anúncios no dispositivo.</translation>
-<translation id="1547424904796464052">Hash SHA-256 codificado em hexadecimal da imagem do firmware.</translation>
 <translation id="1550295162561011575">Se a política for definida, os administradores poderão configurar a automação para iniciar apps em dispositivos <ph name="PRODUCT_NAME" />. Esses apps podem ser iniciados no login ou pelo usuário na tela de início.</translation>
 <translation id="1552418937045050762">Se esta configuração estiver ativada, os usuários poderão usar o recurso "Compartilhar por proximidade", que permite que eles enviem e recebam arquivos de pessoas próximas.
 
@@ -920,6 +905,19 @@ Esta política não vai ter efeito se a opção de manter os dados de navegaçã
 <translation id="1844972978764975668">Permitir consultas a um servidor do Google para recuperar um carimbo de data/hora preciso</translation>
 <translation id="1845405905602899692">Configurações de quiosque</translation>
 <translation id="1845429996559814839">Restringir modo de impressão com PIN</translation>
+<translation id="1845567452014584154">Controle se as extensões do Manifest v2 podem ser usadas pelo navegador.
+
+O suporte a elas será descontinuado, e todas as extensões precisarão
+ser migradas para a v3. Confira outras informações e o cronograma da
+migração em https://developer.chrome.com/docs/extensions/mv3/mv2-sunset/.
+
+Se a política for definida como <ph name="DEFAULT" /> (0) ou for deixada sem definição, o carregamento das extensões da v2 será decidido pelo navegador, seguindo o cronograma acima.
+Se definida como <ph name="DISABLE" /> (1), a instalação de extensões da v2 será bloqueada, e as atuais, desativadas. A opção será tratada da mesma forma que seria se a política não fosse definida após a desativação do suporte à v2 por padrão.
+Se a política for definida como <ph name="ENABLE" /> (2), as extensões da v2 serão permitidas. A opção será tratada da mesma forma que seria se a política não fosse definida antes da desativação do suporte à v2 por padrão.
+Se a política for definida como <ph name="ENABLE_FOR_FORCED_EXTENSIONS" /> (3), as extensões da v2 instaladas serão permitidas. Isso inclui extensões listadas pela <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> ou <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> com <ph name="INSTALLATION_MODE" /> "force_installed" ou "normal_installed". Todas as outras extensões da v2 serão desativadas. A opção está sempre disponível, independente do estado da migração.
+
+
+A disponibilidade das extensões ainda é controlada por outras políticas.</translation>
 <translation id="1846545322805269573">Os usuários não podem personalizar o plano de fundo da página Nova guia</translation>
 <translation id="1847960418907100918">Especifica os parâmetros usados ao fazer pesquisa instantânea com POST. Consiste em pares de nomes/valores separados por vírgula. Se um valor for um parâmetro de modelo, como {searchTerms} no exemplo acima, ele será substituído por dados de termos de pesquisa reais.
 
@@ -1337,7 +1335,7 @@ Se ela for ativada ou deixada sem definição, os usuários poderão ativar ou d
 
 A definição desta política requer que a <ph name="PRIVACY_SANDBOX_PROMPT_ENABLED_POLICY_NAME" /> seja desativada.</translation>
 <translation id="2195032660890227692">Esta política foi removida no <ph name="PRODUCT_NAME" /> 68 e substituída por <ph name="ARC_BR_POLICY_NAME" />.</translation>
-<translation id="2197625019569762163">Se esta política for definida como verdadeira, o teclado numérico será exibido por padrão para inserir a senha na tela de login. Os usuários ainda podem mudar para o teclado normal.
+<translation id="2197625019569762163">Se esta política for definida como verdadeira, o teclado numérico será exibido por padrão para inserir a senha na tela de login. Os usuários ainda podem alternar para o teclado normal.
 
       Se você definir a política, os usuários não poderão mudá-la. Se não for definida ou for definida como falsa, não terá efeito.</translation>
 <translation id="2200698565850397198">Configurar a lista de bloqueio de mensagens nativas</translation>
@@ -2338,33 +2336,6 @@ Essa política é temporária e vai ser removida.</translation>
 <translation id="3125472566440502628">Desativar o recurso Selecionar para ouvir</translation>
 <translation id="3126748868885248792">Botão direito como principal</translation>
 <translation id="3128072319047570212">Configurações de keygen</translation>
-<translation id="3129155711165832367">Os certificados X.509 podem codificar restrições, como as de nome,
-em extensões do certificado. A RFC 5280 especifica que a aplicação dessas
-restrições a certificados de âncoras de confiança é opcional. Da versão 112 em diante
-do <ph name="PRODUCT_NAME" />, essas restrições
-em certificados carregados do repositório de certificados da plataforma passam a ser
-aplicadas.
-
-Esta política existe como uma desativação temporária caso uma empresa encontre
-problemas com as restrições codificadas nas raízes particulares. Nesse caso, esta
-política pode ser usada para desativar temporariamente a aplicação das restrições
-enquanto corrige os problemas de certificado.
-
-Quando esta política for deixada sem definição ou for ativada,
-o <ph name="PRODUCT_NAME" /> vai aplicar
-restrições codificadas a âncoras de confiança carregadas pelo repositório de confiança da plataforma.
-
-Quando ela for desativada,
-o <ph name="PRODUCT_NAME" /> não vai aplicar
-restrições codificadas a âncoras de confiança carregadas do repositório de confiança da plataforma.
-
-Na versão 112 do <ph name="PRODUCT_NAME" />,
-esta política não terá efeito se a
-<ph name="CHROME_ROOT_STORE_ENABLED_POLICY_NAME" />
-for desativada.
-
-Esta política será removida na
-versão 115 do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3131703464330936425">Não permitir roaming de dados móveis</translation>
 <translation id="3135820765957090754">Se esta definição estiver ativada, os usuários poderão sincronizar configurações de rede Wi-Fi entre dispositivos <ph name="PRODUCT_OS_NAME" /> e um smartphone Android conectado. Antes que as configurações sejam sincronizadas, os usuários precisam aceitar esse recurso explicitamente concluindo um fluxo de configuração.
 
@@ -3401,13 +3372,6 @@ Esta política é uma solução temporária e vai ser removida em marcos futuros
 <translation id="4025500273782820766">Permitir que os usuários selecionem "Sempre permitir" em uma caixa de diálogo de protocolo externo para pular as solicitações de confirmação futuras</translation>
 <translation id="402759845255257575">Não permitir que nenhum site execute o JavaScript</translation>
 <translation id="4027608872760987929">Ativar o provedor de pesquisa padrão</translation>
-<translation id="4027904270588278067">Se a política for definida, o diretório usado para salvar arquivos de download no Chrome vai ser configurado. O diretório fornecido será usado, ainda que o usuário tenha especificado outro diretório ou ativado a sinalização de sempre perguntar o local de download.
-
-      Esta política substitui a política <ph name="DEFAULT_DOWNLOAD_DIRECTORY_POLICY_NAME" />.
-
-      Se a política não for definida, o Chrome vai usar o diretório de download padrão e o usuário poderá modificar isso.
-
-      Observação: veja uma lista com as variáveis que podem ser usadas: https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables (link em inglês).</translation>
 <translation id="4030152268425532846">Desativar o descarte do login automático</translation>
 <translation id="4043796890723386527">Impedir que os usuários criem e usem perfis secundários e usem o modo visitante no navegador <ph name="LACROS_NAME" /></translation>
 <translation id="4051723201852944592">Ativar oclusão de janelas</translation>
@@ -3460,6 +3424,19 @@ Esta política é uma solução temporária e vai ser removida em marcos futuros
 <translation id="4101282687722389021">Carimbo de data/hora UTC do último horário em que a entrada foi atualizada. Enviada como uma string, porque o carimbo de data/hora não caberia em um número inteiro.</translation>
 <translation id="4102347680024644994">Relatar eventos de detecção e resposta estendidas (XDR, na sigla em inglês)</translation>
 <translation id="4105989332710272578">Desativar a aplicação da Transparência dos certificados para uma lista de URLs</translation>
+<translation id="410740968939768919">Controle se as extensões do Manifest v2 podem ser usadas na tela de login do <ph name="PRODUCT_OS_NAME" />.
+
+O suporte a elas será descontinuado, e todas as extensões precisarão
+ser migradas para a v3. Confira outras informações e o cronograma da
+migração em https://developer.chrome.com/docs/extensions/mv3/mv2-sunset/.
+
+Se a política for definida como <ph name="DEFAULT" /> (0) ou for deixada sem definição, o carregamento das extensões da v2 será decidido pelo dispositivo, seguindo o cronograma acima.
+Se definida como <ph name="DISABLE" /> (1), a instalação de extensões da v2 será bloqueada, e as atuais, desativadas. A opção será tratada da mesma forma que seria se a política não fosse definida após a desativação do suporte à v2 por padrão.
+Se a política for definida como <ph name="ENABLE" /> (2), as extensões da v2 serão permitidas. A opção será tratada da mesma forma que seria se a política não fosse definida antes da desativação do suporte à v2 por padrão.
+Se a política for definida como <ph name="ENABLE_FOR_FORCED_EXTENSIONS" /> (3), as extensões da v2 instaladas serão permitidas. Isso inclui extensões listadas pela <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> ou <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> com <ph name="INSTALLATION_MODE" /> "force_installed" ou "normal_installed". Todas as outras extensões da v2 serão desativadas. A opção está sempre disponível, independente do estado da migração.
+
+
+A disponibilidade das extensões ainda é controlada por outras políticas.</translation>
 <translation id="4110126170080699437">Por motivos de segurança, a
 API <ph name="GET_DISPLAY_MEDIA_API_NAME" /> Web exige
 que um gesto anterior do usuário ("ativação temporária") seja chamado. Caso contrário,
@@ -3854,6 +3831,33 @@ na versão 117.</translation>
 <translation id="4483649828988077221">Desativar a atualização automática</translation>
 <translation id="4484515651939984695">Especificar por quanto tempo (em segundos) um dispositivo de transmissão selecionado com um código de acesso ou QR permanece na lista aparelhos desse tipo no menu do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4485425108474077672">Configurar o URL da página "Nova guia"</translation>
+<translation id="4490420545181481759">Os certificados X.509 podem codificar restrições, como as de nome,
+em extensões do certificado. A RFC 5280 especifica que a aplicação dessas
+restrições a certificados de âncoras de confiança é opcional. Da versão 112 em diante
+do <ph name="PRODUCT_NAME" />, essas restrições
+em certificados carregados do repositório de certificados da plataforma passam a ser
+aplicadas.
+
+Esta política existe como uma desativação temporária caso uma empresa encontre
+problemas com as restrições codificadas nas raízes particulares. Nesse caso, esta
+política pode ser usada para desativar temporariamente a aplicação das restrições
+enquanto corrige os problemas de certificado.
+
+Quando esta política for deixada sem definição ou for ativada,
+o <ph name="PRODUCT_NAME" /> vai aplicar
+restrições codificadas a âncoras carregadas pelo repositório de confiança da plataforma.
+
+Quando ela for desativada,
+o <ph name="PRODUCT_NAME" /> não vai aplicar
+restrições codificadas a âncoras carregadas do repositório de confiança da plataforma.
+
+Na versão 112 do <ph name="PRODUCT_NAME" />,
+esta política não terá efeito se a
+<ph name="CHROME_ROOT_STORE_ENABLED_POLICY_NAME" />
+for desativada.
+
+Esta política será removida na
+versão 118 do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4491607814095953976">Definir se a configuração do <ph name="PRIVACY_SANDBOX_NAME" /> para a medição de anúncios pode ser desativada</translation>
 <translation id="4492287494009043413">Desativar captura de tela</translation>
 <translation id="4494132853995232608">DTC wilco</translation>
@@ -4566,19 +4570,6 @@ Se a política for definida como verdadeira ou for deixada sem definição, esse
 <translation id="519247340330463721">Configura as políticas relacionadas ao Safe Browsing.</translation>
 <translation id="5194683382395300627">Permitir o uso do <ph name="ASSISTANT_PRODUCT_NAME" /> na Web, por exemplo, para autorizar a mudança automática de senhas</translation>
 <translation id="5196630732055960309">Permitir a API File Handling nesses apps da Web</translation>
-<translation id="5198660575318473544">Controle se as extensões do Manifest v2 podem ser usadas na tela de login do <ph name="PRODUCT_OS_NAME" />.
-
-O suporte a elas vai ser descontinuado, e todas as extensões precisarão
-ser migradas para a v3. Confira outras informações e o cronograma da
-migração em https://developer.chrome.com/docs/extensions/mv3/mv2-sunset/.
-
-Se a política for definida como <ph name="DEFAULT" /> (0) ou for deixada sem definição, o carregamento das extensões da v2 vai ser decidido pelo dispositivo, seguindo o cronograma acima.
-Se definida como <ph name="DISABLE" /> (1), a instalação de extensões da v2 será bloqueada, e as atuais, desativadas. A opção vai ser tratada da mesma forma que seria se a política não fosse definida após a desativação do suporte à v2 por padrão.
-Se a política for definida como <ph name="ENABLE" /> (2), as extensões da v2 serão permitidas. A opção vai ser tratada da mesma forma que seria se a política não fosse definida antes da desativação do suporte à v2 por padrão.
-Se a política for definida como <ph name="ENABLE_FOR_FORCED_EXTENSIONS" /> (3), as extensões da v2 instaladas serão permitidas. Isso inclui extensões listadas pela <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> ou <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> com <ph name="INSTALLATION_MODE" /> "force_installed" ou "normal_installed". Todas as outras extensões v2 são desativadas. A opção vai ser tratada da mesma forma que seria se a política não fosse definida antes da desativação do suporte à v2 por padrão.
-
-
-A disponibilidade das extensões ainda é controlada por outras políticas.</translation>
 <translation id="5206454085187851382">Se <ph name="PRINTERS_ALLOWLIST" /> for escolhida para <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME" />, a definição de <ph name="PRINTERS_BULK_ALLOWLIST_POLICY_NAME" /> especificará quais impressoras os usuários não podem usar. Apenas as impressoras com IDs correspondentes aos valores desta política estão disponíveis para o usuário. Os IDs precisam corresponder aos campos <ph name="ID_FIELD" /> ou <ph name="GUID_FIELD" /> no arquivo especificado na <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME" />.</translation>
 <translation id="5207543664699568887">Configura se o <ph name="PRODUCT_NAME" /> no Linux usará notificações do sistema.
 
@@ -7336,11 +7327,6 @@ resolução de localização baseada no <ph name="IP" />.</translation>
       Quando esta política é definida, o código de acesso do familiar responsável pode ser verificado no dispositivo da criança.
       Quando esta política não é definida, não é possível verificar o código de acesso do familiar responsável no dispositivo da criança.</translation>
 <translation id="7623431489198474050">Desativar atestado remoto para proteção de conteúdo</translation>
-<translation id="7627289446617865057">Esta política permite que um administrador especifique configurações para apps da Web instalados. Ela mapeia um ID de app da Web para a própria configuração específica. É possível usar o ID especial <ph name="DEFAULT_SCOPE" /> para definir uma configuração padrão, que será aplicada a todos os apps da Web que não tiverem uma configuração personalizada definida nesta política.
-
-O campo <ph name="MANIFEST_ID_FIELD" /> é o ID do manifesto do app da Web. Consulte <ph name="WEB_APP_ID_REFERENCE_URL" /> para conferir instruções de como determinar esse ID para um app da Web instalado.
-O campo <ph name="RUN_ON_OS_LOGIN_FIELD" /> especifica se um app da Web pode ser executado durante o Login do SO. Se ele for definido como <ph name="BLOCKED" />, o app da Web não será executado durante o Login do SO e o usuário não poderá ativar essa opção mais tarde. Se definido como <ph name="RUN_WINDOWED" />, o app da Web será executado durante o Login do SO e o usuário não poderá desativar essa opção mais tarde. Se definido como <ph name="ALLOWED" />, o usuário poderá configurar o app da Web para ser executado no Login do SO. A configuração padrão permite apenas os valores <ph name="ALLOWED" /> e <ph name="BLOCKED" />.      
-Da versão 115 em diante, o campo <ph name="PREVENT_CLOSE_FIELD" /> especifica se o fechamento de um app da Web será impedido de alguma forma (por exemplo, pelo usuário, gerenciador de tarefas ou APIs da Web). Esse comportamento só poderá ser ativado se <ph name="RUN_ON_OS_LOGIN_FIELD" /> for definido como <ph name="RUN_WINDOWED" />. Se o app já estava em execução, essa propriedade só terá efeito após a reinicialização dele. Se esse campo não for definido, os apps poderão ser fechados pelos usuários.</translation>
 <translation id="7628747690141606652">Desativar a tradução das Respostas rápidas</translation>
 <translation id="7629840767216985001">Se esta política for definida como verdadeira, o cursor grande será ativado na tela de login. Se esta política for definida como falsa, o cursor grande será desativado na tela de login.
 
@@ -7800,7 +7786,6 @@ também é seguro.</translation>
 <translation id="802776363472387903">Hash SHA-256 da imagem do <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="8028814157747157754">Ativar o provedor de pesquisa padrão e permitir que os usuários modifiquem a lista de provedores de pesquisa</translation>
 <translation id="8029201909194194377">Duração máxima da seção permitida por conexões de acesso remoto</translation>
-<translation id="8033908599068513676">URL da imagem de firmware para download.</translation>
 <translation id="8035570672225663428">Permitir que o modelo de carregamento adaptável controle o processo de carregamento para prolongar a duração da bateria</translation>
 <translation id="8044493735196713914">Informar modo de inicialização do dispositivo</translation>
 <translation id="8044720778481009876">Destinos do <ph name="CLOUD_PRINT_NAME" /> e "Salvar no Google Drive" (descontinuados)</translation>
@@ -8791,6 +8776,11 @@ Se ela for desativada, o comportamento antigo será usado.
 Quando a política é deixada sem definição, o novo comportamento é usado, assim como acontece com os demais usuários do Chromium.</translation>
 <translation id="8955719471735800169">Voltar ao início</translation>
 <translation id="8956312248048980644">Permite o clustering do agente com origin-key por padrão.</translation>
+<translation id="8961117818679701775">Esta política permite que um administrador especifique configurações para apps da Web instalados. Ela mapeia um ID de app da Web para a própria configuração específica. É possível usar o ID especial <ph name="DEFAULT_SCOPE" /> para definir uma configuração padrão, que será aplicada a todos os apps da Web que não tiverem uma configuração personalizada definida nesta política.
+
+O campo <ph name="MANIFEST_ID_FIELD" /> é o ID do manifesto do app da Web. Consulte <ph name="WEB_APP_ID_REFERENCE_URL" /> para conferir instruções de como determinar esse ID para um app da Web instalado.
+O campo <ph name="RUN_ON_OS_LOGIN_FIELD" /> especifica se um app da Web pode ser executado durante o login do SO. Se ele for definido como <ph name="BLOCKED" />, o app da Web não será executado durante o login do SO e o usuário não poderá ativar essa opção mais tarde. Se ele for definido como <ph name="RUN_WINDOWED" />, o app da Web será executado durante o login do SO e o usuário não poderá desativar essa opção mais tarde. Se ele for definido como <ph name="ALLOWED" />, o usuário poderá configurar o app da Web para ser executado no login do SO. A configuração padrão permite apenas os valores <ph name="ALLOWED" /> e <ph name="BLOCKED" />.
+Da versão 115 em diante, o campo <ph name="PREVENT_CLOSE_FIELD" /> especifica se o fechamento de um app da Web será impedido de alguma forma (por exemplo, pelo usuário, gerenciador de tarefas ou APIs da Web). Esse comportamento só poderá ser ativado se <ph name="RUN_ON_OS_LOGIN_FIELD" /> for definido como <ph name="RUN_WINDOWED" />. Se o app já estava em execução, essa propriedade só terá efeito após a reinicialização dele. Se esse campo não for definido, os apps poderão ser fechados pelos usuários.</translation>
 <translation id="8970205333161758602">Remover a solicitação de recusa do <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8973579598359969188">Definir se a solicitação do <ph name="PRIVACY_SANDBOX_NAME" /> pode ser mostrada aos usuários</translation>
 <translation id="8974588819713914715">Essa política foi descontinuada e parou de ter suporte. Use a <ph name="URL_ALLOWLIST_POLICY_NAME" />.</translation>

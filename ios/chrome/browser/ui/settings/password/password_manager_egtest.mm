@@ -1816,7 +1816,8 @@ id<GREYMatcher> EditDoneButton() {
 // storing just about enough passwords to ensure filling more than one page on
 // any device. To limit the effect of (2), custom large scrolling steps are
 // added to the usual scrolling actions.
-- (void)testManyPasswords {
+// TODO(crbug.com/1442985): This test is flaky.
+- (void)FLAKY_testManyPasswords {
   if ([ChromeEarlGrey isIPadIdiom]) {
     // TODO(crbug.com/906551): Enable the test on iPad once the bug is fixed.
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad.");
@@ -2260,9 +2261,6 @@ id<GREYMatcher> EditDoneButton() {
   [[EarlGrey selectElementWithMatcher:EditDoneButton()]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:EditConfirmationButton()]
-      performAction:grey_tap()];
-
   [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
       assertWithMatcher:grey_textFieldValue(@"")];
 
@@ -2272,9 +2270,6 @@ id<GREYMatcher> EditDoneButton() {
       performAction:grey_replaceText(@"new username")];
 
   [[EarlGrey selectElementWithMatcher:EditDoneButton()]
-      performAction:grey_tap()];
-
-  [[EarlGrey selectElementWithMatcher:EditConfirmationButton()]
       performAction:grey_tap()];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]

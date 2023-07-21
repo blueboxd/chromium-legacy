@@ -2051,11 +2051,7 @@ void RenderProcessHostImpl::BindRestrictedCookieManagerForServiceWorker(
   // overrides for a service worker.
   storage_partition_impl_->CreateRestrictedCookieManager(
       network::mojom::RestrictedCookieManagerRole::SCRIPT, storage_key.origin(),
-      net::IsolationInfo::Create(
-          net::IsolationInfo::RequestType::kOther,
-          url::Origin::Create(storage_key.top_level_site().GetURL()),
-          storage_key.origin(), storage_key.ToNetSiteForCookies(),
-          /*party_context=*/absl::nullopt, storage_key.nonce()),
+      storage_key.ToPartialNetIsolationInfo(),
       /*is_service_worker=*/true, GetID(), MSG_ROUTING_NONE,
       net::CookieSettingOverrides(), std::move(receiver),
       storage_partition_impl_->CreateCookieAccessObserverForServiceWorker());
@@ -2162,11 +2158,7 @@ void RenderProcessHostImpl::CreateWebSocketConnector(
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<WebSocketConnectorImpl>(
           GetID(), MSG_ROUTING_NONE, storage_key.origin(),
-          net::IsolationInfo::Create(
-              net::IsolationInfo::RequestType::kOther,
-              url::Origin::Create(storage_key.top_level_site().GetURL()),
-              storage_key.origin(), storage_key.ToNetSiteForCookies(),
-              /*party_context=*/absl::nullopt, storage_key.nonce())),
+          storage_key.ToPartialNetIsolationInfo()),
       std::move(receiver));
 }
 
@@ -3170,6 +3162,15 @@ bool RenderProcessHostImpl::IsSpareProcessForCrashReporting(
                                     .spare_render_process_host();
 }
 
+// static
+void RenderProcessHostImpl::ClearAllResourceCaches() {
+  for (iterator iter(AllHostsIterator()); !iter.IsAtEnd(); iter.Advance()) {
+    mojom::Renderer* renderer_interface =
+        iter.GetCurrentValue()->GetRendererInterface();
+    renderer_interface->PurgeResourceCache(base::DoNothing());
+  }
+}
+
 bool RenderProcessHostImpl::HostHasNotBeenUsed() {
   return IsUnused() && listeners_.IsEmpty() && AreAllRefCountsZero() &&
          pending_views_ == 0;
@@ -3424,7 +3425,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kForceGpuMemAvailableMb,
     switches::kForceHighContrast,
     switches::kForceRasterColorProfile,
-    switches::kForceSkiaAnalyticAntialiasing,
     switches::kForceVideoOverlays,
     switches::kFullMemoryCrashReport,
     switches::kGaiaUrl,
@@ -5511,16 +5511,16 @@ void RenderProcessHostImpl::ProvideSwapFileForRenderer() {
           std::move(allocator)));
 }
 
+void RenderProcessHostImpl::SetAttributionReportingSupport(
+    network::mojom::AttributionSupport attribution_support) {
+  GetRendererInterface()->SetAttributionReportingSupport(attribution_support);
+}
+
 #if BUILDFLAG(IS_ANDROID)
 
 void RenderProcessHostImpl::NotifyMemoryPressureToRenderer(
     base::MemoryPressureListener::MemoryPressureLevel level) {
   child_process_->OnMemoryPressure(level);
-}
-
-void RenderProcessHostImpl::SetAttributionReportingSupport(
-    network::mojom::AttributionSupport attribution_support) {
-  GetRendererInterface()->SetAttributionReportingSupport(attribution_support);
 }
 
 #endif

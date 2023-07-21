@@ -100,7 +100,7 @@ BASE_FEATURE(kExtensionTelemetryConfiguration,
 
 BASE_FEATURE(kExtensionTelemetryCookiesGetAllSignal,
              "SafeBrowsingExtensionTelemetryCookiesGetAllSignal",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kExtensionTelemetryPersistence,
              "SafeBrowsingExtensionTelemetryPersistence",
@@ -108,7 +108,7 @@ BASE_FEATURE(kExtensionTelemetryPersistence,
 
 BASE_FEATURE(kExtensionTelemetryFileData,
              "SafeBrowsingExtensionTelemetryFileData",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const base::FeatureParam<int> kExtensionTelemetryFileDataMaxFilesToProcess{
     &kExtensionTelemetryFileData, "MaxFilesToProcess",
@@ -145,7 +145,7 @@ BASE_FEATURE(kExtensionTelemetryTabsExecuteScriptSignal,
 
 BASE_FEATURE(kExtensionTelemetryCookiesGetSignal,
              "SafeBrowsingExtensionTelemetryCookiesGetSignal",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kExtensionTelemetryDeclarativeNetRequestSignal,
              "SafeBrowsingExtensionTelemetryDeclarativeNetRequestSignal",
@@ -308,6 +308,7 @@ constexpr struct {
     {&kExtensionTelemetryCookiesGetAllSignal, true},
     {&kExtensionTelemetryCookiesGetSignal, true},
     {&kExtensionTelemetryDeclarativeNetRequestSignal, true},
+    {&kExtensionTelemetryFileData, true},
     {&kExtensionTelemetryPersistence, true},
     {&kExtensionTelemetryPotentialPasswordTheft, true},
     {&kExtensionTelemetryReportContactedHosts, true},

@@ -479,23 +479,6 @@ bool DocumentProvider::IsDocumentProviderAllowed(
     return false;
   }
 
-  if (OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() &&
-      input.prefer_keyword()) {
-    // If a keyword provider matches, and we're explicitly in keyword mode,
-    // then the keyword provider must match the default, or the document
-    // provider.
-    AutocompleteInput keyword_input = input;
-    const TemplateURL* keyword_provider =
-        KeywordProvider::GetSubstitutingTemplateURLForInput(
-            template_url_service, &keyword_input);
-    if (keyword_provider &&
-        InExplicitKeywordMode(input, keyword_provider->keyword()) &&
-        !base::StartsWith(input.text(), u"drive.google.com",
-                          base::CompareCase::SENSITIVE)) {
-      return false;
-    }
-  }
-
   // There should be no document suggestions fetched for on-focus suggestion
   // requests, or if the input is empty.
   if (input.focus_type() != metrics::OmniboxFocusType::INTERACTION_DEFAULT ||
@@ -856,15 +839,13 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
       score = std::max(previous_score - 1, 0);
     previous_score = score;
 
-    // Only allow up to `kDocumentProviderMaxLowQualitySuggestions`  docs that
-    // are neither owned nor a complete title or owner match.
+    // Only allow up to 1 doc that is neither owned nor a complete title or
+    // owner match.
     bool is_owned = IsOwnedByUser(client_->ProfileUserName(), result);
     bool is_completely_matched_in_title_and_owner =
         IsCompletelyMatchedInTitleOrOwner(input_.text(), result);
     if (!is_owned && !is_completely_matched_in_title_and_owner &&
-        ++low_quality_match_count >
-            OmniboxFieldTrial::kDocumentProviderMaxLowQualitySuggestions
-                .Get()) {
+        ++low_quality_match_count > 1) {
       score = 0;
     }
 

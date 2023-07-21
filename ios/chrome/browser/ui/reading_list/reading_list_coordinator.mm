@@ -15,18 +15,20 @@
 #import "components/reading_list/core/reading_list_entry.h"
 #import "components/reading_list/features/reading_list_switches.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
+#import "components/sync/base/user_selectable_type.h"
 #import "components/sync/driver/sync_service.h"
-#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
-#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #import "ios/chrome/browser/reading_list/offline_url_utils.h"
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
+#import "ios/chrome/browser/shared/model/browser/browser.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -38,7 +40,6 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
-#import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
@@ -59,7 +60,6 @@
 #import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/window_activities/window_activity_helpers.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/common/features.h"
@@ -304,6 +304,18 @@
               openItemOfflineInNewTab:(id<ReadingListListItem>)item {
   DCHECK_EQ(self.tableViewController, viewController);
   [self openItemOfflineInNewTab:item];
+}
+
+- (void)didLoadContent {
+  if (!_shouldShowSignInPromo) {
+    return;
+  }
+
+  SigninPromoViewConfigurator* promoConfigurator =
+      [_signinPromoViewMediator createConfigurator];
+  [self.tableViewController promoStateChanged:YES
+                            promoConfigurator:promoConfigurator
+                                promoDelegate:_signinPromoViewMediator];
 }
 
 #pragma mark - URL Loading Helpers
@@ -654,10 +666,10 @@
 - (BOOL)isSyncDisabledByAdministrator {
   syncer::SyncService* syncService = SyncServiceFactory::GetForBrowserState(
       self.browser->GetBrowserState()->GetOriginalChromeBrowserState());
-  const bool syncDisabledPolicy = syncService->GetDisableReasons().Has(
+  const bool syncDisabledPolicy = syncService->HasDisableReason(
       syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
-  const bool syncTypesDisabledPolicy =
-      IsManagedSyncDataType(_prefService, SyncSetupService::kSyncReadingList);
+  const bool syncTypesDisabledPolicy = IsManagedSyncDataType(
+      syncService, syncer::UserSelectableType::kReadingList);
   return syncDisabledPolicy || syncTypesDisabledPolicy;
 }
 

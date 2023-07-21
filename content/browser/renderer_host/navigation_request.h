@@ -1021,9 +1021,6 @@ class CONTENT_EXPORT NavigationRequest
 
   const absl::optional<base::UnguessableToken> ComputeFencedFrameNonce() const;
 
-  const absl::optional<blink::FencedFrame::DeprecatedFencedFrameMode>
-  ComputeDeprecatedFencedFrameMode() const;
-
   void RenderFallbackContentForObjectTag();
 
   // Returns the vector of web features used during the navigation, whose
@@ -1130,10 +1127,7 @@ class CONTENT_EXPORT NavigationRequest
 
   // For subframe NavigationRequests, these set and return the main frame's
   // NavigationRequest token, in the case that the main frame returns it from
-  // GetNavigationTokenForDeferringSubframes(). Note that by the time
-  // `main_frame_same_document_history_token()` is called, the NavigationRequest
-  // represented by that token may have already finished and been deleted, so
-  // any attempt to lookup based on this token must null-check the request.
+  // GetNavigationTokenForDeferringSubframes().
   void set_main_frame_same_document_history_token(
       absl::optional<base::UnguessableToken> token) {
     main_frame_same_document_navigation_token_ = token;
@@ -1340,8 +1334,11 @@ class CONTENT_EXPORT NavigationRequest
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       bool is_download,
       absl::optional<SubresourceLoaderParams> subresource_loader_params);
-  // TODO(https://crbug.com/1220337): Implement this logic for
-  // OnRequestFailedInternal() and BeginNavigationImpl() as well.
+  void SelectFrameHostForOnRequestFailedInternal(
+      const network::URLLoaderCompletionStatus& status,
+      bool skip_throttles,
+      const absl::optional<std::string>& error_page_content);
+  void SelectFrameHostForCrossDocumentNavigationWithNoUrlLoader();
 
   // To be called whenever a navigation request fails. If |skip_throttles| is
   // true, the registered NavigationThrottle(s) won't get a chance to intercept

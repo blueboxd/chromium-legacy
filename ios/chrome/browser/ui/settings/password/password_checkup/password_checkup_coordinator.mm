@@ -4,10 +4,11 @@
 
 #import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_coordinator.h"
 
-#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
+#import "ios/chrome/browser/passwords/password_checkup_metrics.h"
+#import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
@@ -64,6 +65,8 @@ using password_manager::PasswordCheckReferrer;
 
 - (void)start {
   [super start];
+
+  password_manager::LogOpenPasswordCheckupHomePage();
   self.viewController = [[PasswordCheckupViewController alloc]
       initWithStyle:ChromeTableViewStyle()];
   self.viewController.handler = self;
@@ -94,6 +97,8 @@ using password_manager::PasswordCheckReferrer;
 
 - (void)showPasswordIssuesWithWarningType:
     (password_manager::WarningType)warningType {
+  password_manager::LogOpenPasswordIssuesList(warningType);
+
   CHECK(!_passwordIssuesCoordinator);
   _passwordIssuesCoordinator = [[PasswordIssuesCoordinator alloc]
             initForWarningType:warningType

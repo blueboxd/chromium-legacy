@@ -76,6 +76,11 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // cleared within a timeout.
 - (void)clearBrowsingHistory;
 
+// Shuts down the network process. Uses a
+// private WebKit API and should be refactored or removed in the event that
+// there's a different way to address hanging.
+- (void)killWebKitNetworkProcess;
+
 // Gets the number of entries in the browsing history database. GREYAssert is
 // induced on error.
 - (NSInteger)browsingHistoryEntryCount;
@@ -700,6 +705,9 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 
 // Returns whether UIButtonConfiguration changes are enabled.
 - (BOOL)isUIButtonConfigurationEnabled;
+
+// Returns whether TabGrid is sorted by recency (#tab-grid-recency-sort).
+- (BOOL)isSortingTabsByRecency;
 
 #pragma mark - ContentSettings
 

@@ -366,10 +366,6 @@ void ManagePasswordsUIController::OnBiometricAuthenticationForFilling(
 }
 
 void ManagePasswordsUIController::ShowBiometricActivationConfirmation() {
-  // Existing dialog shouldn't be closed.
-  if (dialog_controller_) {
-    return;
-  }
   passwords_data_.TransitionToState(
       password_manager::ui::BIOMETRIC_AUTHENTICATION_CONFIRMATION_STATE);
   bubble_status_ = BubbleStatus::SHOULD_POP_UP;
@@ -377,7 +373,6 @@ void ManagePasswordsUIController::ShowBiometricActivationConfirmation() {
 }
 
 void ManagePasswordsUIController::OnBiometricAuthBeforeFillingDeclined() {
-  CHECK(!dialog_controller_);
   passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
   UpdateBubbleAndIconVisibility();
 }
@@ -678,9 +673,9 @@ void ManagePasswordsUIController::BlockMovingPasswordToAccountStore() {
 void ManagePasswordsUIController::ChooseCredential(
     const password_manager::PasswordForm& form,
     password_manager::CredentialType credential_type) {
-  CHECK(dialog_controller_);
-  CHECK_EQ(password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD,
-           credential_type);
+  DCHECK(dialog_controller_);
+  DCHECK_EQ(password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD,
+            credential_type);
   // Copy the argument before destroying the controller. |form| is a member of
   // |dialog_controller_|.
   password_manager::PasswordForm copy_form = form;
@@ -763,7 +758,7 @@ void ManagePasswordsUIController::AuthenticateUserWithMessage(
     std::move(callback).Run(true);
     return;
   }
-#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN)
+#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_CHROMEOS)
   std::move(callback).Run(true);
   return;
 #else

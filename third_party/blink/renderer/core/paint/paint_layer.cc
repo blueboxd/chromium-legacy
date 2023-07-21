@@ -126,7 +126,6 @@ struct SameSizeAsPaintLayer : GarbageCollected<PaintLayer>, DisplayItemClient {
 #endif
   Member<void*> members[9];
   PhysicalOffset offset;
-  LayoutSize size;
   LayoutUnit layout_units[2];
   std::unique_ptr<void*> pointer;
 };
@@ -321,7 +320,7 @@ void PaintLayer::UpdateTransform() {
     DCHECK(box);
     transform->MakeIdentity();
     box->StyleRef().ApplyTransform(
-        *transform, box, box->Size(),
+        *transform, box, PhysicalSize(box->Size()),
         ComputedStyle::kIncludeTransformOperations,
         ComputedStyle::kIncludeTransformOrigin,
         ComputedStyle::kIncludeMotionPath,
@@ -560,11 +559,6 @@ void PaintLayer::Update3DTransformedDescendantStatus() {
 }
 
 void PaintLayer::UpdateLayerPosition() {
-  // LayoutBoxes will call UpdateSizeAndScrollingAfterLayout() from
-  // LayoutBox::UpdateAfterLayout, but LayoutInlines will still need to update
-  // their size.
-  if (GetLayoutObject().IsLayoutInline())
-    UpdateSize();
   if (RuntimeEnabledFeatures::RemoveConvertToLayerCoordsEnabled()) {
     return;
   }
@@ -593,30 +587,15 @@ void PaintLayer::UpdateLayerPosition() {
 #endif
 }
 
-bool PaintLayer::UpdateSize() {
-  LayoutSize old_size = size_;
-  if (IsRootLayer()) {
-    size_ = LayoutSize(GetLayoutObject().GetDocument().View()->Size());
-  } else if (GetLayoutObject().IsInline() &&
-             GetLayoutObject().IsLayoutInline()) {
-    auto& inline_flow = To<LayoutInline>(GetLayoutObject());
-    gfx::Rect line_box =
-        ToEnclosingRect(inline_flow.PhysicalLinesBoundingBox());
-    size_ = LayoutSize(line_box.size());
-  } else if (LayoutBox* box = GetLayoutBox()) {
-    size_ = box->Size();
-  }
-
-  return old_size != size_;
-}
-
-void PaintLayer::UpdateSizeAndScrollingAfterLayout() {
-  bool did_resize = UpdateSize();
+void PaintLayer::UpdateScrollingAfterLayout() {
   if (RequiresScrollableArea()) {
     DCHECK(scrollable_area_);
     scrollable_area_->UpdateAfterLayout();
-    if (did_resize)
+    LayoutBox* layout_box = GetLayoutBox();
+    if (layout_box->ScrollableAreaSizeChanged()) {
       scrollable_area_->VisibleSizeChanged();
+      layout_box->SetScrollableAreaSizeChanged(false);
+    }
   }
 }
 
@@ -1066,16 +1045,8 @@ void PaintLayer::AppendSingleFragmentForHitTesting(
 
 const LayoutBox* PaintLayer::GetLayoutBoxWithBlockFragments() const {
   const LayoutBox* layout_box = GetLayoutBox();
-  if (!layout_box)
-    return nullptr;
-  if (!layout_box->CanTraversePhysicalFragments())
-    return nullptr;
-  if (!layout_box->PhysicalFragmentCount()) {
-    // TODO(crbug.com/1273068): The box has no fragments. This is
-    // unexpected, and we must have failed a bunch of DCHECKs (if enabled)
-    // on our way here. If the LayoutBox has never been laid out, it will
-    // have no fragments. But then we shouldn't really be here. Fall back to
-    // legacy LayoutObject tree traversal for this layer.
+  if (!layout_box || !layout_box->CanTraversePhysicalFragments() ||
+      layout_box->IsFragmentLessBox()) {
     return nullptr;
   }
   return layout_box;
@@ -1390,12 +1361,8 @@ PaintLayer* PaintLayer::HitTestLayer(
     return nullptr;
   }
 
-  if (const auto* box = GetLayoutBox()) {
-    // A child layer of a <frameset> might have no physical fragments. We can
-    // skip such layer. See ClearNeedsLayoutOnHiddenFrames().
-    if (box->PhysicalFragmentCount() == 0) {
-      return nullptr;
-    }
+  if (layout_object.IsFragmentLessBox()) {
+    return nullptr;
   }
 
   if (!IsSelfPaintingLayer() && !HasSelfPaintingLayerDescendant())

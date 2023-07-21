@@ -10,15 +10,13 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "build/build_config.h"
-#include "build/buildflag.h"
 #include "components/attribution_reporting/registration_type.mojom-shared.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/trigger_attestation.h"
+#include "services/network/public/cpp/trigger_verification.h"
 #include "services/network/public/mojom/attribution.mojom-blink.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -105,15 +103,13 @@ class MockDataHost : public mojom::blink::AttributionDataHost {
     return trigger_data_;
   }
 
-  const Vector<absl::optional<network::TriggerAttestation>>&
-  trigger_attestation() const {
-    return trigger_attestation_;
+  const Vector<absl::optional<network::TriggerVerification>>&
+  trigger_verification() const {
+    return trigger_verification_;
   }
 
-#if BUILDFLAG(IS_ANDROID)
   const Vector<KURL>& os_sources() const { return os_sources_; }
   const Vector<KURL>& os_triggers() const { return os_triggers_; }
-#endif
 
   size_t disconnects() const { return disconnects_; }
 
@@ -132,12 +128,11 @@ class MockDataHost : public mojom::blink::AttributionDataHost {
   void TriggerDataAvailable(
       attribution_reporting::SuitableOrigin reporting_origin,
       attribution_reporting::TriggerRegistration data,
-      absl::optional<network::TriggerAttestation> attestation) override {
+      absl::optional<network::TriggerVerification> verification) override {
     trigger_data_.push_back(std::move(data));
-    trigger_attestation_.push_back(std::move(attestation));
+    trigger_verification_.push_back(std::move(verification));
   }
 
-#if BUILDFLAG(IS_ANDROID)
   void OsSourceDataAvailable(const KURL& registration_url) override {
     os_sources_.push_back(registration_url);
   }
@@ -145,18 +140,15 @@ class MockDataHost : public mojom::blink::AttributionDataHost {
   void OsTriggerDataAvailable(const KURL& registration_url) override {
     os_triggers_.push_back(registration_url);
   }
-#endif
 
   Vector<attribution_reporting::SourceRegistration> source_data_;
 
   Vector<attribution_reporting::TriggerRegistration> trigger_data_;
 
-  Vector<absl::optional<network::TriggerAttestation>> trigger_attestation_;
+  Vector<absl::optional<network::TriggerVerification>> trigger_verification_;
 
-#if BUILDFLAG(IS_ANDROID)
   Vector<KURL> os_sources_;
   Vector<KURL> os_triggers_;
-#endif
 
   size_t disconnects_ = 0;
   mojo::Receiver<mojom::blink::AttributionDataHost> receiver_{this};
@@ -277,8 +269,8 @@ TEST_F(AttributionSrcLoaderTest, RegisterTriggerWithoutEligibleHeader) {
 
   mock_data_host->Flush();
   EXPECT_EQ(mock_data_host->trigger_data().size(), 1u);
-  ASSERT_EQ(mock_data_host->trigger_attestation().size(), 1u);
-  ASSERT_FALSE(mock_data_host->trigger_attestation().at(0).has_value());
+  ASSERT_EQ(mock_data_host->trigger_verification().size(), 1u);
+  ASSERT_FALSE(mock_data_host->trigger_verification().at(0).has_value());
 }
 
 // TODO(https://crbug.com/1412566): Improve tests to properly cover the
@@ -369,7 +361,7 @@ TEST_F(AttributionSrcLoaderTest, RegisterTriggerOsHeadersIgnored) {
   EXPECT_EQ(mock_data_host->trigger_data().size(), 1u);
 }
 
-TEST_F(AttributionSrcLoaderTest, RegisterTriggerWithAttestation) {
+TEST_F(AttributionSrcLoaderTest, RegisterTriggerWithVerification) {
   KURL test_url = ToKURL("https://example1.com/foo.html");
 
   ResourceRequest request(test_url);
@@ -380,10 +372,10 @@ TEST_F(AttributionSrcLoaderTest, RegisterTriggerWithAttestation) {
       http_names::kAttributionReportingRegisterTrigger,
       R"({"event_trigger_data":[{"trigger_data": "7"}]})");
 
-  absl::optional<network::TriggerAttestation> trigger_attestation =
-      network::TriggerAttestation::Create(
+  absl::optional<network::TriggerVerification> trigger_verification =
+      network::TriggerVerification::Create(
           "token", "08fa6760-8e5c-4ccb-821d-b5d82bef2b37");
-  response.SetTriggerAttestation(trigger_attestation);
+  response.SetTriggerVerification(trigger_verification);
 
   MockAttributionHost host(
       GetFrame().GetRemoteNavigationAssociatedInterfaces());
@@ -396,11 +388,11 @@ TEST_F(AttributionSrcLoaderTest, RegisterTriggerWithAttestation) {
   ASSERT_TRUE(mock_data_host);
   mock_data_host->Flush();
 
-  ASSERT_EQ(mock_data_host->trigger_attestation().size(), 1u);
-  ASSERT_TRUE(mock_data_host->trigger_attestation().at(0).has_value());
-  EXPECT_EQ(mock_data_host->trigger_attestation().at(0).value().token(),
+  ASSERT_EQ(mock_data_host->trigger_verification().size(), 1u);
+  ASSERT_TRUE(mock_data_host->trigger_verification().at(0).has_value());
+  EXPECT_EQ(mock_data_host->trigger_verification().at(0).value().token(),
             "token");
-  EXPECT_EQ(mock_data_host->trigger_attestation()
+  EXPECT_EQ(mock_data_host->trigger_verification()
                 .at(0)
                 .value()
                 .aggregatable_report_id()
@@ -539,8 +531,6 @@ TEST_F(AttributionSrcLoaderTest, EagerlyClosesRemote) {
   EXPECT_EQ(mock_data_host->disconnects(), 1u);
 }
 
-#if BUILDFLAG(IS_ANDROID)
-
 TEST_F(AttributionSrcLoaderTest, NoneSupported_CannotRegister) {
   platform_->attribution_support = network::mojom::AttributionSupport::kNone;
 
@@ -580,8 +570,6 @@ TEST_F(AttributionSrcLoaderTest, WebDisabled_TriggerNotRegistered) {
   }
 }
 
-#endif
-
 class AttributionSrcLoaderCrossAppWebEnabledTest
     : public AttributionSrcLoaderTest {
  public:
@@ -596,11 +584,7 @@ class AttributionSrcLoaderCrossAppWebEnabledTest
 };
 
 TEST_F(AttributionSrcLoaderCrossAppWebEnabledTest, SupportHeader_Register) {
-#if BUILDFLAG(IS_ANDROID)
   auto attribution_support = network::mojom::AttributionSupport::kWebAndOs;
-#else
-  auto attribution_support = network::mojom::AttributionSupport::kWeb;
-#endif
 
   platform_->attribution_support = attribution_support;
 
@@ -617,11 +601,7 @@ TEST_F(AttributionSrcLoaderCrossAppWebEnabledTest, SupportHeader_Register) {
 
 TEST_F(AttributionSrcLoaderCrossAppWebEnabledTest,
        SupportHeader_RegisterNavigation) {
-#if BUILDFLAG(IS_ANDROID)
   auto attribution_support = network::mojom::AttributionSupport::kWebAndOs;
-#else
-  auto attribution_support = network::mojom::AttributionSupport::kWeb;
-#endif
 
   platform_->attribution_support = attribution_support;
 
@@ -638,7 +618,6 @@ TEST_F(AttributionSrcLoaderCrossAppWebEnabledTest,
             attribution_support);
 }
 
-#if BUILDFLAG(IS_ANDROID)
 TEST_F(AttributionSrcLoaderCrossAppWebEnabledTest, RegisterOsTrigger) {
   platform_->attribution_support =
       network::mojom::AttributionSupport::kWebAndOs;
@@ -666,7 +645,6 @@ TEST_F(AttributionSrcLoaderCrossAppWebEnabledTest, RegisterOsTrigger) {
   EXPECT_THAT(mock_data_host->os_triggers(),
               ::testing::ElementsAre(KURL("https://r.test/x")));
 }
-#endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace
 }  // namespace blink

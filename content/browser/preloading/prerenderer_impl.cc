@@ -18,18 +18,6 @@ namespace content {
 
 namespace {
 
-PreloadingPredictor GetPredictor(
-    blink::mojom::SpeculationInjectionWorld world) {
-  switch (world) {
-    case blink::mojom::SpeculationInjectionWorld::kNone:
-      [[fallthrough]];
-    case blink::mojom::SpeculationInjectionWorld::kMain:
-      return content_preloading_predictor::kSpeculationRules;
-    case blink::mojom::SpeculationInjectionWorld::kIsolated:
-      return content_preloading_predictor::kSpeculationRulesFromIsolatedWorld;
-  }
-}
-
 PrerenderTriggerType GetTriggerType(
     blink::mojom::SpeculationInjectionWorld world) {
   switch (world) {
@@ -80,7 +68,6 @@ void PrerendererImpl::PrimaryPageChanged(Page& page) {
 // about making preloading decisions and could be moved to PreloadingDecider
 // class.
 void PrerendererImpl::ProcessCandidatesForPrerender(
-    const base::UnguessableToken& initiator_devtools_navigation_token,
     const std::vector<blink::mojom::SpeculationCandidatePtr>& candidates) {
   if (!registry_)
     return;
@@ -186,13 +173,11 @@ void PrerendererImpl::ProcessCandidatesForPrerender(
 
   // Actually start the candidates once the diffing is done.
   for (const auto& candidate : candidates_to_start) {
-    MaybePrerender(initiator_devtools_navigation_token, candidate);
+    MaybePrerender(candidate);
   }
 }
 
 bool PrerendererImpl::MaybePrerender(
-    const absl::optional<base::UnguessableToken>&
-        initiator_devtools_navigation_token,
     const blink::mojom::SpeculationCandidatePtr& candidate) {
   DCHECK_EQ(candidate->action, blink::mojom::SpeculationAction::kPrerender);
 
@@ -211,8 +196,8 @@ bool PrerendererImpl::MaybePrerender(
   PreloadingURLMatchCallback same_url_matcher =
       PreloadingData::GetSameURLMatcher(candidate->url);
   PreloadingAttempt* preloading_attempt = preloading_data->AddPreloadingAttempt(
-      GetPredictor(candidate->injection_world), PreloadingType::kPrerender,
-      std::move(same_url_matcher));
+      GetPredictorForSpeculationRules(candidate->injection_world),
+      PreloadingType::kPrerender, std::move(same_url_matcher));
 
   auto [begin, end] = base::ranges::equal_range(
       started_prerenders_.begin(), started_prerenders_.end(), candidate->url,
@@ -247,8 +232,7 @@ bool PrerendererImpl::MaybePrerender(
       rfhi.GetProcess()->GetID(), web_contents->GetWeakPtr(),
       rfhi.GetFrameToken(), rfhi.GetFrameTreeNodeId(),
       rfhi.GetPageUkmSourceId(), ui::PAGE_TRANSITION_LINK,
-      /*url_match_predicate=*/absl::nullopt,
-      initiator_devtools_navigation_token);
+      /*url_match_predicate=*/absl::nullopt, rfhi.GetDevToolsNavigationToken());
 
   // TODO(crbug.com/1354049): Handle the case where multiple speculation rules
   // have the same URL but its `target_browsing_context_name_hint` is

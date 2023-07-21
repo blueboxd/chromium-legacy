@@ -36,8 +36,7 @@ const base::Time kJune2017 = base::Time::FromDoubleT(1497552271);
 // Returns a profile with all fields set.  Contains identical data to the data
 // returned from ConstructCompleteSpecifics().
 AutofillProfile ConstructCompleteProfile() {
-  AutofillProfile profile(kGuid, "https://www.example.com/",
-                          AutofillProfile::Source::kLocalOrSyncable);
+  AutofillProfile profile(kGuid, AutofillProfile::Source::kLocalOrSyncable);
 
   profile.set_use_count(7);
   profile.set_use_date(base::Time::FromTimeT(1423182152));
@@ -136,7 +135,9 @@ AutofillProfileSpecifics ConstructCompleteSpecifics() {
   AutofillProfileSpecifics specifics;
 
   specifics.set_guid(kGuid);
-  specifics.set_origin("https://www.example.com/");
+  // TODO(crbug.com/1441905): Remove. See comment in
+  // `CreateEntityDataFromAutofillProfile()`.
+  specifics.set_deprecated_origin(kSettingsOrigin);
   specifics.set_use_count(7);
   specifics.set_use_date(1423182152);
   specifics.set_profile_label("profile_label");
@@ -305,7 +306,7 @@ TEST_F(AutofillProfileSyncUtilTest, CreateEntityDataFromAutofillProfile) {
 
 // Test that fields not set for the input are empty in the output.
 TEST_F(AutofillProfileSyncUtilTest, CreateEntityDataFromAutofillProfile_Empty) {
-  AutofillProfile profile(kGuid, std::string());
+  AutofillProfile profile(kGuid);
   ASSERT_FALSE(profile.HasRawInfo(NAME_FULL));
   ASSERT_FALSE(profile.HasRawInfo(COMPANY_NAME));
 
@@ -323,7 +324,7 @@ TEST_F(AutofillProfileSyncUtilTest,
   std::string kNameLong(AutofillTable::kMaxDataLength + 1, 'a');
   std::string kNameTrimmed(AutofillTable::kMaxDataLength, 'a');
 
-  AutofillProfile profile(kGuid, std::string());
+  AutofillProfile profile(kGuid);
   profile.SetRawInfo(NAME_FULL, ASCIIToUTF16(kNameLong));
 
   std::unique_ptr<EntityData> entity_data =
@@ -347,7 +348,7 @@ TEST_F(AutofillProfileSyncUtilTest,
     kNameTrimmed += "ä";
   }
 
-  AutofillProfile profile(kGuid, std::string());
+  AutofillProfile profile(kGuid);
   profile.SetRawInfo(NAME_FULL, UTF8ToUTF16(kNameLong));
 
   std::unique_ptr<EntityData> entity_data =
@@ -437,7 +438,7 @@ TEST_F(AutofillProfileSyncUtilTest,
 
 // Tests that guid is returned as storage key.
 TEST_F(AutofillProfileSyncUtilTest, GetStorageKeyFromAutofillProfile) {
-  AutofillProfile profile(kGuid, std::string());
+  AutofillProfile profile(kGuid);
 
   EXPECT_EQ(kGuid, GetStorageKeyFromAutofillProfile(profile));
 }

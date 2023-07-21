@@ -18,7 +18,7 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import {PrinterListEntry, PrinterType} from './cups_printer_types.js';
 import {getTemplate} from './cups_printers_entry.html.js';
-import {PrinterOnlineState} from './printer_status.js';
+import {computePrinterState, PrinterState} from './printer_status.js';
 
 const SettingsCupsPrintersEntryElementBase = FocusRowMixin(PolymerElement);
 
@@ -58,6 +58,19 @@ export class SettingsCupsPrintersEntryElement extends
       },
 
       /**
+       * True when the "printer-settings-printer-status" feature flag is
+       * enabled.
+       */
+      isPrinterSettingsPrinterStatusEnabled_: {
+        type: Boolean,
+        value: () => {
+          return loadTimeData.getBoolean(
+              'isPrinterSettingsPrinterStatusEnabled');
+        },
+        readOnly: true,
+      },
+
+      /**
        * True when the "printer-settings-revamp" feature flag is enabled.
        */
       isPrinterSettingsRevampEnabled_: {
@@ -75,6 +88,7 @@ export class SettingsCupsPrintersEntryElement extends
   subtext: string;
   userPrintersAllowed: boolean;
   private isPrinterSettingsRevampEnabled_: boolean;
+  private isPrinterSettingsPrinterStatusEnabled_: boolean;
 
   /**
    * Fires a custom event when the menu button is clicked. Sends the details of
@@ -142,6 +156,10 @@ export class SettingsCupsPrintersEntryElement extends
     return this.printerEntry.printerType === PrinterType.SAVED;
   }
 
+  private isEnterprisePrinter_(): boolean {
+    return this.printerEntry.printerType === PrinterType.ENTERPRISE;
+  }
+
   private isConfigureDisabled_(): boolean {
     return !this.userPrintersAllowed || this.savingPrinter;
   }
@@ -156,24 +174,45 @@ export class SettingsCupsPrintersEntryElement extends
         'setupPrinterAria', this.printerEntry.printerInfo.printerName);
   }
 
-  private showPrinterStatusIcon_(): boolean {
-    return this.isSavedPrinter_() && this.isPrinterSettingsRevampEnabled_;
+  // The standard printer icon shows for printer entries classified as nearby
+  // printers. An exception is enterprise printers which display the managed
+  // icon.
+  private showNearbyPrinterIcon_(): boolean {
+    return !this.isSavedPrinter_() && !this.isEnterprisePrinter_() &&
+        this.isPrinterSettingsRevampEnabled_;
   }
 
-  private getPrinterStatusIcon_(): string {
+  // Printer status icons are only shown for saved printers.
+  private showPrinterStatusIcon_(): boolean {
+    return this.isSavedPrinter_() &&
+        this.isPrinterSettingsPrinterStatusEnabled_;
+  }
+
+  private showPrinterIcon_(): boolean {
+    return this.showNearbyPrinterIcon_() || this.showPrinterStatusIcon_();
+  }
+
+  private getPrinterIcon_(): string {
+    // Only saved printers need to display an icon with printer status.
+    if (!this.isSavedPrinter_()) {
+      // TODO(b/278621575): Replace with standard printer icon once available.
+      return `os-settings:printer-status-green`;
+    }
+
     let iconColor = '';
-    switch (this.printerEntry.printerInfo.printerOnlineState) {
-      case PrinterOnlineState.ONLINE:
+    switch (computePrinterState(
+        this.printerEntry.printerInfo.printerStatusReason)) {
+      case PrinterState.GOOD:
         iconColor = 'green';
         break;
-      case PrinterOnlineState.OFFLINE:
+      case PrinterState.ERROR:
         iconColor = 'red';
         break;
-      case PrinterOnlineState.UNKNOWN:
+      case PrinterState.UNKNOWN:
         iconColor = 'grey';
         break;
       default:
-        assertNotReached('Invalid PrinterOnlineState');
+        assertNotReached('Invalid PrinterState');
     }
     return `os-settings:printer-status-${iconColor}`;
   }

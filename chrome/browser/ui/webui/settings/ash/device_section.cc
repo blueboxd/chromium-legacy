@@ -17,6 +17,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ui/webui/settings/ash/device_display_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/device_keyboard_handler.h"
@@ -772,10 +773,6 @@ bool IsTouchCalibrationAvailable() {
          display::HasExternalTouchscreenDevice();
 }
 
-bool IsDriveFsBulkPinningEnabled() {
-  return ash::features::IsDriveFsBulkPinningEnabled();
-}
-
 bool IsListAllDisplayModesEnabled() {
   return display::features::IsListAllDisplayModesEnabled();
 }
@@ -824,6 +821,8 @@ void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_KEYBOARD_REMAP_KEYS_DESCRIPTION},
       {"showKeyboardShortcutViewer",
        IDS_SETTINGS_KEYBOARD_SHOW_SHORTCUT_VIEWER},
+      {"viewAndCustomizeKeyboardShortcut",
+       IDS_SETTINGS_KEYBOARD_VIEW_AND_CUSTOMIZE_SHORTCUTS},
       {"keyboardKeyLauncher", IDS_SETTINGS_KEYBOARD_KEY_LAUNCHER},
       {"keyboardKeySearch", IDS_SETTINGS_KEYBOARD_KEY_SEARCH},
       {"keyboardRemapRestoreDefaultsLabel",
@@ -997,11 +996,11 @@ void AddDeviceDisplayStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("enableTouchCalibrationSetting",
                           IsTouchCalibrationAvailable());
 
-  html_source->AddBoolean("enableDriveFsBulkPinning",
-                          IsDriveFsBulkPinningEnabled());
-
   html_source->AddString("invalidDisplayId",
                          base::NumberToString(display::kInvalidDisplayId));
+
+  html_source->AddBoolean("enableDriveFsBulkPinning",
+                          drive::util::IsDriveFsBulkPinningEnabled());
 
   html_source->AddBoolean(
       "allowDisplayAlignmentApi",

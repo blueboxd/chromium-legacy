@@ -14,10 +14,10 @@
 #import "components/feature_engagement/public/feature_constants.h"
 #import "components/feature_engagement/public/tracker.h"
 #import "components/sync/driver/sync_service.h"
-#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/settings/sync/utils/identity_error_util.h"
+#import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -455,11 +455,6 @@ bool IsDefaultBrowserVideoPromoFullscreenEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
       kDefaultBrowserVideoPromo, "default_browser_video_promo_halfscreen",
       false);
-}
-
-bool NonModalPromosEnabled() {
-  // Default browser isn't enabled until iOS 14.0.1, regardless of flag state.
-  return base::ios::IsRunningOnOrLater(14, 0, 1);
 }
 
 bool HasUserInteractedWithFullscreenPromoBefore() {

@@ -295,6 +295,7 @@
 <translation id="3484914941826596830">ໃນຂະນະທີ່ກຳລັງອັບເດດເຟີມແວຢູ່, ກະລຸນາຢ່າຖອດອຸປະກອນພາຍນອກນີ້ອອກ ຫຼື ຢ່າປິດເຄື່ອງຄອມພິວເຕີຂອງທ່ານ. ທ່ານສາມາດຫຍໍ້ໜ້າຈໍນີ້ລົງໄດ້. ອັບເດດນີ້ອາດໃຊ້ເວລາສອງສາມນາທີ ແລະ ອຸປະກອນພາຍນອກຂອງທ່ານອາດບໍ່ເຮັດວຽກໃນລະຫວ່າງນີ້.</translation>
 <translation id="3486220673238053218">ຄໍາ​ນິ​ຍາມ</translation>
 <translation id="3488065109653206955">ເປີດ​​ໃຊ້ງານ​ບາງ​ສ່ວນເທົ່ານັ້ນ</translation>
+<translation id="3502426834823382181">ເບິ່ງແອັບທັງໝົດ</translation>
 <translation id="3510890413042482857">ສົ່ງ <ph name="BEGIN_LINK1" />ຂໍ້ມູນການຕິດຕາມປະສິດທິພາບ<ph name="END_LINK1" /></translation>
 <translation id="3517001332549868749">ອັບເດດ ChromeOS</translation>
 <translation id="3527036260304016759">ບໍ່ສຳເລັດ, ບໍ່ຮູ້ຈັກຂໍ້ຜິດພາດ</translation>
@@ -636,6 +637,7 @@
 <translation id="6278428485366576908">ສີສັນໜ້າຕາ</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">ເປີດໃຊ້ຮູບແບບສີສັນມືດ</translation>
+<translation id="6285899124799306373">ເປີດຕົວເປີດໃຊ້</translation>
 <translation id="6302401976930124515">ຍົກເລີກການທົດສອບ <ph name="TEST_NAME" /> ແລ້ວ</translation>
 <translation id="631063167932043783">ແອັບ Explore</translation>
 <translation id="6319207335391420837">ອັບເດດເຟີມແວຢູ່ <ph name="DEVICE_NAME" /></translation>
@@ -651,6 +653,7 @@
 <translation id="6382182670717268353">ຕົວຢ່າງພາບພັກໜ້າຈໍ</translation>
 <translation id="6388847657025262518">ຕົວປ້ອນເອກະສານຂອງເຄື່ອງສະແກນຕິດຂັດ. ກະລຸນາກວດສອບຕົວປ້ອນເອກະສານແລ້ວລອງໃໝ່.</translation>
 <translation id="6394634179843537518">ເພີ່ມໄຟລ໌</translation>
+<translation id="6401427872449207797">ການຊອກຫາດ້ວຍໂປຣແກຣມທ່ອງເວັບ</translation>
 <translation id="6410257289063177456">ໄຟລ​໌​ຮູບ​</translation>
 <translation id="641081527798843608">ຫົວຂໍ້ກົງກັນ</translation>
 <translation id="6412715219990689313">ແປ້ນພິມໃນຕົວ</translation>
@@ -876,6 +879,7 @@
 <translation id="8312330582793120272">ຫຼິ້ນມີເດຍ</translation>
 <translation id="8318753676953949627">ບໍ່ມີຮູບ</translation>
 <translation id="8329018942023753850">ແອັບຈັກຄິດໄລ່</translation>
+<translation id="8335869473001018124">ເປີດການຊອກຫາ</translation>
 <translation id="8336739000755212683">ປ່ຽນຮູບບັນຊີຂອງອຸປະກອນ</translation>
 <translation id="8347227221149377169">ວຽກການພິມ</translation>
 <translation id="8351855506390808906">ຈຸດສຳຜັດ Keymapping</translation>

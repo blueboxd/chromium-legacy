@@ -111,6 +111,18 @@
       },
     },
 
+    'android_finch_smoke_tests': {
+      'monochrome_finch_smoke_tests': {
+        'args': [
+          '--finch-seed-path',
+          '../../variations_seed',
+        ],
+        'mixins': [
+          'skia_gold_test',
+        ],
+      },
+    },
+
     'android_isolated_scripts': {
       'content_shell_crash_test': {
         'args': [
@@ -446,8 +458,17 @@
         'experiment_percentage': 100,
       },
     },
-
     'chrome_finch_smoke_tests': {
+      'variations_desktop_smoke_tests': {
+        'isolate_name': 'variations_desktop_smoke_tests',
+        'mixins': [
+          'skia_gold_test',
+        ],
+        'resultdb': {
+          'enable': True,
+          'result_format': 'single'
+        },
+      },
       'variations_smoke_tests': {
         'isolate_name': 'variations_smoke_tests',
         'mixins': [
@@ -477,40 +498,6 @@
         'resultdb': {
           'enable': True,
           'result_format': 'single'
-        },
-      },
-    },
-
-    # TODO(crbug/1239300): Remove when persistent_shell experiment is over.
-    'chrome_persistent_shell_tests': {
-      'components_browsertests_persistent_shell': {
-        'args': [
-          '--use-persistent-shell',
-        ],
-        'ci_only': True,
-        'test': 'components_browsertests',
-        'experiment_percentage': 100,
-      },
-      'content_unittests_persistent_shell': {
-        'args': [
-          '--use-persistent-shell',
-        ],
-        'ci_only': True,
-        'test': 'content_unittests',
-        'experiment_percentage': 100,
-        'swarming': {
-          'shards': 3,
-        },
-      },
-      'webview_instrumentation_test_apk_persistent_shell': {
-        'args': [
-          '--use-persistent-shell',
-        ],
-        'ci_only': True,
-        'test': 'webview_instrumentation_test_apk',
-        'experiment_percentage': 100,
-        'swarming': {
-          'shards': 10,
         },
       },
     },
@@ -1562,7 +1549,6 @@
           'blink_tests_write_run_histories',
           # TODO(crbug.com/1327314): Enable for blink web tests.
           'disable_check_flakiness_web_tests',
-          'skia_gold_test',
         ],
         'resultdb': {
           'enable': True,
@@ -1595,7 +1581,6 @@
           'blink_tests_write_run_histories',
           # TODO(crbug.com/1327314): Enable for blink web tests.
           'disable_check_flakiness_web_tests',
-          'skia_gold_test',
         ],
         'resultdb': {
           'enable': True,
@@ -1626,7 +1611,6 @@
           'blink_tests_write_run_histories',
           # TODO(crbug.com/1327314): Enable for blink web tests.
           'disable_check_flakiness_web_tests',
-          'skia_gold_test',
         ],
         'resultdb': {
           'enable': True,
@@ -1654,7 +1638,6 @@
           'blink_tests_write_run_histories',
           # TODO(crbug.com/1327314): Enable for blink web tests.
           'disable_check_flakiness_web_tests',
-          'skia_gold_test',
         ],
         'resultdb': {
           'enable': True,
@@ -1772,6 +1755,30 @@
       },
     },
 
+    'cr23_gtests': {
+      'browser_tests': {
+        'args': [
+          '--enable-features=ChromeRefresh2023',
+        ],
+        'swarming': {
+          'shards': 10,
+        },
+      },
+      'interactive_ui_tests': {
+        'args': [
+          '--enable-features=ChromeRefresh2023',
+        ],
+        'swarming': {
+          'shards': 10,
+        },
+      },
+      'views_unittests': {
+        'args': [
+          '--enable-features=ChromeRefresh2023',
+        ],
+      },
+    },
+
     'cronet_gtests': {
       'cronet_sample_test_apk': {},
       'cronet_smoketests_missing_native_library_instrumentation_apk': {},
@@ -1865,7 +1872,6 @@
           'blink_tests_write_run_histories',
           # TODO(crbug.com/1327314): Enable for blink web tests.
           'disable_check_flakiness_web_tests',
-          'skia_gold_test',
         ],
         'resultdb': {
           'enable': True,
@@ -1893,7 +1899,6 @@
           'blink_tests_write_run_histories',
           # TODO(crbug.com/1327314): Enable for blink web tests.
           'disable_check_flakiness_web_tests',
-          'skia_gold_test',
         ],
         'resultdb': {
           'enable': True,
@@ -1988,7 +1993,6 @@
           'blink_tests_write_run_histories',
           # TODO(crbug.com/1327314): Enable for blink web tests.
           'disable_check_flakiness_web_tests',
-          'skia_gold_test',
         ],
         'resultdb': {
           'enable': True,
@@ -2018,7 +2022,6 @@
           'blink_tests_write_run_histories',
           # TODO(crbug.com/1327314): Enable for blink web tests.
           'disable_check_flakiness_web_tests',
-          'skia_gold_test',
         ],
         'resultdb': {
           'enable': True,
@@ -2046,7 +2049,6 @@
           'blink_tests_write_run_histories',
           # TODO(crbug.com/1327314): Enable for blink web tests.
           'disable_check_flakiness_web_tests',
-          'skia_gold_test',
         ],
         'resultdb': {
           'enable': True,
@@ -2102,7 +2104,6 @@
           'blink_tests_write_run_histories',
           # TODO(crbug.com/1327314): Enable for blink web tests.
           'disable_check_flakiness_web_tests',
-          'skia_gold_test',
         ],
         'resultdb': {
           'enable': True,
@@ -2130,7 +2131,6 @@
           'blink_tests_write_run_histories',
           # TODO(crbug.com/1327314): Enable for blink web tests.
           'disable_check_flakiness_web_tests',
-          'skia_gold_test',
         ],
         'resultdb': {
           'enable': True,
@@ -2723,7 +2723,6 @@
           # TODO(crbug.com/1327314): Enable for blink web tests.
           'disable_check_flakiness_web_tests',
           'webgpu_cts',
-          'skia_gold_test',
         ],
       },
       'webgpu_blink_web_tests_with_backend_validation': {
@@ -2736,7 +2735,6 @@
         ],
         'mixins': [
           'webgpu_cts',
-          'skia_gold_test',
         ],
       },
     },
@@ -2750,7 +2748,6 @@
         ],
         'mixins': [
           'webgpu_cts',
-          'skia_gold_test',
         ],
       },
       'webgpu_swiftshader_blink_web_tests_with_backend_validation': {
@@ -2763,7 +2760,6 @@
         ],
         'mixins': [
           'webgpu_cts',
-          'skia_gold_test',
         ],
       },
     },
@@ -2806,6 +2802,15 @@
     },
 
     'gpu_default_and_optional_win_specific_gtests': {
+      # WebNN DirectML backend unit tests, which currently only run on
+      # Windows OS, and require physical hardware.
+      'services_webnn_unittests': {
+        'args': [
+          '--gtest_filter=WebNN*',
+          '--use-gpu-in-tests'
+        ],
+        'test': 'services_unittests',
+      },
       'xr_browser_tests': {
         # The Windows machines this is run on should always meet all the
         # requirements, so skip the runtime checks to help catch issues, e.g.
@@ -3865,7 +3870,6 @@
       'cast_unittests': {},
       'cc_unittests': {},
       'color_unittests': {},
-      'components_browsertests': {},
       'components_unittests': {},
       'content_unittests': {},
       'crashpad_tests': {},
@@ -3889,6 +3893,7 @@
       'mojo_unittests': {},
       'net_unittests': {},
       'perfetto_unittests': {},
+      'printing_unittests': {},
       'services_unittests': {},
       'shell_dialogs_unittests': {},
       'skia_unittests': {},
@@ -4379,7 +4384,6 @@
           'blink_tests_write_run_histories',
           # TODO(crbug.com/1327314): Enable for blink web tests.
           'disable_check_flakiness_web_tests',
-          'skia_gold_test',
         ],
         'resultdb': {
           'enable': True,
@@ -4413,7 +4417,6 @@
           'blink_tests_write_run_histories',
           # TODO(crbug.com/1327314): Enable for blink web tests.
           'disable_check_flakiness_web_tests',
-          'skia_gold_test',
         ],
         'resultdb': {
           'enable': True,
@@ -4605,7 +4608,11 @@
       'remoting_unittests': {},
       'service_manager_unittests': {}, # https://crbug.com/843134
       'snapshot_unittests': {},
-      'sync_integration_tests': {},
+      'sync_integration_tests': {
+        'swarming': {
+          'shards': 3,
+        },
+      },
       'views_unittests': {},
     },
 
@@ -5266,7 +5273,6 @@
           'blink_tests_write_run_histories',
           # TODO(crbug.com/1327314): Enable for blink web tests.
           'disable_check_flakiness_web_tests',
-          'skia_gold_test',
         ],
         'resultdb': {
           'enable': True,
@@ -5386,6 +5392,10 @@
           '-t',
           'Release',
           'external/wpt/webrtc',
+          'external/wpt/webrtc-encoded-transform',
+          'external/wpt/webrtc-extensions',
+          'external/wpt/webrtc-priority',
+          'external/wpt/webrtc-stats',
           'external/wpt/webrtc-svc',
         ],
         'isolate_name': 'blink_wpt_tests',
@@ -5399,7 +5409,6 @@
           'blink_tests_write_run_histories',
           # TODO(crbug.com/1327314): Enable for blink web tests.
           'disable_check_flakiness_web_tests',
-          'skia_gold_test',
         ],
         'resultdb': {
           'enable': True,
@@ -5541,7 +5550,6 @@
     },
 
     'win_specific_chromium_gtests': {
-      'chrome_cleaner_unittests': {},
       'chrome_elf_unittests': {},
       'courgette_unittests': {},
       'delayloads_unittests': {},
@@ -5661,8 +5669,7 @@
     'wpt_web_tests_content_shell': {
       'wpt_tests_suite': {
         'args': [
-          '--log-wptreport',
-          '--xvfb'
+          '--log-wptreport'
         ],
         'merge': {
           'args': [
@@ -5682,7 +5689,6 @@
       'wpt_tests_suite': {
         'args': [
           '--log-wptreport',
-          '--xvfb',
           '--enable-leak-detection',
         ],
         'merge': {
@@ -5704,7 +5710,6 @@
       'wpt_tests_suite_highdpi': {
         'args': [
           '--log-wptreport',
-          '--xvfb',
           '--flag-specific',
           'highdpi',
         ],
@@ -5772,7 +5777,6 @@
         'args': [
           '--child-processes=8',
           '--log-wptreport',
-          '--xvfb',
           '--flag-specific',
           'disable-site-isolation-trials',
         ],
@@ -6730,7 +6734,6 @@
       'android_trichrome_smoke_tests': {},
       'android_smoke_tests': {},
       'android_specific_chromium_gtests': {},  # Already includes gl_gtests.
-      'chrome_persistent_shell_tests': {}, # Remove when experiment is over.
       'chromium_gtests': {},
       'chromium_gtests_for_devices_with_graphical_output': {},
       'linux_flavor_specific_chromium_gtests': {},

@@ -11,9 +11,9 @@
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/feature_constants.h"
 #import "components/feature_engagement/public/tracker.h"
-#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/flags/system_flags.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/toolbar_commands.h"
 #import "ios/chrome/browser/shared/ui/util/named_guide.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
@@ -336,6 +336,8 @@ const CGFloat kBubblePresentationDelay = 1;
   BubbleArrowDirection arrowDirection = BubbleArrowDirectionDown;
   NSString* text =
       l10n_util::GetNSString(IDS_IOS_PINNED_TAB_OVERFLOW_ACTION_IPH_TEXT);
+  NSString* voiceOverAnnouncement = l10n_util::GetNSString(
+      IDS_IOS_PINNED_TAB_OVERFLOW_ACTION_IPH_VOICE_OVER_ANNOUNCEMENT);
   CGPoint tabGridAnchor = [self anchorPointToGuide:kTabSwitcherGuide
                                          direction:arrowDirection];
 
@@ -347,7 +349,7 @@ const CGFloat kBubblePresentationDelay = 1;
                           direction:arrowDirection
                           alignment:BubbleAlignmentTrailing
                                text:text
-              voiceOverAnnouncement:text
+              voiceOverAnnouncement:voiceOverAnnouncement
                         anchorPoint:tabGridAnchor];
   if (!presenter) {
     return;

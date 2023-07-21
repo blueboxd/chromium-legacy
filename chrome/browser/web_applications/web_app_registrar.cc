@@ -15,7 +15,10 @@
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/strings/to_string.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
@@ -322,6 +325,53 @@ GURL WebAppRegistrar::GetAppScope(const AppId& app_id) const {
   if (scope)
     return *scope;
   return GetAppStartUrl(app_id).GetWithoutFilename();
+}
+
+size_t WebAppRegistrar::GetAppExtendedScopeScore(const GURL& url,
+                                                 const AppId& app_id) const {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kWebAppEnableScopeExtensions)) {
+    return 0;
+  }
+
+  if (!url.is_valid()) {
+    return 0;
+  }
+
+  size_t app_scope = GetUrlInAppScopeScore(url.spec(), app_id);
+  if (app_scope > 0) {
+    return app_scope;
+  }
+
+  url::Origin origin = url::Origin::Create(url);
+  if (origin.opaque() || origin.scheme() != url::kHttpsScheme) {
+    return 0;
+  }
+
+  absl::optional<std::string> origin_str;
+
+  for (const auto& scope_extension : GetValidatedScopeExtensions(app_id)) {
+    if (origin.IsSameOriginWith(scope_extension.origin)) {
+      return origin.host().size();
+    }
+
+    // Origins with wildcard e.g. *.foo are saved as https://foo.
+    // Ensure while matching that the origin ends with '.foo' and not 'foo'.
+    if (scope_extension.has_origin_wildcard) {
+      if (!origin_str.has_value()) {
+        origin_str = origin.Serialize();
+      }
+
+      if (base::EndsWith(origin_str.value(), scope_extension.origin.host(),
+                         base::CompareCase::SENSITIVE) &&
+          origin_str.value().size() > scope_extension.origin.host().size() &&
+          origin_str.value()[origin_str.value().size() -
+                             scope_extension.origin.host().size() - 1] == '.') {
+        return scope_extension.origin.host().size();
+      }
+    }
+  }
+  return 0;
 }
 
 bool WebAppRegistrar::IsUrlInAppScope(const GURL& url,
@@ -640,6 +690,15 @@ void WebAppRegistrar::Start() {
   // Profile manager can be null in unit tests.
   if (ProfileManager* profile_manager = g_browser_process->profile_manager())
     profile_manager_observation_.Observe(profile_manager);
+
+  int num_user_installed_apps = CountUserInstalledApps();
+  int num_non_locally_installed = CountUserInstalledNotLocallyInstalledApps();
+
+  base::UmaHistogramCounts1000("WebApp.InstalledCount.ByUser",
+                               num_user_installed_apps);
+  base::UmaHistogramCounts1000(
+      "WebApp.InstalledCount.ByUserNotLocallyInstalled",
+      num_non_locally_installed);
 }
 
 void WebAppRegistrar::Shutdown() {
@@ -795,6 +854,16 @@ int WebAppRegistrar::CountUserInstalledApps() const {
       ++num_user_installed;
   }
   return num_user_installed;
+}
+
+int WebAppRegistrar::CountUserInstalledNotLocallyInstalledApps() const {
+  int num_non_locally_installed = 0;
+  for (const WebApp& app : GetApps()) {
+    if (!app.is_locally_installed() && app.WasInstalledByUser()) {
+      ++num_non_locally_installed;
+    }
+  }
+  return num_non_locally_installed;
 }
 
 std::vector<content::StoragePartitionConfig>

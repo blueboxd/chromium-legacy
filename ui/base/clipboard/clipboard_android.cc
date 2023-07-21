@@ -117,7 +117,7 @@ class ClipboardMap {
   std::vector<ClipboardFormatType> GetFormats();
   void OnPrimaryClipboardChanged();
   void OnPrimaryClipTimestampInvalidated(int64_t timestamp_ms);
-  void Set(const ClipboardFormatType& format, const std::string& data);
+  void Set(const ClipboardFormatType& format, base::StringPiece data);
   void CommitToAndroidClipboard();
   void Clear();
 
@@ -311,7 +311,7 @@ void ClipboardMap::OnPrimaryClipTimestampInvalidated(int64_t timestamp_ms) {
 }
 
 void ClipboardMap::Set(const ClipboardFormatType& format,
-                       const std::string& data) {
+                       base::StringPiece data) {
   base::AutoLock lock(lock_);
   map_[format] = data;
   map_state_ = MapState::kPreparingCommit;
@@ -674,37 +674,31 @@ void ClipboardAndroid::WritePortableAndPlatformRepresentations(
 
   DispatchPlatformRepresentations(std::move(platform_representations));
   for (const auto& object : objects)
-    DispatchPortableRepresentation(object.first, object.second);
+    DispatchPortableRepresentation(object.second);
 
   g_map.Get().CommitToAndroidClipboard();
 }
 
-void ClipboardAndroid::WriteText(const char* text_data, size_t text_len) {
-  g_map.Get().Set(ClipboardFormatType::PlainTextType(),
-                  std::string(text_data, text_len));
+void ClipboardAndroid::WriteText(base::StringPiece text) {
+  g_map.Get().Set(ClipboardFormatType::PlainTextType(), text);
 }
 
-void ClipboardAndroid::WriteHTML(const char* markup_data,
-                                 size_t markup_len,
-                                 const char* url_data,
-                                 size_t url_len) {
-  g_map.Get().Set(ClipboardFormatType::HtmlType(),
-                  std::string(markup_data, markup_len));
+void ClipboardAndroid::WriteHTML(base::StringPiece markup,
+                                 absl::optional<base::StringPiece> source_url) {
+  g_map.Get().Set(ClipboardFormatType::HtmlType(), markup);
 }
 
-void ClipboardAndroid::WriteUnsanitizedHTML(const char* markup_data,
-                                            size_t markup_len,
-                                            const char* url_data,
-                                            size_t url_len) {
-  WriteHTML(markup_data, markup_len, url_data, url_len);
+void ClipboardAndroid::WriteUnsanitizedHTML(
+    base::StringPiece markup,
+    absl::optional<base::StringPiece> source_url) {
+  WriteHTML(markup, source_url);
 }
 
-void ClipboardAndroid::WriteSvg(const char* markup_data, size_t markup_len) {
-  g_map.Get().Set(ClipboardFormatType::SvgType(),
-                  std::string(markup_data, markup_len));
+void ClipboardAndroid::WriteSvg(base::StringPiece markup) {
+  g_map.Get().Set(ClipboardFormatType::SvgType(), markup);
 }
 
-void ClipboardAndroid::WriteRTF(const char* rtf_data, size_t data_len) {
+void ClipboardAndroid::WriteRTF(base::StringPiece rtf) {
   NOTIMPLEMENTED();
 }
 
@@ -714,12 +708,9 @@ void ClipboardAndroid::WriteFilenames(std::vector<ui::FileInfo> filenames) {
 
 // According to other platforms implementations, this really writes the
 // URL spec.
-void ClipboardAndroid::WriteBookmark(const char* title_data,
-                                     size_t title_len,
-                                     const char* url_data,
-                                     size_t url_len) {
-  g_map.Get().Set(ClipboardFormatType::UrlType(),
-                  std::string(url_data, url_len));
+void ClipboardAndroid::WriteBookmark(base::StringPiece title,
+                                     base::StringPiece url) {
+  g_map.Get().Set(ClipboardFormatType::UrlType(), url);
 }
 
 // Write an extra flavor that signifies WebKit was the last to modify the
@@ -739,9 +730,10 @@ void ClipboardAndroid::WriteBitmap(const SkBitmap& sk_bitmap) {
 }
 
 void ClipboardAndroid::WriteData(const ClipboardFormatType& format,
-                                 const char* data_data,
-                                 size_t data_len) {
-  g_map.Get().Set(format, std::string(data_data, data_len));
+                                 base::span<const uint8_t> data) {
+  g_map.Get().Set(
+      format,
+      std::string(reinterpret_cast<const char*>(data.data()), data.size()));
 }
 
 }  // namespace ui

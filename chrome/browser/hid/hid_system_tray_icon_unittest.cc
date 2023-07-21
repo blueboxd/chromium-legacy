@@ -28,11 +28,11 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "base/command_line.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/value_builder.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 namespace {
@@ -70,16 +70,6 @@ void HidSystemTrayIconTestBase::TearDown() {
   // destroyed before g_browser_process becomes null.
   TestingBrowserProcess::GetGlobal()->SetHidSystemTrayIcon(nullptr);
   BrowserWithTestWindowTest::TearDown();
-}
-
-std::u16string HidSystemTrayIconTestBase::GetExpectedButtonTitleForProfile(
-    Profile* profile) {
-  const std::string profile_name = profile->GetProfileUserName();
-  if (profile_name.empty()) {
-    return u"Manage HID devices";
-  }
-  return base::UTF8ToUTF16(
-      base::StringPrintf("Manage HID devices for %s", profile_name.c_str()));
 }
 
 std::u16string HidSystemTrayIconTestBase::GetExpectedTitle(
@@ -134,16 +124,16 @@ Profile* HidSystemTrayIconTestBase::CreateTestingProfile(
 scoped_refptr<const extensions::Extension>
 HidSystemTrayIconTestBase::CreateExtensionWithName(
     const std::string& extension_name) {
-  extensions::DictionaryBuilder manifest;
-  manifest.Set("name", extension_name)
-      .Set("description", "For testing.")
-      .Set("version", "0.1")
-      .Set("manifest_version", 2)
-      .Set("web_accessible_resources",
-           extensions::ListBuilder().Append("index.html").Build());
+  auto manifest = base::Value::Dict()
+                      .Set("name", extension_name)
+                      .Set("description", "For testing.")
+                      .Set("version", "0.1")
+                      .Set("manifest_version", 2)
+                      .Set("web_accessible_resources",
+                           base::Value::List().Append("index.html"));
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder(/*name=*/extension_name)
-          .MergeManifest(manifest.Build())
+          .MergeManifest(std::move(manifest))
           .Build();
   DCHECK(extension);
   return extension;

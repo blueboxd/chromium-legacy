@@ -367,6 +367,7 @@ filelist.decorateListItem = (li, entry, metadataModel, volumeManager) => {
     'syncStatus',
     'progress',
     'contentMimeType',
+    'shortcut',
   ])[0];
   filelist.updateListItemExternalProps(
       li, entry, externalProps, util.isTeamDriveRoot(entry));
@@ -451,6 +452,18 @@ filelist.renderFileTypeIcon = (doc, entry, locationInfo, opt_mimeType) => {
   icon.setAttribute(
       'file-type-icon', FileType.getIcon(entry, opt_mimeType, rootType));
   return icon;
+};
+
+/**
+ * Renders a div beside the row icon that is used to surface badges for
+ * individual items in the grid and list view.
+ * @param {!Document} doc Owner document.
+ * @returns {!HTMLDivElement}
+ */
+filelist.renderIconBadge = (doc) => {
+  const divElement = /** @type {!HTMLDivElement} */ (doc.createElement('div'));
+  divElement.classList.add('icon-badge');
+  return divElement;
 };
 
 /**
@@ -540,6 +553,7 @@ filelist.updateListItemExternalProps =
       li.classList.toggle(
           'encrypted',
           FileType.isEncrypted(entry, externalProps.contentMimeType));
+      li.classList.toggle('shortcut', !!externalProps.shortcut);
 
       const iconDiv = li.querySelector('.detail-icon');
       if (!iconDiv) {

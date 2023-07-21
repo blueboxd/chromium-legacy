@@ -18,8 +18,6 @@
 #include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters.mojom.h"
 #include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters_module_service.h"
 #include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters_module_service_factory.h"
-#include "chrome/browser/new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranking_metrics_logger.h"
-#include "chrome/browser/new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranking_signals.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -28,7 +26,6 @@
 #include "components/history/core/browser/url_row.h"
 #include "components/history_clusters/core/history_cluster_type_utils.h"
 #include "components/history_clusters/core/history_clusters_service.h"
-#include "components/history_clusters/core/history_clusters_service_task.h"
 #include "components/history_clusters/core/history_clusters_util.h"
 #include "components/history_clusters/public/mojom/history_cluster_types.mojom.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -123,10 +120,7 @@ HistoryClustersPageHandler::HistoryClustersPageHandler(
     content::WebContents* web_contents)
     : receiver_(this, std::move(pending_receiver)),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
-      web_contents_(web_contents),
-      ranking_metrics_logger_(
-          std::make_unique<HistoryClustersModuleRankingMetricsLogger>(
-              web_contents_->GetPrimaryMainFrame()->GetPageUkmSourceId())) {
+      web_contents_(web_contents) {
   if (base::FeatureList::IsEnabled(
           ntp_features::kNtpChromeCartInHistoryClusterModule)) {
     cart_processor_ = std::make_unique<CartProcessor>(
@@ -136,21 +130,15 @@ HistoryClustersPageHandler::HistoryClustersPageHandler(
 
 HistoryClustersPageHandler::~HistoryClustersPageHandler() {
   receiver_.reset();
-
-  ranking_metrics_logger_->RecordUkm(/*record_in_cluster_id_order=*/false);
 }
 
 void HistoryClustersPageHandler::CallbackWithClusterData(
     GetClustersCallback callback,
-    std::vector<history::Cluster> clusters,
-    base::flat_map<int64_t, HistoryClustersModuleRankingSignals>
-        ranking_signals) {
+    std::vector<history::Cluster> clusters) {
   if (clusters.empty()) {
     std::move(callback).Run({});
     return;
   }
-
-  ranking_metrics_logger_->AddSignals(std::move(ranking_signals));
 
   std::vector<history_clusters::mojom::ClusterPtr> clusters_mojom;
   for (const auto& cluster : clusters) {
@@ -168,26 +156,30 @@ void HistoryClustersPageHandler::GetClusters(GetClustersCallback callback) {
   if (!fake_data_param.empty()) {
     const std::vector<std::string> kFakeDataParams = base::SplitString(
         fake_data_param, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    if (kFakeDataParams.size() != 2) {
+    if (kFakeDataParams.size() != 3) {
       LOG(ERROR) << "Invalid history clusters fake data selection parameter "
                     "format.";
       std::move(callback).Run({});
       return;
     }
 
+    int num_clusters;
     int num_visits;
     int num_images;
-    if (!base::StringToInt(kFakeDataParams.at(0), &num_visits) ||
-        !base::StringToInt(kFakeDataParams.at(1), &num_images) ||
+    if (!base::StringToInt(kFakeDataParams.at(0), &num_clusters) ||
+        !base::StringToInt(kFakeDataParams.at(1), &num_visits) ||
+        !base::StringToInt(kFakeDataParams.at(2), &num_images) ||
         num_visits < num_images) {
       std::move(callback).Run({});
       return;
     }
 
     std::vector<history_clusters::mojom::ClusterPtr> clusters_mojom;
-    clusters_mojom.push_back(history_clusters::ClusterToMojom(
-        TemplateURLServiceFactory::GetForProfile(profile_),
-        GenerateSampleCluster(num_visits, num_images)));
+    for (int i = 0; i < num_clusters; i++) {
+      clusters_mojom.push_back(history_clusters::ClusterToMojom(
+          TemplateURLServiceFactory::GetForProfile(profile_),
+          GenerateSampleCluster(num_visits, num_images)));
+    }
     std::move(callback).Run(std::move(clusters_mojom));
     return;
   }
@@ -198,7 +190,7 @@ void HistoryClustersPageHandler::GetClusters(GetClustersCallback callback) {
     std::move(callback).Run({});
     return;
   }
-  fetch_clusters_task_ = history_clusters_module_service->GetClusters(
+  history_clusters_module_service->GetClusters(
       base::BindOnce(&HistoryClustersPageHandler::CallbackWithClusterData,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -280,14 +272,4 @@ void HistoryClustersPageHandler::DismissCluster(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   history_service->HideVisits(visit_ids, base::BindOnce([]() {}),
                               &hide_visits_task_tracker_);
-}
-
-void HistoryClustersPageHandler::RecordClick(int64_t cluster_id) {
-  ranking_metrics_logger_->SetClicked(cluster_id);
-}
-
-void HistoryClustersPageHandler::RecordLayoutTypeShown(
-    ntp::history_clusters::mojom::LayoutType layout_type,
-    int64_t cluster_id) {
-  ranking_metrics_logger_->SetLayoutTypeShown(layout_type, cluster_id);
 }

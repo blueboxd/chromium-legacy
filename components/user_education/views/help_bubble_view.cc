@@ -121,13 +121,26 @@ class MdIPHBubbleButton : public views::MdTextButton {
     SetProminent(true);
     GetViewAccessibility().OverrideIsLeaf(true);
 
-    // Focus ring rendering varies significantly between pre- and post-refresh
-    // Chrome. The pre-refresh tactic of setting the focus color to background
-    // is actually a hack; the post-refresh approach is more "correct".
-    views::FocusRing::Get(this)->SetColorId(
-        features::IsChromeRefresh2023()
-            ? delegate_->GetHelpBubbleForegroundColorId()
-            : delegate_->GetHelpBubbleBackgroundColorId());
+    if (features::IsChromeRefresh2023()) {
+      views::FocusRing::Get(this)->SetColorId(
+          delegate_->GetHelpBubbleForegroundColorId());
+
+      // The default behavior in 2023 refresh is for MD buttons is to have the
+      // alpha baked into the color, but we currently don't have that yet, so
+      // switch back to using the old default alpha blending mode.
+      auto* const ink_drop = views::InkDrop::Get(this);
+      ink_drop->SetBaseColorId(
+          is_default_button_
+              ? delegate_->GetHelpBubbleDefaultButtonForegroundColorId()
+              : delegate_->GetHelpBubbleForegroundColorId());
+      ink_drop->SetHighlightOpacity(absl::nullopt);
+    } else {
+      // Focus ring rendering varies significantly between pre- and post-refresh
+      // Chrome. The pre-refresh tactic of setting the focus color to background
+      // is actually a hack; the post-refresh approach is more "correct".
+      views::FocusRing::Get(this)->SetColorId(
+          delegate_->GetHelpBubbleBackgroundColorId());
+    }
   }
   MdIPHBubbleButton(const MdIPHBubbleButton&) = delete;
   MdIPHBubbleButton& operator=(const MdIPHBubbleButton&) = delete;
@@ -172,7 +185,7 @@ class MdIPHBubbleButton : public views::MdTextButton {
   }
 
  private:
-  const base::raw_ptr<const HelpBubbleDelegate> delegate_;
+  const raw_ptr<const HelpBubbleDelegate> delegate_;
   bool is_default_button_;
 };
 
@@ -218,7 +231,7 @@ class ClosePromoButton : public views::ImageButton {
   }
 
  private:
-  const base::raw_ptr<const HelpBubbleDelegate> delegate_;
+  const raw_ptr<const HelpBubbleDelegate> delegate_;
 };
 
 BEGIN_METADATA(ClosePromoButton, views::ImageButton)
@@ -271,7 +284,7 @@ class DotView : public views::View {
  private:
   static constexpr int kStrokeWidth = 1;
 
-  base::raw_ptr<const HelpBubbleDelegate> delegate_;
+  raw_ptr<const HelpBubbleDelegate> delegate_;
   const gfx::Size size_;
   const bool should_fill_;
 };

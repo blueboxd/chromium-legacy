@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">DNS を解決できません</translation>
 <translation id="1018656279737460067">キャンセルされました</translation>
 <translation id="1022433422498218992">一般設定</translation>
-<translation id="1022628058306505708">地球の動き</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" />（スレッド数 <ph name="THREAD_COUNT" />、<ph name="CPU_MAX_CLOCK_SPEED" /> GHz）</translation>
 <translation id="1047773237499189053">新しい機能があります。上矢印キーで詳細を確認できます。</translation>
 <translation id="1059913517121127803">スキャンを開始できませんでした</translation>
@@ -235,7 +234,6 @@
 <translation id="2902312830803030883">その他の操作</translation>
 <translation id="2926057806159140518">ユーザー名とパスワードを入力するか、QR コードをスキャンしてください</translation>
 <translation id="2940811910881150316">デバイスをテストできません。テストするにはディスプレイをもう一度開きます。</translation>
-<translation id="2981143481017883351">Chromebook 限定のアセットが利用可能に</translation>
 <translation id="3008341117444806826">更新</translation>
 <translation id="3009958530611748826">保存先のフォルダを選択</translation>
 <translation id="3017079585324758401">背景</translation>
@@ -280,7 +278,6 @@
 <translation id="3360306038446926262">ウィンドウ</translation>
 <translation id="3368922792935385530">接続済み</translation>
 <translation id="3369013195428705271">印刷履歴をすべて削除してもよろしいですか？実行中の印刷ジョブは削除されません。</translation>
-<translation id="3386675685417744672">Chromebook 限定</translation>
 <translation id="3404249063913988450">スクリーン セーバーを有効にする</translation>
 <translation id="3413935475507503304">更新を進めるには、[次へ] をクリックしてください。</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
@@ -295,6 +292,7 @@
 <translation id="3484914941826596830">ファームウェアのアップデート中、この外部デバイスを電源から外したり、パソコンをシャットダウンしたりしないでください。このウィンドウは最小化できます。アップデートには数分かかることがあります。その間、外部デバイスは動作しない可能性があります。</translation>
 <translation id="3486220673238053218">定義</translation>
 <translation id="3488065109653206955">一部有効</translation>
+<translation id="3502426834823382181">すべてのアプリを表示</translation>
 <translation id="3510890413042482857"><ph name="BEGIN_LINK1" />パフォーマンス追跡データ<ph name="END_LINK1" />を送信する</translation>
 <translation id="3517001332549868749">ChromeOS の更新</translation>
 <translation id="3527036260304016759">失敗 - 不明なエラー</translation>
@@ -358,7 +356,6 @@
 <translation id="404928562651467259">警告</translation>
 <translation id="4054683689023980771">画像のダウンロード中</translation>
 <translation id="4060260348856573701">新しい APN</translation>
-<translation id="4079743696465895866">Chromebook 限定のアートワークを選択する</translation>
 <translation id="4093865285251893588">プロフィール画像</translation>
 <translation id="409427325554347132">テストの詳細を保存</translation>
 <translation id="4095829376260267438">WPA2 / WPA3</translation>
@@ -578,7 +575,7 @@
 <translation id="5843706793424741864">華氏</translation>
 <translation id="5849570051105887917">ホーム プロバイダのコード</translation>
 <translation id="5859603669299126575">アート ギャラリーのアルバム</translation>
-<translation id="5860033963881614850">OFF</translation>
+<translation id="5860033963881614850">オフ</translation>
 <translation id="5860491529813859533">オンにする</translation>
 <translation id="5866840822086176774">非常に強い</translation>
 <translation id="5876385649737594562">オプションを選択するにはオンにしてください</translation>
@@ -589,7 +586,7 @@
 <translation id="5904994456462260490">新しい APN の追加</translation>
 <translation id="5907649332524363701">キーの色</translation>
 <translation id="5916084858004523819">禁止</translation>
-<translation id="5916664084637901428">ON</translation>
+<translation id="5916664084637901428">オン</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{ファイルは正常にスキャンされ、<ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> に保存されました。}other{ファイルは正常にスキャンされ、<ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> に保存されました。}}</translation>
 <translation id="5931523347251946569">ファイルが見つかりません</translation>
 <translation id="5939518447894949180">リセット</translation>
@@ -625,7 +622,6 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">バッテリー容量は使用に伴って減少します</translation>
 <translation id="6191293864534840972">ネームサーバーの形式が正しくありません</translation>
-<translation id="6205145102504628069">雲の流れ</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223066887782788441">全画面表示を終了</translation>
 <translation id="6223752125779001553">利用可能なスキャナがありません</translation>
@@ -636,6 +632,7 @@
 <translation id="6278428485366576908">テーマ</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">ダークモードをオンにする</translation>
+<translation id="6285899124799306373">ランチャーを開く</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> テストがキャンセルされました</translation>
 <translation id="631063167932043783">アプリについてもっと知る</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> のファームウェアをアップデート</translation>
@@ -651,6 +648,7 @@
 <translation id="6382182670717268353">スクリーンセーバーをプレビュー</translation>
 <translation id="6388847657025262518">スキャナの給紙トレイが詰まっています。トレイを確認してから、もう一度お試しください。</translation>
 <translation id="6394634179843537518">ファイルを追加</translation>
+<translation id="6401427872449207797">ブラウザ検索</translation>
 <translation id="6410257289063177456">画像ファイル</translation>
 <translation id="641081527798843608">件名の一致</translation>
 <translation id="6412715219990689313">デバイス内蔵キーボード</translation>
@@ -666,7 +664,6 @@
 <translation id="6494974875566443634">カスタマイズ</translation>
 <translation id="6500818810472529210">Google 検索で結果を見る</translation>
 <translation id="650266656685499220">アルバムを作成するには、Google フォトにアクセスします</translation>
-<translation id="6505750420152840539">夜明けから夜更けまで</translation>
 <translation id="6516990319416533844">バッテリーの充電速度をテストするには、短時間で電池を消耗してください</translation>
 <translation id="6517239166834772319">使い方・ヒント</translation>
 <translation id="6526200165918397681">壁紙に合わせる</translation>
@@ -875,6 +872,7 @@
 <translation id="8312330582793120272">メディアを再生する</translation>
 <translation id="8318753676953949627">0 件の画像</translation>
 <translation id="8329018942023753850">電卓アプリ</translation>
+<translation id="8335869473001018124">検索を開始</translation>
 <translation id="8336739000755212683">デバイスのアカウント画像を変更</translation>
 <translation id="8347227221149377169">印刷ジョブ</translation>
 <translation id="8351855506390808906">キーマッピングのタッチポイント</translation>
@@ -916,7 +914,7 @@
 <translation id="8675354002693747642">事前共有キー</translation>
 <translation id="8677859815076891398">アルバムはありません。<ph name="LINK_BEGIN" />Google フォト<ph name="LINK_END" />でアルバムを作成してください。</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> 左右矢印キーでこの機能を管理できます。</translation>
-<translation id="8712637175834984815">理解した</translation>
+<translation id="8712637175834984815">閉じる</translation>
 <translation id="871560550817059752">失敗 - インクがありません</translation>
 <translation id="8723108084122415655">デフォルト以外のネットワークの応答時間がしきい値を超えています</translation>
 <translation id="8725066075913043281">やり直し</translation>

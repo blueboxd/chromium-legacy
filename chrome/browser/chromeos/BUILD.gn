@@ -141,6 +141,8 @@ source_set("chromeos") {
     "policy/dlp/dlp_file_access_copy_or_move_delegate_factory.h",
     "policy/dlp/dlp_file_destination.cc",
     "policy/dlp/dlp_file_destination.h",
+    "policy/dlp/dlp_files_controller.cc",
+    "policy/dlp/dlp_files_controller.h",
     "policy/dlp/dlp_histogram_helper.cc",
     "policy/dlp/dlp_histogram_helper.h",
     "policy/dlp/dlp_notification_helper.cc",
@@ -161,6 +163,8 @@ source_set("chromeos") {
     "reporting/metric_reporting_manager_delegate_base.h",
     "reporting/network/network_bandwidth_sampler.cc",
     "reporting/network/network_bandwidth_sampler.h",
+    "reporting/user_reporting_settings.cc",
+    "reporting/user_reporting_settings.h",
     "smart_reader/smart_reader_client_impl.cc",
     "smart_reader/smart_reader_client_impl.h",
     "tablet_mode/chrome_content_browser_client_tablet_mode_part.cc",
@@ -286,8 +290,8 @@ source_set("chromeos") {
     "//third_party/blink/public/common:headers",
     "//third_party/blink/public/mojom/service_worker:storage",
     "//third_party/boringssl",
+    "//ui/base",
     "//ui/base:types",
-    "//ui/base:ui_data_pack",
     "//ui/base/ime",
     "//ui/chromeos/strings",
     "//ui/chromeos/styles:cros_styles_views",
@@ -463,6 +467,7 @@ source_set("unit_tests") {
     "policy/dlp/dlp_rules_manager_impl_unittest.cc",
     "policy/dlp/dlp_scoped_file_access_delegate_unittest.cc",
     "reporting/network/network_bandwidth_sampler_unittest.cc",
+    "reporting/user_reporting_settings_unittest.cc",
 
     # TODO(zturner): Enable this on Windows. See
     # BrowserWithTestWindowTest::SetUp() for a comment explaining why this is

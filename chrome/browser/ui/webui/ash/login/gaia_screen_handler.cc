@@ -229,12 +229,6 @@ std::string GetSSOProfile() {
   return connector->GetSSOProfile();
 }
 
-std::string GetRealm() {
-  policy::BrowserPolicyConnectorAsh* connector =
-      g_browser_process->platform_part()->browser_policy_connector_ash();
-  return connector->GetRealm();
-}
-
 std::string GetChromeType() {
   switch (chromeos::GetDeviceType()) {
     case chromeos::DeviceType::kChromebox:
@@ -435,11 +429,6 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
   if (!app_locale.empty())
     params.Set("hl", app_locale);
 
-  std::string realm(GetRealm());
-  if (!realm.empty()) {
-    params.Set("realm", realm);
-  }
-
   const std::string enterprise_enrollment_domain(
       GetEnterpriseEnrollmentDomain());
   const std::string enterprise_domain_manager(GetEnterpriseDomainManager());
@@ -492,8 +481,10 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
   params.Set("gaiaUrl", GaiaUrls::GetInstance()->gaia_url().spec());
   switch (gaia_path_) {
     case GaiaPath::kDefault:
-      // Use the default gaia signin path embedded/setup/v2/chromeos which is
-      // set in authenticator.js
+      params.Set(
+          "gaiaPath",
+          GaiaUrls::GetInstance()->embedded_setup_chromeos_url().path().substr(
+              1));
       break;
     case GaiaPath::kChildSignup:
       params.Set("gaiaPath", GaiaUrls::GetInstance()
@@ -1178,6 +1169,10 @@ void GaiaScreenHandler::Hide() {
 
 void GaiaScreenHandler::SetGaiaPath(GaiaScreenHandler::GaiaPath gaia_path) {
   gaia_path_ = gaia_path;
+}
+
+GaiaScreenHandler::GaiaPath GaiaScreenHandler::GetGaiaPath() {
+  return gaia_path_;
 }
 
 void GaiaScreenHandler::LoadGaiaAsync(const AccountId& account_id) {

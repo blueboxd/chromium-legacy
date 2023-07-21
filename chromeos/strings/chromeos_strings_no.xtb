@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">Kan ikke foreta DNS-oppslag</translation>
 <translation id="1018656279737460067">Avbrutt</translation>
 <translation id="1022433422498218992">Generelle kontroller</translation>
-<translation id="1022628058306505708">Jordflyt</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> tråder, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">En ny funksjon er tilgjengelig. Bruk oppoverpilen for å finne ut mer.</translation>
 <translation id="1059913517121127803">Kunne ikke starte skanningen</translation>
@@ -235,7 +234,6 @@
 <translation id="2902312830803030883">Flere handlinger</translation>
 <translation id="2926057806159140518">Oppgi brukernavn og passord, eller skann QR-koden din</translation>
 <translation id="2940811910881150316">Kan ikke teste enheten. Åpne lokket igjen for å teste.</translation>
-<translation id="2981143481017883351">Eksklusivt Chromebook-innhold er nå tilgjengelig</translation>
 <translation id="3008341117444806826">OPPDATER</translation>
 <translation id="3009958530611748826">Velg mappen du vil lagre i</translation>
 <translation id="3017079585324758401">Bakgrunn</translation>
@@ -280,7 +278,6 @@
 <translation id="3360306038446926262">Vinduer</translation>
 <translation id="3368922792935385530">Tilkoblet</translation>
 <translation id="3369013195428705271">Er du sikker på at du vil tømme hele utskriftsloggen? Utskriftsjobber som allerede er i gang, fjernes ikke.</translation>
-<translation id="3386675685417744672">Bare på Chromebook</translation>
 <translation id="3404249063913988450">Slå på skjermspareren</translation>
 <translation id="3413935475507503304">For å gå videre med oppdateringen, klikk på Neste.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" /> %</translation>
@@ -295,6 +292,7 @@
 <translation id="3484914941826596830">Ikke koble fra denne eksterne enheten eller slå av datamaskinen mens fastvaren oppdateres. Du kan minimere dette vinduet. Denne oppdateringen kan ta noen minutter, og det kan hende den eksterne enheten ikke fungerer i dette tidsrommet.</translation>
 <translation id="3486220673238053218">definisjon</translation>
 <translation id="3488065109653206955">Delvis aktivert</translation>
+<translation id="3502426834823382181">se alle appene</translation>
 <translation id="3510890413042482857">Send <ph name="BEGIN_LINK1" />ytelsessporingsdata<ph name="END_LINK1" /></translation>
 <translation id="3517001332549868749">ChromeOS-oppdatering</translation>
 <translation id="3527036260304016759">Mislykket – ukjent feil</translation>
@@ -358,7 +356,6 @@
 <translation id="404928562651467259">ADVARSEL</translation>
 <translation id="4054683689023980771">Laster ned bildet</translation>
 <translation id="4060260348856573701">Nytt APN</translation>
-<translation id="4079743696465895866">Velg grafikk som bare finnes på Chromebook</translation>
 <translation id="4093865285251893588">Profilbilde</translation>
 <translation id="409427325554347132">Lagre testdetaljer</translation>
 <translation id="4095829376260267438">WPA2WPA3</translation>
@@ -625,7 +622,6 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">Batterikapasiteten avtar med bruken</translation>
 <translation id="6191293864534840972">Navnetjenerne inneholder feil</translation>
-<translation id="6205145102504628069">Skyflyt</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223066887782788441">Avslutt fullskjerm</translation>
 <translation id="6223752125779001553">Ingen skannere er tilgjengelige</translation>
@@ -636,6 +632,7 @@
 <translation id="6278428485366576908">Tema</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Slå på mørkt tema</translation>
+<translation id="6285899124799306373">åpne appoversikten</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" />testen er avbrutt</translation>
 <translation id="631063167932043783">Utforsk-appen</translation>
 <translation id="6319207335391420837">Oppdater fastvaren på <ph name="DEVICE_NAME" /></translation>
@@ -651,6 +648,7 @@
 <translation id="6382182670717268353">Forhåndsvisning av skjermsparer</translation>
 <translation id="6388847657025262518">Skannerens dokumentmater er tilstoppet. Sjekk materen, og prøv på nytt.</translation>
 <translation id="6394634179843537518">Legg til fil</translation>
+<translation id="6401427872449207797">nettlesersøk</translation>
 <translation id="6410257289063177456">Bildefiler</translation>
 <translation id="641081527798843608">Emnetreff</translation>
 <translation id="6412715219990689313">Innebygd tastatur</translation>
@@ -666,7 +664,6 @@
 <translation id="6494974875566443634">Tilpasning</translation>
 <translation id="6500818810472529210">Se resultat i Google Søk</translation>
 <translation id="650266656685499220">For å opprette album, gå til Google Foto</translation>
-<translation id="6505750420152840539">Fra morgen til kveld</translation>
 <translation id="6516990319416533844">For å teste ladehastigheten til batteriet, la det tappes i en kort periode</translation>
 <translation id="6517239166834772319">Utforsk</translation>
 <translation id="6526200165918397681">Match bakgrunnen</translation>
@@ -875,6 +872,7 @@
 <translation id="8312330582793120272">spill av medieinnhold</translation>
 <translation id="8318753676953949627">Ingen bilder</translation>
 <translation id="8329018942023753850">kalkulator-appen</translation>
+<translation id="8335869473001018124">åpne søk</translation>
 <translation id="8336739000755212683">Endre bildet for enhetskontoen</translation>
 <translation id="8347227221149377169">Utskriftsjobber</translation>
 <translation id="8351855506390808906">Berøringspunkt for tastaturoppsett</translation>

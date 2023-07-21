@@ -287,6 +287,11 @@
 #include "ui/base/pointer/touch_ui_controller.h"
 #endif
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#include "chrome/browser/headless/headless_mode_metrics.h"  // nogncheck
+#include "chrome/browser/headless/headless_mode_util.h"     // nogncheck
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+
 #if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
 #include "chrome/browser/chrome_process_singleton.h"
 #include "chrome/browser/process_singleton.h"
@@ -537,7 +542,7 @@ class ChromeBrowserMainParts::ProfileInitManager
   base::ScopedObservation<ProfileManager, ProfileManagerObserver>
       profile_manager_observer_{this};
   // Raw pointer. This is safe because `ChromeBrowserMainParts` owns `this`.
-  const base::raw_ptr<ChromeBrowserMainParts> browser_main_;
+  const raw_ptr<ChromeBrowserMainParts> browser_main_;
 };
 
 ChromeBrowserMainParts::ProfileInitManager::ProfileInitManager(
@@ -1281,6 +1286,12 @@ void ChromeBrowserMainParts::PostProfileInit(Profile* profile,
   language::LanguageUsageMetrics::RecordPageLanguages(
       *UrlLanguageHistogramFactory::GetForBrowserContext(profile));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  if (headless::IsHeadlessMode()) {
+    headless::ReportHeadlessActionMetrics();
+  }
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 }
 
 void ChromeBrowserMainParts::PreBrowserStart() {
@@ -1728,10 +1739,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   variations::VariationsService* variations_service =
       browser_process_->variations_service();
-  // Only call PerformPreMainMessageLoopStartup() on VariationsService outside
-  // of integration (browser) tests.
-  if (!is_integration_test())
-    variations_service->PerformPreMainMessageLoopStartup();
+  variations_service->PerformPreMainMessageLoopStartup();
 
 #if BUILDFLAG(IS_ANDROID)
   // The profile picker is never shown on Android.

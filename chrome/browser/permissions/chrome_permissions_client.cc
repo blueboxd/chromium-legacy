@@ -51,7 +51,6 @@
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/subresource_filter/content/browser/subresource_filter_content_settings_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_profile_context.h"
-#include "components/unified_consent/pref_names.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/buildflags/buildflags.h"
@@ -266,11 +265,6 @@ void ChromePermissionsClient::TriggerPromptHatsSurveyIfEnabled(
     const GURL& gurl,
     base::OnceCallback<void()> hats_shown_callback) {
   Profile* profile = Profile::FromBrowserContext(context);
-  absl::optional<GURL> recorded_gurl =
-      profile->GetPrefs()->GetBoolean(
-          unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled)
-          ? absl::make_optional(gurl)
-          : absl::nullopt;
 
   auto prompt_parameters =
       permissions::PermissionHatsTriggerHelper::PromptParametersForHaTS(
@@ -281,7 +275,7 @@ void ChromePermissionsClient::TriggerPromptHatsSurveyIfEnabled(
           prompt_display_duration,
           permissions::PermissionHatsTriggerHelper::
               GetOneTimePromptsDecidedBucket(profile->GetPrefs()),
-          recorded_gurl);
+          gurl);
 
   if (!permissions::PermissionHatsTriggerHelper::
           ArePromptTriggerCriteriaSatisfied(prompt_parameters)) {

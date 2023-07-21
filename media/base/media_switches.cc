@@ -291,6 +291,11 @@ const char kCastStreamingForceEnableHardwareVp8[] =
 const char kDisableUseMojoVideoDecoderForPepper[] =
     "disable-use-mojo-video-decoder-for-pepper";
 
+#if !BUILDFLAG(IS_ANDROID)
+const char kCastMirroringTargetPlayoutDelay[] =
+    "cast-mirroring-target-playout-delay";
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 }  // namespace switches
 
 namespace media {
@@ -309,6 +314,12 @@ const base::FeatureParam<base::TimeDelta>
 BASE_FEATURE(kFFmpegDecodeOpaqueVP8,
              "FFmpegDecodeOpaqueVP8",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enable an updated dialog UI for the getDisplayMedia picker dialog under the
+// preferCurrentTab constraint.
+BASE_FEATURE(kShareThisTabDialog,
+             "ShareThisTabDialog",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Only used for disabling overlay fullscreen (aka SurfaceView) in Clank.
 BASE_FEATURE(kOverlayFullscreenVideo,
@@ -643,7 +654,12 @@ BASE_FEATURE(kGlobalMediaControlsCrOSUpdatedUI,
 // If enabled, users can request Media Remoting without fullscreen-in-tab.
 BASE_FEATURE(kMediaRemotingWithoutFullscreen,
              "MediaRemotingWithoutFullscreen",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 #endif
 
 // Allow Global Media Controls in system tray of CrOS.
@@ -792,6 +808,17 @@ BASE_FEATURE(kVaapiVp9kSVCHWEncoding,
              "VaapiVp9kSVCHWEncoding",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
+#if defined(ARCH_CPU_ARM_FAMILY) && BUILDFLAG(IS_CHROMEOS)
+// Enables the new V4L2StatefulVideoDecoder instead of V4L2VideoDecoder.
+BASE_FEATURE(kV4L2FlatStatelessVideoDecoder,
+             "V4L2FlatStatelessVideoDecoder",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the new V4L2StatefulVideoDecoder instead of V4L2VideoDecoder.
+BASE_FEATURE(kV4L2FlatStatefulVideoDecoder,
+             "V4L2FlatStatefulVideoDecoder",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 // Inform video blitter of video color space.
 BASE_FEATURE(kVideoBlitColorAccuracy,
@@ -1040,12 +1067,6 @@ BASE_FEATURE(kUsePooledSharedImageVideoProvider,
              "UsePooledSharedImageVideoProvider",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Historically we hardcoded sRGB for color space. This flags controls if we
-// pass real color space to VideoFrame/SharedImages.
-BASE_FEATURE(kUseRealColorSpaceForAndroidVideo,
-             "UseRealColorSpaceForAndroidVideo",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_HLS_DEMUXER)
@@ -1238,14 +1259,20 @@ BASE_FEATURE(kAllowClearDolbyVisionInMseWhenPlatformEncryptedDvEnabled,
 // lacros-chrome through the crosapi.
 const base::Feature MEDIA_EXPORT kExposeOutOfProcessVideoDecodingToLacros{
     "ExposeOutOfProcessVideoDecodingToLacros",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
 // Spawn utility processes to perform hardware decode acceleration instead of
 // using the GPU process.
 const base::Feature MEDIA_EXPORT kUseOutOfProcessVideoDecoding{
-    "UseOutOfProcessVideoDecoding", base::FEATURE_DISABLED_BY_DEFAULT};
+  "UseOutOfProcessVideoDecoding",
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 #endif  // BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)

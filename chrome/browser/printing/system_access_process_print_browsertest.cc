@@ -437,10 +437,7 @@ class SystemAccessProcessPrintBrowserTestBase
   void PrintAfterPreviewIsReadyAndLoaded() {
     // First invoke the Print Preview dialog with `StartPrint()`.
     TestPrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/true);
-    StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
-               /*print_renderer=*/mojo::NullAssociatedRemote(),
-               /*print_preview_disabled=*/false,
-               /*has_selection=*/false);
+    test::StartPrint(browser()->tab_strip_model()->GetActiveWebContents());
     content::WebContents* preview_dialog =
         print_preview_observer.WaitUntilPreviewIsReadyAndReturnPreviewDialog();
     ASSERT_TRUE(preview_dialog);
@@ -462,10 +459,7 @@ class SystemAccessProcessPrintBrowserTestBase
   void AdjustMediaAfterPreviewIsReadyAndLoaded() {
     // First invoke the Print Preview dialog with `StartPrint()`.
     TestPrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/true);
-    StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
-               /*print_renderer=*/mojo::NullAssociatedRemote(),
-               /*print_preview_disabled=*/false,
-               /*has_selection=*/false);
+    test::StartPrint(browser()->tab_strip_model()->GetActiveWebContents());
     content::WebContents* preview_dialog =
         print_preview_observer.WaitUntilPreviewIsReadyAndReturnPreviewDialog();
     ASSERT_TRUE(preview_dialog);
@@ -492,10 +486,7 @@ class SystemAccessProcessPrintBrowserTestBase
   void SystemPrintFromPreviewOnceReadyAndLoaded(bool wait_for_callback) {
     // First invoke the Print Preview dialog with `StartPrint()`.
     TestPrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/true);
-    StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
-               /*print_renderer=*/mojo::NullAssociatedRemote(),
-               /*print_preview_disabled=*/false,
-               /*has_selection=*/false);
+    test::StartPrint(browser()->tab_strip_model()->GetActiveWebContents());
     content::WebContents* preview_dialog =
         print_preview_observer.WaitUntilPreviewIsReadyAndReturnPreviewDialog();
     ASSERT_TRUE(preview_dialog);
@@ -885,7 +876,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
   const mojom::PrintPagesParamsPtr& snooped_params =
       print_view_manager.snooped_params();
   ASSERT_TRUE(snooped_params);
-  EXPECT_EQ(kTestPrinterCapabilitiesDpi, snooped_params->params->dpi);
+  EXPECT_EQ(test::kPrinterCapabilitiesDpi, snooped_params->params->dpi);
   EXPECT_EQ(kLetterPhysicalSize, snooped_params->params->page_size);
   EXPECT_EQ(kLetterPrintableArea, snooped_params->params->printable_area);
   EXPECT_EQ(kLetterExpectedContentSize, snooped_params->params->content_size);
@@ -915,7 +906,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
   const mojom::PrintPagesParamsPtr& snooped_params =
       print_view_manager.snooped_params();
   ASSERT_TRUE(snooped_params);
-  EXPECT_EQ(kTestPrinterCapabilitiesDpi, snooped_params->params->dpi);
+  EXPECT_EQ(test::kPrinterCapabilitiesDpi, snooped_params->params->dpi);
   EXPECT_EQ(kLegalPhysicalSize, snooped_params->params->page_size);
   EXPECT_EQ(kLegalPrintableArea, snooped_params->params->printable_area);
   EXPECT_EQ(kLegalExpectedContentSize, snooped_params->params->content_size);
@@ -969,7 +960,7 @@ IN_PROC_BROWSER_TEST_F(SystemAccessProcessSandboxedServicePrintBrowserTest,
   for (const auto& advanced_setting : advanced_settings) {
     advanced_setting_keys.push_back(advanced_setting.first);
   }
-  for (const auto& option : kTestDummyPrintInfoOptions) {
+  for (const auto& option : test::kPrintInfoOptions) {
     print_info_options_keys.push_back(option.first);
   }
   EXPECT_THAT(advanced_setting_keys,
@@ -1477,7 +1468,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
     EXPECT_TRUE(did_get_settings_with_ui());
     EXPECT_EQ(did_print_document_count(), 1);
 #endif
-    EXPECT_EQ(*MakeUserModifiedPrintSettings("printer1"),
+    EXPECT_EQ(*test::MakeUserModifiedPrintSettings("printer1"),
               *document_print_settings());
   } else {
     EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
@@ -1491,12 +1482,12 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
 #endif
     EXPECT_EQ(document_done_result(), mojom::ResultCode::kSuccess);
 #if BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
-    EXPECT_EQ(*MakeUserModifiedPrintSettings("printer1"),
+    EXPECT_EQ(*test::MakeUserModifiedPrintSettings("printer1"),
               *document_print_settings());
 #else
     // TODO(crbug.com/1414968):  Update the expectation once system print
     // settings are properly reflected at start of job print.
-    EXPECT_NE(*MakeUserModifiedPrintSettings("printer1"),
+    EXPECT_NE(*test::MakeUserModifiedPrintSettings("printer1"),
               *document_print_settings());
 #endif
   }
@@ -1599,12 +1590,12 @@ IN_PROC_BROWSER_TEST_F(SystemAccessProcessSandboxedServicePrintBrowserTest,
 #if BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
   EXPECT_EQ(use_default_settings_result(), mojom::ResultCode::kSuccess);
   EXPECT_EQ(ask_user_for_settings_result(), mojom::ResultCode::kSuccess);
-  EXPECT_EQ(*MakeUserModifiedPrintSettings("printer1"),
+  EXPECT_EQ(*test::MakeUserModifiedPrintSettings("printer1"),
             *document_print_settings());
 #else
   // TODO(crbug.com/1414968):  Update the expectation once system print
   // settings are properly reflected at start of job print.
-  EXPECT_NE(*MakeUserModifiedPrintSettings("printer1"),
+  EXPECT_NE(*test::MakeUserModifiedPrintSettings("printer1"),
             *document_print_settings());
 #endif
   EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);

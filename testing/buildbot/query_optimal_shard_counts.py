@@ -24,14 +24,29 @@ _CLOUD_PROJECT_ID = 'chrome-trooper-analytics'
 DEFAULT_OVERHEAD_SEC = 60
 ANDROID_OVERHEAD_SEC = 60 * 2
 
-# Builders that should currently not be autosharded because they don't use GCE
-# swarming bots and have capacity issues.
-BUILDER_EXCLUDE_LIST = (
+# ===========================================================================
+# Excluding a builder and/or test suite from autosharding means:
+# - If it was already autosharded before and exists in the
+# autoshard_exceptions.json file, don't change the shard value any further.
+# - If it was never autosharded, never add it to autoshard_exceptions.json
+# ===========================================================================
+
+# All suites triggered by the builder will not be autosharded.
+BUILDER_EXCLUDE_SET = set([
     'mac-rel',
     'ios-simulator',
     'ios-simulator-full-configs',
     'android-arm64-rel',
-)
+])
+
+# Test suites will not be autosharded on all builders that run the test suite.
+# Example: 'browser_tests' -> turns of browser_tests on linux-rel and win-rel
+TEST_SUITE_EXCLUDE_SET = set([])
+
+# Test suite and try builder dicts that should not be autosharded any further.
+# Maps try builder to set of test suite
+# Example: {'linux-rel': {'browser_tests'}}
+BUILDER_TEST_SUITE_EXCLUDE_DICT = {}
 
 QUERY = """
   WITH
@@ -43,12 +58,11 @@ QUERY = """
         b.start_time,
       FROM
         `cr-buildbucket.chromium.builds` b
-      INNER JOIN `chrome-trooper-analytics.metrics.cq_builders` cq_builders
-        ON b.builder.builder = cq_builders.builder
       WHERE
         b.start_time > '{lookback_start_date}'
         AND b.start_time <= '{lookback_end_date}'
         AND b.builder.bucket = 'try'
+        AND JSON_VALUE(b.input.properties, '$.cq') = 'required'
         AND JSON_QUERY(b.output.properties, '$.rts_was_used') IS NULL
         AND b.status = 'SUCCESS'
     ),
@@ -173,7 +187,6 @@ QUERY = """
       FROM suite_durations
       WHERE
         waterfall_builder_group IS NOT NULL
-        AND try_builder NOT IN {builder_exclude_list}
       GROUP BY
         test_suite,
         waterfall_builder_group,
@@ -271,7 +284,6 @@ def _run_query(lookback_start_date, lookback_end_date, desired_runtime,
       lookback_start_date=lookback_start_date,
       lookback_end_date=lookback_end_date,
       percentile=percentile,
-      builder_exclude_list=BUILDER_EXCLUDE_LIST,
       min_sample_size=min_sample_size,
   )
   args = [
@@ -279,7 +291,11 @@ def _run_query(lookback_start_date, lookback_end_date, desired_runtime,
       "--max_rows=100000", "--nouse_legacy_sql", query
   ]
 
-  output = subprocess.check_output(args)
+  try:
+    output = subprocess.check_output(args)
+  except subprocess.CalledProcessError as e:
+    print(e.output)
+    raise (e)
   return json.loads(output)
 
 
@@ -382,6 +398,12 @@ def main(args):
     builder_group = r['waterfall_builder_group']
     builder_name = r['waterfall_builder_name']
     test_suite = r['test_suite']
+
+    excluded_tests = BUILDER_TEST_SUITE_EXCLUDE_DICT.get(r['try_builder'])
+    if (test_suite in TEST_SUITE_EXCLUDE_SET
+        or (excluded_tests and test_suite in excluded_tests)
+        or r['try_builder'] in BUILDER_EXCLUDE_SET):
+      continue
 
     current_autoshard_val = data.get(builder_group,
                                      {}).get(builder_name,

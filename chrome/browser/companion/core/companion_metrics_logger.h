@@ -10,6 +10,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
 
+using side_panel::mojom::PhFeedback;
 using side_panel::mojom::PromoAction;
 using side_panel::mojom::PromoType;
 using side_panel::mojom::UiSurface;
@@ -29,6 +30,24 @@ enum class UiEvent {
 
   // User clicked on the UI surface.
   kClicked = 3,
+};
+
+// Various UI locations from which the companion page can be launched. Keep in
+// sync with Companion.OpenTrigger in enums.xml. These values are persisted to
+// logs. Entries should not be renumbered and numeric values should never be
+// reused.
+enum class OpenTrigger {
+  // Launch location is unknown.
+  kUnknown = 0,
+
+  // The companion page was opened via a context menu image search.
+  kContextMenuImageSearch = 1,
+
+  // The companion page was opened via a context menu text search.
+  kContextMenuTextSearch = 2,
+
+  // Other types of launches. Includes the toolbar button entry point.
+  kOther = 3,
 };
 
 // Tracks events happening on a single UI surface.
@@ -77,9 +96,11 @@ class CompanionMetricsLogger {
   CompanionMetricsLogger& operator=(const CompanionMetricsLogger&) = delete;
   ~CompanionMetricsLogger();
 
+  void RecordOpenTrigger(OpenTrigger open_trigger);
   void RecordUiSurfaceShown(UiSurface ui_surface, uint32_t child_element_count);
   void RecordUiSurfaceClicked(UiSurface ui_surface);
   void OnPromoAction(PromoType promo_type, PromoAction promo_action);
+  void OnPhFeedback(PhFeedback ph_feedback);
 
  private:
   // Meant to be called at destruction. Flushes the UKM metrics.
@@ -93,6 +114,13 @@ class CompanionMetricsLogger {
 
   // Last event on the promo surfaces.
   absl::optional<PromoEvent> last_promo_event_;
+
+  // Last event on the promo surfaces.
+  absl::optional<PhFeedback> last_ph_feedback_;
+
+  // Indicates how the companion page was opened. Non-empty for the first
+  // navigation.
+  absl::optional<OpenTrigger> open_trigger_;
 };
 
 }  // namespace companion

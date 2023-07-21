@@ -17,7 +17,7 @@ try_.defaults.set(
     cores = 8,
     os = os.LINUX_DEFAULT,
     compilator_cores = 8,
-    compilator_reclient_jobs = reclient.jobs.MID_JOBS_FOR_CQ,
+    compilator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     orchestrator_cores = 2,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
@@ -59,7 +59,21 @@ try_.orchestrator_builder(
         "weetbix.enable_weetbix_exonerations": 100,
     },
     main_list_view = "try",
-    tryjob = try_.job(),
+    service_account = try_.DEFAULT_SERVICE_ACCOUNT,
+    tryjob = try_.job(
+        location_filters = [
+            # Covers //fuchsia_web and //fuchsia changes, including
+            # SDK rolls.
+            ".*fuchsia.*",
+
+            # In 04/2022 - 04/2023, there was an independent failure.
+            "media/.+",
+
+            # TODO(crbug.com/1377994): When arm64 graphics are supported on
+            # emulator, fuchsia-arm64-rel tests should be tested.
+            "components/viz/viz.gni",
+        ],
+    ),
 )
 
 try_.compilator_builder(

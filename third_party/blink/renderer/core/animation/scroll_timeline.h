@@ -112,6 +112,8 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline,
   // timeline is inactive.
   absl::optional<ScrollOffsets> GetResolvedScrollOffsets() const;
 
+  float GetResolvedZoom() const { return timeline_state_snapshotted_.zoom; }
+
   bool Matches(TimelineAttachment,
                ReferenceType,
                Element* reference_element,
@@ -121,7 +123,7 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline,
 
   // Mark every effect target of every Animation attached to this timeline
   // for style recalc.
-  void InvalidateEffectTargetStyle();
+  void InvalidateEffectTargetStyle() const;
 
   cc::AnimationTimeline* EnsureCompositorTimeline() override;
   void UpdateCompositorTimeline() override;
@@ -183,6 +185,9 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline,
   void UpdateSnapshot() override;
   bool ValidateSnapshot() override;
   bool ShouldScheduleNextService() override;
+  bool CheckIfNeedsValidation() override;
+
+  virtual bool ValidateTimelineOffsets() { return true; }
 
   bool ComputeIsResolved() const;
 
@@ -196,10 +201,12 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline,
     TimelinePhase phase = TimelinePhase::kInactive;
     absl::optional<base::TimeDelta> current_time;
     absl::optional<ScrollOffsets> scroll_offsets;
+    // Zoom factor applied to the scroll offsets.
+    float zoom = 1.0f;
 
     bool operator==(const TimelineState& other) const {
       return phase == other.phase && current_time == other.current_time &&
-             scroll_offsets == other.scroll_offsets;
+             scroll_offsets == other.scroll_offsets && zoom == other.zoom;
     }
   };
 
@@ -208,6 +215,8 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline,
   TimelineAttachment attachment_type_;
   Member<Node> resolved_source_;
   bool is_resolved_ = false;
+  absl::optional<ScrollOffset> minimum_scroll_offset_;
+  absl::optional<ScrollOffset> maximum_scroll_offset_;
 
   // Snapshotted value produced by the last SnapshotState call.
   TimelineState timeline_state_snapshotted_;

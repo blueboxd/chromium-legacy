@@ -212,7 +212,7 @@
 <translation id="2597774443162333062">Файлдар мүчүлүштүктөрдү оңдоо үчүн Google'га жөнөтүлөт</translation>
 <translation id="2599691907981599502">{NUMBER_OF_PAGES,plural, =1{Скандалып бүттү. 1 бет скандалды}other{Скандалып бүттү. {NUMBER_OF_PAGES} бет скандалды}}</translation>
 <translation id="2619761439309613843">Күн сайын жаңыртуу</translation>
-<translation id="2620436844016719705">Система</translation>
+<translation id="2620436844016719705">Тутум</translation>
 <translation id="2638662041295312666">Аккаунтка кирүү сүрөтү</translation>
 <translation id="2640549051766135490"><ph name="TITLE" /> <ph name="DESC" /> альбому тандалды</translation>
 <translation id="267442004702508783">жаңылоо</translation>
@@ -255,7 +255,7 @@
 <translation id="315116470104423982">Мобилдик Интернет</translation>
 <translation id="3156846309055100599"><ph name="PAGE_NUMBER" />-бет скандалууда...</translation>
 <translation id="315738237743207937">Кирүү бети аныкталды</translation>
-<translation id="3160172848211257835"><ph name="BEGIN_LINK1" />Система жана колдонмо тууралуу маалыматты<ph name="END_LINK1" /> жана <ph name="BEGIN_LINK2" />көрсөткүчтөрдү<ph name="END_LINK2" /> жөнөтүү</translation>
+<translation id="3160172848211257835"><ph name="BEGIN_LINK1" />Тутум жана колдонмо тууралуу маалыматты<ph name="END_LINK1" /> жана <ph name="BEGIN_LINK2" />көрсөткүчтөрдү<ph name="END_LINK2" /> жөнөтүү</translation>
 <translation id="3170673040743561620">Документиңизди сканерге коюңуз</translation>
 <translation id="3188257591659621405">Менин файлдарым</translation>
 <translation id="319101249942218879">Аватардын сүрөтү өзгөрдү</translation>
@@ -295,6 +295,7 @@
 <translation id="3484914941826596830">Орнотулган программа жаңыртылып жатканда, тышкы түзмөктү ажыратпаңыз же компьютерди өчүрбөңүз. Бул терезени кичирейтип койсоңуз болот. Жаңыртуу бир нече мүнөткө созулуп, ал эми тышкы түзмөгүңүз бул убакытта иштебеши мүмкүн.</translation>
 <translation id="3486220673238053218">аныктама</translation>
 <translation id="3488065109653206955">Жарым-жартылай жандырылган</translation>
+<translation id="3502426834823382181">бардык колдонмолорду көрүү</translation>
 <translation id="3510890413042482857"><ph name="BEGIN_LINK1" />Жаздырылган майнаптуулук маалыматын<ph name="END_LINK1" /> жөнөтүү</translation>
 <translation id="3517001332549868749">ChromeOS жаңыртуусу</translation>
 <translation id="3527036260304016759">Басылып чыгарылган жок - Белгисиз ката</translation>
@@ -636,6 +637,7 @@
 <translation id="6278428485366576908">Тема</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Караңгы теманы күйгүзүү</translation>
+<translation id="6285899124799306373">жүргүзгүчтү ачуу</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> сыноосу жокко чыгарылды</translation>
 <translation id="631063167932043783">Мүмкүнчүлүктөр колдонмосу</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> түзмөгүндө орнотулган программаны жаңыртуу</translation>
@@ -651,6 +653,7 @@
 <translation id="6382182670717268353">Көшөгөнү алдын ала көрүү</translation>
 <translation id="6388847657025262518">Сканердин документ түрмөгү такалып калды. Түрмөктү текшерип, кайра аракет кылыңыз.</translation>
 <translation id="6394634179843537518">Файл кошуу</translation>
+<translation id="6401427872449207797">серепчиден издөө</translation>
 <translation id="6410257289063177456">Сүрөт файлдары</translation>
 <translation id="641081527798843608">Темасы дал келди</translation>
 <translation id="6412715219990689313">Кыстарылган баскычтоп</translation>
@@ -875,6 +878,7 @@
 <translation id="8312330582793120272">медианы ойнотуу</translation>
 <translation id="8318753676953949627">Сүрөттөр жок</translation>
 <translation id="8329018942023753850">эсептегич колдонмосу</translation>
+<translation id="8335869473001018124">издөөнү ачуу</translation>
 <translation id="8336739000755212683">Түзмөктөгү аккаунттун сүрөтүн өзгөртүү</translation>
 <translation id="8347227221149377169">Басып чыгаруу тапшырмалары</translation>
 <translation id="8351855506390808906">Баскычтарды дайындоо үчүн тийүү чекити</translation>

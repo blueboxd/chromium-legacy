@@ -13,8 +13,9 @@ import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
 
-import androidx.test.InstrumentationRegistry;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.filters.SmallTest;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -125,7 +126,7 @@ public class TabReparentingTest {
      */
     private Intent createMinimalCustomTabIntent() {
         return CustomTabsIntentTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getTargetContext(), mTestPage);
+                ApplicationProvider.getApplicationContext(), mTestPage);
     }
 
     private ChromeActivity reparentAndVerifyTab() {
@@ -207,7 +208,7 @@ public class TabReparentingTest {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsIntentTestUtils.createMinimalCustomTabIntent(
-                        InstrumentationRegistry.getTargetContext(),
+                        ApplicationProvider.getApplicationContext(),
                         mTestServer.getURL(POPUP_PAGE)));
         CriteriaHelper.pollUiThread(
                 () -> isInfoBarSizeOne(mCustomTabActivityTestRule.getActivity().getActivityTab()));
@@ -233,7 +234,7 @@ public class TabReparentingTest {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsIntentTestUtils.createMinimalCustomTabIntent(
-                        InstrumentationRegistry.getTargetContext(),
+                        ApplicationProvider.getApplicationContext(),
                         mTestServer.getURL(SELECT_POPUP_PAGE)));
         CriteriaHelper.pollUiThread(() -> {
             Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();

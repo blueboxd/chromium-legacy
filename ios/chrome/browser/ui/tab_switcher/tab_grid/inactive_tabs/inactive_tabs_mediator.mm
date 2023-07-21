@@ -11,10 +11,12 @@
 #import "components/prefs/pref_change_registrar.h"
 #import "components/prefs/pref_service.h"
 #import "components/sessions/core/tab_restore_service.h"
-#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_observer.h"
@@ -25,8 +27,6 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
 #import "ios/chrome/browser/ui/tab_switcher/web_state_tab_switcher_item.h"
 #import "ios/chrome/browser/url/url_util.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 #import "ui/base/device_form_factor.h"
@@ -87,6 +87,8 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
                                     PrefObserverDelegate,
                                     SnapshotCacheObserver,
                                     WebStateListObserving> {
+  // The UI consumer to which updates are made.
+  __weak id<TabCollectionConsumer, InactiveTabsInfoConsumer> _consumer;
   // The list of inactive tabs.
   WebStateList* _webStateList;
   // The snapshot cache of _webStateList.
@@ -121,14 +123,17 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
 
 @implementation InactiveTabsMediator
 
-- (instancetype)initWithWebStateList:(WebStateList*)webStateList
-                         prefService:(PrefService*)prefService
-             sessionRestorationAgent:
-                 (SessionRestorationBrowserAgent*)sessionRestorationAgent
-                       snapshotAgent:(SnapshotBrowserAgent*)snapshotAgent
-                   tabRestoreService:
-                       (sessions::TabRestoreService*)tabRestoreService {
+- (instancetype)
+           initWithConsumer:
+               (id<TabCollectionConsumer, InactiveTabsInfoConsumer>)consumer
+               webStateList:(WebStateList*)webStateList
+                prefService:(PrefService*)prefService
+    sessionRestorationAgent:
+        (SessionRestorationBrowserAgent*)sessionRestorationAgent
+              snapshotAgent:(SnapshotBrowserAgent*)snapshotAgent
+          tabRestoreService:(sessions::TabRestoreService*)tabRestoreService {
   CHECK(IsInactiveTabsAvailable());
+  CHECK(consumer);
   CHECK(webStateList);
   CHECK(prefService);
   CHECK(sessionRestorationAgent);
@@ -137,6 +142,7 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   CHECK(tabRestoreService);
   self = [super init];
   if (self) {
+    _consumer = consumer;
     _webStateList = webStateList;
 
     // Observe the web state list.
@@ -163,6 +169,12 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
     _prefObserverBridge->ObserveChangesForPreference(
         prefs::kInactiveTabsTimeThreshold, &_prefChangeRegistrar);
 
+    // Push the tabs to the consumer.
+    PopulateConsumerItems(_consumer, _webStateList);
+    // Push the info to the consumer.
+    NSInteger daysThreshold = InactiveTabsTimeThreshold().InDays();
+    [_consumer updateInactiveTabsDaysThreshold:daysThreshold];
+
     _snapshotCache = snapshotAgent->snapshot_cache();
     [_snapshotCache addObserver:self];
 
@@ -175,21 +187,6 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
 
 - (void)dealloc {
   [_snapshotCache removeObserver:self];
-}
-
-- (void)setConsumer:
-    (id<TabCollectionConsumer, InactiveTabsInfoConsumer>)consumer {
-  if (_consumer == consumer) {
-    return;
-  }
-
-  _consumer = consumer;
-
-  // Push the tabs to the consumer.
-  PopulateConsumerItems(_consumer, _webStateList);
-  // Push the info to the consumer.
-  NSInteger daysThreshold = InactiveTabsTimeThreshold().InDays();
-  [_consumer updateInactiveTabsDaysThreshold:daysThreshold];
 }
 
 - (NSInteger)numberOfItems {

@@ -90,7 +90,6 @@ class SegmentationUkmHelper {
   SegmentationUkmHelper();
   ~SegmentationUkmHelper();
 
-  int sampling_rate_;
   base::flat_set<SegmentId> allowed_segment_ids_;
 };
 

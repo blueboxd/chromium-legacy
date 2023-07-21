@@ -18,7 +18,6 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/controls/contextual_tooltip.h"
 #include "ash/display/screen_orientation_controller.h"
-#include "ash/drag_drop/scoped_drag_drop_observer.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -27,6 +26,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/desk_button_widget.h"
 #include "ash/shelf/drag_handle.h"
 #include "ash/shelf/home_to_overview_nudge_controller.h"
 #include "ash/shelf/hotseat_widget.h"
@@ -939,6 +939,13 @@ bool ShelfLayoutManager::ProcessGestureEvent(
     return false;
   }
 
+  // In certain edge cases, SHOW_PRESS gesture may come just as scroll starts.
+  // Ignore it, as it's not actoinable, and should not cancel drag and drop.
+  // See b/277846859 for more details.
+  if (event_in_screen.type() == ui::ET_GESTURE_SHOW_PRESS) {
+    return true;
+  }
+
   if (event_in_screen.type() == ui::ET_GESTURE_SCROLL_UPDATE) {
     UpdateGestureDrag(event_in_screen);
     return true;
@@ -1389,16 +1396,20 @@ void ShelfLayoutManager::OnSessionStateChanged(
   // Check transition changes to/from the add user to session and change the
   // shelf alignment accordingly
   const bool was_adding_user = state_.IsAddingSecondaryUser();
+  const bool was_locked = state_.IsScreenLocked();
   state_.session_state = state;
 
   // Animate shelf layout if the container is not animating.
-  bool animate = !IsShelfContainerAnimating();
-  MaybeUpdateShelfBackground(animate ? AnimationChangeType::ANIMATE
-                                     : AnimationChangeType::IMMEDIATE);
+  bool animate_background = !IsShelfContainerAnimating();
+  MaybeUpdateShelfBackground(animate_background
+                                 ? AnimationChangeType::ANIMATE
+                                 : AnimationChangeType::IMMEDIATE);
   HideContextualNudges();
   {
     base::AutoReset<bool> immediate_transition(
-        &state_change_animation_disabled_, !animate);
+        &state_change_animation_disabled_,
+        !animate_background || state_.IsActiveSessionState() ||
+            was_locked != state_.IsScreenLocked());
     UpdateShelfVisibilityAfterLoginUIChange();
   }
   if (was_adding_user == state_.IsAddingSecondaryUser()) {
@@ -1437,6 +1448,9 @@ void ShelfLayoutManager::OnLocaleChanged() {
     shelf_->shelf_widget()->HandleLocaleChange();
   shelf_->status_area_widget()->HandleLocaleChange();
   shelf_->navigation_widget()->HandleLocaleChange();
+  if (features::IsDeskButtonEnabled()) {
+    shelf_widget_->desk_button_widget()->HandleLocaleChange();
+  }
 
   // Layout update is needed when language changes between LTR and RTL.
   LayoutShelf();
@@ -1894,6 +1908,9 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
   hotseat_widget->UpdateLayout(animate);
   status_widget->UpdateLayout(animate);
   nav_widget->UpdateLayout(animate);
+  if (features::IsDeskButtonEnabled()) {
+    shelf_widget_->desk_button_widget()->UpdateLayout(animate);
+  }
   if (features::IsUseLoginShelfWidgetEnabled()) {
     shelf_->login_shelf_widget()->UpdateLayout(animate);
   }
@@ -1928,7 +1945,21 @@ void ShelfLayoutManager::UpdateTargetBounds(const State& state,
   shelf_->shelf_widget()->CalculateTargetBounds();
   shelf_->status_area_widget()->CalculateTargetBounds();
   shelf_->navigation_widget()->CalculateTargetBounds();
+  // If the desk button should be on the shelf, reserve space for it in the
+  // hotseat before drawing the hotseat.
+  DeskButtonWidget* desk_button = shelf_->desk_button_widget();
+  if (features::IsDeskButtonEnabled() && desk_button->ShouldBeVisible()) {
+    shelf_->hotseat_widget()->ReserveSpaceForAdjacentWidgets(
+        shelf_->IsHorizontalAlignment()
+            ? gfx::Insets::TLBR(0, desk_button->GetPreferredLength(), 0, 0)
+            : gfx::Insets::TLBR(desk_button->GetPreferredLength(), 0, 0, 0));
+  } else {
+    shelf_->hotseat_widget()->ReserveSpaceForAdjacentWidgets(gfx::Insets());
+  }
   shelf_->hotseat_widget()->CalculateTargetBounds();
+  if (features::IsDeskButtonEnabled()) {
+    desk_button->CalculateTargetBounds();
+  }
   if (features::IsUseLoginShelfWidgetEnabled())
     shelf_->login_shelf_widget()->CalculateTargetBounds();
 
@@ -1969,6 +2000,15 @@ void ShelfLayoutManager::UpdateWorkAreaInsetsAndNotifyObservers(
   Shell::Get()
       ->window_tree_host_manager()
       ->UpdateWorkAreaOfDisplayNearestWindow(shelf_native_window, shelf_insets);
+}
+
+void ShelfLayoutManager::HandleScrollableShelfContainerBoundsChange() const {
+  if (ash::features::IsDeskButtonEnabled()) {
+    // The desk button widget bounds depend on the scrollable shelf container
+    // bounds.
+    shelf_widget_->desk_button_widget()->CalculateTargetBounds();
+    shelf_widget_->desk_button_widget()->UpdateLayout(true);
+  }
 }
 
 void ShelfLayoutManager::UpdateTargetBoundsForGesture(
@@ -2065,9 +2105,10 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
 }
 
 void ShelfLayoutManager::UpdateAutoHideForDragDrop(
+    ScopedDragDropObserver::EventType event_type,
     const ui::DropTargetEvent* event) {
   DCHECK_EQ(visibility_state(), SHELF_AUTO_HIDE);
-  if (!event) {
+  if (event_type != ScopedDragDropObserver::EventType::kDragUpdated) {
     if (!in_mouse_drag_ && in_drag_drop_ &&
         shelf_->shelf_widget()->GetVisibleShelfBounds().Contains(
             last_drag_drop_position_in_screen_)) {

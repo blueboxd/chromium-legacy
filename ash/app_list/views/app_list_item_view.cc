@@ -896,6 +896,7 @@ bool AppListItemView::InitiateDrag(const gfx::Point& location,
     return false;
   }
   drag_state_ = DragState::kInitialized;
+  SilentlyRequestFocus();
   return true;
 }
 
@@ -919,6 +920,10 @@ void AppListItemView::OnDragEnded() {
 
   SetUIState(UI_STATE_NORMAL);
   drag_state_ = DragState::kNone;
+}
+
+void AppListItemView::OnDragDone() {
+  EnsureSelected();
 }
 
 void AppListItemView::CancelContextMenu() {
@@ -1747,9 +1752,9 @@ void AppListItemView::ItemBeingDestroyed() {
     folder_icon_->ResetFolderItem();
   }
 
-  // TODO(b/261985897): Consider canceling drag when the item is being
-  // destroyed.
   if (app_list_features::IsDragAndDropRefactorEnabled()) {
+    // When drag and drop refactor is enabled, AppsGridView observes dragged
+    // item destruction to ensure the drag is finalized.
     return;
   }
 

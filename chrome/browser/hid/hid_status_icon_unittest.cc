@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/hid/hid_status_icon.h"
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/hid/hid_system_tray_icon_unittest.h"
 
@@ -270,5 +272,65 @@ TEST_F(HidStatusIconTest, NumCommandIdOverLimitExtensionOrigin) {
 
 TEST_F(HidStatusIconTest, ExtensionRemoval) {
   TestExtensionRemoval();
+}
+
+TEST_F(HidStatusIconTest, ProfileUserName) {
+  std::vector<HidSystemTrayIconTestBase::ProfileItem> profile_connection_counts;
+  std::vector<std::string> profile_names;
+  std::vector<std::string> new_profile_names;
+  std::vector<base::FilePath> profile_paths;
+  for (size_t idx = 0; idx < 2; idx++) {
+    profile_names.push_back(base::StringPrintf("user%zu", idx));
+    new_profile_names.push_back(base::StringPrintf("user%zu-newname", idx));
+    auto* profile = CreateTestingProfile(profile_names.back());
+    auto extension = CreateExtensionWithName("Test Extension");
+    AddExtensionToProfile(profile, extension.get());
+    auto* connection_tracker =
+        HidConnectionTrackerFactory::GetForProfile(profile,
+                                                   /*create=*/true);
+    connection_tracker->IncrementConnectionCount(extension->origin());
+    profile_connection_counts.push_back(
+        {profile, {{extension->origin(), 1, extension->name()}}});
+    profile_paths.push_back(profile->GetPath());
+  }
+  CheckIcon(profile_connection_counts);
+
+  const auto* status_tray = static_cast<MockStatusTray*>(
+      TestingBrowserProcess::GetGlobal()->status_tray());
+  ASSERT_TRUE(status_tray);
+  EXPECT_EQ(status_tray->GetStatusIconsForTest().size(), 1u);
+  const auto* status_icon = static_cast<MockStatusIcon*>(
+      status_tray->GetStatusIconsForTest().back().get());
+
+  // Check the current profile names.
+  {
+    auto* menu_item = status_icon->menu_item();
+    CheckMenuItemLabel(menu_item, 3, base::UTF8ToUTF16(profile_names[0]));
+    CheckMenuItemLabel(menu_item, 7, base::UTF8ToUTF16(profile_names[1]));
+  }
+
+  // Change the first profile name.
+  {
+    profile_manager()
+        ->profile_attributes_storage()
+        ->GetProfileAttributesWithPath(profile_paths[0])
+        ->SetLocalProfileName(base::UTF8ToUTF16(new_profile_names[0]),
+                              /*is_default_name*/ false);
+    auto* menu_item = status_icon->menu_item();
+    CheckMenuItemLabel(menu_item, 3, base::UTF8ToUTF16(new_profile_names[0]));
+    CheckMenuItemLabel(menu_item, 7, base::UTF8ToUTF16(profile_names[1]));
+  }
+
+  // Change the second profile name.
+  {
+    profile_manager()
+        ->profile_attributes_storage()
+        ->GetProfileAttributesWithPath(profile_paths[1])
+        ->SetLocalProfileName(base::UTF8ToUTF16(new_profile_names[1]),
+                              /*is_default_name*/ false);
+    auto* menu_item = status_icon->menu_item();
+    CheckMenuItemLabel(menu_item, 3, base::UTF8ToUTF16(new_profile_names[0]));
+    CheckMenuItemLabel(menu_item, 7, base::UTF8ToUTF16(new_profile_names[1]));
+  }
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)

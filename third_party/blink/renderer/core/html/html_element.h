@@ -75,6 +75,7 @@ enum class PopoverTriggerAction {
   kToggle,
   kShow,
   kHide,
+  kHover,
 };
 
 enum class HidePopoverFocusBehavior {
@@ -83,7 +84,16 @@ enum class HidePopoverFocusBehavior {
 };
 
 enum class HidePopoverTransitionBehavior {
+  // Fire events (e.g. beforetoggle) which can run synchronous script, and
+  // also wait for CSS transitions of `overlay` before removing the popover
+  // from the top layer. This should be used for most "normal" popover hide
+  // operations.
   kFireEventsAndWaitForTransitions,
+  // Does not fire any events, nor wait for CSS transitions. The popover is
+  // removed immediately from the top layer. This should be used when the UA
+  // is forcibly removing the popover from the top layer, e.g. when other
+  // higher priority elements are entering the top layer, or when the popover
+  // element is being removed from the document.
   kNoEventsNoWaiting,
 };
 
@@ -263,6 +273,10 @@ class CORE_EXPORT HTMLElement : public Element {
                                    HidePopoverFocusBehavior,
                                    HidePopoverTransitionBehavior,
                                    HidePopoverIndependence);
+  // Popover hover triggering behavior.
+  bool IsNodePopoverDescendant(const Node& node) const;
+  void MaybeQueuePopoverHideEvent();
+  static void HoveredElementChanged(Element* old_element, Element* new_element);
 
   void SetOwnerSelectMenuElement(HTMLSelectMenuElement* element);
   HTMLSelectMenuElement* ownerSelectMenuElement() const;

@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_types.h"
 #include "chromeos/crosapi/mojom/video_conference.mojom-forward.h"
+#include "ui/compositor/throughput_tracker.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/controls/button/button.h"
@@ -61,7 +62,8 @@ class ASH_EXPORT ReturnToAppButton : public views::Button {
                     bool is_capturing_camera,
                     bool is_capturing_microphone,
                     bool is_capturing_screen,
-                    const std::u16string& display_text);
+                    const std::u16string& display_text,
+                    crosapi::mojom::VideoConferenceAppType app_type);
 
   ReturnToAppButton(const ReturnToAppButton&) = delete;
   ReturnToAppButton& operator=(const ReturnToAppButton&) = delete;
@@ -86,7 +88,12 @@ class ASH_EXPORT ReturnToAppButton : public views::Button {
   FRIEND_TEST_ALL_PREFIXES(ReturnToAppPanelTest, ExpandCollapse);
 
   // Callback for the button.
-  void OnButtonClicked(const base::UnguessableToken& id);
+  void OnButtonClicked(const base::UnguessableToken& id,
+                       crosapi::mojom::VideoConferenceAppType app_type);
+
+  // Get the text regarding the peripherals part of the return to app button
+  // accessible name.
+  std::u16string GetPeripheralsAccessibleName();
 
   // Indicates if the running app is using camera, microphone, or screen
   // sharing.
@@ -185,6 +192,9 @@ class ASH_EXPORT ReturnToAppPanel : public views::View,
 
     // Target expand state of the panel after the animation is completed.
     bool expanded_target_ = false;
+
+    // Measure animation smoothness metrics for all the animations.
+    absl::optional<ui::ThroughputTracker> throughput_tracker_;
   };
 
   // ReturnToAppButton::Observer:

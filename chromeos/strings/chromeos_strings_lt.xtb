@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">Nepavyko priskirti DNS</translation>
 <translation id="1018656279737460067">Atšaukta</translation>
 <translation id="1022433422498218992">Bendrieji valdikliai</translation>
-<translation id="1022628058306505708">Žemės srautas</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (grupių: <ph name="THREAD_COUNT" />, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">Pasiekiama nauja funkcija, spustelėkite rodyklės aukštyn klavišą, kad sužinotumėte daugiau.</translation>
 <translation id="1059913517121127803">Nepavyko pradėti nuskaitymo</translation>
@@ -235,7 +234,6 @@
 <translation id="2902312830803030883">Daugiau veiksmų</translation>
 <translation id="2926057806159140518">Įveskite naudotojo vardą ir slaptažodį arba nuskaitykite QR kodą</translation>
 <translation id="2940811910881150316">Nepavyko išbandyti įrenginio. Jei norite išbandyti, iš naujo atidarykite dangtelį.</translation>
-<translation id="2981143481017883351">Išskirtiniai „Chromebook“ ištekliai jau pasiekiami</translation>
 <translation id="3008341117444806826">ATNAUJINTI</translation>
 <translation id="3009958530611748826">Pasirinkite aplanką, kuriame pageidaujate išsaugoti</translation>
 <translation id="3017079585324758401">Fonas</translation>
@@ -280,7 +278,6 @@
 <translation id="3360306038446926262">Windows</translation>
 <translation id="3368922792935385530">Prijungta</translation>
 <translation id="3369013195428705271">Ar tikrai norite išvalyti visą spausdinimo istoriją? Vykdomos spausdinimo užduotys nebus išvalytos.</translation>
-<translation id="3386675685417744672">Taikoma tik „Chromebook“</translation>
 <translation id="3404249063913988450">Įgalinti ekrano užsklandą</translation>
 <translation id="3413935475507503304">Jei norite tęsti atnaujinimo procesą, spustelėkite „Kitas“.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" /> proc.</translation>
@@ -295,6 +292,7 @@
 <translation id="3484914941826596830">Kol programinė aparatinė įranga atnaujinama, neatjunkite išorinio įrenginio ir neišjunkite kompiuterio. Galite sumažinti šį langą. Šis atnaujinimo procesas gali užtrukti kelias minutes ir tuo metu jūsų išorinis įrenginys gali neveikti.</translation>
 <translation id="3486220673238053218">apibrėžimas</translation>
 <translation id="3488065109653206955">Iš dalies suaktyvinta</translation>
+<translation id="3502426834823382181">žr. visas programas</translation>
 <translation id="3510890413042482857">Siųsti <ph name="BEGIN_LINK1" />našumo stebėjimo duomenis<ph name="END_LINK1" /></translation>
 <translation id="3517001332549868749">„Chrome“ OS naujinys</translation>
 <translation id="3527036260304016759">Nepavyko – nežinoma klaida</translation>
@@ -358,7 +356,6 @@
 <translation id="404928562651467259">ĮSPĖJIMAS</translation>
 <translation id="4054683689023980771">Atsisiunčiamas vaizdas</translation>
 <translation id="4060260348856573701">Naujas APN</translation>
-<translation id="4079743696465895866">Pasirinkite išskirtinius „Chromebook“ kūrinius</translation>
 <translation id="4093865285251893588">Profilio nuotrauka</translation>
 <translation id="409427325554347132">Išsaugoti išsamią testo informaciją</translation>
 <translation id="4095829376260267438">WPA2 / WPA3</translation>
@@ -625,7 +622,6 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">Akumuliatoriaus galia mažėja jį naudojant</translation>
 <translation id="6191293864534840972">Netinkamai sukonfigūruoti domenų pavadinimų serveriai</translation>
-<translation id="6205145102504628069">Debesies srautas</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223066887782788441">Išeiti iš viso ekrano režimo</translation>
 <translation id="6223752125779001553">Skaitytuvai nepasiekiami</translation>
@@ -636,6 +632,7 @@
 <translation id="6278428485366576908">Tema</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Įjungti tamsiąją temą</translation>
+<translation id="6285899124799306373">atidaryti paleidimo priemonę</translation>
 <translation id="6302401976930124515">Bandymas „<ph name="TEST_NAME" />“ atšauktas</translation>
 <translation id="631063167932043783">Programa „Explore“</translation>
 <translation id="6319207335391420837">„<ph name="DEVICE_NAME" />“ programinės aparatinės įrangos naujinys</translation>
@@ -651,6 +648,7 @@
 <translation id="6382182670717268353">Ekrano užsklandos peržiūra</translation>
 <translation id="6388847657025262518">Skaitytuvo dokumentų tiektuvas užstrigo. Patikrinkite tiektuvą ir bandykite dar kartą.</translation>
 <translation id="6394634179843537518">Pridėti failą</translation>
+<translation id="6401427872449207797">naršyklės paieška</translation>
 <translation id="6410257289063177456">Vaizdo failai</translation>
 <translation id="641081527798843608">Temos atitiktis</translation>
 <translation id="6412715219990689313">Įtaisyta klaviatūra</translation>
@@ -666,7 +664,6 @@
 <translation id="6494974875566443634">Tinkinimas</translation>
 <translation id="6500818810472529210">Peržiūrėti rezultatą „Google“ paieškoje</translation>
 <translation id="650266656685499220">Jei norite kurti albumus, eikite į „Google“ nuotraukas</translation>
-<translation id="6505750420152840539">Nuo aušros iki sutemų</translation>
 <translation id="6516990319416533844">Norėdami patikrinti įkrovimo spartą, leiskite akumuliatoriui trumpam laikotarpiui išsikrauti</translation>
 <translation id="6517239166834772319">Explore</translation>
 <translation id="6526200165918397681">Priderinkite prie ekrano fono</translation>
@@ -875,6 +872,7 @@
 <translation id="8312330582793120272">leisti mediją</translation>
 <translation id="8318753676953949627">Vaizdų nėra</translation>
 <translation id="8329018942023753850">skaičiuotuvo programa</translation>
+<translation id="8335869473001018124">atidaryti paiešką</translation>
 <translation id="8336739000755212683">Keisti įrenginio paskyros vaizdą</translation>
 <translation id="8347227221149377169">Spausdinimo užduotys</translation>
 <translation id="8351855506390808906">Klavišų schemų lietimo taškas</translation>

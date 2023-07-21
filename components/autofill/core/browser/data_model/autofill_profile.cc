@@ -208,11 +208,11 @@ void GetFieldsForDistinguishingProfiles(
 
 }  // namespace
 
-AutofillProfile::AutofillProfile(const std::string& guid,
-                                 const std::string& origin,
-                                 Source source)
-    : AutofillDataModel(guid, origin),
-      company_(this),
+AutofillProfile::AutofillProfile()
+    : AutofillProfile(Source::kLocalOrSyncable) {}
+
+AutofillProfile::AutofillProfile(const std::string& guid, Source source)
+    : AutofillDataModel(guid, /*origin=*/""),
       phone_number_(this),
       record_type_(LOCAL_PROFILE),
       has_converted_(false),
@@ -220,11 +220,14 @@ AutofillProfile::AutofillProfile(const std::string& guid,
       initial_creator_id_(kInitialCreatorOrModifierChrome),
       last_modifier_id_(kInitialCreatorOrModifierChrome) {}
 
+AutofillProfile::AutofillProfile(Source source)
+    : AutofillProfile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                      source) {}
+
 // TODO(crbug.com/1177366): Remove this constructor.
 AutofillProfile::AutofillProfile(RecordType type, const std::string& server_id)
     : AutofillDataModel(base::Uuid::GenerateRandomV4().AsLowercaseString(),
-                        std::string()),
-      company_(this),
+                        /*origin=*/""),
       phone_number_(this),
       server_id_(server_id),
       record_type_(type),
@@ -233,18 +236,8 @@ AutofillProfile::AutofillProfile(RecordType type, const std::string& server_id)
   DCHECK(type == SERVER_PROFILE);
 }
 
-AutofillProfile::AutofillProfile(Source source)
-    : AutofillProfile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
-                      std::string(),
-                      source) {}
-
-AutofillProfile::AutofillProfile()
-    : AutofillProfile(Source::kLocalOrSyncable) {}
-
 AutofillProfile::AutofillProfile(const AutofillProfile& profile)
-    : AutofillDataModel(std::string(), std::string()),
-      company_(this),
-      phone_number_(this) {
+    : AutofillDataModel(/*guid=*/"", /*origin=*/""), phone_number_(this) {
   operator=(profile);
 }
 
@@ -271,7 +264,6 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   name_ = profile.name_;
   email_ = profile.email_;
   company_ = profile.company_;
-  company_.set_profile(this);
   phone_number_ = profile.phone_number_;
   phone_number_.set_profile(this);
   birthdate_ = profile.birthdate_;
@@ -320,10 +312,6 @@ bool AutofillProfile::SetMetadata(const AutofillMetadata& metadata) {
 
   has_converted_ = metadata.has_converted;
   return true;
-}
-
-bool AutofillProfile::IsDeletable() const {
-  return AutofillDataModel::IsDeletable() && !IsVerified();
 }
 
 void AutofillProfile::GetMatchingTypes(
@@ -433,6 +421,7 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
       ADDRESS_HOME_ZIP,
       ADDRESS_HOME_SORTING_CODE,
       ADDRESS_HOME_COUNTRY,
+      ADDRESS_HOME_LANDMARK,
       ADDRESS_HOME_HOUSE_NUMBER,
       ADDRESS_HOME_STREET_NAME,
       ADDRESS_HOME_DEPENDENT_STREET_NAME,
@@ -477,7 +466,6 @@ bool AutofillProfile::EqualsForSyncPurposes(
 bool AutofillProfile::EqualsForUpdatePurposes(
     const AutofillProfile& new_profile) const {
   return use_count() == new_profile.use_count() &&
-         (origin() == new_profile.origin() || !new_profile.IsVerified()) &&
          UseDateEqualsInSeconds(&new_profile) &&
          language_code() == new_profile.language_code() &&
          Compare(new_profile) == 0;
@@ -569,14 +557,11 @@ bool AutofillProfile::IsStrictSupersetOf(
 }
 
 void AutofillProfile::OverwriteDataFrom(const AutofillProfile& profile) {
-  // Verified profiles should never be overwritten with unverified data.
-  DCHECK(!IsVerified() || profile.IsVerified());
   DCHECK_EQ(guid(), profile.guid());
 
   // Some fields should not got overwritten by empty values; back-up the
   // values.
   std::string language_code_value = language_code();
-  std::string origin_value = origin();
 
   // Structured names should not be simply overwritten but it should be
   // attempted to merge the names.
@@ -588,8 +573,6 @@ void AutofillProfile::OverwriteDataFrom(const AutofillProfile& profile) {
 
   *this = profile;
 
-  if (origin().empty())
-    set_origin(origin_value);
   if (language_code().empty())
     set_language_code(language_code_value);
 
@@ -607,52 +590,6 @@ void AutofillProfile::OverwriteDataFrom(const AutofillProfile& profile) {
   }
 }
 
-bool AutofillProfile::MergeStructuredDataFrom(const AutofillProfile& profile,
-                                              const std::string& app_locale) {
-  // Should only be called if the profile is already verified.
-  DCHECK(IsVerified());
-
-  AutofillProfileComparator comparator(app_locale);
-
-  DVLOG(1) << "Merging profile structure information :\nSource = " << profile
-           << "\nDest = " << *this;
-
-  bool merged = false;
-
-  // It is already verified upstream that the profiles and therefore also the
-  // names and addresses are mergeable.
-  // However, the structure should only be merged if the full names or addresses
-  // are token equivalent.
-  if (AreStringTokenEquivalent(GetRawInfo(NAME_FULL),
-                               profile.GetRawInfo(NAME_FULL))) {
-    NameInfo name;
-    if (!comparator.MergeNames(profile, *this, name)) {
-      NOTREACHED();
-      return false;
-    }
-    if (name_ != name) {
-      name_ = name;
-      merged = true;
-    }
-  }
-
-  if (AreStringTokenEquivalent(
-          GetRawInfo(ADDRESS_HOME_STREET_ADDRESS),
-          profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS))) {
-    Address address;
-    if (!comparator.MergeAddresses(profile, *this, address)) {
-      NOTREACHED();
-      return false;
-    }
-    if (address_ != address) {
-      address_ = address;
-      merged = true;
-    }
-  }
-
-  return merged;
-}
-
 bool AutofillProfile::MergeDataFrom(const AutofillProfile& profile,
                                     const std::string& app_locale) {
   AutofillProfileComparator comparator(app_locale);
@@ -660,7 +597,7 @@ bool AutofillProfile::MergeDataFrom(const AutofillProfile& profile,
 
   NameInfo name;
   EmailInfo email;
-  CompanyInfo company(this);
+  CompanyInfo company;
   PhoneNumber phone_number(this);
   Address address;
   Birthdate birthdate;
@@ -739,32 +676,13 @@ bool AutofillProfile::MergeDataFrom(const AutofillProfile& profile,
 
 bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
                                          const std::string& app_locale) {
-  // If both profiles are verified, do not merge them.
-  if (IsVerified() && profile.IsVerified())
-    return false;
-
   AutofillProfileComparator comparator(app_locale);
 
   // SaveAdditionalInfo should not have been called if the profiles were not
   // already deemed to be mergeable.
   DCHECK(comparator.AreMergeable(*this, profile));
 
-  // We don't replace verified profile data with unverified profile data. But,
-  // we can merge two unverified profiles or merge verified profile data into an
-  // unverified profile.
-  if (!IsVerified() || profile.IsVerified()) {
-    if (MergeDataFrom(profile, app_locale)) {
-      AutofillMetrics::LogProfileActionOnFormSubmitted(
-          AutofillMetrics::EXISTING_PROFILE_UPDATED);
-    } else {
-      AutofillMetrics::LogProfileActionOnFormSubmitted(
-          AutofillMetrics::EXISTING_PROFILE_USED);
-    }
-    return true;
-  }
-  // If the profile is verified, only the structured name information should be
-  // merged.
-  if (MergeStructuredDataFrom(profile, app_locale)) {
+  if (MergeDataFrom(profile, app_locale)) {
     AutofillMetrics::LogProfileActionOnFormSubmitted(
         AutofillMetrics::EXISTING_PROFILE_UPDATED);
   } else {
@@ -841,7 +759,7 @@ std::u16string AutofillProfile::ConstructInferredLabel(
 
   // A copy of |this| pruned down to contain only data for the address fields in
   // |included_fields|.
-  AutofillProfile trimmed_profile(guid(), origin());
+  AutofillProfile trimmed_profile(guid());
   trimmed_profile.SetInfo(region_code_type, profile_region_code, app_locale);
   trimmed_profile.set_language_code(language_code());
   AutofillCountry country(address_region_code);
@@ -1098,8 +1016,7 @@ FormGroup* AutofillProfile::MutableFormGroupForType(const AutofillType& type) {
 }
 
 bool AutofillProfile::EqualsSansGuid(const AutofillProfile& profile) const {
-  return origin() == profile.origin() &&
-         disallow_settings_visible_updates() ==
+  return disallow_settings_visible_updates() ==
              profile.disallow_settings_visible_updates() &&
          language_code() == profile.language_code() &&
          profile_label() == profile.profile_label() &&
@@ -1162,10 +1079,12 @@ std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
 
 bool AutofillProfile::FinalizeAfterImport() {
   bool success = true;
-  if (!name_.FinalizeAfterImport(IsVerified()))
+  if (!name_.FinalizeAfterImport()) {
     success = false;
-  if (!address_.FinalizeAfterImport(IsVerified()))
+  }
+  if (!address_.FinalizeAfterImport()) {
     success = false;
+  }
 
   return success;
 }

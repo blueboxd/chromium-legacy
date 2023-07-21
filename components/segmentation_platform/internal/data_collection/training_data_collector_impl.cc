@@ -24,6 +24,7 @@
 #include "components/segmentation_platform/public/config.h"
 #include "components/segmentation_platform/public/local_state_helper.h"
 #include "components/segmentation_platform/public/proto/model_metadata.pb.h"
+#include "components/segmentation_platform/public/trigger.h"
 
 namespace segmentation_platform {
 namespace {
@@ -60,8 +61,9 @@ std::map<uint64_t, int> ParseUmaOutputs(
 }
 
 // Find the segmentation key from the configs that contains the segment ID.
-std::string GetSegmentationKey(std::vector<std::unique_ptr<Config>>* configs,
-                               SegmentId segment_id) {
+std::string GetSegmentationKey(
+    const std::vector<std::unique_ptr<Config>>* configs,
+    SegmentId segment_id) {
   if (!configs)
     return std::string();
 
@@ -102,7 +104,7 @@ TrainingDataCollectorImpl::TrainingDataCollectorImpl(
     HistogramSignalHandler* histogram_signal_handler,
     UserActionSignalHandler* user_action_signal_handler,
     StorageService* storage_service,
-    std::vector<std::unique_ptr<Config>>* configs,
+    const std::vector<std::unique_ptr<Config>>* configs,
     PrefService* profile_prefs,
     base::Clock* clock)
     : segment_info_database_(storage_service->segment_info_database()),
@@ -197,9 +199,10 @@ void TrainingDataCollectorImpl::OnGetSegmentsInfoList(
         const auto& training_data = segment_info.training_data(i);
         if (current_time > training_data.observation_trigger_timestamp()) {
           // Observation is reached for the current training data.
-          OnObservationTrigger(absl::nullopt,
-                               (TrainingRequestId)training_data.request_id(),
-                               segment_info);
+          OnObservationTrigger(
+              absl::nullopt,
+              TrainingRequestId::FromUnsafeValue(training_data.request_id()),
+              segment_info);
         }
       }
     }
@@ -416,12 +419,12 @@ void TrainingDataCollectorImpl::ReportCollectedContinuousTrainingData() {
   }
 }
 
-void TrainingDataCollectorImpl::OnDecisionTime(
+TrainingRequestId TrainingDataCollectorImpl::OnDecisionTime(
     proto::SegmentId id,
     scoped_refptr<InputContext> input_context,
     DecisionType type) {
   if (all_segments_for_training_.count(id) == 0) {
-    return;
+    return TrainingRequestId();
   }
 
   const TrainingRequestId request_id = training_cache_->GenerateNextId();
@@ -431,6 +434,8 @@ void TrainingDataCollectorImpl::OnDecisionTime(
       base::BindOnce(&TrainingDataCollectorImpl::OnGetSegmentInfoAtDecisionTime,
                      weak_ptr_factory_.GetWeakPtr(), id, request_id, type,
                      input_context));
+
+  return request_id;
 }
 
 void TrainingDataCollectorImpl::OnGetSegmentInfoAtDecisionTime(
@@ -550,6 +555,10 @@ void TrainingDataCollectorImpl::OnObservationTrigger(
     const absl::optional<ImmediaCollectionParam>& param,
     TrainingRequestId request_id,
     const proto::SegmentInfo& segment_info) {
+  if (request_id.is_null()) {
+    return;
+  }
+
   RecordTrainingDataCollectionEvent(
       segment_info.segment_id(),
       stats::TrainingDataCollectionEvent::kObservationTimeReached);

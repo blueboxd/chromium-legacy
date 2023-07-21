@@ -22,6 +22,7 @@
 
 class HostContentSettingsMap;
 class Profile;
+struct UrlIdentity;
 
 namespace content {
 class WebUI;
@@ -30,6 +31,10 @@ class WebUI;
 namespace permissions {
 class ObjectPermissionContextBase;
 }
+
+namespace web_app {
+class IsolatedWebAppUrlInfo;
+}  // namespace web_app
 
 namespace site_settings {
 
@@ -46,31 +51,30 @@ typedef std::map<std::pair<ContentSettingsPattern, std::string>,
 using ChooserExceptionDetails = std::set<std::tuple<GURL, std::string, bool>>;
 
 constexpr char kChooserType[] = "chooserType";
-constexpr char kDisplayName[] = "displayName";
-constexpr char kEmbeddingOrigin[] = "embeddingOrigin";
-constexpr char kIncognito[] = "incognito";
-constexpr char kObject[] = "object";
-constexpr char kDisabled[] = "disabled";
-constexpr char kIsolatedWebAppName[] = "isolatedWebAppName";
-constexpr char kOrigin[] = "origin";
-constexpr char kOriginForFavicon[] = "originForFavicon";
-constexpr char kRecentPermissions[] = "recentPermissions";
-constexpr char kSetting[] = "setting";
-constexpr char kSites[] = "sites";
-constexpr char kPolicyIndicator[] = "indicator";
-constexpr char kSource[] = "source";
-constexpr char kType[] = "type";
-constexpr char kIsDirectory[] = "isDirectory";
-constexpr char kIsEmbargoed[] = "isEmbargoed";
-constexpr char kIsWritable[] = "isWritable";
 constexpr char kDirectoryReadGrants[] = "directoryReadGrants";
 constexpr char kDirectoryWriteGrants[] = "directoryWriteGrants";
+constexpr char kDisabled[] = "disabled";
+constexpr char kDisplayName[] = "displayName";
+constexpr char kEmbeddingOrigin[] = "embeddingOrigin";
 constexpr char kFilePath[] = "filePath";
 constexpr char kFileReadGrants[] = "fileReadGrants";
 constexpr char kFileWriteGrants[] = "fileWriteGrants";
+constexpr char kHostOrSpec[] = "hostOrSpec";
+constexpr char kIncognito[] = "incognito";
+constexpr char kIsDirectory[] = "isDirectory";
+constexpr char kIsEmbargoed[] = "isEmbargoed";
+constexpr char kIsWritable[] = "isWritable";
 constexpr char kNotificationInfoString[] = "notificationInfoString";
+constexpr char kObject[] = "object";
+constexpr char kOrigin[] = "origin";
+constexpr char kOriginForFavicon[] = "originForFavicon";
 constexpr char kPermissions[] = "permissions";
-constexpr char kExtensionNameWithId[] = "extensionNameWithId";
+constexpr char kPolicyIndicator[] = "indicator";
+constexpr char kRecentPermissions[] = "recentPermissions";
+constexpr char kSetting[] = "setting";
+constexpr char kSites[] = "sites";
+constexpr char kSource[] = "source";
+constexpr char kType[] = "type";
 
 enum class SiteSettingSource {
   kAllowlist,
@@ -151,8 +155,7 @@ ContentSetting GetContentSettingForOrigin(Profile* profile,
                                           const HostContentSettingsMap* map,
                                           const GURL& origin,
                                           ContentSettingsType content_type,
-                                          std::string* source_string,
-                                          std::string* display_name);
+                                          std::string* source_string);
 
 // Returns URLs with granted entries from the File System Access API.
 void GetFileSystemGrantedEntries(std::vector<base::Value::Dict>* exceptions,
@@ -199,19 +202,21 @@ base::Value::List GetChooserExceptionListFromProfile(
     Profile* profile,
     const ChooserTypeNameEntry& chooser_type);
 
-// Returns the short name of a browser extension, or nullopt if `origin` is not
-// an extension URL.
-absl::optional<std::string> GetExtensionDisplayName(Profile* profile,
-                                                    GURL origin);
-
 // Takes |url| and converts it into an individual origin string or retrieves
 // name of the extension or Isolated Web App it belongs to. If |hostname_only|
 // is true, returns |url|'s hostname for HTTP/HTTPS pages or unknown
 // extension/IWA URLs, otherwise an origin string will be returned that
 // includes the scheme if it's non-cryptographic.
+UrlIdentity GetUrlIdentityForGURL(Profile* profile,
+                                  const GURL& url,
+                                  bool hostname_only);
 std::string GetDisplayNameForGURL(Profile* profile,
                                   const GURL& url,
                                   bool hostname_only);
+
+// Returns data about all currently installed Isolated Web Apps.
+std::vector<web_app::IsolatedWebAppUrlInfo> GetInstalledIsolatedWebApps(
+    Profile* profile);
 
 }  // namespace site_settings
 

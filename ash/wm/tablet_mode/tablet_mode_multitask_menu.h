@@ -39,7 +39,7 @@ class ASH_EXPORT TabletModeMultitaskMenu
   views::Widget* widget() { return widget_.get(); }
 
   // Performs a slide down animation on the menu (and cue if visible) if `show`
-  // is true, otherwise slide up animation.
+  // is true, otherwise a slide up animation.
   void Animate(bool show);
 
   // Performs a fade out animation and closes the menu. Called when tap outside

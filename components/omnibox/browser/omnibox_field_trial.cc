@@ -607,10 +607,6 @@ const base::FeatureParam<int>
         "FuzzyUrlSuggestionsPenaltyTaperLength",
         0);
 
-bool OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kExperimentalKeywordMode);
-}
-
 bool OmniboxFieldTrial::IsOnDeviceHeadSuggestEnabledForIncognito() {
   return base::FeatureList::IsEnabled(omnibox::kOnDeviceHeadProviderIncognito);
 }
@@ -689,9 +685,11 @@ const base::FeatureParam<int> OmniboxFieldTrial::kRichSuggestionVerticalMargin(
     4);
 
 bool OmniboxFieldTrial::IsChromeRefreshIconsEnabled() {
-  return features::GetChromeRefresh2023Level() ==
-             features::ChromeRefresh2023Level::kLevel2 ||
-         base::FeatureList::IsEnabled(omnibox::kOmniboxCR23SteadyStateIcons);
+  static bool enabled =
+      features::GetChromeRefresh2023Level() ==
+          features::ChromeRefresh2023Level::kLevel2 ||
+      base::FeatureList::IsEnabled(omnibox::kOmniboxCR23SteadyStateIcons);
+  return enabled;
 }
 
 bool OmniboxFieldTrial::IsGM3TextStyleEnabled() {
@@ -726,7 +724,15 @@ const base::FeatureParam<int> OmniboxFieldTrial::kFontSizeTouchUI(
 const base::FeatureParam<int> OmniboxFieldTrial::kFontSizeNonTouchUI(
     &omnibox::kOmniboxSteadyStateTextStyle,
     "OmniboxFontSizeNonTouchUI",
-    12);
+    13);
+
+bool OmniboxFieldTrial::IsCr23LayoutEnabled() {
+  static const bool enabled =
+      features::GetChromeRefresh2023Level() ==
+          features::ChromeRefresh2023Level::kLevel2 ||
+      base::FeatureList::IsEnabled(omnibox::kExpandedLayout);
+  return enabled;
+}
 
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
@@ -808,31 +814,6 @@ namespace OmniboxFieldTrial {
 // Autocomplete stability.
 
 const base::FeatureParam<bool>
-    kAutocompleteStabilityPreserveDefaultExcludeKeywordInputs(
-        &omnibox::kPreserveDefault,
-        "AutocompleteStabilityPreserveDefaultExcludeKeywordInputs",
-        true);
-const base::FeatureParam<bool>
-    kAutocompleteStabilityPreserveDefaultAfterTransfer(
-        &omnibox::kPreserveDefault,
-        "AutocompleteStabilityPreserveDefaultAfterTransfer",
-        true);
-const base::FeatureParam<int>
-    kAutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength(
-        &omnibox::kPreserveDefault,
-        "AutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength",
-        3);
-const base::FeatureParam<bool>
-    kAutocompleteStabilityPreserveDefaultForAsyncUpdates(
-        &omnibox::kPreserveDefault,
-        "AutocompleteStabilityPreserveDefaultForAsyncUpdates",
-        true);
-const base::FeatureParam<bool>
-    kAutocompleteStabilityPreventDefaultPreviousMatches(
-        &omnibox::kPreserveDefault,
-        "AutocompleteStabilityPreventDefaultPreviousMatches",
-        true);
-const base::FeatureParam<bool>
     kAutocompleteStabilityUpdateResultDebounceFromLastRun(
         &omnibox::kUpdateResultDebounce,
         "AutocompleteStabilityUpdateResultDebounceFromLastRun",
@@ -878,60 +859,6 @@ bool IsZeroSuggestPrefetchingEnabledInContext(
     default:
       return false;
   }
-}
-
-// Short bookmarks.
-
-bool IsShortBookmarkSuggestionsEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kShortBookmarkSuggestions);
-}
-
-bool IsShortBookmarkSuggestionsByTotalInputLengthEnabled() {
-  return base::FeatureList::IsEnabled(
-             omnibox::kShortBookmarkSuggestionsByTotalInputLength) ||
-         (IsRichAutocompletionEnabled() &&
-          (kRichAutocompletionAutocompleteTitles.Get() ||
-           kRichAutocompletionAutocompleteNonPrefixAll.Get()));
-}
-
-size_t ShortBookmarkSuggestionsByTotalInputLengthThreshold() {
-  // The rich autocompletion feature requires this feature to be enabled. If
-  // short bookmarks is enabled transitively; i.e. rich autocompletion is
-  // enabled, but short bookmarks isn't explicitly enabled, then use the rich
-  // autocompletion min char limit.
-  if (!base::FeatureList::IsEnabled(
-          omnibox::kShortBookmarkSuggestionsByTotalInputLength) &&
-      IsRichAutocompletionEnabled()) {
-    if (kRichAutocompletionAutocompleteTitles.Get() &&
-        kRichAutocompletionAutocompleteNonPrefixAll.Get()) {
-      return std::min(kRichAutocompletionAutocompleteTitlesMinChar.Get(),
-                      kRichAutocompletionAutocompleteNonPrefixMinChar.Get());
-    } else if (kRichAutocompletionAutocompleteTitles.Get()) {
-      return kRichAutocompletionAutocompleteTitlesMinChar.Get();
-    } else if (kRichAutocompletionAutocompleteNonPrefixAll.Get()) {
-      return kRichAutocompletionAutocompleteNonPrefixMinChar.Get();
-    }
-  }
-
-  return kShortBookmarkSuggestionsByTotalInputLengthThreshold.Get();
-}
-
-const base::FeatureParam<bool>
-    kShortBookmarkSuggestionsByTotalInputLengthCounterfactual(
-        &omnibox::kShortBookmarkSuggestionsByTotalInputLength,
-        "ShortBookmarkSuggestionsByTotalInputLengthCounterfactual",
-        false);
-
-const base::FeatureParam<int>
-    kShortBookmarkSuggestionsByTotalInputLengthThreshold(
-        &omnibox::kShortBookmarkSuggestionsByTotalInputLength,
-        "ShortBookmarkSuggestionsByTotalInputLengthThreshold",
-        3);
-
-// Shortcut Expanding
-
-bool IsShortcutExpandingEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kShortcutExpanding);
 }
 
 // Shortcut boost
@@ -1027,15 +954,6 @@ const base::FeatureParam<int> kSiteSearchStarterPackRelevanceScore(
     &omnibox::kSiteSearchStarterPack,
     "SiteSearchStarterPackRelevanceScore",
     1350);
-
-// Rather than have a special default value of -1 to signify no limit, simply
-// set it to a large value that'll never be reached in practice.
-// TODO(manukh): Launched (set to 1) 3/2/23 m113. Clean up feature code 5/2 when
-//   m113 reaches stable.
-const base::FeatureParam<int> kDocumentProviderMaxLowQualitySuggestions(
-    &omnibox::kDocumentProvider,
-    "DocumentProviderMaxLowQualitySuggestions",
-    1);
 
 const base::FeatureParam<bool> kDomainSuggestionsCounterfactual(
     &omnibox::kDomainSuggestions,
@@ -1220,6 +1138,13 @@ const base::FeatureParam<bool> kActionsInSuggestPromoteEntitySuggestion(
     "PromoteEntitySuggestion",
     false);
 // <- Actions In Suggest
+// ---------------------------------------------------------
+// Android UI Revamp ->
+const base::FeatureParam<bool> kOmniboxModernizeVisualUpdateMergeClipboardOnNTP(
+    &omnibox::kOmniboxModernizeVisualUpdate,
+    "modernize_visual_update_merge_clipboard_on_ntp",
+    false);
+// <- Android UI Revamp
 // ---------------------------------------------------------
 
 }  // namespace OmniboxFieldTrial

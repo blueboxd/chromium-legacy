@@ -500,6 +500,7 @@ function _makeIconTemplateGetter() {
     m: getSymbolIcon('.dexmethodicon'),
     p: getSymbolIcon('.localpakicon'),
     P: getSymbolIcon('.nonlocalpakicon'),
+    a: getSymbolIcon('.arscicon'),
     o: getSymbolIcon('.othericon'),  // used as default icon
     '*': null,
   };
@@ -519,9 +520,11 @@ function _makeIconTemplateGetter() {
   };
   const metricsIcons = {
     group: getSymbolIcon('.groupicon'),  // Reuse.
-    elf: getSymbolIcon('.fileicon'),     // Reuse.
-    dex: getSymbolIcon('.dexicon'),      // Reuse.
+    elf: getMetricsIcon('.elficon'),
+    dex: getSymbolIcon('.dexicon'),    // Reuse.
+    arsc: getSymbolIcon('.arscicon'),  // Reuse.
     metrics: getMetricsIcon('.metricsicon'),
+    other: getSymbolIcon('.othericon'),  // Reuse.
   };
 
   /** @type {Map<string, {color:string, description:string}>} */

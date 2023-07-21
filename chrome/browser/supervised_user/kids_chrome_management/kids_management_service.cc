@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/no_destructor.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/permission_request_creator_apiary.h"
 #include "chrome/browser/supervised_user/kids_chrome_management/kids_profile_manager.h"
+#include "chrome/browser/supervised_user/supervised_user_browser_utils.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
@@ -31,6 +33,7 @@
 #include "components/supervised_user/core/browser/proto/families_common.pb.h"
 #include "components/supervised_user/core/browser/proto/kidschromemanagement_messages.pb.h"
 #include "components/supervised_user/core/common/buildflags.h"
+#include "components/supervised_user/core/common/features.h"
 #include "content/public/browser/browser_context.h"
 #include "net/base/backoff_entry.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -234,7 +237,7 @@ void KidsManagementService::SetIsChildAccount(bool is_child_account) {
 
 void KidsManagementService::StartFetchFamilyMembers() {
   list_family_members_fetcher_ = FetchListFamilyMembers(
-      *identity_manager_, url_loader_factory_, GetEndpointUrl(),
+      *identity_manager_, url_loader_factory_,
       BindOnce(&KidsManagementService::ConsumeListFamilyMembers,
                Unretained(this)));
 }
@@ -284,21 +287,13 @@ bool KidsManagementService::IsPendingNextFetchFamilyMembers() const {
   return list_family_members_timer_.IsRunning();
 }
 
-const std::string& KidsManagementService::GetEndpointUrl() {
-  static const NoDestructor<std::string> nonce(
-      "https://kidsmanagement-pa.googleapis.com/kidsmanagement/v1/");
-  return *nonce;
-}
-
 KidsManagementServiceFactory::KidsManagementServiceFactory()
     : ProfileKeyedServiceFactory(
           "KidsManagementService",
-          ProfileSelections::Builder()
-              .WithRegular(ProfileSelection::kOriginalOnly)
-              // TODO(crbug.com/1418376): Check if this service is needed in
-              // Guest mode.
-              .WithGuest(ProfileSelection::kOriginalOnly)
-              .Build()) {
+          base::FeatureList::IsEnabled(
+              supervised_user::kUpdateSupervisedUserFactoryCreation)
+              ? ProfileSelections::BuildForRegularProfile()
+              : supervised_user::BuildProfileSelectionsLegacy()) {
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(SupervisedUserServiceFactory::GetInstance());
 }

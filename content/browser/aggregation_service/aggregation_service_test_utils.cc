@@ -305,43 +305,30 @@ TestHpkeKey GenerateKey(std::string key_id) {
   return hpke_key;
 }
 
-absl::optional<PublicKeyset> ReadAndParsePublicKeys(const base::FilePath& file,
-                                                    base::Time now,
-                                                    std::string* error_msg) {
+base::expected<PublicKeyset, std::string> ReadAndParsePublicKeys(
+    const base::FilePath& file,
+    base::Time now) {
   if (!base::PathExists(file)) {
-    if (error_msg)
-      *error_msg = base::StrCat({"Failed to open file: ", file.MaybeAsASCII()});
-
-    return absl::nullopt;
+    return base::unexpected("Failed to open file: " + file.MaybeAsASCII());
   }
 
   std::string contents;
   if (!base::ReadFileToString(file, &contents)) {
-    if (error_msg)
-      *error_msg = base::StrCat({"Failed to read file: ", file.MaybeAsASCII()});
-
-    return absl::nullopt;
+    return base::unexpected("Failed to read file: " + file.MaybeAsASCII());
   }
 
   auto value_with_error =
       base::JSONReader::ReadAndReturnValueWithError(contents);
   if (!value_with_error.has_value()) {
-    if (error_msg) {
-      *error_msg =
-          base::StrCat({"Failed to parse \"", contents,
-                        "\" as JSON: ", value_with_error.error().message});
-    }
-    return absl::nullopt;
+    return base::unexpected(
+        base::StrCat({"Failed to parse \"", contents,
+                      "\" as JSON: ", value_with_error.error().message}));
   }
 
   std::vector<PublicKey> keys = GetPublicKeys(*value_with_error);
   if (keys.empty()) {
-    if (error_msg) {
-      *error_msg =
-          base::StrCat({"Failed to parse public keys from \"", contents, "\""});
-    }
-
-    return absl::nullopt;
+    return base::unexpected(
+        base::StrCat({"Failed to parse public keys from \"", contents, "\""}));
   }
 
   return PublicKeyset(std::move(keys), /*fetch_time=*/now,

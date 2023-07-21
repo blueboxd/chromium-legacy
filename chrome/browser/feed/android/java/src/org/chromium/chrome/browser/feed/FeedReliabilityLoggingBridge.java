@@ -4,10 +4,14 @@
 
 package org.chromium.chrome.browser.feed;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger;
+import org.chromium.chrome.browser.xsurface.FeedUserInteractionReliabilityLogger;
+import org.chromium.chrome.browser.xsurface.feed.FeedUserInteractionReliabilityLogger.PaginationResult;
 import org.chromium.components.feed.proto.wire.ReliabilityLoggingEnums.DiscoverAboveTheFoldRenderResult;
 import org.chromium.components.feed.proto.wire.ReliabilityLoggingEnums.DiscoverLaunchResult;
 
@@ -16,6 +20,7 @@ import org.chromium.components.feed.proto.wire.ReliabilityLoggingEnums.DiscoverL
 public class FeedReliabilityLoggingBridge {
     private final long mNativePtr;
     private FeedLaunchReliabilityLogger mLaunchLogger;
+    private @Nullable FeedUserInteractionReliabilityLogger mUserInteractionLogger;
     private DiscoverAboveTheFoldRenderResult mRenderResult;
     private boolean mRenderingStarted;
     private DiscoverLaunchResult mLaunchResult;
@@ -34,6 +39,7 @@ public class FeedReliabilityLoggingBridge {
     public void setLogger(FeedReliabilityLogger logger) {
         if (logger != null) {
             mLaunchLogger = logger.getLaunchLogger();
+            mUserInteractionLogger = logger.getUserInteractionLogger();
         }
         // The launch logger may not be provided if FeedReliabilityLogger is mocked in testing.
         // In this case, use the default no-op instance.
@@ -135,6 +141,57 @@ public class FeedReliabilityLoggingBridge {
         mLaunchResult = DiscoverLaunchResult.forNumber(discoverLaunchResult);
         if (mLaunchResult == null) {
             mLaunchResult = DiscoverLaunchResult.ABORTED_DUE_TO_INVALID_STATE;
+        }
+    }
+
+    @CalledByNative
+    public void logLoadMoreStarted() {
+        if (mUserInteractionLogger != null) {
+            mUserInteractionLogger.onPaginationStarted();
+        }
+    }
+
+    @CalledByNative
+    public void logLoadMoreIndicatorShown() {
+        if (mUserInteractionLogger != null) {
+            mUserInteractionLogger.onPaginationIndicatorShown();
+        }
+    }
+
+    @CalledByNative
+    public void logLoadMoreActionUploadRequestStarted() {
+        if (mUserInteractionLogger != null) {
+            mUserInteractionLogger.onPaginationActionUploadRequestStarted();
+        }
+    }
+
+    @CalledByNative
+    public void logLoadMoreRequestSent() {
+        if (mUserInteractionLogger != null) {
+            mUserInteractionLogger.onPaginationRequestSent();
+        }
+    }
+
+    @CalledByNative
+    public void logLoadMoreResponseReceived(long serverRecvTimestamp, long serverSendTimestamp) {
+        if (mUserInteractionLogger != null) {
+            mUserInteractionLogger.onPaginationResponseReceived(
+                    serverRecvTimestamp, serverSendTimestamp);
+        }
+    }
+
+    @CalledByNative
+    public void logLoadMoreRequestFinished(int canonicalStatus) {
+        if (mUserInteractionLogger != null) {
+            mUserInteractionLogger.onPaginationRequestFinished(canonicalStatus);
+        }
+    }
+
+    @CalledByNative
+    public void logLoadMoreEnded(boolean success) {
+        if (mUserInteractionLogger != null) {
+            mUserInteractionLogger.onPaginationEnded(
+                    success ? PaginationResult.SUCCESS_WITH_MORE_FEED : PaginationResult.FAILURE);
         }
     }
 

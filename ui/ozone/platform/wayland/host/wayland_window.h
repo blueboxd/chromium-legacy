@@ -31,6 +31,7 @@
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/host/wayland_output.h"
 #include "ui/ozone/platform/wayland/host/wayland_surface.h"
+#include "ui/ozone/platform/wayland/host/wayland_zaura_surface.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_init_properties.h"
@@ -53,13 +54,15 @@ class WaylandSubsurface;
 class WaylandWindowDragController;
 class WaylandFrameManager;
 class WaylandPopup;
+class WaylandToplevelWindow;
 
 using WidgetSubsurfaceSet = base::flat_set<std::unique_ptr<WaylandSubsurface>>;
 
 class WaylandWindow : public PlatformWindow,
                       public PlatformEventDispatcher,
                       public WmDragHandler,
-                      public EventTarget {
+                      public EventTarget,
+                      public WaylandZAuraSurface::Delegate {
  public:
   WaylandWindow(const WaylandWindow&) = delete;
   WaylandWindow& operator=(const WaylandWindow&) = delete;
@@ -92,6 +95,7 @@ class WaylandWindow : public PlatformWindow,
   const WidgetSubsurfaceSet& wayland_subsurfaces() const {
     return wayland_subsurfaces_;
   }
+  WaylandZAuraSurface* GetZAuraSurface();
 
   base::LinkedList<WaylandSubsurface>* subsurface_stack_committed() {
     return &subsurface_stack_committed_;
@@ -325,9 +329,10 @@ class WaylandWindow : public PlatformWindow,
   virtual bool IsActive() const;
 
   // WaylandWindow can be any type of object - WaylandToplevelWindow,
-  // WaylandPopup, WaylandAuxiliaryWindow. This method casts itself to
-  // WaylandPopup, if |this| has type of WaylandPopup.
+  // WaylandPopup. The following methods cast itself to WaylandPopup or
+  // WaylandToplevelWindow, if |this| is of that type.
   virtual WaylandPopup* AsWaylandPopup();
+  virtual WaylandToplevelWindow* AsWaylandToplevelWindow();
 
   // Returns true if the window's bounds is in screen coordinates.
   virtual bool IsScreenCoordinatesEnabled() const;
@@ -363,11 +368,6 @@ class WaylandWindow : public PlatformWindow,
   zaura_surface* aura_surface() {
     return aura_surface_ ? aura_surface_.get() : nullptr;
   }
-
-  void SetAuraSurface(zaura_surface* aura_surface);
-
-  // Returns true if `aura_surface_` version is equal or newer than `version`.
-  bool IsSupportedOnAuraSurface(uint32_t version) const;
 
   // Update the bounds of the window in DIP. Unlike SetBoundInDIP, it will not
   // send a request to the compositor even if the screen coordinate is enabled.

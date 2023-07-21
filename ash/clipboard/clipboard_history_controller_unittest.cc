@@ -5,11 +5,13 @@
 #include "ash/clipboard/clipboard_history_controller_impl.h"
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/clipboard/clipboard_history.h"
 #include "ash/clipboard/clipboard_history_item.h"
+#include "ash/clipboard/clipboard_history_util.h"
 #include "ash/public/cpp/clipboard_image_model_factory.h"
 #include "ash/public/cpp/session/session_types.h"
 #include "ash/session/session_controller_impl.h"
@@ -17,7 +19,9 @@
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/test/ash_test_base.h"
 #include "base/location.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
+#include "base/scoped_observation.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/repeating_test_future.h"
@@ -25,6 +29,8 @@
 #include "base/test/test_future.h"
 #include "base/unguessable_token.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
+#include "chromeos/ui/clipboard_history/clipboard_history_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
@@ -35,7 +41,10 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/textfield/textfield_test_api.h"
 
 namespace ash {
 using crosapi::mojom::ClipboardHistoryControllerShowSource;
@@ -48,6 +57,22 @@ void FlushMessageLoop() {
       FROM_HERE, run_loop.QuitClosure());
   run_loop.Run();
 }
+
+// A mocked clipboard history controller observer.
+class MockObserver : public ClipboardHistoryController::Observer {
+ public:
+  MockObserver() {
+    scoped_observation_.Observe(ClipboardHistoryController::Get());
+  }
+
+  // ClipboardHistoryController::Observer:
+  MOCK_METHOD(void, OnClipboardHistoryItemsUpdated, (), (override));
+
+ private:
+  base::ScopedObservation<ClipboardHistoryController,
+                          ClipboardHistoryController::Observer>
+      scoped_observation_{this};
+};
 
 class MockClipboardImageModelFactory : public ClipboardImageModelFactory {
  public:
@@ -273,6 +298,180 @@ TEST_F(ClipboardHistoryControllerTest, LockedScreenImage) {
   TestEnteringLockScreen();
 }
 
+using ClipboardHistoryControllerObserverTest = ClipboardHistoryControllerTest;
+
+// Verifies that clipboard history controller notifies observers of clipboard
+// history item updates as expected when adding or removing items.
+TEST_F(ClipboardHistoryControllerObserverTest, AddAndRemoveItem) {
+  MockObserver mock_observer;
+  EXPECT_CALL(mock_observer, OnClipboardHistoryItemsUpdated).Times(3);
+  WriteTextToClipboardAndConfirm(u"A");
+  WriteTextToClipboardAndConfirm(u"B");
+  ClipboardHistoryController::Get()->DeleteClipboardItemById(
+      GetHistoryValues()[0].id().ToString());
+  GetClipboardHistoryController()->FireItemUpdateNotificationTimerForTest();
+}
+
+// Verifies that clipboard history controller notifies observers once when
+// clipboard history item addition causes overflow.
+TEST_F(ClipboardHistoryControllerObserverTest, Overflow) {
+  // Add five items to reach the clipboard history size limit.
+  MockObserver mock_observer;
+  EXPECT_CALL(mock_observer, OnClipboardHistoryItemsUpdated).Times(5);
+  WriteTextToClipboardAndConfirm(u"A");
+  WriteTextToClipboardAndConfirm(u"B");
+  WriteTextToClipboardAndConfirm(u"C");
+  WriteTextToClipboardAndConfirm(u"D");
+  WriteTextToClipboardAndConfirm(u"E");
+  EXPECT_EQ(GetHistoryValues().size(),
+            static_cast<size_t>(clipboard_history_util::kMaxClipboardItems));
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  // Notify `mock_observer` once when item addition causes overflow.
+  EXPECT_CALL(mock_observer, OnClipboardHistoryItemsUpdated);
+  WriteTextToClipboardAndConfirm(u"F");
+  EXPECT_EQ(GetHistoryValues().size(),
+            static_cast<size_t>(clipboard_history_util::kMaxClipboardItems));
+}
+
+TEST_F(ClipboardHistoryControllerObserverTest,
+       ChangeSessionStateWithEmptyHistory) {
+  // Clipboard history is empty. Therefore, the clipboard history controller
+  // should not notify observers when the session state changes.
+  MockObserver mock_observer;
+  EXPECT_CALL(mock_observer, OnClipboardHistoryItemsUpdated).Times(0);
+  TestSessionControllerClient* test_session_client =
+      GetSessionControllerClient();
+  test_session_client->SetSessionState(session_manager::SessionState::LOCKED);
+  test_session_client->FlushForTest();
+  test_session_client->SetSessionState(session_manager::SessionState::ACTIVE);
+  test_session_client->FlushForTest();
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  // Notify `mock_observer` when a new clipboard history item arrives.
+  EXPECT_CALL(mock_observer, OnClipboardHistoryItemsUpdated);
+  WriteTextToClipboardAndConfirm(u"A");
+}
+
+TEST_F(ClipboardHistoryControllerObserverTest,
+       ChangeSessionStateWithNonEmptyHistory) {
+  // Notify `mock_observer` once when adding a clipboard history item.
+  MockObserver mock_observer;
+  EXPECT_CALL(mock_observer, OnClipboardHistoryItemsUpdated);
+  WriteTextToClipboardAndConfirm(u"A");
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  // Notify `mock_observer` once when clipboard history becomes disabled.
+  EXPECT_CALL(mock_observer, OnClipboardHistoryItemsUpdated);
+  TestSessionControllerClient* test_session_client =
+      GetSessionControllerClient();
+  test_session_client->SetSessionState(session_manager::SessionState::LOCKED);
+  test_session_client->FlushForTest();
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  // Do not notify `mock_observer` when switching to another session state where
+  // clipboard history is still disabled.
+  EXPECT_CALL(mock_observer, OnClipboardHistoryItemsUpdated).Times(0);
+  test_session_client->SetSessionState(
+      session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
+  test_session_client->FlushForTest();
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  // Notify `mock_observer` once when clipboard history becomes enabled.
+  EXPECT_CALL(mock_observer, OnClipboardHistoryItemsUpdated);
+  test_session_client->SetSessionState(session_manager::SessionState::ACTIVE);
+  test_session_client->FlushForTest();
+}
+
+class ClipboardHistoryControllerWithTextfieldTest
+    : public ClipboardHistoryControllerTest {
+ public:
+  // ClipboardHistoryControllerTest:
+  void SetUp() override {
+    ClipboardHistoryControllerTest::SetUp();
+
+    textfield_widget_ = CreateFramelessTestWidget();
+    textfield_widget_->SetBounds(gfx::Rect(0, 0, 100, 100));
+    textfield_ = textfield_widget_->SetContentsView(
+        std::make_unique<views::Textfield>());
+    textfield_->SetAccessibleName(u"Textfield");
+    textfield_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+
+    // Focus the textfield and confirm initial state.
+    textfield_->RequestFocus();
+    ASSERT_TRUE(textfield_->HasFocus());
+    ASSERT_TRUE(textfield_->GetText().empty());
+  }
+
+  std::unique_ptr<views::Widget> textfield_widget_;
+  views::Textfield* textfield_;
+};
+
+TEST_F(ClipboardHistoryControllerWithTextfieldTest, PasteClipboardItemById) {
+  // Write four items to the clipboard.
+  WriteTextToClipboardAndConfirm(u"A");
+  WriteTextToClipboardAndConfirm(u"B");
+  WriteTextToClipboardAndConfirm(u"C");
+  WriteTextToClipboardAndConfirm(u"D");
+  const std::vector<ClipboardHistoryItem> items = GetHistoryValues();
+  ASSERT_EQ(items.size(), 4u);
+
+  // Set a zero duration to make test code simpler.
+  GetClipboardHistoryController()->set_buffer_restoration_delay_for_test(
+      base::TimeDelta());
+
+  struct {
+    size_t paste_data_index;
+    crosapi::mojom::ClipboardHistoryControllerShowSource paste_source;
+    int event_flags;
+    ClipboardHistoryControllerImpl::ClipboardHistoryPasteType paste_type;
+  } test_cases[] = {
+      {/*paste_data_index=*/0,
+       /*paste_source=*/
+       crosapi::mojom::ClipboardHistoryControllerShowSource::kVirtualKeyboard,
+       /*event_flags=*/ui::EF_NONE,
+       /*paste_type=*/
+       ClipboardHistoryControllerImpl::ClipboardHistoryPasteType::
+           kRichTextVirtualKeyboard},
+      {/*paste_data_index=*/1,
+       /*paste_source=*/
+       crosapi::mojom::ClipboardHistoryControllerShowSource::
+           kTextfieldContextMenu,
+       /*event_flags=*/ui::EF_MOUSE_BUTTON,
+       /*paste_type=*/
+       ClipboardHistoryControllerImpl::ClipboardHistoryPasteType::
+           kRichTextMouse},
+      {/*paste_data_index=*/2,
+       /*paste_source=*/
+       crosapi::mojom::ClipboardHistoryControllerShowSource::
+           kRenderViewContextMenu,
+       /*event_flags=*/ui::EF_SHIFT_DOWN | ui::EF_FROM_TOUCH,
+       /*paste_type=*/
+       ClipboardHistoryControllerImpl::ClipboardHistoryPasteType::
+           kPlainTextTouch}};
+
+  for (auto& [paste_data_index, paste_source, event_flags, paste_type] :
+       test_cases) {
+    base::HistogramTester histogram_tester;
+    textfield_->SetText(std::u16string());
+    ClipboardHistoryController::Get()->PasteClipboardItemById(
+        items[paste_data_index].id().ToString(), event_flags, paste_source);
+    base::RunLoop().RunUntilIdle();
+
+    // Verify the contents of `textfield_` and histograms.
+    EXPECT_EQ(textfield_->GetText(), items[paste_data_index].display_text());
+    histogram_tester.ExpectBucketCount("Ash.ClipboardHistory.PasteType",
+                                       paste_type,
+                                       /*expected_count=*/1);
+    histogram_tester.ExpectBucketCount("Ash.ClipboardHistory.PasteSource",
+                                       paste_source,
+                                       /*expected_count=*/1);
+    histogram_tester.ExpectBucketCount(
+        "Ash.ClipboardHistory.ContextMenu.MenuOptionSelected",
+        paste_data_index + 1, /*expected_count=*/1);
+  }
+}
+
 // Base class for tests of Clipboard History parameterized by whether the
 // `kClipboardHistoryRefresh` feature flag is enabled.
 class ClipboardHistoryControllerRefreshTest
@@ -281,7 +480,8 @@ class ClipboardHistoryControllerRefreshTest
  public:
   ClipboardHistoryControllerRefreshTest() {
     std::vector<base::test::FeatureRef> refresh_features = {
-        features::kClipboardHistoryRefresh, chromeos::features::kJelly};
+        chromeos::features::kClipboardHistoryRefresh,
+        chromeos::features::kJelly};
     std::vector<base::test::FeatureRef> enabled_features;
     std::vector<base::test::FeatureRef> disabled_features;
     (IsClipboardHistoryRefreshEnabled() ? enabled_features : disabled_features)
@@ -596,7 +796,8 @@ class ClipboardHistoryControllerShowSourceTest
  public:
   ClipboardHistoryControllerShowSourceTest() {
     std::vector<base::test::FeatureRef> refresh_features = {
-        features::kClipboardHistoryRefresh, chromeos::features::kJelly};
+        chromeos::features::kClipboardHistoryRefresh,
+        chromeos::features::kJelly};
     std::vector<base::test::FeatureRef> enabled_features;
     std::vector<base::test::FeatureRef> disabled_features;
     (IsClipboardHistoryRefreshEnabled() ? enabled_features : disabled_features)
@@ -721,6 +922,136 @@ TEST_P(ClipboardHistoryControllerShowSourceTest, OnMenuClosingCallback) {
   histogram_tester.ExpectUniqueSample("Ash.ClipboardHistory.PasteSource",
                                       GetSource(),
                                       /*expected_bucket_count=*/1);
+}
+
+// TODO(b/278109818): Move clipboard history refresh tests into a separate test
+// file.
+
+// A parameterized test base to verify the clipboard history refresh feature on
+// every display format.
+// Each test param is such a tuple:
+// 1. The first value is a boolean indicating whether the clipboard history
+// refresh feature is enabled;
+// 2. The second value is the display format under test.
+class ClipboardHistoryRefreshDisplayFormatTest
+    : public ClipboardHistoryControllerWithTextfieldTest,
+      public testing::WithParamInterface<
+          std::tuple</*enable_clipboard_history_refresh=*/bool,
+                     /*display_format_under_test=*/crosapi::mojom::
+                         ClipboardHistoryDisplayFormat>> {
+ public:
+  ClipboardHistoryRefreshDisplayFormatTest() {
+    std::vector<base::test::FeatureRef> refresh_features = {
+        chromeos::features::kClipboardHistoryRefresh,
+        chromeos::features::kJelly};
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
+    (std::get<0>(GetParam()) ? enabled_features : disabled_features)
+        .swap(refresh_features);
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+  }
+
+  void ShowTextfieldContextMenu(views::View* textfield) {
+    GetEventGenerator()->MoveMouseTo(
+        textfield->GetBoundsInScreen().CenterPoint());
+    GetEventGenerator()->ClickRightButton();
+  }
+
+  // Writes clipboard data and returns an array of the clipboard history display
+  // text. The clipboard data is written based on the test parameter. The
+  // returned array follows the reverse clipboard data writing order.
+  std::vector<std::u16string> WriteClipboardDataBasedOnParam() {
+    // TODO(b/278915828): Modify this part when other display formats are
+    // supported.
+    if (GetDisplayFormat() ==
+        crosapi::mojom::ClipboardHistoryDisplayFormat::kText) {
+      WriteTextToClipboardAndConfirm(u"A");
+      WriteTextToClipboardAndConfirm(u"B");
+      return std::vector<std::u16string>{u"B", u"A"};
+    }
+
+    NOTREACHED_NORETURN();
+  }
+
+  crosapi::mojom::ClipboardHistoryDisplayFormat GetDisplayFormat() const {
+    return std::get<1>(GetParam());
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ClipboardHistoryRefreshDisplayFormatTest,
+    testing::Combine(
+        /*enable_clipboard_history_refresh=*/testing::Bool(),
+        /*display_format_under_test=*/testing::Values(
+            crosapi::mojom::ClipboardHistoryDisplayFormat::kText)));
+
+// Verifies that the clipboard history submenu model of the text services
+// context menu in Ash works as expected.
+TEST_P(ClipboardHistoryRefreshDisplayFormatTest, TextServicesSubMenu) {
+  // Show the textfield context menu before writing any clipboard data.
+  ShowTextfieldContextMenu(textfield_);
+
+  views::TextfieldTestApi api(textfield_);
+  ui::MenuModel* const root_model = api.context_menu_contents();
+  ASSERT_TRUE(root_model);
+
+  // Search the parent model and the command index of
+  // `IDS_APP_SHOW_CLIPBOARD_HISTORY`.
+  ui::MenuModel* target_command_parent_model = root_model;
+  size_t target_command_index = 0u;
+  ui::MenuModel::GetModelAndIndexForCommandId(IDS_APP_SHOW_CLIPBOARD_HISTORY,
+                                              &target_command_parent_model,
+                                              &target_command_index);
+  EXPECT_EQ(target_command_parent_model, root_model);
+  EXPECT_GT(target_command_index, 0u);
+
+  // The clipboard history menu item should be disabled when there is no
+  // clipboard history.
+  EXPECT_FALSE(target_command_parent_model->IsEnabledAt(target_command_index));
+
+  const std::vector<std::u16string> expected_display_text_array =
+      WriteClipboardDataBasedOnParam();
+
+  // Close the textfield menu then reshow.
+  GetEventGenerator()->PressAndReleaseKey(ui::KeyboardCode::VKEY_ESCAPE);
+  ShowTextfieldContextMenu(textfield_);
+
+  // Check `submenu_model` if any. Reuse `target_command_index` since the
+  // context menu model structure should not change.
+  target_command_parent_model = api.context_menu_contents();
+  ui::MenuModel* const submenu_model =
+      target_command_parent_model->GetSubmenuModelAt(target_command_index);
+
+  // The clipboard history menu item should be enabled when there is clipboard
+  // history.
+  EXPECT_TRUE(target_command_parent_model->IsEnabledAt(target_command_index));
+
+  if (chromeos::features::IsClipboardHistoryRefreshEnabled()) {
+    // If the refresh feature is enabled, the clipboard history menu item is a
+    // submenu item.
+    EXPECT_EQ(target_command_parent_model->GetTypeAt(target_command_index),
+              ui::MenuModel::ItemType::TYPE_SUBMENU);
+
+    // Check the submenu model data.
+    ASSERT_EQ(submenu_model->GetItemCount(), 2u);
+    EXPECT_EQ(submenu_model->GetLabelAt(0), expected_display_text_array[0]);
+    EXPECT_EQ(submenu_model->GetLabelAt(1), expected_display_text_array[1]);
+    const ui::ImageModel expected_icon(
+        chromeos::clipboard_history::GetIconForDisplayFormat(
+            GetDisplayFormat()));
+    EXPECT_EQ(submenu_model->GetIconAt(0), expected_icon);
+    EXPECT_EQ(submenu_model->GetIconAt(1), expected_icon);
+  } else {
+    // If the refresh feature is disabled, the clipboard history menu item is a
+    // command item.
+    EXPECT_FALSE(submenu_model);
+    EXPECT_EQ(target_command_parent_model->GetTypeAt(target_command_index),
+              ui::MenuModel::ItemType::TYPE_COMMAND);
+  }
 }
 
 }  // namespace ash

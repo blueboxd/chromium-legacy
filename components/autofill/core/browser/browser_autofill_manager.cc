@@ -955,9 +955,7 @@ bool BrowserAutofillManager::MaybeStartVoteUploadProcess(
   // the form), it's possible that later modifications lead to more accurate
   // votes. In this case we just want to cache the upload and have a chance to
   // override it with better data.
-  // TODO(crbug.com/1383502) Remove the "&& IsEnabled()" part.
-  if (!observed_submission &&
-      base::FeatureList::IsEnabled(features::kAutofillDelayBlurVotes)) {
+  if (!observed_submission) {
     call_after_determine_field_types = base::BindOnce(
         &BrowserAutofillManager::StoreUploadVotesAndLogQualityCallback,
         weak_ptr_factory_.GetWeakPtr(), raw_form->form_signature(),
@@ -3484,7 +3482,8 @@ void BrowserAutofillManager::ProcessFieldLogEventsInForm(
   for (const auto& autofill_field : form_structure) {
     if (should_upload_ukm) {
       form_interactions_ukm_logger()->LogAutofillFieldInfoAtFormRemove(
-          form_structure, *autofill_field);
+          form_structure, *autofill_field,
+          AutocompleteStateForSubmittedField(*autofill_field));
     }
 
     // Clear log events.

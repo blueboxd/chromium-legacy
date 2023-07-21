@@ -407,6 +407,7 @@
 <translation id="3638472932233958418">Предварительная загрузка</translation>
 <translation id="3661160521073045932">Доступен профиль конфигурации</translation>
 <translation id="3670030362669914947">Номер</translation>
+<translation id="3700134753671613714">Войдите в свой аккаунт, и закладки будут доступны на всех ваших устройствах.</translation>
 <translation id="3709582977625132201">Отметить как непрочитанное</translation>
 <translation id="371230970611282515">Предсказывает опасные события и предупреждает вас до того, как они происходят.</translation>
 <translation id="37207012422556617">Популярные запросы</translation>
@@ -546,7 +547,6 @@
 <translation id="4642472735733036929">Отслеживание цен приостановлено.</translation>
 <translation id="4650125387981512669">Продолжить как <ph name="FIRST_RUN_ACCOUNT_NAME" /></translation>
 <translation id="4652817563047461855">Убедитесь, что пароли в безопасности и не были раскрыты, а также получите совет о защите в интернете. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">Эта функция включается, когда вы входите в аккаунт Google.</translation>
 <translation id="4659667755519643272">Открыть переключатель вкладок</translation>
 <translation id="46614316059270592">Сохранить пароль</translation>
 <translation id="4666531726415300315">Вы вошли в аккаунт <ph name="EMAIL" />.
@@ -588,7 +588,6 @@
 <translation id="4844899002472726590">Просмотр и изменение тем, которые вас интересуют</translation>
 <translation id="4848999860252535517">Удалить пароль для <ph name="WEBSITE" />?</translation>
 <translation id="4854345657858711387">Установите код доступа</translation>
-<translation id="4856498338299082007">В аккаунте Google</translation>
 <translation id="4858786880085262208">По возможности использовать HTTPS. Безопасные сайты могут содержать небезопасный встроенный контент.</translation>
 <translation id="4860895144060829044">Позвонить</translation>
 <translation id="4872323082491632254">Проверка паролей</translation>
@@ -667,6 +666,7 @@
 <translation id="543338862236136125">Изменить пароль</translation>
 <translation id="5433691172869980887">Имя пользователя скопировано</translation>
 <translation id="5439599923922718668">Часто посещаемые</translation>
+<translation id="5439618055789623719">Вы вошли в аккаунт <ph name="USER_EMAIL" />.</translation>
 <translation id="54401264925851789">Сведения о надежности страницы</translation>
 <translation id="5443952882982198570">Кредитные карты</translation>
 <translation id="5444892875087332195">Закладки</translation>
@@ -752,7 +752,7 @@
 <translation id="5965679971710331625">Вы вошли в аккаунт</translation>
 <translation id="5979837087407522202">Поиск паролей</translation>
 <translation id="5981230843984570095">Закрыть все неактивные вкладки</translation>
-<translation id="5982717868370722439">Объединить сохраненные данные с данными из аккаунта <ph name="USER_EMAIL" /></translation>
+<translation id="5982717868370722439">Объединить сохраненные данные с данными пользователя <ph name="USER_EMAIL" /></translation>
 <translation id="5984222099446776634">Недавно посещенные страницы</translation>
 <translation id="5988097621740394599">Показывать скидки на вкладках</translation>
 <translation id="5988851877894965432">Открывать URL в Chrome</translation>
@@ -1121,7 +1121,6 @@
 <translation id="8248969482078657578">Не отвлекайтесь на лишние вкладки</translation>
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8264966119170358612">Несколько ваших сохраненных паролей были раскрыты в результате утечки данных в стороннем сервисе. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">Будет сохранен только на этом устройстве.</translation>
 <translation id="826614135184049678">В результате сброса настроек iPad произошел выход из аккаунта <ph name="USER_NAME" />. Чтобы войти, нажмите "Продолжить" ниже.</translation>
 <translation id="8271720166617117963">Принять и войти</translation>
 <translation id="8278938988428169257">Введите слово или словосочетание.</translation>
@@ -1179,7 +1178,7 @@
 <translation id="868773710103052534">Готово!</translation>
 <translation id="8693663554456874301">{count,plural, =1{Закрыть вкладку}one{Закрыть вкладки}few{Закрыть вкладки}many{Закрыть вкладки}other{Закрыть вкладки}}</translation>
 <translation id="8703536910991780768">Нет простых паролей</translation>
-<translation id="8717864919010420084">Скопировать ссылку</translation>
+<translation id="8717864919010420084">Копировать ссылку</translation>
 <translation id="8721297211384281569">Меню "Инструменты"</translation>
 <translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="8727043961453758442">Максимально эффективная работа с Chrome</translation>

@@ -21,12 +21,10 @@
 #include "base/functional/function_ref.h"
 #include "base/functional/overloaded.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/notreached.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
 #include "base/values.h"
-#include "build/build_config.h"
-#include "build/buildflag.h"
+#include "components/attribution_reporting/os_registration.h"
 #include "components/attribution_reporting/registration_type.mojom.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
@@ -37,7 +35,9 @@
 #include "content/browser/attribution_reporting/attribution_constants.h"
 #include "content/browser/attribution_reporting/attribution_input_event.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
+#include "content/browser/attribution_reporting/attribution_os_level_manager.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
+#include "content/browser/attribution_reporting/os_registration.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/content_browser_client.h"
@@ -46,10 +46,11 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/structured_headers.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/network/public/cpp/attribution_utils.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/trigger_attestation.h"
+#include "services/network/public/cpp/trigger_verification.h"
 #include "services/network/public/mojom/attribution.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -57,15 +58,8 @@
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 #include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom.h"
-#include "url/origin.h"
-
-#if BUILDFLAG(IS_ANDROID)
-#include "components/attribution_reporting/os_registration.h"
-#include "content/browser/attribution_reporting/attribution_os_level_manager.h"
-#include "content/browser/attribution_reporting/os_registration.h"
-#include "net/http/structured_headers.h"
 #include "url/gurl.h"
-#endif
+#include "url/origin.h"
 
 namespace content {
 
@@ -257,12 +251,7 @@ class AttributionDataHostManagerImpl::SourceRegistrations {
   const SuitableOrigin& source_origin() const { return source_origin_; }
 
   bool has_pending_decodes() const {
-#if BUILDFLAG(IS_ANDROID)
-    if (!pending_os_decodes_.empty()) {
-      return true;
-    }
-#endif
-    return !pending_web_decodes_.empty();
+    return !pending_os_decodes_.empty() || !pending_web_decodes_.empty();
   }
 
   bool registrations_complete() const { return registrations_complete_; }
@@ -293,7 +282,6 @@ class AttributionDataHostManagerImpl::SourceRegistrations {
     return pending_web_decodes_;
   }
 
-#if BUILDFLAG(IS_ANDROID)
   const base::circular_deque<std::string>& pending_os_decodes() const {
     return pending_os_decodes_;
   }
@@ -301,7 +289,6 @@ class AttributionDataHostManagerImpl::SourceRegistrations {
   base::circular_deque<std::string>& pending_os_decodes() {
     return pending_os_decodes_;
   }
-#endif
 
   bool operator<(const SourceRegistrations& other) const {
     return Id() < other.Id();
@@ -356,9 +343,7 @@ class AttributionDataHostManagerImpl::SourceRegistrations {
 
   base::circular_deque<PendingWebDecode> pending_web_decodes_;
 
-#if BUILDFLAG(IS_ANDROID)
   base::circular_deque<std::string> pending_os_decodes_;
-#endif
 };
 
 struct AttributionDataHostManagerImpl::RegistrarAndHeader {
@@ -480,14 +465,12 @@ void AttributionDataHostManagerImpl::ParseSource(
 
   switch (header.registrar) {
     case Registrar::kWeb:
-#if BUILDFLAG(IS_ANDROID)
       if (!network::HasAttributionWebSupport(
               AttributionManager::GetSupport())) {
         // TODO(crbug.com/1426450): Report a DevTools issue.
         MaybeOnRegistrationsFinished(it);
         break;
       }
-#endif
       it->pending_web_decodes().emplace_back(std::move(header.header),
                                              std::move(reporting_origin));
       // Only perform the decode if it is the only one in the queue. Otherwise,
@@ -502,7 +485,6 @@ void AttributionDataHostManagerImpl::ParseSource(
         MaybeOnRegistrationsFinished(it);
         break;
       }
-#if BUILDFLAG(IS_ANDROID)
       if (auto* rfh = RenderFrameHostImpl::FromID(it->render_frame_id())) {
         GetContentClient()->browser()->LogWebFeatureForCurrentPage(
             rfh, blink::mojom::WebFeature::kAttributionReportingCrossAppWeb);
@@ -514,9 +496,6 @@ void AttributionDataHostManagerImpl::ParseSource(
       if (it->pending_os_decodes().size() == 1) {
         HandleNextOsDecode(*it);
       }
-#else
-      NOTREACHED();
-#endif
       break;
   }
 }
@@ -533,7 +512,6 @@ void AttributionDataHostManagerImpl::HandleNextWebDecode(
                      weak_factory_.GetWeakPtr(), registrations.Id()));
 }
 
-#if BUILDFLAG(IS_ANDROID)
 void AttributionDataHostManagerImpl::HandleNextOsDecode(
     const SourceRegistrations& registrations) {
   DCHECK(!registrations.pending_os_decodes().empty());
@@ -544,7 +522,6 @@ void AttributionDataHostManagerImpl::HandleNextOsDecode(
       header, base::BindOnce(&AttributionDataHostManagerImpl::OnOsSourceParsed,
                              weak_factory_.GetWeakPtr(), registrations.Id()));
 }
-#endif  // BUILDFLAG(IS_ANDROID)
 
 void AttributionDataHostManagerImpl::NotifyNavigationRegistrationStarted(
     const blink::AttributionSrcToken& attribution_src_token,
@@ -675,7 +652,6 @@ void AttributionDataHostManagerImpl::SourceDataAvailable(
 
   attribution_manager_->HandleSource(
       StorableSource(std::move(reporting_origin), std::move(data),
-                     /*source_time=*/base::Time::Now(),
                      /*source_origin=*/context->context_origin(), source_type,
                      context->is_within_fenced_frame()),
       context->render_frame_id());
@@ -684,7 +660,7 @@ void AttributionDataHostManagerImpl::SourceDataAvailable(
 void AttributionDataHostManagerImpl::TriggerDataAvailable(
     attribution_reporting::SuitableOrigin reporting_origin,
     attribution_reporting::TriggerRegistration data,
-    absl::optional<network::TriggerAttestation> attestation) {
+    absl::optional<network::TriggerVerification> verification) {
   // This is validated by the Mojo typemapping.
   DCHECK(reporting_origin.IsValid());
 
@@ -696,12 +672,10 @@ void AttributionDataHostManagerImpl::TriggerDataAvailable(
   attribution_manager_->HandleTrigger(
       AttributionTrigger(std::move(reporting_origin), std::move(data),
                          /*destination_origin=*/context->context_origin(),
-                         std::move(attestation),
+                         std::move(verification),
                          context->is_within_fenced_frame()),
       context->render_frame_id());
 }
-
-#if BUILDFLAG(IS_ANDROID)
 
 void AttributionDataHostManagerImpl::OsSourceDataAvailable(
     const GURL& registration_url) {
@@ -728,8 +702,6 @@ void AttributionDataHostManagerImpl::OsTriggerDataAvailable(
                      /*input_event=*/absl::nullopt),
       context->render_frame_id());
 }
-
-#endif  // BUILDFLAG(IS_ANDROID)
 
 void AttributionDataHostManagerImpl::OnReceiverDisconnected() {
   const ReceiverContext& context = receivers_.current_context();
@@ -835,10 +807,10 @@ void AttributionDataHostManagerImpl::OnWebSourceParsed(
       if (!registration.has_value()) {
         return base::unexpected(registration.error());
       }
-      return StorableSource(
-          pending_decode.reporting_origin, std::move(*registration),
-          /*source_time=*/base::Time::Now(), registrations->source_origin(),
-          source_type, registrations->is_within_fenced_frame());
+      return StorableSource(pending_decode.reporting_origin,
+                            std::move(*registration),
+                            registrations->source_origin(), source_type,
+                            registrations->is_within_fenced_frame());
     }();
 
     if (source.has_value()) {
@@ -869,7 +841,6 @@ void AttributionDataHostManagerImpl::OnWebSourceParsed(
   }
 }
 
-#if BUILDFLAG(IS_ANDROID)
 void AttributionDataHostManagerImpl::OnOsSourceParsed(SourceRegistrationsId id,
                                                       OsParseResult result) {
   auto registrations = registrations_.find(id);
@@ -898,7 +869,6 @@ void AttributionDataHostManagerImpl::OnOsSourceParsed(SourceRegistrationsId id,
     MaybeOnRegistrationsFinished(registrations);
   }
 }
-#endif  // BUILDFLAG(IS_ANDROID)
 
 void AttributionDataHostManagerImpl::MaybeOnRegistrationsFinished(
     base::flat_set<SourceRegistrations>::const_iterator it) {

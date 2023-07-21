@@ -74,6 +74,7 @@ if (is_win || is_mac || is_linux) {
       "app/app_wakeall.h",
       "auto_run_on_os_upgrade_task.cc",
       "auto_run_on_os_upgrade_task.h",
+      "change_owners_task.h",
       "check_for_updates_task.cc",
       "check_for_updates_task.h",
       "configurator.cc",
@@ -154,6 +155,7 @@ if (is_win || is_mac || is_linux) {
       "//components/update_client:in_process_unzipper",
       "//components/version_info",
       "//crypto",
+      "//third_party/abseil-cpp:absl",
       "//third_party/boringssl",
       "//third_party/crashpad/crashpad/client",
       "//third_party/crashpad/crashpad/handler",
@@ -187,6 +189,8 @@ if (is_win || is_mac || is_linux) {
         "mac/setup/keystone.h",
         "mac/setup/keystone.mm",
         "mac/setup/setup.mm",
+        "mac/setup/wake_task.h",
+        "mac/setup/wake_task.mm",
         "net/network_fetcher_mac.mm",
         "policy/mac/managed_preference_policy_manager.h",
         "policy/mac/managed_preference_policy_manager.mm",
@@ -195,13 +199,10 @@ if (is_win || is_mac || is_linux) {
         "setup_mac.mm",
         "update_service_internal_impl_qualifying_mac.cc",
         "update_usage_stats_task_mac.mm",
-        "util/launchd_util.cc",
-        "util/launchd_util.h",
       ]
 
       deps += [
         ":ks_ticket",
-        "//chrome/common/mac:launchd",
         "//mojo/public/cpp/platform",
         "//net",
       ]
@@ -232,6 +233,7 @@ if (is_win || is_mac || is_linux) {
         "app/server/win/update_service_stub_win.cc",
         "app/server/win/update_service_stub_win.h",
         "app/server/win/wrl_classes.cc",
+        "change_owners_task_win.cc",
         "device_management/dm_storage_win.cc",
         "ipc/update_service_internal_proxy_win.cc",
         "ipc/update_service_internal_proxy_win.h",
@@ -328,6 +330,7 @@ if (is_win || is_mac || is_linux) {
         "app/server/posix/update_service_internal_stub.h",
         "app/server/posix/update_service_stub.cc",
         "app/server/posix/update_service_stub.h",
+        "change_owners_task_posix.cc",
         "ipc/ipc_security.h",
         "ipc/update_service_internal_proxy_posix.cc",
         "ipc/update_service_internal_proxy_posix.h",
@@ -597,7 +600,7 @@ if (is_win || is_mac || is_linux) {
         "util/mac_util.mm",
       ]
 
-      deps += [ "//chrome/common/mac:launchd" ]
+      frameworks = [ "Foundation.framework" ]
     }
 
     if (is_posix) {
@@ -678,6 +681,30 @@ if (is_win || is_mac || is_linux) {
     }
   }
 
+  source_set("unittest_util_sources") {
+    testonly = true
+    sources = [
+      "test_scope.h",
+      "util/unittest_util.cc",
+      "util/unittest_util.h",
+    ]
+    if (is_win) {
+      sources += [
+        # TODO(crbug.com/1402743) - eliminate the dependency on //chrome/test.
+        "//chrome/test/base/process_inspector_win.cc",
+        "//chrome/test/base/process_inspector_win.h",
+      ]
+    }
+    deps = [
+      "//base",
+      "//base/test:test_support",
+      "//chrome/updater:base",
+      "//chrome/updater:public_sources",
+      "//testing/gtest",
+      "//third_party/abseil-cpp:absl",
+    ]
+  }
+
   source_set("updater_test_sources") {
     testonly = true
     sources = [
@@ -715,14 +742,11 @@ if (is_win || is_mac || is_linux) {
       "test/request_matcher.h",
       "test/server.cc",
       "test/server.h",
-      "test_scope.h",
       "update_service_impl_inactive_unittest.cc",
       "update_service_unittest.cc",
       "update_usage_stats_task_unittest.cc",
       "updater_scope_unittest.cc",
       "updater_unittest.cc",
-      "util/unittest_util.cc",
-      "util/unittest_util.h",
       "util/unittest_util_unittest.cc",
       "util/util_unittest.cc",
     ]
@@ -731,6 +755,7 @@ if (is_win || is_mac || is_linux) {
       ":base",
       ":branding_header",
       ":constants_test",
+      ":unittest_util_sources",
       ":version_header",
       "//base",
       "//base/test:test_support",
@@ -744,6 +769,7 @@ if (is_win || is_mac || is_linux) {
       "//net:test_support",
       "//testing/gmock",
       "//testing/gtest",
+      "//third_party/abseil-cpp:absl",
       "//third_party/crashpad/crashpad/client",
       "//third_party/re2",
       "//third_party/zlib/google:compression_utils",
@@ -756,9 +782,6 @@ if (is_win || is_mac || is_linux) {
 
     if (is_win) {
       sources += [
-        # TODO(crbug.com/1402743) - eliminate the dependency on //chrome/test.
-        "//chrome/test/base/process_inspector_win.cc",
-        "//chrome/test/base/process_inspector_win.h",
         "activity_impl_win_unittest.cc",
         "app/server/win/com_classes_legacy_unittest.cc",
         "auto_run_on_os_upgrade_task_unittest.cc",
@@ -836,6 +859,7 @@ if (is_win || is_mac || is_linux) {
         "mac/setup/keystone_unittest.cc",
         "mac/setup/ks_tickets_unittest.mm",
         "mac/setup/setup_unittest.mm",
+        "mac/setup/wake_task_unittest.mm",
         "policy/mac/managed_preference_policy_manager_impl_unittest.mm",
         "policy/mac/managed_preference_policy_manager_unittest.cc",
         "test/integration_tests_mac.mm",
@@ -844,7 +868,6 @@ if (is_win || is_mac || is_linux) {
 
       deps += [
         ":ks_ticket",
-        "//chrome/common/mac:launchd",
         "//chrome/updater/mac:ksadmin_lib",
         "//chrome/updater/mac:privileged_helper_sources",
         "//third_party/ocmock",
@@ -981,6 +1004,7 @@ if (is_win || is_mac || is_linux) {
 
     deps = [
       ":base",
+      ":unittest_util_sources",
       ":updater_test_sources",
       "//base/test:test_support",
       "//chrome/common:constants",
@@ -1018,6 +1042,7 @@ if (is_win || is_mac || is_linux) {
 
     deps = [
       ":base",
+      ":unittest_util_sources",
       ":updater_test_sources",
       "//base/test:test_support",
       "//chrome/common:constants",
@@ -1067,6 +1092,7 @@ if (is_win || is_mac || is_linux) {
 
     deps = [
       ":base",
+      ":unittest_util_sources",
       ":updater_test_sources",
       "//base",
       "//base/test:test_support",

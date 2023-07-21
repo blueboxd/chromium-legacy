@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feature_guide.notifications.FeatureNotificationUtils;
 import org.chromium.chrome.browser.feature_guide.notifications.FeatureType;
 import org.chromium.chrome.browser.feed.FeedActionDelegate;
+import org.chromium.chrome.browser.feed.FeedFeatures;
 import org.chromium.chrome.browser.feed.FeedReliabilityLogger;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
 import org.chromium.chrome.browser.feed.FeedSurfaceDelegate;
@@ -78,12 +79,14 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.tasks.HomeSurfaceTracker;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePageHost;
 import org.chromium.chrome.browser.util.BrowserUiUtils;
 import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger.SurfaceType;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.features.tasks.SingleTabSwitcherCoordinator;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
@@ -127,7 +130,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     protected final NewTabPageManagerImpl mNewTabPageManager;
     protected final TileGroup.Delegate mTileGroupDelegate;
     private final boolean mIsTablet;
-    private boolean mShownAsHomeSurface;
+    private boolean mIsHidden;
     private final BrowserControlsStateProvider mBrowserControlsStateProvider;
     private final NewTabPageUma mNewTabPageUma;
     private final ContextMenuManager mContextMenuManager;
@@ -164,6 +167,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     private SingleTabSwitcherCoordinator mSingleTabSwitcherCoordinator;
     private ViewGroup mSingleTabCardContainer;
     private final Activity mActivity;
+    @Nullable
+    private final HomeSurfaceTracker mHomeSurfaceTracker;
 
     @Nullable
     private SearchResumptionModuleCoordinator mSearchResumptionModuleCoordinator;
@@ -347,7 +352,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
             NativePageHost nativePageHost, Tab tab, String url,
             BottomSheetController bottomSheetController,
             Supplier<ShareDelegate> shareDelegateSupplier, WindowAndroid windowAndroid,
-            Supplier<Toolbar> toolbarSupplier, SettingsLauncher settingsLauncher) {
+            Supplier<Toolbar> toolbarSupplier, SettingsLauncher settingsLauncher,
+            HomeSurfaceTracker homeSurfaceTracker) {
         mConstructedTimeNs = System.nanoTime();
         TraceEvent.begin(TAG);
 
@@ -362,6 +368,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         mTabModelSelector = tabModelSelector;
         mBottomSheetController = bottomSheetController;
         mSettingsLauncher = settingsLauncher;
+        mHomeSurfaceTracker = homeSurfaceTracker;
 
         Profile profile = Profile.fromWebContents(mTab.getWebContents());
 
@@ -389,15 +396,19 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 // in function onHidden in order to keep the new tab page's thumbnail unchanged
                 // in the grid tab switcher. Otherwise, it would show a blank space instead of
                 // single tab car in the thumbnail.
-                if (!mShownAsHomeSurface && mSingleTabSwitcherCoordinator != null) {
-                    setSingleTabCardVisibility(false);
+                if (mIsHidden && mSingleTabSwitcherCoordinator != null) {
+                    mIsHidden = false;
+                    if (mHomeSurfaceTracker == null
+                            || !mHomeSurfaceTracker.canShowHomeSurface(mTab)) {
+                        setSingleTabCardVisibility(false);
+                    }
                 }
             }
 
             @Override
             public void onHidden(Tab tab, @TabHidingType int type) {
                 if (mIsLoaded) recordNTPHidden();
-                mShownAsHomeSurface = false;
+                mIsHidden = true;
             }
 
             @Override
@@ -473,7 +484,16 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 mSearchProviderHasLogo, mTemplateUrlService.isDefaultSearchEngineGoogle(),
                 mFeedSurfaceProvider.getScrollDelegate(),
                 mFeedSurfaceProvider.getTouchEnabledDelegate(), mFeedSurfaceProvider.getUiConfig(),
-                lifecycleDispatcher, uma, mTab.isIncognito(), windowAndroid);
+                lifecycleDispatcher, uma, mTab.isIncognito(), windowAndroid,
+                StartSurfaceConfiguration.isNtpAsHomeSurfaceEnabled(mIsTablet),
+                FeedFeatures.isMultiColumnFeedEnabled(mContext));
+
+        // If new NewTabPage is created via back operations, re-show the single Tab card with the
+        // previously tracked Tab.
+        if (mHomeSurfaceTracker != null && mHomeSurfaceTracker.isHomeSurfaceTab(mTab)) {
+            showHomeSurfaceUi(mHomeSurfaceTracker.getLastActiveTabToTrack());
+        }
+
         TraceEvent.end(TAG);
     }
 
@@ -496,7 +516,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
 
         FeedActionDelegate actionDelegate = new FeedActionDelegateImpl(activity, snackbarManager,
                 mNewTabPageManager.getNavigationDelegate(), BookmarkModel.getForProfile(profile),
-                BrowserUiUtils.HostSurface.NEW_TAB_PAGE) {
+                BrowserUiUtils.HostSurface.NEW_TAB_PAGE, mTabModelSelector) {
             @Override
             public void openHelpPage() {
                 NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_LEARN_MORE);
@@ -1008,14 +1028,12 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         return mTabObserver;
     }
 
-    @VisibleForTesting
-    void setShownAsHomeSurfaceForTesting(boolean shownAsHomeSurface) {
-        mShownAsHomeSurface = shownAsHomeSurface;
+    void setIsHiddenForTesting(boolean isHidden) {
+        mIsHidden = isHidden;
     }
 
-    @VisibleForTesting
-    boolean getShownAsHomeSurfaceForTesting() {
-        return mShownAsHomeSurface;
+    boolean getIsHiddenForTesting() {
+        return mIsHidden;
     }
 
     /**
@@ -1052,8 +1070,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         if (mSingleTabSwitcherCoordinator == null) {
             initializeSingleTabCard(mostRecentTab);
         } else {
-            mSingleTabSwitcherCoordinator.updateTrackingTab(mostRecentTab);
-            setSingleTabCardVisibility(true);
+            boolean hasTabToTrack = mSingleTabSwitcherCoordinator.updateTrackingTab(mostRecentTab);
+            setSingleTabCardVisibility(hasTabToTrack);
         }
     }
 
@@ -1094,6 +1112,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     void destroySingleTabCard() {
         mSingleTabCardContainer.removeAllViews();
         setSingleTabCardVisibility(false);
+        mSingleTabSwitcherCoordinator.destroy();
         mSingleTabSwitcherCoordinator = null;
     }
 }

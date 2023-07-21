@@ -32,7 +32,7 @@
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_system_provider/icon_set.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
-#include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
+#include "chrome/browser/ash/policy/dlp/dlp_files_controller_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
@@ -344,7 +344,7 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
 
   base::ScopedTempDir temp_dir_;
   base::ScopedTempDir non_watchable_dir_;
-  raw_ptr<ash::disks::MockDiskMountManager, ExperimentalAsh>
+  raw_ptr<ash::disks::MockDiskMountManager, DanglingUntriaged | ExperimentalAsh>
       disk_mount_manager_mock_ = nullptr;
   DiskMountManager::Disks volumes_;
   DiskMountManager::MountPoints mount_points_;
@@ -764,7 +764,7 @@ class FileManagerPrivateApiDlpTest : public FileManagerPrivateApiTest {
         .WillByDefault(testing::Return(true));
 
     files_controller_ =
-        std::make_unique<policy::DlpFilesController>(*mock_rules_manager_);
+        std::make_unique<policy::DlpFilesControllerAsh>(*mock_rules_manager_);
     ON_CALL(*mock_rules_manager_, GetDlpFilesController)
         .WillByDefault(testing::Return(files_controller_.get()));
 
@@ -775,7 +775,7 @@ class FileManagerPrivateApiDlpTest : public FileManagerPrivateApiTest {
   base::ScopedTempDir drive_path_;
   raw_ptr<policy::MockDlpRulesManager, ExperimentalAsh> mock_rules_manager_ =
       nullptr;
-  std::unique_ptr<policy::DlpFilesController> files_controller_;
+  std::unique_ptr<policy::DlpFilesControllerAsh> files_controller_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 

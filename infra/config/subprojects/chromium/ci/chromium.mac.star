@@ -69,6 +69,7 @@ ci.builder(
             config = "chromium",
             apply_configs = [
                 "mb",
+                "goma_use_local",  # to mitigate compile step timeout (crbug.com/1056935)
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
@@ -259,6 +260,7 @@ ci.thin_tester(
             config = "chromium",
             apply_configs = [
                 "mb",
+                "goma_use_local",  # to mitigate compile step timeout (crbug.com/1056935)
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
@@ -286,6 +288,7 @@ ci.thin_tester(
             config = "chromium",
             apply_configs = [
                 "mb",
+                "goma_use_local",  # to mitigate compile step timeout (crbug.com/1056935)
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
@@ -313,6 +316,7 @@ ci.thin_tester(
             config = "chromium",
             apply_configs = [
                 "mb",
+                "goma_use_local",  # to mitigate compile step timeout (crbug.com/1056935)
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
@@ -340,6 +344,7 @@ ci.thin_tester(
             config = "chromium",
             apply_configs = [
                 "mb",
+                "goma_use_local",  # to mitigate compile step timeout (crbug.com/1056935)
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
@@ -365,6 +370,7 @@ ci.thin_tester(
             config = "chromium",
             apply_configs = [
                 "mb",
+                "goma_use_local",  # to mitigate compile step timeout (crbug.com/1056935)
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,

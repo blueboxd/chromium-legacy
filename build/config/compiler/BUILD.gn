@@ -181,6 +181,13 @@ declare_args() {
   # Allow projects that wish to stay on C++17 to override Chromium's default.
   # TODO(crbug.com/1402249): evaluate removing this end of 2023
   use_cxx17 = false
+
+  # Enable ShadowCallStack for compiled binaries. SCS stores a pointer to a
+  # shadow call stack in register x18. Hence, x18 must not be used by the OS
+  # or libraries. We assume that to be the case for high end Android
+  # configurations. For more details see
+  # https://clang.llvm.org/docs/ShadowCallStack.html
+  enable_shadow_call_stack = false
 }
 
 declare_args() {
@@ -322,28 +329,44 @@ config("compiler") {
     # --------------------------------
     cflags += [ "-fno-strict-aliasing" ]  # See http://crbug.com/32204
 
-    # Stack protection.
-    if (is_apple) {
-      # The strong variant of the stack protector significantly increases
-      # binary size, so only enable it in debug mode.
-      if (is_debug) {
-        cflags += [ "-fstack-protector-strong" ]
-      } else {
-        cflags += [ "-fstack-protector" ]
-      }
-    } else if ((is_posix && !is_chromeos && !is_nacl) || is_fuchsia) {
-      # TODO(phajdan.jr): Use -fstack-protector-strong when our gcc supports it.
-      # See also https://crbug.com/533294
-      if (current_os != "zos") {
-        cflags += [ "--param=ssp-buffer-size=4" ]
-      }
+    # Stack protection. ShadowCallStack and Stack protector address the same
+    # problems. Therefore, we only enable one or the other. Clang advertises SCS as
+    # a stronger alternative to StackProtector, so we give SCS precedence over SP.
+    if (enable_shadow_call_stack) {
+      # On Aarch64, SCS requires the x18 register to be unused because it will hold
+      # a pointer to the shadow stack. For Android we know that Clang doesn't use
+      # x18 by default. On other OSs adding "-ffixed-x18" might be required.
+      assert(is_android)
 
-      # The x86 toolchain currently has problems with stack-protector.
-      if (is_android && current_cpu == "x86") {
-        cflags += [ "-fno-stack-protector" ]
-      } else if (current_os != "aix") {
-        # Not available on aix.
-        cflags += [ "-fstack-protector" ]
+      scs_parameters = [
+        "-fsanitize=shadow-call-stack",
+        "-fno-stack-protector",
+      ]
+      cflags += scs_parameters
+      ldflags += scs_parameters
+    } else {
+      if (is_apple) {
+        # The strong variant of the stack protector significantly increases
+        # binary size, so only enable it in debug mode.
+        if (is_debug) {
+          cflags += [ "-fstack-protector-strong" ]
+        } else {
+          cflags += [ "-fstack-protector" ]
+        }
+      } else if ((is_posix && !is_chromeos && !is_nacl) || is_fuchsia) {
+        # TODO(phajdan.jr): Use -fstack-protector-strong when our gcc supports it.
+        # See also https://crbug.com/533294
+        if (current_os != "zos") {
+          cflags += [ "--param=ssp-buffer-size=4" ]
+        }
+
+        # The x86 toolchain currently has problems with stack-protector.
+        if (is_android && current_cpu == "x86") {
+          cflags += [ "-fno-stack-protector" ]
+        } else if (current_os != "aix") {
+          # Not available on aix.
+          cflags += [ "-fstack-protector" ]
+        }
       }
     }
 
@@ -848,6 +871,24 @@ config("compiler") {
     }
   }
 
+  if (clang_embed_bitcode) {
+    assert(!use_thin_lto,
+           "clang_embed_bitcode is only supported in non-ThinLTO builds")
+    cflags += [
+      "-Xclang",
+      "-fembed-bitcode=all",
+    ]
+  }
+
+  if (lld_emit_indexes_and_imports) {
+    assert(use_thin_lto,
+           "lld_emit_indexes_and_imports is only supported with ThinLTO builds")
+    ldflags += [
+      "-Wl,--save-temps=import",
+      "-Wl,--thinlto-emit-index-files",
+    ]
+  }
+
   # Pass the same C/C++ flags to the objective C/C++ compiler.
   cflags_objc += cflags_c
   cflags_objcc += cflags_cc
@@ -897,6 +938,14 @@ config("compiler") {
     # directory from appearing in build outputs.
     "-Zremap-cwd-prefix=.",
   ]
+
+  if (!is_win || force_rustc_color_output) {
+    # Colorize error output. The analogous flag is passed for clang. This must
+    # be platform-gated since rustc will unconditionally output ANSI escape
+    # sequences, ignoring the platform, when stderr is not a terminal.
+    rustflags += [ "--color=always" ]
+  }
+
   if (rust_abi_target != "") {
     rustflags += [ "--target=$rust_abi_target" ]
   }
@@ -906,21 +955,6 @@ config("compiler") {
   }
   if (is_official_build) {
     rustflags += [ "-Ccodegen-units=1" ]
-  }
-}
-
-# Defers LTO optimization to the linker, for use when:
-# * Having the C++ toolchain do the linking against Rust staticlibs, and it
-#   will be using LTO.
-# * Having Rust toolchain invoke the linker, and you're linking Rust and C++
-#   together, so this defers LTO to the linker.
-#
-# Otherwise, Rust does LTO during compilation.
-#
-# https://doc.rust-lang.org/rustc/linker-plugin-lto.html
-config("rust_defer_lto_to_linker") {
-  if (!is_debug && use_thin_lto && is_a_target_toolchain) {
-    rustflags = [ "-Clinker-plugin-lto" ]
   }
 }
 
@@ -936,6 +970,9 @@ config("thinlto_optimize_default") {
       ldflags = [ "-Wl,--lto-O" + lto_opt_level ]
     }
 
+    # We always point Rust to a linker that performs LTO, so we don't want Rust
+    # to preemptively do so during compilation too or they conflict. But we do
+    # want Rust to generate LTO metadata in order for the linker to do its job.
     rustflags = [ "-Clinker-plugin-lto=yes" ]
   }
 }
@@ -962,6 +999,9 @@ config("thinlto_optimize_max") {
       ldflags = [ "-Wl,--lto-O" + lto_opt_level ]
     }
 
+    # We always point Rust to a linker that performs LTO, so we don't want Rust
+    # to preemptively do so during compilation too or they conflict. But we do
+    # want Rust to generate LTO metadata in order for the linker to do its job.
     rustflags = [ "-Clinker-plugin-lto=yes" ]
   }
 }
@@ -1025,6 +1065,10 @@ config("compiler_cpu_abi") {
           !(is_chromeos_lacros && is_chromeos_device)) {
         cflags += [ "--target=aarch64-linux-gnu" ]
         ldflags += [ "--target=aarch64-linux-gnu" ]
+      }
+      if (is_high_end_android) {
+        cflags += [ "-march=armv8-a+lse" ]
+        ldflags += [ "-march=armv8-a+lse" ]
       }
     } else if (current_cpu == "mipsel" && !is_nacl) {
       ldflags += [ "-Wl,--hash-style=sysv" ]

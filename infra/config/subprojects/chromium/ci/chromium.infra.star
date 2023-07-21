@@ -124,6 +124,7 @@ packager_builder(
                 "tools/android/avd/proto/creation/generic_playstore_android32_foldable.textpb",
                 "tools/android/avd/proto/creation/generic_android33.textpb",
                 "tools/android/avd/proto/creation/generic_playstore_android33.textpb",
+                "tools/android/avd/proto/creation/generic_androidu.textpb",
             ],
             "gclient_config": "chromium",
             "gclient_apply_config": ["android"],
@@ -273,6 +274,11 @@ packager_builder(
                 "sdk_package_name": "system-images;android-TiramisuPrivacySandbox;google_apis_playstore;x86_64",
                 "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-TiramisuPrivacySandbox/google_apis_playstore/x86_64.yaml",
             },
+            # TODO(crbug/1442598): Replace Android-U system images with the finalized API level once available
+            {
+                "sdk_package_name": "system-images;android-UpsideDownCake;google_apis;x86_64",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-UpsideDownCake/google_apis/x86_64.yaml",
+            },
         ],
     },
 )
@@ -301,17 +307,46 @@ packager_builder(
 ci.builder(
     name = "android-device-flasher",
     executable = "recipe:android/device_flasher",
-    # Triggered manually through the scheduler UI
-    # https://luci-scheduler.appspot.com/jobs/chromium/android-device-flasher
-    # TODO(crbug.com/1260195): Run the build regularly once recipe fully works
-    schedule = "triggered",
+    # TODO(crbug.com/1260195): Find the sweet spot for the frequency.
+    schedule = "0 9 * * 1",  # at 9am UTC every Monday.
     triggered_by = [],
     console_view_entry = consoles.console_view_entry(
         short_name = "flash",
     ),
-    # TODO(crbug.com/1260195): Enable the notifies once recipe fully works
-    notifies = [],
+    notifies = ["clank-engprod"],
     properties = {
-        "dry_run": True,
+        "flash_criteria": [
+            # Used by ci/Android Release (Nexus 5X)
+            # This is mirrored by the CQ builder android-arm64-rel
+            {
+                "pool": "chromium.tests",
+                "device_type": "bullhead",
+                "device_os": "N2G48C",
+                "max_uid_threshold": 18000,
+            },
+            # Used by ci/android-pie-arm64-rel
+            # This is mirrored by the CQ builder android-arm64-rel
+            {
+                "pool": "chromium.tests",
+                "device_type": "walleye",
+                "device_os": "PQ3A.190801.002",
+                "max_uid_threshold": 18000,
+            },
+            # Used by ci/android-pie-arm64-rel
+            # This is mirrored by the CQ builder android-arm64-rel
+            {
+                "pool": "chromium.tests",
+                "device_type": "sailfish",
+                "device_os": "PQ3A.190801.002",
+                "max_uid_threshold": 18000,
+            },
+            # Used by GPU team
+            {
+                "pool": "chromium.tests.gpu",
+                "device_type": "oriole",
+                "device_os": "TP1A.220624.021",
+                "max_uid_threshold": 18000,
+            },
+        ],
     },
 )

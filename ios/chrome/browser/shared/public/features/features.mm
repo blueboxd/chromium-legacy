@@ -120,10 +120,6 @@ BASE_FEATURE(kIOSLocationBarUseNativeContextMenu,
              "IOSLocationBarUseNativeContextMenu",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kUseLensToSearchForImage,
-             "UseLensToSearchForImage",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kEnableLensInHomeScreenWidget,
              "EnableLensInHomeScreenWidget",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -245,6 +241,10 @@ bool IsIndicateSyncErrorInOverflowMenuEnabled() {
 BASE_FEATURE(kBottomOmniboxSteadyState,
              "BottomOmniboxSteadyState",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsBottomOmniboxSteadyStateEnabled() {
+  return base::FeatureList::IsEnabled(kBottomOmniboxSteadyState);
+}
 
 BASE_FEATURE(kOnlyAccessClipboardAsync,
              "OnlyAccessClipboardAsync",

@@ -407,6 +407,7 @@ Consulta las instrucciones del buscador para eliminar tu historial de búsqueda 
 <translation id="3638472932233958418">Precargar páginas web</translation>
 <translation id="3661160521073045932">Perfil de configuración disponible</translation>
 <translation id="3670030362669914947">Número</translation>
+<translation id="3700134753671613714">Te permite iniciar sesión para ver tus marcadores en todos tus dispositivos.</translation>
 <translation id="3709582977625132201">Marcar como no leído</translation>
 <translation id="371230970611282515">Predice y te advierte de eventos peligrosos antes de que se produzcan.</translation>
 <translation id="37207012422556617">Tendencias de búsqueda</translation>
@@ -546,7 +547,6 @@ Consulta las instrucciones del buscador para eliminar tu historial de búsqueda 
 <translation id="4642472735733036929">Seguimiento de precios detenido</translation>
 <translation id="4650125387981512669">Seguir como <ph name="FIRST_RUN_ACCOUNT_NAME" /></translation>
 <translation id="4652817563047461855">Asegúrate de que tus contraseñas sean seguras, averigua si se han vulnerado y recibe consejos para protegerte en Internet. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">Esta función se activará cuando inicies sesión en tu cuenta de Google.</translation>
 <translation id="4659667755519643272">Acceder a la función de cambio de pestaña</translation>
 <translation id="46614316059270592">Guardar contraseña</translation>
 <translation id="4666531726415300315">Has iniciado sesión como <ph name="EMAIL" />.
@@ -588,7 +588,6 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="4844899002472726590">Consulta y edita los temas que te interesan</translation>
 <translation id="4848999860252535517">¿Eliminar la contraseña de <ph name="WEBSITE" />?</translation>
 <translation id="4854345657858711387">Establecer una contraseña</translation>
-<translation id="4856498338299082007">En tu cuenta de Google</translation>
 <translation id="4858786880085262208">Cambia a HTTPS cuando sea posible. Los sitios seguros podrían insertar contenido que no es seguro.</translation>
 <translation id="4860895144060829044">Llamar</translation>
 <translation id="4872323082491632254">Comprobar contraseñas</translation>
@@ -667,6 +666,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="543338862236136125">Cambiar contraseña</translation>
 <translation id="5433691172869980887">Se ha copiado el nombre de usuario</translation>
 <translation id="5439599923922718668">Visitados con frecuencia</translation>
+<translation id="5439618055789623719">Has iniciado sesión como <ph name="USER_EMAIL" /></translation>
 <translation id="54401264925851789">Información de seguridad de la página</translation>
 <translation id="5443952882982198570">Tarjetas de crédito</translation>
 <translation id="5444892875087332195">Marcadores</translation>
@@ -688,7 +688,7 @@ Handoff también debe estar habilitado en la sección General de Configuración,
 <translation id="556042886152191864">Botón</translation>
 <translation id="5597915316964418992">Abre la cuadrícula de pestañas</translation>
 <translation id="560322036295180549">Desactivado por tu organización</translation>
-<translation id="5614553682702429503">¿Guardar la contraseña?</translation>
+<translation id="5614553682702429503">¿Quieres guardar la contraseña?</translation>
 <translation id="5626245204502895507">No se puede descargar el archivo en este momento.</translation>
 <translation id="5631164295104953411">Añadir método de pago</translation>
 <translation id="5652623411397330904">Los productos que sigas aparecerán aquí.</translation>
@@ -733,7 +733,7 @@ Handoff también debe estar habilitado en la sección General de Configuración,
 <translation id="5857090052475505287">Nueva carpeta</translation>
 <translation id="5857770089550859117">Se requiere una frase de contraseña para iniciar la sincronización.</translation>
 <translation id="5859715514067755465">Avanzar</translation>
-<translation id="5860033963881614850">Desactivada</translation>
+<translation id="5860033963881614850">Desactivado</translation>
 <translation id="5869029295770560994">Entendido</translation>
 <translation id="5871497086027727873">1 elemento eliminado</translation>
 <translation id="5896576662943111387">Diseñado para iOS</translation>
@@ -907,7 +907,7 @@ Mientras estás en modo Incógnito, los sitios no pueden usar tus cookies para v
 <translation id="6760509555861141183">Volver a la pestaña reciente</translation>
 <translation id="6762812039470893796">Desmarcar todo</translation>
 <translation id="6780034285637185932">Código postal</translation>
-<translation id="6781260999953472352">¿Activar la sincronización?</translation>
+<translation id="6781260999953472352">¿Activar sincronización?</translation>
 <translation id="6785453220513215166">Enviando informe sobre fallos...</translation>
 <translation id="6790502149545262384">Pronto verás historias de <ph name="CHANNEL_NAME" /> cuando abras una pestaña nueva.</translation>
 <translation id="6797885426782475225">Búsqueda por voz</translation>
@@ -1121,7 +1121,6 @@ Los sitios pueden usar cookies para ver tu actividad de navegación en otros sit
 <translation id="8248969482078657578">Las pestañas inactivas te ayudan a mantener la concentración</translation>
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8264966119170358612">Algunas de tus contraseñas guardadas se han visto expuestas en una brecha de seguridad de datos ajena a Google. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">Solo en este dispositivo</translation>
 <translation id="826614135184049678">Se ha cerrado la sesión de tu cuenta (<ph name="USER_NAME" />) al restablecer tu iPad. Para volver a iniciar sesión, toca Continuar abajo.</translation>
 <translation id="8271720166617117963">Aceptar e iniciar sesión</translation>
 <translation id="8278938988428169257">Introduce una palabra o una frase</translation>

@@ -10,27 +10,32 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/quick_answers/ui/quick_answers_focus_search.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/events/event_handler.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/focus/focus_manager.h"
 
 namespace views {
 class ImageButton;
+class ImageView;
 class Label;
 class LabelButton;
 class WebView;
 }  // namespace views
 
 class QuickAnswersUiController;
-class QuickAnswersPreTargetHandler;
 
 namespace quick_answers {
 struct QuickAnswer;
 struct PhoneticsInfo;
-}  // namespace quick_answers
+
+class QuickAnswersPreTargetHandler;
 
 // A bubble style view to show QuickAnswer.
 class QuickAnswersView : public views::View {
  public:
+  METADATA_HEADER(QuickAnswersView);
+
   static constexpr char kWidgetName[] = "QuickAnswersViewWidget";
 
   QuickAnswersView(const gfx::Rect& anchor_view_bounds,
@@ -44,7 +49,6 @@ class QuickAnswersView : public views::View {
   ~QuickAnswersView() override;
 
   // views::View:
-  const char* GetClassName() const override;
   void OnFocus() override;
   void OnThemeChanged() override;
   views::FocusTraversable* GetPaneFocusTraversable() override;
@@ -61,6 +65,8 @@ class QuickAnswersView : public views::View {
 
   void ShowRetryView();
 
+  ui::ImageModel GetIconImageModelForTesting();
+
  private:
   void InitLayout();
   void InitWidget();
@@ -71,6 +77,7 @@ class QuickAnswersView : public views::View {
       View* container);
   void AddAssistantIcon();
   void AddGoogleIcon();
+  void AddResultTypeIcon();
   int GetBoundsWidth();
   int GetLabelWidth();
   void ResetContentView();
@@ -103,6 +110,7 @@ class QuickAnswersView : public views::View {
   raw_ptr<views::ImageButton> dogfood_feedback_button_ = nullptr;
   raw_ptr<views::ImageButton> settings_button_ = nullptr;
   raw_ptr<views::ImageButton> phonetics_audio_button_ = nullptr;
+  raw_ptr<views::ImageView> vector_icon_ = nullptr;
 
   // Invisible web view to play phonetics audio for definition results.
   raw_ptr<views::WebView> phonetics_audio_web_view_ = nullptr;
@@ -111,5 +119,7 @@ class QuickAnswersView : public views::View {
   std::unique_ptr<QuickAnswersFocusSearch> focus_search_;
   base::WeakPtrFactory<QuickAnswersView> weak_factory_{this};
 };
+
+}  // namespace quick_answers
 
 #endif  // CHROME_BROWSER_UI_QUICK_ANSWERS_UI_QUICK_ANSWERS_VIEW_H_

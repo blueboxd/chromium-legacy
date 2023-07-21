@@ -25,10 +25,6 @@
 #include "chrome/updater/util/util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if BUILDFLAG(IS_WIN)
-#include "chrome/updater/util/win_util.h"
-#endif
-
 namespace component_updater {
 namespace {
 
@@ -54,16 +50,10 @@ std::unique_ptr<UpdaterState::StateReader> UpdaterState::StateReader::Create(
           [is_machine]() -> std::unique_ptr<StateReader> {
         // Create a `StateReaderChromiumUpdater` instance only if a prefs.json
         // file for the updater can be found and parsed successfully.
-        const updater::UpdaterScope updater_scope =
-            is_machine ? updater::UpdaterScope::kSystem
-                       : updater::UpdaterScope::kUser;
         const absl::optional<base::FilePath> global_prefs_dir =
-#if BUILDFLAG(IS_WIN)
-            // Google Chrome ships with an x86 updater.
-            updater::GetInstallDirectoryX86(updater_scope);
-#else
-            updater::GetInstallDirectory(updater_scope);
-#endif  //  IS_WIN
+            updater::GetInstallDirectory(is_machine
+                                             ? updater::UpdaterScope::kSystem
+                                             : updater::UpdaterScope::kUser);
         if (!global_prefs_dir)
           return nullptr;
         std::string contents;

@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/memory/weak_ptr.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -78,8 +78,7 @@ class BrowserPluginGuest : public WebContentsObserver {
 
   void InitInternal(WebContentsImpl* owner_web_contents);
 
-  // May be null during guest destruction.
-  const base::WeakPtr<BrowserPluginGuestDelegate> delegate_;
+  const raw_ptr<BrowserPluginGuestDelegate, DanglingUntriaged> delegate_;
 };
 
 }  // namespace content

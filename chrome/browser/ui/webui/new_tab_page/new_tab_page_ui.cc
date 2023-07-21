@@ -226,6 +226,9 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
                                                ntp_features::kNtpModulesLoad));
   source->AddInteger("modulesLoadTimeout",
                      ntp_features::GetModulesLoadTimeout().InMilliseconds());
+  source->AddBoolean("mostVisitedReflowOnOverflowEnabled",
+                     base::FeatureList::IsEnabled(
+                         ntp_features::kNtpMostVisitedReflowOnOverflow));
   source->AddBoolean(
       "historyClustersModuleEnabled",
       base::FeatureList::IsEnabled(ntp_features::kNtpHistoryClustersModule));
@@ -537,9 +540,6 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
   source->AddBoolean(
       "modulesRedesignedEnabled",
       base::FeatureList::IsEnabled(ntp_features::kNtpModulesRedesigned));
-  source->AddBoolean(
-      "modulesRedesignedLayoutEnabled",
-      base::FeatureList::IsEnabled(ntp_features::kNtpModulesRedesignedLayout));
 
   std::vector<std::string> splitExperimentGroup = base::SplitString(
       base::GetFieldTrialParamValueByFeature(

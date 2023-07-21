@@ -7,10 +7,10 @@ import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/md_select.css.js';
-import '../controls/controlled_radio_button.js';
+import '/shared/settings/controls/controlled_radio_button.js';
 import '/shared/settings/controls/extension_controlled_indicator.js';
-import '../controls/settings_radio_group.js';
-import '../controls/settings_toggle_button.js';
+import '/shared/settings/controls/settings_radio_group.js';
+import '/shared/settings/controls/settings_toggle_button.js';
 import '../settings_page/settings_animated_pages.js';
 import '../settings_page/settings_subpage.js';
 import '../settings_shared.css.js';
@@ -300,8 +300,7 @@ export class SettingsAppearancePageElement extends
   /** @return Whether to show the "USE QT" button. */
   private showUseQt_(themeId: string): boolean {
     return (!!themeId || this.systemTheme_ !== SystemTheme.QT) &&
-        !this.appearanceBrowserProxy_.isChildAccount() &&
-        loadTimeData.getBoolean('allowQtTheme');
+        !this.appearanceBrowserProxy_.isChildAccount();
   }
 
   /**

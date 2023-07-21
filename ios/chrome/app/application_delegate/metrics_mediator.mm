@@ -18,6 +18,7 @@
 #import "components/crash/core/common/crash_keys.h"
 #import "components/metrics/metrics_pref_names.h"
 #import "components/metrics/metrics_service.h"
+#import "components/metrics/metrics_switches.h"
 #import "components/prefs/pref_service.h"
 #import "components/previous_session_info/previous_session_info.h"
 #import "components/signin/public/identity_manager/tribool.h"
@@ -25,22 +26,22 @@
 #import "ios/chrome/app/application_delegate/metric_kit_subscriber.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/startup/ios_enable_sandbox_dump_buildflags.h"
-#import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/crash_report/crash_helper.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/flags/system_flags.h"
-#import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/main/browser_provider.h"
-#import "ios/chrome/browser/main/browser_provider_interface.h"
 #import "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/coordinator/scene/connection_information.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
+#import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/shared/model/browser/browser.h"
+#import "ios/chrome/browser/shared/model/browser/browser_provider.h"
+#import "ios/chrome/browser/shared/model/browser/browser_provider_interface.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/signin/signin_util.h"
 #import "ios/chrome/browser/tabs/inactive_tabs/metrics.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/widget_kit/features.h"
 #import "ios/chrome/common/app_group/app_group_metrics.h"
 #import "ios/chrome/common/app_group/app_group_metrics_mainapp.h"
@@ -268,8 +269,10 @@ void RecordWidgetUsage(base::span<const HistogramNameCountPair> histograms) {
     if (count != 0) {
       base::UmaHistogramCounts1000(SysNSStringToUTF8(keyMetric[key]), count);
       [shared_defaults setInteger:0 forKey:key];
-      if ([key isEqual:app_group::kCredentialExtensionPasswordUseCount] ||
-          [key isEqual:app_group::kCredentialExtensionQuickPasswordUseCount]) {
+      if ([key isEqualToString:app_group::
+                                   kCredentialExtensionPasswordUseCount] ||
+          [key isEqualToString:app_group::
+                                   kCredentialExtensionQuickPasswordUseCount]) {
         LogLikelyInterestedDefaultBrowserUserActivity(
             DefaultPromoTypeMadeForIOS);
       }
@@ -507,7 +510,7 @@ using metrics_mediator::kAppDidFinishLaunchingConsecutiveCallsKey;
               GetApplicationContext()->GetLocalState()->GetInteger(
                   prefs::kInactiveTabsTimeThreshold)];
     [self recordNumActiveTabAtStartup:numActiveTabs];
-    [self recordNumInactiveTabAtStartup:numInactiveTabs];
+    [self recordInactiveTabsSettingsAtStartup:numInactiveTabs];
     [self recordNumAbsoluteInactiveTabAtStartup:numAbsoluteInactiveTabs];
     [self recordNumTabAtStartup:numTabs];
     [self recordNumNTPTabAtStartup:numNTPTabs];
@@ -609,6 +612,9 @@ using metrics_mediator::kAppDidFinishLaunchingConsecutiveCallsKey;
 }
 
 - (BOOL)areMetricsEnabled {
+  if (metrics::IsMetricsReportingForceEnabled()) {
+    return YES;
+  }
 // If this if-def changes, it needs to be changed in
 // IOSChromeMainParts::IsMetricsReportingEnabled and settings_egtest.mm.
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)

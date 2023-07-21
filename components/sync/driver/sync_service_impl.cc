@@ -128,6 +128,40 @@ std::unique_ptr<HttpPostProviderFactory> CreateHttpBridgeFactory(
       user_agent, std::move(pending_url_loader_factory));
 }
 
+// Returns whether SyncService should list DISABLE_REASON_USER_CHOICE, given
+// two alternative ways to determine it (except on Ash where both are relevant).
+bool ShouldExposeDisableReasonUserChoice(bool has_sync_consent,
+                                         const SyncPrefs& sync_prefs) {
+  CHECK(!sync_prefs.IsLocalSyncEnabled());
+
+  if (sync_prefs.IsSyncClientDisabledByPolicy()) {
+    return true;
+  }
+
+  const bool is_sync_requested = sync_prefs.IsSyncRequested();
+
+  // In most cases, the two values are identical. In this case there is no
+  // reason to evaluate the feature toggle or reconcile the two values.
+  if (has_sync_consent == is_sync_requested) {
+    return !has_sync_consent;
+  }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // On Ash, `has_sync_consent` should always be true, and what actually matters
+  // is `is_sync_requested`, which is set to false if the server reports
+  // DISABLE_SYNC_ON_CLIENT (e.g. reset via dashboard).
+  return !is_sync_requested;
+#else
+  // On all platforms except Chrome Ash, `has_sync_consent` is the new way to
+  // determine whether DISABLE_REASON_USER_CHOICE should be reported. Use it
+  // if the feature toggle is enabled and otherwise fall back to the legacy
+  // `is_sync_requested`.
+  return base::FeatureList::IsEnabled(kSyncIgnoreSyncRequestedPreference)
+             ? !has_sync_consent
+             : !is_sync_requested;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
+
 }  // namespace
 
 SyncServiceImpl::InitParams::InitParams() = default;
@@ -205,9 +239,15 @@ void SyncServiceImpl::Initialize() {
   data_type_controllers_ =
       BuildDataTypeControllerMap(sync_client_->CreateDataTypeControllers(this));
 
+  // It's safe to pass a raw ptr, since SyncServiceImpl outlives
+  // SyncUserSettingsImpl.
   user_settings_ = std::make_unique<SyncUserSettingsImpl>(
       &crypto_, &sync_prefs_, sync_client_->GetPreferenceProvider(),
-      GetRegisteredDataTypes());
+      GetRegisteredDataTypes(),
+      base::BindRepeating(
+          &SyncServiceImpl::
+              ShouldHonorBookmarksAndReadingListAccountStorageOptIn,
+          base::Unretained(this)));
 
   sync_prefs_.AddSyncPrefObserver(this);
 
@@ -640,7 +680,7 @@ SyncService::DisableReasonSet SyncServiceImpl::GetDisableReasons() const {
     if (!IsSignedIn()) {
       result.Put(DISABLE_REASON_NOT_SIGNED_IN);
     }
-    if (!sync_prefs_.IsSyncRequested()) {
+    if (ShouldExposeDisableReasonUserChoice(HasSyncConsent(), sync_prefs_)) {
       result.Put(DISABLE_REASON_USER_CHOICE);
     }
   }
@@ -1340,6 +1380,15 @@ bool SyncServiceImpl::UseTransportOnlyMode() const {
   return !IsSyncFeatureEnabled() && !IsLocalSyncEnabled();
 }
 
+bool SyncServiceImpl::ShouldHonorBookmarksAndReadingListAccountStorageOptIn()
+    const {
+  // The special bookmarks&readinglist account-storage opt-in should be honored
+  // only in transport mode (not in full-sync mode). As a special case, it
+  // should not be honored while the setup for Sync-the-feature is in progress,
+  // so that the user can properly select the types they want to sync.
+  return !IsSetupInProgress() && UseTransportOnlyMode();
+}
+
 ModelTypeSet SyncServiceImpl::GetRegisteredDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ModelTypeSet registered_types;
@@ -1352,8 +1401,11 @@ ModelTypeSet SyncServiceImpl::GetRegisteredDataTypes() const {
 }
 
 ModelTypeSet SyncServiceImpl::GetModelTypesForTransportOnlyMode() const {
+  // Control types (in practice, NIGORI) are always supported. This special case
+  // is necessary because the NIGORI controller isn't in
+  // `data_type_controllers_`.
+  ModelTypeSet allowed_types = ControlTypes();
   // Collect the types from all controllers that support transport-only mode.
-  ModelTypeSet allowed_types;
   for (const auto& [type, controller] : data_type_controllers_) {
     if (controller->ShouldRunInTransportOnlyMode()) {
       allowed_types.Put(type);
@@ -1785,6 +1837,10 @@ void SyncServiceImpl::StopAndClear() {
   // For explicit passphrase users, clear the encryption key, such that they
   // will need to reenter it if sync gets re-enabled.
   sync_prefs_.ClearEncryptionBootstrapToken();
+
+#if BUILDFLAG(IS_IOS)
+  sync_prefs_.ClearBookmarksAndReadingListAccountStorageOptIn();
+#endif  // BUILDFLAG(IS_IOS)
 
   sync_prefs_.SetSyncRequested(false);
 

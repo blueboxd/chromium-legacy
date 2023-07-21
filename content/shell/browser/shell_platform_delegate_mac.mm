@@ -345,15 +345,14 @@ bool ShellPlatformDelegate::HandleKeyboardEvent(
 
   // The event handling to get this strictly right is a tangle; cheat here a bit
   // by just letting the menus have a chance at it.
-  NSEvent* ns_event = event.os_event.Get();
-  if (ns_event.type == NSEventTypeKeyDown) {
-    if ((ns_event.modifierFlags & NSEventModifierFlagCommand) &&
-        [ns_event.characters isEqual:@"l"]) {
+  if (event.os_event.type == NSEventTypeKeyDown) {
+    if ((event.os_event.modifierFlags & NSEventModifierFlagCommand) &&
+        [event.os_event.characters isEqual:@"l"]) {
       [shell_data.delegate.window makeFirstResponder:shell_data.url_edit_view];
       return true;
     }
 
-    [NSApp.mainMenu performKeyEquivalent:ns_event];
+    [NSApp.mainMenu performKeyEquivalent:event.os_event];
     return true;
   }
   return false;

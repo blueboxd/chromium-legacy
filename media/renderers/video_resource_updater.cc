@@ -88,8 +88,7 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
     absl::optional<gfx::BufferFormat> buffer_format =
         VideoPixelFormatToGfxBufferFormat(format);
     DCHECK(buffer_format.has_value());
-    si_formats[0] = viz::SharedImageFormat::SinglePlane(
-        viz::GetResourceFormat(buffer_format.value()));
+    si_formats[0] = viz::GetSharedImageFormat(buffer_format.value());
     return VideoFrameResourceType::RGB;
   }
 
@@ -1434,7 +1433,6 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
     // Copy pixels into texture. TexSubImage2D() is applicable because
     // |yuv_si_format| is LUMINANCE_F16, R16_EXT, LUMINANCE_8 or RED_8.
-    DCHECK(GLSupportsFormat(plane_si_format.resource_format()));
     {
       HardwarePlaneResource::ScopedTexture scope(gl, plane_resource);
 

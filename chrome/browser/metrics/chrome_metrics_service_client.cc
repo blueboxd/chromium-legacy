@@ -54,6 +54,7 @@
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/metrics/network_quality_estimator_provider_impl.h"
 #include "chrome/browser/metrics/usertype_by_devicetype_metrics_provider.h"
+#include "chrome/browser/performance_manager/metrics/metrics_provider_common.h"
 #include "chrome/browser/privacy_budget/privacy_budget_metrics_provider.h"
 #include "chrome/browser/privacy_budget/privacy_budget_prefs.h"
 #include "chrome/browser/privacy_budget/privacy_budget_ukm_entry_filter.h"
@@ -129,7 +130,7 @@
 #include "components/metrics/android_metrics_provider.h"
 #else
 #include "chrome/browser/metrics/browser_activity_watcher.h"
-#include "chrome/browser/performance_manager/metrics/metrics_provider.h"
+#include "chrome/browser/performance_manager/metrics/metrics_provider_desktop.h"
 #endif
 
 #if BUILDFLAG(IS_POSIX)
@@ -156,6 +157,7 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/ash/web_applications/personalization_app/keyboard_backlight_color_metrics_provider.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_theme_metrics_provider.h"
 #include "chrome/browser/metrics/ambient_mode_metrics_provider.h"
 #include "chrome/browser/metrics/assistant_service_metrics_provider.h"
 #include "chrome/browser/metrics/chromeos_family_link_user_metrics_provider.h"
@@ -165,6 +167,7 @@
 #include "chrome/browser/metrics/family_user_metrics_provider.h"
 #include "chrome/browser/metrics/per_user_state_manager_chromeos.h"
 #include "chrome/browser/metrics/update_engine_metrics_provider.h"
+#include "chrome/browser/ui/webui/settings/ash/os_settings_metrics_provider.h"
 #include "components/metrics/structured/structured_metrics_provider.h"  // nogncheck
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -235,7 +238,8 @@ const uint32_t kSystemProfileMinidumpStreamType = 0x4B6B0003;
 // Ownership must be maintained after registration as the crash reporter does
 // not assume it.
 // TODO(manzagop): revisit this if the Crashpad API evolves.
-base::LazyInstance<std::string>::Leaky g_environment_for_crash_reporter;
+base::LazyInstance<std::string>::Leaky g_environment_for_crash_reporter =
+    LAZY_INSTANCE_INITIALIZER;
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
 
 void RegisterFileMetricsPreferences(PrefRegistrySimple* registry) {
@@ -836,9 +840,12 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<PageLoadMetricsProvider>());
 #else
-  metrics_service_->RegisterMetricsProvider(
-      base::WrapUnique(new performance_manager::MetricsProvider(local_state)));
+  metrics_service_->RegisterMetricsProvider(base::WrapUnique(
+      new performance_manager::MetricsProviderDesktop(local_state)));
 #endif  // BUILDFLAG(IS_ANDROID)
+
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<performance_manager::MetricsProviderCommon>());
 
 #if BUILDFLAG(IS_WIN)
   metrics_service_->RegisterMetricsProvider(
@@ -930,6 +937,10 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<KeyboardBacklightColorMetricsProvider>());
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<PersonalizationAppThemeMetricsProvider>());
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<ash::settings::OsSettingsMetricsProvider>());
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)

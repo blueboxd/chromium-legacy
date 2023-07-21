@@ -308,15 +308,12 @@ std::unique_ptr<D3DImageBacking> D3DImageBacking::Create(
   const bool has_webgpu_usage = !!(usage & SHARED_IMAGE_USAGE_WEBGPU);
   // Keyed mutexes are required for Dawn interop but are not used for XR
   // composition where fences are used instead.
-  CHECK(!has_webgpu_usage || dxgi_shared_handle_state);
-  // SHARED_IMAGE_USAGE_VIDEO_DECODE means that this is for D3D11VideoDecoder.
-  const bool has_video_decode_usage =
-      !!(usage & SHARED_IMAGE_USAGE_VIDEO_DECODE);
+  DCHECK(!has_webgpu_usage || dxgi_shared_handle_state);
+
   std::vector<scoped_refptr<GLTextureHolder>> gl_texture_holders;
-  // Do not cache GL textures in the backing if it could be owned by WebGPU, or
-  // the video decoder, since there could be no GL context to MakeCurrent in the
-  // destructor.
-  if (!has_webgpu_usage && !has_video_decode_usage) {
+  // Do not cache a GL texture in the backing if it could be owned by WebGPU
+  // since there's no GL context to MakeCurrent in the destructor.
+  if (!has_webgpu_usage) {
     for (int plane = 0; plane < format.NumberOfPlanes(); plane++) {
       gfx::Size plane_size = format.GetPlaneSize(plane, size);
       // For legacy multiplanar formats, format() is plane format (eg. RED, RG)
@@ -375,13 +372,13 @@ D3DImageBacking::CreateFromVideoTexture(
     Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
     unsigned array_slice,
     scoped_refptr<DXGISharedHandleState> dxgi_shared_handle_state) {
-  CHECK(d3d11_texture);
-  CHECK(SupportsVideoFormat(dxgi_format));
-  CHECK_EQ(mailboxes.size(), NumPlanes(dxgi_format));
+  DCHECK(d3d11_texture);
+  DCHECK(SupportsVideoFormat(dxgi_format));
+  DCHECK_EQ(mailboxes.size(), NumPlanes(dxgi_format));
 
   // Shared handle and keyed mutex are required for Dawn interop.
   const bool has_webgpu_usage = usage & gpu::SHARED_IMAGE_USAGE_WEBGPU;
-  CHECK(!has_webgpu_usage || dxgi_shared_handle_state);
+  DCHECK(!has_webgpu_usage || dxgi_shared_handle_state);
 
   std::vector<std::unique_ptr<SharedImageBacking>> shared_images(
       NumPlanes(dxgi_format));
@@ -402,13 +399,26 @@ D3DImageBacking::CreateFromVideoTexture(
     // by ANGLE.
     constexpr GLenum kTextureTarget = GL_TEXTURE_EXTERNAL_OES;
 
-    // Do not cache GL textures in the backing since it's owned by the video
-    // decoder, and there could be no GL context to MakeCurrent in the
-    // destructor.
+    // Do not cache a GL texture in the backing if it could be owned by WebGPU
+    // since there's no GL context to MakeCurrent in the destructor.
+    std::vector<scoped_refptr<GLTextureHolder>> gl_texture_holders;
+    if (!has_webgpu_usage) {
+      // Creating the GL texture doesn't require exclusive access to the
+      // underlying D3D11 texture.
+      auto texture_holder = CreateGLTexture(
+          plane_format, plane_size, kInvalidColorSpace, d3d11_texture,
+          kTextureTarget, array_slice, plane_index);
+      if (!texture_holder) {
+        LOG(ERROR) << "Failed to create GL texture.";
+        return {};
+      }
+      gl_texture_holders.push_back(std::move(texture_holder));
+    }
+
     shared_images[plane_index] = base::WrapUnique(new D3DImageBacking(
         mailbox, plane_format, plane_size, kInvalidColorSpace,
         kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage, d3d11_texture,
-        /*gl_texture_holders=*/{}, dxgi_shared_handle_state, kTextureTarget,
+        std::move(gl_texture_holders), dxgi_shared_handle_state, kTextureTarget,
         array_slice, plane_index));
     if (!shared_images[plane_index])
       return {};
@@ -452,10 +462,7 @@ D3DImageBacking::D3DImageBacking(
       swap_chain_(std::move(swap_chain)),
       is_back_buffer_(is_back_buffer) {
   const bool has_webgpu_usage = !!(usage & SHARED_IMAGE_USAGE_WEBGPU);
-  const bool has_video_decode_usage =
-      !!(usage & SHARED_IMAGE_USAGE_VIDEO_DECODE);
-  CHECK(has_webgpu_usage || has_video_decode_usage ||
-        !gl_texture_holders_.empty());
+  DCHECK(has_webgpu_usage || !gl_texture_holders_.empty());
   if (d3d11_texture_)
     d3d11_texture_->GetDevice(&d3d11_device_);
 }
@@ -782,18 +789,14 @@ std::unique_ptr<DawnImageRepresentation> D3DImageBacking::ProduceDawn(
   // Persistently open the shared handle by caching it on this backing.
   auto it = dawn_external_image_cache_.find(device);
   if (it == dawn_external_image_cache_.end()) {
-    DCHECK(dxgi_shared_handle_state_);
+    CHECK(dxgi_shared_handle_state_);
     const HANDLE shared_handle = dxgi_shared_handle_state_->GetSharedHandle();
-    DCHECK(base::win::HandleTraits::IsHandleValid(shared_handle));
-
-    D3D11_TEXTURE2D_DESC texture_desc = {};
-    d3d11_texture_->GetDesc(&texture_desc);
+    CHECK(base::win::HandleTraits::IsHandleValid(shared_handle));
+    CHECK(!dxgi_shared_handle_state_->has_keyed_mutex());
 
     ExternalImageDescriptorDXGISharedHandle externalImageDesc;
     externalImageDesc.cTextureDescriptor = &texture_descriptor;
     externalImageDesc.sharedHandle = shared_handle;
-    externalImageDesc.useFenceSynchronization =
-        !(texture_desc.MiscFlags & D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX);
 
     DawnExternalImageState state;
     state.external_image =

@@ -407,6 +407,7 @@
 <translation id="3638472932233958418">Веб хуудсуудыг урьдчилан ачаалах</translation>
 <translation id="3661160521073045932">Тохируулгын профайл боломжтой</translation>
 <translation id="3670030362669914947">Тоо</translation>
+<translation id="3700134753671613714">Бүх төхөөрөмж дээр хавчуурга авахын тулд нэвтэрнэ үү.</translation>
 <translation id="3709582977625132201">Уншаагүй болгож тэмдэглэх</translation>
 <translation id="371230970611282515">Аюултай үйл явдлын тухай урьдчилан таамаглаж, тохиолдохоос нь өмнө танд анхааруулга өгдөг.</translation>
 <translation id="37207012422556617">Тренд болж буй хайлт</translation>
@@ -546,7 +547,6 @@
 <translation id="4642472735733036929">Үнэ хянахыг зогсоосон</translation>
 <translation id="4650125387981512669"><ph name="FIRST_RUN_ACCOUNT_NAME" />-р үргэлжлүүлэх</translation>
 <translation id="4652817563047461855">Таны нууц үгнүүд аюулгүй эсэхийг шалгах, тэдгээр нь алдагдсан эсэхийг олж мэдэх болон өөрийгөө онлайн орчинд хамгаалахад туслах зөвлөгөөг аваарай. <ph name="BEGIN_LINK" />Нэмэлт мэдээлэл авах<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">Таныг Google Бүртгэлдээ нэвтрэхэд энэ онцлог асна.</translation>
 <translation id="4659667755519643272">Цонх хооронд шилжигчийг оруулна уу</translation>
 <translation id="46614316059270592">Нууц үг хадгалах</translation>
 <translation id="4666531726415300315"><ph name="EMAIL" />-р нэвтэрсэн байна.
@@ -587,7 +587,6 @@
 <translation id="4844899002472726590">Таны сонирхдог сэдвийг харах болон засах</translation>
 <translation id="4848999860252535517"><ph name="WEBSITE" />-н нууц үгийг устгах уу?</translation>
 <translation id="4854345657858711387">Нууц код тохируулах</translation>
-<translation id="4856498338299082007">Таны Google Бүртгэлд</translation>
 <translation id="4858786880085262208">Боломжтой үед HTTPS руу сайжруулна уу. Аюулгүй сайтууд аюултай контент оруулж магадгүй.</translation>
 <translation id="4860895144060829044">Дуудлага</translation>
 <translation id="4872323082491632254">Нууц үгнүүдийг шалгах</translation>
@@ -666,6 +665,7 @@
 <translation id="543338862236136125">Нууц үг засах</translation>
 <translation id="5433691172869980887">Хэрэглэгчийн нэрийг хуулсан</translation>
 <translation id="5439599923922718668">Байнга зочилдог</translation>
+<translation id="5439618055789623719"><ph name="USER_EMAIL" />-р нэвтэрсэн</translation>
 <translation id="54401264925851789">Хуудасны аюулгүй байдалтай холбоотой мэдээлэл</translation>
 <translation id="5443952882982198570">Кредит картууд</translation>
 <translation id="5444892875087332195">Хавчуурга</translation>
@@ -1120,7 +1120,6 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="8248969482078657578">Идэвхгүй табууд нь танд төвлөрөхөд тусална</translation>
 <translation id="8261506727792406068">Устгах</translation>
 <translation id="8264966119170358612">Таны хадгалсан зарим нууц үг Google-н бус өгөгдлийн зөрчилд өртсөн байна. <ph name="BEGIN_LINK" />Нэмэлт мэдээлэл авах<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">Зөвхөн энэ төхөөрөмжид</translation>
 <translation id="826614135184049678">Таны iPad-г шинэчлэх явцад таныг <ph name="USER_NAME" /> бүртгэлээс тань гаргасан. Буцаж нэвтрэхийн тулд доорх "Үргэлжлүүлэх"-ийг товшино уу.</translation>
 <translation id="8271720166617117963">Зөвшөөрөөд, нэвтрэх</translation>
 <translation id="8278938988428169257">Үг эсвэл өгүүлбэр оруулна уу</translation>

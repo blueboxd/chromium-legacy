@@ -782,18 +782,6 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
-<histogram name="Navigation.IsNavigationSameSite.Duration" units="ms"
-    expires_after="2023-10-15">
-  <owner>peilinwang@google.com</owner>
-  <owner>woa-performance-bugs+jank@google.com</owner>
-  <summary>
-    Measures the amount of time it takes to call
-    RenderFrameHostImpl::IsNavigationSameSite(). Logged once per call to
-    RenderFrameHostImpl::IsNavigationSameSite(), potentially numerous times per
-    navigation.
-  </summary>
-</histogram>
-
 <histogram name="Navigation.IsSameBrowsingInstance"
     enum="NavigationIsSameBrowsingInstance" expires_after="2025-01-01">
   <owner>arthursonzogni@chromium.org</owner>
@@ -1627,6 +1615,23 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram
+    name="Prerender.Experimental.ActivationTransitionMismatch{PrerenderTriggerType}"
+    enum="PrerenderActivationTransitionMismatchType" expires_after="2023-10-26">
+  <owner>nhiroki@chromium.org</owner>
+  <owner>chrome-prerendering@google.com</owner>
+  <summary>
+    Breakdown metric for PrerenderActivationNavigationParamsMatch::kTransition.
+
+    When we are attempting to activate a prerendered page, we compare the
+    prerendered page's NavigationRequest's ui::PageTransition with the incoming
+    NavigationRequest's (called activation navigation). If they mismatch, this
+    metric records the transition of the activation navigation in
+    RecordPrerenderActivationTransition().
+  </summary>
+  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+</histogram>
+
+<histogram
     name="Prerender.Experimental.BookmarkBar.EnterToPressDuration{ButtonType}"
     units="ms" expires_after="2023-09-24">
   <owner>robertlin@chromium.org</owner>
@@ -1662,18 +1667,6 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
     <variant name="NotTaken"/>
     <variant name="Taken"/>
   </token>
-</histogram>
-
-<histogram name="Prerender.Experimental.BookmarkBar.PredictionResult"
-    enum="PrerenderPredictionResult" expires_after="2023-09-24">
-  <owner>robertlin@chromium.org</owner>
-  <owner>toyoshim@chromium.org</owner>
-  <owner>chrome-prerendering@google.com</owner>
-  <summary>
-    This metric is to count the combination of bookmark bar triggering
-    prerender's predictor's decision and result. Recorded on mouse leaving a
-    bookmark button in the bookmark bar.
-  </summary>
 </histogram>
 
 <histogram name="Prerender.Experimental.BookmarkUrlButtonEvent"
@@ -1814,6 +1807,23 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   <summary>
     Final status for a prerendering attempt. Recorded by PrerenderHost or
     PrerenderHostRegistry in the browser process when the attempt finishes.
+  </summary>
+  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+</histogram>
+
+<histogram
+    name="Prerender.Experimental.PrerenderLoadingFailureError{PrerenderTriggerType}"
+    enum="NetErrorCodes" expires_after="2023-08-27">
+  <owner>lingqi@chromium.org</owner>
+  <owner>chrome-prerendering@google.com</owner>
+  <summary>
+    Net error code is recorded by PrerenderCancellationReason when a prerender
+    host is canceled due to kDidFailLoad.
+
+    This metric is used to monitor whether preload cache intercepting logic
+    causes extra page loading errors. Similar to
+    PageLoad.Internal.Prerender2.ActivatedPageLoaderStatus{PrerenderTriggerType},
+    but used to track the loading status of not activated prerendered pages.
   </summary>
   <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
 </histogram>

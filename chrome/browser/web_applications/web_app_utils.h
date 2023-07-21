@@ -46,6 +46,11 @@ namespace error_page {
 const char kMessage[] = "web_app_error_page_message";
 const char kAppShortName[] = "app_short_name";
 const char kIconUrl[] = "icon_url";
+const char kSupplementaryIcon[] = "supplementary_icon";
+
+// This must match the HTML element id of the svg to show as a supplementary
+// icon on the default offline error page.
+const char16_t kOfflineIconId[] = u"offlineIcon";
 }  // namespace error_page
 
 // These functions return true if the WebApp System or its subset is allowed
@@ -150,9 +155,24 @@ void SetSkipMainProfileCheckForTesting(bool skip_check);
 
 bool IsMainProfileCheckSkippedForTesting();
 
+// The storage partitions' domain name for the experimental web app isolation.
+// TODO(crbug.com/1425284): use a better domain name, or maybe use a unique
+// domain for each app.
+constexpr char kExperimentalWebAppStorageParitionDomain[] = "goldfish";
+
 // Generates an appropriate path for a new web app profile. This does not create
 // the profile.
 base::FilePath GenerateWebAppProfilePath(const AppId& app_id);
+
+enum class ExperimentalWebAppIsolationMode {
+  kDisabled,
+  kStoragePartition,
+  kProfile,
+};
+
+// Get the experimental web app isolation mode. Prefer using this instead of
+// using the flag directly since this respects the precedence of the flags.
+ExperimentalWebAppIsolationMode ResolveExperimentalWebAppIsolationFeature();
 #endif
 
 constexpr char kAppSettingsPageEntryPointsHistogramName[] =
@@ -199,7 +219,8 @@ content::mojom::AlternativeErrorPageOverrideInfoPtr ConstructWebAppErrorPage(
     const GURL& url,
     content::RenderFrameHost* render_frame_host,
     content::BrowserContext* browser_context,
-    std::u16string message);
+    std::u16string message,
+    std::u16string supplementary_icon);
 
 }  // namespace web_app
 

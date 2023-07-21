@@ -17,6 +17,7 @@
 #include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "base/allocator/partition_allocator/pointers/raw_ptr.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
@@ -39,10 +40,8 @@ class ASH_EXPORT DeskBarViewBase : public views::View,
     kExpanded,
   };
 
-  DeskBarViewBase(aura::Window* root, Type type);
   DeskBarViewBase(const DeskBarViewBase&) = delete;
   DeskBarViewBase& operator=(const DeskBarViewBase&) = delete;
-  ~DeskBarViewBase() override;
 
   // Returns the preferred height of the desk bar that exists on `root` with
   // `state`.
@@ -59,6 +58,8 @@ class ASH_EXPORT DeskBarViewBase : public views::View,
   Type type() const { return type_; }
 
   State state() const { return state_; }
+
+  aura::Window* root() const { return root_; }
 
   void set_is_bounds_animation_on_going(bool value) {
     is_bounds_animation_on_going_ = value;
@@ -230,6 +231,11 @@ class ASH_EXPORT DeskBarViewBase : public views::View,
                                   const ui::LocatedEvent& event);
 
  protected:
+  friend class DeskBarScrollViewLayout;
+
+  DeskBarViewBase(aura::Window* root, Type type);
+  ~DeskBarViewBase() override;
+
   // Returns the X offset of the first mini_view on the left (if there's one),
   // or the X offset of this view's center point when there are no mini_views.
   // This offset is used to calculate the amount by which the mini_views should
@@ -283,7 +289,7 @@ class ASH_EXPORT DeskBarViewBase : public views::View,
   bool is_bounds_animation_on_going_ = false;
 
   // Mini view whose preview is being dragged.
-  DeskMiniView* drag_view_ = nullptr;
+  raw_ptr<DeskMiniView, ExperimentalAsh> drag_view_ = nullptr;
 
   // The screen location of the most recent drag position. This value is valid
   // only when the below `dragged_item_over_bar_` is true.
@@ -295,18 +301,18 @@ class ASH_EXPORT DeskBarViewBase : public views::View,
 
   // The `OverviewGrid` that contains this object if this is a `Type::kOverview`
   // bar, nullptr otherwise.
-  OverviewGrid* overview_grid_;
+  raw_ptr<OverviewGrid, ExperimentalAsh> overview_grid_ = nullptr;
 
   // The views representing desks mini_views. They're owned by views hierarchy.
   std::vector<DeskMiniView*> mini_views_;
 
   // Puts the contents in a `ScrollView` to support scrollable desks.
-  views::ScrollView* scroll_view_ = nullptr;
+  raw_ptr<views::ScrollView, ExperimentalAsh> scroll_view_ = nullptr;
 
   // Contents of `scroll_view_`, which includes `mini_views_`,
   // `expanded_state_new_desk_button_` and optionally
   // `expanded_state_library_button_` currently.
-  views::View* scroll_view_contents_ = nullptr;
+  raw_ptr<views::View, ExperimentalAsh> scroll_view_contents_ = nullptr;
 
   // Default desk button and new desk buttons.
   raw_ptr<ZeroStateDefaultDeskButton, ExperimentalAsh>

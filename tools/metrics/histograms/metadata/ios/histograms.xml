@@ -701,6 +701,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.FeedbackKit.UserFlowStartedSuccess" enum="Boolean"
+    expires_after="2023-10-31">
+  <owner>rkgibson@google.com</owner>
+  <owner>bling-kiwi-pod@google.com</owner>
+  <summary>
+    Whether or not the feedback kit presentation flow completed successfully or
+    had an error.
+  </summary>
+</histogram>
+
 <histogram name="IOS.FinishedNavigationHasContext" enum="Boolean"
     expires_after="2024-05-01">
   <owner>gambard@chromium.org</owner>
@@ -1231,7 +1241,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MetricKit.{MXVersion}ApplicationResumeTime" units="ms"
-    expires_after="2023-09-19">
+    expires_after="2024-05-01">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -1245,7 +1255,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MetricKit.{MXVersion}AverageSuspendedMemory" units="MB"
-    expires_after="2023-09-19">
+    expires_after="2024-05-01">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -1287,7 +1297,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MetricKit.{MXVersion}BackgroundTimePerDay" units="ms"
-    expires_after="2023-05-14">
+    expires_after="2024-05-01">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -1303,7 +1313,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MetricKit.{MXVersion}ExtendedLaunch" units="ms"
-    expires_after="2023-09-19">
+    expires_after="2024-05-01">
   <owner>ajuma@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
   <summary>
@@ -1352,7 +1362,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MetricKit.{MXVersion}ForegroundTimePerDay" units="s"
-    expires_after="2023-05-14">
+    expires_after="2024-05-01">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -1371,7 +1381,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MetricKit.{MXVersion}OptimizedTimeToFirstDraw" units="ms"
-    expires_after="2023-09-19">
+    expires_after="2024-05-01">
   <owner>ajuma@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
   <summary>
@@ -1390,7 +1400,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MetricKit.{MXVersion}PeakMemoryUsage" units="MB"
-    expires_after="2023-09-19">
+    expires_after="2024-05-01">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -1410,7 +1420,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MetricKit.{MXVersion}TimeToFirstDraw" units="ms"
-    expires_after="2023-09-19">
+    expires_after="2024-05-01">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -1613,6 +1623,17 @@ chromium-metrics-reviews@google.com.
   <owner>olivierrobin@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>The length of the selection received from javascript.</summary>
+</histogram>
+
+<histogram name="IOS.PasswordBottomSheet.ExitReason"
+    enum="PasswordSuggestionBottomSheetExitReason" expires_after="2024-04-26">
+  <owner>sugoi@chromium.org</owner>
+  <owner>veronguyen@google.com</owner>
+  <owner>tmartino@chromium.org</owner>
+  <summary>
+    Tracks the bottom sheet dismissal, use of a password suggestion and long
+    press menu events.
+  </summary>
 </histogram>
 
 <histogram name="IOS.PasswordManager.Favicons.Count" units="count"
@@ -1909,6 +1930,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.Reauth.Password.BottomSheet" enum="ReauthenticationEvent"
+    expires_after="2024-04-26">
+  <owner>sugoi@chromium.org</owner>
+  <owner>veronguyen@google.com</owner>
+  <owner>tmartino@chromium.org</owner>
+  <summary>
+    Tracks the results and attempts of reauthentication when using suggestions
+    from the password bottom sheet.
+  </summary>
+</histogram>
+
 <histogram name="IOS.Reauth.Password.ManualFallback"
     enum="ReauthenticationEvent" expires_after="2022-07-03">
   <owner>sarraf@google.com</owner>
@@ -1990,122 +2022,6 @@ chromium-metrics-reviews@google.com.
     this invariant violation, and is logged each time that a main-frame
     navigation response is received after a server redirect. True means that the
     request and response URLs have the same host.
-  </summary>
-</histogram>
-
-<histogram name="IOS.SandboxMetrics.AvailableCapacity" units="MB"
-    expires_after="2023-10-01">
-  <owner>michaeldo@chromium.org</owner>
-  <owner>rohitrao@chromium.org</owner>
-  <summary>
-    The total amount of available storage capacity on the device. Logged once
-    per application cold launch, on startup.
-  </summary>
-</histogram>
-
-<histogram name="IOS.SandboxMetrics.AvailableCapacityPercentage" units="%"
-    expires_after="2023-10-01">
-  <owner>michaeldo@chromium.org</owner>
-  <owner>rohitrao@chromium.org</owner>
-  <summary>
-    The percentage of the device storage which is available. Logged once per
-    application cold launch, on startup.
-  </summary>
-</histogram>
-
-<histogram name="IOS.SandboxMetrics.CapacityForImportantUsage" units="MB"
-    expires_after="2023-10-01">
-  <owner>michaeldo@chromium.org</owner>
-  <owner>rohitrao@chromium.org</owner>
-  <summary>
-    The amount of device storage which is available for important storage.
-    Logged once per application cold launch, on startup.
-  </summary>
-</histogram>
-
-<histogram name="IOS.SandboxMetrics.CapacityForImportantUsagePercentage"
-    units="%" expires_after="2023-10-01">
-  <owner>michaeldo@chromium.org</owner>
-  <owner>rohitrao@chromium.org</owner>
-  <summary>
-    The percentage of the device storage which is available for important
-    storage. Logged once per application cold launch, on startup.
-  </summary>
-</histogram>
-
-<histogram name="IOS.SandboxMetrics.CapacityForOpportunisticUsage" units="MB"
-    expires_after="2023-10-01">
-  <owner>michaeldo@chromium.org</owner>
-  <owner>rohitrao@chromium.org</owner>
-  <summary>
-    The amount of device storage which is available for opportunistic storage.
-    Logged once per application cold launch, on startup.
-  </summary>
-</histogram>
-
-<histogram name="IOS.SandboxMetrics.CapacityForOpportunisticUsagePercentage"
-    units="%" expires_after="2023-10-01">
-  <owner>michaeldo@chromium.org</owner>
-  <owner>rohitrao@chromium.org</owner>
-  <summary>
-    The percentage of the device storage which is available for opportunistic
-    storage. Logged once per application cold launch, on startup.
-  </summary>
-</histogram>
-
-<histogram name="IOS.SandboxMetrics.DocumentsSize2" units="MB"
-    expires_after="2023-10-01">
-  <owner>michaeldo@chromium.org</owner>
-  <owner>rohitrao@chromium.org</owner>
-  <summary>
-    The total amount of storage used by the application Documents directory.
-    Chrome uses this directory to store files downloaded by the user. Logged at
-    application startup, maximum once every 2 weeks, if the
-    `kLogApplicationStorageSizeMetrics` flag is enabled.
-  </summary>
-</histogram>
-
-<histogram name="IOS.SandboxMetrics.LibrarySize" units="MB"
-    expires_after="2023-10-01">
-  <owner>michaeldo@chromium.org</owner>
-  <owner>rohitrao@chromium.org</owner>
-  <summary>
-    The total amount of storage used by the application Library directory.
-    Chrome uses this directory to store application data and caches. Logged at
-    application startup, maximum once every 2 weeks, if the
-    `kLogApplicationStorageSizeMetrics` flag is enabled.
-  </summary>
-</histogram>
-
-<histogram name="IOS.SandboxMetrics.OptimizationGuideModelDownloadedItems"
-    units="items" expires_after="2023-10-01">
-  <owner>michaeldo@chromium.org</owner>
-  <owner>rohitrao@chromium.org</owner>
-  <summary>
-    The number of download directories used by the optimization guide model
-    downloads. Logged at application startup, maximum once every 2 weeks, if the
-    `kLogApplicationStorageSizeMetrics` flag is enabled.
-  </summary>
-</histogram>
-
-<histogram name="IOS.SandboxMetrics.OptimizationGuideModelDownloadsSize"
-    units="KB" expires_after="2023-10-01">
-  <owner>michaeldo@chromium.org</owner>
-  <owner>rohitrao@chromium.org</owner>
-  <summary>
-    The total amount of storage used by the optimization guide model downloads.
-    Logged at application startup, maximum once every 2 weeks, if the
-    `kLogApplicationStorageSizeMetrics` flag is enabled.
-  </summary>
-</histogram>
-
-<histogram name="IOS.SandboxMetrics.TotalCapacity" enum="IOSStorageCapacity"
-    expires_after="2023-10-01">
-  <owner>michaeldo@chromium.org</owner>
-  <owner>rohitrao@chromium.org</owner>
-  <summary>
-    The total amount of storage capacity on the device. Logged once per
-    application cold launch, on startup.
   </summary>
 </histogram>
 
@@ -2521,9 +2437,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.Thumbstrip.CancelBy" enum="ThumbstripOpenByIOS"
-    expires_after="2023-05-14">
-  <owner>djean@chromium.org</owner>
-  <owner>rkgibson@chromium.org</owner>
+    expires_after="2024-05-14">
+  <owner>gambard@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
   <summary>
     [iOS] Reports how a thumbstrip opening was cancelled. It uses the same enum
     as IOS.Thumbstrip.OpenBy.
@@ -2531,16 +2447,16 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.Thumbstrip.CloseBy" enum="ThumbstripCloseByIOS"
-    expires_after="2023-05-14">
-  <owner>djean@chromium.org</owner>
-  <owner>rkgibson@chromium.org</owner>
+    expires_after="2024-05-14">
+  <owner>gambard@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
   <summary>[iOS] Reports how the thumbstrip was closed.</summary>
 </histogram>
 
 <histogram name="IOS.Thumbstrip.OpenBy" enum="ThumbstripOpenByIOS"
-    expires_after="2023-05-14">
-  <owner>djean@chromium.org</owner>
-  <owner>rkgibson@chromium.org</owner>
+    expires_after="2024-05-14">
+  <owner>gambard@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
   <summary>[iOS] Reports how the thumbstrip was opened.</summary>
 </histogram>
 
@@ -2630,6 +2546,16 @@ chromium-metrics-reviews@google.com.
     A boolean that is used to indicate that the URL property of the WKWebView
     has changed to a nil or empty URL. Recorded on the KVO of the URL of the
     WKWebView.
+  </summary>
+</histogram>
+
+<histogram name="IOS.WebInspector.Enabled" enum="BooleanEnabled"
+    expires_after="2024-05-01">
+  <owner>ajuma@chromium.org</owner>
+  <owner>bling-fundamentals@google.com</owner>
+  <summary>
+    Records whether Web Inspector support has been enabled by the user. Logged
+    on iOS 16.4+ only, each time that a WKWebView has been created.
   </summary>
 </histogram>
 

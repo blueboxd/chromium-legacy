@@ -23,6 +23,20 @@
 # The goal is to drive the number of exceptions to zero, to make all
 # the bots behave similarly.
 {
+  'accessibility_unittests': {
+    'modifications': {
+      'Linux ASan LSan Tests (1)': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              # TODO(crbug.com/1442303): Move to Jammy when it's compatible.
+              'os': 'Ubuntu-18.04',
+            },
+          ],
+        },
+      },
+    },
+  },
   'android_browsertests': {
     'modifications': {
       'android-11-x86-rel': {
@@ -82,7 +96,6 @@
             },
           ],
           'shards': 4,
-          'quickrun_shards': 6,
         },
       },
       'android-pie-x86-rel': {
@@ -325,7 +338,6 @@
             },
           ],
           'shards': 12,
-          'inverse_quickrun_shards': 24,
         },
       },
       'Mac12 Tests (dbg)': {
@@ -406,7 +418,6 @@
         ],
         'swarming': {
           "shards": 12,
-          "inverse_quickrun_shards": 24,
         },
       },
       'Win10 Tests x64 (dbg)': {
@@ -539,7 +550,6 @@
             },
           ],
           'shards': 12,
-          'inverse_quickrun_shards': 24,
         },
       },
       'mac10.13-blink-rel': {
@@ -587,7 +597,6 @@
         ],
         'swarming': {
           "shards": 12,
-          "inverse_quickrun_shards": 24,
         },
       },
       'win10-rel-no-external-ip': {
@@ -680,7 +689,6 @@
             },
           ],
           'shards': 18,
-          'inverse_quickrun_shards': 36,
         },
       },
       'Mac12 Tests (dbg)': {
@@ -761,7 +769,6 @@
         ],
         'swarming': {
           "shards": 18,
-          "inverse_quickrun_shards": 36,
         },
       },
       'Win10 Tests x64 (dbg)': {
@@ -876,7 +883,6 @@
             },
           ],
           'shards': 18,
-          'inverse_quickrun_shards': 36,
         },
       },
       'mac10.13-blink-rel': {
@@ -923,7 +929,6 @@
         ],
         'swarming': {
           "shards": 18,
-          "inverse_quickrun_shards": 36,
         },
       },
       'win10-rel-no-external-ip': {
@@ -1041,7 +1046,6 @@
         ],
         'swarming': {
           'shards': 20,
-          'quickrun_shards': 24,
         },
       },
       'Linux Tests (dbg)(1)': {
@@ -1142,7 +1146,6 @@
           # This is for slow test execution that often becomes a critical path of
           # swarming jobs. crbug.com/868114
           'shards': 15,
-          'quickrun_shards': 30,
         }
       },
       'linux-chromeos-chrome': {
@@ -1213,7 +1216,7 @@
       },
       'mac-osxbeta-rel': {
         'swarming': {
-          'shards': 12,
+          'shards': 30,
         },
       },
       'mac-rel-cft': {
@@ -1227,9 +1230,10 @@
       },
       'win-arm64-rel': {
         # Surface Pros aren't using 100% scaling, which some browser tests
-        # rely on.
+        # rely on. They also have touch enabled, which we need to disable.
         'args': [
           '--force-device-scale-factor=1',
+          '--top-chrome-touch-ui=disabled',
         ],
       },
       'win-asan': {
@@ -1296,11 +1300,6 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.cc_unittests.filter',
         ],
       },
-      'chromeos-amd64-generic-rel': {
-        'swarming': {
-          'quickrun_shards': 2,
-        },
-      },
       'fuchsia-code-coverage': {
         'swarming': {
           'shards': 4,
@@ -1310,13 +1309,6 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.debug.cc_unittests.filter',
         ],
-      },
-    },
-  },
-  'cc_unittests eve': {
-    'modifications': {
-      'lacros-amd64-generic-rel': {
-        'ci_only': True,
       },
     },
   },
@@ -1490,52 +1482,6 @@
             {
               # use 8-core to shorten runtime
               'cores': '8',
-            },
-          ],
-        },
-      },
-    },
-  },
-  'chrome_public_test_apk_with_playstore': {
-    'modifications': {
-      'android-11-x86-rel': {
-        'args': [
-          '--avd-config=../../tools/android/avd/proto/generic_playstore_android30.textpb',
-        ],
-        'swarming': {
-          # soft affinity so that bots with caches will be picked first
-          'optional_dimensions': {
-            '60': [
-              {
-                'caches': 'generic_playstore_android30',
-              }
-            ],
-          },
-          'named_caches': [
-            {
-              'name': 'generic_playstore_android30',
-              'path': '.android_emulator/generic_playstore_android30',
-            },
-          ],
-        },
-      },
-      'android-pie-x86-rel': {
-        'args': [
-          '--avd-config=../../tools/android/avd/proto/generic_playstore_android28.textpb',
-        ],
-        'swarming': {
-          # soft affinity so that bots with caches will be picked first
-          'optional_dimensions': {
-            '60': [
-              {
-                'caches': 'generic_playstore_android28',
-              }
-            ],
-          },
-          'named_caches': [
-            {
-              'name': 'generic_playstore_android28',
-              'path': '.android_emulator/generic_playstore_android28',
             },
           ],
         },
@@ -1716,16 +1662,6 @@
           'shards': 2,
         },
       },
-      'Mac12 Tests': {
-        'swarming': {
-          'inverse_quickrun_shards': 2,
-        },
-      },
-      'Win10 Tests x64': {
-        'swarming': {
-          'inverse_quickrun_shards': 2,
-        },
-      },
       'android-11-x86-rel': {
         'args': [
           # TODO(crbug.com/1192348): Fix the test failure
@@ -1738,37 +1674,15 @@
           '--gtest_filter=-FieldFormatterTest.DifferentLocales',
         ],
       },
-      # If you change this, make similar changes in android-x86-code-coverage below
-      'android-nougat-x86-rel': {
-        'swarming': {
-          'inverse_quickrun_shards': 12,
-        },
-      },
-      # Keep this same as android-nougat-x86-rel above
-      'android-x86-code-coverage': {
-        'swarming': {
-          'inverse_quickrun_shards': 12,
-        },
-      },
-      'mac-rel-cft': {
-        'swarming': {
-          'inverse_quickrun_shards': 2,
-        },
-      },
       'win-asan': {
         # With a single shard seems to hit time limit.
         'swarming': {
           'shards': 2,
         },
       },
-      'win-rel-cft': {
-        'swarming': {
-          'inverse_quickrun_shards': 2,
-        },
-      },
       'win10-code-coverage': {
         'swarming': {
-          'shards': 4,
+          'shards': 6,
         },
       },
     },
@@ -1815,6 +1729,12 @@
       },
       'Linux TSan Tests': {
         'swarming': {
+          'dimension_sets': [
+            {
+              # TODO(crbug.com/1412588): Move the rest of the tests to Jammy.
+              'os': 'Ubuntu-22.04',
+            },
+          ],
           'shards': 30,
         },
       },
@@ -1829,7 +1749,6 @@
       'Mac12 Tests': {
         'swarming': {
           'shards': 12,
-          'inverse_quickrun_shards': 24,
         },
       },
       'Mac12 Tests (dbg)': { # https://crbug.com/1279504
@@ -1852,9 +1771,6 @@
         'args': [
           '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
         ],
-        'swarming': {
-          'quickrun_shards': 18,
-        },
       },
       'Win10 Tests x64 (dbg)': {
         'experiment_percentage': 100,
@@ -1946,9 +1862,6 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64.content_browsertests_coverage.filter',
         ],
-        'swarming': {
-          'quickrun_shards': 40
-        },
       },
       'android-pie-x86-rel': {
         'args': [
@@ -2042,7 +1955,6 @@
       'mac-rel-cft': {
         'swarming': {
           'shards': 12,
-          'inverse_quickrun_shards': 24,
         },
       },
       # https://crbug.com/1255940
@@ -2070,9 +1982,6 @@
         'args': [
           '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
         ],
-        'swarming': {
-          'quickrun_shards': 18,
-        },
       },
       'win10-rel-no-external-ip': {
         # crbug.com/868082
@@ -2110,9 +2019,6 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.content_shell_test_apk.filter',
         ],
         'ci_only': True,
-        'swarming': {
-          'inverse_quickrun_shards': 6,
-        },
       },
       'android-12l-x64-dbg-tests': {
         'args': [
@@ -2306,15 +2212,6 @@
       },
     },
   },
-  'exo_unittests': {
-    'modifications': {
-      'linux-chromeos-rel': {
-        'swarming': {
-          'quickrun_shards': 2,
-        }
-      },
-    },
-  },
   'extensions_browsertests': {
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
@@ -2401,10 +2298,16 @@
       'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/831667
     ],
     'modifications': {
+      'android-arm64-proguard-rel': {
+        'args': [
+          # https://crbug.com/1404782
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64.gin_unittests.filter',
+        ],
+      },
       'android-code-coverage-native': {
         'args': [
           # https://crbug.com/1404782
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64.gin_unittests_coverage.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64.gin_unittests.filter',
         ],
       },
       'fuchsia-fyi-x64-asan': {
@@ -2698,7 +2601,6 @@
         # These are slow on the ASan trybot for some reason, crbug.com/1257927
         'swarming': {
           'shards': 6,
-          'quickrun_shards': 12,
         },
       },
       'Linux ChromiumOS MSan Tests': {
@@ -2711,6 +2613,12 @@
       'Linux TSan Tests': {
         # These are slow on the TSan bots for some reason, crbug.com/1257927
         'swarming': {
+          'dimension_sets': [
+            {
+               # TODO(crbug.com/1412588): Move the remainder to Jammy.
+              'os': 'Ubuntu-22.04',
+            },
+          ],
           'shards': 32, # Adjusted for testing, see https://crbug.com/1179567
         },
       },
@@ -2723,15 +2631,9 @@
       'Mac ASan 64 Tests (1)': { # https://crbug.com/1251656
         'experiment_percentage': 100,
       },
-      'Mac11 Tests': {
-        'swarming': {
-          'quickrun_shards': 6,
-        },
-      },
       'Mac12 Tests': {
         'swarming': {
           'shards': 6,
-          'inverse_quickrun_shards': 12,
         },
       },
       'Mac12 Tests (dbg)': { # https://crbug.com/1265051
@@ -2801,8 +2703,13 @@
         ],
         'swarming': {
           'shards': 6,
-          'inverse_quickrun_shards': 12,
         },
+      },
+      'win-arm64-rel': {
+        # Surface Pros have touch turned on by default, which makes some interactive-ui-tests fail.
+        'args': [
+          '--top-chrome-touch-ui=disabled',
+        ],
       },
       'win-asan': {
          # Tests shows tests run faster with fewer retries by using fewer jobs crbug.com/1411912
@@ -2819,6 +2726,11 @@
         ],
         'swarming': {
           'shards': 9,
+        },
+      },
+      'win10-code-coverage': {
+        'swarming': {
+          'shards': 32,
         },
       },
     },
@@ -2843,13 +2755,6 @@
         'swarming': {
           'shards': 2,
         },
-      },
-    },
-  },
-  'lacros_all_tast_tests eve': {
-    'modifications': {
-      'lacros-amd64-generic-rel': {
-        'ci_only': True,
       },
     },
   },
@@ -3117,11 +3022,6 @@
           'shards': 4,
         }
       },
-      'android-12-x64-rel': {
-        'swarming': {
-          'inverse_quickrun_shards': 6,
-        },
-      },
       'android-cronet-x86-dbg-10-tests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_10.net_unittests.filter',
@@ -3154,11 +3054,6 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.net_unittests.filter',
         ],
       },
-      'chromeos-amd64-generic-rel': {
-        'swarming': {
-          'quickrun_shards': 6,
-        },
-      },
       'fuchsia-code-coverage': {
         'swarming': {
           'shards': 14,
@@ -3187,9 +3082,6 @@
         "args": [
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
         ],
-        'swarming': {
-          'quickrun_shards': 18,
-        },
       },
       'linux-code-coverage': {
         'args': [
@@ -3203,9 +3095,6 @@
         "args": [
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
         ],
-        'swarming': {
-          'quickrun_shards': 18,
-        },
       },
     },
   },
@@ -3247,13 +3136,6 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.ozone_unittests.filter',
         ],
-      },
-    },
-  },
-  'ozone_unittests eve': {
-    'modifications': {
-      'lacros-amd64-generic-rel': {
-        'ci_only': True,
       },
     },
   },
@@ -3355,16 +3237,6 @@
           # information.
           '--extra-browser-args=--disable-wcg-for-test',
         ],
-      },
-      'Mac Retina Release (AMD)': {
-        'swarming': {
-          'quickrun_shards': 2,
-        },
-      },
-      'Win10 x64 Release (NVIDIA)': {
-        'swarming': {
-          'quickrun_shards': 2,
-        },
       },
       'android_optional_gpu_tests_rel': {
         'args': [
@@ -3530,11 +3402,6 @@
       'Linux MSan Tests',  # https://crbug.com/831676
     ],
     'modifications': {
-      'Linux ASan LSan Tests (1)': {
-        'swarming': {
-          'quickrun_shards': 2,
-        },
-      },
       'android-11-x86-rel': {
         'args': [
           # TODO(crbug.com/1264654): Fix the failed tests
@@ -3559,7 +3426,6 @@
         'ci_only': True,
         'swarming': {
           'shards': 3,
-          'inverse_quickrun_shards': 4,
         },
       },
       # Keep this same as android-nougat-x86-rel above
@@ -3570,7 +3436,6 @@
         ],
         'swarming': {
           'shards': 3,
-          'inverse_quickrun_shards': 4,
         },
       },
       'fuchsia-code-coverage': {
@@ -3773,11 +3638,6 @@
         ],
         'ci_only': True,
       },
-      'chromeos-amd64-generic-rel': {
-        'swarming': {
-          'quickrun_shards': 24,
-        },
-      },
       'chromeos-eve-chrome': {
         'args': [
           # TODO(crbug.com/1191132): Re-enable.
@@ -3824,11 +3684,6 @@
     'modifications': {
       'Win10 Tests x64 (dbg)': {
         'experiment_percentage': 100,  # crbug.com/870673
-      },
-      'chromeos-amd64-generic-rel': {
-        'swarming': {
-          'quickrun_shards': 60,
-        },
       },
     },
     'remove_from': [
@@ -3894,11 +3749,6 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.unit_tests_wayland.filter',
         ],
       },
-      'Mac12 Tests': {
-        'swarming': {
-          'inverse_quickrun_shards': 2,
-        },
-      },
       'Mac12 Tests (dbg)': {
         'swarming': {
           'shards': 2,
@@ -3941,11 +3791,6 @@
               'cores': '8',
             },
           ],
-        },
-      },
-      'mac-rel-cft': {
-        'swarming': {
-          'inverse_quickrun_shards': 2,
         },
       },
       'win-arm64-rel': {
@@ -4243,15 +4088,6 @@
       },
     },
   },
-  'webgl_conformance_d3d11_passthrough_tests': {
-    'modifications': {
-      'Win10 x64 Release (NVIDIA)': {
-        'swarming': {
-          'quickrun_shards': 4,
-        },
-      },
-    },
-  },
   'webgl_conformance_gl_passthrough_tests 1002:67ef': {
     'modifications': {
       'mac_optional_gpu_tests_rel': {
@@ -4317,9 +4153,6 @@
           # Added to debug crbug.com/1293967.
           '--extra-browser-args=--disable-features=BackgroundVideoPauseOptimization --disable-background-media-suspend --disable-renderer-backgrounding --disable-background-timer-throttling',
         ],
-        'swarming': {
-          'quickrun_shards': 40,
-        },
       },
     },
   },
@@ -4405,6 +4238,12 @@
       'Dawn Android arm Release (Pixel 4)',
     ],
     'modifications': {
+      'Dawn Mac x64 DEPS Release (AMD)': {
+        'ci_only': True,
+      },
+      'Dawn Mac x64 Release (AMD)': {
+        'ci_only': True,
+      },
       # These tests must run with a GPU.
       'linux-code-coverage': {
         'swarming': {
@@ -4482,6 +4321,16 @@
       },
     },
   },
+  'webgpu_swiftshader_web_platform_cts_tests': {
+    'modifications': {
+      'Dawn Mac x64 DEPS Release (AMD)': {
+        'ci_only': True,
+      },
+      'Dawn Mac x64 Release (AMD)': {
+        'ci_only': True,
+      },
+    },
+  },
   'webgpu_swiftshader_web_platform_cts_with_validation_tests': {
     # Remove from bots where capacity is constrained.
     'remove_from': [
@@ -4518,18 +4367,6 @@
       'Linux TSan Tests': {
         'swarming': {
           'shards': 2,
-        },
-      },
-      # If you change this, make similar changes in android-x86-code-coverage below
-      'android-nougat-x86-rel': {
-        'swarming': {
-          'inverse_quickrun_shards': 12,
-        },
-      },
-      # Keep this same as android-nougat-x86-rel above
-      'android-x86-code-coverage': {
-        'swarming': {
-          'inverse_quickrun_shards': 12,
         },
       },
       'win10-code-coverage': {
@@ -4628,7 +4465,6 @@
       'android-12-x64-rel': {
         'swarming': {
           'shards': 10,
-          'inverse_quickrun_shards': 14,
         },
       },
       'android-12l-x64-dbg-tests': {
@@ -4653,6 +4489,12 @@
           '--use-persistent-shell',
         ],
         'swarming': {
+          'dimension_sets': [
+            {
+              # TODO(crbug.com/1412588): Move the remainder to Jammy.
+              'os': 'Ubuntu-22.04',
+            },
+          ],
           'shards': 27,
         },
       },
@@ -4679,10 +4521,36 @@
           '--use-persistent-shell',
         ],
         'swarming': {
+          'dimension_sets': [
+            {
+              # TODO(crbug.com/1412588): Move the remainder to Jammy.
+              'os': 'Ubuntu-22.04',
+            },
+          ],
           'shards': 27,
         },
       },
     },
+  },
+  'webview_trichrome_64_cts_tests full_mode': {
+    'modifications': {
+      'android-12-x64-rel': {
+        'args': [
+          # crbug.com/1401476: Test doesn't work with code coverage.
+          '--gtest_filter=-com.android.cts.webkit.WebViewDeviceSideStartupTest.testStrictModeNotViolatedOnStartup',
+        ],
+      }
+    }
+  },
+  'webview_trichrome_64_cts_tests instant_mode': {
+    'modifications': {
+      'android-12-x64-rel': {
+        'args': [
+          # crbug.com/1401476: Test doesn't work with code coverage.
+          '--gtest_filter=-com.android.cts.webkit.WebViewDeviceSideStartupTest.testStrictModeNotViolatedOnStartup',
+        ],
+      }
+    }
   },
   'webview_ui_test_app_test_apk': {
     'remove_from': [

@@ -71,6 +71,12 @@ class HashRealTimeService : public KeyedService {
   // it).
   bool IsEnhancedProtectionEnabled();
 
+  // Returns whether the |url| is eligible for hash-prefix real-time checks.
+  // It's never eligible if the |request_destination| is not mainframe.
+  static bool CanCheckUrl(
+      const GURL& url,
+      network::mojom::RequestDestination request_destination);
+
   // Start the lookup for |url|, and call |response_callback| on
   // |callback_task_runner| when response is received.
   virtual void StartLookup(
@@ -145,8 +151,13 @@ class HashRealTimeService : public KeyedService {
   };
 
   // Returns the traffic annotation tag that is attached in the simple URL
-  // loader.
-  net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag() const;
+  // loader when a direct fetch request is sent.
+  net::NetworkTrafficAnnotationTag GetTrafficAnnotationTagForDirectFetch()
+      const;
+
+  // Returns the traffic annotation tag that is attached in the Oblivious HTTP
+  // request when an OHTTP request is sent.
+  net::NetworkTrafficAnnotationTag GetTrafficAnnotationTagForOhttp() const;
 
   // Get a resource request with URL, load_flags, credentials mode, and method
   // set.

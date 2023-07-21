@@ -253,7 +253,8 @@ enum EntryPropertyName {
   isExternalMedia,
   isArbitrarySyncFolder,
   syncStatus,
-  progress
+  progress,
+  shortcut
 };
 
 // Source of the volume data.
@@ -305,6 +306,7 @@ enum SharesheetLaunchSource {
 enum IOTaskState {
   queued,
   scanning,
+  warning,
   in_progress,
   paused,
   success,
@@ -323,6 +325,12 @@ enum IOTaskType {
   restore_to_destination,
   trash,
   zip
+};
+
+enum SecurityErrorType {
+  dlp,
+  enterprise_connectors,
+  dlp_warning_timeout
 };
 
 enum RecentDateBucket {
@@ -549,6 +557,9 @@ dictionary EntryProperties {
   // E.g., pasting, syncing. Note: currently, this is exclusively being used
   // for Drive syncing.
   double? progress;
+
+  // True if the entry is a shortcut.
+  boolean? shortcut;
 };
 
 // Information about total and remaining size on the mount point.
@@ -1085,6 +1096,10 @@ dictionary ProgressStatus {
 
   // Current state of the task sending the progress.
   IOTaskState state;
+
+  // Type of security error that occurred, if any.
+  // Used only if Data Leak Prevention or Enterprise Connectors policies apply.
+  SecurityErrorType securityError;
 
   // Name of the first source entry.
   DOMString sourceName;
@@ -1949,6 +1964,10 @@ interface Functions {
 
   // Returns the current progress of the bulk pinning manager.
   static void getBulkPinProgress(GetBulkPinProgressCallback callback);
+
+  // Starts calculating the space required to pin all the items in a users My
+  // drive.
+  static void calculateBulkPinRequiredSpace();
 };
 
 // Events supported by fileManagerPrivate API. These events are broadcasted.

@@ -264,6 +264,11 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool is_computing_role_ = false;
   mutable bool is_updating_cached_values_ = false;
 #endif
+#if !defined(NDEBUG)
+  // Keep track of what the object used to be, to make it easier to debug
+  // situations involving detached objects.
+  String detached_object_debug_info_;
+#endif
 
 #if defined(AX_FAIL_FAST_BUILD)
   bool is_adding_children_ = false;
@@ -1133,6 +1138,10 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // When the parent on children during AddChildren(), take the opportunity to
   // check out ComputeParent() implementation. It should match.
   void EnsureCorrectParentComputation();
+
+  // Prints the entire AX subtree to the screen for debugging, with |this|
+  // highlighted via a "*" notation.
+  void ShowAXTreeForThis();
 #endif
 
   // Get or create the first ancestor that's not accessibility ignored.

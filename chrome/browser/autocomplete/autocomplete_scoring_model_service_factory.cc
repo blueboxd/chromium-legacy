@@ -30,12 +30,10 @@ AutocompleteScoringModelServiceFactory::GetForProfile(Profile* profile) {
 AutocompleteScoringModelServiceFactory::AutocompleteScoringModelServiceFactory()
     : ProfileKeyedServiceFactory(
           "AutocompleteScoringModelService",
-          // This service is available for the regular profile in both the
-          // original and the OTR modes.
           ProfileSelections::Builder()
-              .WithRegular(ProfileSelection::kOwnInstance)
+              .WithRegular(ProfileSelection::kOriginalOnly)
               // TODO(crbug.com/1418376): Check if this service is needed in
-              // Guest mode (likely not since local history is unavailable).
+              // Guest mode.
               .WithGuest(ProfileSelection::kOriginalOnly)
               .Build()) {
   DependsOn(OptimizationGuideKeyedServiceFactory::GetInstance());

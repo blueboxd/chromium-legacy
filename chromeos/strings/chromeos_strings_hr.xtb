@@ -295,6 +295,7 @@
 <translation id="3484914941826596830">Dok se oprema ažurira, nemojte iskopčavati ovaj vanjski uređaj niti isključivati računalo. Ovaj prozor možete minimizirati. Ažuriranje može potrajati nekoliko minuta i vaš vanjski uređaj tada možda neće funkcionirati.</translation>
 <translation id="3486220673238053218">definicija</translation>
 <translation id="3488065109653206955">Djelomično aktivirano</translation>
+<translation id="3502426834823382181">prikaži sve aplikacije</translation>
 <translation id="3510890413042482857">Šalji <ph name="BEGIN_LINK1" />podatke o praćenju izvedbe<ph name="END_LINK1" /></translation>
 <translation id="3517001332549868749">Ažuriranje OS-a Chrome</translation>
 <translation id="3527036260304016759">Nije uspjelo – nepoznata pogreška</translation>
@@ -636,6 +637,7 @@
 <translation id="6278428485366576908">Tema</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Uključivanje tamne teme</translation>
+<translation id="6285899124799306373">otvori pokretač</translation>
 <translation id="6302401976930124515">Otkazan je test <ph name="TEST_NAME" /></translation>
 <translation id="631063167932043783">Aplikacija Istražite</translation>
 <translation id="6319207335391420837">Ažurirajte opremu na uređaju <ph name="DEVICE_NAME" /></translation>
@@ -651,6 +653,7 @@
 <translation id="6382182670717268353">Pregled čuvara zaslona</translation>
 <translation id="6388847657025262518">Ulagač dokumenata u skener je zaglavljen. Provjerite ulagač i pokušajte ponovo.</translation>
 <translation id="6394634179843537518">Dodaj datoteku</translation>
+<translation id="6401427872449207797">pretraživanje u pregledniku</translation>
 <translation id="6410257289063177456">Slikovne datoteke</translation>
 <translation id="641081527798843608">Podudaranje predmeta</translation>
 <translation id="6412715219990689313">Ugrađena tipkovnica</translation>
@@ -875,6 +878,7 @@
 <translation id="8312330582793120272">reprodukcija medijskih sadržaja</translation>
 <translation id="8318753676953949627">Nema slika</translation>
 <translation id="8329018942023753850">aplikacija kalkulator</translation>
+<translation id="8335869473001018124">otvori pretraživanje</translation>
 <translation id="8336739000755212683">Promijenite sliku računa uređaja</translation>
 <translation id="8347227221149377169">Zadaci ispisa</translation>
 <translation id="8351855506390808906">Točka dodira za mapiranje tipki</translation>

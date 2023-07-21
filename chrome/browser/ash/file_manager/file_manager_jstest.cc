@@ -374,6 +374,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfConflictDialog) {
   RunTestURL("widgets/xf_conflict_dialog_unittest.js");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfCloudPanel) {
+  RunTestURL("widgets/xf_cloud_panel_unittest.js");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfDlpRestrictionDetailsDialog) {
   RunTestURL("widgets/xf_dlp_restriction_details_dialog_unittest.js");
 }
@@ -408,6 +412,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfPathDisplay) {
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, BreadcrumbContainer) {
   RunTestURL("containers/breadcrumb_container_unittest.js");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, CloudPanelContainer) {
+  RunTestURL("containers/cloud_panel_container_unittest.js");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DirectoryTreeContainer) {

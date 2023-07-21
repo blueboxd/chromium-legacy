@@ -20,14 +20,6 @@ export class UntrustedAppClient extends PostMessageAPIClient {
   }
 
   /**
-   * Notfies the app when screencasts' pending state have changed.
-   * @param {!Array<!projectorApp.PendingScreencast>} pendingScreencasts
-   */
-  onScreencastsStateChange(pendingScreencasts) {
-    return this.callApiFn('onScreencastsStateChange', pendingScreencasts);
-  }
-
-  /**
    * Notifies the untrusted context when a new video file is available.
    * @param {string} videoFileId the Drive item id of the video file.
    * @param {?File} videoFile to provide to the untrusted context.
@@ -81,24 +73,6 @@ export class TrustedAppRequestHandler extends RequestHandler {
       return this.browserProxy_.sendXhr(
           values[0], values[1], values[2], values[3], values[4], values[5],
           values[6]);
-    });
-    this.registerMethod('getPendingScreencasts', (args) => {
-      return this.browserProxy_.getPendingScreencasts();
-    });
-    this.registerMethod('getUserPref', (args) => {
-      if (!args || args.length != 1) {
-        return;
-      }
-      return this.browserProxy_.getUserPref(args[0]);
-    });
-    this.registerMethod('setUserPref', (args) => {
-      if (!args || args.length != 2) {
-        return;
-      }
-      return this.browserProxy_.setUserPref(args[0], args[1]);
-    });
-    this.registerMethod('openFeedbackDialog', (args) => {
-      return this.browserProxy_.openFeedbackDialog();
     });
     this.registerMethod('getVideo', (args) => {
       if (!args || args.length != 2) {

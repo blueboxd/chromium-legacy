@@ -122,7 +122,7 @@
 <translation id="3115898365077584848">Bilgileri Göster</translation>
 <translation id="3123473560110926937">Bazı sitelerde engelleniyor</translation>
 <translation id="3143754809889689516">Baştan oynat</translation>
-<translation id="3162899666601560689">Siteler size daha iyi bir göz atma deneyimi sunmak, örneğin, oturumunuzu açık tutmak veya alışveriş sepetinizdeki ürünleri hatırlamak için çerez kullanabilir.</translation>
+<translation id="3162899666601560689">Siteler size daha iyi bir göz atma deneyimi sunmak, örneğin, oturumunuzu açık tutmak veya alışveriş sepetinizdeki ürünleri hatırlamak için çerez kullanabilir</translation>
 <translation id="3165022941318558018">Bir sitenin, üçüncü taraf çerezlerini kullanmasına izin verin</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> depolanmış veri</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> uygulamasının size bildirim gönderebilmesi için <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda da bildirimleri açın.</translation>
@@ -454,7 +454,7 @@
 <translation id="913657688200966289"><ph name="APP_NAME" /> için izinleri açmak üzere <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda izinleri açın.</translation>
 <translation id="9138217887606523162">Şu anki yakınlaştırma düzeyi %%<ph name="ZOOM_LEVEL" /></translation>
 <translation id="9162462602695099906">Bu sayfa tehlikeli</translation>
-<translation id="9201023452444595544">Tüm çevrimdışı veriler temizlenir</translation>
+<translation id="9201023452444595544">Tüm çevrimdışı veriler temizlenecek</translation>
 <translation id="930525582205581608">Bu site unutulsun mu?</translation>
 <translation id="947156494302904893">Ziyaret ettiğiniz siteler, bot olmadığınızı ve gerçek bir kişi olduğunuzu doğrulayabilir</translation>
 <translation id="967624055006145463">Depolanan veriler</translation>

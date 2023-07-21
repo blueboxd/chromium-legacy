@@ -16,7 +16,6 @@
 #include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/restore_data.h"
 #include "components/app_restore/window_info.h"
-#include "components/desks_storage/core/desk_template_util.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -59,8 +58,9 @@ void RestoreDataCollector::CaptureActiveDeskAsSavedDesk(
 
     if (!delegate->IsWindowSupportedForSavedDesk(window)) {
       call.unsupported_apps.push_back(window);
-      if (delegate->IsIncognitoWindow(window))
-        call.incognito_window_count++;
+      if (!delegate->IsWindowPersistable(window)) {
+        ++call.non_persistable_window_count;
+      }
       continue;
     }
 
@@ -146,14 +146,8 @@ void RestoreDataCollector::SendDeskTemplate(uint32_t serial) {
   DCHECK(call_it != calls_.end());
   Call& call = call_it->second;
 
-  base::Uuid desk_template_uuid =
-      call.template_type == DeskTemplateType::kFloatingWorkspace
-          ? base::Uuid::ParseLowercase(desks_storage::desk_template_util::
-                                           kFloatingWorkspaceTemplateUuid)
-          : base::Uuid::GenerateRandomV4();
-
   auto desk_template = std::make_unique<DeskTemplate>(
-      std::move(desk_template_uuid), DeskTemplateSource::kUser,
+      base::Uuid::GenerateRandomV4(), DeskTemplateSource::kUser,
       call.template_name, base::Time::Now(), call.template_type);
   desk_template->set_desk_restore_data(std::move(call.data));
 
@@ -173,8 +167,9 @@ void RestoreDataCollector::SendDeskTemplate(uint32_t serial) {
     auto* dialog_controller = saved_desk_util::GetSavedDeskDialogController();
     DCHECK(dialog_controller);
     dialog_controller->ShowUnsupportedAppsDialog(
-        root_window_to_show, call.unsupported_apps, call.incognito_window_count,
-        std::move(call.callback), std::move(desk_template));
+        root_window_to_show, call.unsupported_apps,
+        call.non_persistable_window_count, std::move(call.callback),
+        std::move(desk_template));
   } else {
     std::move(call.callback).Run(std::move(desk_template));
   }

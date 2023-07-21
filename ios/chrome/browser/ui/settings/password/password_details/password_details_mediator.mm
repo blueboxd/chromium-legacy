@@ -12,23 +12,23 @@
 #import "base/containers/cxx20_erase.h"
 #import "base/containers/flat_set.h"
 #import "base/memory/raw_ptr.h"
-#import "base/metrics/histogram_functions.h"
 #import "base/ranges/algorithm.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/password_manager/core/browser/password_form.h"
 #import "components/password_manager/core/browser/password_manager_features_util.h"
-#import "components/password_manager/core/browser/password_manager_metrics_util.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/signin/public/identity_manager/account_info.h"
 #import "components/sync/base/features.h"
 #import "components/sync/driver/sync_service.h"
 #import "ios/chrome/browser/passwords/password_check_observer_bridge.h"
+#import "ios/chrome/browser/passwords/password_checkup_metrics.h"
 #import "ios/chrome/browser/passwords/password_checkup_utils.h"
 #import "ios/chrome/browser/ui/settings/password/account_storage_utils.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator_delegate.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/password_details_metrics_utils.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -55,7 +55,11 @@ bool MatchesRealmUsernameAndPassword(PasswordDetails* password,
 // Helper that determines if a credential should be displayed as compromised in
 // password details. Even if a credential is compromised, it is only displayed
 // as such when password details was opened from the password manager or the
-// compromised password issues page.
+// compromised password issues page. `insecure_credentials` is the list of
+// insecure credentials provided by the `_manager`
+// (IOSChromePasswordCheckManager). This list contains the most recent version
+// of the insecure credentials and is used here to determine if the
+// `_credential` is compromised or muted.
 bool ShouldDisplayCredentialAsCompromised(
     DetailsContext details_context,
     const CredentialUIEntry& credential,
@@ -63,7 +67,6 @@ bool ShouldDisplayCredentialAsCompromised(
   switch (details_context) {
     case DetailsContext::kGeneral:
     case DetailsContext::kCompromisedIssues:
-    case DetailsContext::kDismissedWarnings:
       for (const auto& insecure_credential : insecure_credentials) {
         if (credential == insecure_credential) {
           return password_manager::features::IsPasswordCheckupEnabled()
@@ -74,36 +77,7 @@ bool ShouldDisplayCredentialAsCompromised(
       return false;
     case DetailsContext::kReusedIssues:
     case DetailsContext::kWeakIssues:
-      return false;
-  }
-}
-
-// Helper that determines if a credential should be displayed as muted in
-// password details. Even if a credential is muted, it is only displayed
-// as such when password details was opened from the dismissed warning issues
-// page.
-bool ShouldDisplayCredentialAsMuted(
-    DetailsContext details_context,
-    const CredentialUIEntry& credential,
-    std::vector<password_manager::CredentialUIEntry> insecure_credentials) {
-  // Muted credentials are only available when kIOSPasswordCheckup feature is
-  // enabled.
-  if (!password_manager::features::IsPasswordCheckupEnabled()) {
-    return false;
-  }
-
-  switch (details_context) {
-    case DetailsContext::kGeneral:
-    case DetailsContext::kCompromisedIssues:
-    case DetailsContext::kReusedIssues:
-    case DetailsContext::kWeakIssues:
-      return false;
     case DetailsContext::kDismissedWarnings:
-      for (const auto& insecure_credential : insecure_credentials) {
-        if (credential == insecure_credential) {
-          return insecure_credential.IsMuted();
-        }
-      }
       return false;
   }
 }
@@ -117,7 +91,7 @@ bool ShouldDisplayCredentialAsMuted(
   std::vector<CredentialUIEntry> _credentials;
 
   // Password Check manager.
-  raw_ptr<IOSChromePasswordCheckManager> _manager;
+  scoped_refptr<IOSChromePasswordCheckManager> _manager;
 
   // Listens to compromised passwords changes.
   std::unique_ptr<PasswordCheckObserverBridge> _passwordCheckObserver;
@@ -151,7 +125,7 @@ bool ShouldDisplayCredentialAsMuted(
 - (instancetype)
        initWithPasswords:(const std::vector<CredentialUIEntry>&)credentials
              displayName:(NSString*)displayName
-    passwordCheckManager:(IOSChromePasswordCheckManager*)manager
+    passwordCheckManager:(scoped_refptr<IOSChromePasswordCheckManager>)manager
              prefService:(PrefService*)prefService
              syncService:(syncer::SyncService*)syncService
                  context:(DetailsContext)context
@@ -165,10 +139,10 @@ bool ShouldDisplayCredentialAsMuted(
   }
 
   _manager = manager;
+  _passwordCheckObserver =
+      std::make_unique<PasswordCheckObserverBridge>(self, manager.get());
   _credentials = credentials;
   _displayName = displayName;
-  _passwordCheckObserver =
-      std::make_unique<PasswordCheckObserverBridge>(self, manager);
   _context = context;
   _prefService = prefService;
   _syncService = syncService;
@@ -231,11 +205,12 @@ bool ShouldDisplayCredentialAsMuted(
 }
 
 - (void)removeCredential:(PasswordDetails*)password {
-  if (password.compromised) {
-    base::UmaHistogramEnumeration(
-        "PasswordManager.BulkCheck.UserAction",
-        password_manager::metrics_util::PasswordCheckInteraction::
-            kRemovePassword);
+  // When details was opened from the Password Manager, only log password
+  // check actions if the password is compromised.
+  if (password_manager::ShouldRecordPasswordCheckUserAction(
+          _context, password.compromised)) {
+    password_manager::LogDeletePassword(
+        password_manager::GetWarningTypeForDetailsContext(_context));
   }
 
   // Map from PasswordDetails to CredentialUIEntry. Should support blocklists.
@@ -447,7 +422,6 @@ bool ShouldDisplayCredentialAsMuted(
 // Pushes password details to the consumer.
 - (void)providePasswordsToConsumer {
   NSMutableArray<PasswordDetails*>* passwords = [NSMutableArray array];
-  // Fetch the insecure credentials to get their updated version.
   std::vector<password_manager::CredentialUIEntry> insecureCredentials =
       _manager->GetInsecureCredentials();
   for (const CredentialUIEntry& credential : _credentials) {
@@ -456,14 +430,6 @@ bool ShouldDisplayCredentialAsMuted(
     password.context = _context;
     password.compromised = ShouldDisplayCredentialAsCompromised(
         _context, credential, insecureCredentials);
-
-    // `password.isCompromised` is always false for muted credentials, so
-    // short-circuit to avoid unnecessary computation in
-    // ShouldDisplayCredentialAsMuted.
-    password.muted = !password.isCompromised &&
-                     ShouldDisplayCredentialAsMuted(_context, credential,
-                                                    insecureCredentials);
-
     // Only offer moving to the account if all of these hold.
     // - The embedder of this page wants to support it.
     // - The entry was flagged as local only in the top-level view.

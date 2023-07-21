@@ -289,7 +289,7 @@
 <translation id="2848086008667475748">[設定] でデフォルトにする…</translation>
 <translation id="2858204748079866344">プライバシー保護のため、Chrome ではこの欄のパスワードの自動入力は行われません。</translation>
 <translation id="285960592395650245">ダウンロードを再試行</translation>
-<translation id="2870560284913253234">ウェブサイト</translation>
+<translation id="2870560284913253234">サイト</translation>
 <translation id="2871695793448672541">非表示のパスワード</translation>
 <translation id="2876369937070532032">セキュリティ上のリスクがある場合に、アクセスした一部のページの URL が Google に送信されます</translation>
 <translation id="2883151425485251736">アカウントで非表示にしたトピックの表示と編集</translation>
@@ -407,6 +407,7 @@
 <translation id="3638472932233958418">ウェブページのプリロード</translation>
 <translation id="3661160521073045932">設定プロファイルを使用できます</translation>
 <translation id="3670030362669914947">番号</translation>
+<translation id="3700134753671613714">ログインすると、お使いのどのデバイスでも同じブックマークを利用できるようになります。</translation>
 <translation id="3709582977625132201">未読にする</translation>
 <translation id="371230970611282515">危険なイベントの発生を予測して警告します。</translation>
 <translation id="37207012422556617">急上昇ワード</translation>
@@ -530,7 +531,7 @@
 <translation id="457292989631956153">{COUNT,plural, =1{アクティブでない {COUNT} 個のタブを閉じますか？}other{アクティブでない {COUNT} 個のタブを閉じますか？}}</translation>
 <translation id="457386861538956877">その他...</translation>
 <translation id="4587235830039045480">Google アカウントにパスワードを保存します</translation>
-<translation id="4587589328781138893">ウェブサイト</translation>
+<translation id="4587589328781138893">サイト</translation>
 <translation id="4588014171431912783">同期の設定は前回のバックアップに基づいて復元されます。<ph name="BEGIN_LINK" />同期できるアイテムを確認する<ph name="END_LINK" /></translation>
 <translation id="4592368184551360546">キーボード</translation>
 <translation id="4606247758155004938">お使いのブラウザは組織によって管理されています。</translation>
@@ -546,7 +547,6 @@
 <translation id="4642472735733036929">価格のトラッキングを停止しました</translation>
 <translation id="4650125387981512669"><ph name="FIRST_RUN_ACCOUNT_NAME" /> として続行</translation>
 <translation id="4652817563047461855">パスワードを安全に保管し、不正使用の有無を確認し、オンラインでご自身を守るためのアドバイスを得ることができます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">この機能は Google アカウントにログインすると有効になります。</translation>
 <translation id="4659667755519643272">タブ切り替え機能を開始</translation>
 <translation id="46614316059270592">パスワードを保存</translation>
 <translation id="4666531726415300315"><ph name="EMAIL" /> としてログインしています。
@@ -588,7 +588,6 @@
 <translation id="4844899002472726590">関心のあるトピックの表示と編集</translation>
 <translation id="4848999860252535517"><ph name="WEBSITE" /> のパスワードを削除しますか？</translation>
 <translation id="4854345657858711387">パスコードの設定</translation>
-<translation id="4856498338299082007">Google アカウント</translation>
 <translation id="4858786880085262208">可能であれば、HTTPS にアップグレードします。セキュリティで保護されたサイトに、セキュリティで保護されていないコンテンツが埋め込まれている場合があります。</translation>
 <translation id="4860895144060829044">通話</translation>
 <translation id="4872323082491632254">パスワードを確認</translation>
@@ -667,6 +666,7 @@
 <translation id="543338862236136125">パスワードを編集</translation>
 <translation id="5433691172869980887">ユーザー名がコピーされました</translation>
 <translation id="5439599923922718668">よく使用するサイト</translation>
+<translation id="5439618055789623719"><ph name="USER_EMAIL" /> としてログインしています</translation>
 <translation id="54401264925851789">ページのセキュリティ情報</translation>
 <translation id="5443952882982198570">クレジット カード</translation>
 <translation id="5444892875087332195">ブックマーク</translation>
@@ -733,7 +733,7 @@
 <translation id="5857090052475505287">新しいフォルダ</translation>
 <translation id="5857770089550859117">同期を開始するにはパスフレーズが必要です。</translation>
 <translation id="5859715514067755465">進む</translation>
-<translation id="5860033963881614850">OFF</translation>
+<translation id="5860033963881614850">オフ</translation>
 <translation id="5869029295770560994">OK</translation>
 <translation id="5871497086027727873">1件の項目を移動しました</translation>
 <translation id="5896576662943111387">iOS 向けの設計</translation>
@@ -1121,7 +1121,6 @@
 <translation id="8248969482078657578">アクティブでないタブを分類して作業効率を向上</translation>
 <translation id="8261506727792406068">削除</translation>
 <translation id="8264966119170358612">保存したパスワードの一部が Google 以外でのデータ侵害で漏洩しました。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">保存先: このデバイスのみ</translation>
 <translation id="826614135184049678">iPad をリセットしている途中で、アカウント <ph name="USER_NAME" /> からログアウトしました。再度ログインするには、下の [続行] をタップします。</translation>
 <translation id="8271720166617117963">同意してログイン</translation>
 <translation id="8278938988428169257">単語や語句を入力します</translation>

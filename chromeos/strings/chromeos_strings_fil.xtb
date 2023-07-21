@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">Hindi ma-resolve ang DNS</translation>
 <translation id="1018656279737460067">Nakansela</translation>
 <translation id="1022433422498218992">Mga Pangkalahatang Kontrol</translation>
-<translation id="1022628058306505708">Earth Flow</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> (na) thread, <ph name="CPU_MAX_CLOCK_SPEED" />GHz)</translation>
 <translation id="1047773237499189053">May available na bagong feature, gamitin ang Pataas na arrow key para matuto pa.</translation>
 <translation id="1059913517121127803">Hindi masimulan ang pag-scan</translation>
@@ -235,7 +234,6 @@
 <translation id="2902312830803030883">Higit pang pagkilos</translation>
 <translation id="2926057806159140518">Ilagay ang iyong username at password o i-scan ang iyong QR code</translation>
 <translation id="2940811910881150316">Hindi masuri ang device. Buksang ulit ang takip para suriin.</translation>
-<translation id="2981143481017883351">Available na ngayon ang mga eksklusibong asset sa Chromebook</translation>
 <translation id="3008341117444806826">I-REFRESH</translation>
 <translation id="3009958530611748826">Pumili ng folder kung saan magse-save</translation>
 <translation id="3017079585324758401">Background</translation>
@@ -280,7 +278,6 @@
 <translation id="3360306038446926262">Mga Window</translation>
 <translation id="3368922792935385530">Nakakonekta</translation>
 <translation id="3369013195428705271">Sigurado ka bang gusto mong i-clear ang lahat ng history ng pag-print? Hindi maki-clear ang iyong mga kasalukuyang pag-print.</translation>
-<translation id="3386675685417744672">Eksklusibo sa Chromebook</translation>
 <translation id="3404249063913988450">I-enable ang screen saver</translation>
 <translation id="3413935475507503304">Para magpatuloy sa update, i-click ang Susunod.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
@@ -295,6 +292,7 @@
 <translation id="3484914941826596830">Habang nag-a-update ang firmware, huwag alisin sa pagkakasaksak ang external device na ito o i-shut down ang iyong computer. Puwede mong i-minimize ang window na ito. Posibleng tumagal nang ilang minuto ang update na ito at posibleng hindi gumana ang iyong external device sa panahong ito.</translation>
 <translation id="3486220673238053218">kahulugan</translation>
 <translation id="3488065109653206955">Bahagyang na-activate</translation>
+<translation id="3502426834823382181">tingnan ang lahat ng app</translation>
 <translation id="3510890413042482857">Ipadala ang <ph name="BEGIN_LINK1" />data ng pagte-trace sa performance<ph name="END_LINK1" /></translation>
 <translation id="3517001332549868749">Update sa Chrome OS</translation>
 <translation id="3527036260304016759">Hindi na-print - Hindi kilalang error</translation>
@@ -358,7 +356,6 @@
 <translation id="404928562651467259">BABALA</translation>
 <translation id="4054683689023980771">Dina-download ang larawan</translation>
 <translation id="4060260348856573701">Bagong APN</translation>
-<translation id="4079743696465895866">Pumili ng artwork na eksklusibo sa Chromebook</translation>
 <translation id="4093865285251893588">Larawan sa profile</translation>
 <translation id="409427325554347132">I-save ang mga detalye ng pagsubok</translation>
 <translation id="4095829376260267438">WPA2WPA3</translation>
@@ -625,7 +622,6 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">Nababawasan ang kapasidad ng baterya sa paggamit</translation>
 <translation id="6191293864534840972">Mali ang format ng mga name server</translation>
-<translation id="6205145102504628069">Cloud Flow</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223066887782788441">Lumabas sa full</translation>
 <translation id="6223752125779001553">Walang available na scanner</translation>
@@ -636,6 +632,7 @@
 <translation id="6278428485366576908">Tema</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">I-on ang madilim na tema</translation>
+<translation id="6285899124799306373">buksan ang launcher</translation>
 <translation id="6302401976930124515">Nakansela ang pagsubok na <ph name="TEST_NAME" /></translation>
 <translation id="631063167932043783">Explore app</translation>
 <translation id="6319207335391420837">I-update ang firmware sa <ph name="DEVICE_NAME" /></translation>
@@ -651,6 +648,7 @@
 <translation id="6382182670717268353">Preview ng Screen saver</translation>
 <translation id="6388847657025262518">Nag-jam ang document feeder ng scanner. Tingnan ang feeder at subukan ulit.</translation>
 <translation id="6394634179843537518">Magdagdag ng file</translation>
+<translation id="6401427872449207797">paghahanap sa browser</translation>
 <translation id="6410257289063177456">Mga File ng Larawan</translation>
 <translation id="641081527798843608">Pagtugma ng paksa</translation>
 <translation id="6412715219990689313">Built-in na keyboard</translation>
@@ -666,7 +664,6 @@
 <translation id="6494974875566443634">Pag-customize</translation>
 <translation id="6500818810472529210">Tingnan ang resulta sa Google Search</translation>
 <translation id="650266656685499220">Para gumawa ng mga album, pumunta sa Google Photos</translation>
-<translation id="6505750420152840539">Madaling araw hanggang gabi</translation>
 <translation id="6516990319416533844">Para masubukan ang rate ng pag-charge ng baterya, gumamit ng malaking porsyento ng baterya sa maikling panahon</translation>
 <translation id="6517239166834772319">Explore</translation>
 <translation id="6526200165918397681">Itugma sa wallpaper</translation>
@@ -875,6 +872,7 @@
 <translation id="8312330582793120272">mag-play ng media</translation>
 <translation id="8318753676953949627">Walang Larawan</translation>
 <translation id="8329018942023753850">calculator app</translation>
+<translation id="8335869473001018124">buksan ang paghahanap</translation>
 <translation id="8336739000755212683">Baguhin ang larawan ng account ng device</translation>
 <translation id="8347227221149377169">Mga pag-print</translation>
 <translation id="8351855506390808906">Touch point para sa keymapping</translation>

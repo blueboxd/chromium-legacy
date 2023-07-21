@@ -8,6 +8,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
 #include "chrome/browser/ui/webui/ash/smb_shares/smb_handler.h"
@@ -90,10 +91,10 @@ FilesSection::FilesSection(Profile* profile,
     : OsSettingsSection(profile, search_tag_registry) {
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
   updater.AddSearchTags(GetFilesSearchConcepts());
-  if (cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud()) {
+  if (cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud(profile)) {
     updater.AddSearchTags(GetFilesOfficeSearchConcepts());
   }
-  if (ash::features::IsDriveFsBulkPinningEnabled()) {
+  if (drive::util::IsDriveFsBulkPinningEnabled()) {
     updater.AddSearchTags(GetFilesGoogleDriveSearchConcepts());
   }
 }
@@ -177,7 +178,7 @@ void FilesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean(
       "showOfficeSettings",
-      cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud());
+      cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud(profile()));
 
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile());
@@ -198,7 +199,7 @@ void FilesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   }
 
   html_source->AddBoolean("enableDriveFsBulkPinning",
-                          features::IsDriveFsBulkPinningEnabled());
+                          drive::util::IsDriveFsBulkPinningEnabled());
 }
 
 void FilesSection::AddHandlers(content::WebUI* web_ui) {

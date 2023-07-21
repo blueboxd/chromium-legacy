@@ -196,7 +196,8 @@ AssistiveSuggester::AssistiveSuggester(
       multi_word_suggester_(suggestion_handler, profile),
       longpress_diacritics_suggester_(suggestion_handler),
       longpress_control_v_suggester_(suggestion_handler),
-      suggester_switch_(std::move(suggester_switch)) {
+      suggester_switch_(std::move(suggester_switch)),
+      context_(TextInputMethod::InputContext(ui::TEXT_INPUT_TYPE_NONE)) {
   RecordAssistiveUserPrefForEmoji(
       profile_->GetPrefs()->GetBoolean(prefs::kEmojiSuggestionEnabled));
 }
@@ -212,7 +213,7 @@ bool AssistiveSuggester::IsAssistiveFeatureEnabled() {
 
 void AssistiveSuggester::FetchEnabledSuggestionsFromBrowserContextThen(
     AssistiveSuggesterSwitch::FetchEnabledSuggestionsCallback callback) {
-  suggester_switch_->FetchEnabledSuggestionsThen(std::move(callback));
+  suggester_switch_->FetchEnabledSuggestionsThen(std::move(callback), context_);
 }
 
 bool AssistiveSuggester::IsEmojiSuggestAdditionEnabled() {
@@ -322,10 +323,12 @@ bool AssistiveSuggester::IsAssistiveTypeAllowedInBrowserContext(
   }
 }
 
-void AssistiveSuggester::OnFocus(int context_id) {
+void AssistiveSuggester::OnFocus(int context_id,
+                                 const TextInputMethod::InputContext& context) {
   // Some parts of the code reserve negative/zero context_id for unfocused
   // context. As a result we should make sure it is not being errornously set to
   // a negative number, and cause unexpected behaviour.
+  context_ = context;
   DCHECK(context_id > 0);
   focused_context_id_ = context_id;
   emoji_suggester_.OnFocus(context_id);
@@ -335,7 +338,8 @@ void AssistiveSuggester::OnFocus(int context_id) {
   enabled_suggestions_from_last_onfocus_ = absl::nullopt;
   suggester_switch_->FetchEnabledSuggestionsThen(
       base::BindOnce(&AssistiveSuggester::HandleEnabledSuggestionsOnFocus,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      context);
 }
 
 void AssistiveSuggester::HandleEnabledSuggestionsOnFocus(
@@ -353,9 +357,10 @@ void AssistiveSuggester::OnBlur() {
   longpress_control_v_suggester_.OnBlur();
 }
 
-bool AssistiveSuggester::OnKeyEvent(const ui::KeyEvent& event) {
+AssistiveSuggesterKeyResult AssistiveSuggester::OnKeyEvent(
+    const ui::KeyEvent& event) {
   if (!focused_context_id_.has_value())
-    return false;
+    return AssistiveSuggesterKeyResult::kNotHandled;
 
   // Auto repeat resets whenever a key is pressed/released as long as its not a
   // repeat event.
@@ -382,12 +387,12 @@ bool AssistiveSuggester::OnKeyEvent(const ui::KeyEvent& event) {
           RecordAssistiveSuccess(current_suggester_->GetProposeActionType());
         }
         current_suggester_ = nullptr;
-        return true;
+        return AssistiveSuggesterKeyResult::kHandled;
       case SuggestionStatus::kDismiss:
         current_suggester_ = nullptr;
-        return true;
+        return AssistiveSuggesterKeyResult::kHandled;
       case SuggestionStatus::kBrowsing:
-        return true;
+        return AssistiveSuggesterKeyResult::kHandled;
       default:
         break;
     }
@@ -396,7 +401,7 @@ bool AssistiveSuggester::OnKeyEvent(const ui::KeyEvent& event) {
   return AssistiveSuggester::HandleLongpressEnabledKeyEvent(event);
 }
 
-bool AssistiveSuggester::HandleLongpressEnabledKeyEvent(
+AssistiveSuggesterKeyResult AssistiveSuggester::HandleLongpressEnabledKeyEvent(
     const ui::KeyEvent& event) {
   const bool is_enabled_diacritic_long_press =
       IsDiacriticsOnPhysicalKeyboardLongpressEnabled() &&
@@ -404,7 +409,7 @@ bool AssistiveSuggester::HandleLongpressEnabledKeyEvent(
       enabled_suggestions_from_last_onfocus_->diacritic_suggestions &&
       kDefaultLongpressEnabledKeys.contains(event.GetCharacter());
   if (!is_enabled_diacritic_long_press && !IsLongpressEnabledControlV(event)) {
-    return false;
+    return AssistiveSuggesterKeyResult::kNotHandled;
   }
 
   // Longpress diacritics behaviour overrides the longpress to repeat key
@@ -421,7 +426,7 @@ bool AssistiveSuggester::HandleLongpressEnabledKeyEvent(
       auto_repeat_suppress_metric_emitted_ = true;
       RecordLongPressDiacriticAutoRepeatSuppressedMetric();
     }
-    return true;  // Do not propagate this event.
+    return AssistiveSuggesterKeyResult::kHandled;
   }
 
   // Process longpress keydown event.
@@ -437,7 +442,7 @@ bool AssistiveSuggester::HandleLongpressEnabledKeyEvent(
         FROM_HERE, kLongpressActivationDelay,
         base::BindOnce(&AssistiveSuggester::OnLongpressDetected,
                        weak_ptr_factory_.GetWeakPtr()));
-    return false;
+    return AssistiveSuggesterKeyResult::kNotHandledSuppressAutoRepeat;
   }
 
   // Process longpress interrupted event (key press up before timer callback
@@ -448,7 +453,7 @@ bool AssistiveSuggester::HandleLongpressEnabledKeyEvent(
     current_longpress_keydown_ = absl::nullopt;
     longpress_timer_.Stop();
   }
-  return false;
+  return AssistiveSuggesterKeyResult::kNotHandled;
 }
 
 void AssistiveSuggester::OnLongpressDetected() {
@@ -493,7 +498,8 @@ void AssistiveSuggester::OnExternalSuggestionsUpdated(
 
   suggester_switch_->FetchEnabledSuggestionsThen(
       base::BindOnce(&AssistiveSuggester::ProcessExternalSuggestions,
-                     weak_ptr_factory_.GetWeakPtr(), suggestions));
+                     weak_ptr_factory_.GetWeakPtr(), suggestions),
+      context_);
 }
 
 void AssistiveSuggester::ProcessExternalSuggestions(
@@ -582,7 +588,8 @@ void AssistiveSuggester::OnSurroundingTextChanged(
   last_cursor_pos_ = selection_range.end();
   suggester_switch_->FetchEnabledSuggestionsThen(
       base::BindOnce(&AssistiveSuggester::ProcessOnSurroundingTextChanged,
-                     weak_ptr_factory_.GetWeakPtr(), text, selection_range));
+                     weak_ptr_factory_.GetWeakPtr(), text, selection_range),
+      context_);
 }
 
 void AssistiveSuggester::ProcessOnSurroundingTextChanged(

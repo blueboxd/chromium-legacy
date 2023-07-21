@@ -34,6 +34,10 @@
 #include "chrome/browser/ui/url_identity.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
+#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -420,13 +424,17 @@ const ChooserTypeNameEntry kChooserTypeGroupNames[] = {
     {&GetHidChooserContext, kHidChooserDataGroupType},
     {&GetBluetoothChooserContext, kBluetoothChooserDataGroupType}};
 
-// There are two FormatOptions to support both hostname-only and schemeful URL
-// formatting, both of which are used in Site Settings.
-constexpr UrlIdentity::FormatOptions kUrlIdentityOptionsWithScheme = {
+// These variables represent different formatting options for default (i.e. not
+// extension or IWA) URLs as well as fallbacks for when the IWA/extension is not
+// found in the registry.
+constexpr UrlIdentity::FormatOptions kUrlIdentityOptionsOmitHttps = {
     .default_options = {
         UrlIdentity::DefaultFormatOptions::kOmitCryptographicScheme}};
-constexpr UrlIdentity::FormatOptions kUrlIdentityOptionsHostnameOnly = {
+constexpr UrlIdentity::FormatOptions kUrlIdentityOptionsHostOnly = {
     .default_options = {UrlIdentity::DefaultFormatOptions::kHostname}};
+constexpr UrlIdentity::FormatOptions kUrlIdentityOptionsRawSpec = {
+    .default_options = {UrlIdentity::DefaultFormatOptions::kRawSpec}};
+
 constexpr UrlIdentity::TypeSet kUrlIdentityAllowedTypes = {
     UrlIdentity::Type::kDefault, UrlIdentity::Type::kFile,
     UrlIdentity::Type::kIsolatedWebApp, UrlIdentity::Type::kChromeExtension};
@@ -626,19 +634,26 @@ base::Value::Dict GetExceptionForPage(
   return exception;
 }
 
-std::string GetDisplayNameForGURL(Profile* profile,
+UrlIdentity GetUrlIdentityForGURL(Profile* profile,
                                   const GURL& url,
                                   bool hostname_only) {
   auto origin = url::Origin::Create(url);
   if (origin.opaque()) {
-    return url.spec();
+    return {.type = UrlIdentity::Type::kDefault,
+            .name = base::UTF8ToUTF16(url.spec())};
   }
 
-  auto url_identity = UrlIdentity::CreateFromUrl(
+  return UrlIdentity::CreateFromUrl(
       profile, origin.GetURL(), kUrlIdentityAllowedTypes,
-      hostname_only ? kUrlIdentityOptionsHostnameOnly
-                    : kUrlIdentityOptionsWithScheme);
-  return base::UTF16ToUTF8(url_identity.name);
+      hostname_only ? kUrlIdentityOptionsHostOnly
+                    : kUrlIdentityOptionsOmitHttps);
+}
+
+std::string GetDisplayNameForGURL(Profile* profile,
+                                  const GURL& url,
+                                  bool hostname_only) {
+  return base::UTF16ToUTF8(
+      GetUrlIdentityForGURL(profile, url, hostname_only).name);
 }
 
 void GetExceptionsForContentType(ContentSettingsType type,
@@ -800,8 +815,7 @@ ContentSetting GetContentSettingForOrigin(Profile* profile,
                                           const HostContentSettingsMap* map,
                                           const GURL& origin,
                                           ContentSettingsType content_type,
-                                          std::string* source_string,
-                                          std::string* display_name) {
+                                          std::string* source_string) {
   // TODO(patricialor): In future, PermissionManager should know about all
   // content settings, not just the permissions, plus all the possible sources,
   // and the calls to HostContentSettingsMap should be removed.
@@ -838,8 +852,6 @@ ContentSetting GetContentSettingForOrigin(Profile* profile,
   // Retrieve the source of the content setting.
   *source_string = SiteSettingSourceToString(
       CalculateSiteSettingSource(profile, content_type, origin, info, result));
-  *display_name =
-      GetDisplayNameForGURL(profile, origin, /*hostname_only=*/false);
 
   if (info.metadata.session_model == content_settings::SessionModel::OneTime) {
     DCHECK(
@@ -874,7 +886,7 @@ void GetFileSystemGrantedEntries(std::vector<base::Value::Dict>* exceptions,
 
   for (const auto& grant : grants) {
     const std::string url = grant->origin.spec();
-    auto* const optional_path = grant->value.GetDict().Find(
+    auto* const optional_path = grant->value.Find(
         ChromeFileSystemAccessPermissionContext::kPermissionPathKey);
 
     // Ensure that the file path is found for the given kPermissionPathKey.
@@ -929,23 +941,10 @@ base::Value::Dict CreateChooserExceptionObject(
     const std::string& source = std::get<1>(details);
     const bool incognito = std::get<2>(details);
 
-    std::string site_display_name = origin.spec();
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    // Set the |site_display_name| to the extension's name which is more clear
-    // to the user if the |origin| is for an extension and the extension name
-    // can be found in the |profile|.
-    if (origin.SchemeIs(extensions::kExtensionScheme)) {
-      DCHECK(profile);
-      const auto* extension_registry =
-          extensions::ExtensionRegistry::Get(profile);
-      const extensions::Extension* extension =
-          extension_registry->GetExtensionById(
-              origin.host(), extensions::ExtensionRegistry::EVERYTHING);
-      if (extension) {
-        site_display_name = extension->name();
-      }
-    }
-#endif
+    std::string site_display_name = base::UTF16ToUTF8(
+        UrlIdentity::CreateFromUrl(profile, origin, kUrlIdentityAllowedTypes,
+                                   kUrlIdentityOptionsRawSpec)
+            .name);
 
     auto& this_provider_sites =
         all_provider_sites[HostContentSettingsMap::GetProviderTypeFromSource(
@@ -1014,8 +1013,8 @@ base::Value::List GetChooserExceptionListFromProfile(
       continue;
 
     std::u16string name = chooser_context->GetObjectDisplayName(object->value);
-    auto& chooser_exception_details =
-        all_chooser_objects[std::make_pair(name, object->value.Clone())];
+    auto& chooser_exception_details = all_chooser_objects[std::make_pair(
+        name, base::Value(object->value.Clone()))];
 
     std::string source = GetSourceStringForChooserException(
         profile, content_type, object->source);
@@ -1036,23 +1035,26 @@ base::Value::List GetChooserExceptionListFromProfile(
   return exceptions;
 }
 
-absl::optional<std::string> GetExtensionDisplayName(Profile* profile,
-                                                    GURL url) {
-  if (!url.SchemeIs(extensions::kExtensionScheme)) {
+std::vector<web_app::IsolatedWebAppUrlInfo> GetInstalledIsolatedWebApps(
+    Profile* profile) {
+  auto* web_app_provider = web_app::WebAppProvider::GetForWebApps(profile);
+  if (!web_app_provider) {
     return {};
   }
-  auto* extension_registry = extensions::ExtensionRegistry::Get(profile);
-  if (!extension_registry) {
-    return {};
+
+  std::vector<web_app::IsolatedWebAppUrlInfo> iwas;
+  web_app::WebAppRegistrar& registrar = web_app_provider->registrar_unsafe();
+  for (const web_app::WebApp& web_app : registrar.GetApps()) {
+    if (!registrar.IsIsolated(web_app.app_id())) {
+      continue;
+    }
+    base::expected<web_app::IsolatedWebAppUrlInfo, std::string> url_info =
+        web_app::IsolatedWebAppUrlInfo::Create(web_app.scope());
+    if (url_info.has_value()) {
+      iwas.push_back(*url_info);
+    }
   }
-  // For the extension scheme, the pattern must be a valid URL.
-  DCHECK(url.is_valid());
-  const extensions::Extension* extension = extension_registry->GetExtensionById(
-      url.host(), extensions::ExtensionRegistry::EVERYTHING);
-  if (!extension) {
-    return {};
-  }
-  return extension->name();
+  return iwas;
 }
 
 }  // namespace site_settings

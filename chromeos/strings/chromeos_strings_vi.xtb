@@ -295,6 +295,7 @@
 <translation id="3484914941826596830">Khi chương trình cơ sở đang cập nhật, đừng rút thiết bị bên ngoài này ra hay tắt máy tính. Bạn có thể thu nhỏ cửa sổ này. Quá trình cập nhật có thể mất vài phút và thiết bị bên ngoài của bạn có thể không hoạt động được trong thời gian này.</translation>
 <translation id="3486220673238053218">định nghĩa</translation>
 <translation id="3488065109653206955">Được kích hoạt một phần</translation>
+<translation id="3502426834823382181">xem tất cả các ứng dụng</translation>
 <translation id="3510890413042482857">Gửi <ph name="BEGIN_LINK1" />dữ liệu theo dõi hiệu suất<ph name="END_LINK1" /></translation>
 <translation id="3517001332549868749">Bản cập nhật ChromeOS</translation>
 <translation id="3527036260304016759">Không thành công – Lỗi không xác định</translation>
@@ -636,6 +637,7 @@
 <translation id="6278428485366576908">Chủ đề</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Bật giao diện tối</translation>
+<translation id="6285899124799306373">mở trình chạy</translation>
 <translation id="6302401976930124515">Đã hủy quá trình kiểm tra <ph name="TEST_NAME" /></translation>
 <translation id="631063167932043783">Ứng dụng Explore</translation>
 <translation id="6319207335391420837">Cập nhật chương trình cơ sở cho <ph name="DEVICE_NAME" /></translation>
@@ -651,6 +653,7 @@
 <translation id="6382182670717268353">Xem trước trình bảo vệ màn hình</translation>
 <translation id="6388847657025262518">Khay nạp tài liệu của máy quét bị kẹt. Hãy kiểm tra khay nạp rồi thử lại.</translation>
 <translation id="6394634179843537518">Thêm tệp</translation>
+<translation id="6401427872449207797">tìm kiếm trình duyệt</translation>
 <translation id="6410257289063177456">Tệp hình ảnh</translation>
 <translation id="641081527798843608">Khớp với chủ đề</translation>
 <translation id="6412715219990689313">Bàn phím tích hợp sẵn</translation>
@@ -875,6 +878,7 @@
 <translation id="8312330582793120272">phát nội dung nghe nhìn</translation>
 <translation id="8318753676953949627">Không có hình ảnh nào</translation>
 <translation id="8329018942023753850">ứng dụng máy tính</translation>
+<translation id="8335869473001018124">mở thanh tìm kiếm</translation>
 <translation id="8336739000755212683">Thay đổi hình ảnh tài khoản trên thiết bị</translation>
 <translation id="8347227221149377169">Lệnh in</translation>
 <translation id="8351855506390808906">Ánh xạ phím cho điểm chạm</translation>

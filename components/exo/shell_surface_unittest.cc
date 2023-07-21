@@ -56,6 +56,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/shadow_types.h"
+#include "ui/wm/core/window_properties.h"
 #include "ui/wm/core/window_util.h"
 
 namespace exo {
@@ -1261,7 +1262,7 @@ TEST_F(ShellSurfaceTest, CycleSnap) {
   EXPECT_EQ(buffer_size,
             shell_surface->GetWidget()->GetWindowBoundsInScreen().size());
 
-  ash::WMEvent event(ash::WM_EVENT_CYCLE_SNAP_PRIMARY);
+  ash::WindowSnapWMEvent event(ash::WM_EVENT_CYCLE_SNAP_PRIMARY);
   aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
 
   // Enter snapped mode.
@@ -2897,6 +2898,18 @@ TEST_F(ShellSurfaceTest, SetRestoreInfo) {
                 app_restore::kRestoreWindowIdKey));
 }
 
+TEST_F(ShellSurfaceTest, SetNotPersistable) {
+  auto shell_surface = test::ShellSurfaceBuilder(gfx::Size(20, 30))
+                           .SetNoCommit()
+                           .BuildShellSurface();
+  shell_surface->SetPersistable(/*persistable=*/false);
+  shell_surface->root_surface()->Commit();
+
+  EXPECT_TRUE(shell_surface->GetWidget()->IsVisible());
+  EXPECT_FALSE(shell_surface->GetWidget()->GetNativeWindow()->GetProperty(
+      wm::kPersistableKey));
+}
+
 // Test that restore id is set correctly.
 TEST_F(ShellSurfaceTest, SetRestoreInfoWithWindowIdSource) {
   int32_t restore_session_id = 200;
@@ -2995,7 +3008,8 @@ TEST_F(ShellSurfaceTest, PostWindowChangeCallback) {
   // Make sure we are in a non-snapped state before testing state change.
   ASSERT_FALSE(state->IsSnapped());
 
-  auto snap_event = std::make_unique<ash::WMEvent>(ash::WM_EVENT_SNAP_PRIMARY);
+  auto snap_event =
+      std::make_unique<ash::WindowSnapWMEvent>(ash::WM_EVENT_SNAP_PRIMARY);
 
   // Trigger a snap event, this should cause a configure event.
   state->OnWMEvent(snap_event.get());

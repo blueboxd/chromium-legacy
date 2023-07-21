@@ -221,6 +221,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="1961239773406905488">Kaamera eelvaade on peidetud</translation>
 <translation id="1961832440516943645"><ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="1962969542251276847">Lukusta ekraan</translation>
+<translation id="1962972976741217487">1 seade on ühendatud teie seadme <ph name="DEVICE_NAME" /> kuumkohaga</translation>
 <translation id="1967970931040389207">Lülita kuumkoht sisse</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Tere, <ph name="USERNAME" />!</translation>
@@ -301,7 +302,6 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="2367972762794486313">Rakenduste kuvamine</translation>
 <translation id="2369165858548251131">„Tere” hiina keeles</translation>
 <translation id="2386292613071805067">Lehel kõige valimine</translation>
-<translation id="2390318262976603432">Lokaadi seaded</translation>
 <translation id="2397416548179033562">Kuva Chrome'i menüü</translation>
 <translation id="240006516586367791">Meedia juhtnupud</translation>
 <translation id="2402411679569069051">Chromebooki avamiseks kasutage sõrmejälge või avage oma telefon</translation>
@@ -382,6 +382,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="2791421900609674576">Näete soovitusi, et saaksite jätkata sealt, kus pooleli jäite. Soovituste eemaldamiseks võite pikalt puudutada.</translation>
 <translation id="2792498699870441125">Alt + otsinguklahv</translation>
 <translation id="2797741504905337289">Shelf Party</translation>
+<translation id="2802938996245446490"><ph name="BUTTON_LABEL" />, valitud</translation>
 <translation id="2805756323405976993">Rakendused</translation>
 <translation id="2814448776515246190">Osaline jäädvustamine</translation>
 <translation id="2819276065543622893">Teid logitakse nüüd välja.</translation>
@@ -600,6 +601,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="3735740477244556633">Sortimisalus:</translation>
 <translation id="3738664582935948253">Saate nüüd ekraanikuva salvestistes näidata klikke ja klaviatuuri otseteid</translation>
 <translation id="3742055079367172538">Ekraanipilt on tehtud</translation>
+<translation id="3756485814916578707">Ekraanikuva ülekandmine</translation>
 <translation id="3765841986579723851">Täna muudetud</translation>
 <translation id="3773700760453577392">Administraator on keelanud e-posti aadressi <ph name="USER_EMAIL" /> puhul mitmele kontole sisselogimise.
 Jätkamiseks peavad kõik kasutajad välja logima.</translation>
@@ -822,6 +824,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4777825441726637019">Play pood</translation>
 <translation id="4778095205580009397">Google'i assistent ei ole demoseansi puhul saadaval.</translation>
 <translation id="4789348252524569426">Kõnefaile ei saa installida. Teie seadet on vaja värskendada. Taaskäivitage seade ja proovige uuesti.</translation>
+<translation id="478959186716341421">Ülekandmine</translation>
 <translation id="479989351350248267">otsing</translation>
 <translation id="4804818685124855865">Katkesta ühendus</translation>
 <translation id="4814539958450445987">Sisselogimiskuva</translation>
@@ -929,6 +932,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="5297704307811127955">Väljas</translation>
 <translation id="5300589172476337783">Kuva</translation>
 <translation id="5302048478445481009">Keel</translation>
+<translation id="5303783651764314393"><ph name="DEVICECOUNT" /> seadet on ühendatud teie seade<ph name="DEVICE_NAME" /> kuumkohaga</translation>
 <translation id="5308380583665731573">Ühendamine</translation>
 <translation id="5313326810920013265">Bluetoothi seaded</translation>
 <translation id="5314219114274263156">Jäädvustati ekraanisalvestis</translation>
@@ -997,7 +1001,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Vajutage suulise tagasiside keelamiseks klahvikombinatsiooni Ctrl + Alt + Z.</translation>
 <translation id="5601503069213153581">PIN-kood</translation>
-<translation id="5601571553788043181">Faili avamine Chrome'i brauseris</translation>
 <translation id="5618148318840095371">Ühendasime teid parema võrguga</translation>
 <translation id="5619862035903135339">Ekraanikuva jäädvustamine on administraatori eeskirjadega keelatud</translation>
 <translation id="5625955975703555628">LTE+</translation>
@@ -1118,6 +1121,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6137566720514957455">Kasutaja <ph name="USER_EMAIL_ADDRESS" /> eemaldamise dialoogi avamine</translation>
 <translation id="6141988275892716286">Allalaadimise kinnitamine</translation>
 <translation id="6154006699632741460">Välisseadet ei toetata</translation>
+<translation id="6156960295318603523">Keeleseaded</translation>
 <translation id="615957422585914272">Ekraanil kuvatava klaviatuuri kuvamine</translation>
 <translation id="6165508094623778733">Lisateave</translation>
 <translation id="6166852626429024716">Otsige oma seadmest, rakendustest, seadetest, veebist …</translation>
@@ -1336,6 +1340,7 @@ Uus installimine</translation>
 <translation id="7165278925115064263">Alt + Tõstuklahv + K</translation>
 <translation id="7168224885072002358">Ekraan ennistatakse vanale eraldusvõimele <ph name="TIMEOUT_SECONDS" /> pärast</translation>
 <translation id="7180611975245234373">Värskenda</translation>
+<translation id="7187711731540696127">Teie seadme <ph name="DEVICE_NAME" /> leviala on sisse lülitatud, ükski seade pole ühendatud</translation>
 <translation id="7188494361780961876">Menüü teisaldati ekraanikuva vasakusse ülanurka.</translation>
 <translation id="7189412385142492784">Kui kaugel on Veenus</translation>
 <translation id="7198435252016571249">Kaamera kinnitati paremasse alanurka. Konflikt süsteemi platvormiga.</translation>
@@ -1393,6 +1398,7 @@ Uus installimine</translation>
 <translation id="7497767806359279797">Valige keel ja klaviatuur</translation>
 <translation id="7508690557411636492">Avatud viimase kuu jooksul</translation>
 <translation id="7509246181739783082">Kinnitage oma isik</translation>
+<translation id="7512726380443357693"><ph name="BUTTON_LABEL" />, valimata</translation>
 <translation id="7513622367902644023">Valitud on ekraanipildirežiim</translation>
 <translation id="7513922695575567867">Kalender, kuupäeva <ph name="DATE" /> nädal, <ph name="SELECTED_DATE" /> on praegu valitud.</translation>
 <translation id="7514365320538308">Laadi alla</translation>
@@ -1414,7 +1420,6 @@ Seadme väljalülitamiseks vajutage uuesti pikalt seadme toitenuppu.</translatio
 <translation id="7569509451529460200">Punktkiri ja ChromeVox on lubatud</translation>
 <translation id="7573585051776738856">Aktiivne aken dokiti paremale.</translation>
 <translation id="7579778809502851308">Ekraanikuva jäädvustamine</translation>
-<translation id="7590883480672980941">Sisendi seaded</translation>
 <translation id="7593891976182323525">Otsinguklahv või tõstuklahv</translation>
 <translation id="7600875258240007829">Kuva kõik märguanded</translation>
 <translation id="7607002721634913082">Peatatud</translation>
@@ -1556,6 +1561,7 @@ Seadme väljalülitamiseks vajutage uuesti pikalt seadme toitenuppu.</translatio
 <translation id="8185090165691050712">Lülita lukurežiimi suuruse muutmise menüü sisse/välja</translation>
 <translation id="8192202700944119416">Märguanded on peidetud.</translation>
 <translation id="8196787716797768628">Kasutage tahvelarvutirežiimis rakenduste vahel kiirelt vahetamiseks ja oma Chromebookiga suhtlemiseks liigutusi.</translation>
+<translation id="8198456017687137612">Vahelehe ülekandmine</translation>
 <translation id="8200772114523450471">Taasta</translation>
 <translation id="8203795194971602413">Paremklikk</translation>
 <translation id="8209010265547628927">Taaskäivita</translation>

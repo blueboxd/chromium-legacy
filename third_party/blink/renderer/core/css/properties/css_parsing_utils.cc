@@ -1902,12 +1902,14 @@ static bool ParseLABOrOKLABParameters(CSSParserTokenRange& range,
     if (CSSPrimitiveValue* value_percent =
             ConsumePercent(args, context, CSSPrimitiveValue::ValueRange::kAll);
         value_percent) {
-      lightness = std::max(0.0, value_percent->GetDoubleValue());
+      lightness =
+          std::min(100.0, std::max(0.0, value_percent->GetDoubleValue()));
     } else if (CSSPrimitiveValue* value = ConsumeNumber(
                    args, context, CSSPrimitiveValue::ValueRange::kAll);
                value) {
-      lightness = std::max(0.0, value->GetDoubleValue()) *
-                  (function_id == CSSValueID::kLab ? 1.0 : 100.0);
+      lightness =
+          std::min(100.0, std::max(0.0, value->GetDoubleValue()) *
+                              (function_id == CSSValueID::kLab ? 1.0 : 100.0));
     } else {
       return false;
     }
@@ -1949,12 +1951,14 @@ static bool ParseLCHOrOKLCHParameters(CSSParserTokenRange& range,
     if (CSSPrimitiveValue* value_percent =
             ConsumePercent(args, context, CSSPrimitiveValue::ValueRange::kAll);
         value_percent) {
-      lightness = std::max(0.0, value_percent->GetDoubleValue());
+      lightness =
+          std::min(100.0, std::max(0.0, value_percent->GetDoubleValue()));
     } else if (CSSPrimitiveValue* value = ConsumeNumber(
                    args, context, CSSPrimitiveValue::ValueRange::kAll);
                value) {
-      lightness = std::max(0.0, value->GetDoubleValue()) *
-                  (function_id == CSSValueID::kLch ? 1.0 : 100.0);
+      lightness =
+          std::min(100.0, std::max(0.0, value->GetDoubleValue()) *
+                              (function_id == CSSValueID::kLch ? 1.0 : 100.0));
     } else {
       return false;
     }
@@ -2069,7 +2073,8 @@ static CSSValue* ConsumeColorMixFunction(CSSParserTokenRange& range,
     return nullptr;
   }
 
-  CSSParserTokenRange args = ConsumeFunction(range);
+  CSSParserTokenRange range_copy = range;
+  CSSParserTokenRange args = ConsumeFunction(range_copy);
   // First argument is the colorspace
   Color::ColorSpace color_space;
   Color::HueInterpolationMethod hue_interpolation_method =
@@ -2130,6 +2135,8 @@ static CSSValue* ConsumeColorMixFunction(CSSParserTokenRange& range,
   if (!args.AtEnd()) {
     return nullptr;
   }
+
+  range = range_copy;
 
   cssvalue::CSSColorMixValue* result =
       MakeGarbageCollected<cssvalue::CSSColorMixValue>(
@@ -2334,7 +2341,9 @@ CSSValue* ConsumeColorContrast(CSSParserTokenRange& range,
                                const CSSParserContext& context,
                                bool accept_quirky_colors) {
   DCHECK_EQ(range.Peek().FunctionId(), CSSValueID::kColorContrast);
-  CSSParserTokenRange args = ConsumeFunction(range);
+
+  CSSParserTokenRange range_copy = range;
+  CSSParserTokenRange args = ConsumeFunction(range_copy);
 
   CSSValue* background_color =
       ConsumeColor(args, context, accept_quirky_colors);
@@ -2406,6 +2415,8 @@ CSSValue* ConsumeColorContrast(CSSParserTokenRange& range,
       highest_contrast_index = i;
     }
   }
+
+  range = range_copy;
 
   if (highest_contrast_index < 0) {
     // If an explicit target contrast was set and no provided colors have enough
@@ -3714,15 +3725,19 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
   }
   switch (property) {
     case CSSPropertyID::kAppearance:
-      if (value_id == CSSValueID::kInnerSpinButton ||
-          value_id == CSSValueID::kMediaSlider ||
-          value_id == CSSValueID::kMediaSliderthumb ||
-          value_id == CSSValueID::kMediaVolumeSlider ||
-          value_id == CSSValueID::kMediaVolumeSliderthumb ||
-          value_id == CSSValueID::kSliderVertical ||
-          value_id == CSSValueID::kSliderthumbHorizontal ||
-          value_id == CSSValueID::kSliderthumbVertical ||
-          value_id == CSSValueID::kSearchfieldCancelButton) {
+      // TODO(crbug.com/924486): Remove CSS value slider-horizontal,
+      // slider-vertical and the associated warnings.
+      if ((value_id == CSSValueID::kSliderHorizontal ||
+           value_id == CSSValueID::kSliderVertical) ||
+          (!RuntimeEnabledFeatures::RemoveNonStandardAppearanceValueEnabled() &&
+           (value_id == CSSValueID::kInnerSpinButton ||
+            value_id == CSSValueID::kMediaSlider ||
+            value_id == CSSValueID::kMediaSliderthumb ||
+            value_id == CSSValueID::kMediaVolumeSlider ||
+            value_id == CSSValueID::kMediaVolumeSliderthumb ||
+            value_id == CSSValueID::kSliderthumbHorizontal ||
+            value_id == CSSValueID::kSliderthumbVertical ||
+            value_id == CSSValueID::kSearchfieldCancelButton))) {
         if (const auto* document = context.GetDocument()) {
           document->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
               mojom::blink::ConsoleMessageSource::kOther,
@@ -3749,6 +3764,14 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
           feature = WebFeature::kCSSValueAppearanceCheckbox;
         } else if (value_id == CSSValueID::kInnerSpinButton) {
           feature = WebFeature::kCSSValueAppearanceInnerSpinButton;
+        } else if (value_id == CSSValueID::kMediaSlider) {
+          feature = WebFeature::kCSSValueAppearanceMediaSlider;
+        } else if (value_id == CSSValueID::kMediaSliderthumb) {
+          feature = WebFeature::kCSSValueAppearanceMediaSliderthumb;
+        } else if (value_id == CSSValueID::kMediaVolumeSlider) {
+          feature = WebFeature::kCSSValueAppearanceMediaVolumeSlider;
+        } else if (value_id == CSSValueID::kMediaVolumeSliderthumb) {
+          feature = WebFeature::kCSSValueAppearanceMediaVolumeSliderthumb;
         } else if (value_id == CSSValueID::kMenulist) {
           feature = WebFeature::kCSSValueAppearanceMenulist;
         } else if (value_id == CSSValueID::kMenulistButton) {
@@ -3769,6 +3792,14 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
           feature = WebFeature::kCSSValueAppearanceSquareButton;
         } else if (value_id == CSSValueID::kSearchfield) {
           feature = WebFeature::kCSSValueAppearanceSearchField;
+        } else if (value_id == CSSValueID::kSliderHorizontal) {
+          feature = WebFeature::kCSSValueAppearanceSliderHorizontal;
+        } else if (value_id == CSSValueID::kSliderVertical) {
+          feature = WebFeature::kCSSValueAppearanceSliderVertical;
+        } else if (value_id == CSSValueID::kSliderthumbHorizontal) {
+          feature = WebFeature::kCSSValueAppearanceSliderthumbHorizontal;
+        } else if (value_id == CSSValueID::kSliderthumbVertical) {
+          feature = WebFeature::kCSSValueAppearanceSliderthumbVertical;
         } else if (value_id == CSSValueID::kTextarea) {
           feature = WebFeature::kCSSValueAppearanceTextarea;
         } else if (value_id == CSSValueID::kTextfield) {
@@ -4089,10 +4120,7 @@ CSSValue* ConsumeSelfPositionOverflowPosition(
     return ConsumeIdent(range);
   }
 
-  CSSValue* baseline = RuntimeEnabledFeatures::CSSLastBaselineEnabled()
-                           ? ConsumeBaseline(range)
-                           : ConsumeFirstBaseline(range);
-  if (baseline) {
+  if (CSSValue* baseline = ConsumeBaseline(range)) {
     return baseline;
   }
 
@@ -6499,12 +6527,39 @@ CSSValue* ConsumeScrollPadding(CSSParserTokenRange& range,
                                 UnitlessQuirk::kForbid);
 }
 
+namespace {
+
+// https://drafts.csswg.org/css-shapes-1/#supported-basic-shapes
+bool IsBasicShapeSupportedByOffsetPath(const CSSValueID& id) {
+  switch (id) {
+    case CSSValueID::kCircle:
+    case CSSValueID::kEllipse:
+      return RuntimeEnabledFeatures::
+          CSSOffsetPathBasicShapesCircleAndEllipseEnabled();
+    case CSSValueID::kInset:
+    case CSSValueID::kXywh:
+    case CSSValueID::kRect:
+    case CSSValueID::kPolygon:
+      return RuntimeEnabledFeatures::
+          CSSOffsetPathBasicShapesRectanglesAndPolygonEnabled();
+    default:
+      return false;
+  }
+}
+
+}  // namespace
+
 CSSValue* ConsumeOffsetPath(CSSParserTokenRange& range,
                             const CSSParserContext& context) {
   CSSValue* value = nullptr;
+  const CSSValueID function_id = range.Peek().FunctionId();
   if (RuntimeEnabledFeatures::CSSOffsetPathRayEnabled() &&
-      range.Peek().FunctionId() == CSSValueID::kRay) {
+      function_id == CSSValueID::kRay) {
     value = ConsumeRay(range, context);
+  } else if (IsBasicShapeSupportedByOffsetPath(function_id)) {
+    value = ConsumeBasicShape(range, context, AllowPathValue::kAllow,
+                              AllowBasicShapeRectValue::kAllow,
+                              AllowBasicShapeXYWHValue::kAllow);
   } else {
     value = ConsumePathOrNone(range);
   }

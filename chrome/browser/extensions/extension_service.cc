@@ -93,6 +93,7 @@
 #include "extensions/browser/external_install_info.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/browser/uninstall_reason.h"
@@ -155,6 +156,9 @@ const char* const kObsoleteComponentExtensionIds[] = {
     // continued test coverage.
     "jcgeabjmjgoblfofpppfkcoakmfobdko",  // Video Player
 };
+
+// ExtensionUnpublishedAvailability policy default value.
+constexpr int kAllowUnpublishedExtensions = 0;
 
 }  // namespace
 
@@ -407,6 +411,10 @@ ExtensionService::ExtensionService(
 
   UpgradeDetector::GetInstance()->AddObserver(this);
 
+  if (base::FeatureList::IsEnabled(kCWSInfoService)) {
+    cws_info_service_observation_.Observe(CWSInfoService::Get(profile_));
+  }
+
   ExtensionManagementFactory::GetForBrowserContext(profile_)->AddObserver(this);
 
   // Set up the ExtensionUpdater.
@@ -465,6 +473,9 @@ ExtensionService::~ExtensionService() {
 }
 
 void ExtensionService::Shutdown() {
+  if (base::FeatureList::IsEnabled(kCWSInfoService)) {
+    cws_info_service_observation_.Reset();
+  }
   ExtensionManagementFactory::GetForBrowserContext(profile())->RemoveObserver(
       this);
   external_install_manager_->Shutdown();
@@ -868,7 +879,7 @@ bool ExtensionService::IsExtensionEnabled(
 
 void ExtensionService::PerformActionBasedOnOmahaAttributes(
     const std::string& extension_id,
-    const base::Value& attributes) {
+    const base::Value::Dict& attributes) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   omaha_attributes_handler_.PerformActionBasedOnOmahaAttributes(extension_id,
                                                                 attributes);
@@ -1218,6 +1229,16 @@ void ExtensionService::CheckManagementPolicy() {
     // management policy but now satisfying it.
     if (management->CheckMinimumVersion(extension.get(), nullptr)) {
       disable_reasons &= (~disable_reason::DISABLE_UPDATE_REQUIRED_BY_POLICY);
+    }
+
+    // Check published-in-store status against policy requirement and update
+    // the disable reasons accordingly.
+    if (management->IsAllowedByUnpublishedAvailabilityPolicy(extension.get())) {
+      disable_reasons &=
+          ~disable_reason::DISABLE_PUBLISHED_IN_STORE_REQUIRED_BY_POLICY;
+    } else {
+      disable_reasons |=
+          disable_reason::DISABLE_PUBLISHED_IN_STORE_REQUIRED_BY_POLICY;
     }
 
     if (!system_->management_policy()->MustRemainDisabled(extension.get(),
@@ -1801,6 +1822,19 @@ void ExtensionService::OnExtensionManagementSettingsChanged() {
   }
 
   CheckManagementPolicy();
+
+  // Request an out-of-cycle update of extension metadata information from CWS
+  // if the ExtensionUnpublishedAvailability policy setting is such that
+  // unpublished extensions should not be enabled. This update allows
+  // unpublished extensions to be disabled sooner rather than waiting till the
+  // next regularly scheduled fetch.
+  if (base::FeatureList::IsEnabled(kCWSInfoService)) {
+    if (profile_->GetPrefs()->GetInteger(
+            pref_names::kExtensionUnpublishedAvailability) !=
+        kAllowUnpublishedExtensions) {
+      CWSInfoService::Get(profile_)->CheckAndMaybeFetchInfo();
+    }
+  }
 }
 
 void ExtensionService::AddNewOrUpdatedExtension(
@@ -2178,6 +2212,10 @@ void ExtensionService::OnBlocklistUpdated() {
                      AsExtensionServiceWeakPtr()));
 }
 
+void ExtensionService::OnCWSInfoChanged() {
+  CheckManagementPolicy();
+}
+
 void ExtensionService::OnUpgradeRecommended() {
   // Notify observers that chrome update is available.
   for (auto& observer : update_observers_)
@@ -2241,8 +2279,9 @@ void ExtensionService::OnProfileMarkedForPermanentDeletion(Profile* profile) {
     return;
 
   ExtensionIdSet ids_to_unload = registry_->enabled_extensions().GetIDs();
-  for (auto it = ids_to_unload.begin(); it != ids_to_unload.end(); ++it)
-    UnloadExtension(*it, UnloadedExtensionReason::PROFILE_SHUTDOWN);
+  for (const auto& id : ids_to_unload) {
+    UnloadExtension(id, UnloadedExtensionReason::PROFILE_SHUTDOWN);
+  }
 }
 
 void ExtensionService::ManageBlocklist(

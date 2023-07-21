@@ -150,10 +150,6 @@ static_library("test_support") {
     "//components/prefs:test_support",
     "//components/signin/public/base",
     "//components/signin/public/identity_manager:test_support",
-
-    # TODO(crbug.com/1423343): remove dependency on trusted_vault/proto once
-    # FakeSecurityDomainsServer is moved under trusted_vault.
-    "//components/trusted_vault/proto",
     "//components/version_info",
     "//components/version_info:generate_version_info",
     "//google_apis",
@@ -167,13 +163,6 @@ static_library("test_support") {
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
-
-  if (!is_android) {
-    sources += [
-      "test/fake_security_domains_server.cc",
-      "test/fake_security_domains_server.h",
-    ]
-  }
 
   if (is_chromeos_lacros) {
     sources += [
@@ -250,7 +239,7 @@ source_set("unit_tests") {
     "engine/syncer_proto_util_unittest.cc",
     "engine/syncer_unittest.cc",
     "invalidations/fcm_handler_unittest.cc",
-    "invalidations/interested_data_types_manager_unittest.cc",
+    "invalidations/sync_invalidations_service_impl_unittest.cc",
     "model/client_tag_based_model_type_processor_unittest.cc",
     "model/client_tag_based_remote_update_handler_unittest.cc",
     "model/in_memory_metadata_change_list_unittest.cc",

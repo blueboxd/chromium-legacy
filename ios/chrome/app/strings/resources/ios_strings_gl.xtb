@@ -407,6 +407,7 @@ En caso aplicable, consulta as instrucións do teu motor de busca para eliminar 
 <translation id="3638472932233958418">Precargar páxinas web</translation>
 <translation id="3661160521073045932">Hai un perfil de configuración dispoñible</translation>
 <translation id="3670030362669914947">Número</translation>
+<translation id="3700134753671613714">Inicia sesión para ter os teus marcadores en todos os teus dispositivos.</translation>
 <translation id="3709582977625132201">Marcar como non lido</translation>
 <translation id="371230970611282515">Predí eventos perigosos antes de que se produzan e móstrache unha advertencia.</translation>
 <translation id="37207012422556617">Buscas populares</translation>
@@ -546,7 +547,6 @@ En caso aplicable, consulta as instrucións do teu motor de busca para eliminar 
 <translation id="4642472735733036929">Detívose o seguimento de prezos</translation>
 <translation id="4650125387981512669">Continuar como <ph name="FIRST_RUN_ACCOUNT_NAME" /></translation>
 <translation id="4652817563047461855">Confirma se os teus contrasinais son seguros, descubre se foron vulnerados e recibe consellos para protexerte en liña. <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">Cando inicies sesión na túa Conta de Google, activarase esta función.</translation>
 <translation id="4659667755519643272">Entrar no selector de pestanas</translation>
 <translation id="46614316059270592">Gardar contrasinal</translation>
 <translation id="4666531726415300315">Iniciaches sesión como <ph name="EMAIL" />.
@@ -588,7 +588,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="4844899002472726590">Consulta e edita os temas que che interesan</translation>
 <translation id="4848999860252535517">Queres eliminar o contrasinal de <ph name="WEBSITE" />?</translation>
 <translation id="4854345657858711387">Definir un código</translation>
-<translation id="4856498338299082007">Na túa Conta de Google</translation>
 <translation id="4858786880085262208">Actualiza a HTTPS cando sexa posible. Os sitios seguros poden ter inserido contido non seguro.</translation>
 <translation id="4860895144060829044">Chamar</translation>
 <translation id="4872323082491632254">Comprobar contrasinais</translation>
@@ -667,6 +666,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="543338862236136125">Editar contrasinal</translation>
 <translation id="5433691172869980887">Copiouse o nome de usuario</translation>
 <translation id="5439599923922718668">Visitas frecuentes</translation>
+<translation id="5439618055789623719">Tes a sesión iniciada como <ph name="USER_EMAIL" /></translation>
 <translation id="54401264925851789">Información de seguranza da páxina</translation>
 <translation id="5443952882982198570">Tarxetas de crédito</translation>
 <translation id="5444892875087332195">Marcadores</translation>
@@ -1121,7 +1121,6 @@ Tamén poden utilizalas para ver a túa actividade de navegación en varios siti
 <translation id="8248969482078657578">Pestanas inactivas axúdanche a concentrarte</translation>
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8264966119170358612">Algúns dos teus contrasinais gardados quedaron expostos nunha violación da seguranza dos datos allea a Google. <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">Almacenaríase só neste dispositivo</translation>
 <translation id="826614135184049678">Para poder restablecer o iPad, pechouse a sesión da túa conta (<ph name="USER_NAME" />). Se queres volver iniciar a sesión, toca Continuar máis abaixo.</translation>
 <translation id="8271720166617117963">Aceptar e iniciar sesión</translation>
 <translation id="8278938988428169257">Escribe unha palabra ou frase</translation>

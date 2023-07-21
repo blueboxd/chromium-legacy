@@ -150,8 +150,8 @@ void BoxPainterBase::PaintNormalBoxShadow(const PaintInfo& info,
   bool has_border_radius = style.HasBorderRadius();
   bool has_opaque_background =
       !background_is_skipped &&
-      style.VisitedDependentColor(GetCSSPropertyBackgroundColor()).Alpha() ==
-          255;
+      style.VisitedDependentColor(GetCSSPropertyBackgroundColor())
+              .AlphaAsInteger() == 255;
 
   GraphicsContextStateSaver state_saver(context, false);
 
@@ -442,7 +442,8 @@ BoxPainterBase::FillLayerInfo::FillLayerInfo(
   if (BoxPainterBase::ShouldForceWhiteBackgroundForPrintEconomy(doc, style)) {
     // Note that we can't reuse this variable below because the bgColor might
     // be changed.
-    bool should_paint_background_color = is_bottom_layer && color.Alpha();
+    bool should_paint_background_color =
+        is_bottom_layer && color.AlphaAsInteger();
     if (image || should_paint_background_color) {
       color = Color::kWhite;
       image = nullptr;
@@ -476,7 +477,8 @@ BoxPainterBase::FillLayerInfo::FillLayerInfo(
   // need to trigger repaint even if the background is transparent to collect
   // artifacts in order to run the animation on the compositor.
   should_paint_color =
-      is_bottom_layer && (color.Alpha() || composite_bgcolor_animation) &&
+      is_bottom_layer &&
+      (color.AlphaAsInteger() || composite_bgcolor_animation) &&
       (!should_paint_image || !layer.ImageOccludesNextLayers(doc, style));
   should_paint_color_with_paint_worklet_image =
       should_paint_color && composite_bgcolor_animation;
@@ -522,8 +524,7 @@ absl::optional<gfx::RectF> OptimizeToSingleTileDraw(
   if (!one_tile_rect.Contains(dest_rect))
     return absl::nullopt;
 
-  const PhysicalOffset offset_in_tile =
-      geometry.SnappedDestRect().offset - dest_phase;
+  const PhysicalOffset offset_in_tile = dest_rect.offset - dest_phase;
   if (!image.HasIntrinsicSize()) {
     // This is a generated image sized according to the tile size so we can use
     // the snapped dest rect directly.
@@ -548,14 +549,14 @@ absl::optional<gfx::RectF> OptimizeToSingleTileDraw(
 
   // Subset computation needs the same location as was used above, but needs the
   // unsnapped destination size to correctly calculate sprite subsets in the
-  // presence of zoom.
+  // presence of zoom. We rely on the caller to provide a suitable (snapped)
+  // size.
   const gfx::SizeF scale(
       geometry.TileSize().width / intrinsic_tile_size.width(),
       geometry.TileSize().height / intrinsic_tile_size.height());
   gfx::RectF visible_src_rect(
       offset_in_tile.left / scale.width(), offset_in_tile.top / scale.height(),
-      geometry.UnsnappedDestRect().Width() / scale.width(),
-      geometry.UnsnappedDestRect().Height() / scale.height());
+      dest_rect.Width() / scale.width(), dest_rect.Height() / scale.height());
 
   // Content providers almost always choose source pixels at integer locations,
   // so snap to integers. This is particularly important for sprite maps.
@@ -572,6 +573,16 @@ absl::optional<gfx::RectF> OptimizeToSingleTileDraw(
         intrinsic_tile_size, visible_src_rect);
   }
   return visible_src_rect;
+}
+
+PhysicalRect GetSubsetDestRectForImage(const BackgroundImageGeometry& geometry,
+                                       const Image& image) {
+  // Use the snapped size if the image does not have any intrinsic dimensions,
+  // since in that case the image will have been sized according to tile size.
+  const PhysicalRect& rect = image.HasIntrinsicSize()
+                                 ? geometry.UnsnappedDestRect()
+                                 : geometry.SnappedDestRect();
+  return {geometry.SnappedDestRect().offset, rect.size};
 }
 
 // The unsnapped_subset_size should be the target painting area implied by the
@@ -805,8 +816,11 @@ inline bool PaintFastBottomLayer(const Document* document,
       // Use FastAndLossyFromRectF when converting the image border rect.
       // At this point it should have been derived from a snapped rectangle, so
       // the conversion from float should be as precise as it can be.
+      // If the destination is not a rounded fill, then use the same rectangle
+      // as in DrawTiledBackground() to get consistent results.
       const PhysicalRect dest_rect =
-          PhysicalRect::FastAndLossyFromRectF(image_rect);
+          info.is_rounded_fill ? PhysicalRect::FastAndLossyFromRectF(image_rect)
+                               : GetSubsetDestRectForImage(geometry, *image);
 
       absl::optional<gfx::RectF> single_tile_src = OptimizeToSingleTileDraw(
           geometry, dest_rect, *image, info.respect_image_orientation);

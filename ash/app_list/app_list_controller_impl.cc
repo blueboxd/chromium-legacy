@@ -100,6 +100,9 @@ constexpr float kOverviewFadeAnimationScale = 0.92f;
 constexpr base::TimeDelta kOverviewFadeAnimationDuration =
     base::Milliseconds(350);
 
+// The app id for the settings app used for testing quick app access.
+constexpr char kOsSettingsAppId[] = "odknhmnlageboeamepcngndbggdpaobj";
+
 // Update layer animation settings for launcher scale and opacity animation that
 // runs on overview mode change.
 void UpdateOverviewSettings(base::TimeDelta duration,
@@ -437,6 +440,10 @@ void AppListControllerImpl::OnSessionStateChanged(
     if (in_clamshell)
       DismissAppList();
     return;
+  }
+
+  if (base::FeatureList::IsEnabled(features::kQuickAppAccessTestUI)) {
+    SetHomeButtonQuickApp(kOsSettingsAppId);
   }
 
   if (in_clamshell)
@@ -1247,8 +1254,7 @@ void AppListControllerImpl::ActivateItem(const std::string& id,
                                     is_tablet_mode, last_show_timestamp_);
       break;
     case AppListLaunchedFrom::kLaunchedFromQuickAppAccess:
-      // TODO(b/266734005): Implement user action to record launching from quick
-      // app access.
+      // Metrics for quick app launch already recorded at RecordApplaunched().
       break;
     case AppListLaunchedFrom::kLaunchedFromContinueTask:
     case AppListLaunchedFrom::kLaunchedFromSearchBox:

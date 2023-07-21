@@ -198,13 +198,7 @@ void ImmersiveModeTabbedController::TitlebarHide() {
 
 void ImmersiveModeTabbedController::OnTitlebarFrameDidChange(NSRect frame) {
   ImmersiveModeController::OnTitlebarFrameDidChange(frame);
-
-  // Find the tab overlay view's point on screen (bottom left).
-  NSPoint point_in_window = [tab_content_view_ convertPoint:NSZeroPoint
-                                                     toView:nil];
-  NSPoint point_on_screen =
-      [tab_content_view_.window convertPointToScreen:point_in_window];
-  [tab_window_ setFrameOrigin:point_on_screen];
+  LayoutWindowWithAnchorView(tab_window_, tab_content_view_);
 }
 
 void ImmersiveModeTabbedController::OnChildWindowAdded(NSWindow* child) {
@@ -212,6 +206,15 @@ void ImmersiveModeTabbedController::OnChildWindowAdded(NSWindow* child) {
   // `tab_window_`.
   if (child == tab_window_) {
     return;
+  }
+
+  // Keep the tab window on top of its siblings. This will allow children of tab
+  // window to always be z-order on top of overlay window children.
+  // Practically this allows for the tab preview hover card to be z-order on top
+  // of omnibox results popup.
+  if (overlay_window().childWindows.lastObject != tab_window_) {
+    [overlay_window() removeChildWindow:tab_window_];
+    [overlay_window() addChildWindow:tab_window_ ordered:NSWindowAbove];
   }
   ImmersiveModeController::OnChildWindowAdded(child);
 }

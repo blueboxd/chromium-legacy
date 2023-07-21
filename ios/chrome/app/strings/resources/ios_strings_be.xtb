@@ -407,6 +407,7 @@
 <translation id="3638472932233958418">Перадзагрузка старонак</translation>
 <translation id="3661160521073045932">Даступны профіль канфігурацыі</translation>
 <translation id="3670030362669914947">Нумар</translation>
+<translation id="3700134753671613714">Каб закладкі былі даступнымі на ўсіх вашых прыладах, выканайце ўваход.</translation>
 <translation id="3709582977625132201">Пазначыць як непрачытанае</translation>
 <translation id="371230970611282515">Прадказвае небяспечныя падзеі і папярэджвае пра іх да таго, як яны здараюцца.</translation>
 <translation id="37207012422556617">Папулярныя пошукавыя запыты</translation>
@@ -546,7 +547,6 @@
 <translation id="4642472735733036929">Адсочванне цаны прыпынена</translation>
 <translation id="4650125387981512669">Працягнуць як <ph name="FIRST_RUN_ACCOUNT_NAME" /></translation>
 <translation id="4652817563047461855">Захоўвайце свае паролі ў бяспецы, будзьце ў курсе ў выпадку іх раскрыцця і атрымлівайце парады, якія дапамогуць вам абараніць сябе ў інтэрнэце. <ph name="BEGIN_LINK" />Даведацца больш<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">Гэта функцыя будзе ўключацца пры ўваходзе ва Уліковы запіс Google.</translation>
 <translation id="4659667755519643272">Перайсці да пераключальніка ўкладак</translation>
 <translation id="46614316059270592">Захаваць пароль</translation>
 <translation id="4666531726415300315">Вы ўвайшлі як <ph name="EMAIL" />.
@@ -588,7 +588,6 @@
 <translation id="4844899002472726590">Праглядайце і змяняйце цікавыя вам тэмы</translation>
 <translation id="4848999860252535517">Выдаліць пароль для вэб-сайта <ph name="WEBSITE" />?</translation>
 <translation id="4854345657858711387">Задайце пароль</translation>
-<translation id="4856498338299082007">Ва Уліковым запісе Google</translation>
 <translation id="4858786880085262208">Пераходзіць на HTTPS, калі гэта магчыма. Бяспечныя сайты могуць мець убудаванае змесціва, якое не з'яўляецца бяспечным.</translation>
 <translation id="4860895144060829044">Выклік</translation>
 <translation id="4872323082491632254">Праверка пароляў</translation>
@@ -667,6 +666,7 @@
 <translation id="543338862236136125">Змяніць пароль</translation>
 <translation id="5433691172869980887">Імя карыстальніка скапіравана</translation>
 <translation id="5439599923922718668">Часта наведваецца</translation>
+<translation id="5439618055789623719">Вы ўвайшлі як <ph name="USER_EMAIL" /></translation>
 <translation id="54401264925851789">Інфармацыя пра бяспеку старонкі</translation>
 <translation id="5443952882982198570">Крэдытныя карты</translation>
 <translation id="5444892875087332195">Закладкі</translation>
@@ -1121,7 +1121,6 @@
 <translation id="8248969482078657578">Функцыя "Неактыўныя ўкладкі" дапамагае засяродзіцца</translation>
 <translation id="8261506727792406068">Выдаліць</translation>
 <translation id="8264966119170358612">Некаторыя захаваныя вамі паролі былі раскрыты ў выніку ўцечкі даных у староннім сэрвісе. <ph name="BEGIN_LINK" />Даведацца больш<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">Толькі на гэтай прыладзе</translation>
 <translation id="826614135184049678">У выніку скіду налад iPad адбыўся выхад з уліковага запісу <ph name="USER_NAME" />. Каб увайсці зноў, націсніце "Працягнуць" ніжэй.</translation>
 <translation id="8271720166617117963">Прыняць і ўвайсці</translation>
 <translation id="8278938988428169257">Увядзіце слова або фразу</translation>

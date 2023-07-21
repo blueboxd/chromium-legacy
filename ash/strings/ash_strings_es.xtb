@@ -221,6 +221,7 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="1961239773406905488">Vista previa de cámara ocultada</translation>
 <translation id="1961832440516943645"><ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="1962969542251276847">Bloquear pantalla</translation>
+<translation id="1962972976741217487">1 dispositivo conectado a tu punto de acceso <ph name="DEVICE_NAME" /></translation>
 <translation id="1967970931040389207">Activar punto de acceso</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Hola, <ph name="USERNAME" />:</translation>
@@ -301,7 +302,6 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="2367972762794486313">Mostrar aplicaciones</translation>
 <translation id="2369165858548251131">"Hola" en chino</translation>
 <translation id="2386292613071805067">Seleccionar todo el contenido de la página</translation>
-<translation id="2390318262976603432">Configuración regional</translation>
 <translation id="2397416548179033562">Mostrar menú de Chrome</translation>
 <translation id="240006516586367791">Controles multimedia</translation>
 <translation id="2402411679569069051">Para desbloquear tu Chromebook, usa tu huella digital o desbloquea tu teléfono</translation>
@@ -382,6 +382,7 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="2791421900609674576">Aparecerán recomendaciones para que puedas seguir donde lo dejaste. Puedes mantener pulsadas las recomendaciones para quitarlas.</translation>
 <translation id="2792498699870441125">Alt+tecla de búsqueda</translation>
 <translation id="2797741504905337289">Grupo de estanterías</translation>
+<translation id="2802938996245446490"><ph name="BUTTON_LABEL" />, seleccionado</translation>
 <translation id="2805756323405976993">Aplicaciones</translation>
 <translation id="2814448776515246190">Captura parcial</translation>
 <translation id="2819276065543622893">Tu sesión se cerrará ahora.</translation>
@@ -593,13 +594,14 @@ Conecta tu dispositivo a la corriente.</translation>
 <translation id="3702809606464356667">Se muestran las ventanas del escritorio actual. Pulsa la tecla de la flecha hacia arriba para ver las ventanas de todos los escritorios.</translation>
 <translation id="3702846122927433391">Población de Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
-<translation id="3708186454126126312">Conectado anteriormente</translation>
+<translation id="3708186454126126312">Conectados anteriormente</translation>
 <translation id="371370241367527062">Micrófono delantero</translation>
 <translation id="3713734891607377840">Abrir al terminar</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> y <ph name="UNAVAILABLE_APPS_COUNT" /> más no están en este dispositivo.</translation>
 <translation id="3735740477244556633">Ordenar por</translation>
 <translation id="3738664582935948253">Ahora puedes mostrar clics y combinaciones de teclas en las grabaciones de pantalla</translation>
 <translation id="3742055079367172538">Captura de pantalla hecha</translation>
+<translation id="3756485814916578707">Enviando pantalla</translation>
 <translation id="3765841986579723851">Editado hoy</translation>
 <translation id="3773700760453577392">Un administrador ha inhabilitado el inicio de sesión múltiple para <ph name="USER_EMAIL" />.
 Todos los usuarios deben cerrar sesión para continuar.</translation>
@@ -709,7 +711,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4279490309300973883">Duplicando</translation>
 <translation id="4280601795273309128">Actualizaciones de seguridad completadas. Actualiza tu dispositivo.</translation>
 <translation id="4283888303416325161">Escribe la contraseña como medida de seguridad adicional</translation>
-<translation id="4285498937028063278">Desfijar</translation>
+<translation id="4285498937028063278">No fijar</translation>
 <translation id="4294319844246081198">Buenos días, <ph name="GIVEN_NAME" /></translation>
 <translation id="4296136865091727875">Borrar las <ph name="COUNT" /> notificaciones</translation>
 <translation id="430191667033048642">Se ha movido <ph name="MOVED_APP_NAME" /> a la carpeta <ph name="FOLDER_NAME" />.</translation>
@@ -822,6 +824,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4777825441726637019">Play Store</translation>
 <translation id="4778095205580009397">El Asistente de Google no está disponible en las sesiones de demostración.</translation>
 <translation id="4789348252524569426">No se pueden instalar los archivos de voz. El dispositivo debe actualizarse. Reinícialo y vuelve a intentarlo.</translation>
+<translation id="478959186716341421">Enviando contenido</translation>
 <translation id="479989351350248267">buscar</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="4814539958450445987">Pantalla de inicio de sesión</translation>
@@ -929,6 +932,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5297704307811127955">Desactivada</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5302048478445481009">Idioma</translation>
+<translation id="5303783651764314393"><ph name="DEVICECOUNT" /> dispositivos conectados a tu punto de acceso <ph name="DEVICE_NAME" /></translation>
 <translation id="5308380583665731573">Conectar</translation>
 <translation id="5313326810920013265">Configuración de Bluetooth</translation>
 <translation id="5314219114274263156">Grabación de pantalla realizada</translation>
@@ -997,7 +1001,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Pulsa Ctrl + Alt + Z para inhabilitar los mensajes de voz.</translation>
 <translation id="5601503069213153581">PIN</translation>
-<translation id="5601571553788043181">Abrir archivo en el navegador Chrome</translation>
 <translation id="5618148318840095371">Te hemos pasado a una red mejor</translation>
 <translation id="5619862035903135339">La política del administrador inhabilita la captura de pantalla</translation>
 <translation id="5625955975703555628">LTE+</translation>
@@ -1049,7 +1052,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5841296711770970362">Ir a la siguiente pista</translation>
 <translation id="584525477304726060">Mantén pulsado para maximizar</translation>
 <translation id="5856638668464565213"><ph name="NETWORK_NAME" /> no está activada.</translation>
-<translation id="5860033963881614850">Desactivada</translation>
+<translation id="5860033963881614850">Desactivado</translation>
 <translation id="5860491529813859533">Activar</translation>
 <translation id="5867217927013474703">Recogiendo información de red</translation>
 <translation id="5867606971598166637">El administrador del sistema está monitorizando tus pantallas</translation>
@@ -1118,6 +1121,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="6137566720514957455">Abre el cuadro de diálogo para quitar la cuenta de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Confirmar descarga</translation>
 <translation id="6154006699632741460">Periférico no admitido</translation>
+<translation id="6156960295318603523">Configuración de idioma</translation>
 <translation id="615957422585914272">Mostrar teclado en pantalla</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6166852626429024716">Busca en el dispositivo, en las aplicaciones, en los ajustes, en la Web…</translation>
@@ -1336,6 +1340,7 @@ Nueva instalación</translation>
 <translation id="7165278925115064263">Alt + Mayús + K</translation>
 <translation id="7168224885072002358">Restableciendo la resolución anterior en <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Actualizar</translation>
+<translation id="7187711731540696127">Tu punto de acceso <ph name="DEVICE_NAME" /> está activado, pero no hay dispositivos conectados</translation>
 <translation id="7188494361780961876">Se ha movido el menú a la esquina superior izquierda de la pantalla.</translation>
 <translation id="7189412385142492784">¿A qué distancia está Venus?</translation>
 <translation id="7198435252016571249">Cámara ajustada a la esquina inferior derecha. Conflicto con la superficie del sistema.</translation>
@@ -1393,6 +1398,7 @@ Nueva instalación</translation>
 <translation id="7497767806359279797">Seleccionar idioma y teclado</translation>
 <translation id="7508690557411636492">Abierto hace menos de un mes</translation>
 <translation id="7509246181739783082">Verifica tu identidad</translation>
+<translation id="7512726380443357693"><ph name="BUTTON_LABEL" />, no seleccionado</translation>
 <translation id="7513622367902644023">Modo de captura de pantalla seleccionado</translation>
 <translation id="7513922695575567867">Calendario, semana del <ph name="DATE" />, actualmente está seleccionado el <ph name="SELECTED_DATE" />.</translation>
 <translation id="7514365320538308">Descargar</translation>
@@ -1414,7 +1420,6 @@ Para apagarlo, mantén pulsado de nuevo el botón de encendido del dispositivo.<
 <translation id="7569509451529460200">Braille y ChromeVox están habilitados</translation>
 <translation id="7573585051776738856">Ventana activa anclada a la derecha.</translation>
 <translation id="7579778809502851308">Captura de pantalla</translation>
-<translation id="7590883480672980941">Configuración de introducción de texto</translation>
 <translation id="7593891976182323525">Tecla de búsqueda o Mayús</translation>
 <translation id="7600875258240007829">Ver todas las notificaciones</translation>
 <translation id="7607002721634913082">En pausa</translation>
@@ -1556,6 +1561,7 @@ Para apagarlo, mantén pulsado de nuevo el botón de encendido del dispositivo.<
 <translation id="8185090165691050712">Activar/Desactivar menú del modo de bloqueo del cambio de tamaño</translation>
 <translation id="8192202700944119416">Las notificaciones están ocultas.</translation>
 <translation id="8196787716797768628">Utiliza gestos para cambiar rápidamente de aplicación e interactuar con tu Chromebook en modo tablet.</translation>
+<translation id="8198456017687137612">Enviando pestaña</translation>
 <translation id="8200772114523450471">Reanudar</translation>
 <translation id="8203795194971602413">Clic derecho</translation>
 <translation id="8209010265547628927">Reiniciar</translation>

@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">ডিএনএস (DNS) সংক্রান্ত সমস্যার সমাধান করা যায়নি</translation>
 <translation id="1018656279737460067">বাতিল হয়েছে</translation>
 <translation id="1022433422498218992">সাধারণ নিয়ন্ত্রণ</translation>
-<translation id="1022628058306505708">আর্থ ফ্লো</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" />টি থ্রেড, <ph name="CPU_MAX_CLOCK_SPEED" />GHz)</translation>
 <translation id="1047773237499189053">নতুন ফিচার উপলভ্য আছে, আরও জানতে, 'উর্ধমুখী তীরচিহ্ন' বোতাম ব্যবহার করুন।</translation>
 <translation id="1059913517121127803">স্ক্যান শুরু করা যায়নি</translation>
@@ -235,7 +234,6 @@
 <translation id="2902312830803030883">আরও অ্যাকশন</translation>
 <translation id="2926057806159140518">আপনার ব্যবহারকারীর নাম এবং পাসওয়ার্ড লিখুন বা আপনার QR কোড স্ক্যান করুন</translation>
 <translation id="2940811910881150316">ডিভাইসটি পরীক্ষা করা সম্ভব হচ্ছে না। পরীক্ষার জন্য ডিভাইসের লিডটি আবার খুলুন।</translation>
-<translation id="2981143481017883351">এক্সক্লুসিভ Chromebook অ্যাসেট এখন উপলভ্য আছে</translation>
 <translation id="3008341117444806826">রিফ্রেশ করুন</translation>
 <translation id="3009958530611748826">কোন ফোল্ডারে সেভ করতে চান তা বেছে নিন</translation>
 <translation id="3017079585324758401">ব্যাকগ্রাউন্ড</translation>
@@ -280,7 +278,6 @@
 <translation id="3360306038446926262">{0}Windows{/0}</translation>
 <translation id="3368922792935385530">সংযুক্ত</translation>
 <translation id="3369013195428705271">আপনি কি সব প্রিন্ট ইতিহাস মুছে ফেলতে চান? এখন যে প্রিন্ট করার কাজগুলি চলছে সেগুলি মোছা হবে না।</translation>
-<translation id="3386675685417744672">Chromebook-এর এক্সক্লুসিভ</translation>
 <translation id="3404249063913988450">স্ক্রিন সেভার চালু করুন</translation>
 <translation id="3413935475507503304">আপডেটগুলি ব্যবহার করে চালিয়ে যাওয়ার জন্য, 'পরবর্তী' বিকল্পে ক্লিক করুন।</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
@@ -295,6 +292,7 @@
 <translation id="3484914941826596830">ফার্মওয়্যার আপডেট করার সময়, এই এক্সটার্নাল ডিভাইসটি আনপ্লাগ করবেন না বা আপনার কম্পিউটার বন্ধ করবেন না। আপনি এই উইন্ডোটি মিনিমাইজ করতে পারবেন। এই আপডেটে কয়েক মিনিট সময় লাগতে পারে এবং এই সময়ে আপনার এক্সটার্নাল ডিভাইস কাজ নাও করতে পারে।</translation>
 <translation id="3486220673238053218">সংজ্ঞা</translation>
 <translation id="3488065109653206955">আংশিকভাবে সক্রিয়</translation>
+<translation id="3502426834823382181">সব অ্যাপ দেখুন</translation>
 <translation id="3510890413042482857"><ph name="BEGIN_LINK1" />পারফর্ম্যান্স ট্রেস ডেটা<ph name="END_LINK1" /> পাঠান</translation>
 <translation id="3517001332549868749">ChromeOS-এর আপডেট</translation>
 <translation id="3527036260304016759">প্রিন্ট করা যায়নি - অজানা সমস্যা</translation>
@@ -358,7 +356,6 @@
 <translation id="404928562651467259">সতর্কতা</translation>
 <translation id="4054683689023980771">ছবি ডাউনলোড করা হচ্ছে</translation>
 <translation id="4060260348856573701">নতুন APN</translation>
-<translation id="4079743696465895866">Chromebook-এর এক্সক্লুসিভ আর্টওয়ার্ক বেছে নিন</translation>
 <translation id="4093865285251893588">প্রোফাইল ছবি</translation>
 <translation id="409427325554347132">ডায়গনোসিস করে পাওয়া টেস্টের বিবরণ সেভ করুন</translation>
 <translation id="4095829376260267438">WPA2WPA3</translation>
@@ -625,7 +622,6 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">ব্যবহার করতে করতে ব্যাটারির ক্ষমতা কমে আসতে থাকে</translation>
 <translation id="6191293864534840972">ডোমেন নেম সার্ভারের ফর্ম্যাট ঠিক নেই</translation>
-<translation id="6205145102504628069">ক্লাউড ফ্লো</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223066887782788441">ফুল স্ক্রিন স্ট্যাটাস থেকে বেরিয়ে আসুন</translation>
 <translation id="6223752125779001553">কোনও স্ক্যানার উপলভ্য নেই</translation>
@@ -636,6 +632,7 @@
 <translation id="6278428485366576908">থীম</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">ডার্ক থিম চালু করুন</translation>
+<translation id="6285899124799306373">লঞ্চার খুলুন</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> পরীক্ষা বাতিল করা হয়েছে</translation>
 <translation id="631063167932043783">এক্সপ্লোর সংক্রান্ত অ্যাপ</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" />-এ ফার্মওয়্যার আপডেট করুন</translation>
@@ -651,6 +648,7 @@
 <translation id="6382182670717268353">স্ক্রিন সেভার প্রিভিউ</translation>
 <translation id="6388847657025262518">স্ক্যানারের ডকুমেন্ট ফিডার কাজ করছে না। ফিডার চেক করে আবার চেষ্টা করুন।</translation>
 <translation id="6394634179843537518">ফাইল যোগ করুন</translation>
+<translation id="6401427872449207797">ব্রাউজার সার্চ</translation>
 <translation id="6410257289063177456">ছবি ফাইল</translation>
 <translation id="641081527798843608">বিষয়ের মিল</translation>
 <translation id="6412715219990689313">বিল্ট-ইন কীবোর্ড</translation>
@@ -666,7 +664,6 @@
 <translation id="6494974875566443634">কাস্টোমাইজ করা</translation>
 <translation id="6500818810472529210">Google Search-এ ফলাফল দেখুন</translation>
 <translation id="650266656685499220">অ্যালবাম তৈরি করতে, Google Photos-এ যান</translation>
-<translation id="6505750420152840539">সূর্যোদয় থেকে সূর্যাস্ত পর্যন্ত</translation>
 <translation id="6516990319416533844">ব্যাটারি চার্জিং রেট পরীক্ষা করার জন্য, কিছুক্ষণের জন্য আপনার ডিভাইসের ব্যাটারি সম্পূর্ণ শেষ হতে দিন</translation>
 <translation id="6517239166834772319">ঘুরে দেখুন</translation>
 <translation id="6526200165918397681">ওয়ালপেপারের সাথে মেলান</translation>
@@ -875,6 +872,7 @@
 <translation id="8312330582793120272">মিডিয়া চালান</translation>
 <translation id="8318753676953949627">কোন ছবি নেই</translation>
 <translation id="8329018942023753850">Calculator অ্যাপ</translation>
+<translation id="8335869473001018124">সার্চ খুলুন</translation>
 <translation id="8336739000755212683">ডিভাইস অ্যাকাউন্টের ছবিটি পরিবর্তন করুন</translation>
 <translation id="8347227221149377169">প্রিন্ট করার কাজগুলি</translation>
 <translation id="8351855506390808906">কীম্যাপ করার টাচ পয়েন্ট</translation>

@@ -412,7 +412,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gnrt_unittests",
-        "test_id_prefix": "ninja://tools/crates/gnrt:gnrt_unittests/"
+        "test_id_prefix": "ninja://tools/crates/gnrt/lib:gnrt_unittests/"
       },
       {
         "merge": {
@@ -557,7 +557,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gnrt_unittests",
-        "test_id_prefix": "ninja://tools/crates/gnrt:gnrt_unittests/"
+        "test_id_prefix": "ninja://tools/crates/gnrt/lib:gnrt_unittests/"
       },
       {
         "merge": {
@@ -693,13 +693,13 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118"
+              "revision": "git_revision:3e597065cb23c1fe03aeb2ebd792d83e0709c5c2"
             }
           ],
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-12|Mac-13"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -734,13 +734,13 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118"
+              "revision": "git_revision:3e597065cb23c1fe03aeb2ebd792d83e0709c5c2"
             }
           ],
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-12|Mac-13"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -752,7 +752,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gnrt_unittests",
-        "test_id_prefix": "ninja://tools/crates/gnrt:gnrt_unittests/"
+        "test_id_prefix": "ninja://tools/crates/gnrt/lib:gnrt_unittests/"
       },
       {
         "args": [
@@ -775,13 +775,13 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118"
+              "revision": "git_revision:3e597065cb23c1fe03aeb2ebd792d83e0709c5c2"
             }
           ],
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-12|Mac-13"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -816,13 +816,13 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118"
+              "revision": "git_revision:3e597065cb23c1fe03aeb2ebd792d83e0709c5c2"
             }
           ],
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-12|Mac-13"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -857,13 +857,13 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118"
+              "revision": "git_revision:3e597065cb23c1fe03aeb2ebd792d83e0709c5c2"
             }
           ],
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-12|Mac-13"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -899,13 +899,13 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118"
+              "revision": "git_revision:3e597065cb23c1fe03aeb2ebd792d83e0709c5c2"
             }
           ],
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-12|Mac-13"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -941,13 +941,13 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118"
+              "revision": "git_revision:3e597065cb23c1fe03aeb2ebd792d83e0709c5c2"
             }
           ],
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-12|Mac-13"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -986,13 +986,13 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118"
+              "revision": "git_revision:3e597065cb23c1fe03aeb2ebd792d83e0709c5c2"
             }
           ],
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-12|Mac-13"
+              "os": "Mac-12"
             }
           ],
           "named_caches": [
@@ -1049,7 +1049,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gnrt_unittests",
-        "test_id_prefix": "ninja://tools/crates/gnrt:gnrt_unittests/"
+        "test_id_prefix": "ninja://tools/crates/gnrt/lib:gnrt_unittests/"
       },
       {
         "merge": {
@@ -1202,7 +1202,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gnrt_unittests",
-        "test_id_prefix": "ninja://tools/crates/gnrt:gnrt_unittests/"
+        "test_id_prefix": "ninja://tools/crates/gnrt/lib:gnrt_unittests/"
       },
       {
         "merge": {

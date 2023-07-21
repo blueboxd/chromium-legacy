@@ -25,23 +25,23 @@ BASE_FEATURE(kUsePopularSitesSuggestions,
              "UsePopularSitesSuggestions",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kNewTabPageFieldTrial,
-             "IOSNewTabPageFieldTrials",
+BASE_FEATURE(kNewTabPageRetention,
+             "IOSNewTabPageRetention",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-const char kNewTabPageFieldTrialName[] = "IOSNewTabPageFieldTrials";
+const char kNewTabPageRetentionName[] = "IOSNewTabPageRetention";
 
-const char kNewTabPageFieldTrialParam[] = "NewTabPageFieldTrialParam";
+const char kNewTabPageRetentionParam[] = "NewTabPageRetentionParam";
 
-NewTabPageFieldTrialExperimentBehavior GetNewTabPageFieldTrialExperimentType() {
-  if (base::FeatureList::IsEnabled(kNewTabPageFieldTrial)) {
-    return (NewTabPageFieldTrialExperimentBehavior)
-        base::GetFieldTrialParamByFeatureAsInt(kNewTabPageFieldTrial,
-                                               kNewTabPageFieldTrialParam,
+NewTabPageRetentionExperimentBehavior GetNewTabPageRetentionExperimentType() {
+  if (base::FeatureList::IsEnabled(kNewTabPageRetention)) {
+    return (NewTabPageRetentionExperimentBehavior)
+        base::GetFieldTrialParamByFeatureAsInt(kNewTabPageRetention,
+                                               kNewTabPageRetentionParam,
                                                /*default_value=*/0);
   }
 
-  return NewTabPageFieldTrialExperimentBehavior::kDefault;
+  return NewTabPageRetentionExperimentBehavior::kDefault;
 }
 
 }  // namespace ntp_tiles

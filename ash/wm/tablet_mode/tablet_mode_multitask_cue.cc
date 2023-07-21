@@ -21,9 +21,8 @@ namespace ash {
 
 namespace {
 
-// Cue layout values.
+// Used to set the rounded corners of the cue.
 constexpr float kCornerRadius = 2;
-constexpr int kCueWidth = 48;
 
 // Cue timing values.
 constexpr base::TimeDelta kCueDismissTimeout = base::Seconds(6);
@@ -141,6 +140,13 @@ void TabletModeMultitaskCue::ResetPosition() {
                     gfx::Tween::ACCEL_20_DECEL_100);
 }
 
+void TabletModeMultitaskCue::OnMenuOpened(aura::Window* active_window) {
+  if (cue_layer_ && window_ != active_window) {
+    MaybeShowCue(active_window);
+  }
+  nudge_controller_.OnMenuOpened(/*tablet_mode=*/true);
+}
+
 void TabletModeMultitaskCue::OnWindowDestroying(aura::Window* window) {
   DismissCue();
 }
@@ -175,8 +181,8 @@ void TabletModeMultitaskCue::OnWindowActivated(ActivationReason reason,
   // or selecting a new layout. In the case where the menu is open, the cue is
   // active, and we tap onto another window (e.g., split view), we still want to
   // show the cue on the new window.
-  // TODO(hewer): Fix this so the cue does not appear when the menu is dismissed
-  // by swiping up or not dragging far enough.
+  // TODO(b/279816982): Fix this so the cue does not appear when the menu is
+  // dismissed by swiping up or not dragging far enough.
   if (event_handler->multitask_menu() &&
       event_handler->multitask_menu()->widget()->GetNativeWindow() ==
           lost_active) {

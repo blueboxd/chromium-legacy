@@ -295,6 +295,7 @@
 <translation id="3484914941826596830">ಫರ್ಮ್‌ವೇರ್ ಅಪ್‌ಡೇಟ್ ಆಗುತ್ತಿರುವ ಸಮಯದಲ್ಲಿ, ಈ ಬಾಹ್ಯ ಸಾಧನವನ್ನು ಅನ್‌ಪ್ಲಗ್ ಮಾಡಬೇಡಿ ಅಥವಾ ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಅನ್ನು ಸ್ಥಶಟ್ ಡೌನ್ ಮಾಡಬೇಡಿ. ನೀವು ಈ ವಿಂಡೋವನ್ನು ಕುಗ್ಗಿಸಬಹುದು. ಈ ಅಪ್‌ಡೇಟ್, ಕೆಲವು ನಿಮಿಷಗಳನ್ನು ತೆಗೆದುಕೊಳ್ಳಬಹುದು ಮತ್ತು ಈ ಸಮಯದಲ್ಲಿ ನಿಮ್ಮ ಬಾಹ್ಯ ಸಾಧನವು ಕಾರ್ಯನಿರ್ವಹಿಸದೇ ಇರಬಹುದು.</translation>
 <translation id="3486220673238053218">ವಿವರಣೆ</translation>
 <translation id="3488065109653206955">ಭಾಗಶಃ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
+<translation id="3502426834823382181">ಎಲ್ಲಾ ಆ್ಯಪ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಿ</translation>
 <translation id="3510890413042482857"><ph name="BEGIN_LINK1" />ಕಾರ್ಯಕ್ಷಮತೆ ಟ್ರೇಸ್ ಡೇಟಾ<ph name="END_LINK1" /> ಕಳುಹಿಸಿ</translation>
 <translation id="3517001332549868749">ChromeOS ಅಪ್‌ಡೇಟ್</translation>
 <translation id="3527036260304016759">ವಿಫಲವಾಗಿದೆ - ಅಪರಿಚಿತ ದೋಷ</translation>
@@ -332,7 +333,7 @@
 <translation id="385051799172605136">ಹಿಂದೆ</translation>
 <translation id="3858860766373142691">ಹೆಸರು</translation>
 <translation id="3862598938296403232">ವಿವರಣೆ ಅಗತ್ಯವಿದೆ</translation>
-<translation id="3865289341173661845">ಸಹಾಯ ಕಂಟೆಂಟ್‌ ಲಭ್ಯವಿಲ್ಲ.</translation>
+<translation id="3865289341173661845">ಸಹಾಯ ವಿಷಯ ಲಭ್ಯವಿಲ್ಲ.</translation>
 <translation id="3865414814144988605">ರೆಸಲ್ಯೂಶನ್</translation>
 <translation id="3866249974567520381">ವಿವರಣೆ</translation>
 <translation id="387301095347517405">ನಿಮ್ಮ ಬ್ಯಾಟರಿಯನ್ನು ಸಂಪೂರ್ಣವಾಗಿ ಚಾರ್ಜ್ ಮಾಡಿರುವ ಸಂಖ್ಯೆ</translation>
@@ -636,6 +637,7 @@
 <translation id="6278428485366576908">ಥೀಮ್</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">ಡಾರ್ಕ್ ಥೀಮ್ ಅನ್ನು ಆನ್ ಮಾಡಿ</translation>
+<translation id="6285899124799306373">ಲಾಂಚರ್ ತೆರೆಯಿರಿ</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> ಪರೀಕ್ಷೆಯನ್ನು ರದ್ದುಪಡಿಸಲಾಗಿದೆ</translation>
 <translation id="631063167932043783">Explore ಆ್ಯಪ್</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> ನಲ್ಲಿ ಫರ್ಮ್‌‌ವೇರ್‌‌ ಅನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ</translation>
@@ -651,6 +653,7 @@
 <translation id="6382182670717268353">ಸ್ಕ್ರೀನ್ ಸೇವರ್‌ನ ಪೂರ್ವವೀಕ್ಷಣೆ</translation>
 <translation id="6388847657025262518">ಸ್ಕ್ಯಾನರ್‌ನ ಡಾಕ್ಯುಮೆಂಟ್ ಫೀಡರ್ ಜಾಮ್ ಆಗಿದೆ. ಫೀಡರ್ ಅನ್ನು ಪರಿಶೀಲಿಸಿ ಹಾಗೂ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="6394634179843537518">ಫೈಲ್ ಅನ್ನು ಸೇರಿಸಿ</translation>
+<translation id="6401427872449207797">ಬ್ರೌಸರ್ ಹುಡುಕಾಟ</translation>
 <translation id="6410257289063177456">ಇಮೇಜ್ ಫೈಲ್‌ಗಳು</translation>
 <translation id="641081527798843608">ವಿಷಯದ ಹೊಂದಾಣಿಕೆ</translation>
 <translation id="6412715219990689313">ಬಿಲ್ಟ್-ಇನ್ ಕೀಬೋರ್ಡ್</translation>
@@ -783,7 +786,7 @@
 <translation id="7497215489070763236">ಸರ್ವರ್ CA ಪ್ರಮಾಣಪತ್ರ</translation>
 <translation id="7502658306369382406">IPv6 ವಿಳಾಸ</translation>
 <translation id="7515998400212163428">Android</translation>
-<translation id="7528507600602050979">ಸಹಾಯ ಕಂಟೆಂಟ್‌ ಲಭ್ಯವಿಲ್ಲ</translation>
+<translation id="7528507600602050979">ಸಹಾಯ ವಿಷಯ ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="7535791657097741517">ಲೈಟ್ ಥೀಮ್‌ ಆನ್ ಮಾಡಿ</translation>
 <translation id="7550715992156305117">ಡಯಾಗ್ನಾಸ್ಟಿಕ್ ದಿನಚರಿಗಳು</translation>
 <translation id="7551123448725492271">ಸಾಧನವು ಆಡಿಯೋ ಸಾಧನವಾಗಿದೆ.</translation>
@@ -875,6 +878,7 @@
 <translation id="8312330582793120272">ಮಾಧ್ಯಮವನ್ನು ಪ್ಲೇ ಮಾಡಿ</translation>
 <translation id="8318753676953949627">ಯಾವುದೇ ಚಿತ್ರಗಳಿಲ್ಲ</translation>
 <translation id="8329018942023753850">ಕ್ಯಾಲ್ಕ್ಯುಲೇಟರ್ ಆ್ಯಪ್</translation>
+<translation id="8335869473001018124">ಹುಡುಕಾಟ ತೆರೆಯಿರಿ</translation>
 <translation id="8336739000755212683">ಸಾಧನದ ಖಾತೆ ಚಿತ್ರವನ್ನು ಬದಲಾಯಿಸಿ</translation>
 <translation id="8347227221149377169">ಮುದ್ರಣ ಕಾರ್ಯಗಳು</translation>
 <translation id="8351855506390808906">ಕೀ ಮ್ಯಾಪಿಂಗ್ ಟಚ್ ಪಾಯಿಂಟ್</translation>

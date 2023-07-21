@@ -367,7 +367,7 @@ void PostProcessFoundTasks(Profile* profile,
   disabled_actions.emplace("view-pdf");
 #endif  // !BUILDFLAG(ENABLE_PDF)
 
-  if (!ash::cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud()) {
+  if (!ash::cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud(profile)) {
     disabled_actions.emplace(kActionIdWebDriveOfficeWord);
     disabled_actions.emplace(kActionIdWebDriveOfficeExcel);
     disabled_actions.emplace(kActionIdWebDriveOfficePowerPoint);
@@ -502,6 +502,14 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
                                 false);
   registry->RegisterBooleanPref(prefs::kOfficeMoveConfirmationShownForOneDrive,
                                 false);
+  registry->RegisterBooleanPref(
+      prefs::kOfficeMoveConfirmationShownForLocalToDrive, false);
+  registry->RegisterBooleanPref(
+      prefs::kOfficeMoveConfirmationShownForLocalToOneDrive, false);
+  registry->RegisterBooleanPref(
+      prefs::kOfficeMoveConfirmationShownForCloudToDrive, false);
+  registry->RegisterBooleanPref(
+      prefs::kOfficeMoveConfirmationShownForCloudToOneDrive, false);
   registry->RegisterTimePref(prefs::kOfficeFileMovedToOneDrive, base::Time());
   registry->RegisterTimePref(prefs::kOfficeFileMovedToGoogleDrive,
                              base::Time());
@@ -1169,13 +1177,20 @@ std::string ToSwaActionId(const std::string& action_id) {
 
 }  // namespace
 
+std::set<std::string> WordGroupExtensions() {
+  static const base::NoDestructor<std::set<std::string>> extensions(
+      std::initializer_list<std::string>({".doc", ".docx"}));
+  return *extensions;
+}
+
 void SetWordFileHandler(Profile* profile, const TaskDescriptor& task) {
   UpdateDefaultTask(
-      profile, task, {".doc", ".docx"},
+      profile, task, WordGroupExtensions(),
       {"application/msword",
        "application/"
        "vnd.openxmlformats-officedocument.wordprocessingml.document"});
 }
+
 void SetWordFileHandlerToFilesSWA(Profile* profile,
                                   const std::string& action_id) {
   TaskDescriptor task(kFileManagerSwaAppId, TaskType::TASK_TYPE_WEB_APP,
@@ -1183,9 +1198,15 @@ void SetWordFileHandlerToFilesSWA(Profile* profile,
   SetWordFileHandler(profile, task);
 }
 
+std::set<std::string> ExcelGroupExtensions() {
+  static const base::NoDestructor<std::set<std::string>> extensions(
+      std::initializer_list<std::string>({".xls", ".xlsx"}));
+  return *extensions;
+}
+
 void SetExcelFileHandler(Profile* profile, const TaskDescriptor& task) {
   UpdateDefaultTask(
-      profile, task, {".xls", ".xlsx"},
+      profile, task, ExcelGroupExtensions(),
       {"application/vnd.ms-excel",
        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
 }
@@ -1197,9 +1218,15 @@ void SetExcelFileHandlerToFilesSWA(Profile* profile,
   SetExcelFileHandler(profile, task);
 }
 
+std::set<std::string> PowerPointGroupExtensions() {
+  static const base::NoDestructor<std::set<std::string>> extensions(
+      std::initializer_list<std::string>({".ppt", ".pptx"}));
+  return *extensions;
+}
+
 void SetPowerPointFileHandler(Profile* profile, const TaskDescriptor& task) {
   UpdateDefaultTask(
-      profile, task, {".ppt", ".pptx"},
+      profile, task, PowerPointGroupExtensions(),
       {"application/vnd.ms-powerpoint",
        "application/"
        "vnd.openxmlformats-officedocument.presentationml.presentation"});
@@ -1225,7 +1252,7 @@ void SetAlwaysMoveOfficeFilesToDrive(Profile* profile, bool always_move) {
                                   always_move);
 }
 
-bool AlwaysMoveOfficeFilesToDrive(Profile* profile) {
+bool GetAlwaysMoveOfficeFilesToDrive(Profile* profile) {
   return profile->GetPrefs()->GetBoolean(prefs::kOfficeFilesAlwaysMoveToDrive);
 }
 
@@ -1234,7 +1261,7 @@ void SetAlwaysMoveOfficeFilesToOneDrive(Profile* profile, bool always_move) {
                                   always_move);
 }
 
-bool AlwaysMoveOfficeFilesToOneDrive(Profile* profile) {
+bool GetAlwaysMoveOfficeFilesToOneDrive(Profile* profile) {
   return profile->GetPrefs()->GetBoolean(
       prefs::kOfficeFilesAlwaysMoveToOneDrive);
 }
@@ -1258,6 +1285,50 @@ void SetOfficeMoveConfirmationShownForOneDrive(Profile* profile,
 bool GetOfficeMoveConfirmationShownForOneDrive(Profile* profile) {
   return profile->GetPrefs()->GetBoolean(
       prefs::kOfficeMoveConfirmationShownForOneDrive);
+}
+
+void SetOfficeMoveConfirmationShownForLocalToDrive(Profile* profile,
+                                                   bool shown) {
+  profile->GetPrefs()->SetBoolean(
+      prefs::kOfficeMoveConfirmationShownForLocalToDrive, shown);
+}
+
+bool GetOfficeMoveConfirmationShownForLocalToDrive(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(
+      prefs::kOfficeMoveConfirmationShownForLocalToDrive);
+}
+
+void SetOfficeMoveConfirmationShownForLocalToOneDrive(Profile* profile,
+                                                      bool shown) {
+  profile->GetPrefs()->SetBoolean(
+      prefs::kOfficeMoveConfirmationShownForLocalToOneDrive, shown);
+}
+
+bool GetOfficeMoveConfirmationShownForLocalToOneDrive(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(
+      prefs::kOfficeMoveConfirmationShownForLocalToOneDrive);
+}
+
+void SetOfficeMoveConfirmationShownForCloudToDrive(Profile* profile,
+                                                   bool shown) {
+  profile->GetPrefs()->SetBoolean(
+      prefs::kOfficeMoveConfirmationShownForCloudToDrive, shown);
+}
+
+bool GetOfficeMoveConfirmationShownForCloudToDrive(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(
+      prefs::kOfficeMoveConfirmationShownForCloudToDrive);
+}
+
+void SetOfficeMoveConfirmationShownForCloudToOneDrive(Profile* profile,
+                                                      bool shown) {
+  profile->GetPrefs()->SetBoolean(
+      prefs::kOfficeMoveConfirmationShownForCloudToOneDrive, shown);
+}
+
+bool GetOfficeMoveConfirmationShownForCloudToOneDrive(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(
+      prefs::kOfficeMoveConfirmationShownForCloudToOneDrive);
 }
 
 void SetOfficeFileMovedToOneDrive(Profile* profile, base::Time moved) {

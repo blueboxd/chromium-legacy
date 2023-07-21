@@ -319,7 +319,8 @@ TEST_F(WindowFloatTest, WindowFloatingResize) {
       Shell::Get()->accelerator_controller();
 
   // Snap Left.
-  acc_controller->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT, {});
+  acc_controller->PerformActionIfEnabled(
+      AcceleratorAction::kWindowCycleSnapLeft, {});
   ASSERT_EQ(chromeos::WindowStateType::kPrimarySnapped,
             window_state2->GetStateType());
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
@@ -332,7 +333,8 @@ TEST_F(WindowFloatTest, WindowFloatingResize) {
             window_state2->GetStateType());
 
   // Snap Right.
-  acc_controller->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT, {});
+  acc_controller->PerformActionIfEnabled(
+      AcceleratorAction::kWindowCycleSnapRight, {});
   ASSERT_EQ(chromeos::WindowStateType::kSecondarySnapped,
             WindowState::Get(window2.get())->GetStateType());
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
@@ -833,7 +835,8 @@ TEST_F(WindowFloatTest, PinnedWindow) {
   EXPECT_FALSE(floated_window->IsVisible());
 
   // Unpin the window.
-  Shell::Get()->accelerator_controller()->PerformActionIfEnabled(UNPIN, {});
+  Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
+      AcceleratorAction::kUnpin, {});
   EXPECT_TRUE(floated_window->IsVisible());
 
   // Trusted pin the window.
@@ -2045,11 +2048,11 @@ TEST_F(TabletWindowFloatSplitviewTest, BothSnappedToFloat) {
 
   // Create two windows and snap one on each side.
   auto left_window = CreateAppWindow();
-  const WMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
+  const WindowSnapWMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
   WindowState::Get(left_window.get())->OnWMEvent(&snap_left);
 
   auto right_window = CreateAppWindow();
-  const WMEvent snap_right(WM_EVENT_SNAP_SECONDARY);
+  const WindowSnapWMEvent snap_right(WM_EVENT_SNAP_SECONDARY);
   WindowState::Get(right_window.get())->OnWMEvent(&snap_right);
 
   auto* split_view_controller =
@@ -2076,7 +2079,7 @@ TEST_F(TabletWindowFloatSplitviewTest, FloatToSnapped) {
 
   // If there are no other windows, expect to enter overview. The hotseat will
   // extended and users can pick a second app from there.
-  const WMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
+  const WindowSnapWMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
   WindowState::Get(window.get())->OnWMEvent(&snap_left);
   ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   ASSERT_TRUE(split_view_controller->InSplitViewMode());
@@ -2121,9 +2124,9 @@ TEST_F(TabletWindowFloatSplitviewTest, ResetFloatToMaximize) {
   auto* split_view_controller =
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
 
-  const WMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
+  const WindowSnapWMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
   WindowState::Get(window_1.get())->OnWMEvent(&snap_left);
-  const WMEvent snap_right(WM_EVENT_SNAP_SECONDARY);
+  const WindowSnapWMEvent snap_right(WM_EVENT_SNAP_SECONDARY);
   WindowState::Get(window_2.get())->OnWMEvent(&snap_right);
   EXPECT_TRUE(split_view_controller->BothSnapped());
   EXPECT_EQ(split_view_controller->primary_window(), window_1.get());

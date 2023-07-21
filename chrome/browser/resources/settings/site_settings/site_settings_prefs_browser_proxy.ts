@@ -81,7 +81,6 @@ export interface RawSiteException {
   isEmbargoed: boolean;
   origin: string;
   displayName: string;
-  extensionNameWithId?: string;
   type: string;
   setting: ContentSetting;
   source: SiteSettingSource;
@@ -164,10 +163,8 @@ export interface MediaPickerEntry {
 
 export interface ZoomLevelEntry {
   displayName: string;
-  origin: string;
+  hostOrSpec: string;
   originForFavicon: string;
-  setting: string;
-  source: string;
   zoom: string;
 }
 
@@ -269,6 +266,8 @@ export interface SiteSettingsPrefsBrowserProxy {
   getFileSystemGrants(): Promise<FileSystemGrantsForOrigin[]>;
 
   revokeFileSystemGrant(origin: string, filePath: string): void;
+
+  revokeFileSystemGrants(origin: string): void;
 
   /**
    * Gets a list of category permissions for a given origin. Note that this
@@ -557,6 +556,10 @@ export class SiteSettingsPrefsBrowserProxyImpl implements
 
   revokeFileSystemGrant(origin: string, filePath: string) {
     chrome.send('revokeFileSystemGrant', [origin, filePath]);
+  }
+
+  revokeFileSystemGrants(origin: string) {
+    chrome.send('revokeFileSystemGrants', [origin]);
   }
 
   getOriginPermissions(origin: string, contentTypes: ContentSettingsTypes[]) {

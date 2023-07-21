@@ -25,12 +25,21 @@
 #include "media/capture/video/mac/video_capture_device_avfoundation_utils_mac.h"
 #include "ui/gfx/geometry/size.h"
 
-@implementation DeviceNameAndTransportType
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+@implementation DeviceNameAndTransportType {
+  NSString* __strong _deviceName;
+  // The transport type of the device (USB, PCI, etc), values are defined in
+  // <IOKit/audio/IOAudioTypes.h> as kIOAudioDeviceTransportType*.
+  media::VideoCaptureTransportType _transportType;
+}
 
 - (instancetype)initWithName:(NSString*)deviceName
                transportType:(media::VideoCaptureTransportType)transportType {
   if (self = [super init]) {
-    _deviceName.reset([deviceName copy]);
+    _deviceName = [deviceName copy];
     _transportType = transportType;
   }
   return self;
@@ -451,14 +460,6 @@ void VideoCaptureDeviceMac::SetPhotoOptions(mojom::PhotoSettingsPtr settings,
   std::move(callback).Run(true);
 }
 
-void VideoCaptureDeviceMac::OnUtilizationReport(
-    media::VideoCaptureFeedback feedback) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  if (!capture_device_)
-    return;
-  [capture_device_ setScaledResolutions:std::move(feedback.mapped_sizes)];
-}
-
 bool VideoCaptureDeviceMac::Init(VideoCaptureApi capture_api_type) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kNotInitialized);
@@ -466,8 +467,8 @@ bool VideoCaptureDeviceMac::Init(VideoCaptureApi capture_api_type) {
   if (capture_api_type != VideoCaptureApi::MACOSX_AVFOUNDATION)
     return false;
 
-  capture_device_.reset(
-      [[VideoCaptureDeviceAVFoundation alloc] initWithFrameReceiver:this]);
+  capture_device_ =
+      [[VideoCaptureDeviceAVFoundation alloc] initWithFrameReceiver:this];
 
   if (!capture_device_)
     return false;
@@ -499,7 +500,6 @@ void VideoCaptureDeviceMac::ReceiveFrame(const uint8_t* video_frame,
 
 void VideoCaptureDeviceMac::ReceiveExternalGpuMemoryBufferFrame(
     CapturedExternalVideoBuffer frame,
-    std::vector<CapturedExternalVideoBuffer> scaled_frames,
     base::TimeDelta timestamp) {
   if (capture_format_.frame_size != frame.format.frame_size) {
     ReceiveError(VideoCaptureError::kMacReceivedFrameWithUnexpectedResolution,
@@ -508,9 +508,11 @@ void VideoCaptureDeviceMac::ReceiveExternalGpuMemoryBufferFrame(
                      ", and expected " + capture_format_.frame_size.ToString());
     return;
   }
+  // TODO(https://crbug.com/1440075): Remove the `scaled_buffers` argument
+  // because the vector is always empty and no consumers are interested in them.
   client_->OnIncomingCapturedExternalBuffer(
-      std::move(frame), std::move(scaled_frames), base::TimeTicks::Now(),
-      timestamp, gfx::Rect(capture_format_.frame_size));
+      std::move(frame), std::vector<CapturedExternalVideoBuffer>(),
+      base::TimeTicks::Now(), timestamp, gfx::Rect(capture_format_.frame_size));
 }
 
 void VideoCaptureDeviceMac::OnPhotoTaken(const uint8_t* image_data,

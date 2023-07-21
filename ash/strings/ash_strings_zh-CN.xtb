@@ -221,6 +221,7 @@
 <translation id="1961239773406905488">已隐藏相机预览画面</translation>
 <translation id="1961832440516943645"><ph name="DATE" /> <ph name="TIME" /></translation>
 <translation id="1962969542251276847">锁定屏幕</translation>
+<translation id="1962972976741217487">有 1 部设备已连接到您的 <ph name="DEVICE_NAME" /> 热点</translation>
 <translation id="1967970931040389207">开启热点</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558"><ph name="USERNAME" />，您好！</translation>
@@ -252,7 +253,7 @@
 <translation id="209965399369889474">未连接到网络</translation>
 <translation id="2107914222138020205">您的 USB-C 数据线不支持 Thunderbolt。设备性能可能会受到限制。</translation>
 <translation id="2108303511227308752">键盘快捷键“Alt + 退格键”已更改。若要使用 Delete 键，请按<ph name="LAUNCHER_KEY_NAME" />键 + 退格键。</translation>
-<translation id="2126242104232412123">新建桌面</translation>
+<translation id="2126242104232412123">新桌面</translation>
 <translation id="2132302418721800944">录制整个屏幕</translation>
 <translation id="2135456203358955318">停靠的放大镜</translation>
 <translation id="2148716181193084225">今天</translation>
@@ -301,7 +302,6 @@
 <translation id="2367972762794486313">显示应用</translation>
 <translation id="2369165858548251131">“你好”用英文怎么说</translation>
 <translation id="2386292613071805067">选择网页上的全部内容</translation>
-<translation id="2390318262976603432">语言区域设置</translation>
 <translation id="2397416548179033562">显示 Chrome 菜单</translation>
 <translation id="240006516586367791">媒体控件</translation>
 <translation id="2402411679569069051">若要解锁 Chromebook，请使用指纹或解锁您的手机</translation>
@@ -382,6 +382,7 @@
 <translation id="2791421900609674576">系统会显示建议项目，以便您继续使用上次打开的内容。您可以通过轻触并按住建议项目将其移除。</translation>
 <translation id="2792498699870441125">Alt + 搜索键</translation>
 <translation id="2797741504905337289">Shelf Party 模式</translation>
+<translation id="2802938996245446490">已选择“<ph name="BUTTON_LABEL" />”</translation>
 <translation id="2805756323405976993">应用</translation>
 <translation id="2814448776515246190">截取/录制局部屏幕</translation>
 <translation id="2819276065543622893">您将立即退出。</translation>
@@ -600,6 +601,7 @@
 <translation id="3735740477244556633">排序依据</translation>
 <translation id="3738664582935948253">现在，您可在录制的屏幕内容中显示点击操作和键盘快捷键</translation>
 <translation id="3742055079367172538">已完成屏幕截图</translation>
+<translation id="3756485814916578707">正在投放屏幕</translation>
 <translation id="3765841986579723851">今天修改过</translation>
 <translation id="3773700760453577392">管理员已禁止 <ph name="USER_EMAIL" /> 使用多帐号登录功能。所有用户都必须先退出帐号才能继续。</translation>
 <translation id="3779139509281456663">正在连接“<ph name="NAME" />”</translation>
@@ -620,7 +622,7 @@
 <translation id="385300504083504382">开头</translation>
 <translation id="3859364108019690">无法流式传输应用</translation>
 <translation id="3861651314799684201">按 Enter 键即可录制整个屏幕</translation>
-<translation id="3871092408932389764">最低限度</translation>
+<translation id="3871092408932389764">最低</translation>
 <translation id="3886872229787704059">今天打开过</translation>
 <translation id="3891340733213178823">连按两次Ctrl+Shift+Q即可退出。</translation>
 <translation id="3893630138897523026">ChromeVox（语音反馈）</translation>
@@ -715,7 +717,7 @@
 <translation id="4302592941791324970">不可用</translation>
 <translation id="4303223480529385476">展开状态区</translation>
 <translation id="4305133312001648038">重置网页的缩放级别</translation>
-<translation id="4311195029067684288">完全</translation>
+<translation id="4311195029067684288">全屏</translation>
 <translation id="4312840429157639164">相机已对准右上角。与系统界面冲突。</translation>
 <translation id="4316910396681052118">所有应用</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -821,6 +823,7 @@
 <translation id="4777825441726637019">Play 商店</translation>
 <translation id="4778095205580009397">无法在演示会话中使用 Google 助理。</translation>
 <translation id="4789348252524569426">无法安装语音文件。您的设备需要更新。请重启设备，然后重试。</translation>
+<translation id="478959186716341421">正在投放</translation>
 <translation id="479989351350248267">搜索</translation>
 <translation id="4804818685124855865">断开连接</translation>
 <translation id="4814539958450445987">登录屏幕</translation>
@@ -928,6 +931,7 @@
 <translation id="5297704307811127955">已关闭</translation>
 <translation id="5300589172476337783">显示</translation>
 <translation id="5302048478445481009">语言</translation>
+<translation id="5303783651764314393">有 <ph name="DEVICECOUNT" /> 部设备已连接到您的 <ph name="DEVICE_NAME" /> 热点</translation>
 <translation id="5308380583665731573">连接</translation>
 <translation id="5313326810920013265">蓝牙设置</translation>
 <translation id="5314219114274263156">已录制屏幕</translation>
@@ -996,7 +1000,6 @@
 <translation id="5597451508971090205"><ph name="DATE" /><ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">按 Ctrl + Alt + Z 即可停用语音反馈。</translation>
 <translation id="5601503069213153581">PIN</translation>
-<translation id="5601571553788043181">在 Chrome 浏览器中打开文件</translation>
 <translation id="5618148318840095371">我们已将您切换到更好的网络</translation>
 <translation id="5619862035903135339">管理员政策已停用截屏功能</translation>
 <translation id="5625955975703555628">LTE+</translation>
@@ -1023,7 +1026,7 @@
 <translation id="5727460725221669831">如果您忘记了密码，或最近更改过自己的 Google 帐号密码，请尝试让此用户恢复登录。</translation>
 <translation id="573413375004481890">此设备无法支持您的所有显示屏，因此断开了与其中一个显示屏的连接</translation>
 <translation id="5740328398383587084">附近分享</translation>
-<translation id="574392208103952083">中等</translation>
+<translation id="574392208103952083">中</translation>
 <translation id="5744083938413354016">点按拖动</translation>
 <translation id="5745612484876805746">护眼模式会于日落时自动开启</translation>
 <translation id="5750765938512549687">蓝牙已关闭</translation>
@@ -1117,6 +1120,7 @@
 <translation id="6137566720514957455">打开与 <ph name="USER_EMAIL_ADDRESS" /> 对应的“移除帐号”对话框</translation>
 <translation id="6141988275892716286">确认下载</translation>
 <translation id="6154006699632741460">不支持外围设备</translation>
+<translation id="6156960295318603523">语言设置</translation>
 <translation id="615957422585914272">显示屏幕键盘</translation>
 <translation id="6165508094623778733">了解详情</translation>
 <translation id="6166852626429024716">搜索您的设备、应用、设置、网站…</translation>
@@ -1335,6 +1339,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />秒后恢复到原分辨率</translation>
 <translation id="7180611975245234373">刷新</translation>
+<translation id="7187711731540696127">您的 <ph name="DEVICE_NAME" /> 热点已开启，但尚未连接任何设备</translation>
 <translation id="7188494361780961876">菜单已移至屏幕的左上角。</translation>
 <translation id="7189412385142492784">金星有多远</translation>
 <translation id="7198435252016571249">相机已对准右下角。与系统界面冲突。</translation>
@@ -1389,6 +1394,7 @@
 <translation id="7497767806359279797">选择语言和键盘布局</translation>
 <translation id="7508690557411636492">过去一个月内打开过</translation>
 <translation id="7509246181739783082">验证您的身份</translation>
+<translation id="7512726380443357693">未选择“<ph name="BUTTON_LABEL" />”</translation>
 <translation id="7513622367902644023">已选择截屏模式</translation>
 <translation id="7513922695575567867">日历，<ph name="DATE" />这周，目前所选日期为 <ph name="SELECTED_DATE" />。</translation>
 <translation id="7514365320538308">下载</translation>
@@ -1410,7 +1416,6 @@
 <translation id="7569509451529460200">已启用盲文和 ChromeVox</translation>
 <translation id="7573585051776738856">将活动窗口停靠在右侧。</translation>
 <translation id="7579778809502851308">截取屏幕</translation>
-<translation id="7590883480672980941">输入设置</translation>
 <translation id="7593891976182323525">搜索键或 Shift</translation>
 <translation id="7600875258240007829">查看所有通知</translation>
 <translation id="7607002721634913082">已暂停</translation>
@@ -1552,6 +1557,7 @@
 <translation id="8185090165691050712">开启/关闭菜单即可调整锁定模式的范围</translation>
 <translation id="8192202700944119416">已隐藏通知。</translation>
 <translation id="8196787716797768628">在平板电脑模式下，使用手势快速切换应用以及与 Chromebook 互动。</translation>
+<translation id="8198456017687137612">正在投放标签页</translation>
 <translation id="8200772114523450471">继续</translation>
 <translation id="8203795194971602413">点击鼠标右键</translation>
 <translation id="8209010265547628927">重置</translation>

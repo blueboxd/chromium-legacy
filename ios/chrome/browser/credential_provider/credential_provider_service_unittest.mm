@@ -26,6 +26,7 @@
 #import "components/sync/base/user_selectable_type.h"
 #import "components/sync/test/test_sync_service.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
+#import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/common/credential_provider/constants.h"
 #import "ios/chrome/common/credential_provider/credential.h"
@@ -256,17 +257,8 @@ TEST_F(CredentialProviderServiceTest, PasswordChanges) {
 TEST_F(CredentialProviderServiceTest, AccountChange) {
   CreateCredentialProviderService();
 
-  password_manager::PasswordForm form;
-  form.url = GURL("http://0.com");
-  form.signon_realm = "http://www.example.com/";
-  form.action = GURL("http://www.example.com/action");
-  form.password_element = u"pwd";
-  form.password_value = u"example";
-  password_store_->AddLogin(form);
-  task_environment_.RunUntilIdle();
-
-  ASSERT_EQ(credential_store_.credentials.count, 1u);
-  EXPECT_FALSE(credential_store_.credentials[0].validationIdentifier);
+  EXPECT_FALSE([app_group::GetGroupUserDefaults()
+      stringForKey:AppGroupUserDefaultsCredentialProviderUserID()]);
 
   // Enable sync for managed account.
   CoreAccountInfo core_account =
@@ -282,15 +274,15 @@ TEST_F(CredentialProviderServiceTest, AccountChange) {
                                                signin::ConsentLevel::kSync);
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(credential_store_.credentials.count, 1u);
-  EXPECT_NSEQ(credential_store_.credentials[0].validationIdentifier,
+  EXPECT_NSEQ([app_group::GetGroupUserDefaults()
+                  stringForKey:AppGroupUserDefaultsCredentialProviderUserID()],
               base::SysUTF8ToNSString(core_account.gaia));
 
   identity_test_environment_.ClearPrimaryAccount();
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(credential_store_.credentials.count, 1u);
-  EXPECT_FALSE(credential_store_.credentials[0].validationIdentifier);
+  EXPECT_FALSE([app_group::GetGroupUserDefaults()
+      stringForKey:AppGroupUserDefaultsCredentialProviderUserID()]);
 }
 
 // Test that CredentialProviderService observes changes in the password store.

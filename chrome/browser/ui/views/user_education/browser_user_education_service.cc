@@ -72,7 +72,6 @@ const char kCustomizeChromeTutorialMetricPrefix[] = "CustomizeChromeSidePanel";
 const char kSideSearchTutorialMetricPrefix[] = "SideSearch";
 constexpr char kTabGroupHeaderElementName[] = "TabGroupHeader";
 constexpr char kReadingListItemElementName[] = "ReadingListItem";
-constexpr char kChromeThemeBackElementName[] = "ChromeThemeBackElement";
 
 class BrowserHelpBubbleDelegate : public user_education::HelpBubbleDelegate {
  public:
@@ -463,7 +462,7 @@ void MaybeRegisterChromeFeaturePromos(
                 RecordHighEfficiencyIPHEnableMode(true);
               }))
           .SetCustomActionIsDefault(true)
-          .SetCustomActionDismissText(IDS_NOT_NOW)
+          .SetCustomActionDismissText(IDS_NO_THANKS)
           .SetBubbleTitleText(IDS_HIGH_EFFICIENCY_MODE_PROMO_TITLE)));
 
   // kIPHPriceTrackingInSidePanelFeature;
@@ -683,21 +682,9 @@ void MaybeRegisterChromeTutorials(
         HelpBubbleArrow::kRightCenter, ui::CustomElementEventType(),
         /* must_remain_visible =*/false,
         /* transition_only_on_event =*/false,
-        base::BindRepeating(
-            [](ui::InteractionSequence* sequence, ui::TrackedElement* element) {
-              sequence->NameElement(
-                  element, base::StringPiece(kChromeThemeBackElementName));
-              return true;
-            }),
+        user_education::TutorialDescription::NameElementsCallback(),
         TutorialDescription::ContextMode::kAny);
     customize_chrome_description.steps.emplace_back(back_button_step);
-
-    // Hidden step - back button
-    TutorialDescription::Step back_button_hidden_step(
-        0, 0, ui::InteractionSequence::StepType::kHidden,
-        ui::ElementIdentifier(), kChromeThemeBackElementName,
-        HelpBubbleArrow::kNone);
-    customize_chrome_description.steps.emplace_back(back_button_hidden_step);
 
     // Completion of the tutorial.
     TutorialDescription::Step success_step(

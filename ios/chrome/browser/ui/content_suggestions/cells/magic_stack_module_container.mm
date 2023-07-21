@@ -17,7 +17,7 @@
 namespace {
 
 // The corner radius of this container.
-const float kCornerRadius = 16;
+const float kCornerRadius = 24;
 
 // The width of the modules.
 const int kModuleWidthCompact = 343;
@@ -39,7 +39,7 @@ const int kModuleWidthRegular = 382;
   if (self) {
     _type = type;
     self.layer.cornerRadius = kCornerRadius;
-    self.backgroundColor = [UIColor colorNamed:kGrey100Color];
+    self.backgroundColor = [UIColor colorNamed:kBackgroundColor];
   }
   return self;
 }
@@ -56,6 +56,8 @@ const int kModuleWidthRegular = 382;
     case ContentSuggestionsModuleType::kShortcuts:
       return l10n_util::GetNSString(
           IDS_IOS_CONTENT_SUGGESTIONS_SHORTCUTS_MODULE_TITLE);
+    case ContentSuggestionsModuleType::kMostVisited:
+      return @"";
     default:
       NOTREACHED();
       return @"";

@@ -113,6 +113,7 @@ Vaše šifrirane podatke može pročitati samo osoba koja ima vašu šifru. Šif
 <translation id="1657011748321897393">Dijeljenje nije uspjelo jer niste povezani s mrežom.</translation>
 <translation id="1657641691196698092">Blokirani kolačići</translation>
 <translation id="165877110639533037">Nema otvorenih kartica</translation>
+<translation id="166310177317698233">Prikvačene kartice možete pronaći tako da dodirnete gumb Prikaži kartice.</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> – <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">Zatraži web-lokaciju za mobilne uređaje</translation>
 <translation id="168715261339224929">Da bi se vaše oznake prikazale na svim vašim uređajima, uključite sinkronizaciju.</translation>
@@ -407,6 +408,7 @@ Potražite upute za svoju tražilicu da biste saznali kako izbrisati svoju povij
 <translation id="3638472932233958418">Već učitane stranice</translation>
 <translation id="3661160521073045932">Dostupan je profil za konfiguraciju</translation>
 <translation id="3670030362669914947">Broj</translation>
+<translation id="3700134753671613714">Prijavite se da biste imali svoje oznake na svim svojim uređajima.</translation>
 <translation id="3709582977625132201">Označi kao nepročitano</translation>
 <translation id="371230970611282515">Predviđa opasne događaje i upozorava vas na njih prije nego što se dogode.</translation>
 <translation id="37207012422556617">Pretraživanje u trendu</translation>
@@ -546,7 +548,6 @@ Potražite upute za svoju tražilicu da biste saznali kako izbrisati svoju povij
 <translation id="4642472735733036929">Praćenje cijene zaustavljeno</translation>
 <translation id="4650125387981512669">Nastavi kao <ph name="FIRST_RUN_ACCOUNT_NAME" /></translation>
 <translation id="4652817563047461855">Provjerite jesu li vaše zaporke sigurne, saznajte jesu li ugrožene i primite savjete koji će vam pomoći da se zaštitite online. <ph name="BEGIN_LINK" />Saznaj više<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">Kad se prijavite na Google račun, ova je značajka uključena.</translation>
 <translation id="4659667755519643272">Otvori prekidač za prebacivanje između kartica</translation>
 <translation id="46614316059270592">Spremi zaporku</translation>
 <translation id="4666531726415300315">Prijavljeni ste kao <ph name="EMAIL" />.
@@ -588,7 +589,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="4844899002472726590">Pregled i uređivanje tema koje vas zanimaju</translation>
 <translation id="4848999860252535517">Želite li izbrisati zaporku za <ph name="WEBSITE" />?</translation>
 <translation id="4854345657858711387">Postavite šifru zaporke</translation>
-<translation id="4856498338299082007">Na vašem Google računu</translation>
 <translation id="4858786880085262208">Nadogradite na HTTPS, kad je moguće. Sigurne web-lokacije mogu ugraditi sadržaj koji nije siguran.</translation>
 <translation id="4860895144060829044">Poziv</translation>
 <translation id="4872323082491632254">Provjera zaporki</translation>
@@ -667,6 +667,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="543338862236136125">Uredite zaporku</translation>
 <translation id="5433691172869980887">Korisničko je ime kopirano</translation>
 <translation id="5439599923922718668">Često posjećeno</translation>
+<translation id="5439618055789623719">Prijavljeni ste kao <ph name="USER_EMAIL" /></translation>
 <translation id="54401264925851789">Informacije o sigurnosti stranice</translation>
 <translation id="5443952882982198570">Kreditne kartice</translation>
 <translation id="5444892875087332195">Oznake</translation>
@@ -1121,7 +1122,6 @@ Web-lokacije mogu upotrebljavati kolačiće za uvid u vašu aktivnost pregledava
 <translation id="8248969482078657578">Neaktivne kartice pomažu vam da ostanete usredotočeni</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8264966119170358612">Neke od vaših spremljenih zaporki otkrivene su u neovlaštenom pristupu podacima izvan Googlea. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">Samo na ovom uređaju</translation>
 <translation id="826614135184049678">Odjavljeni ste s računa <ph name="USER_NAME" /> pri vraćanju iPada na zadano. Da biste se ponovno prijavili, dodirnite Nastavi u nastavku.</translation>
 <translation id="8271720166617117963">Prihvati i prijavi se</translation>
 <translation id="8278938988428169257">Unesite riječ ili frazu</translation>

@@ -51,6 +51,18 @@ class ExtensionMenuItemView : public views::FlexLayoutView {
     kEnabled,
   };
 
+  // Extension site access displayed in the site permissions button.
+  enum class SitePermissionsButtonAccess {
+    // Extension has no site access.
+    kNone,
+    // Extension has site access when clicked.
+    kOnClick,
+    // Extension has site access to this site.
+    kOnSite,
+    // Extension has site access to all sites.
+    kOnAllSites
+  };
+
   ExtensionMenuItemView(Browser* browser,
                         std::unique_ptr<ToolbarActionViewController> controller,
                         bool allow_pinning);
@@ -72,7 +84,8 @@ class ExtensionMenuItemView : public views::FlexLayoutView {
 
   // Updates the controller and child views to be on sync with the parent views.
   void Update(SiteAccessToggleState site_access_toggle_state,
-              SitePermissionsButtonState site_permissions_button_state);
+              SitePermissionsButtonState site_permissions_button_state,
+              SitePermissionsButtonAccess site_permissions_button_access);
 
   // Updates the pin button.
   void UpdatePinButton(bool is_force_pinned, bool is_pinned);
@@ -98,6 +111,9 @@ class ExtensionMenuItemView : public views::FlexLayoutView {
   HoverButton* pin_button_for_testing() { return pin_button_; }
   HoverButton* site_permissions_button_for_testing() {
     return site_permissions_button_;
+  }
+  views::View* site_permissions_button_icon_for_testing() {
+    return site_permissions_button_icon_;
   }
 
  private:
@@ -126,7 +142,10 @@ class ExtensionMenuItemView : public views::FlexLayoutView {
 
   raw_ptr<views::ToggleButton> site_access_toggle_ = nullptr;
 
+  // Button that displays the extension site access and opens its site
+  // permissions page.
   raw_ptr<HoverButton> site_permissions_button_ = nullptr;
+  raw_ptr<views::View> site_permissions_button_icon_ = nullptr;
 
   raw_ptr<HoverButton> pin_button_ = nullptr;
 

@@ -105,7 +105,6 @@ extern sandbox::TargetServices* g_utility_target_services;
 #endif  // BUILDFLAG(ENABLE_ACCESSIBILITY_SERVICE)
 
 #if BUILDFLAG(IS_LINUX)
-#include "media/capture/capture_switches.h"
 #include "services/viz/public/cpp/gpu/gpu.h"
 #endif  // BUILDFLAG(IS_LINUX)
 
@@ -306,15 +305,12 @@ auto RunVideoCapture(
   auto service = std::make_unique<UtilityThreadVideoCaptureServiceImpl>(
       std::move(receiver), base::SingleThreadTaskRunner::GetCurrentDefault());
 #if BUILDFLAG(IS_LINUX)
-  if (switches::IsVideoCaptureUseGpuMemoryBufferEnabled()) {
-    mojo::PendingRemote<viz::mojom::Gpu> remote_gpu;
-    content::UtilityThread::Get()->BindHostReceiver(
-        remote_gpu.InitWithNewPipeAndPassReceiver());
-    std::unique_ptr<viz::Gpu> viz_gpu =
-        viz::Gpu::Create(std::move(remote_gpu),
-                         content::UtilityThread::Get()->GetIOTaskRunner());
-    service->SetVizGpu(std::move(viz_gpu));
-  }
+  mojo::PendingRemote<viz::mojom::Gpu> remote_gpu;
+  content::UtilityThread::Get()->BindHostReceiver(
+      remote_gpu.InitWithNewPipeAndPassReceiver());
+  std::unique_ptr<viz::Gpu> viz_gpu = viz::Gpu::Create(
+      std::move(remote_gpu), content::UtilityThread::Get()->GetIOTaskRunner());
+  service->SetVizGpu(std::move(viz_gpu));
 #endif  // BUILDFLAG(IS_LINUX)
   return service;
 }

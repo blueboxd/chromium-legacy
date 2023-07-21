@@ -175,6 +175,7 @@
 <translation id="1363819917331173092">Не нуди превод страница на језику <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1364822246244961190">Ове смернице су блокиране. Њихова вредност ће бити занемарена.</translation>
 <translation id="1368318639262510626">Игра са диносаурусом. Пикселизовани диносаурус избегава кактусе и птеродактиле док трчи пустим пејзажем. Када чујете звучни сигнал додирните тастер за размак да бисте прескакали препреке.</translation>
+<translation id="136907351928231527">Може да прође и до недељу дана да се листа тема појави овде на основу недавне историје прегледања</translation>
 <translation id="1374468813861204354">предлози</translation>
 <translation id="1375198122581997741">О верзији</translation>
 <translation id="1376836354785490390">Прикажи мање</translation>
@@ -190,6 +191,7 @@
 <translation id="1396259464226642517">Да ли је ово неочекиван резултат? <ph name="BEGIN_LINK" />Пошаљите повратне информације<ph name="END_LINK" /></translation>
 <translation id="1405567553485452995">Светлозелена</translation>
 <translation id="1406500794671479665">Верификовање...</translation>
+<translation id="1406812885827747674">Дозволи овај пут</translation>
 <translation id="1407135791313364759">Отвори све</translation>
 <translation id="1408787208417187241">Троструко спајање на врху</translation>
 <translation id="1410941016594047814">Коверта Invite</translation>
@@ -437,7 +439,6 @@
 <translation id="2003709556000175978">Ресетујте лозинку</translation>
 <translation id="2003775180883135320">Четвороструко бушење на врху</translation>
 <translation id="201174227998721785">Управљајте дозволама и подацима сачуваним на различитим сајтовима у подешавањима Chrome-а</translation>
-<translation id="2012276282211112603">Тренутно нема тема за приказ</translation>
 <translation id="2019607688127825327">Дугме Прилагоди подешавања приступачности, притисните Enter да бисте персонализовали алатке за приступачност у подешавањима Chrome-а</translation>
 <translation id="2021333772895814435">Ове смернице аутоматски онемогућавају синхронизацију на свим уређајима за: <ph name="ACTION_LIST" />.</translation>
 <translation id="202224654587969958">12×19 in</translation>
@@ -470,6 +471,7 @@
 <translation id="2079545284768500474">Опозови</translation>
 <translation id="20817612488360358">Подешено је да се користе системска подешавања проксија, али је наведена експлицитна конфигурација проксија.</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" />. од <ph name="TOTAL_RESULTS" /> резултата</translation>
+<translation id="2083256696566019397">Дозволи при свакој посети</translation>
 <translation id="2085876078937250610">Сачувај…</translation>
 <translation id="2088086323192747268">Дугме Управљајте синхронизацијом, притисните Enter да бисте управљали тиме које информације синхронизујете у подешавањима Chrome-а</translation>
 <translation id="2091887806945687916">Звук</translation>
@@ -1354,6 +1356,7 @@
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Ова картица је сачувана на Google налогу}one{Ове картице су сачуване на Google налогу}few{Ове картице су сачуване на Google налогу}other{Ове картице су сачуване на Google налогу}}</translation>
 <translation id="4287495839370498922">Побољшана приватност са огласима у Chrome-у</translation>
 <translation id="4287885627794386150">Испуњава услове за пробу, али није активно</translation>
+<translation id="4290920330097335010">Никада не дозволи</translation>
 <translation id="4297502707443874121">Сличица за <ph name="THUMBNAIL_PAGE" />. страницу</translation>
 <translation id="4298000214066716287">Инвестирање</translation>
 <translation id="42981349822642051">Проширите</translation>
@@ -1422,7 +1425,6 @@
 <translation id="4451135742916150903">Може да тражи да се повезује са HID уређајима</translation>
 <translation id="4451684391620232683">Текст представљен кориснику:</translation>
 <translation id="4452328064229197696">Лозинка коју сте управо користили је пронађена при повреди података. Да бисте заштитили налоге, Google менаџер лозинки препоручује да проверите сачуване лозинке.</translation>
-<translation id="4460315069258617173">Дозвољено док не затворите картице овог сајта</translation>
 <translation id="4464826014807964867">Веб-сајтови са подацима из ваше организације</translation>
 <translation id="447665707681730621"><ph name="BUBBLE_MESSAGE" />. <ph name="LEARN_MORE_TEXT" /></translation>
 <translation id="4476953670630786061">Овај образац није безбедан. Аутоматско попуњавање је искључено.</translation>
@@ -1454,7 +1456,7 @@
 <translation id="4526465106919207193">Људи и друштво</translation>
 <translation id="4530347922939905757">SMS</translation>
 <translation id="4531477351494678589">Број виртуелне картице:</translation>
-<translation id="4540780316273593836">Дошло је до грешке</translation>
+<translation id="4540780316273593836">Нешто није у реду</translation>
 <translation id="4541810033354695636">проширена реалност</translation>
 <translation id="4542971377163063093">6. фиока</translation>
 <translation id="455113658016510503">A9</translation>
@@ -2026,7 +2028,6 @@
 <translation id="5967592137238574583">Измените контакт информације</translation>
 <translation id="5967867314010545767">Уклони из историје</translation>
 <translation id="5968022600320704045">Нема резултата претраге</translation>
-<translation id="5968793460449681917">При свакој посети</translation>
 <translation id="5974052231147553524">Шести котур</translation>
 <translation id="5975083100439434680">Умањивање</translation>
 <translation id="5979084224081478209">Провери лозинке</translation>
@@ -2322,7 +2323,7 @@
 <translation id="6710213216561001401">Претходно</translation>
 <translation id="6710594484020273272">&lt;Унесите термин за претрагу&gt;</translation>
 <translation id="671076103358959139">Токен за регистрацију:</translation>
-<translation id="6711464428925977395">Дошло је до грешке са прокси сервером или је адреса нетачна.</translation>
+<translation id="6711464428925977395">Нешто није у реду са прокси сервером или је адреса нетачна.</translation>
 <translation id="6716672519412350405"><ph name="URL" /> жели да прави 3D мапу окружења и да прати положај камере</translation>
 <translation id="6718612893943028815">Дозволићете коришћење камере?</translation>
 <translation id="6721678857435001674">да види произвођача и модел безбедносног кључа</translation>
@@ -2393,7 +2394,6 @@
 <translation id="6897140037006041989">Кориснички агент</translation>
 <translation id="6898699227549475383">Организација (O)</translation>
 <translation id="6899000063526916106">Унесите <ph name="NUMBER_OF_DIGITS" />-цифрени кôд</translation>
-<translation id="6907293445143367439">Дозволите да <ph name="SITE_NAME" />:</translation>
 <translation id="6907458757809079309">Фитнес</translation>
 <translation id="6910240653697687763"><ph name="URL" /> жели да у потпуности контролише MIDI уређаје</translation>
 <translation id="691024665142758461">да преузме више датотека</translation>
@@ -2574,8 +2574,7 @@
 <translation id="733923710415886693">Сертификат сервера није откривен помоћу Транспарентности сертификата.</translation>
 <translation id="7341357280245177602">Половна возила</translation>
 <translation id="7346048084945669753">Повезан је:</translation>
-<translation id="7349921148288539306">Дозвољено док не затворите ову картицу</translation>
-<translation id="7352651011704765696">Дошло је до грешке</translation>
+<translation id="7352651011704765696">Нешто није у реду</translation>
 <translation id="7353601530677266744">Командна линија</translation>
 <translation id="7354880545102894991">Јефтина путовања и путовања у последњем тренутку</translation>
 <translation id="7359588939039777303">Огласи су блокирани.</translation>
@@ -2642,7 +2641,7 @@
 <translation id="7465963048299965912">10×13 in</translation>
 <translation id="7469935732330206581">Образац није безбедан</translation>
 <translation id="7473891865547856676">Не, хвала</translation>
-<translation id="7481312909269577407">Напред</translation>
+<translation id="7481312909269577407">Проследи</translation>
 <translation id="7481603210197454575">Италијанска коверта</translation>
 <translation id="7485870689360869515">Нису пронађени подаци.</translation>
 <translation id="748745328507845862">Концерти и музички фестивали</translation>
@@ -3051,7 +3050,6 @@
 <translation id="8433057134996913067">Овако ћете се одјавити са већине веб-сајтова.</translation>
 <translation id="8434840396568290395">Кућни љубимци</translation>
 <translation id="8437238597147034694">&amp;Опозови премештање</translation>
-<translation id="8438476240229491014">Запамти ово подешавање</translation>
 <translation id="8438786541497918448">Дозволићете коришћење камере и микрофона?</translation>
 <translation id="8438923942245957911">Ваша организација је обележила овај сајт</translation>
 <translation id="8443613539889492016">Реп и хип-хоп</translation>

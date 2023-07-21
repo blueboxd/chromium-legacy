@@ -290,9 +290,6 @@ AutofillProfile GetIncompleteProfile1();
 // Returns an incomplete profile of dummy info, different to the above.
 AutofillProfile GetIncompleteProfile2();
 
-// Returns a verified profile full of dummy info.
-AutofillProfile GetVerifiedProfile();
-
 // Returns a server profile full of dummy info.
 AutofillProfile GetServerProfile();
 
@@ -513,7 +510,11 @@ void GenerateTestAutofillPopup(
     AutofillExternalDelegate* autofill_external_delegate);
 
 std::string ObfuscatedCardDigitsAsUTF8(const std::string& str,
+#if BUILDFLAG(IS_ANDROID)
+                                       int obfuscation_length = 2);
+#else
                                        int obfuscation_length = 4);
+#endif
 
 // Returns 2-digit month string, like "02", "10".
 std::string NextMonth();

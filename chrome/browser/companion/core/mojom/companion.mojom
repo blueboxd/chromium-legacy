@@ -7,9 +7,10 @@ module side_panel.mojom;
 import "url/mojom/url.mojom";
 
 // Methods called on the browser from the companion UI.
-// TODO(b/274618365): Link documentation for server side counterpart that must
-// be kept in sync.
+// Keep this file in sync with
+// google3/java/com/google/lens/web/interfaces/standalone/companionweb/service/companion_parent_communication_service.ts.
 enum MethodType {
+  // Methods used in renderer -> browser communication.
   // Method corresponding to `CompanionPageHandler.OnPromoAction`.
   kOnPromoAction = 1,
 
@@ -29,13 +30,26 @@ enum MethodType {
   // Method corresponding to `CompanionPageHandler.RecordUiSurfaceClicked`.
   kRecordUiSurfaceClicked = 6,
 
-  // Method called when cq candidates are available.
+  // Method corresponding to `CompanionPageHandler.OnCqCandidatesAvailable`.
   kOnCqCandidatesAvailable = 7,
+
+  // Method corresponding to `CompanionPageHandler.OnPhFeedback`.
+  kOnPhFeedback = 8,
+
+  // Method corresponding to `CompanionPageHandler.OnCqJumptagClicked`.
+  kOnCqJumptagClicked = 9,
+
+  // Methods used in browser -> renderer communication.
+  // Method corresponding to `CompanionPage.UpdateCompanionPage`.
+  kUpdateCompanionPage = 31,
+
+  // Method corresponding to `CompanionPage.OnCqFindTextResultsAvailable`.
+  kOnCqFindTextResultsAvailable = 32,
 };
 
 // Types of promos shown in the companion UI.
-// TODO(b/274618365): Link documentation for server side counterpart that must
-// be kept in sync.
+// Keep this file in sync with
+// google3/java/com/google/lens/web/interfaces/standalone/companionweb/service/companion_parent_communication_service.ts.
 enum PromoType {
   // Promo to sign-in to chrome.
   kSignin = 1,
@@ -48,8 +62,8 @@ enum PromoType {
 };
 
 // User actions taken on a promo.
-// TODO(b/274618365): Link documentation for server side counterpart that must
-// be kept in sync.
+// Keep this file in sync with
+// google3/java/com/google/lens/web/interfaces/standalone/companionweb/service/companion_parent_communication_service.ts.
 enum PromoAction {
   // Promo was shown in the companion UI.
   kShown = 1,
@@ -59,6 +73,17 @@ enum PromoAction {
 
   // User declined the promo.
   kRejected = 3,
+};
+
+// User feedback actions on the PH surface.
+// Keep this file in sync with
+// google3/java/com/google/lens/web/interfaces/standalone/companionweb/service/companion_parent_communication_service.ts.
+enum PhFeedback {
+  // User clicked thumbs up.
+  kThumbsUp = 1,
+
+  // User clicked thumbs down.
+  kThumbsDown = 2,
 };
 
 // Data for uploading an image query.
@@ -82,6 +107,8 @@ struct ImageQuery {
 };
 
 // Various UI surfaces on the companion page.
+// Keep this file in sync with
+// google3/java/com/google/lens/web/interfaces/standalone/companionweb/service/companion_parent_communication_service.ts.
 enum UiSurface {
   kUnknown = 0,
   kPH = 1,
@@ -130,6 +157,14 @@ interface CompanionPageHandler {
 
   // Called to notify the browser that the cq candidates are available.
   OnCqCandidatesAvailable(array<string> text_directives);
+
+  // Called in response to user feedback action on the PH surface.
+  OnPhFeedback(PhFeedback ph_feedback);
+
+  // Called to notify the browser that the user has clicked on a jumptag.
+  // `text_directive` is the URL fragment for highlighting and scrolling-to.
+  // Ref: https://wicg.github.io/scroll-to-text-fragment/#syntax.
+  OnCqJumptagClicked(string text_directive);
 };
 
 // WebUI page handler for request from Browser side. (C++ -> TypeScript)

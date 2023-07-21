@@ -518,18 +518,6 @@ void AppBannerManagerAndroid::Install(
                                     std::move(a2hs_event_callback));
 }
 
-void AppBannerManagerAndroid::MaybeShowAmbientBadge() {
-  ambient_badge_manager_ = std::make_unique<AmbientBadgeManager>(
-      web_contents(), GetAndroidWeakPtr(),
-      nullptr /* segmentation_platform_service */);
-  ambient_badge_manager_->MaybeShow(
-      validated_url_, GetAppName(),
-      CreateAddToHomescreenParams(InstallableMetrics::GetInstallSource(
-          web_contents(), InstallTrigger::AMBIENT_BADGE)),
-      base::BindOnce(&AppBannerManagerAndroid::ShowBannerFromBadge,
-                     AppBannerManagerAndroid::GetAndroidWeakPtr()));
-}
-
 bool AppBannerManagerAndroid::IsSupportedNonWebAppPlatform(
     const std::u16string& platform) const {
   return base::EqualsASCII(platform, kPlatformPlay);
@@ -553,8 +541,8 @@ bool AppBannerManagerAndroid::IsWebAppConsideredInstalled() const {
   // one is in flight for the current site.
   return WebappsUtils::IsWebApkInstalled(web_contents()->GetBrowserContext(),
                                          manifest().start_url) ||
-         WebappsClient::Get()->IsInstallationInProgress(
-             web_contents(), manifest_url_, manifest_id_);
+         WebappsClient::Get()->IsInstallationInProgress(web_contents(),
+                                                        manifest_id_);
 }
 
 void AppBannerManagerAndroid::RecordExtraMetricsForInstallEvent(

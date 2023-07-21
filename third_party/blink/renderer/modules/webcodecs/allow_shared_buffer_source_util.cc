@@ -16,8 +16,7 @@ ArrayBufferContents PinArrayBufferContent(
         if (buffer->IsShared()) {
           buffer->Content()->ShareWith(result);
         } else {
-          static_cast<blink::DOMArrayBuffer*>(buffer)
-              ->ShareNonSharedForInternalUse(result);
+          buffer->Content()->ShareNonSharedForInternalUse(result);
         }
       }
       return result;
@@ -25,11 +24,10 @@ ArrayBufferContents PinArrayBufferContent(
     case AllowSharedBufferSource::ContentType::kArrayBufferViewAllowShared: {
       auto* view = buffer_union->GetAsArrayBufferViewAllowShared().Get();
       if (view && !view->IsDetached()) {
-        if (view->IsShared()) {
+        if (view->IsShared())
           view->BufferShared()->Content()->ShareWith(result);
-        } else {
-          view->buffer()->ShareNonSharedForInternalUse(result);
-        }
+        else
+          view->buffer()->Content()->ShareNonSharedForInternalUse(result);
       }
       return result;
     }

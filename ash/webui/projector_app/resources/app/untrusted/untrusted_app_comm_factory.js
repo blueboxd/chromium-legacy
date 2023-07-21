@@ -114,8 +114,7 @@ const CLIENT_DELEGATE = {
    * @return {Promise<Array<projectorApp.PendingScreencast>>}
    */
   getPendingScreencasts() {
-    return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
-        'getPendingScreencasts', []);
+    return browserProxy.getPendingScreencasts();
   },
 
   /*
@@ -172,8 +171,7 @@ const CLIENT_DELEGATE = {
    * @return {!Promise<Object>}
    */
   getUserPref(userPref) {
-    return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
-        'getUserPref', [userPref]);
+    return browserProxy.getUserPref(userPref);
   },
 
   /**
@@ -185,8 +183,7 @@ const CLIENT_DELEGATE = {
    * @return {!Promise} Promise resolved when the request was handled.
    */
   setUserPref(userPref, value) {
-    return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
-        'setUserPref', [userPref, value]);
+    return browserProxy.setUserPref(userPref, value);
   },
 
   /**
@@ -194,8 +191,7 @@ const CLIENT_DELEGATE = {
    * @return {!Promise}
    */
   openFeedbackDialog() {
-    return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
-        'openFeedbackDialog', []);
+    return browserProxy.openFeedbackDialog();
   },
 
   /**
@@ -260,10 +256,11 @@ export class UntrustedAppRequestHandler extends RequestHandler {
     this.callbackRouter_.onSodaInstalled.addListener(() => {
       getAppElement().onSodaInstalled();
     });
+    this.callbackRouter_.onScreencastsStateChange.addListener(
+        (pendingScreencasts) => {
+          getAppElement().onScreencastsStateChange(pendingScreencasts);
+        });
 
-    this.registerMethod('onScreencastsStateChange', (pendingScreencasts) => {
-      getAppElement().onScreencastsStateChange(pendingScreencasts);
-    });
     this.registerMethod('onFileLoaded', (args) => {
       if (args.length !== 3) {
         console.error('Invalid argument to onFileLoaded', args);

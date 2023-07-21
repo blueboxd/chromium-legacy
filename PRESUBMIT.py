@@ -970,6 +970,8 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [
         # Needed to implement and test std::string_view interoperability.
         r'base/strings/string_piece.*',
+        # Needed to use re2::RE2 regular expression library.
+        r'third_party/blink/common/interest_group/ad_display_size_utils.cc',
         # Needed to use liburlpattern API.
         r'third_party/blink/renderer/core/url_pattern/.*',
         r'third_party/blink/renderer/modules/manifest/manifest_parser\.cc',
@@ -1596,6 +1598,16 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       True,
       []
     ),
+    BanRule(
+      r'/#include <filesystem>',
+      (
+        'libc++ <filesystem> is banned per the Google C++ styleguide.',
+      ),
+      True,
+      # This fuzzing framework is a standalone open source project and
+      # cannot rely on Chromium base.
+      (r'third_party/centipede'),
+    ),
 )
 
 _BANNED_MOJOM_PATTERNS : Sequence[BanRule] = (
@@ -1762,7 +1774,8 @@ _KNOWN_ROBOTS = set(
                     'lacros-version-skew-roller', 'skylab-test-cros-roller',
                     'infra-try-recipes-tester', 'lacros-tracking-roller',
                     'lacros-sdk-version-roller', 'chrome-automated-expectation',
-                    'chromium-automated-expectation', 'chrome-branch-day')
+                    'chromium-automated-expectation', 'chrome-branch-day',
+                    'chromium-autosharder')
   ) | set('%s@skia-public.iam.gserviceaccount.com' % s
           for s in ('chromium-autoroll', 'chromium-release-autoroll')
   ) | set('%s@skia-corp.google.com.iam.gserviceaccount.com' % s
@@ -6839,7 +6852,7 @@ def CheckNoJsInIos(input_api, output_api):
         return input_api.FilterSourceFile(
             affected_file,
             files_to_skip=input_api.DEFAULT_FILES_TO_SKIP +
-                          (r'^ios/third_party/*', r'^third_party/*'),
+                (r'^ios/third_party/*', r'^ios/tools/*', r'^third_party/*'),
             files_to_check=[r'^ios/.*\.js$', r'.*/ios/.*\.js$'])
 
     deleted_files = []

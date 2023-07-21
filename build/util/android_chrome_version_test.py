@@ -500,6 +500,8 @@ class _VersionGroupedTest(unittest.TestCase):
     arch_trichrome_32_version_code = output['TRICHROME_32_VERSION_CODE']
     arch_trichrome_32_64_version_code = output['TRICHROME_32_64_VERSION_CODE']
     arch_trichrome_64_32_version_code = output['TRICHROME_64_32_VERSION_CODE']
+    arch_trichrome_64_32_high_version_code = output[
+        'TRICHROME_64_32_HIGH_VERSION_CODE']
     arch_trichrome_64_version_code = output['TRICHROME_64_VERSION_CODE']
     arch_trichrome_auto_64_32_version_code = output[
         'TRICHROME_AUTO_64_32_VERSION_CODE']
@@ -513,6 +515,7 @@ class _VersionGroupedTest(unittest.TestCase):
     self.assertEqual(arch_trichrome_32_64_version_code, '575000031')
     self.assertEqual(arch_trichrome_version_code, '575000031')
     self.assertEqual(arch_trichrome_64_32_version_code, '575000032')
+    self.assertEqual(arch_trichrome_64_32_high_version_code, '575000033')
     self.assertEqual(arch_trichrome_64_version_code, '575000034')
     self.assertEqual(arch_trichrome_auto_64_32_version_code, '575000052')
 

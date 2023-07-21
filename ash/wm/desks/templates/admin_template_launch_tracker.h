@@ -12,8 +12,11 @@
 #include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_types.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace ash {
 
@@ -50,10 +53,10 @@ ASH_EXPORT void AdjustAdminTemplateWindowBounds(
     const std::vector<gfx::Rect>& existing_bounds,
     gfx::Rect& bounds);
 
-// Returns the number of `window_count` bounds for windows on the
-// `available_bounds` screen.
+// Returns `window_count` bounds for windows automatically laid to fit
+// `work_area_size`.
 ASH_EXPORT std::vector<gfx::Rect> GetInitialWindowLayout(
-    const gfx::Rect& work_area,
+    const gfx::Size& work_area_size,
     const int window_count);
 
 // This class is used to launch an admin template and track the windows that
@@ -62,10 +65,13 @@ class ASH_EXPORT AdminTemplateLaunchTracker {
  public:
   // Construct an admin template launch tracker. The passed `admin_template`
   // (which must not be null) will be updated as the user interacts with
-  // launched windows. Updates to the template are sent to `template_update_cb`.
+  // launched windows. Updates to the template are sent to
+  // `template_update_cb`. Updates are held (and merged) for `update_delay` so
+  // that rapid window changes do not result in a deluge of callback calls.
   AdminTemplateLaunchTracker(
       std::unique_ptr<DeskTemplate> admin_template,
-      base::RepeatingCallback<void(const DeskTemplate&)> template_update_cb);
+      base::RepeatingCallback<void(const DeskTemplate&)> template_update_cb,
+      base::TimeDelta update_delay);
 
   AdminTemplateLaunchTracker(const AdminTemplateLaunchTracker&) = delete;
   AdminTemplateLaunchTracker& operator=(const AdminTemplateLaunchTracker&) =
@@ -80,11 +86,17 @@ class ASH_EXPORT AdminTemplateLaunchTracker {
   void LaunchTemplate(SavedDeskDelegate* delegate, int64_t default_display_id);
 
  private:
+  // Called when an observer is created (either a desk or window observer).
   void OnObserverCreated(std::unique_ptr<base::CheckedObserver> observer);
 
+  // Called when an observer is done (the observee has been destroyed).
   void OnObserverDone(base::CheckedObserver* observer);
 
+  // Called when an observed window has changed.
   void OnUpdate(const AdminTemplateWindowUpdate& update);
+
+  // Called when it's time to fire off a delayed callback.
+  void OnTimer();
 
   // The template that will be updated based on received events. Changes are
   // eventually saved to the storage model.
@@ -96,6 +108,12 @@ class ASH_EXPORT AdminTemplateLaunchTracker {
   // Window observers launched by the tracker. They are tracked so that they can
   // be destroyed, if the launchtracker itself is destroyed.
   std::vector<std::unique_ptr<base::CheckedObserver>> window_observers_;
+
+  // Calls to the update callback are delayed by this much.
+  base::TimeDelta update_delay_;
+
+  // Timer used for callback delays.
+  base::OneShotTimer update_delay_timer_;
 
   base::WeakPtrFactory<AdminTemplateLaunchTracker> weak_ptr_factory_{this};
 };

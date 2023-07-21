@@ -29,6 +29,16 @@ found in the LICENSE file.
     white-space: nowrap;
   }
 
+  :host-context([theme='legacy']) #label,
+  :host-context([theme='legacy']) #link.link-label {
+    font-size: 12px;
+  }
+
+  :host-context([theme='refresh23']) #label,
+  :host-context([theme='refresh23']) #link.link-label {
+    font: var(--cros-annotation-1-font);
+  }
+
   :host(.card-tooltip) {
     background-color: var(--cros-bg-color-elevation-1);
     border-radius: 8px;

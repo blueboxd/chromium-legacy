@@ -87,3 +87,31 @@
   --cr-input-background-color:
       var(--color-side-panel-textfield-background-hover);
 }
+
+.sp-icon-buttons-row {
+  --cr-icon-button-icon-size: 16px;
+  --cr-icon-button-size: 24px;
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-auto-columns: var(--cr-icon-button-icon-size);
+  grid-auto-flow: column;
+  justify-items: center;
+}
+
+.sp-hr {
+  background: var(--google-grey-300);
+  border: none;
+  height: 1px;
+  width: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  .sp-hr {
+    background: var(--google-grey-700);
+  }
+}
+
+:host-context([chrome-refresh-2023]) .sp-hr {
+  background: var(--color-side-panel-divider);
+}

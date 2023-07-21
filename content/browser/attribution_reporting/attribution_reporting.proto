@@ -38,10 +38,11 @@ message AttributionCommonAggregatableMetadata {
 
   enum SourceRegistrationTimeConfig {
     INCLUDE = 0;
+    EXCLUDE = 1;
   }
 
   optional Coordinator coordinator = 1;
-  optional string attestation_token = 2;
+  optional string verification_token = 2;
   optional SourceRegistrationTimeConfig source_registration_time_config = 3;
 }
 

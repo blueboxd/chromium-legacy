@@ -6,17 +6,17 @@
 
 #import <memory>
 
-#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/main/browser_list.h"
-#import "ios/chrome/browser/main/browser_list_factory.h"
-#import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/sessions/fake_tab_restore_service.h"
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
+#import "ios/chrome/browser/shared/model/browser/browser_list.h"
+#import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
+#import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
+#import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest_mac.h"
@@ -128,6 +128,12 @@ TEST_F(BrowserUtilTest, TestMoveTabAcrossIncognitoBrowsers) {
   ASSERT_TRUE(other_incognito_browser_->GetWebStateList()->empty());
   ASSERT_TRUE(tab_restore_service_->entries().empty());
   NSString* tab_id = GetTabIDForWebStateAt(0, incognito_browser_.get());
+
+  BrowserAndIndex tab_info =
+      FindBrowserAndIndex(tab_id, browser_list_->AllIncognitoBrowsers());
+  ASSERT_EQ(tab_info.tab_index, 0);
+  ASSERT_EQ(tab_info.browser, incognito_browser_.get());
+
   MoveTabToBrowser(tab_id, other_incognito_browser_.get(),
                    /*destination_index=*/0);
   ASSERT_TRUE(tab_restore_service_->entries().empty());
@@ -142,6 +148,12 @@ TEST_F(BrowserUtilTest, TestMoveTabAcrossRegularBrowsers) {
   ASSERT_TRUE(other_browser_->GetWebStateList()->empty());
   ASSERT_TRUE(tab_restore_service_->entries().empty());
   NSString* tab_id = GetTabIDForWebStateAt(1, browser_.get());
+
+  BrowserAndIndex tab_info =
+      FindBrowserAndIndex(tab_id, browser_list_->AllRegularBrowsers());
+  ASSERT_EQ(tab_info.tab_index, 1);
+  ASSERT_EQ(tab_info.browser, browser_.get());
+
   MoveTabToBrowser(tab_id, other_browser_.get(), /*destination_index=*/0);
   ASSERT_TRUE(tab_restore_service_->entries().empty());
   EXPECT_EQ(2, browser_->GetWebStateList()->count());
@@ -150,11 +162,31 @@ TEST_F(BrowserUtilTest, TestMoveTabAcrossRegularBrowsers) {
   EXPECT_EQ(tab_id, GetTabIDForWebStateAt(0, other_browser_.get()));
 }
 
+// Tests `FindBrowserAndIndex:` with an invalid tab_id.
+TEST_F(BrowserUtilTest, TestFindBrowserAndIndexWithInvalidId) {
+  NSString* tab_id = @"invalid_id";
+
+  BrowserAndIndex tab_info =
+      FindBrowserAndIndex(tab_id, browser_list_->AllRegularBrowsers());
+  ASSERT_EQ(tab_info.tab_index, WebStateList::kInvalidIndex);
+  EXPECT_NE(tab_info.browser, browser_.get());
+
+  tab_info = FindBrowserAndIndex(tab_id, browser_list_->AllIncognitoBrowsers());
+  ASSERT_EQ(tab_info.tab_index, WebStateList::kInvalidIndex);
+  EXPECT_NE(tab_info.browser, incognito_browser_.get());
+}
+
 // Tests that a tab is reordered within the same browser.
 TEST_F(BrowserUtilTest, TestReorderTabWithinSameBrowser) {
   ASSERT_EQ(3, browser_->GetWebStateList()->count());
   ASSERT_TRUE(tab_restore_service_->entries().empty());
   NSString* tab_id = GetTabIDForWebStateAt(0, browser_.get());
+
+  BrowserAndIndex tab_info =
+      FindBrowserAndIndex(tab_id, browser_list_->AllRegularBrowsers());
+  ASSERT_EQ(tab_info.tab_index, 0);
+  ASSERT_EQ(tab_info.browser, browser_.get());
+
   MoveTabToBrowser(tab_id, browser_.get(), /*destination_index=*/2);
   ASSERT_TRUE(tab_restore_service_->entries().empty());
   EXPECT_EQ(3, browser_->GetWebStateList()->count());

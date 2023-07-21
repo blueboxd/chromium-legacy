@@ -206,7 +206,7 @@ Kun personer med din adgangssætning kan læse dine krypterede data. Adgangssæt
 <translation id="2362083820973145409">Logget ind som <ph name="USER_NAME" />. <ph name="USER_EMAIL" />. Åbner indstillinger.</translation>
 <translation id="236977714248711277">Websites kan ikke anvende cookies til at forbedre din browseroplevelse ved f.eks. at sørge for, at du forbliver logget ind, eller ved at huske varerne i din kurv.
 
-Websites kan ikke bruge cookies til at se din browseraktivitet på forskellige websites for f.eks. at personligt tilpasse annoncer.</translation>
+Websites kan ikke bruge cookies til at se din browseraktivitet på forskellige websites for f.eks. at tilpasse annoncer.</translation>
 <translation id="2375243552872247702">Få personligt tilpasset indhold</translation>
 <translation id="2381405137052800939">Grundlæggende</translation>
 <translation id="2386793615875593361">1 valgt</translation>
@@ -398,7 +398,7 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="3575234738189584619">Søg med Lens</translation>
 <translation id="3581564640715911333">Tilbyd at oversætte sider på andre sprog</translation>
 <translation id="3588820906588687999">Åbn billede på ny fane</translation>
-<translation id="3595252146048399851">Du kan altid vælge, hvad der skal synkroniseres, i <ph name="BEGIN_LINK" />indstillingerne<ph name="END_LINK" />. Google kan personligt tilpasse Søgning og andre tjenester baseret på din historik.</translation>
+<translation id="3595252146048399851">Du kan altid vælge, hvad der skal synkroniseres, i <ph name="BEGIN_LINK" />indstillingerne<ph name="END_LINK" />. Google kan tilpasse Søgning og andre tjenester baseret på din historik.</translation>
 <translation id="3603009562372709545">Kopiér linkets webadresse</translation>
 <translation id="3607167657931203000">AutoFyld-data</translation>
 <translation id="3608008480985212611">Log ind for at administrere dine præferencer.</translation>
@@ -407,6 +407,7 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="3638472932233958418">Forudindlæs websider</translation>
 <translation id="3661160521073045932">Der er en tilgængelig konfigurationsprofil</translation>
 <translation id="3670030362669914947">Nummer</translation>
+<translation id="3700134753671613714">Log ind for at se dine bogmærker på alle enheder.</translation>
 <translation id="3709582977625132201">Markér som ulæst</translation>
 <translation id="371230970611282515">Forudser og advarer dig om skadelige hændelser, før de opstår.</translation>
 <translation id="37207012422556617">Populære søgninger</translation>
@@ -546,7 +547,6 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="4642472735733036929">Prisovervågning er stoppet</translation>
 <translation id="4650125387981512669">Fortsæt som <ph name="FIRST_RUN_ACCOUNT_NAME" /></translation>
 <translation id="4652817563047461855">Sørg for, at dine adgangskoder er beskyttet, find ud af, om de er blevet kompromitteret, og få gode råd til, hvordan du beskytter dig selv online. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">Når du logger ind på din Google-konto, er denne funktion aktiveret.</translation>
 <translation id="4659667755519643272">Åbn Faneskift</translation>
 <translation id="46614316059270592">Gem adgangskode</translation>
 <translation id="4666531726415300315">Logget ind som <ph name="EMAIL" />.
@@ -588,7 +588,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="4844899002472726590">Se og rediger de emner, du er interesseret i</translation>
 <translation id="4848999860252535517">Vil du slette adgangskoden til <ph name="WEBSITE" />?</translation>
 <translation id="4854345657858711387">Angiv en adgangskode</translation>
-<translation id="4856498338299082007">På din Google-konto</translation>
 <translation id="4858786880085262208">Opgrader til HTTPS, når det er muligt. Sikre websites indlejrer muligvis indhold, der ikke er sikkert.</translation>
 <translation id="4860895144060829044">Ring op</translation>
 <translation id="4872323082491632254">Tjek adgangskoder</translation>
@@ -667,6 +666,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="543338862236136125">Rediger adgangskode</translation>
 <translation id="5433691172869980887">Brugernavnet er kopieret</translation>
 <translation id="5439599923922718668">Ofte besøgt</translation>
+<translation id="5439618055789623719">Logget ind som <ph name="USER_EMAIL" /></translation>
 <translation id="54401264925851789">Oplysninger om sidesikkerhed</translation>
 <translation id="5443952882982198570">Kreditkort</translation>
 <translation id="5444892875087332195">Bogmærker</translation>
@@ -853,7 +853,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="6464071786529933911">Åbn på ny inkognitofane</translation>
 <translation id="6464397691496239022">Websites kan bruge cookies til at forbedre din browseroplevelse ved f.eks. at sørge for, at du forbliver logget ind, eller ved at huske varerne i din kurv.
 
-Websites kan ikke bruge cookies til at se din browseraktivitet på forskellige websites for f.eks. at personligt tilpasse annoncer.</translation>
+Websites kan ikke bruge cookies til at se din browseraktivitet på forskellige websites for f.eks. at tilpasse annoncer.</translation>
 <translation id="6476253015009698798">Prisovervågning er ikke tilgængelig for denne side.</translation>
 <translation id="6476800141292307438">Siden oversættes til <ph name="LANGUAGE" />. Valgmulighederne findes nederst på skærmen.</translation>
 <translation id="648164694371393720">Godkendelsesfejl</translation>
@@ -894,7 +894,7 @@ Du bør bruge en unik adgangskode for hvert website.</translation>
 <translation id="6668619169535738264">Rediger bogmærke</translation>
 <translation id="6672241253012342409">Websites kan bruge cookies til at forbedre din browseroplevelse ved f.eks. at sørge for, at du forbliver logget ind, eller ved at huske varerne i din kurv.
 
-Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhistorik på forskellige websites for f.eks. at personligt tilpasse annoncer.</translation>
+Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhistorik på forskellige websites for f.eks. at tilpasse annoncer.</translation>
 <translation id="6672697278890207089">Angiv din adgangssætning</translation>
 <translation id="6674571176963658787">Angiv din adgangssætning for at starte synkroniseringen</translation>
 <translation id="667999046851023355">Dokument</translation>
@@ -990,7 +990,7 @@ Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhis
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> ulæste artikler.</translation>
 <translation id="7412027924265291969">Fortsæt</translation>
 <translation id="7425346204213733349">Ændringer af dine bogmærker, din historik, dine adgangskoder og andre indstillinger synkroniseres ikke længere til din Google-konto. Dine eksisterende data er dog stadig gemt på din Google-konto.</translation>
-<translation id="7431991332293347422">Bestem selv, hvordan din browserhistorik skal bruges til at personligt tilpasse søgeresultater m.m.</translation>
+<translation id="7431991332293347422">Bestem selv, hvordan din browserhistorik skal bruges til at tilpasse søgeresultater m.m.</translation>
 <translation id="7435356471928173109">Deaktiveret af din administrator</translation>
 <translation id="7438481509621345350">Du får nu vist historier fra <ph name="CHANNEL_NAME" />, når du åbner en ny fane.</translation>
 <translation id="7446583256109515732">Fanen er frigjort</translation>
@@ -1072,9 +1072,9 @@ Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhis
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="7966516440812255683">Websites kan bruge cookies til at forbedre din browseroplevelse ved f.eks. at sørge for, at du forbliver logget ind, eller ved at huske varerne i din kurv.
 
-Websites kan bruge cookies til at se din browseraktivitet på forskellige websites for f.eks. at personligt tilpasse annoncer.</translation>
+Websites kan bruge cookies til at se din browseraktivitet på forskellige websites for f.eks. at tilpasse annoncer.</translation>
 <translation id="7971521879845308059">Bloker pop op-vinduer</translation>
-<translation id="797413074872316787">Aktivér synkronisering for at synkronisere og personligt tilpasse på alle dine enheder.</translation>
+<translation id="797413074872316787">Aktivér synkronisering for at synkronisere og tilpasse på alle dine enheder.</translation>
 <translation id="7978018860671536736">3. Tryk på Autoudfyld adgangskoder</translation>
 <translation id="7982789257301363584">Netværk</translation>
 <translation id="7987685713885608670">For at beskytte adgangskoderne yderligere krypteres de på din enhed, inden de gemmes i Googles Adgangskodeadministrator.</translation>
@@ -1121,7 +1121,6 @@ Websites kan bruge cookies til at se din browseraktivitet på forskellige websit
 <translation id="8248969482078657578">Inaktive faner hjælper dig med at holde fokus</translation>
 <translation id="8261506727792406068">Slet</translation>
 <translation id="8264966119170358612">Nogle af dine gemte adgangskoder er blevet offentliggjort som følge af et brud på datasikkerheden uden for Google. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">Kun på denne enhed</translation>
 <translation id="826614135184049678">Du blev logget ud af din konto, <ph name="USER_NAME" />, som en del af nulstillingen af din iPad. Tryk på "Fortsæt" nedenfor for at logge ind igen.</translation>
 <translation id="8271720166617117963">Acceptér og log ind</translation>
 <translation id="8278938988428169257">Angiv et ord eller en sætning</translation>
@@ -1238,7 +1237,7 @@ Websites kan bruge cookies til at se din browseraktivitet på forskellige websit
 <translation id="9034759925968272072">Du logges ikke ud af din Google-konto. Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9037965129289936994">Vis oprindelig</translation>
 <translation id="9039373489628511875">Båndbredde</translation>
-<translation id="9043368763795653245">Aktivér synkronisering for at personligt tilpasse dit Discover-feed og Chrome.</translation>
+<translation id="9043368763795653245">Aktivér synkronisering for at tilpasse dit Discover-feed og Chrome.</translation>
 <translation id="9055772144595778347">Kan ikke logge ind</translation>
 <translation id="9055960261314198756">Forbedret beskyttelse er deaktiveret</translation>
 <translation id="9057972802061533987">Indholdet kan ikke følges. Der gik noget galt.</translation>
@@ -1247,7 +1246,7 @@ Websites kan bruge cookies til at se din browseraktivitet på forskellige websit
 <translation id="9068336935206019333">Åbn i inkognitotilstand i Chrome</translation>
 <translation id="9079935439869366234">Markér alle som ulæste</translation>
 <translation id="9081058212938299310">Vil du opdatere adgangskoden til <ph name="USERNAME" />?</translation>
-<translation id="9083838294503912307">Aktivér synkronisering for at synkronisere og personligt tilpasse på alle dine enheder.</translation>
+<translation id="9083838294503912307">Aktivér synkronisering for at synkronisere og tilpasse på alle dine enheder.</translation>
 <translation id="9093271241977565440">Tryk på søgeikonet øverst på skærmen</translation>
 <translation id="9094033019050270033">Opdater adgangskoden</translation>
 <translation id="9097506547406246598">"Følg" kan ikke fortrydes. Der gik noget galt.</translation>
@@ -1255,7 +1254,7 @@ Websites kan bruge cookies til at se din browseraktivitet på forskellige websit
 <translation id="9100610230175265781">Adgangssætning kræves</translation>
 <translation id="9107664647686727385">Tjekker, om der er kompromitterede adgangskoder</translation>
 <translation id="9120217828624527905">Skift til oversættelse af hele siden</translation>
-<translation id="9124387962554796433">Google kan bruge din historik til at personligt tilpasse Søgning og andre Google-tjenester.</translation>
+<translation id="9124387962554796433">Google kan bruge din historik til at tilpasse Søgning og andre Google-tjenester.</translation>
 <translation id="9137526406337347448">Google-tjenester</translation>
 <translation id="9148126808321036104">Log ind igen</translation>
 <translation id="9157836665414082580">Skjul dialogbokse</translation>

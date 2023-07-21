@@ -442,6 +442,10 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.GridTemplateRows() == b.GridTemplateRows();
     case CSSPropertyID::kHeight:
       return a.Height() == b.Height();
+    case CSSPropertyID::kPopoverShowDelay:
+      return a.PopoverShowDelay() == b.PopoverShowDelay();
+    case CSSPropertyID::kPopoverHideDelay:
+      return a.PopoverHideDelay() == b.PopoverHideDelay();
     case CSSPropertyID::kHyphenateCharacter:
       return a.HyphenationString() == b.HyphenationString();
     case CSSPropertyID::kHyphenateLimitChars:
@@ -494,6 +498,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.MarkerMidResource() == b.MarkerMidResource();
     case CSSPropertyID::kMarkerStart:
       return a.MarkerStartResource() == b.MarkerStartResource();
+    case CSSPropertyID::kMask:
+      return base::ValuesEquivalent(a.MaskerResource(), b.MaskerResource());
     case CSSPropertyID::kMaskType:
       return a.MaskType() == b.MaskType();
     case CSSPropertyID::kMathShift:
@@ -1166,7 +1172,6 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kListStyle:
     case CSSPropertyID::kMargin:
     case CSSPropertyID::kMarker:
-    case CSSPropertyID::kMask:
     case CSSPropertyID::kOffset:
     case CSSPropertyID::kOutline:
     case CSSPropertyID::kOverflow:

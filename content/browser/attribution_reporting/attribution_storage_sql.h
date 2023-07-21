@@ -57,9 +57,6 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   static_assert(kCompatibleVersionNumber <= kCurrentVersionNumber);
   static_assert(kDeprecatedVersionNumber < kCompatibleVersionNumber);
 
-  [[nodiscard]] static bool DeleteStorageForTesting(
-      const base::FilePath& user_data_directory);
-
   // If `user_data_directory` is empty, the DB is created in memory and no data
   // is persisted to disk.
   AttributionStorageSql(const base::FilePath& user_data_directory,
@@ -327,7 +324,7 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // Generates null aggregatable reports for the given trigger, assigns
-  // attestation data to null aggregatable reports and the real aggregatable
+  // verification data to null aggregatable reports and the real aggregatable
   // report if created, and stores all those reports.
   [[nodiscard]] bool GenerateNullAggregatableReportsAndStoreReports(
       const AttributionTrigger&,
@@ -336,9 +333,9 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       absl::optional<base::Time>& min_null_aggregatable_report_time)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
-  // Randomly assigns trigger attestation data to the given reports.
-  void AssignTriggerAttestationData(std::vector<AttributionReport>&,
-                                    const AttributionTrigger&)
+  // Randomly assigns trigger verification data to the given reports.
+  void AssignTriggerVerificationData(std::vector<AttributionReport>&,
+                                     const AttributionTrigger&)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // If set, database errors will not crash the client when run in debug mode.

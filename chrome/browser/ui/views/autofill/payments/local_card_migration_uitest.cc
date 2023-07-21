@@ -152,7 +152,7 @@ class PersonalDataLoadedObserverMock : public PersonalDataManagerObserver {
   PersonalDataLoadedObserverMock() = default;
   ~PersonalDataLoadedObserverMock() override = default;
 
-  MOCK_METHOD0(OnPersonalDataChanged, void());
+  MOCK_METHOD(void, OnPersonalDataChanged, (), (override));
 };
 
 class LocalCardMigrationBrowserTest
@@ -801,10 +801,10 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   // Cards will be added to database in a reversed order.
   EXPECT_EQ(static_cast<MigratableCardView*>(card_list_view->children()[0])
                 ->GetCardIdentifierString(),
-            second_card.CardIdentifierStringForAutofillDisplay());
+            second_card.CardNameAndLastFourDigits());
   EXPECT_EQ(static_cast<MigratableCardView*>(card_list_view->children()[1])
                 ->GetCardIdentifierString(),
-            first_card.CardIdentifierStringForAutofillDisplay());
+            first_card.CardNameAndLastFourDigits());
 }
 
 // Ensures that rejecting the main migration dialog closes the dialog.

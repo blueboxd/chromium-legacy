@@ -4237,6 +4237,42 @@ TEST_F(StyleEngineTest, NoFastRejectForMultipleIs) {
   EXPECT_EQ(0u, stats->rules_fast_rejected);
 }
 
+TEST_F(StyleEngineTest, ScrollbarPartPseudoDoesNotMatchElement) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      .parent ::-webkit-scrollbar-button { background-color: red; }
+      .parent ::-webkit-scrollbar-corner { background-color: red; }
+      .parent ::-webkit-scrollbar-thumb { background-color: red; }
+      .parent ::-webkit-scrollbar-track { background-color: red; }
+      .parent ::-webkit-scrollbar-track-piece { background-color: red; }
+    </style>
+    <div class="parent">
+      <div class="child"></div>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhases();
+
+  StyleEngine& engine = GetStyleEngine();
+  // Even if the Stats() were already enabled, the following resets it to 0.
+  engine.SetStatsEnabled(true);
+
+  StyleResolverStats* stats = engine.Stats();
+  ASSERT_TRUE(stats);
+  EXPECT_EQ(0u, stats->rules_matched);
+
+  Element* div = GetDocument().QuerySelector(".child");
+  ASSERT_TRUE(div);
+  div->SetInlineStyleProperty(CSSPropertyID::kColor, "green");
+
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  GetStyleEngine().RecalcStyle();
+
+  // We have one UA rule for <div> that matches.
+  // None of the ::-webkit-scrollbar-* rules should match.
+  EXPECT_EQ(1u, stats->rules_matched);
+}
+
 TEST_F(StyleEngineTest, AudioUAStyleNameSpace) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <audio id="html-audio"></audio>
@@ -4333,6 +4369,30 @@ TEST_F(StyleEngineTest, AtContainerUseCount) {
   )HTML");
   UpdateAllLifecyclePhases();
   EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSAtRuleContainer));
+}
+
+TEST_F(StyleEngineTest, StyleQueryUseCount) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      @container (width = 200px) {
+        body { background: red; }
+      }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSAtRuleContainer));
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kCSSStyleContainerQuery));
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      @container ((width > 0px) and style(--foo: bar)) {
+        body { background: lime; }
+      }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSAtRuleContainer));
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSStyleContainerQuery));
 }
 
 TEST_F(StyleEngineTest, NestingUseCount) {

@@ -78,8 +78,7 @@ os = struct(
     MAC_10_15 = os_enum(os_category.MAC, "Mac-10.15"),
     MAC_12 = os_enum(os_category.MAC, "Mac-12"),
     MAC_13 = os_enum(os_category.MAC, "Mac-13"),
-    # TODO(crbug.com/1448262) Remove Mac 12 once builders migrate to Mac 13
-    MAC_DEFAULT = os_enum(os_category.MAC, "Mac-12|Mac-13"),
+    MAC_DEFAULT = os_enum(os_category.MAC, "Mac-12"),
     MAC_ANY = os_enum(os_category.MAC, "Mac"),
     WINDOWS_10 = os_enum(os_category.WINDOWS, "Windows-10"),
     WINDOWS_11 = os_enum(os_category.WINDOWS, "Windows-11"),
@@ -140,13 +139,13 @@ reclient = struct(
         TEST_TRUSTED = "rbe-chromium-trusted-test",
         DEFAULT_UNTRUSTED = "rbe-chromium-untrusted",
         TEST_UNTRUSTED = "rbe-chromium-untrusted-test",
+        DEVELOPER = "rbe-chrome-untrusted",
     ),
     jobs = struct(
         DEFAULT = 250,
         LOW_JOBS_FOR_CI = 80,
         HIGH_JOBS_FOR_CI = 500,
         LOW_JOBS_FOR_CQ = 150,
-        MID_JOBS_FOR_CQ = 225,
         HIGH_JOBS_FOR_CQ = 300,
     ),
 )

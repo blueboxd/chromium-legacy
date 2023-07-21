@@ -33,12 +33,14 @@ bool LayoutNGView::IsFragmentationContextRoot() const {
   return ShouldUsePrintingLayout();
 }
 
-void LayoutNGView::UpdateBlockLayout(bool relayout_children) {
-  relayout_children |=
-      !ShouldUsePrintingLayout() &&
-      (!GetFrameView() || LogicalWidth() != ViewLogicalWidthForBoxSizing() ||
-       LogicalHeight() != ViewLogicalHeightForBoxSizing());
-  if (relayout_children && GetDocument().SvgExtensions()) {
+void LayoutNGView::UpdateBlockLayout() {
+  is_resizing_initial_containing_block_ =
+      LogicalWidth() != ViewLogicalWidthForBoxSizing() ||
+      LogicalHeight() != ViewLogicalHeightForBoxSizing();
+  bool invalidate_svg_roots =
+      GetDocument().SvgExtensions() && !ShouldUsePrintingLayout() &&
+      (!GetFrameView() || is_resizing_initial_containing_block_);
+  if (invalidate_svg_roots) {
     GetDocument()
         .AccessSVGExtensions()
         .InvalidateSVGRootsWithRelativeLengthDescendents();
@@ -53,6 +55,7 @@ void LayoutNGView::UpdateBlockLayout(bool relayout_children) {
   builder.SetIsFixedBlockSize(true);
 
   NGBlockNode(this).Layout(builder.ToConstraintSpace());
+  is_resizing_initial_containing_block_ = false;
 }
 
 MinMaxSizes LayoutNGView::ComputeIntrinsicLogicalWidths() const {

@@ -7,8 +7,8 @@
 
 #include "ash/constants/quick_settings_catalogs.h"
 #include "ash/style/icon_button.h"
+#include "ash/system/unified/quick_settings_slider.h"
 #include "base/memory/raw_ptr.h"
-#include "quick_settings_slider.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/controls/image_view.h"
@@ -74,7 +74,7 @@ class UnifiedSliderView : public views::View {
   IconButton* button() { return button_; }
   views::Slider* slider() { return slider_; }
   views::Label* toast_label() { return toast_label_; }
-  views::ImageView* slider_icon() { return slider_icon_; }
+  IconButton* slider_button() { return slider_button_; }
 
   // Sets a slider value. If `by_user` is false, accessibility events will not
   // be triggered.
@@ -95,7 +95,7 @@ class UnifiedSliderView : public views::View {
   raw_ptr<IconButton, ExperimentalAsh> button_ = nullptr;
   raw_ptr<views::Slider, ExperimentalAsh> slider_ = nullptr;
   raw_ptr<views::Label, ExperimentalAsh> toast_label_ = nullptr;
-  raw_ptr<views::ImageView, ExperimentalAsh> slider_icon_ = nullptr;
+  raw_ptr<IconButton, ExperimentalAsh> slider_button_ = nullptr;
   raw_ptr<views::View, ExperimentalAsh> container_ = nullptr;
 };
 

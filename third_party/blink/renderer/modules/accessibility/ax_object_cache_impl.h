@@ -440,7 +440,6 @@ class MODULES_EXPORT AXObjectCacheImpl
   static bool IsRelevantPseudoElement(const Node& node);
   static bool IsRelevantPseudoElementDescendant(
       const LayoutObject& layout_object);
-  static bool IsRelevantSlotElement(const HTMLSlotElement& slot);
 
   bool HasBeenDisposed() { return has_been_disposed_; }
 
@@ -687,9 +686,8 @@ class MODULES_EXPORT AXObjectCacheImpl
   HeapHashMap<Member<AccessibleNode>, AXID> accessible_node_mapping_;
   HeapHashMap<Member<const LayoutObject>, AXID> layout_object_mapping_;
   HeapHashMap<Member<const Node>, AXID> node_object_mapping_;
-  // NGAbstractInlineTextBox are not on the Oilpan heap so we do not use
-  // HeapHashMap for those mappings.
-  HashMap<NGAbstractInlineTextBox*, AXID> inline_text_box_object_mapping_;
+  HeapHashMap<Member<NGAbstractInlineTextBox>, AXID>
+      inline_text_box_object_mapping_;
   int modification_count_;
 
   // Used for a mock AXObject representing the message displayed in the

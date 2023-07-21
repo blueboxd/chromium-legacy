@@ -47,7 +47,6 @@ import './nearby_share_page/nearby_share_high_visibility_page.js';
 import './nearby_share_page/nearby_share_receive_dialog.js';
 import './nearby_share_page/nearby_share_subpage.js';
 import './os_files_page/google_drive_subpage.js';
-import './personalization_page/personalization_page.js';
 import './os_apps_page/android_apps_subpage.js';
 import './os_apps_page/app_notifications_page/app_notifications_subpage.js';
 import './os_apps_page/app_management_page/app_detail_view.js';
@@ -98,17 +97,18 @@ export * as nearbyShareMojom from '/shared/nearby_share.mojom-webui.js';
 export {getNearbyShareSettings, observeNearbyShareSettings, setNearbyShareSettingsForTesting} from '/shared/nearby_share_settings.js';
 export {NearbySettings, NearbyShareSettingsMixin} from '/shared/nearby_share_settings_mixin.js';
 export {SettingsDropdownMenuElement} from '/shared/settings/controls/settings_dropdown_menu.js';
+export {SettingsSliderElement} from '/shared/settings/controls/settings_slider.js';
+export {SettingsToggleButtonElement} from '/shared/settings/controls/settings_toggle_button.js';
 export {LifetimeBrowserProxyImpl} from '/shared/settings/lifetime_browser_proxy.js';
 export {ProfileInfoBrowserProxyImpl} from '/shared/settings/people_page/profile_info_browser_proxy.js';
 export {PageStatus, StatusAction, StoredAccount, SyncBrowserProxy, SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '/shared/settings/people_page/sync_browser_proxy.js';
 export {PrivacyPageBrowserProxyImpl, SecureDnsMode, SecureDnsUiManagementMode} from '/shared/settings/privacy_page/privacy_page_browser_proxy.js';
+export {LocalizedLinkElement} from 'chrome://resources/cr_components/localized_link/localized_link.js';
 export {SettingsPrefsElement} from 'chrome://resources/cr_components/settings_prefs/prefs.js';
 export {CrSettingsPrefs} from 'chrome://resources/cr_components/settings_prefs/prefs_types.js';
 export {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 export {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 export {OpenWindowProxyImpl} from 'chrome://resources/js/open_window_proxy.js';
-export {SettingsSliderElement} from '../controls/settings_slider.js';
-export {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
 export {setCrosAudioConfigForTesting} from './device_page/cros_audio_config.js';
 export {DevicePageBrowserProxy, DevicePageBrowserProxyImpl, IdleBehavior, LidClosedBehavior, NoteAppInfo, NoteAppLockScreenSupport, setDisplayApiForTesting, StorageSpaceState} from './device_page/device_page_browser_proxy.js';
 export * as fakeCrosAudioConfig from './device_page/fake_cros_audio_config.js';
@@ -156,8 +156,8 @@ export {OsSettingsA11yPageElement} from './os_a11y_page/os_a11y_page.js';
 export {OsA11yPageBrowserProxy, OsA11yPageBrowserProxyImpl} from './os_a11y_page/os_a11y_page_browser_proxy.js';
 export {SelectToSpeakSubpageBrowserProxy, SelectToSpeakSubpageBrowserProxyImpl} from './os_a11y_page/select_to_speak_subpage_browser_proxy.js';
 export {SwitchAccessSubpageBrowserProxy, SwitchAccessSubpageBrowserProxyImpl} from './os_a11y_page/switch_access_subpage_browser_proxy.js';
-export {TextToSpeechPageBrowserProxy, TextToSpeechPageBrowserProxyImpl} from './os_a11y_page/text_to_speech_page_browser_proxy.js';
-export {TtsSubpageBrowserProxy, TtsSubpageBrowserProxyImpl} from './os_a11y_page/tts_subpage_browser_proxy.js';
+export {TextToSpeechSubpageBrowserProxy, TextToSpeechSubpageBrowserProxyImpl} from './os_a11y_page/text_to_speech_subpage_browser_proxy.js';
+export {TtsVoiceSubpageBrowserProxy, TtsVoiceSubpageBrowserProxyImpl} from './os_a11y_page/tts_voice_subpage_browser_proxy.js';
 export {AboutPageBrowserProxyImpl, BrowserChannel, UpdateStatus} from './os_about_page/about_page_browser_proxy.js';
 export {DeviceNameBrowserProxyImpl} from './os_about_page/device_name_browser_proxy.js';
 export {DeviceNameState, SetDeviceNameResult} from './os_about_page/device_name_util.js';
@@ -173,15 +173,18 @@ export {OsBluetoothDevicesSubpageBrowserProxy, OsBluetoothDevicesSubpageBrowserP
 export {FastPairSavedDevice, FastPairSavedDevicesOptInStatus} from './os_bluetooth_page/settings_fast_pair_constants.js';
 export {GoogleDriveBrowserProxy, GoogleDrivePageCallbackRouter, GoogleDrivePageHandlerRemote, GoogleDrivePageRemote, Stage} from './os_files_page/google_drive_browser_proxy.js';
 export {ConfirmationDialogType, SettingsGoogleDriveSubpageElement} from './os_files_page/google_drive_subpage.js';
-export {osPageVisibility} from './os_page_visibility.js';
+export {osPageAvailability} from './os_page_availability.js';
 export {MetricsConsentBrowserProxy, MetricsConsentBrowserProxyImpl, MetricsConsentState} from './os_privacy_page/metrics_consent_browser_proxy.js';
+export {OsSettingsPrivacyPageElement} from './os_privacy_page/os_privacy_page.js';
 export {DataAccessPolicyState, PeripheralDataAccessBrowserProxy, PeripheralDataAccessBrowserProxyImpl} from './os_privacy_page/peripheral_data_access_browser_proxy.js';
 export {OsResetBrowserProxyImpl} from './os_reset_page/os_reset_browser_proxy.js';
+export {OsSettingsSearchPageElement} from './os_search_page/os_search_page.js';
 export {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl, SearchEnginesInfo} from './os_search_page/search_engines_browser_proxy.js';
 export {OsSettingsMainElement} from './os_settings_main/os_settings_main.js';
+export {OsSettingsMenuElement} from './os_settings_menu/os_settings_menu.js';
 export {OsSettingsPageElement} from './os_settings_page/os_settings_page.js';
 export {OsSettingsSectionElement} from './os_settings_page/os_settings_section.js';
-export {routes} from './os_settings_routes.js';
+export {OsSettingsRoutes, routes} from './os_settings_routes.js';
 export {OsSettingsSearchBoxElement} from './os_settings_search_box/os_settings_search_box.js';
 export {OsSettingsSearchBoxBrowserProxyImpl} from './os_settings_search_box/os_settings_search_box_browser_proxy.js';
 export {OsSettingsHatsBrowserProxy, OsSettingsHatsBrowserProxyImpl} from './os_settings_ui/os_settings_hats_browser_proxy.js';
@@ -193,6 +196,7 @@ export {PersonalizationHubBrowserProxy, PersonalizationHubBrowserProxyImpl} from
 export {Route, Router} from './router.js';
 export {getPersonalizationSearchHandler, setPersonalizationSearchHandlerForTesting} from './search/personalization_search_handler.js';
 export {getSettingsSearchHandler, setSettingsSearchHandlerForTesting} from './search/settings_search_handler.js';
+export {SettingsSchedulerSliderElement} from './settings_scheduler_slider/settings_scheduler_slider.js';
 
 // TODO(b/257329722) After the Jelly experiment is launched, add the CSS link
 // element directly to the HTML.
@@ -203,6 +207,11 @@ if (jellyEnabled) {
   link.href = 'chrome://theme/colors.css?sets=legacy,sys';
   document.head.appendChild(link);
   document.body.classList.add('jelly-enabled');
+
+  const fontLink = document.createElement('link');
+  fontLink.rel = 'stylesheet';
+  fontLink.href = 'chrome://theme/typography.css';
+  document.head.appendChild(fontLink);
 }
 
 window.addEventListener('load', () => {

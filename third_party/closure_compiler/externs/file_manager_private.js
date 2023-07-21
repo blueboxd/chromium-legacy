@@ -285,6 +285,7 @@ chrome.fileManagerPrivate.EntryPropertyName = {
   IS_ARBITRARY_SYNC_FOLDER: 'isArbitrarySyncFolder',
   SYNC_STATUS: 'syncStatus',
   PROGRESS: 'progress',
+  SHORTCUT: 'shortcut',
 };
 
 /**
@@ -351,6 +352,7 @@ chrome.fileManagerPrivate.SharesheetLaunchSource = {
 chrome.fileManagerPrivate.IOTaskState = {
   QUEUED: 'queued',
   SCANNING: 'scanning',
+  WARNING: 'warning',
   IN_PROGRESS: 'in_progress',
   PAUSED: 'paused',
   SUCCESS: 'success',
@@ -372,6 +374,15 @@ chrome.fileManagerPrivate.IOTaskType = {
   RESTORE_TO_DESTINATION: 'restore_to_destination',
   TRASH: 'trash',
   ZIP: 'zip',
+};
+
+/**
+ * @enum {string}
+ */
+chrome.fileManagerPrivate.SecurityErrorType = {
+  DLP: 'dlp',
+  ENTERPRISE_CONNECTORS: 'enterprise_connectors',
+  DLP_WARNING_TIMEOUT: 'dlp_warning_timeout',
 };
 
 /**
@@ -514,7 +525,8 @@ chrome.fileManagerPrivate.ResultingTasks;
  *   isExternalMedia: (boolean|undefined),
  *   isArbitrarySyncFolder: (boolean|undefined),
  *   syncStatus: (!chrome.fileManagerPrivate.SyncStatus|undefined),
- *   progress: (number|undefined)
+ *   progress: (number|undefined),
+ *   shortcut: (boolean|undefined)
  * }}
  */
 chrome.fileManagerPrivate.EntryProperties;
@@ -873,6 +885,7 @@ chrome.fileManagerPrivate.ResumeParams;
  * @typedef {{
  *   type: !chrome.fileManagerPrivate.IOTaskType,
  *   state: !chrome.fileManagerPrivate.IOTaskState,
+ *   securityError: !chrome.fileManagerPrivate.SecurityErrorType,
  *   sourceName: string,
  *   numRemainingItems: number,
  *   itemCount: number,
@@ -1733,6 +1746,12 @@ chrome.fileManagerPrivate.parseTrashInfoFiles = function(entries, callback) {};
  * @param {function(!chrome.fileManagerPrivate.BulkPinProgress): void} callback
  */
 chrome.fileManagerPrivate.getBulkPinProgress = function(callback) {};
+
+/**
+ * Starts calculating the space required to pin all the items in a users My
+ * drive.
+ */
+chrome.fileManagerPrivate.calculateBulkPinRequiredSpace = function() {};
 
 /**
  * @type {!ChromeEvent}

@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">DNSର ସମାଧାନ କରାଯାଇପାରିବ ନାହିଁ</translation>
 <translation id="1018656279737460067">ବାତିଲ୍‌ କରାଗଲା</translation>
 <translation id="1022433422498218992">ସାଧାରଣ ନିୟନ୍ତ୍ରଣଗୁଡ଼ିକ</translation>
-<translation id="1022628058306505708">ଆର୍ଥ ଫ୍ଲୋ</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" />ଟି ଥ୍ରେଡ୍, <ph name="CPU_MAX_CLOCK_SPEED" />GHz)</translation>
 <translation id="1047773237499189053">ନୂଆ ଫିଚର୍ ଉପଲବ୍ଧ ଅଛି, ଅଧିକ ଜାଣିବାକୁ ଅପ୍ ତୀର କୀ ବ୍ୟବହାର କରନ୍ତୁ।</translation>
 <translation id="1059913517121127803">ସ୍କାନିଂ ଆରମ୍ଭ କରାଯାଇପାରିଲା ନାହିଁ</translation>
@@ -235,7 +234,6 @@
 <translation id="2902312830803030883">ଅଧିକ କାର୍ଯ୍ୟ</translation>
 <translation id="2926057806159140518">ଆପଣଙ୍କ ଉପଯୋଗକର୍ତ୍ତା ନାମ ଏବଂ ପାସୱାର୍ଡ ଲେଖନ୍ତୁ କିମ୍ବା ଆପଣଙ୍କର QR କୋଡ ସ୍କାନ କରନ୍ତୁ</translation>
 <translation id="2940811910881150316">ଡିଭାଇସକୁ ଟେଷ୍ଟ କରାଯାଇପାରିବ ନାହିଁ। ଟେଷ୍ଟ କରିବକୁ ଲିଡ ପୁଣି ଖୋଲନ୍ତୁ।</translation>
-<translation id="2981143481017883351">ଏକ୍ସକ୍ଲୁସିଭ Chromebook ଆସେଟ ବର୍ତ୍ତମାନ ଉପଲବ୍ଧ ଅଛି</translation>
 <translation id="3008341117444806826">ରିଫ୍ରେଶ୍ କରନ୍ତୁ</translation>
 <translation id="3009958530611748826">ଏଥିରେ ସେଭ୍ କରିବାକୁ ଏକ ଫୋଲ୍ଡର୍ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="3017079585324758401">ପୃଷ୍ଠପଟ</translation>
@@ -280,7 +278,6 @@
 <translation id="3360306038446926262">Windows</translation>
 <translation id="3368922792935385530">ସଂଯୁକ୍ତ ହୋଇଛି</translation>
 <translation id="3369013195428705271">ଆପଣ ସମସ୍ତ ପ୍ରିଣ୍ଟ ଇତିହାସ ଖାଲି କରିବାକୁ ଚାହୁଁଥିବା ନିଶ୍ଚିତ କି? ଆପଣଙ୍କ ଚାଲୁଥିବା ପ୍ରିଣ୍ଟ କାର୍ଯ୍ୟଗୁଡ଼ିକ ଖାଲି ହେବ ନାହିଁ।</translation>
-<translation id="3386675685417744672">Chromebook ଏକ୍ସକ୍ଲୁସିଭ</translation>
 <translation id="3404249063913988450">ସ୍କ୍ରିନ୍ ସେଭର୍ ସକ୍ଷମ କରନ୍ତୁ</translation>
 <translation id="3413935475507503304">ଅପଡେଟ କରିବାକୁ ଆଗକୁ ବଢ଼ିବା ପାଇଁ, "ପରବର୍ତ୍ତୀ"କୁ କ୍ଲିକ କରନ୍ତୁ।</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
@@ -295,6 +292,7 @@
 <translation id="3484914941826596830">ଫାର୍ମୱେରକୁ ଅପଡେଟ କରାଯାଉଥିବା ସମୟରେ ଏହି ଏକ୍ସଟର୍ନଲ ଡିଭାଇସକୁ ଅନପ୍ଲଗ କରନ୍ତୁ ନାହିଁ କିମ୍ବା ଆପଣଙ୍କ କମ୍ପ୍ୟୁଟରକୁ ବନ୍ଦ କରନ୍ତୁ ନାହିଁ। ଆପଣ ଏହି ୱିଣ୍ଡୋକୁ ଛୋଟ କରିପାରିବେ। ଏହି ଅପଡେଟ ପାଇଁ କିଛି ସମୟ ଲାଗିପାରେ ଏବଂ ଏହି ସମୟରେ ଆପଣଙ୍କ ଏକ୍ସଟର୍ନଲ ଡିଭାଇସ କାମ କରିନପାରେ।</translation>
 <translation id="3486220673238053218">ସଂଜ୍ଞା</translation>
 <translation id="3488065109653206955">ଆଶିଂକ ଭାବେ ସକ୍ରିୟ କରାଯାଇଛି</translation>
+<translation id="3502426834823382181">ସମସ୍ତ ଆପ୍ ଦେଖନ୍ତୁ</translation>
 <translation id="3510890413042482857"><ph name="BEGIN_LINK1" />ପରଫରମାନ୍ସ ଟ୍ରେସ ତାରିଖ<ph name="END_LINK1" /> ପଠାନ୍ତୁ</translation>
 <translation id="3517001332549868749">ChromeOS ଅପଡେଟ</translation>
 <translation id="3527036260304016759">ବିଫଳ ହୋଇଛି - ଅଜଣା ତ୍ରୁଟି</translation>
@@ -358,7 +356,6 @@
 <translation id="404928562651467259">ଚେତାବନୀ</translation>
 <translation id="4054683689023980771">ଇମେଜ ଡାଉନଲୋଡ ହେଉଛି</translation>
 <translation id="4060260348856573701">ନୂଆ APN</translation>
-<translation id="4079743696465895866">Chromebookର ଏକ୍ସକ୍ଲୁସିଭ କଳାକୃତି ଚୟନ କରନ୍ତୁ</translation>
 <translation id="4093865285251893588">ପ୍ରୋଫାଇଲ୍ ଛବି</translation>
 <translation id="409427325554347132">ଟେଷ୍ଟ ବିବରଣୀ ସେଭ୍ କରନ୍ତୁ</translation>
 <translation id="4095829376260267438">WPA2WPA3</translation>
@@ -625,7 +622,6 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">ବ୍ୟବହାର ଯୋଗୁଁ ବ୍ୟାଟେରୀର କ୍ଷମତା ହ୍ରାସ ପାଏ</translation>
 <translation id="6191293864534840972">ତ୍ରୁଟିପୂର୍ଣ୍ଣ ନେମ୍ ସର୍ଭର୍</translation>
-<translation id="6205145102504628069">କ୍ଲାଉଡ ଫ୍ଲୋ</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223066887782788441">ପୂର୍ଣ୍ଣସ୍କ୍ରିନରୁ ବାହାରି ଯାଆନ୍ତୁ</translation>
 <translation id="6223752125779001553">କୌଣସି ସ୍କାନର୍ ଉପଲବ୍ଧ ନାହିଁ</translation>
@@ -636,6 +632,7 @@
 <translation id="6278428485366576908">ଥିମ୍</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">ଗାଢ଼ା ଥିମ୍ ଚାଲୁ କରନ୍ତୁ</translation>
+<translation id="6285899124799306373">ଲଞ୍ଚର ଖୋଲନ୍ତୁ</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> ଟେଷ୍ଟକୁ ବାତିଲ୍ କରାଯାଇଛି</translation>
 <translation id="631063167932043783">ଆପ ଏକ୍ସପ୍ଲୋର କରନ୍ତୁ</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" />ରେ ଫାର୍ମୱେର ଅପଡେଟ କରନ୍ତୁ</translation>
@@ -651,6 +648,7 @@
 <translation id="6382182670717268353">ସ୍କ୍ରିନ ସେଭର ପ୍ରିଭ୍ୟୁ</translation>
 <translation id="6388847657025262518">ସ୍କାନରର ଡକ୍ୟୁମେଣ୍ଟ ଫିଡର୍ ଜାମ୍ ହୋଇଯାଇଛି। ଫିଡରକୁ ଯାଞ୍ଚ କରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="6394634179843537518">ଫାଇଲ ଯୋଗ କରନ୍ତୁ</translation>
+<translation id="6401427872449207797">ବ୍ରାଉଜର ସର୍ଚ୍ଚ</translation>
 <translation id="6410257289063177456">ଛବି ଫାଇଲ୍‌ଗୁଡ଼ିକ</translation>
 <translation id="641081527798843608">ବିଷୟ ମେଳ</translation>
 <translation id="6412715219990689313">ବିଲ୍ଟ-ଇନ କୀବୋର୍ଡ</translation>
@@ -666,7 +664,6 @@
 <translation id="6494974875566443634">କଷ୍ଟମାଇଜେସନ୍</translation>
 <translation id="6500818810472529210">Google Searchରେ ଫଳାଫଳ ଦେଖନ୍ତୁ</translation>
 <translation id="650266656685499220">ଆଲବମଗୁଡ଼ିକ ତିଆରି କରିବାକୁ, Google Photosକୁ ଯାଆନ୍ତୁ</translation>
-<translation id="6505750420152840539">ଡନ ଟୁ ଡାର୍କ</translation>
 <translation id="6516990319416533844">ବ୍ୟାଟେରୀ ଚାର୍ଜିଂ ରେଟ୍ ପରୀକ୍ଷା କରିବା ପାଇଁ ଆପଣଙ୍କ ବ୍ୟାଟେରୀକୁ ଅଳ୍ପ ସମୟ ପାଇଁ ଖାଲି ହେବାକୁ ଦିଅନ୍ତୁ</translation>
 <translation id="6517239166834772319">ଏକ୍ସପ୍ଲୋର୍</translation>
 <translation id="6526200165918397681">ୱାଲପେପର ମେଳ କରନ୍ତୁ</translation>
@@ -875,6 +872,7 @@
 <translation id="8312330582793120272">ମିଡିଆ ପ୍ଲେ କରନ୍ତୁ</translation>
 <translation id="8318753676953949627">କୌଣସି ଇମେଜ୍ ନାହିଁ</translation>
 <translation id="8329018942023753850">କାଲକୁଲେଟର ଆପ</translation>
+<translation id="8335869473001018124">ସନ୍ଧାନ ଖୋଲନ୍ତୁ</translation>
 <translation id="8336739000755212683">ଡିଭାଇସ୍ ଆକାଉଣ୍ଟ ଛବି ବଦଳାନ୍ତୁ</translation>
 <translation id="8347227221149377169">ପ୍ରିଣ୍ଟ ଜବ୍</translation>
 <translation id="8351855506390808906">କୀମେପିଂ ଟଚ ପଏଣ୍ଟ</translation>

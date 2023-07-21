@@ -157,8 +157,8 @@ void NGInlineLayoutAlgorithm::PrepareBoxStates(
   // have ::first-line styles.
   const HeapVector<NGInlineItem>& items = line_info.ItemsData().items;
   if (!break_token->UseFirstLineStyle()) {
-    box_states_ =
-        context_->BoxStatesIfValidForItemIndex(items, break_token->ItemIndex());
+    box_states_ = context_->BoxStatesIfValidForItemIndex(
+        items, break_token->StartItemIndex());
     if (box_states_) {
 #if EXPENSIVE_DCHECKS_ARE_ON()
       is_box_states_from_context_ = true;
@@ -200,7 +200,8 @@ void NGInlineLayoutAlgorithm::RebuildBoxStates(
     NGInlineLayoutStateStack* box_states) const {
   // Compute which tags are not closed at the beginning of this line.
   NGInlineItemsData::OpenTagItems open_items;
-  line_info.ItemsData().GetOpenTagItems(break_token->ItemIndex(), &open_items);
+  line_info.ItemsData().GetOpenTagItems(break_token->StartItemIndex(),
+                                        &open_items);
 
   // Create box states for tags that are not closed yet.
   NGLogicalLineItems& line_box = context_->AcquireTempLogicalLineItems();
@@ -280,6 +281,16 @@ void NGInlineLayoutAlgorithm::CreateLine(
       DCHECK(item.GetLayoutObject());
       DCHECK(item.GetLayoutObject()->IsText() ||
              item.GetLayoutObject()->IsLayoutNGListItem());
+
+      if (UNLIKELY(!item_result.Length())) {
+        // Empty or fully collapsed text isn't needed for layout, but needs
+        // `ClearNeedsLayout`. See `NGLineBreaker::HandleEmptyText`.
+        LayoutObject* layout_object = item.GetLayoutObject();
+        if (layout_object->NeedsLayout()) {
+          layout_object->ClearNeedsLayout();
+        }
+        continue;
+      }
       DCHECK(item_result.shape_result);
 
       if (UNLIKELY(quirks_mode_))
@@ -1555,7 +1566,7 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingFloats(
   const HeapVector<NGInlineItem>& items =
       Node().ItemsData(/* is_first_line */ false).items;
 
-  unsigned index = BreakToken() ? BreakToken()->ItemIndex() : 0;
+  unsigned index = BreakToken() ? BreakToken()->StartItemIndex() : 0;
   for (; index < items.size(); ++index) {
     const NGInlineItem& item = items[index];
 

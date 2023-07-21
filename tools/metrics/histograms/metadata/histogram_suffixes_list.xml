@@ -1213,12 +1213,15 @@ chromium-metrics-reviews@google.com.
   <suffix name="USB" label="USB device."/>
   <affected-histogram name="Cras.DeviceGain"/>
   <affected-histogram name="Cras.DeviceNoiseCancellationStatus"/>
+  <affected-histogram name="Cras.DeviceSampleRate.Input"/>
+  <affected-histogram name="Cras.DeviceSampleRate.Output"/>
   <affected-histogram name="Cras.DeviceVolume"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Cras_Direction" separator=".">
   <suffix name="Input" label="Capture"/>
   <suffix name="Output" label="Playback"/>
+  <affected-histogram name="Cras.DeviceSampleRate"/>
   <affected-histogram name="Cras.StreamCallbackThreshold"/>
   <affected-histogram name="Cras.StreamChannelCount"/>
   <affected-histogram name="Cras.StreamEffects"/>
@@ -2016,25 +2019,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="TexImage2D" label="All GL APIs that allocate a 2D texture."/>
   <suffix name="TexImage3D" label="All GL APIs that allocate a 3D texture."/>
   <affected-histogram name="GPU.Error"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="GoogleUpdate_Result_UpdateType" separator=".">
-  <suffix base="true" name="Intent" label="Intent Updates"/>
-  <suffix base="true" name="Unknown" label="Unknown Update Type"/>
-  <affected-histogram name="GoogleUpdate.Result.Session"/>
-  <affected-histogram name="GoogleUpdate.Result.TimeWindow"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="GoogleUpdate_Result_UpdateType_UpdateSource"
-    separator=".">
-  <suffix name="Infobar" label="Update initiated from the infobar"/>
-  <suffix name="Menu" label="Update initiated from the menu"/>
-  <suffix name="Notification" label="Update initiated from the notification"/>
-  <suffix name="Unknown" label="Update initiated from an unknown source"/>
-  <affected-histogram name="GoogleUpdate.Result.Session.Intent"/>
-  <affected-histogram name="GoogleUpdate.Result.Session.Unknown"/>
-  <affected-histogram name="GoogleUpdate.Result.TimeWindow.Intent"/>
-  <affected-histogram name="GoogleUpdate.Result.TimeWindow.Unknown"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="GPU_ProtectedVideoType" separator=".">
@@ -4124,6 +4108,11 @@ chromium-metrics-reviews@google.com.
   <suffix name="Extensions.ValueStore"
       label="Only counting memory used by Extension value store database."/>
   <suffix name="GpuMemory" label="Only counting memory allocated for the GPU."/>
+  <suffix name="IOAccelerator" label="Memory used by IOAccelerator, on macOS."/>
+  <suffix name="IOAccelerator.DirtyMemory"
+      label="Memory used by IOAccelerator, on macOS. Only account for dirty
+             (resident and swapped) memory, which is part of private memory
+             footprint."/>
   <suffix name="IOSurface" label="Memory used for IOSurfaces, on macOS."/>
   <suffix name="IOSurface.DirtyMemory"
       label="Memory used for IOSurfaces, on macOS. Only account for dirty
@@ -4424,6 +4413,9 @@ chromium-metrics-reviews@google.com.
              reported when Vulkan is used for rendering."/>
   <suffix name="Vulkan.AllocatedObjects"
       label="Total memory allocated by clients from the Vulkan Memory
+             Allocator. Only reported when Vulkan is used for rendering."/>
+  <suffix name="Vulkan.Fragmentation"
+      label="Total memory lost to fragmentation in the Vulkan Memory
              Allocator. Only reported when Vulkan is used for rendering."/>
   <affected-histogram name="Memory.Experimental.Browser2"/>
   <affected-histogram name="Memory.Experimental.Extension2"/>
@@ -5542,7 +5534,9 @@ chromium-metrics-reviews@google.com.
       label="This variation counts the number of locales that are not
              supported by either Hunspell or the OS spell checker."/>
   <affected-histogram name="Spellcheck.Windows.ChromeLocalesSupport"/>
+  <affected-histogram name="Spellcheck.Windows.ChromeLocalesSupport2"/>
   <affected-histogram name="Spellcheck.Windows.SpellcheckLocalesSupport"/>
+  <affected-histogram name="Spellcheck.Windows.SpellcheckLocalesSupport2"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Spellcheck_Windows_SpellcheckType" separator=".">

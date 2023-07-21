@@ -2921,6 +2921,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // subframes.
   void RecordNavigationSuddenTerminationHandlers();
 
+  // Returns the devtools_navigation_token (see
+  // NavigationRequest::devtools_navigation_token()) associated with the last
+  // cross-document navigation in this RenderFrameHost. This is the same value
+  // that is stored in the DocumentLoader for the RFH's document in the renderer
+  // (and therefore it has per-document semantics). Returns absl::nullopt for a
+  // RenderFrameHost that is the initial empty document (see
+  // |is_initial_empty_document_| for definition).
+  // Note: This is different from the value returned by GetDevToolsFrameToken(),
+  // which is a stable identifier used by DevTools to identify frames and is
+  // kept constant across navigations in a frame.
+  const absl::optional<base::UnguessableToken>& GetDevToolsNavigationToken();
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -3012,7 +3024,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                 bool for_legacy);
 
  private:
-  friend class ResumeCommitClosureSetObserver;
+  friend class CommitNavigationPauser;
   friend class RenderFrameHostPermissionsPolicyTest;
   friend class TestRenderFrameHost;
   friend class TestRenderViewHost;
@@ -3131,12 +3143,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            KeepPrerenderRFHOwnerAfterActivation);
   FRIEND_TEST_ALL_PREFIXES(NavigationSuddenTerminationDisablerTypeBrowserTest,
                            RecordUma);
-  FRIEND_TEST_ALL_PREFIXES(
-      NavigationBrowserTest,
-      NavigationSuddenTerminationDisablerTypeRecordUmaNotHttp);
-  FRIEND_TEST_ALL_PREFIXES(
-      NavigationBrowserTest,
-      NavigationSuddenTerminationDisablerTypeRecordUmaInitialEmptyDocument);
   FRIEND_TEST_ALL_PREFIXES(
       NavigationBrowserTest,
       NavigationSuddenTerminationDisablerTypeRecordUmaSameOrigin);
@@ -3660,9 +3666,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   enum NavigationSuddenTerminationDisablerType : uint32_t {
     kMainFrame = 1 << 0,
     kUnload = 1 << 1,
-    kInitialEmptyDocument = 1 << 2,
-    kNotHttp = 1 << 3,
-    kMaxValue = kNotHttp,
+    kMaxValue = kUnload,
   };
   // Returns information to be recoreded in UMA about sudden termination
   // disablers presence.
@@ -4774,6 +4778,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
     void set_navigation_or_document_handle(
         scoped_refptr<NavigationOrDocumentHandle> handle);
 
+    // See comments for |RenderFrameHostImpl::GetDevToolsNavigationToken()| for
+    // more details.
+    const absl::optional<base::UnguessableToken>& devtools_navigation_token()
+        const {
+      return devtools_navigation_token_;
+    }
+
+    void set_devtools_navigation_token(
+        const base::UnguessableToken& devtools_navigation_token) {
+      devtools_navigation_token_ = devtools_navigation_token;
+    }
+
     // Produces weak pointers to the hosting RenderFrameHostImpl. This is
     // invalidated whenever DocumentAssociatedData is destroyed, due to
     // RenderFrameHost deletion or cross-document navigation.
@@ -4789,6 +4805,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
     std::vector<internal::DocumentServiceBase*> services_;
     scoped_refptr<NavigationOrDocumentHandle> navigation_or_document_handle_;
     base::WeakPtrFactory<RenderFrameHostImpl> weak_factory_;
+    absl::optional<base::UnguessableToken> devtools_navigation_token_ =
+        absl::nullopt;
   };
 
   // Reset immediately before a RenderFrameHost is reused for hosting a new

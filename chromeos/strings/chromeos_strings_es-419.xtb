@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">No se puede resolver el DNS</translation>
 <translation id="1018656279737460067">Cancelado</translation>
 <translation id="1022433422498218992">Controles generales</translation>
-<translation id="1022628058306505708">Flujo de la Tierra</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> subprocesos, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">Hay una nueva función disponible. Para obtener más información, usa la flecha hacia arriba.</translation>
 <translation id="1059913517121127803">No se pudo comenzar el escaneo</translation>
@@ -235,7 +234,6 @@
 <translation id="2902312830803030883">Más acciones</translation>
 <translation id="2926057806159140518">Ingresa tu nombre de usuario y contraseña, o bien, escanea tu código QR</translation>
 <translation id="2940811910881150316">No se puede probar el dispositivo. Vuelve a abrir la tapa para realizar pruebas.</translation>
-<translation id="2981143481017883351">Ya están disponibles los recursos exclusivos para Chromebook</translation>
 <translation id="3008341117444806826">ACTUALIZAR</translation>
 <translation id="3009958530611748826">Seleccionar una carpeta de destino</translation>
 <translation id="3017079585324758401">Imagen de fondo</translation>
@@ -280,7 +278,6 @@
 <translation id="3360306038446926262">Windows</translation>
 <translation id="3368922792935385530">Conectado</translation>
 <translation id="3369013195428705271">¿Seguro que quieres borrar todo el historial de impresiones? No se quitarán tus trabajos de impresión en curso.</translation>
-<translation id="3386675685417744672">Exclusivos para Chromebook</translation>
 <translation id="3404249063913988450">Habilitar el protector de pantalla</translation>
 <translation id="3413935475507503304">Para continuar con la actualización, haz clic en Siguiente.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
@@ -295,6 +292,7 @@
 <translation id="3484914941826596830">No desconectes este dispositivo externo ni apagues la computadora mientras se actualiza el firmware. Puedes minimizar esta ventana. Es posible que esta actualización demore unos minutos y que el dispositivo externo no funcione hasta que termine.</translation>
 <translation id="3486220673238053218">definición</translation>
 <translation id="3488065109653206955">Parcialmente activado</translation>
+<translation id="3502426834823382181">ver todas las apps</translation>
 <translation id="3510890413042482857">Enviar <ph name="BEGIN_LINK1" />datos de registro del rendimiento<ph name="END_LINK1" /></translation>
 <translation id="3517001332549868749">Actualización del SO</translation>
 <translation id="3527036260304016759">Error: Problema desconocido</translation>
@@ -358,7 +356,6 @@
 <translation id="404928562651467259">ADVERTENCIA</translation>
 <translation id="4054683689023980771">Se está descargando la imagen</translation>
 <translation id="4060260348856573701">APN nuevo</translation>
-<translation id="4079743696465895866">Selecciona obras de arte exclusivas para Chromebook</translation>
 <translation id="4093865285251893588">Imagen de perfil</translation>
 <translation id="409427325554347132">Guardar los detalles de la prueba</translation>
 <translation id="4095829376260267438">WPA2/WPA3</translation>
@@ -625,7 +622,6 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">La capacidad de la batería se reduce con el uso</translation>
 <translation id="6191293864534840972">el formato de los servidores de nombres es incorrecto</translation>
-<translation id="6205145102504628069">Flujo de nubes</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223066887782788441">Salir de la pantalla completa</translation>
 <translation id="6223752125779001553">No hay escáneres disponibles</translation>
@@ -636,6 +632,7 @@
 <translation id="6278428485366576908">Tema</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Activar el tema oscuro</translation>
+<translation id="6285899124799306373">abrir el selector</translation>
 <translation id="6302401976930124515">Se canceló la prueba de <ph name="TEST_NAME" /></translation>
 <translation id="631063167932043783">App Explorar</translation>
 <translation id="6319207335391420837">Actualizar el firmware en <ph name="DEVICE_NAME" /></translation>
@@ -651,6 +648,7 @@
 <translation id="6382182670717268353">Vista previa del protector de pantalla</translation>
 <translation id="6388847657025262518">Se atascó el alimentador de documentos del escáner. Revisa el alimentador y vuelve a intentarlo.</translation>
 <translation id="6394634179843537518">Agregar archivo</translation>
+<translation id="6401427872449207797">realizar búsquedas en el navegador</translation>
 <translation id="6410257289063177456">Archivos de imagen</translation>
 <translation id="641081527798843608">Coincidencia de asunto</translation>
 <translation id="6412715219990689313">Teclado integrado</translation>
@@ -666,7 +664,6 @@
 <translation id="6494974875566443634">Personalización</translation>
 <translation id="6500818810472529210">Ver el resultado en la Búsqueda de Google</translation>
 <translation id="650266656685499220">Para crear álbumes, ve a Google Fotos</translation>
-<translation id="6505750420152840539">Del amanecer a la noche</translation>
 <translation id="6516990319416533844">Para probar la velocidad de carga de la batería, deja que esta se descargue un poco.</translation>
 <translation id="6517239166834772319">Explorar</translation>
 <translation id="6526200165918397681">Coincidir con el fondo de pantalla</translation>
@@ -875,6 +872,7 @@
 <translation id="8312330582793120272">reproducir contenido multimedia</translation>
 <translation id="8318753676953949627">No hay imágenes</translation>
 <translation id="8329018942023753850">app de Calculadora</translation>
+<translation id="8335869473001018124">abrir la búsqueda</translation>
 <translation id="8336739000755212683">Cambiar la imagen de cuenta del dispositivo</translation>
 <translation id="8347227221149377169">Trabajos de impresión</translation>
 <translation id="8351855506390808906">Punto táctil de la asignación de teclas</translation>

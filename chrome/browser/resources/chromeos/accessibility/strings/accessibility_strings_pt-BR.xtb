@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
+<translation id="100506692671054486">nenhum comando anterior</translation>
 <translation id="1009046985747440431">Pressione a seta para cima ou para baixo para navegar e Enter para ativar</translation>
 <translation id="1011903154582639569">Encontre uma tecla e levante o dedo para digitá-la</translation>
 <translation id="1012173283529841972">Item da lista</translation>
@@ -101,7 +102,7 @@
 <translation id="1565432156062359693">Nenhuma lista a seguir</translation>
 <translation id="1571643229714746283">ChromeVox pronto</translation>
 <translation id="1594072653727561613">mnu</translation>
-<translation id="1610130962244179598">Mudar para braille de seis pontos</translation>
+<translation id="1610130962244179598">Alternar para braille de seis pontos</translation>
 <translation id="161042844686301425">Ciano</translation>
 <translation id="1611649489706141841">avançar</translation>
 <translation id="1612960140435400149">Nenhum campo de formulário a seguir</translation>
@@ -459,6 +460,7 @@
 <translation id="3936394396199829062">Rosa-ravena</translation>
 <translation id="3943857333388298514">Colar</translation>
 <translation id="3962990492275676168">Iniciar a leitura na posição atual</translation>
+<translation id="397094149579293440">nenhum texto foi selecionado</translation>
 <translation id="3970951409746498040">Marrom-arenoso</translation>
 <translation id="3989324057180830702">tgl btn</translation>
 <translation id="3991317907213946254">Mocassim</translation>
@@ -565,6 +567,7 @@
 <translation id="4786285211967466855">Nenhum cabeçalho de nível 1 anterior</translation>
 <translation id="4787577491510559358">Anunciar formatação para item atual</translation>
 <translation id="479989351350248267">pesquisar</translation>
+<translation id="4802034228771424756">nenhum campo de texto está em foco</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="481165870889056555">Anunciar o título da página atual</translation>
 <translation id="4815668758102003883">Turquesa-pálido</translation>
@@ -587,13 +590,16 @@
 <translation id="489907760999452556">Link interno</translation>
 <translation id="4909019435900810068">Recuar uma palavra</translation>
 <translation id="4911349081560453449">Nenhuma caixa de seleção anterior</translation>
+<translation id="4919186071145887492">Não foi possível <ph name="COMMAND" />. Tente de novo</translation>
 <translation id="492295894462528572">Prefácio</translation>
 <translation id="495046168593986294">Rolar para cima</translation>
 <translation id="495170559598752135">Ações</translation>
 <translation id="4953585991029886728">Texto de edição</translation>
+<translation id="4964701498510730546">o campo de texto está vazio</translation>
 <translation id="4973717656530883744">Min <ph name="X" /></translation>
 <translation id="4974612477719259470">Nenhum botão anterior</translation>
 <translation id="4979404613699303341">Botão anterior</translation>
+<translation id="4981239367072766915">a entrada não foi reconhecida</translation>
 <translation id="4982917827052020884">Vamos começar com teclas usadas com frequência. A tecla Control pode ser usada para interromper qualquer fala atual. Ela fica no canto inferior esquerdo do seu teclado. Pressione a tecla Control para continuar.</translation>
 <translation id="4983588134362688868">Vai para a parte superior da página</translation>
 <translation id="4986606102545753256">Janela <ph name="NAME" /></translation>
@@ -601,6 +607,7 @@
 <translation id="4994420463726586413">Ler em voz alta o status atual da bateria</translation>
 <translation id="4997282455736854877">Botão de opção <ph name="NAME" /> selecionado</translation>
 <translation id="5012724933919010465">Botão de opção <ph name="NAME" /> para item de menu selecionado</translation>
+<translation id="5014131807708055994">Não é possível <ph name="COMMAND" /> porque <ph name="REASON" /></translation>
 <translation id="5020651427400641814">Ativar registros de fala</translation>
 <translation id="5041394372352067729">Mover exibição braille para o topo da página</translation>
 <translation id="5042770794184672516">Aumentar volume da voz</translation>
@@ -673,7 +680,7 @@
 <translation id="5522423213731659107">A orientação rápida foi concluída</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5539820223028224601">Cinza-médio</translation>
-<translation id="554893713779400387">Mudar para o ditado</translation>
+<translation id="554893713779400387">Alternar para o ditado</translation>
 <translation id="5549179427201066174">Ativar ou desativar o feedback sonoro (ícones auditivos)</translation>
 <translation id="556042886152191864">Botão</translation>
 <translation id="5561345396546889625">Próxima lista</translation>
@@ -926,7 +933,7 @@
 <translation id="7317017974771324508">parcialmente selecionado</translation>
 <translation id="7322442671176251901">Explorar por toque</translation>
 <translation id="7344012264516629579">Outros comandos de salto permitem saltar usando links, botões, caixas de seleção, entre outros. É possível acessar uma lista completa de comandos de salto nos menus do ChromeVox, que pode ser aberto pressionando a tecla de pesquisa + . (ponto).</translation>
-<translation id="7356165926712028380">Mudar para braille de oito pontos</translation>
+<translation id="7356165926712028380">Alternar para braille de oito pontos</translation>
 <translation id="7356610683936413584">Detalhe da lista de descrição</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{sinal de "E" comercial}one{# indicadores de "E" comercial}other{# indicadores de "E" comercial}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -959,7 +966,7 @@
 <translation id="7604026522577407655">Ir para o início da coluna atual</translation>
 <translation id="7604451927827590395">hdng</translation>
 <translation id="7609342235116740824">Anunciar o URL da página atual</translation>
-<translation id="7609363189280667021">Mudar para legendas em braille</translation>
+<translation id="7609363189280667021">Alternar para legendas em braille</translation>
 <translation id="761303759119251275">Crédito</translation>
 <translation id="762020119231868829">Pausa todos os widgets de mídia em execução no momento</translation>
 <translation id="7625690649919402823">Próxima tabela</translation>
@@ -1050,7 +1057,7 @@
 <translation id="817529114347680055">Tela ativada</translation>
 <translation id="8179976553408161302">Entrar</translation>
 <translation id="8184828902145951186">linha</translation>
-<translation id="8186185314313222077">mudar para o modo tela cheia</translation>
+<translation id="8186185314313222077">alternar para o modo tela cheia</translation>
 <translation id="8199231515320852133">Anunciar cabeçalhos da célula atual</translation>
 <translation id="8202174735952881587">Azul-celeste</translation>
 <translation id="820469951249669083">Ir para a próxima linha</translation>

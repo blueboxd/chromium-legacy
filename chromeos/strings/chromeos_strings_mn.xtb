@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">DNS-г шийдвэрлэх боломжгүй</translation>
 <translation id="1018656279737460067">Цуцлагдсан байна</translation>
 <translation id="1022433422498218992">Ерөнхий тохиргоо</translation>
-<translation id="1022628058306505708">Earth Flow</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> уялдаат, <ph name="CPU_MAX_CLOCK_SPEED" />Гц)</translation>
 <translation id="1047773237499189053">Шинэ онцлог боломжтой байна. Нэмэлт мэдээлэл авах бол Дээш суман товчийг ашиглана уу.</translation>
 <translation id="1059913517121127803">Скан хийхийг эхлүүлж чадсангүй</translation>
@@ -235,7 +234,6 @@
 <translation id="2902312830803030883">Бусад үйлдэл</translation>
 <translation id="2926057806159140518">Хэрэглэгчийн нэр болон нууц үгээ оруулах эсвэл QR кодыг скан хийнэ үү</translation>
 <translation id="2940811910881150316">Төхөөрөмжийг турших боломжгүй байна. Туршихын тулд тагийг дахин нээнэ үү.</translation>
-<translation id="2981143481017883351">Chromebook-н онцгой өмчүүд одоо боломжтой</translation>
 <translation id="3008341117444806826">ДАХИН ШИНЭЧЛЭХ</translation>
 <translation id="3009958530611748826">Хадгалах фолдероо сонгоно уу</translation>
 <translation id="3017079585324758401">Арын дэвсгэр</translation>
@@ -280,7 +278,6 @@
 <translation id="3360306038446926262">Windows</translation>
 <translation id="3368922792935385530">Холбогдсон</translation>
 <translation id="3369013195428705271">Та хэвлэлийн бүх түүхийг арилгахдаа итгэлтэй байна уу? Таны хийж буй хэвлэлийн ажлуудыг арилгахгүй.</translation>
-<translation id="3386675685417744672">Chromebook-н онцгой</translation>
 <translation id="3404249063913988450">Дэлгэц амраагчийг идэвхжүүлэх</translation>
 <translation id="3413935475507503304">Шинэчлэлтийг үргэлжлүүлэхийн тулд Дараах дээр товшино уу.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
@@ -295,6 +292,7 @@
 <translation id="3484914941826596830">Жижиг программыг шинэчилж байх үед энэ гадны төхөөрөмжийг бүү салгаарай. Мөн компьютероо бүү унтраагаарай. Та энэ цонхыг багасгах боломжтой. Энэ шинэчлэлтэд хэдэн минут зарцуулж магадгүй бөгөөд энэ хугацаанд таны гадны төхөөрөмж ажиллахгүй байж магадгүй.</translation>
 <translation id="3486220673238053218">тодорхойлолт</translation>
 <translation id="3488065109653206955">Хагас идэвхжсэн</translation>
+<translation id="3502426834823382181">бүх аппыг харах</translation>
 <translation id="3510890413042482857"><ph name="BEGIN_LINK1" />Гүйцэтгэлийн ул мөрийн өгөгдлийг<ph name="END_LINK1" /> илгээх</translation>
 <translation id="3517001332549868749">ChromeOS-н шинэчлэлт</translation>
 <translation id="3527036260304016759">Амжилтгүй болсон - Үл мэдэгдэх алдаа</translation>
@@ -358,7 +356,6 @@
 <translation id="404928562651467259">АНХААРУУЛГА</translation>
 <translation id="4054683689023980771">Зураг татаж байна</translation>
 <translation id="4060260348856573701">Шинэ APN</translation>
-<translation id="4079743696465895866">Chromebook-н онцгой постерыг сонгох</translation>
 <translation id="4093865285251893588">Профайлын зураг</translation>
 <translation id="409427325554347132">Туршилтын дэлгэрэнгүйг хадгалах</translation>
 <translation id="4095829376260267438">WPA2WPA3</translation>
@@ -625,7 +622,6 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">Батарейн хүчин чадлыг ашиглалт бууруулдаг</translation>
 <translation id="6191293864534840972">DNS алдаатай байна</translation>
-<translation id="6205145102504628069">Cloud Flow</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223066887782788441">Бүтэн дэлгэцийн төлөвөөс гарах</translation>
 <translation id="6223752125779001553">Боломжтой сканнер байхгүй</translation>
@@ -636,6 +632,7 @@
 <translation id="6278428485366576908">Загвар</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Бараан загварыг асаах</translation>
+<translation id="6285899124799306373">эхлүүлэгчийг нээх</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> тестийг цуцалсан байна</translation>
 <translation id="631063167932043783">Аппыг судлах</translation>
 <translation id="6319207335391420837">Жижиг программыг <ph name="DEVICE_NAME" /> дээр шинэчлэх</translation>
@@ -651,6 +648,7 @@
 <translation id="6382182670717268353">Дэлгэц амраагчийг урьдчилан үзэх</translation>
 <translation id="6388847657025262518">Сканнерын документ дамжуулах тавиур гацсан байна. Дамжуулах тавиурыг шалгаад, дахин оролдоно уу.</translation>
 <translation id="6394634179843537518">Файл нэмэх</translation>
+<translation id="6401427872449207797">хөтчийн хайлт</translation>
 <translation id="6410257289063177456">Зургийн файлууд</translation>
 <translation id="641081527798843608">Субъект тохируулах</translation>
 <translation id="6412715219990689313">Суурилуулсан гар</translation>
@@ -666,7 +664,6 @@
 <translation id="6494974875566443634">Тохируулга</translation>
 <translation id="6500818810472529210">Google Хайлтад илэрц харах</translation>
 <translation id="650266656685499220">Цомог үүсгэхийн тулд Google Зураг руу очно уу</translation>
-<translation id="6505750420152840539">Үүр цайхаас шөнө хүртэл</translation>
 <translation id="6516990319416533844">Батарейн цэнэглэх хурдыг туршихын тулд батарейгаа богино хугацаанд зарцуулна уу</translation>
 <translation id="6517239166834772319">Судлах</translation>
 <translation id="6526200165918397681">Дэлгэцийн зураг тааруулах</translation>
@@ -875,6 +872,7 @@
 <translation id="8312330582793120272">медиаг тоглуулах</translation>
 <translation id="8318753676953949627">Зураг байхгүй</translation>
 <translation id="8329018942023753850">тооны машин апп</translation>
+<translation id="8335869473001018124">хайлтыг нээх</translation>
 <translation id="8336739000755212683">Төхөөрөмжийн бүртгэлийн зургийг өөрчлөх</translation>
 <translation id="8347227221149377169">Хэвлэх ажлууд</translation>
 <translation id="8351855506390808906">Товч харгалзуулалтын хүрэх цэг</translation>

@@ -121,6 +121,7 @@ constexpr TaskType kAllFrameTaskTypes[] = {
     TaskType::kInternalLoading,
     TaskType::kNetworking,
     TaskType::kNetworkingUnfreezable,
+    TaskType::kNetworkingUnfreezableImageLoading,
     TaskType::kNetworkingControl,
     TaskType::kLowPriorityScriptExecution,
     TaskType::kDOMManipulation,
@@ -172,7 +173,7 @@ constexpr TaskType kAllFrameTaskTypes[] = {
     TaskType::kInternalNavigationCancellation};
 
 static_assert(
-    static_cast<int>(TaskType::kMaxValue) == 82,
+    static_cast<int>(TaskType::kMaxValue) == 83,
     "When adding a TaskType, make sure that kAllFrameTaskTypes is updated.");
 
 void AppendToVectorTestTask(Vector<String>* vector, String value) {
@@ -205,14 +206,13 @@ class FrameSchedulerDelegateForTesting : public FrameScheduler::Delegate {
 };
 
 MATCHER(BlockingDetailsHasCCNS, "Blocking details has CCNS.") {
-  bool vector_empty =
-      arg.non_sticky_features_and_js_locations.details_list.empty();
+  bool vector_empty = arg.non_sticky_features_and_js_locations.empty();
   bool vector_has_ccns =
-      arg.sticky_features_and_js_locations.details_list.Contains(
+      arg.sticky_features_and_js_locations.Contains(
           FeatureAndJSLocationBlockingBFCache(
               SchedulingPolicy::Feature::kMainResourceHasCacheControlNoStore,
               nullptr)) &&
-      arg.sticky_features_and_js_locations.details_list.Contains(
+      arg.sticky_features_and_js_locations.Contains(
           FeatureAndJSLocationBlockingBFCache(
               SchedulingPolicy::Feature::kMainResourceHasCacheControlNoCache,
               nullptr));
@@ -226,15 +226,14 @@ MATCHER_P(BlockingDetailsHasWebSocket,
       (handle->GetFeatureAndJSLocationBlockingBFCache() ==
        FeatureAndJSLocationBlockingBFCache(
            SchedulingPolicy::Feature::kWebSocket, nullptr));
-  bool vector_empty = arg.sticky_features_and_js_locations.details_list.empty();
+  bool vector_empty = arg.sticky_features_and_js_locations.empty();
   return handle_has_web_socket && vector_empty;
 }
 
 MATCHER(BlockingDetailsIsEmpty, "BlockingDetails is empty.") {
   bool non_sticky_vector_empty =
-      arg.non_sticky_features_and_js_locations.details_list.empty();
-  bool sticky_vector_empty =
-      arg.sticky_features_and_js_locations.details_list.empty();
+      arg.non_sticky_features_and_js_locations.empty();
+  bool sticky_vector_empty = arg.sticky_features_and_js_locations.empty();
   return non_sticky_vector_empty && sticky_vector_empty;
 }
 class FrameSchedulerImplTest : public testing::Test {
@@ -1467,6 +1466,17 @@ TEST_F(FrameSchedulerImplTest, HighestPriorityInputBlockingTaskQueue) {
   page_scheduler_->SetPageVisible(true);
   EXPECT_EQ(InputBlockingTaskQueue()->GetQueuePriority(),
             TaskPriority::kHighestPriority);
+}
+
+TEST_F(FrameSchedulerImplTest, RenderBlockingImageLoading) {
+  auto render_blocking_task_queue =
+      GetTaskQueue(TaskType::kNetworkingUnfreezableImageLoading);
+  page_scheduler_->SetPageVisible(false);
+  EXPECT_EQ(render_blocking_task_queue->GetQueuePriority(),
+            TaskPriority::kNormalPriority);
+  page_scheduler_->SetPageVisible(true);
+  EXPECT_EQ(render_blocking_task_queue->GetQueuePriority(),
+            TaskPriority::kExtremelyHighPriority);
 }
 
 TEST_F(FrameSchedulerImplTest, TaskTypeToTaskQueueMapping) {

@@ -395,14 +395,12 @@ IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, FeatureOverridesChromeSchemes) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), GURL(chrome::kChromeUIDownloadsURL)));
 
-  bool matches;
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      base::StringPrintf("window.domAutomationController.send(window."
-                         "matchMedia('(prefers-color-scheme: %s)').matches)",
-                         ExpectedColorScheme()),
-      &matches));
-  EXPECT_TRUE(matches);
+  EXPECT_EQ(
+      true,
+      EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+             base::StringPrintf(
+                 "window.matchMedia('(prefers-color-scheme: %s)').matches",
+                 ExpectedColorScheme())));
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -419,14 +417,12 @@ IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, FeatureOverridesPdfUI) {
   GURL pdf_index = GURL(pdf_extension_url).Resolve("/index.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), pdf_index));
 
-  bool matches;
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      base::StringPrintf("window.domAutomationController.send(window."
-                         "matchMedia('(prefers-color-scheme: %s)').matches)",
-                         ExpectedColorScheme()),
-      &matches));
-  EXPECT_TRUE(matches);
+  EXPECT_EQ(
+      true,
+      EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+             base::StringPrintf(
+                 "window.matchMedia('(prefers-color-scheme: %s)').matches",
+                 ExpectedColorScheme())));
 }
 #endif
 
@@ -727,23 +723,6 @@ class IsClipboardPasteContentAllowedTest : public InProcessBrowserTest {
   base::ScopedTempDir temp_dir_;
   raw_ptr<ChromeContentBrowserClient> client_ = nullptr;
 };
-
-IN_PROC_BROWSER_TEST_F(IsClipboardPasteContentAllowedTest, BitmapAllowed) {
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetWebContentsAt(0);
-  ChromeContentBrowserClient::ClipboardPasteData clipboard_paste_data =
-      ChromeContentBrowserClient::ClipboardPasteData(std::string(), "bitmap",
-                                                     {});
-
-  client()->IsClipboardPasteContentAllowed(
-      contents, GURL("google.com"), ui::ClipboardFormatType::BitmapType(),
-      clipboard_paste_data,
-      base::BindOnce(
-          [](absl::optional<ChromeContentBrowserClient::ClipboardPasteData>
-                 clipboard_paste_data) {
-            EXPECT_TRUE(clipboard_paste_data.has_value());
-          }));
-}
 
 IN_PROC_BROWSER_TEST_F(IsClipboardPasteContentAllowedTest, TextAllowed) {
   content::WebContents* contents =

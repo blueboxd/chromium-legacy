@@ -15,11 +15,13 @@
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fido_assertion_info.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/random_session_id.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker.h"
-#include "chrome/browser/ash/login/oobe_quick_start/connectivity/wifi_credentials.h"
 #include "chrome/browser/nearby_sharing/public/cpp/nearby_connection.h"
 #include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder.mojom.h"
+#include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom-shared.h"
 #include "components/cbor/values.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
+#include "mojo/public/cpp/bindings/struct_ptr.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 namespace ash::quick_start {
@@ -47,6 +49,12 @@ class Connection
     kClosed    // The connection is closed
   };
 
+  struct SessionContext {
+    RandomSessionId session_id;
+    SharedSecret shared_secret;
+    SharedSecret secondary_shared_secret;
+  };
+
   class Factory {
    public:
     Factory() = default;
@@ -56,9 +64,8 @@ class Connection
 
     virtual std::unique_ptr<Connection> Create(
         NearbyConnection* nearby_connection,
-        RandomSessionId session_id,
-        SharedSecret shared_secret,
-        SharedSecret secondary_shared_secret,
+        Connection::SessionContext session_context,
+        mojo::SharedRemote<mojom::QuickStartDecoder> quick_start_decoder,
         ConnectionClosedCallback on_connection_closed,
         ConnectionAuthenticatedCallback on_connection_authenticated);
   };
@@ -74,9 +81,8 @@ class Connection
   };
 
   Connection(NearbyConnection* nearby_connection,
-             RandomSessionId session_id,
-             SharedSecret shared_secret,
-             SharedSecret secondary_shared_secret,
+             SessionContext session_context,
+             mojo::SharedRemote<mojom::QuickStartDecoder> quick_start_decoder,
              std::unique_ptr<NonceGenerator> nonce_generator,
              ConnectionClosedCallback on_connection_closed,
              ConnectionAuthenticatedCallback on_connection_authenticated);
@@ -88,8 +94,9 @@ class Connection
   // Get the state of the connection (open, closing, or closed)
   State GetState();
 
-  // Close the connection.
-  void Close(TargetDeviceConnectionBroker::ConnectionClosedReason reason);
+  // TargetDeviceConnectionBroker::AuthenticatedConnection:
+  void Close(
+      TargetDeviceConnectionBroker::ConnectionClosedReason reason) override;
 
   // Changes the connection state to authenticated and invokes the
   // ConnectionAuthenticatedCallback. The caller must ensure that the connection
@@ -113,22 +120,21 @@ class Connection
   using PayloadResponseCallback =
       base::OnceCallback<void(absl::optional<std::vector<uint8_t>>)>;
 
-  // TargetDeviceConnectionBroker::AuthenticatedConnection
+  // TargetDeviceConnectionBroker::AuthenticatedConnection:
   void RequestWifiCredentials(int32_t session_id,
                               RequestWifiCredentialsCallback callback) override;
-  void NotifySourceOfUpdate(int32_t session_id) override;
+  void NotifySourceOfUpdate(int32_t session_id,
+                            NotifySourceOfUpdateCallback callback) override;
   void RequestAccountTransferAssertion(
       const std::string& challenge_b64url,
       RequestAccountTransferAssertionCallback callback) override;
 
-  // Parses a raw response and converts it to a WifiCredentialsResponse
-  void OnRequestWifiCredentialsResponse(
-      RequestWifiCredentialsCallback callback,
+  void OnNotifySourceOfUpdateResponse(
+      NotifySourceOfUpdateCallback callback,
       absl::optional<std::vector<uint8_t>> response_bytes);
 
-  void ParseWifiCredentialsResponse(
-      RequestWifiCredentialsCallback callback,
-      ::ash::quick_start::mojom::GetWifiCredentialsResponsePtr response);
+  void HandleNotifySourceOfUpdateResponse(NotifySourceOfUpdateCallback callback,
+                                          absl::optional<bool> ack_received);
 
   // Parses a raw AssertionResponse and converts it into a FidoAssertionInfo
   void OnRequestAccountTransferAssertionResponse(
@@ -140,17 +146,36 @@ class Connection
       ::ash::quick_start::mojom::GetAssertionResponsePtr response);
 
   void SendMessage(std::unique_ptr<QuickStartMessage> message,
-                   absl::optional<ConnectionResponseCallback> callback);
+                   ConnectionResponseCallback callback);
 
   // Reusable method to serialize a payload into JSON bytes and send via Nearby
   // Connections.
   void SendPayload(const base::Value::Dict& message_payload);
 
-  void SendPayloadAndReadResponse(const base::Value::Dict& message_payload,
-                                  PayloadResponseCallback callback);
-
   void OnConnectionClosed(
       TargetDeviceConnectionBroker::ConnectionClosedReason reason);
+
+  template <typename T>
+  using DecoderResponseCallback =
+      base::OnceCallback<void(mojo::InlinedStructPtr<T>,
+                              absl::optional<mojom::QuickStartDecoderError>)>;
+
+  template <typename T>
+  using DecoderMethod =
+      void (mojom::QuickStartDecoder::*)(const std::vector<uint8_t>&,
+                                         DecoderResponseCallback<T>);
+
+  template <typename T>
+  using OnDecodingCompleteCallback =
+      base::OnceCallback<void(absl::optional<T>)>;
+
+  // Generic method to decode data using QuickStartDecoder. If a decoding error
+  // occurs, return empty data. On success, on_success will be called
+  // with the decoded data.
+  template <typename T>
+  void DecodeData(DecoderMethod<T> decoder_method,
+                  OnDecodingCompleteCallback<T> on_decoding_complete,
+                  absl::optional<std::vector<uint8_t>> data);
 
   raw_ptr<NearbyConnection, ExperimentalAsh> nearby_connection_;
   RandomSessionId random_session_id_;

@@ -94,11 +94,9 @@ public class CronetTestUtil {
         getCronetEngineBuilderImpl(builder).setMockCertVerifierForTesting(mockCertVerifier);
     }
 
-    static CronetEngineBuilderImpl getCronetEngineBuilderImpl(
+    public static CronetEngineBuilderImpl getCronetEngineBuilderImpl(
             ExperimentalCronetEngine.Builder builder) {
-        return (CronetEngineBuilderImpl) ((ExperimentalOptionsTranslatingCronetEngineBuilder)
-                                                  builder.getBuilderDelegate())
-                .getDelegate();
+        return (CronetEngineBuilderImpl) builder.getBuilderDelegate();
     }
 
     /**

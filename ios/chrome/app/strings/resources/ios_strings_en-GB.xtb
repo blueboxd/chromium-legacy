@@ -113,6 +113,7 @@ Only someone with your passphrase can read your encrypted data. The passphrase i
 <translation id="1657011748321897393">Sharing failed because you are not connected to the network.</translation>
 <translation id="1657641691196698092">Blocked cookies</translation>
 <translation id="165877110639533037">No open tabs</translation>
+<translation id="166310177317698233">You can find your pinned tabs by tapping the 'Show tabs' button.</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">Request Mobile Site</translation>
 <translation id="168715261339224929">To get your bookmarks on all your devices, turn on sync.</translation>
@@ -407,6 +408,7 @@ See your search engine’s instructions for deleting your search history, if app
 <translation id="3638472932233958418">Pre-load Web Pages</translation>
 <translation id="3661160521073045932">Configuration profile available</translation>
 <translation id="3670030362669914947">Number</translation>
+<translation id="3700134753671613714">Sign in to get your bookmarks on all your devices.</translation>
 <translation id="3709582977625132201">Mark as unread</translation>
 <translation id="371230970611282515">Predicts and warns you about dangerous events before they happen.</translation>
 <translation id="37207012422556617">Trending searches</translation>
@@ -546,7 +548,6 @@ See your search engine’s instructions for deleting your search history, if app
 <translation id="4642472735733036929">Price tracking stopped</translation>
 <translation id="4650125387981512669">Continue as <ph name="FIRST_RUN_ACCOUNT_NAME" /></translation>
 <translation id="4652817563047461855">Make sure that your passwords are safe, find out if they've been compromised and get advice to help protect yourself online. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">When you sign in to your Google account, this feature is turned on.</translation>
 <translation id="4659667755519643272">Enter Tab Switcher</translation>
 <translation id="46614316059270592">Save password</translation>
 <translation id="4666531726415300315">Signed in as <ph name="EMAIL" />.
@@ -588,7 +589,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4844899002472726590">See and edit the topics that you're interested in</translation>
 <translation id="4848999860252535517">Delete password for <ph name="WEBSITE" />?</translation>
 <translation id="4854345657858711387">Set A Passcode</translation>
-<translation id="4856498338299082007">In your Google Account</translation>
 <translation id="4858786880085262208">Upgrade to HTTPS, when possible. Secure sites might embed content that isn't secure.</translation>
 <translation id="4860895144060829044">Call</translation>
 <translation id="4872323082491632254">Check passwords</translation>
@@ -667,6 +667,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="543338862236136125">Edit password</translation>
 <translation id="5433691172869980887">Username copied</translation>
 <translation id="5439599923922718668">Frequently visited</translation>
+<translation id="5439618055789623719">Signed in as <ph name="USER_EMAIL" /></translation>
 <translation id="54401264925851789">Page Security Info</translation>
 <translation id="5443952882982198570">Credit cards</translation>
 <translation id="5444892875087332195">Bookmarks</translation>
@@ -1018,7 +1019,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="7611459119367035420">You can find your pinned tabs here.</translation>
 <translation id="7638584964844754484">Incorrect passphrase</translation>
 <translation id="7640669552036055091">Tabs from Android</translation>
-<translation id="7646263789464975852">Menu → Settings → Safety Check</translation>
+<translation id="7646263789464975852">Menu → Settings → Safety check</translation>
 <translation id="7646772052135772216">Password sync isn't working</translation>
 <translation id="764827086632467055">Tap default browser app</translation>
 <translation id="7649070708921625228">Help</translation>
@@ -1121,7 +1122,6 @@ Sites can use cookies to see your browsing activity across different sites, for 
 <translation id="8248969482078657578">Inactive Tabs helps you to stay focused</translation>
 <translation id="8261506727792406068">Delete</translation>
 <translation id="8264966119170358612">Some of your saved passwords were exposed in a non-Google data breach. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">Only on this device</translation>
 <translation id="826614135184049678">You were signed out of your account, <ph name="USER_NAME" />, as part of your iPad reset. To sign back in, tap 'Continue' below.</translation>
 <translation id="8271720166617117963">Accept and sign in</translation>
 <translation id="8278938988428169257">Enter a word or phrase</translation>

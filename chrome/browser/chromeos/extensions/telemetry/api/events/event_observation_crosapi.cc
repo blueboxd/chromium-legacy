@@ -22,6 +22,8 @@ namespace chromeos {
 
 namespace {
 
+namespace crosapi = ::crosapi::mojom;
+
 class DefaultEventDelegate : public EventObservationCrosapi::Delegate {
  public:
   explicit DefaultEventDelegate(content::BrowserContext* context)
@@ -29,19 +31,19 @@ class DefaultEventDelegate : public EventObservationCrosapi::Delegate {
   ~DefaultEventDelegate() override = default;
 
   void OnEvent(const extensions::ExtensionId& extension_id,
-               crosapi::mojom::TelemetryEventInfoPtr info) override {
+               crosapi::TelemetryEventInfoPtr info) override {
     std::unique_ptr<extensions::Event> event;
     switch (info->which()) {
-      case crosapi::mojom::internal::TelemetryEventInfo_Data::
-          TelemetryEventInfo_Tag::kDefaultType: {
+      case crosapi::internal::TelemetryEventInfo_Data::TelemetryEventInfo_Tag::
+          kDefaultType: {
         LOG(WARNING) << "Got unknown event category";
         return;
       }
-      case crosapi::mojom::internal::TelemetryEventInfo_Data::
-          TelemetryEventInfo_Tag::kAudioJackEventInfo: {
+      case crosapi::internal::TelemetryEventInfo_Data::TelemetryEventInfo_Tag::
+          kAudioJackEventInfo: {
         base::Value::List args;
         args.Append(
-            converters::ConvertEventPtr<api::os_events::AudioJackEventInfo>(
+            converters::ConvertStructPtr<api::os_events::AudioJackEventInfo>(
                 std::move(info->get_audio_jack_event_info()))
                 .ToValue());
         event = std::make_unique<extensions::Event>(
@@ -50,15 +52,40 @@ class DefaultEventDelegate : public EventObservationCrosapi::Delegate {
             browser_context_);
         break;
       }
-      case crosapi::mojom::internal::TelemetryEventInfo_Data::
-          TelemetryEventInfo_Tag::kLidEventInfo: {
+      case crosapi::internal::TelemetryEventInfo_Data::TelemetryEventInfo_Tag::
+          kLidEventInfo: {
         base::Value::List args;
-        args.Append(converters::ConvertEventPtr<api::os_events::LidEventInfo>(
+        args.Append(converters::ConvertStructPtr<api::os_events::LidEventInfo>(
                         std::move(info->get_lid_event_info()))
                         .ToValue());
         event = std::make_unique<extensions::Event>(
             extensions::events::OS_EVENTS_ON_LID_EVENT,
             api::os_events::OnLidEvent::kEventName, std::move(args),
+            browser_context_);
+        break;
+      }
+      case crosapi::internal::TelemetryEventInfo_Data::TelemetryEventInfo_Tag::
+          kUsbEventInfo: {
+        base::Value::List args;
+        args.Append(converters::ConvertStructPtr<api::os_events::UsbEventInfo>(
+                        std::move(info->get_usb_event_info()))
+                        .ToValue());
+        event = std::make_unique<extensions::Event>(
+            extensions::events::OS_EVENTS_ON_USB_EVENT,
+            api::os_events::OnUsbEvent::kEventName, std::move(args),
+            browser_context_);
+        break;
+      }
+      case crosapi::internal::TelemetryEventInfo_Data::TelemetryEventInfo_Tag::
+          kSdCardEventInfo: {
+        base::Value::List args;
+        args.Append(
+            converters::ConvertStructPtr<api::os_events::SdCardEventInfo>(
+                std::move(info->get_sd_card_event_info()))
+                .ToValue());
+        event = std::make_unique<extensions::Event>(
+            extensions::events::OS_EVENTS_ON_SD_CARD_EVENT,
+            api::os_events::OnSdCardEvent::kEventName, std::move(args),
             browser_context_);
         break;
       }
@@ -84,8 +111,7 @@ EventObservationCrosapi::EventObservationCrosapi(
 
 EventObservationCrosapi::~EventObservationCrosapi() = default;
 
-void EventObservationCrosapi::OnEvent(
-    crosapi::mojom::TelemetryEventInfoPtr info) {
+void EventObservationCrosapi::OnEvent(crosapi::TelemetryEventInfoPtr info) {
   if (!info) {
     LOG(WARNING) << "Received empty event";
     return;
@@ -94,7 +120,7 @@ void EventObservationCrosapi::OnEvent(
   delegate_->OnEvent(extension_id_, std::move(info));
 }
 
-mojo::PendingRemote<crosapi::mojom::TelemetryEventObserver>
+mojo::PendingRemote<crosapi::TelemetryEventObserver>
 EventObservationCrosapi::GetRemote() {
   return receiver_.BindNewPipeAndPassRemote();
 }

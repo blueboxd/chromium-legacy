@@ -28,7 +28,7 @@ SyncCredentialsFilter::SyncCredentialsFilter(
 SyncCredentialsFilter::~SyncCredentialsFilter() = default;
 
 bool SyncCredentialsFilter::ShouldSave(const PasswordForm& form) const {
-  if (client_->IsIncognito())
+  if (client_->IsOffTheRecord())
     return false;
 
   if (form.form_data.is_gaia_with_skip_save_password_form)
@@ -39,49 +39,36 @@ bool SyncCredentialsFilter::ShouldSave(const PasswordForm& form) const {
   const signin::IdentityManager* identity_manager =
       client_->GetIdentityManager();
 
-  if (!base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage)) {
-    // Legacy code path, subject to clean-up.
+  if (base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage)) {
+    // If kEnablePasswordsAccountStorage is enabled, then don't allow saving the
+    // password if it corresponds to the primary account. Note that if the user
+    // is just signing in to the first Gaia account, then IdentityManager might
+    // not know about the account yet.
+    if (sync_util::IsGaiaCredentialPage(form.signon_realm)) {
+      CoreAccountInfo primary_account = identity_manager->GetPrimaryAccountInfo(
+          signin::ConsentLevel::kSignin);
+      if (primary_account.IsEmpty() ||
+          gaia::AreEmailsSame(base::UTF16ToUTF8(form.username_value),
+                              primary_account.email)) {
+        return false;
+      }
+    }
+  } else {
     // If kEnablePasswordsAccountStorage is NOT enabled, then don't allow saving
     // the password for the sync account specifically.
-    return !sync_util::IsSyncAccountCredential(form.url, form.username_value,
-                                               sync_service, identity_manager);
+    if (sync_util::IsSyncAccountCredential(form.url, form.username_value,
+                                           sync_service, identity_manager)) {
+      return false;
+    }
   }
 
-  if (!sync_util::IsGaiaCredentialPage(form.signon_realm)) {
-    return true;
-  }
-
-  // The requirement to fulfill is "don't offer to save a Gaia password inside
-  // its own account".
-  // Let's assume that if the browser is signed-in, new passwords are saved to
-  // the primary signed-in account. Per sync_util::GetAccountForSaving(), that's
-  // not always true, but let's not overcomplicate.
-  CoreAccountInfo primary_account =
-      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
-  if (!primary_account.IsEmpty()) {
-    // This returns false when `primary_account` just signed-in on the web and
-    // already made it to the IdentityManager.
-    return !gaia::AreEmailsSame(base::UTF16ToUTF8(form.username_value),
-                                primary_account.email);
-  }
-
-  // The browser is signed-out and the web just signed-in. On desktop, this
-  // immediately leads to browser sign-in, so don't offer saving.
-  // TODO(crbug.com/1446361): The above is false if the user disabled browser
-  // sign-in. Return true then. Currently these users can't save Gaia passwords.
-
-  // On mobile, sign-in via the web page doesn't lead to browser sign-in, so
-  // offer saving.
-  // (Navigating to the Gaia web page opens Chrome UI which must be accepted to
-  // perform browser+web sign-in. The code path here is only hit if that UI was
-  // suppressed/ dismissed and the user interacted directly with the page.)
-  return BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS);
+  return true;
 }
 
 bool SyncCredentialsFilter::ShouldSaveGaiaPasswordHash(
     const PasswordForm& form) const {
   if (base::FeatureList::IsEnabled(features::kPasswordReuseDetectionEnabled)) {
-    return !client_->IsIncognito() &&
+    return !client_->IsOffTheRecord() &&
            sync_util::IsGaiaCredentialPage(form.signon_realm);
   }
   return false;
@@ -89,8 +76,9 @@ bool SyncCredentialsFilter::ShouldSaveGaiaPasswordHash(
 
 bool SyncCredentialsFilter::ShouldSaveEnterprisePasswordHash(
     const PasswordForm& form) const {
-  return !client_->IsIncognito() && sync_util::ShouldSaveEnterprisePasswordHash(
-                                        form, *client_->GetPrefs());
+  return !client_->IsOffTheRecord() &&
+         sync_util::ShouldSaveEnterprisePasswordHash(form,
+                                                     *client_->GetPrefs());
 }
 
 bool SyncCredentialsFilter::IsSyncAccountEmail(

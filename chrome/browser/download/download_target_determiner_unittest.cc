@@ -71,7 +71,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
+#include "chrome/browser/ash/policy/dlp/dlp_files_controller_ash.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
@@ -1324,12 +1324,12 @@ TEST_F(DownloadTargetDeterminerTest, TransitionType) {
       {// Benign file type. Results in a danger type of NOT_DANGEROUS. Page
        // transition type is irrelevant.
        ui::PAGE_TRANSITION_LINK, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-       raw_ref(kSafeFile)},
+       ToRawRef<ExperimentalAsh>(kSafeFile)},
 
       {// File type is ALLOW_ON_USER_GESTURE. PAGE_TRANSITION_LINK doesn't
        // cause file to be marked as safe.
        ui::PAGE_TRANSITION_LINK, download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
-       raw_ref(kAllowOnUserGesture)},
+       ToRawRef<ExperimentalAsh>(kAllowOnUserGesture)},
 
       {// File type is ALLOW_ON_USER_GESTURE. PAGE_TRANSITION_TYPED doesn't
        // cause file to be marked as safe. TYPED can be used for certain
@@ -1337,32 +1337,33 @@ TEST_F(DownloadTargetDeterminerTest, TransitionType) {
        // initiated by a user. Hence a resulting download may not be
        // intentional.
        ui::PAGE_TRANSITION_TYPED, download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
-       raw_ref(kAllowOnUserGesture)},
+       ToRawRef<ExperimentalAsh>(kAllowOnUserGesture)},
 
       {// File type is ALLOW_ON_USER_GESTURE.
        // PAGE_TRANSITION_FROM_ADDRESS_BAR causes file to be marked as safe.
        static_cast<ui::PageTransition>(ui::PAGE_TRANSITION_TYPED |
                                        ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
        download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-       raw_ref(kAllowOnUserGesture)},
+       ToRawRef<ExperimentalAsh>(kAllowOnUserGesture)},
 
       {// File type is ALLOW_ON_USER_GESTURE.
        // PAGE_TRANSITION_FROM_ADDRESS_BAR causes file to be marked as safe.
        static_cast<ui::PageTransition>(ui::PAGE_TRANSITION_GENERATED |
                                        ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
        download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-       raw_ref(kAllowOnUserGesture)},
+       ToRawRef<ExperimentalAsh>(kAllowOnUserGesture)},
 
       {// File type is ALLOW_ON_USER_GESTURE.
        // PAGE_TRANSITION_FROM_ADDRESS_BAR causes file to be marked as safe.
        ui::PAGE_TRANSITION_FROM_ADDRESS_BAR,
        download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-       raw_ref(kAllowOnUserGesture)},
+       ToRawRef<ExperimentalAsh>(kAllowOnUserGesture)},
 
       {// File type is DANGEROUS. PageTransition is irrelevant.
        static_cast<ui::PageTransition>(ui::PAGE_TRANSITION_TYPED |
                                        ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-       download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE, raw_ref(kDangerousFile)},
+       download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+       ToRawRef<ExperimentalAsh>(kDangerousFile)},
   };
 
   // Test assumptions:
@@ -2843,10 +2844,10 @@ class DownloadTargetDeterminerDlpTest : public DownloadTargetDeterminerTest {
         scoped_user_manager_(std::make_unique<user_manager::ScopedUserManager>(
             base::WrapUnique(user_manager_.get()))) {}
 
-  class MockFilesController : public policy::DlpFilesController {
+  class MockFilesController : public policy::DlpFilesControllerAsh {
    public:
     explicit MockFilesController(const policy::DlpRulesManager& rules_manager)
-        : DlpFilesController(rules_manager) {}
+        : DlpFilesControllerAsh(rules_manager) {}
     ~MockFilesController() override = default;
 
     MOCK_METHOD(bool,

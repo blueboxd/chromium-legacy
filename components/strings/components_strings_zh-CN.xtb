@@ -175,6 +175,7 @@
 <translation id="1363819917331173092">不询问是否翻译<ph name="SOURCE_LANGUAGE" />网页</translation>
 <translation id="1364822246244961190">此政策已被禁用，其值也会被忽略。</translation>
 <translation id="1368318639262510626">恐龙游戏。在这款游戏中，您要协助一头正在荒野中奔跑的像素化恐龙躲避仙人掌和翼手龙。您只需在听到提示音时按一下空格键，即可让恐龙跃过障碍物。</translation>
+<translation id="136907351928231527">主题列表最多可能需要 1 周的时间才会显示在这里，具体取决于您近期的浏览记录</translation>
 <translation id="1374468813861204354">建议</translation>
 <translation id="1375198122581997741">关于版本</translation>
 <translation id="1376836354785490390">收起</translation>
@@ -190,6 +191,7 @@
 <translation id="1396259464226642517">此结果出乎意料？<ph name="BEGIN_LINK" />发送反馈<ph name="END_LINK" /></translation>
 <translation id="1405567553485452995">浅绿色</translation>
 <translation id="1406500794671479665">正在验证...</translation>
+<translation id="1406812885827747674">仅这次访问时允许</translation>
 <translation id="1407135791313364759">全部打开</translation>
 <translation id="1408787208417187241">三钉（顶部）</translation>
 <translation id="1410941016594047814">Invite 信封</translation>
@@ -437,7 +439,6 @@
 <translation id="2003709556000175978">立即重置您的密码</translation>
 <translation id="2003775180883135320">四孔（顶部）</translation>
 <translation id="201174227998721785">在 Chrome 设置中管理各网站的权限及存储的数据</translation>
-<translation id="2012276282211112603">暂无可显示的主题</translation>
 <translation id="2019607688127825327">“管理无障碍设置”按钮，按 Enter 键即可在 Chrome 设置中定制您的个性化无障碍工具</translation>
 <translation id="2021333772895814435">此政策会针对以下操作自动停用跨设备同步功能：<ph name="ACTION_LIST" />。</translation>
 <translation id="202224654587969958">12 x 19 英寸</translation>
@@ -470,6 +471,7 @@
 <translation id="2079545284768500474">撤消</translation>
 <translation id="20817612488360358">已设置为使用系统代理设置，但同时指定了一个明确的代理配置。</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 条结果，共 <ph name="TOTAL_RESULTS" /> 条</translation>
+<translation id="2083256696566019397">每次访问时都允许</translation>
 <translation id="2085876078937250610">保存…</translation>
 <translation id="2088086323192747268">“管理同步数据”按钮，按 Enter 键即可在 Chrome 设置中管理您要同步的信息</translation>
 <translation id="2091887806945687916">声音</translation>
@@ -1184,7 +1186,7 @@
 <translation id="3906954721959377182">平板电脑</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3911401144270344103">如果您改变了想法，可随时在 Chrome 设置中做出更改</translation>
-<translation id="3919748199683685809"><ph name="BEGIN_BOLD" />您可以如何管理自己的数据：<ph name="END_BOLD" />Chrome 会自动删除保留时长超过 30 天的网站。您再次访问的网站可能会重新出现在列表中。您还可随时在 Chrome 设置中禁止某个网站向您展示建议的广告，以及停用网站建议的广告。</translation>
+<translation id="3919748199683685809"><ph name="BEGIN_BOLD" />您可以如何管理自己的数据：<ph name="END_BOLD" />Chrome 会自动删除保留时长超过 30 天的网站。您再次访问的网站可能会再次出现在列表中。您还可随时在 Chrome 设置中禁止某个网站向您展示建议的广告，以及停用网站建议的广告。</translation>
 <translation id="3921869355029467742">输入您的安全码</translation>
 <translation id="3927932062596804919">拒绝</translation>
 <translation id="393316646445601645">互联网与电信</translation>
@@ -1350,6 +1352,8 @@
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{这张卡已保存到您的 Google 帐号中}other{这些卡已保存到您的 Google 帐号中}}</translation>
 <translation id="4287495839370498922">在 Chrome 中加强广告隐私设置</translation>
 <translation id="4287885627794386150">符合试用条件但处于无效状态</translation>
+<translation id="4290920330097335010">一律不允许</translation>
+<translation id="4296207570293932800">全新广告隐私权功能现已推出</translation>
 <translation id="4297502707443874121">第 <ph name="THUMBNAIL_PAGE" /> 页的缩略图</translation>
 <translation id="4298000214066716287">投资</translation>
 <translation id="42981349822642051">展开</translation>
@@ -1418,7 +1422,6 @@
 <translation id="4451135742916150903">可以询问能否连接到 HID 设备</translation>
 <translation id="4451684391620232683">向用户显示的文本：</translation>
 <translation id="4452328064229197696">您刚才使用的密码遭遇了数据泄露。为确保您的帐号安全，Google 密码管理器建议您检查已保存的所有密码。</translation>
-<translation id="4460315069258617173">可以使用，直到您关闭在此网站上打开的所有标签页</translation>
 <translation id="4464826014807964867">包含来自贵组织的信息的网站</translation>
 <translation id="447665707681730621"><ph name="BUBBLE_MESSAGE" />。<ph name="LEARN_MORE_TEXT" /></translation>
 <translation id="4476953670630786061">此表单不安全。因此，系统已关闭自动填充功能。</translation>
@@ -1472,7 +1475,7 @@
 <translation id="4602465984861132303">保龄球</translation>
 <translation id="4606870351894164739">富有影响力</translation>
 <translation id="4607603470419975064">“查看 Chrome 提示”按钮，按 Enter 键即可了解各项 Chrome 功能</translation>
-<translation id="4607608436550361748">查看 Chrome 使用窍门</translation>
+<translation id="4607608436550361748">查看 Chrome 提示</translation>
 <translation id="460848736049414407">已被管理员屏蔽</translation>
 <translation id="4610279718074907952">此网站属于由 <ph name="SET_OWNER" /> 定义的群组，该群组可查看您的活动记录</translation>
 <translation id="4617273035598175554">图形与动画软件</translation>
@@ -1622,6 +1625,7 @@
 <translation id="495170559598752135">操作</translation>
 <translation id="4953689047182316270">对无障碍事件做出响应</translation>
 <translation id="4958444002117714549">展开列表</translation>
+<translation id="4960068118612257147">您可在 Chrome 的广告隐私权设置中进行更改</translation>
 <translation id="4964505745997821360">健康保险</translation>
 <translation id="4968522289500246572">此应用是专为移动设备设计的，可能无法妥当地调整大小。此应用可能会出现问题或重启。</translation>
 <translation id="4968665849807487749">可以询问能否管理您的所有显示屏上的窗口</translation>
@@ -2022,7 +2026,6 @@
 <translation id="5967592137238574583">修改联系信息</translation>
 <translation id="5967867314010545767">从历史记录中移除</translation>
 <translation id="5968022600320704045">无搜索结果</translation>
-<translation id="5968793460449681917">每次访问时</translation>
 <translation id="5974052231147553524">第 6 卷</translation>
 <translation id="5975083100439434680">缩小</translation>
 <translation id="5979084224081478209">检查密码</translation>
@@ -2389,7 +2392,6 @@
 <translation id="6897140037006041989">用户代理</translation>
 <translation id="6898699227549475383">组织 (O)</translation>
 <translation id="6899000063526916106">输入 <ph name="NUMBER_OF_DIGITS" /> 位数的动态密码</translation>
-<translation id="6907293445143367439">允许 <ph name="SITE_NAME" />：</translation>
 <translation id="6907458757809079309">健身</translation>
 <translation id="6910240653697687763"><ph name="URL" /> 想完全控制您的 MIDI 设备</translation>
 <translation id="691024665142758461">下载多个文件</translation>
@@ -2570,7 +2572,6 @@
 <translation id="733923710415886693">该服务器的证书未通过证书透明度政策进行披露。</translation>
 <translation id="7341357280245177602">二手车</translation>
 <translation id="7346048084945669753">有无关联：</translation>
-<translation id="7349921148288539306">可以使用，直到您关闭此标签页</translation>
 <translation id="7352651011704765696">出了点问题</translation>
 <translation id="7353601530677266744">命令行</translation>
 <translation id="7354880545102894991">廉价旅行与最后时限旅行</translation>
@@ -3047,7 +3048,6 @@
 <translation id="8433057134996913067">这将使您退出大多数网站。</translation>
 <translation id="8434840396568290395">宠物</translation>
 <translation id="8437238597147034694">撤消移动(&amp;U)</translation>
-<translation id="8438476240229491014">记住此设置</translation>
 <translation id="8438786541497918448">使用摄像头和麦克风？</translation>
 <translation id="8438923942245957911">贵组织已标记此网站</translation>
 <translation id="8443613539889492016">说唱</translation>

@@ -10,8 +10,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import static org.chromium.net.CronetTestRule.SERVER_CERT_PEM;
-import static org.chromium.net.CronetTestRule.SERVER_KEY_PKCS8_PEM;
 import static org.chromium.net.CronetTestRule.assertContains;
 import static org.chromium.net.CronetTestRule.getContext;
 import static org.chromium.net.CronetTestRule.getTestStorage;
@@ -79,8 +77,7 @@ public class ExperimentalOptionsTest {
         mHangingUrlLatch = new CountDownLatch(1);
         CronetTestUtil.setMockCertVerifierForTesting(
                 mBuilder, QuicTestServer.createMockCertVerifier());
-        assertTrue(Http2TestServer.startHttp2TestServer(
-                getContext(), SERVER_CERT_PEM, SERVER_KEY_PKCS8_PEM, mHangingUrlLatch));
+        assertTrue(Http2TestServer.startHttp2TestServer(getContext(), mHangingUrlLatch));
     }
 
     @After
@@ -271,7 +268,6 @@ public class ExperimentalOptionsTest {
     @Test
     @MediumTest
     @OnlyRunNativeCronet
-    @DisabledTest(message = "https://crbug.com/1404719")
     // Experimental options should be specified through a JSON compliant string. When that is not
     // the case building a Cronet engine should fail.
     public void testWrongJsonExperimentalOptions() throws Exception {
@@ -479,23 +475,10 @@ public class ExperimentalOptionsTest {
     @Test
     @MediumTest
     @OnlyRunNativeCronet
-    public void testExperimentalOptions_allSet_viaExperimentalEngine() throws Exception {
+    public void testExperimentalOptions_allSet() throws Exception {
         MockCronetBuilderImpl mockBuilderImpl = MockCronetBuilderImpl.withoutNativeSetterSupport();
-        testExperimentalOptionsAllSetImpl(
-                new ExperimentalCronetEngine.Builder(mockBuilderImpl), mockBuilderImpl);
-    }
+        mBuilder = new ExperimentalCronetEngine.Builder(mockBuilderImpl);
 
-    @Test
-    @MediumTest
-    @OnlyRunNativeCronet
-    public void testExperimentalOptions_allSet_viaNonExperimentalEngine() throws Exception {
-        MockCronetBuilderImpl mockBuilderImpl = MockCronetBuilderImpl.withoutNativeSetterSupport();
-        testExperimentalOptionsAllSetImpl(
-                new CronetEngine.Builder(mockBuilderImpl), mockBuilderImpl);
-    }
-
-    private static void testExperimentalOptionsAllSetImpl(
-            CronetEngine.Builder builder, MockCronetBuilderImpl mockBuilderImpl) throws Exception {
         QuicOptions quicOptions =
                 QuicOptions.builder()
                         .addAllowedQuicHost("quicHost1.com")
@@ -568,7 +551,7 @@ public class ExperimentalOptionsTest {
                                 toTelephoneKeyboardSequence("badPathErr"))
                         .build();
 
-        builder.setDnsOptions(dnsOptions)
+        mBuilder.setDnsOptions(dnsOptions)
                 .setConnectionMigrationOptions(connectionMigrationOptions)
                 .setQuicOptions(quicOptions)
                 .build();

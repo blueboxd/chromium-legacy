@@ -20,8 +20,10 @@
 #include "content/browser/webid/test/federated_auth_request_request_token_callback_helper.h"
 #include "content/browser/webid/test/mock_api_permission_delegate.h"
 #include "content/browser/webid/test/mock_auto_reauthn_permission_delegate.h"
+#include "content/browser/webid/test/mock_identity_registry.h"
 #include "content/browser/webid/test/mock_identity_request_dialog_controller.h"
 #include "content/browser/webid/test/mock_idp_network_request_manager.h"
+#include "content/browser/webid/test/mock_modal_dialog_view_delegate.h"
 #include "content/browser/webid/test/mock_permission_delegate.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/public/browser/identity_request_dialog_controller.h"
@@ -54,6 +56,7 @@ namespace content {
 
 namespace {
 
+constexpr char kIdpUrl[] = "https://idp.example/";
 constexpr char kProviderUrlFull[] = "https://idp.example/fedcm.json";
 constexpr char kTopFrameUrl[] = "https://top-frame.example/";
 constexpr char kAccountsEndpoint[] = "https://idp.example/accounts";
@@ -191,6 +194,11 @@ class FederatedAuthRequestImplMultipleFramesTest
         std::make_unique<NiceMock<MockAutoReauthnPermissionDelegate>>();
     mock_permission_delegate_ =
         std::make_unique<NiceMock<MockPermissionDelegate>>();
+    mock_modal_dialog_view_delegate_ =
+        std::make_unique<NiceMock<MockModalDialogViewDelegate>>();
+    mock_identity_registry_ = std::make_unique<NiceMock<MockIdentityRegistry>>(
+        web_contents(), mock_modal_dialog_view_delegate_.get(),
+        url::Origin::Create(GURL(kIdpUrl)));
 
     static_cast<TestWebContents*>(web_contents())
         ->NavigateAndCommit(GURL(kTopFrameUrl), ui::PAGE_TRANSITION_LINK);
@@ -223,7 +231,7 @@ class FederatedAuthRequestImplMultipleFramesTest
         &FederatedAuthRequestImpl::CreateForTesting(
             render_frame_host, test_api_permission_delegate_.get(),
             mock_auto_reauthn_permission_delegate_.get(),
-            mock_permission_delegate_.get(),
+            mock_permission_delegate_.get(), mock_identity_registry_.get(),
             request_remote.BindNewPipeAndPassReceiver());
     federated_auth_request_impl->SetDialogControllerForTests(
         std::make_unique<TestDialogController>(accounts_dialog_action,
@@ -247,12 +255,13 @@ class FederatedAuthRequestImplMultipleFramesTest
         blink::mojom::IdentityProvider::NewFederated(std::move(config_ptr));
     idp_ptrs.push_back(std::move(idp_ptr));
     auto get_params = blink::mojom::IdentityProviderGetParameters::New(
-        std::move(idp_ptrs), /*auto_reauthn=*/true,
+        std::move(idp_ptrs),
         /*rp_context=*/blink::mojom::RpContext::kSignIn);
     std::vector<blink::mojom::IdentityProviderGetParametersPtr> idp_get_params;
     idp_get_params.push_back(std::move(get_params));
 
     request_remote->RequestToken(std::move(idp_get_params),
+                                 MediationRequirement::kOptional,
                                  std::move(callback));
     request_remote.FlushForTesting();
   }
@@ -262,6 +271,9 @@ class FederatedAuthRequestImplMultipleFramesTest
   std::unique_ptr<NiceMock<MockAutoReauthnPermissionDelegate>>
       mock_auto_reauthn_permission_delegate_;
   std::unique_ptr<NiceMock<MockPermissionDelegate>> mock_permission_delegate_;
+  std::unique_ptr<NiceMock<MockModalDialogViewDelegate>>
+      mock_modal_dialog_view_delegate_;
+  std::unique_ptr<NiceMock<MockIdentityRegistry>> mock_identity_registry_;
 };
 
 // Test that test harness can execute successful FedCM flow for iframe.

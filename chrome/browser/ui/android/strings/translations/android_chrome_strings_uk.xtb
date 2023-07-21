@@ -30,7 +30,6 @@
 <translation id="1145536944570833626">Видалити наявні дані.</translation>
 <translation id="1149401351239820326">Місяць закінчення терміну дії</translation>
 <translation id="1150263420752757504">Додаток <ph name="APP_NAME" /> відкриється в Chrome. Продовжуючи, ви приймаєте <ph name="BEGIN_LINK1" />Загальні положення та умови Google<ph name="END_LINK1" /> і <ph name="BEGIN_LINK2" />Додаткові умови використання Google Chrome та ОС Chrome<ph name="END_LINK2" />.</translation>
-<translation id="1154704303112745282">Сторінка недоступна в режимі офлайн: <ph name="VIOLATED_URL" /></translation>
 <translation id="1173894706177603556">Перейменувати</translation>
 <translation id="1177863135347784049">Спеціальне</translation>
 <translation id="1181037720776840403">Видалити</translation>
@@ -151,6 +150,7 @@
 <translation id="1810845389119482123">Початкове налаштування синхронізації не завершено</translation>
 <translation id="1829244130665387512">Знайти на сторінці</translation>
 <translation id="1832459821645506983">Гаразд</translation>
+<translation id="185383612275551373">Увімкніть синхронізацію, щоб отримувати найактуальніший контент від Google</translation>
 <translation id="1854311313115643875">Якщо пробні версії функцій увімкнено, відвідувані вами сайти можуть запитувати в Chrome інформацію, яка допомагає їм вимірювати ефективність реклами. Функція оцінки ефективності реклами обмежує міжсайтове відстеження, передаючи між сайтами мінімум даних.
 
 Коли ви видаляєте історію веб-перегляду (повністю або для певного сайту), також вилучається інформація для вимірювання ефективності. Перегляньте <ph name="BEGIN_LINK" />історію веб-перегляду<ph name="END_LINK" />.</translation>
@@ -242,7 +242,6 @@
 <translation id="2386938421315164605">Ховайте й показуйте теми</translation>
 <translation id="2390510615457643724">Завантажити файл "<ph name="FILE_NAME" />" (<ph name="FILE_SIZE" />) знову?</translation>
 <translation id="2394602618534698961">Завантажені файли з’являться тут</translation>
-<translation id="2407481962792080328">Ця функція вмикається, коли ви входите в обліковий запис Google</translation>
 <translation id="2410754283952462441">Виберіть обліковий запис</translation>
 <translation id="2414886740292270097">Темна</translation>
 <translation id="2426805022920575512">Вибрати інший обліковий запис</translation>
@@ -251,7 +250,7 @@
 <translation id="2439153523196674349">Перегляд стрічки із сайту "<ph name="SITE_NAME" />"</translation>
 <translation id="2450083983707403292">Завантажити файл <ph name="FILE_NAME" /> ще раз?</translation>
 <translation id="2453860139492968684">Готово</translation>
-<translation id="2461822463642141190">Зараз</translation>
+<translation id="2461822463642141190">Енергоспоживання</translation>
 <translation id="2472163211318554013">Увійдіть, щоб користуватися всіма можливостями Chrome</translation>
 <translation id="247737702124049222">Описи зображень увімкнено</translation>
 <translation id="2482878487686419369">Сповіщення</translation>
@@ -299,6 +298,7 @@
 <translation id="265156376773362237">Звичайне попереднє завантаження</translation>
 <translation id="2656405586795711023">Веб-додатки</translation>
 <translation id="2669454659051515572">Усі користувачі цього пристрою можуть бачити завантажені файли</translation>
+<translation id="2688382350024736268">Тепер веб-переглядач Chrome надає сайтам і додаткам доступ лише до певних типів даних (наприклад, інформацію про те, коли вам показувалось оголошення), на основі яких вимірюється ефективність реклами.</translation>
 <translation id="2702516483241149200">Новинка! Діліться посиланням, яке прокручує сторінку до цього тексту</translation>
 <translation id="2707726405694321444">Оновити сторінку</translation>
 <translation id="271033894570825754">Новий</translation>
@@ -693,7 +693,6 @@
 Щоб змінити це налаштування, <ph name="BEGIN_LINK" />скиньте параметри синхронізації<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Ім'я на картці</translation>
 <translation id="481574578487123132">Зв’язані пристрої</translation>
-<translation id="4818017973810341238">Не вдалося підтвердити Digital Asset Links на сторінці <ph name="VIOLATED_URL" /></translation>
 <translation id="4826163340425232009">Нижній екран для входу.</translation>
 <translation id="4831037795716408498">Як завантажити контент</translation>
 <translation id="4834007576107377210">Перегляньте вказівки пошукової системи щодо того, як видалити історію пошуку (якщо вона є)</translation>
@@ -889,7 +888,6 @@
 <translation id="5833984609253377421">Поділитися посиланням</translation>
 <translation id="5834764604050996579">Щоб зісканувати QR-код, надайте Chrome доступ до камери</translation>
 <translation id="5839058148541733625">Chrome Dino</translation>
-<translation id="5842437907245493289">Впорядковуйте відстежувані товари в закладках через значок папки</translation>
 <translation id="5853623416121554550">призупинено</translation>
 <translation id="5854512288214985237">Компанія Google не отримуватиме статистику та звіти про аварійне завершення роботи</translation>
 <translation id="5855546874025048181">Уточнити: <ph name="REFINE_TEXT" /></translation>
@@ -991,7 +989,6 @@
 <translation id="6395288395575013217">ПОСИЛАННЯ</translation>
 <translation id="6397616442223433927">З'єднання відновлено</translation>
 <translation id="6401458660421980302">Щоб надіслати цю вкладку на інший пристрій, увійдіть на ньому в Chrome</translation>
-<translation id="6402652558933147609">Помилка <ph name="ERROR_CODE" /> на сторінці <ph name="VIOLATED_URL" /></translation>
 <translation id="6404511346730675251">Редагувати закладку</translation>
 <translation id="6406506848690869874">Синхронізація</translation>
 <translation id="6407224748847589805">Не вдається підключитися до комп'ютера. Виберіть інший варіант підтвердження.</translation>
@@ -1057,7 +1054,7 @@
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}one{<ph name="CONTACT_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}many{<ph name="CONTACT_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="6649642165559792194">Переглянути зображення <ph name="BEGIN_NEW" />Нове<ph name="END_NEW" /></translation>
 <translation id="6657585470893396449">Пароль</translation>
-<translation id="6659594942844771486">Tab</translation>
+<translation id="6659594942844771486">Вкладка</translation>
 <translation id="666731172850799929">Відкрити в програмі <ph name="APP_NAME" /></translation>
 <translation id="6671495933530132209">Копіювати зображення</translation>
 <translation id="6672917148207387131">Додати домен <ph name="DOMAIN" /></translation>
@@ -1174,6 +1171,7 @@
 <translation id="7291910923717764901">Додано описи зображень для цієї сторінки</translation>
 <translation id="7293429513719260019">Вибрати мову</translation>
 <translation id="729975465115245577">На пристрої немає додатка для зберігання файлу з паролями.</translation>
+<translation id="7304072650267745798">На вашому пристрої Android може бути схоже налаштування. Якщо це налаштування ввімкнено в Chrome і на пристрої Android, компанії можуть визначати ефективність своїх оголошень на відвіданих вами веб-сайтах і в додатках, якими ви користуєтеся.</translation>
 <translation id="7304873321153398381">Офлайн. Chrome не може перевірити паролі.</translation>
 <translation id="7313188324932846546">Натисніть, щоб налаштувати синхронізацію</translation>
 <translation id="7332075081379534664">Вхід виконано</translation>

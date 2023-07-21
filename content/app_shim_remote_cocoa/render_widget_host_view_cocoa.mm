@@ -6,14 +6,13 @@
 
 #include <Carbon/Carbon.h>  // for <HIToolbox/Events.h>
 
+#include <algorithm>
 #include <limits>
 #include <tuple>
 #include <utility>
 
 #include "base/containers/contains.h"
-#include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
-#include "base/mac/mac_util.h"
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/remote_cocoa/app_shim/ns_view_ids.h"
@@ -1387,27 +1386,6 @@ void ExtractUnderlines(NSAttributedString* string,
 
 // Called repeatedly during a pinch gesture, with incremental change values.
 - (void)magnifyWithEvent:(NSEvent*)event {
-  if (base::mac::IsAtLeastOS10_11()) {
-    if (event.phase == NSEventPhaseBegan) {
-      [self handleBeginGestureWithEvent:event isSyntheticallyInjected:NO];
-      return;
-    }
-
-    if (event.phase == NSEventPhaseEnded ||
-        event.phase == NSEventPhaseCancelled) {
-      [self handleEndGestureWithEvent:event];
-      return;
-    }
-  }
-
-  // If this conditional evalutes to true, and the function has not
-  // short-circuited from the previous block, then this event is a duplicate of
-  // a gesture event, and should be ignored.
-  if (event.phase == NSEventPhaseBegan || event.phase == NSEventPhaseEnded ||
-      event.phase == NSEventPhaseCancelled) {
-    return;
-  }
-
   WebGestureEvent updateEvent = WebGestureEventBuilder::Build(event, self);
   _hostHelper->GestureUpdate(updateEvent);
 }

@@ -76,7 +76,7 @@ bool IsDeviceBlocked(const char* field, const std::string& block_list) {
 #if BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kAndroidFrameDeadline,
              "AndroidFrameDeadline",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 #if BUILDFLAG(ENABLE_VALIDATING_COMMAND_DECODER)
@@ -86,7 +86,12 @@ BASE_FEATURE(kAndroidFrameDeadline,
 // platforms that would otherwise not default to using EGL bindings.
 BASE_FEATURE(kDefaultPassthroughCommandDecoder,
              "DefaultPassthroughCommandDecoder",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_CHROMEOS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 #endif  // !defined(PASSTHROUGH_COMMAND_DECODER_LAUNCHED)
 
 #if BUILDFLAG(IS_MAC)

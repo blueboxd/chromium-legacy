@@ -190,9 +190,8 @@
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/locale_change_guard.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
-#include "chrome/browser/ash/policy/active_directory/active_directory_policy_manager.h"
 #include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
-#include "chrome/browser/ash/policy/core/user_policy_manager_builder_ash.h"
+#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_factory_ash.h"
 #include "chrome/browser/ash/preferences.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/secure_channel/secure_channel_client_provider.h"
@@ -582,15 +581,11 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
   else
     ash::DeviceSettingsService::Get()->LoadIfNotPresent();
 
-  policy::CreateConfigurationPolicyProvider(
-      this, force_immediate_policy_load, io_task_runner_,
-      &user_cloud_policy_manager_ash_, &active_directory_policy_manager_);
+  user_cloud_policy_manager_ash_ = policy::CreateUserCloudPolicyManagerAsh(
+      this, force_immediate_policy_load, io_task_runner_);
 
   cloud_policy_manager = nullptr;
   policy_provider = GetUserCloudPolicyManagerAsh();
-  if (!policy_provider) {
-    policy_provider = GetActiveDirectoryPolicyManager();
-  }
 #else  // !BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   if (IsMainProfile()) {
@@ -1285,11 +1280,6 @@ policy::SchemaRegistryService* ProfileImpl::GetPolicySchemaRegistryService() {
 policy::UserCloudPolicyManagerAsh* ProfileImpl::GetUserCloudPolicyManagerAsh() {
   return user_cloud_policy_manager_ash_.get();
 }
-
-policy::ActiveDirectoryPolicyManager*
-ProfileImpl::GetActiveDirectoryPolicyManager() {
-  return active_directory_policy_manager_.get();
-}
 #else
 policy::UserCloudPolicyManager* ProfileImpl::GetUserCloudPolicyManager() {
   return user_cloud_policy_manager_.get();
@@ -1306,8 +1296,6 @@ ProfileImpl::configuration_policy_provider() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (user_cloud_policy_manager_ash_)
     return user_cloud_policy_manager_ash_.get();
-  if (active_directory_policy_manager_)
-    return active_directory_policy_manager_.get();
   return nullptr;
 #else  // !BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

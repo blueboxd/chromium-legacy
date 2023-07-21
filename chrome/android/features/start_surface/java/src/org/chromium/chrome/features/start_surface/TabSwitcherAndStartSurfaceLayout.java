@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher.TabListDelegate;
+import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherLayout.PerfListener;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurface.TabSwitcherViewObserver;
@@ -116,11 +117,6 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
     private boolean mAndroidViewFinishedShowing;
 
     private Animator mBackgroundTabAnimation;
-
-    interface PerfListener {
-        void onAnimationDone(
-                int frameRendered, long elapsedMs, long maxFrameInterval, int dirtySpan);
-    }
 
     private PerfListener mPerfListenerForTesting;
 
@@ -786,7 +782,7 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
     }
 
     @VisibleForTesting
-    void setPerfListenerForTesting(PerfListener perfListener) {
+    public void setPerfListenerForTesting(PerfListener perfListener) {
         mPerfListenerForTesting = perfListener;
     }
 

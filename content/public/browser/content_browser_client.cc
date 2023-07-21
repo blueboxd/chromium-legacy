@@ -35,6 +35,7 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/prefetch_service_delegate.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/responsiveness_calculator_delegate.h"
 #include "content/public/browser/sms_fetcher.h"
 #include "content/public/browser/speculation_host_delegate.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
@@ -533,11 +534,9 @@ bool ContentBrowserClient::IsAttributionReportingOperationAllowed(
   return true;
 }
 
-#if BUILDFLAG(IS_ANDROID)
 bool ContentBrowserClient::IsWebAttributionReportingAllowed() {
   return true;
 }
-#endif
 
 bool ContentBrowserClient::IsSharedStorageAllowed(
     content::BrowserContext* browser_context,
@@ -1478,6 +1477,11 @@ bool ContentBrowserClient::
 bool ContentBrowserClient::ShouldUseFirstPartyStorageKey(
     const url::Origin& origin) {
   return false;
+}
+
+std::unique_ptr<ResponsivenessCalculatorDelegate>
+ContentBrowserClient::CreateResponsivenessCalculatorDelegate() {
+  return nullptr;
 }
 
 }  // namespace content

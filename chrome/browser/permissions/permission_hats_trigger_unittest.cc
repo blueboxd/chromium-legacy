@@ -15,9 +15,7 @@
 
 class PermissionHatsTriggerUnitTest : public testing::Test {
  public:
-  PermissionHatsTriggerUnitTest() {
-    trigger_gurl = absl::make_optional(GURL("https://test.url"));
-  }
+  PermissionHatsTriggerUnitTest() { trigger_gurl = GURL("https://test.url"); }
 
   PermissionHatsTriggerUnitTest(const PermissionHatsTriggerUnitTest&) = delete;
   PermissionHatsTriggerUnitTest& operator=(
@@ -56,7 +54,7 @@ class PermissionHatsTriggerUnitTest : public testing::Test {
   base::test::ScopedFeatureList* feature_list() { return &feature_list_; }
 
   // Represents the url on which the survey was triggered
-  absl::optional<GURL> trigger_gurl;
+  GURL trigger_gurl;
 
  private:
   content::BrowserTaskEnvironment task_environment_{

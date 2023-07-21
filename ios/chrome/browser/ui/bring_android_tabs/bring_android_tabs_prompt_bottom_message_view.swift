@@ -5,14 +5,13 @@
 import SwiftUI
 import ios_chrome_common_ui_colors_swift
 
-private let kPromptInnerPaddingHorizontal: CGFloat = 12
-private let kPromptInnerPaddingVertical: CGFloat = 8
+private let kPromptInnerPadding: CGFloat = 7
 private let kPromptOuterPaddingHorizontal: CGFloat = 6
 private let kPromptOuterPaddingVertical: CGFloat = 8
 private let kPromptCornerRadius: CGFloat = 20
+private let kIconPadding: CGFloat = 12
 private let kTextVerticalSpacing: CGFloat = 12
 private let kTextMinimumScaleFactor: CGFloat = 0.5
-private let kSeparatorHeight: CGFloat = 1
 
 // The view object for "Bring Android Tabs" bottom message prompt.
 struct BringAndroidTabsPromptBottomMessageView: View {
@@ -25,12 +24,12 @@ struct BringAndroidTabsPromptBottomMessageView: View {
     HStack(alignment: .top) {
       Image(systemName: kTabsSymbol)
         .imageScale(.large)
-        .padding(.top, kTextVerticalSpacing)
+        .padding(kIconPadding - kPromptInnerPadding)
       VStack(alignment: .leading, spacing: kTextVerticalSpacing) {
         HStack(alignment: .top) {
           VStack(
             alignment: .leading,
-            spacing: kTextVerticalSpacing - kPromptInnerPaddingVertical
+            spacing: kTextVerticalSpacing - kPromptInnerPadding
           ) {
             Text(
               L10nUtils.pluralString(
@@ -48,7 +47,7 @@ struct BringAndroidTabsPromptBottomMessageView: View {
             .foregroundColor(.textSecondary)
             .minimumScaleFactor(kTextMinimumScaleFactor)
           }
-          .padding(.top, kTextVerticalSpacing - kPromptInnerPaddingVertical)
+          .padding(.top, kTextVerticalSpacing - kPromptInnerPadding)
           Spacer()
           Button(action: self.close) {
             Image(systemName: kXMarkCircleFillSymbol)
@@ -58,7 +57,7 @@ struct BringAndroidTabsPromptBottomMessageView: View {
             kBringAndroidTabsPromptBottomMessageCloseButtonAXId)
         }
         .padding(0)
-        Divider().overlay(Color.separator).frame(height: kSeparatorHeight)
+        Divider().overlay(Color.separator)
         Button(action: self.review) {
           HStack {
             Text(
@@ -79,8 +78,7 @@ struct BringAndroidTabsPromptBottomMessageView: View {
       }
       .padding(.bottom, kTextVerticalSpacing)
     }
-    .padding(.horizontal, kPromptInnerPaddingHorizontal)
-    .padding(.vertical, kPromptInnerPaddingVertical)
+    .padding(kPromptInnerPadding)
     .background(Color.primaryBackground)
     .clipShape(RoundedRectangle(cornerRadius: kPromptCornerRadius))
     .environment(\.colorScheme, .dark)

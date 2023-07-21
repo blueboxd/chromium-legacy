@@ -295,6 +295,7 @@
 <translation id="3484914941826596830">ફર્મવેયર અપડેટ થતું હોય ત્યારે આ બાહ્ય ડિવાઇસ પ્લગમાંથી દૂર કરશો નહીં અથવા તમારા કમ્પ્યુટરને શટ ડાઉન કરશો નહીં. તમે આ વિન્ડો નાની કરી શકો છો. આ અપડેટમાં થોડી મિનિટનો સમય લાગી શકે અને તમારું બાહ્ય ડિવાઇસ આ સમય દરમિયાન કામ ન કરે તેમ બની શકે છે.</translation>
 <translation id="3486220673238053218">વિવરણ</translation>
 <translation id="3488065109653206955">આંશિક રીતે સક્રિય કરેલું</translation>
+<translation id="3502426834823382181">બધી ઍપ જુઓ</translation>
 <translation id="3510890413042482857"><ph name="BEGIN_LINK1" />પર્ફોર્મન્સ ટ્રેસ ડેટા<ph name="END_LINK1" /> મોકલો</translation>
 <translation id="3517001332549868749">ChromeOSની અપડેટ</translation>
 <translation id="3527036260304016759">નિષ્ફળ થયું - અજાણી ભૂલ</translation>
@@ -636,6 +637,7 @@
 <translation id="6278428485366576908">થીમ</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">ઘેરી થીમ ચાલુ કરો</translation>
+<translation id="6285899124799306373">લૉન્ચર ખોલો</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" />નું પરીક્ષણ રદ કરવામાં આવ્યું</translation>
 <translation id="631063167932043783">Explore ઍપ</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" /> પર ફર્મવેયર અપડેટ કરો</translation>
@@ -651,6 +653,7 @@
 <translation id="6382182670717268353">સ્ક્રીન સેવરનો પ્રીવ્યૂ</translation>
 <translation id="6388847657025262518">સ્કૅનરનું દસ્તાવેજ ફીડર જામ થઈ ગયું છે. ફીડર ચેક કરો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="6394634179843537518">ફાઇલ ઉમેરો</translation>
+<translation id="6401427872449207797">બ્રાઉઝર દ્વારા શોધ</translation>
 <translation id="6410257289063177456">છબી ફાઇલો</translation>
 <translation id="641081527798843608">વિષય મેળ</translation>
 <translation id="6412715219990689313">બિલ્ટ-ઇન કીબોર્ડ</translation>
@@ -875,6 +878,7 @@
 <translation id="8312330582793120272">મીડિયા ચલાવો</translation>
 <translation id="8318753676953949627">કોઈ છબી ઉપલબ્ધ નથી</translation>
 <translation id="8329018942023753850">કેલ્ક્યુલેટર ઍપ</translation>
+<translation id="8335869473001018124">શોધ ખોલો</translation>
 <translation id="8336739000755212683">ડિવાઇસના એકાઉન્ટની છબી બદલો</translation>
 <translation id="8347227221149377169">પ્રિન્ટ કરવાના કામો</translation>
 <translation id="8351855506390808906">કીમૅપિંગ ટચ પૉઇન્ટ</translation>

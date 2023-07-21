@@ -639,30 +639,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.Drive.FileCount" units="count"
-    expires_after="never">
-<!-- expires-never: Used for Chirp monitoring. -->
-
-  <owner>tiborg@chromium.org</owner>
-  <owner>chrome-desktop-ntp@google.com</owner>
-  <summary>
-    Logs the number of files returned by ItemSuggest. Logged every time the
-    Drive module successfully processed an ItemSuggest response.
-  </summary>
-</histogram>
-
-<histogram name="NewTabPage.Drive.ItemSuggestRequestResult"
-    enum="ItemSuggestRequestResult" expires_after="never">
-<!-- expires-never: Used for Chirp monitoring. -->
-
-  <owner>tiborg@chromium.org</owner>
-  <owner>chrome-desktop-ntp@google.com</owner>
-  <summary>
-    Logs the result of a request to the ItemSuggest API. Logged every time the
-    Drive module makes an ItemSuggest request.
-  </summary>
-</histogram>
-
 <histogram name="NewTabPage.FeedPositionSegmentationResult"
     enum="FeedPositionSegmentationResult" expires_after="2023-09-10">
   <owner>hanxi@chromium.org</owner>
@@ -700,22 +676,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.HistoryClusters.CartAssociationStatus"
-    units="NTPHistoryClustersModuleCartAssociationStatus"
-    expires_after="2023-08-08">
-  <owner>yuezhanggg@chromium.org</owner>
-  <owner>romanarora@chromium.org</owner>
-  <owner>tiborg@chromium.org</owner>
-  <owner>chrome-desktop-ntp@google.com</owner>
-  <summary>
-    Logs the association status of every abandoned cart to history clusters when
-    history clusters are loaded and ranked to be shown in the NTP History
-    Cluster Module. Logged at module UI creation time when determining if there
-    is necessary data to display the module. Only logged on the 1P NTP and when
-    the history clusters module is enabled.
-  </summary>
-</histogram>
-
 <histogram name="NewTabPage.HistoryClusters.DisplayLayout"
     enum="NTPHistoryClustersModuleDisplayLayout" expires_after="2023-10-08">
   <owner>romanarora@chromium.org</owner>
@@ -726,6 +686,18 @@ chromium-metrics-reviews@google.com.
     module. Logged at module UI creation time when determining if there is
     necessary data to display the module. Only logged on the 1P NTP when the
     history clusters module is enabled.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.HistoryClusters.ExhaustedEligibleClusters"
+    enum="Boolean" expires_after="2023-10-08">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Records whether all eligible clusters for the requested time period were
+    candidates for being shown in the history clusters module. Only logged on
+    the 1P NTP and the history clusters module is enabled.
   </summary>
 </histogram>
 
@@ -1658,6 +1630,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="NewTabPage.SearchAvailableLoadTime2.ColdStart" units="ms"
     expires_after="2022-02-20">
+  <obsolete>
+    Removed in April 2023.
+  </obsolete>
   <owner>fgorski@chromium.org</owner>
   <owner>ender@google.com</owner>
   <owner>yyushkina@chromium.org</owner>
@@ -1670,6 +1645,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="NewTabPage.SearchAvailableLoadTime2.WarmStart" units="ms"
     expires_after="2021-10-10">
+  <obsolete>
+    Removed in April 2023.
+  </obsolete>
   <owner>fgorski@chromium.org</owner>
   <owner>ender@google.com</owner>
   <owner>yyushkina@chromium.org</owner>

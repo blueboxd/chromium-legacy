@@ -48,7 +48,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chrome/test/base/tracing.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "components/find_in_page/find_tab_helper.h"
@@ -2773,22 +2772,6 @@ IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest,
   EXPECT_TRUE(content::NavigateToURLFromRenderer(guest2, coop_url));
 }
 
-// This test creates a situation where we have two unattached webviews which
-// have an opener relationship, and ensures that we can shutdown safely. See
-// https://crbug.com/1450397.
-IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest, DestroyOpenerBeforeAttachment) {
-  TestHelper("testDestroyOpenerBeforeAttachment", "web_view/newwindow",
-             NEEDS_TEST_SERVER);
-  GetGuestViewManager()->WaitForNumGuestsCreated(2);
-
-  content::RenderProcessHost* embedder_rph =
-      GetEmbedderWebContents()->GetPrimaryMainFrame()->GetProcess();
-  content::RenderProcessHostWatcher kill_observer(
-      embedder_rph, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  EXPECT_TRUE(embedder_rph->Shutdown(content::RESULT_CODE_KILLED));
-  kill_observer.Wait();
-}
-
 IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenuInspectElement) {
   LoadAppWithGuest("web_view/context_menus/basic");
   content::RenderFrameHost* guest_rfh = GetGuestRenderFrameHost();
@@ -3729,14 +3712,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, SendMessageToComponentExtensionFromGuest) {
   // Retrive the guestProcessId and guestRenderFrameRoutingId from the
   // extension.
   int guest_process_id =
-      content::ExecuteScriptAndGetValue(
-          embedder_web_contents->GetPrimaryMainFrame(), "window.guestProcessId")
-          .GetInt();
+      content::EvalJs(embedder_web_contents->GetPrimaryMainFrame(),
+                      "window.guestProcessId")
+          .ExtractInt();
   int guest_render_frame_routing_id =
-      content::ExecuteScriptAndGetValue(
-          embedder_web_contents->GetPrimaryMainFrame(),
-          "window.guestRenderFrameRoutingId")
-          .GetInt();
+      content::EvalJs(embedder_web_contents->GetPrimaryMainFrame(),
+                      "window.guestRenderFrameRoutingId")
+          .ExtractInt();
 
   auto* guest_rfh = content::RenderFrameHost::FromID(
       guest_process_id, guest_render_frame_routing_id);
@@ -3888,11 +3870,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Shim_TestFindAPI_findupdate) {
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_testFindInMultipleWebViews) {
   TestHelper("testFindInMultipleWebViews", "web_view/shim", NO_TEST_SERVER);
-}
-
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestFindAfterTerminate) {
-  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
-  TestHelper("testFindAfterTerminate", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadDataAPI) {
@@ -4528,7 +4505,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
 
   // Finally, try accessing a privileged API, which shouldn't be available to
   // the embedded resource.
-  std::string app_window_result;
   static constexpr char kCallAppWindowCreate[] =
       R"(var message;
          if (chrome.app && chrome.app.window) {
@@ -4536,10 +4512,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
          } else {
            message = 'success';
          }
-         domAutomationController.send(message);)";
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      web_view_frame, kCallAppWindowCreate, &app_window_result));
-  EXPECT_EQ("success", app_window_result);
+         message;)";
+  EXPECT_EQ("success", content::EvalJs(web_view_frame, kCallAppWindowCreate));
 }
 
 // Tests that a WebView can navigate an iframe to a blob URL that it creates
@@ -5301,13 +5275,9 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginWebViewTest, IsolatedOriginInWebview) {
   // Check that accessing a foo.com cookie from the WebView doesn't result in a
   // renderer kill. This might happen if we erroneously applied an isolated.com
   // origin lock to the WebView process when committing isolated.com.
-  bool cookie_is_correct = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      guest->GetGuestMainFrame(),
-      "document.cookie = 'foo=bar';\n"
-      "window.domAutomationController.send(document.cookie == 'foo=bar');\n",
-      &cookie_is_correct));
-  EXPECT_TRUE(cookie_is_correct);
+  EXPECT_EQ(true, EvalJs(guest->GetGuestMainFrame(),
+                         "document.cookie = 'foo=bar';\n"
+                         "document.cookie == 'foo=bar';\n"));
 }
 
 // This test is similar to IsolatedOriginInWebview above, but loads an isolated
@@ -5366,13 +5336,9 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginWebViewTest,
   // Check that accessing a foo.com cookie from the WebView doesn't result in a
   // renderer kill. This might happen if we erroneously applied an isolated.com
   // origin lock to the WebView process when committing isolated.com.
-  bool cookie_is_correct = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      guest->GetGuestMainFrame(),
-      "document.cookie = 'foo=bar';\n"
-      "window.domAutomationController.send(document.cookie == 'foo=bar');\n",
-      &cookie_is_correct));
-  EXPECT_TRUE(cookie_is_correct);
+  EXPECT_EQ(true, EvalJs(guest->GetGuestMainFrame(),
+                         "document.cookie = 'foo=bar';\n"
+                         "document.cookie == 'foo=bar';\n"));
 }
 
 // Sends an auto-resize message to the RenderWidgetHost and ensures that the
@@ -5574,63 +5540,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, LoadDisallowedExtensionURLInSubframe) {
   EXPECT_EQ(blink::IdentifiableToken(
                 extensions::ExtensionResourceAccessResult::kFailure),
             entry->metrics.begin()->second);
-}
-
-class PopupWaiter : public content::WebContentsObserver {
- public:
-  PopupWaiter(content::WebContents* opener, base::OnceClosure on_popup)
-      : content::WebContentsObserver(opener), on_popup_(std::move(on_popup)) {}
-
-  // WebContentsObserver:
-  // Note that `DidOpenRequestedURL` is used as it fires precisely after a new
-  // WebContents is created but before it is shown. This timing is necessary for
-  // the `ShutdownWithUnshownPopup` test.
-  void DidOpenRequestedURL(content::WebContents* new_contents,
-                           content::RenderFrameHost* source_render_frame_host,
-                           const GURL& url,
-                           const content::Referrer& referrer,
-                           WindowOpenDisposition disposition,
-                           ui::PageTransition transition,
-                           bool started_from_context_menu,
-                           bool renderer_initiated) override {
-    if (on_popup_) {
-      std::move(on_popup_).Run();
-    }
-  }
-
- private:
-  base::OnceClosure on_popup_;
-};
-
-// Test destroying an opener webview while the created window has not been
-// shown by the renderer. Between the time of the renderer creating and showing
-// the new window, the created guest WebContents is owned by content/ and not by
-// WebViewGuest. See `WebContentsImpl::pending_contents_` for details. When we
-// destroy the new WebViewGuest, content/ must ensure that the guest WebContents
-// is destroyed safely.
-//
-// This test is conceptually similar to
-// testNewWindowOpenerDestroyedWhileUnattached, but for this test, we have
-// precise timing requirements that need to be controlled by the browser such
-// that we shutdown while the new window is pending.
-//
-// Regression test for https://crbug.com/1442516
-IN_PROC_BROWSER_TEST_F(WebViewTest, ShutdownWithUnshownPopup) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
-  // Core classes in content often record trace events during destruction.
-  // Enable tracing to test that writing traces with partially destructed
-  // objects is done safely.
-  ASSERT_TRUE(tracing::BeginTracing("content,navigation"));
-
-  LoadAppWithGuest("web_view/simple");
-
-  base::RunLoop run_loop;
-  PopupWaiter popup_waiter(GetGuestWebContents(), run_loop.QuitClosure());
-  content::ExecuteScriptAsync(GetGuestRenderFrameHost(),
-                              "window.open(location.href);");
-  run_loop.Run();
-  CloseAppWindow(GetFirstAppWindow());
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, InsertIntoDetachedIframe) {

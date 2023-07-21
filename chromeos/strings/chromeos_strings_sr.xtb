@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">DNS не може да се разреши</translation>
 <translation id="1018656279737460067">Отказано</translation>
 <translation id="1022433422498218992">Опште контроле</translation>
-<translation id="1022628058306505708">Ток Земље</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> нити, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">Доступна је нова функција. Користите тастер са стрелицом нагоре да бисте сазнали више.</translation>
 <translation id="1059913517121127803">Покретање скенирања није успело</translation>
@@ -235,7 +234,6 @@
 <translation id="2902312830803030883">Још радњи</translation>
 <translation id="2926057806159140518">Унесите корисничко име и лозинку или скенирајте QR кôд</translation>
 <translation id="2940811910881150316">Тестирање уређаја није успело. Поново отворите поклопац да бисте га тестирали.</translation>
-<translation id="2981143481017883351">Сада су доступни ексклузивни елементи за Chromebook</translation>
 <translation id="3008341117444806826">ОСВЕЖИ</translation>
 <translation id="3009958530611748826">Изаберите фолдер за чување</translation>
 <translation id="3017079585324758401">Позадина</translation>
@@ -280,7 +278,6 @@
 <translation id="3360306038446926262">Windows</translation>
 <translation id="3368922792935385530">Повезан</translation>
 <translation id="3369013195428705271">Желите ли стварно да обришете сву историју штампања? Задаци штампања који су у току се не бришу.</translation>
-<translation id="3386675685417744672">Ексклузивно за Chromebook</translation>
 <translation id="3404249063913988450">Омогућите чувар екрана</translation>
 <translation id="3413935475507503304">Да бисте наставили са ажурирањем, кликните на Даље.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
@@ -295,6 +292,7 @@
 <translation id="3484914941826596830">Не искључујте спољни уређај ни рачунар док се фирмвер ажурира. Можете да умањите овај прозор. Ово ажурирање може да потраје неколико минута, а спољни уређај можда неће радити током тог периода.</translation>
 <translation id="3486220673238053218">дефиниција</translation>
 <translation id="3488065109653206955">Делимично активирано</translation>
+<translation id="3502426834823382181">прикажи све апликације</translation>
 <translation id="3510890413042482857">Шаљи <ph name="BEGIN_LINK1" />податке о праћењу учинка<ph name="END_LINK1" /></translation>
 <translation id="3517001332549868749">Ажурирање Chrome ОС-а</translation>
 <translation id="3527036260304016759">Није успело – непозната грешка</translation>
@@ -358,7 +356,6 @@
 <translation id="404928562651467259">УПОЗОРЕЊЕ</translation>
 <translation id="4054683689023980771">Преузима се слика</translation>
 <translation id="4060260348856573701">Нови назив приступне тачке</translation>
-<translation id="4079743696465895866">Изаберите ексклузивне илустрације за Chromebook</translation>
 <translation id="4093865285251893588">Слика профила</translation>
 <translation id="409427325554347132">Сачувај детаље теста</translation>
 <translation id="4095829376260267438">WPA2WPA3</translation>
@@ -625,7 +622,6 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">Капацитет батерије се смањује током коришћења</translation>
 <translation id="6191293864534840972">Сервери за имена су погрешног формата</translation>
-<translation id="6205145102504628069">Ток у клауду</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223066887782788441">Изађите из приказа преко целог екрана</translation>
 <translation id="6223752125779001553">Нису доступни скенери</translation>
@@ -636,6 +632,7 @@
 <translation id="6278428485366576908">Тема</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Укључите тамну тему</translation>
+<translation id="6285899124799306373">отворите покретач</translation>
 <translation id="6302401976930124515">Тест <ph name="TEST_NAME" /> је отказан</translation>
 <translation id="631063167932043783">Истражите апликацију</translation>
 <translation id="6319207335391420837">Ажурирајте фирмвер на уређају <ph name="DEVICE_NAME" /></translation>
@@ -651,6 +648,7 @@
 <translation id="6382182670717268353">Преглед Чувара екрана</translation>
 <translation id="6388847657025262518">Механизам за увлачење докумената на скенеру је заглављен. Проверите механизам и пробајте поново.</translation>
 <translation id="6394634179843537518">Додајте фајл</translation>
+<translation id="6401427872449207797">претрага прегледача</translation>
 <translation id="6410257289063177456">Датотеке слика</translation>
 <translation id="641081527798843608">Подударање наслова</translation>
 <translation id="6412715219990689313">Уграђена тастатура</translation>
@@ -666,7 +664,6 @@
 <translation id="6494974875566443634">Прилагођавање</translation>
 <translation id="6500818810472529210">Погледајте резултат у Google претрази</translation>
 <translation id="650266656685499220">Да бисте направили албуме, идите у Google слике</translation>
-<translation id="6505750420152840539">Од зоре до мрака</translation>
 <translation id="6516990319416533844">Да бисте тестирали брзину пуњења батерије, дозволите да се батерија мало испразни</translation>
 <translation id="6517239166834772319">Истражите</translation>
 <translation id="6526200165918397681">Препознај позадину</translation>
@@ -776,7 +773,7 @@
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7458970041932198923">Повежите се на мрежу и поново учитајте страницу да бисте видели и подесили аватаре.</translation>
 <translation id="7469648432129124067">Откривен је портал</translation>
-<translation id="7481312909269577407">Напред</translation>
+<translation id="7481312909269577407">Проследи</translation>
 <translation id="7487067081878637334">Технологија</translation>
 <translation id="7490813197707563893">MAC адреса</translation>
 <translation id="7491478667760509108">Изађите из плутајућег приказа</translation>
@@ -875,6 +872,7 @@
 <translation id="8312330582793120272">пуштајте медије</translation>
 <translation id="8318753676953949627">Нема слика</translation>
 <translation id="8329018942023753850">апликација Калкулатор</translation>
+<translation id="8335869473001018124">отворите претрагу</translation>
 <translation id="8336739000755212683">Промените слику налога на уређају</translation>
 <translation id="8347227221149377169">Задаци штампања</translation>
 <translation id="8351855506390808906">Тачка контакта за мапирање тастера</translation>

@@ -14,7 +14,6 @@
 #include "ash/style/ash_color_id.h"
 #include "ash/style/icon_button.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/ash_test_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_item.h"
@@ -27,6 +26,7 @@
 #include "ash/wm/splitview/split_view_divider_view.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/multi_window_resize_controller.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
@@ -38,8 +38,10 @@
 #include "base/timer/timer.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -52,6 +54,8 @@
 namespace ash {
 
 namespace {
+
+using ::ui::mojom::CursorType;
 
 SplitViewController* split_view_controller() {
   return SplitViewController::Get(Shell::GetPrimaryRootWindow());
@@ -156,10 +160,10 @@ class SnapGroupTest : public AshTestBase {
                          chromeos::WindowStateType state_type) {
     UpdateDisplay("800x600");
     WindowState* window_state = WindowState::Get(window);
-    const WMEvent snap_type(state_type ==
-                                    chromeos::WindowStateType::kPrimarySnapped
-                                ? WM_EVENT_SNAP_PRIMARY
-                                : WM_EVENT_SNAP_SECONDARY);
+    const WindowSnapWMEvent snap_type(
+        state_type == chromeos::WindowStateType::kPrimarySnapped
+            ? WM_EVENT_SNAP_PRIMARY
+            : WM_EVENT_SNAP_SECONDARY);
     window_state->OnWMEvent(&snap_type);
     EXPECT_EQ(state_type, window_state->GetStateType());
   }
@@ -331,7 +335,7 @@ TEST_F(SnapGroupTest, WindowActivationTest) {
   // before `w2`.
   // TODO(michelefan): Keep an eye out for changes in the activation logic and
   // update this test if needed in future.
-  EXPECT_TRUE(IsStackedBelow(w3.get(), w2.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(w3.get(), w2.get()));
 }
 
 // A test fixture that tests the snap group entry point arm 1 which will create
@@ -375,9 +379,8 @@ class SnapGroupEntryPointArm1Test : public SnapGroupTest {
     OverviewItem* item2 = GetOverviewItemForWindow(window2);
     auto* event_generator = GetEventGenerator();
     event_generator->MoveMouseTo(
-        item2->GetBoundsOfSelectedItem().CenterPoint());
-    event_generator->PressLeftButton();
-    event_generator->ReleaseLeftButton();
+        gfx::ToRoundedPoint(item2->GetTransformedBounds().CenterPoint()));
+    event_generator->ClickLeftButton();
     WaitForOverviewExitAnimation();
     EXPECT_EQ(split_view_controller()->secondary_window(), window2);
 
@@ -585,7 +588,7 @@ TEST_F(SnapGroupEntryPointArm1Test,
 
   std::unique_ptr<aura::Window> w3(CreateTestWindow());
   wm::ActivateWindow(w2.get());
-  EXPECT_TRUE(IsStackedBelow(w3.get(), w1.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(w3.get(), w1.get()));
 
   w1.reset();
   EXPECT_FALSE(split_view_divider());
@@ -605,20 +608,20 @@ TEST_F(SnapGroupEntryPointArm1Test, SplitViewDividerStackingOrderTest) {
   SplitViewDivider* divider = split_view_divider();
   auto* divider_widget = divider->divider_widget();
   aura::Window* divider_window = divider_widget->GetNativeWindow();
-  EXPECT_TRUE(IsStackedBelow(w2.get(), w1.get()));
-  EXPECT_TRUE(IsStackedBelow(w1.get(), divider_window));
-  EXPECT_TRUE(IsStackedBelow(w2.get(), divider_window));
+  EXPECT_TRUE(window_util::IsStackedBelow(w2.get(), w1.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(w1.get(), divider_window));
+  EXPECT_TRUE(window_util::IsStackedBelow(w2.get(), divider_window));
 
   std::unique_ptr<aura::Window> w3(
       CreateTestWindow(gfx::Rect(100, 200, 300, 400)));
-  EXPECT_TRUE(IsStackedBelow(divider_window, w3.get()));
-  EXPECT_TRUE(IsStackedBelow(w1.get(), divider_window));
-  EXPECT_TRUE(IsStackedBelow(w2.get(), w1.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(divider_window, w3.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(w1.get(), divider_window));
+  EXPECT_TRUE(window_util::IsStackedBelow(w2.get(), w1.get()));
 
   wm::ActivateWindow(w2.get());
-  EXPECT_TRUE(IsStackedBelow(w3.get(), w1.get()));
-  EXPECT_TRUE(IsStackedBelow(w1.get(), w2.get()));
-  EXPECT_TRUE(IsStackedBelow(w2.get(), divider_window));
+  EXPECT_TRUE(window_util::IsStackedBelow(w3.get(), w1.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(w1.get(), w2.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(w2.get(), divider_window));
 }
 
 // Tests that the union bounds of the primary window, secondary window in a snap
@@ -688,8 +691,7 @@ TEST_F(SnapGroupEntryPointArm1Test, ExpandedMenuViewTest) {
   EXPECT_TRUE(update_secondary_window_button());
   EXPECT_TRUE(unlock_button());
 
-  event_generator->PressLeftButton();
-  event_generator->ReleaseLeftButton();
+  event_generator->ClickLeftButton();
   EXPECT_FALSE(snap_group_expanded_menu_widget());
   EXPECT_FALSE(snap_group_expanded_menu_view());
 }
@@ -745,9 +747,9 @@ TEST_F(SnapGroupEntryPointArm1Test, UpdateWindowButtonTest) {
   // be formed.
   OverviewItem* item3 = GetOverviewItemForWindow(w3.get());
   auto* event_generator = GetEventGenerator();
-  event_generator->MoveMouseTo(item3->GetBoundsOfSelectedItem().CenterPoint());
-  event_generator->PressLeftButton();
-  event_generator->ReleaseLeftButton();
+  event_generator->MoveMouseTo(
+      gfx::ToRoundedPoint(item3->GetTransformedBounds().CenterPoint()));
+  event_generator->ClickLeftButton();
   WaitForOverviewExitAnimation();
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_EQ(split_view_controller()->state(),
@@ -775,9 +777,9 @@ TEST_F(SnapGroupEntryPointArm1Test, UpdateWindowButtonTest) {
   // Do another update for the snap group by selecting another candidate from
   // the overview session and verify that the snap group has been updated.
   OverviewItem* item4 = GetOverviewItemForWindow(w4.get());
-  event_generator->MoveMouseTo(item4->GetBoundsOfSelectedItem().CenterPoint());
-  event_generator->PressLeftButton();
-  event_generator->ReleaseLeftButton();
+  event_generator->MoveMouseTo(
+      gfx::ToRoundedPoint(item4->GetTransformedBounds().CenterPoint()));
+  event_generator->ClickLeftButton();
   WaitForOverviewExitAnimation();
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_EQ(split_view_controller()->state(),
@@ -827,6 +829,26 @@ TEST_F(SnapGroupEntryPointArm1Test, SwapWindowsAndUnlockTest) {
   ClickSwapWindowsButtonAndVerify();
   ClickKebabButtonToShowExpandedMenu();
   ClickUnlockButtonAndVerify();
+}
+
+// Tests that the windows in snap group can be minimized together with the
+// keyboard shortcut 'Search + Shift + D'.
+TEST_F(SnapGroupEntryPointArm1Test, UseShortcutToMinimizeWindows) {
+  std::unique_ptr<aura::Window> w1(CreateTestWindow());
+  std::unique_ptr<aura::Window> w2(CreateTestWindow());
+  SnapTwoTestWindowsInArm1(w1.get(), w2.get(), /*horizontal=*/true);
+
+  // Press the shortcut first time and the windows will be minimized.
+  GetEventGenerator()->PressAndReleaseKey(
+      ui::VKEY_D, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(WindowState::Get(w1.get())->IsMinimized());
+  EXPECT_TRUE(WindowState::Get(w2.get())->IsMinimized());
+
+  // Press the shortcut again and the windows state remain the same.
+  GetEventGenerator()->PressAndReleaseKey(
+      ui::VKEY_D, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(WindowState::Get(w1.get())->IsMinimized());
+  EXPECT_TRUE(WindowState::Get(w2.get())->IsMinimized());
 }
 
 // Tests that the lock widget will not show on the shared edge of two unsnapped
@@ -902,6 +924,55 @@ TEST_F(SnapGroupEntryPointArm1Test, SwapWindowsSourceHistogramTest) {
   }
 }
 
+// Tests that the cursor type gets updated on mouse hovering over everywhere on
+// the split view divider excluding the kebab button.
+TEST_F(SnapGroupEntryPointArm1Test, CursorUpdateTest) {
+  std::unique_ptr<aura::Window> w1(CreateTestWindow());
+  std::unique_ptr<aura::Window> w2(CreateTestWindow());
+  SnapTwoTestWindowsInArm1(w1.get(), w2.get(), /*horizontal=*/true);
+  auto* divider = split_view_divider();
+  ASSERT_TRUE(divider);
+
+  auto divider_bounds = split_view_divider_bounds_in_screen();
+  auto outside_point = split_view_divider_bounds_in_screen().CenterPoint();
+  outside_point.Offset(-kSplitviewDividerShortSideLength * 5, 0);
+  EXPECT_FALSE(divider_bounds.Contains(outside_point));
+
+  auto* cursor_manager = Shell::Get()->cursor_manager();
+  cursor_manager->SetCursor(CursorType::kPointer);
+
+  // Test that the default cursor type when mouse is not hovered over the split
+  // view divider.
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(outside_point);
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
+  EXPECT_FALSE(cursor_manager->IsCursorLocked());
+  EXPECT_EQ(CursorType::kNull, cursor_manager->GetCursor().type());
+
+  // Test that the cursor changed to resize cursor while hovering over the split
+  // view divider.
+  const auto delta_vector = gfx::Vector2d(0, -10);
+  const gfx::Point cached_hover_point =
+      divider_bounds.CenterPoint() + delta_vector;
+  event_generator->MoveMouseTo(cached_hover_point);
+  EXPECT_EQ(CursorType::kColumnResize, cursor_manager->GetCursor().type());
+
+  // Test that after resizing, the cursor type is still the resize cursor.
+  event_generator->PressLeftButton();
+  const auto move_vector = gfx::Vector2d(20, 0);
+  event_generator->MoveMouseTo(cached_hover_point + move_vector);
+  event_generator->ReleaseLeftButton();
+  EXPECT_EQ(CursorType::kColumnResize, cursor_manager->GetCursor().type());
+  EXPECT_EQ(split_view_divider_bounds_in_screen().CenterPoint() + delta_vector,
+            cached_hover_point + move_vector);
+
+  // Test that when hovering over the kebab button, the cursor type changed back
+  // to the default type.
+  event_generator->MoveMouseTo(
+      kebab_button()->GetBoundsInScreen().CenterPoint());
+  EXPECT_EQ(CursorType::kNull, cursor_manager->GetCursor().type());
+}
+
 // A test fixture that tests the user-initiated snap group entry point. This
 // entry point is guarded by the feature flag `kSnapGroup` and will only be
 // enabled when the feature param `kAutomaticallyLockGroup` is false.
@@ -921,13 +992,13 @@ class SnapGroupEntryPointArm2Test : public SnapGroupTest {
     UpdateDisplay("800x700");
 
     WindowState* primary_window_state = WindowState::Get(primary_window);
-    const WMEvent snap_primary(WM_EVENT_SNAP_PRIMARY);
+    const WindowSnapWMEvent snap_primary(WM_EVENT_SNAP_PRIMARY);
     primary_window_state->OnWMEvent(&snap_primary);
     EXPECT_EQ(chromeos::WindowStateType::kPrimarySnapped,
               primary_window_state->GetStateType());
 
     WindowState* secondary_window_state = WindowState::Get(secondary_window);
-    const WMEvent snap_secondary(WM_EVENT_SNAP_SECONDARY);
+    const WindowSnapWMEvent snap_secondary(WM_EVENT_SNAP_SECONDARY);
     secondary_window_state->OnWMEvent(&snap_secondary);
     EXPECT_EQ(chromeos::WindowStateType::kSecondarySnapped,
               secondary_window_state->GetStateType());
@@ -1006,7 +1077,7 @@ TEST_F(SnapGroupEntryPointArm2Test, SnapGroupCreationTest) {
   std::unique_ptr<aura::Window> w3(CreateTestWindow());
   wm::ActivateWindow(w3.get());
   wm::ActivateWindow(w1.get());
-  EXPECT_TRUE(IsStackedBelow(w3.get(), w2.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(w3.get(), w2.get()));
 }
 
 }  // namespace ash

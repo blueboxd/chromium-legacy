@@ -407,6 +407,7 @@
 <translation id="3638472932233958418">Попер.завантаж.стор.</translation>
 <translation id="3661160521073045932">Доступний профіль конфігурації</translation>
 <translation id="3670030362669914947">Номер</translation>
+<translation id="3700134753671613714">Увійдіть в обліковий запис, щоб мати доступ до закладок на всіх своїх пристроях.</translation>
 <translation id="3709582977625132201">Позначити як непрочитане</translation>
 <translation id="371230970611282515">Передбачає небезпечні події та повідомляє про них ще до того, як вони відбудуться.</translation>
 <translation id="37207012422556617">Популярні запити</translation>
@@ -546,7 +547,6 @@
 <translation id="4642472735733036929">Відстеження ціни зупинено</translation>
 <translation id="4650125387981512669">Продовжити як <ph name="FIRST_RUN_ACCOUNT_NAME" /></translation>
 <translation id="4652817563047461855">Переконайтеся, що ваші паролі надійні й не були викрадені, а також отримайте пораду, як захистити себе в Інтернеті. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">Ця функція вмикається, коли ви входите в обліковий запис Google.</translation>
 <translation id="4659667755519643272">Відкрити перемикач вкладок</translation>
 <translation id="46614316059270592">Зберегти пароль</translation>
 <translation id="4666531726415300315">Ви ввійшли як <ph name="EMAIL" />.
@@ -588,7 +588,6 @@
 <translation id="4844899002472726590">Переглядайте й редагуйте цікаві вам теми</translation>
 <translation id="4848999860252535517">Видалити пароль для веб-сайту <ph name="WEBSITE" />?</translation>
 <translation id="4854345657858711387">Налаштуйте код доступу</translation>
-<translation id="4856498338299082007">У вашому обліковому записі Google</translation>
 <translation id="4858786880085262208">За можливості використовуйте протокол HTTPS. На безпечних сайтах може бути вбудовано незахищений контент.</translation>
 <translation id="4860895144060829044">Зателефонувати</translation>
 <translation id="4872323082491632254">Перевірка паролів</translation>
@@ -667,6 +666,7 @@
 <translation id="543338862236136125">Змінити пароль</translation>
 <translation id="5433691172869980887">Ім’я користувача скопійовано</translation>
 <translation id="5439599923922718668">Часто відвідувані</translation>
+<translation id="5439618055789623719">Ви ввійшли в обліковий запис <ph name="USER_EMAIL" /></translation>
 <translation id="54401264925851789">Відомості про безпеку сторінки</translation>
 <translation id="5443952882982198570">Кредитні картки</translation>
 <translation id="5444892875087332195">Закладки</translation>
@@ -1121,7 +1121,6 @@
 <translation id="8248969482078657578">Завдяки розділу "Неактивні вкладки" ви можете зосередитися на найважливішому</translation>
 <translation id="8261506727792406068">Видалити</translation>
 <translation id="8264966119170358612">Деякі ваші збережені паролі було розкрито через порушення безпеки даних стороннього сервісу. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">Лише на цьому пристрої</translation>
 <translation id="826614135184049678">Ви вийшли з облікового запису <ph name="USER_NAME" />, коли було скинуто налаштування iPad. Щоб увійти знову, натисніть "Продовжити" нижче.</translation>
 <translation id="8271720166617117963">Прийняти й увійти</translation>
 <translation id="8278938988428169257">Введіть слово або фразу</translation>

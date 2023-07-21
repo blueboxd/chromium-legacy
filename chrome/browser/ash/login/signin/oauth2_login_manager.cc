@@ -85,12 +85,7 @@ void OAuth2LoginManager::ContinueSessionRestore() {
 
   CheckIfTokensHaveBeenLoaded();
 
-  // ContinueSessionRestore could be called multiple times when network
-  // connection changes. Only add observation once.
-  if (!account_reconcilor_observation_.IsObserving()) {
-    account_reconcilor_observation_.Observe(GetAccountReconcilor());
-  }
-
+  account_reconcilor_observation_.Observe(GetAccountReconcilor());
   const signin_metrics::AccountReconcilorState state =
       GetAccountReconcilor()->GetState();
   if (IsTerminalState(state)) {

@@ -144,7 +144,7 @@
 <translation id="1910975740091000991">Chrome за iOS</translation>
 <translation id="1911619930368729126">Постави во Диск на Google</translation>
 <translation id="1923342640370224680">Минатиот час</translation>
-<translation id="1930989359703290198">Вашата организација ви дозволува да се најавите само со одредени сметки. Сметките што не се дозволени се скриени. <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
+<translation id="1930989359703290198">Вашата организација ви дозволува да се најавите само со одредени сметки. Сметките што не се дозволени се сокриени. <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
 <translation id="1941314575388338491">Допрете двапати за да копирате.</translation>
 <translation id="1943478190258551035">Мени → Поставки</translation>
 <translation id="1952172573699511566">Кога е можно, веб-сајтовите ќе прикажуваат текст на вашиот претпочитан јазик.</translation>
@@ -221,7 +221,7 @@
 <translation id="2469960372084740698">Да се исклучи „Безбедно прелистување“?</translation>
 <translation id="2473876017985765807">Веќе зачувавте лозинка за <ph name="WEBSITE" /></translation>
 <translation id="2476359652512522418">Не е избрано</translation>
-<translation id="2479148705183875116">Отворете „Поставки“</translation>
+<translation id="2479148705183875116">Одете во „Поставки“</translation>
 <translation id="2482878487686419369">Известувања</translation>
 <translation id="2496626742194544812">Одете на првата картичка</translation>
 <translation id="2500374554657206846">Опции за зачувување лозинка</translation>
@@ -407,6 +407,7 @@
 <translation id="3638472932233958418">Вчитај веб-страници</translation>
 <translation id="3661160521073045932">Достапен е профил за конфигурација</translation>
 <translation id="3670030362669914947">Број</translation>
+<translation id="3700134753671613714">Најавете се за да ги добиете обележувачите на сите уреди.</translation>
 <translation id="3709582977625132201">Обележи како непрочитано</translation>
 <translation id="371230970611282515">Предвидува опасни настани и ве предупредува пред да се случат.</translation>
 <translation id="37207012422556617">Пребарувања во тренд</translation>
@@ -546,7 +547,6 @@
 <translation id="4642472735733036929">Следењето на цените е сопрено</translation>
 <translation id="4650125387981512669">Продолжете како <ph name="FIRST_RUN_ACCOUNT_NAME" /></translation>
 <translation id="4652817563047461855">Погрижете се лозинките да ви бидат безбедни, дознајте дали се компромитирани и добијте совет како да се заштитите себеси онлајн. <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">Функцијава е вклучена кога ќе се најавите на сметката на Google.</translation>
 <translation id="4659667755519643272">Влези во менувачот на картички</translation>
 <translation id="46614316059270592">Зачувај ја лозинката</translation>
 <translation id="4666531726415300315">Најавени сте како: <ph name="EMAIL" />.
@@ -588,7 +588,6 @@
 <translation id="4844899002472726590">Гледајте и менувајте ги темите што ве интересираат</translation>
 <translation id="4848999860252535517">Да се избрише лозинката за <ph name="WEBSITE" />?</translation>
 <translation id="4854345657858711387">Поставете лозинка</translation>
-<translation id="4856498338299082007">Во вашата сметка на Google</translation>
 <translation id="4858786880085262208">Надградете на HTTPS, кога е можно. Безбедните сајтови може да вметнуваат содржини што не се безбедни.</translation>
 <translation id="4860895144060829044">Повикајте</translation>
 <translation id="4872323082491632254">Проверувај лозинки</translation>
@@ -667,6 +666,7 @@
 <translation id="543338862236136125">Измени ја лозинката</translation>
 <translation id="5433691172869980887">Корисничкото име е копирано</translation>
 <translation id="5439599923922718668">Често посетувани</translation>
+<translation id="5439618055789623719">Најавени сте како <ph name="USER_EMAIL" /></translation>
 <translation id="54401264925851789">Безбедносни информации за страницата</translation>
 <translation id="5443952882982198570">Кредитни картички</translation>
 <translation id="5444892875087332195">Обележувачи</translation>
@@ -999,7 +999,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="746684838091935575">3. Изберете Chrome</translation>
 <translation id="7472734401283673885">Име на компанија</translation>
 <translation id="7473891865547856676">Не, фала</translation>
-<translation id="7491131399623468277">Отворете „Поставки“…</translation>
+<translation id="7491131399623468277">Одете во „Поставки“…</translation>
 <translation id="750228856503700085">Ажурирања не се достапни</translation>
 <translation id="750493650310597496">0 избрани</translation>
 <translation id="7508728395076009983">За да ги заклучите картичките „Инкогнито“, поставете „ID на допир“, „ID на лик“ или лозинка.</translation>
@@ -1121,7 +1121,6 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="8248969482078657578">Неактивните картички во помагаат да се фокусирате</translation>
 <translation id="8261506727792406068">Избриши</translation>
 <translation id="8264966119170358612">При упад во податоците што не се случи кај Google беа откриени некои од вашите зачувани лозинки. <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">Само на уредов</translation>
 <translation id="826614135184049678">Одјавени сте од сметката, <ph name="USER_NAME" />, како дел од ресетирањето на вашиот iPad. За да се најавите повторно, допрете „Продолжи“ подолу.</translation>
 <translation id="8271720166617117963">Прифати и најави се</translation>
 <translation id="8278938988428169257">Внесете збор или фраза</translation>
@@ -1204,7 +1203,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="882557203579758546">Најди на страницата…</translation>
 <translation id="8840513115188359703">Нема да ве одјавиме од сметката на Google.</translation>
 <translation id="8843129975935593190">Вашата организација ограничува што може да синхронизирате.</translation>
-<translation id="8849001918648564819">Скриен</translation>
+<translation id="8849001918648564819">Сокриен</translation>
 <translation id="8868471676553493380">{count,plural, =1{{count} картичка}one{{count} картичка}other{{count} картички}}</translation>
 <translation id="8870413625673593573">Неодамна затворено</translation>
 <translation id="8876882697946675716">Уредите нека ви бидат синхронизирани</translation>
@@ -1274,7 +1273,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="953008885340860025">Chrome е одјавен</translation>
 <translation id="959066944189734975">Го следите <ph name="CHANNEL_NAME" /></translation>
 <translation id="973493300226275298">Следете ја цената на даден производи насекаде во онлајн продавниците. Ќе добивате известувања кога цената ќе се намали.</translation>
-<translation id="981498610235328462">Вашата организација ви дозволува да се најавите само со одредени сметки. Сметките што не се дозволени се скриени.</translation>
+<translation id="981498610235328462">Вашата организација ви дозволува да се најавите само со одредени сметки. Сметките што не се дозволени се сокриени.</translation>
 <translation id="984509647832111802">Синхронизацијата не функционира.</translation>
 <translation id="988141524645182168">Други уреди</translation>
 <translation id="989988560359834682">Измени адреса</translation>

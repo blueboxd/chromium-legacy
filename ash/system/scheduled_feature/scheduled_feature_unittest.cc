@@ -147,7 +147,7 @@ class CheckpointObserver : public ScheduledFeature::CheckpointObserver {
   base::ScopedObservation<ScheduledFeature,
                           ScheduledFeature::CheckpointObserver>
       observation_{this};
-  const base::raw_ptr<const base::Clock> clock_;
+  const raw_ptr<const base::Clock> clock_;
   std::vector<std::pair<TimeOfDay, ScheduleCheckpoint>> changes_;
 };
 
@@ -671,13 +671,7 @@ TEST_F(ScheduledFeatureTest, SunsetSunrise) {
 
 // Tests that scheduled start time and end time of sunset-to-sunrise feature
 // are updated correctly if the geoposition changes.
-// TODO(crbug.com/1334047) Fix flakiness and re-enable on ChromeOS.
-#if BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_SunsetSunriseGeoposition DISABLED_SunsetSunriseGeoposition
-#else
-#define MAYBE_SunsetSunriseGeoposition SunsetSunriseGeoposition
-#endif
-TEST_F(ScheduledFeatureTest, MAYBE_SunsetSunriseGeoposition) {
+TEST_F(ScheduledFeatureTest, SunsetSunriseGeoposition) {
   constexpr double kFakePosition1_Latitude = 23.5;
   constexpr double kFakePosition1_Longitude = 55.88;
   constexpr double kFakePosition2_Latitude = 23.5;
@@ -720,13 +714,17 @@ TEST_F(ScheduledFeatureTest, MAYBE_SunsetSunriseGeoposition) {
   EXPECT_FALSE(feature()->GetEnabled());
   EXPECT_TRUE(IsFeatureObservingGeoposition());
 
+  // A small delta used to help forwarding the time to be a little bit behind
+  // the target time. Used to avoid test flaky because of the time issue.
+  const base::TimeDelta delta = base::Minutes(5);
   // Simulate reaching sunset.
-  FastForwardBy(base::Hours(4));  // Now is sunset time of the position1.
+  FastForwardBy(base::Hours(4) +
+                delta);  // Now is sunset time of the position1.
   EXPECT_TRUE(feature()->GetEnabled());
 
   // Simulate reaching sunrise.
   FastForwardTo(TimeOfDay::FromTime(
-      sunrise_time1));  // Now is sunrise time of the position1
+      sunrise_time1 + delta));  // Now is sunrise time of the position1
   EXPECT_FALSE(feature()->GetEnabled());
 
   // Now simulate user changing position.
@@ -762,34 +760,11 @@ TEST_F(ScheduledFeatureTest, MAYBE_SunsetSunriseGeoposition) {
 
   // Simulate reaching sunrise.
   FastForwardTo(TimeOfDay::FromTime(
-      sunrise_time2));  // Now is sunrise time of the position2.
+      sunrise_time2 + delta));  // Now is sunrise time of the position2.
   EXPECT_FALSE(feature()->GetEnabled());
   // Timer is running scheduling the start at the sunset of the next day.
   FastForwardTo(TimeOfDay::FromTime(sunrise_time2));
   EXPECT_TRUE(feature()->GetEnabled());
-}
-
-// Tests that the feature is disabled and there are no crashes/unpredictable
-// behavior if there is 24 hours of daylight.
-TEST_F(ScheduledFeatureTest, SunsetSunriseAllDaylight) {
-  // 24 hours of daylight (Kiruna, Sweden)
-  constexpr double kTestLatitude = 67.855800;
-  constexpr double kTestLongitude = 20.225282;
-
-  base::Time now;
-  EXPECT_TRUE(base::Time::FromUTCString("07 Jun 2023 20:30:00.000", &now));
-  test_clock()->SetNow(now);
-  const Geoposition position =
-      CreateGeoposition(kTestLatitude, kTestLongitude, now);
-
-  // Set and fetch position update.
-  SetServerPosition(position);
-  FireTimerToFetchGeoposition();
-
-  feature()->SetScheduleType(ScheduleType::kSunsetToSunrise);
-  EXPECT_FALSE(feature()->GetEnabled());
-  FastForwardBy(base::Days(1));
-  EXPECT_FALSE(feature()->GetEnabled());
 }
 
 // Tests that on device resume from sleep, the feature status is updated

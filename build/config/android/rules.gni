@@ -200,9 +200,6 @@ if (enable_java_templates) {
         }
         _input_args = invoker.classes
         _input_names = invoker.classes
-        if (defined(invoker.always_mangle) && invoker.always_mangle) {
-          args += [ "--always_mangle" ]
-        }
         if (defined(invoker.unchecked_exceptions) &&
             invoker.unchecked_exceptions) {
           args += [ "--unchecked_exceptions" ]
@@ -321,8 +318,6 @@ if (enable_java_templates) {
   #     include the full path to the .class file.
   #   jar_file: the path to the .jar. If not provided, will default to the sdk's
   #     android.jar
-  #   always_mangle: Mangle all generated method names. By default, the script
-  #     only mangles methods that cause ambiguity due to method overload.
   #   unchecked_exceptions: Don't CHECK() for exceptions in generated stubs.
   #     This behaves as if every method had @CalledByNativeUnchecked.
   #   deps, public_deps: As normal
@@ -1936,6 +1931,7 @@ if (enable_java_templates && is_android) {
                                    "proguard_enabled",
                                    "proguard_enable_obfuscation",
                                    "min_sdk_version",
+                                   "repackage_classes",
                                    "version_code",
                                  ])
       deps = [ ":$_build_config_target_name" ] + _deps
@@ -3119,12 +3115,6 @@ if (enable_java_templates && is_android) {
         if (defined(invoker.proguard_configs)) {
           proguard_configs += invoker.proguard_configs
         }
-        if (!_assertions_implicitly_enabled && !enable_java_asserts &&
-            (!defined(testonly) || !testonly) &&
-            # Injected JaCoCo code causes -checkdiscards to fail.
-            !use_jacoco_coverage) {
-          proguard_configs += [ "//build/android/dcheck_is_off.flags" ]
-        }
         if (!_is_bundle_module) {
           proguard_mapping_path = _proguard_mapping_path
         }
@@ -3167,6 +3157,7 @@ if (enable_java_templates && is_android) {
                                  "enable_proguard_checks",
                                  "custom_assertion_handler",
                                  "proguard_enable_obfuscation",
+                                 "repackage_classes",
                                ])
         min_sdk_version = _min_sdk_version
         proguard_enabled = _proguard_enabled
@@ -3182,6 +3173,15 @@ if (enable_java_templates && is_android) {
           deps += [ ":$_compile_resources_target" ]
           proguard_mapping_path = _proguard_mapping_path
           has_apk_under_test = defined(invoker.apk_under_test)
+
+          # Must not be set via write_build_config, because that will cause it
+          # to be picked up by test apks that use apk_under_test.
+          if (!_assertions_implicitly_enabled && !enable_java_asserts &&
+              (!defined(testonly) || !testonly) &&
+              # Injected JaCoCo code causes -checkdiscards to fail.
+              !use_jacoco_coverage) {
+            proguard_configs = [ "//build/android/dcheck_is_off.flags" ]
+          }
         } else {
           if (_min_sdk_version >= default_min_sdk_version) {
             # Enable dex merging only when min_sdk_version is >= what the library
@@ -3639,6 +3639,7 @@ if (enable_java_templates && is_android) {
             "proguard_enabled",
             "proguard_enable_obfuscation",
             "r_java_root_package_name",
+            "repackage_classes",
             "resource_exclusion_exceptions",
             "resource_exclusion_regex",
             "resource_ids_provider_dep",
@@ -3776,6 +3777,7 @@ if (enable_java_templates && is_android) {
             "proguard_configs",
             "proguard_enabled",
             "proguard_enable_obfuscation",
+            "repackage_classes",
             "resource_exclusion_exceptions",
             "resource_exclusion_regex",
             "resource_ids_provider_dep",
@@ -5095,6 +5097,7 @@ if (enable_java_templates && is_android) {
                                  "expected_proguard_config",
                                  "expected_proguard_config_base",
                                  "proguard_enable_obfuscation",
+                                 "repackage_classes",
                                ])
         if (defined(expected_proguard_config)) {
           top_target_name = _target_name
@@ -5110,6 +5113,17 @@ if (enable_java_templates && is_android) {
           deps += [ ":${_rewritten_jar_target_name}" ]
         }
         modules = _modules
+
+        # Must not be set via write_build_config, because that will cause it
+        # to be picked up by test apks that use apk_under_test.
+        _assertions_implicitly_enabled =
+            defined(invoker.custom_assertion_handler)
+        if (!_assertions_implicitly_enabled && !enable_java_asserts &&
+            (!defined(testonly) || !testonly) &&
+            # Injected JaCoCo code causes -checkdiscards to fail.
+            !use_jacoco_coverage) {
+          proguard_configs = [ "//build/android/dcheck_is_off.flags" ]
+        }
       }
     }
 

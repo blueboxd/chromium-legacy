@@ -107,6 +107,10 @@ void TestWallpaperController::SetOnlineWallpaper(
   std::move(callback).Run(/*success=*/true);
 }
 
+void TestWallpaperController::ShowOobeWallpaper() {
+  ++set_oobe_wallpaper_count_;
+}
+
 void TestWallpaperController::SetGooglePhotosWallpaper(
     const ash::GooglePhotosWallpaperParams& params,
     SetWallpaperCallback callback) {
@@ -286,10 +290,10 @@ gfx::ImageSkia TestWallpaperController::GetWallpaperImage() {
   return current_wallpaper;
 }
 
-scoped_refptr<base::RefCountedMemory>
-TestWallpaperController::GetPreviewImage() {
+void TestWallpaperController::LoadPreviewImage(
+    LoadPreviewImageCallback callback) {
   current_wallpaper.MakeThreadSafe();
-  return gfx::Image(current_wallpaper).As1xPNGBytes();
+  std::move(callback).Run(gfx::Image(current_wallpaper).As1xPNGBytes());
 }
 
 bool TestWallpaperController::IsWallpaperBlurredForLockState() const {

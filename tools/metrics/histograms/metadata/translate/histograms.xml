@@ -155,6 +155,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Translate.CompactInfobar.Language.AlwaysTranslate"
     enum="LocaleCodeISO639" expires_after="2023-10-08">
+  <obsolete>
+    This predates the Translate metrics redesign. Metrics are now logged at a
+    translation-level and a page-load level.
+  </obsolete>
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -165,6 +169,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Translate.CompactInfobar.Language.MoreLanguages"
     enum="LocaleCodeISO639" expires_after="2023-04-23">
+  <obsolete>
+    This predates the Translate metrics redesign. Metrics are now logged at a
+    translation-level and a page-load level.
+  </obsolete>
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -174,6 +182,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Translate.CompactInfobar.Language.NeverTranslate"
     enum="LocaleCodeISO639" expires_after="2023-08-13">
+  <obsolete>
+    This predates the Translate metrics redesign. Metrics are now logged at a
+    translation-level and a page-load level.
+  </obsolete>
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -184,6 +196,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Translate.CompactInfobar.Language.PageNotIn"
     enum="LocaleCodeISO639" expires_after="2023-09-17">
+  <obsolete>
+    This predates the Translate metrics redesign. Metrics are now logged at a
+    translation-level and a page-load level.
+  </obsolete>
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -194,6 +210,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Translate.CompactInfobar.Language.Translate"
     enum="LocaleCodeISO639" expires_after="2023-08-31">
+  <obsolete>
+    This predates the Translate metrics redesign. Metrics are now logged at a
+    translation-level and a page-load level.
+  </obsolete>
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -625,13 +645,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Translate.PageScheme" enum="TranslateScheme"
-    expires_after="M77">
-  <owner>megjablon@google.com</owner>
-  <owner>chrome-language@google.com</owner>
-  <summary>Counts translation target page schemes.</summary>
-</histogram>
-
 <histogram name="Translate.PartialTranslateBubbleUiEvent"
     enum="PartialTranslateBubbleUiEvent" expires_after="2023-08-31">
   <owner>cuianthony@google.com</owner>
@@ -770,14 +783,17 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Translate.SimilarLanguageMatch" enum="BooleanMatched"
     expires_after="2023-08-31">
+  <obsolete>
+    Replaced by Translate.LanguageDetection.LanguageVerification in M114.
+  </obsolete>
   <owner>megjablon@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
-    This metrics is logged whenever a page is loaded. The logged value is
-    &quot;Matched&quot; when the CLD-detected language differs from the page
+    This metric is logged whenever a page is loaded. The logged value is
+    &quot;Matched&quot; when the model-detected language differs from the page
     language code, and the two languages are such similar languages. In that
-    case, Chrome ignore the CLD-determined language and instead uses the page
-    language code. The page language code is decided by Content-Language and
+    case, Chrome ignore the model-determined language and instead uses the page
+    language code. The page language code is decided by its Content-Language and
     HTML lang attribute.
   </summary>
 </histogram>
@@ -799,20 +815,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     The number of requests sent to the Translate server, grouped by target
     language.
-  </summary>
-</histogram>
-
-<histogram name="Translate.TargetLanguage.Origin"
-    enum="TranslateTargetLanguageOrigin" expires_after="2023-03-19">
-  <obsolete>
-    Replaced by Translate.PageLoad.InitialTargetLanguage.Origin in M114.
-  </obsolete>
-  <owner>megjablon@google.com</owner>
-  <owner>chrome-language@google.com</owner>
-  <summary>
-    Where the target language was determined from. Can be the most recent target
-    language, from the language model, the UI language, the user's accept
-    languages, or default to English.
   </summary>
 </histogram>
 

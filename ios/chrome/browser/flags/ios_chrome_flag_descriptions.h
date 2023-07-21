@@ -13,11 +13,6 @@
 
 namespace flag_descriptions {
 
-// Title and description for the flag to enable kAdaptiveSuggestionsCount flag
-// on iOS.
-extern const char kAdaptiveSuggestionsCountName[];
-extern const char kAdaptiveSuggestionsCountDescription[];
-
 // Title and description for the flag to enable add to home screen button in
 // share menu.
 extern const char kAddToHomeScreenName[];
@@ -277,10 +272,6 @@ extern const char kEnableFollowIPHExpParamsDescription[];
 extern const char kEnableFollowManagementInstantReloadName[];
 extern const char kEnableFollowManagementInstantReloadDescription[];
 
-// Title and description for the flag to enable DMToken deletion.
-extern const char kDmTokenDeletionName[];
-extern const char kDmTokenDeletionDescription[];
-
 // Title and description for the flag to enable kEditPasswordsInSettings flag on
 // iOS.
 extern const char kEditPasswordsInSettingsName[];
@@ -423,10 +414,9 @@ extern const char kFullscreenPromosManagerSkipInternalLimitsDescription[];
 extern const char kFullscreenSmoothScrollingName[];
 extern const char kFullscreenSmoothScrollingDescription[];
 
-// Title and description for the flag that hides the content suggestion tiles
-// from the NTP.
-extern const char kHideContentSuggestionTilesName[];
-extern const char kHideContentSuggestionTilesDescription[];
+// Title and description for the flag to enable history-sync opt-in.
+extern const char kHistorySyncOptInName[];
+extern const char kHistorySyncOptInDescription[];
 
 // Title and description for the flag to enable HTTPS-Only Mode setting.
 extern const char kHttpsOnlyModeName[];
@@ -502,8 +492,8 @@ extern const char kIOSPasswordBottomSheetDescription[];
 
 // Title and description of the flag to enable client side new tab page
 // experiments aimed at improving user retention.
-extern const char kNewTabPageFieldTrialName[];
-extern const char kNewTabPageFieldTrialDescription[];
+extern const char kNewTabPageRetentionName[];
+extern const char kNewTabPageRetentionDescription[];
 
 // Title and description for the flag to enable Shared Highlighting color
 // change in iOS.
@@ -519,11 +509,6 @@ extern const char kIOSSharedHighlightingAmpDescription[];
 // the text fragments UI.
 extern const char kIOSSharedHighlightingV2Name[];
 extern const char kIOSSharedHighlightingV2Description[];
-
-// Title and description for the flag that modifies the save password infobar
-// to show whether the save happens to an account or only to the current device.
-extern const char kIOSShowPasswordStorageInSaveInfobarName[];
-extern const char kIOSShowPasswordStorageInSaveInfobarDescription[];
 
 // Title and description for the flag to lock the bottom toolbar into place.
 extern const char kLockBottomToolbarName[];
@@ -725,19 +710,10 @@ extern const char kDownloadServiceForegroundSessionDescription[];
 extern const char kOptimizationGuidePushNotificationClientName[];
 extern const char kOptimizationGuidePushNotificationClientDescription[];
 
-// Title and description for the flag to enable TFLite model downloading.
-extern const char kOptimizationGuideModelDownloadingName[];
-extern const char kOptimizationGuideModelDownloadingDescription[];
-
 // Title and description for the flag to enable one tap experience for maps
 // experience kit.
 extern const char kOneTapForMapsName[];
 extern const char kOneTapForMapsDescription[];
-
-// Title and description for the flag to enable the prediction of optimization
-// targets.
-extern const char kOptimizationTargetPredictionDescription[];
-extern const char kOptimizationTargetPredictionName[];
 
 // Title and description for the flag to enable adding notes to password in
 // settings.
@@ -875,11 +851,6 @@ extern const char kTFLiteLanguageDetectionIgnoreDescription[];
 // implementation.
 extern const char kToolbarContainerName[];
 extern const char kToolbarContainerDescription[];
-
-// Title and description for the flag to enable using Lens to search for an
-// image from the long press context menu.
-extern const char kUseLensToSearchForImageName[];
-extern const char kUseLensToSearchForImageDescription[];
 
 // Title and description for the flag to enable using Lens to search using
 // the device camera from the home screen widget.

@@ -738,11 +738,6 @@ void BrowserMainLoop::PostCreateMainMessageLoop() {
     InitSkiaEventTracer();
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
         skia::SkiaMemoryDumpProvider::GetInstance(), "Skia", nullptr);
-
-    // For in-browser tests, we still need to call this to respect the
-    // force-skia-analytic-aa switch
-    // https://crbug.com/1421297
-    InitializeSkiaAnalyticAntialiasing();
   }
 
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
@@ -874,11 +869,11 @@ void BrowserMainLoop::CreateStartupTasks() {
       &BrowserMainLoop::PreMainMessageLoopRun, base::Unretained(this));
   startup_task_runner_->AddTask(std::move(pre_main_message_loop_run));
 
-// On Android, the native message loop is already running when the app is
-// entered and startup tasks are run asynchrously from it.
+// On Android and iOS, the native message loop is already running when the app
+// is entered and startup tasks are run asynchrously from it.
 // InterceptMainMessageLoopRun() thus needs to be forced instead of happening
 // from MainMessageLoopRun().
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   StartupTask intercept_main_message_loop_run = base::BindOnce(
       [](BrowserMainLoop* self) {
         // Lambda to ignore the return value and always keep a clean exit code

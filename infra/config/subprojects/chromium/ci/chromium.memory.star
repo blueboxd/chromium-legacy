@@ -654,7 +654,7 @@ ci.builder(
         ),
     ),
     cores = None,
-    os = os.MAC_DEFAULT,
+    os = os.MAC_12,
     sheriff_rotations = args.ignore_default(sheriff_rotations.IOS),
     console_view_entry = consoles.console_view_entry(
         category = "iOS",

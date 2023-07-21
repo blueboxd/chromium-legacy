@@ -135,12 +135,6 @@ const char* const kModelIdsBlockedForMediaFoundation[] = {
     // ACER Aspire VN7-571G. See https://crbug.com/1327948.
     "04f2:b469"};
 
-// Use this list only for USB webcams.
-const char* const kModelIdsBlockedForMediaFoundationD3D11VideoCapture[] = {
-    // D3D11 calls on textures produced by these cameras take so much time
-    // that MFCaptureEngine fails with E_MF_SAMPLEALLOCATOREMPTY error
-    "05a3:9331", "04f2:b6bf"};
-
 // Use this list only for non-USB webcams.
 const char* const kDisplayNamesBlockedForMediaFoundation[] = {
     // VMware Virtual Webcams cause hangs when there is no physical Webcam.
@@ -184,12 +178,6 @@ bool IsDeviceBlockedForQueryingDetailedFrameRates(
 
 bool IsDeviceBlockedForMediaFoundationByModelId(const std::string& model_id) {
   return base::Contains(kModelIdsBlockedForMediaFoundation, model_id);
-}
-
-bool IsDeviceBlockedForMediaFoundationD3D11ByModelId(
-    const std::string& model_id) {
-  return base::Contains(kModelIdsBlockedForMediaFoundationD3D11VideoCapture,
-                        model_id);
 }
 
 bool IsDeviceBlockedForMediaFoundationByDisplayName(
@@ -400,18 +388,12 @@ VideoCaptureErrorOrDevice VideoCaptureDeviceFactoryWin::CreateDevice(
     case VideoCaptureApi::WIN_MEDIA_FOUNDATION_SENSOR: {
       DCHECK(PlatformSupportsMediaFoundation());
       ComPtr<IMFMediaSource> source;
-      const bool banned_for_d3d11 =
-          IsDeviceBlockedForMediaFoundationD3D11ByModelId(
-              GetDeviceModelId(device_descriptor.device_id));
-
       MFSourceOutcome outcome = CreateDeviceSourceMediaFoundation(
-          device_descriptor.device_id, device_descriptor.capture_api,
-          banned_for_d3d11, &source);
+          device_descriptor.device_id, device_descriptor.capture_api, &source);
       switch (outcome) {
         case MFSourceOutcome::kSuccess: {
           auto device = std::make_unique<VideoCaptureDeviceMFWin>(
-              device_descriptor, std::move(source),
-              banned_for_d3d11 ? nullptr : dxgi_device_manager_,
+              device_descriptor, std::move(source), dxgi_device_manager_,
               base::SingleThreadTaskRunner::GetCurrentDefault());
           DVLOG(1) << " MediaFoundation Device: "
                    << device_descriptor.display_name();
@@ -551,7 +533,6 @@ bool VideoCaptureDeviceFactoryWin::CreateDeviceFilterDirectShow(
 MFSourceOutcome VideoCaptureDeviceFactoryWin::CreateDeviceSourceMediaFoundation(
     const std::string& device_id,
     VideoCaptureApi capture_api,
-    const bool banned_for_d3d11,
     IMFMediaSource** source) {
   DCHECK(source);
   DCHECK(!*source);
@@ -572,13 +553,11 @@ MFSourceOutcome VideoCaptureDeviceFactoryWin::CreateDeviceSourceMediaFoundation(
   attributes->SetString(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK,
                         base::SysUTF8ToWide(device_id).c_str());
 
-  return CreateDeviceSourceMediaFoundation(std::move(attributes),
-                                           banned_for_d3d11, source);
+  return CreateDeviceSourceMediaFoundation(std::move(attributes), source);
 }
 
 MFSourceOutcome VideoCaptureDeviceFactoryWin::CreateDeviceSourceMediaFoundation(
     ComPtr<IMFAttributes> attributes,
-    const bool banned_for_d3d11,
     IMFMediaSource** source_out) {
   ComPtr<IMFMediaSource> source;
   HRESULT hr = MFCreateDeviceSource(attributes.Get(), &source);
@@ -588,7 +567,7 @@ MFSourceOutcome VideoCaptureDeviceFactoryWin::CreateDeviceSourceMediaFoundation(
     return MFSourceOutcome::kFailedSystemPermissions;
 
   if (SUCCEEDED(hr) && use_d3d11_with_media_foundation_ &&
-      dxgi_device_manager_ && !banned_for_d3d11) {
+      dxgi_device_manager_) {
     dxgi_device_manager_->RegisterWithMediaSource(source);
   }
   *source_out = source.Detach();
@@ -837,15 +816,13 @@ DevicesInfo VideoCaptureDeviceFactoryWin::GetDevicesInfoMediaFoundation() {
             ComPtr<IMFMediaSource> source;
             VideoCaptureControlSupport control_support;
             VideoCaptureFormats supported_formats;
-            const bool banned_for_d3d11 =
-                IsDeviceBlockedForMediaFoundationD3D11ByModelId(model_id);
             if (CreateDeviceSourceMediaFoundation(
-                    device_id, api_attributes.first, banned_for_d3d11,
-                    &source) == MFSourceOutcome::kSuccess) {
+                    device_id, api_attributes.first, &source) ==
+                MFSourceOutcome::kSuccess) {
               control_support =
                   VideoCaptureDeviceMFWin::GetControlSupport(source);
-              supported_formats = GetSupportedFormatsMediaFoundation(
-                  source, banned_for_d3d11, display_name);
+              supported_formats =
+                  GetSupportedFormatsMediaFoundation(source, display_name);
             }
             devices_info.emplace_back(VideoCaptureDeviceDescriptor(
                 display_name, device_id, model_id, api_attributes.first,
@@ -1003,12 +980,9 @@ VideoCaptureFormats VideoCaptureDeviceFactoryWin::GetSupportedFormatsDirectShow(
 VideoCaptureFormats
 VideoCaptureDeviceFactoryWin::GetSupportedFormatsMediaFoundation(
     ComPtr<IMFMediaSource> source,
-    const bool banned_for_d3d11,
     const std::string& display_name) {
   ComPtr<IMFAttributes> source_reader_attributes;
-  const bool dxgi_device_manager_available =
-      (dxgi_device_manager_ != nullptr) && !banned_for_d3d11;
-  if (dxgi_device_manager_available) {
+  if (dxgi_device_manager_) {
     dxgi_device_manager_->RegisterWithMediaSource(source);
 
     HRESULT hr = MFCreateAttributes(&source_reader_attributes, 1);
@@ -1034,7 +1008,7 @@ VideoCaptureDeviceFactoryWin::GetSupportedFormatsMediaFoundation(
 
   DWORD stream_index = 0;
   ComPtr<IMFMediaType> type;
-
+  const bool dxgi_device_manager_available = dxgi_device_manager_ != nullptr;
   while (SUCCEEDED(hr = reader->GetNativeMediaType(
                        static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM),
                        stream_index, &type))) {

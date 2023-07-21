@@ -175,7 +175,7 @@
 <translation id="2417486498593892439">Sign in to network</translation>
 <translation id="2425665904502185219">Total file size</translation>
 <translation id="2428749644083375155">Copying <ph name="NUMBER_OF_ITEMS" /> items to <ph name="FOLDER_NAME" /></translation>
-<translation id="2448312741937722512">Type</translation>
+<translation id="2448312741937722512">Types</translation>
 <translation id="2452444014801043526">Person with megaphone</translation>
 <translation id="2464079411014186876">Ice cream</translation>
 <translation id="2464089476039395325">HTTP Proxy</translation>
@@ -791,6 +791,7 @@
 <translation id="7252604552361840748">Find the extension above</translation>
 <translation id="7256405249507348194">Unrecognised error: <ph name="DESC" /></translation>
 <translation id="7268659760406822741">Available services</translation>
+<translation id="7291818353625820805">Want keys to repeat? Turn off accent marks in Keyboard settings</translation>
 <translation id="7292816689782057017">Administrator policy restricts saving to some locations.</translation>
 <translation id="7294063083760278948">Telugu transliteration</translation>
 <translation id="7295662345261934369">Share with others</translation>

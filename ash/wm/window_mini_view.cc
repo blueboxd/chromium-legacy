@@ -16,7 +16,6 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/window.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
@@ -109,9 +108,8 @@ void WindowMiniView::SetShowPreview(bool show) {
     return;
   }
 
-  preview_view_ = AddChildView(std::make_unique<WindowPreviewView>(
-      source_window_,
-      /*trilinear_filtering_on_init=*/false));
+  preview_view_ =
+      AddChildView(std::make_unique<WindowPreviewView>(source_window_));
   preview_view_->SetPaintToLayer();
   preview_view_->layer()->SetFillsBoundsOpaquely(false);
   Layout();
@@ -170,14 +168,10 @@ gfx::Size WindowMiniView::GetPreviewViewSize() const {
   return preview_view_->GetPreferredSize();
 }
 
-WindowMiniView::WindowMiniView(aura::Window* source_window, int border_inset)
+WindowMiniView::WindowMiniView(aura::Window* source_window)
     : source_window_(source_window) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
-
-  // TODO(conniekxu|sammiequon): Remove the border once the calculation method
-  // for the bounds of the OverviewItemView is redone.
-  SetBorder(views::CreateEmptyBorder(gfx::Insets(border_inset)));
 
   window_observation_.Observe(source_window);
 
@@ -213,7 +207,7 @@ WindowMiniView::WindowMiniView(aura::Window* source_window, int border_inset)
   // In order to show the focus ring out of the content view, `border_inset`
   // needs to be counted when setting the insets for the focus ring.
   views::InstallRoundRectHighlightPathGenerator(
-      this, gfx::Insets(kFocusRingHaloInset + border_inset),
+      this, gfx::Insets(kFocusRingHaloInset),
       chromeos::features::IsJellyrollEnabled() ? kFocusRingCornerRadius
                                                : kBackdropBorderRoundingDp);
   views::FocusRing::Install(this);

@@ -26,8 +26,8 @@ import android.graphics.Bitmap;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 
-import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.MediumTest;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -202,6 +202,9 @@ public class TabSwitcherTabletTest {
                        withParent(withId(R.id.tab_switcher_switches_and_menu))))
                 .check(matches(withEffectiveVisibility(GONE)));
         onView(allOf(withId(R.id.new_tab_button), withParent(withId(R.id.tab_switcher_toolbar))))
+                .check(matches(withEffectiveVisibility(GONE)));
+        onView(allOf(withId(R.id.tab_switcher_mode_tab_switcher_button),
+                       withParent(withId(R.id.tab_switcher_switches_and_menu))))
                 .check(matches(withEffectiveVisibility(GONE)));
 
         // Assert visible views.

@@ -40,10 +40,7 @@ class AffiliatedCloudPolicyInvalidator;
 class AffiliatedInvalidationServiceProvider;
 class AffiliatedRemoteCommandsInvalidator;
 class BluetoothPolicyHandler;
-class DeviceActiveDirectoryPolicyManager;
 class DeviceCloudPolicyInitializer;
-class ActiveDirectoryDeviceStateUploader;
-class ActiveDirectoryMigrationManager;
 class DeviceDockMacAddressHandler;
 class DeviceLocalAccountPolicyService;
 class DeviceNamePolicyHandler;
@@ -98,6 +95,10 @@ class BrowserPolicyConnectorAsh : public ChromeBrowserPolicyConnector,
   bool IsCloudManaged() const;
 
   // Checks whether this is an Active Directory managed enterprise device.
+  // In theory, this can still yield true for a few left-over AD devices.
+  // However, starting in M114, it is considered safe to assume that this
+  // function always returns false.
+  // TODO(b/279364186) Remove.
   bool IsActiveDirectoryManaged() const;
 
   // Returns the enterprise enrollment domain if device is managed.
@@ -149,12 +150,6 @@ class BrowserPolicyConnectorAsh : public ChromeBrowserPolicyConnector,
   // May be nullptr, e.g. for devices managed by Active Directory.
   DeviceCloudPolicyManagerAsh* GetDeviceCloudPolicyManager() const {
     return device_cloud_policy_manager_;
-  }
-
-  // May be nullptr, e.g. for cloud-managed devices.
-  DeviceActiveDirectoryPolicyManager* GetDeviceActiveDirectoryPolicyManager()
-      const {
-    return device_active_directory_policy_manager_;
   }
 
   // May be nullptr, e.g. for devices managed by Active Directory.
@@ -269,12 +264,6 @@ class BrowserPolicyConnectorAsh : public ChromeBrowserPolicyConnector,
       affiliated_invalidation_service_provider_;
   raw_ptr<DeviceCloudPolicyManagerAsh, ExperimentalAsh>
       device_cloud_policy_manager_ = nullptr;
-  raw_ptr<DeviceActiveDirectoryPolicyManager, ExperimentalAsh>
-      device_active_directory_policy_manager_ = nullptr;
-  std::unique_ptr<ActiveDirectoryDeviceStateUploader>
-      active_directory_device_state_uploader_;
-  std::unique_ptr<ActiveDirectoryMigrationManager>
-      active_directory_migration_manager_;
   raw_ptr<PrefService, DanglingUntriaged | ExperimentalAsh> local_state_ =
       nullptr;
   std::unique_ptr<DeviceCloudPolicyInitializer>

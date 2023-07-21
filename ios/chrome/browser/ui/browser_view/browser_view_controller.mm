@@ -14,14 +14,15 @@
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
-#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/discover_feed/feed_constants.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
-#import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/reading_list/reading_list_browser_agent.h"
+#import "ios/chrome/browser/shared/coordinator/default_browser_promo/non_modal_default_browser_promo_scheduler_scene_agent.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/find_in_page_commands.h"
@@ -41,7 +42,6 @@
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
-#import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
 #import "ios/chrome/browser/ui/default_promo/default_promo_non_modal_presentation_delegate.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
@@ -77,14 +77,11 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #import "ios/chrome/browser/ui/toolbar/secondary_toolbar_coordinator.h"
-#import "ios/chrome/browser/ui/toolbar_container/toolbar_container_coordinator.h"
-#import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web/page_placeholder_browser_agent.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/web_navigation_util.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
 #import "ios/chrome/browser/webui/show_mail_composer_context.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -201,9 +198,6 @@ enum HeaderBehaviour {
   // Keyboard commands provider.  It offloads most of the keyboard commands
   // management off of the BVC.
   KeyCommandsProvider* _keyCommandsProvider;
-
-  // TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
-  PrerenderService* _prerenderService;
 
   // Used to display the Voice Search UI.  Nil if not visible.
   id<VoiceSearchController> _voiceSearchController;
@@ -340,29 +334,23 @@ enum HeaderBehaviour {
 @property(nonatomic, strong)
     ToolbarAccessoryPresenter* toolbarAccessoryPresenter;
 
-// Command handler for load query commands
-@property(nonatomic, weak) id<LoadQueryCommands> loadQueryCommandsHandler;
-
-// Command handler for omnibox commands
-@property(nonatomic, weak) id<OmniboxCommands> omniboxCommandsHandler;
-
-// Command handler for text zoom commands
+// Command handler for text zoom commands.
 @property(nonatomic, weak) id<TextZoomCommands> textZoomHandler;
 
-// Command handler for help commands
+// Command handler for help commands.
 @property(nonatomic, weak) id<HelpCommands> helpHandler;
 
-// Command handler for popup menu commands
+// Command handler for popup menu commands.
 @property(nonatomic, weak) id<PopupMenuCommands> popupMenuCommandsHandler;
 
-// Command handler for application commands
+// Command handler for application commands.
 @property(nonatomic, weak) id<ApplicationCommands> applicationCommandsHandler;
 
-// Command handler for browser coordinator commands
+// Command handler for browser coordinator commands.
 @property(nonatomic, weak) id<BrowserCoordinatorCommands>
     browserCoordinatorCommandsHandler;
 
-// Command handler for find in page commands
+// Command handler for find in page commands.
 @property(nonatomic, weak) id<FindInPageCommands> findInPageCommandsHandler;
 
 // The FullscreenController.
@@ -378,8 +366,6 @@ enum HeaderBehaviour {
 // TODO(crbug.com/880656): Convert to a container coordinator.
 @property(nonatomic, strong) UIView* secondaryToolbarContainerView;
 // Coordinator used to manage the secondary toolbar view.
-@property(nonatomic, strong)
-    ToolbarContainerCoordinator* secondaryToolbarContainerCoordinator;
 
 // Vertical offset for the primary toolbar, used for fullscreen.
 @property(nonatomic, strong) NSLayoutConstraint* primaryToolbarOffsetConstraint;
@@ -436,8 +422,6 @@ enum HeaderBehaviour {
   if (self) {
     _browserContainerViewController = browserContainerViewController;
     _keyCommandsProvider = keyCommandsProvider;
-    // TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
-    _prerenderService = dependencies.prerenderService;
     _sideSwipeController = dependencies.sideSwipeController;
     [_sideSwipeController setSwipeDelegate:self];
     _bookmarksCoordinator = dependencies.bookmarksCoordinator;
@@ -457,8 +441,6 @@ enum HeaderBehaviour {
     self.browserCoordinatorCommandsHandler =
         dependencies.browserCoordinatorCommandsHandler;
     self.findInPageCommandsHandler = dependencies.findInPageCommandsHandler;
-    self.loadQueryCommandsHandler = dependencies.loadQueryCommandsHandler;
-    self.omniboxCommandsHandler = dependencies.omniboxCommandsHandler;
     _isOffTheRecord = dependencies.isOffTheRecord;
     _urlLoadingBrowserAgent = dependencies.urlLoadingBrowserAgent;
     _urlLoadingNotifierBrowserAgent =
@@ -468,8 +450,6 @@ enum HeaderBehaviour {
     _layoutGuideCenter = dependencies.layoutGuideCenter;
     _webStateList = dependencies.webStateList;
     _voiceSearchController = dependencies.voiceSearchController;
-    self.secondaryToolbarContainerCoordinator =
-        dependencies.secondaryToolbarContainerCoordinator;
     self.safeAreaProvider = dependencies.safeAreaProvider;
     _pagePlaceholderBrowserAgent = dependencies.pagePlaceholderBrowserAgent;
 
@@ -911,8 +891,6 @@ enum HeaderBehaviour {
 
   [self.primaryToolbarCoordinator stop];
   self.primaryToolbarCoordinator = nil;
-  [self.secondaryToolbarContainerCoordinator stop];
-  self.secondaryToolbarContainerCoordinator = nil;
   [self.secondaryToolbarCoordinator stop];
   self.secondaryToolbarCoordinator = nil;
   _sideSwipeController = nil;
@@ -967,7 +945,7 @@ enum HeaderBehaviour {
   if (self.bottomPosition)
     return NO;
 
-  return self.viewVisible;
+  return YES;
 }
 
 #pragma mark - UIViewController
@@ -1102,8 +1080,6 @@ enum HeaderBehaviour {
     _voiceSearchController.dispatcher = nil;
     [self.primaryToolbarCoordinator stop];
     self.primaryToolbarCoordinator = nil;
-    [self.secondaryToolbarContainerCoordinator stop];
-    self.secondaryToolbarContainerCoordinator = nil;
     [self.secondaryToolbarCoordinator stop];
     self.secondaryToolbarCoordinator = nil;
     _toolbarUIState = nil;
@@ -1431,15 +1407,7 @@ enum HeaderBehaviour {
 - (void)buildToolbarAndTabStrip {
   DCHECK([self isViewLoaded]);
 
-  // TODO(crbug.com/880672): Finish ToolbarContainer work.
-  if (base::FeatureList::IsEnabled(
-          toolbar_container::kToolbarContainerEnabled)) {
-    self.secondaryToolbarContainerCoordinator.toolbarCoordinators =
-        @[ self.secondaryToolbarCoordinator ];
-    [self.secondaryToolbarContainerCoordinator start];
-  } else {
-    [self.secondaryToolbarCoordinator start];
-  }
+  [self.secondaryToolbarCoordinator start];
 
   [self updateBroadcastState];
   if (_voiceSearchController) {
@@ -1534,16 +1502,8 @@ enum HeaderBehaviour {
   if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE ||
       ![self canShowTabStrip]) {
     topAnchor = self.view.topAnchor;
-    // TODO(crbug.com/1423799): Dchecks added for investigation purposes, remove
-    // once crash root cause is found.
-    DCHECK(self.view);
-    DCHECK(topAnchor);
   } else {
     topAnchor = self.tabStripView.bottomAnchor;
-    // TODO(crbug.com/1423799): Dchecks added for investigation purposes, remove
-    // once crash root cause is found.
-    DCHECK(self.tabStripView);
-    DCHECK(topAnchor);
   }
 
   // Only add leading and trailing constraints once as they are never updated.
@@ -1564,9 +1524,6 @@ enum HeaderBehaviour {
 
   // Create a constraint for the vertical positioning of the toolbar.
   UIView* primaryView = self.primaryToolbarCoordinator.viewController.view;
-  // TODO(crbug.com/1423799): Dcheck added for investigation purposes, remove
-  // once crash root cause is found.
-  DCHECK(primaryView.topAnchor);
   self.primaryToolbarOffsetConstraint =
       [primaryView.topAnchor constraintEqualToAnchor:topAnchor];
 
@@ -1605,31 +1562,11 @@ enum HeaderBehaviour {
   }
 }
 
-// Adds constraints to the secondary toolbar container anchoring it to the
-// bottom of the browser view.
-- (void)addConstraintsToSecondaryToolbarContainer {
-  if (!self.secondaryToolbarContainerCoordinator)
-    return;
-
-  // Constrain the container to the bottom of the view.
-  UIView* containerView =
-      self.secondaryToolbarContainerCoordinator.viewController.view;
-  AddSameConstraintsToSides(
-      self.view, containerView,
-      LayoutSides::kBottom | LayoutSides::kLeading | LayoutSides::kTrailing);
-}
-
 // Adds constraints to the primary and secondary toolbars, anchoring them to the
 // top and bottom of the browser view.
 - (void)addConstraintsToToolbar {
   [self addConstraintsToPrimaryToolbar];
-  // TODO(crbug.com/880672): Finish ToolbarContainer work.
-  if (base::FeatureList::IsEnabled(
-          toolbar_container::kToolbarContainerEnabled)) {
-    [self addConstraintsToSecondaryToolbarContainer];
-  } else {
-    [self addConstraintsToSecondaryToolbar];
-  }
+  [self addConstraintsToSecondaryToolbar];
   [[self view] layoutIfNeeded];
 }
 
@@ -1654,15 +1591,8 @@ enum HeaderBehaviour {
     // Add the toolbars as child view controllers.
     [self addChildViewController:self.primaryToolbarCoordinator.viewController];
     if (self.secondaryToolbarCoordinator) {
-      // TODO(crbug.com/880672): Finish ToolbarContainer work.
-      if (base::FeatureList::IsEnabled(
-              toolbar_container::kToolbarContainerEnabled)) {
-        [self addChildViewController:self.secondaryToolbarContainerCoordinator
-                                         .viewController];
-      } else {
-        [self addChildViewController:self.secondaryToolbarCoordinator
-                                         .viewController];
-      }
+      [self addChildViewController:self.secondaryToolbarCoordinator
+                                       .viewController];
     }
 
     // Add the primary toolbar. On iPad, it should be in front of the tab strip
@@ -1685,23 +1615,14 @@ enum HeaderBehaviour {
 
     // Add the secondary toolbar.
     if (self.secondaryToolbarCoordinator) {
-      // TODO(crbug.com/880672): Finish ToolbarContainer work.
-      if (base::FeatureList::IsEnabled(
-              toolbar_container::kToolbarContainerEnabled)) {
-        // Add the container view to the hierarchy.
-        UIView* containerView =
-            self.secondaryToolbarContainerCoordinator.viewController.view;
-        [self.view insertSubview:containerView aboveSubview:primaryToolbarView];
-      } else {
-        // Create the container view for the secondary toolbar and add it to
-        // the hierarchy
-        UIView* container = [[LegacyToolbarContainerView alloc] init];
-        container.translatesAutoresizingMaskIntoConstraints = NO;
-        [container
-            addSubview:self.secondaryToolbarCoordinator.viewController.view];
-        [self.view insertSubview:container aboveSubview:primaryToolbarView];
-        self.secondaryToolbarContainerView = container;
-      }
+      // Create the container view for the secondary toolbar and add it to
+      // the hierarchy
+      UIView* container = [[LegacyToolbarContainerView alloc] init];
+      container.translatesAutoresizingMaskIntoConstraints = NO;
+      [container
+          addSubview:self.secondaryToolbarCoordinator.viewController.view];
+      [self.view insertSubview:container aboveSubview:primaryToolbarView];
+      self.secondaryToolbarContainerView = container;
     }
 
     // Create the NamedGuides and add them to the browser view.
@@ -1754,15 +1675,8 @@ enum HeaderBehaviour {
     [self.primaryToolbarCoordinator.viewController
         didMoveToParentViewController:self];
     if (self.secondaryToolbarCoordinator) {
-      // TODO(crbug.com/880672): Finish ToolbarContainer work.
-      if (base::FeatureList::IsEnabled(
-              toolbar_container::kToolbarContainerEnabled)) {
-        [self.secondaryToolbarContainerCoordinator.viewController
-            didMoveToParentViewController:self];
-      } else {
-        [self.secondaryToolbarCoordinator.viewController
-            didMoveToParentViewController:self];
-      }
+      [self.secondaryToolbarCoordinator.viewController
+          didMoveToParentViewController:self];
     }
   }
 
@@ -2347,7 +2261,7 @@ enum HeaderBehaviour {
                         fromTabId:(NSString*)tabId {
   // Check if the call comes from currently visible tab.
   NSString* visibleTabId = self.currentWebState->GetStableIdentifier();
-  if ([tabId isEqual:visibleTabId]) {
+  if ([tabId isEqualToString:visibleTabId]) {
     [self addChildViewController:viewController];
     [self.view addSubview:viewController.view];
     [viewController didMoveToParentViewController:self];
@@ -2581,19 +2495,12 @@ enum HeaderBehaviour {
   self.footerFullscreenProgress = progress;
 
   CGFloat height = 0.0;
-  // TODO(crbug.com/880672): Finish ToolbarContainer work.
-  if (base::FeatureList::IsEnabled(
-          toolbar_container::kToolbarContainerEnabled)) {
-    height = [self.secondaryToolbarContainerCoordinator
-        toolbarStackHeightForFullscreenProgress:progress];
-  } else {
-    // Update the height constraint and force a layout on the container view
-    // so that the update is animatable.
-    height = [self secondaryToolbarHeightWithInset] * progress;
-    self.secondaryToolbarHeightConstraint.constant = height;
-    [self.secondaryToolbarContainerView setNeedsLayout];
-    [self.secondaryToolbarContainerView layoutIfNeeded];
-  }
+  // Update the height constraint and force a layout on the container view
+  // so that the update is animatable.
+  height = [self secondaryToolbarHeightWithInset] * progress;
+  self.secondaryToolbarHeightConstraint.constant = height;
+  [self.secondaryToolbarContainerView setNeedsLayout];
+  [self.secondaryToolbarContainerView layoutIfNeeded];
 }
 
 // Updates the browser container view such that its viewport is the space
@@ -2635,9 +2542,9 @@ enum HeaderBehaviour {
 
   // Prerender tab does not have a toolbar, return `headerHeight` as promised by
   // API documentation.
-  // TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
-  if (_prerenderService && _prerenderService->IsLoadingPrerender())
+  if ([self.primaryToolbarCoordinator isLoadingPrerenderer]) {
     return self.headerHeight;
+  }
 
   UIView* topHeader = headers[0].view;
   return -(topHeader.frame.origin.y - self.headerOffset);
@@ -2743,7 +2650,6 @@ enum HeaderBehaviour {
 
 - (void)initiateNewTabForegroundAnimationForWebState:(web::WebState*)webState {
   // Initiates the new tab foreground animation, which is phone-specific.
-  DCHECK(webState);
   if ([self canShowTabStrip]) {
     if (self.foregroundTabWasAddedCompletionBlock) {
       // This callback is called before webState is activated. Dispatch the

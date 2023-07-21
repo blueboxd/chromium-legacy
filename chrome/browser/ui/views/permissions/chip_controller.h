@@ -48,8 +48,8 @@ class ChipController : public permissions::PermissionRequestManager::Observer,
 
   // PermissionRequestManager::Observer:
   void OnPermissionRequestManagerDestructed() override;
+
   void OnPromptRemoved() override;
-  void OnRequestsFinalized() override;
 
   void OnWebContentsChanged();
 
@@ -102,7 +102,7 @@ class ChipController : public permissions::PermissionRequestManager::Observer,
 
   views::Widget* GetBubbleWidget();
 
-  PermissionPromptBubbleView* GetPromptBubbleView();
+  PermissionPromptBubbleBaseView* GetPromptBubbleView();
 
   bool should_expand_for_testing();
 

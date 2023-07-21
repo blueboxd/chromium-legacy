@@ -221,6 +221,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="1961239773406905488">Forhåndsvisning af kamera er skjult</translation>
 <translation id="1961832440516943645"><ph name="DATE" /> <ph name="TIME" /></translation>
 <translation id="1962969542251276847">Skærmlås</translation>
+<translation id="1962972976741217487">1 enhed er forbundet til dit hotspot for <ph name="DEVICE_NAME" /></translation>
 <translation id="1967970931040389207">Aktivér hotspot</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Hej <ph name="USERNAME" /></translation>
@@ -301,7 +302,6 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="2367972762794486313">Vis apps</translation>
 <translation id="2369165858548251131">"Hej" på kinesisk</translation>
 <translation id="2386292613071805067">Markér alt på siden</translation>
-<translation id="2390318262976603432">Lokale indstillinger</translation>
 <translation id="2397416548179033562">Vis Chrome-menuen</translation>
 <translation id="240006516586367791">Mediestyring</translation>
 <translation id="2402411679569069051">Hvis du vil låse din Chromebook op, skal du bruge dit fingeraftryk eller låse din telefon op</translation>
@@ -382,6 +382,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="2791421900609674576">Du får vist anbefalinger, så du kan fortsætte, hvor du slap. Du kan fjerne anbefalinger ved at trykke og holde fingeren nede.</translation>
 <translation id="2792498699870441125">Alt+Søg</translation>
 <translation id="2797741504905337289">Shelf Party</translation>
+<translation id="2802938996245446490"><ph name="BUTTON_LABEL" />, valgt</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2814448776515246190">Afgrænset screenshot</translation>
 <translation id="2819276065543622893">Du bliver logget ud nu.</translation>
@@ -572,7 +573,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="3631369015426612114">Tillad notifikationer fra følgende</translation>
 <translation id="3633097874324966332">Åbn Bluetooth-indstillingerne for at parre din enhed</translation>
 <translation id="3633851487917460983">Åbn udklipsholderen</translation>
-<translation id="3638400994746983214">Slå privatlivsfilter til eller fra. <ph name="STATE_TEXT" />.</translation>
+<translation id="3638400994746983214">Slå privatlivsskærmen til eller fra. <ph name="STATE_TEXT" />.</translation>
 <translation id="3649256019230929621">Minimer vinduet</translation>
 <translation id="3649505501900178324">En opdatering mangler at blive udført</translation>
 <translation id="3653999174677652346"><ph name="EVENT_POSITION" />
@@ -600,6 +601,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="3735740477244556633">Sortér efter</translation>
 <translation id="3738664582935948253">Du kan nu vise klik og tastaturgenveje i skærmoptagelser</translation>
 <translation id="3742055079367172538">Screenshottet blev gemt</translation>
+<translation id="3756485814916578707">Skærmen castes</translation>
 <translation id="3765841986579723851">Redigeret i dag</translation>
 <translation id="3773700760453577392">En administrator har afvist samlet login fra flere konti for <ph name="USER_EMAIL" />. Alle brugere skal logge ud for at fortsætte.</translation>
 <translation id="3779139509281456663">Opretter forbindelse til <ph name="NAME" /></translation>
@@ -821,6 +823,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="4777825441726637019">Play Butik</translation>
 <translation id="4778095205580009397">Google Assistent er ikke tilgængelig i en demosession.</translation>
 <translation id="4789348252524569426">Talefilerne kan ikke installeres Din enhed skal opdateres. Genstart din enhed, og prøv igen.</translation>
+<translation id="478959186716341421">Caster</translation>
 <translation id="479989351350248267">søg</translation>
 <translation id="4804818685124855865">Afbryd</translation>
 <translation id="4814539958450445987">Loginskærm</translation>
@@ -911,7 +914,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="5208059991603368177">Til</translation>
 <translation id="5216991270656129561">Deaktiveret indtil <ph name="TIME" /></translation>
 <translation id="5222676887888702881">Log ud</translation>
-<translation id="5229343007215035173">Slå privatlivsfilter til/fra</translation>
+<translation id="5229343007215035173">Slå privatlivsskærm til/fra</translation>
 <translation id="5234764350956374838">Luk</translation>
 <translation id="523505283826916779">Indstillinger for hjælpefunktioner</translation>
 <translation id="5245201184978705914">Det er ikke muligt at generere en transskription</translation>
@@ -928,6 +931,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="5297704307811127955">Fra</translation>
 <translation id="5300589172476337783">Vis</translation>
 <translation id="5302048478445481009">Sprog</translation>
+<translation id="5303783651764314393"><ph name="DEVICECOUNT" /> enheder er forbundet til dit hotspot for <ph name="DEVICE_NAME" /></translation>
 <translation id="5308380583665731573">Opret forbindelse</translation>
 <translation id="5313326810920013265">Indstillinger for Bluetooth</translation>
 <translation id="5314219114274263156">Skærmen blev optaget</translation>
@@ -996,7 +1000,6 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" /> d. <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Tryk på Ctrl+Alt+Z for at deaktivere talefeedback.</translation>
 <translation id="5601503069213153581">Pinkode</translation>
-<translation id="5601571553788043181">Åbn filen i Chrome-browseren</translation>
 <translation id="5618148318840095371">Vi har ændret dit netværk til et bedre et</translation>
 <translation id="5619862035903135339">Administratorpolitikken tillader ikke screenshots</translation>
 <translation id="5625955975703555628">LTE+</translation>
@@ -1117,6 +1120,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="6137566720514957455">Åbn dialogboksen til fjernelse for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Bekræft download</translation>
 <translation id="6154006699632741460">Den eksterne enhed understøttes ikke</translation>
+<translation id="6156960295318603523">Sprogindstillinger</translation>
 <translation id="615957422585914272">Vis skærmtastatur</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="6166852626429024716">Søg på din enhed, i dine apps, i indstillingerne, på nettet...</translation>
@@ -1335,6 +1339,7 @@ Installeret for nylig</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS" /> sekunder.</translation>
 <translation id="7180611975245234373">Opdater</translation>
+<translation id="7187711731540696127">Dit hotspot for <ph name="DEVICE_NAME" /> er aktiveret. Der er ingen forbundne enheder</translation>
 <translation id="7188494361780961876">Menuen blev flyttet til øverste venstre hjørne af skærmen.</translation>
 <translation id="7189412385142492784">Hvor langt væk er Venus?</translation>
 <translation id="7198435252016571249">Kameraet er fastgjort til hjørnet nederst til højre. Dette er i strid med systemfladen.</translation>
@@ -1392,6 +1397,7 @@ Installeret for nylig</translation>
 <translation id="7497767806359279797">Vælg sprog og tastatur</translation>
 <translation id="7508690557411636492">Åbnet inden for den seneste måned</translation>
 <translation id="7509246181739783082">Verificer din identitet</translation>
+<translation id="7512726380443357693"><ph name="BUTTON_LABEL" />, ikke valgt</translation>
 <translation id="7513622367902644023">Screenshottilstand er valgt</translation>
 <translation id="7513922695575567867">Kalender for ugen med <ph name="DATE" /> – <ph name="SELECTED_DATE" /> er valgt.</translation>
 <translation id="7514365320538308">Download</translation>
@@ -1413,7 +1419,6 @@ Du kan slukke enheden ved at holde afbryderknappen på enheden nede igen.</trans
 <translation id="7569509451529460200">Braille og ChromeVox er aktiveret</translation>
 <translation id="7573585051776738856">Det aktive vindue er fastgjort til højre.</translation>
 <translation id="7579778809502851308">Screenshot</translation>
-<translation id="7590883480672980941">Indstillinger for indtastning</translation>
 <translation id="7593891976182323525">Søg eller Shift</translation>
 <translation id="7600875258240007829">Se alle notifikationer</translation>
 <translation id="7607002721634913082">Sat på pause</translation>
@@ -1555,6 +1560,7 @@ Du kan slukke enheden ved at holde afbryderknappen på enheden nede igen.</trans
 <translation id="8185090165691050712">Aktivér/deaktiver menuen til justering af størrelse i låst tilstand</translation>
 <translation id="8192202700944119416">Notifikationer er skjult.</translation>
 <translation id="8196787716797768628">Brug bevægelser til hurtigt at skifte mellem apps og bruge din Chromebook i tablettilstand.</translation>
+<translation id="8198456017687137612">Caster fane</translation>
 <translation id="8200772114523450471">Genoptag</translation>
 <translation id="8203795194971602413">Højreklik</translation>
 <translation id="8209010265547628927">Nulstil</translation>

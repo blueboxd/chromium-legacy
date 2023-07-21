@@ -25,7 +25,6 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
@@ -41,7 +40,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/user_education/common/user_education_class_properties.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -66,7 +64,6 @@
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_class_properties.h"
-#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -74,7 +71,7 @@ using GetBadgeTextCallback = base::RepeatingCallback<gfx::RenderText&()>;
 
 constexpr int kProgressRingRadius = 9;
 constexpr int kProgressRingRadiusTouchMode = 12;
-constexpr float kProgressRingStrokeWidth = 1.7f;
+constexpr float kProgressRingStrokeWidth = 2.0f;
 
 // Close the partial bubble after 5 seconds if the user doesn't interact with
 // it.
@@ -139,7 +136,8 @@ DownloadToolbarButtonView::DownloadToolbarButtonView(BrowserView* browser_view)
                      : kDownloadToolbarButtonIcon,
                  kDownloadToolbarButtonIcon);
   GetViewAccessibility().OverrideHasPopup(ax::mojom::HasPopup::kDialog);
-  SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_DOWNLOAD_ICON));
+  tooltip_texts_[0] = l10n_util::GetStringUTF16(IDS_TOOLTIP_DOWNLOAD_ICON);
+  SetTooltipText(tooltip_texts_.at(0));
   SetVisible(false);
   SetProperty(views::kElementIdentifierKey, kDownloadToolbarButtonElementId);
 
@@ -152,9 +150,6 @@ DownloadToolbarButtonView::DownloadToolbarButtonView(BrowserView* browser_view)
   scanning_animation_.SetTweenType(gfx::Tween::LINEAR);
 
   bubble_controller_ = std::make_unique<DownloadBubbleUIController>(browser_);
-
-  BrowserList::GetInstance()->AddObserver(this);
-
   // Wait until we're done with everything else before creating `controller_`
   // since it can call `Show()` synchronously.
   controller_ = std::make_unique<DownloadDisplayController>(
@@ -162,7 +157,6 @@ DownloadToolbarButtonView::DownloadToolbarButtonView(BrowserView* browser_view)
 }
 
 DownloadToolbarButtonView::~DownloadToolbarButtonView() {
-  BrowserList::GetInstance()->RemoveObserver(this);
   controller_.reset();
   bubble_controller_.reset();
 }
@@ -292,7 +286,7 @@ void DownloadToolbarButtonView::Disable() {
 }
 
 void DownloadToolbarButtonView::UpdateDownloadIcon(bool show_animation) {
-  if (show_animation && gfx::Animation::ShouldRenderRichAnimation()) {
+  if (show_animation) {
     has_pending_download_started_animation_ = true;
     // Invalidate the layout to show the animation in Layout().
     PreferredSizeChanged();
@@ -364,11 +358,24 @@ void DownloadToolbarButtonView::UpdateIcon() {
       ui::ImageModel::FromVectorIcon(
           *new_icon, GetForegroundColor(ButtonState::STATE_DISABLED)));
 
-  badge_image_view_->SetImage(GetBadgeImage(
-      icon_info.is_active, controller_->GetProgress().download_count,
-      GetProgressColor(GetVisualState() == Button::STATE_DISABLED,
-                       icon_info.is_active),
-      GetColorProvider()->GetColor(kColorToolbar)));
+  int progress_download_count = controller_->GetProgress().download_count;
+  badge_image_view_->SetImage(
+      GetBadgeImage(icon_info.is_active, progress_download_count,
+                    GetProgressColor(GetVisualState() == Button::STATE_DISABLED,
+                                     icon_info.is_active),
+                    GetColorProvider()->GetColor(kColorToolbar)));
+
+  // Update the toolbar button's tooltip.
+  std::u16string& tooltip_for_progress_count =
+      tooltip_texts_[progress_download_count];
+  if (tooltip_for_progress_count.empty()) {
+    // We already initialized the text for 0 downloads in the constructor.
+    CHECK_GT(progress_download_count, 0);
+    // "1 download in progress" or "N downloads in progress".
+    tooltip_for_progress_count = l10n_util::GetPluralStringFUTF16(
+        IDS_DOWNLOAD_BUBBLE_TOOLTIP_IN_PROGRESS_COUNT, progress_download_count);
+  }
+  SetTooltipText(tooltip_texts_.at(progress_download_count));
 }
 
 void DownloadToolbarButtonView::Layout() {
@@ -419,7 +426,6 @@ void DownloadToolbarButtonView::OpenPrimaryDialog() {
   primary_view_->SetVisible(true);
   security_view_->SetVisible(false);
   bubble_delegate_->SetButtons(ui::DIALOG_BUTTON_NONE);
-  bubble_delegate_->SetDefaultButton(ui::DIALOG_BUTTON_NONE);
   bubble_delegate_->set_margins(GetPrimaryViewMargin());
   ResizeDialog();
 }
@@ -469,7 +475,6 @@ void DownloadToolbarButtonView::CreateBubbleDialogDelegate(
   bubble_delegate->SetShowTitle(false);
   bubble_delegate->SetShowCloseButton(false);
   bubble_delegate->SetButtons(ui::DIALOG_BUTTON_NONE);
-  bubble_delegate->SetDefaultButton(ui::DIALOG_BUTTON_NONE);
   bubble_delegate->RegisterDeleteDelegateCallback(
       base::BindOnce(&DownloadToolbarButtonView::OnBubbleDelegateDeleted,
                      weak_factory_.GetWeakPtr()));
@@ -488,14 +493,7 @@ void DownloadToolbarButtonView::CreateBubbleDialogDelegate(
   bubble_delegate->SetEnableArrowKeyTraversal(true);
   bubble_delegate_ = bubble_delegate.get();
   views::BubbleDialogDelegate::CreateBubble(std::move(bubble_delegate));
-  // The bubble can either be shown as active or inactive. When the current
-  // browser is inactive, make the bubble inactive to avoid stealing focus from
-  // non-Chrome windows or showing on a different workspace.
-  if (browser_->window() && browser_->window()->IsActive()) {
-    bubble_delegate_->GetWidget()->Show();
-  } else {
-    bubble_delegate_->GetWidget()->ShowInactive();
-  }
+  bubble_delegate_->GetWidget()->Show();
 
   // For IPH bubble. The IPH should show when the partial view is closed, either
   // manually or automatically.
@@ -506,24 +504,9 @@ void DownloadToolbarButtonView::CreateBubbleDialogDelegate(
   }
 }
 
-// If the browser was inactive when the bubble was shown, then the bubble would
-// be inactive. This would prevent close-on-deactivate, making the bubble
-// unclosable. To work around this, we activate the bubble when the current
-// browser becomes active, so that clicking outside the bubble will deactivate
-// and close it.
-void DownloadToolbarButtonView::OnBrowserSetLastActive(Browser* browser) {
-  if (browser == browser_ && bubble_delegate_) {
-    // We need to defer activating the download bubble when the browser window
-    // is being activated, otherwise this is ineffective on macOS.
-    content::GetUIThreadTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&views::Widget::Activate,
-                                  bubble_delegate_->GetWidget()->GetWeakPtr()));
-  }
-}
-
 void DownloadToolbarButtonView::OnPartialViewClosed() {
-  if (download::ShouldSuppressDownloadBubbleIph(
-          browser_->profile()->GetOriginalProfile())) {
+  if (browser_->profile() && download::ShouldSuppressDownloadBubbleIph(
+                                 browser_->profile()->GetOriginalProfile())) {
     return;
   }
   browser_->window()->MaybeShowFeaturePromo(
@@ -572,6 +555,10 @@ void DownloadToolbarButtonView::ShowPendingDownloadStartedAnimation() {
   if (!has_pending_download_started_animation_) {
     return;
   }
+  has_pending_download_started_animation_ = false;
+  if (!gfx::Animation::ShouldRenderRichAnimation()) {
+    return;
+  }
   content::WebContents* const web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
   if (!web_contents ||
@@ -584,7 +571,6 @@ void DownloadToolbarButtonView::ShowPendingDownloadStartedAnimation() {
       web_contents, image()->GetBoundsInScreen(),
       color_provider->GetColor(kColorDownloadToolbarButtonAnimationForeground),
       color_provider->GetColor(kColorDownloadToolbarButtonAnimationBackground));
-  has_pending_download_started_animation_ = false;
 }
 
 SkColor DownloadToolbarButtonView::GetIconColor() const {

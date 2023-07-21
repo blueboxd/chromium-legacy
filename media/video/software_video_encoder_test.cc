@@ -28,6 +28,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv.h"
 
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#include "media/filters/h264_to_annex_b_bitstream_converter.h"
+#include "media/formats/mp4/box_definitions.h"
+#include "media/video/h264_parser.h"
+#endif
+
 #if BUILDFLAG(ENABLE_OPENH264)
 #include "media/video/openh264_video_encoder.h"
 #endif
@@ -689,63 +695,6 @@ TEST_P(SVCVideoEncoderTest, EncodeClipTemporalSvc) {
   }
 }
 
-TEST_P(SVCVideoEncoderTest, ChangeLayers) {
-  VideoEncoder::Options options;
-  options.frame_size = gfx::Size(640, 480);
-  options.bitrate = Bitrate::ConstantBitrate(1000000u);  // 1Mbps
-  options.framerate = 25;
-  options.scalability_mode = GetParam().scalability_mode;
-  std::vector<scoped_refptr<VideoFrame>> frames_to_encode;
-
-  std::vector<VideoEncoderOutput> chunks;
-  size_t total_frames_count = 80;
-
-  // Encoder all frames with 3 temporal layers and put all outputs in |chunks|
-  auto frame_duration = base::Seconds(1.0 / options.framerate.value());
-
-  VideoEncoder::OutputCB encoder_output_cb = base::BindLambdaForTesting(
-      [&](VideoEncoderOutput output,
-          absl::optional<VideoEncoder::CodecDescription> desc) {
-        chunks.push_back(std::move(output));
-      });
-
-  encoder_->Initialize(profile_, options, /*info_cb=*/base::DoNothing(),
-                       std::move(encoder_output_cb),
-                       ValidatingStatusCB(/* quit_run_loop_on_call */ true));
-  RunUntilQuit();
-
-  uint32_t color = 0x964050;
-  for (auto frame_index = 0u; frame_index < total_frames_count; frame_index++) {
-    auto timestamp = frame_index * frame_duration;
-
-    const bool reconfigure = (frame_index == total_frames_count / 2);
-    if (reconfigure) {
-      encoder_->Flush(ValidatingStatusCB(/* quit_run_loop_on_call */ true));
-      RunUntilQuit();
-
-      // Ask encoder to change SVC mode, empty output callback
-      // means the encoder should keep the old one.
-      options.scalability_mode = SVCScalabilityMode::kL1T1;
-      encoder_->ChangeOptions(
-          options, VideoEncoder::OutputCB(),
-          ValidatingStatusCB(/* quit_run_loop_on_call */ true));
-      RunUntilQuit();
-    }
-
-    auto frame =
-        CreateFrame(options.frame_size, pixel_format_, timestamp, color);
-    color = (color << 1) + frame_index;
-    frames_to_encode.push_back(frame);
-    encoder_->Encode(frame, VideoEncoder::EncodeOptions(false),
-                     ValidatingStatusCB(/* quit_run_loop_on_call */ true));
-    RunUntilQuit();
-  }
-
-  encoder_->Flush(ValidatingStatusCB(/* quit_run_loop_on_call */ true));
-  RunUntilQuit();
-  EXPECT_EQ(chunks.size(), total_frames_count);
-}
-
 TEST_P(H264VideoEncoderTest, ReconfigureWithResize) {
   VideoEncoder::Options options;
   gfx::Size size1(320, 200), size2(400, 240);
@@ -852,6 +801,21 @@ TEST_P(H264VideoEncoderTest, ReconfigureWithResize) {
 }
 #endif  // ENABLE_FFMPEG_VIDEO_DECODERS
 
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+VideoCodecProfile ProfileIDToVideoCodecProfile(int profile) {
+  switch (profile) {
+    case H264SPS::kProfileIDCBaseline:
+      return H264PROFILE_BASELINE;
+    case H264SPS::kProfileIDCMain:
+      return H264PROFILE_MAIN;
+    case H264SPS::kProfileIDCHigh:
+      return H264PROFILE_HIGH;
+    default:
+      return VIDEO_CODEC_PROFILE_UNKNOWN;
+  }
+}
+#endif
+
 TEST_P(H264VideoEncoderTest, AvcExtraData) {
   int outputs_count = 0;
   VideoEncoder::Options options;
@@ -862,10 +826,21 @@ TEST_P(H264VideoEncoderTest, AvcExtraData) {
       [&](VideoEncoderOutput output,
           absl::optional<VideoEncoder::CodecDescription> desc) {
         switch (outputs_count) {
-          case 0:
+          case 0: {
             // First frame should have extra_data
             EXPECT_TRUE(desc.has_value());
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+            H264ToAnnexBBitstreamConverter converter;
+            mp4::AVCDecoderConfigurationRecord avc_config;
+            bool parse_ok = converter.ParseConfiguration(
+                desc->data(), desc->size(), &avc_config);
+            EXPECT_TRUE(parse_ok);
+            EXPECT_EQ(profile_, ProfileIDToVideoCodecProfile(
+                                    avc_config.profile_indication));
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
             break;
+          }
           case 1:
             // Regular non-key frame shouldn't have extra_data
             EXPECT_FALSE(desc.has_value());
@@ -1039,7 +1014,10 @@ std::string PrintTestParams(
 #if BUILDFLAG(ENABLE_OPENH264)
 SwVideoTestParams kH264Params[] = {
     {VideoCodec::kH264, H264PROFILE_BASELINE, PIXEL_FORMAT_I420},
-    {VideoCodec::kH264, H264PROFILE_BASELINE, PIXEL_FORMAT_XRGB}};
+    {VideoCodec::kH264, H264PROFILE_BASELINE, PIXEL_FORMAT_XRGB},
+    {VideoCodec::kH264, H264PROFILE_MAIN, PIXEL_FORMAT_I420},
+    {VideoCodec::kH264, H264PROFILE_HIGH, PIXEL_FORMAT_I420},
+};
 
 INSTANTIATE_TEST_SUITE_P(H264Specific,
                          H264VideoEncoderTest,
@@ -1058,6 +1036,10 @@ SwVideoTestParams kH264SVCParams[] = {
     {VideoCodec::kH264, H264PROFILE_BASELINE, PIXEL_FORMAT_I420,
      SVCScalabilityMode::kL1T2},
     {VideoCodec::kH264, H264PROFILE_BASELINE, PIXEL_FORMAT_I420,
+     SVCScalabilityMode::kL1T3},
+    {VideoCodec::kH264, H264PROFILE_MAIN, PIXEL_FORMAT_I420,
+     SVCScalabilityMode::kL1T3},
+    {VideoCodec::kH264, H264PROFILE_HIGH, PIXEL_FORMAT_I420,
      SVCScalabilityMode::kL1T3}};
 
 INSTANTIATE_TEST_SUITE_P(H264TemporalSvc,

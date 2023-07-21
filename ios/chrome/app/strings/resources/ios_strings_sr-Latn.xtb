@@ -407,6 +407,7 @@ Pogledajte uputstva pretraživača za brisanje istorije pretrage ako je to prime
 <translation id="3638472932233958418">Unap. učitaj veb-stranice</translation>
 <translation id="3661160521073045932">Dostupan profil konfiguracije</translation>
 <translation id="3670030362669914947">Broj</translation>
+<translation id="3700134753671613714">Prijavite se da bi vam obeleživači bili dostupni na svim uređajima.</translation>
 <translation id="3709582977625132201">Označi kao nepročitano</translation>
 <translation id="371230970611282515">Otkriva opasne događaje pre nego što se dogode i upozorava vas na njih.</translation>
 <translation id="37207012422556617">Pretrage u trendu</translation>
@@ -525,7 +526,7 @@ Pogledajte uputstva pretraživača za brisanje istorije pretrage ako je to prime
 <translation id="4520798012560649652">Saznajte više o režimu bez arhiviranja</translation>
 <translation id="452750746583162491">Pregledajte sinhronizovane podatke</translation>
 <translation id="4536418791685807335">Probajte ponovo da se prijavite.</translation>
-<translation id="4540780316273593836">Došlo je do greške</translation>
+<translation id="4540780316273593836">Nešto nije u redu</translation>
 <translation id="4550040941166547650">Samo na ovom uređaju</translation>
 <translation id="457292989631956153">{COUNT,plural, =1{Želite da zatvorite {COUNT} neaktivnu karticu?}one{Želite da zatvorite {COUNT} neaktivnu karticu?}few{Želite da zatvorite {COUNT} neaktivne kartice?}other{Želite da zatvorite {COUNT} neaktivnih kartica?}}</translation>
 <translation id="457386861538956877">Još...</translation>
@@ -546,7 +547,6 @@ Pogledajte uputstva pretraživača za brisanje istorije pretrage ako je to prime
 <translation id="4642472735733036929">Praćenje cena je zaustavljeno</translation>
 <translation id="4650125387981512669">Nastavi kao <ph name="FIRST_RUN_ACCOUNT_NAME" /></translation>
 <translation id="4652817563047461855">Uverite se da su lozinke bezbedne, saznajte da li su ugrožene i potražite savet o tome kako da se zaštitite onlajn. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">Ova funkcija se uključuje kada se prijavite na Google nalog.</translation>
 <translation id="4659667755519643272">Uđi u prebacivač kartica</translation>
 <translation id="46614316059270592">Sačuvaj lozinku</translation>
 <translation id="4666531726415300315">Prijavljeni ste kao <ph name="EMAIL" />.
@@ -588,7 +588,6 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="4844899002472726590">Pregledajte i menjajte teme koje vas interesuju</translation>
 <translation id="4848999860252535517">Želite da izbrišete lozinku za <ph name="WEBSITE" />?</translation>
 <translation id="4854345657858711387">Podesite šifru</translation>
-<translation id="4856498338299082007">Na Google nalogu</translation>
 <translation id="4858786880085262208">Nadogradite na HTTPS kada je to moguće. Bezbedni sajtovi mogu da ugrade sadržaj koji nije bezbedan.</translation>
 <translation id="4860895144060829044">Pozovite</translation>
 <translation id="4872323082491632254">Proverite lozinke</translation>
@@ -667,6 +666,7 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="543338862236136125">Izmenite lozinku</translation>
 <translation id="5433691172869980887">Korisničko ime je kopirano</translation>
 <translation id="5439599923922718668">Često posećivano</translation>
+<translation id="5439618055789623719">Prijavljeni ste kao <ph name="USER_EMAIL" /></translation>
 <translation id="54401264925851789">Informacije o bezbednosti stranice</translation>
 <translation id="5443952882982198570">Kreditne kartice</translation>
 <translation id="5444892875087332195">Obeleživači</translation>
@@ -982,7 +982,7 @@ Kada ste u režimu bez arhiviranja, sajtovi ne mogu da koriste kolačiće da bi
 <translation id="7346909386216857016">Važi</translation>
 <translation id="734758817008927353">Opcije za čuvanje kartice</translation>
 <translation id="7351537303876921605">Dodirnite Napravi link u kontekstualnom meniju</translation>
-<translation id="7352651011704765696">Došlo je do greške</translation>
+<translation id="7352651011704765696">Nešto nije u redu</translation>
 <translation id="7353432112255316844">Potvrdite svoj identitet</translation>
 <translation id="7383797227493018512">Lista za čitanje</translation>
 <translation id="7398893703713203428">Create Link (Napravi link)</translation>
@@ -1121,7 +1121,6 @@ Sajtovi mogu da koriste kolačiće da bi videli vaše aktivnosti pregledanja na
 <translation id="8248969482078657578">Neaktivne kartice vam pomažu da ostanete fokusirani</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8264966119170358612">Neke od vaših sačuvanih lozinki su otkrivene tokom povrede podataka koji nisu Google podaci. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">Samo na ovom uređaju</translation>
 <translation id="826614135184049678">Odjavljeni ste sa naloga <ph name="USER_NAME" /> u sklopu resetovanja na iPad-u. Da biste se ponovo prijavili, dodirnite Nastavi ispod.</translation>
 <translation id="8271720166617117963">Prihvati i prijavi me</translation>
 <translation id="8278938988428169257">Unesite reč ili frazu</translation>

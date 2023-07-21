@@ -6,7 +6,6 @@
 
 #import <objc/runtime.h>
 
-#import "base/debug/dump_without_crashing.h"
 #import "base/functional/bind.h"
 #import "base/ios/ios_util.h"
 #import "base/logging.h"
@@ -315,6 +314,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [super viewDidLayoutSubviews];
   // Modify Incognito and Regular Tabs Insets.
   [self setInsetForGridViews];
+  // Reset bottom message width after bottom toolbar is updated after an
+  // orientation change. As this depends on
+  // `regularTabsViewController.gridView.contentOffset.x`, this should not be
+  // done in `-traitCollectionDidChange` when the updated layout has not been
+  // finalized.
+  [self updateRegularTabsBottomMessageConstraintsIfExists];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -350,7 +355,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (IsPinnedTabsEnabled()) {
     [self updatePinnedTabsViewControllerConstraints];
   }
-  [self updateRegularTabsBottomMessageConstraintsIfExists];
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -2218,11 +2222,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)reportTabSelectionTime {
-  if (self.tabGridEnterTime.is_null()) {
-    // The enter time was not recorded. Bail out.
-    base::debug::DumpWithoutCrashing();
-    return;
-  }
+  CHECK(!self.tabGridEnterTime.is_null());
   base::TimeDelta duration = base::TimeTicks::Now() - self.tabGridEnterTime;
   base::UmaHistogramLongTimes("IOS.TabSwitcher.TimeSpentOpeningExistingTab",
                               duration);
@@ -3179,7 +3179,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   self.regularTabsBottomMessageConstraints = nil;
 
   UIView* bottomMessageView = self.regularTabsBottomMessage.view;
-  [bottomMessageView invalidateIntrinsicContentSize];
   NSMutableArray<NSLayoutConstraint*>* constraints =
       [[NSMutableArray alloc] init];
   // left and right anchors.
@@ -3224,10 +3223,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     [bottomMessageView.bottomAnchor constraintEqualToAnchor:bottomAnchor],
     [bottomMessageView.topAnchor
         constraintGreaterThanOrEqualToAnchor:self.view.topAnchor
-                                    constant:topLayoutAnchorConstant],
-    [bottomMessageView.heightAnchor
-        constraintLessThanOrEqualToConstant:bottomMessageView
-                                                .intrinsicContentSize.height],
+                                    constant:topLayoutAnchorConstant]
   ]];
   self.regularTabsBottomMessageConstraints = constraints;
   [NSLayoutConstraint

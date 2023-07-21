@@ -54,17 +54,6 @@ BASE_DECLARE_FEATURE(kPerformanceControlsBatterySaverOptOutSurvey);
 extern const base::FeatureParam<base::TimeDelta>
     kPerformanceControlsBatterySurveyLookback;
 
-// On certain platforms (ChromeOS), the battery level displayed to the user is
-// artificially lower than the actual battery level. Unfortunately, the battery
-// level that Battery Saver Mode looks at is the "actual" level, so users on
-// that platform may see Battery Saver Mode trigger at say 17% rather than the
-// "advertised" 20%. This parameter allows us to heuristically tweak the
-// threshold on those platforms, by being added to the 20% threshold value (so
-// setting this parameter to 3 would result in battery saver being activated at
-// 23% actual battery level).
-extern const base::FeatureParam<int>
-    kBatterySaverModeThresholdAdjustmentForDisplayLevel;
-
 // When enabled, the memory saver policy used is HeuristicMemorySaverPolicy.
 BASE_DECLARE_FEATURE(kHeuristicMemorySaver);
 
@@ -138,6 +127,25 @@ extern const base::FeatureParam<int> kExpandedHighEfficiencyChipThresholdBytes;
 // expanded.
 extern const base::FeatureParam<base::TimeDelta>
     kExpandedHighEfficiencyChipDiscardedDuration;
+
+// Percentiles of PMF across all tabs on all browsers.
+extern const base::FeatureParam<int> kHighEfficiencyChartPmf25PercentileBytes;
+extern const base::FeatureParam<int> kHighEfficiencyChartPmf50PercentileBytes;
+extern const base::FeatureParam<int> kHighEfficiencyChartPmf75PercentileBytes;
+
+// Final opacity of the favicon after the discard animation completes
+extern const base::FeatureParam<double> kDiscardedTabTreatmentOpacity;
+
+// The version of the tab discard treatment on the favicon should be shown
+extern const base::FeatureParam<int> kDiscardedTabTreatmentOption;
+
+BASE_DECLARE_FEATURE(kUseDeviceBatterySaverChromeOS);
+
+enum class DiscardTabTreatmentOptions {
+  kNone = 0,
+  kFadeFullsizedFavicon = 1,
+  kFadeSmallFaviconWithRing = 2
+};
 
 #endif
 

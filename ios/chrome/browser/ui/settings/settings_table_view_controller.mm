@@ -31,14 +31,12 @@
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/driver/sync_service.h"
+#import "components/sync/driver/sync_user_settings.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
-#import "ios/chrome/browser/application_context/application_context.h"
-#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/flags/system_flags.h"
-#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
@@ -52,6 +50,9 @@
 #import "ios/chrome/browser/settings/sync/utils/sync_state.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
+#import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/shared/model/browser/browser.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
@@ -471,7 +472,7 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   }
   [model addItem:[self voiceSearchDetailItem]
       toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
-  if (base::FeatureList::IsEnabled(kBottomOmniboxSteadyState)) {
+  if (IsBottomOmniboxSteadyStateEnabled()) {
     [model addItem:[self bottomOmniboxItem]
         toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
   };
@@ -695,8 +696,9 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   AccountSignInItem* signInTextItem =
       [[AccountSignInItem alloc] initWithType:SettingsItemTypeSignInButton];
   signInTextItem.accessibilityIdentifier = kSettingsSignInCellId;
-  PrefService* prefService = _browserState->GetPrefs();
-  if (!HasManagedSyncDataType(prefService)) {
+  syncer::SyncService* syncService =
+      SyncServiceFactory::GetForBrowserState(_browserState);
+  if (!HasManagedSyncDataType(syncService)) {
     signInTextItem.detailText =
         l10n_util::GetNSString(IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SUBTITLE);
   } else {
@@ -911,7 +913,7 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 }
 
 - (TableViewItem*)bottomOmniboxItem {
-  DCHECK(base::FeatureList::IsEnabled(kBottomOmniboxSteadyState));
+  DCHECK(IsBottomOmniboxSteadyStateEnabled());
   if (!_bottomOmniboxItem) {
     _bottomOmniboxItem =
         [self switchItemWithType:SettingsItemTypeBottomOmnibox
@@ -1536,7 +1538,7 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 }
 
 - (void)bottomOmniboxSwitchToggled:(UISwitch*)sender {
-  DCHECK(base::FeatureList::IsEnabled(kBottomOmniboxSteadyState));
+  DCHECK(IsBottomOmniboxSteadyStateEnabled());
   NSIndexPath* switchPath = [self.tableViewModel
       indexPathForItemType:SettingsItemTypeBottomOmnibox
          sectionIdentifier:SettingsSectionIdentifierAdvanced];

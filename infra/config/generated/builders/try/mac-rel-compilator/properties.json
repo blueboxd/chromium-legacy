@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "GPU Mac Builder",
-              "project": "chromium-m114"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-gpu-archive",
@@ -15,7 +15,8 @@
               "execution_mode": "COMPILE_AND_TEST",
               "legacy_chromium_config": {
                 "apply_configs": [
-                  "mb"
+                  "mb",
+                  "goma_use_local"
                 ],
                 "build_config": "Release",
                 "config": "chromium",
@@ -34,7 +35,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Mac Builder",
-              "project": "chromium-m114"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-mac-archive",
@@ -42,7 +43,8 @@
               "execution_mode": "COMPILE_AND_TEST",
               "legacy_chromium_config": {
                 "apply_configs": [
-                  "mb"
+                  "mb",
+                  "goma_use_local"
                 ],
                 "build_config": "Release",
                 "config": "chromium",
@@ -61,7 +63,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Mac Release (Intel)",
-              "project": "chromium-m114"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-gpu-archive",
@@ -69,7 +71,8 @@
               "execution_mode": "TEST",
               "legacy_chromium_config": {
                 "apply_configs": [
-                  "mb"
+                  "mb",
+                  "goma_use_local"
                 ],
                 "build_config": "Release",
                 "config": "chromium",
@@ -82,7 +85,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "GPU Mac Builder",
-                "project": "chromium-m114"
+                "project": "chromium"
               }
             }
           },
@@ -90,7 +93,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Mac Retina Release (AMD)",
-              "project": "chromium-m114"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-gpu-archive",
@@ -98,7 +101,8 @@
               "execution_mode": "TEST",
               "legacy_chromium_config": {
                 "apply_configs": [
-                  "mb"
+                  "mb",
+                  "goma_use_local"
                 ],
                 "build_config": "Release",
                 "config": "chromium",
@@ -111,7 +115,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "GPU Mac Builder",
-                "project": "chromium-m114"
+                "project": "chromium"
               }
             }
           },
@@ -119,14 +123,15 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Mac12 Tests",
-              "project": "chromium-m114"
+              "project": "chromium"
             },
             "builder_spec": {
               "builder_group": "chromium.mac",
               "execution_mode": "TEST",
               "legacy_chromium_config": {
                 "apply_configs": [
-                  "mb"
+                  "mb",
+                  "goma_use_local"
                 ],
                 "build_config": "Release",
                 "config": "chromium",
@@ -139,7 +144,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "Mac Builder",
-                "project": "chromium-m114"
+                "project": "chromium"
               }
             }
           }
@@ -149,29 +154,29 @@
         {
           "bucket": "ci",
           "builder": "GPU Mac Builder",
-          "project": "chromium-m114"
+          "project": "chromium"
         },
         {
           "bucket": "ci",
           "builder": "Mac Builder",
-          "project": "chromium-m114"
+          "project": "chromium"
         }
       ],
       "builder_ids_in_scope_for_testing": [
         {
           "bucket": "ci",
           "builder": "Mac Release (Intel)",
-          "project": "chromium-m114"
+          "project": "chromium"
         },
         {
           "bucket": "ci",
           "builder": "Mac Retina Release (AMD)",
-          "project": "chromium-m114"
+          "project": "chromium"
         },
         {
           "bucket": "ci",
           "builder": "Mac12 Tests",
-          "project": "chromium-m114"
+          "project": "chromium"
         }
       ],
       "rts_config": {
@@ -191,7 +196,7 @@
   },
   "$build/reclient": {
     "instance": "rbe-chromium-untrusted",
-    "jobs": 225,
+    "jobs": 300,
     "metrics_project": "chromium-reclient-metrics",
     "scandeps_server": true
   },

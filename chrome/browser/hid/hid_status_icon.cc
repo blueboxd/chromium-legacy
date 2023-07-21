@@ -17,6 +17,8 @@
 #include "chrome/browser/hid/hid_connection_tracker.h"
 #include "chrome/browser/hid/hid_connection_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_icon_menu_model.h"
@@ -39,6 +41,18 @@ HidConnectionTracker* GetConnectionTracker(base::WeakPtr<Profile> profile) {
   }
   return HidConnectionTrackerFactory::GetForProfile(profile.get(),
                                                     /*create=*/false);
+}
+
+// Returns profile username.
+std::u16string GetProfileUserName(Profile* profile) {
+  ProfileAttributesEntry* profile_attributes =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile->GetPath());
+  if (profile_attributes) {
+    return profile_attributes->GetName();
+  }
+  return base::UTF8ToUTF16(profile->GetProfileUserName());
 }
 
 // Returns a label for about HID device button.
@@ -76,11 +90,21 @@ HidStatusIcon::~HidStatusIcon() {
 }
 
 void HidStatusIcon::ProfileAdded(Profile* profile) {
+  if (profiles_.size() == 1) {
+    auto* profile_manager = g_browser_process->profile_manager();
+    CHECK(profile_manager);
+    profile_manager->GetProfileAttributesStorage().AddObserver(this);
+  }
   RefreshIcon();
 }
 
 void HidStatusIcon::ProfileRemoved(Profile* profile) {
   RefreshIcon();
+  if (profiles_.empty()) {
+    auto* profile_manager = g_browser_process->profile_manager();
+    CHECK(profile_manager);
+    profile_manager->GetProfileAttributesStorage().RemoveObserver(this);
+  }
 }
 
 void HidStatusIcon::NotifyConnectionCountUpdated(Profile* profile) {
@@ -157,7 +181,7 @@ void HidStatusIcon::RefreshIcon() {
     // |...                                    |
     // |origin n is connecting to y device(s)  |
     menu->AddSeparator(ui::NORMAL_SEPARATOR);
-    menu->AddTitle(base::UTF8ToUTF16(profile->GetProfileUserName()));
+    menu->AddTitle(GetProfileUserName(profile));
     AddItem(menu.get(), GetContentSettingsLabel(),
             base::BindRepeating(&HidStatusIcon::ShowContentSettings,
                                 profile->GetWeakPtr()));
@@ -202,4 +226,14 @@ void HidStatusIcon::AddItem(StatusIconMenuModel* menu,
   }
   menu->AddItem(index, label);
   command_id_callbacks_.push_back(std::move(callback));
+}
+
+void HidStatusIcon::OnProfileNameChanged(
+    const base::FilePath& profile_path,
+    const std::u16string& old_profile_name) {
+  auto* profile =
+      g_browser_process->profile_manager()->GetProfileByPath(profile_path);
+  if (profiles_.contains(profile)) {
+    NotifyConnectionCountUpdated(profile);
+  }
 }

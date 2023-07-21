@@ -281,12 +281,9 @@
     (sysctl-name "kern.usrstack64")
     (sysctl-name "kern.version")
     (sysctl-name "sysctl.proc_cputype")
+    (if (defined? 'sysctl-name-prefix)
+      (sysctl-name-prefix "hw.perflevel"))
   )
-)
-
-(if (>= os-version 1100)
-  (allow sysctl-read
-  (sysctl-name-prefix "hw.perflevel"))
 )
 
 (allow network-outbound

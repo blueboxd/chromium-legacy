@@ -7,13 +7,14 @@ import argparse
 import collections
 import contextlib
 import enum
+import inspect
 import io
 import logging
 import optparse
 import pathlib
 import textwrap
 import urllib.parse
-from typing import Collection, Hashable, List, Optional, Set, Tuple, Type, Union
+from typing import Hashable, List, Optional, Set, Tuple, Type, Union
 
 from blinkpy.common import path_finder
 from blinkpy.common.host import Host
@@ -23,6 +24,7 @@ from blinkpy.tool.commands.update_metadata import (
     BUG_PATTERN,
     TestConfigurations,
 )
+from blinkpy.w3c.common import is_basename_skipped
 from blinkpy.w3c.wpt_manifest import WPTManifest
 from blinkpy.web_tests.port.base import Port
 
@@ -239,6 +241,15 @@ class MetadataLongTimeout(MetadataRule):
     """
 
 
+class IgnoreListInvalidRule(rules.Rule):
+    name = 'IGNORELIST-BAD-RULE'
+    description = 'Rule %(rule)r cannot be ignored or does not exist'
+    to_fix = """
+    Check that all rules are spelled correctly in `lint.ignore`. `META-*` rules
+    are only defined in Chromium and cannot be ignored.
+    """
+
+
 LintError = Tuple[str, str, str, Optional[int]]
 ValueNode = Union[wptnode.ValueNode, wptnode.AtomNode, wptnode.ListNode]
 Condition = Optional[wptnode.Node]
@@ -263,6 +274,7 @@ class LintWPT(Command):
     show_in_main_help = False  # TODO(crbug.com/1406669): To be switched on.
     help_text = __doc__.strip().splitlines()[0]
     long_help = __doc__
+    ignorelist_filename: str = 'lint.ignore'
 
     def __init__(self,
                  tool: Host,
@@ -290,8 +302,6 @@ class LintWPT(Command):
         parser.add_argument('--github-checks-text-file',
                             help=argparse.SUPPRESS)
         parameters = parser.parse_args(args)
-        # TODO(crbug.com/1406669): Find a way to lint `wpt_internal/` files too
-        # so that they can be upstreamed easily.
         if not parameters.repo_root:
             parameters.repo_root = self._finder.path_from_wpt_tests()
         return optparse.Values(vars(parameters)), []
@@ -302,7 +312,7 @@ class LintWPT(Command):
         wptlint.logger = _log
         # Repurpose the `json` format to collect all lint errors, including
         # non-metadata ones, so that `lint-wpt` can customize the logs.
-        errors = []
+        errors = self.check_ignorelist(options.repo_root)
         options.json = True
         wptlint.output_errors_json = (
             lambda _log, worker_errors: errors.extend(worker_errors))
@@ -314,22 +324,22 @@ class LintWPT(Command):
         wptlint.regexps.append(WebPlatformTestRegexp(self._fs))
         wptlint.file_lints.append(self.check_metadata)
         exit_code = wptlint.main(**vars(options))
-        self._log_errors(errors, [self._manifest(options.repo_root)])
+        self._log_errors(errors, options.repo_root)
         return exit_code
 
-    def _log_errors(self, errors: List[LintError],
-                    manifests: Collection[WPTManifest]):
+    def _log_errors(self, errors: List[LintError], repo_root: str):
         if not errors:
             _log.info('All files OK.')
             return
+        manifest = self._manifest(repo_root)
         wptlint.output_errors_text(_log.error, errors)
         test_file_errors, metadata_file_errors = [], []
         for error in errors:
             _, _, path, _ = error
-            if self._is_dir_metadata(path) or any(
-                    self._test_path(manifest, path) for manifest in manifests):
+            if self._is_dir_metadata(path) or self._test_path(manifest, path):
                 metadata_file_errors.append(error)
-            else:
+            elif path != self.ignorelist_filename and not is_basename_skipped(
+                    self._fs.basename(path)):
                 test_file_errors.append(error)
 
         paragraphs = []
@@ -341,18 +351,18 @@ class LintWPT(Command):
         if test_file_errors:
             error, _, path, _ = test_file_errors[-1]
             context = {'error': error, 'path': path}
+            ignorelist_path = self._fs.abspath(
+                self._fs.join(repo_root, 'lint.ignore'))
             paragraphs.append(
                 "However, for errors in test files, it's sometimes OK to add "
-                'lines to `web_tests/external/wpt/lint.ignore` to ignore them.'
-            )
+                'lines to `%s` to ignore them.' % self._fs.relpath(
+                    ignorelist_path, self._finder.path_from_web_tests()))
             paragraphs.append(
                 "For example, to make the lint tool ignore all '%(error)s' "
                 'errors in the %(path)s file, you could add the following '
                 'line to the lint.ignore file:' % context)
             paragraphs.append('%(error)s: %(path)s' % context)
         if metadata_file_errors:
-            # TODO(crbug.com/1406669): Referencing metadata files from
-            # `lint.ignore` should be an error itself.
             paragraphs.append(
                 'Errors for `*.ini` metadata files cannot be ignored and must '
                 'be fixed.')
@@ -362,6 +372,24 @@ class LintWPT(Command):
             _log.info('')
             for line in textwrap.wrap(paragraph):
                 _log.info(line)
+
+    def check_ignorelist(self, repo_root: str) -> List[LintError]:
+        ignorelist_path = self._fs.join(repo_root, self.ignorelist_filename)
+        with self._fs.open_text_file_for_reading(
+                ignorelist_path) as ignorelist_file:
+            ignorelist, _ = wptlint.parse_ignorelist(ignorelist_file)
+        ignorable_rules = {
+            maybe_rule.name: maybe_rule
+            for maybe_rule in rules.__dict__.values()
+            if inspect.isclass(maybe_rule)
+            and issubclass(maybe_rule, (rules.Rule, rules.Regexp))
+        }
+        invalid_rules = set(ignorelist) - set(ignorable_rules)
+        return [
+            IgnoreListInvalidRule.error(self.ignorelist_filename,
+                                        {'rule': rule})
+            for rule in sorted(invalid_rules)
+        ]
 
     def check_metadata(self, repo_root: str, path: str,
                        metadata_file: io.BytesIO) -> List[LintError]:

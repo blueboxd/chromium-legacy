@@ -271,6 +271,7 @@ public class TopToolbarCoordinator implements Toolbar {
         Callback<Integer> tabSwitcherLongClickCallback =
                 menuItemId -> appMenuDelegate.onOptionsItemSelected(menuItemId, null);
         if (mTabSwitcherModeCoordinator != null) {
+            mTabSwitcherModeCoordinator.setOnTabSwitcherClickHandler(tabSwitcherClickHandler);
             mTabSwitcherModeCoordinator.setOnNewTabClickHandler(newTabClickHandler);
             mTabSwitcherModeCoordinator.setTabModelSelector(mTabModelSelectorSupplier.get());
         } else if (mStartSurfaceToolbarCoordinator != null) {

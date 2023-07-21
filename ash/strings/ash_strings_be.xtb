@@ -221,6 +221,7 @@
 <translation id="1961239773406905488">Папярэдні прагляд для камеры схаваны</translation>
 <translation id="1961832440516943645"><ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="1962969542251276847">Экран блакіроўкі</translation>
+<translation id="1962972976741217487">Да хот-спота <ph name="DEVICE_NAME" /> падключана адна прылада</translation>
 <translation id="1967970931040389207">Уключыць хот-спот</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Вітаем, <ph name="USERNAME" />!</translation>
@@ -301,7 +302,6 @@
 <translation id="2367972762794486313">Паказаць праграмы</translation>
 <translation id="2369165858548251131">"Вітаю" па-кітайску</translation>
 <translation id="2386292613071805067">Вылучыць усё на старонцы</translation>
-<translation id="2390318262976603432">Рэгіянальныя налады</translation>
 <translation id="2397416548179033562">Паказаць меню Chrome</translation>
 <translation id="240006516586367791">Элементы кіравання мультымедыя</translation>
 <translation id="2402411679569069051">Каб разблакіраваць Chromebook, выкарыстайце функцыю разблакіравання адбіткам пальца або разблакіруйце тэлефон</translation>
@@ -382,6 +382,7 @@
 <translation id="2791421900609674576">Выкарыстоўвайце рэкамендацыі, каб працягваць работу з таго месца, на якім вы спыніліся. Каб выдаліць рэкамендацыю, націсніце на яе і ўтрымлівайце.</translation>
 <translation id="2792498699870441125">Alt+Пошук</translation>
 <translation id="2797741504905337289">Shelf Party</translation>
+<translation id="2802938996245446490"><ph name="BUTTON_LABEL" />, выбрана</translation>
 <translation id="2805756323405976993">Праграмы</translation>
 <translation id="2814448776515246190">Здыманне часткі экрана</translation>
 <translation id="2819276065543622893">Вы выйдзеце з уліковага запісу зараз.</translation>
@@ -600,6 +601,7 @@
 <translation id="3735740477244556633">Парадак сартавання</translation>
 <translation id="3738664582935948253">Цяпер у відэа, створаным пры запісе экрана, можна дэманстраваць выкарыстаныя спалучэнні клавіш і націсканні мышшу</translation>
 <translation id="3742055079367172538">Здымак экрана зроблены</translation>
+<translation id="3756485814916578707">Экран трансліруецца</translation>
 <translation id="3765841986579723851">Зменена сёння</translation>
 <translation id="3773700760453577392">Адміністратар забараніў уваход у некалькі ўліковых запісаў для карыстальніка <ph name="USER_EMAIL" />. Каб працягнуць, усе карыстальнікі павінны выйсці.</translation>
 <translation id="3779139509281456663">Ідзе падключэнне прылады "<ph name="NAME" />"</translation>
@@ -821,6 +823,7 @@
 <translation id="4777825441726637019">Крама Play</translation>
 <translation id="4778095205580009397">Памочнік Google недаступны ў дэманстрацыйным сеансе.</translation>
 <translation id="4789348252524569426">Не ўдалося ўсталяваць файлы для распазнавання маўлення. Неабходна абнавіць прыладу. Перазапусціце яе і паўтарыце спробу.</translation>
+<translation id="478959186716341421">Ідзе трансляцыя</translation>
 <translation id="479989351350248267">пошук</translation>
 <translation id="4804818685124855865">Адключыцца</translation>
 <translation id="4814539958450445987">Экран уваходу</translation>
@@ -928,6 +931,7 @@
 <translation id="5297704307811127955">Выключана</translation>
 <translation id="5300589172476337783">Паказаць</translation>
 <translation id="5302048478445481009">Мова</translation>
+<translation id="5303783651764314393">Да хот-спота <ph name="DEVICE_NAME" /> падключаны прылады (<ph name="DEVICECOUNT" />)</translation>
 <translation id="5308380583665731573">Падключыцца</translation>
 <translation id="5313326810920013265">Налады Bluetooth</translation>
 <translation id="5314219114274263156">Запіс экрана зроблены</translation>
@@ -996,7 +1000,6 @@
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Каб выключыць галасавую зваротную сувязь, націсніце Ctrl + Alt + Z.</translation>
 <translation id="5601503069213153581">PIN-код</translation>
-<translation id="5601571553788043181">Адкрыць файл у браўзеры Chrome</translation>
 <translation id="5618148318840095371">Мы пераключылі вас на лепшую сетку</translation>
 <translation id="5619862035903135339">Згодна з палітыкай, зададзенай адміністратарам, здыманне экрана адключана</translation>
 <translation id="5625955975703555628">LTE+</translation>
@@ -1117,6 +1120,7 @@
 <translation id="6137566720514957455">Адкрыць дыялогавае акно выдалення ўліковага запісу <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Пацвярджэнне спампоўвання</translation>
 <translation id="6154006699632741460">Перыферыйная прылада не падтрымліваецца</translation>
+<translation id="6156960295318603523">Налады мовы</translation>
 <translation id="615957422585914272">Паказаць экранную клавіятуру</translation>
 <translation id="6165508094623778733">Даведацца больш</translation>
 <translation id="6166852626429024716">Пошук на прыладзе, у праграмах, наладах і інтэрнэце...</translation>
@@ -1335,6 +1339,7 @@
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Вяртанне да старой раздзяляльнасці праз <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Абнавіць</translation>
+<translation id="7187711731540696127">Хот-спот прылады <ph name="DEVICE_NAME" /> уключаны, няма падключаных прылад</translation>
 <translation id="7188494361780961876">Меню перамешчана ў левы верхні вугал экрана.</translation>
 <translation id="7189412385142492784">Якая адлегласць да Венеры</translation>
 <translation id="7198435252016571249">Акно перадпрагляду камеры прывязана да правага ніжняга вугла, бо яно перакрывала інтэрфейс сістэмы.</translation>
@@ -1392,6 +1397,7 @@
 <translation id="7497767806359279797">Выбраць мову і клавіятуру</translation>
 <translation id="7508690557411636492">Адкрывалася ў мінулым месяцы</translation>
 <translation id="7509246181739783082">Спраўдзіце сваю асобу</translation>
+<translation id="7512726380443357693"><ph name="BUTTON_LABEL" />, не выбрана</translation>
 <translation id="7513622367902644023">Быў выбраны рэжым здымка экрана</translation>
 <translation id="7513922695575567867">Каляндар, тыдзень з <ph name="DATE" />, дата, якая цяпер выбрана, – <ph name="SELECTED_DATE" />.</translation>
 <translation id="7514365320538308">Спампаваць</translation>
@@ -1413,7 +1419,6 @@
 <translation id="7569509451529460200">Сістэма Брайля і ChromeVox уключаны</translation>
 <translation id="7573585051776738856">Актыўнае акно замацавана справа.</translation>
 <translation id="7579778809502851308">Здымак экрана</translation>
-<translation id="7590883480672980941">Налады ўводу</translation>
 <translation id="7593891976182323525">"Пошук" або Shift</translation>
 <translation id="7600875258240007829">Паказаць усе апавяшчэнні</translation>
 <translation id="7607002721634913082">Прыпынена</translation>
@@ -1555,6 +1560,7 @@
 <translation id="8185090165691050712">Уключыць або выключыць меню рэжыму блакіроўкі змянення памеру</translation>
 <translation id="8192202700944119416">Апавяшчэнні схаваны.</translation>
 <translation id="8196787716797768628">З дапамогай жэстаў можна хутка пераключацца паміж праграмамі і выкарыстоўваць Chromebook у планшэтным рэжыме.</translation>
+<translation id="8198456017687137612">Ідзе трансляцыя ўкладкі</translation>
 <translation id="8200772114523450471">Узнавіць</translation>
 <translation id="8203795194971602413">Націсканне правай клавішай мышы</translation>
 <translation id="8209010265547628927">Скінуць</translation>

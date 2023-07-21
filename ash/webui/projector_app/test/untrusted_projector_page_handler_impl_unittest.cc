@@ -4,14 +4,18 @@
 
 #include "ash/webui/projector_app/untrusted_projector_page_handler_impl.h"
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
 #include "ash/public/cpp/test/mock_projector_controller.h"
 #include "ash/webui/projector_app/mojom/untrusted_projector.mojom.h"
 #include "ash/webui/projector_app/public/mojom/projector_types.mojom.h"
 #include "ash/webui/projector_app/test/mock_app_client.h"
+#include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -36,6 +40,9 @@ class MockUntrustedProjectorPageJs
   MOCK_METHOD1(OnSodaInstallProgressUpdated, void(int32_t));
   MOCK_METHOD0(OnSodaInstalled, void());
   MOCK_METHOD0(OnSodaInstallError, void());
+  MOCK_METHOD1(OnScreencastsStateChange,
+               void(std::vector<projector::mojom::PendingScreencastPtr>
+                        pending_screencasts));
 
   void FlushReceiverForTesting() { receiver_.FlushForTesting(); }
 
@@ -66,10 +73,20 @@ class UntrustedProjectorPageHandlerImplUnitTest : public testing::Test {
   ~UntrustedProjectorPageHandlerImplUnitTest() override = default;
 
   void SetUp() override {
+    auto* registry = pref_service_.registry();
+    registry->RegisterBooleanPref(ash::prefs::kProjectorCreationFlowEnabled,
+                                  false);
+    registry->RegisterBooleanPref(
+        ash::prefs::kProjectorExcludeTranscriptDialogShown, false);
+    registry->RegisterIntegerPref(
+        ash::prefs::kProjectorGalleryOnboardingShowCount, 0);
+    registry->RegisterIntegerPref(
+        ash::prefs::kProjectorViewerOnboardingShowCount, 0);
+
     page_ = std::make_unique<MockUntrustedProjectorPageJs>();
     handler_impl_ = std::make_unique<UntrustedProjectorPageHandlerImpl>(
         page().page_handler().BindNewPipeAndPassReceiver(),
-        page().receiver().BindNewPipeAndPassRemote());
+        page().receiver().BindNewPipeAndPassRemote(), &pref_service_);
   }
 
   void TearDown() override {
@@ -82,6 +99,10 @@ class UntrustedProjectorPageHandlerImplUnitTest : public testing::Test {
   UntrustedProjectorPageHandlerImpl& handler() { return *handler_impl_; }
   MockAppClient& mock_app_client() { return mock_app_client_; }
 
+ protected:
+  void TestUserPref(projector::mojom::PrefsThatProjectorCanAskFor pref,
+                    base::Value value);
+
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
 
@@ -89,7 +110,22 @@ class UntrustedProjectorPageHandlerImplUnitTest : public testing::Test {
   MockAppClient mock_app_client_;
   std::unique_ptr<MockUntrustedProjectorPageJs> page_;
   std::unique_ptr<UntrustedProjectorPageHandlerImpl> handler_impl_;
+  TestingPrefServiceSimple pref_service_;
 };
+
+void UntrustedProjectorPageHandlerImplUnitTest::TestUserPref(
+    projector::mojom::PrefsThatProjectorCanAskFor pref,
+    base::Value value) {
+  base::test::TestFuture<void> set_pref_future;
+  page().page_handler()->SetUserPref(pref, value.Clone(),
+                                     set_pref_future.GetCallback());
+  set_pref_future.Get();
+
+  base::test::TestFuture<base::Value> get_pref_future;
+  page().page_handler()->GetUserPref(pref, get_pref_future.GetCallback());
+
+  EXPECT_EQ(get_pref_future.Get(), value);
+}
 
 TEST_F(UntrustedProjectorPageHandlerImplUnitTest, CanStartProjectorSession) {
   NewScreencastPrecondition precondition = NewScreencastPrecondition(
@@ -154,6 +190,61 @@ TEST_F(UntrustedProjectorPageHandlerImplUnitTest, InstallSoda) {
   base::test::TestFuture<bool> install_triggered_future;
   page().page_handler()->InstallSoda(install_triggered_future.GetCallback());
   EXPECT_TRUE(install_triggered_future.Get());
+}
+
+TEST_F(UntrustedProjectorPageHandlerImplUnitTest, GetPendingScreencasts) {
+  const std::string name = "test_pending_screencast";
+  const std::string path = "/root/projector_data/test_pending_screencast";
+  const PendingScreencastContainerSet expected_screencasts{
+      ash::PendingScreencastContainer(
+          /*container_dir=*/base::FilePath(path), /*name=*/name,
+          /*total_size_in_bytes=*/1, /*bytes_transferred=*/0)};
+
+  ON_CALL(mock_app_client(), GetPendingScreencasts())
+      .WillByDefault(testing::ReturnRef(expected_screencasts));
+
+  base::test::TestFuture<
+      std::vector<ash::projector::mojom::PendingScreencastPtr>>
+      install_triggered_future;
+
+  page().page_handler()->GetPendingScreencasts(
+      install_triggered_future.GetCallback());
+  const auto& pending_screencasts = install_triggered_future.Get();
+  EXPECT_EQ(pending_screencasts.size(), 1u);
+  const auto& pending_screencast = pending_screencasts[0];
+  EXPECT_EQ(pending_screencast->name, name);
+  EXPECT_EQ(pending_screencast->upload_failed, false);
+  EXPECT_EQ(pending_screencast->created_time, 0.0);
+}
+
+TEST_F(UntrustedProjectorPageHandlerImplUnitTest, OnScreencastsStateChange) {
+  EXPECT_CALL(page(), OnScreencastsStateChange(testing::_)).Times(1);
+  handler().OnScreencastsPendingStatusChanged(PendingScreencastContainerSet());
+  page().FlushReceiverForTesting();
+}
+
+TEST_F(UntrustedProjectorPageHandlerImplUnitTest, TestPrefs) {
+  TestUserPref(projector::mojom::PrefsThatProjectorCanAskFor::
+                   kProjectorCreationFlowEnabled,
+               /*value=*/base::Value(true));
+
+  TestUserPref(projector::mojom::PrefsThatProjectorCanAskFor::
+                   kProjectorExcludeTranscriptDialogShown,
+               /*value=*/base::Value(true));
+
+  TestUserPref(projector::mojom::PrefsThatProjectorCanAskFor::
+                   kProjectorViewerOnboardingShowCount,
+               /*value=*/base::Value(3));
+  TestUserPref(projector::mojom::PrefsThatProjectorCanAskFor::
+                   kProjectorGalleryOnboardingShowCount,
+               /*value=*/base::Value(4));
+}
+
+TEST_F(UntrustedProjectorPageHandlerImplUnitTest, OpenFeedbackDialog) {
+  EXPECT_CALL(mock_app_client(), OpenFeedbackDialog()).Times(1);
+  base::test::TestFuture<void> open_feedback_future;
+  page().page_handler()->OpenFeedbackDialog(open_feedback_future.GetCallback());
+  EXPECT_TRUE(open_feedback_future.Wait());
 }
 
 }  // namespace ash

@@ -56,8 +56,6 @@ class ASH_EXPORT GeolocationController
       public SessionObserver,
       public SimpleGeolocationProvider::Delegate {
  public:
-  static constexpr base::Time kNoSunRiseSet = base::Time::Min();
-
   class Observer : public base::CheckedObserver {
    public:
     // Emitted when the Geoposition is updated with
@@ -101,8 +99,7 @@ class ASH_EXPORT GeolocationController
 
   // Returns sunset and sunrise time calculated from the most recently observed
   // geoposition. If a geoposition has not been observed, defaults to sunset
-  // 6 PM and sunrise 6 AM. If the current geolocation has no sunrise/sunset
-  // (24 hours of daylight or darkness), both methods return `kNoSunRiseSet`.
+  // 6 PM and sunrise 6 AM.
   base::Time GetSunsetTime() const { return GetSunRiseSet(/*sunrise=*/false); }
   base::Time GetSunriseTime() const { return GetSunRiseSet(/*sunrise=*/true); }
 
@@ -167,7 +164,7 @@ class ASH_EXPORT GeolocationController
   const raw_ptr<network::SharedURLLoaderFactory, ExperimentalAsh> factory_;
 
   // May be null if a user has not logged in yet.
-  base::raw_ptr<PrefService> active_user_pref_service_ = nullptr;
+  raw_ptr<PrefService> active_user_pref_service_ = nullptr;
 
   // The IP-based geolocation provider.
   SimpleGeolocationProvider provider_;

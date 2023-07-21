@@ -4,8 +4,10 @@
 
 #include "ash/system/video_conference/bubble/set_value_effects_view.h"
 
+#include "ash/bubble/bubble_utils.h"
 #include "ash/style/tab_slider.h"
 #include "ash/style/tab_slider_button.h"
+#include "ash/style/typography.h"
 #include "ash/system/video_conference/bubble/bubble_view_ids.h"
 #include "ash/system/video_conference/effects/video_conference_tray_effects_delegate.h"
 #include "ash/system/video_conference/effects/video_conference_tray_effects_manager_types.h"
@@ -37,8 +39,14 @@ SetValueEffectSlider::SetValueEffectSlider(const VcHostedEffect* effect)
         views::BoxLayout::MainAxisAlignment::kStart);
     label_container->SetInsideBorderInsets(gfx::Insets::TLBR(0, 8, 0, 0));
 
-    label_container->AddChildView(
+    auto* label = label_container->AddChildView(
         std::make_unique<views::Label>(effect->label_text()));
+    label->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+    label->SetAutoColorReadabilityEnabled(false);
+    TypographyProvider::Get()->StyleLabel(TypographyToken::kLegacyButton2,
+                                          *label);
+    label->SetEnabledColorId(cros_tokens::kCrosSysOnSurface);
+
     auto* spacer_view =
         label_container->AddChildView(std::make_unique<views::View>());
     // Let the spacer fill the remaining space, pushing the label to the
@@ -80,13 +88,6 @@ SetValueEffectSlider::SetValueEffectSlider(const VcHostedEffect* effect)
             state->icon(), state->label_text()));
 
     slider_button->SetSelected(state->state_value().value() == current_state);
-
-    // See comments above `kSetValueButton*` in `BubbleViewID` for details
-    // on how the IDs of these buttons are set.
-    slider_button->SetID(i <= BubbleViewID::kSetValueButtonMax -
-                                     BubbleViewID::kSetValueButtonMin
-                             ? BubbleViewID::kSetValueButtonMin + i
-                             : BubbleViewID::kSetValueButtonMax);
   }
   tab_slider_ = AddChildView(std::move(tab_slider));
 }

@@ -1498,8 +1498,7 @@ wtf_size_t NGGridLayoutAlgorithm::ComputeAutomaticRepetitionsForSubgrid(
 void NGGridLayoutAlgorithm::CalculateAlignmentBaselines(
     const NGGridSizingSubtree& sizing_subtree,
     GridTrackSizingDirection track_direction,
-    SizingConstraint sizing_constraint,
-    bool* needs_additional_pass) const {
+    SizingConstraint sizing_constraint) const {
   auto& sizing_data = sizing_subtree.SubtreeRootData();
 
   auto& track_collection =
@@ -1520,16 +1519,11 @@ void NGGridLayoutAlgorithm::CalculateAlignmentBaselines(
     const auto space = CreateConstraintSpaceForLayout(
         grid_item, sizing_data.layout_data, &unused_grid_area);
 
-    // We cannot apply some of the baseline alignment rules for synthesized
-    // baselines until layout has been performed. However, layout cannot
-    // be performed in certain scenarios. So force an additional pass in
-    // these cases and skip layout for now.
+    // Skip this item if we aren't able to resolve our inline size.
     const auto& item_style = grid_item.node.Style();
     if (InlineLengthUnresolvable(space, item_style.LogicalWidth()) ||
         InlineLengthUnresolvable(space, item_style.LogicalMinWidth()) ||
         InlineLengthUnresolvable(space, item_style.LogicalMaxWidth())) {
-      if (needs_additional_pass)
-        *needs_additional_pass = true;
       continue;
     }
 
@@ -1687,35 +1681,15 @@ void NGGridLayoutAlgorithm::InitializeTrackSizes(
     InitAndCacheTrackSizes(kForRows);
   }
 
-  if (subtree_size == 1) {
-    // If we know this subtree doesn't have nested subgrids we can exit early
-    // instead of iterating over every grid item looking for them.
-    return;
-  }
-
-  auto next_subgrid_subtree = sizing_subtree.FirstChild();
-  for (const auto& grid_item : grid_items) {
-    if (grid_item.is_subgridded_to_parent_grid || !grid_item.IsSubgrid()) {
-      continue;
-    }
-
-    DCHECK(next_subgrid_subtree);
-    NGSubgriddedItemData subgrid_data(grid_item, layout_data);
-
-    const auto space = CreateConstraintSpaceForSubgridAlgorithm(subgrid_data);
-    const auto fragment_geometry = CalculateInitialFragmentGeometry(
-        space, subgrid_data->node, /* break_token */ nullptr,
-        /* is_intrinsic */ HasIndefiniteInlineSize(space));
-
-    const NGGridLayoutAlgorithm subgrid_algorithm(
-        {subgrid_data->node, fragment_geometry, space});
-
-    subgrid_algorithm.InitializeTrackSizes(
-        next_subgrid_subtree, subgrid_data,
-        RelativeDirectionFilterInSubgrid(opt_track_direction, grid_item));
-
-    next_subgrid_subtree = next_subgrid_subtree.NextSibling();
-  }
+  ForEachSubgrid(sizing_subtree,
+                 [&](const NGGridLayoutAlgorithm& subgrid_algorithm,
+                     const NGGridSizingSubtree& subgrid_subtree,
+                     const NGSubgriddedItemData& subgrid_data) {
+                   subgrid_algorithm.InitializeTrackSizes(
+                       subgrid_subtree, subgrid_data,
+                       RelativeDirectionFilterInSubgrid(opt_track_direction,
+                                                        *subgrid_data));
+                 });
 }
 
 void NGGridLayoutAlgorithm::InitializeTrackSizes(
@@ -1790,7 +1764,7 @@ void NGGridLayoutAlgorithm::ComputeUsedTrackSizes(
 
   // Cache baselines, as these contributions can influence track sizing
   CalculateAlignmentBaselines(sizing_subtree, track_direction,
-                              sizing_constraint, opt_needs_additional_pass);
+                              sizing_constraint);
 
   // 2. Resolve intrinsic track sizing functions to absolute lengths.
   if (track_collection.HasIntrinsicTrack()) {
@@ -1878,9 +1852,38 @@ void NGGridLayoutAlgorithm::CompleteTrackSizingAlgorithm(
     }
   }
 
+  ForEachSubgrid(
+      sizing_subtree, [&](const NGGridLayoutAlgorithm& subgrid_algorithm,
+                          const NGGridSizingSubtree& subgrid_subtree,
+                          const NGSubgriddedItemData& subgrid_data) {
+        subgrid_algorithm.CompleteTrackSizingAlgorithm(
+            subgrid_subtree, subgrid_data,
+            RelativeDirectionInSubgrid(track_direction, *subgrid_data),
+            sizing_constraint, opt_needs_additional_pass);
+      });
+}
+
+void NGGridLayoutAlgorithm::CompleteTrackSizingAlgorithm(
+    const NGGridSizingTree& sizing_tree,
+    GridTrackSizingDirection track_direction,
+    SizingConstraint sizing_constraint,
+    bool* opt_needs_additional_pass) const {
+  CompleteTrackSizingAlgorithm(NGGridSizingSubtree(sizing_tree),
+                               /* opt_subgrid_data */ kNoSubgriddedItemData,
+                               track_direction, sizing_constraint,
+                               opt_needs_additional_pass);
+}
+
+template <typename CallbackFunc>
+void NGGridLayoutAlgorithm::ForEachSubgrid(
+    const NGGridSizingSubtree& sizing_subtree,
+    const CallbackFunc& callback_func) const {
+  auto& [grid_items, layout_data, subtree_size] =
+      sizing_subtree.SubtreeRootData();
+
+  // If we know this subtree doesn't have nested subgrids we can exit early
+  // instead of iterating over every grid item looking for them.
   if (subtree_size == 1) {
-    // If we know this subtree doesn't have nested subgrids we can exit early
-    // instead of iterating over every grid item looking for them.
     return;
   }
 
@@ -1896,29 +1899,16 @@ void NGGridLayoutAlgorithm::CompleteTrackSizingAlgorithm(
     const auto space = CreateConstraintSpaceForSubgridAlgorithm(subgrid_data);
     const auto fragment_geometry = CalculateInitialFragmentGeometry(
         space, subgrid_data->node, /* break_token */ nullptr,
-        /* is_intrinsic */ HasIndefiniteInlineSize(space));
+        /* is_intrinsic */ space.AvailableSize().inline_size ==
+            kIndefiniteSize);
 
     const NGGridLayoutAlgorithm subgrid_algorithm(
         {subgrid_data->node, fragment_geometry, space});
 
-    subgrid_algorithm.CompleteTrackSizingAlgorithm(
-        next_subgrid_subtree, subgrid_data,
-        RelativeDirectionInSubgrid(track_direction, grid_item),
-        sizing_constraint, opt_needs_additional_pass);
+    callback_func(subgrid_algorithm, next_subgrid_subtree, subgrid_data);
 
     next_subgrid_subtree = next_subgrid_subtree.NextSibling();
   }
-}
-
-void NGGridLayoutAlgorithm::CompleteTrackSizingAlgorithm(
-    const NGGridSizingTree& sizing_tree,
-    GridTrackSizingDirection track_direction,
-    SizingConstraint sizing_constraint,
-    bool* opt_needs_additional_pass) const {
-  CompleteTrackSizingAlgorithm(NGGridSizingSubtree(sizing_tree),
-                               /* opt_subgrid_data */ kNoSubgriddedItemData,
-                               track_direction, sizing_constraint,
-                               opt_needs_additional_pass);
 }
 
 LayoutUnit NGGridLayoutAlgorithm::ComputeSubgridContributionSize(

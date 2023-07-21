@@ -407,6 +407,7 @@ Imkon boʻlsa, qidiruv tarixini qanday tozalash haqidagi qidiruv tizimi koʻrsat
 <translation id="3638472932233958418">Oldindan yuklash</translation>
 <translation id="3661160521073045932">Profil konfiguratsiyasi mavjud</translation>
 <translation id="3670030362669914947">Raqam</translation>
+<translation id="3700134753671613714">O‘z hisobingizga kirib, xatcho‘plaringizni barcha qurilmalarda ko‘rishingiz mumkin.</translation>
 <translation id="3709582977625132201">Oʻqilmagan deb belgilash</translation>
 <translation id="371230970611282515">Xavfli tahdidlarni aniqlaydi va sizni ulardan himoya qiladi.</translation>
 <translation id="37207012422556617">Qidiruv trendlari</translation>
@@ -546,7 +547,6 @@ Imkon boʻlsa, qidiruv tarixini qanday tozalash haqidagi qidiruv tizimi koʻrsat
 <translation id="4642472735733036929">Narx kuzatuvi toʻxtatildi</translation>
 <translation id="4650125387981512669"><ph name="FIRST_RUN_ACCOUNT_NAME" /> nomidan kirish</translation>
 <translation id="4652817563047461855">Parollaringiz xavfsiz ekaniga ishonch hosil qiling. Ular oʻgʻirlagan yoki yoʻqligi haqida maʼlumot oling va oʻzingizni onlayn himoya qilish boʻyicha maslahat oling. <ph name="BEGIN_LINK" />Batafsil<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">Bu funksiya Google hisobingizga kirganingizda yoqiladi.</translation>
 <translation id="4659667755519643272">Sahifalarni tezkor almashtirish funksiyasini yoqish</translation>
 <translation id="46614316059270592">Parolni saqlash</translation>
 <translation id="4666531726415300315"><ph name="EMAIL" /> hisobidan kirgansiz.
@@ -588,7 +588,6 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="4844899002472726590">Qiziqarli mavzularni koʻrish va tahrirlash</translation>
 <translation id="4848999860252535517"><ph name="WEBSITE" /> paroli oʻchirilsinmi?</translation>
 <translation id="4854345657858711387">Maxfiy kod o‘rnating</translation>
-<translation id="4856498338299082007">Google hisobingizda</translation>
 <translation id="4858786880085262208">Imkon boʻlganda HTTPS protokoliga yangilansin Xavfsiz saytlarda ham himoyasiz kontent joylanishi mumkin.</translation>
 <translation id="4860895144060829044">Chaqiruv</translation>
 <translation id="4872323082491632254">Parollarni tekshiring</translation>
@@ -667,6 +666,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="543338862236136125">Parolni almashtirish</translation>
 <translation id="5433691172869980887">Foydalanuvchi nomi nusxalandi</translation>
 <translation id="5439599923922718668">Eng koʻp ochilgan</translation>
+<translation id="5439618055789623719"><ph name="USER_EMAIL" /> sifatida kirgansiz</translation>
 <translation id="54401264925851789">Sahifa xavfsizligi haqida ma’lumot</translation>
 <translation id="5443952882982198570">Bank kartalari</translation>
 <translation id="5444892875087332195">Bukmarklar</translation>
@@ -1121,7 +1121,6 @@ Saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzat
 <translation id="8248969482078657578">Nofaol varaqlar tufayli diqqatni jamlaysiz</translation>
 <translation id="8261506727792406068">O‘chirish</translation>
 <translation id="8264966119170358612">Saqlangan parollaringizdan ayrimlari Googledan boshqa tashqi xizmatlarning sizib chiqarilgan axborotlari ichidan topildi. <ph name="BEGIN_LINK" />Batafsil<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">Faqat shu qurilmada</translation>
 <translation id="826614135184049678">iPad qurilmasini tiklash mobaynida <ph name="USER_NAME" /> hisobingizdan chiqarildingiz. Hisobga qayta kirish uchun “Davom etish” ustiga bosing.</translation>
 <translation id="8271720166617117963">Qabul qilish va kirish</translation>
 <translation id="8278938988428169257">Soʻz yoki iborani kiriting</translation>

@@ -23,6 +23,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
+#include "base/types/expected.h"
 #include "base/uuid.h"
 #include "base/values.h"
 #include "components/aggregation_service/aggregation_service.mojom.h"
@@ -77,10 +78,10 @@ class PrivateAggregationReportGoldenLatestVersionTest : public testing::Test {
     input_dir_ = input_dir_.AppendASCII(
         "private_aggregation/aggregatable_report_goldens/latest/");
 
-    absl::optional<PublicKeyset> keyset =
+    base::expected<PublicKeyset, std::string> keyset =
         aggregation_service::ReadAndParsePublicKeys(
             input_dir_.AppendASCII("public_key.json"), base::Time::Now());
-    ASSERT_TRUE(keyset);
+    ASSERT_TRUE(keyset.has_value());
     ASSERT_EQ(keyset->keys.size(), 1u);
 
     aggregation_service().SetPublicKeysForTesting(
@@ -130,7 +131,7 @@ class PrivateAggregationReportGoldenLatestVersionTest : public testing::Test {
         std::move(debug_details),
         /*scheduled_report_time=*/base::Time::FromJavaTime(1234486400000),
         /*report_id=*/
-        base::GUID::ParseLowercase("21abd97f-73e8-4b88-9389-a9fee6abda5e"),
+        base::Uuid::ParseLowercase("21abd97f-73e8-4b88-9389-a9fee6abda5e"),
         /*reporting_origin=*/kExampleOrigin, api_identifier,
         /*context_id=*/absl::nullopt);
     ASSERT_TRUE(actual_report.has_value());

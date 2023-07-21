@@ -14,14 +14,15 @@
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/credential_provider_promo/features.h"
-#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
 #import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
 #import "ios/chrome/browser/shared/coordinator/alert/alert_coordinator.h"
+#import "ios/chrome/browser/shared/model/browser/browser.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/credential_provider_promo_commands.h"
@@ -37,7 +38,6 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/password_utils.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -96,6 +96,7 @@
     _credential = credential;
     _reauthenticationModule = reauthModule;
     _context = context;
+    _shouldDismissOnAllPasswordsGone = YES;
   }
   return self;
 }
@@ -117,6 +118,7 @@
     _affiliatedGroup = affiliatedGroup;
     _reauthenticationModule = reauthModule;
     _context = context;
+    _shouldDismissOnAllPasswordsGone = YES;
   }
   return self;
 }
@@ -350,7 +352,9 @@
 - (void)onAllPasswordsDeleted {
   DCHECK_EQ(self.baseNavigationController.topViewController,
             self.viewController);
-  [self.baseNavigationController popViewControllerAnimated:YES];
+  if (_shouldDismissOnAllPasswordsGone) {
+    [self.baseNavigationController popViewControllerAnimated:YES];
+  }
 }
 
 #pragma mark - PasswordDetailsMediatorDelegate

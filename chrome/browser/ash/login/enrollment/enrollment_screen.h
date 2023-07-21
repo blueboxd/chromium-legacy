@@ -21,7 +21,6 @@
 #include "chrome/browser/ash/login/error_screens_histogram_helper.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 #include "chrome/browser/ash/login/wizard_context.h"
-#include "chrome/browser/ash/policy/active_directory/active_directory_join_delegate.h"
 #include "chrome/browser/ash/policy/enrollment/account_status_check_fetcher.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
 #include "chrome/browser/ui/webui/ash/login/network_state_informer.h"
@@ -51,7 +50,6 @@ class EnrollmentScreen
     : public BaseScreen,
       public EnterpriseEnrollmentHelper::EnrollmentStatusConsumer,
       public EnrollmentScreenView::Controller,
-      public policy::ActiveDirectoryJoinDelegate,
       public NetworkStateInformer::NetworkStateInformerObserver {
  public:
   enum class Result {
@@ -88,11 +86,6 @@ class EnrollmentScreen
   void OnRetry() override;
   void OnCancel() override;
   void OnConfirmationClosed() override;
-  void OnActiveDirectoryCredsProvided(const std::string& machine_name,
-                                      const std::string& distinguished_name,
-                                      int encryption_types,
-                                      const std::string& username,
-                                      const std::string& password) override;
   void OnDeviceAttributeProvided(const std::string& asset_id,
                                  const std::string& location) override;
   void OnIdentifierEntered(const std::string& email) override;
@@ -109,11 +102,6 @@ class EnrollmentScreen
   void OnDeviceEnrolled() override;
   void OnDeviceAttributeUploadCompleted(bool success) override;
   void OnDeviceAttributeUpdatePermission(bool granted) override;
-
-  // policy::ActiveDirectoryJoinDelegate implementation:
-  void JoinDomain(const std::string& dm_token,
-                  const std::string& domain_join_config,
-                  policy::OnDomainJoinedCallback on_joined_callback) override;
 
   // Notification that the browser is being restarted.
   void OnBrowserRestart();
@@ -227,12 +215,6 @@ class EnrollmentScreen
   // Called by OnRetry() and AutomaticRetry().
   void ProcessRetry();
 
-  // Callback for Active Directory domain join.
-  void OnActiveDirectoryJoined(const std::string& machine_name,
-                               const std::string& username,
-                               authpolicy::ErrorType error,
-                               const std::string& machine_domain);
-
   // Tries to take TPM ownership.
   void TakeTpmOwnership();
   // Processes a reply from tpm_manager.
@@ -242,10 +224,6 @@ class EnrollmentScreen
   // wait for the FIRST_INSTALL status, or show a TpmErrorScreen with an ability
   // to reboot the device.
   void CheckInstallAttributesState();
-
-  // Updates the local variable, according to the existence of the Chromad
-  // migration flag file.
-  void UpdateChromadMigrationOobeFlow(bool exists);
 
   // Indicates whether this is an automatic enrollment as part of Zero-Touch
   // Hands Off flow or Chromad Migration.
@@ -284,11 +262,6 @@ class EnrollmentScreen
   // Timer for install attribute to resolve.
   base::OneShotTimer wait_state_timer_;
 
-  // This local flag should be true if the OOBE flow is operating as part of the
-  // Chromad to cloud device migration. If so, "Enterprise enrollment complete"
-  // screen should be skipped.
-  bool is_chromad_migration_oobe_flow_ = false;
-
   // Whether the ongoing flow belongs to an enterprise rollback.
   bool is_rollback_flow_ = false;
 
@@ -307,12 +280,7 @@ class EnrollmentScreen
   base::CancelableOnceClosure retry_task_;
   int num_retries_ = 0;
   std::unique_ptr<EnterpriseEnrollmentHelper> enrollment_helper_;
-  policy::OnDomainJoinedCallback on_joined_callback_;
   std::unique_ptr<policy::AccountStatusCheckFetcher> status_checker_;
-
-  // Helper to call AuthPolicyClient and cancel calls if needed. Used to join
-  // Active Directory domain.
-  std::unique_ptr<AuthPolicyHelper> authpolicy_login_helper_;
 
   base::WeakPtrFactory<EnrollmentScreen> weak_ptr_factory_{this};
 };

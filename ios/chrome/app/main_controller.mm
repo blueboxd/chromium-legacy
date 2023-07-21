@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/app/main_controller.h"
-#import "ios/chrome/app/main_controller_private.h"
 
 #import <memory>
 
@@ -37,12 +36,10 @@
 #import "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/app_metrics_app_state_agent.h"
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
-#import "ios/chrome/app/application_storage_metrics.h"
 #import "ios/chrome/app/blocking_scene_commands.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #import "ios/chrome/app/enterprise_app_agent.h"
 #import "ios/chrome/app/fast_app_terminate_buildflags.h"
-#import "ios/chrome/app/features.h"
 #import "ios/chrome/app/feed_app_agent.h"
 #import "ios/chrome/app/first_run_app_state_agent.h"
 #import "ios/chrome/app/memory_monitor.h"
@@ -53,6 +50,7 @@
 #import "ios/chrome/app/startup/chrome_main_starter.h"
 #import "ios/chrome/app/startup/client_registration.h"
 #import "ios/chrome/app/startup/ios_chrome_main.h"
+#import "ios/chrome/app/startup/ios_enable_sandbox_dump_buildflags.h"
 #import "ios/chrome/app/startup/provider_registration.h"
 #import "ios/chrome/app/startup/register_experimental_settings.h"
 #import "ios/chrome/app/startup/setup_debugging.h"
@@ -60,9 +58,6 @@
 #import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/app/variations_app_state_agent.h"
 #import "ios/chrome/browser/accessibility/window_accessibility_change_notifier_app_agent.h"
-#import "ios/chrome/browser/application_context/application_context.h"
-#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state_removal_controller.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_remover.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
@@ -81,10 +76,6 @@
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/mailto_handler/mailto_handler_service.h"
 #import "ios/chrome/browser/mailto_handler/mailto_handler_service_factory.h"
-#import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/main/browser_list.h"
-#import "ios/chrome/browser/main/browser_list_factory.h"
-#import "ios/chrome/browser/main/browser_provider.h"
 #import "ios/chrome/browser/memory/memory_debugger_manager.h"
 #import "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/metrics/incognito_usage_app_state_agent.h"
@@ -103,6 +94,14 @@
 #import "ios/chrome/browser/share_extension/share_extension_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_delegate.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
+#import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/shared/model/browser/browser.h"
+#import "ios/chrome/browser/shared/model/browser/browser_list.h"
+#import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
+#import "ios/chrome/browser/shared/model/browser/browser_provider.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -120,7 +119,6 @@
 #import "ios/chrome/browser/web/certificate_policy_app_agent.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_cache.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_cache_factory.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/common/app_group/app_group_field_trial_version.h"
 #import "ios/chrome/common/app_group/app_group_utils.h"
@@ -142,6 +140,10 @@
 #import "ios/chrome/browser/credential_provider/credential_provider_support.h"
 #import "ios/chrome/browser/credential_provider/credential_provider_util.h"
 #endif
+
+#if BUILDFLAG(IOS_ENABLE_SANDBOX_DUMP)
+#import "ios/chrome/app/dump_documents_statistics.h"
+#endif  // BUILDFLAG(IOS_ENABLE_SANDBOX_DUMP)
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -206,11 +208,6 @@ NSString* const kPurgeWebSessionStates = @"PurgeWebSessionStates";
 
 // Constants for deferred favicons clean up.
 NSString* const kFaviconsCleanup = @"FaviconsCleanup";
-
-// The minimum amount of time (2 weeks in seconds) between calculating and
-// logging metrics about the amount of device storage space used by Chrome.
-const NSTimeInterval kMinimumTimeBetweenDocumentsSizeLogging =
-    60.0 * 60.0 * 24.0 * 14.0;
 
 // Adapted from chrome/browser/ui/browser_init.cc.
 void RegisterComponentsForUpdate() {
@@ -447,6 +444,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [ClientRegistration registerClients];
 
   _chromeMain = [ChromeMainStarter startChromeMain];
+
+  // Start recording field trial info.
+  [[PreviousSessionInfo sharedInstance] beginRecordingFieldTrials];
 
   // Remove the extra browser states as Chrome iOS is single profile in M48+.
   ChromeBrowserStateRemovalController::GetInstance()
@@ -1147,7 +1147,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self scheduleSaveFieldTrialValuesForExternals];
   [self scheduleEnterpriseManagedDeviceCheck];
   [self scheduleFaviconsCleanup];
-  [self scheduleLogDocumentsSize];
+#if BUILDFLAG(IOS_ENABLE_SANDBOX_DUMP)
+  [self scheduleDumpDocumentsStatistics];
+#endif  // BUILDFLAG(IOS_ENABLE_SANDBOX_DUMP)
 }
 
 - (void)scheduleTasksRequiringBVCWithBrowserState {
@@ -1206,22 +1208,19 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 #endif
 }
 
-- (void)scheduleLogDocumentsSize {
-  if (!base::FeatureList::IsEnabled(kLogApplicationStorageSizeMetrics)) {
-    return;
-  }
+#if BUILDFLAG(IOS_ENABLE_SANDBOX_DUMP)
+- (void)scheduleDumpDocumentsStatistics {
+  if ([[NSUserDefaults standardUserDefaults]
+          boolForKey:@"EnableDumpSandboxFileStatistics"]) {
+    // Reset the pref to prevent dumping statistics on every launch.
+    [[NSUserDefaults standardUserDefaults]
+        setBool:NO
+         forKey:@"EnableDumpSandboxFileStatistics"];
 
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  NSDate* lastLogged = base::mac::ObjCCast<NSDate>(
-      [defaults objectForKey:kLastApplicationStorageMetricsLogTime]);
-  if (lastLogged && [[NSDate date] timeIntervalSinceDate:lastLogged] <
-                        kMinimumTimeBetweenDocumentsSizeLogging) {
-    return;
+    documents_statistics::DumpSandboxFileStatistics();
   }
-
-  base::FilePath profilePath = self.appState.mainBrowserState->GetStatePath();
-  LogApplicationStorageMetrics(profilePath);
 }
+#endif  // BUILDFLAG(IOS_ENABLE_SANDBOX_DUMP)
 
 - (void)expireFirstUserActionRecorder {
   // Clear out any scheduled calls to this method. For example, the app may have
@@ -1407,20 +1406,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
 
   [uiBlocker bringBlockerToFront:requestingScene];
-}
-
-@end
-
-#pragma mark - TestingOnly
-
-@implementation MainController (TestingOnly)
-
-- (void)setStartupParametersWithURL:(const GURL&)launchURL {
-  NSString* sourceApplication = @"Fake App";
-  SceneState* sceneState = self.appState.foregroundActiveScene;
-  sceneState.controller.startupParameters = [ChromeAppStartupParameters
-      newChromeAppStartupParametersWithURL:net::NSURLWithGURL(launchURL)
-                     fromSourceApplication:sourceApplication];
 }
 
 @end

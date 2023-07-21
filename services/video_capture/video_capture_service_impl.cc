@@ -153,19 +153,14 @@ class VideoCaptureServiceImpl::VizGpuContextProvider
       return;
     }
 
-    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
-        viz_gpu_->GetGpuChannel();
-    if (!gpu_channel_host || gpu_channel_host->IsLost()) {
-      gpu_channel_host = viz_gpu_->EstablishGpuChannelSync();
-    }
-
-    if (!gpu_channel_host) {
-      return;
+    if (!viz_gpu_->GetGpuChannel() || viz_gpu_->GetGpuChannel()->IsLost()) {
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
+          viz_gpu_->EstablishGpuChannelSync();
     }
 
     scoped_refptr<viz::ContextProvider> context_provider =
         base::MakeRefCounted<viz::ContextProviderCommandBuffer>(
-            std::move(gpu_channel_host), viz_gpu_->GetGpuMemoryBufferManager(),
+            viz_gpu_->GetGpuChannel(), viz_gpu_->GetGpuMemoryBufferManager(),
             0 /* stream ID */, gpu::SchedulingPriority::kNormal,
             gpu::kNullSurfaceHandle,
             GURL(std::string("chrome://gpu/VideoCapture")),
@@ -257,11 +252,9 @@ void VideoCaptureServiceImpl::LazyInitializeGpuDependenciesContext() {
     gpu_dependencies_context_ = std::make_unique<GpuDependenciesContext>();
 
 #if BUILDFLAG(IS_LINUX)
-  if (switches::IsVideoCaptureUseGpuMemoryBufferEnabled()) {
-    if (!viz_gpu_context_provider_) {
-      viz_gpu_context_provider_ =
-          std::make_unique<VizGpuContextProvider>(std::move(viz_gpu_));
-    }
+  if (!viz_gpu_context_provider_) {
+    viz_gpu_context_provider_ =
+        std::make_unique<VizGpuContextProvider>(std::move(viz_gpu_));
   }
 #endif  // BUILDFLAG(IS_LINUX)
 }

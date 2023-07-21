@@ -743,6 +743,39 @@ be describing additional metrics about the same event.
       two or greater.
     </summary>
   </metric>
+  <metric name="MaxGenerateBidCodeReadyLatencyInMillis">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the max time in millis that GenerateBid waited for the Script and/or WASM
+      load. If both Script and WASM were requested, this is the latency of the
+      slower of the two to complete.
+    </summary>
+  </metric>
+  <metric name="MaxGenerateBidConfigPromisesLatencyInMillis">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the max time in millis that GenerateBid waited for the fulfillment of the
+      config promises.
+    </summary>
+  </metric>
+  <metric name="MaxGenerateBidDirectFromSellerSignalsLatencyInMillis">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the max time in millis that GenerateBid waited for the download of the
+      DirectFromSellerSignals. This combines the PerBuyerSignals and
+      AuctionSignals, and as such, this is the latency of the slower of the two
+      to complete.
+    </summary>
+  </metric>
+  <metric name="MaxGenerateBidTrustedBiddingSignalsLatencyInMillis">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the max time in millis that GenerateBid waited for the download of the
+      TrustedBiddingSignals. This includes *all* TrustedBiddingSignals for that
+      buyer, because of how those all need to be available in order to
+      reprioritize InterestGroups and apply per-buyer group limits.
+    </summary>
+  </metric>
   <metric name="MaxGenerateSingleBidLatencyInMillis">
     <summary>
       Aggregated across all components for a multi-seller auctions, this records
@@ -777,6 +810,79 @@ be describing additional metrics about the same event.
       two or greater.
     </summary>
   </metric>
+  <metric name="MeanGenerateBidCodeReadyCriticalPathLatencyInMillis">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the mean critical path latency in millis, the time after all other
+      GenerateBid dependencies were satisfied that GenerateBid was blocked
+      waiting for the Script and/or WASM load. This combines Script and WASM
+      loads.
+    </summary>
+  </metric>
+  <metric name="MeanGenerateBidCodeReadyLatencyInMillis">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the mean time in millis that GenerateBid waited for the Script and/or WASM
+      load. If both Script and WASM were requested, this is the latency of the
+      slower of the two to complete.
+    </summary>
+  </metric>
+  <metric name="MeanGenerateBidConfigPromisesCriticalPathLatencyInMillis">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the mean critical path latency in millis, the time after all other
+      GenerateBid dependencies were satisfied that GenerateBid was blocked
+      waiting for the fulfillment of the config promises.
+    </summary>
+  </metric>
+  <metric name="MeanGenerateBidConfigPromisesLatencyInMillis">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the mean time in millis that GenerateBid waited for the fulfillment of the
+      config promises.
+    </summary>
+  </metric>
+  <metric
+      name="MeanGenerateBidDirectFromSellerSignalsCriticalPathLatencyInMillis">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the mean critical path latency in millis, the time after all other
+      GenerateBid dependencies were satisfied that GenerateBid was blocked
+      waiting for the download of the DirectFromSellerSignals. This combines the
+      PerBuyerSignals and AuctionSignals since they should arrive at roughly the
+      same time.
+    </summary>
+  </metric>
+  <metric name="MeanGenerateBidDirectFromSellerSignalsLatencyInMillis">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the mean time in millis that GenerateBid waited for the download of the
+      DirectFromSellerSignals. This combines the PerBuyerSignals and
+      AuctionSignals, and as such, this is the latency of the slower of the two
+      to complete.
+    </summary>
+  </metric>
+  <metric
+      name="MeanGenerateBidTrustedBiddingSignalsCriticalPathLatencyInMillis">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the mean critical path latency in millis, the time after all other
+      GenerateBid dependencies were satisfied that GenerateBid was blocked
+      waiting for the download of the TrustedBiddingSignals. This includes *all*
+      TrustedBiddingSignals for that buyer, because of how those all need to be
+      available in order to reprioritize InterestGroups and apply per-buyer
+      group limits.
+    </summary>
+  </metric>
+  <metric name="MeanGenerateBidTrustedBiddingSignalsLatencyInMillis">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the mean time in millis that GenerateBid waited for the download of the
+      TrustedBiddingSignals. This includes *all* TrustedBiddingSignals for that
+      buyer, because of how those all need to be available in order to
+      reprioritize InterestGroups and apply per-buyer group limits.
+    </summary>
+  </metric>
   <metric name="MeanGenerateSingleBidLatencyInMillis">
     <summary>
       Aggregated across all components for a multi-seller auctions, this records
@@ -786,6 +892,38 @@ be describing additional metrics about the same event.
       Like the UMA metric, this measures each distinct call to
       GenerateSingleBid, for which there could be two for a given InterestGroup,
       one that satisfies the kAnon threshold, and one that doesn't.
+    </summary>
+  </metric>
+  <metric name="MeanTimeBidsQueuedWaitingForConfigPromisesInMillis">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the mean time that bids that were ready for scoring before the config
+      promises were fulfilled were blocked waiting on the config promises. For
+      multi-seller auctions, this only includes bids in the component auctions,
+      and not rescoring of bids in the top-level auction.
+    </summary>
+  </metric>
+  <metric name="MeanTimeBidsQueuedWaitingForSellerWorkletInMillis">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the mean time that bids that were ready for scoring before the seller
+      worklet became available were blocked waiting on the seller worklet. For
+      multi-seller auctions, this only includes bids in the component auctions,
+      and not rescoring of bids in the top-level auction.
+    </summary>
+  </metric>
+  <metric name="MeanTimeTopLevelBidsQueuedWaitingForConfigPromisesInMillis">
+    <summary>
+      Only recorded for multi-seller auctions, this records the mean time that
+      top-level bids that were ready for rescoring before the config promises
+      were fulfilled were blocked waiting on the config promises.
+    </summary>
+  </metric>
+  <metric name="MeanTimeTopLevelBidsQueuedWaitingForSellerWorkletInMillis">
+    <summary>
+      Only recorded for multi-seller auctions, this records the mean time that
+      top-level bids that were ready for rescoring before the seller worklet
+      became available were blocked waiting on the seller worklet.
     </summary>
   </metric>
   <metric name="NumBidderWorklets">
@@ -845,6 +983,24 @@ be describing additional metrics about the same event.
       NumInterestGroups metric.
     </summary>
   </metric>
+  <metric name="NumBidsQueuedWaitingForConfigPromises">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the total number of bids that were ready for scoring before the config
+      promises were fulfilled. For multi-seller auctions, this only includes
+      bids in the component auctions, and not rescoring of bids in the top-level
+      auction.
+    </summary>
+  </metric>
+  <metric name="NumBidsQueuedWaitingForSellerWorklet">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the total number of bids that were ready for scoring before the seller
+      worklet became available. For multi-seller auctions, this only includes
+      bids in the component auctions, and not rescoring of bids in the top-level
+      auction.
+    </summary>
+  </metric>
   <metric name="NumDistinctOwnersWithInterestGroups">
     <summary>
       The number of buyers with InterestGroups participating in an auction,
@@ -856,6 +1012,38 @@ be describing additional metrics about the same event.
       Also unlike NumOwnersWithInterestGroups, this metric has a value even if
       there are no bidders eligible to participate in this auction, though, in
       this case, that value is likely to be zero.
+    </summary>
+  </metric>
+  <metric name="NumGenerateBidCodeReadyOnCriticalPath">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the number of occurrences in which GenerateBid was blocked waiting for the
+      Script and/or WASM load.
+    </summary>
+  </metric>
+  <metric name="NumGenerateBidConfigPromisesOnCriticalPath">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the number of occurrences in which GenerateBid was blocked waiting for the
+      fulfillment of the config promises.
+    </summary>
+  </metric>
+  <metric name="NumGenerateBidDirectFromSellerSignalsOnCriticalPath">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the number of occurrences in which GenerateBid was blocked waiting for the
+      download of the DirectFromSellerSignals. This combines the PerBuyerSignals
+      and AuctionSignals since they should arrive at roughly the same time.
+    </summary>
+  </metric>
+  <metric name="NumGenerateBidTrustedBiddingSignalsOnCriticalPath">
+    <summary>
+      Aggregated across all components for multi-seller auctions, this records
+      the number of occurrences in which GenerateBid was blocked waiting for the
+      download of the TrustedBiddingSignals. This includes *all*
+      TrustedBiddingSignals for that buyer, because of how those all need to be
+      available in order to reprioritize InterestGroups and apply per-buyer
+      group limits.
     </summary>
   </metric>
   <metric name="NumInterestGroups">
@@ -925,6 +1113,18 @@ be describing additional metrics about the same event.
       metric, Ads.InterestGroup.Auction.NumSellersWithBidders. No value is
       defined for this metric if there are no bidders eligible to participate in
       this auction.
+    </summary>
+  </metric>
+  <metric name="NumTopLevelBidsQueuedWaitingForConfigPromises">
+    <summary>
+      Only recorded for multi-seller auctions, this records the number of bids
+      that were ready for rescoring before the config promises were fulfilled.
+    </summary>
+  </metric>
+  <metric name="NumTopLevelBidsQueuedWaitingForSellerWorklet">
+    <summary>
+      Only recorded for multi-seller auctions, this records the number of bids
+      that were ready for rescoring before the seller worklet became available.
     </summary>
   </metric>
   <metric name="Result" enum="AuctionResult">
@@ -2989,6 +3189,12 @@ be describing additional metrics about the same event.
     All information about a specific field, recorded at form submission or form
     destruction time (whatever comes first).
   </summary>
+  <metric name="AutocompleteState" enum="AutofillAutocompleteState">
+    <summary>
+      The field's autocomplete attribute value, the values are from
+      |AutofillMetrics::AutocompleteState|.
+    </summary>
+  </metric>
   <metric name="AutofillSkippedStatus">
     <summary>
       Whether filling the field was skipped during autofill, and if it was
@@ -6480,6 +6686,16 @@ be describing additional metrics about the same event.
   <metric name="CQ.LastEvent" enum="Companion.UiEvent">
     <summary>
       The last event on the CQ surface.
+    </summary>
+  </metric>
+  <metric name="OpenTrigger" enum="Companion.OpenTrigger">
+    <summary>
+      The UI location from which the companion page was opened.
+    </summary>
+  </metric>
+  <metric name="PH.Feedback" enum="Companion.PhFeedback">
+    <summary>
+      The last user feedback event on the PH surface.
     </summary>
   </metric>
   <metric name="PH.LastEvent" enum="Companion.UiEvent">
@@ -11878,6 +12094,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="LoginDetection" singular="True">
+  <obsolete>
+    Deprecated as of 04/2023.
+  </obsolete>
   <owner>rajendrant@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -14576,58 +14795,6 @@ be describing additional metrics about the same event.
   <metric name="TotalBytesFetched">
     <summary>
       Records the total bytes fetched by the network.
-    </summary>
-  </metric>
-</event>
-
-<event name="NewTabPage.HistoryClusters">
-  <owner>sophiechang@chromium.org</owner>
-  <owner>tiborg@chromium.org</owner>
-  <summary>
-    Metrics related to a History Clusters module shown on the New Tab Page.
-    Recorded for each History Clusters module shown on a 1P New Tab Page load,
-    which can be multiple for a page load.
-  </summary>
-  <metric name="BelongsToBoostedCategory" enum="Boolean">
-    <summary>
-      Cluster is of a boosted category.
-    </summary>
-  </metric>
-  <metric name="DidEngageWithModule" enum="Boolean">
-    <summary>
-      Whether the user engaged with the module.
-    </summary>
-  </metric>
-  <metric name="LayoutTypeShown" enum="NTPHistoryClustersModuleDisplayLayout">
-    <summary>
-      The layout type that was shown to the user for this module.
-    </summary>
-  </metric>
-  <metric name="MinutesSinceMostRecentVisit">
-    <summary>
-      Minutes since the shown cluster's most recent visit, exponentially
-      bucketed using GetExponentialBucketMin with a spacing of 1.3.
-    </summary>
-  </metric>
-  <metric name="NumAbandonedCarts">
-    <summary>
-      Number of abandoned carts associated with the cluster.
-    </summary>
-  </metric>
-  <metric name="NumTotalVisits">
-    <summary>
-      Number of total visits in the same cluster including ones that are not
-      necessarily shown in the module.
-    </summary>
-  </metric>
-  <metric name="NumUniqueHosts">
-    <summary>
-      Number of unique hosts represented in the cluster.
-    </summary>
-  </metric>
-  <metric name="NumVisitsWithImage">
-    <summary>
-      Number of visits with an image to show.
     </summary>
   </metric>
 </event>
@@ -23171,6 +23338,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="TrustedWebActivity.QualityEnforcementViolation" singular="True">
+  <obsolete>
+    Deprecated 05/2023.
+  </obsolete>
   <owner>eirage@chromium.org</owner>
   <owner>peconn@chromium.org</owner>
   <summary>
@@ -24116,7 +24286,8 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
-<event name="V8CompileHints.Version4">
+<event name="V8CompileHints.Version5"
+    skip_proto_reason="Too many metrics causing scalability issue b/275678348">
   <owner>marja@chromium.org</owner>
   <owner>v8-loading@google.com</owner>
   <summary>

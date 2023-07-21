@@ -223,6 +223,7 @@ class PresentationObserver;
 class ReceiverPresentationServiceDelegate;
 class RenderFrameHost;
 class RenderProcessHost;
+class ResponsivenessCalculatorDelegate;
 class SerialDelegate;
 class SiteInstance;
 class SpeculationHostDelegate;
@@ -916,11 +917,9 @@ class CONTENT_EXPORT ContentBrowserClient {
       const url::Origin* destination_origin,
       const url::Origin* reporting_origin);
 
-#if BUILDFLAG(IS_ANDROID)
   // Allows the embedder to control if web attribution reporting is allowed.
   // This method must be idempotent.
   virtual bool IsWebAttributionReportingAllowed();
-#endif
 
   // Allows the embedder to control if Shared Storage API operations can happen
   // in a given context.
@@ -2452,6 +2451,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // in RenderFrameHostImpl. Currently in Chrome, this is true for all
   // extension origins.
   virtual bool ShouldUseFirstPartyStorageKey(const url::Origin& origin);
+
+  // Allows the embedder to return a delegate for the responsiveness calculator.
+  // The default implementation returns nullptr.
+  virtual std::unique_ptr<ResponsivenessCalculatorDelegate>
+  CreateResponsivenessCalculatorDelegate();
 };
 
 }  // namespace content

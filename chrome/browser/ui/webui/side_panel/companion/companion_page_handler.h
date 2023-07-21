@@ -26,7 +26,6 @@ class CompanionMetricsLogger;
 class CompanionUrlBuilder;
 class PromoHandler;
 class SigninDelegate;
-class TextFinderManager;
 
 class CompanionPageHandler : public side_panel::mojom::CompanionPageHandler,
                              public content::WebContentsObserver,
@@ -52,6 +51,8 @@ class CompanionPageHandler : public side_panel::mojom::CompanionPageHandler,
   void RecordUiSurfaceClicked(side_panel::mojom::UiSurface ui_surface) override;
   void OnCqCandidatesAvailable(
       const std::vector<std::string>& text_directives) override;
+  void OnPhFeedback(side_panel::mojom::PhFeedback ph_feedback) override;
+  void OnCqJumptagClicked(const std::string& text_directive) override;
 
   // content::WebContentsObserver:
   void PrimaryPageChanged(content::Page& page) override;
@@ -89,7 +90,6 @@ class CompanionPageHandler : public side_panel::mojom::CompanionPageHandler,
   mojo::Receiver<side_panel::mojom::CompanionPageHandler> receiver_;
   mojo::Remote<side_panel::mojom::CompanionPage> page_;
   raw_ptr<CompanionSidePanelUntrustedUI> companion_untrusted_ui_ = nullptr;
-  raw_ptr<TextFinderManager> text_finder_manager_ = nullptr;
   std::unique_ptr<SigninDelegate> signin_delegate_;
   std::unique_ptr<CompanionUrlBuilder> url_builder_;
   std::unique_ptr<PromoHandler> promo_handler_;

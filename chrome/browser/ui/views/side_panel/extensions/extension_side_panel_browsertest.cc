@@ -215,16 +215,13 @@ class ExtensionSidePanelBrowserTest : public ExtensionBrowserTest {
                   browser())
                   ->GetExtensionCoordinatorForTesting(extension_id);
 
-    std::string result;
     static constexpr char kScript[] = R"(
-      domAutomationController.send(document.sidePanelTemp ?
-          document.sidePanelTemp : 'undefined');
+      document.sidePanelTemp ? document.sidePanelTemp : 'undefined';
     )";
 
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        extension_coordinator->GetHostWebContentsForTesting(), kScript,
-        &result));
-    return result;
+    return content::EvalJs(
+               extension_coordinator->GetHostWebContentsForTesting(), kScript)
+        .ExtractString();
   }
 
   // Runs a script in the extension's side panel WebContents to set the value of
@@ -377,9 +374,25 @@ IN_PROC_BROWSER_TEST_F(ExtensionSidePanelBrowserTest, EntryShowsExtensionIcon) {
       test_data_dir_.AppendASCII("api_test/side_panel/simple_default"));
   ASSERT_TRUE(extension);
 
+  auto* extension_coordinator =
+      extensions::ExtensionSidePanelManager::GetOrCreateForBrowser(browser())
+          ->GetExtensionCoordinatorForTesting(extension->id());
+
   SidePanelEntry::Key extension_key = GetKey(extension->id());
   SidePanelEntry* extension_entry =
       global_registry()->GetEntryForKey(extension_key);
+
+  // At this point, we don't know if the extension's icon has finished loading
+  // or not, since the first icon load is initiated right when the extension
+  // loads. Attempting to wait on OnEntryIconUpdated will hang forever if the
+  // icon has been loaded after setting up the waiter. To ensure the icon is
+  // loaded and the OnEntryIconUpdated event is broadcast, initiate a reload for
+  // the extension's icon manually.
+  {
+    TestSidePanelEntryWaiter icon_updated_waiter(extension_entry);
+    extension_coordinator->LoadExtensionIconForTesting();
+    icon_updated_waiter.WaitForIconUpdated();
+  }
 
   // Check that the entry's icon bitmap is identical to the bitmap of the
   // extension's icon scaled down to `extension_misc::EXTENSION_ICON_BITTY`.

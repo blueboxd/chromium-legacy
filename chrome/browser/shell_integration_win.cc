@@ -61,12 +61,12 @@ namespace shell_integration {
 
 namespace {
 
-BASE_FEATURE(kWin10UnattendedDefaultExportDerived,
-             "Win10UnattendedDefaultExportDerived",
+BASE_FEATURE(kWin10UnattendedDefault,
+             "Win10UnattendedDefault",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool CanSetAsDefaultDirectly() {
-  return base::FeatureList::IsEnabled(kWin10UnattendedDefaultExportDerived);
+  return base::FeatureList::IsEnabled(kWin10UnattendedDefault);
 }
 
 // Helper function for GetAppId to generates profile id

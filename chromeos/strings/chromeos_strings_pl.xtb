@@ -295,6 +295,7 @@
 <translation id="3484914941826596830">Podczas aktualizowania oprogramowania układowego nie odłączaj tego urządzenia zewnętrznego ani nie wyłączaj komputera. To okno możesz zminimalizować. Aktualizowanie może potrwać kilka minut i w tym czasie urządzenie zewnętrzne może nie działać.</translation>
 <translation id="3486220673238053218">definicja</translation>
 <translation id="3488065109653206955">Częściowo aktywowane</translation>
+<translation id="3502426834823382181">zobacz wszystkie aplikacje</translation>
 <translation id="3510890413042482857">Wyślij <ph name="BEGIN_LINK1" />dane śledzenia wydajności<ph name="END_LINK1" /></translation>
 <translation id="3517001332549868749">Aktualizacja Chrome OS</translation>
 <translation id="3527036260304016759">Niepowodzenie – nieznany błąd</translation>
@@ -636,6 +637,7 @@
 <translation id="6278428485366576908">Motyw</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Włącz ciemny motyw</translation>
+<translation id="6285899124799306373">otwórz Menu z aplikacjami</translation>
 <translation id="6302401976930124515">Test <ph name="TEST_NAME" /> został anulowany</translation>
 <translation id="631063167932043783">Aplikacja Odkrywaj</translation>
 <translation id="6319207335391420837">Aktualizacja oprogramowania układowego na urządzeniu <ph name="DEVICE_NAME" /></translation>
@@ -651,6 +653,7 @@
 <translation id="6382182670717268353">Podgląd wygaszacza ekranu</translation>
 <translation id="6388847657025262518">Podajnik dokumentów w skanerze się zaciął. Sprawdź go i spróbuj ponownie.</translation>
 <translation id="6394634179843537518">Dodaj plik</translation>
+<translation id="6401427872449207797">wyszukiwanie w przeglądarce</translation>
 <translation id="6410257289063177456">Pliki graficzne</translation>
 <translation id="641081527798843608">Dopasowanie do tematu</translation>
 <translation id="6412715219990689313">Klawiatura wbudowana</translation>
@@ -875,6 +878,7 @@
 <translation id="8312330582793120272">odtwórz multimedia</translation>
 <translation id="8318753676953949627">Brak obrazów</translation>
 <translation id="8329018942023753850">aplikacja Kalkulator</translation>
+<translation id="8335869473001018124">otwórz wyszukiwarkę</translation>
 <translation id="8336739000755212683">Zmień obraz konta na urządzeniu</translation>
 <translation id="8347227221149377169">Zadania drukowania</translation>
 <translation id="8351855506390808906">Mapowanie punktu styku</translation>

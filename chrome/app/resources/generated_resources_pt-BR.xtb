@@ -79,7 +79,7 @@
 <translation id="1061373870045429865">Criar um código QR para este link</translation>
 <translation id="1061904396131502319">Está quase na hora de fazer uma pausa</translation>
 <translation id="1062407476771304334">Substituir</translation>
-<translation id="1062628064301375934">Ajude a criar uma Web com mais privacidade</translation>
+<translation id="1062628064301375934">Ajude-nos a criar uma Web com mais privacidade</translation>
 <translation id="1067048845568873861">Criado em</translation>
 <translation id="1067661089446014701">Para ter mais segurança, você pode criptografar as senhas no dispositivo antes que elas sejam salvas na sua Conta do Google</translation>
 <translation id="1067922213147265141">Outros serviços do Google</translation>
@@ -187,7 +187,6 @@ Verifique suas senhas a qualquer momento no <ph name="GOOGLE_PASSWORD_MANAGER" /
 <translation id="1150490752229770117">Esta é a última atualização automática de software e segurança deste <ph name="DEVICE_TYPE" />. Para receber atualizações futuras, faça upgrade para um modelo mais novo. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="1150565364351027703">Óculos de sol</translation>
 <translation id="1151917987301063366">Sempre permitir que <ph name="HOST" /> acesse os sensores</translation>
-<translation id="1152181876167086799">Permitir que todas as extensões leiam e mudem o site <ph name="SITE_NAME" /></translation>
 <translation id="1152346050262092795">Insira sua senha novamente para verificar a conta.</translation>
 <translation id="1153636665119721804">Programa Proteção Avançada do Google</translation>
 <translation id="1155545602507378023">Não, apenas neste dispositivo</translation>
@@ -211,6 +210,7 @@ Verifique suas senhas a qualquer momento no <ph name="GOOGLE_PASSWORD_MANAGER" /
 <translation id="1169435433292653700"><ph name="FILE_NAME" /> tem dados sensíveis ou perigosos. Mensagem do administrador: "<ph name="CUSTOM_MESSAGE" />"</translation>
 <translation id="1171515578268894665"><ph name="ORIGIN" /> quer se conectar a um dispositivo HID</translation>
 <translation id="1172750555846831341">Virar página pelo lado menor</translation>
+<translation id="1173332155861271669">Detalhes do provedor de Passpoint</translation>
 <translation id="1173894706177603556">Renomear</translation>
 <translation id="1174073918202301297">Atalho adicionado</translation>
 <translation id="1174366174291287894">Sua conexão é sempre segura, a menos que o Chrome informe o contrário</translation>
@@ -227,7 +227,6 @@ Verifique suas senhas a qualquer momento no <ph name="GOOGLE_PASSWORD_MANAGER" /
 <translation id="1183237619868651138">Não foi possível instalar o arquivo <ph name="EXTERNAL_CRX_FILE" /> no cache local.</translation>
 <translation id="1184709369107246085">O app <ph name="APPLICATION_NAME" /> exige um URL válido do <ph name="APPLICATION_NAME" />.</translation>
 <translation id="1185924365081634987">Tente <ph name="GUEST_SIGNIN_LINK_START" />navegar como convidado<ph name="GUEST_SIGNIN_LINK_END" /> para corrigir este erro da rede.</translation>
-<translation id="1186771945450942097">Remover software perigoso</translation>
 <translation id="1187722533808055681">Ativações do estado ocioso</translation>
 <translation id="1188807932851744811">Registro não enviado.</translation>
 <translation id="1190086046506744802">Muito espaçadas</translation>
@@ -248,7 +247,7 @@ Verifique suas senhas a qualquer momento no <ph name="GOOGLE_PASSWORD_MANAGER" /
 <translation id="11978075283960463">Dados armazenados no app: <ph name="APP_SIZE" /></translation>
 <translation id="1197935538609051549">Desativar</translation>
 <translation id="1198066799963193307">Ferramentas de fala para pessoas com baixa visão</translation>
-<translation id="119944043368869598">Remover tudo</translation>
+<translation id="119944043368869598">Limpar tudo</translation>
 <translation id="1199814941632954229">Certificados estão sendo provisionados para esses perfis certificados</translation>
 <translation id="120069043972472860">Não é possível assistir</translation>
 <translation id="1201402288615127009">Próxima</translation>
@@ -282,7 +281,6 @@ Verifique suas senhas a qualquer momento no <ph name="GOOGLE_PASSWORD_MANAGER" /
 <translation id="1227660082540388410">Editar chave de acesso</translation>
 <translation id="1227993798763400520">Falha ao transmitir. Tente novamente</translation>
 <translation id="1230417814058465809">A Proteção padrão está ativa. Para ter ainda mais segurança, selecione a Proteção reforçada.</translation>
-<translation id="1231733316453485619">Ativar sincronização?</translation>
 <translation id="1232569758102978740">Sem título</translation>
 <translation id="1233497634904001272">Toque na chave de segurança novamente para concluir a solicitação.</translation>
 <translation id="1233721473400465416">Localidade</translation>
@@ -450,7 +448,6 @@ Verifique suas senhas a qualquer momento no <ph name="GOOGLE_PASSWORD_MANAGER" /
 <translation id="138784436342154190">Restaurar página de inicialização padrão?</translation>
 <translation id="1388253969141979417">Permitir o uso do microfone</translation>
 <translation id="1388728792929436380">O <ph name="DEVICE_TYPE" /> será reiniciado quando as atualizações forem concluídas.</translation>
-<translation id="1389601498324964367">Armazenamento gerenciado por cotas</translation>
 <translation id="1390113502208199250">Você precisará redefinir este dispositivo para a configuração original se quiser usar recursos do Upgrade do Chrome Education.</translation>
 <translation id="139013308650923562">Com autorização para usar as fontes instaladas no dispositivo</translation>
 <translation id="1390548061267426325">Abrir como guia normal</translation>
@@ -505,10 +502,8 @@ Verifique suas senhas a qualquer momento no <ph name="GOOGLE_PASSWORD_MANAGER" /
             <ph name="LINE_BREAKS" />
            Os favoritos, o histórico e as senhas salvas não serão afetados.</translation>
 <translation id="1425040197660226913">Não foi possível fazer upload. Use um arquivo com menos de 20 MB.</translation>
-<translation id="1425282319410216613">Não mostrar quando os downloads forem concluídos</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="142655739075382478">O app <ph name="APP_NAME" /> está bloqueado</translation>
-<translation id="1426870617281699524">Clique em Tentar novamente e aceite a solicitação no seu computador</translation>
 <translation id="1427179946227469514">Timbre da voz da conversão de texto</translation>
 <translation id="1427269577154060167">País</translation>
 <translation id="142765311413773645">A licença do app <ph name="APP_NAME" /> expirou</translation>
@@ -601,6 +596,7 @@ As permissões que você já concedeu a apps podem ser aplicadas a essa conta. V
 <translation id="1506187449813838456">Aumentar tom de voz</translation>
 <translation id="1507170440449692343">Esta página foi impedida de acessar sua câmera.</translation>
 <translation id="1507246803636407672">&amp;Descartar</translation>
+<translation id="1508931164824684991">Os sites podem usar o JavaScript</translation>
 <translation id="1509163368529404530">&amp;Restaurar grupo</translation>
 <translation id="1509281256533087115">Acessar qualquer <ph name="DEVICE_NAME_AND_VENDOR" /> por USB</translation>
 <translation id="1510238584712386396">Iniciador</translation>
@@ -801,7 +797,6 @@ As permissões que você já concedeu a apps podem ser aplicadas a essa conta. V
 <translation id="1657406563541664238">Ajudar a tornar o <ph name="PRODUCT_NAME" /> melhor enviando automaticamente estatísticas de uso e relatórios de problemas ao Google.</translation>
 <translation id="1657937299377480641">Para fazer login novamente e ter acesso a recursos educacionais, peça permissão a um dos responsáveis</translation>
 <translation id="1658424621194652532">Esta página está acessando seu microfone.</translation>
-<translation id="1660204651932907780">Permitir o áudio dos sites (recomendado)</translation>
 <translation id="1660763353352708040">Problema com o adaptador de energia</translation>
 <translation id="1661156625580498328">Aplicar a codificação AES (recomendado).</translation>
 <translation id="16620462294541761">Não foi possível confirmar sua senha. Tente novamente.</translation>
@@ -825,7 +820,6 @@ As permissões que você já concedeu a apps podem ser aplicadas a essa conta. V
 <translation id="167983332380191032">O serviço de gerenciamento enviou um erro de HTTP.</translation>
 <translation id="167997285881077031">Configurações de voz da conversão de texto em voz</translation>
 <translation id="1680849702532889074">Ocorreu um erro durante a instalação do aplicativo Linux.</translation>
-<translation id="16815041330799488">Não permitir que sites vejam textos e imagens copiados para a área de transferência</translation>
 <translation id="1682548588986054654">Nova janela anônima</translation>
 <translation id="1682696837763999627">Cursor grande do mouse</translation>
 <translation id="1682867089915960590">Ativar Caret Browsing?</translation>
@@ -866,12 +860,12 @@ As permissões que você já concedeu a apps podem ser aplicadas a essa conta. V
 <translation id="1708291623166985230">Ponto de acesso desativado</translation>
 <translation id="1708338024780164500">(Inativa)</translation>
 <translation id="1708713382908678956"><ph name="NAME_PH" /> (código: <ph name="ID_PH" />)</translation>
+<translation id="1708979186656821319">Não mostrar quando os downloads terminarem</translation>
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (nativo)</translation>
 <translation id="1709217939274742847">Selecione um tíquete para usar na autenticação. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="1709762881904163296">Configurações de rede</translation>
 <translation id="1709916727352927457">Excluir chave de acesso</translation>
 <translation id="1709972045049031556">Não foi possível compartilhar</translation>
-<translation id="1711935594505774770">Essa ação vai apagar todos os dados e cookies armazenados por <ph name="SITE_GROUP_NAME" />, incluindo os dos sites relacionados e os dos apps instalados</translation>
 <translation id="1714644264617423774">Ative recursos de acessibilidade para facilitar o uso do seu dispositivo. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1719312230114180055">Observação: sua impressão digital pode ser menos segura que uma senha forte ou um PIN.</translation>
@@ -933,7 +927,6 @@ As permissões que você já concedeu a apps podem ser aplicadas a essa conta. V
 <translation id="1770407692401984718">Arraste uma imagem aqui ou</translation>
 <translation id="177053719077591686">Fazer backup dos apps Android no Google Drive.</translation>
 <translation id="177336675152937177">Dados do aplicativo hospedado</translation>
-<translation id="1775706469381199282">Não permitir que os sites usem JavaScript</translation>
 <translation id="1776712937009046120">Adicionar usuário</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
 <translation id="1778457539567749232">Marcar como não lida</translation>
@@ -956,7 +949,6 @@ As permissões que você já concedeu a apps podem ser aplicadas a essa conta. V
 <translation id="1784849162047402014">O dispositivo está com pouco espaço em disco</translation>
 <translation id="1787350673646245458">Imagem do usuário</translation>
 <translation id="1790976235243700817">Remover acesso</translation>
-<translation id="1791662854739702043">Instalado</translation>
 <translation id="1792619191750875668">Exibição estendida</translation>
 <translation id="1794051631868188691">Nunca mostrar <ph name="MERCHANT" /></translation>
 <translation id="1794212650797661990">Ocultar senha de <ph name="DOMAIN" /></translation>
@@ -964,9 +956,7 @@ As permissões que você já concedeu a apps podem ser aplicadas a essa conta. V
 <translation id="1795214765651529549">Usar "Clássico"</translation>
 <translation id="1796588414813960292">Os recursos que precisam de som não funcionarão</translation>
 <translation id="1797117170091578105">Jogue com o teclado do Chromebook. Você pode personalizar quais teclas vão realizar ações específicas.</translation>
-<translation id="1800502858278951817">Nenhuma extensão solicitou a leitura ou mudança de <ph name="SITE_NAME" /></translation>
 <translation id="180203835522132923">Pesquisa + O e depois W</translation>
-<translation id="1802457294427928325">Mude o comportamento das teclas F para ações de linha superior do ChromeOS</translation>
 <translation id="1802624026913571222">Suspender quando a capa for fechada</translation>
 <translation id="1802687198411089702">A página não está respondendo. Você pode esperar até que ele volte a responder ou sair.</translation>
 <translation id="1803531841600994172">Traduzir para</translation>
@@ -976,7 +966,7 @@ As permissões que você já concedeu a apps podem ser aplicadas a essa conta. V
 <translation id="1805822111539868586">Inspecionar visualizações</translation>
 <translation id="1805888043020974594">Servidor de impressão</translation>
 <translation id="1805967612549112634">Confirmar PIN</translation>
-<translation id="1806335016774576568">Mudar para outro app aberto</translation>
+<translation id="1806335016774576568">Alternar para outro app aberto</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1809201888580326312">Você escolheu não salvar senhas para estes sites e apps</translation>
 <translation id="1809483812148634490">Os apps transferidos por download do Google Play serão excluídos deste Chromebook.
@@ -1043,7 +1033,6 @@ As permissões que você já concedeu a apps podem ser aplicadas a essa conta. V
 <translation id="185111092974636561"><ph name="BEGIN_PARAGRAPH1" />Antes de fazer o registro, limpe o TPM para que o <ph name="DEVICE_OS" /> possa assumir a propriedade do dispositivo.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Você também pode desativar completamente o TPM. Seus dados ainda serão armazenados com segurança e criptografia de software, mas alguns recursos de proteção, como certificados de hardware, serão desativados.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Para mudar as configurações do TPM, reinicie o sistema e acesse as configurações de BIOS/UEFI. As etapas variam de acordo com o modelo do dispositivo. Para mais informações, abra a documentação do <ph name="DEVICE_OS" /> em um dispositivo diferente antes de reiniciar: g.co/flex/TPMHelp.<ph name="END_PARAGRAPH3" /></translation>
-<translation id="1852141627593563189">Encontrar software nocivo</translation>
 <translation id="1852799913675865625">Ocorreu um erro ao tentar ler o arquivo: <ph name="ERROR_TEXT" /></translation>
 <translation id="1854049213067042715">Continue de onde você parou. Nas Configurações, é possível definir ou desativar a restauração automática dos apps na inicialização.</translation>
 <translation id="1854180393107901205">Parar transmissão</translation>
@@ -1212,7 +1201,6 @@ As permissões que você já concedeu a apps podem ser aplicadas a essa conta. V
 <translation id="2003130567827682533">Para ativar os dados de "<ph name="NAME" />", primeiro conecte-se a uma rede Wi-Fi</translation>
 <translation id="2004697686368036666">Os recursos de alguns sites podem não funcionar</translation>
 <translation id="2005199804247617997">Outros perfis</translation>
-<translation id="2005967212456643969">Personalizar permissões para cada extensão</translation>
 <translation id="2006638907958895361">Abrir link no <ph name="APP" /></translation>
 <translation id="2007404777272201486">Informar um problema...</translation>
 <translation id="2009590708342941694">Ferramenta e emoji</translation>
@@ -1269,7 +1257,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2053105195397337973">Estamos desenvolvendo meios para restringir o rastreamento ao mesmo tempo em que permitimos que os sites evitem anúncios de spam e fraudes.</translation>
 <translation id="2053312383184521053">Dados em estado de inatividade</translation>
 <translation id="2054240652864153171">Limpar os dados do site <ph name="SITE_NAME" /> particionados em <ph name="PARTITION_SITE_NAME" />?</translation>
-<translation id="2055585478631012616">Sua conta será desconectada desses sites, inclusive nas guias abertas.</translation>
 <translation id="205560151218727633">Logotipo do Google Assistente</translation>
 <translation id="2058456167109518507">Dispositivo detectado</translation>
 <translation id="2058581283817163201">Verificar com este smartphone</translation>
@@ -1305,7 +1292,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2089090684895656482">Menos</translation>
 <translation id="208928984520943006">Para acessar a tela inicial a qualquer momento, deslize de baixo para cima.</translation>
 <translation id="2089566709556890888">Navegue com segurança com o Google Chrome</translation>
-<translation id="2089795179672254991">Perguntar quando um site quiser ver os textos e imagens copiados para a área de transferência (recomendado)</translation>
 <translation id="2089925163047119068">OU</translation>
 <translation id="2090165459409185032">Para recuperar informações da sua conta, acesse: google.com.br/accounts/recovery</translation>
 <translation id="2090507354966565596">Conexão automática ao fazer login</translation>
@@ -1348,7 +1334,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="21133533946938348">Fixar guia</translation>
 <translation id="2113479184312716848">Abrir &amp;arquivo...</translation>
 <translation id="2113921862428609753">Acesso às informações de autoridade</translation>
-<translation id="2114148807864221167">Destaque o texto que você quer mostrar no modo de leitura</translation>
 <translation id="2114326799768592691">Atualizar &amp;frame</translation>
 <translation id="2114413269775311385">Use esta conta com apps Android. Você pode controlar as permissões para apps Android nas <ph name="LINK_BEGIN" />Configurações de apps<ph name="LINK_END" />.</translation>
 <translation id="2114820389966440614">Ver "Destaques recentes" e outras recordações aqui</translation>
@@ -1451,11 +1436,10 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2194856509914051091">Considerações</translation>
 <translation id="2195331105963583686">Você ainda poderá usar este <ph name="DEVICE_TYPE" /> após esse período, mas ele não receberá mais atualizações automáticas de software e segurança</translation>
 <translation id="2195729137168608510">Proteção de e-mail</translation>
-<translation id="2198625180564913276">Adicionando perfil. Pode levar alguns minutos..</translation>
+<translation id="2198625180564913276">Adicionando perfil. Isso pode levar alguns minutos.</translation>
 <translation id="2198712775285959645">Editar</translation>
 <translation id="2199298570273670671">Erro</translation>
 <translation id="2200094388063410062">E-mail</translation>
-<translation id="2200356397587687044">O Chrome precisa de permissão para continuar</translation>
 <translation id="2203088913459920044">Os nomes podem usar letras, números e caracteres especiais</translation>
 <translation id="220321590587754225">Não foi possível conectar. Tente de novo.</translation>
 <translation id="2203903197029773650"><ph name="BRAND" /> pode verificar suas senhas quando você faz login com sua Conta do Google.</translation>
@@ -1468,7 +1452,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2214884991347062907">Senha incorreta. Tente novamente</translation>
 <translation id="2214893006758804920">{LINE_COUNT,plural, =1{&lt;1 linha não mostrada&gt;}one{&lt;<ph name="NUMBER_OF_LINES" /> linha não mostrada&gt;}other{&lt;<ph name="NUMBER_OF_LINES" /> linhas não mostradas&gt;}}</translation>
 <translation id="2218019600945559112">Mouse e touchpad</translation>
-<translation id="2218320521449013367">Ocorreu um erro enquanto o Chrome estava removendo softwares nocivos</translation>
 <translation id="2218515861914035131">Colar como texto sem formatação</translation>
 <translation id="2220409419896228519">Adicione favoritos aos apps do Google que você mais usa</translation>
 <translation id="2220529011494928058">Informar um problema</translation>
@@ -1497,7 +1480,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2235344399760031203">Cookies de terceiros foram bloqueados</translation>
 <translation id="2238379619048995541">Dados do estado de frequência</translation>
 <translation id="2241053333139545397">Ler e alterar seus dados em vários websites</translation>
-<translation id="2241242047787527912">Para cada tecla abaixo, escolha a ação a ser realizada</translation>
 <translation id="2241634353105152135">Apenas uma vez</translation>
 <translation id="2242687258748107519">Informações do arquivo</translation>
 <translation id="2245603955208828424">Use as teclas de seta para percorrer os itens letra por letra.</translation>
@@ -1512,7 +1494,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="225163402930830576">Atualizar redes</translation>
 <translation id="2251809247798634662">Nova janela anônima</translation>
 <translation id="2252017960592955005">Proteção de visualização (Beta)</translation>
-<translation id="225240747099314620">Permitir identificadores de conteúdo protegido (pode ser necessário reiniciar o computador)</translation>
 <translation id="2253318212986772520">Não foi possível recuperar o arquivo PPD da <ph name="PRINTER_NAME" />.</translation>
 <translation id="2253927598983295051">Escolha o que compartilhar com o app <ph name="APP_NAME" /></translation>
 <translation id="2255077166240162850">Este dispositivo foi bloqueado para um domínio ou modo diferente.</translation>
@@ -1529,7 +1510,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
     Para resolver problemas com o Google Cast, consulte a
     <ph name="BEGIN_LINK" />
     Central de Ajuda<ph name="END_LINK" />.</translation>
-<translation id="22665427234727190">Perguntar quando um site quiser acessar dispositivos Bluetooth (recomendado)</translation>
 <translation id="2266957463645820432">IPP via USB (IPPUSB)</translation>
 <translation id="2268130516524549846">Bluetooth desativado</translation>
 <translation id="2270450558902169558">Trocar dados com qualquer dispositivo no domínio <ph name="DOMAIN" /></translation>
@@ -1540,14 +1520,12 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2271986192355138465">Aprenda a instalar apps da Web</translation>
 <translation id="2272430695183451567">0 interruptor atribuído</translation>
 <translation id="2272570998639520080">Copo de martini</translation>
-<translation id="2272830751703114341">Ativar tecla do sistema/acesso rápido para alternar o comportamento das teclas da linha superior</translation>
 <translation id="2273119997271134996">Problema na porta de vídeo da base</translation>
 <translation id="2274840746523584236">Carregue seu Chromebook</translation>
 <translation id="2276503375879033601">Adicionar mais aplicativos</translation>
 <translation id="2276910256003242519">Limpando dados…</translation>
 <translation id="2278562042389100163">Abrir janela do navegador</translation>
 <translation id="2278668501808246459">Iniciando o administrador de contêiner</translation>
-<translation id="2279051792571591988">Restaurar padrões</translation>
 <translation id="2280486287150724112">Margem direta</translation>
 <translation id="2281863813036651454">Clique com o botão esquerdo do mouse</translation>
 <translation id="2282146716419988068">Processo de GPU</translation>
@@ -1657,7 +1635,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2350133097354918058">Atualizada</translation>
 <translation id="2350182423316644347">Inicializando aplicativo...</translation>
 <translation id="235028206512346451">Se você se afastar do dispositivo, a tela vai ser bloqueada automaticamente. Quando estiver em frente ao dispositivo, a tela vai ficar ativada por mais tempo. Se você não estiver usando uma tela de bloqueio, o dispositivo vai ser suspenso em vez de bloqueado.</translation>
-<translation id="2352495879228166246">{NUM_ITEMS,plural, =1{1 item}one{{NUM_ITEMS} item}other{{NUM_ITEMS} itens}}</translation>
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">As anotações na tela de bloqueio são salvas automaticamente no <ph name="LOCK_SCREEN_APP_NAME" />. Sua anotação mais recente ficará na tela de bloqueio.</translation>
 <translation id="2353297238722298836">Câmera e microfone permitidos</translation>
@@ -1667,7 +1644,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2355604387869345912">Ativar tethering instantâneo</translation>
 <translation id="2356070529366658676">Perguntar</translation>
 <translation id="2357330829548294574">Remover <ph name="USER_NAME" /></translation>
-<translation id="2358561147588818967">Os sites podem usar o JavaScript</translation>
 <translation id="2358777858338503863">Clique para permitir em <ph name="ORIGIN" />:</translation>
 <translation id="2359071692152028734">Os apps do Linux podem parar de responder.</translation>
 <translation id="2359345697448000899">Gerencie suas extensões clicando em Extensões no menu Ferramentas.</translation>
@@ -1693,7 +1669,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2378982052244864789">Selecionar o diretório da extensão.</translation>
 <translation id="2379281330731083556">Imprimir utilizando caixa de diálogo de sistema... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381499968174336913">Prévia da guia compartilhada</translation>
-<translation id="2381756643783702095">Perguntar antes de enviar (recomendado)</translation>
 <translation id="2383825469508278924">Mude o mapa de atalhos do teclado, as teclas de função e muito mais.</translation>
 <translation id="2387052489799050037">Ir para a tela inicial</translation>
 <translation id="2387602571959163792"><ph name="DESK_NAME" /> (atual)</translation>
@@ -1709,6 +1684,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2398546389094871088">O Powerwash do dispositivo não removerá seus perfis de eSIM. Para remover esses perfis manualmente, acesse <ph name="LINK_BEGIN" />Configurações do celular<ph name="LINK_END" />.</translation>
 <translation id="2399699884460174994">Notificações ativadas</translation>
 <translation id="2399939490305346086">Dados de login da chave de segurança</translation>
+<translation id="2400323785194108001">Nunca desativar este site</translation>
 <translation id="2400664245143453337">Atualização imediata necessária</translation>
 <translation id="2402226831639195063">Tons</translation>
 <translation id="2406153734066939945">Excluir este perfil e os dados dele?</translation>
@@ -1991,7 +1967,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2649045351178520408">ASCII codificado na Base64, cadeia de certificados</translation>
 <translation id="265156376773362237">Pré-carregamento padrão</translation>
 <translation id="2652129567809778422">Selecionar senha</translation>
-<translation id="2653033005692233957">Falha ao pesquisar</translation>
 <translation id="2653266418988778031">Se você excluir o certificado de uma CA (Autoridade de certificação), seu navegador não confiará mais nos certificados emitidos por essa CA.</translation>
 <translation id="2653275834716714682">Substituição de texto</translation>
 <translation id="2653659639078652383">Enviar</translation>
@@ -2025,6 +2000,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2673135533890720193">Ler seu histórico de navegação</translation>
 <translation id="2674764818721168631">Desativado</translation>
 <translation id="2675570801872027281">Erro ao remover Bruschetta. Tente de novo.</translation>
+<translation id="2676084251379299915">Esta extensão foi desativada pela política da empresa porque não está mais disponível na Chrome Web Store.</translation>
 <translation id="267708982776801183">Filtro vermelho-verde (vermelho fraco, protanomalia)</translation>
 <translation id="2678063897982469759">Reativar</translation>
 <translation id="2678100101831051676">Falha na transmissão</translation>
@@ -2091,7 +2067,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2731700343119398978">Aguarde...</translation>
 <translation id="2731971182069536520">Na próxima vez que você reiniciar o dispositivo, o administrador fará uma atualização única que excluirá seus dados locais.</translation>
 <translation id="2732134891301408122">Conteúdo extra <ph name="CURRENT_ELEMENT" /> de <ph name="TOTAL_ELEMENTS" /></translation>
-<translation id="2734760316755174687">Os sites de <ph name="SITE_GROUP_NAME" /> também serão redefinidos.</translation>
 <translation id="27349076983469322">Plano de fundo claro</translation>
 <translation id="2735712963799620190">Programar</translation>
 <translation id="2737363922397526254">Recolher...</translation>
@@ -2122,6 +2097,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2755349111255270002">Redefinir este <ph name="DEVICE_TYPE" /></translation>
 <translation id="2755367719610958252">Gerenciar recursos de acessibilidade</translation>
 <translation id="275662540872599901">tela desativada</translation>
+<translation id="2756936198272359372">Bloquear o uso do JavaScript</translation>
 <translation id="2757161511365746634">Ver impressora</translation>
 <translation id="2757338480560142065">A senha que você está salvando precisa corresponder à usada em <ph name="WEBSITE" /></translation>
 <translation id="2761632996810146912"><ph name="HASHTAG_SETTINGS" /> Nenhum resultado da pesquisa por "<ph name="SEARCH_QUERY" />"</translation>
@@ -2150,7 +2126,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2777251078198759550">Excluir contêiner</translation>
 <translation id="2777525873368474674">Cole o link de uma imagem</translation>
 <translation id="2778471504622896352">Adicionar apps remotos ao iniciador do ChromeOS</translation>
-<translation id="2781120507965857989">Ative a sincronização para acessar favoritos, senhas, histórico e muito mais neste dispositivo e em qualquer outro lugar em que esse recurso também esteja ativado. O Google pode usar seu histórico para personalizar a Pesquisa e outros serviços que ele oferece.</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2781800772148653810">As extensões são permitidas neste site</translation>
 <translation id="2782104745158847185">Erro ao instalar o aplicativo Linux</translation>
@@ -2235,7 +2210,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="284805635805850872">Remover software perigoso?</translation>
 <translation id="2849035674501872372">Pesquisar</translation>
 <translation id="284970761985428403"><ph name="ASCII_NAME" /> (<ph name="UNICODE_NAME" />)</translation>
-<translation id="284975061945174219">Falha ao limpar</translation>
 <translation id="2849767214114481738">Seu PIN foi adicionado</translation>
 <translation id="2849936225196189499">Crítico</translation>
 <translation id="2850541429955027218">Adicionar tema</translation>
@@ -2245,6 +2219,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2856776373509145513">Criar um novo contêiner</translation>
 <translation id="2859741939921354763">Importar senhas para o <ph name="BRAND" /></translation>
 <translation id="2861301611394761800">A atualização do sistema foi concluída. Reinicie o sistema.</translation>
+<translation id="2861402191395139055">Assinaturas de Passpoint</translation>
 <translation id="2861941300086904918">Gerenciador de segurança do Cliente nativo</translation>
 <translation id="2862815659905780618">Remover o ambiente de desenvolvimento do Linux</translation>
 <translation id="2864601841139725659">Definir a foto do seu perfil</translation>
@@ -2307,7 +2282,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2910318910161511225">Conecte-se a uma rede e tente novamente</translation>
 <translation id="2910718431259223434">Algo deu errado. Tente novamente ou entre em contato com o proprietário ou administrador do dispositivo. Código do erro: <ph name="ERROR_CODE" />.</translation>
 <translation id="2912247081180973411">Fechar janelas</translation>
-<translation id="2913331724188855103">Permitir que os sites salvem e leiam os dados de arquivos "cookies" - que armazenam temporariamente o que você visitou na rede. (Recomendado)</translation>
 <translation id="2915102088417824677">Ver registro de atividades</translation>
 <translation id="2915873080513663243">Leitura automática</translation>
 <translation id="2916073183900451334">Ao pressionar Tab em uma página da Web, os links e os campos de formulário são destacados</translation>
@@ -2361,7 +2335,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2959127025785722291">Algo deu errado. Não foi possível concluir a verificação. Tente novamente.</translation>
 <translation id="2959842337402130152">Não é possível restaurar devido à falta de espaço de armazenamento. Libere <ph name="SPACE_REQUIRED" /> do dispositivo e tente novamente.</translation>
 <translation id="2960208947600937804">Algo deu errado na configuração do Linux. Entre em contato com seu administrador.</translation>
-<translation id="296026337010986570">Pronto! Software perigoso removido. Para reativar as extensões, visite &lt;a href="chrome://extensions"&gt;Extensões&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (extensão fornecida)</translation>
 <translation id="2961210776189273067">Título</translation>
 <translation id="2961695502793809356">Clique para avançar, pressione para ver o histórico</translation>
@@ -2465,7 +2438,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3043016484125065343">Faça login para conferir seus favoritos</translation>
 <translation id="3043218608271070212"><ph name="GROUP_NAME" />: <ph name="GROUP_CONTENT_STRING" /></translation>
 <translation id="3043581297103810752">De <ph name="ORIGIN" /></translation>
-<translation id="304499331062371949">Não permitir que extensões leiam e mudem o site <ph name="SITE_NAME" /></translation>
 <translation id="3045447014237878114">Este site fez o download de vários arquivos automaticamente</translation>
 <translation id="3046178388369461825">O espaço em disco do Linux está criticamente baixo</translation>
 <translation id="3046910703532196514">Página da web, completa</translation>
@@ -2663,7 +2635,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3254084468305910013">{COUNT,plural, =0{Nenhum problema de segurança encontrado}=1{{COUNT} problema de segurança encontrado}one{{COUNT} problema de segurança encontrado}other{{COUNT} problemas de segurança encontrados}}</translation>
 <translation id="3254451942070605467">Fazendo o download de <ph name="FILE_NAME" />, falta <ph name="PERCENT_REMAINING" />%</translation>
 <translation id="3254516606912442756">A detecção automática de fuso horário está desativada</translation>
-<translation id="3255355328033513170">Todos os dados armazenados pelo <ph name="SITE_GROUP_NAME" /> e sites relacionados serão excluídos. Isso inclui cookies. Você será desconectado desses sites, inclusive nas guias abertas.</translation>
 <translation id="3257733480216378006">Permitir <ph name="EXTENSIONS_REQUESTING_ACCESS_COUNT" />?</translation>
 <translation id="3259723213051400722">Tente novamente.</translation>
 <translation id="3261090393424563833">Aumentar taxa</translation>
@@ -2696,7 +2667,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3280237271814976245">Salvar &amp;como...</translation>
 <translation id="3280243678470289153">Ficar no Chrome</translation>
 <translation id="328119399589609861">Controle o acesso do dispositivo ao microfone, à câmera e muito mais</translation>
-<translation id="3281892622610078515">Arquivos e programas a serem colocados em quarentena:</translation>
 <translation id="3282210178675490297">Compartilhando uma guia com <ph name="APP_NAME" /></translation>
 <translation id="3284050785966252943">Visualização de metadados do preenchimento automático</translation>
 <translation id="3285322247471302225">Nova &amp;guia</translation>
@@ -2707,7 +2677,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3289856944988573801">Para verificar se há atualizações, utilize Ethernet ou Wi-Fi.</translation>
 <translation id="3289886661311231677">Você pode bloquear temas que não quer compartilhar com sites. O Chrome também exclui automaticamente os temas que estão na lista há mais de quatro semanas.</translation>
 <translation id="3290249595466894471">Envia também uma pequena amostra de páginas, downloads, atividades de extensões e informações do sistema para ajudar a descobrir novas ameaças</translation>
-<translation id="3293181007446299124">Seu histórico de navegação é mantido no seu dispositivo, e os relatórios são enviados com um atraso para proteger sua identidade</translation>
+<translation id="3293181007446299124">A privacidade do seu histórico de navegação é mantida no dispositivo, e os relatórios são enviados com um atraso para proteger sua identidade</translation>
 <translation id="3293644607209440645">Enviar esta página</translation>
 <translation id="32939749466444286">O contêiner Linux não foi iniciado. Tente novamente.</translation>
 <translation id="3294437725009624529">Visitante</translation>
@@ -2716,7 +2686,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3297105622164376095">Pode mostrar solicitações de login de terceiros</translation>
 <translation id="3297536526040732495">Vincula temporariamente esses dados à sua Conta do Google quando ela está conectada para proteger você nos apps do Google</translation>
 <translation id="329838636886466101">Reparo</translation>
-<translation id="3298438307450647315">Ler dados e informações do dispositivo ChromeOS</translation>
 <translation id="3298789223962368867">URL inválido digitado.</translation>
 <translation id="32991397311664836">Dispositivos:</translation>
 <translation id="33022249435934718">Processamentos de GDI</translation>
@@ -2828,7 +2797,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3402255108239926910">Escolha um avatar</translation>
 <translation id="3402585168444815892">Inscrevendo-se no modo de demonstração</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
-<translation id="3403071741485135898">Ler dados e informações do dispositivo ChromeOS Flex</translation>
 <translation id="3404065873681873169">Nenhuma senha salva para este site</translation>
 <translation id="3405664148539009465">Personalizar fontes</translation>
 <translation id="3405763860805964263">...</translation>
@@ -2851,7 +2819,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3420501302812554910">A chave de segurança interna precisa ser redefinida</translation>
 <translation id="3421387094817716717">Chave pública de curva elíptica</translation>
 <translation id="3421672904902642628"><ph name="BEGIN_BOLD" />Observação<ph name="END_BOLD" />: uma voz parecida ou uma gravação pode conseguir acessar seus resultados personalizados ou o Google Assistente.</translation>
-<translation id="3422291238483866753">Perguntar quando um site quiser criar um mapa 3D do ambiente a sua volta ou acompanhar a posição da câmera (recomendado)</translation>
 <translation id="3423463006624419153">No seu "<ph name="PHONE_NAME_1" />" e "<ph name="PHONE_NAME_2" />":</translation>
 <translation id="3423858849633684918">Reinicie <ph name="PRODUCT_NAME" /></translation>
 <translation id="3424969259347320884">Descrever o que você estava fazendo quando a guia travou</translation>
@@ -2932,7 +2899,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3481268647794498892">Abrindo no <ph name="ALTERNATIVE_BROWSER_NAME" /> em <ph name="COUNTDOWN_SECONDS" /> segundos</translation>
 <translation id="348268549820508141">Reconhecimento de fala</translation>
 <translation id="3482719661246593752"><ph name="ORIGIN" /> pode ver os seguintes arquivos</translation>
-<translation id="3484273680291419129">Removendo software perigoso...</translation>
 <translation id="3484869148456018791">Obter novo certificado</translation>
 <translation id="3486950712960783074">Sua viagem</translation>
 <translation id="3487007233252413104">função anônima</translation>
@@ -2941,13 +2907,13 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3491678231052507920">Os sites geralmente usam dispositivos e dados de realidade virtual para permitir que você participe de sessões de RV</translation>
 <translation id="3493486281776271508">Requer uma conexão de Internet</translation>
 <translation id="3493881266323043047">Validade</translation>
-<translation id="3494769164076977169">Perguntar quando um site tenta fazer o download de arquivos automaticamente após o primeiro arquivo (recomendado)</translation>
 <translation id="3495496470825196617">Inatividade ao carregar</translation>
 <translation id="3495660573538963482">Configurações do Google Assistente</translation>
 <translation id="3495675993466884458">O administrador do sistema deu permissão para o app <ph name="APP_ORIGIN" /> gravar sua tela</translation>
 <translation id="3496213124478423963">Afastar</translation>
 <translation id="3496238553815913323"><ph name="LANGUAGE" /> (não selecionado)</translation>
 <translation id="3496689104192986836">Nível da bateria: <ph name="PERCENTAGE" />%</translation>
+<translation id="3496995426334945408">Os sites geralmente usam JavaScript para mostrar recursos interativos, como videogames ou formulários da Web</translation>
 <translation id="3497501929010263034">Dispositivo USB do <ph name="VENDOR_NAME" /> (produto <ph name="PRODUCT_ID" />)</translation>
 <translation id="3497560059572256875">Compartilhar doodle</translation>
 <translation id="3500417806337761827">Erro ao ativar o compartilhamento. Muitos compartilhamentos SMB já estão ativos.</translation>
@@ -2961,7 +2927,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3508920295779105875">Escolher outra pasta...</translation>
 <translation id="3509379002674019679">Crie, salve e gerencie suas senhas para que você possa fazer login em sites e apps com facilidade.</translation>
 <translation id="3511200754045804813">Verificar novamente</translation>
-<translation id="3511269949096797228">{COUNT,plural, =0{Nenhuma tecla remapeada}=1{1 tecla remapeada}one{{COUNT} tecla remapeada}other{{COUNT} teclas remapeadas}}</translation>
 <translation id="3511307672085573050">Copiar &amp;endereço do link</translation>
 <translation id="351152300840026870">Fonte de largura pré-determinada</translation>
 <translation id="3511528412952710609">Pequeno</translation>
@@ -2993,11 +2958,11 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="354060433403403521">Carregador</translation>
 <translation id="354068948465830244">Pode ler e alterar os dados do site</translation>
 <translation id="3541823293333232175">Atribuído</translation>
+<translation id="354204985370574425">Nunca desativar este site</translation>
 <translation id="3543393733900874979">Falha na atualização (erro: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="3543597750097719865">Assinatura X9.62 ECDSA com SHA-512</translation>
 <translation id="3544058026430919413">Uma empresa pode definir um grupo de sites que podem usar cookies para compartilhar sua atividade no grupo. Essa opção fica desativada na navegação anônima.</translation>
 <translation id="3544879808695557954">Nome de usuário (opcional)</translation>
-<translation id="354602065659584722">Software perigoso removido</translation>
 <translation id="3547954654003013442">Configurações de proxy</translation>
 <translation id="3548162552723420559">Ajusta as cores da tela para combinar com o ambiente</translation>
 <translation id="3550593477037018652">Desconectar rede celular</translation>
@@ -3066,7 +3031,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3610241585790874201">Sem permissão para salvar dados no dispositivo</translation>
 <translation id="3610369246614755442">A ventilação da base precisa de reparos</translation>
 <translation id="3610961622607302617">Mudar a senha de <ph name="WEBSITE" /></translation>
-<translation id="361106536627977100">Dados do Flash</translation>
 <translation id="3611655097742243705">Acesse a Play Store para ver mais apps</translation>
 <translation id="3611658447322220736">Os sites fechados recentemente podem terminar de enviar e receber dados</translation>
 <translation id="3612673635130633812">Download feito por &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
@@ -3306,7 +3270,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3798632811625902122">O dispositivo Bluetooth <ph name="DEVICE" /> quer permissão para fazer o pareamento.</translation>
 <translation id="3798670284305777884">Alto-falante (interno)</translation>
 <translation id="3799128412641261490">Configurações do acesso com interruptor</translation>
-<translation id="3800806661949714323">Mostrar tudo (recomendado)</translation>
 <translation id="3800828618615365228">Termos adicionais do Google Chrome e do ChromeOS</translation>
 <translation id="3802486193901166966">Esta extensão não requer permissões especiais e não tem nenhum acesso extra a sites</translation>
 <translation id="380329542618494757">Nome</translation>
@@ -3494,7 +3457,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3954354850384043518">Em andamento</translation>
 <translation id="3954469006674843813"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> hertz)</translation>
 <translation id="3954953195017194676">Você não tem nenhum log de eventos WebRTC capturado recentemente.</translation>
-<translation id="3955193568934677022">Permitir que os sites mostrem conteúdo protegido (recomendado)</translation>
 <translation id="3955321697524543127">Não permitir que os sites se conectem a dispositivos USB</translation>
 <translation id="3955896417885489542">Revisar as opções do Google Play após a configuração</translation>
 <translation id="3957079323242030166">Os dados de backup não são considerados na sua cota de armazenamento no Drive.</translation>
@@ -3556,7 +3518,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3995138139523574647">Dispositivo USB-C (porta traseira da direita)</translation>
 <translation id="3995963973192100066">Iniciar animação</translation>
 <translation id="4001540981461989979">Destacar cursor do mouse em movimento</translation>
-<translation id="4002329649066944389">Gerenciar exceções específicas do site</translation>
 <translation id="4002440992267487163">Configuração do PIN</translation>
 <translation id="4005817994523282006">Método de detecção de fuso horário</translation>
 <translation id="4007856537951125667">Ocultar atalhos</translation>
@@ -3700,6 +3661,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4135746311382563554">Termos de Serviço Adicionais do Chrome e do ChromeOS</translation>
 <translation id="4136203100490971508">O Modo noturno será desativado automaticamente ao amanhecer</translation>
 <translation id="41365691917097717">Se você continuar, a depuração do adb será ativada para a criação e o teste de apps Android. Essa ação permite a instalação de apps Android que não foram verificados pelo Google. Para desativar, será necessária uma redefinição para a configuração original.</translation>
+<translation id="4137923333452716643">Destaque o texto que você quer abrir no modo de leitura</translation>
 <translation id="4138267921960073861">Mostrar nomes de usuários e fotos na tela de login</translation>
 <translation id="4138598238327913711">No momento, a verificação gramatical está disponível apenas para o inglês</translation>
 <translation id="413915106327509564"><ph name="WINDOW_TITLE" />: dispositivo HID conectado</translation>
@@ -3726,14 +3688,12 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4165986682804962316">Configurações do site</translation>
 <translation id="4167212649627589331">O app <ph name="APP_NAME" /> está tentando acessar este dispositivo: <ph name="DEVICE_NAME" />. Desative a chave de privacidade do dispositivo <ph name="DEVICE_NAME" /> para permitir o acesso.</translation>
 <translation id="4167393659000039775">O Google não se responsabiliza pela perda de dados, e o <ph name="DEVICE_OS" /> pode não funcionar em modelos sem certificação. Saiba mais em g.co/flex/InstallGuide.</translation>
-<translation id="4167686856635546851">Os sites geralmente usam JavaScript para exibir recursos interativos, como videogames ou formulários da Web</translation>
 <translation id="4168015872538332605">Algumas configurações pertencentes a <ph name="PRIMARY_EMAIL" /> estão sendo compartilhadas com você. Essas configurações afetam sua conta apenas quando o recurso de login múltiplo é usado.</translation>
 <translation id="4168651806173792090"><ph name="NETWORK_NAME" /> com final <ph name="LAST_FOUR_DIGITS" /></translation>
 <translation id="4169535189173047238">Não permitir</translation>
 <translation id="4170314459383239649">Limpar ao sair</translation>
 <translation id="417096670996204801">Escolha um perfil</translation>
 <translation id="4175137578744761569">Roxo-claro e branco</translation>
-<translation id="4175737294868205930">Armazenamento persistente</translation>
 <translation id="4176463684765177261">Desativado</translation>
 <translation id="4176864026061939326">Este dispositivo é gerenciado. O administrador dele solicitou um novo perfil para a conta <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4177501066905053472">Temas de anúncios</translation>
@@ -3789,7 +3749,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4232375817808480934">Configurar o Kerberos</translation>
 <translation id="4233739489690259993">Seu Chromebook deixou de receber atualizações de segurança e de software. Troque por um novo dispositivo para ter a segurança e os recursos mais recentes. Oferta sujeita aos termos.</translation>
 <translation id="4235965441080806197">Cancelar login</translation>
-<translation id="4236163961381003811">Descubra mais extensões</translation>
 <translation id="4237282663517880406">Mostrar as sugestões do Google Drive</translation>
 <translation id="4241182343707213132">Reiniciar o dispositivo para atualizar os apps da organização</translation>
 <translation id="4242145785130247982">Múltiplos certificados de clientes não são aceitos.</translation>
@@ -3852,7 +3811,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4285498937028063278">Soltar</translation>
 <translation id="428565720843367874">O software antivírus falhou inesperadamente ao verificar este arquivo.</translation>
 <translation id="4287099557599763816">Leitor de tela</translation>
-<translation id="428715201724021596">Conectando-se ao perfil. Pode levar alguns minutos..</translation>
+<translation id="428715201724021596">Conectando-se ao perfil. Isso pode levar alguns minutos.</translation>
 <translation id="4287157641315808225">Sim, ativar o ChromeVox</translation>
 <translation id="4287502603002637393">{MUTED_NOTIFICATIONS_COUNT,plural, =1{Mostrar}one{Mostrar tudo}other{Mostrar tudo}}</translation>
 <translation id="4289540628985791613">Visão geral</translation>
@@ -3871,7 +3830,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4305402730127028764">Copiar para <ph name="DEVICE_NAME" /></translation>
 <translation id="4305817255990598646">Alternar</translation>
 <translation id="4306119971288449206">Os apps precisam ser veiculados com o tipo de conteúdo "<ph name="CONTENT_TYPE" />"</translation>
-<translation id="4307992518367153382">Básicas</translation>
+<translation id="4307992518367153382">Básico</translation>
 <translation id="4309165024397827958">Permitir que apps e serviços do Android com permissão de localização usem o local do dispositivo. O Google pode coletar dados de local periodicamente e os usar de forma anônima para melhorar a precisão de local e os serviços com base em localização.</translation>
 <translation id="4309183709806093061">Compartilhar também o áudio do sistema. Este dispositivo vai ser silenciado para evitar feedback.</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K ativos)</translation>
@@ -3977,7 +3936,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4400632832271803360">Toque na tecla Iniciador e mantenha-a pressionada para alternar o comportamento das teclas de função</translation>
 <translation id="4400963414856942668">Você pode clicar no ícone da estrela para adicionar uma guia aos favoritos</translation>
 <translation id="4401912261345737180">Conecte-se com um código para transmitir</translation>
-<translation id="4402755511846832236">Impedir que sites saibam quando você está usando este dispositivo</translation>
 <translation id="4403012369005671154">Conversão de voz em texto</translation>
 <translation id="4403266582403435904">Restaure dados ou troque de dispositivo com facilidade a qualquer momento. Os backups são enviados ao Google e criptografados usando a senha da Conta do Google da criança.</translation>
 <translation id="4403775189117163360">Escolher uma pasta diferente</translation>
@@ -3996,6 +3954,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4412632005703201014">Os apps do Chrome estão migrando para Progressive Web Apps. Este app do Chrome foi instalado no navegador pela sua organização. Para abrir o Progressive Web App na página "Detalhes do app", primeiro entre em contato com o administrador e peça para desinstalar o app do Chrome. Enquanto isso, você pode acessar <ph name="EXTENSION_LAUNCH_URL" /> para abrir a extensão <ph name="EXTENSION_NAME" /> na Web.</translation>
 <translation id="4412698727486357573">Central de Ajuda</translation>
 <translation id="4412992751769744546">Permitir cookies de terceiros</translation>
+<translation id="4413087696295876280">Ler dados e informações do dispositivo ChromeOS Flex</translation>
 <translation id="44141919652824029">Permitir que o app <ph name="APP_NAME" /> receba a lista dos seus dispositivos USB conectados?</translation>
 <translation id="4414232939543644979">Nova janela &amp;anônima</translation>
 <translation id="4414648713167199100">Usa os dados móveis do seu Chromebook, o que pode aumentar o uso da bateria. Sujeito a cobranças extras da operadora. <ph name="BEGIN_LINK_LEARN_MORE" />Saiba mais<ph name="END_LINK_LEARN_MORE" /></translation>
@@ -4042,7 +4001,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4450974146388585462">Diagnosticar</translation>
 <translation id="445099924538929605">O <ph name="DEVICE_OS" /> detectou um TPM ativo que pode salvar dados com mais segurança.</translation>
 <translation id="4451479197788154834">Sua senha foi salva neste dispositivo e na sua Conta do Google</translation>
-<translation id="4451757071857432900">Bloqueados em sites que mostram anúncios invasivos ou enganosos (recomendado)</translation>
 <translation id="4452898361839215358">ou selecione um. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="4453430595102511050">Toque no sensor de impressão digital no canto superior direito do teclado. Seus dados de impressão digital são armazenados de forma segura e nunca saem do <ph name="DEVICE_TYPE" />.</translation>
 <translation id="4453946976636652378">Pesquisar no <ph name="SEARCH_ENGINE_NAME" /> ou digitar URL</translation>
@@ -4069,8 +4027,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4478664379124702289">Salvar &amp;link como...</translation>
 <translation id="4479424953165245642">Gerenciar aplicativos do quiosque</translation>
 <translation id="4479639480957787382">Ethernet</translation>
-<translation id="4479877282574735775">Configurando a máquina virtual. Pode levar alguns minutos..</translation>
-<translation id="4480590691557335796">O Chrome pode localizar softwares nocivos no seu computador e removê-los</translation>
+<translation id="4479877282574735775">Configurando a máquina virtual. Isso pode levar alguns minutos.</translation>
 <translation id="4481448477173043917">Seu <ph name="DEVICE_TYPE" /> reiniciou de maneira inesperada</translation>
 <translation id="4481467543947557978">service worker</translation>
 <translation id="4482990632723642375">Guia fechada recentemente</translation>
@@ -4108,7 +4065,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="451102079304155829">carrinhos</translation>
 <translation id="4513872120116766993">Escrita preditiva</translation>
 <translation id="4513946894732546136">Comentários</translation>
-<translation id="451407183922382411">Tecnologia da <ph name="COMPANY_NAME" /></translation>
 <translation id="4515872537870654449">Fale com a Dell para consertar. A base será desligada se a ventilação não estiver funcionando.</translation>
 <translation id="4518840066030486079">Estilo do modo da tecla Shift</translation>
 <translation id="4519331665958994620">Os sites podem pedir para usar a câmera</translation>
@@ -4127,7 +4083,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4528494169189661126">Sugestão de tradução</translation>
 <translation id="4528638190900283934">Faça login para ter acesso a mais recursos</translation>
 <translation id="4529455689802245339">A Legenda instantânea do Chrome pode não funcionar</translation>
-<translation id="4530494379350999373">Origem</translation>
 <translation id="4531924570968473143">Quem você quer adicionar a este <ph name="DEVICE_TYPE" />?</translation>
 <translation id="4532625150642446981">"<ph name="USB_DEVICE_NAME" />" está em uso. Reatribuir o dispositivo enquanto ele está sendo usado pode causar erros. Você quer mesmo continuar?</translation>
 <translation id="4532646538815530781">Este site está usando os sensores de movimento.</translation>
@@ -4141,7 +4096,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4538792345715658285">Instalada pela política empresarial.</translation>
 <translation id="4541123282641193691">Não foi possível verificar sua conta. Tente novamente ou reinicie o Chromebook.</translation>
 <translation id="4541662893742891060">Não é possível se conectar a esse perfil. Entre em contato com sua operadora para receber suporte técnico.</translation>
-<translation id="4541706525461326392">Removendo o perfil. Pode levar alguns minutos..</translation>
+<translation id="4541706525461326392">Removendo o perfil. Isso pode levar alguns minutos.</translation>
 <translation id="4542332958571335077">{NUM_PASSWORDS,plural, =1{1 senha importada para o Gerenciador de senhas do Google deste dispositivo}one{{NUM_PASSWORDS} senha importada para o Gerenciador de senhas do Google deste dispositivo}other{{NUM_PASSWORDS} senhas importadas para o Gerenciador de senhas do Google deste dispositivo}}</translation>
 <translation id="4542520061254486227">Leia seus dados em <ph name="WEBSITE_1" /> e <ph name="WEBSITE_2" /></translation>
 <translation id="4543778593405494224">Gerenciador de certificados</translation>
@@ -4199,7 +4154,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4586275095964870617">Não foi possível abrir <ph name="URL" /> em um navegador alternativo. Fale com o administrador do sistema.</translation>
 <translation id="4587589328781138893">Sites</translation>
 <translation id="4589713469967853491">Os registros foram gravados no diretório Downloads.</translation>
-<translation id="4590324241397107707">Armazenamento de banco de dados</translation>
 <translation id="459204634473266369">Nenhum dispositivo salvo na conta <ph name="PRIMARY_EMAIL" /></translation>
 <translation id="4592525994536856567">A navegação e a pesquisa estão mais rápidas.</translation>
 <translation id="4592891116925567110">App de desenho com a stylus</translation>
@@ -4218,7 +4172,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4602466770786743961">Sempre permitir que <ph name="HOST" /> acesse sua câmera e seu microfone</translation>
 <translation id="4606551464649945562">Não permitir que os sites criem um mapa 3D do ambiente a sua volta ou acompanhem a posição da câmera</translation>
 <translation id="4608500690299898628">&amp;Buscar...</translation>
-<translation id="4609987916561367134">Permitir o uso do JavaScript</translation>
 <translation id="4610162781778310380">O plug-in <ph name="PLUGIN_NAME" /> encontrou um erro</translation>
 <translation id="4610637590575890427">Você quis ir a <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">Conexão de dados disponível</translation>
@@ -4230,7 +4183,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4617001782309103936">Muito curto</translation>
 <translation id="4617270414136722281">Opções de extensão</translation>
 <translation id="4617880081511131945">Não é possível estabelecer uma conexão</translation>
-<translation id="4618195822946934889">O URL só permite caracteres ASCII</translation>
 <translation id="4619564267100705184">Confirmar sua identidade</translation>
 <translation id="4619615317237390068">Guias de outros dispositivos</translation>
 <translation id="4620809267248568679">Esta configuração é aplicada por uma extensão.</translation>
@@ -4295,7 +4247,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4667027203988048332">Quais dados são usados:</translation>
 <translation id="4668279686271488041">Os dados de medição de anúncios são excluídos regularmente do seu dispositivo</translation>
 <translation id="4672759829555593783">Abrir <ph name="FILE_NAME" /> agora</translation>
-<translation id="46733273239502219">Os dados off-line em apps instalados também serão removidos</translation>
 <translation id="4673442866648850031">Abrir ferramentas da stylus quando a stylus for removida</translation>
 <translation id="4675065861091108046">Anteriormente, você escolheu permitir todas as extensões em <ph name="ORIGIN" /></translation>
 <translation id="4675828034887792601">Criar atalhos para pesquisar em sites e gerenciar seu mecanismo de pesquisa</translation>
@@ -4364,7 +4315,6 @@ Use Ctrl + Alt + Diminuir brilho para diminuir o zoom.</translation>
 <translation id="4735506354605317060">Circular ponteiro</translation>
 <translation id="4735793370946506039">Saiba mais sobre a Navegação segura com maior proteção.</translation>
 <translation id="4735803855089279419">Falha do sistema ao determinar os identificadores do dispositivo.</translation>
-<translation id="4736292055110123391">Sincronize favoritos, senhas, histórico e muito mais em todos os seus dispositivos</translation>
 <translation id="473775607612524610">Atualizar</translation>
 <translation id="473936925429402449">Selecionado, conteúdo extra <ph name="CURRENT_ELEMENT" /> de <ph name="TOTAL_ELEMENTS" /></translation>
 <translation id="4739639199548674512">Tíquetes</translation>
@@ -4416,6 +4366,7 @@ Use Ctrl + Alt + Diminuir brilho para diminuir o zoom.</translation>
 <translation id="4789550509729954245">Mostrar notificação quando dispositivos estiverem compartilhando itens por perto</translation>
 <translation id="4791037424585594169">(UDP)</translation>
 <translation id="4792290259143007505">Ativar aceleração do TrackPoint</translation>
+<translation id="4792510204382653691">Abrir a Chrome Web Store</translation>
 <translation id="4792711294155034829">&amp;Informar um problema...</translation>
 <translation id="4794810983896241342">As atualizações são gerenciadas pelo <ph name="BEGIN_LINK" />seu administrador<ph name="END_LINK" /></translation>
 <translation id="479536056609751218">Página da web, somente HTML</translation>
@@ -4560,8 +4511,6 @@ Use Ctrl + Alt + Diminuir brilho para diminuir o zoom.</translation>
 <translation id="4906490889887219338">Configurar ou gerenciar compartilhamentos de arquivos em rede. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="4907129260985716018">Escolha quando esta extensão pode ler e alterar os dados do site</translation>
 <translation id="4907161631261076876">Esse arquivo não é transferido com frequência e pode ser perigoso.</translation>
-<translation id="4907306957610201395">Categoria de permissão</translation>
-<translation id="4908070840805457717">Repetir a tecla pressionada</translation>
 <translation id="4908811072292128752">Abra uma nova guia para navegar em dois sites de uma vez</translation>
 <translation id="4909038193460299775">Como essa conta é gerenciada por <ph name="DOMAIN" />, seus favoritos, histórico, senhas e outras configurações serão excluídos desse dispositivo. No entanto, seus dados permanecerão armazenados na sua Conta do Google e poderão ser gerenciados no <ph name="BEGIN_LINK" />Painel do Google<ph name="END_LINK" />.</translation>
 <translation id="4912643508233590958">Ativações do estado ocioso</translation>
@@ -4648,7 +4597,6 @@ Use Ctrl + Alt + Diminuir brilho para diminuir o zoom.</translation>
 <translation id="4997086284911172121">Sem conexão com a Internet.</translation>
 <translation id="4998430619171209993">Ativado</translation>
 <translation id="4999804342505941663">Ativar o Não perturbe</translation>
-<translation id="5000922062037820727">Bloqueada (recomendado)</translation>
 <translation id="5001526427543320409">Cookies de terceiros</translation>
 <translation id="5005498671520578047">Copiar senha</translation>
 <translation id="5006118752738286774">2 anos atrás</translation>
@@ -4656,7 +4604,7 @@ Use Ctrl + Alt + Diminuir brilho para diminuir o zoom.</translation>
 <translation id="5007392906805964215">Revisar</translation>
 <translation id="50080882645628821">Remover perfil</translation>
 <translation id="5008936837313706385">Nome da atividade</translation>
-<translation id="5009463889040999939">Renomeando o perfil. Pode levar alguns minutos..</translation>
+<translation id="5009463889040999939">Renomeando o perfil. Isso pode levar alguns minutos.</translation>
 <translation id="5010043101506446253">Autoridade de certificação</translation>
 <translation id="501057610015570208">O app com o atributo de manifesto "kiosk_only" precisa ser instalado no modo quiosque do ChromeOS Flex</translation>
 <translation id="5010886807652684893">Exibição visual</translation>
@@ -4714,7 +4662,6 @@ Use Ctrl + Alt + Diminuir brilho para diminuir o zoom.</translation>
 <translation id="5067399438976153555">Sempre ativado</translation>
 <translation id="5067867186035333991">Perguntar se <ph name="HOST" /> deseja acessar seu microfone</translation>
 <translation id="5068553687099139861">mostrar as senhas</translation>
-<translation id="5068918910148307423">Não permitir que sites fechados recentemente concluam o envio e o recebimento de dados</translation>
 <translation id="5068919226082848014">Pizza</translation>
 <translation id="5070710277167211639">Fazer upgrade das navegações para HTTPS e enviar um aviso antes de carregar sites que não são compatíveis com esse protocolo</translation>
 <translation id="5070773577685395116">Não recebeu?</translation>
@@ -4740,6 +4687,7 @@ Use Ctrl + Alt + Diminuir brilho para diminuir o zoom.</translation>
 <translation id="5086874064903147617">Restaurar página inicial padrão?</translation>
 <translation id="5087249366037322692">Adicionada por um terceiro</translation>
 <translation id="5087580092889165836">Adicionar cartão</translation>
+<translation id="5088427648965532275">Provedor de Passpoint</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512 com criptografia RSA</translation>
 <translation id="5089763948477033443">Alça de redimensionamento do painel lateral</translation>
 <translation id="5090637338841444533">Bloquear o monitoramento da posição da câmera</translation>
@@ -4802,7 +4750,6 @@ Use Ctrl + Alt + Diminuir brilho para diminuir o zoom.</translation>
 <translation id="5145464978649806571">Se você se afastar do dispositivo, a tela vai ser bloqueada automaticamente. Quando estiver em frente ao dispositivo, a tela vai ficar ativada por mais tempo. Se a tela de bloqueio estiver desativada, o dispositivo vai ser suspenso em vez de bloqueado.</translation>
 <translation id="514575469079499857">Usar seu endereço IP para determinar o local (padrão)</translation>
 <translation id="5146896637028965135">Voz do sistema</translation>
-<translation id="5147103632304200977">Perguntar quando um site quiser acessar dispositivos HID (recomendado)</translation>
 <translation id="5148277445782867161">Os Serviços de localização do Google usam fontes como Wi-Fi, redes móveis e sensores para estimar a localização do seu dispositivo.</translation>
 <translation id="5150254825601720210">Nome do servidor SSL do certificado do Netscape</translation>
 <translation id="5151354047782775295">Libere espaço em disco, ou dados específicos podem ser excluídos automaticamente</translation>
@@ -4835,7 +4782,7 @@ Use Ctrl + Alt + Diminuir brilho para diminuir o zoom.</translation>
 <translation id="5177549709747445269">Você está usando dados móveis</translation>
 <translation id="5178667623289523808">Localizar anterior</translation>
 <translation id="5181140330217080051">Fazendo download</translation>
-<translation id="5181172023548002891">No Gerenciador de senhas do Google da conta <ph name="ACCOUNT" /></translation>
+<translation id="5181172023548002891">Para o Gerenciador de senhas do Google da conta <ph name="ACCOUNT" /></translation>
 <translation id="5183344263225877832">Redefinir todas as permissões de dispositivos HID?</translation>
 <translation id="5184063094292164363">&amp;Console JavaScript</translation>
 <translation id="5184209580557088469">Já existe um tíquete com esse nome de usuário</translation>
@@ -4907,7 +4854,6 @@ Use Ctrl + Alt + Diminuir brilho para diminuir o zoom.</translation>
 <translation id="5250372599208556903">O <ph name="SEARCH_ENGINE_NAME" /> usa sua localização para que você tenha acesso a conteúdo local. É possível alterar isso em <ph name="SETTINGS_LINK" />.</translation>
 <translation id="5252496130205799136">Usar sua Conta do Google para salvar e preencher senhas?</translation>
 <translation id="5252653240322147470">O PIN deve ter menos de <ph name="MAXIMUM" /> dígitos</translation>
-<translation id="5254368820972107711">Mostrar arquivos a serem removidos</translation>
 <translation id="52550593576409946">Não foi possível iniciar o aplicativo Kiosk.</translation>
 <translation id="5255726914791076208">Quando você edita a chave de acesso, sua conta de <ph name="RP_ID" /> não muda.</translation>
 <translation id="5255859108402770436">Fazer login novamente</translation>
@@ -4972,7 +4918,6 @@ Use Ctrl + Alt + Diminuir brilho para diminuir o zoom.</translation>
 <translation id="5299109548848736476">Não rastrear</translation>
 <translation id="5299558715747014286">Ver e gerenciar seus grupos de guias</translation>
 <translation id="529986401483187205">desativada</translation>
-<translation id="5300287940468717207">Redefinir permissões do site?</translation>
 <translation id="5300426565656326054">Personalização de anúncios com base no navegador</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5300719150368506519">Enviar ao Google os URLs das páginas que você visita</translation>
@@ -5014,7 +4959,6 @@ Use Ctrl + Alt + Diminuir brilho para diminuir o zoom.</translation>
 <translation id="5338338064218053691">Você pode navegar com privacidade usando uma janela anônima</translation>
 <translation id="5338503421962489998">Armazenamento local</translation>
 <translation id="5339031667684712858">Sites que você removeu</translation>
-<translation id="5340638867532133571">Permitir que sites instalem gerenciadores de pagamento (recomendado)</translation>
 <translation id="5340787663756381836">Localizar e editar</translation>
 <translation id="5341793073192892252">Os cookies a seguir foram bloqueados (cookies de terceiros estão sendo bloqueados sem exceções)</translation>
 <translation id="5342091991439452114">O PIN deve ter no mínimo <ph name="MINIMUM" /> dígitos</translation>
@@ -5031,7 +4975,7 @@ Use Ctrl + Alt + Diminuir brilho para diminuir o zoom.</translation>
 <translation id="5355191726083956201">A Proteção reforçada está ativa</translation>
 <translation id="5355501370336370394">Registrar dispositivo de empresa</translation>
 <translation id="5355926466126177564">A extensão "<ph name="EXTENSION_NAME" />" alterou a página que é exibida quando você pesquisa na Omnibox.</translation>
-<translation id="5356155057455921522">Essa atualização do administrador fará com que os apps da organização abram mais rapidamente. Pode levar alguns minutos..</translation>
+<translation id="5356155057455921522">Essa atualização do administrador fará com que os apps da organização abram mais rapidamente. Isso pode levar alguns minutos.</translation>
 <translation id="5359910752122114278">1 resultado</translation>
 <translation id="5359944933953785675"><ph name="NUM" /> guia</translation>
 <translation id="5360150013186312835">Mostrar na barra de ferramentas</translation>
@@ -5059,7 +5003,6 @@ Use Ctrl + Alt + Diminuir brilho para diminuir o zoom.</translation>
 <translation id="5382591305415226340">Gerenciar links compatíveis</translation>
 <translation id="5383377866517186886">A câmera está desativada nas preferências do sistema do Mac</translation>
 <translation id="5383740867328871413">Grupo sem nome: <ph name="GROUP_CONTENTS" /> - <ph name="COLLAPSED_STATE" /></translation>
-<translation id="5385612634631487511"><ph name="EXTENSION_NAME" /> (ID: <ph name="EXTENSION_ID" />)</translation>
 <translation id="538822246583124912">A política da empresa mudou. O botão "Experimentos" foi adicionado à barra de ferramentas. Clique nele para abrir uma caixa de diálogo e ativar os experimentos.</translation>
 <translation id="5388885445722491159">Emparelhado</translation>
 <translation id="5390112241331447203">Incluir o arquivo system_logs.txt enviado nos relatórios de feedback.</translation>
@@ -5089,7 +5032,7 @@ Você pode atribuir vários interruptores a essa ação.</translation>
 
 As permissões que você já concedeu a sites e apps podem ser aplicadas a essa conta. É possível gerenciar suas Contas do Google nas <ph name="SETTINGS_LINK_BEGIN" />Configurações<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="5413640305322530561">Saiba mais sobre dados de uso e diagnóstico.</translation>
-<translation id="5414198321558177633">Atualizando a lista de perfis. Pode levar alguns minutos..</translation>
+<translation id="5414198321558177633">Atualizando a lista de perfis. Isso pode levar alguns minutos.</translation>
 <translation id="5414566801737831689">Ler os ícones dos websites que você visitar</translation>
 <translation id="5414836363063783498">Verificando...</translation>
 <translation id="5417312524372586921">Temas do navegador</translation>
@@ -5201,7 +5144,6 @@ As permissões que você já concedeu a sites e apps podem ser aplicadas a essa 
 <translation id="5502500733115278303">Importado do Firefox</translation>
 <translation id="5502915260472117187">Uma criança</translation>
 <translation id="5503982651688210506">Continuar permitindo que <ph name="HOST" /> use e mova sua câmera e use seu microfone</translation>
-<translation id="5505264765875738116">Os sites não podem pedir para enviar notificações</translation>
 <translation id="5505307013568720083">Sem tinta</translation>
 <translation id="5507756662695126555">Não repúdio</translation>
 <translation id="5509693895992845810">Salvar &amp;como...</translation>
@@ -5213,7 +5155,6 @@ As permissões que você já concedeu a sites e apps podem ser aplicadas a essa 
 <translation id="5514315914873062345">Tab</translation>
 <translation id="5517304475148761050">Este app precisa de acesso à Play Store</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" />: <ph name="NETWORK_DISPLAY_NAME" /></translation>
-<translation id="5518219166343146486">Perguntar quando um site quiser ver os textos e imagens copiados para a área de transferência</translation>
 <translation id="5518949581554491184">Configurar com um smartphone Android</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="5521078259930077036">Esta é a página inicial que você esperava?</translation>
@@ -5352,7 +5293,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5634446357546764049">Ver recordações das suas viagens recentes e mais</translation>
 <translation id="5635091213277904818">O Chrome exclui automaticamente sites que estão na lista há mais de 30 dias. Se você visitar um site novamente, ele poderá reaparecer na lista. Você também pode bloquear um site para que ele não sugira anúncios.</translation>
 <translation id="5635312199252507107">Permitir em sites específicos</translation>
-<translation id="563535393368633106">Perguntar antes de acessar (recomendado)</translation>
 <translation id="5636012309446422">Remover o dispositivo <ph name="DEVICE" /> de <ph name="PRIMARY_EMAIL" />?</translation>
 <translation id="5636996382092289526">Para usar <ph name="NETWORK_ID" />, talvez seja necessário primeiro <ph name="LINK_START" />visitar a página de login da rede<ph name="LINK_END" />, que abrirá automaticamente em alguns segundos. Se isso não acontecer, significa que a rede não pode ser usada.</translation>
 <translation id="5637476008227280525">Ativar dados móveis</translation>
@@ -5372,7 +5312,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5653154844073528838">Você tem <ph name="PRINTER_COUNT" /> impressoras salvas.</translation>
 <translation id="5655296450510165335">Registro do dispositivo</translation>
 <translation id="5656845498778518563">Enviar feedback para o Google</translation>
-<translation id="5657156137487675418">Permitir todos os cookies</translation>
+<translation id="5657156137487675418">Mostrar todos os cookies</translation>
 <translation id="5657667036353380798">A extensão externa requer que a versão <ph name="MINIMUM_CHROME_VERSION" /> do Google Chrome, ou mais recente, esteja instalada.</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5662513737565158057">Mude o funcionamento dos apps Linux.</translation>
@@ -5494,7 +5434,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5781092003150880845">Sincronizar como <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="5781865261247219930">Enviar comandos para <ph name="EXTENSION_NAME" /></translation>
 <translation id="5782227691023083829">Traduzindo...</translation>
-<translation id="5783304934509327739">Opções de acesso aos sites</translation>
 <translation id="57838592816432529">Desativar som</translation>
 <translation id="5785583009707899920">Utilitários de arquivos do Chrome</translation>
 <translation id="5787146423283493983">Acordo de chave</translation>
@@ -5560,6 +5499,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5832970156002835240">Permitir em todos os sites</translation>
 <translation id="5833397272224757657">Usa o conteúdo dos sites que você visita, além das interações e atividades do navegador, para personalização</translation>
 <translation id="5833726373896279253">Estas definições somente poderão ser alteradas pelo proprietário:</translation>
+<translation id="5833899990800318936">Não permitir que os sites usem JavaScript</translation>
 <translation id="583431638776747">O site não está disponível</translation>
 <translation id="5834581999798853053">Cerca de <ph name="TIME" /> minutos restantes</translation>
 <translation id="5835360478055379192">{NUM_EXTENSION,plural, =1{A extensão <ph name="EXTENSION1" /> está acessando 1 dispositivo HID}=2{Extensões acessando dispositivos: <ph name="EXTENSION1" />, <ph name="EXTENSION2" />}one{Extensões acessando dispositivos: <ph name="EXTENSION1" />, <ph name="EXTENSION2" /> e mais {3}}other{Extensões acessando dispositivos: <ph name="EXTENSION1" />, <ph name="EXTENSION2" /> e mais {3}}}</translation>
@@ -5592,7 +5532,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5857693745746757503">Economize US$ 50 ou mais em um novo Chromebook fazendo upgrade hoje mesmo</translation>
 <translation id="5858490737742085133">Terminal</translation>
 <translation id="585979798156957858">Meta externa</translation>
-<translation id="5860033963881614850">Desativada</translation>
+<translation id="5860033963881614850">Desativado</translation>
 <translation id="5860254591544742609">Mostrar barra de título</translation>
 <translation id="5860491529813859533">Ativar</translation>
 <translation id="5860494867054883682">Atualizando seu dispositivo para o canal <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -5641,7 +5581,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5900302528761731119">Foto do perfil do Google</translation>
 <translation id="590036993063074298">Detalhes da qualidade do espelhamento</translation>
 <translation id="5901069264981746702">Seus dados de impressão digital são armazenados de forma segura e nunca saem do <ph name="DEVICE_TYPE" />. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
-<translation id="5901089233978050985">Mudar para a guia que será capturada</translation>
+<translation id="5901089233978050985">Alternar para a guia que será capturada</translation>
 <translation id="5901494423252125310">A porta da impressora está aberta</translation>
 <translation id="5901630391730855834">Amarelo</translation>
 <translation id="5904614460720589786">Não foi possível definir o app <ph name="APP_NAME" /> devido a um problema de configuração. Entre em contato com o administrador. Código do erro: <ph name="ERROR_CODE" />.</translation>
@@ -5742,7 +5682,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5979353814339191480">Esta opção se aplica a Chromebooks com um plano de dados ou dongle de rede móvel, ou então a processos de tethering para pontos de acesso portáteis</translation>
 <translation id="5979421442488174909">&amp;Traduzir para o <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Para adicionar páginas aos favoritos, clique na estrela na barra de endereço</translation>
-<translation id="5981362776161841923">Para permitir uma extensão, mude a configuração padrão abaixo.</translation>
 <translation id="5982578203375898585">Mostrar os downloads quando eles forem concluídos</translation>
 <translation id="5984222099446776634">Visitados recentemente</translation>
 <translation id="5985458664595100876">Formato de URL inválido. Os formatos compatíveis são \\server\share e smb://server/share.</translation>
@@ -5791,6 +5730,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - Dispositivo USB conectado</translation>
 <translation id="6027945736510816438">Você quis dizer <ph name="WEBSITE" />?</translation>
 <translation id="6028117231645531007">Adicionar impressão digital</translation>
+<translation id="6030719887161080597">Gerencie as informações usadas por sites para avaliar a performance de anúncios</translation>
 <translation id="6031600495088157824">Opções de entrada na barra de ferramentas</translation>
 <translation id="6032715498678347852">Para conceder a uma extensão acesso a este site, clique nela.</translation>
 <translation id="6032912588568283682">Sistema de arquivos</translation>
@@ -5901,7 +5841,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6122095009389448667">Continuar impedindo que esse site veja a área de transferência</translation>
 <translation id="6122600716821516697">Compartilhar com esse dispositivo?</translation>
 <translation id="6122831415929794347">Desativar "Navegação segura"?</translation>
-<translation id="6124213551517593835">Essa ação vai apagar todos os dados e cookies armazenados por <ph name="SITE_GROUP_NAME" />, incluindo os dos sites relacionados</translation>
 <translation id="6124650939968185064">As extensões a seguir dependem desta extensão:</translation>
 <translation id="6124698108608891449">Este site precisa de outras permissões.</translation>
 <translation id="6125479973208104919">Adicione sua conta a esse <ph name="DEVICE_TYPE" /> novamente.</translation>
@@ -5962,7 +5901,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6177412385419165772">Removendo...</translation>
 <translation id="6178664161104547336">Selecione um certificado</translation>
 <translation id="6178682841350631965">Seus dados de login foram atualizados</translation>
-<translation id="6179893151569852357">Converter as teclas F em teclas da linha superior do ChromeOS</translation>
 <translation id="6180510783007738939">Ferramenta de linha</translation>
 <translation id="6180550893222597997">Qual senha de acesso você quer usar no app <ph name="APP_NAME" />?</translation>
 <translation id="6181431612547969857">Download bloqueado</translation>
@@ -6027,6 +5965,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="623755660902014047">Modo de leitura</translation>
 <translation id="6238767809035845642">Texto compartilhado de outro dispositivo</translation>
 <translation id="6238923052227198598">Manter a anotação mais recente na tela de bloqueio</translation>
+<translation id="6238982280403036866">Permitir o uso do JavaScript</translation>
 <translation id="6239558157302047471">Atualizar &amp;frame</translation>
 <translation id="6240821072888636753">Perguntar sempre</translation>
 <translation id="6241530762627360640">Acessar informações sobre dispositivos Bluetooth pareados com seu sistema e descobrir dispositivos Bluetooth nas proximidades.</translation>
@@ -6062,7 +6001,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6268252012308737255">Abrir com <ph name="APP" /></translation>
 <translation id="6270391203985052864">Os sites podem pedir para enviar notificações</translation>
 <translation id="6270770586500173387">Enviar <ph name="BEGIN_LINK2" />métricas<ph name="END_LINK2" /> e <ph name="BEGIN_LINK1" />informações sobre o sistema e apps<ph name="END_LINK1" /></translation>
-<translation id="6270896861225278704">card de jornadas</translation>
+<translation id="6270896861225278704">Card de jornadas</translation>
 <translation id="6271348838875430303">correção desfeita</translation>
 <translation id="6273677812470008672">Qualidade</translation>
 <translation id="6274202259872570803">Screencast</translation>
@@ -6081,9 +6020,8 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6285120108426285413">O arquivo <ph name="FILE_NAME" /> não costuma ser transferido por download e pode ser perigoso.</translation>
 <translation id="6285770818046456882">O dispositivo que estava fazendo o compartilhamento cancelou a transferência</translation>
 <translation id="6290613030083731160">Não há dispositivos disponíveis por perto. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
-<translation id="6291086328725007688">Verificando o código de ativação. Pode levar alguns minutos..</translation>
+<translation id="6291086328725007688">Verificando o código de ativação. Isso pode levar alguns minutos.</translation>
 <translation id="6291741848715722067">Código de confirmação</translation>
-<translation id="6291949900244949761">Perguntar quando um site quiser acessar dispositivos USB (recomendado)</translation>
 <translation id="6291953229176937411">&amp;Mostrar no Finder</translation>
 <translation id="6292699686837272722">as guias são encolhidas para uma largura média</translation>
 <translation id="6293862149782163840">O dispositivo <ph name="DEVICE_NAME" /> está desativado</translation>
@@ -6149,7 +6087,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="635609604405270300">Mantenha o dispositivo ligado</translation>
 <translation id="63566973648609420">Somente uma pessoa que tenha sua senha longa pode ler seus dados criptografados. A senha longa não é enviada para o Google ou armazenada por ele. Se você esquecer sua senha longa ou quiser alterar essa configuração, será necessário <ph name="BEGIN_LINK" />redefinir a sincronização<ph name="END_LINK" />.</translation>
 <translation id="6357305427698525450">Alguns links com suporte ainda serão abertos no app <ph name="APP_NAME" /> ou <ph name="APP_NAME_2" />.</translation>
-<translation id="6357794994761110294">Nenhuma extensão pode ler ou editar o site <ph name="SITE_NAME" /></translation>
 <translation id="6358884629796491903">Dragão</translation>
 <translation id="6361850914223837199">Detalhes do erro:</translation>
 <translation id="6362853299801475928">&amp;Informar um problema...</translation>
@@ -6164,7 +6101,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="636850387210749493">Registro da empresa</translation>
 <translation id="6370021412472292592">Não foi possível carregar o manifesto.</translation>
 <translation id="637135143619858508">Espaçadas</translation>
-<translation id="6372856076511744743">Remapear teclas</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">Repetir</translation>
 <translation id="6374635887697228982">Receber descontos?</translation>
@@ -6172,13 +6108,11 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6377268785556383139">1 resultado para "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6378392501584240055">Abrir em redes Wi-Fi</translation>
 <translation id="6380143666419481200">Aceitar e continuar</translation>
-<translation id="6382616130475191723">Receberam permissão para ler e modificar <ph name="SITE_NAME" /></translation>
 <translation id="6382958439467370461">Não há atalhos inativos</translation>
 <translation id="638418309848716977">Links compatíveis</translation>
 <translation id="6384275966486438344">Alterar suas configurações de pesquisa para: <ph name="SEARCH_HOST" /></translation>
 <translation id="63849924261838903">{NUM_TABS,plural, =1{Grupo sem nome: 1 guia}one{Grupo sem nome: # guia}other{Grupo sem nome: # guias}}</translation>
 <translation id="6385149369087767061">Conecte-se à Internet e tente novamente</translation>
-<translation id="6385543213911723544">Os sites podem salvar e ler os dados dos cookies</translation>
 <translation id="6385994920693662133">Aviso: o registro detalhado está ativado. Os registros abaixo podem incluir URLs ou outras informações sensíveis. Revise-os e confirme se você está de acordo com o envio dessas informações.</translation>
 <translation id="6387674443318562538">Divisão vertical</translation>
 <translation id="6388429472088318283">Idiomas de pesquisa</translation>
@@ -6191,6 +6125,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6396175271241405634">App do sistema</translation>
 <translation id="6398715114293939307">Remover Google Play Store</translation>
 <translation id="6398765197997659313">Sair do modo tela cheia</translation>
+<translation id="6399675241776343019">Negada</translation>
 <translation id="6399774419735315745">Espião</translation>
 <translation id="6400360390396538896">Sempre no site <ph name="ORIGIN" /></translation>
 <translation id="6401458660421980302">Para enviar esta guia a outro dispositivo, faça login no Chrome no outro aparelho</translation>
@@ -6199,7 +6134,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6404187344102273690">Jogos no Chromebook</translation>
 <translation id="6404511346730675251">Editar favorito</translation>
 <translation id="6406303162637086258">Simular reinicialização do navegador</translation>
-<translation id="6406506848690869874">Sincronização</translation>
+<translation id="6406506848690869874">Sincronizar</translation>
 <translation id="6406708970972405507">Configurações: <ph name="SECTION_TITLE" /></translation>
 <translation id="6407398811519202484">Com permissão para salvar dados no dispositivo</translation>
 <translation id="6408118934673775994">Ler e alterar seus dados em <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e <ph name="WEBSITE_3" /></translation>
@@ -6258,7 +6193,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="645286928527869380">Ideias de receitas</translation>
 <translation id="6452961788130242735">Problema de rede ou domínio incorreto</translation>
 <translation id="6453191633103419909">Qualidade da projeção de guia/tela</translation>
-<translation id="6453921811609336127">Para mudar para o próximo método de entrada, pressione <ph name="BEGIN_SHORTCUT" /><ph name="BEGIN_CTRL" />Ctrl<ph name="END_CTRL" /><ph name="SEPARATOR1" /><ph name="BEGIN_SHIFT" />Shift<ph name="END_SHIFT" /><ph name="SEPARATOR2" /><ph name="BEGIN_SPACE" />Espaço<ph name="END_SPACE" /><ph name="END_SHORTCUT" /></translation>
+<translation id="6453921811609336127">Para alternar para o próximo método de entrada, pressione <ph name="BEGIN_SHORTCUT" /><ph name="BEGIN_CTRL" />Ctrl<ph name="END_CTRL" /><ph name="SEPARATOR1" /><ph name="BEGIN_SHIFT" />Shift<ph name="END_SHIFT" /><ph name="SEPARATOR2" /><ph name="BEGIN_SPACE" />Espaço<ph name="END_SPACE" /><ph name="END_SHORTCUT" /></translation>
 <translation id="6455264371803474013">Em sites específicos</translation>
 <translation id="6455894534188563617">&amp;Nova pasta</translation>
 <translation id="645705751491738698">Continuar bloqueando JavaScript</translation>
@@ -6372,15 +6307,12 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6551612971599078809">O site está usando um dispositivo USB</translation>
 <translation id="6551739526055143276">Com gerenciamento pelo Family Link</translation>
 <translation id="655384502888039633"><ph name="USER_COUNT" /> usuários</translation>
-<translation id="655483977608336153">Tentar novamente</translation>
 <translation id="6555432686520421228">Remover todas as contas de usuário e redefinir seu dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> para as condições de fábrica.</translation>
 <translation id="6555604601707417276">Backup do Linux restaurado</translation>
-<translation id="6555810572223193255">A limpeza está indisponível no momento</translation>
 <translation id="6556866813142980365">Refazer</translation>
 <translation id="6556903358015358733">Tema e plano de fundo</translation>
 <translation id="6557290421156335491">Meus atalhos</translation>
 <translation id="6560151649238390891">Sugestão inserida</translation>
-<translation id="6561560012278703671">Usar mensagens mais silenciosas (bloqueia notificações que interrompem você)</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="6562117348069327379">Armazenar registros do sistema no diretório Downloads.</translation>
 <translation id="656293578423618167">O caminho ou nome do arquivo é muito longo. Salve com um nome mais curto ou em outro local.</translation>
@@ -6408,7 +6340,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6586099239452884121">Navegação como visitante</translation>
 <translation id="6586213706115310390">Acesse o Google Assistente sempre que você disser "Ok Google".</translation>
 <translation id="6586451623538375658">Trocar botão principal do mouse</translation>
-<translation id="6587958707401001932">Escolha sua configuração padrão</translation>
 <translation id="6588043302623806746">Usar DNS seguro</translation>
 <translation id="6588047202935130957">Uma lista de interesses pode aparecer aqui conforme você navega na Web</translation>
 <translation id="659005207229852190">A "confirmação de segurança" foi concluída.</translation>
@@ -6574,7 +6505,7 @@ Há # outras senhas comprometidas. O Gerenciador de senhas do Google recomenda q
 <translation id="67269783048918309">Envie dados de uso e diagnóstico. No momento, este dispositivo está enviando automaticamente ao Google dados de diagnóstico, de uso de apps e do dispositivo. Eles não serão usados para identificar seu filho e ajudarão a melhorar o sistema, a estabilidade de apps e muito mais. Alguns dados agregados também ajudarão os apps do Google e os nossos parceiros, como os desenvolvedores Android. Essa <ph name="BEGIN_LINK1" />configuração<ph name="END_LINK1" /> é aplicada pelo proprietário. Se a configuração "Atividade na Web e de apps adicional" estiver ativada para seu filho, esses dados poderão ser salvos na Conta do Google dele. <ph name="BEGIN_LINK2" />Saiba mais<ph name="END_LINK2" /></translation>
 <translation id="6728528977475057549">IBAN com final <ph name="LAST_FOUR_DIGITS" /></translation>
 <translation id="6729192290958770680">Digite seu nome de usuário</translation>
-<translation id="6731320427842222405">Pode levar alguns minutos.</translation>
+<translation id="6731320427842222405">Isso pode levar alguns minutos</translation>
 <translation id="6733620523445262364">O favorito "<ph name="BOOKMARK_TITLE" />" foi criado.</translation>
 <translation id="6735304988756581115">Mostrar cookies e outros dados do site...</translation>
 <translation id="6736243959894955139">Endereço</translation>
@@ -6585,7 +6516,6 @@ Há # outras senhas comprometidas. O Gerenciador de senhas do Google recomenda q
 <translation id="6739923123728562974">Mostrar atalho na área de trabalho</translation>
 <translation id="6740234557573873150"><ph name="FILE_NAME" /> pausado</translation>
 <translation id="6741063444351041466"><ph name="BEGIN_LINK" />Seu administrador<ph name="END_LINK" /> desativou o "Navegação segura"</translation>
-<translation id="6742339027238151589">Acessível ao script</translation>
 <translation id="6742629250739345159">Cria legendas automaticamente para conteúdo de mídia no navegador Chrome. Os áudios e as legendas são processados localmente e nunca deixam o dispositivo.</translation>
 <translation id="6743841972744298686">Configurações de sincronização</translation>
 <translation id="6745592621698551453">Atualizar agora</translation>
@@ -6616,7 +6546,6 @@ Há # outras senhas comprometidas. O Gerenciador de senhas do Google recomenda q
 <translation id="677646486571529447">Adicionar uma observação</translation>
 <translation id="6776589734354015877">Acesse mais recursos</translation>
 <translation id="6776729248872343918">Ativar "Pareamento rápido"</translation>
-<translation id="677778081766640955">Mantenha a tecla pressionada para alternar entre as teclas F e as ações do ChromeOS</translation>
 <translation id="6777817260680419853">Redirecionamento bloqueado</translation>
 <translation id="6779092717724412415">Para criar um destaque como esse, selecione qualquer trecho do texto e clique nele com o botão direito do mouse.</translation>
 <translation id="6779447100905857289">seus carrinhos</translation>
@@ -6678,7 +6607,6 @@ Há # outras senhas comprometidas. O Gerenciador de senhas do Google recomenda q
 <translation id="6812841287760418429">Manter alterações</translation>
 <translation id="6813907279658683733">Tela cheia</translation>
 <translation id="6815376457351236663">Abrir mesmo assim</translation>
-<translation id="6817174620439930047">Perguntar quando um site quiser usar mensagens exclusivas do sistema para acessar dispositivos MIDI (recomendado)</translation>
 <translation id="6818198425579322765">Idioma de origem da página</translation>
 <translation id="6818547713623251698">Ver os arquivos de mídia, fotos, notificações e apps do smartphone</translation>
 <translation id="6818802132960437751">Proteção antivírus integrada</translation>
@@ -6767,7 +6695,6 @@ Há # outras senhas comprometidas. O Gerenciador de senhas do Google recomenda q
 <translation id="689007770043972343">Tente arrastar outras guias abertas para o grupo</translation>
 <translation id="6892812721183419409">Abrir link como <ph name="USER" /></translation>
 <translation id="6893164346922798247">eSpeak</translation>
-<translation id="6895032998810961280">Enviar ao Google detalhes sobre softwares nocivos, configurações do sistema e processos encontrados no seu computador durante a limpeza</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6897363604023044284">Selecionar sites para limpar</translation>
 <translation id="6897688156970667447">Útil em ambientes com pouca luz e economiza bateria</translation>
@@ -6790,7 +6717,6 @@ Há # outras senhas comprometidas. O Gerenciador de senhas do Google recomenda q
 <translation id="6906095067383230422">{NUM_MINS,plural, =1{Para proteger suas senhas, o Gerenciador de senhas do Google é bloqueado depois de 1 minuto de inatividade.}one{Para proteger suas senhas, o Gerenciador de senhas do Google é bloqueado depois de {NUM_MINS} minuto de inatividade.}other{Para proteger suas senhas, o Gerenciador de senhas do Google é bloqueado depois de {NUM_MINS} minutos de inatividade.}}</translation>
 <translation id="6909422577741440844">Receber desse dispositivo?</translation>
 <translation id="6910211073230771657">Excluído</translation>
-<translation id="691106080621596509">Essa ação vai apagar todos os dados e cookies armazenados por <ph name="SITE_GROUP_NAME" />, incluindo os dos sites relacionados e os do app instalado</translation>
 <translation id="6911734910326569517">Ocupação da memória</translation>
 <translation id="6912007319859991306">PIN do chip da rede celular</translation>
 <translation id="6912380255120084882">Tente usar outro dispositivo</translation>
@@ -6891,6 +6817,7 @@ Há # outras senhas comprometidas. O Gerenciador de senhas do Google recomenda q
 <translation id="6993000214273684335">Guia removida do grupo sem nome: <ph name="GROUP_CONTENTS" /></translation>
 <translation id="6993050154661569036">Atualizando o navegador Chrome</translation>
 <translation id="6995899638241819463">Avisar se suas senhas forem expostas em uma violação de dados</translation>
+<translation id="6995984090981858039">Ler dados e informações do dispositivo ChromeOS</translation>
 <translation id="6997553674029032185">Acessar o site</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" />: registro de atividades</translation>
 <translation id="6997707937646349884">Nos seus dispositivos:</translation>
@@ -6972,7 +6899,6 @@ Há # outras senhas comprometidas. O Gerenciador de senhas do Google recomenda q
 <translation id="7057767408836081338">Falha ao acessar os dados do app. Tentando executá-lo mesmo assim…</translation>
 <translation id="7058024590501568315">Rede oculta</translation>
 <translation id="7059858479264779982">Definir para abertura automática</translation>
-<translation id="7062222374113411376">Permitir que sites fechados recentemente concluam o envio e o recebimento de dados (recomendado)</translation>
 <translation id="7063129466199351735">Processando atalhos...</translation>
 <translation id="7063311912041006059">URL com <ph name="SPECIAL_SYMBOL" /> no lugar da consulta</translation>
 <translation id="706342288220489463">Permita que o Google Assistente use as informações exibidas na tela para ajudar você</translation>
@@ -7085,16 +7011,16 @@ Há # outras senhas comprometidas. O Gerenciador de senhas do Google recomenda q
 <translation id="7182791023900310535">Mover sua senha</translation>
 <translation id="7186088072322679094">Manter na barra de ferramentas</translation>
 <translation id="7186303001964993981"><ph name="ORIGIN" /> não pode abrir esta pasta porque ela contém arquivos do sistema</translation>
-<translation id="7187428571767585875">Entradas de registro que devem ser removidas ou alteradas:</translation>
 <translation id="7188508872042490670">Dados do site no dispositivo</translation>
 <translation id="7189234443051076392">Verifique se há espaço suficiente no seu dispositivo</translation>
 <translation id="7189451821249468368">Você não tem upgrades suficientes para registrar esse dispositivo. Fale com o departamento de vendas para adquirir mais. Se acredita que recebeu esta mensagem por engano, entre em contato com o suporte.</translation>
-<translation id="7189965711416741966">Impressão digital registrada.</translation>
+<translation id="7189965711416741966">Impressão digital adicionada.</translation>
 <translation id="7191063546666816478">Alguns links com suporte ainda serão abertos no app <ph name="APP_NAME" />, <ph name="APP_NAME_2" />, <ph name="APP_NAME_3" /> e em <ph name="NUMBER_OF_OTHER_APPS" /> outros apps.</translation>
 <translation id="7191159667348037">Impressora desconhecida (USB)</translation>
 <translation id="7193051357671784796">Este app foi adicionado pela sua organização. Reinicie o app para concluir a instalação.</translation>
 <translation id="7193374945610105795">Nenhuma senha salva para <ph name="ORIGIN" /></translation>
 <translation id="7194873994243265344">Sua organização bloqueou esse arquivo porque ele está criptografado. Peça para o proprietário descriptografar.</translation>
+<translation id="7196107899576756066">{COUNT,plural, =1{1 download em andamento}one{# download em andamento}other{# downloads em andamento}}</translation>
 <translation id="7196272782924897510">Quer mesmo usar uma senha de acesso de outro dispositivo?</translation>
 <translation id="7196913789568937443">Fazer backup no Google Drive. Restaure seus dados com facilidade ou troque de dispositivo a qualquer momento. O backup inclui dados de apps. Ele é enviado ao Google e criptografado usando a senha da sua Conta do Google. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="7197190419934240522">Aproveite a tecnologia do Google e da Pesquisa sempre que navegar</translation>
@@ -7188,7 +7114,6 @@ Há # outras senhas comprometidas. O Gerenciador de senhas do Google recomenda q
 <translation id="727441411541283857"><ph name="PERCENTAGE" />% - <ph name="TIME" /> até completar a carga</translation>
 <translation id="727595954130325265">Comprar agora</translation>
 <translation id="727952162645687754">Erro no download</translation>
-<translation id="7280041992884344566">Ocorreu um erro enquanto o Chrome estava procurando softwares nocivos</translation>
 <translation id="7280649757394340890">Configurações da conversão de texto em voz</translation>
 <translation id="7280877790564589615">Permissão solicitada</translation>
 <translation id="7282056103720203738">Ler informações e dados dos dispositivos conectados</translation>
@@ -7220,9 +7145,8 @@ Há # outras senhas comprometidas. O Gerenciador de senhas do Google recomenda q
 <translation id="7307129035224081534">Pausada</translation>
 <translation id="7308643132139167865">Idiomas de sites</translation>
 <translation id="7310598146671372464">Não foi possível fazer login. O servidor não é compatível com os tipos de criptografia do Kerberos especificados. Entre em contato com seu administrador.</translation>
-<translation id="7311089766378749632">Solicitação para ler e fazer mudanças em <ph name="SITE_NAME" /></translation>
 <translation id="7311244614769792472">Nenhum resultado encontrado</translation>
-<translation id="7312210124139670355">O administrador está redefinindo o eSIM. Pode levar alguns minutos..</translation>
+<translation id="7312210124139670355">O administrador está redefinindo o eSIM. Isso pode levar alguns minutos.</translation>
 <translation id="7317831949569936035">Registro escolar</translation>
 <translation id="7320213904474460808">Usar rede como padrão</translation>
 <translation id="7321545336522791733">Servidor inacessível</translation>
@@ -7352,7 +7276,6 @@ Há # outras senhas comprometidas. O Gerenciador de senhas do Google recomenda q
 <translation id="742130257665691897">Favoritos removidos</translation>
 <translation id="7421925624202799674">&amp;Exibir código fonte da página</translation>
 <translation id="7422192691352527311">Preferências...</translation>
-<translation id="7423098979219808738">Perguntar primeiro</translation>
 <translation id="7423425410216218516">A visibilidade está ativada por <ph name="MINUTES" /> minutos</translation>
 <translation id="7423513079490750513">Remover <ph name="INPUT_METHOD_NAME" /></translation>
 <translation id="7423807071740419372">O app <ph name="APP_NAME" /> precisa de permissão para ser executado</translation>
@@ -7469,7 +7392,6 @@ Há # outras senhas comprometidas. O Gerenciador de senhas do Google recomenda q
 <translation id="7523117833414447032">Ao ler letras maiúsculas</translation>
 <translation id="7523585675576642403">Renomear perfil</translation>
 <translation id="7525067979554623046">Criar</translation>
-<translation id="7526658513669652747">{NUM_DOWNLOADS,plural, =1{Mais 1}one{Mais {NUM_DOWNLOADS}}other{Mais {NUM_DOWNLOADS}}}</translation>
 <translation id="7526989658317409655">Marcador</translation>
 <translation id="7527758104894292229">Atualize a senha na sua Conta do Google <ph name="ACCOUNT" /></translation>
 <translation id="7528224636098571080">Não abrir</translation>
@@ -7564,7 +7486,6 @@ Há # outras senhas comprometidas. O Gerenciador de senhas do Google recomenda q
 <translation id="7612401678989660900">Dê acesso a apps e sites com a permissão do microfone</translation>
 <translation id="7612655942094160088">Ativar recursos do smartphone conectado.</translation>
 <translation id="7612989789287281429">Fazendo login…</translation>
-<translation id="7614260613810441905">Perguntar quando um site quiser editar arquivos ou pastas do dispositivo (recomendado)</translation>
 <translation id="761530003705945209">Fazer backup no Google Drive Restaure seus dados ou troque de dispositivo a qualquer momento com facilidade. Seu backup inclui dados do app. Seus backups são enviados para o Google e criptografados usando a senha da sua Conta do Google.</translation>
 <translation id="7615365294369022248">Ocorreu um erro ao adicionar uma conta</translation>
 <translation id="7615807797520072741">Redefinir para o Chrome clássico</translation>
@@ -7576,7 +7497,7 @@ Há # outras senhas comprometidas. O Gerenciador de senhas do Google recomenda q
 <translation id="7622114377921274169">Carregando.</translation>
 <translation id="7622768823216805500">Os sites geralmente instalam gerenciadores de pagamento para recursos de compras, como finalizações de compra facilitadas</translation>
 <translation id="7622903810087708234">Detalhes da senha</translation>
-<translation id="7622966771025050155">Mudar para a guia capturada</translation>
+<translation id="7622966771025050155">Alternar para a guia capturada</translation>
 <translation id="7624337243375417909">tecla caps lock desativada</translation>
 <translation id="7625568159987162309">Ver permissões e dados armazenados em sites</translation>
 <translation id="7625823789272218216">Nova guia à esquerda</translation>
@@ -7745,7 +7666,6 @@ Pressione um interruptor ou tecla atribuídos para remover a atribuição.</tran
 <translation id="7751260505918304024">Exibir todos</translation>
 <translation id="7751619076382363711">Você não removeu nenhum site</translation>
 <translation id="7753735457098489144">Falha na instalação devido à falta de espaço de armazenamento. Para liberar espaço, exclua arquivos do armazenamento do dispositivo.</translation>
-<translation id="7754347746598978109">Bloquear o uso do JavaScript</translation>
 <translation id="7754704193130578113">Perguntar onde salvar cada arquivo antes de fazer download</translation>
 <translation id="7757592200364144203">Mudar o nome do dispositivo</translation>
 <translation id="7757739382819740102">Os contatos por perto podem compartilhar com você. Será necessária a aprovação.</translation>
@@ -7852,7 +7772,7 @@ Pressione um interruptor ou tecla atribuídos para remover a atribuição.</tran
 <translation id="784273751836026224">Desinstalar Linux</translation>
 <translation id="7844992432319478437">Atualizando diff</translation>
 <translation id="7846634333498149051">Teclado</translation>
-<translation id="7847212883280406910">Pressione Ctrl + Alt + S para mudar para <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
+<translation id="7847212883280406910">Pressione Ctrl + Alt + S para alternar para <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="7848244988854036372">Abrir tudo (<ph name="URL_COUNT" />) em um novo grupo de guias</translation>
 <translation id="7849264908733290972">Abrir &amp;imagem em uma nova guia</translation>
 <translation id="784934925303690534">Período</translation>
@@ -7881,7 +7801,6 @@ Pressione um interruptor ou tecla atribuídos para remover a atribuição.</tran
 <translation id="787069710204604994">Por exemplo, se você visitar um site que vende tênis de corrida de longa distância, ele poderá decidir que você tem interesse em corridas de maratona. Quando você visitar outro site depois disso, é possível que ele mostre um anúncio de tênis de corrida sugerido pelo primeiro site.</translation>
 <translation id="7870730066603611552">Revisar as opções de sincronização após a configuração</translation>
 <translation id="7870790288828963061">Nenhum aplicativo de quiosque com versão mais recente foi encontrado. Não há nada para ser atualizado. Remova o pendrive.</translation>
-<translation id="7871049986386271121">Sempre neste site</translation>
 <translation id="7871109039747854576">Usar as teclas <ph name="COMMA" /> e <ph name="PERIOD" /> para localizar uma lista de candidatos</translation>
 <translation id="7871691770940645922">Tela virtual em braille</translation>
 <translation id="787268756490971083">Desativado</translation>
@@ -8057,7 +7976,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8014154204619229810">O atualizador está sendo executado no momento. Aguarde um minuto e atualize para verificar novamente.</translation>
 <translation id="8014206674403687691">Não foi possível reverter o produto <ph name="IDS_SHORT_PRODUCT_NAME" /> para a versão anteriormente instalada. Tente executar novamente o Powerwash no seu dispositivo.</translation>
 <translation id="8015812716978143">Mostrar todos os downloads em uma nova guia</translation>
-<translation id="8016266267177410919">Armazenamento temporário</translation>
 <translation id="8017176852978888182">Diretórios compartilhados do Linux</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Atalho editado</translation>
@@ -8236,7 +8154,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8163708146810922598">mais antigo</translation>
 <translation id="8165997195302308593">Encaminhamento de portas do Crostini</translation>
 <translation id="816704878106051517">{COUNT,plural, =1{um número de telefone}one{# número de telefone}other{# números de telefone}}</translation>
-<translation id="8168071266284693455">Favoritos, senhas, histórico e muito mais estão sincronizados em todos os seus dispositivos</translation>
 <translation id="8168435359814927499">Conteúdo</translation>
 <translation id="8169165065843881617">{NUM_TABS,plural, =1{Adicionar guia à lista de leitura}one{Adicionar guia à lista de leitura}other{Adicionar guias à lista de leitura}}</translation>
 <translation id="8171334254070436367">Ocultar todos os cards</translation>
@@ -8258,7 +8175,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8182664696082410784"><ph name="REASON" />
     Não acho que este site deva ser bloqueado.</translation>
 <translation id="8183703640399301650">O EID do seu dispositivo é <ph name="EID_NUMBER" />, e o IMEI é <ph name="IMEI_NUMBER" />. Esses números podem ser usados para ativar o serviço.</translation>
-<translation id="8184288427634747179">Mudar para <ph name="AVATAR_NAME" /></translation>
+<translation id="8184288427634747179">Alternar para <ph name="AVATAR_NAME" /></translation>
 <translation id="8184318863960255706">Mais informações</translation>
 <translation id="8184472985242519288">Uniforme</translation>
 <translation id="8186609076106987817">O servidor não encontrou o arquivo.</translation>
@@ -8270,7 +8187,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8192944472786724289">O app <ph name="APP_NAME" /> quer compartilhar o conteúdo da sua tela.</translation>
 <translation id="8193195501228940758">Remover <ph name="WEBSITE" /></translation>
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />Seus dispositivos<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
-<translation id="8195027750202970175">Tamanho em disco</translation>
 <translation id="8195191503358432289">Adicionar senha</translation>
 <translation id="8195265224453131880">Intensidade</translation>
 <translation id="8195737548602430447">Traduzir legendas automaticamente para um idioma de destino.</translation>
@@ -8377,7 +8293,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8275080796245127762">Ligar do seu dispositivo</translation>
 <translation id="8275339871947079271">Mova a senha para sua Conta do Google para que você possa acessá-la com segurança onde quer que a conta esteja conectada</translation>
 <translation id="8276560076771292512">Esvaziar cache e recarregamento forçado</translation>
-<translation id="8281721647184388851">Ativar a sincronização do navegador Chrome?</translation>
 <translation id="8281886186245836920">Pular</translation>
 <translation id="8284279544186306258">todos os sites de <ph name="WEBSITE_1" /></translation>
 <translation id="8284326494547611709">Legendas</translation>
@@ -8463,7 +8378,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="835951711479681002">Salvar na sua Conta do Google</translation>
 <translation id="8360140320636871023">Personalizar o tema da tela</translation>
 <translation id="8360267485906769442">Botão "Enviar feedback"</translation>
-<translation id="8362914115861174987">Traduzir para </translation>
+<translation id="8362914115861174987">Traduzir para o</translation>
 <translation id="8363095875018065315">estável</translation>
 <translation id="8363142353806532503">Microfone bloqueado</translation>
 <translation id="8366396658833131068">Sua conectividade de rede foi restaurada. Selecione outra rede ou pressione o botão "Continuar" abaixo para iniciar seu aplicativo de quiosque.</translation>
@@ -8519,7 +8434,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="84098433273647700">Tema instalado no momento.</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8412136526970428322">Permitidos: <ph name="PERMISSION" /> e mais <ph name="COUNT" /></translation>
-<translation id="8413385045638830869">Perguntar primeiro (recomendado)</translation>
 <translation id="8413956290606243087">Você quer ativar o ChromeVox, o leitor de tela integrado do ChromeOS?</translation>
 <translation id="8414249071344507766">As recordações estão ocultas por dois dias</translation>
 <translation id="8414396119627470038">Fazer login no <ph name="SITE_ETLD_PLUS_ONE" /> com <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /></translation>
@@ -8545,7 +8459,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8428271547607112339">Adicionar conta escolar</translation>
 <translation id="8428628598981198790">Sua chave de segurança não pode ser usada com este site</translation>
 <translation id="84297032718407999">Você será desconectado em <ph name="LOGOUT_TIME_LEFT" /></translation>
-<translation id="8430963319679282846">Se você segurar uma tecla, o caractere dela será repetido</translation>
 <translation id="8431190899827883166">Mostrar toques</translation>
 <translation id="8434480141477525001">Porta de depuração de Cliente nativo</translation>
 <translation id="8437209419043462667">EUA</translation>
@@ -8623,7 +8536,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8503813439785031346">Nome de usuário</translation>
 <translation id="850382998924680137">Visto hoje</translation>
 <translation id="8507227974644337342">Resolução da tela</translation>
-<translation id="850875081535031620">Nenhum software perigoso encontrado</translation>
 <translation id="8509177919508253835">Redefinir chaves de segurança e criar PINs</translation>
 <translation id="8509646642152301857">Falha no download do dicionário de correção ortográfica.</translation>
 <translation id="8509967119010808787">Para pesquisar suas guias, clique aqui</translation>
@@ -8693,7 +8605,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8576885347118332789">{NUM_TABS,plural, =1{Adicionar guia à lista de leitura}one{Adicionar guia à lista de leitura}other{Adicionar guias à lista de leitura}}</translation>
 <translation id="8577052309681449949">Cliques automáticos, tamanho do cursor, cor do cursor e muito mais</translation>
 <translation id="8578639784464423491">Não pode exceder 99 letras</translation>
-<translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8581809080475256101">Pressione para avançar ao menu de contexto e ver o histórico</translation>
 <translation id="8584280235376696778">&amp;Abrir vídeo em uma nova guia</translation>
 <translation id="8584427708066927472">A senha foi excluída deste dispositivo</translation>
@@ -8730,7 +8641,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8617748779076050570">Código da conexão segura: <ph name="CONNECTION_ID" /></translation>
 <translation id="8619803522055190423">Sombra projetada</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
-<translation id="8621866727807194849">Há um software nocivo no seu computador. O Chrome está removendo-o, restaurando suas configurações e desativando as extensões. Assim, o navegador voltará a funcionar normalmente.</translation>
 <translation id="8621979332865976405">Compartilhar toda a tela</translation>
 <translation id="8624315169751085215">Copiar para a área de transferência</translation>
 <translation id="8624354461147303341">Ver descontos</translation>
@@ -8746,7 +8656,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8627804903623428808">Leia estes termos e tenha controle sobre os dados da criança</translation>
 <translation id="8630338733867813168">Suspensão ao carregar</translation>
 <translation id="8631032106121706562">Bem-me-quer</translation>
-<translation id="863109444997383731">Os sites serão impedidos de solicitar a exibição de notificações. Se um site solicitar notificações, um indicador de bloqueio aparecerá na barra de endereço.</translation>
 <translation id="8632104508818855045">Anteriormente, você escolheu não permitir nenhuma extensão em <ph name="ORIGIN" /></translation>
 <translation id="8633025649649592204">Atividade recente</translation>
 <translation id="8633979878370972178">Depois de dezembro de 2022, não vai mais ser possível abrir as versões antigas dos apps do Chrome em dispositivos Linux. Verifique se há uma nova versão disponível.</translation>
@@ -8756,7 +8665,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8636323803535540285">Para chegar aqui mais rapidamente, adicione um atalho ao <ph name="BRAND" /></translation>
 <translation id="8636500887554457830">Não permitir que os sites enviem pop-ups ou usem redirecionamentos</translation>
 <translation id="8637688295594795546">A atualização do sistema está disponível. Preparando para fazer download...</translation>
-<translation id="8639047128869322042">Procurando softwares perigosos…</translation>
 <translation id="8639635302972078117">Envie dados de uso e diagnóstico. No momento, este dispositivo está enviando automaticamente ao Google dados de diagnóstico, de uso de apps e do dispositivo. Eles não serão usados para identificar a criança e ajudarão a melhorar o sistema, a estabilidade de apps e muito mais. Alguns dados agregados também ajudarão os apps do Google e nossos parceiros, como os desenvolvedores Android. Se a configuração "Atividade na Web e de apps adicional" estiver ativada para a criança, esses dados poderão ser salvos na Conta do Google dela.</translation>
 <translation id="8640575194957831802">Aberto pela última vez</translation>
 <translation id="8642900771896232685">2 segundos</translation>
@@ -8865,7 +8773,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8720816553731218127">A inicialização dos atributos de tempo de instalação expirou.</translation>
 <translation id="8722912030556880711">Envie dados de uso e diagnóstico. No momento, este dispositivo está enviando automaticamente ao Google dados de diagnóstico, de uso de apps e do dispositivo. Eles ajudarão a melhorar o sistema, a estabilidade de apps e muito mais. Alguns dados agregados também ajudarão os apps do Google e os nossos parceiros, como os desenvolvedores Android. Se a configuração "Atividade na Web e de apps adicional" estiver ativada, esses dados poderão ser salvos na sua Conta do Google. <ph name="BEGIN_LINK2" />Saiba mais<ph name="END_LINK2" /></translation>
 <translation id="8724405322205516354">Sempre que vir este ícone, use sua impressão digital para se identificar ou aprovar compras.</translation>
-<translation id="8724409975248965964">Impressão digital registrada</translation>
+<translation id="8724409975248965964">Impressão digital adicionada</translation>
 <translation id="8724859055372736596">&amp;Mostrar na pasta</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8725178340343806893">Favoritos</translation>
@@ -9050,7 +8958,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8872155268274985541">Arquivo de manifesto de atualização externa do modo quiosque inválido encontrado. Falha ao atualizar o aplicativo de quiosque. Remova o pendrive.</translation>
 <translation id="8872506776304248286">Abrir no app</translation>
 <translation id="8872774989979382243">O som está desativado. Selecione para ativar.</translation>
-<translation id="8872777911145321141">Perguntar quando um site quiser usar seus dispositivos e dados de realidade virtual (recomendado)</translation>
 <translation id="887292602123626481">Saiba mais sobre os mecanismos de pesquisa padrão</translation>
 <translation id="8874341931345877644">Transmitir para um dispositivo:</translation>
 <translation id="8875520811099717934">Upgrade do Linux</translation>
@@ -9308,7 +9215,7 @@ As permissões que você já concedeu a sites e apps podem ser aplicadas a essa 
 <translation id="909554839118732438">Fechar navegação anônima</translation>
 <translation id="9096776523567481218">não está instalado localmente</translation>
 <translation id="9099220545925418560">Com base no seu histórico de navegação. Esta configuração está desativada.</translation>
-<translation id="9100416672768993722">Para mudar para o último método de entrada usado, pressione <ph name="BEGIN_SHORTCUT" /><ph name="BEGIN_CTRL" />Ctrl<ph name="END_CTRL" /><ph name="SEPARATOR" /><ph name="BEGIN_SPACE" />Espaço<ph name="END_SPACE" /><ph name="END_SHORTCUT" /></translation>
+<translation id="9100416672768993722">Para alternar para o último método de entrada usado, pressione <ph name="BEGIN_SHORTCUT" /><ph name="BEGIN_CTRL" />Ctrl<ph name="END_CTRL" /><ph name="SEPARATOR" /><ph name="BEGIN_SPACE" />Espaço<ph name="END_SPACE" /><ph name="END_SHORTCUT" /></translation>
 <translation id="9100765901046053179">Configurações avançadas</translation>
 <translation id="9101691533782776290">Iniciar aplicativo</translation>
 <translation id="9102610709270966160">Ativar extensão</translation>
@@ -9334,7 +9241,6 @@ As permissões que você já concedeu a sites e apps podem ser aplicadas a essa 
 <translation id="9113469270512809735">Alternar itens fechados recentemente</translation>
 <translation id="9114663181201435112">Fazer login de forma fácil</translation>
 <translation id="9115675100829699941">&amp;Favoritos</translation>
-<translation id="9116465289595958864">Última modificação</translation>
 <translation id="9116799625073598554">App de anotações</translation>
 <translation id="9117030152748022724">Gerenciar seus apps</translation>
 <translation id="9120693811286642342"><ph name="BEGIN_PARAGRAPH1" />Para ter a melhor experiência possível, instale o <ph name="DEVICE_OS" /> no seu disco interno. Você também pode o instalar mais tarde na tela de login.<ph name="END_PARAGRAPH1" />
@@ -9445,7 +9351,6 @@ As permissões que você já concedeu a sites e apps podem ser aplicadas a essa 
 <translation id="923467487918828349">Mostrar tudo</translation>
 <translation id="924818813611903184">Gerenciar idiomas nas configurações do ChromeOS</translation>
 <translation id="925270020047573546">Este dispositivo não tem suporte à transmissão do áudio do computador.</translation>
-<translation id="929117907539171075">Os dados off-line em apps instalados também serão removidos</translation>
 <translation id="930268624053534560">Timestamps detalhados</translation>
 <translation id="930551443325541578">Repetir teclas e acentos</translation>
 <translation id="930893132043726269">Está em roaming no momento</translation>
@@ -9456,7 +9361,6 @@ As permissões que você já concedeu a sites e apps podem ser aplicadas a essa 
 <translation id="93343527085570547">Acesse a <ph name="BEGIN_LINK1" />página de Ajuda Jurídica<ph name="END_LINK1" /> para solicitar alterações de conteúdo por motivos legais. Algumas informações podem ser enviadas ao Google, e elas serão usadas para resolver problemas técnicos e melhorar nossos serviços, de acordo com nossa <ph name="BEGIN_LINK2" />Política de Privacidade<ph name="END_LINK2" /> e nossos <ph name="BEGIN_LINK3" />Termos de Serviço<ph name="END_LINK3" />.</translation>
 <translation id="93393615658292258">Somente senha</translation>
 <translation id="934244546219308557">Dê um nome para este grupo</translation>
-<translation id="934503638756687833">Itens que não estão listados aqui também serão removidos, se necessário. Saiba mais sobre a &lt;a href="<ph name="URL" />"&gt;proteção contra softwares indesejados&lt;/a&gt; no artigo sobre privacidade do Chrome.</translation>
 <translation id="93480724622239549">Bug ou erro</translation>
 <translation id="936646668635477464">Câmera e microfone</translation>
 <translation id="936801553271523408">Dados de diagnóstico do sistema</translation>

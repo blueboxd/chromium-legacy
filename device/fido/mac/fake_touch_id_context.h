@@ -8,9 +8,7 @@
 #include "base/component_export.h"
 #include "device/fido/mac/touch_id_context.h"
 
-namespace device {
-namespace fido {
-namespace mac {
+namespace device::fido::mac {
 
 class API_AVAILABLE(macosx(10.12.2)) FakeTouchIdContext
     : public TouchIdContext {
@@ -39,8 +37,6 @@ class API_AVAILABLE(macosx(10.12.2)) FakeTouchIdContext
   bool resolve_next_prompt_ = true;
 };
 
-}  // namespace mac
-}  // namespace fido
-}  // namespace device
+}  // namespace device::fido::mac
 
 #endif  // DEVICE_FIDO_MAC_FAKE_TOUCH_ID_CONTEXT_H_

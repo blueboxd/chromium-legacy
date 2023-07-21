@@ -13,6 +13,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_serializable_tree.h"
+#include "url/gurl.h"
 
 class MockAXTreeDistiller : public AXTreeDistiller {
  public:
@@ -26,7 +27,8 @@ class MockAXTreeDistiller : public AXTreeDistiller {
               (override));
 };
 
-class MockReadAnythingPageHandler : public read_anything::mojom::PageHandler {
+class MockReadAnythingPageHandler
+    : public read_anything::mojom::UntrustedPageHandler {
  public:
   MockReadAnythingPageHandler() = default;
 
@@ -43,14 +45,14 @@ class MockReadAnythingPageHandler : public read_anything::mojom::PageHandler {
                int focus_offset),
               (override));
 
-  mojo::PendingRemote<read_anything::mojom::PageHandler>
+  mojo::PendingRemote<read_anything::mojom::UntrustedPageHandler>
   BindNewPipeAndPassRemote() {
     return receiver_.BindNewPipeAndPassRemote();
   }
   void FlushForTesting() { receiver_.FlushForTesting(); }
 
  private:
-  mojo::Receiver<read_anything::mojom::PageHandler> receiver_{this};
+  mojo::Receiver<read_anything::mojom::UntrustedPageHandler> receiver_{this};
 };
 
 class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
@@ -91,6 +93,7 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
     snapshot.nodes[2].id = 3;
     snapshot.nodes[3].id = 4;
     SetUpdateTreeID(&snapshot);
+    root_id_ = snapshot.root_id;
 
     // Send the snapshot to the controller and set its tree ID to be the active
     // tree ID. When the accessibility event is received and unserialized, the
@@ -152,7 +155,11 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
   }
 
   void OnActiveAXTreeIDChanged(const ui::AXTreeID& tree_id) {
-    controller_->OnActiveAXTreeIDChanged(tree_id, ukm::kInvalidSourceId);
+    OnActiveAXTreeIDChanged(tree_id, GURL::EmptyGURL());
+  }
+
+  void OnActiveAXTreeIDChanged(const ui::AXTreeID& tree_id, const GURL& url) {
+    controller_->OnActiveAXTreeIDChanged(tree_id, ukm::kInvalidSourceId, url);
   }
 
   void OnAXTreeDistilled(const std::vector<ui::AXNodeID>& content_node_ids) {
@@ -200,6 +207,8 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
 
   float LetterSpacing() { return controller_->LetterSpacing(); }
 
+  bool isSelectable() { return controller_->isSelectable(); }
+
   std::vector<ui::AXNodeID> GetChildren(ui::AXNodeID ax_node_id) {
     return controller_->GetChildren(ax_node_id);
   }
@@ -228,6 +237,8 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
     controller_->OnLinkClicked(ax_node_id);
   }
 
+  void ClearSelection() { controller_->ClearSelection(); }
+
   void OnSelectionChange(ui::AXNodeID anchor_node_id,
                          int anchor_offset,
                          ui::AXNodeID focus_node_id,
@@ -247,6 +258,7 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
   ui::AXTreeID ActiveTreeId() { return controller_->model_.active_tree_id(); }
 
   ui::AXTreeID tree_id_;
+  ui::AXNodeID root_id_;
   MockAXTreeDistiller* distiller_ = nullptr;
   testing::StrictMock<MockReadAnythingPageHandler> page_handler_;
 
@@ -741,6 +753,35 @@ TEST_F(ReadAnythingAppControllerTest, OnActiveAXTreeIDChanged) {
   OnActiveAXTreeIDChanged(tree_ids[2]);
 }
 
+TEST_F(ReadAnythingAppControllerTest,
+       OnActiveAXTreeIDChanged_DocsLabeledNotSelectable) {
+  ui::AXTreeUpdate update;
+  ui::AXTreeID id_1 = ui::AXTreeID::CreateNewAXTreeID();
+  SetUpdateTreeID(&update, id_1);
+  update.root_id = 1;
+  update.nodes.resize(1);
+  update.nodes[0].id = 1;
+  AccessibilityEventReceived({update});
+  OnAXTreeDistilled({1});
+  EXPECT_CALL(*distiller_, Distill).Times(1);
+  OnActiveAXTreeIDChanged(id_1, GURL("www.google.com"));
+  EXPECT_TRUE(isSelectable());
+
+  ui::AXTreeUpdate update_1;
+  SetUpdateTreeID(&update_1, tree_id_);
+  update_1.root_id = 1;
+  update_1.nodes.resize(1);
+  update_1.nodes[0].id = 1;
+  AccessibilityEventReceived({update_1});
+  OnAXTreeDistilled({1});
+  EXPECT_CALL(*distiller_, Distill).Times(1);
+  OnActiveAXTreeIDChanged(
+      tree_id_, GURL("https://docs.google.com/document/d/"
+                     "1t6x1PQaQWjE8wb9iyYmFaoK1XAEgsl8G1Hx3rzfpoKA/"
+                     "edit?ouid=103677288878638916900&usp=docs_home&ths=true"));
+  EXPECT_FALSE(isSelectable());
+}
+
 TEST_F(ReadAnythingAppControllerTest, DoesNotCrashIfActiveAXTreeIDUnknown) {
   EXPECT_CALL(*distiller_, Distill).Times(0);
   ui::AXTreeID tree_id = ui::AXTreeIDUnknown();
@@ -1122,8 +1163,15 @@ TEST_F(ReadAnythingAppControllerTest, OnSelectionChange) {
   OnSelectionChange(anchor_node_id, anchor_offset, focus_node_id, focus_offset);
 }
 
-TEST_F(ReadAnythingAppControllerTest,
-       OnSelectionChange_ClickDoesNotUpdateSelection) {
+TEST_F(ReadAnythingAppControllerTest, ClearSelection) {
+  EXPECT_CALL(page_handler_,
+              OnSelectionChange(tree_id_, root_id_, 0, root_id_, 0))
+      .Times(1);
+  ClearSelection();
+  page_handler_.FlushForTesting();
+}
+
+TEST_F(ReadAnythingAppControllerTest, OnSelectionChange_ClickClearsSelection) {
   ui::AXTreeUpdate update;
   SetUpdateTreeID(&update);
   update.nodes.resize(3);
@@ -1133,15 +1181,58 @@ TEST_F(ReadAnythingAppControllerTest,
   update.nodes[0].role = ax::mojom::Role::kStaticText;
   update.nodes[1].role = ax::mojom::Role::kStaticText;
   update.nodes[2].role = ax::mojom::Role::kStaticText;
+  AccessibilityEventReceived({update});
   ui::AXNodeID anchor_node_id = 2;
   int anchor_offset = 15;
   ui::AXNodeID focus_node_id = 2;
   int focus_offset = 15;
   EXPECT_CALL(page_handler_,
+              OnSelectionChange(tree_id_, root_id_, 0, root_id_, 0))
+      .Times(1);
+  OnSelectionChange(anchor_node_id, anchor_offset, focus_node_id, focus_offset);
+  page_handler_.FlushForTesting();
+}
+
+TEST_F(ReadAnythingAppControllerTest,
+       OnSelectionChange_ClickAfterSelectionClearsSelection) {
+  ui::AXTreeUpdate selection_update;
+  SetUpdateTreeID(&selection_update);
+  selection_update.nodes.resize(3);
+  selection_update.nodes[0].id = 2;
+  selection_update.nodes[1].id = 3;
+  selection_update.nodes[2].id = 4;
+  selection_update.nodes[0].role = ax::mojom::Role::kStaticText;
+  selection_update.nodes[1].role = ax::mojom::Role::kStaticText;
+  selection_update.nodes[2].role = ax::mojom::Role::kStaticText;
+  AccessibilityEventReceived({selection_update});
+  ui::AXNodeID anchor_node_id = 2;
+  int anchor_offset = 0;
+  ui::AXNodeID focus_node_id = 3;
+  int focus_offset = 1;
+  EXPECT_CALL(page_handler_,
               OnSelectionChange(tree_id_, anchor_node_id, anchor_offset,
                                 focus_node_id, focus_offset))
-      .Times(0);
+      .Times(1);
   OnSelectionChange(anchor_node_id, anchor_offset, focus_node_id, focus_offset);
+
+  ui::AXTreeUpdate click_update;
+  SetUpdateTreeID(&click_update);
+  click_update.nodes.resize(3);
+  click_update.nodes[0].id = 2;
+  click_update.nodes[1].id = 3;
+  click_update.nodes[2].id = 4;
+  click_update.nodes[0].role = ax::mojom::Role::kStaticText;
+  click_update.nodes[1].role = ax::mojom::Role::kStaticText;
+  click_update.nodes[2].role = ax::mojom::Role::kStaticText;
+  AccessibilityEventReceived({click_update});
+  anchor_node_id = 2;
+  anchor_offset = 15;
+  focus_node_id = 2;
+  focus_offset = 15;
+  EXPECT_CALL(page_handler_,
+              OnSelectionChange(tree_id_, root_id_, 0, root_id_, 0))
+      .Times(1);
+  ClearSelection();
   page_handler_.FlushForTesting();
 }
 

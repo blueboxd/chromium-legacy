@@ -30,7 +30,6 @@
 <translation id="1145536944570833626">刪除現有資料。</translation>
 <translation id="1149401351239820326">到期月份</translation>
 <translation id="1150263420752757504">「<ph name="APP_NAME" />」將在 Chrome 中開啟。選擇繼續即表示您同意《<ph name="BEGIN_LINK1" />Google 服務條款<ph name="END_LINK1" />》以及 <ph name="BEGIN_LINK2" />Google Chrome 和 Chrome OS 的《附加服務條款》<ph name="END_LINK2" />。</translation>
-<translation id="1154704303112745282">無法離線載入頁面：<ph name="VIOLATED_URL" /></translation>
 <translation id="1173894706177603556">重新命名</translation>
 <translation id="1177863135347784049">自訂</translation>
 <translation id="1181037720776840403">移除</translation>
@@ -152,6 +151,7 @@
 <translation id="1810845389119482123">尚未完成初始同步處理設定</translation>
 <translation id="1829244130665387512">在網頁中尋找</translation>
 <translation id="1832459821645506983">是，我同意</translation>
+<translation id="185383612275551373">進行同步處理，取得 Google 提供的最相關內容</translation>
 <translation id="1854311313115643875">在試用期間，廣告評估功能會允許你造訪的網站向 Chrome 要求資訊，以便協助網站評估自家廣告的成效。廣告評估功能會盡可能降低網站之間分享的資訊，藉此限制跨網站追蹤。
 
 如果刪除所有或特定網站的瀏覽記錄，也會一併刪除相關的評估資訊。查看<ph name="BEGIN_LINK" />你的瀏覽記錄<ph name="END_LINK" />。</translation>
@@ -243,7 +243,6 @@
 <translation id="2386938421315164605">隱藏和取消隱藏主題</translation>
 <translation id="2390510615457643724">要再次下載「<ph name="FILE_NAME" />」(<ph name="FILE_SIZE" />) 嗎？</translation>
 <translation id="2394602618534698961">你下載的檔案會顯示在這裡</translation>
-<translation id="2407481962792080328">登入 Google 帳戶時，系統會啟用這項功能</translation>
 <translation id="2410754283952462441">選擇帳戶</translation>
 <translation id="2414886740292270097">深色</translation>
 <translation id="2426805022920575512">選擇其他帳戶</translation>
@@ -300,6 +299,7 @@
 <translation id="265156376773362237">標準預先載入模式</translation>
 <translation id="2656405586795711023">網頁應用程式</translation>
 <translation id="2669454659051515572">這部裝置的任何使用者都可以看到已下載的檔案</translation>
+<translation id="2688382350024736268">Chrome 現在只會在網站和應用程式間分享有限的資訊 (例如向使用者放送廣告的時段)，讓網站評估廣告成效。</translation>
 <translation id="2702516483241149200">新功能：分享可跳至這段文字的連結</translation>
 <translation id="2707726405694321444">重新整理頁面</translation>
 <translation id="271033894570825754">全新</translation>
@@ -333,7 +333,7 @@
 <translation id="2886836735871983413">瀏覽網路時，網站清單會顯示在這裡</translation>
 <translation id="2888126860611144412">關於 Chrome</translation>
 <translation id="2891154217021530873">停止載入網頁</translation>
-<translation id="2893180576842394309">Google 可能會使用你的歷史記錄，為你提供個人化的 Google 搜尋和其他服務</translation>
+<translation id="2893180576842394309">Google 可能會使用你的歷史記錄，為你提供個人化的搜尋服務和其他各項 Google 服務</translation>
 <translation id="2900528713135656174">建立活動</translation>
 <translation id="2901411048554510387">此處顯示的是與「<ph name="WEBSITE_TITLE" />」相關的建議</translation>
 <translation id="2904414404539560095">要共用分頁的裝置清單已開啟，顯示於整個畫面。</translation>
@@ -652,7 +652,7 @@
 <translation id="4619564267100705184">驗證身分</translation>
 <translation id="4634124774493850572">使用密碼</translation>
 <translation id="4637420359569396807">透過廣告評估，網站和應用程式間可分享特定類型的資料，以評估廣告成效，例如在一天中向使用者放送廣告的時段。</translation>
-<translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 組密碼外洩}other{# 組密碼外洩}}</translation>
+<translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{有 1 組密碼遭外洩}other{有 # 組密碼遭外洩}}</translation>
 <translation id="4650364565596261010">系統預設</translation>
 <translation id="465657074423018424">「安全瀏覽」功能可協助你防範詐騙網站。如果停用這項功能，在瀏覽網站時請提高警覺，尤其在輸入密碼前請特別留意。</translation>
 <translation id="4662373422909645029">暱稱不可包含數字</translation>
@@ -692,7 +692,6 @@
 如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">持卡人姓名</translation>
 <translation id="481574578487123132">連結的裝置</translation>
-<translation id="4818017973810341238"><ph name="VIOLATED_URL" /> 上的 Digital Asset Links 驗證失敗</translation>
 <translation id="4826163340425232009">登入底部功能表。</translation>
 <translation id="4831037795716408498">Download content</translation>
 <translation id="4834007576107377210">同時建議你查看搜尋引擎的操作說明 (如果有的話)，瞭解如何刪除搜尋記錄</translation>
@@ -888,7 +887,6 @@
 <translation id="5833984609253377421">分享連結</translation>
 <translation id="5834764604050996579">如要掃描 QR 圖碼，請允許 Chrome 使用你的攝影機</translation>
 <translation id="5839058148541733625">Chrome 恐龍</translation>
-<translation id="5842437907245493289">在書籤中按一下 [資料夾] 圖示即可整理所追蹤的產品</translation>
 <translation id="5853623416121554550">已暫停</translation>
 <translation id="5854512288214985237">不向 Google 傳送任何統計資料或當機報告</translation>
 <translation id="5855546874025048181">修正為：<ph name="REFINE_TEXT" /></translation>
@@ -949,7 +947,7 @@
 <translation id="6154478581116148741">在「設定」中開啟螢幕鎖定，即可從這部裝置匯出你的密碼</translation>
 <translation id="6159729262978459665">清除所有同步裝置上的記錄。</translation>
 <translation id="6162892189396105610">預先載入 Chrome 認為你可能造訪的網頁。</translation>
-<translation id="6186394685773237175">沒有任何密碼外洩</translation>
+<translation id="6186394685773237175">未發現任何外洩密碼</translation>
 <translation id="6192907950379606605">取得圖片說明</translation>
 <translation id="6193448654517602979">選取分頁</translation>
 <translation id="6196315980958524839">密碼會儲存至這部裝置上的 Google 密碼管理工具</translation>
@@ -990,7 +988,6 @@
 <translation id="6395288395575013217">連結</translation>
 <translation id="6397616442223433927">已恢復連線</translation>
 <translation id="6401458660421980302">如要將這個分頁傳送到其他裝置，請在該裝置上登入 Chrome</translation>
-<translation id="6402652558933147609"><ph name="VIOLATED_URL" /> 上發生 <ph name="ERROR_CODE" /> 錯誤</translation>
 <translation id="6404511346730675251">編輯書籤</translation>
 <translation id="6406506848690869874">同步</translation>
 <translation id="6407224748847589805">無法連線至你的電腦。請改用其他驗證選項。</translation>
@@ -1173,6 +1170,7 @@
 <translation id="7291910923717764901">已新增這個頁面的圖片說明</translation>
 <translation id="7293429513719260019">選取語言</translation>
 <translation id="729975465115245577">你的裝置沒有可儲存密碼檔案的應用程式。</translation>
+<translation id="7304072650267745798">Android 裝置可能會有類似的設定。如果 Chrome 和 Android 裝置上開啟了這項設定，廣告技術公司或許就能在你造訪的網站和使用的應用程式上評估廣告成效。</translation>
 <translation id="7304873321153398381">你目前處於離線狀態，因此 Chrome 無法檢查你的密碼。</translation>
 <translation id="7313188324932846546">輕觸即可設定同步功能</translation>
 <translation id="7332075081379534664">登入成功</translation>

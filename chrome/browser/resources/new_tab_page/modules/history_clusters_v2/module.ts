@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './module_header.js';
+
 import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -10,7 +12,7 @@ import {Cluster, URLVisit} from '../../history_cluster_types.mojom-webui.js';
 import {I18nMixin, loadTimeData} from '../../i18n_setup.js';
 import {HistoryClustersProxyImpl} from '../history_clusters/history_clusters_proxy.js';
 import {InfoDialogElement} from '../info_dialog';
-import {ModuleDescriptorV2, ModuleHeight} from '../module_descriptor.js';
+import {ModuleDescriptorV2} from '../module_descriptor.js';
 
 import {getTemplate} from './module.html.js';
 
@@ -112,4 +114,4 @@ async function createElement(): Promise<HTMLElement> {
 
 export const historyClustersV2Descriptor: ModuleDescriptorV2 =
     new ModuleDescriptorV2(
-        /*id=*/ 'history_clusters', ModuleHeight.DYNAMIC, createElement);
+        /*id=*/ 'history_clusters', createElement);

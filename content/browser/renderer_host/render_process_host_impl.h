@@ -327,10 +327,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void ResumeSocketManagerForRenderFrameHost(
       const GlobalRenderFrameHostId& render_frame_host_id) override;
 
-#if BUILDFLAG(IS_ANDROID)
   void SetAttributionReportingSupport(
       network::mojom::AttributionSupport) override;
-#endif
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
@@ -551,6 +549,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Returns true if a spare RenderProcessHost should be kept at all times.
   static bool IsSpareProcessKeptAtAllTimes();
+
+  // Iterate over all renderers and clear their in-memory resource cache.
+  static void ClearAllResourceCaches();
 
   // Helper method that allows crash reporting logic to determine if a
   // specific RenderProcessHost is the current spare process.

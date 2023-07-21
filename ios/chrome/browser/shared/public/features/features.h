@@ -95,9 +95,6 @@ BASE_DECLARE_FEATURE(kIOSLocationBarUseNativeContextMenu);
 // Feature flag that swaps the omnibox textfield implementation.
 BASE_DECLARE_FEATURE(kIOSNewOmniboxImplementation);
 
-// Feature flag to enable using Lens to search for images.
-BASE_DECLARE_FEATURE(kUseLensToSearchForImage);
-
 // Feature flag to enable the Lens entrypoint in the home screen widget.
 BASE_DECLARE_FEATURE(kEnableLensInHomeScreenWidget);
 
@@ -187,6 +184,11 @@ bool IsIndicateSyncErrorInOverflowMenuEnabled();
 
 // Feature flag to move the steady-state (unfocused) omnibox to the bottom.
 BASE_DECLARE_FEATURE(kBottomOmniboxSteadyState);
+
+// Returns true if `kBottomOmniboxSteadyState` feature flag is enabled.
+// This checks that the flag is enabled, not that the omnibox is currently at
+// the bottom.
+bool IsBottomOmniboxSteadyStateEnabled();
 
 // Feature flag to put all clipboard access onto a background thread. Any
 // synchronous clipboard access will always return nil/false.

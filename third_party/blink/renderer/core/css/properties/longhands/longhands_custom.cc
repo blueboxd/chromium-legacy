@@ -3212,6 +3212,10 @@ const CSSValue* FlexDirection::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.FlexDirection());
 }
 
+const CSSValue* FlexDirection::InitialValue() const {
+  return CSSIdentifierValue::Create(CSSValueID::kRow);
+}
+
 const CSSValue* FlexGrow::ParseSingleValue(CSSParserTokenRange& range,
                                            const CSSParserContext& context,
                                            const CSSParserLocalContext&) const {
@@ -3248,6 +3252,10 @@ const CSSValue* FlexWrap::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.FlexWrap());
+}
+
+const CSSValue* FlexWrap::InitialValue() const {
+  return CSSIdentifierValue::Create(CSSValueID::kNowrap);
 }
 
 const CSSValue* Float::CSSValueFromComputedStyleInternal(
@@ -4111,6 +4119,38 @@ const CSSValue* Height::CSSValueFromComputedStyleInternal(
                                                              style);
 }
 
+const CSSValue* PopoverShowDelay::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_parsing_utils::ConsumeTime(
+      range, context, CSSPrimitiveValue::ValueRange::kNonNegative);
+}
+
+const CSSValue* PopoverShowDelay::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) const {
+  return CSSNumericLiteralValue::Create(style.PopoverShowDelay(),
+                                        CSSPrimitiveValue::UnitType::kSeconds);
+}
+
+const CSSValue* PopoverHideDelay::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_parsing_utils::ConsumeTime(
+      range, context, CSSPrimitiveValue::ValueRange::kNonNegative);
+}
+
+const CSSValue* PopoverHideDelay::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) const {
+  return CSSNumericLiteralValue::Create(style.PopoverHideDelay(),
+                                        CSSPrimitiveValue::UnitType::kSeconds);
+}
+
 const CSSValue* HyphenateLimitChars::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
@@ -4640,14 +4680,14 @@ const blink::Color InternalForcedBackgroundColor::ColorIncludingFallback(
     alpha = style.InternalVisitedBackgroundColor()
                 .Resolve(style.GetInternalVisitedCurrentColor(),
                          style.UsedColorScheme(), &alpha_is_current_color)
-                .Alpha();
+                .AlphaAsInteger();
   } else {
     forced_current_color = style.GetInternalForcedCurrentColor(
         /* No is_current_color because we might not be forced_current_color */);
     alpha = style.BackgroundColor()
                 .Resolve(style.GetCurrentColor(), style.UsedColorScheme(),
                          &alpha_is_current_color)
-                .Alpha();
+                .AlphaAsInteger();
   }
 
   bool result_is_current_color;

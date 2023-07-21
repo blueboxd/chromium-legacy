@@ -34,30 +34,19 @@ bool IsSameDomCode(ui::DomCode a, ui::DomCode b);
 // Convert mouse action strings to enum values.
 MouseAction ConvertToMouseActionEnum(const std::string& mouse_action);
 
-// Update |position| according to |key| if |key| is arrow key.
-bool UpdatePositionByArrowKey(ui::KeyboardCode key, gfx::Point& position);
-
 // Return the input binding filtered by |binding_option| in |action|.
 InputElement* GetInputBindingByBindingOption(Action* action,
                                              BindingOption binding_option);
 
-// Clamp position |position| inside of the |parent_size| with padding of
-// |parent_padding|
-void ClampPosition(gfx::Point& position,
-                   const gfx::Size& ui_size,
-                   const gfx::Size& parent_size,
-                   int parent_padding = 0);
-
 // Return the current running version of Game controls. If it is not set, it's
 // Alpha version. Otherwise, it is AlphaV2+ version.
-absl::optional<std::string> GetCurrentSystemVersion();
+std::string GetCurrentSystemVersion();
 
 // Reset the focus to |view|.
 void ResetFocusTo(views::View* view);
 
-// TODO(b/260937747): Update or remove when removing flags
-// |kArcInputOverlayAlphaV2| or |kArcInputOverlayBeta|.
-bool AllowReposition();
+// TODO(b/253646354): This will be removed when removing the flag.
+bool IsBeta();
 
 }  // namespace arc::input_overlay
 

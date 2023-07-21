@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">Не ўдалося ажыццявіць DNS-пераўтварэнне</translation>
 <translation id="1018656279737460067">Скасавана</translation>
 <translation id="1022433422498218992">Агульныя налады</translation>
-<translation id="1022628058306505708">Рух Зямлі</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (патокаў: <ph name="THREAD_COUNT" />, <ph name="CPU_MAX_CLOCK_SPEED" /> ГГц)</translation>
 <translation id="1047773237499189053">З'явілася новая функцыя, націсніце стрэлку ўверх, каб даведацца больш.</translation>
 <translation id="1059913517121127803">Не ўдалося запусціць сканіраванне</translation>
@@ -235,7 +234,6 @@
 <translation id="2902312830803030883">Іншыя дзеянні</translation>
 <translation id="2926057806159140518">Увядзіце імя карыстальніка і пароль або адсканіруйце QR-код</translation>
 <translation id="2940811910881150316">Не ўдаецца пратэсціраваць прыладу. Каб пачаць тэсціраванне, адкрыйце яе вечка.</translation>
-<translation id="2981143481017883351">Эксклюзіўныя аб'екты для Chromebook ужо даступны</translation>
 <translation id="3008341117444806826">АБНАВІЦЬ</translation>
 <translation id="3009958530611748826">Выберыце папку для захавання</translation>
 <translation id="3017079585324758401">Фон</translation>
@@ -280,7 +278,6 @@
 <translation id="3360306038446926262">Вокны</translation>
 <translation id="3368922792935385530">Падключана</translation>
 <translation id="3369013195428705271">Сапраўды выдаліць гісторыю друку? Бягучыя заданні друку выдалены не будуць.</translation>
-<translation id="3386675685417744672">Эксклюзіўна для Chromebook</translation>
 <translation id="3404249063913988450">Уключыць застаўку</translation>
 <translation id="3413935475507503304">Каб працягнуць абнаўленне, націсніце "Далей".</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" /> %</translation>
@@ -295,6 +292,7 @@
 <translation id="3484914941826596830">Падчас абнаўлення ўбудаванага ПЗ не адключайце знешнюю прыладу і не выключайце камп'ютар. Гэта акно можна згарнуць. Абнаўленне зойме некалькі хвілін, і падчас яго знешняя прылада можа не працаваць.</translation>
 <translation id="3486220673238053218">азначэнне</translation>
 <translation id="3488065109653206955">Часткова актывавана</translation>
+<translation id="3502426834823382181">паглядзець усе праграмы</translation>
 <translation id="3510890413042482857">Адпраўляць <ph name="BEGIN_LINK1" />даныя адсочвання прадукцыйнасці<ph name="END_LINK1" /></translation>
 <translation id="3517001332549868749">Абнаўленне Chrome OS</translation>
 <translation id="3527036260304016759">Збой: невядомая памылка</translation>
@@ -358,7 +356,6 @@
 <translation id="404928562651467259">ПАПЯРЭДЖАННЕ</translation>
 <translation id="4054683689023980771">Спампоўваецца відарыс</translation>
 <translation id="4060260348856573701">Новая APN</translation>
-<translation id="4079743696465895866">Выбраць эксклюзіўныя творы для Chromebook</translation>
 <translation id="4093865285251893588">Відарыс профілю</translation>
 <translation id="409427325554347132">Захаваць даныя тэста</translation>
 <translation id="4095829376260267438">WPA2/WPA3</translation>
@@ -625,7 +622,6 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">Ёмістасць акумулятара зніжаецца па меры яго выкарыстання</translation>
 <translation id="6191293864534840972">Серверы даменных імён маюць няправільны фармат</translation>
-<translation id="6205145102504628069">Рух аблокаў</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223066887782788441">Выйсці з поўнаэкраннага рэжыму</translation>
 <translation id="6223752125779001553">Няма даступных сканераў</translation>
@@ -636,6 +632,7 @@
 <translation id="6278428485366576908">Тэма</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Уключыць цёмную тэму</translation>
+<translation id="6285899124799306373">адкрыць панэль запуску</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" />: тэст скасаваны</translation>
 <translation id="631063167932043783">Праграма "Агляд"</translation>
 <translation id="6319207335391420837">Абнаўленне ўбудаванага ПЗ прылады "<ph name="DEVICE_NAME" />"</translation>
@@ -651,6 +648,7 @@
 <translation id="6382182670717268353">Перадпрагляд застаўкі</translation>
 <translation id="6388847657025262518">Заела прыстасаванне сканера для падачы дакументаў. Праверце прыстасаванне і паўтарыце спробу.</translation>
 <translation id="6394634179843537518">Дадайце файл</translation>
+<translation id="6401427872449207797">пошук у браўзеры</translation>
 <translation id="6410257289063177456">Файлы відарысаў</translation>
 <translation id="641081527798843608">Супадзенне суб'екта</translation>
 <translation id="6412715219990689313">Убудаваная клавіятура</translation>
@@ -666,7 +664,6 @@
 <translation id="6494974875566443634">Наладжванне</translation>
 <translation id="6500818810472529210">Паглядзець вынік у Google Пошуку</translation>
 <translation id="650266656685499220">Каб стварыць альбомы, перайдзіце ў Google Фота</translation>
-<translation id="6505750420152840539">Ад відна да сцямна</translation>
 <translation id="6516990319416533844">Каб праверыць хуткасць зарадкі, пачакайце крыху, пакуль акумулятар дастаткова не разрадзіцца</translation>
 <translation id="6517239166834772319">Агляд</translation>
 <translation id="6526200165918397681">Прывесці ў адпаведнасць з колерам шпалер</translation>
@@ -875,6 +872,7 @@
 <translation id="8312330582793120272">прайграць медыязмесціва</translation>
 <translation id="8318753676953949627">Няма відарысаў</translation>
 <translation id="8329018942023753850">праграма "Калькулятар"</translation>
+<translation id="8335869473001018124">адкрыць пошук</translation>
 <translation id="8336739000755212683">Змяніць відарыс уліковага запісу на прыладзе</translation>
 <translation id="8347227221149377169">Заданні друку</translation>
 <translation id="8351855506390808906">Кропка дотыку для вызначэння клавіш</translation>

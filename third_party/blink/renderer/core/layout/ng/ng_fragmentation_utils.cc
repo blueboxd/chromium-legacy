@@ -113,29 +113,12 @@ EBreakBetween CalculateBreakBetweenValue(NGLayoutInputNode child,
                                          const NGBoxFragmentBuilder& builder) {
   if (child.IsInline())
     return EBreakBetween::kAuto;
-
-  // Since it's not an inline node, if we have a fragment at all, it has to be a
-  // box fragment.
-  const NGPhysicalBoxFragment* box_fragment = nullptr;
-  if (layout_result.Status() == NGLayoutResult::kSuccess) {
-    box_fragment = &To<NGPhysicalBoxFragment>(layout_result.PhysicalFragment());
-    if (!box_fragment->IsFirstForNode()) {
-      // If the node is resumed after a break, we are not *before* it anymore,
-      // so ignore values. We normally don't even consider breaking before a
-      // resumed node, since there normally is no container separation. The
-      // normal place to resume is at the very start of the fragmentainer -
-      // cannot break there!  However, there are cases where a node is resumed
-      // at a location past the start of the fragmentainer, e.g. when printing
-      // monolithic overflowing content.
-      return EBreakBetween::kAuto;
-    }
-  }
-
   EBreakBetween break_before = JoinFragmentainerBreakValues(
       child.Style().BreakBefore(), layout_result.InitialBreakBefore());
   break_before = builder.JoinedBreakBetweenValue(break_before);
   const NGConstraintSpace& space = builder.ConstraintSpace();
-  if (space.IsPaginated() && box_fragment &&
+  if (space.IsPaginated() &&
+      layout_result.Status() == NGLayoutResult::kSuccess &&
       !IsForcedBreakValue(builder.ConstraintSpace(), break_before)) {
     AtomicString current_name = builder.PageName();
     if (current_name == g_null_atom) {
@@ -143,7 +126,9 @@ EBreakBetween CalculateBreakBetweenValue(NGLayoutInputNode child,
     }
     // If the page name propagated from the child differs from what we already
     // have, we need to break before the child.
-    if (box_fragment->PageName() != current_name) {
+    const auto& fragment =
+        To<NGPhysicalBoxFragment>(layout_result.PhysicalFragment());
+    if (fragment.PageName() != current_name) {
       return EBreakBetween::kPage;
     }
   }
@@ -776,11 +761,8 @@ NGBreakStatus BreakBeforeChildIfNeeded(
         CalculateBreakBetweenValue(child, layout_result, *builder);
     if (IsForcedBreakValue(space, break_between)) {
       BreakBeforeChild(space, child, &layout_result, fragmentainer_block_offset,
-                       kBreakAppealPerfect, /* is_forced_break */ true, builder,
-                       /* block_size_override */ absl::nullopt,
-                       flex_column_break_info
-                           ? &flex_column_break_info->break_after
-                           : nullptr);
+                       kBreakAppealPerfect, /* is_forced_break */ true,
+                       builder);
       return NGBreakStatus::kBrokeBefore;
     }
   }
@@ -814,8 +796,7 @@ void BreakBeforeChild(const NGConstraintSpace& space,
                       absl::optional<NGBreakAppeal> appeal,
                       bool is_forced_break,
                       NGBoxFragmentBuilder* builder,
-                      absl::optional<LayoutUnit> block_size_override,
-                      EBreakBetween* flex_column_break_after) {
+                      absl::optional<LayoutUnit> block_size_override) {
 #if DCHECK_IS_ON()
   DCHECK(layout_result || block_size_override);
   if (layout_result && layout_result->Status() == NGLayoutResult::kSuccess) {
@@ -837,7 +818,7 @@ void BreakBeforeChild(const NGConstraintSpace& space,
 
   if (layout_result && space.ShouldPropagateChildBreakValues() &&
       !is_forced_break)
-    builder->PropagateChildBreakValues(*layout_result, flex_column_break_after);
+    builder->PropagateChildBreakValues(*layout_result);
 
   // We'll drop the fragment (if any) on the floor and retry at the start of the
   // next fragmentainer.
@@ -1173,10 +1154,9 @@ bool AttemptSoftBreak(const NGConstraintSpace& space,
   // Break before the child. Note that there may be a better break further up
   // with higher appeal (but it's too early to tell), in which case this
   // breakpoint will be replaced.
-  BreakBeforeChild(
-      space, child, layout_result, fragmentainer_block_offset, appeal_before,
-      /* is_forced_break */ false, builder, block_size_override,
-      flex_column_break_info ? &flex_column_break_info->break_after : nullptr);
+  BreakBeforeChild(space, child, layout_result, fragmentainer_block_offset,
+                   appeal_before,
+                   /* is_forced_break */ false, builder, block_size_override);
   return true;
 }
 

@@ -262,7 +262,7 @@
 <translation id="2704491540504985681">下载内容</translation>
 <translation id="2704606927547763573">已复制</translation>
 <translation id="2709516037105925701">自动填充</translation>
-<translation id="271033894570825754">新</translation>
+<translation id="271033894570825754">新建</translation>
 <translation id="2712127207578915686">无法打开该文件</translation>
 <translation id="2718352093833049315">仅限使用 Wi-Fi 时</translation>
 <translation id="2747003861858887689">上一个字段</translation>
@@ -407,6 +407,7 @@
 <translation id="3638472932233958418">预先加载网页</translation>
 <translation id="3661160521073045932">有可用的配置文件</translation>
 <translation id="3670030362669914947">卡号</translation>
+<translation id="3700134753671613714">登录后可获取您所有设备上保存的书签。</translation>
 <translation id="3709582977625132201">标记为未读</translation>
 <translation id="371230970611282515">预测危险事件并在此类事件发生前向您发出警告。</translation>
 <translation id="37207012422556617">热搜字词</translation>
@@ -546,7 +547,6 @@
 <translation id="4642472735733036929">已停止跟踪价格</translation>
 <translation id="4650125387981512669">继续以<ph name="FIRST_RUN_ACCOUNT_NAME" />的身份登录</translation>
 <translation id="4652817563047461855">确保您的密码始终安全，检查密码是否遭到泄露，并获取关于如何保障您的在线安全的建议。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">当您登录自己的 Google 帐号后，系统即会启用此功能。</translation>
 <translation id="4659667755519643272">进入标签页切换器</translation>
 <translation id="46614316059270592">保存密码</translation>
 <translation id="4666531726415300315">目前登录的帐号是 <ph name="EMAIL" />。
@@ -588,7 +588,6 @@
 <translation id="4844899002472726590">查看和修改您感兴趣的主题</translation>
 <translation id="4848999860252535517">要删除用于登录 <ph name="WEBSITE" /> 的密码吗？</translation>
 <translation id="4854345657858711387">设置密码</translation>
-<translation id="4856498338299082007">保存在您的 Google 帐号中</translation>
 <translation id="4858786880085262208">尽可能升级到 HTTPS。安全网站可能会内嵌不安全的内容。</translation>
 <translation id="4860895144060829044">拨打</translation>
 <translation id="4872323082491632254">检查密码</translation>
@@ -667,6 +666,7 @@
 <translation id="543338862236136125">修改密码</translation>
 <translation id="5433691172869980887">已复制用户名</translation>
 <translation id="5439599923922718668">经常访问</translation>
+<translation id="5439618055789623719">目前登录的帐号是 <ph name="USER_EMAIL" /></translation>
 <translation id="54401264925851789">网页安全信息</translation>
 <translation id="5443952882982198570">信用卡</translation>
 <translation id="5444892875087332195">书签</translation>
@@ -1121,7 +1121,6 @@
 <translation id="8248969482078657578">“闲置标签页”功能可帮助您保持专注</translation>
 <translation id="8261506727792406068">删除</translation>
 <translation id="8264966119170358612">您保存的密码中有一些已在非 Google 数据泄露事件中外泄。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">仅在该设备上</translation>
 <translation id="826614135184049678">您在 iPad 重置过程中退出了帐号 <ph name="USER_NAME" />。如需重新登录，请点按下方的“继续”。</translation>
 <translation id="8271720166617117963">接受并登录</translation>
 <translation id="8278938988428169257">输入字词或词组</translation>

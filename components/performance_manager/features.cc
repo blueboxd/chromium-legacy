@@ -28,10 +28,6 @@ BASE_FEATURE(kBackgroundTabLoadingFromPerformanceManager,
              "BackgroundTabLoadingFromPerformanceManager",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kBatterySaverModeAvailable,
-             "BatterySaverModeAvailable",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kPerformanceControlsPerformanceSurvey,
              "PerformanceControlsPerformanceSurvey",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -52,19 +48,6 @@ const base::FeatureParam<base::TimeDelta>
     kPerformanceControlsBatterySurveyLookback{
         &kPerformanceControlsBatteryPerformanceSurvey, "battery_lookback",
         base::Days(8)};
-
-// On ChromeOS, the adjustment generally seems to be around 3%, sometimes 2%. We
-// choose 3% because it gets us close enough, or overestimates (which is better
-// than underestimating in this instance).
-const base::FeatureParam<int>
-    kBatterySaverModeThresholdAdjustmentForDisplayLevel {
-  &kBatterySaverModeAvailable, "low_battery_threshold_adjustment",
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-      3,
-#else
-      0,
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-};
 
 BASE_FEATURE(kHeuristicMemorySaver,
              "HeuristicMemorySaver",
@@ -118,6 +101,27 @@ const base::FeatureParam<base::TimeDelta>
     kExpandedHighEfficiencyChipDiscardedDuration{
         &kMemorySavingsReportingImprovements,
         "expanded_high_efficiency_chip_discarded_duration", base::Hours(6)};
+
+const base::FeatureParam<int> kHighEfficiencyChartPmf25PercentileBytes{
+    &kMemorySavingsReportingImprovements,
+    "high_efficiency_chart_pmf_25_percentile_bytes", 62 * 1024 * 1024};
+const base::FeatureParam<int> kHighEfficiencyChartPmf50PercentileBytes{
+    &kMemorySavingsReportingImprovements,
+    "high_efficiency_chart_pmf_50_percentile_bytes", 112 * 1024 * 1024};
+const base::FeatureParam<int> kHighEfficiencyChartPmf75PercentileBytes{
+    &kMemorySavingsReportingImprovements,
+    "high_efficiency_chart_pmf_75_percentile_bytes", 197 * 1024 * 1024};
+
+const base::FeatureParam<double> kDiscardedTabTreatmentOpacity{
+    &kDiscardedTabTreatment, "discard_tab_treatment_opacity", 0.3};
+
+const base::FeatureParam<int> kDiscardedTabTreatmentOption{
+    &kDiscardedTabTreatment, "discard_tab_treatment_option",
+    static_cast<int>(DiscardTabTreatmentOptions::kFadeFullsizedFavicon)};
+
+BASE_FEATURE(kUseDeviceBatterySaverChromeOS,
+             "UseDeviceBatterySaverChromeOS",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #endif
 

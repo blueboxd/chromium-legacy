@@ -1162,6 +1162,10 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
               ->GetGraphicsResetStatusKHR() == GL_NO_ERROR)
     return shared_main_thread_contexts_;
 
+  if (is_context_result_fatal_) {
+    return nullptr;
+  }
+
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
       EstablishGpuChannelSync());
   if (!gpu_channel_host) {
@@ -1180,6 +1184,7 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
   // Enable automatic flushes to improve canvas throughput.
   // See https://crbug.com/880901
   bool automatic_flushes = true;
+
   // We use kGpuStreamIdDefault here, the same as in
   // PepperVideoDecodeContextProvider, so we don't need to handle
   // synchronization between the pepper context and the shared main thread
@@ -1192,8 +1197,11 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
       viz::command_buffer_metrics::ContextType::RENDERER_MAIN_THREAD,
       kGpuStreamIdDefault, kGpuStreamPriorityDefault);
   auto result = shared_main_thread_contexts_->BindToCurrentSequence();
-  if (result != gpu::ContextResult::kSuccess)
+  if (result != gpu::ContextResult::kSuccess) {
     shared_main_thread_contexts_ = nullptr;
+    is_context_result_fatal_ = result == gpu::ContextResult::kFatalFailure;
+  }
+
   return shared_main_thread_contexts_;
 }
 
@@ -1626,6 +1634,11 @@ void RenderThreadImpl::PurgePluginListCache(bool reload_pages) {
 #endif
 }
 
+void RenderThreadImpl::PurgeResourceCache(PurgeResourceCacheCallback callback) {
+  blink::WebCache::Clear();
+  std::move(callback).Run();
+}
+
 void RenderThreadImpl::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   TRACE_EVENT(
@@ -1835,12 +1848,10 @@ RenderThreadImpl::GetAttributionReportingSupport() {
   return attribution_support_;
 }
 
-#if BUILDFLAG(IS_ANDROID)
 void RenderThreadImpl::SetAttributionReportingSupport(
     network::mojom::AttributionSupport attribution_support) {
   attribution_support_ = attribution_support;
 }
-#endif
 
 std::unique_ptr<CodecFactory> RenderThreadImpl::CreateMediaCodecFactory(
     scoped_refptr<viz::ContextProviderCommandBuffer> context_provider,

@@ -823,6 +823,7 @@ export class FileTable extends Table {
     }
     icon.appendChild(this.renderCheckmark_());
     label.appendChild(icon);
+    label.appendChild(filelist.renderIconBadge(this.ownerDocument));
 
     label.entry = entry;
     label.className = 'detail-name';
@@ -1031,6 +1032,7 @@ export class FileTable extends Table {
                   'pinned',
                   'syncStatus',
                   'progress',
+                  'shortcut',
                 ])[0],
             util.isTeamDriveRoot(entry));
         listItem.toggleAttribute(

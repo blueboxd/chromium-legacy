@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
+#include "chrome/browser/ui/views/permissions/permission_prompt_bubble_one_origin_view.h"
 #include "chrome/browser/ui/views/permissions/permission_prompt_chip_model.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -123,12 +124,6 @@ void ChipController::OnPromptRemoved() {
                            ->GetWebContents()
                            .GetVisibility() == content::Visibility::HIDDEN;
   if (is_tab_hidden || !is_confirmation_showing_) {
-    ResetPermissionPromptChip();
-  }
-}
-
-void ChipController::OnRequestsFinalized() {
-  if (!is_confirmation_showing_) {
     ResetPermissionPromptChip();
   }
 }
@@ -513,8 +508,8 @@ void ChipController::OpenPermissionPromptBubble() {
   if (permission_prompt_model_->GetPromptStyle() ==
       PermissionPromptStyle::kChip) {
     // Loud prompt bubble
-    raw_ptr<PermissionPromptBubbleView> prompt_bubble =
-        new PermissionPromptBubbleView(
+    raw_ptr<PermissionPromptBubbleBaseView> prompt_bubble =
+        new PermissionPromptBubbleOneOriginView(
             browser_,
             permission_prompt_model_->GetDelegate().value()->GetWeakPtr(),
             request_chip_shown_time_, PermissionPromptStyle::kChip);
@@ -590,11 +585,6 @@ void ChipController::OnPromptBubbleDismissed() {
 void ChipController::OnPromptExpired() {
   AnnouncePermissionRequestForAccessibility(l10n_util::GetStringUTF16(
       IDS_PERMISSIONS_EXPIRED_SCREENREADER_ANNOUNCEMENT));
-  if (active_chip_permission_request_manager_.has_value()) {
-    active_chip_permission_request_manager_.value()->RemoveObserver(this);
-    active_chip_permission_request_manager_.reset();
-  }
-
   if (permission_prompt_model_ &&
       permission_prompt_model_->GetDelegate().has_value()) {
     if (permission_prompt_model_->ShouldDismiss()) {
@@ -603,8 +593,6 @@ void ChipController::OnPromptExpired() {
       permission_prompt_model_->GetDelegate().value()->Ignore();
     }
   }
-
-  ResetPermissionPromptChip();
 }
 
 void ChipController::OnRequestChipButtonPressed() {
@@ -684,15 +672,15 @@ LocationBarView* ChipController::GetLocationBarView() {
 
 views::Widget* ChipController::GetBubbleWidget() {
   // We can't call GetPromptBubbleView() here, because the bubble_tracker may
-  // hold objects that aren't of typ `PermissionPromptBubbleView`.
+  // hold objects that aren't of typ `PermissionPromptBubbleBaseView`.
   return bubble_tracker_.view() ? bubble_tracker_.view()->GetWidget() : nullptr;
 }
 
-PermissionPromptBubbleView* ChipController::GetPromptBubbleView() {
-  // The tracked bubble view is a `PermissionPromptBubbleView` only when `kChip`
-  // is used.
+PermissionPromptBubbleBaseView* ChipController::GetPromptBubbleView() {
+  // The tracked bubble view is a `PermissionPromptBubbleBaseView` only when
+  // `kChip` is used.
   CHECK_EQ(permission_prompt_model_->GetPromptStyle(),
            PermissionPromptStyle::kChip);
   auto* view = bubble_tracker_.view();
-  return view ? static_cast<PermissionPromptBubbleView*>(view) : nullptr;
+  return view ? static_cast<PermissionPromptBubbleBaseView*>(view) : nullptr;
 }

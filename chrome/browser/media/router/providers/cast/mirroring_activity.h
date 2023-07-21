@@ -121,11 +121,14 @@ class MirroringActivity : public CastActivity,
  private:
   FRIEND_TEST_ALL_PREFIXES(MirroringActivityTest, GetScrubbedLogMessage);
   FRIEND_TEST_ALL_PREFIXES(MirroringActivityTest, OnSourceChanged);
+  FRIEND_TEST_ALL_PREFIXES(MirroringActivityTest,
+                           OnSourceChangedNotifiesMediaStatusObserver);
   FRIEND_TEST_ALL_PREFIXES(MirroringActivityTest, ReportsNotEnabledByDefault);
   FRIEND_TEST_ALL_PREFIXES(MirroringActivityTest, EnableRtcpReports);
   FRIEND_TEST_ALL_PREFIXES(MirroringActivityTest, Pause);
   FRIEND_TEST_ALL_PREFIXES(MirroringActivityTest, Play);
   FRIEND_TEST_ALL_PREFIXES(MirroringActivityTest, OnRemotingStateChanged);
+  FRIEND_TEST_ALL_PREFIXES(MirroringActivityTest, GetTargetPlayoutDelay);
 
   void HandleParseJsonResult(const std::string& route_id,
                              data_decoder::DataDecoder::ValueOrError result);
@@ -147,6 +150,7 @@ class MirroringActivity : public CastActivity,
   // Starts the mirroring service via the Ui thread. Can only be called on the
   // Ui thread.
   void StartOnUiThread(
+      base::WeakPtr<mirroring::MirroringServiceHost> host,
       mirroring::mojom::SessionParametersPtr session_params,
       mojo::PendingRemote<mirroring::mojom::SessionObserver> observer,
       mojo::PendingRemote<mirroring::mojom::CastMessageChannel>
@@ -158,6 +162,11 @@ class MirroringActivity : public CastActivity,
   void ScheduleFetchMirroringStats();
   void FetchMirroringStats();
   void OnMirroringStats(base::Value json_stats);
+
+  // Checks if we should override the target playout delay if the
+  // kCastMirroringTargetPlayoutDelay switch has a value.
+  absl::optional<base::TimeDelta> GetTargetPlayoutDelay(
+      const absl::optional<base::TimeDelta>& source_playout_delay);
 
   std::unique_ptr<mirroring::MirroringServiceHost> host_;
 

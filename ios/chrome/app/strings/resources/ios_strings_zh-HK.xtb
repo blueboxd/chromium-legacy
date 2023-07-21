@@ -407,6 +407,7 @@
 <translation id="3638472932233958418">預先載入網頁</translation>
 <translation id="3661160521073045932">有可用的設定描述檔。</translation>
 <translation id="3670030362669914947">號碼</translation>
+<translation id="3700134753671613714">登入後，即可從任何裝置取得自己的書籤。</translation>
 <translation id="3709582977625132201">標示為未讀取</translation>
 <translation id="371230970611282515">在危險事件發生前進行預測並發出警告。</translation>
 <translation id="37207012422556617">熱門搜尋</translation>
@@ -546,7 +547,6 @@
 <translation id="4642472735733036929">已停止追蹤價格</translation>
 <translation id="4650125387981512669">以「<ph name="FIRST_RUN_ACCOUNT_NAME" />」的身分繼續</translation>
 <translation id="4652817563047461855">確保密碼安全、檢查密碼是否被盜用，並提供可確保網上安全的建議。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">當您登入 Google 帳戶時，系統會啟用此功能</translation>
 <translation id="4659667755519643272">進入分頁切換工具</translation>
 <translation id="46614316059270592">儲存密碼</translation>
 <translation id="4666531726415300315">已使用 <ph name="EMAIL" /> 的身分登入。
@@ -588,7 +588,6 @@
 <translation id="4844899002472726590">查看和編輯您感興趣的主題</translation>
 <translation id="4848999860252535517">要刪除 <ph name="WEBSITE" /> 的密碼嗎？</translation>
 <translation id="4854345657858711387">設定密碼</translation>
-<translation id="4856498338299082007">在 Google 帳戶中</translation>
 <translation id="4858786880085262208">盡可能升級為 HTTPS。即使是安全的網站，仍有可能嵌入不安全的內容。</translation>
 <translation id="4860895144060829044">撥號</translation>
 <translation id="4872323082491632254">檢查密碼</translation>
@@ -667,6 +666,7 @@
 <translation id="543338862236136125">修改密碼</translation>
 <translation id="5433691172869980887">已複製使用者名稱</translation>
 <translation id="5439599923922718668">經常瀏覽</translation>
+<translation id="5439618055789623719">已使用 <ph name="USER_EMAIL" /> 的身分登入</translation>
 <translation id="54401264925851789">網頁安全性資料</translation>
 <translation id="5443952882982198570">信用卡</translation>
 <translation id="5444892875087332195">書籤</translation>
@@ -1119,7 +1119,6 @@
 <translation id="8248969482078657578">「閒置分頁」可助您保持專注</translation>
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8264966119170358612">非 Google 資料外洩中包含部分您儲存的密碼。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">只儲存在此裝置上</translation>
 <translation id="826614135184049678">您已在重設 iPad 時登出帳戶 (<ph name="USER_NAME" />)，如要重新登入，請輕按下方的 [繼續]。</translation>
 <translation id="8271720166617117963">接受並登入</translation>
 <translation id="8278938988428169257">輸入字詞或詞組</translation>

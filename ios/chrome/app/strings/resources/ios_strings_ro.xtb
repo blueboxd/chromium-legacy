@@ -113,6 +113,7 @@ Numai un utilizator care deține expresia ta de acces îți poate citi datele cr
 <translation id="1657011748321897393">Nu s-a trimis, pentru că nu te-ai conectat la rețea.</translation>
 <translation id="1657641691196698092">Cookie-uri blocate</translation>
 <translation id="165877110639533037">Nu există file deschise</translation>
+<translation id="166310177317698233">Poți găsi filele fixate atingând butonul Afișează filele.</translation>
 <translation id="1674504678466460478">Din <ph name="SOURCE_LANGUAGE" /> în <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">Solicită un site mobil</translation>
 <translation id="168715261339224929">Pentru a accesa marcajele pe toate dispozitivele, activează sincronizarea.</translation>
@@ -313,7 +314,7 @@ Motorul tău de căutare este <ph name="DSE_NAME" />. Vezi instrucțiunile pentr
 <translation id="2975121486251958312">Este disponibil numai modul incognito</translation>
 <translation id="2982481275546140226">Șterge datele</translation>
 <translation id="298306318844797842">Adaugă o metodă de plată...</translation>
-<translation id="2989805286512600854">Deschide într-o filă nouă</translation>
+<translation id="2989805286512600854">Deschideți într-o filă nouă</translation>
 <translation id="3020183492814296499">Comenzi rapide</translation>
 <translation id="3037605927509011580">Of, nu mai merge!</translation>
 <translation id="3039722182465315531">Nu mă conectez</translation>
@@ -407,6 +408,7 @@ Vezi instrucțiunile motorului de căutare pentru ștergerea istoricului căută
 <translation id="3638472932233958418">Preîncarcă pagini</translation>
 <translation id="3661160521073045932">Este disponibil un profil de configurare</translation>
 <translation id="3670030362669914947">Număr</translation>
+<translation id="3700134753671613714">Conectează-te pentru a putea accesa marcajele pe toate dispozitivele.</translation>
 <translation id="3709582977625132201">Marchează ca necitit</translation>
 <translation id="371230970611282515">Anticipează și te avertizează cu privire la evenimente periculoase înainte să aibă loc.</translation>
 <translation id="37207012422556617">Căutări populare</translation>
@@ -546,7 +548,6 @@ Vezi instrucțiunile motorului de căutare pentru ștergerea istoricului căută
 <translation id="4642472735733036929">Urmărirea prețului s-a oprit</translation>
 <translation id="4650125387981512669">Continuă ca <ph name="FIRST_RUN_ACCOUNT_NAME" /></translation>
 <translation id="4652817563047461855">Asigură-te că parolele tale sunt în siguranță, află dacă au fost compromise și primește sfaturi pentru a te proteja online. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">Când te conectezi la Contul Google, această funcție este activată.</translation>
 <translation id="4659667755519643272">Accesează comutatorul de file</translation>
 <translation id="46614316059270592">Salvează parola</translation>
 <translation id="4666531726415300315">Te-ai conectat ca <ph name="EMAIL" />.
@@ -588,7 +589,6 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="4844899002472726590">Vezi și editează subiectele care te interesează</translation>
 <translation id="4848999860252535517">Ștergi parola pentru <ph name="WEBSITE" />?</translation>
 <translation id="4854345657858711387">Setează o parolă</translation>
-<translation id="4856498338299082007">În Contul Google</translation>
 <translation id="4858786880085262208">Fă upgrade la HTTPS, dacă este posibil. Site-urile securizate pot încorpora conținut nesigur.</translation>
 <translation id="4860895144060829044">Apelează</translation>
 <translation id="4872323082491632254">Verifică parolele</translation>
@@ -667,6 +667,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="543338862236136125">Editează parola</translation>
 <translation id="5433691172869980887">Numele de utilizator a fost copiat</translation>
 <translation id="5439599923922718668">Accesate frecvent</translation>
+<translation id="5439618055789623719">Te-ai conectat ca <ph name="USER_EMAIL" /></translation>
 <translation id="54401264925851789">Informații privind securitatea paginii</translation>
 <translation id="5443952882982198570">Carduri de credit</translation>
 <translation id="5444892875087332195">Marcaje</translation>
@@ -1121,7 +1122,6 @@ Site-urile pot folosi cookie-uri pentru a vedea activitatea ta de navigare de pe
 <translation id="8248969482078657578">Filele inactive te ajută să te concentrezi</translation>
 <translation id="8261506727792406068">Șterge</translation>
 <translation id="8264966119170358612">Unele dintre parolele salvate au fost expuse într-o încălcare a securității datelor independentă de Google. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">Numai pe acest dispozitiv</translation>
 <translation id="826614135184049678">Te-ai deconectat de la contul <ph name="USER_NAME" /> în cadrul procesului de resetare a dispozitivului iPad. Pentru a te conecta din nou, atinge Continuă mai jos.</translation>
 <translation id="8271720166617117963">Acceptă și conectează-te</translation>
 <translation id="8278938988428169257">Introdu un cuvânt sau o expresie</translation>

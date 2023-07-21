@@ -832,18 +832,6 @@ bool LayoutObject::IsInListMarker() const {
   return Parent() && Parent()->IsListMarker();
 }
 
-LayoutObject* LayoutObject::NonCulledParent() const {
-  LayoutObject* parent = Parent();
-  for (; parent; parent = parent->Parent()) {
-    if (const auto* parent_inline_box = DynamicTo<LayoutInline>(parent)) {
-      if (!parent_inline_box->AlwaysCreateLineBoxesForLayoutInline())
-        continue;
-    }
-    return parent;
-  }
-  return nullptr;
-}
-
 LayoutObject* LayoutObject::NextInPreOrderAfterChildren() const {
   NOT_DESTROYED();
   LayoutObject* o = NextSibling();
@@ -1204,9 +1192,9 @@ LayoutBlockFlow* LayoutObject::FragmentItemsContainer() const {
 
 LayoutBox* LayoutObject::ContainingNGBox() const {
   NOT_DESTROYED();
-  if (RuntimeEnabledFeatures::LayoutMediaNGContainerEnabled() && Parent() &&
-      Parent()->IsMedia())
+  if (Parent() && Parent()->IsMedia()) {
     return To<LayoutBox>(Parent());
+  }
   LayoutBlock* containing_block = ContainingBlock();
   if (!containing_block)
     return nullptr;
@@ -3382,13 +3370,19 @@ void LayoutObject::GetTransformFromContainer(
     const LayoutObject* container_object,
     const PhysicalOffset& offset_in_container,
     gfx::Transform& transform,
-    const PhysicalSize* size) const {
+    const PhysicalSize* size,
+    const gfx::Transform* fragment_transform) const {
   NOT_DESTROYED();
   transform.MakeIdentity();
-  PaintLayer* layer =
-      HasLayer() ? To<LayoutBoxModelObject>(this)->Layer() : nullptr;
-  if (layer && layer->Transform())
-    transform.PreConcat(layer->CurrentTransform());
+  if (fragment_transform) {
+    transform.PreConcat(*fragment_transform);
+  } else {
+    PaintLayer* layer =
+        HasLayer() ? To<LayoutBoxModelObject>(this)->Layer() : nullptr;
+    if (layer && layer->Transform()) {
+      transform.PreConcat(layer->CurrentTransform());
+    }
+  }
 
   transform.PostTranslate(offset_in_container.left.ToFloat(),
                           offset_in_container.top.ToFloat());

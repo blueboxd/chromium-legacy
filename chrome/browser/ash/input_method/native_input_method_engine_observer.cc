@@ -898,7 +898,7 @@ void NativeInputMethodEngineObserver::OnFocus(
       TextClient{.context_id = context_id, .state = TextClientState::kPending};
 
   if (assistive_suggester_->IsAssistiveFeatureEnabled()) {
-    assistive_suggester_->OnFocus(context_id);
+    assistive_suggester_->OnFocus(context_id, context);
   }
   autocorrect_manager_->OnFocus(context_id);
   if (grammar_manager_->IsOnDeviceGrammarEnabled()) {
@@ -1010,10 +1010,17 @@ void NativeInputMethodEngineObserver::OnKeyEvent(
     const ui::KeyEvent& event,
     TextInputMethod::KeyEventDoneCallback callback) {
   if (assistive_suggester_->IsAssistiveFeatureEnabled()) {
-    if (assistive_suggester_->OnKeyEvent(event)) {
-      std::move(callback).Run(
-          ui::ime::KeyEventHandledState::kHandledByAssistiveSuggester);
-      return;
+    switch (assistive_suggester_->OnKeyEvent(event)) {
+      case AssistiveSuggesterKeyResult::kHandled:
+        std::move(callback).Run(
+            ui::ime::KeyEventHandledState::kHandledByAssistiveSuggester);
+        return;
+      case AssistiveSuggesterKeyResult::kNotHandledSuppressAutoRepeat:
+        std::move(callback).Run(
+            ui::ime::KeyEventHandledState::kNotHandledSuppressAutoRepeat);
+        return;
+      case AssistiveSuggesterKeyResult::kNotHandled:
+        break;
     }
   }
   if (autocorrect_manager_->OnKeyEvent(event)) {

@@ -20,6 +20,12 @@ api::os_events::AudioJackEventInfo UncheckedConvertPtr(
 api::os_events::LidEventInfo UncheckedConvertPtr(
     crosapi::mojom::TelemetryLidEventInfoPtr ptr);
 
+api::os_events::UsbEventInfo UncheckedConvertPtr(
+    crosapi::mojom::TelemetryUsbEventInfoPtr ptr);
+
+api::os_events::SdCardEventInfo UncheckedConvertPtr(
+    crosapi::mojom::TelemetrySdCardEventInfoPtr ptr);
+
 }  // namespace unchecked
 
 api::os_events::AudioJackEvent Convert(
@@ -31,11 +37,17 @@ api::os_events::AudioJackDeviceType Convert(
 api::os_events::LidEvent Convert(
     crosapi::mojom::TelemetryLidEventInfo::State state);
 
+api::os_events::UsbEvent Convert(
+    crosapi::mojom::TelemetryUsbEventInfo::State state);
+
+api::os_events::SdCardEvent Convert(
+    crosapi::mojom::TelemetrySdCardEventInfo::State state);
+
 crosapi::mojom::TelemetryEventCategoryEnum Convert(
     api::os_events::EventCategory input);
 
 template <class OutputT, class InputT>
-OutputT ConvertEventPtr(InputT input) {
+OutputT ConvertStructPtr(InputT input) {
   return (!input.is_null()) ? unchecked::UncheckedConvertPtr(std::move(input))
                             : OutputT();
 }

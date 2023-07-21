@@ -19,6 +19,7 @@
 #include "chrome/browser/dips/dips_redirect_info.h"
 #include "chrome/browser/dips/dips_service.h"
 #include "chrome/browser/dips/dips_utils.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_handle_user_data.h"
@@ -32,6 +33,11 @@ namespace base {
 class Clock;
 class TickClock;
 }  // namespace base
+
+using DIPSIssueHandler =
+    base::RepeatingCallback<void(const std::set<std::string>& sites)>;
+using DIPSIssueReportingCallback =
+    base::RepeatingCallback<void(const std::set<std::string>& sites)>;
 
 // ClientBounceDetectionState is owned by the DIPSBounceDetector and stores
 // data needed to detect stateful client-side redirects.
@@ -50,7 +56,7 @@ class ClientBounceDetectionState {
   base::TimeTicks page_load_time;
   absl::optional<base::Time> last_activation_time;
   absl::optional<base::Time> last_storage_time;
-  CookieAccessType cookie_access_type = CookieAccessType::kUnknown;
+  SiteDataAccessType site_data_access_type = SiteDataAccessType::kUnknown;
 };
 
 // Either the URL navigated away from (starting a new chain), or the client-side
@@ -62,6 +68,7 @@ using DIPSNavigationStart = absl::variant<GURL, DIPSRedirectInfoPtr>;
 class DIPSRedirectContext {
  public:
   DIPSRedirectContext(DIPSRedirectChainHandler handler,
+                      DIPSIssueHandler issue_handler,
                       const GURL& initial_url);
   ~DIPSRedirectContext();
 
@@ -76,7 +83,8 @@ class DIPSRedirectContext {
   // start of a new one, or extends it, according to the value of
   // `navigation_start`.
   void AppendCommitted(DIPSNavigationStart navigation_start,
-                       std::vector<DIPSRedirectInfoPtr> server_redirects);
+                       std::vector<DIPSRedirectInfoPtr> server_redirects,
+                       const GURL& final_url);
 
   // Terminates the in-progress redirect chain, ending it with `final_url`, and
   // parsing it to the `DIPSRedirectChainHandler` iff the chain is valid. It
@@ -84,6 +92,8 @@ class DIPSRedirectContext {
   // state of the terminated chain.
   // NOTE: A chain is valid if it has a non-empty `initial_url_`.
   void EndChain(GURL final_url);
+
+  void ReportIssue(const GURL& final_url);
 
   [[nodiscard]] bool AddLateCookieAccess(GURL url, CookieOperation op);
 
@@ -100,17 +110,16 @@ class DIPSRedirectContext {
   void AppendServerRedirects(std::vector<DIPSRedirectInfoPtr> server_redirects);
 
   DIPSRedirectChainHandler handler_;
+  DIPSIssueHandler issue_handler_;
   // Represents the start of a chain and also indicates the presence of a valid
   // chain.
   GURL initial_url_;
   std::vector<DIPSRedirectInfoPtr> redirects_;
+  std::set<std::string> redirectors_;
   // The index of the last redirect to have a known cookie access. When adding
   // late cookie accesses, we only consider redirects from this offset onwards.
   size_t update_offset_ = 0;
 };
-
-using DIPSIssueCallback =
-    base::RepeatingCallback<void(const std::set<std::string>& sites)>;
 
 // A simplified interface to WebContents and DIPSService that can be faked in
 // tests. Needed to allow unit testing DIPSBounceDetector.
@@ -194,6 +203,7 @@ class DIPSBounceDetector {
   void SetClockForTesting(base::Clock* clock) { clock_ = clock; }
   // The following methods are based on WebContentsObserver, simplified.
   void DidStartNavigation(DIPSNavigationHandle* navigation_handle);
+  void OnClientSiteDataAccessed(const GURL& url, CookieOperation op);
   void OnClientCookiesAccessed(const GURL& url, CookieOperation op);
   void OnServerCookiesAccessed(DIPSNavigationHandle* navigation_handle,
                                const GURL& url,
@@ -221,13 +231,6 @@ class DIPSBounceDetector {
   bool ShouldUpdateTimestamp(base::optional_ref<const base::Time> last_time,
                              base::Time now);
 
-  // Returns the set of sites in the current (server) redirect chain. If the
-  // navigation started with a client redirect, that site is also included.
-  // Redirectors matching the initial or end site are omitted.
-  std::set<std::string> GetRedirectors(
-      const DIPSNavigationStart& navigation_start,
-      DIPSNavigationHandle* navigation_handle);
-
   raw_ptr<const base::TickClock> tick_clock_;
   raw_ptr<const base::Clock> clock_;
   raw_ptr<DIPSBounceDetectorDelegate> delegate_;
@@ -251,8 +254,9 @@ class DIPSWebContentsObserver
   }
 
   // Use the passed handler instead of DIPSWebContentsObserver::EmitDIPSIssue().
-  void SetIssueReportingCallbackForTesting(DIPSIssueCallback callback) {
-    issue_callback_ = callback;
+  void SetIssueReportingCallbackForTesting(
+      DIPSIssueReportingCallback callback) {
+    issue_reporting_callback_ = callback;
   }
 
   void SetClockForTesting(base::Clock* clock) {
@@ -295,12 +299,31 @@ class DIPSWebContentsObserver
       content::RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;
 
+  class DIPSSiteDataObserver
+      : public content_settings::PageSpecificContentSettings::SiteDataObserver {
+   public:
+    DIPSSiteDataObserver(content::WebContents* web_contents,
+                         DIPSWebContentsObserver* dips_web_contents_observer);
+
+    DIPSSiteDataObserver(const DIPSSiteDataObserver&) = delete;
+    DIPSSiteDataObserver& operator=(const DIPSSiteDataObserver&) = delete;
+
+   private:
+    // Start SiteDataObserver overrides:
+    void OnSiteDataAccessed(
+        const content_settings::AccessDetails& access_details) override;
+    // End SiteDataObserver overrides.
+
+    raw_ptr<DIPSWebContentsObserver> dips_web_contents_observer_;
+  };
+
   // raw_ptr<> is safe here because DIPSService is a KeyedService, associated
   // with the BrowserContext/Profile which will outlive the WebContents that
   // DIPSWebContentsObserver is observing.
   raw_ptr<DIPSService> dips_service_;
   DIPSBounceDetector detector_;
-  DIPSIssueCallback issue_callback_;
+  DIPSIssueReportingCallback issue_reporting_callback_;
+  std::unique_ptr<DIPSSiteDataObserver> dips_site_data_observer_;
 
   base::WeakPtrFactory<DIPSWebContentsObserver> weak_factory_{this};
 

@@ -496,6 +496,8 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
         GetOrCreateFragmentData(object, context, *pre_paint_info);
     if (!pre_paint_info->fragment_data)
       return;
+  } else if (object.IsFragmentLessBox()) {
+    return;
   }
 
   absl::optional<PaintPropertyTreeBuilder> property_tree_builder;
@@ -976,8 +978,7 @@ void PrePaintTreeWalk::WalkChildren(
           (!box->IsLayoutNGObject() || !box->PhysicalFragmentCount())) {
         // We can traverse PhysicalFragments in LayoutMedia though it's not
         // a LayoutNGObject.
-        if (!RuntimeEnabledFeatures::LayoutMediaNGContainerEnabled() ||
-            !box->IsMedia()) {
+        if (!box->IsMedia()) {
           // Leave LayoutNGBoxFragment-accompanied child LayoutObject
           // traversal, since this object doesn't support that (or has no
           // fragments (happens for table columns)). We need to switch back to

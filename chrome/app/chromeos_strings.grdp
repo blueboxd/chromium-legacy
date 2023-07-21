@@ -3400,6 +3400,9 @@
   <message name="IDS_NETWORK_UI_RESET_EUICC_LABEL" desc="Label and button text for section of the debug networking page which allows developers and QA testers to reset Euicc.">
     Reset eSIM
   </message>
+  <message name="IDS_NETWORK_UI_RESET_APN_MIGRATOR_LABEL" desc="Label and button text for section of the debug networking page which allows developers and QA testers to reset ApnMigrator.">
+    Reset ApnMigrator
+  </message>
   <message name="IDS_NETWORK_UI_ADD_NEW_WIFI_LABEL" desc="Label for section dealing with showing the 'Add new Wi-Fi network' dialog.">
     New Wi-Fi Network Dialog
   </message>
@@ -6520,12 +6523,7 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   <message name="IDS_OS_URL_HANDLER_APP_NAME" translateable="false" desc="Name for a hidden app which shows os:// and chrome:// system pages in an app">
     ChromeOS-URLs
   </message>
-
-     <!-- Strings for WebAppSettings -->
-  <message name="IDS_RUN_ON_OS_LOGIN_ENABLED" desc="This is the message of the notification when an application is automatically started on OS login.">
-    The app <ph name="APP_NAME">$1</ph> has been configured by your admin to run on OS login
-  </message>
-
+  
   <!-- Theme Selection -->
   <message name="IDS_THEME_SELECTION_TITLE" desc="Title of the theme selection screen.">
     Personalize your display theme
@@ -6705,4 +6703,13 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
     Your administrator has logged in to look into an issue. You can continue to use the device after the administrator gives the control back to you.
   </message>
 
+  <!-- Gaia Info -->
+  <message name="IDS_GAIA_INFO_TITLE" desc="Title of the Gaia Info screen.">
+    Use your Google Account on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+  </message>
+  <message name="IDS_GAIA_INFO_DESCRIPTION" desc="Description of the Gaia Info screen.">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>On the next screen, sign in with your Google Account.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>This is the same account you use for Gmail, YouTube, Chrome, and other Google services. Use your account for a personalized experience and easy access to all of your information.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>If you don't have a Google Account, you'll be able to create one on the next screen.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+  </message>
 </grit-part>

@@ -18,21 +18,14 @@
 #include "components/history_clusters/public/mojom/history_cluster_types.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "services/metrics/public/cpp/ukm_source_id.h"
 
-class CartProcessor;
-class GURL;
-class HistoryClustersModuleRankingMetricsLogger;
-class HistoryClustersModuleRankingSignals;
 class Profile;
+class GURL;
+class CartProcessor;
 
 namespace content {
 class WebContents;
 }  // namespace content
-
-namespace history_clusters {
-class HistoryClustersServiceTask;
-}  // namespace history_clusters
 
 class HistoryClustersPageHandler
     : public ntp::history_clusters::mojom::PageHandler {
@@ -54,34 +47,18 @@ class HistoryClustersPageHandler
   void OpenUrlsInTabGroup(const std::vector<GURL>&) override;
   void DismissCluster(
       const std::vector<history_clusters::mojom::URLVisitPtr> visits) override;
-  void RecordClick(int64_t cluster_id) override;
-  void RecordLayoutTypeShown(
-      ntp::history_clusters::mojom::LayoutType layout_type,
-      int64_t cluster_id) override;
 
  private:
   // Forward the most relevant history clusters to the callback if any.
-  void CallbackWithClusterData(
-      GetClustersCallback callback,
-      std::vector<history::Cluster> clusters,
-      base::flat_map<int64_t, HistoryClustersModuleRankingSignals>
-          ranking_signals);
+  void CallbackWithClusterData(GetClustersCallback callback,
+                               std::vector<history::Cluster> clusters);
 
   mojo::Receiver<ntp::history_clusters::mojom::PageHandler> receiver_;
   raw_ptr<Profile> profile_;
   raw_ptr<content::WebContents> web_contents_;
 
-  // Tracks the current fetch clusters task. Will be `nullptr` or
-  // `Done()` will be true if there is no ongoing task.
-  std::unique_ptr<history_clusters::HistoryClustersServiceTask>
-      fetch_clusters_task_;
   base::CancelableTaskTracker hide_visits_task_tracker_;
   std::unique_ptr<CartProcessor> cart_processor_;
-  // The logger used to record metrics related to module ranking scoped to
-  // `this`. Will be nullptr until clusters are received and ranking signals are
-  // returned in the callback.
-  std::unique_ptr<HistoryClustersModuleRankingMetricsLogger>
-      ranking_metrics_logger_;
 
   base::WeakPtrFactory<HistoryClustersPageHandler> weak_ptr_factory_{this};
 };

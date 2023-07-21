@@ -51,8 +51,15 @@ chromeos::api::os_telemetry::BatteryInfo UncheckedConvertPtr(
     crosapi::mojom::ProbeBatteryInfoPtr input,
     bool has_serial_number_permission);
 
+// The `mac_address` field should be converted iff `has_mac_address_permission`
+// is true.
 chromeos::api::os_telemetry::NetworkInfo UncheckedConvertPtr(
-    chromeos::network_health::mojom::NetworkPtr input);
+    chromeos::network_health::mojom::NetworkPtr input,
+    bool has_mac_address_permission);
+
+chromeos::api::os_telemetry::InternetConnectivityInfo UncheckedConvertPtr(
+    chromeos::network_health::mojom::NetworkHealthStatePtr input,
+    bool has_mac_address_permission);
 
 chromeos::api::os_telemetry::NonRemovableBlockDeviceInfo UncheckedConvertPtr(
     crosapi::mojom::ProbeNonRemovableBlockDeviceInfoPtr);
@@ -83,6 +90,12 @@ chromeos::api::os_telemetry::FwupdFirmwareVersionInfo UncheckedConvertPtr(
 
 chromeos::api::os_telemetry::UsbBusInfo UncheckedConvertPtr(
     crosapi::mojom::ProbeUsbBusInfoPtr input);
+
+// `serial_number` field should be converted iff `has_serial_number_permission`
+// is true.
+chromeos::api::os_telemetry::VpdInfo UncheckedConvertPtr(
+    crosapi::mojom::ProbeCachedVpdInfoPtr input,
+    bool has_serial_number_permission);
 
 }  // namespace unchecked
 

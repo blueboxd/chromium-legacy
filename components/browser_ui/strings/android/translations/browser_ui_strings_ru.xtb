@@ -122,7 +122,7 @@
 <translation id="3115898365077584848">Показать информацию</translation>
 <translation id="3123473560110926937">Заблокировано на некоторых сайтах</translation>
 <translation id="3143754809889689516">Воспроизвести с начала</translation>
-<translation id="3162899666601560689">Сайты могут использовать файлы cookie для вашего удобства, например, чтобы вам не приходилось вновь входить в аккаунт или повторно добавлять товары в корзину.</translation>
+<translation id="3162899666601560689">Сайты могут использовать файлы cookie для вашего удобства, например, чтобы сохранять информацию о товарах в корзине или о том, что вы вошли в аккаунт.</translation>
 <translation id="3165022941318558018">Разрешите сайту использовать сторонние файлы cookie.</translation>
 <translation id="3198916472715691905">В памяти занято: <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="321187648315454507">Чтобы получать уведомления из приложения "<ph name="APP_NAME" />", включите их в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
@@ -166,7 +166,7 @@
 <translation id="3918378745482005425">Некоторые функции могут не работать. При этом связанные сайты по-прежнему смогут использовать сторонние файлы cookie.</translation>
 <translation id="3955193568934677022">Разрешить сайтам воспроизводить защищенный контент (рекомендуется)</translation>
 <translation id="3967822245660637423">Скачивание завершено.</translation>
-<translation id="3987993985790029246">Скопировать ссылку</translation>
+<translation id="3987993985790029246">Копировать ссылку</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> из ?</translation>
 <translation id="3992684624889376114">Об этой странице</translation>
 <translation id="4002066346123236978">Название</translation>

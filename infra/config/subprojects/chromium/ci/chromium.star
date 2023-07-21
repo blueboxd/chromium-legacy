@@ -529,8 +529,7 @@ ci.builder(
             target_bits = 64,
         ),
     ),
-    # Bump to 8 cores if needed.
-    cores = 4,
+    cores = 12,
     os = os.MAC_DEFAULT,
     tree_closing = True,
     console_view_entry = consoles.console_view_entry(
@@ -550,6 +549,7 @@ ci.builder(
             apply_configs = [
                 "clobber",
                 "mb",
+                "goma_use_local",  # to mitigate compile step timeout (crbug.com/1056935).
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
@@ -611,6 +611,7 @@ ci.builder(
             apply_configs = [
                 "clobber",
                 "mb",
+                "goma_use_local",  # to mitigate compile step timeout (crbug.com/1056935).
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,

@@ -113,6 +113,7 @@ Dim ond rhywun sydd â'ch cyfrinymadrodd all ddarllen eich data sydd wedi'u hamg
 <translation id="1657011748321897393">Wedi methu â rhannu oherwydd nad ydych wedi'ch cysylltu â'r rhwydwaith.</translation>
 <translation id="1657641691196698092">Cwcis a Rwystrwyd</translation>
 <translation id="165877110639533037">Dim Tabiau Ar Agor</translation>
+<translation id="166310177317698233">Gallwch ddod o hyd i'ch tabiau sydd wedi'u pinio trwy dapio'r botwm Dangos Tabiau.</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> i <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">Gofyn am Wefan Symudol</translation>
 <translation id="168715261339224929">I gael eich nodau tudalen ar eich holl ddyfeisiau, trowch gysoni ymlaen.</translation>
@@ -407,6 +408,7 @@ Gweler cyfarwyddiadau eich peiriant chwilio er mwyn dileu eich hanes chwilio, os
 <translation id="3638472932233958418">Rhag-lwytho Tudalennau Gwe</translation>
 <translation id="3661160521073045932">Mae Proffil Ffurfweddiad Ar Gael</translation>
 <translation id="3670030362669914947">Rhif</translation>
+<translation id="3700134753671613714">Mewngofnodwch i gael eich nodau tudalen ar eich holl ddyfeisiau.</translation>
 <translation id="3709582977625132201">Marcio ei fod Heb ei Ddarllen</translation>
 <translation id="371230970611282515">Mae'n rhagfynegi digwyddiadau peryglus ac yn eich rhybuddio amdanynt cyn iddynt ddigwydd.</translation>
 <translation id="37207012422556617">Chwiliadau Poblogaidd</translation>
@@ -546,7 +548,6 @@ Gweler cyfarwyddiadau eich peiriant chwilio er mwyn dileu eich hanes chwilio, os
 <translation id="4642472735733036929">Olrhain prisiau wedi stopio</translation>
 <translation id="4650125387981512669">Parhau fel <ph name="FIRST_RUN_ACCOUNT_NAME" /></translation>
 <translation id="4652817563047461855">Gwneud yn siŵr bod eich cyfrineiriau yn ddiogel, darganfod a ydynt wedi cael eu peryglu, a chael cyngor i helpu i amddiffyn eich hun ar-lein. <ph name="BEGIN_LINK" />Dysgu rhagor<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">Pan fyddwch yn mewngofnodi i'ch Cyfrif Google, mae'r nodwedd hon yn cael ei droi ymlaen.</translation>
 <translation id="4659667755519643272">Rhowch Newidydd Tabiau</translation>
 <translation id="46614316059270592">Cadw'r Cyfrinair</translation>
 <translation id="4666531726415300315">Wedi mewngofnodi fel <ph name="EMAIL" />.
@@ -588,7 +589,6 @@ I newid y gosodiad hwn, <ph name="BEGIN_LINK" />ailosodwch gysoni<ph name="END_L
 <translation id="4844899002472726590">Gweld a golygu pynciau y mae gennych ddiddordeb ynddynt</translation>
 <translation id="4848999860252535517">Dileu Cyfrinair ar gyfer <ph name="WEBSITE" />?</translation>
 <translation id="4854345657858711387">Gosod Cod Pas</translation>
-<translation id="4856498338299082007">Yn eich Cyfrif Google</translation>
 <translation id="4858786880085262208">Uwchraddiwch i HTTPS, pan fo modd. Mae'n bosib y bydd gwefannau diogel yn ymgorffori cynnwys nad yw'n ddiogel.</translation>
 <translation id="4860895144060829044">Galw</translation>
 <translation id="4872323082491632254">Gwirio Cyfrineiriau</translation>
@@ -667,6 +667,7 @@ I newid y gosodiad hwn, <ph name="BEGIN_LINK" />ailosodwch gysoni<ph name="END_L
 <translation id="543338862236136125">Golygu cyfrinair</translation>
 <translation id="5433691172869980887">Copïwyd enw defnyddiwr</translation>
 <translation id="5439599923922718668">Ymwelir yn aml</translation>
+<translation id="5439618055789623719">Wedi mewngofnodi fel <ph name="USER_EMAIL" /></translation>
 <translation id="54401264925851789">Gwybodaeth am Ddiogelwch y Dudalen</translation>
 <translation id="5443952882982198570">Cardiau Credyd</translation>
 <translation id="5444892875087332195">Nodau tudalen</translation>
@@ -1121,7 +1122,6 @@ Gall gwefannau ddefnyddio cwcis i weld eich gweithgarwch pori ar draws gwahanol 
 <translation id="8248969482078657578">Mae Tabiau Anweithredol yn Eich Helpu i Ganolbwyntio</translation>
 <translation id="8261506727792406068">Dileu</translation>
 <translation id="8264966119170358612">Cafodd rhai o'ch cyfrineiriau a gadwyd eu datgelu mewn achos o dor diogelwch data y tu allan i Google. <ph name="BEGIN_LINK" />Dysgu rhagor<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">Ar y ddyfais hon yn unig</translation>
 <translation id="826614135184049678">Cawsoch eich allgofnodi o'ch cyfrif, <ph name="USER_NAME" />, fel rhan o'ch ailosodiad iPad. I fewngofnodi eto, tapiwch "Parhau" isod.</translation>
 <translation id="8271720166617117963">Derbyn a Mewngofnodi</translation>
 <translation id="8278938988428169257">Rhowch Air neu Ymadrodd</translation>

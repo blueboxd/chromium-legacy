@@ -2256,11 +2256,7 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
   InvalidateStyleAndLayoutForFontUpdates();
   UpdateStyleInvalidationIfNeeded();
   UpdateStyle();
-  StyleResolver& style_resolver = GetStyleResolver();
-  if (style_resolver.WasViewportResized()) {
-    style_resolver.ClearResizedForViewportUnits();
-    View()->MarkOrthogonalWritingModeRootsForLayout();
-  }
+  GetStyleResolver().ClearResizedForViewportUnits();
 
   GetLayoutView()->ClearHitTestCache();
 
@@ -2784,12 +2780,6 @@ void Document::SetIsXrOverlay(bool val, Element* overlay_element) {
   // On navigation, the layout view may be invalid, skip style changes.
   if (!GetLayoutView())
     return;
-
-  if (val) {
-    // The UA style sheet for the :xr-overlay pseudoclass uses lazy loading.
-    // If we get here, we need to ensure that it's present.
-    GetStyleEngine().EnsureUAStyleForXrOverlay();
-  }
 
   if (overlay_element) {
     // Now that the custom style sheet is loaded, update the pseudostyle for
@@ -3957,11 +3947,11 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
   if (!before_unload_event.defaultPrevented())
     DefaultEventHandler(before_unload_event);
 
-  if (before_unload_event.returnValue().IsNull()) {
+  if (before_unload_event.returnValue().empty()) {
     RecordBeforeUnloadUse(BeforeUnloadUse::kNoDialogNoText);
   }
   bool cancelled_by_script =
-      !before_unload_event.returnValue().IsNull() ||
+      !before_unload_event.returnValue().empty() ||
       (RuntimeEnabledFeatures::
            BeforeunloadEventCancelByPreventDefaultEnabled() &&
        before_unload_event.defaultPrevented());
@@ -4949,6 +4939,7 @@ void Document::DynamicViewportUnitsChanged() {
 }
 
 void Document::SetHoverElement(Element* new_hover_element) {
+  HTMLElement::HoveredElementChanged(hover_element_, new_hover_element);
   hover_element_ = new_hover_element;
 }
 
@@ -8772,6 +8763,7 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(popover_hint_showing_);
   visitor->Trace(popover_pointerdown_target_);
   visitor->Trace(popovers_waiting_to_hide_);
+  visitor->Trace(all_open_popovers_);
   visitor->Trace(elements_with_css_toggles_);
   visitor->Trace(elements_needing_style_recalc_for_toggle_);
   visitor->Trace(css_toggle_inference_);

@@ -2365,6 +2365,22 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Internal.EventTiming.PendingPresentationPromiseCount"
+    units="count" expires_after="2024-04-27">
+  <owner>zuoaoyuan@chromium.org</owner>
+  <owner>speed-metrics-dev@chromium.org</owner>
+  <summary>
+    Records the number of unique presentation times that Event Timing has queued
+    up, waiting to assign to Event Timing entries and dispatch to performance
+    timeline. Recorded once every time a presentation promise resolves. The
+    queue grows whenever a new presentation promise gets queued, and shrinks
+    when it gets reported. Note that when a newer presentation promise gets
+    resolved before an older one, we would delay reporting it so timings are
+    reported in order. This should only happen whenever a newer presentation
+    promise is not actually measuring to Next Paint.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Internal.PageLoadTimingStatus{Condition}"
     enum="PageLoadTimingStatus" expires_after="2023-07-13">
   <owner>toyoshim@chromium.org</owner>
@@ -2909,6 +2925,42 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram
+    name="PageLoad.PaintTiming.NavigationToLargestContentfulPaint.ImageLCPLessThanLoadEnd"
+    enum="Boolean" expires_after="2024-04-24">
+  <owner>haoliuk@chromium.org</owner>
+  <owner>speed-metrics-dev@chromium.org</owner>
+  <summary>
+    Records the count of cases where an LCP image candidate has an LCP less than
+    its LoadEnd. This is counted once per LCP candidate in the
+    PageLoadTracker::OnTimingChanged() method when the LCP candiate changes.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.PaintTiming.NavigationToLargestContentfulPaint.ImageLoadEndLessThanLoadStart"
+    enum="Boolean" expires_after="2024-04-24">
+  <owner>haoliuk@chromium.org</owner>
+  <owner>speed-metrics-dev@chromium.org</owner>
+  <summary>
+    Records the count of cases where an LCP image candidate has a LoadEnd less
+    than its LoadStart. This is counted once per LCP candidate in the
+    PageLoadTracker::OnTimingChanged() method when the LCP candiate changes.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.PaintTiming.NavigationToLargestContentfulPaint.ImageLoadStartLessThanDocumentTTFB"
+    enum="Boolean" expires_after="2024-04-24">
+  <owner>haoliuk@chromium.org</owner>
+  <owner>speed-metrics-dev@chromium.org</owner>
+  <summary>
+    Records the count of cases where an LCP image candidate has a LoadStart less
+    than the document TTFB. This is counted once per LCP candidate in the
+    PageLoadTracker::OnTimingChanged() method when the LCP candiate changes.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.PaintTiming.NavigationToLargestContentfulPaint2"
     units="ms" expires_after="2023-10-22">
   <owner>npm@chromium.org</owner>
@@ -3036,58 +3088,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Measures the time that the HTML parser spent blocked on the load of scripts,
     for main frame documents that finished parsing.
-  </summary>
-</histogram>
-
-<histogram
-    name="PageSerialization.MhtmlGeneration.BrowserWaitForRendererTime.FrameTree"
-    units="ms" expires_after="2020-12-01">
-  <owner>sclittle@chromium.org</owner>
-  <owner>offline-dev@chromium.org</owner>
-  <summary>
-    Total time the browser process waited for all render processes to save their
-    respective frames while saving a page into MHTML.
-  </summary>
-</histogram>
-
-<histogram
-    name="PageSerialization.MhtmlGeneration.BrowserWaitForRendererTime.SingleFrame"
-    units="ms" expires_after="2020-12-01">
-  <owner>sclittle@chromium.org</owner>
-  <owner>offline-dev@chromium.org</owner>
-  <summary>
-    Time the browser process waited on a single frame to be saved by a render
-    processes while saving a page into MHTML.
-  </summary>
-</histogram>
-
-<histogram name="PageSerialization.MhtmlGeneration.FinalSaveStatus"
-    enum="MhtmlGenerationFinalSaveStatus" expires_after="2021-08-08">
-  <owner>sclittle@chromium.org</owner>
-  <owner>offline-dev@chromium.org</owner>
-  <summary>Final status of the MHTML save operation for a page.</summary>
-</histogram>
-
-<histogram
-    name="PageSerialization.MhtmlGeneration.RendererMainThreadTime.SingleFrame"
-    units="ms" expires_after="2020-12-01">
-  <owner>sclittle@chromium.org</owner>
-  <owner>offline-dev@chromium.org</owner>
-  <summary>
-    Time spent by the renderer main thread while saving one frame of a page to
-    MHTML.
-  </summary>
-</histogram>
-
-<histogram name="PageSerialization.MhtmlGeneration.WriteToDiskTime.SingleFrame"
-    units="ms" expires_after="2020-12-01">
-  <owner>sclittle@chromium.org</owner>
-  <owner>offline-dev@chromium.org</owner>
-  <summary>
-    Time spent writing a frame's encoded MHTML data to the file or data pipe
-    handle passed to the Renderer, recorded when the writing is done and the
-    handle is closed. Note that when writing to a data pipe, this metric does
-    not precisely reflect the time taken to write the data to disk.
   </summary>
 </histogram>
 

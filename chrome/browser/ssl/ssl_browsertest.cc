@@ -2540,10 +2540,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
 
   // Load the insecure image.
-  bool js_result = false;
-  EXPECT_TRUE(
-      content::ExecuteScriptAndExtractBool(tab, "loadBadImage();", &js_result));
-  EXPECT_TRUE(js_result);
+  EXPECT_EQ(true, content::EvalJs(tab, "loadBadImage();"));
 
   // We should now have insecure content.
   ssl_test_util::CheckSecurityState(tab, CertError::NONE,
@@ -5726,9 +5723,9 @@ class SSLUITestCustomCACerts : public SSLUITestNoCert {
   }
 
   // The first profile.
-  raw_ptr<Profile, ExperimentalAsh> profile_1_;
+  raw_ptr<Profile, DanglingUntriaged | ExperimentalAsh> profile_1_;
   // The second profile.
-  raw_ptr<Profile, ExperimentalAsh> profile_2_;
+  raw_ptr<Profile, DanglingUntriaged | ExperimentalAsh> profile_2_;
 
   // The NSSCertDatabase for |profile_1_|.
   net::NSSCertDatabase* profile_1_cert_db_;

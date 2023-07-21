@@ -32,7 +32,7 @@ class ShellSurfaceBase;
 namespace wayland {
 class SerialTracker;
 
-constexpr uint32_t kZAuraShellVersion = 51;
+constexpr uint32_t kZAuraShellVersion = 52;
 
 // Adds bindings to the Aura Shell. Normally this implies Ash on ChromeOS
 // builds. On non-ChromeOS builds the protocol provides access to Aura windowing
@@ -164,6 +164,7 @@ class AuraToplevel {
   void Deactivate();
   void SetFullscreenMode(uint32_t mode);
   void SetScaleFactor(float scale_factor);
+  void SetPersistable(bool persistable);
 
   raw_ptr<ShellSurface, ExperimentalAsh> shell_surface_;
   const raw_ptr<SerialTracker, ExperimentalAsh> serial_tracker_;

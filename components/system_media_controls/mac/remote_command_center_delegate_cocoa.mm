@@ -6,10 +6,14 @@
 
 #import <MediaPlayer/MediaPlayer.h>
 
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "components/system_media_controls/mac/remote_command_center_delegate.h"
 
-API_AVAILABLE(macos(10.12.2))
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface RemoteCommandCenterDelegateCocoa ()
 
 - (void)setCommand:(MPRemoteCommand*)command enabled:(bool)enabled;
@@ -18,7 +22,10 @@ API_AVAILABLE(macos(10.12.2))
 
 @end
 
-@implementation RemoteCommandCenterDelegateCocoa
+@implementation RemoteCommandCenterDelegateCocoa {
+  raw_ptr<system_media_controls::internal::RemoteCommandCenterDelegate>
+      _delegate;
+}
 
 - (instancetype)initWithDelegate:
     (system_media_controls::internal::RemoteCommandCenterDelegate*)delegate {

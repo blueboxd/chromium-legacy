@@ -50,13 +50,18 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/url_identity.h"
 #include "chrome/browser/ui/webui/settings/recent_site_settings_helper.h"
 #include "chrome/browser/ui/webui/settings/site_settings_helper.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browsing_data/content/browsing_data_model.h"
 #include "components/browsing_topics/browsing_topics_service.h"
@@ -606,7 +611,7 @@ void ConvertSiteGroupMapToList(
       origin_object.Set("isPartitioned", is_partitioned);
       origin_object.Set("engagement",
                         engagement_service->GetScore(origin.GetURL()));
-      origin_object.Set("usage", 0);
+      origin_object.Set("usage", 0.0);
       origin_object.Set(kNumCookies, 0);
 
       bool is_installed = installed_origins.contains(origin);
@@ -659,6 +664,24 @@ bool ShouldAddToNotificationPermissionReviewList(
       notification_count > min_engagement_notification_limit;
 
   return is_minimal_engagement || is_low_engagement;
+}
+
+base::Value::Dict CreateZoomLevelException(
+    const std::string& host_or_spec,
+    const std::string& origin_for_favicon,
+    const std::string& display_name,
+    double zoom) {
+  base::Value::Dict exception;
+  exception.Set(site_settings::kHostOrSpec, host_or_spec);
+  exception.Set(site_settings::kOriginForFavicon, origin_for_favicon);
+  exception.Set(site_settings::kDisplayName, display_name);
+
+  // Calculate the zoom percent from the factor. Round up to the nearest
+  // whole number.
+  int zoom_percent =
+      static_cast<int>(blink::PageZoomLevelToZoomFactor(zoom) * 100 + 0.5);
+  exception.Set(kZoom, base::FormatPercent(zoom_percent));
+  return exception;
 }
 
 }  // namespace
@@ -906,15 +929,22 @@ void SiteSettingsHandler::OnJavascriptAllowed() {
       ObserveSourcesForProfile(primary_otr_profile);
   }
 
-  // Here we only subscribe to the HostZoomMap for the default storage partition
-  // since we don't allow the user to manage the zoom levels for apps.
-  // We're only interested in zoom-levels that are persisted, since the user
-  // is given the opportunity to view/delete these in the content-settings page.
-  host_zoom_map_subscription_ =
+  // Listen for zoom changes in the default StoragePartition and the primary
+  // StoragePartition of all installed Isolated Web Apps.
+  auto zoom_changed_callback = base::BindRepeating(
+      &SiteSettingsHandler::OnZoomLevelChanged, base::Unretained(this));
+  host_zoom_map_subscriptions_.push_back(
       content::HostZoomMap::GetDefaultForBrowserContext(profile_)
-          ->AddZoomLevelChangedCallback(
-              base::BindRepeating(&SiteSettingsHandler::OnZoomLevelChanged,
-                                  base::Unretained(this)));
+          ->AddZoomLevelChangedCallback(zoom_changed_callback));
+  for (const web_app::IsolatedWebAppUrlInfo& iwa_url_info :
+       site_settings::GetInstalledIsolatedWebApps(profile_)) {
+    content::StoragePartition* iwa_storage_partition =
+        profile_->GetStoragePartition(
+            iwa_url_info.storage_partition_config(profile_));
+    host_zoom_map_subscriptions_.push_back(
+        content::HostZoomMap::GetForStoragePartition(iwa_storage_partition)
+            ->AddZoomLevelChangedCallback(zoom_changed_callback));
+  }
 
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(profile_->GetPrefs());
@@ -935,7 +965,7 @@ void SiteSettingsHandler::OnJavascriptAllowed() {
 void SiteSettingsHandler::OnJavascriptDisallowed() {
   observations_.RemoveAllObservations();
   chooser_observations_.RemoveAllObservations();
-  host_zoom_map_subscription_ = {};
+  host_zoom_map_subscriptions_.clear();
   pref_change_registrar_->Remove(prefs::kBlockAutoplayEnabled);
   pref_change_registrar_->Remove(prefs::kCookieControlsMode);
   observed_profiles_.RemoveAllObservations();
@@ -1009,7 +1039,8 @@ void SiteSettingsHandler::OnGetUsageInfo() {
 
   for (const BrowsingDataModel::BrowsingDataEntryView& entry :
        *browsing_data_model_) {
-    if (*entry.primary_host != usage_hostname) {
+    auto usage_origin = url::Origin::Create(GURL(usage_origin_));
+    if (!entry.Matches(usage_origin)) {
       continue;
     }
     size += entry.data_details->storage_size;
@@ -1547,9 +1578,9 @@ void SiteSettingsHandler::HandleGetOriginPermissions(
     HostContentSettingsMap* map =
         HostContentSettingsMapFactory::GetForProfile(profile_);
 
-    std::string source_string, display_name;
+    std::string source_string;
     ContentSetting content_setting = site_settings::GetContentSettingForOrigin(
-        profile_, map, origin_url, content_type, &source_string, &display_name);
+        profile_, map, origin_url, content_type, &source_string);
     std::string content_setting_string =
         content_settings::ContentSettingToString(content_setting);
 
@@ -1558,18 +1589,23 @@ void SiteSettingsHandler::HandleGetOriginPermissions(
     raw_site_exception.Set(site_settings::kIncognito,
                            profile_->IsOffTheRecord());
     raw_site_exception.Set(site_settings::kOrigin, origin);
-    absl::optional<std::string> extension_name =
-        site_settings::GetExtensionDisplayName(profile_, origin_url);
-    if (extension_name.has_value()) {
-      raw_site_exception.Set(site_settings::kExtensionNameWithId,
-                             l10n_util::GetStringFUTF8(
-                                 IDS_SETTINGS_EXTENSION_DISPLAY_NAME,
-                                 base::UTF8ToUTF16(extension_name.value()),
-                                 base::UTF8ToUTF16(origin_url.host_piece())));
-    }
-    raw_site_exception.Set(site_settings::kDisplayName, display_name);
     raw_site_exception.Set(site_settings::kSetting, content_setting_string);
     raw_site_exception.Set(site_settings::kSource, source_string);
+
+    UrlIdentity identity = site_settings::GetUrlIdentityForGURL(
+        profile_, origin_url, /*hostname_only=*/false);
+    std::string display_name;
+    if (identity.type == UrlIdentity::Type::kChromeExtension ||
+        identity.type == UrlIdentity::Type::kIsolatedWebApp) {
+      // Append " (ID: <id>)" to extensions and IWA names as the user could have
+      // multiple extensions/IWAs installed with the same name.
+      display_name = l10n_util::GetStringFUTF8(
+          IDS_SETTINGS_EXTENSION_OR_APP_DISPLAY_NAME, identity.name,
+          base::UTF8ToUTF16(origin_url.host_piece()));
+    } else {
+      display_name = base::UTF16ToUTF8(identity.name);
+    }
+    raw_site_exception.Set(site_settings::kDisplayName, display_name);
 
     exceptions.Append(std::move(raw_site_exception));
   }
@@ -1900,7 +1936,8 @@ void SiteSettingsHandler::HandleResetChooserExceptionForSite(
 
   permissions::ObjectPermissionContextBase* chooser_context =
       chooser_type->get_context(profile_);
-  chooser_context->RevokeObjectPermission(url::Origin::Create(origin), args[2]);
+  chooser_context->RevokeObjectPermission(url::Origin::Create(origin),
+                                          args[2].GetDict());
 }
 
 void SiteSettingsHandler::HandleIgnoreOriginsForNotificationPermissionReview(
@@ -2045,6 +2082,40 @@ void SiteSettingsHandler::SendZoomLevels() {
 
   base::Value::List zoom_levels_exceptions;
 
+  // Show any non-default Isolated Web App zoom levels at the top of the page.
+  auto* web_app_provider = web_app::WebAppProvider::GetForWebApps(profile_);
+  if (web_app_provider) {
+    const web_app::WebAppRegistrar& registrar =
+        web_app_provider->registrar_unsafe();
+    for (const web_app::IsolatedWebAppUrlInfo& iwa_url_info :
+         site_settings::GetInstalledIsolatedWebApps(profile_)) {
+      content::StoragePartition* iwa_storage_partition =
+          profile_->GetStoragePartition(
+              iwa_url_info.storage_partition_config(profile_));
+      auto* host_zoom_map =
+          content::HostZoomMap::GetForStoragePartition(iwa_storage_partition);
+      double iwa_zoom = host_zoom_map->GetZoomLevelForHostAndScheme(
+          chrome::kIsolatedAppScheme, iwa_url_info.origin().host());
+      if (iwa_zoom == host_zoom_map->GetDefaultZoomLevel()) {
+        continue;
+      }
+
+      zoom_levels_exceptions.Append(CreateZoomLevelException(
+          iwa_url_info.origin().Serialize(), iwa_url_info.origin().Serialize(),
+          registrar.GetAppShortName(iwa_url_info.app_id()), iwa_zoom));
+    }
+
+    // Sort by app name.
+    std::sort(zoom_levels_exceptions.begin(), zoom_levels_exceptions.end(),
+              [](const base::Value& a, const base::Value& b) {
+                const std::string& name_a =
+                    *a.GetDict().FindString(site_settings::kDisplayName);
+                const std::string& name_b =
+                    *b.GetDict().FindString(site_settings::kDisplayName);
+                return name_a < name_b;
+              });
+  }
+
   content::HostZoomMap* host_zoom_map =
       content::HostZoomMap::GetDefaultForBrowserContext(profile_);
   content::HostZoomMap::ZoomLevelVector zoom_levels(
@@ -2059,32 +2130,35 @@ void SiteSettingsHandler::SendZoomLevels() {
                const content::HostZoomMap::ZoomLevelChange& b) {
               return a.host == b.host ? a.scheme < b.scheme : a.host < b.host;
             });
+  GURL unreachable_web_data_url(content::kUnreachableWebDataURL);
   for (const auto& zoom_level : zoom_levels) {
     base::Value::Dict exception;
     switch (zoom_level.mode) {
       case content::HostZoomMap::ZOOM_CHANGED_FOR_HOST: {
-        std::string host = zoom_level.host;
-        if (host == content::kUnreachableWebDataURL) {
-          host =
+        std::string host_or_spec = zoom_level.host;
+        std::string origin_for_favicon = host_or_spec;
+        std::string display_name = host_or_spec;
+
+        if (host_or_spec == unreachable_web_data_url.host()) {
+          display_name =
               l10n_util::GetStringUTF8(IDS_ZOOMLEVELS_CHROME_ERROR_PAGES_LABEL);
         }
-        exception.Set(site_settings::kOrigin, host);
 
-        std::string display_name = host;
-        std::string origin_for_favicon = host;
         // As an optimization, only check hosts that could be an extension.
-        if (crx_file::id_util::IdIsValid(host)) {
+        if (crx_file::id_util::IdIsValid(host_or_spec)) {
           // Look up the host as an extension, if found then it is an extension.
           const extensions::Extension* extension =
               extension_registry->GetExtensionById(
-                  host, extensions::ExtensionRegistry::EVERYTHING);
+                  host_or_spec, extensions::ExtensionRegistry::EVERYTHING);
           if (extension) {
             origin_for_favicon = extension->url().spec();
             display_name = extension->name();
           }
         }
-        exception.Set(site_settings::kDisplayName, display_name);
-        exception.Set(site_settings::kOriginForFavicon, origin_for_favicon);
+
+        zoom_levels_exceptions.Append(
+            CreateZoomLevelException(host_or_spec, origin_for_favicon,
+                                     display_name, zoom_level.zoom_level));
         break;
       }
       case content::HostZoomMap::ZOOM_CHANGED_FOR_SCHEME_AND_HOST:
@@ -2094,23 +2168,6 @@ void SiteSettingsHandler::SendZoomLevels() {
       case content::HostZoomMap::ZOOM_CHANGED_TEMPORARY_ZOOM:
         NOTREACHED();
     }
-
-    std::string setting_string =
-        content_settings::ContentSettingToString(CONTENT_SETTING_DEFAULT);
-    DCHECK(!setting_string.empty());
-
-    exception.Set(site_settings::kSetting, setting_string);
-
-    // Calculate the zoom percent from the factor. Round up to the nearest whole
-    // number.
-    int zoom_percent = static_cast<int>(
-        blink::PageZoomLevelToZoomFactor(zoom_level.zoom_level) * 100 + 0.5);
-    exception.Set(kZoom, base::FormatPercent(zoom_percent));
-    exception.Set(site_settings::kSource,
-                  site_settings::SiteSettingSourceToString(
-                      site_settings::SiteSettingSource::kPreference));
-    // Append the new entry to the list and map.
-    zoom_levels_exceptions.Append(std::move(exception));
   }
 
   FireWebUIListener("onZoomLevelsChanged", zoom_levels_exceptions);
@@ -2119,17 +2176,29 @@ void SiteSettingsHandler::SendZoomLevels() {
 void SiteSettingsHandler::HandleRemoveZoomLevel(const base::Value::List& args) {
   CHECK_EQ(1U, args.size());
 
-  std::string origin = args[0].GetString();
+  std::string host_or_spec = args[0].GetString();
 
-  if (origin ==
-      l10n_util::GetStringUTF8(IDS_ZOOMLEVELS_CHROME_ERROR_PAGES_LABEL)) {
-    origin = content::kUnreachableWebDataURL;
+  GURL url(host_or_spec);
+  if (url.is_valid() && url.scheme() == chrome::kIsolatedAppScheme) {
+    base::expected<web_app::IsolatedWebAppUrlInfo, std::string> iwa_url_info =
+        web_app::IsolatedWebAppUrlInfo::Create(url);
+    if (!iwa_url_info.has_value()) {
+      return;
+    }
+    content::StoragePartition* iwa_storage_partition =
+        profile_->GetStoragePartition(
+            iwa_url_info->storage_partition_config(profile_));
+    auto* host_zoom_map =
+        content::HostZoomMap::GetForStoragePartition(iwa_storage_partition);
+    double default_level = host_zoom_map->GetDefaultZoomLevel();
+    host_zoom_map->SetZoomLevelForHost(url.host(), default_level);
+    return;
   }
 
-  content::HostZoomMap* host_zoom_map;
-  host_zoom_map = content::HostZoomMap::GetDefaultForBrowserContext(profile_);
+  content::HostZoomMap* host_zoom_map =
+      content::HostZoomMap::GetDefaultForBrowserContext(profile_);
   double default_level = host_zoom_map->GetDefaultZoomLevel();
-  host_zoom_map->SetZoomLevelForHost(origin, default_level);
+  host_zoom_map->SetZoomLevelForHost(host_or_spec, default_level);
 }
 
 void SiteSettingsHandler::HandleFetchBlockAutoplayStatus(
@@ -2316,10 +2385,14 @@ void SiteSettingsHandler::GetOriginStorage(
     if (entry.data_details->storage_size == 0)
       continue;
 
-    // Convert the primary host to an HTTPS url to match expecations for this
-    // code.
-    url::Origin origin =
-        ConvertEtldToOrigin(*entry.primary_host, /*secure=*/true);
+    url::Origin origin = absl::visit(
+        base::Overloaded{[](const std::string& host) {
+                           // Convert the primary host to an HTTPS url to match
+                           // expecations for this code.
+                           return ConvertEtldToOrigin(host, /*secure=*/true);
+                         },
+                         [](const url::Origin& origin) { return origin; }},
+        *entry.data_owner);
     UpdateDataFromModel(all_sites_map, origin_size_map, origin,
                         entry.data_details->storage_size);
   }

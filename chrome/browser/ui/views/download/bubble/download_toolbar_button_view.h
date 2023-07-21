@@ -10,7 +10,6 @@
 #include "chrome/browser/download/bubble/download_display.h"
 #include "chrome/browser/download/bubble/download_icon_state.h"
 #include "chrome/browser/download/download_ui_model.h"
-#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/animation/throb_animation.h"
@@ -43,8 +42,7 @@ class DownloadBubbleNavigationHandler {
 // displays the number of ongoing downloads.
 class DownloadToolbarButtonView : public ToolbarButton,
                                   public DownloadDisplay,
-                                  public DownloadBubbleNavigationHandler,
-                                  public BrowserListObserver {
+                                  public DownloadBubbleNavigationHandler {
  public:
   METADATA_HEADER(DownloadToolbarButtonView);
   explicit DownloadToolbarButtonView(BrowserView* browser_view);
@@ -76,9 +74,6 @@ class DownloadToolbarButtonView : public ToolbarButton,
   void OpenSecurityDialog(DownloadBubbleRowView* download_row_view) override;
   void CloseDialog(views::Widget::ClosedReason reason) override;
   void ResizeDialog() override;
-
-  // BrowserListObserver
-  void OnBrowserSetLastActive(Browser* browser) override;
 
   // Deactivates the automatic closing of the partial bubble.
   void DeactivateAutoClose();
@@ -162,6 +157,12 @@ class DownloadToolbarButtonView : public ToolbarButton,
   // Badge view drawn on top of the rest of the children. It is positioned at
   // the bottom right corner of this view's bounds.
   raw_ptr<views::ImageView> badge_image_view_ = nullptr;
+
+  // Maps number of in-progress downloads to the corresponding tooltip text, to
+  // avoid having to create the strings repeatedly. The entry for 0 is the
+  // default tooltip ("Downloads"), the entries for larger numbers are the
+  // tooltips for N in-progress downloads ("N downloads in progress").
+  std::map<int, std::u16string> tooltip_texts_;
 
   // Override for the icon color. Used for PWAs, which don't have full
   // ThemeProvider color support.

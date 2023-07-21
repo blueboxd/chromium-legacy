@@ -3998,22 +3998,46 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Extensions.ServiceWorkerBackground.StartWorker_FailStatus"
+    enum="ServiceWorkerStatusCode" expires_after="2023-04-28">
+  <owner>jlulejian@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <summary>
+    Tracks when a background service worker fails to start what is the
+    ServiceWorkerStatusCode that occurred. Logged each time a service worker
+    fails to start when we attempt to start it for extension tasks.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.ServiceWorkerBackground.StartWorkerStatus"
     enum="Boolean" expires_after="2023-10-22">
-  <owner>lazyboy@chromium.org</owner>
-  <owner>dbertoni@chromium.org</owner>
+  <owner>jlulejian@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
   <summary>
-    Tracks whether background service worker starting succeeded or not.
+    Tracks whether background service worker starting succeeded or not. Logged
+    each time a service worker has been started for extension tasks.
   </summary>
 </histogram>
 
 <histogram name="Extensions.ServiceWorkerBackground.StartWorkerTime" units="ms"
-    expires_after="2022-10-01">
-  <owner>lazyboy@chromium.org</owner>
-  <owner>dbertoni@chromium.org</owner>
+    expires_after="2024-04-26">
+  <owner>jlulejian@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
   <summary>
     The amount of time it takes to start the background service worker of an
-    extension.
+    extension that succeeded in starting. Logged when we've confirmed the
+    service worker is started for extension tasks to run.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ServiceWorkerBackground.StartWorkerTime_Fail"
+    units="ms" expires_after="2024-04-26">
+  <owner>jlulejian@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <summary>
+    The amount of time it takes to start the background service worker of an
+    extension that failed in starting. Logged when we've confirmed the service
+    worker has failed for extension tasks to run.
   </summary>
 </histogram>
 

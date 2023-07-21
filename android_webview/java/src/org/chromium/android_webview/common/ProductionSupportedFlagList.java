@@ -122,6 +122,8 @@ public final class ProductionSupportedFlagList {
                             + "support."),
             Flag.baseFeature(GpuFeatures.WEBVIEW_THREAD_SAFE_MEDIA,
                     "Use thread-safe media path, requires Android P."),
+            Flag.baseFeature(VizFeatures.ALLOW_BYPASS_RENDER_PASS_QUADS,
+                    "Enable bypass render pass for RenderPassDrawQuads"),
             Flag.baseFeature(VizFeatures.WEBVIEW_NEW_INVALIDATE_HEURISTIC,
                     "More robust heuristic for calling Invalidate"),
             Flag.baseFeature(
@@ -177,9 +179,6 @@ public final class ProductionSupportedFlagList {
                     "Enables Autofill to use its new method to retrieve parsing patterns."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_PAGE_LANGUAGE_DETECTION,
                     "Enables Autofill to retrieve the page language for form parsing."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_RATIONALIZE_STREET_ADDRESS_AND_HOUSE_NUMBER,
-                    "Rationalizes (street address, house number) field sequences to "
-                            + "(street name, house number)."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ALWAYS_PARSE_PLACEHOLDERS,
                     "When enabled, Autofill local heuristics consider the placeholder attribute "
                             + "for determining field types."),
@@ -267,6 +266,8 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.EARLY_EXIT_ON_NOOP_CLASS_OR_STYLE_CHANGE,
                     "Early exit when the style or class attribute of a DOM element is set to the"
                             + " same value as before."),
+            Flag.baseFeature(BlinkFeatures.MAIN_THREAD_HIGH_PRIORITY_IMAGE_LOADING,
+                    "If enabled, image load tasks on visible pages have high priority."),
             Flag.baseFeature(BlinkFeatures.THREADED_PRELOAD_SCANNER,
                     "If enabled, the HTMLPreloadScanner will run on a worker thread."),
             Flag.baseFeature(BlinkFeatures.TIMED_HTML_PARSER_BUDGET,
@@ -309,10 +310,10 @@ public final class ProductionSupportedFlagList {
                     "Switches skia to use DMSAA instead of MSAA for tile raster"),
             Flag.baseFeature(BlinkFeatures.CSS_PAINTING_FOR_SPELLING_GRAMMAR_ERRORS,
                     "Use the new CSS-based painting for spelling and grammar errors"),
-            Flag.baseFeature(
-                    CcFeatures.AVOID_RASTER_DURING_ELASTIC_OVERSCROLL, "No effect on webview"),
             Flag.baseFeature(BlinkFeatures.WEB_RTC_ENCODER_ASYNC_ENCODE,
                     "Make RTCVideoEncoder encode call asynchronous."),
+            Flag.baseFeature(BlinkFeatures.WEB_RTC_INITIALIZE_ENCODER_ON_FIRST_FRAME,
+                    "Initialize VideoEncodeAccelerator on the first encode."),
             Flag.baseFeature(BlinkFeatures.WEB_RTC_METRONOME,
                     "Inject a metronome into webrtc to allow task coalescing, "
                             + " including synchronized decoding."),
@@ -422,6 +423,8 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(NetworkServiceFeatures.ATTRIBUTION_REPORTING_CROSS_APP_WEB,
                     "Enable attribution reporting to cross the app/web barrier by letting "
                             + "the WebView use OS-level attribution."),
+            Flag.baseFeature(BaseFeatures.THREAD_POOL_CAP,
+                    "Reduces the thread pool cap to use less threads"),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

@@ -16,7 +16,6 @@
 #include "components/segmentation_platform/internal/segmentation_ukm_helper.h"
 #include "components/segmentation_platform/internal/stats.h"
 #include "components/segmentation_platform/public/model_provider.h"
-#include "components/segmentation_platform/public/proto/model_metadata.pb.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
 #include "third_party/perfetto/include/perfetto/tracing/track.h"
 
@@ -185,11 +184,16 @@ void ModelExecutorImpl::OnModelExecutionComplete(
   stats::RecordModelExecutionDurationModel(
       state->segment_info.segment_id(), result.has_value(),
       clock_->Now() - state->model_execution_start_time);
-  // TODO(ritikagup): Change the use of this according to MultiOutputModel.
-  if (result.has_value()) {
-    VLOG(1) << "Segmentation model result: " << result.value().at(0)
-            << " for segment "
-            << proto::SegmentId_Name(state->segment_info.segment_id());
+  if (result.has_value() && result.value().size() > 0) {
+    if (VLOG_IS_ON(1)) {
+      std::stringstream log_output;
+      for (unsigned i = 0; i < result.value().size(); ++i) {
+        log_output << " output " << i << ": " << result.value().at(i);
+      }
+      VLOG(1) << "Segmentation model result: " << log_output.str()
+              << " for segment "
+              << proto::SegmentId_Name(state->segment_info.segment_id());
+    }
     const proto::SegmentationModelMetadata& model_metadata =
         state->segment_info.model_metadata();
     if (model_metadata.has_output_config()) {
@@ -206,8 +210,6 @@ void ModelExecutorImpl::OnModelExecutionComplete(
         model_metadata.signal_storage_length() *
         metadata_utils::GetTimeUnit(model_metadata);
     if (state->segment_info.model_version() &&
-        state->segment_info.model_source() ==
-            proto::ModelSource::SERVER_MODEL_SOURCE &&
         SegmentationUkmHelper::AllowedToUploadData(signal_storage_length,
                                                    clock_)) {
       if (state->upload_tensors) {

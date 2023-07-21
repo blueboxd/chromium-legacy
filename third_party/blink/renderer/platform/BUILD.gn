@@ -307,8 +307,6 @@ component("platform") {
     "audio/audio_callback_metric_reporter.h",
     "audio/audio_channel.cc",
     "audio/audio_channel.h",
-    "audio/audio_delay_dsp_kernel.cc",
-    "audio/audio_delay_dsp_kernel.h",
     "audio/audio_destination.cc",
     "audio/audio_destination.h",
     "audio/audio_dsp_kernel.cc",
@@ -334,6 +332,8 @@ component("platform") {
     "audio/cpu/x86/vector_math_sse.cc",
     "audio/cpu/x86/vector_math_sse.h",
     "audio/cpu/x86/vector_math_x86.h",
+    "audio/delay.cc",
+    "audio/delay.h",
     "audio/denormal_disabler.h",
     "audio/direct_convolver.cc",
     "audio/direct_convolver.h",
@@ -1265,8 +1265,6 @@ component("platform") {
     "mojo/kurl_mojom_traits.h",
     "mojo/mojo_binding_context.h",
     "mojo/security_origin_mojom_traits.h",
-    "mojo/shared_storage_mojom_traits.cc",
-    "mojo/shared_storage_mojom_traits.h",
     "mojo/string16_mojom_traits.cc",
     "mojo/string16_mojom_traits.h",
     "p2p/empty_network_manager.cc",
@@ -1580,6 +1578,10 @@ component("platform") {
     }
   }
 
+  if (is_apple) {
+    configs += [ "//build/config/compiler:enable_arc" ]
+  }
+
   if (is_mac) {
     sources += [
       "audio/mac/fft_frame_mac.cc",
@@ -1593,8 +1595,6 @@ component("platform") {
       "fonts/mac/font_matcher_mac.mm",
       "fonts/mac/font_platform_data_mac.h",
       "fonts/mac/font_platform_data_mac.mm",
-      "mac/block_exceptions.h",
-      "mac/block_exceptions.mm",
       "mac/color_mac.h",
       "mac/color_mac.mm",
       "mac/graphics_context_canvas.h",
@@ -1609,7 +1609,6 @@ component("platform") {
   if (is_ios) {
     sources += [ "fonts/ios/font_cache_ios.mm" ]
   }
-
   if (is_linux || is_chromeos) {
     sources += [
       "fonts/linux/font_cache_linux.cc",
@@ -1674,6 +1673,7 @@ component("platform") {
     "//third_party/pffft:pffft",
     "//ui/base/cursor",
     "//ui/gfx",
+    "//ui/native_theme:features",
   ]
   deps = [
     "//base:base_static",
@@ -1813,12 +1813,12 @@ component("platform") {
 
   if (current_cpu == "x86" || current_cpu == "x64") {
     deps += [ ":blink_x86_avx" ]
-    sources += [ "audio/cpu/x86/audio_delay_dsp_kernel_sse2.cc" ]
+    sources += [ "audio/cpu/x86/delay_sse2.cc" ]
     allow_circular_includes_from += [ ":blink_x86_avx" ]
   }
 
   if (current_cpu == "arm64" || (current_cpu == "arm" && arm_use_neon)) {
-    sources += [ "audio/cpu/arm/audio_delay_dsp_kernel_neon.cc" ]
+    sources += [ "audio/cpu/arm/delay_neon.cc" ]
   }
 
   if (use_webaudio_ffmpeg) {
@@ -2227,6 +2227,10 @@ source_set("blink_platform_unittests_sources") {
     "widget/input/prediction/filter_factory_unittests.cc",
     "widget/input/scroll_predictor_unittest.cc",
   ]
+
+  if (is_apple) {
+    configs += [ "//build/config/compiler:enable_arc" ]
+  }
 
   if (is_android) {
     sources += [ "fonts/android/font_cache_android_test.cc" ]

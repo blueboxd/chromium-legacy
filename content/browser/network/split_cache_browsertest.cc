@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/back_forward_cache_disable.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/renderer.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -197,7 +198,7 @@ class SplitCacheContentBrowserTest : public ContentBrowserTest {
                               bool use_popup = false) {
     DCHECK(url.is_valid());
 
-    // Clear the in-memory cache held by the current process:
+    // Allocate a new process to prevent using the in-memory cache.
     // 1) Prevent the old page from entering the back-forward cache. Otherwise
     //    the old process will be kept alive, because it is still being used.
     // 2) Navigate to a WebUI URL, which uses a new process.
@@ -231,6 +232,16 @@ class SplitCacheContentBrowserTest : public ContentBrowserTest {
       }
     }
 
+    // `shell_to_observe` may still contain responses depending on process reuse
+    // policies. Clear the in-memory cache in `shell_to_observe` to make sure
+    // the following ResourceLoadObserver can observe network requests.
+    base::RunLoop loop;
+    shell_to_observe->web_contents()
+        ->GetPrimaryMainFrame()
+        ->GetProcess()
+        ->GetRendererInterface()
+        ->PurgeResourceCache(loop.QuitClosure());
+    loop.Run();
     // Observe network requests.
     ResourceLoadObserver observer(shell_to_observe);
 

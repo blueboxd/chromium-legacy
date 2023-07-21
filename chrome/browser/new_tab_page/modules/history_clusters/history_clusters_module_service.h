@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NEW_TAB_PAGE_MODULES_HISTORY_CLUSTERS_HISTORY_CLUSTERS_MODULE_SERVICE_H_
 #define CHROME_BROWSER_NEW_TAB_PAGE_MODULES_HISTORY_CLUSTERS_HISTORY_CLUSTERS_MODULE_SERVICE_H_
 
+#include "base/containers/flat_map.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -23,7 +24,6 @@ struct QueryClustersContinuationParams;
 
 class CartService;
 class HistoryClustersModuleRanker;
-class HistoryClustersModuleRankingSignals;
 class OptimizationGuideKeyedService;
 class TemplateURLService;
 
@@ -38,31 +38,33 @@ class HistoryClustersModuleService : public KeyedService {
       OptimizationGuideKeyedService* optimization_guide_keyed_service);
   ~HistoryClustersModuleService() override;
 
-  using GetClustersCallback = base::OnceCallback<void(
-      std::vector<history::Cluster>,
-      base::flat_map<int64_t, HistoryClustersModuleRankingSignals>)>;
+  using GetClustersCallback =
+      base::OnceCallback<void(std::vector<history::Cluster>)>;
 
-  // Returns the pending task to query clusters and invokes `callback` when
-  // clusters are ready.
+  // Queries clusters and invokes `callback` when clusters are ready.
   //
   // Virtual for testing.
-  virtual std::unique_ptr<history_clusters::HistoryClustersServiceTask>
-  GetClusters(GetClustersCallback callback);
+  virtual void GetClusters(GetClustersCallback callback);
 
  private:
+  // Queries clusters starting at `begin_time` and with `continuation_params`.
+  void GetClusters(
+      base::Time begin_time,
+      history_clusters::QueryClustersContinuationParams continuation_params,
+      GetClustersCallback callback);
+
   // Callback invoked when `history_clusters_service_` returns filtered
   // clusters.
   void OnGetFilteredClusters(
+      size_t pending_task_id,
+      base::Time begin_time,
       GetClustersCallback callback,
       std::vector<history::Cluster> clusters,
       history_clusters::QueryClustersContinuationParams continuation_params);
 
   // Callback invoked when `module_ranker_` returns ranked clusters.
-  void OnGetRankedClusters(
-      GetClustersCallback callback,
-      std::vector<history::Cluster> clusters,
-      base::flat_map<int64_t, HistoryClustersModuleRankingSignals>
-          ranking_signals);
+  void OnGetRankedClusters(GetClustersCallback callback,
+                           std::vector<history::Cluster> clusters);
 
   // The filtering parameters to use for all calls to fetch clusters.
   const history_clusters::QueryClustersFilterParams filter_params_;
@@ -72,6 +74,17 @@ class HistoryClustersModuleService : public KeyedService {
 
   // The categories to boost.
   const base::flat_set<std::string> category_boostlist_;
+
+  // Whether clusters should continue to be fetched from
+  // `history_clusters_service_` until visits have been exhausted.
+  const bool should_fetch_clusters_until_exhausted_;
+
+  // Holds the set of pending tasks to query clusters with a task ID so we can
+  // clean it up from the map.
+  size_t task_id_ = 0;
+  base::flat_map<size_t,
+                 std::unique_ptr<history_clusters::HistoryClustersServiceTask>>
+      in_progress_query_clusters_tasks_;
 
   raw_ptr<history_clusters::HistoryClustersService> history_clusters_service_;
   raw_ptr<CartService> cart_service_;

@@ -221,6 +221,7 @@
 <translation id="1961239773406905488">隱藏咗攝錄機預覽</translation>
 <translation id="1961832440516943645"><ph name="DATE" /> <ph name="TIME" /></translation>
 <translation id="1962969542251276847">上鎖畫面</translation>
+<translation id="1962972976741217487">有 1 部裝置連線至您的 <ph name="DEVICE_NAME" /> 熱點</translation>
 <translation id="1967970931040389207">開啟熱點</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558"><ph name="USERNAME" />，您好：</translation>
@@ -301,7 +302,6 @@
 <translation id="2367972762794486313">顯示應用程式</translation>
 <translation id="2369165858548251131">「你好」嘅英文</translation>
 <translation id="2386292613071805067">選取頁面上所有內容</translation>
-<translation id="2390318262976603432">語言代碼設定</translation>
 <translation id="2397416548179033562">顯示 Chrome 選單</translation>
 <translation id="240006516586367791">媒體控制項</translation>
 <translation id="2402411679569069051">如要解鎖 Chromebook，請使用指紋或解鎖手機</translation>
@@ -382,6 +382,7 @@
 <translation id="2791421900609674576">系統會顯示建議，讓您繼續使用上次開啟的內容。只要輕觸並按住建議即可移除。</translation>
 <translation id="2792498699870441125">Alt + 搜尋鍵</translation>
 <translation id="2797741504905337289">捷徑列群組</translation>
+<translation id="2802938996245446490"><ph name="BUTTON_LABEL" />，已選取</translation>
 <translation id="2805756323405976993">應用程式</translation>
 <translation id="2814448776515246190">局部擷取</translation>
 <translation id="2819276065543622893">現在即將登出。</translation>
@@ -458,6 +459,7 @@
 <translation id="316086887565479535">範本中有不支援的應用程式</translation>
 <translation id="3161500364292033097">關閉桌面和視窗</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> 正在回復您的 <ph name="DEVICE_TYPE" />。您的裝置將會重設，且所有資料將會被刪除。</translation>
+<translation id="3171170659304083361">輸入方法設定</translation>
 <translation id="3181441307743005334">重新啟動中，請稍候</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{已連接 1 部裝置}other{已連接 # 部裝置}}</translation>
 <translation id="320207200541803018">設定計時器</translation>
@@ -600,6 +602,7 @@
 <translation id="3735740477244556633">排序方式</translation>
 <translation id="3738664582935948253">螢幕畫面擷取內容現可顯示您點擊的項目和使用的鍵盤快速鍵</translation>
 <translation id="3742055079367172538">已拍攝螢幕擷圖</translation>
+<translation id="3756485814916578707">正在投放畫面</translation>
 <translation id="3765841986579723851">今天編輯過</translation>
 <translation id="3773700760453577392">管理員已禁止 <ph name="USER_EMAIL" /> 的多重登入功能。所有使用者都必須登出，才能繼續操作。</translation>
 <translation id="3779139509281456663">正在連接「<ph name="NAME" />」</translation>
@@ -821,6 +824,7 @@
 <translation id="4777825441726637019">Play 商店</translation>
 <translation id="4778095205580009397">「Google 助理」不適用於示範工作階段。</translation>
 <translation id="4789348252524569426">無法安裝語音檔案，裝置需要更新。請重新開機，然後再試一次。</translation>
+<translation id="478959186716341421">投放中</translation>
 <translation id="479989351350248267">搜尋</translation>
 <translation id="4804818685124855865">中斷連線</translation>
 <translation id="4814539958450445987">登入畫面</translation>
@@ -927,6 +931,7 @@
 <translation id="5297704307811127955">已關閉</translation>
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5302048478445481009">語言</translation>
+<translation id="5303783651764314393">有 <ph name="DEVICECOUNT" /> 部裝置連線至您的 <ph name="DEVICE_NAME" /> 熱點</translation>
 <translation id="5308380583665731573">連線</translation>
 <translation id="5313326810920013265">藍牙設定</translation>
 <translation id="5314219114274263156">已錄影螢幕畫面</translation>
@@ -995,7 +1000,6 @@
 <translation id="5597451508971090205"><ph name="DATE" /><ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">按下 Ctrl + Alt + Z 鍵即可停用朗讀功能。</translation>
 <translation id="5601503069213153581">PIN</translation>
-<translation id="5601571553788043181">在 Chrome 瀏覽器中開啟檔案</translation>
 <translation id="5618148318840095371">我們已將您的連線切換至更優質的網絡</translation>
 <translation id="5619862035903135339">管理員政策停用擷取螢幕截圖功能</translation>
 <translation id="5625955975703555628">LTE+</translation>
@@ -1106,6 +1110,7 @@
 <translation id="6074087755403037157">測試版</translation>
 <translation id="6093867385179428431">已由管理員停用</translation>
 <translation id="6095008505822982596">語速</translation>
+<translation id="6095425951508823973">新增 <ph name="PROVIDER" /> 嘅連線</translation>
 <translation id="6099678161144790572">上個月編輯過</translation>
 <translation id="6103838137565245112">系統</translation>
 <translation id="6114505516289286752">已下載<ph name="LANGUAGE" />語音檔案</translation>
@@ -1116,6 +1121,7 @@
 <translation id="6137566720514957455">打開移除 <ph name="USER_EMAIL_ADDRESS" /> 嘅對話框</translation>
 <translation id="6141988275892716286">確認下載</translation>
 <translation id="6154006699632741460">不支援周邊裝置</translation>
+<translation id="6156960295318603523">語言設定</translation>
 <translation id="615957422585914272">顯示螢幕小鍵盤</translation>
 <translation id="6165508094623778733">瞭解更多資料</translation>
 <translation id="6166852626429024716">搜尋您的裝置、應用程式、設定、網絡…</translation>
@@ -1333,6 +1339,7 @@
 <translation id="7165278925115064263">Alt + Shift + K 鍵</translation>
 <translation id="7168224885072002358">系統將在 <ph name="TIMEOUT_SECONDS" /> 秒後還原成原來的解像度</translation>
 <translation id="7180611975245234373">重新整理</translation>
+<translation id="7187711731540696127">您的 <ph name="DEVICE_NAME" /> 熱點已開啟，但未連線至任何裝置</translation>
 <translation id="7188494361780961876">已經將選單移去螢幕左上角。</translation>
 <translation id="7189412385142492784">金星距離幾遠</translation>
 <translation id="7198435252016571249">攝錄機已經對齊右下角，同系統平台有衝突。</translation>
@@ -1390,6 +1397,7 @@
 <translation id="7497767806359279797">選擇語言和鍵盤配置</translation>
 <translation id="7508690557411636492">上個月開啟過</translation>
 <translation id="7509246181739783082">驗證您的身分</translation>
+<translation id="7512726380443357693"><ph name="BUTTON_LABEL" />，未選取</translation>
 <translation id="7513622367902644023">揀咗螢幕截圖模式</translation>
 <translation id="7513922695575567867">日曆，<ph name="DATE" />嗰個星期，目前揀咗 <ph name="SELECTED_DATE" /> 日。</translation>
 <translation id="7514365320538308">下載</translation>
@@ -1411,7 +1419,6 @@
 <translation id="7569509451529460200">已啟用點字和 ChromeVox</translation>
 <translation id="7573585051776738856">用緊嘅視固定咗喺畫面右邊。</translation>
 <translation id="7579778809502851308">擷取螢幕畫面</translation>
-<translation id="7590883480672980941">輸入法設定</translation>
 <translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
 <translation id="7600875258240007829">查看所有通知</translation>
 <translation id="7607002721634913082">已暫停</translation>
@@ -1553,6 +1560,7 @@
 <translation id="8185090165691050712">開啟/關閉選單即可調整鎖定模式的大小</translation>
 <translation id="8192202700944119416">已隱藏通知。</translation>
 <translation id="8196787716797768628">在平板電腦模式中使用手勢快速切換應用程式，並與 Chromebook 互動。</translation>
+<translation id="8198456017687137612">正在投放分頁</translation>
 <translation id="8200772114523450471">繼續</translation>
 <translation id="8203795194971602413">按一下右鍵</translation>
 <translation id="8209010265547628927">重設</translation>

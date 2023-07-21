@@ -8,7 +8,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {ClearBrowsingDataBrowserProxyImpl, ContentSettingsTypes, CookieControlsMode, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {CrLinkRowElement, CrSettingsPrefs, HatsBrowserProxyImpl, MetricsBrowserProxyImpl, PrivacyGuideInteractions, PrivacyPageBrowserProxyImpl, Route, Router, routes, SettingsPrefsElement, SettingsPrivacyPageElement, StatusAction, SyncStatus, TrustSafetyInteraction} from 'chrome://settings/settings.js';
-import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals, assertFalse, assertTrue, assertThrows} from 'chrome://webui-test/chai_assert.js';
 import {isChildVisible, isVisible} from 'chrome://webui-test/test_util.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
@@ -186,7 +186,6 @@ suite('PrivacyPage', function() {
     assertTrue(isVisible(categorySettingExceptions));
     assertEquals(
         ContentSettingsTypes.NOTIFICATIONS, categorySettingExceptions.category);
-    assertFalse(isChildVisible(page, 'category-default-setting'));
   });
 
   test('privacySandboxRestricted', function() {
@@ -452,6 +451,109 @@ suite(`PrivacySandbox4Enabled`, function() {
   });
 });
 
+suite(`PrivacySandbox4EnabledButRestricted`, function() {
+  let page: SettingsPrivacyPageElement;
+  let settingsPrefs: SettingsPrefsElement;
+
+  suiteSetup(function() {
+    // Note that the browsertest setup ensures these values are set correctly at
+    // startup, such that routes are created (or not). They are included here to
+    // make clear the intent of the test.
+    loadTimeData.overrideValues({
+      isPrivacySandboxRestricted: true,
+      isPrivacySandboxRestrictedNoticeEnabled: false,
+    });
+
+    settingsPrefs = document.createElement('settings-prefs');
+    return CrSettingsPrefs.initialized;
+  });
+
+  setup(function() {
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    page = document.createElement('settings-privacy-page');
+    page.prefs = settingsPrefs.prefs!;
+    document.body.appendChild(page);
+    return flushTasks();
+  });
+
+  test('noPrivacySandboxRowShown', function() {
+    assertFalse(isChildVisible(page, '#privacySandboxLinkRow'));
+  });
+
+  test('noRouteForAdPrivacyPaths', function() {
+    const adPrivacyPaths = [
+      routes.PRIVACY_SANDBOX,
+      routes.PRIVACY_SANDBOX_AD_MEASUREMENT,
+      routes.PRIVACY_SANDBOX_TOPICS,
+      routes.PRIVACY_SANDBOX_FLEDGE,
+    ];
+    for (const path of adPrivacyPaths) {
+      assertThrows(() => Router.getInstance().navigateTo(path));
+    }
+  });
+});
+
+suite(`PrivacySandbox4EnabledButRestrictedWithNotice`, function() {
+  let page: SettingsPrivacyPageElement;
+  let settingsPrefs: SettingsPrefsElement;
+
+  suiteSetup(function() {
+    // Note that the browsertest setup ensures these values are set correctly at
+    // startup, such that routes are created (or not). They are included here to
+    // make clear the intent of the test.
+    loadTimeData.overrideValues({
+      isPrivacySandboxRestricted: true,
+      isPrivacySandboxRestrictedNoticeEnabled: true,
+      isPrivacySandboxSettings4: true,
+    });
+
+    settingsPrefs = document.createElement('settings-prefs');
+    return CrSettingsPrefs.initialized;
+  });
+
+  setup(function() {
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    page = document.createElement('settings-privacy-page');
+    page.prefs = settingsPrefs.prefs!;
+    document.body.appendChild(page);
+    return flushTasks();
+  });
+
+  test('privacySandboxRowShown', function() {
+    assertTrue(isChildVisible(page, '#privacySandboxLinkRow'));
+  });
+
+  test('noRouteForDisabledAdPrivacyPaths', function() {
+    const removedAdPrivacyPaths = [
+      routes.PRIVACY_SANDBOX_TOPICS,
+      routes.PRIVACY_SANDBOX_FLEDGE,
+    ];
+    const presentAdPrivacyPaths = [
+      routes.PRIVACY_SANDBOX,
+      routes.PRIVACY_SANDBOX_AD_MEASUREMENT,
+    ];
+    for (const path of removedAdPrivacyPaths) {
+      assertThrows(() => Router.getInstance().navigateTo(path));
+    }
+    for (const path of presentAdPrivacyPaths) {
+      Router.getInstance().navigateTo(path);
+      assertEquals(path, Router.getInstance().getCurrentRoute());
+    }
+  });
+
+  test('privacySandboxRowSublabel', function() {
+    const privacySandboxLinkRow =
+        page.shadowRoot!.querySelector<CrLinkRowElement>(
+            '#privacySandboxLinkRow')!;
+    // Ensure that a measurement-specific message is shown in this
+    // configuration. The default is tested in the regular
+    // PrivacySandbox4Enabled suite.
+    assertEquals(
+        loadTimeData.getString('adPrivacyRestrictedLinkRowSubLabel'),
+        privacySandboxLinkRow.subLabel);
+  });
+});
+
 suite('PrivacyGuideRowTests', function() {
   let page: SettingsPrivacyPageElement;
   let settingsPrefs: SettingsPrefsElement;
@@ -489,20 +591,22 @@ suite('PrivacyGuideRowTests', function() {
         'privacyGuideLinkRow is visible');
   });
 
-  test('privacyGuideRowVisibleChildAccount', function() {
+  test('privacyGuideRowVisibleSupervisedAccount', function() {
     assertTrue(isChildVisible(page, '#privacyGuideLinkRow'));
 
-    // The user signs in to a child user account. This hides the privacy guide
-    // entry point.
-    const syncStatus:
-        SyncStatus = {childUser: true, statusAction: StatusAction.NO_ACTION};
+    // The user signs in to a supervised user account. This hides the privacy
+    // guide entry point.
+    const syncStatus: SyncStatus = {
+      supervisedUser: true,
+      statusAction: StatusAction.NO_ACTION,
+    };
     webUIListenerCallback('sync-status-changed', syncStatus);
     flush();
     assertFalse(isChildVisible(page, '#privacyGuideLinkRow'));
 
-    // The user is no longer signed in to a child user account. This doesn't
-    // show the entry point.
-    syncStatus.childUser = false;
+    // The user is no longer signed in to a supervised user account. This
+    // doesn't show the entry point.
+    syncStatus.supervisedUser = false;
     webUIListenerCallback('sync-status-changed', syncStatus);
     flush();
     assertFalse(isChildVisible(page, '#privacyGuideLinkRow'));

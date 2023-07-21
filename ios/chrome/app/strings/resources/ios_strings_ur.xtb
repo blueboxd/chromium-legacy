@@ -113,6 +113,7 @@
 <translation id="1657011748321897393">اشتراک ناکام ہوگیا کیونکہ آپ نیٹ ورک سے منسلک نہیں ہیں۔</translation>
 <translation id="1657641691196698092">مسدود کردہ کوکیز</translation>
 <translation id="165877110639533037">کوئی کھلے ٹیبز نہیں ہیں</translation>
+<translation id="166310177317698233">آپ ٹیبز دکھائیں بٹن کو تھپتھپا کر اپنے پن کردہ ٹیبز تلاش کر سکتے ہیں۔</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> سے <ph name="TARGET_LANGUAGE" /> میں</translation>
 <translation id="1683483432843341018">موبائل سائٹ کی درخواست کریں</translation>
 <translation id="168715261339224929">اپنے تمام آلات پر اپنے بُک مارکس حاصل کرنے کیلئے، مطابقت پذیری آن کریں۔</translation>
@@ -407,6 +408,7 @@
 <translation id="3638472932233958418">ویب صفحات کو پیشگی لوڈ کریں</translation>
 <translation id="3661160521073045932">کنفیگریشن پروفائل دستیاب ہے</translation>
 <translation id="3670030362669914947">نمبر</translation>
+<translation id="3700134753671613714">اپنے سبھی آلات پر اپنے بُک مارکس حاصل کرنے کیلئے سائن ان کریں۔</translation>
 <translation id="3709582977625132201">نہ پڑھا ہوا کے بطور نشان زد کریں</translation>
 <translation id="371230970611282515">خطرناک ایونٹس ہونے سے پہلے ان کی پیشین گوئی کرتا ہے اور آپ کو ان کے بارے میں متنبہ کرتا ہے۔</translation>
 <translation id="37207012422556617">رجحان ساز تلاشیں</translation>
@@ -546,7 +548,6 @@
 <translation id="4642472735733036929">قیمت کی ٹریکنگ بند کی گئی</translation>
 <translation id="4650125387981512669">بطور <ph name="FIRST_RUN_ACCOUNT_NAME" /> جاری رکھیں</translation>
 <translation id="4652817563047461855">اس بات کو یقینی بنائیں کہ آپ کے پاس ورڈز محفوظ ہیں، معلوم کریں کہ آیا ان سے سمجھوتہ کیا گیا ہے اور اپنے آپ کو آن لائن محفوظ رکھنے میں مدد کے لیے مشورہ حاصل کریں۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">‏جب آپ اپنے Google اکاؤنٹ میں سائن ان کرتے ہیں، تو یہ خصوصیت آن ہو جاتی ہے۔</translation>
 <translation id="4659667755519643272">ٹیب سوئچ کنندہ میں داخل ہوں</translation>
 <translation id="46614316059270592">پاس ورڈ محفوظ کریں</translation>
 <translation id="4666531726415300315"><ph name="EMAIL" /> کے بطور سائن ان کردہ۔
@@ -588,7 +589,6 @@
 <translation id="4844899002472726590">ان موضوعات کو دیکھیں اور ان میں ترمیم کریں جن میں آپ کی دلچسپی ہے۔</translation>
 <translation id="4848999860252535517"><ph name="WEBSITE" /> کا پاس ورڈ حذف کریں؟</translation>
 <translation id="4854345657858711387">ایک پاس کوڈ سیٹ کریں</translation>
-<translation id="4856498338299082007">‏آپ کے Google اکاؤنٹ میں</translation>
 <translation id="4858786880085262208">‏ممکن ہونے پر HTTPS میں اپ گریڈ کریں۔ محفوظ سائٹس ایسے مواد کو سرایت کر سکتی ہیں جو محفوظ نہیں ہے۔</translation>
 <translation id="4860895144060829044">کال کریں</translation>
 <translation id="4872323082491632254">پاس ورڈز چیک کریں</translation>
@@ -667,6 +667,7 @@
 <translation id="543338862236136125">پاس ورڈ میں ترمیم کریں</translation>
 <translation id="5433691172869980887">صارف نام کاپی ہو گیا</translation>
 <translation id="5439599923922718668">اکثر ملاحظہ کردہ</translation>
+<translation id="5439618055789623719"><ph name="USER_EMAIL" /> کے بطور سائن ان ہیں</translation>
 <translation id="54401264925851789">صفحہ کی سیکیورٹی کی معلومات</translation>
 <translation id="5443952882982198570">کریڈٹ کارڈز</translation>
 <translation id="5444892875087332195">بُک مارکس</translation>
@@ -1121,7 +1122,6 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8248969482078657578">غیر فعال ٹیبز آپ کو توجہ مرکوز رکھنے میں مدد کرتے ہیں</translation>
 <translation id="8261506727792406068">حذف کریں</translation>
 <translation id="8264966119170358612">‏آپ کے محفوظ کردہ کچھ پاس ورڈز غیر Google ڈیٹا کی خلاف ورزی میں افشاء ہو گئے۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">صرف اس آلے پر</translation>
 <translation id="826614135184049678">‏آپ اپنے iPad ری سیٹ کے حصے کے طور پر اپنے اکاؤنٹ <ph name="USER_NAME" /> سے سائن آؤٹ ہو گئے تھے۔ واپس سائن ان کرنے کے لیے، نیچے "جاری رکھیں" پر تھپتھپائیں۔</translation>
 <translation id="8271720166617117963">قبول کریں اور سائن ان کریں</translation>
 <translation id="8278938988428169257">ایک لفظ یا جملہ درج کریں</translation>

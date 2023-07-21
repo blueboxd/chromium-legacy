@@ -89,8 +89,8 @@ class InstallIsolatedWebAppCommand : public WebAppCommandTemplate<AppLock> {
       const IsolatedWebAppLocation& location,
       std::unique_ptr<content::WebContents> web_contents,
       std::unique_ptr<WebAppUrlLoader> url_loader,
-      std::unique_ptr<ScopedKeepAlive> keep_alive,
-      std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive,
+      std::unique_ptr<ScopedKeepAlive> optional_keep_alive,
+      std::unique_ptr<ScopedProfileKeepAlive> optional_profile_keep_alive,
       base::OnceCallback<
           void(base::expected<InstallIsolatedWebAppCommandSuccess,
                               InstallIsolatedWebAppCommandError>)> callback,
@@ -111,7 +111,6 @@ class InstallIsolatedWebAppCommand : public WebAppCommandTemplate<AppLock> {
   const LockDescription& lock_description() const override;
   base::Value ToDebugValue() const override;
   void StartWithLock(std::unique_ptr<AppLock> lock) override;
-  void OnSyncSourceRemoved() override;
   void OnShutdown() override;
 
   void SetDataRetrieverForTesting(
@@ -167,8 +166,8 @@ class InstallIsolatedWebAppCommand : public WebAppCommandTemplate<AppLock> {
 
   std::unique_ptr<WebAppUrlLoader> url_loader_;
 
-  std::unique_ptr<ScopedKeepAlive> keep_alive_;
-  std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive_;
+  std::unique_ptr<ScopedKeepAlive> optional_keep_alive_;
+  std::unique_ptr<ScopedProfileKeepAlive> optional_profile_keep_alive_;
 
   std::unique_ptr<WebAppDataRetriever> data_retriever_;
 

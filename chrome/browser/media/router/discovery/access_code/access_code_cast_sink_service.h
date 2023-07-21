@@ -122,6 +122,9 @@ class AccessCodeCastSinkService : public KeyedService,
                              RecordRouteDuration);
     FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
                              RecordRouteDurationNonAccessCodeDevice);
+    FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
+                             AddRouteCallsHandleMediaRoute);
+
     // media_router::MediaRoutesObserver:
     void OnRoutesUpdated(const std::vector<MediaRoute>& routes) override;
 
@@ -208,6 +211,10 @@ class AccessCodeCastSinkService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest, RecordRouteDuration);
   FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
                            RecordRouteDurationNonAccessCodeDevice);
+  FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
+                           RestartExpirationTimerDoesntResetTimer);
+  FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
+                           AddRouteCallsHandleMediaRoute);
 
   // Use |AccessCodeCastSinkServiceFactory::GetForProfile(..)| to get
   // an instance of this service.
@@ -226,7 +233,7 @@ class AccessCodeCastSinkService : public KeyedService,
                              AddSinkResultCode result_code);
 
   void OnChannelOpenedResult(AddSinkResultCallback add_sink_callback,
-                             MediaSink::Id sink_id,
+                             const MediaSinkInternal& sink,
                              bool channel_opened);
 
   bool IsSinkValidAccessCodeSink(const MediaSinkInternal* sink);

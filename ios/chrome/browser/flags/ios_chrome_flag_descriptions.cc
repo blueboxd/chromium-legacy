@@ -11,11 +11,6 @@
 
 namespace flag_descriptions {
 
-const char kAdaptiveSuggestionsCountName[] = "Omnibox adaptive suggestions";
-const char kAdaptiveSuggestionsCountDescription[] =
-    "Allows Omnibox to dynamically adjust number of offered suggestions to "
-    "fill in the space between Omnibox and the soft keyboard.";
-
 const char kAddToHomeScreenName[] = "Add to home screen";
 const char kAddToHomeScreenDescription[] =
     "Allows to add a bookmark on the device home screen when sharing from a "
@@ -269,11 +264,6 @@ const char kEnableFeedHeaderSettingsName[] =
 const char kEnableFeedHeaderSettingsDescription[] =
     "When enabled, some UI elements of the feed header can be modified.";
 
-const char kDmTokenDeletionName[] = "DMToken deletion";
-const char kDmTokenDeletionDescription[] =
-    "Delete the corresponding DMToken when a managed browser is deleted in "
-    "Chrome Browser Cloud Management.";
-
 const char kEditPasswordsInSettingsName[] = "Edit passwords in settings";
 const char kEditPasswordsInSettingsDescription[] =
     "Enables password editing in settings.";
@@ -495,10 +485,9 @@ const char kFullscreenSmoothScrollingDescription[] =
     "When enabled, the web view's insets are updated for scoll events. If "
     "disabled, the the web view's frame are updated.";
 
-extern const char kHideContentSuggestionTilesName[] =
-    "Hide content suggestions tiles";
-extern const char kHideContentSuggestionTilesDescription[] =
-    "Hides content suggestions tiles from the new tab page.";
+extern const char kHistorySyncOptInName[] = "History Sync Opt-In";
+extern const char kHistorySyncOptInDescription[] =
+    "Enables history sync opt-in";
 
 const char kHttpsOnlyModeName[] = "HTTPS-Only Mode Setting";
 const char kHttpsOnlyModeDescription[] = "Enables the HTTPS-Only Mode setting";
@@ -577,9 +566,9 @@ const char kIOSPasswordBottomSheetName[] = "IOS Password Manager Bottom Sheet";
 const char kIOSPasswordBottomSheetDescription[] =
     "Enables the display of the password bottom sheet on IOS.";
 
-const char kNewTabPageFieldTrialName[] =
+const char kNewTabPageRetentionName[] =
     "New tab page features that target new users";
-const char kNewTabPageFieldTrialDescription[] =
+const char kNewTabPageRetentionDescription[] =
     "Enables new tab page features that are available on first run for new "
     "Chrome iOS users.";
 
@@ -597,12 +586,6 @@ const char kIOSSharedHighlightingV2Name[] = "Text Fragments UI improvements";
 const char kIOSSharedHighlightingV2Description[] =
     "Enables improvements to text fragments UI, including a menu for removing "
     "or resharing a highlight.";
-
-const char kIOSShowPasswordStorageInSaveInfobarName[] =
-    "Show password storage in save infobar";
-const char kIOSShowPasswordStorageInSaveInfobarDescription[] =
-    "Modifies the save password infobar to show whether the save happens to an "
-    "account or only to the current device";
 
 const char kLockBottomToolbarName[] = "Lock bottom toolbar";
 const char kLockBottomToolbarDescription[] =
@@ -826,16 +809,6 @@ const char kOptimizationGuidePushNotificationClientDescription[] =
     "Enables the client that handles incoming push notifications on behalf of "
     "the optimization guide.";
 
-const char kOptimizationGuideModelDownloadingName[] =
-    "Allow optimization guide model downloads";
-const char kOptimizationGuideModelDownloadingDescription[] =
-    "Enables the optimization guide to download prediction models.";
-
-const char kOptimizationTargetPredictionDescription[] =
-    "Enables prediction of optimization targets";
-const char kOptimizationTargetPredictionName[] =
-    "Enables usage of optimization guide TFLite models.";
-
 const char kPasswordNotesWithBackupName[] = "Password notes in settings";
 const char kPasswordNotesWithBackupDescription[] =
     "Enables a note section for each password in the settings page.";
@@ -998,12 +971,6 @@ const char kToolbarContainerName[] = "Use Toolbar Containers";
 const char kToolbarContainerDescription[] =
     "When enabled, the toolbars and their fullscreen animations will be "
     "managed by the toolbar container coordinator rather than BVC.";
-
-const char kUseLensToSearchForImageName[] =
-    "Use Google Lens to Search for images";
-const char kUseLensToSearchForImageDescription[] =
-    "When enabled, use Lens to search for images from the long press context "
-    "menu when Google is the selected search engine. iPhone only.";
 
 const char kEnableLensInHomeScreenWidgetName[] =
     "Enable Google Lens in the Home Screen Widget";

@@ -51,6 +51,11 @@ chromium-metrics-reviews@google.com.
   <variant name="TalkBack"/>
 </variants>
 
+<variants name="ArcAppInstallTypes">
+  <variant name="Manual" summary="apps manually installed by the user"/>
+  <variant name="Policy" summary="apps installed by a managed user's policy"/>
+</variants>
+
 <variants name="ArcAppKillDailyBackgroundVms">
   <variant name="" summary="Total"/>
   <variant name=".Crostini" summary="When Crostini is also running"/>
@@ -473,30 +478,6 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Arc.AppInstall.Manual.InitialSession.NumAppsIncomplete"
-    units="ms" expires_after="2023-09-15">
-  <owner>batoon@google.com</owner>
-  <owner>arc-core@google.com</owner>
-  <summary>
-    Record the number of manual installs that did not complete after the very
-    first login on a device. This metric is recorded when the ARC session is
-    stopped IFF it is the first session after opting in during the sync consent
-    screen.
-  </summary>
-</histogram>
-
-<histogram name="Arc.AppInstall.Manual.InitialSession.TimeDelta" units="ms"
-    expires_after="2023-09-15">
-  <owner>batoon@google.com</owner>
-  <owner>arc-core@google.com</owner>
-  <summary>
-    Record the length of time it took to complete a manual install after the
-    very first login on a device. This metric is recorded when a manual install
-    succeeds IFF it is the first session after opting in during the sync consent
-    screen.
-  </summary>
-</histogram>
-
 <histogram name="Arc.AppInstall.PolicySuccessRate" units="%"
     expires_after="2023-10-08">
   <owner>batoon@google.com</owner>
@@ -507,6 +488,47 @@ chromium-metrics-reviews@google.com.
     The metric is emitted when success/failure results are received for all apps
     in a policy or when 30 minutes have elapsed since the policy was received.
   </summary>
+</histogram>
+
+<histogram
+    name="Arc.AppInstall.{ArcAppInstallTypes}.InitialSession.NumAppsIncomplete"
+    units="apps" expires_after="2023-09-15">
+  <owner>batoon@google.com</owner>
+  <owner>arc-core@google.com</owner>
+  <summary>
+    Record the number of {ArcAppInstallTypes} installs that did not complete
+    after the very first login on a device. This metric is recorded when the ARC
+    session is stopped IFF it is the first session after opting in during the
+    sync consent screen.
+  </summary>
+  <token key="ArcAppInstallTypes" variants="ArcAppInstallTypes"/>
+</histogram>
+
+<histogram
+    name="Arc.AppInstall.{ArcAppInstallTypes}.InitialSession.NumAppsRequested"
+    units="apps" expires_after="2023-09-15">
+  <owner>batoon@google.com</owner>
+  <owner>arc-core@google.com</owner>
+  <summary>
+    Record the number of {ArcAppInstallTypes} installs that were requested after
+    the very first login on a device. This metric is recorded when the ARC
+    session is stopped IFF it is the first session after opting in during the
+    sync consent screen.
+  </summary>
+  <token key="ArcAppInstallTypes" variants="ArcAppInstallTypes"/>
+</histogram>
+
+<histogram name="Arc.AppInstall.{ArcAppInstallTypes}.InitialSession.TimeDelta"
+    units="ms" expires_after="2023-09-15">
+  <owner>batoon@google.com</owner>
+  <owner>arc-core@google.com</owner>
+  <summary>
+    Record the length of time it took to complete a {ArcAppInstallTypes} install
+    after the very first login on a device. This metric is recorded when the
+    install succeeds IFF it is the first session after opting in during the sync
+    consent screen.
+  </summary>
+  <token key="ArcAppInstallTypes" variants="ArcAppInstallTypes"/>
 </histogram>
 
 <histogram name="Arc.AppInstalledReason" enum="InstallationCounterReasonEnum"
@@ -666,27 +688,6 @@ chromium-metrics-reviews@google.com.
     in case check-in task is completed successfully. {ArcUserTypes}
   </summary>
   <token key="ArcUserTypes" variants="ArcUserTypes"/>
-</histogram>
-
-<histogram name="Arc.Auth.CodeFetcher.ProxyBypass{ArcUserTypes}" enum="Boolean"
-    expires_after="M96">
-  <owner>acostinas@google.com</owner>
-  <owner>chromeos-commercial-networking@google.com</owner>
-  <summary>
-    If the network is configured to use a mandatory Proxy Auto-Configuration
-    (PAC) script which is unreachable, all network requests will fail. In this
-    case, the code which fetches the auth code used for Google Play Store
-    sign-in will retry to connect directly to the Google endpoint, bypassing the
-    proxy. This histogram is only recorded if the auth code was fetched
-    successfully. A &quot;false&quot; entry means the code was successfully
-    fetched at the first try, regardless of proxy configuration. A
-    &quot;true&quot; entry means that the network is configured to use a
-    mandatory PAC script which is unreachable and code was successfully fetched
-    at the second try, when the unreachable proxy was bypassed. {ArcUserTypes}
-  </summary>
-  <token key="ArcUserTypes" variants="ArcUserTypes">
-    <variant name=""/>
-  </token>
 </histogram>
 
 <histogram name="Arc.Auth.MainAccountHashMigration.Status"
@@ -2301,12 +2302,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Arc.Tracing.Tool" enum="ArcTracingToolAction"
-    expires_after="M82">
-  <owner>khmel@google.com</owner>
-  <summary>Action of ARC++ Graphics Tracing tool.</summary>
-</histogram>
-
 <histogram name="Arc.UiAvailable.AlreadyProvisioned.TimeDelta{ArcUserTypes}"
     units="ms" expires_after="2023-09-01">
   <owner>khmel@google.com</owner>
@@ -2353,19 +2348,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Counts user interactions with ARC by type, such as ARC app launches via the
     shelf or launcher.
-  </summary>
-</histogram>
-
-<histogram name="Arc.VmDataMigration.AccessDeniedAtOpenSourceFileFailureType"
-    enum="ArcVmDataMigrationAccessDeniedAtOpenFileFailureType"
-    expires_after="2024-01-01">
-  <owner>momohatt@google.com</owner>
-  <owner>youkichihosoi@google.com</owner>
-  <owner>arc-storage@google.com</owner>
-  <summary>
-    The detailed cause of an access denied error at opening a source file during
-    ARCVM /data migration. Reported each time when the migrator encounters such
-    an error.
   </summary>
 </histogram>
 

@@ -92,7 +92,7 @@ public class ManageAccountDevicesLinkView extends LinearLayout {
         TextView linkView = findViewById(R.id.manage_devices_link);
         // If the feature is disabled, the email address is displayable by default.
         final boolean canHaveEmailAddressDisplayed =
-                account.getAccountCapabilities().canHaveEmailAddressDisplayed() != Tribool.FALSE
+                account.getAccountCapabilities().canHaveEmailAddressDisplayed() == Tribool.TRUE
                 || !ChromeFeatureList.sHideNonDisplayableAccountEmail.isEnabled();
         final String accountFullNameOrEmail =
                 canHaveEmailAddressDisplayed ? account.getEmail() : account.getFullName();

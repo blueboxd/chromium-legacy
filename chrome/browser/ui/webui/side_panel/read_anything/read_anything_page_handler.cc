@@ -16,19 +16,20 @@
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_tree_update.h"
+#include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 #include "components/services/screen_ai/public/cpp/screen_ai_service_router.h"
 #include "components/services/screen_ai/public/cpp/screen_ai_service_router_factory.h"
 #endif
 
-using read_anything::mojom::Page;
-using read_anything::mojom::PageHandler;
 using read_anything::mojom::ReadAnythingTheme;
+using read_anything::mojom::UntrustedPage;
+using read_anything::mojom::UntrustedPageHandler;
 
 ReadAnythingPageHandler::ReadAnythingPageHandler(
-    mojo::PendingRemote<Page> page,
-    mojo::PendingReceiver<PageHandler> receiver,
+    mojo::PendingRemote<UntrustedPage> page,
+    mojo::PendingReceiver<UntrustedPageHandler> receiver,
     content::WebUI* web_ui)
     : browser_(chrome::FindLastActive()),
       web_ui_(web_ui),
@@ -47,8 +48,8 @@ ReadAnythingPageHandler::ReadAnythingPageHandler(
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   if (features::IsReadAnythingWithScreen2xEnabled()) {
-    if (screen_ai::ScreenAIInstallState::GetInstance()
-            ->IsComponentAvailable()) {
+    if (screen_ai::ScreenAIInstallState::GetInstance()->get_state() ==
+        screen_ai::ScreenAIInstallState::State::kReady) {
       // Notify that the screen ai service is already ready so we can bind to
       // the content extractor.
       page_->ScreenAIServiceReady();
@@ -84,7 +85,7 @@ void ReadAnythingPageHandler::TreeRemoved(ui::AXTreeID ax_tree_id) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// read_anything::mojom::PageHandler:
+// read_anything::mojom::UntrustedPageHandler:
 ///////////////////////////////////////////////////////////////////////////////
 
 void ReadAnythingPageHandler::OnLinkClicked(const ui::AXTreeID& target_tree_id,
@@ -136,6 +137,7 @@ void ReadAnythingPageHandler::OnReadAnythingThemeChanged(
     ui::ColorId separator_color_id,
     ui::ColorId dropdown_color_id,
     ui::ColorId selected_dropdown_color_id,
+    ui::ColorId focus_ring_color_id,
     read_anything::mojom::LineSpacing line_spacing,
     read_anything::mojom::LetterSpacing letter_spacing) {
   // Elsewhere in this file, `web_contents` refers to the active web contents
@@ -252,7 +254,9 @@ void ReadAnythingPageHandler::OnActiveWebContentsChanged() {
 void ReadAnythingPageHandler::OnActiveAXTreeIDChanged() {
   ui::AXTreeID tree_id = ui::AXTreeIDUnknown();
   ukm::SourceId ukm_source_id = ukm::kInvalidSourceId;
+  GURL visible_url;
   if (active_ && web_contents()) {
+    visible_url = web_contents()->GetVisibleURL();
     content::RenderFrameHost* render_frame_host =
         web_contents()->GetPrimaryMainFrame();
     if (render_frame_host) {
@@ -261,5 +265,5 @@ void ReadAnythingPageHandler::OnActiveAXTreeIDChanged() {
     }
   }
 
-  page_->OnActiveAXTreeIDChanged(tree_id, ukm_source_id);
+  page_->OnActiveAXTreeIDChanged(tree_id, ukm_source_id, visible_url);
 }

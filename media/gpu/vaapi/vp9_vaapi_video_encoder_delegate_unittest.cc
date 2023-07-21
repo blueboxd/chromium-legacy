@@ -4,13 +4,13 @@
 
 #include "media/gpu/vaapi/vp9_vaapi_video_encoder_delegate.h"
 
+#include <va/va.h>
+
+#include <algorithm>
 #include <memory>
 #include <numeric>
 #include <tuple>
 
-#include <va/va.h>
-
-#include "base/cxx17_backports.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
@@ -233,9 +233,7 @@ MATCHER_P2(MatchVABufferDescriptor, va_buffer_type, va_buffer_size, "") {
 
 class MockVaapiWrapper : public VaapiWrapper {
  public:
-  MockVaapiWrapper()
-      : VaapiWrapper(VADisplayStateHandle(),
-                     kEncodeConstantQuantizationParameter) {}
+  MockVaapiWrapper() : VaapiWrapper(kEncodeConstantQuantizationParameter) {}
   MOCK_METHOD1(SubmitBuffer_Locked, bool(const VABufferDescriptor&));
 
  protected:
@@ -245,7 +243,8 @@ class MockVaapiWrapper : public VaapiWrapper {
 class MockVP9RateControl
     : public VideoRateControl<libvpx::VP9RateControlRtcConfig,
                               libvpx::VP9RateControlRTC,
-                              libvpx::VP9FrameParamsQpRTC> {
+                              libvpx::VP9FrameParamsQpRTC,
+                              int> {
  public:
   MockVP9RateControl() = default;
   ~MockVP9RateControl() override = default;

@@ -1140,6 +1140,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.HPRT.Network.HttpResponseCode.{NetError}"
+    enum="HttpResponseCode" expires_after="2023-07-25">
+  <owner>thefrog@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    HTTP response code from a SafeBrowsing hash-prefix real-time lookup when the
+    net error is {NetError}. Logged after a lookup request with that net error
+    finishes.
+  </summary>
+  <token key="NetError">
+    <variant name="InternetDisconnected" summary="ERR_INTERNET_DISCONNECTED"/>
+    <variant name="NetworkChanged" summary="ERR_NETWORK_CHANGED"/>
+  </token>
+</histogram>
+
 <histogram name="SafeBrowsing.HPRT.Network.Result"
     enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-09-24">
   <owner>thefrog@chromium.org</owner>
@@ -1148,6 +1163,17 @@ chromium-metrics-reviews@google.com.
     Response or error codes from SafeBrowsing hash-prefix real-time lookups.
     Logged on each resource check for which a lookup request is sent to the
     server.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.HPRT.Network.Result.WhenEnteringBackoff"
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-08-05">
+  <owner>thefrog@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Response or error codes from SafeBrowsing hash-prefix real-time lookups.
+    Logged when the resource check's lookup request results in entering backoff
+    mode.
   </summary>
 </histogram>
 
@@ -1758,8 +1784,8 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Logs whether the URL cannot be checked because it is not valid. Logged each
-    time a URL is checked by Safe Browsing URL checker if real-time lookups are
-    enabled and eligible for the request destination.
+    time a URL is checked by Safe Browsing URL checker if real-time URL lookups
+    are enabled and eligible for the request destination.
   </summary>
 </histogram>
 
@@ -1784,7 +1810,7 @@ chromium-metrics-reviews@google.com.
     Logs the threat type of cached verdicts. If the threat type is not safe, it
     means the cache is a false positive. False positive verdicts are safe
     verdicts in cache manager but turns out to be dangerous in the Safe Browsing
-    database. Logged each time a URL is checked by real time lookup and the
+    database. Logged each time a URL is checked by real time URL lookup and the
     response is safe from the cache manager.
   </summary>
 </histogram>
@@ -1829,7 +1855,7 @@ chromium-metrics-reviews@google.com.
   <summary>
     Logs the latency between the start of a token request and when the token is
     actually obtained. Logged each time a user performs a real-time Safe
-    Browsing check with token.
+    Browsing URL check with token.
   </summary>
 </histogram>
 
@@ -1860,10 +1886,10 @@ chromium-metrics-reviews@google.com.
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
-    Logs whether the real time lookup service is available when a real time URL
-    check is needed. The real time lookup service is available if it is not
-    nullptr and it is not in backoff mode. Logged when real time URL check is
-    enabled and the URL doesn't match the allowlist.
+    Logs whether the real time URL lookup service is available when a real time
+    URL check is needed. The real time URL lookup service is available if it is
+    not nullptr and it is not in backoff mode. Logged when real time URL check
+    is enabled and the URL doesn't match the allowlist.
   </summary>
 </histogram>
 
@@ -2014,7 +2040,8 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Logs the request destination that was checked by Safe Browsing real time URL
-    lookup. Logged on each resource check that is eligible for real time checks.
+    lookup. Logged on each resource check that is eligible for real time URL
+    checks.
   </summary>
 </histogram>
 
@@ -2161,7 +2188,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SafeBrowsing.TailoredSecurityConsented{Status}{PromptType}Outcome"
-    enum="SafeBrowsingTailoredSecurityOutcome" expires_after="2023-05-22">
+    enum="SafeBrowsingTailoredSecurityOutcome" expires_after="2023-11-22">
   <owner>jacastro@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2696,6 +2723,20 @@ security at risk. -->
     Track the results of writing the SafeBrowsing V4 store file to disk.
     Recorded every time a store is written to disk.
   </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.V4UnusedStoreFileExists.{Store}"
+    enum="BooleanExists" expires_after="2023-08-26">
+  <owner>drubery@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <summary>
+    Track the presence of store file {Store}.store, which was previously created
+    but has been deprecated and needs to be removed from disk. Logged once per
+    startup.
+  </summary>
+  <token key="Store">
+    <variant name="IpMalware" summary="IpMalware"/>
+  </token>
 </histogram>
 
 <histogram name="SafeBrowsing.V4Update.Network.Result"

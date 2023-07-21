@@ -113,6 +113,7 @@ Twoje zaszyfrowane dane może odczytać tylko osoba znająca hasło. Hasło nie 
 <translation id="1657011748321897393">Nie udało się udostępnić, bo nie masz połączenia z siecią.</translation>
 <translation id="1657641691196698092">Zablokowane pliki cookie</translation>
 <translation id="165877110639533037">Brak otwartych kart</translation>
+<translation id="166310177317698233">Przypięte karty znajdziesz po kliknięciu przycisku Pokaż karty.</translation>
 <translation id="1674504678466460478">Z: <ph name="SOURCE_LANGUAGE" /> na: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">Żądaj strony mobilnej</translation>
 <translation id="168715261339224929">Aby korzystać ze swoich zakładek na wszystkich urządzeniach, włącz synchronizację.</translation>
@@ -407,6 +408,7 @@ Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wys
 <translation id="3638472932233958418">Wstępne wczytywanie stron</translation>
 <translation id="3661160521073045932">Dostępny jest profil konfiguracji</translation>
 <translation id="3670030362669914947">Numer</translation>
+<translation id="3700134753671613714">Zaloguj się, by pobrać zakładki na wszystkie urządzenia.</translation>
 <translation id="3709582977625132201">Oznacz jako nieprzeczytane</translation>
 <translation id="371230970611282515">Przewiduje niebezpieczne zdarzenia i ostrzega Cię przed nimi, zanim nastąpią.</translation>
 <translation id="37207012422556617">Wyszukiwania zyskujące popularność</translation>
@@ -546,7 +548,6 @@ Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wys
 <translation id="4642472735733036929">Śledzenie cen zostało zatrzymane</translation>
 <translation id="4650125387981512669">Nadal używaj konta użytkownika <ph name="FIRST_RUN_ACCOUNT_NAME" /></translation>
 <translation id="4652817563047461855">Upewnij się, że Twoje hasła są bezpieczne, dowiedz się, czy nie zostały przejęte, i poznaj porady, jak lepiej chronić się online. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">Ta funkcja zostanie włączona, gdy zalogujesz się na swoje konto Google.</translation>
 <translation id="4659667755519643272">Otwórz przełącznik kart</translation>
 <translation id="46614316059270592">Zapisz hasło</translation>
 <translation id="4666531726415300315">Jesteś zalogowany jako <ph name="EMAIL" />.
@@ -588,7 +589,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="4844899002472726590">Wyświetl tematy, które Cię interesują, i wprowadź w nich zmiany</translation>
 <translation id="4848999860252535517">Usunąć hasło do strony <ph name="WEBSITE" />?</translation>
 <translation id="4854345657858711387">Ustaw kod dostępu</translation>
-<translation id="4856498338299082007">Na Twoim koncie Google</translation>
 <translation id="4858786880085262208">Jeśli to możliwe, przełączaj się na HTTPS. Bezpieczne witryny mogą umieszczać treści, które nie są bezpieczne.</translation>
 <translation id="4860895144060829044">Zadzwoń</translation>
 <translation id="4872323082491632254">Sprawdź hasła</translation>
@@ -667,6 +667,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="543338862236136125">Edytuj hasło</translation>
 <translation id="5433691172869980887">Nazwa użytkownika została skopiowana</translation>
 <translation id="5439599923922718668">Często odwiedzane</translation>
+<translation id="5439618055789623719">Używasz konta <ph name="USER_EMAIL" /></translation>
 <translation id="54401264925851789">Informacje o bezpieczeństwie strony</translation>
 <translation id="5443952882982198570">Karty kredytowe</translation>
 <translation id="5444892875087332195">Zakładki</translation>
@@ -1121,7 +1122,6 @@ Witryny mogą używać plików cookie do śledzenia Twojej aktywności związane
 <translation id="8248969482078657578">Sekcja Nieaktywne karty pomaga Ci się skupić</translation>
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="8264966119170358612">Niektóre z Twoich zapisanych haseł zostały ujawnione w wyniku naruszenia bezpieczeństwa danych poza firmą Google. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">Tylko na tym urządzeniu</translation>
 <translation id="826614135184049678">W ramach resetowania iPada nastąpiło wylogowanie z konta <ph name="USER_NAME" />. Aby ponownie się zalogować, kliknij „Dalej” poniżej.</translation>
 <translation id="8271720166617117963">Zaakceptuj i zaloguj się</translation>
 <translation id="8278938988428169257">Wpisz słowo lub wyrażenie</translation>

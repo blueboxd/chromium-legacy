@@ -10,6 +10,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/bind.h"
 #import "base/test/gtest_util.h"
+#import "base/test/metrics/histogram_tester.h"
 #import "base/test/scoped_feature_list.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/pref_registry/pref_registry_syncable.h"
@@ -25,15 +26,15 @@
 #import "components/sync/test/mock_sync_service.h"
 #import "components/sync_preferences/pref_service_mock_factory.h"
 #import "components/sync_preferences/pref_service_syncable.h"
-#import "ios/chrome/browser/application_context/application_context.h"
-#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #import "ios/chrome/browser/content_settings/cookie_settings_factory.h"
 #import "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prefs/browser_prefs.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state_manager.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_observer.h"
@@ -243,6 +244,8 @@ class AuthenticationServiceTest : public PlatformTest {
   web::WebTaskEnvironment task_environment_;
   signin::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
+  // Used to verify histogram logging.
+  base::HistogramTester histogram_tester_;
 };
 
 TEST_F(AuthenticationServiceTest, TestDefaultGetPrimaryIdentity) {
@@ -255,7 +258,8 @@ TEST_F(AuthenticationServiceTest, TestDefaultGetPrimaryIdentity) {
 TEST_F(AuthenticationServiceTest, TestSignInAndGetPrimaryIdentity) {
   // Sign in.
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
+  authentication_service()->SignIn(
+      identity(0), signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO);
 
   EXPECT_NSEQ(identity(0), authentication_service()->GetPrimaryIdentity(
                                signin::ConsentLevel::kSignin));
@@ -269,6 +273,9 @@ TEST_F(AuthenticationServiceTest, TestSignInAndGetPrimaryIdentity) {
       identity_manager()->HasAccountWithRefreshToken(account_info.account_id));
   EXPECT_TRUE(authentication_service()->HasPrimaryIdentity(
       signin::ConsentLevel::kSignin));
+  histogram_tester_.ExpectUniqueSample(
+      "Signin.SignIn.Completed",
+      signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO, 1);
 }
 
 // Tests that reauth prompt can be set and reset.
@@ -287,7 +294,8 @@ TEST_F(AuthenticationServiceTest, TestHandleForgottenIdentityNoPromptSignIn) {
   // Sign in.
   SetExpectationsForSignInAndSync();
   authentication_service()->SignIn(identity(0));
-  authentication_service()->GrantSyncConsent(identity(0));
+  authentication_service()->GrantSyncConsent(
+      identity(0), signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
 
   // Set the authentication service as "In Foreground", remove identity and run
   // the loop.
@@ -314,7 +322,8 @@ TEST_F(AuthenticationServiceTest, TestHandleForgottenIdentityPromptSignIn) {
   // Sign in.
   SetExpectationsForSignInAndSync();
   authentication_service()->SignIn(identity(0));
-  authentication_service()->GrantSyncConsent(identity(0));
+  authentication_service()->GrantSyncConsent(
+      identity(0), signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
 
   // Set the authentication service as "In Background", remove identity and run
   // the loop.
@@ -736,7 +745,8 @@ TEST_F(AuthenticationServiceTest, SigninAndSyncDecoupled) {
   // Grant Sync consent.
   EXPECT_CALL(*sync_setup_service_mock(), PrepareForFirstSyncSetup).Times(1);
   EXPECT_CALL(*mock_sync_service(), SetSyncFeatureRequested());
-  authentication_service()->GrantSyncConsent(identity(0));
+  authentication_service()->GrantSyncConsent(
+      identity(0), signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
 
   EXPECT_NSEQ(identity(0), authentication_service()->GetPrimaryIdentity(
                                signin::ConsentLevel::kSignin));
@@ -764,7 +774,8 @@ TEST_F(AuthenticationServiceTest, TestHandleRestrictedIdentityPromptSignIn) {
   // Sign in.
   SetExpectationsForSignInAndSync();
   authentication_service()->SignIn(identity(0));
-  authentication_service()->GrantSyncConsent(identity(0));
+  authentication_service()->GrantSyncConsent(
+      identity(0), signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
 
   // Set the account restriction.
   SetPattern("foo");

@@ -147,13 +147,6 @@ TEST_F(DriveServiceTest, PassesDataOnSuccess) {
   ASSERT_EQ(1,
             histogram_tester_.GetBucketCount("NewTabPage.Modules.DataRequest",
                                              base::PersistentHash("drive")));
-  // The third item is malformed. So, even though we can display the first two
-  // items, we report a content error.
-  ASSERT_EQ(1, histogram_tester_.GetBucketCount(
-                   "NewTabPage.Drive.ItemSuggestRequestResult",
-                   ItemSuggestRequestResult::kContentError));
-  ASSERT_EQ(1,
-            histogram_tester_.GetBucketCount("NewTabPage.Drive.FileCount", 2));
 }
 
 TEST_F(DriveServiceTest, PassesDataToMultipleRequestsToDriveService) {
@@ -253,11 +246,6 @@ TEST_F(DriveServiceTest, PassesDataToMultipleRequestsToDriveService) {
   ASSERT_EQ(1,
             histogram_tester_.GetBucketCount("NewTabPage.Modules.DataRequest",
                                              base::PersistentHash("drive")));
-  ASSERT_EQ(1, histogram_tester_.GetBucketCount(
-                   "NewTabPage.Drive.ItemSuggestRequestResult",
-                   ItemSuggestRequestResult::kSuccess));
-  ASSERT_EQ(1,
-            histogram_tester_.GetBucketCount("NewTabPage.Drive.FileCount", 1));
 }
 
 TEST_F(DriveServiceTest, PassesCachedDataIfRequested) {
@@ -465,9 +453,6 @@ TEST_F(DriveServiceTest, PassesNoDataOnNetError) {
   ASSERT_EQ(1,
             histogram_tester_.GetBucketCount("NewTabPage.Modules.DataRequest",
                                              base::PersistentHash("drive")));
-  ASSERT_EQ(1, histogram_tester_.GetBucketCount(
-                   "NewTabPage.Drive.ItemSuggestRequestResult",
-                   ItemSuggestRequestResult::kNetworkError));
 }
 
 TEST_F(DriveServiceTest, PassesNoDataOnEmptyResponse) {
@@ -495,9 +480,6 @@ TEST_F(DriveServiceTest, PassesNoDataOnEmptyResponse) {
   ASSERT_EQ(1,
             histogram_tester_.GetBucketCount("NewTabPage.Modules.DataRequest",
                                              base::PersistentHash("drive")));
-  ASSERT_EQ(1, histogram_tester_.GetBucketCount(
-                   "NewTabPage.Drive.ItemSuggestRequestResult",
-                   ItemSuggestRequestResult::kJsonParseError));
 }
 
 TEST_F(DriveServiceTest, PassesNoDataOnMissingItemKey) {
@@ -528,9 +510,6 @@ TEST_F(DriveServiceTest, PassesNoDataOnMissingItemKey) {
   ASSERT_EQ(1,
             histogram_tester_.GetBucketCount("NewTabPage.Modules.DataRequest",
                                              base::PersistentHash("drive")));
-  ASSERT_EQ(1, histogram_tester_.GetBucketCount(
-                   "NewTabPage.Drive.ItemSuggestRequestResult",
-                   ItemSuggestRequestResult::kContentError));
 }
 
 TEST_F(DriveServiceTest, DismissModule) {

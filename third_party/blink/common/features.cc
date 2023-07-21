@@ -361,10 +361,6 @@ const base::FeatureParam<int>
         &kSharedStorageSelectURLLimit,
         "SharedStorageSelectURLBitBudgetPerOriginPerPageLoad", 6};
 
-BASE_FEATURE(kPrerender2SequentialPrerendering,
-             "Prerender2SequentialPrerendering",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kPrerender2MainFrameNavigation,
              "Prerender2MainFrameNavigation",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -768,7 +764,7 @@ BASE_FEATURE(kProduceCompileHints,
 const base::FeatureParam<int> kProduceCompileHintsOnIdleDelayParam{
     &kProduceCompileHints, "delay-in-ms", 10000};
 const base::FeatureParam<double> kProduceCompileHintsNoiseLevel{
-    &kProduceCompileHints, "noise probability", 0.9};
+    &kProduceCompileHints, "noise probability", 0.5};
 
 // Make all pending 'display: auto' web fonts enter the swap or failure period
 // immediately before reaching the LCP time limit (~2500ms), so that web fonts
@@ -938,6 +934,12 @@ BASE_FEATURE(kWebAppManifestLockScreen,
 // Enable borderless mode for desktop PWAs. go/borderless-mode
 BASE_FEATURE(kWebAppBorderless,
              "WebAppBorderless",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Allows web apps to customize their tab strip. See explainer for more detail:
+// https://github.com/WICG/manifest-incubations/blob/gh-pages/tabbed-mode-explainer.md
+BASE_FEATURE(kDesktopPWAsTabStripCustomizations,
+             "DesktopPWAsTabStripCustomizations",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Makes network loading tasks unfreezable so that they can be processed while
@@ -1545,6 +1547,10 @@ BASE_FEATURE(kWebRtcEncoderAsyncEncode,
              "WebRtcEncoderAsyncEncode",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kWebRtcInitializeEncoderOnFirstFrame,
+             "WebRtcInitializeEncoderOnFirstFrame",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kWebRtcThreadsUseResourceEfficientType,
              "WebRtcThreadsUseResourceEfficientType",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1579,7 +1585,7 @@ BASE_FEATURE(kFastPathPaintPropertyUpdates,
 
 BASE_FEATURE(kThrottleOffscreenAnimatingSvgImages,
              "ThrottleOffscreenAnimatingSvgImages",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kThreadedBodyLoader,
              "ThreadedBodyLoader",
@@ -1796,6 +1802,14 @@ BASE_FEATURE(kKeepAliveInBrowserMigration,
 
 BASE_FEATURE(kGainmapHdrImages,
              "GainmapHdrImages",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kMainThreadHighPriorityImageLoading,
+             "MainThreadHighPriorityImageLoading",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kInputIpcDirect,
+             "InputIpcDirect",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

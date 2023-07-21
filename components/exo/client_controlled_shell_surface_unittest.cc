@@ -577,6 +577,23 @@ TEST_P(ClientControlledShellSurfaceTest, Frame) {
   widget->LayoutRootViewIfNecessary();
   EXPECT_FALSE(frame_view->GetFrameEnabled());
   EXPECT_FALSE(frame_view->GetHeaderView()->in_immersive_mode());
+
+  // Fullscreen (AUTOHIDE) to normal with a single commit.
+  shell_surface->SetGeometry(fullscreen_bounds);
+  shell_surface->SetMaximized();
+  shell_surface->SetFullscreen(true);
+  surface->SetFrame(SurfaceFrameType::AUTOHIDE);
+  surface->Commit();
+
+  shell_surface->SetGeometry(client_bounds);
+  shell_surface->SetRestored();
+  shell_surface->SetFullscreen(false);
+  surface->SetFrame(SurfaceFrameType::NORMAL);
+  surface->Commit();
+  EXPECT_TRUE(frame_view->GetFrameEnabled());
+  EXPECT_EQ(normal_window_bounds, widget->GetWindowBoundsInScreen());
+  EXPECT_EQ(client_bounds,
+            frame_view->GetClientBoundsForWindowBounds(normal_window_bounds));
 }
 
 namespace {
@@ -1877,7 +1894,7 @@ TEST_P(ClientControlledShellSurfaceTest, SnappedInTabletMode) {
 
   EnableTabletMode(true);
 
-  ash::WMEvent event(ash::WM_EVENT_SNAP_PRIMARY);
+  ash::WindowSnapWMEvent event(ash::WM_EVENT_SNAP_PRIMARY);
   window_state->OnWMEvent(&event);
   EXPECT_EQ(window_state->GetStateType(), WindowStateType::kPrimarySnapped);
 
@@ -2440,7 +2457,7 @@ TEST_P(ClientControlledShellSurfaceTest, SnappedClientBounds) {
   surface->Commit();
   EXPECT_EQ(gfx::Rect(50, 68, 200, 332), widget->GetWindowBoundsInScreen());
 
-  ash::WMEvent event(ash::WM_EVENT_SNAP_PRIMARY);
+  ash::WindowSnapWMEvent event(ash::WM_EVENT_SNAP_PRIMARY);
   ash::WindowState::Get(window)->OnWMEvent(&event);
   EXPECT_EQ(gfx::Rect(0, 32, 400, 568), delegate->requested_bounds().back());
 

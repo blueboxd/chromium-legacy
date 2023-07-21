@@ -10,28 +10,51 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/table_layout.h"
 
-FedCmModalDialogView::FedCmModalDialogView(content::WebContents* web_contents,
-                                           const GURL& url)
-    : web_contents_(web_contents), curr_origin_(url::Origin::Create(url)) {
+FedCmModalDialogView::FedCmModalDialogView(
+    content::WebContents* web_contents,
+    const GURL& url,
+    FedCmModalDialogView::Observer* observer)
+    : web_contents_(web_contents),
+      observer_(observer),
+      curr_origin_(url::Origin::Create(url)) {
   SetModalType(ui::MODAL_TYPE_CHILD);
   SetButtons(ui::DIALOG_BUTTON_NONE);
   Init(url);
 }
 
-FedCmModalDialogView::~FedCmModalDialogView() = default;
+FedCmModalDialogView::~FedCmModalDialogView() {
+  // Let the observer know that this object is being destroyed.
+  if (observer_) {
+    observer_->OnFedCmModalDialogViewDestroyed();
+  }
+}
 
 // static
 FedCmModalDialogView* FedCmModalDialogView::ShowFedCmModalDialog(
     content::WebContents* web_contents,
-    const GURL& url) {
+    const GURL& url,
+    FedCmModalDialogView::Observer* observer) {
   // This dialog owns itself. DialogDelegateView will delete |dialog| instance.
-  FedCmModalDialogView* dialog = new FedCmModalDialogView(web_contents, url);
+  FedCmModalDialogView* dialog =
+      new FedCmModalDialogView(web_contents, url, observer);
   constrained_window::ShowWebModalDialogViews(dialog, web_contents);
   return dialog;
+}
+
+void FedCmModalDialogView::CloseFedCmModalDialog() {
+  contents_wrapper_->GetWidget()->Close();
+}
+
+content::WebContents* FedCmModalDialogView::GetWebViewWebContents() {
+  DCHECK(web_view_);
+  return web_view_->GetWebContents();
+}
+
+void FedCmModalDialogView::RemoveObserver() {
+  observer_ = nullptr;
 }
 
 void FedCmModalDialogView::Init(const GURL& url) {
@@ -54,19 +77,18 @@ void FedCmModalDialogView::Init(const GURL& url) {
       contents_wrapper->AddChildView(std::make_unique<views::View>());
   header_view = PopulateSheetHeaderView(header_view, url);
 
-  auto* web_view = contents_wrapper->AddChildView(
+  web_view_ = contents_wrapper->AddChildView(
       std::make_unique<views::WebView>(web_contents_->GetBrowserContext()));
-
-  web_view->SetPreferredSize(gfx::Size(kDialogMinWidth, kDialogHeight));
-  web_view->LoadInitialURL(url);
+  web_view_->SetPreferredSize(gfx::Size(kDialogMinWidth, kDialogHeight));
+  web_view_->LoadInitialURL(url);
 
   web_modal::WebContentsModalDialogManager::CreateForWebContents(
-      web_view->GetWebContents());
+      web_view_->GetWebContents());
   web_modal::WebContentsModalDialogManager::FromWebContents(
-      web_view->GetWebContents())
+      web_view_->GetWebContents())
       ->SetDelegate(this);
 
-  Observe(web_view->GetWebContents());
+  Observe(web_view_->GetWebContents());
 
   contents_wrapper_ = AddChildView(std::move(contents_wrapper));
 }

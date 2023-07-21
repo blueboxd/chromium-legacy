@@ -8,8 +8,9 @@
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "components/device_signals/core/browser/user_permission_service.h"
+
+class PrefService;
 
 namespace policy {
 class ManagementService;
@@ -22,7 +23,8 @@ class UserDelegate;
 class UserPermissionServiceImpl : public UserPermissionService {
  public:
   UserPermissionServiceImpl(policy::ManagementService* management_service,
-                            std::unique_ptr<UserDelegate> user_delegate);
+                            std::unique_ptr<UserDelegate> user_delegate,
+                            PrefService* user_prefs);
 
   UserPermissionServiceImpl(const UserPermissionServiceImpl&) = delete;
   UserPermissionServiceImpl& operator=(const UserPermissionServiceImpl&) =
@@ -31,15 +33,22 @@ class UserPermissionServiceImpl : public UserPermissionService {
   ~UserPermissionServiceImpl() override;
 
   // UserPermissionService:
-  void CanUserCollectSignals(const UserContext& user_context,
-                             CanCollectCallback callback) override;
-  void CanCollectSignals(CanCollectCallback callback) override;
+  bool ShouldCollectConsent() override;
+  UserPermission CanUserCollectSignals(
+      const UserContext& user_context) override;
+  UserPermission CanCollectSignals() override;
 
  private:
-  base::raw_ptr<policy::ManagementService> management_service_;
-  std::unique_ptr<UserDelegate> user_delegate_;
+  // Returns whether the user has explicitly agreed to device signals being
+  // shared or not.
+  bool HasUserConsented() const;
 
-  base::WeakPtrFactory<UserPermissionServiceImpl> weak_factory_{this};
+  // Returns true if the device is Cloud-managed.
+  bool IsDeviceCloudManaged() const;
+
+  const raw_ptr<policy::ManagementService> management_service_;
+  const std::unique_ptr<UserDelegate> user_delegate_;
+  const raw_ptr<PrefService> user_prefs_;
 };
 
 }  // namespace device_signals

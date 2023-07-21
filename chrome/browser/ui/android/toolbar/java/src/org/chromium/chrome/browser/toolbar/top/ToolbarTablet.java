@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarCoordinator;
 import org.chromium.chrome.browser.omnibox.NewTabPageDelegate;
-import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -128,11 +127,6 @@ public class ToolbarTablet
                 getResources().getDimensionPixelOffset(R.dimen.toolbar_edge_padding);
     }
 
-    public boolean isToolbarButtonReorderingEnabled() {
-        return ChromeFeatureList.sTabStripRedesign.isEnabled()
-            && !OmniboxFeatures.isTabStripToolbarReorderingDisabled();
-    }
-
     @Override
     public void onFinishInflate() {
         super.onFinishInflate();
@@ -141,9 +135,8 @@ public class ToolbarTablet
         mForwardButton = findViewById(R.id.forward_button);
         mReloadButton = findViewById(R.id.refresh_button);
 
-        // Reposition home button to align with desktop ordering when TSR enabled and toolbar
-        // reordering not disabled
-        if (isToolbarButtonReorderingEnabled()) {
+        // Reposition home button to align with desktop ordering when TSR enabled.
+        if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
             // Remove home button view added in XML and adding back with different ordering
             // programmatically.
             ((ViewGroup) mHomeButton.getParent()).removeView(mHomeButton);
@@ -197,7 +190,7 @@ public class ToolbarTablet
         mHomeButton.setOnKeyListener(new KeyboardNavigationListener() {
             @Override
             public View getNextFocusForward() {
-                if (isToolbarButtonReorderingEnabled()) {
+                if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
                     return findViewById(R.id.url_bar);
                 } else {
                     if (mBackButton.isFocusable()) {
@@ -212,7 +205,7 @@ public class ToolbarTablet
 
             @Override
             public View getNextFocusBackward() {
-                if (isToolbarButtonReorderingEnabled()) {
+                if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
                     return findViewById(R.id.refresh_button);
                 } else {
                     return findViewById(R.id.menu_button);
@@ -234,7 +227,7 @@ public class ToolbarTablet
 
             @Override
             public View getNextFocusBackward() {
-                if (isToolbarButtonReorderingEnabled()) {
+                if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
                     return findViewById(R.id.menu_button);
                 } else {
                     if (mHomeButton.getVisibility() == VISIBLE) {
@@ -258,7 +251,7 @@ public class ToolbarTablet
             public View getNextFocusBackward() {
                 if (mBackButton.isFocusable()) {
                     return mBackButton;
-                } else if (!isToolbarButtonReorderingEnabled()
+                } else if (!ChromeFeatureList.sTabStripRedesign.isEnabled()
                         && mHomeButton.getVisibility() == VISIBLE) {
                     return findViewById(R.id.home_button);
                 } else {
@@ -272,7 +265,7 @@ public class ToolbarTablet
         mReloadButton.setOnKeyListener(new KeyboardNavigationListener() {
             @Override
             public View getNextFocusForward() {
-                if (isToolbarButtonReorderingEnabled()
+                if (ChromeFeatureList.sTabStripRedesign.isEnabled()
                         && mHomeButton.getVisibility() == VISIBLE) {
                     return findViewById(R.id.home_button);
                 } else {
@@ -286,7 +279,7 @@ public class ToolbarTablet
                     return mForwardButton;
                 } else if (mBackButton.isFocusable()) {
                     return mBackButton;
-                } else if (!isToolbarButtonReorderingEnabled()
+                } else if (!ChromeFeatureList.sTabStripRedesign.isEnabled()
                         && mHomeButton.getVisibility() == VISIBLE) {
                     return findViewById(R.id.home_button);
                 } else {

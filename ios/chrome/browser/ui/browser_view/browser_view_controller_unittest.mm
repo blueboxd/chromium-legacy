@@ -13,21 +13,23 @@
 #import "components/open_from_clipboard/fake_clipboard_recent_content.h"
 #import "components/search_engines/template_url_service.h"
 #import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
-#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/history/history_service_factory.h"
 #import "ios/chrome/browser/lens/lens_browser_agent.h"
-#import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
-#import "ios/chrome/browser/prerender/fake_prerender_service.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
+#import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
+#import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/web_state_list/test/fake_web_state_list_delegate.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/shared/public/commands/activity_service_commands.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
@@ -65,9 +67,6 @@
 #import "ios/chrome/browser/web/page_placeholder_browser_agent.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/web/web_state_update_browser_agent.h"
-#import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
 #import "ios/chrome/test/block_cleanup_test.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
@@ -218,8 +217,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     safe_area_provider_ =
         [[SafeAreaProvider alloc] initWithBrowser:browser_.get()];
 
-    fake_prerender_service_ = std::make_unique<FakePrerenderService>();
-
     popup_menu_coordinator_ =
         [[PopupMenuCoordinator alloc] initWithBrowser:browser_.get()];
     [popup_menu_coordinator_ start];
@@ -270,7 +267,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
         PagePlaceholderBrowserAgent::FromBrowser(browser_.get());
 
     BrowserViewControllerDependencies dependencies;
-    dependencies.prerenderService = fake_prerender_service_.get();
     dependencies.bubblePresenter = bubble_presenter_;
     dependencies.popupMenuCoordinator = popup_menu_coordinator_;
     dependencies.primaryToolbarCoordinator = primary_toolbar_coordinator_;
@@ -288,10 +284,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     dependencies.layoutGuideCenter =
         LayoutGuideCenterForBrowser(browser_.get());
     dependencies.webStateList = browser_->GetWebStateList()->AsWeakPtr();
-    dependencies.secondaryToolbarContainerCoordinator =
-        [[ToolbarContainerCoordinator alloc]
-            initWithBrowser:browser_.get()
-                       type:ToolbarContainerType::kSecondary];
     dependencies.safeAreaProvider = safe_area_provider_;
     dependencies.pagePlaceholderBrowserAgent = page_placeholder_browser_agent_;
     dependencies.applicationCommandsHandler = mockApplicationCommandHandler_;
@@ -377,7 +369,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<Browser> browser_;
-  std::unique_ptr<PrerenderService> fake_prerender_service_;
   KeyCommandsProvider* key_commands_provider_;
   PKAddPassesViewController* passKitViewController_;
   OCMockObject* dependencyFactory_;

@@ -12,6 +12,7 @@
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/component_updater/cros_component_manager.h"
 #include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_service.h"
@@ -172,6 +173,9 @@ class CrOSComponentInstaller : public CrOSComponentManager {
             UpdatePolicy update_policy,
             LoadCallback load_callback) override;
   bool Unload(const std::string& name) override;
+  void GetVersion(const std::string& name,
+                  base::OnceCallback<void(const base::Version&)>
+                      version_callback) const override;
   void RegisterCompatiblePath(const std::string& name,
                               const base::FilePath& path) override;
   void RegisterInstalled() override;
@@ -260,6 +264,12 @@ class CrOSComponentInstaller : public CrOSComponentManager {
                   const std::string& name,
                   absl::optional<base::FilePath> result);
 
+  // Calls `version_callback` and pass in the parameter `result` (component
+  // version).
+  void FinishGetVersion(
+      base::OnceCallback<void(const base::Version&)> version_callback,
+      absl::optional<std::string> result) const;
+
   // Registers component |configs| to be updated.
   void RegisterN(const std::vector<ComponentConfig>& configs);
 
@@ -288,6 +298,8 @@ class CrOSComponentInstaller : public CrOSComponentManager {
   std::map<std::string, LoadInfo> load_cache_;
 
   const raw_ptr<ComponentUpdateService, ExperimentalAsh> component_updater_;
+
+  base::WeakPtrFactory<CrOSComponentInstaller> weak_factory_{this};
 };
 
 }  // namespace component_updater

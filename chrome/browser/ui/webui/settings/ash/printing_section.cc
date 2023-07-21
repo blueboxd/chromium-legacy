@@ -120,6 +120,8 @@ void PrintingSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"cupsPrintersLearnMoreLabel",
        IDS_SETTINGS_PRINTING_CUPS_PRINTERS_LEARN_MORE_LABEL},
       {"addCupsPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_PRINTER},
+      {"addCupsPrinterManually",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_PRINTER_MANUALLY},
       {"editPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_EDIT},
       {"viewPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_VIEW},
       {"removePrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_REMOVE},
@@ -150,6 +152,9 @@ void PrintingSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PRINTING_CUPS_PRINTERS_SAVED_PRINTERS_COUNT_ONE},
       {"savedPrintersCountNone",
        IDS_SETTINGS_PRINTING_CUPS_PRINTERS_SAVED_PRINTERS_COUNT_NONE},
+      {"helpSectionTitle", IDS_SETTINGS_PRINTING_CUPS_HELP_SECTION_TITLE},
+      {"helpSectionDescription",
+       IDS_SETTINGS_PRINTING_CUPS_HELP_SECTION_DESCRIPTION},
       {"showMorePrinters", IDS_SETTINGS_PRINTING_CUPS_SHOW_MORE},
       {"addPrintersNearbyTitle",
        IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTERS_NEARBY_TITLE},
@@ -287,9 +292,10 @@ void PrintingSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "printingCUPSPrintPpdLearnMoreUrl",
       GetHelpUrlWithBoard(chrome::kCupsPrintPPDLearnMoreURL));
-  html_source->AddBoolean("isViewPpdEnabled", features::IsViewPpdEnabled());
   html_source->AddBoolean("isPrinterSettingsRevampEnabled",
                           features::IsPrinterSettingsRevampEnabled());
+  html_source->AddBoolean("isPrinterSettingsPrinterStatusEnabled",
+                          features::IsPrinterSettingsPrinterStatusEnabled());
 }
 
 void PrintingSection::AddHandlers(content::WebUI* web_ui) {

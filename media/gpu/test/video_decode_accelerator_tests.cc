@@ -4,6 +4,7 @@
 
 #include <limits>
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
@@ -285,6 +286,71 @@ class VideoDecoderTest : public ::testing::Test {
 
 }  // namespace
 
+// Test initializing the video decoder for the specified video. Initialization
+// will be successful if the video decoder is capable of decoding the test
+// video's configuration (e.g. codec and resolution). The test only verifies
+// initialization and doesn't decode the video.
+TEST_F(VideoDecoderTest, Initialize) {
+  auto tvp = CreateDecoderListener(g_env->Video());
+  EXPECT_EQ(tvp->GetEventCount(DecoderListener::Event::kInitialized), 1u);
+}
+
+// Test video decoder simple re-initialization: Initialize, then without
+// playing, re-initialize.
+TEST_F(VideoDecoderTest, Reinitialize) {
+  if (g_env->GetDecoderImplementation() != DecoderImplementation::kVD) {
+    GTEST_SKIP() << "Re-initialization is only supported by the "
+                    "media::VideoDecoder interface;";
+  }
+  // Create and initialize the video decoder.
+  auto tvp = CreateDecoderListener(g_env->Video());
+
+  EXPECT_EQ(tvp->GetEventCount(DecoderListener::Event::kInitialized), 1u);
+
+  // Re-initialize the video decoder, without having played the video.
+  EXPECT_TRUE(tvp->Initialize(g_env->Video()));
+  EXPECT_EQ(tvp->GetEventCount(DecoderListener::Event::kInitialized), 2u);
+}
+
+// Test video decoder simple re-initialization, then re-initialization after a
+// successful play.
+TEST_F(VideoDecoderTest, ReinitializeThenPlayThenInitialize) {
+  if (g_env->GetDecoderImplementation() != DecoderImplementation::kVD) {
+    GTEST_SKIP() << "Re-initialization is only supported by the "
+                    "media::VideoDecoder interface;";
+  }
+
+  // Create and initialize the video decoder.
+  auto tvp = CreateDecoderListener(g_env->Video());
+  EXPECT_EQ(tvp->GetEventCount(DecoderListener::Event::kInitialized), 1u);
+
+  // Re-initialize the video decoder, without having played the video.
+  EXPECT_TRUE(tvp->Initialize(g_env->Video()));
+  EXPECT_EQ(tvp->GetEventCount(DecoderListener::Event::kInitialized), 2u);
+
+  // Play the video from start to end.
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForFlushDone());
+  EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
+  EXPECT_TRUE(tvp->WaitForFrameProcessors());
+
+  // Try re-initializing the video decoder again.
+  EXPECT_TRUE(tvp->Initialize(g_env->Video()));
+  EXPECT_EQ(tvp->GetEventCount(DecoderListener::Event::kInitialized), 3u);
+}
+
+// Create a video decoder and immediately destroy it without initializing. The
+// video decoder will be automatically destroyed when the video player goes out
+// of scope at the end of the test. The test will pass if no asserts or crashes
+// are triggered upon destroying.
+TEST_F(VideoDecoderTest, DestroyBeforeInitialize) {
+  DecoderWrapperConfig config = DecoderWrapperConfig();
+  config.implementation = g_env->GetDecoderImplementation();
+  auto tvp = DecoderListener::Create(config, FrameRendererDummy::Create());
+  EXPECT_NE(tvp, nullptr);
+}
+
 // Play video from start to end. Wait for the kFlushDone event at the end of the
 // stream, that notifies us all frames have been decoded.
 TEST_F(VideoDecoderTest, FlushAtEndOfStream) {
@@ -370,7 +436,7 @@ TEST_F(VideoDecoderTest, ResetEndOfStream) {
   tvp->Reset();
   EXPECT_TRUE(tvp->WaitForResetDone());
   tvp->Play();
-  EXPECT_TRUE(tvp->WaitForFlushDone());
+  ASSERT_TRUE(tvp->WaitForFlushDone());
 
   EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFlushDoneCount(), 2u);
@@ -486,53 +552,6 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_MultipleConcurrentDecodes) {
   }
 }
 
-// Test initializing the video decoder for the specified video. Initialization
-// will be successful if the video decoder is capable of decoding the test
-// video's configuration (e.g. codec and resolution). The test only verifies
-// initialization and doesn't decode the video.
-TEST_F(VideoDecoderTest, Initialize) {
-  auto tvp = CreateDecoderListener(g_env->Video());
-  EXPECT_EQ(tvp->GetEventCount(DecoderListener::Event::kInitialized), 1u);
-}
-
-// Test video decoder re-initialization. Re-initialization is only supported by
-// the media::VideoDecoder interface, so the test will be skipped if
-// --use-legacy or --use_vd_vda are specified.
-TEST_F(VideoDecoderTest, Reinitialize) {
-  if (g_env->GetDecoderImplementation() != DecoderImplementation::kVD)
-    GTEST_SKIP();
-
-  // Create and initialize the video decoder.
-  auto tvp = CreateDecoderListener(g_env->Video());
-  EXPECT_EQ(tvp->GetEventCount(DecoderListener::Event::kInitialized), 1u);
-
-  // Re-initialize the video decoder, without having played the video.
-  EXPECT_TRUE(tvp->Initialize(g_env->Video()));
-  EXPECT_EQ(tvp->GetEventCount(DecoderListener::Event::kInitialized), 2u);
-
-  // Play the video from start to end.
-  tvp->Play();
-  EXPECT_TRUE(tvp->WaitForFlushDone());
-  EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
-  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
-  EXPECT_TRUE(tvp->WaitForFrameProcessors());
-
-  // Try re-initializing the video decoder again.
-  EXPECT_TRUE(tvp->Initialize(g_env->Video()));
-  EXPECT_EQ(tvp->GetEventCount(DecoderListener::Event::kInitialized), 3u);
-}
-
-// Create a video decoder and immediately destroy it without initializing. The
-// video decoder will be automatically destroyed when the video player goes out
-// of scope at the end of the test. The test will pass if no asserts or crashes
-// are triggered upon destroying.
-TEST_F(VideoDecoderTest, DestroyBeforeInitialize) {
-  DecoderWrapperConfig config = DecoderWrapperConfig();
-  config.implementation = g_env->GetDecoderImplementation();
-  auto tvp = DecoderListener::Create(config, FrameRendererDummy::Create());
-  EXPECT_NE(tvp, nullptr);
-}
-
 }  // namespace test
 }  // namespace media
 
@@ -573,10 +592,11 @@ int main(int argc, char** argv) {
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
-    if (it->first.find("gtest_") == 0 ||               // Handled by GoogleTest
-        it->first == "ozone-platform" ||               // Handled by Chrome
-        it->first == "use-gl" ||                       // Handled by Chrome
-        it->first == "v" || it->first == "vmodule") {  // Handled by Chrome
+    if (it->first.find("gtest_") == 0 ||  // Handled by GoogleTest
+                                          // Options below are handled by Chrome
+        it->first == "ozone-platform" || it->first == "use-gl" ||
+        it->first == "v" || it->first == "vmodule" ||
+        it->first == "enable-features" || it->first == "disable-features") {
       continue;
     }
 
@@ -670,6 +690,20 @@ int main(int argc, char** argv) {
   // read by the cpu.  This prevents MD5 computation as that is done by the
   // cpu.
   cmd_line->AppendSwitch("disable-buffer-bw-compression");
+#endif
+
+#if BUILDFLAG(USE_V4L2_CODEC)
+  std::unique_ptr<base::FeatureList> feature_list =
+      std::make_unique<base::FeatureList>();
+  feature_list->InitializeFromCommandLine(
+      cmd_line->GetSwitchValueASCII(switches::kEnableFeatures),
+      cmd_line->GetSwitchValueASCII(switches::kDisableFeatures));
+  if (feature_list->IsFeatureOverridden("V4L2FlatStatelessVideoDecoder")) {
+    enabled_features.push_back(media::kV4L2FlatStatelessVideoDecoder);
+  }
+  if (feature_list->IsFeatureOverridden("V4L2FlatStatefulVideoDecoder")) {
+    enabled_features.push_back(media::kV4L2FlatStatefulVideoDecoder);
+  }
 #endif
 
   // Set up our test environment.

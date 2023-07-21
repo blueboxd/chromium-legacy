@@ -104,6 +104,7 @@ class CORE_EXPORT LayoutView : public LayoutBlockFlow {
   void ComputeLogicalHeight(LayoutUnit logical_height,
                             LayoutUnit logical_top,
                             LogicalExtentComputedValues&) const override;
+  LayoutUnit ComputeMinimumWidth();
 
   // Based on LocalFrameView::LayoutSize, but:
   // - checks for null LocalFrameView
@@ -253,6 +254,12 @@ class CORE_EXPORT LayoutView : public LayoutBlockFlow {
     needs_marker_counter_update_ = true;
   }
 
+  // Return true if laying out with a new initial containing block size.
+  bool IsResizingInitialContainingBlock() const {
+    NOT_DESTROYED();
+    return is_resizing_initial_containing_block_;
+  }
+
   // Update generated markers and counters after style and layout tree update.
   // container - The container for container queries, otherwise nullptr.
   void UpdateMarkersAndCountersAfterStyleChange(
@@ -339,6 +346,10 @@ class CORE_EXPORT LayoutView : public LayoutBlockFlow {
     NOT_DESTROYED();
     return ViewLogicalHeight(kIncludeScrollbars);
   }
+
+  // Set to true if laying out with a new initial containing block size. Always
+  // set back to false after layout.
+  bool is_resizing_initial_containing_block_ = false;
 
  private:
   bool CanHaveChildren() const override;

@@ -8,9 +8,11 @@
 #include <algorithm>
 #include <memory>
 
+#include "ash/bubble/bubble_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/icon_button.h"
+#include "ash/style/typography.h"
 #include "ash/system/video_conference/bubble/bubble_view_ids.h"
 #include "ash/system/video_conference/effects/video_conference_tray_effects_manager_types.h"
 #include "ash/system/video_conference/video_conference_tray_controller.h"
@@ -88,8 +90,13 @@ class ButtonContainer : public views::Button {
     // `icon_` image set in `UpdateColorsAndBackground()`.
     icon_ = AddChildView(std::move(icon));
 
-    // Label is below the button.
-    label_ = AddChildView(std::make_unique<views::Label>(label_text));
+    auto label = std::make_unique<views::Label>(label_text);
+    label->SetID(video_conference::BubbleViewID::kToggleEffectLabel);
+    label->SetAutoColorReadabilityEnabled(false);
+    TypographyProvider::Get()->StyleLabel(TypographyToken::kLegacyButton2,
+                                          *label);
+    label->SetEnabledColorId(cros_tokens::kCrosSysOnPrimaryContainer);
+    label_ = AddChildView(std::move(label));
 
     SetTooltipText(l10n_util::GetStringFUTF16(
         VIDEO_CONFERENCE_TOGGLE_BUTTON_TOOLTIP,

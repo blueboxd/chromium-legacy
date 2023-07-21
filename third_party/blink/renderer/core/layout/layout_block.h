@@ -154,7 +154,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   void AddChild(LayoutObject* new_child,
                 LayoutObject* before_child = nullptr) override;
 
-  virtual void UpdateBlockLayout(bool relayout_children);
+  virtual void UpdateBlockLayout();
 
   void InsertPositionedObject(LayoutBox*);
   static void RemovePositionedObject(LayoutBox*);
@@ -280,8 +280,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
     NOT_DESTROYED();
     return IsInline() && IsAtomicInlineLevel();
   }
-
-  bool NeedsPreferredWidthsRecalculation() const override;
 
   bool IsInSelfHitTestingPhase(HitTestPhase phase) const final {
     NOT_DESTROYED();

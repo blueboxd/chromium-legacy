@@ -184,12 +184,13 @@ class UserProfileLoadedObserver
 }  // namespace
 
 class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
- protected:
-  ExistingUserControllerTest() = default;
-
+ public:
   ExistingUserControllerTest(const ExistingUserControllerTest&) = delete;
   ExistingUserControllerTest& operator=(const ExistingUserControllerTest&) =
       delete;
+
+ protected:
+  ExistingUserControllerTest() = default;
 
   ExistingUserController* existing_user_controller() {
     return ExistingUserController::current_controller();
@@ -215,7 +216,6 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
     EXPECT_CALL(*mock_login_display_host_, GetSigninUI())
         .Times(AnyNumber())
         .WillRepeatedly(Return(mock_signin_ui_.get()));
-    EXPECT_CALL(*mock_login_display_, Init(_)).Times(1);
   }
 
   void SetUpOnMainThread() override {
@@ -233,8 +233,8 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
     test::UserSessionManagerTestApi(UserSessionManager::GetInstance())
         .SetShouldLaunchBrowserInTests(false);
 
-    ash::AuthMetricsRecorder::Get()->OnAuthenticationSurfaceChange(
-        AuthMetricsRecorder::AuthenticationSurface::kLogin);
+    ash::AuthEventsRecorder::Get()->OnAuthenticationSurfaceChange(
+        AuthEventsRecorder::AuthenticationSurface::kLogin);
   }
 
   void TearDownOnMainThread() override {
@@ -256,11 +256,9 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
   }
 
   void ExpectLoginFailure() {
-    EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(1);
     EXPECT_CALL(*mock_signin_ui_,
                 ShowSigninError(SigninError::kOwnerKeyLost, std::string()))
         .Times(1);
-    EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(1);
   }
 
   void MakeCrosSettingsPermanentlyUntrusted() {
@@ -312,8 +310,6 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
-  EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(2);
-  EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(1);
   EXPECT_CALL(*mock_login_display_host_,
               StartWizard(TermsOfServiceScreenView::kScreenId.AsId()))
       .Times(0);
@@ -376,7 +372,7 @@ class ExistingUserControllerPublicSessionTest
       const ExistingUserControllerPublicSessionTest&) = delete;
 
  protected:
-  ExistingUserControllerPublicSessionTest() {}
+  ExistingUserControllerPublicSessionTest() = default;
 
   void SetUpOnMainThread() override {
     ExistingUserControllerTest::SetUpOnMainThread();
@@ -445,7 +441,6 @@ class ExistingUserControllerPublicSessionTest
     EXPECT_CALL(*mock_login_display_host_, GetSigninUI())
         .Times(AnyNumber())
         .WillRepeatedly(Return(mock_signin_ui_.get()));
-    EXPECT_CALL(*mock_login_display_, Init(_)).Times(AnyNumber());
   }
 
   void TearDownOnMainThread() override {
@@ -474,8 +469,6 @@ class ExistingUserControllerPublicSessionTest
     EXPECT_CALL(*mock_login_display_host_,
                 StartWizard(LocaleSwitchView::kScreenId.AsId()))
         .Times(AnyNumber());
-    EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(AnyNumber());
-    EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(AnyNumber());
   }
 
   void SetAutoLoginPolicy(const std::string& user_email, int delay) {
@@ -630,7 +623,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        GuestModeLoginStopsAutoLogin) {
-  EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(2);
   UserContext user_context(
       LoginManagerMixin::CreateDefaultUserContext(new_user_));
   test::UserSessionManagerTestApi session_manager_test_api(

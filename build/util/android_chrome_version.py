@@ -181,15 +181,12 @@ def _GetAbisToDigitMask(build_number):
   so arm codes must be lower than x86 codes to prevent providing an
   arm-optimized build to intel devices.
 
-  Cherry-picked to 5735 to support releasing the new
-  version code schema earlier.
-
   Returns:
     A dictionary of architecture mapped to bitness
     mapped to version code suffix.
   """
 
-  if build_number < 5750 and build_number != 5735:
+  if build_number < 5750:
     return {
         'arm': {
             '32': 0,

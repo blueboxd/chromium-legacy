@@ -236,7 +236,7 @@ BASE_FEATURE(kPreinstalledWebAppWindowExperiment,
 // DB.
 BASE_FEATURE(kOsIntegrationSubManagers,
              "OsIntegrationSubManagers",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 const base::FeatureParam<OsIntegrationSubManagersStage>::Option
     sub_manager_stages[] = {
         {OsIntegrationSubManagersStage::kWriteConfig, "write_config"},
@@ -620,6 +620,10 @@ BASE_FEATURE(kHappinessTrackingPrivacyHubBaseline,
 BASE_FEATURE(kHappinessTrackingOsSettingsSearch,
              "HappinessTrackingOsSettingsSearch",
              base::FEATURE_DISABLED_BY_DEFAULT);
+// Enables the Happiness Tracking System for Borealis games survey.
+BASE_FEATURE(kHappinessTrackingBorealisGames,
+             "HappinessTrackingBorealisGames",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 // Hides the origin text from showing up briefly in WebApp windows.
@@ -639,6 +643,12 @@ BASE_FEATURE(kHttpsFirstModeForAdvancedProtectionUsers,
 BASE_FEATURE(kHttpsFirstModeV2,
              "HttpsFirstModeV2",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables HTTPS-First Mode for engaged sites. No-op if HttpsFirstModeV2 or
+// HTTPS-Upgrades is disabled.
+BASE_FEATURE(kHttpsFirstModeV2ForEngagedSites,
+             "HttpsFirstModeV2ForEngagedSites",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables automatically upgrading main frame navigations to HTTPS.
 BASE_FEATURE(kHttpsUpgrades,
@@ -815,7 +825,7 @@ BASE_FEATURE(kMetricsSettingsAndroid,
 
 BASE_FEATURE(kMigrateExternalPrefsToWebAppDB,
              "MigrateExternalPrefsToWebAppDB",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kMoveWebApp,
              "MoveWebApp",

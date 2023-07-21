@@ -221,6 +221,7 @@
 <translation id="1961239773406905488">동영상 카메라 미리보기 숨겨짐</translation>
 <translation id="1961832440516943645"><ph name="DATE" /> <ph name="TIME" /></translation>
 <translation id="1962969542251276847">잠금 화면</translation>
+<translation id="1962972976741217487">1대의 기기가 <ph name="DEVICE_NAME" /> 핫스팟에 연결됨</translation>
 <translation id="1967970931040389207">핫스팟 사용 설정</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />(USB)</translation>
 <translation id="1972950159383891558"><ph name="USERNAME" />님, 안녕하세요.</translation>
@@ -301,7 +302,6 @@
 <translation id="2367972762794486313">앱 표시</translation>
 <translation id="2369165858548251131">중국어로 '안녕'</translation>
 <translation id="2386292613071805067">페이지의 모든 항목 선택</translation>
-<translation id="2390318262976603432">언어 설정</translation>
 <translation id="2397416548179033562">Chrome 메뉴 표시</translation>
 <translation id="240006516586367791">미디어 컨트롤</translation>
 <translation id="2402411679569069051">Chromebook을 잠금 해제하려면 지문을 사용하거나 휴대전화를 잠금 해제하세요.</translation>
@@ -382,6 +382,7 @@
 <translation id="2791421900609674576">이전에 중단한 부분부터 계속할 수 있도록 추천 항목이 표시됩니다. 추천 항목을 삭제하려면 길게 터치하세요.</translation>
 <translation id="2792498699870441125">Alt+검색 키</translation>
 <translation id="2797741504905337289">Shelf Party</translation>
+<translation id="2802938996245446490"><ph name="BUTTON_LABEL" />, 선택됨</translation>
 <translation id="2805756323405976993">앱</translation>
 <translation id="2814448776515246190">부분 캡처</translation>
 <translation id="2819276065543622893">지금 로그아웃됩니다.</translation>
@@ -600,6 +601,7 @@
 <translation id="3735740477244556633">정렬 기준</translation>
 <translation id="3738664582935948253">이제 화면을 녹화할 때 클릭 및 단축키를 표시할 수 있습니다.</translation>
 <translation id="3742055079367172538">찍은 스크린샷</translation>
+<translation id="3756485814916578707">화면 전송 중</translation>
 <translation id="3765841986579723851">오늘 수정됨</translation>
 <translation id="3773700760453577392">관리자가 <ph name="USER_EMAIL" />의 멀티 로그인을 허용하지 않습니다. 계속하려면 모든 사용자가 로그아웃해야 합니다.</translation>
 <translation id="3779139509281456663"><ph name="NAME" /> 연결 중</translation>
@@ -821,6 +823,7 @@
 <translation id="4777825441726637019">Play 스토어</translation>
 <translation id="4778095205580009397">데모 세션에서는 Google 어시스턴트를 사용할 수 없습니다.</translation>
 <translation id="4789348252524569426">음성 파일을 설치할 수 없습니다. 기기를 업데이트해야 합니다. 기기를 재시작한 후 다시 시도해 보세요.</translation>
+<translation id="478959186716341421">전송</translation>
 <translation id="479989351350248267">검색</translation>
 <translation id="4804818685124855865">연결 해제</translation>
 <translation id="4814539958450445987">로그인 화면</translation>
@@ -928,6 +931,7 @@
 <translation id="5297704307811127955">사용 안함</translation>
 <translation id="5300589172476337783">표시</translation>
 <translation id="5302048478445481009">언어</translation>
+<translation id="5303783651764314393"><ph name="DEVICECOUNT" />대의 기기가 <ph name="DEVICE_NAME" /> 핫스팟에 연결됨</translation>
 <translation id="5308380583665731573">연결</translation>
 <translation id="5313326810920013265">블루투스 설정</translation>
 <translation id="5314219114274263156">화면 녹화됨</translation>
@@ -996,7 +1000,6 @@
 <translation id="5597451508971090205"><ph name="DATE" /> <ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">음성 피드백을 사용 중지하려면 Ctrl + Alt + Z를 누르세요.</translation>
 <translation id="5601503069213153581">PIN</translation>
-<translation id="5601571553788043181">Chrome 브라우저에서 파일 열기</translation>
 <translation id="5618148318840095371">더 원활한 네트워크로 전환되었습니다.</translation>
 <translation id="5619862035903135339">관리자 정책에서 화면 캡처를 사용 중지합니다.</translation>
 <translation id="5625955975703555628">LTE+</translation>
@@ -1117,6 +1120,7 @@
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> 삭제 대화상자 열기</translation>
 <translation id="6141988275892716286">다운로드 확인</translation>
 <translation id="6154006699632741460">지원되지 않는 주변기기</translation>
+<translation id="6156960295318603523">언어 설정</translation>
 <translation id="615957422585914272">터치 키보드 표시</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
 <translation id="6166852626429024716">기기, 앱, 설정, 웹에서 검색...</translation>
@@ -1335,6 +1339,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />초 후 기존 해상도로 돌아갑니다.</translation>
 <translation id="7180611975245234373">새로고침</translation>
+<translation id="7187711731540696127"><ph name="DEVICE_NAME" /> 핫스팟이 켜져 있으며 연결된 기기가 없음</translation>
 <translation id="7188494361780961876">메뉴가 화면 왼쪽 상단으로 이동했습니다.</translation>
 <translation id="7189412385142492784">금성까지의 거리</translation>
 <translation id="7198435252016571249">카메라 미리보기가 오른쪽 하단으로 맞춰졌습니다. 시스템 표시 경로와 충돌합니다.</translation>
@@ -1392,6 +1397,7 @@
 <translation id="7497767806359279797">언어 및 키보드 선택</translation>
 <translation id="7508690557411636492">지난달에 열림</translation>
 <translation id="7509246181739783082">본인 확인</translation>
+<translation id="7512726380443357693"><ph name="BUTTON_LABEL" />, 선택되지 않음</translation>
 <translation id="7513622367902644023">스크린샷 모드 선택됨</translation>
 <translation id="7513922695575567867">현재 캘린더에서 <ph name="DATE" />이 속한 주를 표지 중이며 선택된 날짜는 <ph name="SELECTED_DATE" />입니다.</translation>
 <translation id="7514365320538308">다운로드</translation>
@@ -1413,7 +1419,6 @@
 <translation id="7569509451529460200">점자와 ChromeVox가 사용 설정되었습니다.</translation>
 <translation id="7573585051776738856">활성 창이 오른쪽에 고정되었습니다.</translation>
 <translation id="7579778809502851308">화면 캡처</translation>
-<translation id="7590883480672980941">입력 설정</translation>
 <translation id="7593891976182323525">검색 또는 Shift 키</translation>
 <translation id="7600875258240007829">모든 알림 보기</translation>
 <translation id="7607002721634913082">일시중지됨</translation>
@@ -1555,6 +1560,7 @@
 <translation id="8185090165691050712">잠금 모드의 크기를 조절할 수 있는 메뉴 사용 설정/사용 중지</translation>
 <translation id="8192202700944119416">알림이 숨겨져 있음</translation>
 <translation id="8196787716797768628">태블릿 모드에서 동작을 사용하여 앱 간에 빠르게 전환하고 Chromebook과 상호작용하세요.</translation>
+<translation id="8198456017687137612">탭 전송 중</translation>
 <translation id="8200772114523450471">다시 시작</translation>
 <translation id="8203795194971602413">오른쪽 클릭</translation>
 <translation id="8209010265547628927">재설정</translation>

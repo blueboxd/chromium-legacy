@@ -175,5 +175,6 @@ void PageInfoPermissionContentView::OnRememberSettingPressed() {
 
 void PageInfoPermissionContentView::PermissionChanged() {
   presenter_->OnSitePermissionChanged(permission_.type, permission_.setting,
+                                      permission_.requesting_origin,
                                       permission_.is_one_time);
 }

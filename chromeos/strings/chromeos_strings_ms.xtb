@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">Tidak dapat menyelesaikan DNS</translation>
 <translation id="1018656279737460067">Dibatalkan</translation>
 <translation id="1022433422498218992">Kawalan Umum</translation>
-<translation id="1022628058306505708">Aliran Bumi</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> urutan, <ph name="CPU_MAX_CLOCK_SPEED" />GHz)</translation>
 <translation id="1047773237499189053">Ciri baharu tersedia, gunakan kekunci Anak panah ke atas untuk mengetahui lebih lanjut.</translation>
 <translation id="1059913517121127803">Tidak dapat memulakan pengimbasan</translation>
@@ -235,7 +234,6 @@
 <translation id="2902312830803030883">Lagi tindakan</translation>
 <translation id="2926057806159140518">Masukkan nama pengguna dan kata laluan anda atau imbas kod QR anda</translation>
 <translation id="2940811910881150316">Tidak dapat menguji peranti. Buka semula penutup untuk menguji.</translation>
-<translation id="2981143481017883351">Aset eksklusif Chromebook kini tersedia</translation>
 <translation id="3008341117444806826">MUAT SEMULA</translation>
 <translation id="3009958530611748826">Pilih folder untuk menyimpan imbasan</translation>
 <translation id="3017079585324758401">Latar belakang</translation>
@@ -280,7 +278,6 @@
 <translation id="3360306038446926262">Windows</translation>
 <translation id="3368922792935385530">Disambungkan</translation>
 <translation id="3369013195428705271">Adakah anda pasti anda ingin mengosongkan semua sejarah cetak? Tugas cetak anda yang masih dijalankan tidak akan dipadamkan.</translation>
-<translation id="3386675685417744672">Chromebook eksklusif</translation>
 <translation id="3404249063913988450">Dayakan penyelamat skrin</translation>
 <translation id="3413935475507503304">Untuk meneruskan kemaskinian, klik Seterusnya.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
@@ -295,6 +292,7 @@
 <translation id="3484914941826596830">Semasa perisian tegar sedang dikemas kini, jangan cabut palam peranti luaran ini atau matikan komputer anda. Anda boleh meminimumkan tetingkap ini. Kemaskinian ini mungkin mengambil masa beberapa minit dan peranti luaran anda mungkin tidak berfungsi pada masa ini.</translation>
 <translation id="3486220673238053218">takrif</translation>
 <translation id="3488065109653206955">Diaktifkan sebahagian</translation>
+<translation id="3502426834823382181">lihat semua apl</translation>
 <translation id="3510890413042482857">Hantar <ph name="BEGIN_LINK1" />data surih prestasi<ph name="END_LINK1" /></translation>
 <translation id="3517001332549868749">Kemaskinian ChromeOS</translation>
 <translation id="3527036260304016759">Gagal - Ralat tidak diketahui</translation>
@@ -358,7 +356,6 @@
 <translation id="404928562651467259">AMARAN</translation>
 <translation id="4054683689023980771">Memuat turun imej</translation>
 <translation id="4060260348856573701">APN Baharu</translation>
-<translation id="4079743696465895866">Pilih kerja seni eksklusif Chromebook</translation>
 <translation id="4093865285251893588">Imej profil</translation>
 <translation id="409427325554347132">Simpan butiran ujian</translation>
 <translation id="4095829376260267438">WPA2WPA3</translation>
@@ -625,7 +622,6 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">Kapasiti bateri menurun seiring dengan penggunaan</translation>
 <translation id="6191293864534840972">Pelayan nama cacat</translation>
-<translation id="6205145102504628069">Aliran Awan</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223066887782788441">Keluar dari keadaan skrin penuh</translation>
 <translation id="6223752125779001553">Tiada pengimbas tersedia</translation>
@@ -636,6 +632,7 @@
 <translation id="6278428485366576908">Tema</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Hidupkan tema gelap</translation>
+<translation id="6285899124799306373">buka pelancar</translation>
 <translation id="6302401976930124515">Ujian <ph name="TEST_NAME" /> telah dibatalkan</translation>
 <translation id="631063167932043783">Teroka apl</translation>
 <translation id="6319207335391420837">Kemas kini perisian tegar pada <ph name="DEVICE_NAME" /></translation>
@@ -651,6 +648,7 @@
 <translation id="6382182670717268353">Pratonton penyelamat skrin</translation>
 <translation id="6388847657025262518">Penyuap dokumen pengimbas tersekat. Semak penyuap dan cuba lagi.</translation>
 <translation id="6394634179843537518">Tambah fail</translation>
+<translation id="6401427872449207797">carian penyemak imbas</translation>
 <translation id="6410257289063177456">Fail Imej</translation>
 <translation id="641081527798843608">Padanan subjek</translation>
 <translation id="6412715219990689313">Papan kekunci terbina dalam</translation>
@@ -666,7 +664,6 @@
 <translation id="6494974875566443634">Penyesuaian</translation>
 <translation id="6500818810472529210">Lihat hasil dalam Google Search</translation>
 <translation id="650266656685499220">Untuk mencipta album, pergi ke Google Photos</translation>
-<translation id="6505750420152840539">Subuh sehingga gelap</translation>
 <translation id="6516990319416533844">Untuk menguji kadar pengecasan bateri, biarkan cas bateri anda habis dalam tempoh yang singkat</translation>
 <translation id="6517239166834772319">Teroka</translation>
 <translation id="6526200165918397681">Padankan hiasan latar</translation>
@@ -875,6 +872,7 @@
 <translation id="8312330582793120272">mainkan media</translation>
 <translation id="8318753676953949627">Tiada Imej</translation>
 <translation id="8329018942023753850">apl kalkulator</translation>
+<translation id="8335869473001018124">buka carian</translation>
 <translation id="8336739000755212683">Tukar imej akaun peranti</translation>
 <translation id="8347227221149377169">Tugas cetak</translation>
 <translation id="8351855506390808906">Titik sentuhan pemetaan kunci</translation>

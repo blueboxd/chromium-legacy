@@ -28,6 +28,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/browsing_data/browsing_data_filter_builder_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -514,7 +515,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     network::mojom::NetworkContext* network_context =
         storage_partition->GetNetworkContext();
 
-    // TODO(msramek): Clear the cache of all renderers.
+    RenderProcessHostImpl::ClearAllResourceCaches();
 
     // TODO(crbug.com/813882): implement retry on network service.
 
@@ -553,6 +554,12 @@ void BrowsingDataRemoverImpl::RemoveImpl(
 
     // Clears the PrefetchedSignedExchangeCache of all RenderFrameHostImpls.
     RenderFrameHostImpl::ClearAllPrefetchedSignedExchangeCache();
+
+    // Clears the CORS PreFlight cache. We don't support delete_begin,
+    // delete_end time range, as the preflight cache max age is capped to 2hrs.
+    network_context->ClearCorsPreflightCache(
+        filter_builder->BuildNetworkServiceFilter(),
+        CreateTaskCompletionClosureForMojo(TracingDataType::kPreflightCache));
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -841,6 +848,8 @@ const char* BrowsingDataRemoverImpl::GetHistogramSuffix(TracingDataType task) {
       return "DeferredCookies";
     case TracingDataType::kSharedStorage:
       return "SharedStorage";
+    case TracingDataType::kPreflightCache:
+      return "PreflightCache";
   }
 }
 

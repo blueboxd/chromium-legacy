@@ -3,7 +3,7 @@
 <title>Popover light dismiss behavior</title>
 <meta name="timeout" content="long">
 <link rel="author" href="mailto:masonf@chromium.org">
-<link rel=help href="https://open-ui.org/components/popup.research.explainer">
+<link rel=help href="https://open-ui.org/components/popover.research.explainer">
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <script src="/resources/testdriver.js"></script>
@@ -13,7 +13,7 @@
 
 <button id=b1t popovertarget='p1'>Popover 1</button>
 <button id=b1s popovertarget='p1' popovertargetaction=show>Popover 1</button>
-<button id=p1anchor>Popover1 anchor (no action)</button>
+<button id=p1anchor  tabindex="0">Popover1 anchor (no action)</button>
 <span id=outside>Outside all popovers</span>
 <div popover id=p1 anchor=p1anchor>
   <span id=inside1>Inside popover 1</span>
@@ -23,7 +23,7 @@
 <div popover id=p2 anchor=b2>
   <span id=inside2>Inside popover 2</span>
 </div>
-<button id=after_p1>Next control after popover1</button>
+<button id=after_p1 tabindex="0">Next control after popover1</button>
 <style>
   #p1 {top: 50px;}
   #p2 {top: 120px;}
@@ -332,7 +332,7 @@
 
 <my-element id="myElement">
   <template shadowrootmode="open">
-    <button id=b7 onclick='showPopover7()'>Popover7</button>
+    <button id=b7 onclick='showPopover7()' tabindex="0">Popover7</button>
     <div popover id=p7 anchor=b7 style="top: 100px;">
       <p>Popover content.</p>
       <input id="inside7" type="text" placeholder="some text">
@@ -364,10 +364,10 @@
 </script>
 
 <div popover id=p8 anchor=p8anchor>
-  <button>Button</button>
+  <button tabindex="0">Button</button>
   <span id=inside8after>Inside popover 8 after button</span>
 </div>
-<button id=p8anchor>Popover8 anchor (no action)</button>
+<button id=p8anchor tabindex="0">Popover8 anchor (no action)</button>
 <script>
   promise_test(async () => {
     const popover8 = document.querySelector('#p8');
@@ -380,7 +380,7 @@
     await sendTab();
     assert_equals(document.activeElement,popover8Anchor,'Focus should move to the anchor element');
     assert_true(popover8.matches(':popover-open'),'popover should stay open');
-    popover8.hidePopover();
+    popover8.hidePopover(); // Cleanup
   },'Moving focus back to the anchor element should not dismiss the popover');
 </script>
 
@@ -398,7 +398,7 @@
 <div popover id=convoluted_p3 anchor=convoluted_anchor>Popover 3
   <button popovertarget=convoluted_p4>Open Popover 4</button>
 </div>
-<button onclick="convoluted_p1.showPopover()">Open convoluted popover</button>
+<button onclick="convoluted_p1.showPopover()" tabindex="0">Open convoluted popover</button>
 <style>
   #convoluted_p1 {top:50px;}
   #convoluted_p2 {top:150px;}
@@ -534,6 +534,7 @@ promise_test(async () => {
   assert_true(p13.matches(':popover-open'),'p13 should still be open');
   assert_false(p14.matches(':popover-open'));
   assert_false(p15.matches(':popover-open'));
+  p13.hidePopover(); // Cleanup
 },'Hide the target popover during "hide all popovers until"');
 </script>
 
@@ -546,11 +547,16 @@ promise_test(async () => {
 promise_test(async () => {
   p16.showPopover();
   p18.showPopover();
+  let events = [];
+  const logEvents = (e) => {events.push(`${e.newState==='open' ? 'show' : 'hide'} ${e.target.id}`)};
+  p16.addEventListener('beforetoggle', logEvents);
+  p17.addEventListener('beforetoggle', logEvents);
   p18.addEventListener('beforetoggle', (e) => {
-    if (e.newState === "closed")
-      p17.showPopover();
-  },{once:true});
+    logEvents(e);
+    p17.showPopover();
+  });
   p16.hidePopover();
+  assert_array_equals(events,['hide p18','show p17','hide p16'],'There should not be a hide event for p17');
   assert_false(p16.matches(':popover-open'));
   assert_false(p17.matches(':popover-open'));
   assert_false(p18.matches(':popover-open'));
@@ -559,20 +565,25 @@ promise_test(async () => {
 
 <div id=p19 popover>Popover 19</div>
 <div id=p20 popover>Popover 20</div>
-<button id=example2>Example 2</button>
+<button id=example2 tabindex="0">Example 2</button>
 
 <script>
 promise_test(async () => {
   p19.showPopover();
+  let events = [];
+  const logEvents = (e) => {events.push(`${e.newState==='open' ? 'show' : 'hide'} ${e.target.id}`)};
   p19.addEventListener('beforetoggle', (e) => {
-    if (e.newState === "closed")
-      p20.showPopover();
-  },{once:true});
+    logEvents(e);
+    p20.showPopover();
+  });
+  p20.addEventListener('beforetoggle', logEvents);
   // Because the `beforetoggle` handler shows a different popover,
   // and that action closes the p19 popover, the call to hidePopover()
   // will result in an exception.
   assert_throws_dom('InvalidStateError',() => p19.hidePopover());
+  assert_array_equals(events,['hide p19','show p20'],'There should not be a second hide event for 19');
   assert_false(p19.matches(':popover-open'));
   assert_true(p20.matches(':popover-open'));
+  p20.hidePopover(); // Cleanup
 },'Show an unrelated popover during "hide popover"');
 </script>

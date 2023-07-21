@@ -407,6 +407,7 @@
 <translation id="3638472932233958418">טעינה מראש של דפי אינטרנט</translation>
 <translation id="3661160521073045932">יש פרופיל של הגדרות אישיות</translation>
 <translation id="3670030362669914947">מספר</translation>
+<translation id="3700134753671613714">היכנס כדי שהסימניות יופיעו בכל המכשירים שלך.</translation>
 <translation id="3709582977625132201">סימון כפריט שלא נקרא</translation>
 <translation id="371230970611282515">המערכת חוזה אירועים מסוכנים ומזהירה אותך לגביהם לפני שהם מתרחשים.</translation>
 <translation id="37207012422556617">שאילתות חיפוש פופולריות</translation>
@@ -546,7 +547,6 @@
 <translation id="4642472735733036929">המעקב אחר מחירים הופסק</translation>
 <translation id="4650125387981512669">המשך בשם <ph name="FIRST_RUN_ACCOUNT_NAME" /></translation>
 <translation id="4652817563047461855">חשוב לוודא שהסיסמאות מאובטחות, לבדוק אם הן נחשפו ולקבל עצות שיעזרו לך להגן על עצמך אונליין. <ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /></translation>
-<translation id="4659126640776004816">‏התכונה הזו מופעלת בעת הכניסה לחשבון Google.</translation>
 <translation id="4659667755519643272">‏כניסה אל Tab Switcher</translation>
 <translation id="46614316059270592">שמירת הסיסמה</translation>
 <translation id="4666531726415300315">החשבון המחובר: <ph name="EMAIL" />.
@@ -588,7 +588,6 @@
 <translation id="4844899002472726590">הצגה ועריכה של הנושאים שמעניינים אותך</translation>
 <translation id="4848999860252535517">למחוק את הסיסמה של <ph name="WEBSITE" />?</translation>
 <translation id="4854345657858711387">עליך להגדיר קוד גישה</translation>
-<translation id="4856498338299082007">‏בחשבון Google שלך</translation>
 <translation id="4858786880085262208">‏שדרוג ל-HTTPS, כשיש אפשרות כזו. אתרים מאובטחים עשויים להטמיע תוכן לא מאובטח.</translation>
 <translation id="4860895144060829044">תרימו טלפון</translation>
 <translation id="4872323082491632254">בדיקת הסיסמאות</translation>
@@ -667,6 +666,7 @@
 <translation id="543338862236136125">עריכת סיסמה</translation>
 <translation id="5433691172869980887">שם המשתמש הועתק</translation>
 <translation id="5439599923922718668">אתרים עם ביקורים תכופים</translation>
+<translation id="5439618055789623719">נכנסת בתור <ph name="USER_EMAIL" /></translation>
 <translation id="54401264925851789">פרטי אבטחת דף</translation>
 <translation id="5443952882982198570">כרטיסי אשראי</translation>
 <translation id="5444892875087332195">סימניות</translation>
@@ -1121,7 +1121,6 @@
 <translation id="8248969482078657578">מתמקדים במה שחשוב בעזרת הקטע 'כרטיסיות לא פעילות'</translation>
 <translation id="8261506727792406068">מחיקה</translation>
 <translation id="8264966119170358612">‏חלק מהסיסמאות השמורות שלך נחשפו ברשומות שאינן של Google עקב פרצה באבטחת מידע. <ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /></translation>
-<translation id="8265018477030547118">רק במכשיר הזה</translation>
 <translation id="826614135184049678">‏המערכת הוציאה אותך מהחשבון, <ph name="USER_NAME" />, במסגרת האיפוס של iPad. כדי להיכנס שוב לחשבון צריך להקיש על 'המשך' למטה.</translation>
 <translation id="8271720166617117963">אישור וכניסה</translation>
 <translation id="8278938988428169257">מזינים מילה או ביטוי</translation>

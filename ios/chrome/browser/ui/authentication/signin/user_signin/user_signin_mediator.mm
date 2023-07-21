@@ -152,9 +152,6 @@
       if ([self.authenticationService->GetPrimaryIdentity(
               signin::ConsentLevel::kSignin)
               isEqual:self.delegate.signinIdentityOnStart]) {
-        // Call StopAndClear() to clear the encryption passphrase, in case the
-        // user entered it before canceling the sync opt-in flow.
-        _syncService->StopAndClear();
         if (completion)
           completion();
       } else {
@@ -171,10 +168,7 @@
     }
     case IdentitySigninStateSignedInWithSyncEnabled: {
       // Switching accounts is not possible without sign-out.
-      // TODO(crbug.com/1410747): DCHECK failures are reported for this
-      // codepath that requires more investigation.
-      NOTREACHED();
-      break;
+      NOTREACHED_NORETURN();
     }
   }
 }
@@ -196,7 +190,8 @@
   if (!authenticationService)
     return;
 
-  authenticationService->SignIn(identity);
+  signin_metrics::AccessPoint accessPoint = self.authenticationFlow.accessPoint;
+  authenticationService->SignIn(identity, accessPoint);
 }
 
 - (void)disconnect {
@@ -250,7 +245,9 @@
       base::SysNSStringToUTF8(identity.gaiaID),
       base::SysNSStringToUTF8(identity.userEmail));
   self.consentAuditor->RecordSyncConsent(coreAccountId, syncConsent);
-  self.authenticationService->GrantSyncConsent(identity);
+
+  signin_metrics::AccessPoint accessPoint = self.authenticationFlow.accessPoint;
+  self.authenticationService->GrantSyncConsent(identity, accessPoint);
 
   // FirstSetupComplete flag should be turned on after the authentication
   // service has granted user consent to start Sync when tapping "Yes, I'm in."

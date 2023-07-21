@@ -440,6 +440,7 @@ class CONTENT_EXPORT RenderThreadImpl
   void UpdateSystemColorInfo(
       mojom::UpdateSystemColorInfoParamsPtr params) override;
   void PurgePluginListCache(bool reload_pages) override;
+  void PurgeResourceCache(PurgeResourceCacheCallback callback) override;
   void SetProcessState(mojom::RenderProcessBackgroundState background_state,
                        mojom::RenderProcessVisibleState visible_state) override;
   void SetIsLockedToSite() override;
@@ -449,10 +450,8 @@ class CONTENT_EXPORT RenderThreadImpl
 #endif
   void SetIsCrossOriginIsolated(bool value) override;
   void SetIsIsolatedContext(bool value) override;
-#if BUILDFLAG(IS_ANDROID)
   void SetAttributionReportingSupport(
       network::mojom::AttributionSupport) override;
-#endif
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
@@ -588,6 +587,8 @@ class CONTENT_EXPORT RenderThreadImpl
   int process_foregrounded_count_;
 
   int32_t client_id_;
+
+  bool is_context_result_fatal_ = false;
 
   // A mojo connection to the CompositingModeReporter service.
   mojo::Remote<viz::mojom::CompositingModeReporter> compositing_mode_reporter_;

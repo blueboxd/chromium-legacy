@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">Nevar atrast DNS.</translation>
 <translation id="1018656279737460067">Atcelts</translation>
 <translation id="1022433422498218992">Vispārīgas vadīklas</translation>
-<translation id="1022628058306505708">Zemes plūsma</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (pavedienu skaits: <ph name="THREAD_COUNT" />; <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">Pieejama jauna funkcija. Lai uzzinātu vairāk, nospiediet augšupvērsto bulttaustiņu.</translation>
 <translation id="1059913517121127803">Nevarēja sākt skenēšanu.</translation>
@@ -235,7 +234,6 @@
 <translation id="2902312830803030883">Citas darbības</translation>
 <translation id="2926057806159140518">Ievadiet savu lietotājvārdu un paroli vai skenējiet kvadrātkodu</translation>
 <translation id="2940811910881150316">Nevar pārbaudīt ierīci. Lai pārbaudītu, atkal atveriet vāku.</translation>
-<translation id="2981143481017883351">Tagad ir pieejami ekskluzīvi līdzekļi Chromebook datoriem</translation>
 <translation id="3008341117444806826">ATSVAIDZINĀT</translation>
 <translation id="3009958530611748826">Atlasiet mapi, kurā saglabāt failus</translation>
 <translation id="3017079585324758401">Fons</translation>
@@ -280,7 +278,6 @@
 <translation id="3360306038446926262">Logi</translation>
 <translation id="3368922792935385530">pievienots</translation>
 <translation id="3369013195428705271">Vai tiešām vēlaties notīrīt visu drukāšanas vēsturi? Netiks notīrīti drukas uzdevumi, kas tiek izpildīti.</translation>
-<translation id="3386675685417744672">Tikai Chromebook datoriem</translation>
 <translation id="3404249063913988450">Iespējot ekrānsaudzētāju</translation>
 <translation id="3413935475507503304">Lai veiktu atjaunināšanu, noklikšķiniet uz “Tālāk”.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
@@ -295,6 +292,7 @@
 <translation id="3484914941826596830">Kamēr notiek aparātprogrammatūras atjaunināšana, neatvienojiet šo ārējo ierīci un neizslēdziet datoru. Varat minimizēt šo logu. Atjaunināšana var ilgt dažas minūtes, un jūsu ārējā ierīce šajā laikā var nedarboties.</translation>
 <translation id="3486220673238053218">definīcija</translation>
 <translation id="3488065109653206955">Daļēji aktivizēts</translation>
+<translation id="3502426834823382181">skatīt visas lietotnes</translation>
 <translation id="3510890413042482857">Sūtīt <ph name="BEGIN_LINK1" />veiktspējas izsekošanas datus<ph name="END_LINK1" /></translation>
 <translation id="3517001332549868749">Chrome OS atjauninājums</translation>
 <translation id="3527036260304016759">Neizdevās — nezināma kļūda</translation>
@@ -358,7 +356,6 @@
 <translation id="404928562651467259">BRĪDINĀJUMS</translation>
 <translation id="4054683689023980771">Notiek attēla lejupielāde…</translation>
 <translation id="4060260348856573701">Jauns APN</translation>
-<translation id="4079743696465895866">Atlasīt tikai Chromebook datoriem paredzētus mākslas darbus</translation>
 <translation id="4093865285251893588">Profila attēls</translation>
 <translation id="409427325554347132">Saglabāt testa informāciju</translation>
 <translation id="4095829376260267438">WPA2/WPA3</translation>
@@ -625,7 +622,6 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">Lietošanas gaitā akumulatora kapacitāte samazinās</translation>
 <translation id="6191293864534840972">Nepareizi nosaukumu serveri</translation>
-<translation id="6205145102504628069">Mākoņu plūsma</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223066887782788441">Iziet no pilnekrāna režīma</translation>
 <translation id="6223752125779001553">Nav pieejams neviens skeneris</translation>
@@ -636,6 +632,7 @@
 <translation id="6278428485366576908">Motīvs</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Ieslēgt tumšo motīvu</translation>
+<translation id="6285899124799306373">atvērt palaišanas programmu</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" />: pārbaude ir atcelta.</translation>
 <translation id="631063167932043783">Lietotne Izpēte</translation>
 <translation id="6319207335391420837">Ierīces “<ph name="DEVICE_NAME" />” aparātprogrammatūras atjaunināšana</translation>
@@ -651,6 +648,7 @@
 <translation id="6382182670717268353">Ekrānsaudzētāja priekšskatījums</translation>
 <translation id="6388847657025262518">Skenera dokumentu padevējā ir iestrēdzis papīrs. Pārbaudiet padevēju un mēģiniet vēlreiz.</translation>
 <translation id="6394634179843537518">Pievienot failu</translation>
+<translation id="6401427872449207797">meklēšana pārlūkā</translation>
 <translation id="6410257289063177456">Attēlu faili</translation>
 <translation id="641081527798843608">Temata atbilstība</translation>
 <translation id="6412715219990689313">Iebūvētā tastatūra</translation>
@@ -666,7 +664,6 @@
 <translation id="6494974875566443634">Pielāgošana</translation>
 <translation id="6500818810472529210">Skatiet rezultātu Google meklēšanā</translation>
 <translation id="650266656685499220">Lai izveidotu albumus, pārejiet uz pakalpojumu Google fotoattēli.</translation>
-<translation id="6505750420152840539">No ausmas līdz tumsai</translation>
 <translation id="6516990319416533844">Lai pārbaudītu akumulatora uzlādes ātrumu, uz neilgu laiku palieliniet akumulatora enerģijas patēriņu, sasniedzot zemu uzlādes līmeni.</translation>
 <translation id="6517239166834772319">Izpēte</translation>
 <translation id="6526200165918397681">Saskaņot fona tapeti</translation>
@@ -875,6 +872,7 @@
 <translation id="8312330582793120272">atskaņot multivides saturu</translation>
 <translation id="8318753676953949627">Nav attēlu</translation>
 <translation id="8329018942023753850">lietotne Kalkulators</translation>
+<translation id="8335869473001018124">atvērt meklēšanu</translation>
 <translation id="8336739000755212683">Mainīt ierīces konta attēlu</translation>
 <translation id="8347227221149377169">Drukas uzdevumi</translation>
 <translation id="8351855506390808906">Taustiņu saistīšanas skārienpunkts</translation>

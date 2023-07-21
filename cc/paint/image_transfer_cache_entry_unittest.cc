@@ -16,6 +16,7 @@
 #include "base/notreached.h"
 #include "build/build_config.h"
 #include "cc/paint/image_transfer_cache_entry.h"
+#include "cc/paint/paint_op_writer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -84,6 +85,7 @@ bool CheckImageIsSolidColor(const sk_sp<SkImage>& image,
       image, expected_color, SkIRect::MakeWH(image->width(), image->height()));
 }
 
+// TODO(crbug.com/1442381): Implement test with Skia Graphite backend.
 class ImageTransferCacheEntryTest
     : public testing::TestWithParam<SkYUVAInfo::PlaneConfig> {
  public:
@@ -242,14 +244,15 @@ TEST_P(ImageTransferCacheEntryTest, MAYBE_Deserialize) {
                                            nullptr /* decoded color space*/),
       true /* needs_mips */, absl::nullopt));
   uint32_t size = client_entry->SerializedSize();
-  std::vector<uint8_t> data(size);
+  auto data = PaintOpWriter::AllocateAlignedBuffer<uint8_t>(size);
   ASSERT_TRUE(client_entry->Serialize(
-      base::make_span(static_cast<uint8_t*>(data.data()), size)));
+      base::make_span(static_cast<uint8_t*>(data.get()), size)));
 
   // Create service-side entry from the client-side serialize info
   auto entry(std::make_unique<ServiceImageTransferCacheEntry>());
   ASSERT_TRUE(entry->Deserialize(
-      gr_context(), base::make_span(static_cast<uint8_t*>(data.data()), size)));
+      gr_context(), /*graphite_recorder=*/nullptr,
+      base::make_span(static_cast<uint8_t*>(data.get()), size)));
   ASSERT_TRUE(entry->is_yuv());
 
   // Check color of pixels
@@ -394,12 +397,14 @@ TEST(ImageTransferCacheEntryTestNoYUV, CPUImageWithMips) {
   ClientImageTransferCacheEntry client_entry(
       ClientImageTransferCacheEntry::Image(&bitmap.pixmap()), true,
       absl::nullopt);
-  std::vector<uint8_t> storage(client_entry.SerializedSize());
-  client_entry.Serialize(base::make_span(storage.data(), storage.size()));
+  const uint32_t storage_size = client_entry.SerializedSize();
+  auto storage = PaintOpWriter::AllocateAlignedBuffer<uint8_t>(storage_size);
+  client_entry.Serialize(base::make_span(storage.get(), storage_size));
 
   ServiceImageTransferCacheEntry service_entry;
   service_entry.Deserialize(gr_context.get(),
-                            base::make_span(storage.data(), storage.size()));
+                            /*graphite_recorder=*/nullptr,
+                            base::make_span(storage.get(), storage_size));
   ASSERT_TRUE(service_entry.image());
   auto pre_mip_image = service_entry.image();
   EXPECT_FALSE(pre_mip_image->isTextureBacked());
@@ -422,12 +427,14 @@ TEST(ImageTransferCacheEntryTestNoYUV, CPUImageAddMipsLater) {
   ClientImageTransferCacheEntry client_entry(
       ClientImageTransferCacheEntry::Image(&bitmap.pixmap()), false,
       absl::nullopt);
-  std::vector<uint8_t> storage(client_entry.SerializedSize());
-  client_entry.Serialize(base::make_span(storage.data(), storage.size()));
+  const uint32_t storage_size = client_entry.SerializedSize();
+  auto storage = PaintOpWriter::AllocateAlignedBuffer<uint8_t>(storage_size);
+  client_entry.Serialize(base::make_span(storage.get(), storage_size));
 
   ServiceImageTransferCacheEntry service_entry;
   service_entry.Deserialize(gr_context.get(),
-                            base::make_span(storage.data(), storage.size()));
+                            /*graphite_recorder=*/nullptr,
+                            base::make_span(storage.get(), storage_size));
   ASSERT_TRUE(service_entry.image());
   auto pre_mip_image = service_entry.image();
   EXPECT_FALSE(pre_mip_image->isTextureBacked());
@@ -523,6 +530,7 @@ TEST(ImageTransferCacheEntryTestHDR, Gainmap) {
 
     ServiceImageTransferCacheEntry service_entry;
     service_entry.Deserialize(gr_context,
+                              /*graphite_recorder=*/nullptr,
                               base::make_span(storage.data(), storage.size()));
     ASSERT_TRUE(service_entry.image());
     auto image = service_entry.image();

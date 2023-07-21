@@ -115,6 +115,8 @@ class SkylabGPUTelemetryTestGenerator(GPUTelemetryTestGenerator):
     isolated_scripts = super(SkylabGPUTelemetryTestGenerator,
                              self).generate(*args, **kwargs)
     for test in isolated_scripts:
+      if 'swarming' in test:
+        test['swarming'] = {'can_use_on_swarming_builders': False}
       if 'isolate_name' in test:
         test['test'] = test['isolate_name']
         del test['isolate_name']
@@ -724,6 +726,11 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     if 'hard_timeout' in swarming_dict:
       if swarming_dict['hard_timeout'] == 0: # pragma: no cover
         del swarming_dict['hard_timeout'] # pragma: no cover
+    if not swarming_dict.get('can_use_on_swarming_builders', False):
+      # Remove all other keys.
+      for k in list(swarming_dict):  # pragma: no cover
+        if k != 'can_use_on_swarming_builders': # pragma: no cover
+          del swarming_dict[k] # pragma: no cover
 
   def update_and_cleanup_test(self, test, test_name, tester_name, tester_config,
                               waterfall):
@@ -735,11 +742,8 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     modifications = self.get_test_modifications(test, test_name, tester_name)
     if modifications:
       test = self.dictionary_merge(test, modifications)
-    if (swarming_dict := test.get('swarming')) is not None:
-      if swarming_dict.get('can_use_on_swarming_builders', False):
-        self.clean_swarming_dictionary(swarming_dict)
-      else:
-        del test['swarming']
+    if 'swarming' in test:
+      self.clean_swarming_dictionary(test['swarming'])
     # Ensure all Android Swarming tests run only on userdebug builds if another
     # build type was not specified.
     if 'swarming' in test and self.is_android(tester_config):
@@ -853,8 +857,9 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     self.add_common_test_properties(result, tester_config)
     self.substitute_magic_args(result, tester_name, tester_config)
 
-    if (result.get('swarming', {}).get('can_use_on_swarming_builders')
-        and not result.get('merge')):
+    if not result.get('merge'):
+      # TODO(https://crbug.com/958376): Consider adding the ability to not have
+      # this default.
       if test_config.get('use_isolated_scripts_api', False):
         merge_script = 'standard_isolated_script_merge'
       else:
@@ -886,8 +891,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     self.add_common_test_properties(result, tester_config)
     self.substitute_magic_args(result, tester_name, tester_config)
 
-    if (result.get('swarming', {}).get('can_use_on_swarming_builders')
-        and not result.get('merge')):
+    if not result.get('merge'):
       # TODO(https://crbug.com/958376): Consider adding the ability to not have
       # this default.
       result['merge'] = {
@@ -1002,8 +1006,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
 
     # These tests upload and download results from cloud storage and therefore
     # aren't idempotent yet. https://crbug.com/549140.
-    if 'swarming' in result:
-      result['swarming']['idempotent'] = False
+    result['swarming']['idempotent'] = False
 
     # The GPU tests act much like integration tests for the entire browser, and
     # tend to uncover flakiness bugs more readily than other test suites. In
@@ -1050,9 +1053,8 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         '--stable-jobs',
         '--extra-browser-args=%s' % ' '.join(extra_browser_args),
     ] + args
-    result['args'] = self.maybe_fixup_args_array(
-        self.substitute_gpu_args(tester_config, result.get('swarming', {}),
-                                 args))
+    result['args'] = self.maybe_fixup_args_array(self.substitute_gpu_args(
+      tester_config, result['swarming'], args))
     return result
 
   def get_default_isolate_name(self, tester_config, is_android_webview):
@@ -2096,7 +2098,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
   def _check_swarming_config(self, filename, builder, step_name, step_data):
     # TODO(crbug.com/1203436): Ensure all swarming tests specify cpu, not
     # just mac tests.
-    if step_data.get('swarming', {}).get('can_use_on_swarming_builders'):
+    if step_data['swarming']['can_use_on_swarming_builders']:
       dimension_sets = step_data['swarming'].get('dimension_sets')
       if not dimension_sets:
         raise BBGenErr('%s: %s / %s : os must be specified for all '

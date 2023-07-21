@@ -1455,7 +1455,9 @@ void PrintRenderFrameHelper::SetPrintPreviewUI(
 }
 
 void PrintRenderFrameHelper::InitiatePrintPreview(
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     mojo::PendingAssociatedRemote<mojom::PrintRenderer> print_renderer,
+#endif
     bool has_selection) {
   ScopedIPC scoped_ipc(weak_ptr_factory_.GetWeakPtr());
   if (ipc_nesting_level_ > kAllowedIpcDepthForPrint)
@@ -2566,7 +2568,6 @@ bool PrintRenderFrameHelper::RenderPagesForPrint(blink::WebLocalFrame* frame,
   return true;
 }
 
-#if !BUILDFLAG(IS_APPLE)
 void PrintRenderFrameHelper::PrintPageInternal(const mojom::PrintParams& params,
                                                uint32_t page_number,
                                                uint32_t page_count,
@@ -2611,7 +2612,6 @@ void PrintRenderFrameHelper::PrintPageInternal(const mojom::PrintParams& params,
   bool ret = metafile->FinishPage();
   DCHECK(ret);
 }
-#endif  // !BUILDFLAG(IS_APPLE)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintRenderFrameHelper::ShowScriptedPrintPreview() {

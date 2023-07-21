@@ -32,7 +32,8 @@ extern const char kIosCredentialProviderPromoSource[];
 extern const char kIosCredentialProviderPromoHasRegisteredWithPromoManager[];
 extern const char kIosBookmarkCachedFolderId[];
 extern const char kIosBookmarkCachedTopMostRow[];
-extern const char kIosBookmarkFolderDefault[];
+extern const char kIosBookmarkLastUsedFolderReceivingBookmarks[];
+extern const char kIosBookmarkLastUsedStorageReceivingBookmarks[];
 extern const char kIosBookmarkPromoAlreadySeen[];
 extern const char kIosBookmarkSigninPromoDisplayedCount[];
 extern const char kIosBringAndroidTabsPromptDisplayed[];
@@ -64,6 +65,7 @@ extern const char kPrintingEnabled[];
 extern const char kSearchSuggestEnabled[];
 extern const char kTrackPricesOnTabsEnabled[];
 extern const char kLensCameraAssistedSearchPolicyAllowed[];
+extern const char kWebInspectorEnabled[];
 
 extern const char kNetworkPredictionSetting[];
 

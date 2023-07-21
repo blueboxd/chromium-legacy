@@ -308,6 +308,9 @@ class AutocompleteController : public AutocompleteProviderListener,
       bool force_notify_default_match_changed,
       absl::optional<AutocompleteMatch> default_match_to_preserve);
 
+  // Attaches actions to matches: pedals, history clusters, tab switch, etc.
+  void AttachActions();
+
   // Updates `result` to populate each match's `associated_keyword` if that
   // match can show a keyword hint. `result` should be sorted by relevance
   // before this is called.
@@ -348,11 +351,6 @@ class AutocompleteController : public AutocompleteProviderListener,
   // Helper function for Stop().  |due_to_user_inactivity| means this call was
   // triggered by a user's idleness, i.e., not an explicit user action.
   void StopHelper(bool clear_result, bool due_to_user_inactivity);
-
-  // Helper for UpdateKeywordDescriptions(). Returns whether curbing the keyword
-  // descriptions is enabled, and whether there is enough input to guarantee
-  // that the Omnibox is in keyword mode.
-  bool ShouldCurbKeywordDescriptions(const std::u16string& keyword);
 
   // MemoryDumpProvider:
   bool OnMemoryDump(

@@ -26,17 +26,6 @@ UserCloudPolicyStatusProvider::UserCloudPolicyStatusProvider(
 UserCloudPolicyStatusProvider::~UserCloudPolicyStatusProvider() = default;
 
 base::Value::Dict UserCloudPolicyStatusProvider::GetStatus() {
-  signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile_);
-  const bool is_flex_org =
-      identity_manager && identity_manager
-                              ->FindExtendedAccountInfoByEmailAddress(
-                                  profile_->GetProfileUserName())
-                              .IsMemberOfFlexOrg();
-  if (!is_flex_org && !core_->store()->is_managed()) {
-    return {};
-  }
-
   ProfileAttributesEntry* entry =
       g_browser_process->profile_manager()
           ->GetProfileAttributesStorage()
@@ -48,6 +37,17 @@ base::Value::Dict UserCloudPolicyStatusProvider::GetStatus() {
       policy::PolicyStatusProvider::GetStatusFromCore(core_);
 
   if (enrollment_token.empty()) {
+    signin::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(profile_);
+    const bool is_flex_org =
+        identity_manager && identity_manager
+                                ->FindExtendedAccountInfoByEmailAddress(
+                                    profile_->GetProfileUserName())
+                                .IsMemberOfFlexOrg();
+    if (!is_flex_org && !core_->store()->is_managed()) {
+      return {};
+    }
+
     SetDomainExtractedFromUsername(dict);
     GetUserAffiliationStatus(&dict, profile_);
     dict.Set(policy::kFlexOrgWarningKey, is_flex_org);

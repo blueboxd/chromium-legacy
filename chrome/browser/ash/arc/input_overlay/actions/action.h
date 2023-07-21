@@ -45,7 +45,7 @@ void LogTouchEvents(const std::list<ui::TouchEvent>& events);
 //    "modifiers": [""] // optional: "ctrl", "shift", "alt".
 // }
 absl::optional<std::pair<ui::DomCode, int>> ParseKeyboardKey(
-    const base::Value& value,
+    const base::Value::Dict& value,
     const base::StringPiece key_name);
 
 // Return true if the |input_element| is bound.
@@ -63,7 +63,7 @@ class Action {
   Action& operator=(const Action&) = delete;
   virtual ~Action();
 
-  virtual bool ParseFromJson(const base::Value& value);
+  virtual bool ParseFromJson(const base::Value::Dict& value);
   // Used to create an action from UI.
   virtual bool InitFromEditor();
   bool ParseFromProto(const ActionProto& proto);
@@ -87,6 +87,7 @@ class Action {
   // |input_element| should overlap the current displayed binding. If it is
   // partially overlapped, then we only unbind the overlapped input.
   virtual void UnbindInput(const InputElement& input_element) = 0;
+  virtual ActionType GetType() = 0;
 
   // This is called for editing the actions before change is saved. Or for
   // loading the customized data to override the default input mapping.
@@ -229,9 +230,6 @@ class Action {
   // Mainly for default action to mark if it is deleted.
   bool deleted_ = false;
 
-  // TODO(b/260937747): Update or remove when removing flags
-  // |kArcInputOverlayAlphaV2| or |kArcInputOverlayBeta|.
-  bool allow_reposition_;
   // Corresponds to |kArcInputOverlayBeta| flag to turn on/off the editor
   // feature of adding or removing actions.
   bool beta_;

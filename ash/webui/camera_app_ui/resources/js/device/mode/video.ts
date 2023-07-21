@@ -86,7 +86,7 @@ const GRAB_GIF_FRAME_RATIO = 2;
 /**
  * Initial speed for time-lapse recording.
  */
-const TIME_LAPSE_INITIAL_SPEED = 5;
+export const TIME_LAPSE_INITIAL_SPEED = 5;
 
 /**
  * Minimum bitrate multiplier for time lapse recording.
@@ -637,6 +637,9 @@ export class Video extends ModeBase {
         duration: this.gifRecordTime.inMilliseconds(),
       })];
     } else if (this.recordingType === RecordType.TIME_LAPSE) {
+      // TODO(b/279865370): Don't pause when the confirm dialog is shown.
+      window.addEventListener('beforeunload', beforeUnloadListener);
+
       this.recordTime.start({resume: false});
       let timeLapseSaver: TimeLapseSaver|null = null;
       try {
@@ -645,6 +648,7 @@ export class Video extends ModeBase {
       } finally {
         state.set(state.State.RECORDING, false);
         this.recordTime.stop({pause: false});
+        window.removeEventListener('beforeunload', beforeUnloadListener);
       }
 
       if (this.recordTime.inMilliseconds() <
@@ -722,7 +726,7 @@ export class Video extends ModeBase {
     } else {
       sound.cancel(dom.get('#sound-rec-start', HTMLAudioElement));
 
-      if (this.mediaRecorder &&
+      if (this.mediaRecorder !== null &&
           (this.mediaRecorder.state === 'recording' ||
            this.mediaRecorder.state === 'paused')) {
         this.mediaRecorder.stop();
@@ -792,7 +796,6 @@ export class Video extends ModeBase {
   private async captureTimeLapse(param: h264.EncoderParameters):
       Promise<TimeLapseSaver> {
     const encoderConfig = getVideoEncoderConfig(param, this.captureResolution);
-    const video = this.video.video;
 
     // Creates a saver given the initial speed.
     const saver = await TimeLapseSaver.create(
@@ -808,35 +811,45 @@ export class Video extends ModeBase {
     const frames = await new Promise<number>((resolve, reject) => {
       let frameCount = 0;
       let writtenFrameCount = 0;
-      // TODO(b/236800499): Investigate whether we should use async, or use
-      // reader.read().then() instead.
+
+      async function onError(error: unknown) {
+        await saver.cancel();
+        reject(error);
+      }
+      saver.setErrorCallback(onError);
+
       async function updateFrame(): Promise<void> {
         if (!state.get(state.State.RECORDING)) {
           resolve(writtenFrameCount);
           return;
         }
         if (state.get(state.State.RECORDING_PAUSED)) {
-          video.requestVideoFrameCallback(updateFrame);
+          state.addOneTimeObserver(state.State.RECORDING_PAUSED, updateFrame);
           return;
         }
-        if (frameCount % saver.speed === 0) {
-          try {
-            const {done, value: frame} = await reader.read();
-            if (done) {
-              resolve(writtenFrameCount);
-              return;
-            }
+        let frame: VideoFrame|null = null;
+        try {
+          const {done, value} = await reader.read();
+          if (done) {
+            resolve(writtenFrameCount);
+            return;
+          }
+          frame = value;
+          if (frameCount % saver.speed === 0) {
             saver.write(frame, frameCount);
             writtenFrameCount++;
+          }
+        } catch (e) {
+          onError(e);
+        } finally {
+          if (frame !== null) {
             frame.close();
-          } catch (e) {
-            reject(e);
           }
         }
         frameCount++;
-        video.requestVideoFrameCallback(updateFrame);
+        updateFrame();
       }
-      video.requestVideoFrameCallback(updateFrame);
+      updateFrame();
     });
 
     if (frames === 0) {
@@ -858,7 +871,7 @@ export class Video extends ModeBase {
         let noChunk = true;
 
         function onDataAvailable(event: BlobEvent) {
-          if (event.data && event.data.size > 0) {
+          if (event.data.size > 0) {
             noChunk = false;
             saver.write(event.data);
           }

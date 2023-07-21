@@ -175,6 +175,7 @@
 <translation id="1363819917331173092">ترجمه صفحه‌های <ph name="SOURCE_LANGUAGE" /> پیشنهاد نشود</translation>
 <translation id="1364822246244961190">این خط‌مشی مسدود شده است، ارزش آن نادیده گرفته خواهد شد.</translation>
 <translation id="1368318639262510626">بازی داینو. دایناسوری نقطه‌ای همان‌طور که در دشتی دورافتاده می‌دود، موقع رسیدن به کاکتوس‌ها و پتروداکتیل‌ها جاخالی می‌دهد. وقتی صدای نشانه صوتی را شنیدید، برای پریدن از روی موانع کلید فاصله را فشار دهید.</translation>
+<translation id="136907351928231527">براساس سابقه مرور اخیرتان، ممکن است حداکثر یک هفته طول بکشد تا فهرست موضوعات در اینجا نشان داده شود</translation>
 <translation id="1374468813861204354">پیشنهادات</translation>
 <translation id="1375198122581997741">درباره نسخه</translation>
 <translation id="1376836354785490390">نمایش موارد کمتر</translation>
@@ -190,6 +191,7 @@
 <translation id="1396259464226642517">این نتیجه غیرمنتظره بود؟ <ph name="BEGIN_LINK" />ارسال بازخورد<ph name="END_LINK" /></translation>
 <translation id="1405567553485452995">سبز روشن</translation>
 <translation id="1406500794671479665">در حال تأیید...</translation>
+<translation id="1406812885827747674">این دفعه مجاز است</translation>
 <translation id="1407135791313364759">باز کردن همه</translation>
 <translation id="1408787208417187241">سه منگنه در بالا</translation>
 <translation id="1410941016594047814">پاکت دعوت‌نامه</translation>
@@ -437,7 +439,6 @@
 <translation id="2003709556000175978">هم‌اکنون گذرواژه‌تان را بازنشانی کنید</translation>
 <translation id="2003775180883135320">چهار سوراخ در بالا</translation>
 <translation id="201174227998721785">‏مدیریت اجازه‌ها و داده‌های ذخیره‌شده در سایت‌ها در تنظیمات Chrome</translation>
-<translation id="2012276282211112603">درحال‌حاضر هیچ موضوعی برای نمایش وجود ندارد</translation>
 <translation id="2019607688127825327">‏دکمه «مدیریت تنظیمات دسترس‌پذیری»؛ برای شخصی کردن ابزارهای دسترس‌پذیری در تنظیمات Chrome، کلید «ورود» را فشار دهید</translation>
 <translation id="2021333772895814435">این خط‌مشی همگام‌سازی را در همه دستگاه‌ها برای این موارد به‌طور خودکار غیرفعال می‌کند: <ph name="ACTION_LIST" />.</translation>
 <translation id="202224654587969958">۱۹ × ۱۲ اینچ</translation>
@@ -470,6 +471,7 @@
 <translation id="2079545284768500474">لغو</translation>
 <translation id="20817612488360358">تنظیمات پروکسی سیستم تنظیم شده تا مورد استفاده قرار گیرد، اما یک پیکربندی مشخص برای پروکسی نیز تعیین شده است.</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" /> نتیجه از <ph name="TOTAL_RESULTS" /></translation>
+<translation id="2083256696566019397">در هر بازدید مجاز است</translation>
 <translation id="2085876078937250610">ذخیره کردن…</translation>
 <translation id="2088086323192747268">‏دکمه مدیریت همگام‌سازی، کلید «ورود» را فشار دهید تا اطلاعاتی را که همگام‌سازی می‌کنید در تنظیمات Chrome مدیریت کنید</translation>
 <translation id="2091887806945687916">صدا</translation>
@@ -1354,6 +1356,8 @@
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{‏این کارت در حساب Google ذخیره شده است}one{‏این کارت‌ها در حساب Google ذخیره شده‌اند}other{‏این کارت‌ها در حساب Google ذخیره شده‌اند}}</translation>
 <translation id="4287495839370498922">‏حریم خصوصی بهبودیافته آگهی در Chrome</translation>
 <translation id="4287885627794386150">برای دوره آزمایشی واجدشرایط هستید، اما فعال نیست</translation>
+<translation id="4290920330097335010">همیشه غیرمجاز</translation>
+<translation id="4296207570293932800">اکنون ویژگی جدیدی برای حریم خصوصی آگهی‌ها دردسترس است</translation>
 <translation id="4297502707443874121">تصویر کوچک صفحه <ph name="THUMBNAIL_PAGE" /></translation>
 <translation id="4298000214066716287">سرمایه‌گذاری</translation>
 <translation id="42981349822642051">بزرگ کردن</translation>
@@ -1422,7 +1426,6 @@
 <translation id="4451135742916150903">‏می‌تواند برای اتصال به دستگاه‌های HID درخواست دهد</translation>
 <translation id="4451684391620232683">نوشتار ارائه‌شده به کاربر:</translation>
 <translation id="4452328064229197696">‏گذرواژه‌ای که اکنون استفاده کردید مورد سرقت قرار گرفته است. برای حفظ امنیت حساب‌هایتان، «مدیر گذرواژه Google» توصیه می‌کند گذرواژه‌های ذخیره‌شده‌تان را بررسی کنید.</translation>
-<translation id="4460315069258617173">تا زمانی که برگه‌های این سایت را نبندید، مجاز است</translation>
 <translation id="4464826014807964867">وب‌سایت‌های حاوی اطلاعات سازمان شما</translation>
 <translation id="447665707681730621"><ph name="BUBBLE_MESSAGE" />. <ph name="LEARN_MORE_TEXT" /></translation>
 <translation id="4476953670630786061">این فرم ایمن نیست. تکمیل خودکار خاموش شده است.</translation>
@@ -1626,6 +1629,7 @@
 <translation id="495170559598752135">کنش‌ها</translation>
 <translation id="4953689047182316270">پاسخ دادن به رویدادهای مربوط به دسترس‌پذیری</translation>
 <translation id="4958444002117714549">بزرگ کردن فهرست</translation>
+<translation id="4960068118612257147">‏می‌توانید تغییرات موردنظرتان را در تنظیمات حریم خصوصی آگهی Chrome اعمال کنید</translation>
 <translation id="4964505745997821360">بیمه درمانی</translation>
 <translation id="4968522289500246572">این برنامه برای تلفن همراه طراحی شده است و ممکن است با تغییر اندازه سازگار نباشد. برنامه ممکن است با مشکلاتی روبرو شود یا بازراه‌اندازی شود.</translation>
 <translation id="4968665849807487749">می‌تواند درخواست کند پنجره‌های همه نمایشگرهایتان را مدیریت کند</translation>
@@ -2026,7 +2030,6 @@
 <translation id="5967592137238574583">ویرایش اطلاعات تماس</translation>
 <translation id="5967867314010545767">حذف از سابقه</translation>
 <translation id="5968022600320704045">بدون نتیجه جستجو</translation>
-<translation id="5968793460449681917">در هر بازدید</translation>
 <translation id="5974052231147553524">سینی ششم</translation>
 <translation id="5975083100439434680">دورنمایی کردن</translation>
 <translation id="5979084224081478209">بررسی گذرواژه‌ها</translation>
@@ -2394,7 +2397,6 @@
 <translation id="6897140037006041989">نماینده کاربر</translation>
 <translation id="6898699227549475383">‏سازمان (O)</translation>
 <translation id="6899000063526916106">کد <ph name="NUMBER_OF_DIGITS" /> رقمی را وارد کنید</translation>
-<translation id="6907293445143367439">به <ph name="SITE_NAME" /> اجازه داده شود تا:</translation>
 <translation id="6907458757809079309">تناسب اندام</translation>
 <translation id="6910240653697687763">‏<ph name="URL" /> می‌خواهد کنترل کامل دستگاه‌های MIDI شما را به‌دست آورد</translation>
 <translation id="691024665142758461">بارگیری چندین فایل.</translation>
@@ -2575,7 +2577,6 @@
 <translation id="733923710415886693">گواهی سرور از طریق شفافیت گواهینامه نشان داده نشده بود.</translation>
 <translation id="7341357280245177602">وسایل نقلیه دست‌دوم</translation>
 <translation id="7346048084945669753">وابسته است:</translation>
-<translation id="7349921148288539306">تا زمانی که این برگه را نبندید، مجاز است</translation>
 <translation id="7352651011704765696">مشکلی پیش آمد</translation>
 <translation id="7353601530677266744">خط فرمان</translation>
 <translation id="7354880545102894991">سفرهای کم‌هزینه و لحظه آخری</translation>
@@ -3052,7 +3053,6 @@
 <translation id="8433057134996913067">با این کار از سیستم بیشتر وب‌سایت‌ها خارج می‌شوید.</translation>
 <translation id="8434840396568290395">حیوان خانگی</translation>
 <translation id="8437238597147034694">&amp;واگرد انتقال</translation>
-<translation id="8438476240229491014">این تنظیم به‌خاطر سپرده شود</translation>
 <translation id="8438786541497918448">از دوربین و میکروفون استفاده شود؟</translation>
 <translation id="8438923942245957911">سازمانتان این سایت را پرچم‌گذاری کرده است</translation>
 <translation id="8443613539889492016">رپ و هیپ‌هاپ</translation>

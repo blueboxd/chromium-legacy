@@ -92,9 +92,9 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
 
   PrefService* GetPrefs() const override { return prefs_.get(); }
 
-  bool IsIncognito() const override { return is_incognito_; }
+  bool IsOffTheRecord() const override { return is_incognito_; }
 
-  void SetIsIncognito(bool is_incognito) { is_incognito_ = is_incognito; }
+  void SetIsOffTheRecord(bool is_incognito) { is_incognito_ = is_incognito; }
 
  private:
   url::Origin last_committed_origin_;
@@ -230,15 +230,14 @@ TEST_P(CredentialsFilterTest, ShouldSave_NotSignedIn) {
                   ->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
                   .IsEmpty());
   SetSyncingPasswords(false);
-  // See comments inside ShouldSave() for the justification.
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-  EXPECT_TRUE(filter_->ShouldSave(form));
-#else
+  // If kEnablePasswordsAccountStorage is enabled, then Chrome shouldn't offer
+  // to save the password for the primary account. If there is no primary
+  // account yet, then the just-signed-in account will *become* the primary
+  // account immediately, so it shouldn't be saved either.
   if (base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage))
     EXPECT_FALSE(filter_->ShouldSave(form));
   else
     EXPECT_TRUE(filter_->ShouldSave(form));
-#endif
 }
 
 TEST_P(CredentialsFilterTest, ShouldSave_NotSyncCredential) {
@@ -288,7 +287,7 @@ TEST_P(CredentialsFilterTest, ShouldSaveGaiaPasswordHash) {
 }
 
 TEST_P(CredentialsFilterTest, ShouldNotSaveGaiaPasswordHashIncognito) {
-  client_->SetIsIncognito(true);
+  client_->SetIsOffTheRecord(true);
   PasswordForm gaia_form = SimpleGaiaForm("user@gmail.org");
   EXPECT_FALSE(filter_->ShouldSaveGaiaPasswordHash(gaia_form));
 
@@ -309,7 +308,7 @@ TEST_P(CredentialsFilterTest, ShouldSaveEnterprisePasswordHash) {
 }
 
 TEST_P(CredentialsFilterTest, ShouldNotSaveEnterprisePasswordHashIncognito) {
-  client_->SetIsIncognito(true);
+  client_->SetIsOffTheRecord(true);
   PasswordForm gaia_form = SimpleGaiaForm("user@gmail.org");
   EXPECT_FALSE(filter_->ShouldSaveEnterprisePasswordHash(gaia_form));
 
@@ -332,7 +331,7 @@ TEST_P(CredentialsFilterTest, IsSyncAccountEmail) {
 }
 
 TEST_P(CredentialsFilterTest, IsSyncAccountEmailIncognito) {
-  client_->SetIsIncognito(true);
+  client_->SetIsOffTheRecord(true);
   FakeSigninAs("user@gmail.com");
   EXPECT_FALSE(filter_->IsSyncAccountEmail("user"));
   EXPECT_FALSE(filter_->IsSyncAccountEmail("user2@gmail.com"));

@@ -71,10 +71,10 @@ BASE_DECLARE_FEATURE(kPermissionsPromptSurvey);
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
 BASE_DECLARE_FEATURE(kRecordPermissionExpirationTimestamps);
 
+#endif  // BUILDFLAG(IS_ANDROID)
+
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
 BASE_DECLARE_FEATURE(kPermissionStorageAccessAPI);
-
-#endif  // BUILDFLAG(IS_ANDROID)
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
 BASE_DECLARE_FEATURE(kWindowManagementPermissionAlias);
@@ -83,7 +83,7 @@ BASE_DECLARE_FEATURE(kWindowManagementPermissionAlias);
 namespace feature_params {
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
-extern const base::FeatureParam<bool> kOkButtonBehavesAsAllowAlways;
+extern const base::FeatureParam<bool> kUseStrongerPromptLanguage;
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::FeatureParam<std::string>

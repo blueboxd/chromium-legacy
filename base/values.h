@@ -769,9 +769,6 @@ class BASE_EXPORT GSL_OWNER Value {
   // DEPRECATED: prefer `Value::Dict::FindString()`.
   const std::string* FindStringKey(StringPiece key) const;
   std::string* FindStringKey(StringPiece key);
-  // DEPRECATED: prefer `Value::Dict::FindList()`.
-  const Value* FindListKey(StringPiece key) const;
-  Value* FindListKey(StringPiece key);
 
   // `SetKey` looks up `key` in the underlying dictionary and sets the mapped
   // value to `value`. If `key` could not be found, a new element is inserted.
@@ -787,12 +784,6 @@ class BASE_EXPORT GSL_OWNER Value {
   // `SetKey()`, this avoids un-necessary temporary `Value()` creation, as well
   // ambiguities in the value type.
   //
-  // DEPRECATED: Prefer `Value::Dict::Set()`.
-  Value* SetBoolKey(StringPiece key, bool val);
-  // DEPRECATED: Prefer `Value::Dict::Set()`.
-  Value* SetIntKey(StringPiece key, int val);
-  // DEPRECATED: Prefer `Value::Dict::Set()`.
-  Value* SetDoubleKey(StringPiece key, double val);
   // DEPRECATED: Prefer `Value::Dict::Set()`.
   Value* SetStringKey(StringPiece key, StringPiece val);
   // DEPRECATED: Prefer `Value::Dict::Set()`.

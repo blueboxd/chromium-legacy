@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
@@ -22,6 +23,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -120,6 +122,89 @@ ConvertStyle(uint32_t style) {
   return absl::nullopt;
 }
 
+struct OffsetText {
+  std::string text;
+  size_t offset;
+};
+
+// Trims surrounding text for standard text_input. There is the limit of length
+// of the surrounding text, which is 4000 bytes. This gives it a try to keep
+// the surrounding text around the selection with respecting UTF-8 boundary.
+// Returns the trimmed string and UTF-8 offset.
+absl::optional<OffsetText> TrimSurroundingTextForStandard(
+    base::StringPiece text_utf8,
+    gfx::Range selection_utf8) {
+  // The text length for set_surrounding_text can not be longer than the maximum
+  // length of wayland messages. The maximum length of the text is explicitly
+  // specified as 4000 in the protocol spec of text-input-unstable-v3.
+  static constexpr size_t kWaylandMessageDataMaxLength = 4000;
+
+  // If the selection range in UTF8 form is longer than the maximum length of
+  // wayland messages, skip sending set_surrounding_text requests.
+  if (selection_utf8.length() > kWaylandMessageDataMaxLength) {
+    return absl::nullopt;
+  }
+
+  if (text_utf8.size() <= kWaylandMessageDataMaxLength) {
+    // We separate this case to run the function simpler and faster since this
+    // condition is satisfied in most cases.
+    return OffsetText{std::string(text_utf8), 0u};
+  }
+
+  // If the text in UTF8 form is longer than the maximum length of wayland
+  // messages while the selection range in UTF8 form is not, truncate the text
+  // into the limitation and adjust indices of |selection_range|.
+
+  // Decide where to start. The truncated text should be around the selection
+  // range. We choose a text whose center point is same to the center of the
+  // selection range unless this chosen text is shorter than the maximum
+  // length of wayland messages because of the original text position.
+  uint32_t selection_range_utf8_center =
+      selection_utf8.start() + selection_utf8.length() / 2;
+  // The substring starting with |start_index| might be invalid as UTF8.
+  size_t start_index;
+  if (selection_range_utf8_center <= kWaylandMessageDataMaxLength / 2) {
+    // The selection range is near enough to the start point of original text.
+    start_index = 0;
+  } else if (text_utf8.size() - selection_range_utf8_center <
+             kWaylandMessageDataMaxLength / 2) {
+    // The selection range is near enough to the end point of original text.
+    start_index = text_utf8.size() - kWaylandMessageDataMaxLength;
+  } else {
+    // Choose a text whose center point is same to the center of the selection
+    // range.
+    start_index =
+        selection_range_utf8_center - kWaylandMessageDataMaxLength / 2;
+  }
+
+  // Truncate the text to fit into the wayland message size and adjust indices
+  // of |selection_range|. Since the text is in UTF8 form, we need to adjust
+  // the text and selection range positions where all characters are valid.
+  //
+  // TODO(crbug.com/1214957): We should use base::i18n::BreakIterator
+  // to get the offsets and convert it into UTF8 form instead of using
+  // UTF8CharIterator.
+  base::i18n::UTF8CharIterator iter(text_utf8);
+  while (iter.array_pos() < start_index) {
+    iter.Advance();
+  }
+  size_t truncated_text_start = iter.array_pos();
+  size_t truncated_text_end;
+  while (iter.array_pos() <= start_index + kWaylandMessageDataMaxLength) {
+    truncated_text_end = iter.array_pos();
+    if (!iter.Advance()) {
+      break;
+    }
+  }
+
+  return OffsetText{
+      std::string(text_utf8.substr(truncated_text_start,
+                                   truncated_text_end - truncated_text_start)),
+      truncated_text_start};
+}
+
+// TODO(crbug.com/1402906): Add TrimSurroundingTextForExtension.
+
 }  // namespace
 
 WaylandInputMethodContext::WaylandInputMethodContext(
@@ -197,7 +282,18 @@ void WaylandInputMethodContext::UpdatePreeditText(
 
 void WaylandInputMethodContext::Reset() {
   character_composer_.Reset();
-  surrounding_text_tracker_.Reset();
+  if (base::FeatureList::IsEnabled(features::kWaylandCancelComposition)) {
+    // TODO(b/269964109): In ChromeOS, 'reset' means to reset the composition
+    // only, excluding surrounding text etc. In Wayland, text-input-v1 doesn't
+    // define what state is reset in a 'reset' call. However, based on the
+    // description in text-input-v3, the state likely includes the surrounding
+    // text. Therefore, the call below is likely not compliant with Wayland's
+    // intentions. Introduce a dedicated extended Wayland API for resetting only
+    // the composition.
+    surrounding_text_tracker_.CancelComposition();
+  } else {
+    surrounding_text_tracker_.Reset();
+  }
   if (text_input_)
     text_input_->Reset();
 }
@@ -260,11 +356,6 @@ void WaylandInputMethodContext::SetSurroundingText(
   if (!text_input_)
     return;
 
-  // The text length for set_surrounding_text can not be longer than the maximum
-  // length of wayland messages. The maximum length of the text is explicitly
-  // specified as 4000 in the protocol spec of text-input-unstable-v3.
-  static constexpr size_t kWaylandMessageDataMaxLength = 4000;
-
   // Convert |text| and |selection_range| into UTF8 form.
   std::vector<size_t> offsets_for_adjustment = {selection_range.start(),
                                                 selection_range.end()};
@@ -284,68 +375,14 @@ void WaylandInputMethodContext::SetSurroundingText(
       static_cast<uint32_t>(offsets_for_adjustment[0]),
       static_cast<uint32_t>(offsets_for_adjustment[1])};
 
-  // If the selection range in UTF8 form is longer than the maximum length of
-  // wayland messages, skip sending set_surrounding_text requests.
-  if (selection_range_utf8.length() > kWaylandMessageDataMaxLength) {
+  auto trimmed =
+      TrimSurroundingTextForStandard(text_utf8, selection_range_utf8);
+  if (!trimmed.has_value()) {
     surrounding_text_tracker_.Reset();
     return;
   }
-
-  if (text_utf8.size() <= kWaylandMessageDataMaxLength) {
-    // We separate this case to run the function simpler and faster since this
-    // condition is satisfied in most cases.
-    surrounding_text_offset_ = 0;
-  } else {
-    // If the text in UTF8 form is longer than the maximum length of wayland
-    // messages while the selection range in UTF8 form is not, truncate the text
-    // into the limitation and adjust indices of |selection_range|.
-
-    // Decide where to start. The truncated text should be around the selection
-    // range. We choose a text whose center point is same to the center of the
-    // selection range unless this chosen text is shorter than the maximum
-    // length of wayland messages because of the original text position.
-    uint32_t selection_range_utf8_center =
-        selection_range_utf8.start() + selection_range_utf8.length() / 2;
-    // The substring starting with |start_index| might be invalid as UTF8.
-    size_t start_index;
-    if (selection_range_utf8_center <= kWaylandMessageDataMaxLength / 2) {
-      // The selection range is near enough to the start point of original text.
-      start_index = 0;
-    } else if (text_utf8.size() - selection_range_utf8_center <
-               kWaylandMessageDataMaxLength / 2) {
-      // The selection range is near enough to the end point of original text.
-      start_index = text_utf8.size() - kWaylandMessageDataMaxLength;
-    } else {
-      // Choose a text whose center point is same to the center of the selection
-      // range.
-      start_index =
-          selection_range_utf8_center - kWaylandMessageDataMaxLength / 2;
-    }
-
-    // Truncate the text to fit into the wayland message size and adjust indices
-    // of |selection_range|. Since the text is in UTF8 form, we need to adjust
-    // the text and selection range positions where all characters are valid.
-    //
-    // TODO(crbug.com/1214957): We should use base::i18n::BreakIterator
-    // to get the offsets and convert it into UTF8 form instead of using
-    // UTF8CharIterator.
-    base::i18n::UTF8CharIterator iter(text_utf8);
-    while (iter.array_pos() < start_index) {
-      iter.Advance();
-    }
-    size_t truncated_text_start = iter.array_pos();
-    size_t truncated_text_end;
-    while (iter.array_pos() <= start_index + kWaylandMessageDataMaxLength) {
-      truncated_text_end = iter.array_pos();
-      if (!iter.Advance()) {
-        break;
-      }
-    }
-
-    text_utf8.erase(truncated_text_end);
-    text_utf8.erase(0, truncated_text_start);
-    surrounding_text_offset_ = truncated_text_start;
-  }
+  text_utf8 = std::move(trimmed->text);
+  surrounding_text_offset_ = trimmed->offset;
 
   if (fragment.has_value()) {
     // SetGrammarFragmentAtCursor must happen before SetSurroundingText to make
@@ -372,8 +409,6 @@ void WaylandInputMethodContext::SetSurroundingText(
   gfx::Range relocated_selection_range(
       selection_range_utf8.start() - surrounding_text_offset_,
       selection_range_utf8.end() - surrounding_text_offset_);
-  DCHECK(relocated_selection_range.IsBoundedBy(
-      gfx::Range(0, kWaylandMessageDataMaxLength)));
   text_input_->SetSurroundingText(text_utf8, relocated_selection_range);
 }
 
@@ -507,6 +542,10 @@ void WaylandInputMethodContext::OnCursorPosition(int32_t index,
     return;
   }
 
+  const gfx::Range new_selection_range =
+      base::FeatureList::IsEnabled(features::kWaylandKeepSelectionFix)
+          ? gfx::Range(offsets[1], offsets[0])
+          : gfx::Range(offsets[0], offsets[1]);
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Cursor position may be wrong on Lacros due to timing issue for some
   // scenario when surrounding text is longer than wayland message size
@@ -522,15 +561,14 @@ void WaylandInputMethodContext::OnCursorPosition(int32_t index,
   //
   // This timing issue will be fixed by sending whole surrounding text instead
   // of trimmed text.
-  if (selection == gfx::Range(offsets[0], offsets[1])) {
+  if (selection == new_selection_range) {
     pending_keep_selection_ = true;
   } else {
     NOTIMPLEMENTED_LOG_ONCE();
   }
 #endif
 
-  surrounding_text_tracker_.OnSetEditableSelectionRange(
-      gfx::Range(offsets[0], offsets[1]));
+  surrounding_text_tracker_.OnSetEditableSelectionRange(new_selection_range);
 }
 
 void WaylandInputMethodContext::OnDeleteSurroundingText(int32_t index,

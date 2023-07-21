@@ -259,36 +259,6 @@ TEST_F(DocumentProviderTest, IsDocumentProviderAllowed) {
   template_url_service->Remove(new_default_provider);
   EXPECT_TRUE(provider_->IsDocumentProviderAllowed(client_.get(), ac_input));
 
-  // Should not be in explicit keyword mode unless the keyword is the default or
-  // drive.google.com.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeatures(
-        {omnibox::kDocumentProvider, omnibox::kExperimentalKeywordMode}, {});
-    {
-      AutocompleteInput input(u"wikipedia.org soup",
-                              metrics::OmniboxEventProto::OTHER,
-                              TestSchemeClassifier());
-      input.set_prefer_keyword(true);
-      EXPECT_FALSE(provider_->IsDocumentProviderAllowed(client_.get(), input));
-    }
-    {
-      // Amazon is not registered as a keyword in |SetUp()|.
-      AutocompleteInput input(u"amazon.com soup",
-                              metrics::OmniboxEventProto::OTHER,
-                              TestSchemeClassifier());
-      input.set_prefer_keyword(true);
-      EXPECT_TRUE(provider_->IsDocumentProviderAllowed(client_.get(), input));
-    }
-    {
-      AutocompleteInput input(u"drive.google.com soup",
-                              metrics::OmniboxEventProto::OTHER,
-                              TestSchemeClassifier());
-      input.set_prefer_keyword(true);
-      EXPECT_TRUE(provider_->IsDocumentProviderAllowed(client_.get(), input));
-    }
-  }
-
   // Input should not be on-focus.
   {
     AutocompleteInput input(u"text text", metrics::OmniboxEventProto::OTHER,
@@ -1267,16 +1237,9 @@ TEST_F(DocumentProviderTest, Logging) {
 }
 
 TEST_F(DocumentProviderTest, LowQualitySuggestions) {
-  auto test = [&](int limit_enabled, const std::string& response_str,
+  auto test = [&](const std::string& response_str,
                   const std::string& input_text,
                   const std::vector<int> expected_scores) {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeatureWithParameters(
-        omnibox::kDocumentProvider,
-        {{std::string(
-              OmniboxFieldTrial::kDocumentProviderMaxLowQualitySuggestions
-                  .name),
-          limit_enabled ? "1" : "100"}});
     absl::optional<base::Value> response = base::JSONReader::Read(response_str);
     provider_->input_.UpdateText(base::UTF8ToUTF16(input_text), 0, {});
     ACMatches matches = provider_->ParseDocumentSearchResults(*response);
@@ -1290,8 +1253,7 @@ TEST_F(DocumentProviderTest, LowQualitySuggestions) {
     SCOPED_TRACE(
         "Unowned and non-title matching docs are limited. Title matching docs "
         "are not limited.");
-    test(true,
-         R"({"results": [
+    test(R"({"results": [
           {"title": "bad title1 title2",  "score": 1000, "url": "good url isn't sufficient"},
           {"title": "bad title1 title2",  "score": 999,  "url": "url"},
           {"title": "bad title1 title2",  "score": 998,  "url": "url"},
@@ -1309,8 +1271,8 @@ TEST_F(DocumentProviderTest, LowQualitySuggestions) {
 
   {
     SCOPED_TRACE("Owned docs are not limited.");
-    test(true,
-         R"({"results": [
+    test(
+        R"({"results": [
           {"title": "bad title1 title2",  "score": 1000, "url": "good url isn't sufficient"},
           {"title": "bad title1 title2",  "score": 999,  "url": "url"},
           {"title": "bad title1 title2",  "score": 998,  "url": "url", "metadata": {"owner": {"emailAddresses": [{"emailAddress": "badEmail1@gmail.com"}, {"emailAddress": "gOOdemaIl@gmail.com"}]}}},
@@ -1319,30 +1281,12 @@ TEST_F(DocumentProviderTest, LowQualitySuggestions) {
           {"title": "good title1 title2", "score": 995,  "url": "url"},
           {"title": "good title1 title2", "score": 994,  "url": "url"}
         ]})",
-         "goo title1", {1000, 0, 998, 0, 996, 995, 994});
-  }
-
-  {
-    SCOPED_TRACE(
-        "When the limit is disabled, unowned and non-title matching docs are "
-        "not limited.");
-    test(false,
-         R"({"results": [
-          {"title": "bad title1 title2",  "score": 1000, "url": "good url isn't sufficient"},
-          {"title": "bad title1 title2",  "score": 999,  "url": "url"},
-          {"title": "bad title1 title2",  "score": 998,  "url": "url"},
-          {"title": "goOd tItLE1 title2", "score": 997,  "url": "url"},
-          {"title": "good title1 title2", "score": 996,  "url": "url"},
-          {"title": "good title1 title2", "score": 995,  "url": "url"},
-          {"title": "good title1 title2", "score": 994,  "url": "url"}
-        ]})",
-         "goo title1", {1000, 999, 998, 997, 996, 995, 994});
+        "goo title1", {1000, 0, 998, 0, 996, 995, 994});
   }
 
   {
     SCOPED_TRACE("Responses with missing owner don't crash and are limited.");
-    test(true,
-         R"({"results": [
+    test(R"({"results": [
             {"title": "title", "score": 1000,  "url": "url", "metadata":
               { "owner": { "emailAddresses": [{}] } }
             },

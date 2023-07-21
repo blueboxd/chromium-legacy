@@ -601,7 +601,6 @@ SegmentID HistoryBackend::CalculateSegmentID(
 }
 
 void HistoryBackend::UpdateSegmentForExistingForeignVisit(VisitRow& visit_row) {
-  CHECK(can_add_foreign_visits_to_segments_);
   CHECK(!visit_row.originator_cache_guid.empty());
 
   URLRow url_row;
@@ -1782,9 +1781,7 @@ VisitID HistoryBackend::UpdateSyncedVisit(
     return kInvalidVisitID;
   }
 
-  if (can_add_foreign_visits_to_segments_) {
-    UpdateSegmentForExistingForeignVisit(updated_row);
-  }
+  UpdateSegmentForExistingForeignVisit(updated_row);
 
   // If provided, add or update the ContextAnnotations.
   if (context_annotations) {
@@ -1827,7 +1824,7 @@ bool HistoryBackend::UpdateVisitReferrerOpenerIDs(VisitID visit_id,
 
   bool result = db_->UpdateVisitRow(row);
 
-  if (result && can_add_foreign_visits_to_segments_) {
+  if (result) {
     UpdateSegmentForExistingForeignVisit(row);
   }
 

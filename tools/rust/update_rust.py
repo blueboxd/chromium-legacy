@@ -32,7 +32,7 @@ sys.path.append(
 
 # These fields are written by //tools/clang/scripts/upload_revision.py, and
 # should not be changed manually.
-RUST_REVISION = '17c11672167827b0dd92c88ef69f24346d1286dd'
+RUST_REVISION = '473f916d836cc662c5bdbb0d40af9fb4678fab9e'
 RUST_SUB_REVISION = 1
 
 # Trunk on 2022-10-15.
@@ -65,12 +65,12 @@ CRUBIT_SUB_REVISION = 1
 # TODO(lukasza): Include CRUBIT_REVISION and CRUBIT_SUB_REVISION once we
 # include Crubit binaries in the generated package.  See also a TODO comment
 # in BuildCrubit in package_rust.py.
-FALLBACK_REVISION = '17c11672167827b0dd92c88ef69f24346d1286dd-1-llvmorg-17-init-8029-g27f27d15-1'
+FALLBACK_REVISION = '17c11672167827b0dd92c88ef69f24346d1286dd-2-llvmorg-17-init-8029-g27f27d15-4'
 
 # Hash of src/stage0.json, which itself contains the stage0 toolchain hashes.
 # We trust the Rust build system checks, but to ensure it is not tampered with
 # itself check the hash.
-STAGE0_JSON_SHA256 = '7339c4d847db37e8c0b69b5c037bb708fcce1baf22ac5bf598dc739e559bcbc1'
+STAGE0_JSON_SHA256 = 'b1aae08ff68e03322e55e02cf1eabd4a796ec477a5d64b7b1daa504ccc3b21ba'
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 CHROMIUM_DIR = os.path.abspath(os.path.join(THIS_DIR, '..', '..'))
@@ -170,11 +170,11 @@ def main():
     platform_prefix = GetPlatformUrlPrefix(GetDefaultHostOs())
 
     version = GetLatestRevision()
-    url = f'{platform_prefix}rust-toolchain-{version}.tgz'
+    url = f'{platform_prefix}rust-toolchain-{version}.tar.xz'
     if not CheckUrl(url):
         print("Latest Rust toolchain not found. Using fallback revision.")
         version = FALLBACK_REVISION
-        url = f'{platform_prefix}rust-toolchain-{version}.tgz'
+        url = f'{platform_prefix}rust-toolchain-{version}.tar.xz'
         if not CheckUrl(url):
             print('error: Could not find Rust toolchain package')
             return 1
@@ -192,7 +192,6 @@ def main():
         shutil.rmtree(RUST_TOOLCHAIN_OUT_DIR)
 
     try:
-        platform_prefix = GetPlatformUrlPrefix(GetDefaultHostOs())
         DownloadAndUnpack(url, THIRD_PARTY_DIR)
     except urllib.error.HTTPError as e:
         print(f'error: Failed to download Rust package')

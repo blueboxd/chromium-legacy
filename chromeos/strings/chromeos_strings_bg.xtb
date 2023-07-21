@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">Преобразуването от DNS не е възможно</translation>
 <translation id="1018656279737460067">Отказано</translation>
 <translation id="1022433422498218992">Общи контроли</translation>
-<translation id="1022628058306505708">Земята</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> нишки, <ph name="CPU_MAX_CLOCK_SPEED" /> ГХц)</translation>
 <translation id="1047773237499189053">Налице е нова функция. Използвайте стрелката нагоре, за да научите повече.</translation>
 <translation id="1059913517121127803">Сканирането не бе стартирано</translation>
@@ -235,7 +234,6 @@
 <translation id="2902312830803030883">Още действия</translation>
 <translation id="2926057806159140518">Въведете потребителското име и паролата си или сканирайте QR кода си</translation>
 <translation id="2940811910881150316">Устройството не може да бъде тествано. За целта отворете капака.</translation>
-<translation id="2981143481017883351">Вече са налице активи специално за Chromebook</translation>
 <translation id="3008341117444806826">ОПРЕСНЯВАНЕ</translation>
 <translation id="3009958530611748826">Изберете папка, в която да запазите</translation>
 <translation id="3017079585324758401">Фон</translation>
@@ -280,7 +278,6 @@
 <translation id="3360306038446926262">Windows</translation>
 <translation id="3368922792935385530">Има връзка</translation>
 <translation id="3369013195428705271">Наистина ли искате да изчистите цялата история на отпечатването? Текущите задания за печат няма да бъдат изтрити.</translation>
-<translation id="3386675685417744672">Специално за Chromebook</translation>
 <translation id="3404249063913988450">Активиране на скрийнсейвъра</translation>
 <translation id="3413935475507503304">За да продължите с актуализацията, кликнете върху „Напред“.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
@@ -295,6 +292,7 @@
 <translation id="3484914941826596830">Докато фърмуерът се актуализира, не изключвайте това външно устройство, нито компютъра си. Можете да намалите прозореца. Възможно е актуализацията да отнеме няколко минути и през това време външното ви устройство може да не работи.</translation>
 <translation id="3486220673238053218">дефиниция</translation>
 <translation id="3488065109653206955">Частично активиран</translation>
+<translation id="3502426834823382181">преглед на всички приложения</translation>
 <translation id="3510890413042482857">Изпращане на <ph name="BEGIN_LINK1" />данните от проследяването на ефективността<ph name="END_LINK1" /></translation>
 <translation id="3517001332549868749">Chrome OS: Актуал.</translation>
 <translation id="3527036260304016759">Неуспешно – неизвестна грешка</translation>
@@ -358,7 +356,6 @@
 <translation id="404928562651467259">ПРЕДУПРЕЖДЕНИЕ</translation>
 <translation id="4054683689023980771">Изображението се изтегля</translation>
 <translation id="4060260348856573701">Ново име на точка за достъп (APN)</translation>
-<translation id="4079743696465895866">Изберете съдържание специално за Chromebook</translation>
 <translation id="4093865285251893588">Изображение на потребителския профил</translation>
 <translation id="409427325554347132">Запазване на подробностите за теста</translation>
 <translation id="4095829376260267438">WPA2 + WPA3</translation>
@@ -625,7 +622,6 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">Капацитетът на батерията намалява с течение на използването ѝ</translation>
 <translation id="6191293864534840972">Неправилно образувани сървъри за имена</translation>
-<translation id="6205145102504628069">Облаци</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223066887782788441">Изход от режима на цял екран</translation>
 <translation id="6223752125779001553">Няма налични скенери</translation>
@@ -636,6 +632,7 @@
 <translation id="6278428485366576908">Тема</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Включване на тъмната тема</translation>
+<translation id="6285899124799306373">отваряне на стартовия панел</translation>
 <translation id="6302401976930124515">Тестът „<ph name="TEST_NAME" />“ бе прекратен</translation>
 <translation id="631063167932043783">Приложение Explore</translation>
 <translation id="6319207335391420837">Актуализиране на фърмуера на <ph name="DEVICE_NAME" /></translation>
@@ -651,6 +648,7 @@
 <translation id="6382182670717268353">Визуализация на скрийнсейвъра</translation>
 <translation id="6388847657025262518">Подавачът на документи на скенера е блокирал. Проверете го и опитайте отново.</translation>
 <translation id="6394634179843537518">Добавяне на файл</translation>
+<translation id="6401427872449207797">търсене в браузъра</translation>
 <translation id="6410257289063177456">Графични файлове</translation>
 <translation id="641081527798843608">Съвпадение на субекта</translation>
 <translation id="6412715219990689313">Вградена клавиатура</translation>
@@ -666,7 +664,6 @@
 <translation id="6494974875566443634">Персонализиране</translation>
 <translation id="6500818810472529210">Вижте резултата в Google Търсене</translation>
 <translation id="650266656685499220">За да създадете албуми, отворете Google Снимки</translation>
-<translation id="6505750420152840539">От зазоряване до здрачаване</translation>
 <translation id="6516990319416533844">За да тествате скоростта на зареждане, трябва да изчакате малко, така че батерията да се изтощи</translation>
 <translation id="6517239166834772319">Explore</translation>
 <translation id="6526200165918397681">Съответствие с тапета</translation>
@@ -875,6 +872,7 @@
 <translation id="8312330582793120272">пускане на мултимедията</translation>
 <translation id="8318753676953949627">Няма изображения</translation>
 <translation id="8329018942023753850">приложение за калкулатор</translation>
+<translation id="8335869473001018124">отваряне на търсенето</translation>
 <translation id="8336739000755212683">Промяна на изображението за профила на устройството</translation>
 <translation id="8347227221149377169">Задания за отпечатване</translation>
 <translation id="8351855506390808906">Точка на докосване за задаване на функции за клавишите</translation>

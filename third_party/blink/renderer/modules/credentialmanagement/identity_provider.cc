@@ -147,6 +147,12 @@ void IdentityProvider::logout(ScriptState* script_state) {
                               mojom::blink::IdpSigninStatus::kSignedOut);
 }
 
+void IdentityProvider::close(ScriptState* script_state) {
+  auto* request =
+      CredentialManagerProxy::From(script_state)->FederatedAuthRequest();
+  request->CloseModalDialogView();
+}
+
 void OnRegisterIdP(ScriptPromiseResolver* resolver, bool accepted) {
   if (!accepted) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -193,6 +199,14 @@ ScriptPromise IdentityProvider::unregisterIdentityProvider(
       KURL(configURL),
       WTF::BindOnce(&OnUnregisterIdP, WrapPersistent(resolver)));
 
+  return promise;
+}
+
+ScriptPromise IdentityProvider::resolve(ScriptState* script_state,
+                                        const String& token) {
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+  // TODO(crbug.com/1429083): send the request to the browser process.
   return promise;
 }
 

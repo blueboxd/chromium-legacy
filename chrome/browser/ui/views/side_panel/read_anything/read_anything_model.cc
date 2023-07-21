@@ -26,6 +26,34 @@
 using read_anything::mojom::LetterSpacing;
 using read_anything::mojom::LineSpacing;
 
+namespace {
+
+const char* kLanguagesSupportedByPoppins[] = {
+    "af", "ca", "cs", "da", "de", "en", "es", "et", "fi", "fil",
+    "fr", "hi", "hr", "hu", "id", "it", "lt", "lv", "mr", "ms",
+    "nl", "pl", "pt", "ro", "sk", "sl", "sv", "sw", "tr"};
+
+const char* kLanguagesSupportedByComicNeue[] = {
+    "af", "ca", "cs", "da", "de", "en", "es", "et", "fi", "fil", "fr", "hr",
+    "hu", "id", "it", "ms", "nl", "pl", "pt", "sk", "sl", "sv",  "sw"};
+
+const char* kLanguagesSupportedByLexendDeca[] = {
+    "af", "ca", "cs", "da", "de", "en", "es", "et", "fi", "fil",
+    "fr", "hr", "hu", "id", "it", "lt", "lv", "ms", "nl", "pl",
+    "pt", "ro", "sk", "sl", "sv", "sw", "tr", "vi"};
+
+const char* kLanguagesSupportedByEbGaramond[] = {
+    "af", "bg", "ca", "cs", "da", "de", "en", "es", "et", "fi", "fil",
+    "fr", "hr", "hu", "id", "it", "lt", "lv", "ms", "nl", "pl", "pt",
+    "ro", "ru", "sk", "sl", "sr", "sv", "sw", "tr", "uk", "vi"};
+
+const char* kLanguagesSupportedByStixTwoText[] = {
+    "af", "bg", "ca", "cs", "da", "de", "en", "es", "et", "fi", "fil",
+    "fr", "hr", "hu", "id", "it", "lt", "lv", "ms", "nl", "pl", "pt",
+    "ro", "ru", "sk", "sl", "sr", "sv", "sw", "tr", "uk", "vi"};
+
+}  // namespace
+
 ReadAnythingModel::ReadAnythingModel()
     : font_name_(string_constants::kReadAnythingDefaultFontName),
       font_scale_(kReadAnythingDefaultFontScale),
@@ -37,11 +65,14 @@ ReadAnythingModel::ReadAnythingModel()
 
 ReadAnythingModel::~ReadAnythingModel() = default;
 
-void ReadAnythingModel::Init(const std::string& font_name,
+void ReadAnythingModel::Init(const std::string& lang_code,
+                             const std::string& font_name,
                              double font_scale,
                              read_anything::mojom::Colors colors,
                              LineSpacing line_spacing,
                              LetterSpacing letter_spacing) {
+  font_model_->SetDefaultLanguage(lang_code);
+
   // If this profile has previously selected choices that were saved to
   // prefs, check they are still a valid, and then assign if so.
   if (font_model_->IsValidFontName(font_name)) {
@@ -79,6 +110,7 @@ void ReadAnythingModel::Init(const std::string& font_name,
   separator_color_id_ = initial_colors.separator_color_id;
   dropdown_color_id_ = initial_colors.dropdown_color_id;
   selected_dropdown_color_id_ = initial_colors.selected_dropdown_color_id;
+  focus_ring_color_id_ = initial_colors.focus_ring_color_id;
 
   line_spacing_ = line_spacing_model_->GetLineSpacingAt(
       line_spacing_model_->GetSelectedIndex().value());
@@ -118,6 +150,7 @@ void ReadAnythingModel::SetSelectedColorsByIndex(size_t new_index) {
   separator_color_id_ = new_colors.separator_color_id;
   dropdown_color_id_ = new_colors.dropdown_color_id;
   selected_dropdown_color_id_ = new_colors.selected_dropdown_color_id;
+  focus_ring_color_id_ = new_colors.focus_ring_color_id;
 
   NotifyThemeChanged();
 }
@@ -172,7 +205,7 @@ void ReadAnythingModel::NotifyThemeChanged() {
     obs.OnReadAnythingThemeChanged(
         font_name_, font_scale_, foreground_color_id_, background_color_id_,
         separator_color_id_, dropdown_color_id_, selected_dropdown_color_id_,
-        line_spacing_, letter_spacing_);
+        focus_ring_color_id_, line_spacing_, letter_spacing_);
   }
 }
 
@@ -180,14 +213,26 @@ void ReadAnythingModel::NotifyThemeChanged() {
 // ReadAnythingFontModel
 ///////////////////////////////////////////////////////////////////////////////
 
-ReadAnythingFontModel::ReadAnythingFontModel() {
-  // TODO(1266555): i18n and replace temp fonts with finalized fonts.
-  font_choices_.emplace_back(u"Standard font");
+ReadAnythingFontModel::ReadAnythingFontModel() {}
+
+void ReadAnythingFontModel::SetDefaultLanguage(const std::string& lang) {
+  if (base::Contains(kLanguagesSupportedByPoppins, lang)) {
+    font_choices_.emplace_back(u"Poppins");
+  }
   font_choices_.emplace_back(u"Sans-serif");
   font_choices_.emplace_back(u"Serif");
-  font_choices_.emplace_back(u"Arial");
-  font_choices_.emplace_back(u"Comic Sans MS");
-  font_choices_.emplace_back(u"Times New Roman");
+  if (base::Contains(kLanguagesSupportedByComicNeue, lang)) {
+    font_choices_.emplace_back(u"Comic Neue");
+  }
+  if (base::Contains(kLanguagesSupportedByLexendDeca, lang)) {
+    font_choices_.emplace_back(u"Lexend Deca");
+  }
+  if (base::Contains(kLanguagesSupportedByEbGaramond, lang)) {
+    font_choices_.emplace_back(u"EB Garamond");
+  }
+  if (base::Contains(kLanguagesSupportedByStixTwoText, lang)) {
+    font_choices_.emplace_back(u"STIX Two Text");
+  }
   font_choices_.shrink_to_fit();
 }
 
@@ -284,6 +329,7 @@ ReadAnythingColorsModel::ColorInfo::ColorInfo(
     ui::ColorId separator_color_id,
     ui::ColorId dropdown_color_id,
     ui::ColorId selected_dropdown_color_id,
+    ui::ColorId focus_ring_color_id,
     ColorInfo::ReadAnythingColor logging_value)
     : name(name),
       icon_asset(icon_asset),
@@ -292,6 +338,7 @@ ReadAnythingColorsModel::ColorInfo::ColorInfo(
       separator_color_id(separator_color_id),
       dropdown_color_id(dropdown_color_id),
       selected_dropdown_color_id(selected_dropdown_color_id),
+      focus_ring_color_id(focus_ring_color_id),
       logging_value(logging_value) {}
 ReadAnythingColorsModel::ColorInfo::ColorInfo(const ColorInfo& other) = default;
 ReadAnythingColorsModel::ColorInfo::ColorInfo(ColorInfo&&) = default;
@@ -310,6 +357,7 @@ ReadAnythingColorsModel::ReadAnythingColorsModel() {
       kColorReadAnythingSeparator,
       kColorReadAnythingDropdownBackground,
       kColorReadAnythingDropdownSelected,
+      kColorReadAnythingFocusRingBackground,
       ColorInfo::ReadAnythingColor::kDefault};
 
   ColorInfo kLightColors = {
@@ -320,6 +368,7 @@ ReadAnythingColorsModel::ReadAnythingColorsModel() {
       kColorReadAnythingSeparatorLight,
       kColorReadAnythingDropdownBackgroundLight,
       kColorReadAnythingDropdownSelectedLight,
+      kColorReadAnythingFocusRingBackgroundLight,
       ColorInfo::ReadAnythingColor::kLight};
 
   ColorInfo kDarkColors = {
@@ -330,6 +379,7 @@ ReadAnythingColorsModel::ReadAnythingColorsModel() {
       kColorReadAnythingSeparatorDark,
       kColorReadAnythingDropdownBackgroundDark,
       kColorReadAnythingDropdownSelectedDark,
+      kColorReadAnythingFocusRingBackgroundDark,
       ColorInfo::ReadAnythingColor::kDark};
 
   ColorInfo kYellowColors = {
@@ -340,6 +390,7 @@ ReadAnythingColorsModel::ReadAnythingColorsModel() {
       kColorReadAnythingSeparatorYellow,
       kColorReadAnythingDropdownBackgroundYellow,
       kColorReadAnythingDropdownSelectedYellow,
+      kColorReadAnythingFocusRingBackgroundYellow,
       ColorInfo::ReadAnythingColor::kYellow};
 
   ColorInfo kBlueColors = {
@@ -350,6 +401,7 @@ ReadAnythingColorsModel::ReadAnythingColorsModel() {
       kColorReadAnythingSeparatorBlue,
       kColorReadAnythingDropdownBackgroundBlue,
       kColorReadAnythingDropdownSelectedBlue,
+      kColorReadAnythingFocusRingBackgroundBlue,
       ColorInfo::ReadAnythingColor::kBlue};
 
   colors_choices_.emplace_back(kDefaultColors);

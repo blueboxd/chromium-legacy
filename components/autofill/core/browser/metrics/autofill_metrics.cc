@@ -17,6 +17,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "base/types/cxx23_to_underlying.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -118,6 +119,7 @@ enum FieldTypeGroupForMetrics {
   GROUP_UNKNOWN_TYPE,
   GROUP_BIRTHDATE,
   GROUP_IBAN,
+  GROUP_ADDRESS_HOME_LANDMARK,
   // Add new entries here and update enums.xml.
   NUM_FIELD_TYPE_GROUPS_FOR_METRICS
 };
@@ -238,6 +240,9 @@ int GetFieldTypeGroupPredictionQualityMetric(
           break;
         case ADDRESS_HOME_FLOOR:
           group = GROUP_ADDRESS_HOME_FLOOR;
+          break;
+        case ADDRESS_HOME_LANDMARK:
+          group = GROUP_ADDRESS_HOME_LANDMARK;
           break;
         case UNKNOWN_TYPE:
           group = GROUP_UNKNOWN_TYPE;
@@ -2368,8 +2373,10 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFieldType(
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::
-    LogAutofillFieldInfoAtFormRemove(const FormStructure& form,
-                                     const AutofillField& field) {
+    LogAutofillFieldInfoAtFormRemove(
+        const FormStructure& form,
+        const AutofillField& field,
+        AutofillMetrics::AutocompleteState autocomplete_state) {
   if (!CanLog()) {
     return;
   }
@@ -2579,7 +2586,8 @@ void AutofillMetrics::FormInteractionsUkmLogger::
       .SetWasFocused(OptionalBooleanToBool(was_focused))
       .SetIsFocusable(field.IsFocusable())
       .SetUserTypedIntoField(OptionalBooleanToBool(user_typed_into_field))
-      .SetFormControlType(static_cast<int>(field.FormControlType()));
+      .SetFormControlType(base::to_underlying(field.FormControlType()))
+      .SetAutocompleteState(base::to_underlying(autocomplete_state));
 
   if (was_focused == OptionalBoolean::kTrue) {
     builder
@@ -2621,8 +2629,8 @@ void AutofillMetrics::FormInteractionsUkmLogger::
   }
 
   if (had_html_type) {
-    builder.SetHtmlFieldType(static_cast<int>(html_type))
-        .SetHtmlFieldMode(static_cast<int>(html_mode));
+    builder.SetHtmlFieldType(base::to_underlying(html_type))
+        .SetHtmlFieldMode(base::to_underlying(html_mode));
   }
 
   if (had_server_type) {

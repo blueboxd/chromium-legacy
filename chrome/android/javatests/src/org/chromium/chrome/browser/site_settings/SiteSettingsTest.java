@@ -44,10 +44,11 @@ import android.view.View;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
-import androidx.test.InstrumentationRegistry;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.hamcrest.Matcher;
 import org.junit.After;
@@ -71,6 +72,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.FederatedIdentityTestUtils;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
@@ -118,6 +120,7 @@ import org.chromium.components.browser_ui.site_settings.WebsiteAddress;
 import org.chromium.components.browser_ui.site_settings.WebsiteGroup;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJni;
+import org.chromium.components.browsing_data.DeleteBrowsingDataAction;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.content_settings.CookieControlsMode;
@@ -719,11 +722,16 @@ public class SiteSettingsTest {
         Assert.assertEquals(
                 "\"Foo=Bar\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
 
+        HistogramWatcher histogramWatcher = HistogramWatcher.newSingleRecordWatcher(
+                "Privacy.DeleteBrowsingData.Action", DeleteBrowsingDataAction.SITES_SETTINGS_PAGE);
+
         resetSite(WebsiteAddress.create(url));
 
         // Load the page again and ensure the cookie is gone.
         mPermissionRule.loadUrl(url);
         Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+        // Verify DeleteBrowsingDataAction metric is recorded.
+        histogramWatcher.assertExpected();
     }
 
     /** Tests clearing cookies for a group of websites. */
@@ -758,6 +766,9 @@ public class SiteSettingsTest {
         Assert.assertEquals(
                 "\"Foo=Bar\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
 
+        HistogramWatcher histogramWatcher = HistogramWatcher.newSingleRecordWatcher(
+                "Privacy.DeleteBrowsingData.Action", DeleteBrowsingDataAction.SITES_SETTINGS_PAGE);
+
         resetGroup(Arrays.asList(WebsiteAddress.create(url1), WebsiteAddress.create(url2)));
 
         // 1 and 2 got cleared; 3 stays intact.
@@ -768,6 +779,9 @@ public class SiteSettingsTest {
         mPermissionRule.loadUrl(url3);
         Assert.assertEquals(
                 "\"Foo=Bar\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+
+        // Verify DeleteBrowsingDataAction metric is recorded.
+        histogramWatcher.assertExpected();
     }
 
     /** Set cookies for domains and check that they are removed when a site is cleared. */
@@ -2021,7 +2035,7 @@ public class SiteSettingsTest {
         triggerEmbargoForOrigin(url);
 
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-        Context context = InstrumentationRegistry.getTargetContext();
+        Context context = ApplicationProvider.getApplicationContext();
         Intent intent = settingsLauncher.createSettingsActivityIntent(context,
                 SingleWebsiteSettings.class.getName(),
                 SingleWebsiteSettings.createFragmentArgsForSite(url));
@@ -2098,7 +2112,7 @@ public class SiteSettingsTest {
             // Only |url| has been added under embargo.
             Assert.assertEquals(2, blockedGroup.getPreferenceCount());
 
-            Assert.assertEquals(InstrumentationRegistry.getTargetContext().getString(
+            Assert.assertEquals(ApplicationProvider.getApplicationContext().getString(
                                         R.string.automatically_blocked),
                     blockedGroup.getPreference(0).getSummary());
 
@@ -2124,7 +2138,7 @@ public class SiteSettingsTest {
                 () -> { FederatedIdentityTestUtils.embargoFedCmForRelyingParty(new GURL(rpUrl)); });
 
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-        Context context = InstrumentationRegistry.getTargetContext();
+        Context context = ApplicationProvider.getApplicationContext();
         Intent intent = settingsLauncher.createSettingsActivityIntent(context,
                 SingleWebsiteSettings.class.getName(),
                 SingleWebsiteSettings.createFragmentArgsForSite(rpUrl));
@@ -2414,7 +2428,7 @@ public class SiteSettingsTest {
     public void testCookiesSettingsManagedForURL(String setting) throws Exception {
         final SettingsActivity settingsActivity =
                 SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
-        String managedText = InstrumentationRegistry.getTargetContext().getString(
+        String managedText = ApplicationProvider.getApplicationContext().getString(
                 R.string.managed_by_your_organization);
 
         SingleCategorySettings websitePreferences =

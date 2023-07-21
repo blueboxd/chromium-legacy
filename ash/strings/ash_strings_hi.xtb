@@ -56,6 +56,7 @@
 <translation id="121097972571826261">एक शब्द आगे जाएं</translation>
 <translation id="1217633719248931900">ऐप्लिकेशन पर जाएं</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" />, Play Store ऐप्लिकेशन</translation>
+<translation id="1219309685806246869"><ph name="APP_TITLE" /> पर वापस जाएं.</translation>
 <translation id="1225748608451425081">आपका Chromebook, एक जानी-पहचानी समस्या की वजह से लॉक है. आप इतने समय बाद साइन इन कर पाएंगे: <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">टेक्स्ट चुनना बंद करें</translation>
 <translation id="1235458158152011030">ज्ञात नेटवर्क</translation>
@@ -221,6 +222,7 @@
 <translation id="1961239773406905488">वीडियो कैमरे में झलक नहीं दिखाई जा रही है</translation>
 <translation id="1961832440516943645"><ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="1962969542251276847">लॉक स्‍क्रीन</translation>
+<translation id="1962972976741217487"><ph name="DEVICE_NAME" /> के हॉटस्पॉट से एक डिवाइस कनेक्ट है</translation>
 <translation id="1967970931040389207">हॉटस्पॉट चालू करें</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">नमस्ते, <ph name="USERNAME" /></translation>
@@ -301,7 +303,6 @@
 <translation id="2367972762794486313">ऐप्स  दिखाएं</translation>
 <translation id="2369165858548251131">चाइनीज़ भाषा में "नमस्ते" कैसे बोलते हैं</translation>
 <translation id="2386292613071805067">पेज पर मौजूद सब कुछ चुनें</translation>
-<translation id="2390318262976603432">स्थान-भाषा की सेटिंग</translation>
 <translation id="2397416548179033562">Chrome मेन्यू दिखाएं</translation>
 <translation id="240006516586367791">मीडिया कंट्रोल</translation>
 <translation id="2402411679569069051">Chromebook अनलॉक करने के लिए, अपना फ़िंगरप्रिंट इस्तेमाल करें या अपना फ़ोन अनलॉक करें</translation>
@@ -382,6 +383,7 @@
 <translation id="2791421900609674576">जहां पिछली बार छोड़ा था वहीं से इस्तेमाल शुरू करने के लिए, आपको सुझाव दिखेंगे.  दबाकर रखने से, इन सुझावों को बंद किया जा सकता है.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2797741504905337289">शेल्फ़ पार्टी मोड</translation>
+<translation id="2802938996245446490"><ph name="BUTTON_LABEL" /> को चुना गया</translation>
 <translation id="2805756323405976993">ऐप्लिकेशन</translation>
 <translation id="2814448776515246190">पार्शियल कैप्चर</translation>
 <translation id="2819276065543622893">अब आप प्रस्थान कर जाएंगे.</translation>
@@ -600,6 +602,7 @@
 <translation id="3735740477244556633">इसके अनुसार क्रम से लगाएं</translation>
 <translation id="3738664582935948253">अब स्क्रीन रिकॉर्डिंग के दौरान, कीबोर्ड शॉर्टकट और क्लिक दिखाए जा सकते हैं</translation>
 <translation id="3742055079367172538">स्क्रीनशॉट लिया गया</translation>
+<translation id="3756485814916578707">स्क्रीन कास्ट की जा रही है</translation>
 <translation id="3765841986579723851">इसमें, आज बदलाव किया गया था</translation>
 <translation id="3773700760453577392">किसी एडमिन ने <ph name="USER_EMAIL" /> के लिए एक से ज़्यादा 'साइन इन' नामंज़ूर कर दिए हैं.
 जारी रखने के लिए सभी उपयोगकर्ताओं को साइन आउट करना होगा.</translation>
@@ -822,6 +825,7 @@
 <translation id="4777825441726637019">Play Store</translation>
 <translation id="4778095205580009397">डेमो सत्र में Google Assistant मौजूद नहीं है.</translation>
 <translation id="4789348252524569426">बोली पहचानने वाली फ़ाइलों को इंस्टॉल नहीं किया जा सका. इसके लिए, आपको अपने डिवाइस को अपडेट करना होगा. डिवाइस को रीस्टार्ट करके, फिर से कोशिश करें.</translation>
+<translation id="478959186716341421">कास्ट किया जा रहा है</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">डिसकनेक्ट करें</translation>
 <translation id="4814539958450445987">लॉगिन स्क्रीन</translation>
@@ -929,6 +933,7 @@
 <translation id="5297704307811127955">बंद है</translation>
 <translation id="5300589172476337783">दिखाएं</translation>
 <translation id="5302048478445481009">भाषा</translation>
+<translation id="5303783651764314393">आपके <ph name="DEVICE_NAME" /> के हॉटस्पॉट से <ph name="DEVICECOUNT" /> डिवाइस कनेक्ट हैं</translation>
 <translation id="5308380583665731573">कनेक्ट करें</translation>
 <translation id="5313326810920013265">ब्लूटूथ सेटिंग</translation>
 <translation id="5314219114274263156">स्क्रीन की रिकॉर्डिंग की गई</translation>
@@ -997,7 +1002,6 @@
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">बोला गया फ़ीडबैक अक्षम करने के लिए Ctrl + Alt + Z दबाएं.</translation>
 <translation id="5601503069213153581">पिन</translation>
-<translation id="5601571553788043181">फ़ाइल को Chrome ब्राउज़र में खोलें</translation>
 <translation id="5618148318840095371">हमने आपको बेहतर नेटवर्क से कनेक्ट किया है</translation>
 <translation id="5619862035903135339">एडमिन नीति के तहत, स्क्रीन कैप्चर की सुविधा को बंद कर दिया जाता है</translation>
 <translation id="5625955975703555628">LTE+</translation>
@@ -1118,6 +1122,7 @@
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> के लिए, खाता हटाएं वाला डायलॉग खोलें</translation>
 <translation id="6141988275892716286">डाउनलोड की पुष्टि करें</translation>
 <translation id="6154006699632741460">सहायक डिवाइस (जैसे, कीबोर्ड, माउस, मॉनिटर, वेबकैम वगैरह) काम नहीं कर रहा</translation>
+<translation id="6156960295318603523">भाषा सेटिंग</translation>
 <translation id="615957422585914272">ऑन-स्क्रीन कीबोर्ड दिखाएं</translation>
 <translation id="6165508094623778733">ज़्यादा जानें</translation>
 <translation id="6166852626429024716">अपने डिवाइस, ऐप्लिकेशन, सेटिंग के साथ-साथ वेब पर भी खोजें...</translation>
@@ -1336,6 +1341,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> में पुराने रिज़ॉल्यूशन में वापस लौट रहा है</translation>
 <translation id="7180611975245234373">रीफ्रेश करें</translation>
+<translation id="7187711731540696127">आपके <ph name="DEVICE_NAME" /> का हॉटस्पॉट चालू है, लेकिन कोई डिवाइस कनेक्ट नहीं है</translation>
 <translation id="7188494361780961876">मेन्यू, स्क्रीन के सबसे ऊपर बाएं कोने में चला गया है.</translation>
 <translation id="7189412385142492784">धरती से शुक्र ग्रह कितना दूर है</translation>
 <translation id="7198435252016571249">कैमरा इनपुट की झलक, अब नीचे दाएं कोने में दिखेगी. ऐसा, सिस्टम पर दूसरे ऐप्लिकेशन के साथ ओवरलैप होने की वजह से किया गया है.</translation>
@@ -1393,6 +1399,7 @@
 <translation id="7497767806359279797">भाषा और कीवर्ड चुनें</translation>
 <translation id="7508690557411636492">इसे पिछले महीने खोला गया था</translation>
 <translation id="7509246181739783082">अपनी पहचान की पुष्टि करें</translation>
+<translation id="7512726380443357693"><ph name="BUTTON_LABEL" /> को नहीं चुना गया</translation>
 <translation id="7513622367902644023">स्क्रीनशॉट मोड चुना गया</translation>
 <translation id="7513922695575567867"><ph name="DATE" /> वाले हफ़्ते के कैलेंडर में, फ़िलहाल<ph name="SELECTED_DATE" /> को चुना गया है.</translation>
 <translation id="7514365320538308">डाउनलोड करें</translation>
@@ -1414,7 +1421,6 @@
 <translation id="7569509451529460200">ब्रेल और ChromeVox सक्षम हैं</translation>
 <translation id="7573585051776738856">चालू विंडो को दाईं तरफ़ डॉक किया गया है.</translation>
 <translation id="7579778809502851308">स्क्रीन कैप्चर</translation>
-<translation id="7590883480672980941">इनपुट सेटिंग</translation>
 <translation id="7593891976182323525">Search या Shift</translation>
 <translation id="7600875258240007829">सभी सूचनाएं देखें</translation>
 <translation id="7607002721634913082">रोका गया</translation>
@@ -1556,6 +1562,7 @@
 <translation id="8185090165691050712">मेन्यू को चालू या बंद करने के लिए, ताकि लॉक मोड का साइज़ बदला जा सके</translation>
 <translation id="8192202700944119416">सूचनाएं छिपी हुई हैं.</translation>
 <translation id="8196787716797768628">एक ऐप्लिकेशन से दूसरे ऐप्लिकेशन पर तेज़ी से जाने और अपने Chromebook से टैबलेट मोड में इंटरैक्ट करने के लिए, हाथ के जेस्चर (हाव-भाव) का इस्तेमाल करें.</translation>
+<translation id="8198456017687137612">कास्टिंग टैब</translation>
 <translation id="8200772114523450471">फिर से शुरू करें</translation>
 <translation id="8203795194971602413">राइट क्लिक करें</translation>
 <translation id="8209010265547628927">रीसेट करें</translation>
@@ -1584,6 +1591,7 @@
 <translation id="8349964124165471584">लिंक को नई विंडो में खोलें</translation>
 <translation id="8351131234907093545">नोट बनाएं</translation>
 <translation id="8364673525741149932">शेल्फ़ पार्टी मोड को टॉगल करें. <ph name="STATE_TEXT" /></translation>
+<translation id="8367948981300340152"><ph name="CAPTURE_MEDIUM" /> इस्तेमाल में है.</translation>
 <translation id="8369166482916924789">सेव किया गया डेस्क, <ph name="SAVE_AND_RECALL_DESK_NAME" /></translation>
 <translation id="8371779926711439835">एक वर्ण आगे जाएं</translation>
 <translation id="8371991222807690464">हो सकता है कि मेहमान मोड में आपके सहायक डिवाइस (जैसे, कीबोर्ड, माउस, मॉनिटर, वेबकैम वगैरह) पूरी तरह काम न कर पाएं</translation>

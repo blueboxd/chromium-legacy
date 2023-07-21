@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ash/file_manager/file_manager_test_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
+#include "chrome/browser/ash/policy/dlp/dlp_files_controller_ash.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/chromeos/policy/dlp/mock_dlp_rules_manager.h"
@@ -215,10 +216,7 @@ class BaseSelectFileDialogExtensionBrowserTest
 
   void CheckJavascriptErrors() {
     content::RenderFrameHost* host = dialog_->GetPrimaryMainFrame();
-    base::Value value =
-        content::ExecuteScriptAndGetValue(host, "window.JSErrorCount");
-    int js_error_count = value.GetInt();
-    ASSERT_EQ(0, js_error_count);
+    ASSERT_EQ(0, content::EvalJs(host, "window.JSErrorCount"));
   }
 
   void ClickElement(const std::string& selector) {
@@ -742,10 +740,10 @@ INSTANTIATE_TEST_SUITE_P(SystemWebApp,
 class SelectFileDialogExtensionPolicyTest
     : public BaseSelectFileDialogExtensionBrowserTest {
  protected:
-  class MockFilesController : public policy::DlpFilesController {
+  class MockFilesController : public policy::DlpFilesControllerAsh {
    public:
     explicit MockFilesController(const policy::DlpRulesManager& rules_manager)
-        : DlpFilesController(rules_manager) {}
+        : DlpFilesControllerAsh(rules_manager) {}
     ~MockFilesController() override = default;
 
     MOCK_METHOD(void,

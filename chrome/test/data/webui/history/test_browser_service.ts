@@ -101,9 +101,11 @@ export class TestBrowserService extends TestBrowserProxy implements
 
   openForeignSessionAllTabs() {}
 
-  openForeignSessionTab(sessionTag: string, tabId: number, e: MouseEvent) {
+  openForeignSessionTab(
+      sessionTag: string, windowId: number, tabId: number, e: MouseEvent) {
     this.methodCalled('openForeignSessionTab', {
       sessionTag: sessionTag,
+      windowId: windowId,
       tabId: tabId,
       e: e,
     });

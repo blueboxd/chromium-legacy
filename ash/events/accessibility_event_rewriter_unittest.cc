@@ -210,6 +210,9 @@ class ChromeVoxAccessibilityEventRewriterTest
   bool NotifyDeprecatedSixPackKeyRewrite(ui::KeyboardCode key_code) override {
     return false;
   }
+  void RecordEventRemappedToRightClick() override {}
+  void RecordSixPackEventRewrite(ui::KeyboardCode key_code,
+                                 bool alt_based) override {}
 
   std::map<std::string, ui::mojom::ModifierKey> modifier_remapping_;
 };
@@ -530,12 +533,12 @@ class SwitchAccessAccessibilityEventRewriterTest
         accessibility_event_rewriter_.get());
     controller_->switch_access().SetEnabled(true);
 
-    std::vector<ui::InputDevice> keyboards;
+    std::vector<ui::KeyboardDevice> keyboards;
     ui::DeviceDataManagerTestApi device_data_test_api;
-    keyboards.push_back(ui::InputDevice(1, ui::INPUT_DEVICE_INTERNAL, ""));
-    keyboards.push_back(ui::InputDevice(2, ui::INPUT_DEVICE_USB, ""));
-    keyboards.push_back(ui::InputDevice(3, ui::INPUT_DEVICE_BLUETOOTH, ""));
-    keyboards.push_back(ui::InputDevice(4, ui::INPUT_DEVICE_UNKNOWN, ""));
+    keyboards.emplace_back(1, ui::INPUT_DEVICE_INTERNAL, "");
+    keyboards.emplace_back(2, ui::INPUT_DEVICE_USB, "");
+    keyboards.emplace_back(3, ui::INPUT_DEVICE_BLUETOOTH, "");
+    keyboards.emplace_back(4, ui::INPUT_DEVICE_UNKNOWN, "");
     device_data_test_api.SetKeyboardDevices(keyboards);
   }
 
@@ -610,6 +613,10 @@ class SwitchAccessAccessibilityEventRewriterTest
   bool NotifyDeprecatedSixPackKeyRewrite(ui::KeyboardCode key_code) override {
     return false;
   }
+
+  void RecordEventRemappedToRightClick() override {}
+  void RecordSixPackEventRewrite(ui::KeyboardCode key_code,
+                                 bool alt_based) override {}
 
   std::map<std::string, ui::mojom::ModifierKey> modifier_remapping_;
 

@@ -61,6 +61,8 @@ class METRICS_EXPORT SourceIdObj {
     // manifest. A new source of this type and associated events are expected to
     // be recorded within the same report interval; it will not be kept in
     // memory between different reports.
+    // TODO(crbug.com/1441376): Deprecate and migrate usages to AppKm so UKM can
+    // reuse code and enforce the same checks.
     DESKTOP_WEB_APP_ID = 6,
     // Source ID for web workers, namely SharedWorkers and ServiceWorkers. Web
     // workers may inherit a source ID from the spawner context (in the case of
@@ -93,14 +95,8 @@ class METRICS_EXPORT SourceIdObj {
     // Some criteria (e.g. checking if it's a synced extension) will be applied
     // when recording metrics with this type.
     EXTENSION_ID = 12,
-    // Source ID type for reporting soft navigation metrics. A new source of
-    // this type and associated events are expected to be recorded within the
-    // same report interval; it will not be kept in memory between different
-    // reports. The URLs associated with source ids of this type are soft
-    // navigation URLs.
-    SOFT_NAVIGATION_ID = 13,
 
-    kMaxValue = SOFT_NAVIGATION_ID,
+    kMaxValue = EXTENSION_ID,
   };
 
   // Default constructor has the invalid value.

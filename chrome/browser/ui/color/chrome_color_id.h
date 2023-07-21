@@ -20,6 +20,8 @@
            kChromeColorsStart) \
   E_CPONLY(kColorAppMenuHighlightSeverityHigh) \
   E_CPONLY(kColorAppMenuHighlightSeverityMedium) \
+  E_CPONLY(kColorAppMenuHighlightDefault) \
+  E_CPONLY(kColorAppMenuExpandedForegroundDefault) \
   /* Avatar colors. */ \
   E_CPONLY(kColorAvatarButtonHighlightNormal) \
   E_CPONLY(kColorAvatarButtonHighlightSyncError) \
@@ -337,6 +339,7 @@
   E_CPONLY(kColorSidePanelCardBackground) \
   E_CPONLY(kColorSidePanelContentAreaSeparator) \
   E_CPONLY(kColorSidePanelContentBackground) \
+  E_CPONLY(kColorSidePanelDivider) \
   E_CPONLY(kColorSidePanelEditFooterBorder) \
   E_CPONLY(kColorSidePanelFilterChipBorder) \
   E_CPONLY(kColorSidePanelFilterChipForeground) \
@@ -546,6 +549,11 @@
   E_CPONLY(kColorReadAnythingDropdownSelectedDark) \
   E_CPONLY(kColorReadAnythingDropdownSelectedLight) \
   E_CPONLY(kColorReadAnythingDropdownSelectedYellow) \
+  E_CPONLY(kColorReadAnythingFocusRingBackground) \
+  E_CPONLY(kColorReadAnythingFocusRingBackgroundBlue) \
+  E_CPONLY(kColorReadAnythingFocusRingBackgroundDark) \
+  E_CPONLY(kColorReadAnythingFocusRingBackgroundLight) \
+  E_CPONLY(kColorReadAnythingFocusRingBackgroundYellow) \
 
 #if BUILDFLAG(IS_CHROMEOS)
 #define CHROME_PLATFORM_SPECIFIC_COLOR_IDS \

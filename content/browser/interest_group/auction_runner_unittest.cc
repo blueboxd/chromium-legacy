@@ -53,6 +53,7 @@
 #include "content/services/auction_worklet/auction_worklet_service_impl.h"
 #include "content/services/auction_worklet/public/mojom/auction_shared_storage_host.mojom.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
+#include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom-forward.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom-shared.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom.h"
@@ -92,7 +93,7 @@ using PostAuctionSignals = InterestGroupAuction::PostAuctionSignals;
 using blink::FencedFrame::ReportingDestination;
 using PrivateAggregationRequests = AuctionRunner::PrivateAggregationRequests;
 
-const std::string kBidder1Name{"Ad Platform"};
+std::string kBidder1Name{"Ad Platform"};
 const std::string kBidder1NameAlt{"Ad Platform Alt"};
 const char kBidder1DebugLossReportUrl[] =
     "https://bidder1-debug-loss-reporting.com/";
@@ -1260,6 +1261,23 @@ MATCHER_P2(OnlyHasMetricIf, key, condition, "") {
   return true;
 }
 
+MATCHER_P2(HasMetricWithValueOrNotIfNullOpt, key, matcher, "") {
+  if (!matcher.has_value()) {
+    if (arg.contains(key)) {
+      *result_listener << "which unexpectedly contains " << key;
+      return false;
+    }
+    // Metric has no value and none was expected, which is good.
+    return true;
+  }
+  // Here, we expect a metric value.
+  if (!arg.contains(key)) {
+    *result_listener << "which does not contain " << key;
+    return false;
+  }
+  return ExplainMatchResult(arg.at(key), matcher, result_listener);
+}
+
 class AuctionRunnerTest : public RenderViewHostTestHarness,
                           public AuctionWorkletManager::Delegate,
                           public DebuggableAuctionWorkletTracker::Observer {
@@ -2002,6 +2020,7 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
         ukm_recorder_->GetEntries(
             Entry::kEntryName,
             {
+                /* General metrics */
                 Entry::kResultName,
                 Entry::kEndToEndLatencyInMillisName,
                 Entry::kLoadInterestGroupPhaseLatencyInMillisName,
@@ -2010,23 +2029,60 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
                 Entry::kNumDistinctOwnersWithInterestGroupsName,
                 Entry::kNumSellersWithBiddersName,
                 Entry::kNumBidderWorkletsName,
+                /* Bid filtering metrics */
                 Entry::kNumBidsAbortedByBuyerCumulativeTimeoutName,
                 Entry::kNumBidsAbortedByBidderWorkletFatalErrorName,
                 Entry::kNumBidsFilteredDuringInterestGroupLoadName,
                 Entry::kNumBidsFilteredDuringReprioritizationName,
                 Entry::kNumBidsFilteredByPerBuyerLimitsName,
+                /* GenerateBid outcome metrics */
                 Entry::kKAnonymityBidModeName,
                 Entry::kNumInterestGroupsWithNoBidsName,
                 Entry::kNumInterestGroupsWithOnlyNonKAnonBidName,
                 Entry::kNumInterestGroupsWithSameBidForKAnonAndNonKAnonName,
                 Entry::
                     kNumInterestGroupsWithSeparateBidsForKAnonAndNonKAnonName,
+                /* ComponentAuction latency metrics */
                 Entry::kMeanComponentAuctionLatencyInMillisName,
                 Entry::kMaxComponentAuctionLatencyInMillisName,
                 Entry::kMeanBidForOneInterestGroupLatencyInMillisName,
                 Entry::kMaxBidForOneInterestGroupLatencyInMillisName,
                 Entry::kMeanGenerateSingleBidLatencyInMillisName,
                 Entry::kMaxGenerateSingleBidLatencyInMillisName,
+                /* GenerateBid Dependency latency metrics */
+                Entry::kMeanGenerateBidCodeReadyLatencyInMillisName,
+                Entry::kMeanGenerateBidConfigPromisesLatencyInMillisName,
+                Entry::
+                    kMeanGenerateBidDirectFromSellerSignalsLatencyInMillisName,
+                Entry::kMeanGenerateBidTrustedBiddingSignalsLatencyInMillisName,
+                Entry::kMaxGenerateBidCodeReadyLatencyInMillisName,
+                Entry::kMaxGenerateBidConfigPromisesLatencyInMillisName,
+                Entry::
+                    kMaxGenerateBidDirectFromSellerSignalsLatencyInMillisName,
+                Entry::kMaxGenerateBidTrustedBiddingSignalsLatencyInMillisName,
+                /* GenerateBid Dependency critical path metrics */
+                Entry::kNumGenerateBidCodeReadyOnCriticalPathName,
+                Entry::kNumGenerateBidConfigPromisesOnCriticalPathName,
+                Entry::kNumGenerateBidDirectFromSellerSignalsOnCriticalPathName,
+                Entry::kNumGenerateBidTrustedBiddingSignalsOnCriticalPathName,
+                Entry::kMeanGenerateBidCodeReadyCriticalPathLatencyInMillisName,
+                Entry::
+                    kMeanGenerateBidConfigPromisesCriticalPathLatencyInMillisName,
+                Entry::
+                    kMeanGenerateBidDirectFromSellerSignalsCriticalPathLatencyInMillisName,
+                Entry::
+                    kMeanGenerateBidTrustedBiddingSignalsCriticalPathLatencyInMillisName,
+                /* Bids queued waiting to begin ScoreAd */
+                Entry::kNumTopLevelBidsQueuedWaitingForConfigPromisesName,
+                Entry::kNumTopLevelBidsQueuedWaitingForSellerWorkletName,
+                Entry::
+                    kMeanTimeTopLevelBidsQueuedWaitingForConfigPromisesInMillisName,
+                Entry::
+                    kMeanTimeTopLevelBidsQueuedWaitingForSellerWorkletInMillisName,
+                Entry::kNumBidsQueuedWaitingForConfigPromisesName,
+                Entry::kNumBidsQueuedWaitingForSellerWorkletName,
+                Entry::kMeanTimeBidsQueuedWaitingForConfigPromisesInMillisName,
+                Entry::kMeanTimeBidsQueuedWaitingForSellerWorkletInMillisName,
             });
 
     EXPECT_THAT(ukm_entries, testing::SizeIs(1));
@@ -2154,6 +2210,31 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
       SetHasGenerateSingleBidLatencyMetrics(generated_bids);
     }
 
+    MetricsExpectations& SetNumTopLevelBidsQueuedWaitingForConfigPromises(
+        int64_t value) {
+      num_top_level_bids_queued_waiting_for_config_promises = value;
+      return *this;
+    }
+
+    MetricsExpectations& SetNumTopLevelBidsQueuedWaitingForSellerWorklet(
+        int64_t value) {
+      num_top_level_bids_queued_waiting_for_seller_worklet = value;
+      return *this;
+    }
+
+    MetricsExpectations& SetNumBidsQueuedWaitingForConfigPromises(
+        int64_t value) {
+      num_bids_queued_waiting_for_config_promises = value;
+      return *this;
+    }
+
+    // If set to -1, these metrics are not checked.
+    MetricsExpectations& SetNumBidsQueuedWaitingForSellerWorklet(
+        int64_t value) {
+      num_bids_queued_waiting_for_seller_worklet = value;
+      return *this;
+    }
+
     AuctionResult result;
     absl::optional<int64_t> num_interest_groups;
     absl::optional<int64_t> num_owners;
@@ -2170,8 +2251,14 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
     int64_t num_interest_groups_with_same_bid_for_k_anon_and_non_k_anon = 0;
     int64_t num_interest_groups_with_separate_bids_for_k_anon_and_non_k_anon =
         0;
+
     bool has_bid_for_one_interest_group_latency_metrics = false;
     bool has_generate_single_bid_latency_metrics = false;
+
+    int64_t num_top_level_bids_queued_waiting_for_config_promises = 0;
+    int64_t num_top_level_bids_queued_waiting_for_seller_worklet = 0;
+    int64_t num_bids_queued_waiting_for_config_promises = 0;
+    int64_t num_bids_queued_waiting_for_seller_worklet = 0;
   };
 
   // Check histogram values and UKMs.
@@ -2329,6 +2416,55 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
         ukm_metrics,
         OnlyHasMetricIf(UkmEntry::kMaxGenerateSingleBidLatencyInMillisName,
                         expectations.has_generate_single_bid_latency_metrics));
+
+    EXPECT_THAT(
+        ukm_metrics,
+        HasMetricWithValue(
+            UkmEntry::kNumTopLevelBidsQueuedWaitingForConfigPromisesName,
+            expectations
+                .num_top_level_bids_queued_waiting_for_config_promises));
+    EXPECT_THAT(
+        ukm_metrics,
+        OnlyHasMetricIf(
+            UkmEntry::
+                kMeanTimeTopLevelBidsQueuedWaitingForConfigPromisesInMillisName,
+            expectations.num_top_level_bids_queued_waiting_for_config_promises >
+                0));
+
+    EXPECT_THAT(
+        ukm_metrics,
+        HasMetricWithValue(
+            UkmEntry::kNumTopLevelBidsQueuedWaitingForSellerWorkletName,
+            expectations.num_top_level_bids_queued_waiting_for_seller_worklet));
+    EXPECT_THAT(
+        ukm_metrics,
+        OnlyHasMetricIf(
+            UkmEntry::
+                kMeanTimeTopLevelBidsQueuedWaitingForSellerWorkletInMillisName,
+            expectations.num_top_level_bids_queued_waiting_for_seller_worklet >
+                0));
+
+    EXPECT_THAT(ukm_metrics,
+                HasMetricWithValue(
+                    UkmEntry::kNumBidsQueuedWaitingForConfigPromisesName,
+                    expectations.num_bids_queued_waiting_for_config_promises));
+    EXPECT_THAT(
+        ukm_metrics,
+        OnlyHasMetricIf(
+            UkmEntry::kMeanTimeBidsQueuedWaitingForConfigPromisesInMillisName,
+            expectations.num_bids_queued_waiting_for_config_promises > 0));
+
+    if (expectations.num_bids_queued_waiting_for_seller_worklet >= 0) {
+      EXPECT_THAT(ukm_metrics,
+                  HasMetricWithValue(
+                      UkmEntry::kNumBidsQueuedWaitingForSellerWorkletName,
+                      expectations.num_bids_queued_waiting_for_seller_worklet));
+      EXPECT_THAT(
+          ukm_metrics,
+          OnlyHasMetricIf(
+              UkmEntry::kMeanTimeBidsQueuedWaitingForSellerWorkletInMillisName,
+              expectations.num_bids_queued_waiting_for_seller_worklet > 0));
+    }
   }
 
   AuctionRunner::IsInterestGroupApiAllowedCallback
@@ -3699,38 +3835,30 @@ TEST_F(AuctionRunnerTest, ComponentAuctionMixedCurrency) {
                   // generateBid(), winning-bid
                   BuildPrivateAggregationRequest(/*bucket=*/20, /*value=*/2001),
                   // generateBid(), highest-scoring-other-bid
-                  BuildPrivateAggregationRequest(/*bucket=*/10, /*value=*
-                                                                 */
-                                                 2002),
+                  BuildPrivateAggregationRequest(/*bucket=*/10, /*value=*/2002),
                   // reportWin(), winning-bid
                   BuildPrivateAggregationRequest(/*bucket=*/20, /*value=*/2011),
                   // reportWin(), highest-scoring-other-bid
-                  BuildPrivateAggregationRequest(/*bucket=*/10, /*value=*
-                                                                 */
-                                                 2012))),
+                  BuildPrivateAggregationRequest(/*bucket=*/10,
+                                                 /*value=*/2012))),
           testing::Pair(
               kComponentSeller1,
               ElementsAreRequests(
                   // scoreAd(), winning-bid, incoming bid 1
                   BuildPrivateAggregationRequest(/*bucket=*/20, /*value=*/1021),
                   // scoreAd(), highest-scoring-other-bid, incoming bid 1
-                  BuildPrivateAggregationRequest(/*bucket=*/10, /*value=*
-                                                                 */
-                                                 1022),
+                  BuildPrivateAggregationRequest(/*bucket=*/10, /*value=*/1022),
                   // scoreAd(), winning-bid, incoming bid 2
                   BuildPrivateAggregationRequest(/*bucket=*/20, /*value=*/2021),
                   // scoreAd(), highest-scoring-other-bid, incoming bid 2
-                  BuildPrivateAggregationRequest(/*bucket=*/10, /*value=*
-                                                                 */
-                                                 2022),
+                  BuildPrivateAggregationRequest(/*bucket=*/10, /*value=*/2022),
                   // reportResult(), winning-bid, browserSignals.bid is 20
                   BuildPrivateAggregationRequest(/*bucket=*/20,
                                                  /*value=*/20031),
                   // reportResult(), highest-scoring-other-bid,
                   // browserSignals.bid is 20
-                  BuildPrivateAggregationRequest(/*bucket=*/10, /*value=*
-                                                                 */
-                                                 20032))),
+                  BuildPrivateAggregationRequest(/*bucket=*/10,
+                                                 /*value=*/20032))),
           testing::Pair(
               kSeller,
               ElementsAreRequests(
@@ -3889,41 +4017,34 @@ TEST_F(AuctionRunnerTest, ComponentAuctionMixedCurrency2) {
                   // generateBid(), winning-bid
                   BuildPrivateAggregationRequest(/*bucket=*/20, /*value=*/2001),
                   // generateBid(), highest-scoring-other-bid
-                  BuildPrivateAggregationRequest(/*bucket=*/0, /*value=*
-                                                                */
-                                                 2002),
+                  BuildPrivateAggregationRequest(/*bucket=*/0, /*value=*/2002),
                   // reportWin(), winning-bid
                   BuildPrivateAggregationRequest(/*bucket=*/20, /*value=*/2011),
                   // reportWin(), highest-scoring-other-bid
-                  BuildPrivateAggregationRequest(/*bucket=*/0, /*value=*
-                                                                */
-                                                 2012))),
+                  BuildPrivateAggregationRequest(/*bucket=*/0,
+                                                 /*value=*/2012))),
           testing::Pair(
               kComponentSeller1,
               ElementsAreRequests(
                   // scoreAd(), winning-bid, incoming bid 1
                   BuildPrivateAggregationRequest(/*bucket=*/10, /*value=*/1021),
                   // scoreAd(), highest-scoring-other-bid, incoming bid 1
-                  BuildPrivateAggregationRequest(/*bucket=*/0, /*value=*
-                                                                */
-                                                 1022))),
+                  BuildPrivateAggregationRequest(/*bucket=*/0,
+                                                 /*value=*/1022))),
           testing::Pair(
               kComponentSeller2,
               ElementsAreRequests(
                   // scoreAd(), winning-bid, incoming bid 2
                   BuildPrivateAggregationRequest(/*bucket=*/20, /*value=*/2041),
                   // scoreAd(), highest-scoring-other-bid, incoming bid 2
-                  BuildPrivateAggregationRequest(/*bucket=*/0, /*value=*
-                                                                */
-                                                 2042),
+                  BuildPrivateAggregationRequest(/*bucket=*/0, /*value=*/2042),
                   // reportResult(), winning-bid, browserSignals.bid is 20
                   BuildPrivateAggregationRequest(/*bucket=*/20,
                                                  /*value=*/20051),
                   // reportResult(), highest-scoring-other-bid,
                   // browserSignals.bid is 20
-                  BuildPrivateAggregationRequest(/*bucket=*/0, /*value=*
-                                                                */
-                                                 20052))),
+                  BuildPrivateAggregationRequest(/*bucket=*/0,
+                                                 /*value=*/20052))),
           testing::Pair(
               kSeller,
               ElementsAreRequests(
@@ -7719,12 +7840,26 @@ TEST_F(AuctionRunnerTest, ProcessManagerBlocksWorkletCreation) {
                   testing::UnorderedElementsAre(kBidder1Key, kBidder2Key));
       EXPECT_EQ(R"({"render_url":"https://ad2.com/"})",
                 result_.winning_group_ad_metadata);
-      CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
-                       .SetNumInterestGroups(2)
-                       .SetNumOwnersAndDistinctOwners(2)
-                       .SetNumSellers(1)
-                       .SetNumBidderWorklets(2)
-                       .SetNumInterestGroupsWithOnlyNonKAnonBid(2));
+      // In the case where no SellerWorklet is available at the start of the
+      // auction, the auction is blocked on scoring the ad until the
+      // SellerWorklet is later released by the test. This doesn't happen if
+      // there are no BidderWorklets available at the start of the auction,
+      // because a BidderWorklet is released by the test after a SellerWorklet
+      // is released.
+      int64_t num_bids_queued = 0;
+      if (seller_worklet_creation_delayed &&
+          num_used_bidder_worklet_processes !=
+              AuctionProcessManager::kMaxBidderProcesses) {
+        num_bids_queued = 2;
+      }
+      CheckMetrics(
+          MetricsExpectations(AuctionResult::kSuccess)
+              .SetNumInterestGroups(2)
+              .SetNumOwnersAndDistinctOwners(2)
+              .SetNumSellers(1)
+              .SetNumBidderWorklets(2)
+              .SetNumInterestGroupsWithOnlyNonKAnonBid(2)
+              .SetNumBidsQueuedWaitingForSellerWorklet(num_bids_queued));
     }
   }
 }
@@ -7923,12 +8058,37 @@ TEST_F(AuctionRunnerTest, ComponentAuctionProcessManagerBlocksWorkletCreation) {
                                                /*bucket=*/10, /*value=*/22),
                                            BuildPrivateAggregationRequest(
                                                /*bucket=*/30, /*value=*/42)))));
+
+      int64_t num_top_level_bids_queued = 0;
+      int64_t num_component_bids_queued = 0;
+
+      // The component auction needs three SellerWorklets in total. In all of
+      // the cases where we're making an insufficient number of these available,
+      // the top-level InterestGroupAuction will need to wait for the
+      // SellerWorklet to become available to rescore the bids.
+      //
+      // Only a much weaker expectation can be applied to the number of
+      // component bids queued. In all cases where we limit the number of
+      // available SellerWorklets, it's possible that the component bids are
+      // generated before a SellerWorklet is available. Because the ordering of
+      // these events is non-deterministic, we can only make lower-bound
+      // assumptions on how many of the bids will be queued as a result. As
+      // such, we simply don't check these metrics in this case. We still check
+      // that no bids are queued when all SellerWorklets are available.
+      if (num_used_seller_worklet_processes > 0) {
+        num_top_level_bids_queued = 2;
+        num_component_bids_queued = -1;
+      }
       CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
                        .SetNumInterestGroups(2)
                        .SetNumOwnersAndDistinctOwners(2)
                        .SetNumSellers(3)
                        .SetNumBidderWorklets(2)
-                       .SetNumInterestGroupsWithOnlyNonKAnonBid(2));
+                       .SetNumInterestGroupsWithOnlyNonKAnonBid(2)
+                       .SetNumTopLevelBidsQueuedWaitingForSellerWorklet(
+                           num_top_level_bids_queued)
+                       .SetNumBidsQueuedWaitingForSellerWorklet(
+                           num_component_bids_queued));
     }
   }
 }
@@ -8108,7 +8268,8 @@ TEST_F(AuctionRunnerTest,
                    .SetNumOwnersAndDistinctOwners(2)
                    .SetNumSellers(3)
                    .SetNumBidderWorklets(2)
-                   .SetNumInterestGroupsWithOnlyNonKAnonBid(1));
+                   .SetNumInterestGroupsWithOnlyNonKAnonBid(1)
+                   .SetNumTopLevelBidsQueuedWaitingForSellerWorklet(1));
 }
 
 // Test to make sure SendPendingSignalsRequests is called on a seller worklet
@@ -11321,6 +11482,272 @@ TEST_F(AuctionRunnerTest, AbortLate) {
   abortable_ad_auction_->Abort();
   task_environment()->RunUntilIdle();
   auction_runner_.reset();
+}
+
+// Test the critical path latency computation for GenerateBid dependencies.
+TEST_F(
+    AuctionRunnerTest,
+    CriticalPathIsComputedFromDependencyLatenciesPassedToGenerateBidCallback) {
+  using absl::nullopt;
+  using auction_worklet::mojom::GenerateBidDependencyLatencies;
+  using auction_worklet::mojom::GenerateBidDependencyLatenciesPtr;
+  const struct TestCase {
+    std::string description;
+    GenerateBidDependencyLatencies dependency_latencies;
+    // All remaining values are bucketed values.
+    absl::optional<int64_t> code_ready_latency_in_millis;
+    int64_t num_bidder_worklet_on_critical_path;
+    absl::optional<int64_t> bidder_worklet_critical_path_latency_in_millis;
+    absl::optional<int64_t> config_promises_latency_in_millis;
+    int64_t num_config_promises_on_critical_path;
+    absl::optional<int64_t> config_promises_critical_path_latency_in_millis;
+    absl::optional<int64_t> direct_from_seller_signals_latency_in_millis;
+    int64_t num_direct_from_seller_signals_on_critical_path;
+    absl::optional<int64_t>
+        direct_from_seller_signals_critical_path_latency_in_millis;
+    absl::optional<int64_t> trusted_bidding_signals_latency_in_millis;
+    int64_t num_trusted_bidding_signals_on_critical_path;
+    absl::optional<int64_t>
+        trusted_bidding_signals_critical_path_latency_in_millis;
+  } kTestCases[] = {
+      {/*description=*/"bidder_worklet on critical path",
+       /*dependency_latencies=*/
+       GenerateBidDependencyLatencies(
+           {/*code_ready_latency=*/base::Milliseconds(550),
+            /*config_promises_latency=*/nullopt,
+            /*direct_from_seller_signals_latency=*/base::Milliseconds(400),
+            /*trusted_bidding_signals_latency=*/nullopt}),
+       /*code_ready_latency_in_millis=*/500,
+       /*num_bidder_worklet_on_critical_path=*/1,
+       /*bidder_worklet_critical_path_latency_in_millis=*/100,
+       /*config_promises_latency_in_millis=*/nullopt,
+       /*num_config_promises_on_critical_path=*/0,
+       /*config_promises_critical_path_latency_in_millis=*/nullopt,
+       /*direct_from_seller_signals_latency_in_millis=*/400,
+       /*num_direct_from_seller_signals_on_critical_path=*/0,
+       /*direct_from_seller_signals_critical_path_latency_in_millis=*/nullopt,
+       /*trusted_bidding_signals_latency_in_millis=*/nullopt,
+       /*num_trusted_bidding_signals_on_critical_path=*/0,
+       /*trusted_bidding_signals_critical_path_latency_in_millis=*/nullopt},
+      {/*description=*/"config_promises on critical path",
+       /*dependency_latencies=*/
+       GenerateBidDependencyLatencies(
+           {/*code_ready_latency=*/nullopt,
+            /*config_promises_latency=*/base::Milliseconds(550),
+            /*direct_from_seller_signals_latency=*/nullopt,
+            /*trusted_bidding_signals_latency=*/base::Milliseconds(300)}),
+       /*code_ready_latency_in_millis=*/nullopt,
+       /*num_bidder_worklet_on_critical_path=*/0,
+       /*bidder_worklet_critical_path_latency_in_millis=*/nullopt,
+       /*config_promises_latency_in_millis=*/500,
+       /*num_config_promises_on_critical_path=*/1,
+       /*config_promises_critical_path_latency_in_millis=*/200,
+       /*direct_from_seller_signals_latency_in_millis=*/nullopt,
+       /*num_direct_from_seller_signals_on_critical_path=*/0,
+       /*direct_from_seller_signals_critical_path_latency_in_millis=*/nullopt,
+       /*trusted_bidding_signals_latency_in_millis=*/300,
+       /*num_trusted_bidding_signals_on_critical_path=*/0,
+       /*trusted_bidding_signals_critical_path_latency_in_millis=*/nullopt},
+      {/*description=*/"direct_from_seller_signals on critical path",
+       /*dependency_latencies=*/
+       GenerateBidDependencyLatencies(
+           {/*code_ready_latency=*/base::Milliseconds(50),
+            /*config_promises_latency=*/base::Milliseconds(200),
+            /*direct_from_seller_signals_latency=*/base::Milliseconds(550),
+            /*trusted_bidding_signals_latency=*/nullopt}),
+       /*code_ready_latency_in_millis=*/50,
+       /*num_bidder_worklet_on_critical_path=*/0,
+       /*bidder_worklet_critical_path_latency_in_millis=*/nullopt,
+       /*config_promises_latency_in_millis=*/200,
+       /*num_config_promises_on_critical_path=*/0,
+       /*config_promises_critical_path_latency_in_millis=*/nullopt,
+       /*direct_from_seller_signals_latency_in_millis=*/500,
+       /*num_direct_from_seller_signals_on_critical_path=*/1,
+       /*direct_from_seller_signals_critical_path_latency_in_millis=*/300,
+       /*trusted_bidding_signals_latency_in_millis=*/nullopt,
+       /*num_trusted_bidding_signals_on_critical_path=*/0,
+       /*trusted_bidding_signals_critical_path_latency_in_millis=*/nullopt},
+      {/*description=*/"trusted_bidding_signals on critical path",
+       /*dependency_latencies=*/
+       GenerateBidDependencyLatencies(
+           {/*code_ready_latency=*/base::Milliseconds(100),
+            /*config_promises_latency=*/base::Milliseconds(51),
+            /*direct_from_seller_signals_latency=*/base::Milliseconds(100),
+            /*trusted_bidding_signals_latency=*/base::Milliseconds(550)}),
+       /*code_ready_latency_in_millis=*/100,
+       /*num_bidder_worklet_on_critical_path=*/0,
+       /*bidder_worklet_critical_path_latency_in_millis=*/nullopt,
+       /*config_promises_latency_in_millis=*/50,
+       /*num_config_promises_on_critical_path=*/0,
+       /*config_promises_critical_path_latency_in_millis=*/nullopt,
+       /*direct_from_seller_signals_latency_in_millis=*/100,
+       /*num_direct_from_seller_signals_on_critical_path=*/0,
+       /*direct_from_seller_signals_critical_path_latency_in_millis=*/nullopt,
+       /*trusted_bidding_signals_latency_in_millis=*/500,
+       /*num_trusted_bidding_signals_on_critical_path=*/1,
+       /*trusted_bidding_signals_critical_path_latency_in_millis=*/400},
+      {/*description=*/"a tie: last-listed dependency  wins, 0 critical path",
+       /*dependency_latencies=*/
+       GenerateBidDependencyLatencies(
+           {/*code_ready_latency=*/base::Milliseconds(100),
+            /*config_promises_latency=*/base::Milliseconds(550),
+            /*direct_from_seller_signals_latency=*/base::Milliseconds(100),
+            /*trusted_bidding_signals_latency=*/base::Milliseconds(550)}),
+       /*code_ready_latency_in_millis=*/100,
+       /*num_bidder_worklet_on_critical_path=*/0,
+       /*bidder_worklet_critical_path_latency_in_millis=*/nullopt,
+       /*config_promises_latency_in_millis=*/500,
+       /*num_config_promises_on_critical_path=*/0,
+       /*config_promises_critical_path_latency_in_millis=*/nullopt,
+       /*direct_from_seller_signals_latency_in_millis=*/100,
+       /*num_direct_from_seller_signals_on_critical_path=*/0,
+       /*direct_from_seller_signals_critical_path_latency_in_millis=*/nullopt,
+       /*trusted_bidding_signals_latency_in_millis=*/500,
+       /*num_trusted_bidding_signals_on_critical_path=*/1,
+       /*trusted_bidding_signals_critical_path_latency_in_millis=*/0},
+  };
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.description);
+    interest_group_buyers_ = {{kBidder1}};
+    StartStandardAuctionWithMockService(/*num_bidder_worklets=*/1);
+
+    auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
+    ASSERT_TRUE(seller_worklet);
+    auto bidder1_worklet =
+        mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
+    ASSERT_TRUE(bidder1_worklet);
+
+    // Bid generation completes.
+    bidder1_worklet->InvokeGenerateBidCallback(
+        /*bid=*/2, /*bid_currency=*/absl::nullopt,
+        /*ad_descriptor=*/blink::AdDescriptor(GURL("https://ad1.com/")),
+        /*mojo_kanon_bid=*/nullptr,
+        /*ad_component_descriptors=*/absl::nullopt,
+        /*duration=*/base::TimeDelta(),
+        /*bidding_signals_data_version=*/absl::nullopt,
+        /*debug_loss_report_url=*/absl::nullopt,
+        /*debug_win_report_url=*/absl::nullopt,
+        /*pa_requests=*/{},
+        /*dependency_latencies=*/
+        GenerateBidDependencyLatencies::New(test_case.dependency_latencies));
+
+    // Score the ad.
+    auto score_ad_params = seller_worklet->WaitForScoreAd();
+    EXPECT_EQ(kBidder1, score_ad_params.interest_group_owner);
+    EXPECT_EQ(2, score_ad_params.bid);
+    mojo::Remote<auction_worklet::mojom::ScoreAdClient>(
+        std::move(score_ad_params.score_ad_client))
+        ->OnScoreAdComplete(
+            /*score=*/10,
+            /*reject_reason=*/
+            auction_worklet::mojom::RejectReason::kNotAvailable,
+            auction_worklet::mojom::ComponentAuctionModifiedBidParamsPtr(),
+            /*bid_in_seller_currency=*/absl::nullopt,
+            /*scoring_signals_data_version=*/absl::nullopt,
+            /*debug_loss_report_url=*/absl::nullopt,
+            /*debug_win_report_url=*/absl::nullopt, /*pa_requests=*/{},
+            /*errors=*/{});
+
+    // Finish the auction.
+    seller_worklet->WaitForReportResult();
+    seller_worklet->InvokeReportResultCallback();
+    mock_auction_process_manager_->WaitForWinningBidderReload();
+    bidder1_worklet =
+        mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
+    bidder1_worklet->WaitForReportWin();
+    bidder1_worklet->InvokeReportWinCallback();
+    auction_run_loop_->Run();
+
+    EXPECT_THAT(result_.errors, testing::UnorderedElementsAre());
+    EXPECT_EQ(kBidder1Key, result_.winning_group_id);
+    EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
+
+    ukm::TestUkmRecorder::HumanReadableUkmMetrics ukm_metrics = GetUkmMetrics();
+
+    using UkmEntry = ukm::builders::AdsInterestGroup_AuctionLatency;
+    EXPECT_THAT(ukm_metrics,
+                HasMetricWithValueOrNotIfNullOpt(
+                    UkmEntry::kMeanGenerateBidCodeReadyLatencyInMillisName,
+                    test_case.code_ready_latency_in_millis));
+    EXPECT_THAT(ukm_metrics,
+                HasMetricWithValueOrNotIfNullOpt(
+                    UkmEntry::kMaxGenerateBidCodeReadyLatencyInMillisName,
+                    test_case.code_ready_latency_in_millis));
+    EXPECT_THAT(
+        ukm_metrics,
+        HasMetricWithValue(UkmEntry::kNumGenerateBidCodeReadyOnCriticalPathName,
+                           test_case.num_bidder_worklet_on_critical_path));
+    EXPECT_THAT(
+        ukm_metrics,
+        HasMetricWithValueOrNotIfNullOpt(
+            UkmEntry::kMeanGenerateBidCodeReadyCriticalPathLatencyInMillisName,
+            test_case.bidder_worklet_critical_path_latency_in_millis));
+
+    EXPECT_THAT(ukm_metrics,
+                HasMetricWithValueOrNotIfNullOpt(
+                    UkmEntry::kMeanGenerateBidConfigPromisesLatencyInMillisName,
+                    test_case.config_promises_latency_in_millis));
+    EXPECT_THAT(ukm_metrics,
+                HasMetricWithValueOrNotIfNullOpt(
+                    UkmEntry::kMaxGenerateBidConfigPromisesLatencyInMillisName,
+                    test_case.config_promises_latency_in_millis));
+    EXPECT_THAT(ukm_metrics,
+                HasMetricWithValue(
+                    UkmEntry::kNumGenerateBidConfigPromisesOnCriticalPathName,
+                    test_case.num_config_promises_on_critical_path));
+    EXPECT_THAT(
+        ukm_metrics,
+        HasMetricWithValueOrNotIfNullOpt(
+            UkmEntry::
+                kMeanGenerateBidConfigPromisesCriticalPathLatencyInMillisName,
+            test_case.config_promises_critical_path_latency_in_millis));
+
+    EXPECT_THAT(
+        ukm_metrics,
+        HasMetricWithValueOrNotIfNullOpt(
+            UkmEntry::
+                kMeanGenerateBidDirectFromSellerSignalsLatencyInMillisName,
+            test_case.direct_from_seller_signals_latency_in_millis));
+    EXPECT_THAT(
+        ukm_metrics,
+        HasMetricWithValueOrNotIfNullOpt(
+            UkmEntry::kMaxGenerateBidDirectFromSellerSignalsLatencyInMillisName,
+            test_case.direct_from_seller_signals_latency_in_millis));
+    EXPECT_THAT(
+        ukm_metrics,
+        HasMetricWithValue(
+            UkmEntry::kNumGenerateBidDirectFromSellerSignalsOnCriticalPathName,
+            test_case.num_direct_from_seller_signals_on_critical_path));
+    EXPECT_THAT(
+        ukm_metrics,
+        HasMetricWithValueOrNotIfNullOpt(
+            UkmEntry::
+                kMeanGenerateBidDirectFromSellerSignalsCriticalPathLatencyInMillisName,
+            test_case
+                .direct_from_seller_signals_critical_path_latency_in_millis));
+
+    EXPECT_THAT(
+        ukm_metrics,
+        HasMetricWithValueOrNotIfNullOpt(
+            UkmEntry::kMeanGenerateBidTrustedBiddingSignalsLatencyInMillisName,
+            test_case.trusted_bidding_signals_latency_in_millis));
+    EXPECT_THAT(
+        ukm_metrics,
+        HasMetricWithValueOrNotIfNullOpt(
+            UkmEntry::kMaxGenerateBidTrustedBiddingSignalsLatencyInMillisName,
+            test_case.trusted_bidding_signals_latency_in_millis));
+    EXPECT_THAT(
+        ukm_metrics,
+        HasMetricWithValue(
+            UkmEntry::kNumGenerateBidTrustedBiddingSignalsOnCriticalPathName,
+            test_case.num_trusted_bidding_signals_on_critical_path));
+    EXPECT_THAT(
+        ukm_metrics,
+        HasMetricWithValueOrNotIfNullOpt(
+            UkmEntry::
+                kMeanGenerateBidTrustedBiddingSignalsCriticalPathLatencyInMillisName,
+            test_case.trusted_bidding_signals_critical_path_latency_in_millis));
+  }
 }
 
 // An auction with two successful bids. sendHistogramReport() and
@@ -16012,6 +16439,13 @@ TEST_P(AuctionRunnerKAnonTest, ComponentURLs) {
     base::flat_set<std::string> expected_k_anon_keys_to_join;
     histogram_tester_->ExpectUniqueSample(
         "Ads.InterestGroup.Auction.NonKAnonWinnerIsKAnon", false, 1);
+
+    MetricsExpectations expectations(AuctionResult::kSuccess);
+    expectations.SetNumInterestGroups(2)
+        .SetNumOwnersAndDistinctOwners(2)
+        .SetNumSellers(run_as_component ? 2 : 1)
+        .SetNumBidderWorklets(2);
+
     switch (kanon_mode()) {
       case KAnonMode::kNone:
         // k-anon support is turned off entirely, so ad2 wins, and no other URLs
@@ -16032,12 +16466,6 @@ TEST_P(AuctionRunnerKAnonTest, ComponentURLs) {
             /*highest_scoring_other_bid=*/1,
             /*highest_scoring_other_bid_currency=*/absl::nullopt,
             /*made_highest_scoring_other_bid=*/false));
-        CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
-                         .SetNumInterestGroups(2)
-                         .SetNumOwnersAndDistinctOwners(2)
-                         .SetNumSellers(run_as_component ? 2 : 1)
-                         .SetNumBidderWorklets(2)
-                         .SetNumInterestGroupsWithOnlyNonKAnonBid(2));
         {
           auto requests =
               private_aggregation_manager_.TakePrivateAggregationRequests();
@@ -16073,6 +16501,7 @@ TEST_P(AuctionRunnerKAnonTest, ComponentURLs) {
                                                 2, 2)))));  // bid was 2.
           }
         }
+        expectations.SetNumInterestGroupsWithOnlyNonKAnonBid(2);
         break;
 
       case KAnonMode::kEnforce:
@@ -16099,14 +16528,6 @@ TEST_P(AuctionRunnerKAnonTest, ComponentURLs) {
             /*highest_scoring_other_bid=*/0,
             /*highest_scoring_other_bid_currency=*/absl::nullopt,
             /*made_highest_scoring_other_bid=*/false));
-        CheckMetrics(
-            MetricsExpectations(AuctionResult::kSuccess)
-                .SetNumInterestGroups(2)
-                .SetNumOwnersAndDistinctOwners(2)
-                .SetNumSellers(run_as_component ? 2 : 1)
-                .SetNumBidderWorklets(2)
-                .SetNumInterestGroupsWithOnlyNonKAnonBid(1)
-                .SetNumInterestGroupsWithSameBidForKAnonAndNonKAnon(1));
         {
           auto requests =
               private_aggregation_manager_.TakePrivateAggregationRequests();
@@ -16146,7 +16567,8 @@ TEST_P(AuctionRunnerKAnonTest, ComponentURLs) {
                                 1, 2)))));  // bid was 1.
           }
         }
-
+        expectations.SetNumInterestGroupsWithOnlyNonKAnonBid(1)
+            .SetNumInterestGroupsWithSameBidForKAnonAndNonKAnon(1);
         break;
 
       case KAnonMode::kSimulate:
@@ -16169,14 +16591,6 @@ TEST_P(AuctionRunnerKAnonTest, ComponentURLs) {
             /*highest_scoring_other_bid=*/1,
             /*highest_scoring_other_bid_currency=*/absl::nullopt,
             /*made_highest_scoring_other_bid=*/false));
-        CheckMetrics(
-            MetricsExpectations(AuctionResult::kSuccess)
-                .SetNumInterestGroups(2)
-                .SetNumOwnersAndDistinctOwners(2)
-                .SetNumSellers(run_as_component ? 2 : 1)
-                .SetNumBidderWorklets(2)
-                .SetNumInterestGroupsWithOnlyNonKAnonBid(1)
-                .SetNumInterestGroupsWithSameBidForKAnonAndNonKAnon(1));
         {
           auto requests =
               private_aggregation_manager_.TakePrivateAggregationRequests();
@@ -16212,8 +16626,11 @@ TEST_P(AuctionRunnerKAnonTest, ComponentURLs) {
                                                 2, 2)))));  // bid was 2.
           }
         }
+        expectations.SetNumInterestGroupsWithOnlyNonKAnonBid(1)
+            .SetNumInterestGroupsWithSameBidForKAnonAndNonKAnon(1);
         break;
     }
+    CheckMetrics(expectations);
 
     // Have to spin all message loops to flush any k-anon set join events.
     task_environment()->RunUntilIdle();
@@ -16296,6 +16713,13 @@ TEST_P(AuctionRunnerKAnonTest, Basic) {
     base::flat_set<std::string> expected_k_anon_keys_to_join;
     GURL expected_seller_report_url;
     std::vector<GURL> expected_report_urls;
+
+    MetricsExpectations expectations(AuctionResult::kSuccess);
+    expectations.SetNumInterestGroups(2)
+        .SetNumOwnersAndDistinctOwners(2)
+        .SetNumSellers(run_as_component ? 2 : 1)
+        .SetNumBidderWorklets(2);
+
     switch (kanon_mode()) {
       case KAnonMode::kNone:
         // k-anon support is turned off entirely, so ad2 wins, and no other URLs
@@ -16309,12 +16733,6 @@ TEST_P(AuctionRunnerKAnonTest, Basic) {
             /*highest_scoring_other_bid=*/1,
             /*highest_scoring_other_bid_currency=*/absl::nullopt,
             /*made_highest_scoring_other_bid=*/false));
-        CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
-                         .SetNumInterestGroups(2)
-                         .SetNumOwnersAndDistinctOwners(2)
-                         .SetNumSellers(run_as_component ? 2 : 1)
-                         .SetNumBidderWorklets(2)
-                         .SetNumInterestGroupsWithOnlyNonKAnonBid(2));
         {
           auto requests =
               private_aggregation_manager_.TakePrivateAggregationRequests();
@@ -16350,6 +16768,7 @@ TEST_P(AuctionRunnerKAnonTest, Basic) {
                                                 2, 2)))));  // bid was 2.
           }
         }
+        expectations.SetNumInterestGroupsWithOnlyNonKAnonBid(2);
         break;
 
       case KAnonMode::kEnforce:
@@ -16366,14 +16785,6 @@ TEST_P(AuctionRunnerKAnonTest, Basic) {
             /*highest_scoring_other_bid=*/0,
             /*highest_scoring_other_bid_currency=*/absl::nullopt,
             /*made_highest_scoring_other_bid=*/false));
-        CheckMetrics(
-            MetricsExpectations(AuctionResult::kSuccess)
-                .SetNumInterestGroups(2)
-                .SetNumOwnersAndDistinctOwners(2)
-                .SetNumSellers(run_as_component ? 2 : 1)
-                .SetNumBidderWorklets(2)
-                .SetNumInterestGroupsWithOnlyNonKAnonBid(1)
-                .SetNumInterestGroupsWithSameBidForKAnonAndNonKAnon(1));
         {
           auto requests =
               private_aggregation_manager_.TakePrivateAggregationRequests();
@@ -16413,6 +16824,8 @@ TEST_P(AuctionRunnerKAnonTest, Basic) {
                                 1, 2)))));  // bid was 1.
           }
         }
+        expectations.SetNumInterestGroupsWithOnlyNonKAnonBid(1)
+            .SetNumInterestGroupsWithSameBidForKAnonAndNonKAnon(1);
         break;
 
       case KAnonMode::kSimulate:
@@ -16429,14 +16842,6 @@ TEST_P(AuctionRunnerKAnonTest, Basic) {
             /*highest_scoring_other_bid=*/1,
             /*highest_scoring_other_bid_currency=*/absl::nullopt,
             /*made_highest_scoring_other_bid=*/false));
-        CheckMetrics(
-            MetricsExpectations(AuctionResult::kSuccess)
-                .SetNumInterestGroups(2)
-                .SetNumOwnersAndDistinctOwners(2)
-                .SetNumSellers(run_as_component ? 2 : 1)
-                .SetNumBidderWorklets(2)
-                .SetNumInterestGroupsWithOnlyNonKAnonBid(1)
-                .SetNumInterestGroupsWithSameBidForKAnonAndNonKAnon(1));
         {
           auto requests =
               private_aggregation_manager_.TakePrivateAggregationRequests();
@@ -16472,8 +16877,13 @@ TEST_P(AuctionRunnerKAnonTest, Basic) {
                                                 2, 2)))));  // bid was 2.
           }
         }
+        expectations.SetNumInterestGroupsWithOnlyNonKAnonBid(1)
+            .SetNumInterestGroupsWithSameBidForKAnonAndNonKAnon(1);
         break;
     }
+
+    CheckMetrics(expectations);
+
     // Have to spin all message loops to flush any k-anon set join events.
     task_environment()->RunUntilIdle();
     EXPECT_THAT(
@@ -16536,6 +16946,12 @@ TEST_P(AuctionRunnerKAnonTest, KAnonHigher) {
 
   std::vector<GURL> expected_report_urls;
   expected_report_urls.emplace_back("https://reporting.example.com/2");
+  MetricsExpectations expectations(AuctionResult::kSuccess);
+  expectations.SetNumInterestGroups(2)
+      .SetNumOwnersAndDistinctOwners(2)
+      .SetNumSellers(1)
+      .SetNumBidderWorklets(2);
+
   switch (kanon_mode()) {
     case KAnonMode::kNone:
       // k-anon support is turned off entirely, so no other URLs
@@ -16547,13 +16963,6 @@ TEST_P(AuctionRunnerKAnonTest, KAnonHigher) {
           /*highest_scoring_other_bid=*/1,
           /*highest_scoring_other_bid_currency=*/absl::nullopt,
           /*made_highest_scoring_other_bid=*/false));
-      CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
-                       .SetNumInterestGroups(2)
-                       .SetNumOwnersAndDistinctOwners(2)
-                       .SetNumSellers(1)
-                       .SetNumBidderWorklets(2)
-                       .SetNumInterestGroupsWithOnlyNonKAnonBid(2));
-
       {
         auto requests =
             private_aggregation_manager_.TakePrivateAggregationRequests();
@@ -16569,6 +16978,7 @@ TEST_P(AuctionRunnerKAnonTest, KAnonHigher) {
                                   BuildPrivateAggregationRequest(0, 0),
                                   BuildPrivateAggregationRequest(2, 2)))));
       }
+      expectations.SetNumInterestGroupsWithOnlyNonKAnonBid(2);
       break;
 
     case KAnonMode::kEnforce:
@@ -16580,14 +16990,6 @@ TEST_P(AuctionRunnerKAnonTest, KAnonHigher) {
           /*highest_scoring_other_bid=*/0,
           /*highest_scoring_other_bid_currency=*/absl::nullopt,
           /*made_highest_scoring_other_bid=*/false));
-      CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
-                       .SetNumInterestGroups(2)
-                       .SetNumOwnersAndDistinctOwners(2)
-                       .SetNumSellers(1)
-                       .SetNumBidderWorklets(2)
-                       .SetNumInterestGroupsWithOnlyNonKAnonBid(1)
-                       .SetNumInterestGroupsWithSameBidForKAnonAndNonKAnon(1));
-
       {
         auto requests =
             private_aggregation_manager_.TakePrivateAggregationRequests();
@@ -16603,6 +17005,8 @@ TEST_P(AuctionRunnerKAnonTest, KAnonHigher) {
                                   BuildPrivateAggregationRequest(0, 0),
                                   BuildPrivateAggregationRequest(2, 2)))));
       }
+      expectations.SetNumInterestGroupsWithOnlyNonKAnonBid(1)
+          .SetNumInterestGroupsWithSameBidForKAnonAndNonKAnon(1);
       break;
 
     case KAnonMode::kSimulate:
@@ -16614,14 +17018,6 @@ TEST_P(AuctionRunnerKAnonTest, KAnonHigher) {
           /*highest_scoring_other_bid=*/1,
           /*highest_scoring_other_bid_currency=*/absl::nullopt,
           /*made_highest_scoring_other_bid=*/false));
-      CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
-                       .SetNumInterestGroups(2)
-                       .SetNumOwnersAndDistinctOwners(2)
-                       .SetNumSellers(1)
-                       .SetNumBidderWorklets(2)
-                       .SetNumInterestGroupsWithOnlyNonKAnonBid(1)
-                       .SetNumInterestGroupsWithSameBidForKAnonAndNonKAnon(1));
-
       {
         auto requests =
             private_aggregation_manager_.TakePrivateAggregationRequests();
@@ -16637,8 +17033,11 @@ TEST_P(AuctionRunnerKAnonTest, KAnonHigher) {
                                   BuildPrivateAggregationRequest(0, 0),
                                   BuildPrivateAggregationRequest(2, 2)))));
       }
+      expectations.SetNumInterestGroupsWithOnlyNonKAnonBid(1)
+          .SetNumInterestGroupsWithSameBidForKAnonAndNonKAnon(1);
       break;
   }
+  CheckMetrics(expectations);
   EXPECT_THAT(result_.report_urls,
               testing::UnorderedElementsAreArray(expected_report_urls));
 }
@@ -16700,6 +17099,13 @@ TEST_P(AuctionRunnerKAnonTest, DifferentBids) {
       "Ads.InterestGroup.Auction.NonKAnonWinnerIsKAnon", false, 1);
 
   base::flat_set<std::string> expected_k_anon_keys_to_join;
+
+  MetricsExpectations expectations(AuctionResult::kSuccess);
+  expectations.SetNumInterestGroups(1)
+      .SetNumOwnersAndDistinctOwners(1)
+      .SetNumSellers(1)
+      .SetNumBidderWorklets(1);
+
   switch (kanon_mode()) {
     case KAnonMode::kNone:
       // Don't care about k-anonymity: ad2 wins, nothing else is reporter.
@@ -16708,17 +17114,12 @@ TEST_P(AuctionRunnerKAnonTest, DifferentBids) {
                                           ad2_k_anon_keys.end());
       EXPECT_THAT(result_.report_urls,
                   testing::ElementsAre("https://reporting.example.com/2"));
-      CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
-                       .SetNumInterestGroups(1)
-                       .SetNumOwnersAndDistinctOwners(1)
-                       .SetNumSellers(1)
-                       .SetNumBidderWorklets(1)
-                       .SetNumInterestGroupsWithOnlyNonKAnonBid(1));
       EXPECT_THAT(
           private_aggregation_manager_.TakePrivateAggregationRequests(),
           testing::UnorderedElementsAre(testing::Pair(
               kSeller, ElementsAreRequests(
                            kExpectedReportResultPrivateAggregationRequest))));
+      expectations.SetNumInterestGroupsWithOnlyNonKAnonBid(1);
       break;
 
     case KAnonMode::kEnforce:
@@ -16731,18 +17132,12 @@ TEST_P(AuctionRunnerKAnonTest, DifferentBids) {
                                           ad2_k_anon_keys.end());
       EXPECT_THAT(result_.report_urls,
                   testing::ElementsAre("https://reporting.example.com/1"));
-      CheckMetrics(
-          MetricsExpectations(AuctionResult::kSuccess)
-              .SetNumInterestGroups(1)
-              .SetNumOwnersAndDistinctOwners(1)
-              .SetNumSellers(1)
-              .SetNumBidderWorklets(1)
-              .SetNumInterestGroupsWithSeparateBidsForKAnonAndNonKAnon(1));
       EXPECT_THAT(
           private_aggregation_manager_.TakePrivateAggregationRequests(),
           testing::UnorderedElementsAre(testing::Pair(
               kSeller, ElementsAreRequests(
                            kExpectedReportResultPrivateAggregationRequest))));
+      expectations.SetNumInterestGroupsWithSeparateBidsForKAnonAndNonKAnon(1);
       break;
 
     case KAnonMode::kSimulate:
@@ -16755,20 +17150,17 @@ TEST_P(AuctionRunnerKAnonTest, DifferentBids) {
                                           ad2_k_anon_keys.end());
       EXPECT_THAT(result_.report_urls,
                   testing::ElementsAre("https://reporting.example.com/2"));
-      CheckMetrics(
-          MetricsExpectations(AuctionResult::kSuccess)
-              .SetNumInterestGroups(1)
-              .SetNumOwnersAndDistinctOwners(1)
-              .SetNumSellers(1)
-              .SetNumBidderWorklets(1)
-              .SetNumInterestGroupsWithSeparateBidsForKAnonAndNonKAnon(1));
       EXPECT_THAT(
           private_aggregation_manager_.TakePrivateAggregationRequests(),
           testing::UnorderedElementsAre(testing::Pair(
               kSeller, ElementsAreRequests(
                            kExpectedReportResultPrivateAggregationRequest))));
+      expectations.SetNumInterestGroupsWithSeparateBidsForKAnonAndNonKAnon(1);
       break;
   }
+
+  CheckMetrics(expectations);
+
   // Have to spin all message loops to flush any k-anon set join events.
   task_environment()->RunUntilIdle();
   EXPECT_THAT(interest_group_manager_->TakeJoinedKAnonSets(),

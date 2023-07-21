@@ -903,6 +903,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
   _authenticationFlow = [[AuthenticationFlow alloc]
                initWithBrowser:_browser
                       identity:self.identity
+                   accessPoint:self.accessPoint
               postSignInAction:PostSignInAction::
                                    kEnableBookmarkReadingListAccountStorage
       presentingViewController:_baseViewController];

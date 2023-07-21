@@ -16,7 +16,7 @@
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/sync/base/features.h"
-#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
@@ -35,7 +35,7 @@
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/app/password_test_util.h"
+#import "ios/chrome/test/app/mock_reauthentication_module.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -223,11 +223,9 @@ class PasswordDetailsTableViewControllerTest
                    std::string password = kPassword,
                    std::string note = kNote,
                    bool is_compromised = false,
-                   bool is_muted = false,
                    DetailsContext context = DetailsContext::kGeneral) {
     std::vector<std::string> websites = {website};
-    SetPassword(websites, username, password, note, is_compromised, is_muted,
-                context);
+    SetPassword(websites, username, password, note, is_compromised, context);
   }
 
   void SetPassword(const std::vector<std::string>& websites,
@@ -235,7 +233,6 @@ class PasswordDetailsTableViewControllerTest
                    std::string password = kPassword,
                    std::string note = kNote,
                    bool is_compromised = false,
-                   bool is_muted = false,
                    DetailsContext context = DetailsContext::kGeneral) {
     std::vector<password_manager::PasswordForm> forms;
     for (const auto& website : websites) {
@@ -257,7 +254,6 @@ class PasswordDetailsTableViewControllerTest
         initWithCredential:password_manager::CredentialUIEntry(forms)];
     passwordDetails.context = context;
     passwordDetails.compromised = is_compromised;
-    passwordDetails.muted = is_muted;
     [passwords addObject:passwordDetails];
 
     PasswordDetailsTableViewController* passwords_controller =
@@ -432,7 +428,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestAddingPasswordWithNote) {
   feature_list.InitAndEnableFeature(syncer::kPasswordNotesWithBackup);
   base::HistogramTester histogram_tester;
 
-  SetPassword(kExampleCom, kUsername, kPassword, /*note=*/"");
+  SetPassword(kExampleCom, kUsername, kPassword, /*note=*/"", false);
   PasswordDetailsTableViewController* passwordDetails =
       base::mac::ObjCCastStrict<PasswordDetailsTableViewController>(
           controller());
@@ -441,7 +437,6 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestAddingPasswordWithNote) {
 
   SetEditCellMultiLineText(@"note", 1, 2);
   [passwordDetails editButtonPressed];
-  [passwordDetails passwordEditingConfirmed];
 
   EXPECT_FALSE(passwordDetails.tableView.editing);
   EXPECT_NSEQ(@"note", delegate().password.note);
@@ -467,7 +462,6 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestEditingPasswordWithNote) {
 
   SetEditCellMultiLineText(@"new_note", 1, 2);
   [passwordDetails editButtonPressed];
-  [passwordDetails passwordEditingConfirmed];
 
   EXPECT_FALSE(passwordDetails.tableView.editing);
   EXPECT_NSEQ(@"new_note", delegate().password.note);
@@ -494,7 +488,6 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestRemovingPasswordWithNote) {
 
   SetEditCellMultiLineText(@"", 1, 2);
   [passwordDetails editButtonPressed];
-  [passwordDetails passwordEditingConfirmed];
 
   EXPECT_FALSE(passwordDetails.tableView.editing);
   EXPECT_NSEQ(@"", delegate().password.note);
@@ -566,8 +559,7 @@ TEST_F(PasswordDetailsTableViewControllerTest,
   feature_list.InitAndDisableFeature(
       password_manager::features::kIOSPasswordCheckup);
 
-  SetPassword(kExampleCom, kUsername, kPassword, kNote,
-              /*is_compromised=*/true);
+  SetPassword(kExampleCom, kUsername, kPassword, kNote, true);
   EXPECT_EQ(3, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(0));
   EXPECT_EQ(2, NumberOfItemsInSection(1));
@@ -589,8 +581,7 @@ TEST_F(PasswordDetailsTableViewControllerTest,
   base::test::ScopedFeatureList feature_list(
       password_manager::features::kIOSPasswordCheckup);
 
-  SetPassword(kExampleCom, kUsername, kPassword, kNote,
-              /*is_compromised=*/true);
+  SetPassword(kExampleCom, kUsername, kPassword, kNote, true);
   EXPECT_EQ(3, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(0));
   EXPECT_EQ(2, NumberOfItemsInSection(1));
@@ -614,8 +605,7 @@ TEST_F(PasswordDetailsTableViewControllerTest,
   base::test::ScopedFeatureList feature_list(
       password_manager::features::kIOSPasswordCheckup);
 
-  SetPassword(kExampleCom, kUsername, kPassword, kNote,
-              /*is_compromised=*/false, /*is_muted=*/true,
+  SetPassword(kExampleCom, kUsername, kPassword, kNote, false,
               DetailsContext::kDismissedWarnings);
   EXPECT_EQ(3, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(0));
@@ -634,8 +624,7 @@ TEST_F(PasswordDetailsTableViewControllerTest,
 
 // Tests the “Change Password on Website” button.
 TEST_P(PasswordGroupingTest, TestChangePasswordOnWebsite) {
-  SetPassword(kExampleCom, kUsername, kPassword, kNote,
-              /*is_compromised=*/true);
+  SetPassword(kExampleCom, kUsername, kPassword, kNote, true);
   PasswordDetailsTableViewController* password_details =
       base::mac::ObjCCastStrict<PasswordDetailsTableViewController>(
           controller());
@@ -668,8 +657,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestDismissWarning) {
   base::test::ScopedFeatureList feature_list(
       password_manager::features::kIOSPasswordCheckup);
 
-  SetPassword(kExampleCom, kUsername, kPassword, kNote,
-              /*is_compromised=*/true);
+  SetPassword(kExampleCom, kUsername, kPassword, kNote, true);
   PasswordDetailsTableViewController* password_details =
       base::mac::ObjCCastStrict<PasswordDetailsTableViewController>(
           controller());
@@ -692,8 +680,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestRestoreWarning) {
   base::test::ScopedFeatureList feature_list(
       password_manager::features::kIOSPasswordCheckup);
 
-  SetPassword(kExampleCom, kUsername, kPassword, kNote,
-              /*is_compromised=*/false, /*is_muted=*/true,
+  SetPassword(kExampleCom, kUsername, kPassword, kNote, false,
               DetailsContext::kDismissedWarnings);
   PasswordDetailsTableViewController* password_details =
       base::mac::ObjCCastStrict<PasswordDetailsTableViewController>(
@@ -812,8 +799,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestPasswordDelete) {
 
 // Tests compromised password deletion trigger showing password delete dialog.
 TEST_F(PasswordDetailsTableViewControllerTest, TestCompromisedPasswordDelete) {
-  SetPassword(kExampleCom, kUsername, kPassword, kNote,
-              /*is_compromised=*/true);
+  SetPassword(kExampleCom, kUsername, kPassword, kNote, true);
 
   EXPECT_FALSE(handler().deletionCalled);
   PasswordDetailsTableViewController* password_details =
@@ -880,7 +866,7 @@ TEST_F(PasswordDetailsTableViewControllerTest,
   feature_list.InitAndDisableFeature(
       password_manager::features::kIOSPasswordCheckup);
 
-  SetPassword(kAndroid, kUsername, kPassword, kNote, /*is_compromised=*/true);
+  SetPassword(kAndroid, kUsername, kPassword, kNote, true);
 
   EXPECT_EQ(3, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(0));
@@ -903,7 +889,7 @@ TEST_F(PasswordDetailsTableViewControllerTest,
   base::test::ScopedFeatureList feature_list(
       password_manager::features::kIOSPasswordCheckup);
 
-  SetPassword(kAndroid, kUsername, kPassword, kNote, /*is_compromised=*/true);
+  SetPassword(kAndroid, kUsername, kPassword, kNote, true);
 
   EXPECT_EQ(3, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(0));

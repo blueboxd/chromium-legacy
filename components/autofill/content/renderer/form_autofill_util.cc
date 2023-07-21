@@ -99,13 +99,13 @@ struct ShadowFieldData {
 namespace {
 
 // Maximal length of a button's title.
-const int kMaxLengthForSingleButtonTitle = 30;
+constexpr int kMaxLengthForSingleButtonTitle = 30;
 // Maximal length of all button titles.
-const int kMaxLengthForAllButtonTitles = 200;
+constexpr int kMaxLengthForAllButtonTitles = 200;
 
 // Number of shadow roots to traverse upwards when looking for relevant forms
 // and labels of an input element inside a shadow root.
-const int kMaxShadowLevelsUp = 2;
+constexpr size_t kMaxShadowLevelsUp = 2;
 
 // Text features to detect form submission buttons. Features are selected based
 // on analysis of real forms and their buttons.
@@ -1090,7 +1090,8 @@ std::vector<WebFormControlElement> ForEachMatchingFormFieldCommon(
     if (((filters & FILTER_DISABLED_ELEMENTS) && !element.IsEnabled()) ||
         ((filters & FILTER_READONLY_ELEMENTS) && element.IsReadOnly()) ||
         // See description for FILTER_NON_FOCUSABLE_ELEMENTS.
-        ((filters & FILTER_NON_FOCUSABLE_ELEMENTS) && !element.IsFocusable() &&
+        ((filters & FILTER_NON_FOCUSABLE_ELEMENTS) &&
+         !IsWebElementFocusableForAutofill(element) &&
          !IsSelectElement(element))) {
       continue;
     }
@@ -1563,7 +1564,7 @@ void MaybeEmitInputAssignedAutocompleteValueToIdOrNameAttributesIssue(
 // WebFormControlElementToFormField().
 bool OwnedOrUnownedFormToFormData(
     const WebFrame* frame,
-    const blink::WebFormElement* form_element,
+    const blink::WebFormElement& form_element,
     const blink::WebFormControlElement* form_control_element,
     const WebVector<WebFormControlElement>& control_elements,
     const std::vector<blink::WebElement>& iframe_elements,
@@ -1612,8 +1613,8 @@ bool OwnedOrUnownedFormToFormData(
     form->fields.emplace_back();
     shadow_fields.emplace_back();
     WebFormControlElementToFormField(
-        form->unique_renderer_id, control_element, field_data_manager,
-        extract_mask, &form->fields.back(), &shadow_fields.back());
+        form_element, control_element, field_data_manager, extract_mask,
+        &form->fields.back(), &shadow_fields.back());
     fields_extracted[i] = true;
 
     if (base::FeatureList::IsEnabled(features::kAutofillEnableDevtoolsIssues)) {
@@ -1623,12 +1624,10 @@ bool OwnedOrUnownedFormToFormData(
     }
 
     if (base::FeatureList::IsEnabled(features::kAutofillAcrossIframes)) {
-      const blink::WebFormElement& ancestor_hint =
-          form_element ? *form_element : blink::WebFormElement();
       // Finds the last frame that precedes |control_element|.
       while (next_iframe < iframe_elements.size() &&
              !IsDOMPredecessor(control_element, iframe_elements[next_iframe],
-                               ancestor_hint)) {
+                               form_element)) {
         ++next_iframe;
       }
       // The |next_frame|th frame precedes `control_element` and thus the last
@@ -1820,26 +1819,6 @@ void ValidateAutocompleteAttributeForElement(const WebElement& element) {
   }
 }
 
-void FindFormElementUpShadowRoots(const WebElement& element,
-                                  WebFormElement* found_form_element) {
-  // If we are in shadowdom, then look to see if the host(s) are inside a form
-  // element we can use.
-  int levels_up = kMaxShadowLevelsUp;
-  for (WebElement host = element.OwnerShadowHost(); !host.IsNull() && levels_up;
-       host = host.OwnerShadowHost(), --levels_up) {
-    for (WebNode parent = host; !parent.IsNull();
-         parent = parent.ParentNode()) {
-      if (parent.IsElementNode()) {
-        WebElement parentElement = parent.To<WebElement>();
-        if (parentElement.HasHTMLTagName("form")) {
-          *found_form_element = parentElement.To<WebFormElement>();
-          return;
-        }
-      }
-    }
-  }
-}
-
 }  // namespace
 
 // TODO(crbug.com/1335257): This check is very similar to IsWebElementVisible()
@@ -1852,8 +1831,8 @@ bool IsVisibleIframe(const WebElement& element) {
   // positive bounds. The threshold of 10 pixels is chosen rather arbitrarily.
   constexpr int kMinPixelSize = 10;
   gfx::Rect bounds = element.BoundsInWidget();
-  return element.IsFocusable() && bounds.width() > kMinPixelSize &&
-         bounds.height() > kMinPixelSize;
+  return IsWebElementFocusableForAutofill(element) &&
+         bounds.width() > kMinPixelSize && bounds.height() > kMinPixelSize;
 }
 
 bool IsAdIframe(const WebElement& element) {
@@ -1984,7 +1963,7 @@ bool IsSomeControlElementVisible(
       [&](const WebVector<WebFormControlElement>& fields) {
         return base::ranges::any_of(
             fields, [&](const WebFormControlElement& field) {
-              return IsWebElementFocusable(field) &&
+              return IsWebElementFocusableForAutofill(field) &&
                      base::Contains(control_elements,
                                     GetFieldRendererId(field));
             });
@@ -2074,8 +2053,16 @@ bool IsElementEditable(const WebInputElement& element) {
   return element.IsEnabled() && !element.IsReadOnly();
 }
 
-bool IsWebElementFocusable(const blink::WebElement& element) {
-  return element.IsFocusable();
+bool IsWebElementFocusableForAutofill(const WebElement& element) {
+  if (element.IsFocusable()) {
+    return true;
+  }
+
+  if (IsSelectMenuElement(element.DynamicTo<WebFormControlElement>())) {
+    // The <selectmenu> shadow root is not focusable.
+    return element.To<WebSelectMenuElement>().HasFocusableChild();
+  }
+  return false;
 }
 
 bool IsWebElementVisible(const blink::WebElement& element) {
@@ -2083,7 +2070,7 @@ bool IsWebElementVisible(const blink::WebElement& element) {
     constexpr int kMinPixelSize = 10;
     return size.width() >= kMinPixelSize && size.height() >= kMinPixelSize;
   };
-  return !element.IsNull() && IsWebElementFocusable(element) &&
+  return !element.IsNull() && IsWebElementFocusableForAutofill(element) &&
          (IsCheckableElement(element) || HasMinSize(element.GetClientSize()) ||
           HasMinSize(element.GetScrollSize()));
 }
@@ -2138,7 +2125,7 @@ std::vector<WebFormControlElement> ExtractAutofillableElementsInForm(
 }
 
 void WebFormControlElementToFormField(
-    FormRendererId form_renderer_id,
+    const WebFormElement& form_element,
     const WebFormControlElement& element,
     const FieldDataManager* field_data_manager,
     ExtractMask extract_mask,
@@ -2159,7 +2146,7 @@ void WebFormControlElementToFormField(
   field->id_attribute = element.GetIdAttribute().Utf16();
   field->name_attribute = element.GetAttribute(*kName).Utf16();
   field->unique_renderer_id = GetFieldRendererId(element);
-  field->host_form_id = form_renderer_id;
+  field->host_form_id = GetFormRendererId(form_element);
   field->form_control_ax_id = element.GetAxId();
   field->form_control_type = element.FormControlTypeForAutofill().Utf8();
   field->max_length =
@@ -2190,14 +2177,12 @@ void WebFormControlElementToFormField(
   field->aria_label = GetAriaLabel(element.GetDocument(), element);
   field->aria_description = GetAriaDescription(element.GetDocument(), element);
 
-  // Traverse up through shadow hosts to see if we can gather missing fields.
-  WebFormElement form_element_up_shadow_hosts;
-  FindFormElementUpShadowRoots(element, &form_element_up_shadow_hosts);
-  int levels_up = kMaxShadowLevelsUp;
+  // Traverse up through shadow hosts to see if we can gather missing
+  // attributes.
+  size_t levels_up = kMaxShadowLevelsUp;
   for (WebElement host = element.OwnerShadowHost();
-       !host.IsNull() && levels_up &&
-       (!form_element_up_shadow_hosts.IsNull() &&
-        form_element_up_shadow_hosts.OwnerShadowHost() != host);
+       !host.IsNull() && levels_up > 0 && !form_element.IsNull() &&
+       form_element.OwnerShadowHost() != host;
        host = host.OwnerShadowHost(), --levels_up) {
     std::u16string shadow_host_id = host.GetIdAttribute().Utf16();
     if (shadow_data && !shadow_host_id.empty())
@@ -2237,7 +2222,7 @@ void WebFormControlElementToFormField(
       IsSelectOrSelectMenuElement(element)) {
     // The browser doesn't need to differentiate between preview and autofill.
     field->is_autofilled = element.IsAutofilled();
-    field->is_focusable = IsWebElementFocusable(element);
+    field->is_focusable = IsWebElementFocusableForAutofill(element);
     field->is_visible = IsWebElementVisible(element);
     field->should_autocomplete =
         element.AutoComplete() &&
@@ -2362,9 +2347,34 @@ bool WebFormElementToFormData(
   }
 
   return OwnedOrUnownedFormToFormData(
-      frame, &form_element, &form_control_element,
+      frame, form_element, &form_control_element,
       form_element.GetFormControlElements(), owned_iframes, field_data_manager,
       extract_mask, form, field);
+}
+
+WebFormElement GetOwningForm(const WebFormControlElement& form_control) {
+  WebFormElement associated_form = form_control.Form();
+  if (!associated_form.IsNull()) {
+    return associated_form;
+  }
+
+  // If we are in a shadow DOM, then look to see if the host(s) are inside a
+  // form element we can use.
+  size_t levels_up = kMaxShadowLevelsUp;
+  for (WebElement host = form_control.OwnerShadowHost();
+       !host.IsNull() && levels_up > 0;
+       host = host.OwnerShadowHost(), --levels_up) {
+    for (WebNode parent = host; !parent.IsNull();
+         parent = parent.ParentNode()) {
+      if (parent.IsElementNode()) {
+        WebElement parentElement = parent.To<WebElement>();
+        if (parentElement.HasHTMLTagName("form")) {
+          return parentElement.To<WebFormElement>();
+        }
+      }
+    }
+  }
+  return WebFormElement();
 }
 
 std::vector<WebFormControlElement> GetUnownedFormFieldElements(
@@ -2412,9 +2422,9 @@ bool UnownedFormElementsToFormData(
 
   form->is_form_tag = false;
 
-  return OwnedOrUnownedFormToFormData(frame, nullptr, element, control_elements,
-                                      iframe_elements, field_data_manager,
-                                      extract_mask, form, field);
+  return OwnedOrUnownedFormToFormData(
+      frame, WebFormElement(), element, control_elements, iframe_elements,
+      field_data_manager, extract_mask, form, field);
 }
 
 bool FindFormAndFieldForFormControlElement(
@@ -2430,10 +2440,7 @@ bool FindFormAndFieldForFormControlElement(
 
   extract_mask =
       static_cast<ExtractMask>(EXTRACT_VALUE | EXTRACT_OPTIONS | extract_mask);
-  WebFormElement form_element = element.Form();
-
-  if (form_element.IsNull())
-    FindFormElementUpShadowRoots(element, &form_element);
+  WebFormElement form_element = GetOwningForm(element);
 
   if (form_element.IsNull()) {
     // No associated form, try the synthetic form for unowned form elements.
@@ -2464,9 +2471,7 @@ std::vector<WebFormControlElement> FillOrPreviewForm(
     const FormData& form,
     const WebFormControlElement& element,
     mojom::RendererFormDataAction action) {
-  WebFormElement form_element = element.Form();
-  if (form_element.IsNull())
-    FindFormElementUpShadowRoots(element, &form_element);
+  WebFormElement form_element = GetOwningForm(element);
 
   Callback callback = action == mojom::RendererFormDataAction::kPreview
                           ? &PreviewFormField

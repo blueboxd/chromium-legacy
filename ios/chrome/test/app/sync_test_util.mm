@@ -9,12 +9,12 @@
 
 #import "base/check.h"
 #import "base/functional/bind.h"
-#import "base/guid.h"
 #import "base/memory/ptr_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "base/time/time.h"
+#import "base/uuid.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
 #import "components/history/core/browser/history_service.h"
 #import "components/keyed_service/core/service_access_type.h"
@@ -41,8 +41,8 @@
 #import "components/sync_sessions/session_store.h"
 #import "components/sync_sessions/session_sync_test_helper.h"
 #import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
-#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/history/history_service_factory.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/sync/device_info_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/synced_sessions/distant_session.h"
@@ -159,7 +159,8 @@ void AddBookmarkToFakeSyncServer(std::string url, std::string title) {
 void AddLegacyBookmarkToFakeSyncServer(std::string url,
                                        std::string title,
                                        std::string originator_client_item_id) {
-  DCHECK(!base::IsValidGUID(originator_client_item_id));
+  DCHECK(
+      !base::Uuid::ParseCaseInsensitive(originator_client_item_id).is_valid());
   fake_server::EntityBuilderFactory entity_builder_factory;
   fake_server::BookmarkEntityBuilder bookmark_builder =
       entity_builder_factory.NewBookmarkEntityBuilder(

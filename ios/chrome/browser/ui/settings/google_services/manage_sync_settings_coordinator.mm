@@ -11,10 +11,10 @@
 #import "components/sync/driver/sync_service.h"
 #import "components/sync/driver/sync_service_utils.h"
 #import "components/sync/driver/sync_user_settings.h"
-#import "ios/chrome/browser/application_context/application_context.h"
-#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
+#import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/shared/model/browser/browser.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
@@ -91,6 +91,13 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
 
 - (void)start {
   DCHECK(self.baseNavigationController);
+  // Ensure that SyncService::IsSetupInProgress is true while the
+  // manage-sync-settings UI is open.
+  SyncSetupService* syncSetupService =
+      SyncSetupServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
+  syncSetupService->PrepareForFirstSyncSetup();
+
   self.mediator = [[ManageSyncSettingsMediator alloc]
       initWithSyncService:self.syncService
           userPrefService:self.browser->GetBrowserState()->GetPrefs()];
@@ -121,13 +128,11 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
   [super stop];
   // This coordinator displays the main view and it is in charge to enable sync
   // or not when being closed.
-  // Sync changes should only be commited if the user is authenticated.
-  if (self.authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
-    SyncSetupService* syncSetupService =
-        SyncSetupServiceFactory::GetForBrowserState(
-            self.browser->GetBrowserState());
-    syncSetupService->CommitSyncChanges();
-  }
+  SyncSetupService* syncSetupService =
+      SyncSetupServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
+  syncSetupService->CommitSyncChanges();
+
   _syncObserver.reset();
 }
 

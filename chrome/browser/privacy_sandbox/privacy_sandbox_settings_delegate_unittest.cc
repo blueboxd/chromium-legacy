@@ -87,7 +87,6 @@ TEST_F(PrivacySandboxSettingsDelegateTest,
   // When the capability is restricted, the delegate should return as such.
   SetPrivacySandboxAccountCapability(kTestEmail, false);
   EXPECT_TRUE(delegate()->IsPrivacySandboxRestricted());
-
   // Even when the capability is unrestricted, the sandbox should remain
   // restricted.
   // TODO (crbug.com/1428546): Adjust when we have a graduation flow.
@@ -152,6 +151,37 @@ TEST_F(PrivacySandboxSettingsDelegateTest,
   // Even if the user is signed in to Chrome, the feature being disabled means
   // no notice should be shown.
   EXPECT_FALSE(delegate()->IsSubjectToM1NoticeRestricted());
+}
+
+TEST_F(PrivacySandboxSettingsDelegateTest,
+       UnrestrictedPref_UserSignedInWithAccountCapability) {
+  identity_test_env()->MakePrimaryAccountAvailable(
+      kTestEmail, signin::ConsentLevel::kSignin);
+  SetPrivacySandboxAccountCapability(kTestEmail, true);
+
+  // Calls to IsPrivacySandboxRestricted should set the unrestricted pref
+  EXPECT_FALSE(prefs()->GetBoolean(prefs::kPrivacySandboxM1Unrestricted));
+  delegate()->IsPrivacySandboxRestricted();
+  EXPECT_TRUE(prefs()->GetBoolean(prefs::kPrivacySandboxM1Unrestricted));
+}
+
+TEST_F(PrivacySandboxSettingsDelegateTest,
+       UnrestrictedPref_UserSignedInWithoutAccountCapability) {
+  identity_test_env()->MakePrimaryAccountAvailable(
+      kTestEmail, signin::ConsentLevel::kSignin);
+  SetPrivacySandboxAccountCapability(kTestEmail, false);
+
+  // Calls to IsPrivacySandboxRestricted should NOT set the unrestricted pref
+  EXPECT_FALSE(prefs()->GetBoolean(prefs::kPrivacySandboxM1Unrestricted));
+  delegate()->IsPrivacySandboxRestricted();
+  EXPECT_FALSE(prefs()->GetBoolean(prefs::kPrivacySandboxM1Unrestricted));
+}
+
+TEST_F(PrivacySandboxSettingsDelegateTest, UnrestrictedPref_UserNotSignedIn) {
+  // Calls to IsPrivacySandboxRestricted should NOT set the unrestricted pref
+  EXPECT_FALSE(prefs()->GetBoolean(prefs::kPrivacySandboxM1Unrestricted));
+  delegate()->IsPrivacySandboxRestricted();
+  EXPECT_FALSE(prefs()->GetBoolean(prefs::kPrivacySandboxM1Unrestricted));
 }
 
 TEST_F(PrivacySandboxSettingsDelegateTest,

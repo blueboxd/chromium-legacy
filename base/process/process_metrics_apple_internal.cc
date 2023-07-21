@@ -104,11 +104,14 @@ bool GetPowerInfo(mach_port_t task, task_power_info* power_info_data) {
 #if BUILDFLAG(IS_MAC)
 double GetEnergyImpactInternal(mach_port_t task, uint64_t mach_time) {
   OpaquePMTaskEnergyData energy_info{};
-
-  if (pm_sample_task(task, &energy_info, mach_time, kPMSampleFlags) != 0) {
+  if(__builtin_available(macOS 10.11,*)) {
+    if (pm_sample_task(task, &energy_info, mach_time, kPMSampleFlags) != 0) {
+      return 0.0;
+    }
+    return pm_energy_impact(&energy_info);
+  } else{
     return 0.0;
   }
-  return pm_energy_impact(&energy_info);
 }
 #endif
 

@@ -25,9 +25,13 @@ namespace {
 
 NSDictionary* MaybeGetDictionaryFromPath(const base::FilePath& path) {
   // The folder where the energy coefficient plist files are stored.
-  return
-      [NSDictionary dictionaryWithContentsOfURL:base::mac::FilePathToNSURL(path)
-                                          error:nil];
+  if(@available(macOS 10.10, *)) {
+    return
+        [NSDictionary dictionaryWithContentsOfURL:base::mac::FilePathToNSURL(path)
+                                            error:nil];
+  } else {
+    return nil;
+  }
 }
 
 double GetNamedCoefficientOrZero(NSDictionary* dict, NSString* key) {

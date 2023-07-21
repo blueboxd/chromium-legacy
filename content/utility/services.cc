@@ -36,6 +36,8 @@
 #include "services/video_capture/video_capture_service_impl.h"
 
 #if BUILDFLAG(IS_MAC)
+#include <sys/types.h>
+#include <unistd.h>
 #include "base/mac/mach_logging.h"
 #include "sandbox/mac/system_services.h"
 #include "sandbox/policy/sandbox.h"
@@ -216,15 +218,23 @@ auto RunAudio(mojo::PendingReceiver<audio::mojom::AudioService> receiver) {
   MACH_LOG_IF(ERROR, result != KERN_SUCCESS, result)
       << "task_policy_set TASK_CATEGORY_POLICY";
 
-  task_qos_policy qos;
-  qos.task_latency_qos_tier = LATENCY_QOS_TIER_0;
-  qos.task_throughput_qos_tier = THROUGHPUT_QOS_TIER_0;
-  result = task_policy_set(mach_task_self(), TASK_BASE_QOS_POLICY,
-                           reinterpret_cast<task_policy_t>(&qos),
-                           TASK_QOS_POLICY_COUNT);
+  if(result!=KERN_SUCCESS)
+    LOG(ERROR) << "task_policy_set(TASK_CATEGORY_POLICY) failed for pid:" << getpid() << " role:TASK_FOREGROUND_APPLICATION";
 
-  MACH_LOG_IF(ERROR, result != KERN_SUCCESS, result)
-      << "task_policy_set TASK_QOS_POLICY";
+  if(__builtin_available(macOS 10.9, *)) {
+    task_qos_policy qos;
+    qos.task_latency_qos_tier = LATENCY_QOS_TIER_0;
+    qos.task_throughput_qos_tier = THROUGHPUT_QOS_TIER_0;
+    result = task_policy_set(mach_task_self(), TASK_BASE_QOS_POLICY,
+                             reinterpret_cast<task_policy_t>(&qos),
+                             TASK_QOS_POLICY_COUNT);
+
+    MACH_LOG_IF(ERROR, result != KERN_SUCCESS, result)
+        << "task_policy_set TASK_QOS_POLICY";
+
+    if(result!=KERN_SUCCESS)
+      LOG(ERROR) << "task_policy_set(TASK_BASE_QOS_POLICY) failed for pid:" << getpid() << " task_latency_qos_tier: LATENCY_QOS_TIER_0, task_throughput_qos_tier: THROUGHPUT_QOS_TIER_0";
+  }
 #endif
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)

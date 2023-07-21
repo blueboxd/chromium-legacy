@@ -262,11 +262,8 @@ class PLATFORM_EXPORT Color {
   bool SetFromString(const String&);
   bool SetNamedColor(const String&);
 
-  // Returns true if the color is not opaque.
-  bool HasAlpha() const { return AlphaAsInteger() < 255; }
-
-  // Returns true if the color is transparent.
-  bool IsTransparent() const { return AlphaAsInteger() == 0; }
+  bool IsFullyTransparent() const { return Alpha() <= 0.0f; }
+  bool IsOpaque() const { return Alpha() >= 1.0f; }
 
   float Param0() const { return param0_; }
   float Param1() const { return param1_; }
@@ -342,7 +339,7 @@ class PLATFORM_EXPORT Color {
   Color::ColorSpace GetColorInterpolationSpace() const;
 
   ColorSpace GetColorSpace() const { return color_space_; }
-  void ConvertToColorSpace(ColorSpace interpolation_space);
+  void ConvertToColorSpace(ColorSpace destination_color_space);
 
   FRIEND_TEST_ALL_PREFIXES(BlinkColor, ColorMixNone);
   FRIEND_TEST_ALL_PREFIXES(BlinkColor, ColorInterpolation);

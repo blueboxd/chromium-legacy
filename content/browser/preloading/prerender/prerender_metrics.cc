@@ -398,6 +398,17 @@ void RecordPrerenderActivationTransition(
       potential_activation_transition);
 }
 
+void RecordPrerenderNavigationErrorCode(
+    net::Error error_code,
+    PrerenderTriggerType trigger_type,
+    const std::string& embedder_histogram_suffix) {
+  base::UmaHistogramSparse(
+      GenerateHistogramName(
+          "Prerender.Experimental.PrerenderNavigationRequestNetworkErrorCode",
+          trigger_type, embedder_histogram_suffix),
+      std::abs(error_code));
+}
+
 static_assert(
     static_cast<int>(PrerenderBackNavigationEligibility::kMaxValue) +
         static_cast<int>(
@@ -428,6 +439,27 @@ void RecordPrerenderBackNavigationEligibility(
   if (preloading_attempt) {
     preloading_attempt->SetEligibility(ToPreloadingEligibility(eligibility));
   }
+}
+
+void RecordPrerenderActivationCommitDeferTime(
+    base::TimeDelta time_delta,
+    PrerenderTriggerType trigger_type,
+    const std::string& embedder_histogram_suffix) {
+  base::UmaHistogramTimes(
+      GenerateHistogramName("Navigation.Prerender.ActivationCommitDeferTime",
+                            trigger_type, embedder_histogram_suffix),
+      time_delta);
+}
+
+void RecordBlockedByClientResourceType(
+    network::mojom::RequestDestination request_destination,
+    PrerenderTriggerType trigger_type,
+    const std::string& embedder_histogram_suffix) {
+  base::UmaHistogramEnumeration(
+      GenerateHistogramName(
+          "Prerender.Experimental.ResourceLoadingBlockedByClientByType",
+          trigger_type, embedder_histogram_suffix),
+      request_destination);
 }
 
 }  // namespace content

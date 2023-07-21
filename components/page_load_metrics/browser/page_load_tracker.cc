@@ -12,6 +12,7 @@
 
 #include "base/check_op.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/default_tick_clock.h"
@@ -48,7 +49,9 @@ const char kImageLoadEndLessThanLoadStart[] =
 const char kImageLCPLessThanLoadEnd[] =
     "PageLoad.PaintTiming.NavigationToLargestContentfulPaint."
     "ImageLCPLessThanLoadEnd";
-
+const char kImageLoadStartLessThanDocumentTtfbCause[] =
+    "PageLoad.PaintTiming.NavigationToLargestContentfulPaint."
+    "ImageLoadStartLessThanDocumentTtfbCauses";
 }  // namespace internal
 
 void RecordInternalError(InternalErrorLoadEvent event) {
@@ -57,6 +60,13 @@ void RecordInternalError(InternalErrorLoadEvent event) {
 
 void RecordPageType(internal::PageLoadTrackerPageType type) {
   base::UmaHistogramEnumeration(internal::kPageLoadTrackerPageType, type);
+}
+
+void RecordImageLoadStartLessThanDocumentTtfbCause(
+    page_load_metrics::internal::ImageLoadStartLessThanDocumentTtfbCause
+        sample) {
+  base::UmaHistogramEnumeration(
+      internal::kImageLoadStartLessThanDocumentTtfbCause, sample);
 }
 
 void RecordLargestContentfulPaintImageLoadTiming(
@@ -82,6 +92,31 @@ void RecordLargestContentfulPaintImageLoadTiming(
     UMA_HISTOGRAM_BOOLEAN(internal::kImageLCPLessThanLoadEnd,
                           largest_contentful_paint.largest_image_paint <
                               largest_contentful_paint.largest_image_load_end);
+  }
+
+  // If the images load_start is less than document_ttfb, then something may be
+  // wrong with the metric. Attempt to diagnose the cause and record it to UMA,
+  // or report 'Unknown' if no cause is identified. This code may be removed
+  // when https://crbug.com/1431906 is resolved.
+  if (largest_contentful_paint.largest_image_load_start.has_value() &&
+      largest_contentful_paint.largest_image_load_start < document_ttfb) {
+    if (largest_contentful_paint.is_loaded_from_memory_cache &&
+        largest_contentful_paint.is_preloaded_with_early_hints) {
+      RecordImageLoadStartLessThanDocumentTtfbCause(
+          internal::ImageLoadStartLessThanDocumentTtfbCause::
+              kLoadedFromMemoryCacheAndPreloadedWithEarlyHints);
+    } else if (largest_contentful_paint.is_loaded_from_memory_cache) {
+      RecordImageLoadStartLessThanDocumentTtfbCause(
+          internal::ImageLoadStartLessThanDocumentTtfbCause::
+              kLoadedFromMemoryCache);
+    } else if (largest_contentful_paint.is_preloaded_with_early_hints) {
+      RecordImageLoadStartLessThanDocumentTtfbCause(
+          internal::ImageLoadStartLessThanDocumentTtfbCause::
+              kPreloadedWithEarlyHints);
+    } else {
+      RecordImageLoadStartLessThanDocumentTtfbCause(
+          internal::ImageLoadStartLessThanDocumentTtfbCause::kUnknown);
+    }
   }
 }
 
@@ -501,7 +536,12 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
              PageLoadMetricsObserverInterface* observer) {
             return observer->ShouldObserveMimeType(mime_type);
           },
-          navigation_handle->GetWebContents()->GetContentsMimeType()),
+          // Query with the outermost page's MIME type so that we can ask each
+          // observer with information for the page they are interested in.
+          navigation_handle->GetRenderFrameHost()
+              ->GetOutermostMainFrameOrEmbedder()
+              ->GetPage()
+              .GetContentsMimeType()),
       /*permit_forwarding=*/false);
   InvokeAndPruneObservers("PageLoadMetricsObserver::OnCommit",
                           base::BindRepeating(
@@ -651,8 +691,15 @@ void PageLoadTracker::FlushMetricsOnAppEnterBackground() {
 
 void PageLoadTracker::OnLoadedResource(
     const ExtraRequestCompleteInfo& extra_request_complete_info) {
-  receive_headers_start_ =
-      extra_request_complete_info.load_timing_info->receive_headers_start;
+  // The main_frame_receive_headers_start_ should be only set once during a
+  // page load. A new page load would have a new PageLoadTracker object.
+  if (extra_request_complete_info.request_destination ==
+          network::mojom::RequestDestination::kDocument &&
+      !main_frame_receive_headers_start_.has_value()) {
+    main_frame_receive_headers_start_ =
+        extra_request_complete_info.load_timing_info->receive_headers_start;
+  }
+
   for (const auto& observer : observers_) {
     observer->OnLoadedResource(extra_request_complete_info);
   }
@@ -898,10 +945,11 @@ void PageLoadTracker::OnTimingChanged() {
                .value());
 
   if (largest_contentful_image_changed) {
-    if (receive_headers_start_.has_value() && !GetNavigationStart().is_null()) {
+    if (main_frame_receive_headers_start_.has_value() &&
+        !GetNavigationStart().is_null()) {
       RecordLargestContentfulPaintImageLoadTiming(
           *paint_timing->largest_contentful_paint,
-          receive_headers_start_.value() - GetNavigationStart());
+          main_frame_receive_headers_start_.value() - GetNavigationStart());
     }
   }
 

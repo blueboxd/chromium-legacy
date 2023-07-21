@@ -44,11 +44,11 @@ enum class RateLimitResult : int;
 class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
  public:
   // Version number of the database.
-  static constexpr int kCurrentVersionNumber = 52;
+  static constexpr int kCurrentVersionNumber = 54;
 
   // Earliest version which can use a `kCurrentVersionNumber` database
   // without failing.
-  static constexpr int kCompatibleVersionNumber = 52;
+  static constexpr int kCompatibleVersionNumber = 54;
 
   // Latest version of the database that cannot be upgraded to
   // `kCurrentVersionNumber` without razing the database.
@@ -113,7 +113,7 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   std::vector<AttributionReport> GetReports(
       const std::vector<AttributionReport::Id>& ids) override;
   std::vector<StoredSource> GetActiveSources(int limit = -1) override;
-  std::vector<AttributionDataModel::DataKey> GetAllDataKeys() override;
+  std::set<AttributionDataModel::DataKey> GetAllDataKeys() override;
   void DeleteByDataKey(const AttributionDataModel::DataKey& datakey) override;
   bool DeleteReport(AttributionReport::Id report_id) override;
   bool UpdateReportForSendFailure(AttributionReport::Id report_id,
@@ -316,8 +316,10 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   MaybeStoreAggregatableAttributionReportData(
       AttributionReport& report,
       int64_t aggregatable_budget_consumed,
+      int num_aggregatable_reports,
       absl::optional<uint64_t> dedup_key,
-      absl::optional<int64_t>& aggregatable_budget_per_source)
+      absl::optional<int64_t>& aggregatable_budget_per_source,
+      absl::optional<int>& max_aggregatable_reports_per_source)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   [[nodiscard]] bool StoreAttributionReport(AttributionReport& report)

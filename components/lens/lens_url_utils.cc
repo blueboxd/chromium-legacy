@@ -39,6 +39,8 @@ constexpr char kOneLensDesktopWebChromeSidePanel[] = "dcsp";
 constexpr char kOneLensDesktopWebFullscreen[] = "df";
 constexpr char kOneLensAmbientVisualSearchWebFullscreen[] = "avsf";
 constexpr char kChromeSearchCompanion[] = "csc";
+constexpr char kViewportWidthQueryParameter[] = "vpw";
+constexpr char kViewportHeightQueryParameter[] = "vph";
 
 void AppendQueryParam(std::string* query_string,
                       const char name[],
@@ -52,7 +54,8 @@ void AppendQueryParam(std::string* query_string,
 std::map<std::string, std::string> GetLensQueryParametersMap(
     lens::EntryPoint ep,
     lens::RenderingEnvironment re,
-    bool is_side_panel_request) {
+    bool is_side_panel_request,
+    gfx::Size side_panel_initial_size_upper_bound) {
   std::map<std::string, std::string> query_parameters;
   switch (ep) {
     case lens::CHROME_OPEN_NEW_TAB_SIDE_PANEL:
@@ -101,6 +104,21 @@ std::map<std::string, std::string> GetLensQueryParametersMap(
       // Empty strings are ignored when query parameters are built.
       break;
   }
+  if (is_side_panel_request) {
+    const int side_panel_initial_width =
+        side_panel_initial_size_upper_bound.width();
+    const int side_panel_initial_height =
+        side_panel_initial_size_upper_bound.height();
+    if (side_panel_initial_width != 0) {
+      query_parameters.insert({kViewportWidthQueryParameter,
+                               base::NumberToString(side_panel_initial_width)});
+    }
+    if (side_panel_initial_height != 0) {
+      query_parameters.insert(
+          {kViewportHeightQueryParameter,
+           base::NumberToString(side_panel_initial_height)});
+    }
+  }
 
   query_parameters.insert({kSurfaceQueryParameter, kChromiumSurfaceProtoValue});
   int64_t current_time_ms = base::Time::Now().ToJavaTime();
@@ -110,7 +128,7 @@ std::map<std::string, std::string> GetLensQueryParametersMap(
 }
 
 lens::RenderingEnvironment GetRenderingEnvironment(
-    bool is_side_panel_request,
+    bool is_lens_side_panel_request,
     bool is_full_screen_region_search_request,
     bool is_companion_request) {
   if (is_companion_request) {
@@ -121,8 +139,9 @@ lens::RenderingEnvironment GetRenderingEnvironment(
     return lens::RenderingEnvironment::
         ONELENS_AMBIENT_VISUAL_SEARCH_WEB_FULLSCREEN;
 
-  if (is_side_panel_request)
+  if (is_lens_side_panel_request) {
     return lens::RenderingEnvironment::ONELENS_DESKTOP_WEB_CHROME_SIDE_PANEL;
+  }
 
   return lens::RenderingEnvironment::ONELENS_DESKTOP_WEB_FULLSCREEN;
 }
@@ -139,30 +158,52 @@ void AppendLogsQueryParam(
   }
 }
 
-GURL AppendOrReplaceQueryParametersForLensRequest(const GURL& url,
-                                                  lens::EntryPoint ep,
-                                                  lens::RenderingEnvironment re,
-                                                  bool is_side_panel_request) {
+GURL AppendOrReplaceQueryParametersForLensRequest(
+    const GURL& url,
+    lens::EntryPoint ep,
+    lens::RenderingEnvironment re,
+    bool is_side_panel_request,
+    const gfx::Size& side_panel_initial_size_upper_bound) {
   GURL modified_url(url);
   for (auto const& param :
-       GetLensQueryParametersMap(ep, re, is_side_panel_request))
+       GetLensQueryParametersMap(ep, re, is_side_panel_request,
+                                 side_panel_initial_size_upper_bound)) {
     modified_url = net::AppendOrReplaceQueryParameter(modified_url, param.first,
                                                       param.second);
+  }
+
+  // Remove the viewport width and height params if the given size is zero or
+  // the request is not a side panel request.
+  if (!is_side_panel_request ||
+      side_panel_initial_size_upper_bound.width() == 0) {
+    modified_url = net::AppendOrReplaceQueryParameter(
+        modified_url, kViewportWidthQueryParameter, absl::nullopt);
+  }
+  if (!is_side_panel_request ||
+      side_panel_initial_size_upper_bound.height() == 0) {
+    modified_url = net::AppendOrReplaceQueryParameter(
+        modified_url, kViewportHeightQueryParameter, absl::nullopt);
+  }
   return modified_url;
 }
 
 std::string GetQueryParametersForLensRequest(
     lens::EntryPoint ep,
-    bool is_side_panel_request,
+    bool is_lens_side_panel_request,
+    const gfx::Size& side_panel_initial_size_upper_bound,
     bool is_full_screen_region_search_request,
     bool is_companion_request) {
-  auto re = GetRenderingEnvironment(is_side_panel_request,
+  auto re = GetRenderingEnvironment(is_lens_side_panel_request,
                                     is_full_screen_region_search_request,
                                     is_companion_request);
   std::string query_string;
+  const bool is_side_panel_request =
+      is_lens_side_panel_request || is_companion_request;
   for (auto const& param :
-       GetLensQueryParametersMap(ep, re, is_side_panel_request))
+       GetLensQueryParametersMap(ep, re, is_side_panel_request,
+                                 side_panel_initial_size_upper_bound)) {
     AppendQueryParam(&query_string, param.first.c_str(), param.second.c_str());
+  }
   return query_string;
 }
 

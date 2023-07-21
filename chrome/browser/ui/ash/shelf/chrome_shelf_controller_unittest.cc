@@ -153,11 +153,11 @@
 #include "components/services/app_service/public/cpp/instance_registry.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/protocol/app_list_specifics.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
+#include "components/sync/service/sync_service.h"
+#include "components/sync/service/sync_user_settings.h"
 #include "components/sync/test/fake_sync_change_processor.h"
 #include "components/sync/test/test_sync_service.h"
 #include "components/sync_preferences/pref_model_associator.h"
@@ -2431,6 +2431,17 @@ TEST_F(ChromeShelfControllerTest, V1AppPinRunCloseUnpin) {
 
 // Test the V1 app interaction flow: run it, pin it, close it, unpin it.
 TEST_F(ChromeShelfControllerTest, V1AppRunPinCloseUnpin) {
+  // Set the app type of extension1_ to a chrome app, as the default unknown app
+  // type is not allowed to be pinned.
+  std::vector<apps::AppPtr> apps;
+  apps::AppPtr app =
+      std::make_unique<apps::App>(apps::AppType::kChromeApp, extension1_->id());
+  apps.push_back(std::move(app));
+  apps::AppServiceProxyFactory::GetForProfile(profile())
+      ->AppRegistryCache()
+      .OnApps(std::move(apps), apps::AppType::kChromeApp,
+              /*should_notify_initialized=*/false);
+
   InitShelfController();
 
   // The model should only contain the browser shortcut.

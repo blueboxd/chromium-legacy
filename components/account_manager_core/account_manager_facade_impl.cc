@@ -113,6 +113,8 @@ bool GetIsAvailableInArcBySource(
     case AccountManagerFacade::AccountAdditionSource::kChromeExtensionReauth:
     case AccountManagerFacade::AccountAdditionSource::kChromeSyncPromoReauth:
     case AccountManagerFacade::AccountAdditionSource::
+        kChromeOSProjectorAppReauth:
+    case AccountManagerFacade::AccountAdditionSource::
         kChromeSettingsReauthAccountButton:
       NOTREACHED();
       return false;
@@ -381,7 +383,7 @@ void AccountManagerFacadeImpl::ShowAddAccountDialog(
         void(const account_manager::AccountUpsertionResult& result)> callback) {
   if (!account_manager_remote_) {
     LOG(WARNING) << "Account Manager remote disconnected";
-    FinishAddAccount(
+    FinishUpsertAccount(
         std::move(callback),
         AccountUpsertionResult::FromStatus(
             AccountUpsertionResult::Status::kMojoRemoteDisconnected));
@@ -392,7 +394,7 @@ void AccountManagerFacadeImpl::ShowAddAccountDialog(
     LOG(WARNING) << "Found remote at: " << remote_version_ << ", expected: "
                  << RemoteMinVersions::kShowAddAccountDialogMinVersion
                  << " for ShowAddAccountDialog.";
-    FinishAddAccount(
+    FinishUpsertAccount(
         std::move(callback),
         AccountUpsertionResult::FromStatus(
             AccountUpsertionResult::Status::kIncompatibleMojoVersions));
@@ -409,27 +411,41 @@ void AccountManagerFacadeImpl::ShowAddAccountDialog(
 
   account_manager_remote_->ShowAddAccountDialog(
       std::move(options),
-      base::BindOnce(&AccountManagerFacadeImpl::OnShowAddAccountDialogFinished,
+      base::BindOnce(&AccountManagerFacadeImpl::OnSigninDialogActionFinished,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void AccountManagerFacadeImpl::ShowReauthAccountDialog(
     AccountAdditionSource source,
     const std::string& email,
-    base::OnceClosure callback) {
-  if (!account_manager_remote_ ||
-      remote_version_ < RemoteMinVersions::kShowReauthAccountDialogMinVersion) {
+    base::OnceCallback<
+        void(const account_manager::AccountUpsertionResult& result)> callback) {
+  if (!account_manager_remote_) {
+    LOG(WARNING) << "Account Manager remote disconnected";
+    FinishUpsertAccount(
+        std::move(callback),
+        AccountUpsertionResult::FromStatus(
+            AccountUpsertionResult::Status::kMojoRemoteDisconnected));
+    return;
+  }
+
+  if (remote_version_ < RemoteMinVersions::kShowReauthAccountDialogMinVersion) {
     LOG(WARNING) << "Found remote at: " << remote_version_ << ", expected: "
                  << RemoteMinVersions::kShowReauthAccountDialogMinVersion
                  << " for ShowReauthAccountDialog.";
-    if (callback)
-      std::move(callback).Run();
+    FinishUpsertAccount(
+        std::move(callback),
+        AccountUpsertionResult::FromStatus(
+            AccountUpsertionResult::Status::kIncompatibleMojoVersions));
     return;
   }
 
   base::UmaHistogramEnumeration(kAccountAdditionSource, source);
 
-  account_manager_remote_->ShowReauthAccountDialog(email, std::move(callback));
+  account_manager_remote_->ShowReauthAccountDialog(
+      email,
+      base::BindOnce(&AccountManagerFacadeImpl::OnSigninDialogActionFinished,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void AccountManagerFacadeImpl::ShowManageAccountsSettings() {
@@ -521,22 +537,23 @@ void AccountManagerFacadeImpl::OnReceiverReceived(
   FinishInitSequenceIfNotAlreadyFinished();
 }
 
-void AccountManagerFacadeImpl::OnShowAddAccountDialogFinished(
+void AccountManagerFacadeImpl::OnSigninDialogActionFinished(
     base::OnceCallback<
         void(const account_manager::AccountUpsertionResult& result)> callback,
     crosapi::mojom::AccountUpsertionResultPtr mojo_result) {
   absl::optional<account_manager::AccountUpsertionResult> result =
       account_manager::FromMojoAccountUpsertionResult(mojo_result);
   if (!result.has_value()) {
-    FinishAddAccount(std::move(callback),
-                     AccountUpsertionResult::FromStatus(
-                         AccountUpsertionResult::Status::kUnexpectedResponse));
+    FinishUpsertAccount(
+        std::move(callback),
+        AccountUpsertionResult::FromStatus(
+            AccountUpsertionResult::Status::kUnexpectedResponse));
     return;
   }
-  FinishAddAccount(std::move(callback), result.value());
+  FinishUpsertAccount(std::move(callback), result.value());
 }
 
-void AccountManagerFacadeImpl::FinishAddAccount(
+void AccountManagerFacadeImpl::FinishUpsertAccount(
     base::OnceCallback<
         void(const account_manager::AccountUpsertionResult& result)> callback,
     const account_manager::AccountUpsertionResult& result) {

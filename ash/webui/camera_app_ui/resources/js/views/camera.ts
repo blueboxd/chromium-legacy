@@ -272,15 +272,21 @@ export class Camera extends View implements CameraViewUI {
       const modes =
           dom.getAllFrom(this.modesGroup, '.mode-item>input', HTMLInputElement);
       for (const mode of modes) {
-        mode.disabled = disabled;
+        // Use data-disabled here because:
+        // 1. `mode.disabled = true` loses focus on the element.
+        // 2. `mode.setAttribute('aria-disabled', 'true')` makes ChromeVox
+        //    always announce the element is disabled.
+        mode.dataset['disabled'] = String(disabled);
       }
     };
     state.addObserver(state.State.STREAMING, checkModesGroupDisabled);
     state.addObserver(state.State.TAKING, checkModesGroupDisabled);
+    checkModesGroupDisabled();
 
     for (const el of dom.getAll('.mode-item>input', HTMLInputElement)) {
       el.addEventListener('click', (event) => {
-        if (!this.cameraReady.isSignaled()) {
+        if (!this.cameraReady.isSignaled() ||
+            el.dataset['disabled'] === 'true') {
           event.preventDefault();
         }
       });
@@ -313,6 +319,9 @@ export class Camera extends View implements CameraViewUI {
         () => this.cameraManager.reconfigure());
     expert.addObserver(
         expert.ExpertOption.ENABLE_MULTISTREAM_RECORDING,
+        () => this.cameraManager.reconfigure());
+    expert.addObserver(
+        expert.ExpertOption.ENABLE_MULTISTREAM_RECORDING_CHROME,
         () => this.cameraManager.reconfigure());
     expert.addObserver(
         expert.ExpertOption.ENABLE_PTZ_FOR_BUILTIN,
@@ -789,12 +798,14 @@ export class Camera extends View implements CameraViewUI {
       const positive = new review.OptionGroup<boolean>({
         template: review.ButtonGroupTemplate.POSITIVE,
         options: [
-          new review.Option({text: I18nString.LABEL_SHARE}, {
-            callback: async () => {
-              sendEvent(metrics.GifResultType.SHARE);
-              await util.share(new File([blob], name, {type: MimeType.GIF}));
-            },
-          }),
+          new review.Option(
+              {text: I18nString.LABEL_SHARE, icon: 'review_share.svg'}, {
+                callback: async () => {
+                  sendEvent(metrics.GifResultType.SHARE);
+                  await util.share(
+                      new File([blob], name, {type: MimeType.GIF}));
+                },
+              }),
           new review.Option(
               {text: I18nString.LABEL_SAVE, primary: true}, {exitValue: true}),
         ],

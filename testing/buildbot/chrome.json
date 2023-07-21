@@ -1555,10 +1555,9 @@
         "args": [],
         "autotest_name": "tast.chrome-from-tls",
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R114-15408.0.0",
+        "cros_img": "octopus-release/R115-15460.0.0",
         "name": "chrome_all_tast_tests OCTOPUS_RELEASE_CHROME_FROM_TLS_LKGM",
         "shards": 10,
-        "swarming": {},
         "tast_expr": "(\"group:mainline\" && !informational)",
         "test": "chrome_all_tast_tests",
         "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/",
@@ -1660,104 +1659,6 @@
       }
     ]
   },
-  "lacros-amd64-generic-chrome": {
-    "additional_compile_targets": [
-      "chrome",
-      "linux_symbols",
-      "symupload",
-      "strip_lacros_files"
-    ],
-    "gtest_tests": [
-      {
-        "args": [
-          "--board=eve",
-          "--flash"
-        ],
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "lacros_all_tast_tests eve",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_type": "eve",
-              "os": "ChromeOS",
-              "pool": "chrome.tests"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "lacros_all_tast_tests",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
-        "trigger_script": {
-          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
-        },
-        "variant_id": "eve"
-      },
-      {
-        "args": [
-          "--board=betty-pi-arc",
-          "--use-vm"
-        ],
-        "experiment_percentage": 100,
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "lacros_variations_tast_tests betty-pi-arc",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "kvm": "1",
-              "os": "Ubuntu-18.04",
-              "pool": "chrome.tests"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "lacros_variations_tast_tests",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_variations_tast_tests/",
-        "variant_id": "betty-pi-arc"
-      }
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "chrome_sizes",
-        "merge": {
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "chrome_sizes",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-18.04",
-              "pool": "chrome.tests"
-            }
-          ],
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
-      }
-    ]
-  },
   "lacros-amd64-generic-chrome-skylab": {
     "additional_compile_targets": [
       "chrome",
@@ -1800,7 +1701,6 @@
           "enable": true,
           "has_native_resultdb_integration": true
         },
-        "swarming": {},
         "tast_expr": "(\"group:mainline\" && (\"dep:lacros_stable\" || \"dep:lacros\") && !informational)",
         "test": "lacros_all_tast_tests",
         "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
@@ -1817,7 +1717,6 @@
           "enable": true,
           "has_native_resultdb_integration": true
         },
-        "swarming": {},
         "tast_expr": "(\"group:mainline\" && (\"dep:lacros_stable\" || \"dep:lacros\") && !informational)",
         "test": "lacros_all_tast_tests",
         "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
@@ -1834,7 +1733,6 @@
           "enable": true,
           "has_native_resultdb_integration": true
         },
-        "swarming": {},
         "tast_expr": "(\"group:mainline\" && (\"dep:lacros_stable\" || \"dep:lacros\") && !informational)",
         "test": "lacros_all_tast_tests",
         "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
@@ -1851,7 +1749,6 @@
           "enable": true,
           "has_native_resultdb_integration": true
         },
-        "swarming": {},
         "tast_expr": "(\"group:mainline\" && (\"dep:lacros_stable\" || \"dep:lacros\") && !informational)",
         "test": "lacros_all_tast_tests",
         "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
@@ -1868,7 +1765,6 @@
           "enable": true,
           "has_native_resultdb_integration": true
         },
-        "swarming": {},
         "tast_expr": "(\"group:mainline\" && (\"dep:lacros_stable\" || \"dep:lacros\") && !informational)",
         "test": "lacros_all_tast_tests",
         "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
@@ -1885,7 +1781,6 @@
           "enable": true,
           "has_native_resultdb_integration": true
         },
-        "swarming": {},
         "tast_expr": "(\"group:mainline\" && (\"dep:lacros_stable\" || \"dep:lacros\") && !informational)",
         "test": "lacros_all_tast_tests",
         "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
@@ -1902,7 +1797,6 @@
           "enable": true,
           "has_native_resultdb_integration": true
         },
-        "swarming": {},
         "tast_expr": "(\"group:mainline\" && (\"dep:lacros_stable\" || \"dep:lacros\") && !informational)",
         "test": "lacros_all_tast_tests",
         "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
@@ -1919,7 +1813,6 @@
           "enable": true,
           "has_native_resultdb_integration": true
         },
-        "swarming": {},
         "tast_expr": "(\"group:mainline\" && (\"dep:lacros_stable\" || \"dep:lacros\") && !informational)",
         "test": "lacros_all_tast_tests",
         "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
@@ -1971,7 +1864,6 @@
           "enable": true,
           "has_native_resultdb_integration": true
         },
-        "swarming": {},
         "tast_expr": "(\"group:mainline\" && (\"dep:lacros_stable\" || \"dep:lacros\") && !informational)",
         "test": "lacros_all_tast_tests",
         "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
@@ -1988,7 +1880,6 @@
           "enable": true,
           "has_native_resultdb_integration": true
         },
-        "swarming": {},
         "tast_expr": "(\"group:mainline\" && (\"dep:lacros_stable\" || \"dep:lacros\") && !informational)",
         "test": "lacros_all_tast_tests",
         "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
@@ -2005,7 +1896,6 @@
           "enable": true,
           "has_native_resultdb_integration": true
         },
-        "swarming": {},
         "tast_expr": "(\"group:mainline\" && (\"dep:lacros_stable\" || \"dep:lacros\") && !informational)",
         "test": "lacros_all_tast_tests",
         "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
@@ -2022,7 +1912,6 @@
           "enable": true,
           "has_native_resultdb_integration": true
         },
-        "swarming": {},
         "tast_expr": "(\"group:mainline\" && (\"dep:lacros_stable\" || \"dep:lacros\") && !informational)",
         "test": "lacros_all_tast_tests",
         "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
@@ -2067,20 +1956,19 @@
     "skylab_tests": [
       {
         "args": [],
-        "cros_board": "herobrine",
-        "cros_img": "herobrine-release/R114-15410.0.0",
-        "name": "lacros_all_tast_tests HEROBRINE_RELEASE_LKGM",
+        "cros_board": "strongbad",
+        "cros_img": "strongbad-release/R114-15410.0.0",
+        "name": "lacros_all_tast_tests STRONGBAD_RELEASE_LKGM",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
         },
-        "swarming": {},
         "tast_expr": "(\"group:mainline\" && (\"dep:lacros_stable\" || \"dep:lacros\") && !informational)",
         "test": "lacros_all_tast_tests",
         "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
         "test_level_retries": 2,
         "timeout_sec": 10800,
-        "variant_id": "HEROBRINE_RELEASE_LKGM"
+        "variant_id": "STRONGBAD_RELEASE_LKGM"
       }
     ]
   },
@@ -2098,7 +1986,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04|Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -2119,7 +2007,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04|Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -2141,7 +2029,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04|Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -2171,7 +2059,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04|Ubuntu-18.04",
               "pool": "chrome.tests.finch"
             }
           ],
@@ -2197,7 +2085,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2215,7 +2103,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2233,7 +2121,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2252,7 +2140,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2270,7 +2158,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2289,7 +2177,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2307,7 +2195,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2326,7 +2214,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2344,7 +2232,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2362,7 +2250,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2380,7 +2268,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2398,7 +2286,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2416,7 +2304,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2434,7 +2322,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2453,7 +2341,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2471,7 +2359,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2489,7 +2377,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2510,7 +2398,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2532,7 +2420,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2550,7 +2438,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2568,7 +2456,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2586,7 +2474,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2604,7 +2492,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2622,7 +2510,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2640,7 +2528,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2658,7 +2546,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2676,7 +2564,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2694,7 +2582,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2712,7 +2600,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2730,7 +2618,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2749,7 +2637,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2767,7 +2655,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2785,7 +2673,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2803,7 +2691,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2821,7 +2709,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2839,7 +2727,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2858,7 +2746,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2876,7 +2764,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2894,7 +2782,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2912,7 +2800,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2930,7 +2818,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2948,7 +2836,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2966,7 +2854,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -2984,7 +2872,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3002,7 +2890,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3020,7 +2908,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3038,7 +2926,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3056,7 +2944,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3074,7 +2962,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3095,7 +2983,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3114,7 +3002,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3132,7 +3020,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3150,7 +3038,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3169,7 +3057,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3187,7 +3075,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3205,7 +3093,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3223,7 +3111,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3241,7 +3129,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3259,7 +3147,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3277,7 +3165,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3295,7 +3183,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3313,7 +3201,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3331,7 +3219,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3352,7 +3240,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3373,7 +3261,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3391,7 +3279,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3409,7 +3297,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3427,7 +3315,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3445,7 +3333,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3463,7 +3351,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3481,7 +3369,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3499,7 +3387,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3517,7 +3405,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3535,7 +3423,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3553,7 +3441,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3571,7 +3459,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3589,7 +3477,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3607,7 +3495,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3625,7 +3513,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3643,7 +3531,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3661,7 +3549,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3680,7 +3568,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3698,7 +3586,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3716,7 +3604,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3737,7 +3625,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3755,7 +3643,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3774,7 +3662,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3792,7 +3680,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3810,7 +3698,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3828,7 +3716,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3846,7 +3734,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3864,7 +3752,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3882,7 +3770,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3900,7 +3788,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }
@@ -3926,7 +3814,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chrome.tests",
               "ssd": "0"
             }

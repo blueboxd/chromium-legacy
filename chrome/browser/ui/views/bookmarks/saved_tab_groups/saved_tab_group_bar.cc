@@ -23,6 +23,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/saved_tab_groups/saved_tab_group_tab.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -74,6 +75,7 @@ class SavedTabGroupBar::OverflowMenu : public views::View {
  public:
   explicit OverflowMenu(SavedTabGroupBar& parent_bar)
       : parent_bar_(parent_bar) {}
+
   ~OverflowMenu() override = default;
 
   bool GetDropFormats(
@@ -185,6 +187,10 @@ SavedTabGroupBar::SavedTabGroupBar(Browser* browser,
     : saved_tab_group_model_(saved_tab_group_model),
       browser_(browser),
       animations_enabled_(animations_enabled) {
+  SetAccessibilityProperties(
+      ax::mojom::Role::kToolbar,
+      /*name=*/l10n_util::GetStringUTF16(IDS_ACCNAME_SAVED_TAB_GROUPS));
+
   SetProperty(views::kElementIdentifierKey, kSavedTabGroupBarElementId);
 
   std::unique_ptr<views::LayoutManager> layout_manager =
@@ -205,8 +211,8 @@ SavedTabGroupBar::SavedTabGroupBar(Browser* browser,
   overflow_button_ = AddChildView(
       std::make_unique<SavedTabGroupOverflowButton>(base::BindRepeating(
           &SavedTabGroupBar::MaybeShowOverflowMenu, base::Unretained(this))));
-  HideOverflowButton();
 
+  HideOverflowButton();
   LoadAllButtonsFromModel();
   ReorderChildView(overflow_button_, children().size());
 }
@@ -229,7 +235,7 @@ SavedTabGroupBar::~SavedTabGroupBar() {
 void SavedTabGroupBar::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kToolbar;
   node_data->SetNameChecked(
-      l10n_util::GetStringUTF8(IDS_ACCNAME_SAVED_TAB_GROUPS));
+      l10n_util::GetStringUTF16(IDS_ACCNAME_SAVED_TAB_GROUPS));
 }
 
 void SavedTabGroupBar::UpdateDropIndex() {
@@ -242,11 +248,11 @@ void SavedTabGroupBar::UpdateDropIndex() {
   // be dropped at. `vertical` should be true when the buttons in `parent` are
   // laid out vertically, and false if they are horizontally laid out.
   // TODO(tbergquist): Use Rect::ManhattanDistanceToPoint instead of `vertical`.
-  const auto get_drop_index = [](views::View* parent, gfx::Point location,
+  const auto get_drop_index = [](const views::View* parent, gfx::Point location,
                                  bool vertical) {
-    int i = 0;
-    for (views::View* child : parent->children()) {
-      SavedTabGroupButton* button =
+    size_t i = 0;
+    for (const views::View* const child : parent->children()) {
+      const SavedTabGroupButton* const button =
           views::AsViewClass<SavedTabGroupButton>(child);
       // Skip non-button views, or buttons that are not shown.
       if (!button || !button->GetVisible()) {
@@ -265,10 +271,10 @@ void SavedTabGroupBar::UpdateDropIndex() {
     return i;
   };
 
-  const absl::optional<int> current_index =
+  const absl::optional<size_t> current_index =
       saved_tab_group_model_->GetIndexOf(dragged_group_guid);
 
-  absl::optional<int> drop_index = absl::nullopt;
+  absl::optional<size_t> drop_index = absl::nullopt;
   if (overflow_menu_) {
     const gfx::Point overflow_menu_cursor_loc = ConvertPointFromScreen(
         overflow_menu_, ConvertPointToScreen(this, cursor_location));
@@ -291,6 +297,8 @@ void SavedTabGroupBar::UpdateDropIndex() {
     drop_index = drop_index.value() - 1;
   }
 
+  CHECK_LT(drop_index.value(),
+           saved_tab_group_model_->saved_tab_groups().size());
   drag_data_->SetInsertionIndex(drop_index);
   SchedulePaint();
   if (overflow_menu_) {
@@ -298,10 +306,19 @@ void SavedTabGroupBar::UpdateDropIndex() {
   }
 }
 
+absl::optional<size_t> SavedTabGroupBar::GetDropIndex() const {
+  if (!drag_data_ || !drag_data_->insertion_index()) {
+    return absl::nullopt;
+  }
+
+  CHECK_LT(drag_data_->insertion_index().value(),
+           saved_tab_group_model_->saved_tab_groups().size());
+  return drag_data_->insertion_index();
+}
+
 void SavedTabGroupBar::HandleDrop() {
-  // TODO(tbergquist): go through the controller/service
-  saved_tab_group_model_->Reorder(drag_data_->guid(),
-                                  drag_data_->insertion_index().value());
+  saved_tab_group_model_->ReorderGroupLocally(drag_data_->guid(),
+                                              GetDropIndex().value());
   drag_data_.release();
   HideOverflowMenu();
   SchedulePaint();
@@ -339,9 +356,10 @@ int SavedTabGroupBar::OnDragUpdated(const ui::DropTargetEvent& event) {
   UpdateDropIndex();
 
   const bool dragging_over_button =
+      overflow_button_->GetVisible() &&
       event.location().x() >= overflow_button_->bounds().x();
   const bool would_drop_into_overflow =
-      drag_data_->insertion_index() >= static_cast<size_t>(kMaxVisibleButtons);
+      GetDropIndex() >= static_cast<size_t>(kMaxVisibleButtons);
 
   if (dragging_over_button || would_drop_into_overflow) {
     MaybeShowOverflowMenu();
@@ -390,6 +408,11 @@ void SavedTabGroupBar::SavedTabGroupRemovedLocally(
   SavedTabGroupRemoved(removed_group->saved_guid());
 }
 
+void SavedTabGroupBar::SavedTabGroupLocalIdChanged(
+    const base::Uuid& saved_group_id) {
+  SavedTabGroupUpdated(saved_group_id);
+}
+
 void SavedTabGroupBar::SavedTabGroupUpdatedLocally(
     const base::Uuid& group_guid,
     const absl::optional<base::Uuid>& tab_guid) {
@@ -397,29 +420,11 @@ void SavedTabGroupBar::SavedTabGroupUpdatedLocally(
 }
 
 void SavedTabGroupBar::SavedTabGroupReorderedLocally() {
-  // Selection sort the buttons to match the model's order.
-  std::unordered_map<std::string, SavedTabGroupButton*> buttons_by_guid;
-  for (views::View* child : children()) {
-    SavedTabGroupButton* button =
-        views::AsViewClass<SavedTabGroupButton>(child);
-    if (button) {
-      buttons_by_guid[button->guid().AsLowercaseString()] = button;
-    }
-  }
+  SavedTabGroupReordered();
+}
 
-  int i = 0;
-  for (SavedTabGroup group : saved_tab_group_model_->saved_tab_groups()) {
-    views::View* const button =
-        buttons_by_guid[group.saved_guid().AsLowercaseString()];
-    ReorderChildView(button, i);
-    button->SetVisible(i < kMaxVisibleButtons);
-
-    i++;
-  }
-
-  // Ensure the overflow button is the last button in the view hierarchy.
-  ReorderChildView(overflow_button_, children().size());
-  PreferredSizeChanged();
+void SavedTabGroupBar::SavedTabGroupReorderedFromSync() {
+  SavedTabGroupReordered();
 }
 
 void SavedTabGroupBar::SavedTabGroupAddedFromSync(const base::Uuid& guid) {
@@ -535,6 +540,32 @@ void SavedTabGroupBar::SavedTabGroupUpdated(const base::Uuid& guid) {
   SchedulePaint();
 }
 
+void SavedTabGroupBar::SavedTabGroupReordered() {
+  // Selection sort the buttons to match the model's order.
+  std::unordered_map<std::string, SavedTabGroupButton*> buttons_by_guid;
+  for (views::View* child : children()) {
+    SavedTabGroupButton* button =
+        views::AsViewClass<SavedTabGroupButton>(child);
+    if (button) {
+      buttons_by_guid[button->guid().AsLowercaseString()] = button;
+    }
+  }
+
+  int i = 0;
+  for (SavedTabGroup group : saved_tab_group_model_->saved_tab_groups()) {
+    views::View* const button =
+        buttons_by_guid[group.saved_guid().AsLowercaseString()];
+    ReorderChildView(button, i);
+    button->SetVisible(i < kMaxVisibleButtons);
+
+    i++;
+  }
+
+  // Ensure the overflow button is the last button in the view hierarchy.
+  ReorderChildView(overflow_button_, children().size());
+  PreferredSizeChanged();
+}
+
 void SavedTabGroupBar::LoadAllButtonsFromModel() {
   const std::vector<SavedTabGroup>& saved_tab_groups =
       saved_tab_group_model_->saved_tab_groups();
@@ -585,16 +616,19 @@ views::View* SavedTabGroupBar::GetButton(const base::Uuid& guid) {
 void SavedTabGroupBar::OnTabGroupButtonPressed(const base::Uuid& id,
                                                const ui::Event& event) {
   DCHECK(saved_tab_group_model_ && saved_tab_group_model_->Contains(id));
-
   const SavedTabGroup* group = saved_tab_group_model_->Get(id);
 
-  // TODO: Handle click if group has already been opened (crbug.com/1238539)
-  // left click on a saved tab group opens all links in new group
-  if (event.flags() & ui::EF_LEFT_MOUSE_BUTTON) {
-    if (group->saved_tabs().empty()) {
-      return;
-    }
-    SavedTabGroupKeyedService* keyed_service =
+  if (group->saved_tabs().empty()) {
+    return;
+  }
+
+  bool space_pressed = event.IsKeyEvent() && event.AsKeyEvent()->key_code() ==
+                                                 ui::KeyboardCode::VKEY_SPACE;
+
+  bool left_mouse_button_pressed = event.flags() & ui::EF_LEFT_MOUSE_BUTTON;
+
+  if (left_mouse_button_pressed || space_pressed) {
+    SavedTabGroupKeyedService* const keyed_service =
         SavedTabGroupServiceFactory::GetForProfile(browser_->profile());
 
     keyed_service->OpenSavedTabGroupInBrowser(browser_, group->saved_guid());
@@ -607,29 +641,15 @@ void SavedTabGroupBar::MaybeShowOverflowMenu() {
     return;
   }
 
-  auto bubble_delegate = std::make_unique<views::BubbleDialogDelegate>(
-      overflow_button_, views::BubbleBorder::TOP_LEFT);
+  // Don't show the menu if it would be empty.
+  if (saved_tab_group_model_->saved_tab_groups().size() <= kMaxVisibleButtons) {
+    return;
+  }
 
-  bubble_delegate_ = bubble_delegate.get();
-  bubble_delegate_->SetShowTitle(false);
-  bubble_delegate_->SetShowCloseButton(false);
-  bubble_delegate_->SetButtons(ui::DIALOG_BUTTON_NONE);
-  bubble_delegate_->set_margins(gfx::Insets());
-  bubble_delegate_->set_fixed_width(200);
-  bubble_delegate_->set_adjust_if_offscreen(true);
-  bubble_delegate_->set_close_on_deactivate(true);
+  // 1. Build the vertical list of buttons in the over flow menu.
+  auto overflow_menu = std::make_unique<OverflowMenu>(*this);
 
-  overflow_menu_ =
-      bubble_delegate_->SetContentsView(std::make_unique<OverflowMenu>(*this));
-
-  const gfx::Insets insets = gfx::Insets::TLBR(16, 16, 16, 48);
-  auto box = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, insets,
-      kOverflowMenuButtonPadding);
-  box->set_cross_axis_alignment(views::BoxLayout::CrossAxisAlignment::kStart);
-  overflow_menu_->SetLayoutManager(std::move(box));
-
-  // Add all buttons that are not currently visible to the overflow menu
+  // Add all buttons that are not currently visible to the overflow menu.
   for (const auto* const child : children()) {
     if (child->GetVisible() ||
         !views::IsViewClass<SavedTabGroupButton>(child)) {
@@ -641,7 +661,7 @@ void SavedTabGroupBar::MaybeShowOverflowMenu() {
     const SavedTabGroup* const group =
         saved_tab_group_model_->Get(button->guid());
 
-    overflow_menu_->AddChildView(std::make_unique<SavedTabGroupButton>(
+    overflow_menu->AddChildView(std::make_unique<SavedTabGroupButton>(
         *group,
         base::BindRepeating(&SavedTabGroupBar::page_navigator,
                             base::Unretained(this)),
@@ -650,13 +670,37 @@ void SavedTabGroupBar::MaybeShowOverflowMenu() {
         browser_, animations_enabled_));
   }
 
+  // Make the list of buttons vertical.
+  const gfx::Insets insets = gfx::Insets::TLBR(16, 16, 16, 48);
+  auto box = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical, insets,
+      kOverflowMenuButtonPadding);
+  box->set_cross_axis_alignment(views::BoxLayout::CrossAxisAlignment::kStart);
+  overflow_menu->SetLayoutManager(std::move(box));
+
+  // 2. Create the bubble / background which will hold the overflow menu.
+  // TODO(dljames): Set the background color to match the current theme.
+  auto bubble_delegate = std::make_unique<views::BubbleDialogDelegate>(
+      overflow_button_, views::BubbleBorder::TOP_LEFT);
+  bubble_delegate->set_fixed_width(200);
+  bubble_delegate->set_margins(gfx::Insets());
+  bubble_delegate->set_adjust_if_offscreen(true);
+  bubble_delegate->set_close_on_deactivate(true);
+  bubble_delegate->SetShowTitle(false);
+  bubble_delegate->SetButtons(ui::DIALOG_BUTTON_NONE);
+  bubble_delegate->SetShowCloseButton(false);
+  bubble_delegate->SetEnableArrowKeyTraversal(true);
+  bubble_delegate->SetContentsView(std::move(overflow_menu));
+
+  bubble_delegate_ = bubble_delegate.get();
+  overflow_menu_ =
+      views::AsViewClass<OverflowMenu>(bubble_delegate->GetContentsView());
+
+  // 3. Display the menu.
   auto* const widget =
       views::BubbleDialogDelegate::CreateBubble(std::move(bubble_delegate));
-
   widget_observation_.Observe(widget);
-
   widget->Show();
-  return;
 }
 
 void SavedTabGroupBar::HideOverflowMenu() {
@@ -721,11 +765,11 @@ absl::optional<int> SavedTabGroupBar::CalculateDropIndicatorIndexInBar() const {
 
 absl::optional<int>
 SavedTabGroupBar::CalculateDropIndicatorIndexInCombinedSpace() const {
-  if (!drag_data_ || !drag_data_->insertion_index().has_value()) {
+  if (!drag_data_ || !GetDropIndex().has_value()) {
     return absl::nullopt;
   }
 
-  const int insertion_index = drag_data_->insertion_index().value();
+  const int insertion_index = GetDropIndex().value();
   const int current_index =
       saved_tab_group_model_->GetIndexOf(drag_data_->guid()).value();
 

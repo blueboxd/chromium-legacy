@@ -14,6 +14,7 @@
 #include "ui/events/event_handler.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 
 namespace views {
 class ImageButton;
@@ -48,6 +49,12 @@ class QuickAnswersView : public views::View {
 
   ~QuickAnswersView() override;
 
+  static views::UniqueWidgetPtr CreateWidget(
+      const gfx::Rect& anchor_view_bounds,
+      const std::string& title,
+      bool is_internal,
+      base::WeakPtr<QuickAnswersUiController> controller);
+
   // views::View:
   void OnFocus() override;
   void OnThemeChanged() override;
@@ -69,7 +76,6 @@ class QuickAnswersView : public views::View {
 
  private:
   void InitLayout();
-  void InitWidget();
   void AddContentView();
   void AddFrameButtons();
   void AddPhoneticsAudioButton(
@@ -77,7 +83,7 @@ class QuickAnswersView : public views::View {
       View* container);
   void AddAssistantIcon();
   void AddGoogleIcon();
-  void AddResultTypeIcon();
+  void AddDefaultResultTypeIcon();
   int GetBoundsWidth();
   int GetLabelWidth();
   void ResetContentView();
@@ -110,7 +116,7 @@ class QuickAnswersView : public views::View {
   raw_ptr<views::ImageButton> dogfood_feedback_button_ = nullptr;
   raw_ptr<views::ImageButton> settings_button_ = nullptr;
   raw_ptr<views::ImageButton> phonetics_audio_button_ = nullptr;
-  raw_ptr<views::ImageView> vector_icon_ = nullptr;
+  raw_ptr<views::ImageView> result_type_icon_ = nullptr;
 
   // Invisible web view to play phonetics audio for definition results.
   raw_ptr<views::WebView> phonetics_audio_web_view_ = nullptr;

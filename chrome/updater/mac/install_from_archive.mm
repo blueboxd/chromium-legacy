@@ -22,7 +22,6 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/numerics/checked_math.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -39,6 +38,10 @@
 #include "chrome/updater/util/mac_util.h"
 #include "chrome/updater/util/util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace updater {
 namespace {
@@ -61,7 +64,7 @@ bool RunHDIUtil(const std::vector<std::string>& args,
     command.AppendArg(arg);
 
   std::string output;
-  bool result = base::GetAppOutputAndError(command, &output);
+  bool result = base::GetAppOutput(command, &output);
   if (!result)
     VLOG(1) << "hdiutil failed.";
 
@@ -86,8 +89,14 @@ bool MountDMG(const base::FilePath& dmg_path, std::string* mount_point) {
     return false;
   }
   @autoreleasepool {
-    NSString* output = base::SysUTF8ToNSString(command_output);
-    NSDictionary* plist = [output propertyList];
+    NSDictionary* plist = nil;
+    @try {
+      plist = [base::SysUTF8ToNSString(command_output) propertyList];
+    } @catch (NSException*) {
+      // `[NSString propertyList]` throws an NSParseErrorException if bad data.
+      VLOG(1) << "Unable to parse command output: [" << command_output << "]";
+      return false;
+    }
     // Look for the mountpoint.
     NSArray* system_entities = [plist objectForKey:@"system-entities"];
     NSString* dmg_mount_point = nil;

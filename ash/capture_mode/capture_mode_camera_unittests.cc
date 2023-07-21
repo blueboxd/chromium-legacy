@@ -35,6 +35,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
+#include "ash/system/notification_center/notification_center_tray.h"
 #include "ash/system/privacy/privacy_indicators_controller.h"
 #include "ash/system/privacy/privacy_indicators_tray_item_view.h"
 #include "ash/system/unified/unified_system_tray.h"
@@ -2344,8 +2345,7 @@ TEST_F(CaptureModeCameraTest, CameraPreviewVisibilityOnCaptureSourceChanged) {
 // both in clamshell and tablet mode.
 TEST_F(CaptureModeCameraTest, RecordingStartsWithCameraHistogramTest) {
   base::HistogramTester histogram_tester;
-  constexpr char kHistogramNameBase[] =
-      "Ash.CaptureModeController.RecordingStartsWithCamera";
+  constexpr char kHistogramNameBase[] = "RecordingStartsWithCamera";
 
   AddDefaultCamera();
 
@@ -2367,9 +2367,10 @@ TEST_F(CaptureModeCameraTest, RecordingStartsWithCameraHistogramTest) {
       EXPECT_FALSE(Shell::Get()->IsInTabletMode());
     }
 
-    histogram_tester.ExpectBucketCount(
-        GetCaptureModeHistogramName(kHistogramNameBase), test_case.camera_on,
-        0);
+    const std::string histogram_name =
+        BuildHistogramName(kHistogramNameBase, /*behavior=*/nullptr,
+                           /*append_ui_mode_suffix=*/true);
+    histogram_tester.ExpectBucketCount(histogram_name, test_case.camera_on, 0);
 
     auto* controller = StartCaptureSession(CaptureModeSource::kFullscreen,
                                            CaptureModeType::kVideo);
@@ -2383,9 +2384,7 @@ TEST_F(CaptureModeCameraTest, RecordingStartsWithCameraHistogramTest) {
     controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
     WaitForCaptureFileToBeSaved();
 
-    histogram_tester.ExpectBucketCount(
-        GetCaptureModeHistogramName(kHistogramNameBase), test_case.camera_on,
-        1);
+    histogram_tester.ExpectBucketCount(histogram_name, test_case.camera_on, 1);
   }
 }
 
@@ -2393,8 +2392,7 @@ TEST_F(CaptureModeCameraTest, RecordingStartsWithCameraHistogramTest) {
 // recorded correctly both in clamshell and tablet mode.
 TEST_F(CaptureModeCameraTest,
        RecordCameraDisconnectionsDuringRecordingsHistogramTest) {
-  constexpr char kHistogramNameBase[] =
-      "Ash.CaptureModeController.CameraDisconnectionsDuringRecordings";
+  constexpr char kHistogramNameBase[] = "CameraDisconnectionsDuringRecordings";
   base::HistogramTester histogram_tester;
 
   auto* camera_controller = GetCameraController();
@@ -2424,16 +2422,19 @@ TEST_F(CaptureModeCameraTest,
     controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
     WaitForCaptureFileToBeSaved();
     histogram_tester.ExpectBucketCount(
-        GetCaptureModeHistogramName(kHistogramNameBase), 3, 1);
+        BuildHistogramName(kHistogramNameBase, /*behavior=*/nullptr,
+                           /*append_ui_mode_suffix=*/true),
+        3, 1);
   }
 }
 
 // Tests that the number of connected cameras to the device is recorded whenever
 // the number changes.
 TEST_F(CaptureModeCameraTest, RecordNumberOfConnectedCamerasHistogramTest) {
-  constexpr char kHistogramNameBase[] =
-      "Ash.CaptureModeController.NumberOfConnectedCameras";
-
+  constexpr char kHistogramNameBase[] = "NumberOfConnectedCameras";
+  const std::string histogram_name =
+      BuildHistogramName(kHistogramNameBase, /*behavior=*/nullptr,
+                         /*append_ui_mode_suffix=*/false);
   base::HistogramTester histogram_tester;
   // Make sure the device change alert triggered by the SystemMonitor is handled
   // before we connect a camera device.
@@ -2448,35 +2449,34 @@ TEST_F(CaptureModeCameraTest, RecordNumberOfConnectedCamerasHistogramTest) {
 
   // Verify that before we connect any camera device, there's 0 cameras and it
   // has been recorded.
-  histogram_tester.ExpectBucketCount(kHistogramNameBase, 0, 1);
+  histogram_tester.ExpectBucketCount(histogram_name, 0, 1);
 
   // Connect one camera, verify that the number of one camera device has been
   // recorded once.
   AddFakeCamera("/dev/video", "fake cam ", "model 1");
-  histogram_tester.ExpectBucketCount(kHistogramNameBase, 1, 1);
+  histogram_tester.ExpectBucketCount(histogram_name, 1, 1);
 
   // Connect the second camera, verify that the number of two camera devices has
   // been recorded once.
   AddFakeCamera("/dev/video1", "fake cam 2", "model 2");
-  histogram_tester.ExpectBucketCount(kHistogramNameBase, 2, 1);
+  histogram_tester.ExpectBucketCount(histogram_name, 2, 1);
 
   // Disconnect the second camera, now the number of connected cameres drops
   // back to one, verify that the number of one camera device has been recorded
   // twice.
   RemoveFakeCamera("/dev/video1");
-  histogram_tester.ExpectBucketCount(kHistogramNameBase, 1, 2);
+  histogram_tester.ExpectBucketCount(histogram_name, 1, 2);
 
   // Connect the third camera, now the number of connected cameras is two again,
   // verify that the number of two camera devices has been recorded twice.
   AddFakeCamera("/dev/video2", "fake cam 3", "model 3");
-  histogram_tester.ExpectBucketCount(kHistogramNameBase, 2, 2);
+  histogram_tester.ExpectBucketCount(histogram_name, 2, 2);
 }
 
 // Tests that the duration for disconnected camera to become available again is
 // recorded correctly both in clamshell and tablet mode.
 TEST_F(CaptureModeCameraTest, RecordCameraReconnectDurationHistogramTest) {
-  constexpr char kHistogramNameBase[] =
-      "Ash.CaptureModeController.CameraReconnectDuration";
+  constexpr char kHistogramNameBase[] = "CameraReconnectDuration";
   base::HistogramTester histogram_tester;
 
   for (const bool tablet_enabled : {false, true}) {
@@ -2491,7 +2491,9 @@ TEST_F(CaptureModeCameraTest, RecordCameraReconnectDurationHistogramTest) {
     WaitForSeconds(1);
     AddDefaultCamera();
     histogram_tester.ExpectBucketCount(
-        GetCaptureModeHistogramName(kHistogramNameBase), 1, 1);
+        BuildHistogramName(kHistogramNameBase, /*behavior=*/nullptr,
+                           /*append_ui_mode_suffix=*/true),
+        1, 1);
     RemoveDefaultCamera();
   }
 }
@@ -2501,8 +2503,7 @@ TEST_F(CaptureModeCameraTest, RecordCameraReconnectDurationHistogramTest) {
 TEST_F(CaptureModeCameraTest, RecordingCameraSizeOnStartHistogramTest) {
   UpdateDisplay("1366x768");
 
-  constexpr char kHistogramNameBase[] =
-      "Ash.CaptureModeController.RecordingCameraSizeOnStart";
+  constexpr char kHistogramNameBase[] = "RecordingCameraSizeOnStart";
   base::HistogramTester histogram_tester;
 
   auto* camera_controller = GetCameraController();
@@ -2517,11 +2518,13 @@ TEST_F(CaptureModeCameraTest, RecordingCameraSizeOnStartHistogramTest) {
       EXPECT_FALSE(Shell::Get()->IsInTabletMode());
     }
 
+    const std::string histogram_name =
+        BuildHistogramName(kHistogramNameBase, /*behavior=*/nullptr,
+                           /*append_ui_mode_suffix=*/true);
     for (const bool collapsed : {false, true}) {
       const auto sample = collapsed ? CaptureModeCameraSize::kCollapsed
                                     : CaptureModeCameraSize::kExpanded;
-      histogram_tester.ExpectBucketCount(
-          GetCaptureModeHistogramName(kHistogramNameBase), sample, 0);
+      histogram_tester.ExpectBucketCount(histogram_name, sample, 0);
 
       auto* controller = StartCaptureSession(CaptureModeSource::kFullscreen,
                                              CaptureModeType::kVideo);
@@ -2551,8 +2554,7 @@ TEST_F(CaptureModeCameraTest, RecordingCameraSizeOnStartHistogramTest) {
       StartVideoRecordingImmediately();
       controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
       WaitForCaptureFileToBeSaved();
-      histogram_tester.ExpectBucketCount(
-          GetCaptureModeHistogramName(kHistogramNameBase), sample, 1);
+      histogram_tester.ExpectBucketCount(histogram_name, sample, 1);
     }
   }
 }
@@ -2560,8 +2562,7 @@ TEST_F(CaptureModeCameraTest, RecordingCameraSizeOnStartHistogramTest) {
 // Tests that the camera position on start is recorded correctly in the metrics
 // both in clamshell and tablet mode.
 TEST_F(CaptureModeCameraTest, RecordingCameraPositionOnStartHistogramTest) {
-  constexpr char kHistogramName[] =
-      "Ash.CaptureModeController.RecordingCameraPositionOnStart";
+  constexpr char kHistogramName[] = "RecordingCameraPositionOnStart";
   base::HistogramTester histogram_tester;
 
   StartCaptureSession(CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
@@ -2584,9 +2585,10 @@ TEST_F(CaptureModeCameraTest, RecordingCameraPositionOnStartHistogramTest) {
       EXPECT_FALSE(Shell::Get()->IsInTabletMode());
     }
 
+    const std::string histogram_name = BuildHistogramName(
+        kHistogramName, /*behavior=*/nullptr, /*append_ui_mode_suffix=*/true);
     for (const auto camera_position : kCameraPositionTestCases) {
-      histogram_tester.ExpectBucketCount(
-          GetCaptureModeHistogramName(kHistogramName), camera_position, 0);
+      histogram_tester.ExpectBucketCount(histogram_name, camera_position, 0);
       auto* controller = StartCaptureSession(CaptureModeSource::kFullscreen,
                                              CaptureModeType::kVideo);
       DCHECK(camera_controller->camera_preview_widget());
@@ -2594,8 +2596,7 @@ TEST_F(CaptureModeCameraTest, RecordingCameraPositionOnStartHistogramTest) {
       StartVideoRecordingImmediately();
       controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
       WaitForCaptureFileToBeSaved();
-      histogram_tester.ExpectBucketCount(
-          GetCaptureModeHistogramName(kHistogramName), camera_position, 1);
+      histogram_tester.ExpectBucketCount(histogram_name, camera_position, 1);
     }
   }
 }
@@ -4200,8 +4201,7 @@ TEST_F(ProjectorCaptureModeCameraTest,
 TEST_F(ProjectorCaptureModeCameraTest,
        ProjectorRecordingStartsWithCameraHistogramTest) {
   base::HistogramTester histogram_tester;
-  constexpr char kHistogramNameBase[] =
-      "Ash.CaptureModeController.Projector.RecordingStartsWithCamera";
+  constexpr char kHistogramNameBase[] = "RecordingStartsWithCamera";
 
   AddDefaultCamera();
 
@@ -4223,9 +4223,11 @@ TEST_F(ProjectorCaptureModeCameraTest,
       EXPECT_FALSE(Shell::Get()->IsInTabletMode());
     }
 
-    histogram_tester.ExpectBucketCount(
-        GetCaptureModeHistogramName(kHistogramNameBase), test_case.camera_on,
-        0);
+    const std::string histogram_name = BuildHistogramName(
+        kHistogramNameBase,
+        CaptureModeTestApi().GetBehavior(BehaviorType::kProjector),
+        /*append_ui_mode_suffix=*/true);
+    histogram_tester.ExpectBucketCount(histogram_name, test_case.camera_on, 0);
 
     auto* controller = CaptureModeController::Get();
     controller->SetType(CaptureModeType::kVideo);
@@ -4234,7 +4236,7 @@ TEST_F(ProjectorCaptureModeCameraTest,
     StartProjectorModeSession();
     EXPECT_TRUE(controller->IsActive());
     auto* session = controller->capture_mode_session();
-    EXPECT_TRUE(session->is_in_projector_mode());
+    ASSERT_TRUE(session);
 
     GetCameraController()->SetSelectedCamera(
         test_case.camera_on ? CameraId(kDefaultCameraModelId, 1) : CameraId());
@@ -4247,9 +4249,7 @@ TEST_F(ProjectorCaptureModeCameraTest,
     controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
     WaitForCaptureFileToBeSaved();
 
-    histogram_tester.ExpectBucketCount(
-        GetCaptureModeHistogramName(kHistogramNameBase), test_case.camera_on,
-        1);
+    histogram_tester.ExpectBucketCount(histogram_name, test_case.camera_on, 1);
   }
 }
 
@@ -4495,10 +4495,19 @@ TEST_F(NoSessionCaptureModeCameraTest, RequestCameraInfoAfterUserLogsIn) {
   EXPECT_EQ(camera_controller->available_cameras().size(), 1u);
 }
 
-class CaptureModePrivacyIndicatorsTest : public CaptureModeCameraTest {
+class CaptureModePrivacyIndicatorsTest
+    : public CaptureModeCameraTest,
+      public testing::WithParamInterface<bool> {
  public:
-  CaptureModePrivacyIndicatorsTest()
-      : scoped_feature_list_(features::kPrivacyIndicators) {}
+  CaptureModePrivacyIndicatorsTest() {
+    if (IsQsRevampEnabled()) {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kPrivacyIndicators, features::kQsRevamp}, {});
+    } else {
+      scoped_feature_list_.InitWithFeatures({features::kPrivacyIndicators},
+                                            {features::kQsRevamp});
+    }
+  }
   CaptureModePrivacyIndicatorsTest(const CaptureModePrivacyIndicatorsTest&) =
       delete;
   CaptureModePrivacyIndicatorsTest& operator=(
@@ -4521,17 +4530,28 @@ class CaptureModePrivacyIndicatorsTest : public CaptureModeCameraTest {
 
   PrivacyIndicatorsTrayItemView* GetPrimaryDisplayPrivacyIndicatorsView()
       const {
-    return Shell::GetPrimaryRootWindowController()
-        ->GetStatusAreaWidget()
-        ->unified_system_tray()
-        ->privacy_indicators_view();
+    return features::IsQsRevampEnabled()
+               ? Shell::GetPrimaryRootWindowController()
+                     ->GetStatusAreaWidget()
+                     ->notification_center_tray()
+                     ->privacy_indicators_view()
+               : Shell::GetPrimaryRootWindowController()
+                     ->GetStatusAreaWidget()
+                     ->unified_system_tray()
+                     ->privacy_indicators_view();
   }
+
+  bool IsQsRevampEnabled() const { return GetParam(); }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-TEST_F(CaptureModePrivacyIndicatorsTest, CameraPrivacyIndicators) {
+INSTANTIATE_TEST_SUITE_P(All,
+                         CaptureModePrivacyIndicatorsTest,
+                         testing::Bool());
+
+TEST_P(CaptureModePrivacyIndicatorsTest, CameraPrivacyIndicators) {
   ui::ScopedAnimationDurationScaleMode animation_scale(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
 
@@ -4579,7 +4599,7 @@ TEST_F(CaptureModePrivacyIndicatorsTest, CameraPrivacyIndicators) {
       capture_mode_privacy_notification_id));
 }
 
-TEST_F(CaptureModePrivacyIndicatorsTest, DuringRecordingPrivacyIndicators) {
+TEST_P(CaptureModePrivacyIndicatorsTest, DuringRecordingPrivacyIndicators) {
   ui::ScopedAnimationDurationScaleMode animation_scale(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
 

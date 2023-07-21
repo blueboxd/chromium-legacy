@@ -12,6 +12,7 @@
 #include "chrome/browser/ssl/https_first_mode_settings_tracker.h"
 #include "chrome/browser/ssl/https_only_mode_tab_helper.h"
 #include "chrome/browser/ssl/https_upgrades_navigation_throttle.h"
+#include "chrome/browser/ssl/https_upgrades_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -126,16 +127,17 @@ HttpsUpgradesNavigationThrottle::WillStartRequest() {
   auto* handle = navigation_handle();
   auto* contents = handle->GetWebContents();
   auto* tab_helper = HttpsOnlyModeTabHelper::FromWebContents(contents);
+
   if ((handle->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK &&
        tab_helper->has_failed_upgrade(handle->GetURL())) &&
       !handle->GetURL().SchemeIsCryptographic()) {
-    if (interstitial_state_.enabled_by_pref) {
+    if (IsInterstitialEnabled(interstitial_state_)) {
       // Mark this as a fallback HTTP navigation and trigger the interstitial.
       tab_helper->set_is_navigation_fallback(true);
       std::unique_ptr<security_interstitials::HttpsOnlyModeBlockingPage>
           blocking_page =
               blocking_page_factory_->CreateHttpsOnlyModeBlockingPage(
-                  contents, handle->GetURL());
+                  contents, handle->GetURL(), interstitial_state_);
       std::string interstitial_html = blocking_page->GetHTMLContents();
       security_interstitials::SecurityInterstitialTabHelper::
           AssociateBlockingPage(handle, std::move(blocking_page));
@@ -148,6 +150,13 @@ HttpsUpgradesNavigationThrottle::WillStartRequest() {
     // TODO(crbug.com/1435222): Record a separate histogram for Site Engagement
     // heuristic.
   }
+
+  // TODO(crbug.com/1448371): There are some cases where the navigation may
+  // "restart", such as if we encounter an exempted transient network error on
+  // the upgraded HTTPS URL, show a net error page, and then reload the tab. In
+  // these cases the navigation will proceed with the upgrade/fallback logic,
+  // but the navigation timeout will no longer be set. Currently, re-starting
+  // the timer here would trigger a DCHECK in NavigationRequest.
 
   // Navigation is HTTPS or an initial HTTP navigation (which will get
   // upgraded by the interceptor). Fallback HTTP navigations are handled in
@@ -172,13 +181,14 @@ HttpsUpgradesNavigationThrottle::WillRedirectRequest() {
   auto* handle = navigation_handle();
   auto* contents = handle->GetWebContents();
   auto* tab_helper = HttpsOnlyModeTabHelper::FromWebContents(contents);
+
   if (tab_helper->is_navigation_fallback() &&
       !handle->GetURL().SchemeIsCryptographic()) {
-    if (interstitial_state_.enabled_by_pref) {
+    if (IsInterstitialEnabled(interstitial_state_)) {
       std::unique_ptr<security_interstitials::HttpsOnlyModeBlockingPage>
           blocking_page =
               blocking_page_factory_->CreateHttpsOnlyModeBlockingPage(
-                  contents, handle->GetURL());
+                  contents, handle->GetURL(), interstitial_state_);
       std::string interstitial_html = blocking_page->GetHTMLContents();
       security_interstitials::SecurityInterstitialTabHelper::
           AssociateBlockingPage(handle, std::move(blocking_page));
@@ -207,13 +217,12 @@ HttpsUpgradesNavigationThrottle::WillRedirectRequest() {
   //      navigation, and will also result in the Interceptor serving an
   //      artificial redirect to upgrade the navigation.
   //
-  // HTTPS->HTTP downgrades may result in net::ERR_TOO_MANY_REDIRECTS, but these
+  // The Interceptor logs the URLs that it sees and triggers fallback if it
+  // encounters a redirect loop. Any cases that might not be caught by the
+  // Interceptor should result in net::ERR_TOO_MANY_REDIRECTS, but in general
   // redirect loops should hit the cache and not cost too much. If they go too
   // long, the fallback timer will kick in. ERR_TOO_MANY_REDIRECTS should result
-  // in the request failing and triggering fallback. Alternately, the
-  // Interceptor could log URLs seen and bail if it encounters a redirect loop,
-  // but it is simpler to rely on existing handling unless the optimization is
-  // needed.
+  // in the request failing and triggering fallback.
   if (tab_helper->is_navigation_upgraded()) {
     // Check if the timer is already started, as there may be additional
     // redirects on the navigation after the artificial upgrade redirect.

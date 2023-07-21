@@ -48,7 +48,7 @@
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/user_selectable_type.h"
-#include "components/sync/driver/sync_user_settings_impl.h"
+#include "components/sync/service/sync_user_settings_impl.h"
 #include "components/sync/test/mock_sync_service.h"
 #include "components/sync/test/sync_user_settings_mock.h"
 #include "content/public/browser/web_contents.h"
@@ -384,8 +384,10 @@ TEST_F(PeopleHandlerTest, DisplayBasicLogin) {
   handler_->DisallowJavascript();
 
   ON_CALL(*mock_sync_service_, GetDisableReasons())
-      .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN));
-  ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsFirstSetupComplete())
+      .WillByDefault(Return(syncer::SyncService::DisableReasonSet(
+          {syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN})));
+  ON_CALL(*mock_sync_service_->GetMockUserSettings(),
+          IsInitialSyncFeatureSetupComplete())
       .WillByDefault(Return(false));
   // Ensure that the user is not signed in before calling |HandleStartSignin()|.
   identity_test_env()->ClearPrimaryAccount();
@@ -411,7 +413,8 @@ TEST_F(PeopleHandlerTest, DisplayConfigureWithEngineDisabledAndCancel) {
   CreatePeopleHandler();
   ON_CALL(*mock_sync_service_, GetDisableReasons())
       .WillByDefault(Return(syncer::SyncService::DisableReasonSet()));
-  ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsFirstSetupComplete())
+  ON_CALL(*mock_sync_service_->GetMockUserSettings(),
+          IsInitialSyncFeatureSetupComplete())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_, GetTransportState())
       .WillByDefault(Return(syncer::SyncService::TransportState::INITIALIZING));
@@ -442,7 +445,8 @@ TEST_F(PeopleHandlerTest,
        DisplayConfigureWithEngineDisabledAndSyncStartupCompleted) {
   SigninUser();
   CreatePeopleHandler();
-  ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsFirstSetupComplete())
+  ON_CALL(*mock_sync_service_->GetMockUserSettings(),
+          IsInitialSyncFeatureSetupComplete())
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service_, GetDisableReasons())
       .WillByDefault(Return(syncer::SyncService::DisableReasonSet()));
@@ -484,7 +488,8 @@ TEST_F(PeopleHandlerTest,
   CreatePeopleHandler();
   ON_CALL(*mock_sync_service_, GetDisableReasons())
       .WillByDefault(Return(syncer::SyncService::DisableReasonSet()));
-  ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsFirstSetupComplete())
+  ON_CALL(*mock_sync_service_->GetMockUserSettings(),
+          IsInitialSyncFeatureSetupComplete())
       .WillByDefault(Return(false));
   EXPECT_CALL(*mock_sync_service_, GetTransportState())
       .WillOnce(Return(syncer::SyncService::TransportState::INITIALIZING))
@@ -511,20 +516,20 @@ TEST_F(PeopleHandlerTest,
 TEST_F(PeopleHandlerTest, RestartSyncAfterDashboardClear) {
   SigninUser();
   CreatePeopleHandler();
-  // Clearing sync from the dashboard results in DISABLE_REASON_USER_CHOICE
-  // being set.
-  ON_CALL(*mock_sync_service_, GetDisableReasons())
-      .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
+  ON_CALL(*mock_sync_service_, IsSyncFeatureDisabledViaDashboard())
+      .WillByDefault(Return(true));
   ON_CALL(*mock_sync_service_, GetTransportState())
       .WillByDefault(Return(syncer::SyncService::TransportState::DISABLED));
 
   // Attempting to open the setup UI should restart sync.
   EXPECT_CALL(*mock_sync_service_, SetSyncFeatureRequested())
       .WillOnce([&]() {
-        // SetSyncFeatureRequested() clears DISABLE_REASON_USER_CHOICE, and
-        // immediately starts initializing the engine.
+        // SetSyncFeatureRequested() clears IsSyncFeatureDisabledViaDashboard()
+        // and immediately starts initializing the engine.
         ON_CALL(*mock_sync_service_, GetDisableReasons())
             .WillByDefault(Return(syncer::SyncService::DisableReasonSet()));
+        ON_CALL(*mock_sync_service_, IsSyncFeatureDisabledViaDashboard())
+            .WillByDefault(Return(false));
         ON_CALL(*mock_sync_service_, GetTransportState())
             .WillByDefault(
                 Return(syncer::SyncService::TransportState::INITIALIZING));
@@ -540,21 +545,19 @@ TEST_F(PeopleHandlerTest,
        RestartSyncAfterDashboardClearWithStandaloneTransport) {
   SigninUser();
   CreatePeopleHandler();
-  // Clearing sync from the dashboard results in DISABLE_REASON_USER_CHOICE
-  // being set. However, the sync engine has restarted in standalone transport
-  // mode.
-  ON_CALL(*mock_sync_service_, GetDisableReasons())
-      .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
+  // Clearing sync from the dashboard results in
+  // IsSyncFeatureDisabledViaDashboard() returning true. However, the sync
+  // engine has restarted in standalone transport mode.
+  ON_CALL(*mock_sync_service_, IsSyncFeatureDisabledViaDashboard())
+      .WillByDefault(Return(true));
   ON_CALL(*mock_sync_service_, GetTransportState())
       .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
 
   // Attempting to open the setup UI should re-enable sync-the-feature.
   EXPECT_CALL(*mock_sync_service_, SetSyncFeatureRequested())
       .WillOnce([&]() {
-        // SetSyncFeatureRequested() clears DISABLE_REASON_USER_CHOICE. Since
-        // the engine is already running, it just gets reconfigured.
-        ON_CALL(*mock_sync_service_, GetDisableReasons())
-            .WillByDefault(Return(syncer::SyncService::DisableReasonSet()));
+        ON_CALL(*mock_sync_service_, IsSyncFeatureDisabledViaDashboard())
+            .WillByDefault(Return(false));
         ON_CALL(*mock_sync_service_, GetTransportState())
             .WillByDefault(
                 Return(syncer::SyncService::TransportState::CONFIGURING));
@@ -603,9 +606,10 @@ TEST_F(PeopleHandlerTest, UnrecoverableErrorInitializingSync) {
   SigninUser();
   CreatePeopleHandler();
   ON_CALL(*mock_sync_service_, GetDisableReasons())
-      .WillByDefault(
-          Return(syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR));
-  ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsFirstSetupComplete())
+      .WillByDefault(Return(syncer::SyncService::DisableReasonSet(
+          {syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR})));
+  ON_CALL(*mock_sync_service_->GetMockUserSettings(),
+          IsInitialSyncFeatureSetupComplete())
       .WillByDefault(Return(false));
   // Open the web UI.
   handler_->HandleShowSyncSetupUI(base::Value::List());
@@ -617,8 +621,10 @@ TEST_F(PeopleHandlerTest, GaiaErrorInitializingSync) {
   SigninUser();
   CreatePeopleHandler();
   ON_CALL(*mock_sync_service_, GetDisableReasons())
-      .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN));
-  ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsFirstSetupComplete())
+      .WillByDefault(Return(syncer::SyncService::DisableReasonSet(
+          {syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN})));
+  ON_CALL(*mock_sync_service_->GetMockUserSettings(),
+          IsInitialSyncFeatureSetupComplete())
       .WillByDefault(Return(false));
   // Open the web UI.
   handler_->HandleShowSyncSetupUI(base::Value::List());
@@ -916,7 +922,7 @@ TEST_F(PeopleHandlerTest, ShowSetupSyncForAllTypesIndividually) {
     ON_CALL(*mock_sync_service_->GetMockUserSettings(),
             IsSyncEverythingEnabled())
         .WillByDefault(Return(false));
-    syncer::UserSelectableTypeSet types(type);
+    const syncer::UserSelectableTypeSet types = {type};
     ON_CALL(*mock_sync_service_->GetMockUserSettings(), GetSelectedTypes())
         .WillByDefault(Return(types));
 
@@ -1115,11 +1121,13 @@ TEST_F(PeopleHandlerTest, DashboardClearWhileSettingsOpen_ConfirmSoon) {
   handler_->HandleShowSyncSetupUI(base::Value::List());
 
   // Now sync gets reset from the dashboard (the user clicked the "Manage synced
-  // data" link), which results in the sync-requested and first-setup-complete
-  // bits being cleared.
-  ON_CALL(*mock_sync_service_, GetDisableReasons())
-      .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
-  ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsFirstSetupComplete())
+  // data" link), which results in the first-setup-complete bit being cleared.
+  // While first-setup isn't completed, IsSyncFeatureDisabledViaDashboard() also
+  // returns false.
+  ON_CALL(*mock_sync_service_, IsSyncFeatureDisabledViaDashboard())
+      .WillByDefault(Return(false));
+  ON_CALL(*mock_sync_service_->GetMockUserSettings(),
+          IsInitialSyncFeatureSetupComplete())
       .WillByDefault(Return(false));
   // Sync will eventually start again in transport mode.
   ON_CALL(*mock_sync_service_, GetTransportState())
@@ -1132,21 +1140,17 @@ TEST_F(PeopleHandlerTest, DashboardClearWhileSettingsOpen_ConfirmSoon) {
   // and the first-setup-complete bits.
   EXPECT_CALL(*mock_sync_service_, SetSyncFeatureRequested())
       .WillOnce([&]() {
-        // SetSyncFeatureRequested() clears DISABLE_REASON_USER_CHOICE, and
-        // immediately starts initializing the engine.
-        ON_CALL(*mock_sync_service_, GetDisableReasons())
-            .WillByDefault(Return(syncer::SyncService::DisableReasonSet()));
         ON_CALL(*mock_sync_service_, GetTransportState())
             .WillByDefault(
                 Return(syncer::SyncService::TransportState::INITIALIZING));
         NotifySyncStateChanged();
       });
   EXPECT_CALL(*mock_sync_service_->GetMockUserSettings(),
-              SetFirstSetupComplete(
+              SetInitialSyncFeatureSetupComplete(
                   syncer::SyncFirstSetupCompleteSource::ADVANCED_FLOW_CONFIRM))
       .WillOnce([&](syncer::SyncFirstSetupCompleteSource) {
         ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-                IsFirstSetupComplete())
+                IsInitialSyncFeatureSetupComplete())
             .WillByDefault(Return(true));
         NotifySyncStateChanged();
       });
@@ -1165,11 +1169,13 @@ TEST_F(PeopleHandlerTest, DashboardClearWhileSettingsOpen_ConfirmLater) {
   handler_->HandleShowSyncSetupUI(base::Value::List());
 
   // Now sync gets reset from the dashboard (the user clicked the "Manage synced
-  // data" link), which results in the sync-requested and first-setup-complete
-  // bits being cleared.
-  ON_CALL(*mock_sync_service_, GetDisableReasons())
-      .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
-  ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsFirstSetupComplete())
+  // data" link), which results in the first-setup-complete bit being cleared.
+  // While first-setup isn't completed, IsSyncFeatureDisabledViaDashboard() also
+  // returns false.
+  ON_CALL(*mock_sync_service_, IsSyncFeatureDisabledViaDashboard())
+      .WillByDefault(Return(false));
+  ON_CALL(*mock_sync_service_->GetMockUserSettings(),
+          IsInitialSyncFeatureSetupComplete())
       .WillByDefault(Return(false));
   // Sync will eventually start again in transport mode.
   ON_CALL(*mock_sync_service_, GetTransportState())
@@ -1182,12 +1188,12 @@ TEST_F(PeopleHandlerTest, DashboardClearWhileSettingsOpen_ConfirmLater) {
   // transport mode.
   ON_CALL(*mock_sync_service_, GetTransportState())
       .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
-  // On some platforms (e.g. ChromeOS), the first-setup-complete bit gets set
-  // automatically during engine startup.
-  if (browser_defaults::kSyncAutoStarts) {
-    ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsFirstSetupComplete())
-        .WillByDefault(Return(true));
-  }
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // The first-setup-complete bit gets set automatically during engine startup.
+  ON_CALL(*mock_sync_service_->GetMockUserSettings(),
+          IsInitialSyncFeatureSetupComplete())
+      .WillByDefault(Return(true));
+#endif
   NotifySyncStateChanged();
 
   // Now the user confirms sync again. This should set the sync-requested bit
@@ -1195,27 +1201,22 @@ TEST_F(PeopleHandlerTest, DashboardClearWhileSettingsOpen_ConfirmLater) {
   // first-setup-complete bit.
   EXPECT_CALL(*mock_sync_service_, SetSyncFeatureRequested())
       .WillOnce([&]() {
-        // SetSyncFeatureRequested() clears DISABLE_REASON_USER_CHOICE, and
-        // immediately starts initializing the engine.
-        ON_CALL(*mock_sync_service_, GetDisableReasons())
-            .WillByDefault(Return(syncer::SyncService::DisableReasonSet()));
         ON_CALL(*mock_sync_service_, GetTransportState())
             .WillByDefault(
                 Return(syncer::SyncService::TransportState::INITIALIZING));
         NotifySyncStateChanged();
       });
-  if (!browser_defaults::kSyncAutoStarts) {
-    EXPECT_CALL(
-        *mock_sync_service_->GetMockUserSettings(),
-        SetFirstSetupComplete(
-            syncer::SyncFirstSetupCompleteSource::ADVANCED_FLOW_CONFIRM))
-        .WillOnce([&](syncer::SyncFirstSetupCompleteSource) {
-          ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-                  IsFirstSetupComplete())
-              .WillByDefault(Return(true));
-          NotifySyncStateChanged();
-        });
-  }
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  EXPECT_CALL(*mock_sync_service_->GetMockUserSettings(),
+              SetInitialSyncFeatureSetupComplete(
+                  syncer::SyncFirstSetupCompleteSource::ADVANCED_FLOW_CONFIRM))
+      .WillOnce([&](syncer::SyncFirstSetupCompleteSource) {
+        ON_CALL(*mock_sync_service_->GetMockUserSettings(),
+                IsInitialSyncFeatureSetupComplete())
+            .WillByDefault(Return(true));
+        NotifySyncStateChanged();
+      });
+#endif
 
   base::Value::List did_abort;
   did_abort.Append(false);

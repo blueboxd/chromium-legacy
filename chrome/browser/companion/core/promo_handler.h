@@ -19,16 +19,13 @@ namespace companion {
 using side_panel::mojom::PromoAction;
 using side_panel::mojom::PromoType;
 
-class MsbbDelegate;
 class SigninDelegate;
 
 // Central class to handle user actions on various promos displayed in the
 // search companion.
 class PromoHandler {
  public:
-  PromoHandler(PrefService* pref_service,
-               SigninDelegate* signin_delegate,
-               MsbbDelegate* msbb_delegate);
+  PromoHandler(PrefService* pref_service, SigninDelegate* signin_delegate);
   ~PromoHandler();
 
   // Disallow copy/assign.
@@ -53,11 +50,8 @@ class PromoHandler {
   // of the companion page.
   raw_ptr<PrefService> pref_service_;
 
-  // Delegate to handle sign-in flow.
+  // Delegate to handle promo acceptance flow.
   raw_ptr<SigninDelegate> signin_delegate_;
-
-  // Delegate to set MSBB.
-  raw_ptr<MsbbDelegate> msbb_delegate_;
 };
 
 }  // namespace companion

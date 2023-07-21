@@ -108,6 +108,7 @@
 <translation id="1838709767668011582">Tapak Google</translation>
 <translation id="1853795129690976061">Folder ini dikongsi dengan Linux</translation>
 <translation id="1864756863218646478">Fail tidak dapat dijumpai.</translation>
+<translation id="1877377730633446520">Tindakan ini akan menggunakan anggaran <ph name="REQUIRED_SPACE" />. Pada masa ini anda mempunyai <ph name="FREE_SPACE" />.</translation>
 <translation id="1884013283844450420">Rangkaian <ph name="NETWORK_INDEX" /> daripada <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Sambung</translation>
 <translation id="1920670151694390848">Alih Huruf Malayalam</translation>
 <translation id="1920798810075583923">Tembikai</translation>
@@ -119,6 +120,7 @@
 <translation id="1972984168337863910">Kembangkan panel maklum balas fail</translation>
 <translation id="1995337122023280937">Pergi ke lokasi fail</translation>
 <translation id="2001796770603320721">Urus dalam Drive</translation>
+<translation id="2004942826429452291">Fail akan disimpan pada awan dalam Chromebook ini.</translation>
 <translation id="2009067268969781306">Memformatkan pemacu akan memadamkan semua data yang disimpan di dalamnya. Tindakan ini tidak boleh dibuat asal.</translation>
 <translation id="2025955442973426285">Tigrinya</translation>
 <translation id="2037845485764049925">Rusia</translation>
@@ -129,6 +131,7 @@
 <translation id="2084108471225856927">Tetapan peranti</translation>
 <translation id="2084809735218147718">Mengucapkan terima kasih menggunakan bahasa isyarat</translation>
 <translation id="2088690981887365033">Rangkaian VPN</translation>
+<translation id="2089751716171649322">Akses fail Google Drive anda dengan mudah apabila anda berada di luar talian</translation>
 <translation id="2111134541987263231">Hidupkan <ph name="BEGIN_BOLD" />Benarkan dalam mod Inkognito<ph name="END_BOLD" /></translation>
 <translation id="2114191879048183086"><ph name="NUMBER_OF_ITEMS" /> item akan dipadam dan anda tidak akan dapat memulihkan item itu.</translation>
 <translation id="2122305276694332719">Tindakan menyambung secara automatik ke rangkaian tersembunyi akan membolehkan orang lain melihat peranti anda dan sesetengah tetapan rangkaian, maka tindakan ini tidak disyorkan.</translation>
@@ -147,7 +150,6 @@
 <translation id="2208919847696382164">Pasang dengan Linux</translation>
 <translation id="2225536596944493418">Adakah anda pasti anda mahu memadamkan <ph name="NUMBER_OF_ITEMS" /> item?</translation>
 <translation id="2230062665678605299">Tidak dapat membuat folder "<ph name="FOLDER_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
-<translation id="2236732657580416950">Cache Google Drive anda dikosongkan.</translation>
 <translation id="2239068707900391003">Orang dengan kopi</translation>
 <translation id="2251368349685848079">Pulihkan daripada sampah</translation>
 <translation id="2278133026967558505">Akses fail oleh semua laman web dan url</translation>
@@ -166,7 +168,6 @@
 <translation id="23721837607121582">Muat turun profil mudah alih, Rangkaian <ph name="NETWORK_INDEX" /> daripada <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Tukar kepada paparan senarai</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> folder dikongsi dengan Linux</translation>
-<translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> fail dipilih</translation>
 <translation id="2383454254762599978">Alihkan ke folder sampah</translation>
 <translation id="2387458720915042159">Jenis sambungan proksi</translation>
 <translation id="2389832672041313158">Burma/Myanmar</translation>
@@ -299,6 +300,7 @@
 <translation id="3479552764303398839">Bukan sekarang</translation>
 <translation id="3486821258960016770">Mongolia</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> ralat.</translation>
+<translation id="3501954296166022751">Fail Google Drive anda tersedia di luar talian</translation>
 <translation id="3509680540198371098">Rangkaian <ph name="NETWORK_INDEX" /> daripada <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />%, Butiran</translation>
 <translation id="3511705761158917664">Membuat persediaan untuk menyegerakkan <ph name="NUMBER_OF_ITEMS" /> item...</translation>
 <translation id="3522708245912499433">Bahasa Portugis</translation>
@@ -321,6 +323,7 @@
 <translation id="3619593063686672873">Tiada video baru-baru ini</translation>
 <translation id="3634507049637220048">Rangkaian <ph name="NETWORK_INDEX" /> daripada <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Diurus oleh Pentadbir anda, Butiran</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> item dialihkan.</translation>
+<translation id="3658269352872031728"><ph name="SELECTED_FILE_COUNT" /> fail dipilih</translation>
 <translation id="3685122418104378273">Penyegerakan Google Drive dilumpuhkan secara lalai, apabila menggunakan data mudah alih.</translation>
 <translation id="3689865792480713551">Batalkan <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3690128548376345212">Rangkaian <ph name="NETWORK_INDEX" /> daripada <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Dinyahaktifkan, <ph name="CONNECTION_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />%, Butiran</translation>
@@ -419,6 +422,7 @@
 <translation id="4462159676511157176">Nama pelayan tersuai</translation>
 <translation id="4465725236958772856">Rangkaian <ph name="NETWORK_INDEX" /> daripada <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Diurus oleh Pentadbir anda, Sambung</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
+<translation id="4472575034687746823">Bermula</translation>
 <translation id="4474142134969976028">Tiada hasil carian yang sepadan</translation>
 <translation id="4477002475007461989">Romania</translation>
 <translation id="4477219268485577442">Fonetik bahasa Bulgaria</translation>
@@ -471,7 +475,6 @@
 <translation id="4823651846660089135">Peranti dalam mod baca sahaja</translation>
 <translation id="4826849268470072925">ITRANS Tamil</translation>
 <translation id="482932175346970750">Taip <ph name="BEGIN_BOLD" />chrome://extensions<ph name="END_BOLD" /> dalam penyemak imbas anda</translation>
-<translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> item dipilih</translation>
 <translation id="4843566743023903107">Chromebase</translation>
 <translation id="4850886885716139402">Lihat</translation>
 <translation id="485316830061041779">Bahasa Jerman</translation>
@@ -574,11 +577,13 @@
 <translation id="5494920125229734069">Pilih semua</translation>
 <translation id="5500122897333236901">Bahasa Iceland</translation>
 <translation id="5508696409934741614">Titik</translation>
+<translation id="5519161320735100193">Tetapan Google Drive</translation>
 <translation id="5522908512596376669">Senarai fail telah berubah kepada paparan senarai.</translation>
 <translation id="5524517123096967210">Fail tidak boleh dibaca.</translation>
 <translation id="5533102081734025921">Imej <ph name="IMAGE_TYPE" /></translation>
 <translation id="5534520101572674276">Mengira saiz</translation>
 <translation id="554153475311314364">Alih Huruf Greek</translation>
+<translation id="5554171655917412781"><ph name="SELECTED_FOLDERS_COUNT" /> folder dipilih</translation>
 <translation id="5580591966435005537">mesin maya</translation>
 <translation id="5583640892426849032">Undur ruang</translation>
 <translation id="5583664733673201137">Lebar tanda baca ialah Penuh</translation>
@@ -601,6 +606,7 @@
 <translation id="5724172041621205163">Thai dengan papan kekunci Pattachote</translation>
 <translation id="57383366388012121">Bulan lalu</translation>
 <translation id="5756666464756035725">QWERTY Hungary</translation>
+<translation id="5760252553414789727"><ph name="SELECTED_FILES_COUNT" /> item dipilih</translation>
 <translation id="5763377084591234761">Jerman (Switzerland)</translation>
 <translation id="5769519078756170258">Hos atau domain yang hendak dikecualikan</translation>
 <translation id="5775750595919327203">Urdu</translation>
@@ -618,6 +624,7 @@
 <translation id="5838451609423551646">Semua masukan dialih keluar daripada pilihan.</translation>
 <translation id="5838825566232597749">US Workman international</translation>
 <translation id="5845721951356578987">Jururawat</translation>
+<translation id="5860491529813859533">Hidupkan</translation>
 <translation id="5861477046012235702">Pemain</translation>
 <translation id="5864471791310927901">Carian DHCP gagal</translation>
 <translation id="5896749729057314184">Rangkaian <ph name="NETWORK_INDEX" /> daripada <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Dinyahaktifkan, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />%, Butiran</translation>
@@ -756,7 +763,6 @@
 <translation id="6989942356279143254">Sweden</translation>
 <translation id="6990081529015358884">Anda telah kehabisan ruang</translation>
 <translation id="6993826899923627728">Item ini berada dalam folder sampah anda</translation>
-<translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> folder dipilih</translation>
 <translation id="7008426324576352165">Organisasi anda memerlukan lebih banyak storan untuk menyelesaikan muat naik.</translation>
 <translation id="7009985720488544166">Pengalihan <ph name="COUNT" /> fail disekat oleh dasar pentadbir</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -864,6 +870,7 @@
 <translation id="7805768142964895445">Status</translation>
 <translation id="7806708061868529807">Ibrani</translation>
 <translation id="78104721049218340">Thai dengan papan kekunci Kedmanee</translation>
+<translation id="7814857791038398352">Microsoft® OneDrive</translation>
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7831491651892296503">Ralat mengkonfigurasi rangkaian</translation>
 <translation id="7839804798877833423">Pengambilan fail ini akan menggunakan kira-kira <ph name="FILE_SIZE" /> data mudah alih.</translation>
@@ -876,15 +883,18 @@
 <translation id="7903984238293908205">Katakana</translation>
 <translation id="7908793776359722643">Tindakan memformatkan petakan akan memadamkan semua data yang disimpan dalam petakan itu. Tindakan ini tidak boleh dibuat asal.</translation>
 <translation id="7911118814695487383">Linux</translation>
+<translation id="7920501309908018401">Fail anda dalam My Drive akan disegerakkan dengan Chromebook anda secara automatik supaya anda boleh mengakses fail tersebut tanpa sambungan Internet.</translation>
 <translation id="7925247922861151263">Gagal periksa AAA</translation>
 <translation id="7925686952655276919">Jangan gunakan data mudah alih untuk penyegerakan</translation>
 <translation id="7928710562641958568">Keluarkan peranti</translation>
+<translation id="7933875256234974853">Bersedia untuk menyegerakkan fail Drive...</translation>
 <translation id="7943385054491506837">Bahasa Colemak AS</translation>
 <translation id="7953739707111622108">Peranti ini tidak boleh dibuka kerana sistem fail tidak dikenali.</translation>
 <translation id="7969525169268594403">Bahasa Slovenia</translation>
 <translation id="7972920761225148017">Perancis (Switzerland)</translation>
 <translation id="7973962044839454485">Pengesahan PPP gagal disebabkan oleh nama pengguna atau kata laluan yang salah</translation>
 <translation id="7980421588063892270">Inggeris (AS) dengan papan kekunci Colemak</translation>
+<translation id="7985008041109611710">Menyegerakkan <ph name="NUMBER_OF_FILES_SYNCING" /> fail</translation>
 <translation id="8000066093800657092">Tiada rangkaian</translation>
 <translation id="8008366997883261463">Anjing Jack Russel Terrier</translation>
 <translation id="8028993641010258682">Saiz</translation>
@@ -920,6 +930,7 @@
 <translation id="8264024885325823677">Tetapan ini diurus oleh pentadbir anda.</translation>
 <translation id="8269755669432358899">Runtuhkan panel maklum balas fail</translation>
 <translation id="8280151743281770066">Fonetik bahasa Armenia</translation>
+<translation id="8285791779547722821">Disulitkan <ph name="ORIGINAL_MIME_TYPE" /></translation>
 <translation id="8294431847097064396">Sumber</translation>
 <translation id="8297012244086013755">Hangul 3 Set (Tiada Shift)</translation>
 <translation id="8299269255470343364">Bahasa Jepun</translation>
@@ -1038,6 +1049,7 @@
 <translation id="9213073329713032541">Pemasangan berjaya dimulakan.</translation>
 <translation id="9219103736887031265">Imej</translation>
 <translation id="9219908252191632183">Qamari</translation>
+<translation id="937795003075802289">Menyegerakkan 1 fail</translation>
 <translation id="938470336146445890">Sila pasang sijil pengguna.</translation>
 <translation id="939736085109172342">Folder baharu</translation>
 <translation id="943972244133411984">Diubah suai oleh</translation>

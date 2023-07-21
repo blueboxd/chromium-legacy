@@ -32,7 +32,7 @@
 #include "components/history/core/browser/sync/history_model_type_controller.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
-#include "components/password_manager/core/browser/sync/password_model_type_controller.h"
+#include "components/password_manager/core/browser/sync/credential_model_type_controller.h"
 #include "components/power_bookmarks/core/power_bookmark_features.h"
 #include "components/power_bookmarks/core/power_bookmark_service.h"
 #include "components/prefs/pref_service.h"
@@ -46,15 +46,15 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/driver/data_type_manager_impl.h"
-#include "components/sync/driver/glue/sync_engine_impl.h"
-#include "components/sync/driver/glue/sync_transport_data_prefs.h"
-#include "components/sync/driver/model_type_controller.h"
-#include "components/sync/driver/syncable_service_based_model_type_controller.h"
 #include "components/sync/engine/sync_engine.h"
 #include "components/sync/invalidations/sync_invalidations_service.h"
 #include "components/sync/model/forwarding_model_type_controller_delegate.h"
 #include "components/sync/model/proxy_model_type_controller_delegate.h"
+#include "components/sync/service/data_type_manager_impl.h"
+#include "components/sync/service/glue/sync_engine_impl.h"
+#include "components/sync/service/glue/sync_transport_data_prefs.h"
+#include "components/sync/service/model_type_controller.h"
+#include "components/sync/service/syncable_service_based_model_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_type_controller.h"
 #include "components/sync_bookmarks/bookmark_sync_service.h"
 #include "components/sync_device_info/device_info_sync_service.h"
@@ -379,12 +379,13 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
     if (profile_password_store_) {
       // |profile_password_store_| can be null in tests.
       controllers.push_back(
-          std::make_unique<password_manager::PasswordModelTypeController>(
+          std::make_unique<password_manager::CredentialModelTypeController>(
+              syncer::PASSWORDS,
               profile_password_store_->CreateSyncControllerDelegate(),
               account_password_store_
                   ? account_password_store_->CreateSyncControllerDelegate()
                   : nullptr,
-              account_password_store_, sync_client_->GetPrefService(),
+              sync_client_->GetPrefService(),
               sync_client_->GetIdentityManager(), sync_service));
     }
   }
@@ -473,12 +474,15 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
 #if !BUILDFLAG(IS_ANDROID) || !BUILDFLAG(IS_IOS)
   if (base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials) &&
       !disabled_types.Has(syncer::WEBAUTHN_CREDENTIAL)) {
-    controllers.push_back(std::make_unique<ModelTypeController>(
-        syncer::WEBAUTHN_CREDENTIAL,
-        /*delegate_for_full_sync_mode=*/
-        CreateForwardingControllerDelegate(syncer::WEBAUTHN_CREDENTIAL),
-        /*delegate_for_transport_mode=*/
-        CreateForwardingControllerDelegate(syncer::WEBAUTHN_CREDENTIAL)));
+    controllers.push_back(
+        std::make_unique<password_manager::CredentialModelTypeController>(
+            syncer::WEBAUTHN_CREDENTIAL,
+            /*delegate_for_full_sync_mode=*/
+            CreateForwardingControllerDelegate(syncer::WEBAUTHN_CREDENTIAL),
+            /*delegate_for_transport_mode=*/
+            CreateForwardingControllerDelegate(syncer::WEBAUTHN_CREDENTIAL),
+            sync_client_->GetPrefService(), sync_client_->GetIdentityManager(),
+            sync_service));
   }
 #endif
 

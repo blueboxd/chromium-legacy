@@ -20,6 +20,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/log/net_log_source.h"
 #include "net/url_request/referrer_policy.h"
+#include "services/network/public/cpp/attribution_reporting_runtime_features.h"
 #include "services/network/public/cpp/optional_trust_token_params.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/accept_ch_frame_observer.mojom.h"
@@ -159,6 +160,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   scoped_refptr<ResourceRequestBody> request_body;
   bool keepalive = false;
   bool browsing_topics = false;
+  bool ad_auction_headers = false;
+  bool shared_storage_writable = false;
   bool has_user_gesture = false;
   bool enable_load_timing = false;
   bool enable_upload_progress = false;
@@ -197,6 +200,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
       network::mojom::AttributionSupport::kWeb;
   mojom::AttributionReportingEligibility attribution_reporting_eligibility =
       mojom::AttributionReportingEligibility::kUnset;
+  network::AttributionReportingRuntimeFeatures
+      attribution_reporting_runtime_features;
 };
 
 // This does not accept |kDefault| referrer policy.

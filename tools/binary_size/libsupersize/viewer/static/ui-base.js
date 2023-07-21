@@ -78,6 +78,23 @@ const _OTHER_SYMBOL_TYPE = 'o';
 const _LOCALE =
     /** @type {Array<string>} */ (navigator.languages) || navigator.language;
 
+/** @type {Object} */
+window.supersize = window.supersize || {};
+
+/** @type {?Worker} */
+window.supersize.worker = null;
+
+/** @type {?Object} **/
+window.supersize.metadata = null;
+
+/**
+ * Helper to render cached metadata.
+ * @type {!function(): void}
+ **/
+window.supersize.prettyMetadata = () => {
+  console.log(JSON.stringify(window.supersize.metadata, null, 2));
+};
+
 /**
  * Returns shortName for a tree node.
  * @param {TreeNode} treeNode
@@ -224,4 +241,25 @@ class ProgressBar {
       requestAnimationFrame(() => this.setValue(val));
     }
   }
+}
+
+/**
+ * Returns a metadata |*size_file|'s |containers| list if it exists, or a list
+ * with a synthesized container for old format without explicit containers.
+ * @param {?Object} sizeFile
+ * @return {!Array<!Object>}
+ */
+function getOrMakeContainers(sizeFile) {
+  if (sizeFile) {
+    if (sizeFile.containers)
+      return sizeFile.containers;
+    // Synthesize for old format without explicit containers.
+    const container = {name: '(Default container)'};
+    if (sizeFile.metrics_by_file)
+      container.metrics_by_file = sizeFile.metrics_by_file;
+    if (sizeFile.metadata)
+      container.metadata = sizeFile.metadata;
+    return [container];
+  }
+  return [];
 }

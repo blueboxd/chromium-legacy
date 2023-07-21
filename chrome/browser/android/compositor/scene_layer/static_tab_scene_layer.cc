@@ -24,9 +24,7 @@ StaticTabSceneLayer::StaticTabSceneLayer(JNIEnv* env,
                                          const JavaRef<jobject>& jobj)
     : SceneLayer(env, jobj),
       tab_content_manager_(nullptr),
-      last_set_tab_id_(-1),
-      background_color_(SK_ColorWHITE),
-      brightness_(1.f) {}
+      background_color_(SK_ColorWHITE) {}
 
 StaticTabSceneLayer::~StaticTabSceneLayer() = default;
 
@@ -47,8 +45,7 @@ void StaticTabSceneLayer::UpdateTabLayer(JNIEnv* env,
                                          jfloat x,
                                          jfloat y,
                                          jfloat static_to_view_blend,
-                                         jfloat saturation,
-                                         jfloat brightness) {
+                                         jfloat saturation) {
   DCHECK(tab_content_manager_)
       << "TabContentManager must be set before updating the layer";
 
@@ -58,31 +55,11 @@ void StaticTabSceneLayer::UpdateTabLayer(JNIEnv* env,
     layer_->AddChild(content_layer_->layer());
   }
 
-  // Only override the alpha of content layers when the static tab is first
-  // assigned to the layer tree.
-  float content_alpha_override = 1.f;
-  bool should_override_content_alpha = last_set_tab_id_ != id;
-  last_set_tab_id_ = id;
-
   content_layer_->SetProperties(id, can_use_live_layer, static_to_view_blend,
-                                should_override_content_alpha,
-                                content_alpha_override, saturation, false,
-                                gfx::Rect());
+                                false, 1.f, saturation, false, gfx::Rect());
 
   content_layer_->layer()->SetPosition(gfx::PointF(x, y));
   content_layer_->layer()->SetIsDrawable(true);
-
-  // Only applies the brightness filter if the value has changed and is less
-  // than 1.
-  if (brightness != brightness_) {
-    brightness_ = brightness;
-
-    std::vector<cc::slim::Filter> filters;
-    if (brightness_ < 1.f) {
-      filters.push_back(cc::slim::Filter::CreateBrightness(brightness_));
-    }
-    layer_->SetFilters(std::move(filters));
-  }
 }
 
 void StaticTabSceneLayer::SetTabContentManager(

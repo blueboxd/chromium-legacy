@@ -94,8 +94,10 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacade {
     kChromeSyncPromoAddAccount = 15,
     // Chrome Settings > Turn on Sync.
     kChromeSettingsTurnOnSyncButton = 16,
+    // Launched from ChromeOS Projector App for re-authentication.
+    kChromeOSProjectorAppReauth = 17,
 
-    kMaxValue = kChromeSettingsTurnOnSyncButton
+    kMaxValue = kChromeOSProjectorAppReauth
   };
 
   AccountManagerFacade();
@@ -134,9 +136,13 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER_CORE) AccountManagerFacade {
           callback) = 0;
 
   // Launches account reauthentication dialog for provided `email`.
-  virtual void ShowReauthAccountDialog(AccountAdditionSource source,
-                                       const std::string& email,
-                                       base::OnceClosure callback) = 0;
+  // Note: the added/reauthenticated account may not match the account provided
+  // in the `email` field if user decided to edit the email inside the dialog.
+  virtual void ShowReauthAccountDialog(
+      AccountAdditionSource source,
+      const std::string& email,
+      base::OnceCallback<void(const AccountUpsertionResult& result)>
+          callback) = 0;
 
   // Launches OS Settings > Accounts.
   virtual void ShowManageAccountsSettings() = 0;

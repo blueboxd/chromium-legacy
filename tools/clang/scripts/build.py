@@ -722,6 +722,8 @@ def main():
       '-DLLVM_ENABLE_CURL=OFF',
       # Build libclang.a as well as libclang.so
       '-DLIBCLANG_BUILD_STATIC=ON',
+      # Don't try to use ZStd (crbug.com/1444500).
+      '-DLLVM_ENABLE_ZSTD=OFF',
   ]
 
   if sys.platform == 'darwin':
@@ -825,6 +827,10 @@ def main():
     # Use rpmalloc. For faster ThinLTO linking.
     rpmalloc_dir = DownloadRPMalloc()
     base_cmake_args.append('-DLLVM_INTEGRATED_CRT_ALLOC=' + rpmalloc_dir)
+
+    # Set a sysroot to make the build more hermetic.
+    base_cmake_args.append('-DLLVM_WINSYSROOT=' +
+                           os.path.dirname(os.path.dirname(GetWinSDKDir())))
 
   # Statically link libxml2 to make lld-link not require mt.exe on Windows,
   # and to make sure lld-link output on other platforms is identical to
@@ -1101,15 +1107,18 @@ def main():
             'LLVM_INCLUDE_TESTS=OFF',
         ]))
   elif sys.platform == 'win32':
+    sysroot = os.path.dirname(os.path.dirname(GetWinSDKDir()))
     runtimes_triples_args.append(
         ('i386-pc-windows-msvc',
          compiler_rt_cmake_flags(sanitizers=False, profile=True) + [
              'LLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF',
+             'LLVM_WINSYSROOT=' + sysroot,
          ]))
     runtimes_triples_args.append(
         ('x86_64-pc-windows-msvc',
          compiler_rt_cmake_flags(sanitizers=True, profile=True) + [
              'LLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF',
+             'LLVM_WINSYSROOT=' + sysroot,
          ]))
   elif sys.platform == 'darwin':
     compiler_rt_args = [

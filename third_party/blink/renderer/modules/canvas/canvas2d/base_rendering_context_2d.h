@@ -293,7 +293,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
     ValidateStateStackWithCanvas(GetPaintCanvas());
 #endif
   }
-  virtual void ValidateStateStackWithCanvas(const cc::PaintCanvas*) const = 0;
+  void ValidateStateStackWithCanvas(const cc::PaintCanvas* canvas) const;
 
   virtual bool HasAlpha() const = 0;
 
@@ -469,6 +469,9 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
   unsigned max_state_stack_depth_ = 1;
   // Counts how many states have been pushed with BeginLayer.
   int layer_count_ = 0;
+#if DCHECK_IS_ON()
+  int layer_extra_saves_ = 0;
+#endif
   AntiAliasingMode clip_antialiasing_;
 
   virtual void FinalizeFrame(CanvasResourceProvider::FlushReason) {}
@@ -507,6 +510,14 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
   static const char kGeometricPrecisionRendering[];
   virtual void DisableAcceleration() {}
 
+  // Override to prematurely disable acceleration because of a readback.
+  // BaseRenderingContext2D automatically disables acceleration after a number
+  // of readbacks, this can be overridden to disable acceleration earlier than
+  // would typically happen.
+  virtual bool ShouldDisableAccelerationBecauseOfReadback() const {
+    return false;
+  }
+
   virtual bool IsPaint2D() const { return false; }
   void WillOverwriteCanvas(OverdrawOp);
   virtual void WillOverwriteCanvas() = 0;
@@ -532,11 +543,14 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
   bool ExtractColorFromV8ValueAndUpdateCache(const V8CanvasStyle& v8_style,
                                              Color& color);
 
+  CanvasRenderingContext2DState::SaveType SaveLayerForState(
+      const CanvasRenderingContext2DState& state,
+      cc::PaintCanvas& canvas) const;
+
   // Pops from the top of the state stack, inverts transform, restores the
   // PaintCanvas, and validates the state stack. Helper for Restore and
   // EndLayer.
   void PopAndRestore();
-  void pushLayerStack(CanvasRenderingContext2DState::SaveType save_type);
 
   bool ShouldDrawImageAntialiased(const gfx::RectF& dest_rect) const;
 
@@ -559,14 +573,16 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
            image_type == CanvasRenderingContext2DState::kNonOpaqueImage;
   }
 
-  bool BlendModeRequiresCompositedDraw(SkBlendMode blendMode);
+  bool BlendModeRequiresCompositedDraw(
+      const CanvasRenderingContext2DState& state) const;
 
   ALWAYS_INLINE bool ShouldUseCompositedDraw(
       CanvasRenderingContext2DState::PaintType paint_type,
       CanvasRenderingContext2DState::ImageType image_type) {
     const CanvasRenderingContext2DState& state = GetState();
-    if (BlendModeRequiresCompositedDraw(state.GlobalComposite()))
+    if (BlendModeRequiresCompositedDraw(state)) {
       return true;
+    }
     if (StateHasFilter())
       return true;
     if (state.ShouldDrawShadows() &&
@@ -667,6 +683,22 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
   mojom::blink::ColorScheme color_scheme_ = mojom::blink::ColorScheme::kLight;
 };
 
+ALWAYS_INLINE void BaseRenderingContext2D::ValidateStateStackWithCanvas(
+    const cc::PaintCanvas* canvas) const {
+#if DCHECK_IS_ON()
+  if (canvas) {
+    // The canvas should always have an initial save frame, to support
+    // resetting the top level matrix and clip.
+    DCHECK_GT(canvas->getSaveCount(), 1);
+
+    if (context_lost_mode_ == CanvasRenderingContext::kNotLostContext) {
+      DCHECK_EQ(static_cast<size_t>(canvas->getSaveCount()),
+                state_stack_.size() + layer_extra_saves_ + 1);
+    }
+  }
+#endif
+}
+
 namespace {
 
 // Blend modes that require compositing with layers when shadows are drawn.
@@ -703,15 +735,15 @@ ALWAYS_INLINE bool BlendModeDoesntPreserveOpaqueDestinationAlpha(
 }  // namespace
 
 ALWAYS_INLINE bool BaseRenderingContext2D::BlendModeRequiresCompositedDraw(
-    SkBlendMode blendMode) {
+    const CanvasRenderingContext2DState& state) const {
+  SkBlendMode blend_mode = state.GlobalComposite();
   // Blend modes that require CompositedDraw in every case.
-  if (IsFullCanvasCompositeMode(blendMode)) {
+  if (IsFullCanvasCompositeMode(blend_mode)) {
     return true;
   }
-  const CanvasRenderingContext2DState& state = GetState();
   // Blend modes that require CompositedDraw if shadows are drawn.
   return state.ShouldDrawShadows() &&
-         BlendModeRequiresLayersForShadows(blendMode);
+         BlendModeRequiresLayersForShadows(blend_mode);
 }
 
 ALWAYS_INLINE void BaseRenderingContext2D::ResetAlphaIfNeeded(
@@ -929,7 +961,7 @@ void BaseRenderingContext2D::CompositedDraw(
       draw_func(c, &foreground_flags);
     } else {
       DCHECK(IsFullCanvasCompositeMode(state.GlobalComposite()) ||
-             BlendModeRequiresCompositedDraw(state.GlobalComposite()));
+             BlendModeRequiresCompositedDraw(state));
       c->saveLayer(composite_flags);
       shadow_flags.setBlendMode(SkBlendMode::kSrcOver);
       c->setMatrix(ctm);
@@ -1007,7 +1039,7 @@ ALWAYS_INLINE bool BaseRenderingContext2D::ComputeDirtyRect(
   const CanvasRenderingContext2DState& state = GetState();
   gfx::RectF canvas_rect = state.GetTransform().MapRect(local_rect);
 
-  if (UNLIKELY(!state.ShadowColor().IsTransparent())) {
+  if (UNLIKELY(!state.ShadowColor().IsFullyTransparent())) {
     gfx::RectF shadow_rect(canvas_rect);
     shadow_rect.Offset(state.ShadowOffset());
     shadow_rect.Outset(ClampTo<float>(state.ShadowBlur()));

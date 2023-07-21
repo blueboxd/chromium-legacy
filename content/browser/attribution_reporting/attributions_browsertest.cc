@@ -596,9 +596,9 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
 
   // Verify the navigation redirects contain the eligibility header.
   register_response1->WaitForRequest();
-  EXPECT_EQ(register_response1->http_request()->headers.at(
-                "Attribution-Reporting-Eligible"),
-            "navigation-source");
+  ExpectValidAttributionReportingEligibleHeaderForNavigation(
+      register_response1->http_request()->headers.at(
+          "Attribution-Reporting-Eligible"));
   EXPECT_FALSE(base::Contains(register_response1->http_request()->headers,
                               "Attribution-Reporting-Support"));
 
@@ -610,9 +610,9 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
 
   // Ensure that redirect requests also contain the header.
   register_response2->WaitForRequest();
-  ASSERT_EQ(register_response2->http_request()->headers.at(
-                "Attribution-Reporting-Eligible"),
-            "navigation-source");
+  ExpectValidAttributionReportingEligibleHeaderForNavigation(
+      register_response2->http_request()->headers.at(
+          "Attribution-Reporting-Eligible"));
   ASSERT_FALSE(base::Contains(register_response2->http_request()->headers,
                               "Attribution-Reporting-Support"));
 }
@@ -1117,34 +1117,11 @@ ATTRIBUTION_PRERENDER_BROWSER_TEST(ConversionsRegisteredOnActivatedPrerender) {
   const char* kTestCases[] = {"createAttributionSrcImg($1);",
                               "createTrackingPixel($1);"};
 
+  ASSERT_TRUE(https_server()->Start());
+
   for (const char* registration_js : kTestCases) {
-    auto https_server = std::make_unique<net::EmbeddedTestServer>(
-        net::EmbeddedTestServer::TYPE_HTTPS);
-    https_server->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
-    https_server->ServeFilesFromSourceDirectory("content/test/data");
-
-    ExpectedReportWaiter expected_report(
-        GURL("https://a.test/.well-known/attribution-reporting/"
-             "report-event-attribution"),
-        /*attribution_destination=*/"https://d.test",
-        /*source_event_id=*/"5", /*source_type=*/"event", /*trigger_data=*/"1",
-        https_server.get());
-    ASSERT_TRUE(https_server->Start());
-
-    // Navigate to a page with impression creator.
-    const GURL kImpressionUrl = https_server->GetURL(
-        "a.test", "/attribution_reporting/page_with_impression_creator.html");
-    EXPECT_TRUE(NavigateToURL(web_contents(), kImpressionUrl));
-
-    // Register impression for the target conversion url.
-    GURL register_url = https_server->GetURL(
-        "a.test", "/attribution_reporting/register_source_headers.html");
-
-    EXPECT_TRUE(ExecJs(web_contents(), JsReplace("createAttributionSrcImg($1);",
-                                                 register_url)));
-
     // Navigate to a starting same origin page with the conversion url.
-    const GURL kEmptyUrl = https_server->GetURL("d.test", "/empty.html");
+    const GURL kEmptyUrl = https_server()->GetURL("d.test", "/empty.html");
     {
       auto url_loader_interceptor =
           content::URLLoaderInterceptor::ServeFilesFromDirectoryAtOrigin(
@@ -1153,7 +1130,7 @@ ATTRIBUTION_PRERENDER_BROWSER_TEST(ConversionsRegisteredOnActivatedPrerender) {
     }
 
     // Pre-render the conversion url.
-    const GURL kConversionUrl = https_server->GetURL(
+    const GURL kConversionUrl = https_server()->GetURL(
         "d.test", "/attribution_reporting/page_with_conversion_redirect.html");
     int host_id = prerender_helper_.AddPrerender(kConversionUrl);
     content::test::PrerenderHostObserver host_observer(*web_contents(),
@@ -1163,37 +1140,113 @@ ATTRIBUTION_PRERENDER_BROWSER_TEST(ConversionsRegisteredOnActivatedPrerender) {
     content::RenderFrameHost* prerender_rfh =
         prerender_helper_.GetPrerenderedMainFrameHost(host_id);
 
-    const GURL register_trigger_url = https_server->GetURL(
+    const GURL register_trigger_url = https_server()->GetURL(
         "a.test", "/attribution_reporting/register_trigger_headers.html");
     EXPECT_TRUE(ExecJs(prerender_rfh,
                        JsReplace(registration_js, register_trigger_url)));
 
-    // Delay prerender activation so that subresource response is received
-    // earlier than that.
-    base::RunLoop run_loop;
-    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(100));
-    run_loop.Run();
+    MockAttributionObserver observer;
+    base::ScopedObservation<AttributionManager, AttributionObserver>
+        observation(&observer);
+    observation.Observe(attribution_manager());
+    base::RunLoop loop;
+    EXPECT_CALL(observer, OnTriggerHandled(_, _, _)).WillOnce([&]() {
+      loop.Quit();
+    });
 
     // Navigate to pre-rendered page, bringing it to the fore.
     prerender_helper_.NavigatePrimaryPage(kConversionUrl);
+
     ASSERT_EQ(kConversionUrl, web_contents()->GetLastCommittedURL());
     ASSERT_TRUE(host_observer.was_activated());
 
-    // Confirm that reports work as expected, and impressions were retrieved
-    // from the pre-rendered page, once it became a primary page.
-    expected_report.WaitForReport();
+    loop.Run();
   }
+}
+
+// Tests to verify that cross app web is not enabled when base::Feature is
+// enabled but runtime feature is disabled (without
+// `features::kPrivacySandboxAdsAPIsOverride` override).
+class AttributionsCrossAppWebRuntimeDisabledBrowserTest
+    : public AttributionsBrowserTest {
+ public:
+  AttributionsCrossAppWebRuntimeDisabledBrowserTest() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{network::features::
+                                  kAttributionReportingCrossAppWeb},
+        /*disabled_features=*/{});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Verify that the Attribution-Reporting-Support header setting is gated by the
+// runtime feature.
+IN_PROC_BROWSER_TEST_F(AttributionsCrossAppWebRuntimeDisabledBrowserTest,
+                       AttributionEligibleNavigation_SupportHeaderNotSet) {
+  auto register_response1 =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server(), "/register_source_redirect");
+  auto register_response2 =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server(), "/register_source_redirect2");
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL impression_url = https_server()->GetURL(
+      "a.test", "/attribution_reporting/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), impression_url));
+
+  GURL register_source_url =
+      https_server()->GetURL("d.test", "/register_source_redirect");
+
+  // Don't use `CreateAndClickSource()` as we need to observe navigation
+  // redirects prior to the navigation finishing.
+  EXPECT_TRUE(ExecJs(web_contents(), JsReplace(R"(
+    createAttributionSrcAnchor({id: 'link',
+                        url: $1,
+                        attributionsrc: '',
+                        target: $2});)",
+                                               register_source_url, "_top")));
+  EXPECT_TRUE(ExecJs(web_contents(), "simulateClick('link');"));
+
+  // Verify the navigation redirects contain the eligibility header.
+  register_response1->WaitForRequest();
+  ExpectValidAttributionReportingEligibleHeaderForNavigation(
+      register_response1->http_request()->headers.at(
+          "Attribution-Reporting-Eligible"));
+  ASSERT_FALSE(base::Contains(register_response1->http_request()->headers,
+                              "Attribution-Reporting-Support"));
+
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
+  http_response->AddCustomHeader("Location", "/register_source_redirect2");
+  register_response1->Send(http_response->ToResponseString());
+  register_response1->Done();
+
+  // Ensure that redirect requests also don't contain the
+  // Attribution-Reporting-Support header.
+  register_response2->WaitForRequest();
+  ExpectValidAttributionReportingEligibleHeaderForNavigation(
+      register_response2->http_request()->headers.at(
+          "Attribution-Reporting-Eligible"));
+  EXPECT_FALSE(base::Contains(register_response2->http_request()->headers,
+                              "Attribution-Reporting-Support"));
 }
 
 class AttributionsCrossAppWebEnabledBrowserTest
     : public AttributionsBrowserTest {
  public:
-  AttributionsCrossAppWebEnabledBrowserTest() = default;
+  AttributionsCrossAppWebEnabledBrowserTest() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{network::features::
+                                  kAttributionReportingCrossAppWeb,
+                              features::kPrivacySandboxAdsAPIsOverride},
+        /*disabled_features=*/{});
+  }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_{
-      network::features::kAttributionReportingCrossAppWeb};
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(AttributionsCrossAppWebEnabledBrowserTest,
@@ -1300,7 +1353,8 @@ class AttributionsFencedFrameBrowserTest : public AttributionsBrowserTest {
                               {features::kPrivacySandboxAdsAPIsOverride, {}},
                               {features::kAttributionFencedFrameReportingBeacon,
                                {}},
-                              {blink::features::kFencedFramesAPIChanges, {}}},
+                              {blink::features::kFencedFramesAPIChanges, {}},
+                              {blink::features::kFencedFramesDefaultMode, {}}},
         /*disabled_features=*/{});
   }
 

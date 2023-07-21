@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.settings.ProfileDependentSetting;
 import org.chromium.components.autofill.VirtualCardEnrollmentLinkType;
 import org.chromium.components.autofill.VirtualCardEnrollmentState;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
@@ -44,10 +45,12 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Server credit card settings.
  */
-public class AutofillServerCardEditor extends AutofillCreditCardEditor {
+public class AutofillServerCardEditor
+        extends AutofillCreditCardEditor implements ProfileDependentSetting {
     private static final String SETTINGS_PAGE_ENROLLMENT_HISTOGRAM_TEXT =
             "Autofill.VirtualCard.SettingsPageEnrollment";
 
+    private Profile mProfile;
     private View mLocalCopyLabel;
     private View mClearLocalCopy;
     private TextView mVirtualCardEnrollmentButton;
@@ -118,7 +121,7 @@ public class AutofillServerCardEditor extends AutofillCreditCardEditor {
         super.onCreate(savedInstanceState);
         if (ChromeFeatureList.isEnabled(
                     ChromeFeatureList.AUTOFILL_ENABLE_UPDATE_VIRTUAL_CARD_ENROLLMENT)) {
-            mDelegate = new AutofillPaymentMethodsDelegate(Profile.getLastUsedRegularProfile());
+            mDelegate = new AutofillPaymentMethodsDelegate(mProfile);
             mVirtualCardEnrollmentUpdateResponseCallback = isUpdateSuccessful -> {
                 // If the server card editor page was closed when the server call was in progress,
                 // cleanup the delegate. Else, update the enrollment button.
@@ -161,7 +164,7 @@ public class AutofillServerCardEditor extends AutofillCreditCardEditor {
         ((TextView) v.findViewById(R.id.card_last_four))
                 .setText(mCard.getObfuscatedLastFourDigits());
         ((TextView) v.findViewById(R.id.settings_page_card_expiration))
-                .setText(mCard.getFormattedExpirationDateWithTwoDigitYear(getActivity()));
+                .setText(mCard.getFormattedExpirationDate(getActivity()));
         v.findViewById(R.id.edit_server_card).setOnClickListener(view -> {
             logServerCardEditorButtonClicks(showVirtualCardEnrollmentButton()
                             ? CardType.VIRTUAL_CARD
@@ -343,5 +346,10 @@ public class AutofillServerCardEditor extends AutofillCreditCardEditor {
     @Override
     protected boolean getIsDeletable() {
         return false;
+    }
+
+    @Override
+    public void setProfile(Profile profile) {
+        mProfile = profile;
     }
 }

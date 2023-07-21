@@ -31,11 +31,14 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
+#include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -126,14 +129,21 @@ DeskMiniView::DeskMiniView(DeskBarViewBase* owner_bar,
       chromeos::features::IsJellyrollEnabled() ? kPreviewFocusRingRadius
                                                : kPreviewFocusRingRadiusOld);
 
-  preview_focus_ring->SetHasFocusPredicate([&](views::View* view) {
-    return (owner_bar_->dragged_item_over_bar() &&
-            IsPointOnMiniView(
-                owner_bar_->last_dragged_item_screen_location())) ||
-           desk_preview_->IsViewHighlighted() ||
-           (desk_ && desk_->is_active() && owner_bar_->overview_grid() &&
-            !owner_bar_->overview_grid()->IsShowingSavedDeskLibrary());
-  });
+  preview_focus_ring->SetHasFocusPredicate(base::BindRepeating(
+      [](const DeskMiniView* mini_view, const views::View* view) {
+        const auto* desk_preview = views::AsViewClass<DeskPreviewView>(view);
+        CHECK(desk_preview);
+        return desk_preview->IsViewHighlighted() ||
+               (mini_view->owner_bar_->dragged_item_over_bar() &&
+                mini_view->IsPointOnMiniView(
+                    mini_view->owner_bar_
+                        ->last_dragged_item_screen_location())) ||
+               (mini_view->desk_ && mini_view->desk_->is_active() &&
+                mini_view->owner_bar_->overview_grid() &&
+                !mini_view->owner_bar_->overview_grid()
+                     ->IsShowingSavedDeskLibrary());
+      },
+      base::Unretained(this)));
 
   desk_name_view_ = AddChildView(std::move(desk_name_view));
 
@@ -232,7 +242,10 @@ void DeskMiniView::UpdateFocusColor() {
     new_focus_color_id = ui::kColorAshFocusRing;
   } else if (desk_->is_active() && owner_bar_->overview_grid() &&
              !owner_bar_->overview_grid()->IsShowingSavedDeskLibrary()) {
-    new_focus_color_id = kColorAshCurrentDeskColor;
+    new_focus_color_id =
+        chromeos::features::IsJellyrollEnabled()
+            ? cros_tokens::kCrosSysTertiary
+            : static_cast<ui::ColorId>(kColorAshCurrentDeskColor);
   } else {
     new_focus_color_id = absl::nullopt;
   }

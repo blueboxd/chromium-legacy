@@ -13,7 +13,6 @@
 #include "base/lazy_instance.h"
 #include "base/trace_event/typed_macros.h"
 #include "content/browser/bad_message.h"
-#include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/isolated_origin_util.h"
 #include "content/browser/isolation_context.h"
@@ -105,7 +104,9 @@ SiteInstanceImpl::SiteInstanceImpl(BrowsingInstance* browsing_instance)
 }
 
 SiteInstanceImpl::~SiteInstanceImpl() {
-  GetContentClient()->browser()->SiteInstanceDeleting(this);
+  if (destruction_callback_for_testing_) {
+    std::move(destruction_callback_for_testing_).Run();
+  }
 
   // Now that no one is referencing us, we can safely remove ourselves from
   // the BrowsingInstance.  Any future visits to a page from this site
@@ -538,8 +539,10 @@ void SiteInstanceImpl::SetSiteInfoInternal(const SiteInfo& site_info) {
   // BrowsingInstance can script each other.
   browsing_instance_->RegisterSiteInstance(this);
 
-  if (site_info_.requires_origin_keyed_process()) {
-    // Track this origin's isolation in the current BrowsingInstance.  This is
+  if (site_info_.requires_origin_keyed_process() &&
+      !site_info_.requires_origin_keyed_process_by_default()) {
+    // Track this origin's isolation in the current BrowsingInstance, if it has
+    // received an origin-keyed process due to an explicit opt-in. This is
     // needed to consistently isolate future navigations to this origin in this
     // BrowsingInstance, even if its opt-in status changes later.
     ChildProcessSecurityPolicyImpl* policy =
@@ -1175,10 +1178,11 @@ bool SiteInstanceImpl::IsSameSite(const IsolationContext& isolation_context,
   url::Origin dest_isolated_origin;
   bool src_origin_is_isolated = policy->GetMatchingProcessIsolatedOrigin(
       isolation_context, src_origin,
-      real_src_url_info.requests_origin_keyed_process(), &src_isolated_origin);
+      real_src_url_info.RequestsOriginKeyedProcess(isolation_context),
+      &src_isolated_origin);
   bool dest_origin_is_isolated = policy->GetMatchingProcessIsolatedOrigin(
       isolation_context, dest_origin,
-      real_dest_url_info.requests_origin_keyed_process(),
+      real_dest_url_info.RequestsOriginKeyedProcess(isolation_context),
       &dest_isolated_origin);
   if (src_origin_is_isolated || dest_origin_is_isolated) {
     // Compare most specific matching origins to ensure that a subdomain of an
@@ -1496,12 +1500,8 @@ RenderProcessHost* SiteInstanceImpl::GetDefaultProcessForBrowsingInstance() {
 
 bool SiteInstanceImpl::IsCoopRelatedSiteInstance(
     const SiteInstanceImpl* instance) const {
-  return instance->browsing_instance_->GetCoopRelatedGroupId() ==
-         browsing_instance_->GetCoopRelatedGroupId();
-}
-
-CoopRelatedGroupId SiteInstanceImpl::GetCoopRelatedGroupId() const {
-  return browsing_instance_->GetCoopRelatedGroupId();
+  return instance->browsing_instance_->coop_related_group_token() ==
+         browsing_instance_->coop_related_group_token();
 }
 
 void SiteInstanceImpl::SetProcessForTesting(RenderProcessHost* process) {

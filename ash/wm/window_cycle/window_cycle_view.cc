@@ -59,6 +59,11 @@ constexpr int kBackgroundCornerRadius = 16;
 // Shield horizontal inset.
 constexpr int kBackgroundHorizontalInsetDp = 8;
 
+// Shield horizontal inset when Jellyroll is enabled.
+// TODO(b/282753971): Rename this to `kBackgroundHorizontalInsetDp` and remove
+// `kBackgroundHorizontalInsetDp` above.
+constexpr int kBackgroundHorizontalInsetDpCrOSNext = 40;
+
 // Vertical padding between the alt-tab bandshield and the window previews.
 constexpr int kInsideBorderVerticalPaddingDp = 60;
 
@@ -185,8 +190,11 @@ WindowCycleView::WindowCycleView(aura::Window* root_window,
     // Set a pill shaped (fully rounded rect) highlight path to focus ring.
     focus_ring->SetPathGenerator(
         std::make_unique<views::PillHighlightPathGenerator>());
-    focus_ring->SetHasFocusPredicate(
-        [&](views::View* view) { return IsTabSliderFocused(); });
+    focus_ring->SetHasFocusPredicate(base::BindRepeating(
+        [](const WindowCycleView* cycle_view, const views::View* view) {
+          return cycle_view->IsTabSliderFocused();
+        },
+        base::Unretained(this)));
 
     const bool per_desk =
         Shell::Get()->window_cycle_controller()->IsAltTabPerActiveDesk();
@@ -670,7 +678,9 @@ bool WindowCycleView::IsEventInTabSliderContainer(
 
 int WindowCycleView::CalculateMaxWidth() const {
   return root_window_->GetBoundsInScreen().size().width() -
-         2 * kBackgroundHorizontalInsetDp;
+         2 * (chromeos::features::IsJellyrollEnabled()
+                  ? kBackgroundHorizontalInsetDpCrOSNext
+                  : kBackgroundHorizontalInsetDp);
 }
 
 gfx::Rect WindowCycleView::GetContentContainerBounds() const {

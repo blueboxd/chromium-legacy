@@ -290,6 +290,7 @@ const ModifierRemapping* GetSearchRemappedKey(
 
     case KeyboardCapability::DeviceType::kDeviceExternalChromeOsKeyboard:
     case KeyboardCapability::DeviceType::kDeviceInternalKeyboard:
+    case KeyboardCapability::DeviceType::kDeviceInternalRevenKeyboard:
     case KeyboardCapability::DeviceType::kDeviceHotrodRemote:
     case KeyboardCapability::DeviceType::kDeviceVirtualCoreKeyboard:
     case KeyboardCapability::DeviceType::kDeviceUnknown:
@@ -854,6 +855,8 @@ bool EventRewriterAsh::RewriteModifierKeys(const KeyEvent& key_event,
       // We remove the CapsLock modifier here because we do not want to
       // turn on the Capslock modifier when the key has been remapped.
       incoming.flags &= ~EF_CAPS_LOCK_ON;
+      base::RecordAction(
+          base::UserMetricsAction("CapsLock_Toggled_Using_CapsLockKey"));
     }
     if (remapped_key->remap_to == ui::mojom::ModifierKey::kCapsLock) {
       characteristic_flag |= EF_CAPS_LOCK_ON;
@@ -1060,6 +1063,7 @@ void EventRewriterAsh::RecordModifierKeyPressedAfterRemapping(
 
   switch (keyboard_capability_->GetDeviceType(device_id)) {
     case KeyboardCapability::DeviceType::kDeviceInternalKeyboard:
+    case KeyboardCapability::DeviceType::kDeviceInternalRevenKeyboard:
       UMA_HISTOGRAM_ENUMERATION(
           "ChromeOS.Inputs.Keyboard.RemappedModifierPressed.Internal",
           modifier_key_usage_mapping->modifier_key_enum);
@@ -1104,6 +1108,7 @@ void EventRewriterAsh::RecordModifierKeyPressedBeforeRemapping(
 
   switch (keyboard_capability_->GetDeviceType(device_id)) {
     case KeyboardCapability::DeviceType::kDeviceInternalKeyboard:
+    case KeyboardCapability::DeviceType::kDeviceInternalRevenKeyboard:
       UMA_HISTOGRAM_ENUMERATION(
           "ChromeOS.Inputs.Keyboard.ModifierPressed.Internal",
           modifier_key_usage_mapping->modifier_key_enum);
@@ -1780,12 +1785,15 @@ int EventRewriterAsh::RewriteModifierClick(const MouseEvent& mouse_event,
       if (matched_mask == kSearchLeftButton) {
         base::RecordAction(
             base::UserMetricsAction("SearchClickMappedToRightClick"));
+        delegate_->RecordEventRemappedToRightClick(
+            /*alt_based_right_click=*/false);
       } else {
         DCHECK(matched_mask == kAltLeftButton);
         base::RecordAction(
             base::UserMetricsAction("AltClickMappedToRightClick"));
+        delegate_->RecordEventRemappedToRightClick(
+            /*alt_based_right_click=*/true);
       }
-      delegate_->RecordEventRemappedToRightClick();
     } else {
       pressed_as_right_button_device_ids_.erase(mouse_event.source_device_id());
     }

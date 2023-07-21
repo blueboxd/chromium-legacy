@@ -163,6 +163,10 @@ extern const base::FeatureParam<OsIntegrationSubManagersStage>
     kOsIntegrationSubManagersStageParam;
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS)
+BASE_DECLARE_FEATURE(kDesktopTaskManagerEndProcessDisabledForExtension);
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kPWAsDefaultOfflinePage);
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -238,6 +242,9 @@ BASE_DECLARE_FEATURE(kEnableWebHidOnExtensionServiceWorker);
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kEnableWebUsbOnExtensionServiceWorker);
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kExtendedSettingsDescriptions);
 
 #if !BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -334,6 +341,9 @@ BASE_DECLARE_FEATURE(kHappinessTrackingSystemBluetoothRevamp);
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kHappinessTrackingSystemBatteryLife);
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kHappinessTrackingSystemPeripherals);
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kHappinessTrackingSystemEnt);
@@ -573,6 +583,9 @@ BASE_DECLARE_FEATURE(kRemoveSupervisedUsersOnStartup);
 
 #if !BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kSafetyCheckExtensions);
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kSafetyCheckNotificationPermissions);
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<int>
@@ -580,6 +593,9 @@ extern const base::FeatureParam<int>
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<int>
     kSafetyCheckNotificationPermissionsLowEnagementLimit;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kSafetyHub);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -630,7 +646,7 @@ BASE_DECLARE_FEATURE(kThirdPartyModulesBlocking);
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kTreatUnsafeDownloadsAsActive);
 COMPONENT_EXPORT(CHROME_FEATURES)
-BASE_DECLARE_FEATURE(kBlockInsecureDownloads);
+BASE_DECLARE_FEATURE(kInsecureDownloadWarnings);
 
 // TrustSafetySentimentSurvey
 #if !BUILDFLAG(IS_ANDROID)

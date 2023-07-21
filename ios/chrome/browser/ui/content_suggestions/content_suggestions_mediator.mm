@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 
+#import <AuthenticationServices/AuthenticationServices.h>
 #import <MaterialComponents/MaterialSnackbar.h>
 
 #import "base/functional/bind.h"
@@ -21,23 +22,32 @@
 #import "components/ntp_tiles/most_visited_sites.h"
 #import "components/ntp_tiles/ntp_tile.h"
 #import "components/pref_registry/pref_registry_syncable.h"
+#import "components/prefs/ios/pref_observer_bridge.h"
 #import "components/reading_list/core/reading_list_model.h"
 #import "components/reading_list/ios/reading_list_model_bridge_observer.h"
 #import "components/search_engines/search_terms_data.h"
 #import "components/search_engines/template_url.h"
+#import "components/signin/public/identity_manager/identity_manager.h"
+#import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/ntp/set_up_list.h"
+#import "ios/chrome/browser/ntp/set_up_list_delegate.h"
+#import "ios/chrome/browser/ntp/set_up_list_item.h"
+#import "ios/chrome/browser/ntp/set_up_list_item_type.h"
+#import "ios/chrome/browser/ntp/set_up_list_prefs.h"
 #import "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
@@ -47,6 +57,7 @@
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/authentication_service_observer_bridge.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_item.h"
@@ -60,13 +71,15 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_tile_saver.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
+#import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_view_data.h"
+#import "ios/chrome/browser/ui/content_suggestions/set_up_list/utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/start_suggest_service_factory.h"
+#import "ios/chrome/browser/ui/credential_provider_promo/credential_provider_promo_metrics.h"
 #import "ios/chrome/browser/ui/ntp/feed_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_metrics_delegate.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_util.h"
 #import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
-#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/common/app_group/app_group_constants.h"
@@ -80,16 +93,31 @@
 
 namespace {
 
+using credential_provider_promo::IOSCredentialProviderPromoAction;
 using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 using RequestSource = SearchTermsData::RequestSource;
 
 // Maximum number of most visited tiles fetched.
 const NSInteger kMaxNumMostVisitedTiles = 4;
 
+// Checks the last action the user took on the Credential Provider Promo to
+// determine if it was dismissed.
+bool CredentialProviderPromoDismissed(PrefService* local_state) {
+  IOSCredentialProviderPromoAction last_action =
+      static_cast<IOSCredentialProviderPromoAction>(local_state->GetInteger(
+          prefs::kIosCredentialProviderPromoLastActionTaken));
+  return last_action == IOSCredentialProviderPromoAction::kNo;
+}
+
 }  // namespace
 
-@interface ContentSuggestionsMediator () <MostVisitedSitesObserving,
-                                          ReadingListModelBridgeObserver> {
+@interface ContentSuggestionsMediator () <AuthenticationServiceObserving,
+                                          IdentityManagerObserverBridgeDelegate,
+                                          MostVisitedSitesObserving,
+                                          ReadingListModelBridgeObserver,
+                                          PrefObserverDelegate,
+                                          SceneStateObserver,
+                                          SetUpListDelegate> {
   std::unique_ptr<ntp_tiles::MostVisitedSites> _mostVisitedSites;
   std::unique_ptr<ntp_tiles::MostVisitedSitesObserverBridge> _mostVisitedBridge;
   std::unique_ptr<ReadingListModelBridge> _readingListModelBridge;
@@ -147,10 +175,27 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 @property(nonatomic, assign) BOOL incognitoAvailable;
 // Browser reference.
 @property(nonatomic, assign) Browser* browser;
+// The SetUpList, a list of tasks a new user might want to complete.
+@property(nonatomic, strong) SetUpList* setUpList;
 
 @end
 
-@implementation ContentSuggestionsMediator
+@implementation ContentSuggestionsMediator {
+  // Bridge to listen to pref changes.
+  std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
+  // Registrar for pref changes notifications.
+  PrefChangeRegistrar _prefChangeRegistrar;
+  // Local State prefs.
+  PrefService* _localState;
+  // Used by SetUpList to get signed-in status.
+  AuthenticationService* _authenticationService;
+  // Used by SetUpList to observe changes to signed-in status.
+  std::unique_ptr<signin::IdentityManagerObserverBridge>
+      _identityObserverBridge;
+  // Observer for auth service status changes.
+  std::unique_ptr<AuthenticationServiceObserverBridge>
+      _authServiceObserverBridge;
+}
 
 #pragma mark - Public
 
@@ -162,9 +207,12 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
                  readingListModel:(ReadingListModel*)readingListModel
                       prefService:(PrefService*)prefService
     isGoogleDefaultSearchProvider:(BOOL)isGoogleDefaultSearchProvider
+            authenticationService:(AuthenticationService*)authenticationService
+                  identityManager:(signin::IdentityManager*)identityManager
                           browser:(Browser*)browser {
   self = [super init];
   if (self) {
+    _localState = GetApplicationContext()->GetLocalState();
     _incognitoAvailable = !IsIncognitoModeDisabled(prefService);
     _articleForYouEnabled =
         prefService->FindPreference(prefs::kArticlesForYouEnabled);
@@ -186,6 +234,34 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
     _readingListModelBridge =
         std::make_unique<ReadingListModelBridge>(self, readingListModel);
+
+    if (IsIOSSetUpListEnabled() &&
+        set_up_list_utils::IsSetUpListActive(_localState)) {
+      _authenticationService = authenticationService;
+      _authServiceObserverBridge =
+          std::make_unique<AuthenticationServiceObserverBridge>(
+              _authenticationService, self);
+      _identityObserverBridge =
+          std::make_unique<signin::IdentityManagerObserverBridge>(
+              identityManager, self);
+      _prefObserverBridge = std::make_unique<PrefObserverBridge>(self);
+      _prefChangeRegistrar.Init(_localState);
+      _prefObserverBridge->ObserveChangesForPreference(
+          prefs::kIosCredentialProviderPromoLastActionTaken,
+          &_prefChangeRegistrar);
+      if (CredentialProviderPromoDismissed(_localState)) {
+        set_up_list_prefs::MarkItemComplete(_localState,
+                                            SetUpListItemType::kAutofill);
+      } else {
+        [self checkIfCPEEnabled];
+      }
+      _setUpList = [SetUpList buildFromPrefs:prefService
+                                  localState:_localState
+                       authenticationService:authenticationService];
+    }
+    SceneState* sceneState =
+        SceneStateBrowserAgent::FromBrowser(browser)->GetSceneState();
+    [sceneState addObserver:self];
     _browser = browser;
   }
   return self;
@@ -199,6 +275,20 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 - (void)disconnect {
   _mostVisitedBridge.reset();
   _mostVisitedSites.reset();
+  _readingListModelBridge.reset();
+  _authenticationService = nullptr;
+  _authServiceObserverBridge.reset();
+  _identityObserverBridge.reset();
+  if (_prefObserverBridge) {
+    _prefChangeRegistrar.RemoveAll();
+    _prefObserverBridge.reset();
+  }
+  [_setUpList disconnect];
+  _setUpList = nil;
+  SceneState* sceneState =
+      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
+  [sceneState removeObserver:self];
+  _localState = nullptr;
 }
 
 - (void)refreshMostVisitedTiles {
@@ -215,16 +305,29 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     [self.consumer
         showReturnToRecentTabTileWithConfig:self.returnToRecentTabItem];
   }
-  if ([self.mostVisitedItems count] && ![self shouldHideMVTForTileAblation]) {
+  if ([self.mostVisitedItems count] && ![self shouldHideMVTTiles]) {
     [self.consumer setMostVisitedTilesWithConfigs:self.mostVisitedItems];
   }
-  if (![self shouldHideShortcutsForTileAblation]) {
+  if ([self shouldShowSetUpList]) {
+    self.setUpList.delegate = self;
+    NSArray<SetUpListItemViewData*>* items = [self setUpListItems];
+    [self.consumer showSetUpListWithItems:items];
+    [self.contentSuggestionsMetricsRecorder recordSetUpListShown];
+    for (SetUpListItemViewData* item in items) {
+      [self.contentSuggestionsMetricsRecorder
+          recordSetUpListItemShown:item.type];
+    }
+  }
+  // Show Shortcuts if the Tile Ablation is not enabled and either:
+  // 1) Magic Stack is enabled (always show shortcuts in Magic Stack).
+  // 2) The Set Up List and Magic Stack are not enabled (Set Up List replaced
+  // Shortcuts).
+  if (![self shouldHideShortcuts] &&
+      (IsMagicStackEnabled() || ![self shouldShowSetUpList])) {
     [self.consumer setShortcutTilesWithConfigs:self.actionButtonItems];
   }
   if (IsMagicStackEnabled()) {
-    [self.consumer setMagicStackOrder:@[
-      @(int(ContentSuggestionsModuleType::kShortcuts))
-    ]];
+    [self.consumer setMagicStackOrder:[self magicStackOrder]];
   }
 }
 
@@ -286,6 +389,59 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     self.returnToRecentTabItem = nil;
     [self.consumer hideReturnToRecentTabTile];
   }
+}
+
+- (void)disableSetUpList {
+  set_up_list_prefs::DisableSetUpList(_localState);
+  [self.consumer hideSetUpListWithAnimations:^{
+    [self.feedDelegate contentSuggestionsWasUpdated];
+  }];
+}
+
+#pragma mark - IdentityManagerObserverBridgeDelegate
+
+// Called when a user changes the syncing state.
+- (void)onPrimaryAccountChanged:
+    (const signin::PrimaryAccountChangeEvent&)event {
+  switch (event.GetEventTypeFor(signin::ConsentLevel::kSync)) {
+    case signin::PrimaryAccountChangeEvent::Type::kSet:
+      if (IsIOSSetUpListEnabled() && _authenticationService->GetPrimaryIdentity(
+                                         signin::ConsentLevel::kSignin)) {
+        // User has signed in, mark SetUpList item complete. Delayed to allow
+        // Signin UI flow to be fully dismissed before starting SetUpList
+        // completion animation.
+        PrefService* localState = _localState;
+        base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+            FROM_HERE, base::BindOnce(^{
+              set_up_list_prefs::MarkItemComplete(
+                  localState, SetUpListItemType::kSignInSync);
+            }),
+            base::Seconds(0.5));
+      }
+      break;
+    case signin::PrimaryAccountChangeEvent::Type::kCleared:
+    case signin::PrimaryAccountChangeEvent::Type::kNone:
+      break;
+  }
+}
+
+#pragma mark - SetUpListDelegate
+
+- (void)setUpListItemDidComplete:(SetUpListItem*)item {
+  __weak __typeof(self) weakSelf = self;
+  ProceduralBlock completion = ^{
+    if ([weakSelf.setUpList allItemsComplete]) {
+      [weakSelf.consumer showSetUpListDoneWithAnimations:^{
+        if (!IsMagicStackEnabled()) {
+          [self.feedDelegate contentSuggestionsWasUpdated];
+        }
+      }];
+    } else if (IsMagicStackEnabled()) {
+      [self.consumer scrollToNextMagicStackModuleForCompletedModule:
+                         SetUpListModuleTypeForSetUpListType(item.type)];
+    }
+  };
+  [self.consumer markSetUpListItemComplete:item.type completion:completion];
 }
 
 #pragma mark - ContentSuggestionsCommands
@@ -424,7 +580,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 - (void)onMostVisitedURLsAvailable:
     (const ntp_tiles::NTPTilesVector&)mostVisited {
-  if ([self shouldHideMVTForTileAblation]) {
+  if ([self shouldHideMVTTiles]) {
     return;
   }
 
@@ -471,27 +627,33 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   }
 }
 
+#pragma mark - SceneStateObserver
+
+- (void)sceneState:(SceneState*)sceneState
+    transitionedToActivationLevel:(SceneActivationLevel)level {
+  if (level == SceneActivationLevelForegroundActive) {
+    if (IsIOSSetUpListEnabled() && _setUpList) {
+      [self checkIfCPEEnabled];
+    }
+  }
+}
 #pragma mark - Private
 
 // Updates `prefs::kIosSyncSegmentsNewTabPageDisplayCount` with the number of
 // remaining New Tab Page displays that include synced history in the Most
 // Visited Tiles.
 - (void)recordMostVisitedTilesDisplayed {
-  PrefService* local_state = GetApplicationContext()->GetLocalState();
-
-  CHECK(local_state != nullptr);
-
   const int displayCount =
-      local_state->GetInteger(prefs::kIosSyncSegmentsNewTabPageDisplayCount) +
+      _localState->GetInteger(prefs::kIosSyncSegmentsNewTabPageDisplayCount) +
       1;
 
-  local_state->SetInteger(prefs::kIosSyncSegmentsNewTabPageDisplayCount,
+  _localState->SetInteger(prefs::kIosSyncSegmentsNewTabPageDisplayCount,
                           displayCount);
 }
 
 // Replaces the Most Visited items currently displayed by the most recent ones.
 - (void)useFreshMostVisited {
-  if ([self shouldHideMVTForTileAblation]) {
+  if ([self shouldHideMVTTiles]) {
     return;
   }
   self.mostVisitedItems = self.freshMostVisitedItems;
@@ -622,31 +784,123 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   return NO;
 }
 
-// Returns whether the shortcut tiles should be hidden for the tile ablation
-// experiment.
-- (BOOL)shouldHideShortcutsForTileAblation {
+// Returns whether the shortcut tiles should be hidden.
+- (BOOL)shouldHideShortcuts {
+  if (ShoudHideShortcuts()) {
+    return YES;
+  }
   if ([self isTileAblationComplete]) {
     return NO;
   }
-  ntp_tiles::NewTabPageRetentionExperimentBehavior behavior =
-      ntp_tiles::GetNewTabPageRetentionExperimentType();
-  return behavior ==
-         ntp_tiles::NewTabPageRetentionExperimentBehavior::kTileAblationHideAll;
+  ntp_tiles::NewTabPageFieldTrialExperimentBehavior behavior =
+      ntp_tiles::GetNewTabPageFieldTrialExperimentType();
+  return behavior == ntp_tiles::NewTabPageFieldTrialExperimentBehavior::
+                         kTileAblationHideAll;
 }
 
-// Returns whether the MVT tiles should be hidden for the tile ablation
-// experiment.
-- (BOOL)shouldHideMVTForTileAblation {
+// Returns whether the MVT tiles should be hidden.
+- (BOOL)shouldHideMVTTiles {
+  if (ShouldHideMVT()) {
+    return YES;
+  }
   if ([self isTileAblationComplete]) {
     return NO;
   }
-  ntp_tiles::NewTabPageRetentionExperimentBehavior behavior =
-      ntp_tiles::GetNewTabPageRetentionExperimentType();
+  ntp_tiles::NewTabPageFieldTrialExperimentBehavior behavior =
+      ntp_tiles::GetNewTabPageFieldTrialExperimentType();
 
-  return behavior == ntp_tiles::NewTabPageRetentionExperimentBehavior::
+  return behavior == ntp_tiles::NewTabPageFieldTrialExperimentBehavior::
                          kTileAblationHideAll ||
-         behavior == ntp_tiles::NewTabPageRetentionExperimentBehavior::
+         behavior == ntp_tiles::NewTabPageFieldTrialExperimentBehavior::
                          kTileAblationHideMVTOnly;
+}
+
+// Returns an array that represents the order of the modules to be shown in the
+// Magic Stack.
+- (NSArray<NSNumber*>*)magicStackOrder {
+  NSMutableArray* magicStackModules = [NSMutableArray array];
+  if ([self shouldShowSetUpList]) {
+    if (set_up_list_utils::ShouldShowCompactedSetUpListModule()) {
+      [magicStackModules
+          addObject:@(int(ContentSuggestionsModuleType::kCompactedSetUpList))];
+    } else {
+      for (SetUpListItem* model in self.setUpList.items) {
+        [magicStackModules
+            addObject:@(int(SetUpListModuleTypeForSetUpListType(model.type)))];
+      }
+    }
+  }
+  if (ShouldPutMostVisitedSitesInMagicStack()) {
+    [magicStackModules
+        addObject:@(int(ContentSuggestionsModuleType::kMostVisited))];
+  }
+  [magicStackModules
+      addObject:@(int(ContentSuggestionsModuleType::kShortcuts))];
+
+  return magicStackModules;
+}
+
+// Returns YES if the conditions are right to display the Set Up List.
+- (BOOL)shouldShowSetUpList {
+  if (!IsIOSSetUpListEnabled()) {
+    return NO;
+  }
+  if (!set_up_list_utils::IsSetUpListActive(_localState)) {
+    return NO;
+  }
+
+  SetUpList* setUpList = self.setUpList;
+  if (!setUpList || setUpList.items.count == 0) {
+    return NO;
+  }
+
+  return YES;
+}
+
+// Returns an array of items to display in the Set Up List.
+- (NSArray<SetUpListItemViewData*>*)setUpListItems {
+  // Map the model objects to view objects.
+  NSMutableArray<SetUpListItemViewData*>* items = [[NSMutableArray alloc] init];
+  for (SetUpListItem* model in self.setUpList.items) {
+    SetUpListItemViewData* item =
+        [[SetUpListItemViewData alloc] initWithType:model.type
+                                           complete:model.complete];
+    [items addObject:item];
+  }
+  // For the compacted Set Up List Module in the Magic Stack, there will only be
+  // two items shown.
+  if (IsMagicStackEnabled() &&
+      set_up_list_utils::ShouldShowCompactedSetUpListModule() &&
+      [items count] > 2) {
+    return [items subarrayWithRange:NSMakeRange(0, 2)];
+  }
+  return items;
+}
+
+// Checks if the CPE is enabled and marks the SetUpList Autofill item complete
+// if it is.
+- (void)checkIfCPEEnabled {
+  __weak __typeof(self) weakSelf = self;
+  scoped_refptr<base::SequencedTaskRunner> runner =
+      base::SequencedTaskRunner::GetCurrentDefault();
+  [ASCredentialIdentityStore.sharedStore
+      getCredentialIdentityStoreStateWithCompletion:^(
+          ASCredentialIdentityStoreState* state) {
+        if (state.isEnabled) {
+          // The completion handler sent to ASCredentialIdentityStore is
+          // executed on a background thread. Putting it back onto the main
+          // thread to update local state prefs.
+          runner->PostTask(FROM_HERE, base::BindOnce(^{
+                             __typeof(self) strongSelf = weakSelf;
+                             if (!strongSelf) {
+                               return;
+                             }
+                             set_up_list_prefs::MarkItemComplete(
+                                 strongSelf->_localState,
+                                 SetUpListItemType::kAutofill);
+                           }));
+        }
+      }];
 }
 
 #pragma mark - Properties
@@ -693,6 +947,17 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
          self.contentSuggestionsPolicyEnabled->GetValue()->GetBool();
 }
 
+#pragma mark - PrefObserverDelegate
+
+- (void)onPreferenceChanged:(const std::string&)preferenceName {
+  if (IsIOSSetUpListEnabled() &&
+      preferenceName == prefs::kIosCredentialProviderPromoLastActionTaken &&
+      CredentialProviderPromoDismissed(_localState)) {
+    set_up_list_prefs::MarkItemComplete(_localState,
+                                        SetUpListItemType::kAutofill);
+  }
+}
+
 #pragma mark - ReadingListModelBridgeObserver
 
 - (void)readingListModelLoaded:(const ReadingListModel*)model {
@@ -704,6 +969,25 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   if (self.readingListItem) {
     self.readingListItem.count = self.readingListUnreadCount;
     [self.consumer updateShortcutTileConfig:self.readingListItem];
+  }
+}
+
+#pragma mark - AuthenticationServiceObserving
+
+- (void)onServiceStatusChanged {
+  if (_setUpList) {
+    switch (_authenticationService->GetServiceStatus()) {
+      case AuthenticationService::ServiceStatus::SigninForcedByPolicy:
+      case AuthenticationService::ServiceStatus::SigninAllowed:
+        break;
+      case AuthenticationService::ServiceStatus::SigninDisabledByUser:
+      case AuthenticationService::ServiceStatus::SigninDisabledByPolicy:
+      case AuthenticationService::ServiceStatus::SigninDisabledByInternal:
+        // Signin is now disabled, so mark the SetUpList item complete so that
+        // it cannot be used again.
+        set_up_list_prefs::MarkItemComplete(_localState,
+                                            SetUpListItemType::kSignInSync);
+    }
   }
 }
 

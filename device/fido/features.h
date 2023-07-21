@@ -63,6 +63,28 @@ BASE_DECLARE_FEATURE(kWebAuthnNewPrioritiesImpl);
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnAndroidCredMan);
 
+// Count kCtap2ErrPinRequired as meaning not recognised.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnPinRequiredMeansNotRecognized);
+
+// Advertise hybrid prelinking on Android even if the app doesn't have
+// notifications permission.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnHybridLinkWithoutNotifications);
+
+// Don't allow the old style JSON where values could be `null`.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnNoNullInJSON);
+
+// Require the "easy accessor" fields to be provided in JSON attestation
+// responses. Otherwise the fields are only checked if provided.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnRequireEasyAccessorFieldsInJSON);
+
+// Enable support for iCloud Keychain
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnICloudKeychain);
+
 }  // namespace device
 
 #endif  // DEVICE_FIDO_FEATURES_H_

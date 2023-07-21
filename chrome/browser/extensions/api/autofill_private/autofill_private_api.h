@@ -5,8 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_AUTOFILL_PRIVATE_AUTOFILL_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_AUTOFILL_PRIVATE_AUTOFILL_PRIVATE_API_H_
 
+#include "components/prefs/pref_service.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
+
+namespace device_reauth {
+class DeviceAuthenticator;
+}
 
 namespace extensions {
 class AutofillPrivateGetAccountInfoFunction : public ExtensionFunction {
@@ -334,6 +339,39 @@ class AutofillPrivateRemoveVirtualCardFunction : public ExtensionFunction {
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;
+};
+
+class AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction
+    : public ExtensionFunction {
+ public:
+  AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction();
+  AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction(
+      const AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction&) =
+      delete;
+  AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction& operator=(
+      const AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction&) =
+      delete;
+  DECLARE_EXTENSION_FUNCTION(
+      "autofillPrivate.authenticateUserAndFlipMandatoryAuthToggle",
+      AUTOFILLPRIVATE_AUTHENTICATEUSERANDFLIPMANDATORYAUTHTOGGLE)
+
+ protected:
+  ~AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  void UpdateMandatoryAuthTogglePref(bool reauth_succeeded);
+
+  // Callback to reset `device_authenticator_` after auth is completed.
+  void OnReauthCompleted();
+
+  // Reference pointer to prevent `device_authenticator` from getting
+  // dereferenced before the auth is completed.
+  // `device_authenticator_` is used to access the OS level biometric auth. If
+  // not available, it uses device password/pin auth as the fallback.
+  scoped_refptr<device_reauth::DeviceAuthenticator> device_authenticator_;
 };
 
 }  // namespace extensions

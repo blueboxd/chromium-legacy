@@ -9,8 +9,8 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/memory/raw_ptr.h"
-#include "components/sync/driver/sync_service_observer.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
+#include "components/sync/service/sync_service_observer.h"
 
 namespace syncer {
 class SyncService;
@@ -47,10 +47,11 @@ class SyncServiceAndroidBridge : public syncer::SyncServiceObserver {
   jboolean IsEngineInitialized(JNIEnv* env);
   jboolean IsTransportStateActive(JNIEnv* env);
   void SetSetupInProgress(JNIEnv* env, jboolean in_progress);
-  jboolean IsFirstSetupComplete(JNIEnv* env);
-  void SetFirstSetupComplete(JNIEnv* env, jint source);
+  jboolean IsInitialSyncFeatureSetupComplete(JNIEnv* env);
+  void SetInitialSyncFeatureSetupComplete(JNIEnv* env, jint source);
   base::android::ScopedJavaLocalRef<jintArray> GetActiveDataTypes(JNIEnv* env);
   base::android::ScopedJavaLocalRef<jintArray> GetSelectedTypes(JNIEnv* env);
+  jboolean IsTypeManagedByPolicy(JNIEnv* env, jint type);
   void SetSelectedTypes(JNIEnv* env,
                         jboolean sync_everything,
                         const base::android::JavaParamRef<jintArray>&

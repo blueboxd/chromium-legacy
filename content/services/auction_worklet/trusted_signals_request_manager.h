@@ -135,7 +135,7 @@ class CONTENT_EXPORT TrustedSignalsRequestManager {
                 LoadSignalsCallback load_signals_callback);
 
     RequestImpl(TrustedSignalsRequestManager* trusted_signals_request_manager,
-                const GURL& render_urls,
+                const GURL& render_url,
                 std::set<std::string> ad_component_render_urls,
                 LoadSignalsCallback load_signals_callback);
 
@@ -168,7 +168,8 @@ class CONTENT_EXPORT TrustedSignalsRequestManager {
 
     // If this request is currently assigned to a batched request, points to
     // that request. nullptr otherwise.
-    raw_ptr<BatchedTrustedSignalsRequest> batched_request_ = nullptr;
+    raw_ptr<BatchedTrustedSignalsRequest, DanglingUntriaged> batched_request_ =
+        nullptr;
   };
 
   // Manages a single TrustedSignals object, which is associated with one or

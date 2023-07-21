@@ -40,10 +40,6 @@ JAVAC_PATH = os.path.join(JAVA_HOME, 'bin', 'javac')
 JAVAP_PATH = os.path.join(JAVA_HOME, 'bin', 'javap')
 KOTLIN_HOME = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'kotlinc', 'current')
 KOTLINC_PATH = os.path.join(KOTLIN_HOME, 'bin', 'kotlinc')
-# Please avoid using this. Our JAVA_HOME is using a newer and actively patched
-# JDK.
-JAVA_11_HOME_DEPRECATED = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'jdk11',
-                                       'current')
 
 def JavaCmd(xmx='1G'):
   ret = [os.path.join(JAVA_HOME, 'bin', 'java')]
@@ -193,6 +189,18 @@ def FilterReflectiveAccessJavaWarnings(output):
       'All illegal access operations)')
 
 
+# This filter applies globally to all CheckOutput calls. We use this to prevent
+# messages from failing the build, without actually removing them.
+def _FailureFilter(output):
+  # This is a message that comes from the JDK which can't be disabled, which as
+  # far as we can tell, doesn't cause any real issues. It only happens
+  # occasionally on the bots. See crbug.com/1441023 for details.
+  jdk_filter = (r'.*warning.*Cannot use file \S+ because'
+                r' it is locked by another process')
+  output = FilterLines(output, jdk_filter)
+  return output
+
+
 # This can be used in most cases like subprocess.check_output(). The output,
 # particularly when the command fails, better highlights the command's failure.
 # If the command fails, raises a build_utils.CalledProcessError.
@@ -242,7 +250,7 @@ def CheckOutput(args,
     else:
       stream_name = 'stderr'
 
-    if fail_on_output:
+    if fail_on_output and _FailureFilter(stdout + stderr):
       MSG = """
 Command failed because it wrote to {}.
 You can often set treat_warnings_as_errors=false to not treat output as \

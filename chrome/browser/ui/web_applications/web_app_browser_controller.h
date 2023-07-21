@@ -79,8 +79,8 @@ class WebAppBrowserController : public AppBrowserController,
   // AppBrowserController:
   using HomeTabCallbackList = base::OnceCallbackList<void()>;
   bool HasMinimalUiButtons() const override;
-  bool DoesHomeTabIconExist() const;
   gfx::ImageSkia GetHomeTabIcon() const;
+  gfx::ImageSkia GetFallbackHomeTabIcon() const;
   ui::ImageModel GetWindowAppIcon() const override;
   ui::ImageModel GetWindowIcon() const override;
   absl::optional<SkColor> GetThemeColor() const override;
@@ -91,6 +91,7 @@ class WebAppBrowserController : public AppBrowserController,
   GURL GetAppStartUrl() const override;
   GURL GetAppNewTabUrl() const override;
   bool IsUrlInHomeTabScope(const GURL& url) const override;
+  bool ShouldShowAppIconOnTab(int index) const override;
   bool IsUrlInAppScope(const GURL& url) const override;
   WebAppBrowserController* AsWebAppBrowserController() override;
   bool CanUserUninstall() const override;
@@ -192,7 +193,6 @@ class WebAppBrowserController : public AppBrowserController,
   raw_ptr<const ash::SystemWebAppDelegate> system_app_;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   mutable absl::optional<ui::ImageModel> app_icon_;
-  mutable absl::optional<gfx::ImageSkia> home_tab_icon_;
 
   mutable absl::optional<RE2::Set> home_tab_scope_;
 

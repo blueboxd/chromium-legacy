@@ -84,7 +84,11 @@ The tables are parsed in this file as critical user journeys. Lines are consider
 | WMLC | install_or_shortcut_windowed(NotPromotable) | navigate_browser(NotPromotable) | check_launch_icon_shown |
 | WMLC | install_or_shortcut_with_shortcut | check_platform_shortcut_and_icon |
 | WMLC | install_or_shortcut_with_shortcut(NotPromotable) | check_platform_shortcut_and_icon(NotPromotable) |
-
+| WMLC | install_or_shortcut_by_user_tabbed(Standalone) | launch_from_platform_shortcut(Standalone) | check_tab_created(One) |
+| WMLC | install_or_shortcut_by_user_tabbed(Standalone) | launch_from_platform_shortcut(Standalone) | install_omnibox_icon(Standalone) | check_pwa_window_created_in_profile(Standalone, One, Default)
+| WMLC | create_shortcut(Standalone, Windowed) | check_window_created |
+| WMLC | create_shortcut(Standalone, Windowed) | close_pwa | check_app_in_list_windowed(Standalone) | check_platform_shortcut_and_icon(Standalone) |
+| WMLC | create_shortcut(Standalone, Windowed) | close_pwa | launch_from_platform_shortcut(Standalone) | check_pwa_window_created_in_profile(Standalone, One, Default) | check_launch_icon_not_shown |
 
 ## Uninstallation
 | #Platforms | Test -> | | | | | | | | | | | | | | | | |
@@ -404,15 +408,16 @@ The test behavior can change whether the site is configured to open as a window 
 
 | #Platforms | Test -> | | | | | | | | | | | | | | | | |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| #WMLC | install_or_shortcut(HasSubApps) | install_sub_app(HasSubApps, SubApp1, UserAllow) | check_app_in_list_windowed(SubApp1) | check_has_sub_app(SubApp1) | check_has_shortcuts(SubApp1) |
-| #WMLC | install_or_shortcut(HasSubApps) | install_sub_app(HasSubApps, SubApp1, UserDeny) | check_app_is not_in_list(SubApp1) | check_platform_shortcut_not_exists(SubApp1) |
-| #WMLC | install_or_shortcut_by_user(HasSubApps) | install_sub_app(HasSubApps, SubApp1, UserAllow) | uninstall_by_user(HasSubApps) | check_app_not_in_list(SubApp1) | check_platform_shortcut_not_exists(SubApp1) |
-| #WMLC | install_or_shortcut_by_policy(HasSubApps) | install_sub_app(HasSubApps, SubApp1, UserAllow) | uninstall_by_policy(HasSubApps) | check_app_not_in_list(SubApp1) | check_platform_shortcut_not_exists(SubApp1) |
-| #WMLC | install_or_shortcut(HasSubApps) | install_sub_app(HasSubApps, SubApp1, UserAllow) | install_sub_app(HasSubApps, SubApp2, UserAllow) | check_has_sub_app(SubApp1) | check_has_sub_app(SubApp2) |
-| #WMLC | install_or_shortcut(HasSubApps) | check_no_sub_apps() |
-| #WMLC | install_or_shortcut_by_user(HasSubApps) | install_sub_app(HasSubApps, SubApp1, UserAllow) | remove_sub_app(HasSubApps, SubApp1) | check_app_not_in_list(SubApp1) | check_platform_shortcut_not_exists(SubApp1) | check_no_sub_apps() |
-| #WMLC | install_or_shortcut_by_policy(HasSubApps) | launch(HasSubApps) | install_sub_app(HasSubApps, SubApp1, UserAllow) | remove_sub_app(HasSubApps, SubApp1) | check_app_not_in_list(SubApp1) | check_platform_shortcut_not_exists(SubApp1) | check_no_sub_apps() |
-| #WMLC | install_or_shortcut(SubApp1) | check_app_in_list(SubApp1) | check_has_shortcut(SubApp1)
-| #WMLC | install_or_shortcut(HasSubApps) | install_or_shortcut(SubApp1) | check_not_has_sub_app(SubApp1)
-| #WMLC | install_or_shortcut(HasSubApps) | install_or_shortcut(SubApp1) | install_sub_app(HasSubApps, SubApp1, UserAllow) | check_has_sub_app(SubApp1)
-| #WMLC | install_or_shortcut(HasSubApps) | install_or_shortcut(SubApp1) | install_sub_app(HasSubApps, SubApp1, UserAllow) | remove_sub_app(HasSubApps, SubApp1) | check_not_has_sub_app(SubApp1) | check_app_in_list_windowed(SubApp1) | check_has_shortcut(SubApp1)
+| C | install_or_shortcut(HasSubApps) | install_sub_app(HasSubApps, SubApp1, UserAllow) | check_app_in_list_windowed(SubApp1) | check_has_sub_app(HasSubApps, SubApp1) | check_platform_shortcut_and_icon(SubApp1) |
+| #C | install_or_shortcut(HasSubApps) | install_sub_app(HasSubApps, SubApp1, UserDeny) | check_app_not_in_list(SubApp1) | check_platform_shortcut_not_exists(SubApp1) |
+| C | install_or_shortcut_by_user(HasSubApps) | install_sub_app(HasSubApps, SubApp1, UserAllow) | uninstall_by_user(HasSubApps) | check_app_not_in_list(SubApp1) | check_platform_shortcut_not_exists(SubApp1) |
+| C | install_policy_app(HasSubApps, ShortcutOptions::All, WindowOptions::All, WebApp) | install_sub_app(HasSubApps, SubApp1, UserAllow) | uninstall_policy_app(HasSubApps) | check_app_not_in_list(SubApp1) | check_platform_shortcut_not_exists(SubApp1) |
+| C | install_or_shortcut(HasSubApps) | install_sub_app(HasSubApps, SubApp1, UserAllow) | install_sub_app(HasSubApps, SubApp2, UserAllow) | check_has_sub_app(HasSubApps, SubApp1) | check_has_sub_app(HasSubApps, SubApp2) |
+| C | install_or_shortcut(HasSubApps) | check_no_sub_apps(HasSubApps) |
+| C | install_or_shortcut(HasSubApps) | install_sub_app(HasSubApps, SubApp1, UserAllow) | remove_sub_app(HasSubApps, SubApp1) | check_app_not_in_list(SubApp1) | check_platform_shortcut_not_exists(SubApp1) | check_no_sub_apps(HasSubApps) |
+| C | install_or_shortcut_windowed(SubApp1) | check_app_in_list_windowed(SubApp1) | check_platform_shortcut_and_icon(SubApp1)
+| C | install_or_shortcut_tabbed(SubApp1) | check_app_in_list_tabbed(SubApp1) | check_platform_shortcut_and_icon(SubApp1)
+| C | install_or_shortcut(SubApp1) | install_or_shortcut(HasSubApps) | check_not_has_sub_app(HasSubApps, SubApp1)
+| C | install_or_shortcut(SubApp1) | install_or_shortcut(HasSubApps) | install_sub_app(HasSubApps, SubApp1, UserAllow) | check_has_sub_app(HasSubApps, SubApp1)
+| C | install_or_shortcut_windowed(SubApp1) | install_or_shortcut(HasSubApps) | install_sub_app(HasSubApps, SubApp1, UserAllow) | remove_sub_app(HasSubApps, SubApp1) | check_not_has_sub_app(HasSubApps, SubApp1) | check_app_in_list_windowed(SubApp1) | check_platform_shortcut_and_icon(SubApp1)
+| C | install_or_shortcut_tabbed(SubApp1) | install_or_shortcut(HasSubApps) | install_sub_app(HasSubApps, SubApp1, UserAllow) | remove_sub_app(HasSubApps, SubApp1) | check_not_has_sub_app(HasSubApps, SubApp1) | check_app_in_list_tabbed(SubApp1) | check_platform_shortcut_and_icon(SubApp1)

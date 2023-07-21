@@ -378,11 +378,15 @@ mojom("mojom_attribution") {
           cpp = "::network::TriggerVerification"
           move_only = true
         },
+        {
+          mojom = "network.mojom.AttributionReportingRuntimeFeatures"
+          cpp = "::network::AttributionReportingRuntimeFeatures"
+          copyable_pass_by_value = true
+        },
       ]
       traits_headers =
           [ "//services/network/public/cpp/attribution_mojom_traits.h" ]
-      traits_deps =
-          [ "//services/network/public/cpp:trigger_verification_traits" ]
+      traits_deps = [ "//services/network/public/cpp:attribution_traits" ]
     },
   ]
 
@@ -861,10 +865,6 @@ mojom("mojom_network_param") {
           cpp = "::net::CertVerifyResult"
         },
         {
-          mojom = "network.mojom.CTVerifyResult"
-          cpp = "::net::ct::CTVerifyResult"
-        },
-        {
           mojom = "network.mojom.HttpResponseHeaders"
           cpp = "::scoped_refptr<::net::HttpResponseHeaders>"
           nullable_is_same_type = true
@@ -1038,6 +1038,11 @@ mojom("mojom_structured_headers") {
         {
           mojom = "network.mojom.StructuredHeadersParameterizedItem"
           cpp = "::net::structured_headers::ParameterizedItem"
+          move_only = true
+        },
+        {
+          mojom = "network.mojom.StructuredHeadersParameterizedMember"
+          cpp = "::net::structured_headers::ParameterizedMember"
           move_only = true
         },
       ]

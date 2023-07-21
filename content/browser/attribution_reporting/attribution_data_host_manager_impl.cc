@@ -9,6 +9,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/check.h"
 #include "base/check_op.h"
@@ -48,6 +49,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/structured_headers.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
+#include "services/network/public/cpp/attribution_reporting_runtime_features.h"
 #include "services/network/public/cpp/attribution_utils.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/trigger_verification.h"
@@ -351,7 +353,8 @@ struct AttributionDataHostManagerImpl::RegistrarAndHeader {
   std::string header;
 
   [[nodiscard]] static absl::optional<RegistrarAndHeader> Get(
-      const net::HttpResponseHeaders* headers) {
+      const net::HttpResponseHeaders* headers,
+      bool cross_app_web_runtime_enabled) {
     if (!headers) {
       return absl::nullopt;
     }
@@ -361,7 +364,12 @@ struct AttributionDataHostManagerImpl::RegistrarAndHeader {
         kAttributionReportingRegisterSourceHeader, &web_source);
 
     std::string os_source;
+    // Note that it's important that the browser process check both the
+    // base::Feature (which is set from the browser, so trustworthy) and the
+    // runtime feature (which can be spoofed in a compromised renderer, so is
+    // best-effort).
     const bool has_os =
+        cross_app_web_runtime_enabled &&
         base::FeatureList::IsEnabled(
             network::features::kAttributionReportingCrossAppWeb) &&
         headers->GetNormalizedHeader(
@@ -518,7 +526,7 @@ void AttributionDataHostManagerImpl::HandleNextOsDecode(
 
   const auto& header = registrations.pending_os_decodes().front();
 
-  data_decoder_.ParseStructuredHeaderItem(
+  data_decoder_.ParseStructuredHeaderList(
       header, base::BindOnce(&AttributionDataHostManagerImpl::OnOsSourceParsed,
                              weak_factory_.GetWeakPtr(), registrations.Id()));
 }
@@ -567,8 +575,12 @@ void AttributionDataHostManagerImpl::NotifyNavigationRegistrationData(
     bool is_within_fenced_frame,
     GlobalRenderFrameHostId render_frame_id,
     int64_t navigation_id,
+    network::AttributionReportingRuntimeFeatures runtime_features,
     bool is_final_response) {
-  if (auto header = RegistrarAndHeader::Get(headers)) {
+  if (auto header = RegistrarAndHeader::Get(
+          headers,
+          runtime_features.Has(
+              network::AttributionReportingRuntimeFeature::kCrossAppWeb))) {
     auto [it, inserted] = registrations_.emplace(
         source_origin, is_within_fenced_frame, std::move(input_event),
         render_frame_id,
@@ -678,29 +690,33 @@ void AttributionDataHostManagerImpl::TriggerDataAvailable(
 }
 
 void AttributionDataHostManagerImpl::OsSourceDataAvailable(
-    const GURL& registration_url) {
+    std::vector<GURL> registration_urls) {
   const ReceiverContext* context = GetReceiverContextForSource();
   if (!context) {
     return;
   }
 
-  attribution_manager_->HandleOsRegistration(
-      OsRegistration(registration_url, context->context_origin(),
-                     context->input_event()),
-      context->render_frame_id());
+  for (GURL& url : registration_urls) {
+    attribution_manager_->HandleOsRegistration(
+        OsRegistration(std::move(url), context->context_origin(),
+                       context->input_event()),
+        context->render_frame_id());
+  }
 }
 
 void AttributionDataHostManagerImpl::OsTriggerDataAvailable(
-    const GURL& registration_url) {
+    std::vector<GURL> registration_urls) {
   const ReceiverContext* context = GetReceiverContextForTrigger();
   if (!context) {
     return;
   }
 
-  attribution_manager_->HandleOsRegistration(
-      OsRegistration(registration_url, context->context_origin(),
-                     /*input_event=*/absl::nullopt),
-      context->render_frame_id());
+  for (GURL& url : registration_urls) {
+    attribution_manager_->HandleOsRegistration(
+        OsRegistration(std::move(url), context->context_origin(),
+                       /*input_event=*/absl::nullopt),
+        context->render_frame_id());
+  }
 }
 
 void AttributionDataHostManagerImpl::OnReceiverDisconnected() {
@@ -740,6 +756,7 @@ void AttributionDataHostManagerImpl::NotifyFencedFrameReportingBeaconStarted(
 
 void AttributionDataHostManagerImpl::NotifyFencedFrameReportingBeaconData(
     BeaconId beacon_id,
+    network::AttributionReportingRuntimeFeatures runtime_features,
     url::Origin reporting_origin,
     const net::HttpResponseHeaders* headers,
     bool is_final_response) {
@@ -763,7 +780,9 @@ void AttributionDataHostManagerImpl::NotifyFencedFrameReportingBeaconData(
     return;
   }
 
-  const auto attribution_header = RegistrarAndHeader::Get(headers);
+  auto attribution_header = RegistrarAndHeader::Get(
+      headers, runtime_features.Has(
+                   network::AttributionReportingRuntimeFeature::kCrossAppWeb));
   if (!attribution_header) {
     MaybeOnRegistrationsFinished(it);
     return;
@@ -774,7 +793,8 @@ void AttributionDataHostManagerImpl::NotifyFencedFrameReportingBeaconData(
         rfh, blink::mojom::WebFeature::kAttributionFencedFrameReportingBeacon);
   }
 
-  ParseSource(it, std::move(*suitable_reporting_origin), *attribution_header);
+  ParseSource(it, std::move(*suitable_reporting_origin),
+              std::move(*attribution_header));
 }
 
 void AttributionDataHostManagerImpl::OnWebSourceParsed(
@@ -850,14 +870,15 @@ void AttributionDataHostManagerImpl::OnOsSourceParsed(SourceRegistrationsId id,
   {
     // TODO: Report parsing errors to DevTools.
     if (result.has_value()) {
-      GURL registration_url =
+      std::vector<GURL> registration_urls =
           attribution_reporting::ParseOsSourceOrTriggerHeader(*result);
 
-      attribution_manager_->HandleOsRegistration(
-          OsRegistration(std::move(registration_url),
-                         registrations->source_origin(),
-                         registrations->input_event()),
-          registrations->render_frame_id());
+      for (GURL& url : registration_urls) {
+        attribution_manager_->HandleOsRegistration(
+            OsRegistration(std::move(url), registrations->source_origin(),
+                           registrations->input_event()),
+            registrations->render_frame_id());
+      }
     }
   }
 

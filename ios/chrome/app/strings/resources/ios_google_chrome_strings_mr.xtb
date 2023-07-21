@@ -12,6 +12,7 @@
 <translation id="1554731936187952550">तुमच्याकडे हानीकारक वेबसाइटच्या विरोधात Chrome ची सर्वात मजबूत सुरक्षा आहे</translation>
 <translation id="1682483655351012182">तुमचा Chrome डेटा सिंक करा</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1843217788865538014">तुम्ही मेसेज, दस्तऐवज आणि इतर अ‍ॅप्समधील लिंकवर टॅप करता, तेव्हा आपोआप Chrome वापरा.</translation>
 <translation id="1917964099031477364">हे खाते आणि कोणताही सेव्ह न केलेला डेटा Chrome आणि या डिव्हाइसवरील इतर Google अ‍ॅप्समधून काढून टाकला जाईल.</translation>
 <translation id="2009224836393115614">Chrome ला तुमचे पासवर्ड तपासता आले नाहीत. तुमचे इंटरनेट कनेक्शन तपासून पहा.</translation>
 <translation id="2056123005618757196">सोपे, सुरक्षित आणि पूर्वीपेक्षा अधिक जलद Google Chrome वापरून आणखी बरेच काही करा.</translation>
@@ -34,6 +35,7 @@
 <translation id="2732745070297234559">Chrome ला सर्व पासवर्ड तपासता आले नाहीत. उद्या पुन्हा प्रयत्न करा.</translation>
 <translation id="2736805085127235148">तुमच्या डिव्हाइस सेटिंग्जमध्ये Chrome सूचना सध्या बंद केल्या आहेत.</translation>
 <translation id="2767464022270041271">सेव्ह केलेले कोणतेही पासवर्ड नाहीत. तुम्ही तुमचे पासवर्ड सेव्ह करता, तेव्हा Google Password Manager तुमचे पासवर्ड तपासू शकते.</translation>
+<translation id="2840432500933227975">iOS मध्ये Chrome सेटिंग्ज उघडा, त्यानंतर "ब्राउझर डीफॉल्ट अ‍ॅप" वर टॅप करा आणि Chrome निवडा.</translation>
 <translation id="2869959624320573933">Chrome वर साइन इन करा</translation>
 <translation id="2957447865124070833"><ph name="BEGIN_BOLD" />Chrome<ph name="END_BOLD" /> निवडा</translation>
 <translation id="3030414234702425231">तुम्ही <ph name="SIGNOUT_MANAGED_DOMAIN" /> द्वारे व्यवस्थापित केलेल्या खात्यातून साइन आउट केले आहे, तुमचा Chrom डेटा या डिव्हाइसवरून हटवला जाईल. तुमचा डेटा तुमच्या Google खाते मध्ये असेल</translation>
@@ -49,6 +51,7 @@
 <translation id="3655656110921623717">याचा अर्थ असा, की Chrome हे प्रत्येक वेळी मोबाइल साइटची विनंती करेल.</translation>
 <translation id="3706101708757577809">तुम्ही आता केव्हाही मेसेज, दस्तऐवज आणि इतर अ‍ॅप्समध्ये लिंकवर टॅप केल्यास, Chrome वापरू शकता.</translation>
 <translation id="3720541637541300822">तुम्ही Chrome बंद करता तेव्हा गुप्त टॅब लॉक करा</translation>
+<translation id="3827545470516145620">तुम्हाला या डिव्हाइसवर साधारण सुरक्षा संरक्षण मिळत आहे</translation>
 <translation id="384394811301901750">Google Chrome आत्ता तुमचा कॅमेरा वापरू शकत नाही</translation>
 <translation id="3980220367029651214">तुम्ही संकालित केलेली खाती <ph name="USER_EMAIL1" /> वरून <ph name="USER_EMAIL2" /> वर स्विच करीत आहात. तुमचा विद्यमान Chrome डेटा <ph name="DOMAIN" /> द्वारे व्यवस्थापित केला आहे. हे तुमचा डेटा या डिव्हाइस वरून हटवेल परंतु तुमचा डेटा <ph name="USER_EMAIL1" /> मध्ये असेल.</translation>
 <translation id="3984746313391923992">तुमच्या संस्थेनुसार, तुम्ही Chrome मधून साइन आउट केलेले राहणे आवश्यक आहे.</translation>
@@ -58,6 +61,7 @@
 <translation id="4233521129555661685"><ph name="USER_EMAIL1" /> हा Chrome वापरत होता आणि त्याने या डिव्हाइसवर बुकमार्क, पासवर्ड आणि इतर सेटिंग्ज ठेवली आहेत.</translation>
 <translation id="424864128008805179">Chrome मधून साइन आउट करायचे?</translation>
 <translation id="4249068189593983585">Chrome टीप. आणखी टॅब पर्यायांसाठी, तुमच्या स्क्रीनच्या तळाशी किंवा सर्वात वर असलेल्या टूलबारवरील टॅब दाखवा बटणाला स्पर्श करा आणि धरून ठेवा.</translation>
+<translation id="4508370294876102450">कोणत्याही अ‍ॅपवरून Chrome उघडा</translation>
 <translation id="4523886039239821078">Chrome क्रॅश होण्याचे कारण काही ॲड-ऑन आहेत. कृपया ती अनइंस्टॉल करा:</translation>
 <translation id="4633328489441962921">Chrome ला अपडेट तपासता आले नाहीत</translation>
 <translation id="4636900170638246267">ही साइट आणि Chrome मध्ये साइन इन करा.</translation>
@@ -87,6 +91,7 @@
 <translation id="6110625574506755980">काही Chrome वैशिष्ट्ये यापुढे उपलब्ध असणार नाहीत.</translation>
 <translation id="6181930887571472871">Chrome वर स्विच करा</translation>
 <translation id="6238746320622508509">Chrome ला तुमचे गुप्त टॅब लॉक करू द्या.</translation>
+<translation id="6247557882553405851">Google Password Manager</translation>
 <translation id="6412673304250309937">Chrome मध्ये स्टोअर केलेल्या असुरक्षित साइटच्या सूचीमध्ये URL तपासतो. साइटने तुमचा पासवर्ड चोरण्याचा प्रयत्न केल्यास किंवा तुम्ही हानीकारक फाइल डाउनलोड केल्यावर, Chrome, पेज आशयाच्या भागांसह, URL सुरक्षित ब्राउझिंग कडे पाठवू शकतो.</translation>
 <translation id="6427126399757991875">तुमची संस्था Chrome सेट करत आहे...</translation>
 <translation id="6600954340915313787">Chrome वर कॉपी केले</translation>
@@ -97,7 +102,6 @@
 <translation id="6822673484890854830">Chrome ला सर्व पासवर्ड तपासता आले नाहीत. नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="6964931465519938134">तुम्ही आता केव्हाही मेसेज, दस्तऐवज आणि इतर अ‍ॅप्समध्ये लिंकवर टॅप केल्यास, Chrome वापरू शकता.</translation>
 <translation id="6975725306479268850">ऑटोफिल साठी Chrome निवडा</translation>
-<translation id="701356708427365932">नवीन Chrome मेनू जाणून घ्या</translation>
 <translation id="7059914902409643750">Chrome ला तुमचे हक्काचे ठिकाण बनवा</translation>
 <translation id="7124339256045485976">Chrome अप टू डेट ठेवा</translation>
 <translation id="7161390184744336561">Google Chrome कालबाह्य झाले आहे</translation>
@@ -148,7 +152,6 @@
   • Chrome क्रॅश झाल्यास, क्रॅशसंबंधित तपशिलांमध्ये कदाचित काही वैयक्तिक माहितीचा समावेश असू शकतो.
 
   • तुम्ही सिंक सुरू केल्यास, मेट्रिकमध्ये कदाचित तुम्ही भेट दिलेल्या URLs संबंधित माहितीचादेखील समावेश असू शकतो.<ph name="END_INDENT" /></translation>
-<translation id="9103442491611662960">या Chrome प्रोफाइलसाठी तुम्हाला साधारण सुरक्षा संरक्षण मिळत आहे</translation>
 <translation id="9112744793181547300">Chrome ला डीफॉल्ट म्हणून सेट करायचे आहे का?</translation>
 <translation id="9122931302567044771">याचा अर्थ असा, की Chrome हे प्रत्येक वेळी साइटच्या डेस्कटॉप आवृत्तीची विनंती करेल.</translation>
 </translationbundle>

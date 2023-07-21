@@ -5,6 +5,7 @@
 #include "chrome/browser/dips/dips_service.h"
 
 #include "base/files/file_util.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece_forward.h"
@@ -13,10 +14,12 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_file_util.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/dips/dips_features.h"
+#include "chrome/browser/dips/dips_redirect_info.h"
 #include "chrome/browser/dips/dips_service_factory.h"
 #include "chrome/browser/dips/dips_state.h"
 #include "chrome/browser/dips/dips_test_utils.h"
@@ -29,8 +32,10 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_browsing_data_remover_delegate.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 class DIPSServiceTest : public testing::Test {
  protected:
@@ -222,12 +227,104 @@ class DIPSServiceStateRemovalTest : public testing::Test {
     return state;
   }
 
+  // Add an exception to third-party cookie blocking rule for `url` in
+  // third-part context.
+  void Add3PCExceptionAs3P(const GURL& url) {
+    HostContentSettingsMap* map =
+        HostContentSettingsMapFactory::GetForProfile(GetProfile());
+
+    map->SetContentSettingCustomScope(
+        ContentSettingsPattern::FromString("[*.]" + url.host()),
+        ContentSettingsPattern::Wildcard(), ContentSettingsType::COOKIES,
+        ContentSetting::CONTENT_SETTING_ALLOW);
+
+    // Verify settings.
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+              GetCookieSettings()->GetCookieSetting(
+                  url, GURL(), net::CookieSettingOverrides(), nullptr));
+    EXPECT_EQ(CONTENT_SETTING_BLOCK,
+              GetCookieSettings()->GetCookieSetting(
+                  GURL(), url, net::CookieSettingOverrides(), nullptr));
+  }
+
+  // Add an exception to third-party cookie blocking rule for third-parties
+  // embedded by `url`.
+  void Add3PCExceptionAs1P(const GURL& url) {
+    HostContentSettingsMap* map =
+        HostContentSettingsMapFactory::GetForProfile(GetProfile());
+
+    map->SetContentSettingCustomScope(
+        ContentSettingsPattern::Wildcard(),
+        ContentSettingsPattern::FromString("[*.]" + url.host()),
+        ContentSettingsType::COOKIES, ContentSetting::CONTENT_SETTING_ALLOW);
+
+    EXPECT_EQ(CONTENT_SETTING_BLOCK,
+              GetCookieSettings()->GetCookieSetting(
+                  url, GURL(), net::CookieSettingOverrides(), nullptr));
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+              GetCookieSettings()->GetCookieSetting(
+                  GURL(), url, net::CookieSettingOverrides(), nullptr));
+  }
+
  private:
   base::SimpleTestClock clock_;
+
   std::unique_ptr<TestingProfile> profile_;
   raw_ptr<content_settings::CookieSettings> cookie_settings_ = nullptr;
   raw_ptr<DIPSService> service_ = nullptr;
 };
+
+TEST_F(DIPSServiceStateRemovalTest,
+       CompleteChain_NotifiesRedirectChainObservers) {
+  GetService()->SetStorageClockForTesting(base::DefaultClock::GetInstance());
+  auto observer = std::make_unique<RedirectChainObserver>(
+      GetService(), /*final_url=*/GURL("http://c.test/"));
+
+  std::vector<DIPSRedirectInfoPtr> complete_redirects;
+  complete_redirects.push_back(std::make_unique<DIPSRedirectInfo>(
+      /*url=*/GURL("http://b.test/"),
+      /*redirect_type=*/DIPSRedirectType::kServer,
+      /*access_type=*/SiteDataAccessType::kNone,
+      /*source_id=*/ukm::SourceId(),
+      /*time=*/Now()));
+  auto complete_chain = std::make_unique<DIPSRedirectChainInfo>(
+      /*initial_url=*/GURL("http://a.test/"),
+      /*final_url=*/GURL("http://c.test/"),
+      /*length=*/1, /*is_partial_chain=*/false);
+
+  GetService()->HandleRedirectChain(
+      std::move(complete_redirects), std::move(complete_chain),
+      base::BindRepeating([](const GURL& final_url) {}));
+  WaitOnStorage();
+  // Expect one call to Observer.OnChainHandled when handling a complete chain.
+  EXPECT_EQ(observer->handle_call_count, 1u);
+}
+
+TEST_F(DIPSServiceStateRemovalTest,
+       PartialChain_DoesNotNotifyRedirectChainObservers) {
+  GetService()->SetStorageClockForTesting(base::DefaultClock::GetInstance());
+  auto observer = std::make_unique<RedirectChainObserver>(
+      GetService(), /*final_url=*/GURL("http://c.test/"));
+
+  std::vector<DIPSRedirectInfoPtr> partial_redirects;
+  partial_redirects.push_back(std::make_unique<DIPSRedirectInfo>(
+      /*url=*/GURL("http://b.test/"),
+      /*redirect_type=*/DIPSRedirectType::kServer,
+      /*access_type=*/SiteDataAccessType::kNone,
+      /*source_id=*/ukm::SourceId(),
+      /*time=*/Now()));
+  auto partial_chain = std::make_unique<DIPSRedirectChainInfo>(
+      /*initial_url=*/GURL("http://a.test/"),
+      /*final_url=*/GURL("http://c.test/"),
+      /*length=*/1, /*is_partial_chain=*/true);
+
+  GetService()->HandleRedirectChain(
+      std::move(partial_redirects), std::move(partial_chain),
+      base::BindRepeating([](const GURL& final_url) {}));
+  WaitOnStorage();
+  // Expect no calls to Observer.OnChainHandled when handling a partial chain.
+  EXPECT_EQ(observer->handle_call_count, 0u);
+}
 
 // NOTE: The use of a MockBrowsingDataRemoverDelegate in this test fixture
 // means that when DIPS deletion is enabled, the row for 'url' is not actually
@@ -242,9 +339,9 @@ TEST_F(DIPSServiceStateRemovalTest, BrowsingDataDeletion_Enabled) {
   // Record a bounce.
   GURL url("https://example.com");
   base::Time bounce = base::Time::FromDoubleT(2);
-  GetService()->RecordBounceForTesting(url, GURL("https://initial.com"),
-                                       GURL("https://final.com"), bounce,
-                                       false);
+  GetService()->RecordBounceForTesting(
+      url, GURL("https://initial.com"), GURL("https://final.com"), bounce,
+      false, base::BindRepeating([](const GURL& final_url) {}));
   WaitOnStorage();
   EXPECT_TRUE(GetDIPSState(url).has_value());
 
@@ -292,9 +389,9 @@ TEST_F(DIPSServiceStateRemovalTest, BrowsingDataDeletion_Disabled) {
   // Record a bounce.
   GURL url("https://example.com");
   base::Time bounce = base::Time::FromDoubleT(2);
-  GetService()->RecordBounceForTesting(url, GURL("https://initial.com"),
-                                       GURL("https://final.com"), bounce,
-                                       false);
+  GetService()->RecordBounceForTesting(
+      url, GURL("https://initial.com"), GURL("https://final.com"), bounce,
+      false, base::BindRepeating([](const GURL& final_url) {}));
   WaitOnStorage();
   EXPECT_TRUE(GetDIPSState(url).has_value());
 
@@ -333,32 +430,21 @@ TEST_F(DIPSServiceStateRemovalTest,
   GURL excepted_3p_url("https://excepted-as-3p.com");
   GURL non_excepted_url("https://not-excepted.com");
 
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(GetProfile());
+  Add3PCExceptionAs3P(excepted_3p_url);
 
-  // Add exception to third-party cookie blocking rule for
-  // 'excepted_3p_url' in third-part context.
-  map->SetContentSettingCustomScope(
-      ContentSettingsPattern::FromString("[*.]" + excepted_3p_url.host()),
-      ContentSettingsPattern::Wildcard(), ContentSettingsType::COOKIES,
-      ContentSetting::CONTENT_SETTING_ALLOW);
-
-  // Verify settings.
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, GetCookieSettings()->GetCookieSetting(
-                                       excepted_3p_url, GURL(),
-                                       net::CookieSettingOverrides(), nullptr));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, GetCookieSettings()->GetCookieSetting(
-                                       GURL(), excepted_3p_url,
-                                       net::CookieSettingOverrides(), nullptr));
+  int stateful_bounce_count = 0;
+  base::RepeatingCallback<void(const GURL&)> increment_bounce =
+      base::BindLambdaForTesting(
+          [&](const GURL& final_url) { stateful_bounce_count++; });
 
   // Record bounces for sites.
   base::Time bounce = base::Time::FromDoubleT(2);
   GetService()->RecordBounceForTesting(
       excepted_3p_url, GURL("https://initial.com"), GURL("https://final.com"),
-      bounce, false);
+      bounce, true, increment_bounce);
   GetService()->RecordBounceForTesting(
       non_excepted_url, GURL("https://initial.com"), GURL("https://final.com"),
-      bounce, false);
+      bounce, false, increment_bounce);
   WaitOnStorage();
   EXPECT_TRUE(GetDIPSState(excepted_3p_url).has_value());
   EXPECT_TRUE(GetDIPSState(non_excepted_url).has_value());
@@ -396,6 +482,9 @@ TEST_F(DIPSServiceStateRemovalTest,
   EXPECT_THAT(ukm_recorder,
               EntryUrlsAre("DIPS.Deletion", {"http://excepted-as-3p.com/",
                                              "http://not-excepted.com/"}));
+
+  // Expect one recorded bounce, for the stateful redirect.
+  EXPECT_EQ(stateful_bounce_count, 1);
 }
 
 TEST_F(DIPSServiceStateRemovalTest,
@@ -411,40 +500,34 @@ TEST_F(DIPSServiceStateRemovalTest,
   GURL redirect_url_2("https://redirect-2.com");
   GURL redirect_url_3("https://redirect-3.com");
 
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(GetProfile());
+  Add3PCExceptionAs1P(excepted_1p_url);
 
-  // Add exception to third-party cookie blocking rule for third-parties
-  // embedded by 'excepted_1p_url'.
-  map->SetContentSettingCustomScope(
-      ContentSettingsPattern::Wildcard(),
-      ContentSettingsPattern::FromString("[*.]" + excepted_1p_url.host()),
-      ContentSettingsType::COOKIES, ContentSetting::CONTENT_SETTING_ALLOW);
-
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, GetCookieSettings()->GetCookieSetting(
-                                       excepted_1p_url, GURL(),
-                                       net::CookieSettingOverrides(), nullptr));
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, GetCookieSettings()->GetCookieSetting(
-                                       GURL(), excepted_1p_url,
-                                       net::CookieSettingOverrides(), nullptr));
+  int stateful_bounce_count = 0;
+  base::RepeatingCallback<void(const GURL&)> increment_bounce =
+      base::BindLambdaForTesting(
+          [&](const GURL& final_url) { stateful_bounce_count++; });
 
   base::Time bounce = base::Time::FromDoubleT(2);
   // Record a bounce through redirect_url_1 that starts on an excepted
   // URL.
   GetService()->RecordBounceForTesting(redirect_url_1, excepted_1p_url,
-                                       non_excepted_url, bounce, false);
+                                       non_excepted_url, bounce, true,
+                                       increment_bounce);
   // Record a bounce through redirect_url_1 that ends on an excepted
   // URL.
   GetService()->RecordBounceForTesting(redirect_url_1, non_excepted_url,
-                                       excepted_1p_url, bounce, false);
+                                       excepted_1p_url, bounce, true,
+                                       increment_bounce);
   // Record a bounce through redirect_url_2 that does not start or
   // end on an excepted URL.
   GetService()->RecordBounceForTesting(redirect_url_2, non_excepted_url,
-                                       non_excepted_url, bounce, false);
+                                       non_excepted_url, bounce, true,
+                                       increment_bounce);
   // Record a bounce through redirect_url_3 that does not start or
   // end on an excepted URL. Record an interaction on this URL as well.
   GetService()->RecordBounceForTesting(redirect_url_3, non_excepted_url,
-                                       non_excepted_url, bounce, false);
+                                       non_excepted_url, bounce, true,
+                                       increment_bounce);
   GetService()
       ->storage()
       ->AsyncCall(&DIPSStorage::RecordInteraction)
@@ -460,15 +543,21 @@ TEST_F(DIPSServiceStateRemovalTest,
   // Record a bounce through redirect_url_2 that starts on an
   // excepted URL. This should clear the DB entry for redirect_url_2.
   GetService()->RecordBounceForTesting(redirect_url_2, excepted_1p_url,
-                                       non_excepted_url, bounce, false);
+                                       non_excepted_url, bounce, true,
+                                       increment_bounce);
   EXPECT_FALSE(GetDIPSState(redirect_url_2).has_value());
 
   // Record a bounce through redirect_url_3 that starts on an
   // excepted URL. This should not clear the DB entry for redirect_url_3 as it
   // has a recorded interaction.
   GetService()->RecordBounceForTesting(redirect_url_3, excepted_1p_url,
-                                       non_excepted_url, bounce, false);
+                                       non_excepted_url, bounce, true,
+                                       increment_bounce);
   EXPECT_TRUE(GetDIPSState(redirect_url_3).has_value());
+
+  // Expect two non-exempted stateful redirects: the first bounces through
+  // redirect_url_2 and redirect_url_3.
+  EXPECT_EQ(stateful_bounce_count, 2);
 }
 
 TEST_F(DIPSServiceStateRemovalTest, ImmediateEnforcement) {
@@ -480,9 +569,9 @@ TEST_F(DIPSServiceStateRemovalTest, ImmediateEnforcement) {
   // Record a bounce.
   GURL url("https://example.com");
   base::Time bounce = Now();
-  GetService()->RecordBounceForTesting(url, GURL("https://initial.com"),
-                                       GURL("https://final.com"), bounce,
-                                       false);
+  GetService()->RecordBounceForTesting(
+      url, GURL("https://initial.com"), GURL("https://final.com"), bounce,
+      false, base::BindRepeating([](const GURL& final_url) {}));
   WaitOnStorage();
   EXPECT_TRUE(GetDIPSState(url).has_value());
 
@@ -534,6 +623,9 @@ class DIPSServiceHistogramTest : public DIPSServiceStateRemovalTest {
   const base::HistogramTester& histograms() const { return histogram_tester_; }
 
  protected:
+  const std::string kBlock3PC = "Block3PC";
+  const std::string kUmaHistogramDeletionPrefix = "Privacy.DIPS.Deletion.";
+
   base::HistogramTester histogram_tester_;
 };
 
@@ -548,9 +640,9 @@ TEST_F(DIPSServiceHistogramTest, DeletionLatency) {
   // Record a bounce.
   GURL url("https://example.com");
   base::Time bounce = base::Time::FromDoubleT(2);
-  GetService()->RecordBounceForTesting(url, GURL("https://initial.com"),
-                                       GURL("https://final.com"), bounce,
-                                       false);
+  GetService()->RecordBounceForTesting(
+      url, GURL("https://initial.com"), GURL("https://final.com"), bounce,
+      false, base::BindRepeating([](const GURL& final_url) {}));
   WaitOnStorage();
 
   // Set the current time to just after the bounce happened.
@@ -572,4 +664,177 @@ TEST_F(DIPSServiceHistogramTest, DeletionLatency) {
   // removed.
   histograms().ExpectTotalCount("Privacy.DIPS.DeletionLatency", 1);
   EXPECT_FALSE(GetDIPSState(url).has_value());
+}
+
+TEST_F(DIPSServiceHistogramTest, Deletion_Disallowed) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      dips::kFeature,
+      {{"delete", "false"}, {"triggering_action", "stateful_bounce"}});
+
+  // Verify the histogram is initially empty.
+  EXPECT_TRUE(histograms()
+                  .GetTotalCountsForPrefix(kUmaHistogramDeletionPrefix)
+                  .empty());
+
+  // Record a bounce.
+  GURL url("https://example.com");
+  base::Time bounce_time = base::Time::FromDoubleT(2);
+  GetService()->RecordBounceForTesting(
+      url, GURL("https://initial.com"), GURL("https://final.com"), bounce_time,
+      true, base::BindRepeating([](const GURL& final_url) {}));
+  WaitOnStorage();
+
+  // Time-travel to after the grace period has ended for the bounce.
+  AdvanceTimeTo(bounce_time + grace_period + tiny_delta);
+  FireDIPSTimer();
+  task_environment_.RunUntilIdle();
+
+  // Verify a deletion metric was emitted and the DIPS entry was removed.
+  base::HistogramTester::CountsMap expected_counts;
+  expected_counts[kUmaHistogramDeletionPrefix + kBlock3PC] = 1;
+  EXPECT_THAT(histograms().GetTotalCountsForPrefix(kUmaHistogramDeletionPrefix),
+              testing::ContainerEq(expected_counts));
+  histograms().ExpectUniqueSample(kUmaHistogramDeletionPrefix + kBlock3PC,
+                                  DIPSDeletionAction::kDisallowed, 1);
+  EXPECT_FALSE(GetDIPSState(url).has_value());
+}
+
+TEST_F(DIPSServiceHistogramTest, Deletion_ExceptedAs1P) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      dips::kFeature,
+      {{"delete", "true"}, {"triggering_action", "stateful_bounce"}});
+
+  // Verify the histogram is initially empty.
+  EXPECT_TRUE(histograms()
+                  .GetTotalCountsForPrefix(kUmaHistogramDeletionPrefix)
+                  .empty());
+
+  // Record a bounce.
+  GURL url("https://example.com");
+  GURL excepted_1p_url("https://initial.com");
+  Add3PCExceptionAs1P(excepted_1p_url);
+  base::Time bounce_time = base::Time::FromDoubleT(2);
+  GetService()->RecordBounceForTesting(
+      url, excepted_1p_url, GURL("https://final.com"), bounce_time, true,
+      base::BindRepeating([](const GURL& final_url) {}));
+  WaitOnStorage();
+
+  // Time-travel to after the grace period has ended for the bounce.
+  AdvanceTimeTo(bounce_time + grace_period + tiny_delta);
+  FireDIPSTimer();
+  task_environment_.RunUntilIdle();
+
+  // Verify a deletion metric was emitted and the DIPS entry was removed.
+  base::HistogramTester::CountsMap expected_counts;
+  expected_counts[kUmaHistogramDeletionPrefix + kBlock3PC] = 1;
+  EXPECT_THAT(histograms().GetTotalCountsForPrefix(kUmaHistogramDeletionPrefix),
+              testing::ContainerEq(expected_counts));
+  histograms().ExpectUniqueSample(kUmaHistogramDeletionPrefix + kBlock3PC,
+                                  DIPSDeletionAction::kExceptedAs1p, 1);
+  EXPECT_FALSE(GetDIPSState(url).has_value());
+}
+
+TEST_F(DIPSServiceHistogramTest, Deletion_ExceptedAs3P) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      dips::kFeature,
+      {{"delete", "true"}, {"triggering_action", "stateful_bounce"}});
+
+  // Verify the histogram is initially empty.
+  EXPECT_TRUE(histograms()
+                  .GetTotalCountsForPrefix(kUmaHistogramDeletionPrefix)
+                  .empty());
+
+  // Record a bounce.
+  GURL excepted_3p_url("https://example.com");
+  Add3PCExceptionAs3P(excepted_3p_url);
+  base::Time bounce_time = base::Time::FromDoubleT(2);
+  GetService()->RecordBounceForTesting(
+      excepted_3p_url, GURL("https://initial.com"), GURL("https://final.com"),
+      bounce_time, true, base::BindRepeating([](const GURL& final_url) {}));
+  WaitOnStorage();
+
+  // Time-travel to after the grace period has ended for the bounce.
+  AdvanceTimeTo(bounce_time + grace_period + tiny_delta);
+  FireDIPSTimer();
+  task_environment_.RunUntilIdle();
+
+  // Verify a deletion metric was emitted and the DIPS entry was removed.
+  base::HistogramTester::CountsMap expected_counts;
+  expected_counts[kUmaHistogramDeletionPrefix + kBlock3PC] = 1;
+  EXPECT_THAT(histograms().GetTotalCountsForPrefix(kUmaHistogramDeletionPrefix),
+              testing::ContainerEq(expected_counts));
+  histograms().ExpectUniqueSample(kUmaHistogramDeletionPrefix + kBlock3PC,
+                                  DIPSDeletionAction::kExceptedAs3p, 1);
+  EXPECT_FALSE(GetDIPSState(excepted_3p_url).has_value());
+}
+
+TEST_F(DIPSServiceHistogramTest, Deletion_Enforced) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      dips::kFeature,
+      {{"delete", "true"}, {"triggering_action", "stateful_bounce"}});
+
+  // Verify the histogram is initially empty.
+  EXPECT_TRUE(histograms()
+                  .GetTotalCountsForPrefix(kUmaHistogramDeletionPrefix)
+                  .empty());
+
+  // Record a bounce.
+  GURL url("https://example.com");
+  base::Time bounce_time = base::Time::FromDoubleT(2);
+  GetService()->RecordBounceForTesting(
+      url, GURL("https://initial.com"), GURL("https://final.com"), bounce_time,
+      true, base::BindRepeating([](const GURL& final_url) {}));
+  WaitOnStorage();
+
+  // Time-travel to after the grace period has ended for the bounce.
+  AdvanceTimeTo(bounce_time + grace_period + tiny_delta);
+  FireDIPSTimer();
+  task_environment_.RunUntilIdle();
+
+  // Verify a deletion metric was emitted and the DIPS entry was not removed.
+  base::HistogramTester::CountsMap expected_counts;
+  expected_counts[kUmaHistogramDeletionPrefix + kBlock3PC] = 1;
+  EXPECT_THAT(histograms().GetTotalCountsForPrefix(kUmaHistogramDeletionPrefix),
+              testing::ContainerEq(expected_counts));
+  histograms().ExpectUniqueSample(kUmaHistogramDeletionPrefix + kBlock3PC,
+                                  DIPSDeletionAction::kEnforced, 1);
+  EXPECT_TRUE(GetDIPSState(url).has_value());
+}
+
+TEST_F(DIPSServiceHistogramTest, Deletion_Ignored) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      dips::kFeature,
+      {{"delete", "true"}, {"triggering_action", "stateful_bounce"}});
+
+  // Verify the histogram is initially empty.
+  EXPECT_TRUE(histograms()
+                  .GetTotalCountsForPrefix(kUmaHistogramDeletionPrefix)
+                  .empty());
+
+  // Record a bounce.
+  GURL url;
+  base::Time bounce_time = base::Time::FromDoubleT(2);
+  GetService()->RecordBounceForTesting(
+      url, GURL("https://initial.com"), GURL("https://final.com"), bounce_time,
+      true, base::BindRepeating([](const GURL& final_url) {}));
+  WaitOnStorage();
+
+  // Time-travel to after the grace period has ended for the bounce.
+  AdvanceTimeTo(bounce_time + grace_period + tiny_delta);
+  FireDIPSTimer();
+  task_environment_.RunUntilIdle();
+
+  // Verify a deletion metric was emitted and the DIPS entry was not removed.
+  base::HistogramTester::CountsMap expected_counts;
+  expected_counts[kUmaHistogramDeletionPrefix + kBlock3PC] = 1;
+  EXPECT_THAT(histograms().GetTotalCountsForPrefix(kUmaHistogramDeletionPrefix),
+              testing::ContainerEq(expected_counts));
+  histograms().ExpectUniqueSample(kUmaHistogramDeletionPrefix + kBlock3PC,
+                                  DIPSDeletionAction::kIgnored, 1);
+  EXPECT_TRUE(GetDIPSState(url).has_value());
 }

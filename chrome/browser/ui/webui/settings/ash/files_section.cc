@@ -77,7 +77,7 @@ const std::vector<SearchConcept>& GetFilesGoogleDriveSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags(
       {{IDS_OS_SETTINGS_TAG_FILES_GOOGLE_DRIVE,
         mojom::kGoogleDriveSubpagePath,
-        mojom::SearchResultIcon::kFolder,
+        mojom::SearchResultIcon::kDrive,
         mojom::SearchResultDefaultRank::kMedium,
         mojom::SearchResultType::kSubpage,
         {.subpage = mojom::Subpage::kGoogleDrive}}});
@@ -163,6 +163,7 @@ void FilesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"smbShareAddedInvalidSSOURLMessage",
        IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_INVALID_SSO_URL_MESSAGE},
       {"officeLabel", IDS_SETTINGS_OFFICE_LABEL},
+      {"officeSublabel", IDS_SETTINGS_OFFICE_SUBLABEL},
       {"officeSubpageTitle", IDS_SETTINGS_OFFICE_SUBPAGE_TITLE},
       {"alwaysMoveToDrivePreferenceLabel",
        IDS_SETTINGS_ALWAYS_MOVE_OFFICE_TO_DRIVE_PREFERENCE_LABEL},

@@ -63,6 +63,7 @@
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/browsing_topics/browsing_topics.mojom-forward.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
+#include "third_party/blink/public/mojom/origin_trials/origin_trials_settings.mojom-forward.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -542,8 +543,12 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allows the embedder to override parameters when navigating. Called for both
   // opening new URLs and when transferring URLs across processes.
+  // If the initiator of the navigation is set, `source_process_site_url` is
+  // the site URL that the initiator's process is locked to. Generally the
+  // initiator is set on renderer-initiated navigations, but not on
+  // browser-initiated navigations.
   virtual void OverrideNavigationParams(
-      SiteInstance* site_instance,
+      absl::optional<GURL> source_process_site_url,
       ui::PageTransition* transition,
       bool* is_renderer_initiated,
       content::Referrer* referrer,
@@ -602,9 +607,6 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Called when a site instance is first associated with a process.
   virtual void SiteInstanceGotProcess(SiteInstance* site_instance) {}
-
-  // Called from a site instance's destructor.
-  virtual void SiteInstanceDeleting(SiteInstance* site_instance) {}
 
   // Returns true if for the navigation from |current_effective_url| to
   // |destination_effective_url| in |site_instance|, a new SiteInstance and
@@ -670,10 +672,9 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Check if applications whose origin is |origin| are allowed to perform
   // all-screens-auto-selection, which allows automatic capturing of all
-  // screens with the getDisplayMediaSet API.
-  virtual bool IsGetDisplayMediaSetSelectAllScreensAllowed(
-      content::BrowserContext* context,
-      const url::Origin& origin);
+  // screens with the getAllScreensMedia API.
+  virtual bool IsGetAllScreensMediaAllowed(content::BrowserContext* context,
+                                           const url::Origin& origin);
 
   // Allow the embedder to control the maximum renderer process count. Only
   // applies if it is set to a non-zero value.  Once this limit is exceeded,
@@ -920,6 +921,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to control if web attribution reporting is allowed.
   // This method must be idempotent.
   virtual bool IsWebAttributionReportingAllowed();
+
+  // Allows the embedder to control if an Os source event should register as
+  // a Web Os or Os (App) source.
+  // This method must be idempotent.
+  virtual bool ShouldUseOsWebSourceAttributionReporting();
 
   // Allows the embedder to control if Shared Storage API operations can happen
   // in a given context.
@@ -2108,7 +2114,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // debug URLs, as other requests are handled via NavigationThrottlers and
   // blocklist policies are applied there.
   virtual bool ShouldBlockRendererDebugURL(const GURL& url,
-                                           BrowserContext* context);
+                                           BrowserContext* context,
+                                           RenderFrameHost* render_frame_host);
 
   // Returns the default accessibility mode for the given browser context.
   virtual ui::AXMode GetAXModeForBrowserContext(
@@ -2162,6 +2169,12 @@ class CONTENT_EXPORT ContentBrowserClient {
       bool get_topics,
       bool observe,
       std::vector<blink::mojom::EpochTopicPtr>& topics);
+
+  // Returns the number of distinct topics epochs versions for `main_frame`.
+  // Must be called when topics are eligible (i.e. `HandleTopicsWebApi` would
+  // return true for the same main frame context).
+  virtual int NumVersionsInTopicsEpochs(
+      content::RenderFrameHost* main_frame) const;
 
   // Returns whether a site is blocked to use Bluetooth scanning API.
   virtual bool IsBluetoothScanningBlocked(
@@ -2296,6 +2309,11 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns the URL-Keyed Metrics service for chrome:ukm.
   virtual ukm::UkmService* GetUkmService();
+
+  // Returns the Origin Trials Settings. If the embedder does not support Origin
+  // Trials, the method will return a null
+  // blink::mojom::OriginTrialsSettingsPtr.
+  virtual blink::mojom::OriginTrialsSettingsPtr GetOriginTrialsSettings();
 
   // Called when a keepalive request
   // (https://fetch.spec.whatwg.org/#request-keepalive-flag) is requested.

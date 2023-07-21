@@ -132,6 +132,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   // AXNodeID can be used to access the other.
   private domNodeToAxNodeIdMap_: TwoWayMap = new TwoWayMap();
 
+  private scrollingOnSelection_: boolean;
   private hasContent_: boolean;
   private emptyStateImagePath_: string;
   private emptyStateDarkImagePath_: string;
@@ -155,19 +156,26 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       const selection = shadowRoot.getSelection();
       assert(selection);
       const {anchorNode, anchorOffset, focusNode, focusOffset} = selection;
-      if (focusNode && anchorNode) {
-        const anchorNodeId = this.domNodeToAxNodeIdMap_.get(anchorNode);
-        const focusNodeId = this.domNodeToAxNodeIdMap_.get(focusNode);
-        assert(anchorNodeId && focusNodeId);
-        chrome.readAnything.onSelectionChange(
-            anchorNodeId, anchorOffset, focusNodeId, focusOffset);
-      } else if (!focusNode && !anchorNode) {
-        // If a non-zero selection exists and then you click inside that
-        // selection area, we get null nodes. We still want to forward this to
-        // readAnything because this causes the selection to clear and we need
-        // to clear the selection on the main page.
-        chrome.readAnything.clearSelection();
+      if (!anchorNode || !focusNode) {
+        return;
       }
+      const anchorNodeId = this.domNodeToAxNodeIdMap_.get(anchorNode);
+      const focusNodeId = this.domNodeToAxNodeIdMap_.get(focusNode);
+      assert(anchorNodeId && focusNodeId);
+      chrome.readAnything.onSelectionChange(
+          anchorNodeId, anchorOffset, focusNodeId, focusOffset);
+    };
+
+    document.onscroll = () => {
+      chrome.readAnything.onScroll(this.scrollingOnSelection_);
+      this.scrollingOnSelection_ = false;
+    };
+
+    // Pass copy commands to main page. Copy commands will not work if they are
+    // disabled on the main page.
+    document.oncopy = () => {
+      chrome.readAnything.onCopy();
+      return false;
     };
   }
 
@@ -318,7 +326,8 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     if (!startElement) {
       return;
     }
-    startElement.scrollIntoView();
+    this.scrollingOnSelection_ = true;
+    startElement.scrollIntoViewIfNeeded();
   }
 
   private validatedFontName_(): string {

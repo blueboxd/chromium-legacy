@@ -122,12 +122,18 @@ void AttributionOsLevelManagerAndroid::Register(
   switch (registration.GetType()) {
     case attribution_reporting::mojom::OsRegistrationType::kSource:
       DCHECK(registration.input_event.has_value());
-      Java_AttributionOsLevelManager_registerAttributionSource(
-          env, jobj_, request_id, registration_url, top_level_origin,
-          is_debug_key_allowed, registration.input_event->input_event);
+      if (AttributionOsLevelManager::ShouldUseOsWebSource()) {
+        Java_AttributionOsLevelManager_registerWebAttributionSource(
+            env, jobj_, request_id, registration_url, top_level_origin,
+            is_debug_key_allowed, registration.input_event->input_event);
+      } else {
+        Java_AttributionOsLevelManager_registerAttributionSource(
+            env, jobj_, request_id, registration_url,
+            registration.input_event->input_event);
+      }
       break;
     case attribution_reporting::mojom::OsRegistrationType::kTrigger:
-      Java_AttributionOsLevelManager_registerAttributionTrigger(
+      Java_AttributionOsLevelManager_registerWebAttributionTrigger(
           env, jobj_, request_id, registration_url, top_level_origin,
           is_debug_key_allowed);
       break;
@@ -145,45 +151,6 @@ void AttributionOsLevelManagerAndroid::ClearData(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   JNIEnv* env = base::android::AttachCurrentThread();
-
-  // Currently Android and Chromium have different matching behaviors when both
-  // `origins` and `domains` are empty.
-  // Chromium: Delete -> Delete nothing; Preserve -> Delete all.
-  // Android: Delete -> Delete all; Preserve -> Delete nothing.
-  // Android may fix the behavior in the future. As a workaround, Chromium will
-  // not call Android if it's to delete nothing (no-op), and call Android with
-  // both Delete and Preserve modes if it's to delete all. These two modes will
-  // be one no-op and one delete all in Android releases with and without the
-  // fix. See crbug.com/1442967.
-  if (origins.empty() && domains.empty()) {
-    switch (mode) {
-      case BrowsingDataFilterBuilder::Mode::kDelete:
-        // No-op.
-        std::move(done).Run();
-        return;
-      case BrowsingDataFilterBuilder::Mode::kPreserve: {
-        // Delete everything.
-        auto barrier = base::BarrierClosure(2, std::move(done));
-
-        auto empty_origins = url::GURLAndroid::ToJavaArrayOfGURLs(env, {});
-        auto empty_domains = base::android::ToJavaArrayOfStrings(
-            env, std::vector<std::string>());
-
-        for (auto match_mode : {BrowsingDataFilterBuilder::Mode::kDelete,
-                                BrowsingDataFilterBuilder::Mode::kPreserve}) {
-          int request_id = next_callback_id_++;
-          pending_data_deletion_callbacks_.emplace(request_id, barrier);
-          Java_AttributionOsLevelManager_deleteRegistrations(
-              env, jobj_, request_id, delete_begin.ToJavaTime(),
-              delete_end.ToJavaTime(), empty_origins, empty_domains,
-              GetDeletionMode(delete_rate_limit_data),
-              GetMatchBehavior(match_mode));
-        }
-
-        return;
-      }
-    }
-  }
 
   std::vector<base::android::ScopedJavaLocalRef<jobject>> j_origins;
   base::ranges::transform(

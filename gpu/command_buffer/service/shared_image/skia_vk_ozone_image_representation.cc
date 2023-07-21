@@ -24,6 +24,7 @@
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
+#include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
 
 namespace gpu {
 
@@ -89,7 +90,7 @@ std::vector<sk_sp<SkSurface>> SkiaVkOzoneImageRepresentation::BeginWriteAccess(
       surface_props != surface_->props()) {
     SkColorType sk_color_type = viz::ToClosestSkColorType(
         /*gpu_compositing=*/true, format());
-    surface_ = SkSurface::MakeFromBackendTexture(
+    surface_ = SkSurfaces::WrapBackendTexture(
         gr_context, promise_texture_->backendTexture(), surface_origin(),
         final_msaa_count, sk_color_type, color_space().ToSkColorSpace(),
         &surface_props);
@@ -225,7 +226,7 @@ void SkiaVkOzoneImageRepresentation::EndAccess(bool readonly) {
     SemaphoreHandle semaphore_handle = vk_implementation()->GetSemaphoreHandle(
         vk_device(), end_access_semaphore_);
     fence = std::move(semaphore_handle).ToGpuFenceHandle();
-    DCHECK(!fence.is_null());
+    DLOG_IF(ERROR, fence.is_null()) << "Failed to convert the external semaphore to fence.";
   }
 
   ozone_backing()->EndAccess(readonly, OzoneImageBacking::AccessStream::kVulkan,

@@ -44,9 +44,9 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/user_selectable_type.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/model/proxy_model_type_controller_delegate.h"
+#include "components/sync/service/sync_service.h"
+#include "components/sync/service/sync_user_settings.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace password_manager {
@@ -209,6 +209,7 @@ SuccessStatus GetSuccessStatusFromError(
     case AndroidBackendErrorType::kGMSVersionNotSupported:
     case AndroidBackendErrorType::kExternalError:
     case AndroidBackendErrorType::kBackendNotAvailable:
+    case AndroidBackendErrorType::kFailedToCreateFacetId:
       return SuccessStatus::kError;
   }
   NOTREACHED();
@@ -931,9 +932,6 @@ void PasswordStoreAndroidBackend::OnCompleteWithLogins(
 
   // Since the API call has succeeded, it's safe to reenable saving.
   prefs_->SetBoolean(prefs::kSavePasswordsSuspendedByError, false);
-  // A successful API call means that the user is no longer in a broken auth
-  // state. Reset the counter.
-  prefs_->SetInteger(password_manager::prefs::kTimesUPMAuthErrorShown, 0);
 
   reply->RecordMetrics(/*error=*/absl::nullopt);
   DCHECK(reply->Holds<LoginsOrErrorReply>());
@@ -954,9 +952,6 @@ void PasswordStoreAndroidBackend::OnLoginsChanged(JobId job_id,
 
   // Since the API call has succeeded, it's safe to reenable saving.
   prefs_->SetBoolean(prefs::kSavePasswordsSuspendedByError, false);
-  // A successful API all means that the user is no longer in a broken auth
-  // state. Reset the counter.
-  prefs_->SetInteger(password_manager::prefs::kTimesUPMAuthErrorShown, 0);
 
   main_task_runner_->PostTask(
       FROM_HERE,
@@ -1032,10 +1027,6 @@ void PasswordStoreAndroidBackend::OnError(JobId job_id,
     if (password_manager::IsUnrecoverableBackendError(api_error_code, operation,
                                                       prefs_)) {
       if (!password_manager_upm_eviction::IsCurrentUserEvicted(prefs_)) {
-        if (base::FeatureList::IsEnabled(
-                password_manager::features::kShowUPMErrorNotification)) {
-          bridge_helper_->ShowErrorNotification();
-        }
         password_manager_upm_eviction::EvictCurrentUser(api_error, prefs_);
       }
     } else if (IsAuthenticationError(api_error_code)) {

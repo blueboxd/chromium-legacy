@@ -102,8 +102,8 @@ void StaticBitmapImageToVideoFrameCopier::Convert(
       // format that is backing `image->GetMailboxHolder()`, or, alternatively,
       // expose an accelerated SkImage.
       if (accelerated_frame_pool_->CopyRGBATextureToVideoFrame(
-              viz::SharedImageFormat::SinglePlane(
-                  viz::SkColorTypeToResourceFormat(kRGBA_8888_SkColorType)),
+              viz::SkColorTypeToSinglePlaneSharedImageFormat(
+                  kRGBA_8888_SkColorType),
               gfx::Size(image->width(), image->height()),
               gfx::ColorSpace::CreateSRGB(),
               image->IsOriginTopLeft() ? kTopLeft_GrSurfaceOrigin
@@ -156,6 +156,7 @@ void StaticBitmapImageToVideoFrameCopier::ReadARGBPixelsSync(
     DLOG(ERROR) << "Couldn't read pixels from PaintImage";
     return;
   }
+  temp_argb_frame->set_color_space(gfx::ColorSpace::CreateSRGB());
   std::move(callback).Run(std::move(temp_argb_frame));
 }
 
@@ -257,6 +258,7 @@ void StaticBitmapImageToVideoFrameCopier::OnARGBPixelsReadAsync(
     ReadARGBPixelsSync(image, std::move(callback));
     return;
   }
+  argb_frame->set_color_space(gfx::ColorSpace::CreateSRGB());
   std::move(callback).Run(std::move(argb_frame));
 }
 
@@ -270,6 +272,7 @@ void StaticBitmapImageToVideoFrameCopier::OnYUVPixelsReadAsync(
     DLOG(ERROR) << "Couldn't read SkImage using async callback";
     return;
   }
+  yuv_frame->set_color_space(gfx::ColorSpace::CreateREC601());
   std::move(callback).Run(yuv_frame);
 }
 

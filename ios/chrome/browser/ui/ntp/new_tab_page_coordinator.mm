@@ -36,7 +36,6 @@
 #import "ios/chrome/browser/follow/followed_web_site_state.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
-#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
 #import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
@@ -45,6 +44,7 @@
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
@@ -83,6 +83,7 @@
 #import "ios/chrome/browser/ui/ntp/incognito/incognito_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_constants.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
+#import "ios/chrome/browser/ui/ntp/metrics/home_metrics.h"
 #import "ios/chrome/browser/ui/ntp/metrics/new_tab_page_metrics_recorder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_component_factory_protocol.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_content_delegate.h"
@@ -415,9 +416,17 @@
       return;
     }
   }
-
   // No active NTPs were found.
   [self stop];
+}
+
+- (BOOL)isNTPActiveForCurrentWebState {
+  if (!self.webState) {
+    return NO;
+  }
+  NewTabPageTabHelper* NTPHelper =
+      NewTabPageTabHelper::FromWebState(self.webState);
+  return NTPHelper && NTPHelper->IsActive();
 }
 
 - (void)stopScrolling {
@@ -451,11 +460,9 @@
   [self.NTPViewController resetStateUponReload];
   self.discoverFeedService->RefreshFeed(
       FeedRefreshTrigger::kForegroundUserTriggered);
-  [self reloadContentSuggestions];
 }
 
 - (void)locationBarDidBecomeFirstResponder {
-  [self.headerViewController locationBarBecomesFirstResponder];
   self.NTPViewController.omniboxFocused = YES;
 }
 
@@ -502,10 +509,13 @@
   CHECK(self.started);
   self.webState = webState;
   [self updateNTPIsVisible:YES];
+  [self updateStartForVisibilityChange:YES];
 }
 
 - (void)didNavigateAwayFromNTP {
+  [self cancelOmniboxEdit];
   [self updateNTPIsVisible:NO];
+  [self updateStartForVisibilityChange:NO];
   self.webState = nullptr;
 }
 
@@ -789,8 +799,7 @@
 }
 
 - (void)fakeboxTapped {
-  [self.NTPMetricsRecorder recordHomeActionType:IOSHomeActionType::kFakebox
-                                 onStartSurface:[self isStartSurface]];
+  RecordHomeAction(IOSHomeActionType::kFakebox, [self isStartSurface]);
   [self focusFakebox];
 }
 
@@ -1110,13 +1119,6 @@
 
 #pragma mark - NewTabPageContentDelegate
 
-- (void)reloadContentSuggestions {
-  // No need to reload ContentSuggestions since the mediator receives all
-  // model state changes and immediately updates the consumer with the new
-  // state.
-  return;
-}
-
 - (BOOL)isContentHeaderSticky {
   return [self isFollowingFeedAvailable] && [self isFeedHeaderVisible] &&
          !IsStickyHeaderDisabledForFollowingFeed();
@@ -1221,25 +1223,24 @@
 #pragma mark - NewTabPageMetricsDelegate
 
 - (void)recentTabTileOpened {
-  [self.NTPMetricsRecorder
-      recordHomeActionType:IOSHomeActionType::kReturnToRecentTab
-            onStartSurface:[self isStartSurface]];
+  RecordHomeAction(IOSHomeActionType::kReturnToRecentTab,
+                   [self isStartSurface]);
 }
 
 - (void)feedArticleOpened {
-  [self.NTPMetricsRecorder recordHomeActionType:IOSHomeActionType::kFeedCard
-                                 onStartSurface:[self isStartSurface]];
+  RecordHomeAction(IOSHomeActionType::kFeedCard, [self isStartSurface]);
 }
 
 - (void)mostVisitedTileOpened {
-  [self.NTPMetricsRecorder
-      recordHomeActionType:IOSHomeActionType::kMostVisitedTile
-            onStartSurface:[self isStartSurface]];
+  RecordHomeAction(IOSHomeActionType::kMostVisitedTile, [self isStartSurface]);
 }
 
 - (void)shortcutTileOpened {
-  [self.NTPMetricsRecorder recordHomeActionType:IOSHomeActionType::kShortcuts
-                                 onStartSurface:[self isStartSurface]];
+  RecordHomeAction(IOSHomeActionType::kShortcuts, [self isStartSurface]);
+}
+
+- (void)setUpListItemOpened {
+  RecordHomeAction(IOSHomeActionType::kSetUpList, [self isStartSurface]);
 }
 
 #pragma mark - LogoAnimationControllerOwnerOwner
@@ -1618,8 +1619,6 @@
   self.visible = visible;
 
   if (!self.browser->GetBrowserState()->IsOffTheRecord()) {
-    [self updateStartForVisibilityChange:visible];
-
     if (visible) {
       if ([self isFollowingFeedAvailable]) {
         NewTabPageTabHelper* helper =
@@ -1643,26 +1642,23 @@
       if ([self isFeedHeaderVisible]) {
         if ([self.feedExpandedPref value]) {
           [self.NTPMetricsRecorder
-              recordNTPImpression:IOSNTPImpressionType::kFeedVisible];
+              recordHomeImpression:IOSNTPImpressionType::kFeedVisible
+                    isStartSurface:[self isStartSurface]];
         } else {
           [self.NTPMetricsRecorder
-              recordNTPImpression:IOSNTPImpressionType::kFeedCollapsed];
+              recordHomeImpression:IOSNTPImpressionType::kFeedCollapsed
+                    isStartSurface:[self isStartSurface]];
         }
       } else {
         [self.NTPMetricsRecorder
-            recordNTPImpression:IOSNTPImpressionType::kFeedDisabled];
+            recordHomeImpression:IOSNTPImpressionType::kFeedDisabled
+                  isStartSurface:[self isStartSurface]];
       }
     } else {
-      // Unfocus omnibox, to prevent it from lingering when it should be
-      // dismissed (for example, when navigating away or when changing feed
-      // visibility). Do this after the MVC classes are deallocated so no reset
-      // animations are fired in response to this cancel.
-      id<OmniboxCommands> omniboxCommandHandler = HandlerForProtocol(
-          self.browser->GetCommandDispatcher(), OmniboxCommands);
-      [omniboxCommandHandler cancelOmniboxEdit];
       if (!self.didAppearTime.is_null()) {
         [self.NTPMetricsRecorder
-            recordTimeSpentInNTP:base::TimeTicks::Now() - self.didAppearTime];
+            recordTimeSpentInHome:(base::TimeTicks::Now() - self.didAppearTime)
+                   isStartSurface:[self isStartSurface]];
         self.didAppearTime = base::TimeTicks();
       }
     }
@@ -1672,15 +1668,6 @@
     if ([self isFeedVisible]) {
       [self.feedMetricsRecorder recordNTPDidChangeVisibility:visible];
     }
-  }
-
-  if (!self.browser->GetBrowserState()->IsOffTheRecord() && !visible) {
-    // Unfocus omnibox, to prevent it from lingering when it should be
-    // dismissed (for example, when navigating away or when changing feed
-    // visibility).
-    // Do this after updating `visible` to prevent defocus animation from
-    // happening when already navigating away from NTP.
-    [self cancelOmniboxEdit];
   }
 }
 

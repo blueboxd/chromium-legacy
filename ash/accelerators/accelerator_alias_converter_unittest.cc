@@ -296,6 +296,19 @@ TEST_F(AcceleratorAliasConverterTest, CheckCapsLockAlias) {
   EXPECT_EQ(0u, accelerator_aliases.size());
 }
 
+TEST_F(AcceleratorAliasConverterTest, CheckPlayPauseHidden) {
+  AcceleratorAliasConverter accelerator_alias_converter_;
+  const ui::Accelerator play_accelerator{ui::VKEY_PLAY, ui::EF_NONE};
+  const ui::Accelerator pause_accelerator{ui::VKEY_PAUSE, ui::EF_NONE};
+
+  EXPECT_TRUE(
+      accelerator_alias_converter_.CreateAcceleratorAlias(play_accelerator)
+          .empty());
+  EXPECT_TRUE(
+      accelerator_alias_converter_.CreateAcceleratorAlias(pause_accelerator)
+          .empty());
+}
+
 TEST_F(AcceleratorAliasConverterTest, MetaFKeyRewritesSuppressed) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kInputDeviceSettingsSplit);
@@ -537,13 +550,15 @@ INSTANTIATE_TEST_SUITE_P(
         // (last item in the list).
         // In this case, the most recently connected external keyboard does not
         // have a browser forward key.
+        // As the most recently connected keyboard and the internal keyboards
+        // are both ChromeOS keyboards, no alias is generated.
         {{ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
           ui::InputDeviceType::INPUT_DEVICE_BLUETOOTH,
           ui::InputDeviceType::INPUT_DEVICE_USB},
          {kKbdTopRowLayout1Tag, kKbdTopRowLayoutUnspecified,
           kKbdTopRowLayout2Tag},
          ui::Accelerator{ui::VKEY_BROWSER_FORWARD, ui::EF_NONE},
-         {ui::Accelerator{ui::VKEY_BROWSER_FORWARD, ui::EF_COMMAND_DOWN}}},
+         {}},
 
         // Since the external keyboard uses Layout1 by default, it should map to
         // F2.

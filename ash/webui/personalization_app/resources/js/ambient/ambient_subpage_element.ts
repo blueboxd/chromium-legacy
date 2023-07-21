@@ -27,7 +27,6 @@ import {dismissTimeOfDayBanner, setAmbientModeEnabled} from './ambient_controlle
 import {getAmbientProvider} from './ambient_interface_provider.js';
 import {AmbientObserver} from './ambient_observer.js';
 import {getTemplate} from './ambient_subpage_element.html.js';
-import {ToggleRow} from './toggle_row_element.js';
 import {getZerosArray} from './utils.js';
 
 export class AmbientSubpage extends WithPersonalizationStore {
@@ -174,17 +173,6 @@ export class AmbientSubpage extends WithPersonalizationStore {
     }
   }
 
-  private onClickAmbientModeButton_(event: Event) {
-    event.stopPropagation();
-    this.setAmbientModeEnabled_(!this.ambientModeEnabled_);
-  }
-
-  private onToggleStateChanged_(event: Event) {
-    const toggleRow = event.currentTarget as ToggleRow;
-    const ambientModeEnabled = toggleRow!.checked;
-    this.setAmbientModeEnabled_(ambientModeEnabled);
-  }
-
   private setAmbientModeEnabled_(ambientModeEnabled: boolean) {
     setAmbientModeEnabled(
         ambientModeEnabled, getAmbientProvider(), this.getStore());
@@ -240,10 +228,6 @@ export class AmbientSubpage extends WithPersonalizationStore {
 
   private getPlaceholders_(x: number): number[] {
     return getZerosArray(x);
-  }
-
-  private getClassContainer_(x: number): string {
-    return `ambient-text-placeholder-${x}`;
   }
 }
 

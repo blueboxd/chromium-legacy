@@ -58,14 +58,12 @@ std::vector<ContentSettingsPattern> FledgeBlockToContentSettingsPatterns(
           ContentSettingsPattern::FromString(entry)};
 }
 
-// Returns a base::Value for storage in prefs that represents |topic| blocked
-// at the current time.
-base::Value CreateBlockedTopicEntry(const CanonicalTopic& topic) {
-  base::Value entry(base::Value::Type::DICT);
-  entry.SetKey(kBlockedTopicsTopicKey, topic.ToValue());
-  entry.SetKey(kBlockedTopicsBlockTimeKey,
-               base::TimeToValue(base::Time::Now()));
-  return entry;
+// Returns a base::Value::Dict for storage in prefs that represents |topic|
+// blocked at the current time.
+base::Value::Dict CreateBlockedTopicEntry(const CanonicalTopic& topic) {
+  return base::Value::Dict()
+      .Set(kBlockedTopicsTopicKey, topic.ToValue())
+      .Set(kBlockedTopicsBlockTimeKey, base::TimeToValue(base::Time::Now()));
 }
 
 }  // namespace
@@ -559,6 +557,10 @@ bool PrivacySandboxSettingsImpl::IsPrivacySandboxRestricted() const {
   return delegate_->IsPrivacySandboxRestricted();
 }
 
+bool PrivacySandboxSettingsImpl::IsPrivacySandboxCurrentlyUnrestricted() const {
+  return delegate_->IsPrivacySandboxCurrentlyUnrestricted();
+}
+
 bool PrivacySandboxSettingsImpl::IsSubjectToM1NoticeRestricted() const {
   return delegate_->IsSubjectToM1NoticeRestricted();
 }
@@ -600,6 +602,16 @@ void PrivacySandboxSettingsImpl::SetPrivacySandboxAttestationsMapForTesting(
   attestations_ = PrivacySandboxAttestations(attestations_map);
 }
 
+void PrivacySandboxSettingsImpl::AddPrivacySandboxAttestationOverride(
+    const GURL& url) {
+  attestations_.AddOverride(net::SchemefulSite(url));
+}
+
+const std::vector<net::SchemefulSite>
+PrivacySandboxSettingsImpl::GetAttestationOverridesForTesting() const {
+  return attestations_.GetOverridesForTesting();  // IN-TEST
+}
+
 bool PrivacySandboxSettingsImpl::IsPrivacySandboxEnabledForContext(
     const absl::optional<url::Origin>& top_frame_origin,
     const GURL& url) const {
@@ -639,12 +651,13 @@ PrivacySandboxSettingsImpl::GetSiteAccessAllowedStatus(
 }
 
 PrivacySandboxSettingsImpl::Status
-PrivacySandboxSettingsImpl::GetPrivacySandboxAllowedStatus() const {
+PrivacySandboxSettingsImpl::GetPrivacySandboxAllowedStatus(
+    bool should_ignore_restriction /*=false*/) const {
   if (delegate_->IsIncognitoProfile()) {
     return Status::kIncognitoProfile;
   }
 
-  if (IsPrivacySandboxRestricted()) {
+  if (IsPrivacySandboxRestricted() && !should_ignore_restriction) {
     return Status::kRestricted;
   }
 
@@ -658,7 +671,11 @@ PrivacySandboxSettingsImpl::GetM1PrivacySandboxApiEnabledStatus(
          pref_name == prefs::kPrivacySandboxM1FledgeEnabled ||
          pref_name == prefs::kPrivacySandboxM1AdMeasurementEnabled);
 
-  PrivacySandboxSettingsImpl::Status status = GetPrivacySandboxAllowedStatus();
+  bool should_ignore_restriction =
+      pref_name == prefs::kPrivacySandboxM1AdMeasurementEnabled &&
+      IsRestrictedNoticeEnabled();
+  PrivacySandboxSettingsImpl::Status status =
+      GetPrivacySandboxAllowedStatus(should_ignore_restriction);
   if (!IsAllowed(status)) {
     return status;
   }

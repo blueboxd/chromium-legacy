@@ -71,44 +71,13 @@ export class OsSettingsPageElement extends OsSettingsPageElementBase {
         notify: true,
       },
 
-      showAndroidApps: Boolean,
-
-      showArcvmManageUsb: Boolean,
-
-      showCrostini: Boolean,
-
-      showPluginVm: Boolean,
-
-      showReset: Boolean,
-
-      showStartup: Boolean,
-
-      showKerberosSection: Boolean,
-
-      allowCrostini_: Boolean,
-
-      havePlayStoreApp: Boolean,
-
       androidAppsInfo: Object,
-
-      /**
-       * Whether the user is in guest mode.
-       */
-      isGuestMode_: {
-        type: Boolean,
-        value: () => {
-          return loadTimeData.getBoolean('isGuest');
-        },
-      },
 
       /**
        * Dictionary defining page availability.
        */
       pageAvailability: {
         type: Object,
-        value() {
-          return {};
-        },
       },
 
       advancedToggleExpanded: {
@@ -163,8 +132,6 @@ export class OsSettingsPageElement extends OsSettingsPageElementBase {
   androidAppsInfo?: AndroidAppsInfo;
   pageAvailability: OsPageAvailability;
   advancedToggleExpanded: boolean;
-  showKerberosSection: boolean;
-  private allowCrostini_: boolean;
   private hasExpandedSection_: boolean;
   private showSecondaryUserBanner_: boolean;
   private showUpdateRequiredEolBanner_: boolean;
@@ -192,9 +159,6 @@ export class OsSettingsPageElement extends OsSettingsPageElementBase {
     super.connectedCallback();
 
     this.currentRoute_ = Router.getInstance().currentRoute;
-
-    this.allowCrostini_ = loadTimeData.valueExists('allowCrostini') &&
-        loadTimeData.getBoolean('allowCrostini');
 
     this.addWebUiListener(
         'android-apps-info-update', this.androidAppsInfoUpdate_.bind(this));
@@ -233,8 +197,9 @@ export class OsSettingsPageElement extends OsSettingsPageElementBase {
         routes.ADVANCED.contains(route);
   }
 
-  private showPage_(visibility?: boolean): boolean {
-    return visibility !== false;
+  /** Stamp page in the DOM depending on page availability */
+  private shouldStampPage_(available?: boolean): boolean {
+    return !!available;
   }
 
   private computeShowSecondaryUserBanner_(): boolean {

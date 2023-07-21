@@ -98,6 +98,12 @@ class ASH_PUBLIC_EXPORT AshWebView : public views::View {
   // Invoke to navigate the embedded WebContents' to |url|.
   virtual void Navigate(const GURL& url) = 0;
 
+  // See `WebContents::GetVisibleURL()`.
+  virtual const GURL& GetVisibleURL() = 0;
+
+  // See `RenderFrameHost::IsErrorDocument()`.
+  virtual bool IsErrorDocument() = 0;
+
  protected:
   AshWebView();
 };

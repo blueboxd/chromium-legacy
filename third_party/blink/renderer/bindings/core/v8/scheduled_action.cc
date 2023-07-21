@@ -51,7 +51,7 @@
 namespace blink {
 
 ScheduledAction::ScheduledAction(ScriptState* script_state,
-                                 ExecutionContext* target,
+                                 ExecutionContext& target,
                                  V8Function* handler,
                                  const HeapVector<ScriptValue>& arguments)
     : script_state_(
@@ -59,8 +59,7 @@ ScheduledAction::ScheduledAction(ScriptState* script_state,
   if (script_state->World().IsWorkerWorld() ||
       BindingSecurity::ShouldAllowAccessTo(
           EnteredDOMWindow(script_state->GetIsolate()),
-          To<LocalDOMWindow>(target),
-          BindingSecurity::ErrorReportOption::kDoNotReport)) {
+          To<LocalDOMWindow>(&target))) {
     function_ = handler;
     arguments_ = arguments;
     auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
@@ -74,15 +73,14 @@ ScheduledAction::ScheduledAction(ScriptState* script_state,
 }
 
 ScheduledAction::ScheduledAction(ScriptState* script_state,
-                                 ExecutionContext* target,
+                                 ExecutionContext& target,
                                  const String& handler)
     : script_state_(
           MakeGarbageCollected<ScriptStateProtectingContext>(script_state)) {
   if (script_state->World().IsWorkerWorld() ||
       BindingSecurity::ShouldAllowAccessTo(
           EnteredDOMWindow(script_state->GetIsolate()),
-          To<LocalDOMWindow>(target),
-          BindingSecurity::ErrorReportOption::kDoNotReport)) {
+          To<LocalDOMWindow>(&target))) {
     code_ = handler;
     auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
     if (tracker && script_state->World().IsMainWorld()) {

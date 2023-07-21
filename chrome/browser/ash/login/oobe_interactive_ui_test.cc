@@ -30,7 +30,6 @@
 #include "chrome/browser/ash/login/screens/recommend_apps/recommend_apps_fetcher_delegate.h"
 #include "chrome/browser/ash/login/screens/recommend_apps/scoped_test_recommend_apps_fetcher_factory.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
-#include "chrome/browser/ash/login/test/embedded_policy_test_server_mixin.h"
 #include "chrome/browser/ash/login/test/embedded_test_server_setup_mixin.h"
 #include "chrome/browser/ash/login/test/enrollment_ui_mixin.h"
 #include "chrome/browser/ash/login/test/fake_arc_tos_mixin.h"
@@ -47,6 +46,7 @@
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_type_checker.h"
 #include "chrome/browser/ash/policy/enrollment/psm/rlwe_test_support.h"
+#include "chrome/browser/ash/policy/test_support/embedded_policy_test_server_mixin.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/extensions/api/quick_unlock_private/quick_unlock_private_api.h"
@@ -54,6 +54,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/ash/login/app_downloading_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/assistant_optin_flow_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/gaia_info_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gesture_navigation_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/marketing_opt_in_screen_handler.h"
@@ -127,6 +128,14 @@ void RunNetworkSelectionScreenChecks() {
 
   test::OobeJS().CreateFocusWaiter({"network-selection", "nextButton"})->Wait();
   EXPECT_TRUE(test::IsScanningRequestedOnNetworkScreen());
+}
+
+void HandleGaiaInfoScreen() {
+  OobeScreenWaiter(GaiaInfoScreenView::kScreenId).Wait();
+  LOG(INFO) << "OobeInteractiveUITest: Switched to 'gaia-info' screen.";
+
+  test::OobeJS().ClickOnPath({"gaia-info", "nextButton"});
+  LOG(INFO) << "OobeInteractiveUITest: Exiting 'gaia-info' screen.";
 }
 
 void WaitForGaiaSignInScreen() {
@@ -624,7 +633,12 @@ void OobeInteractiveUITest::PerformSessionSignInSteps() {
   if (GetFirstSigninScreen() == UserCreationView::kScreenId) {
     test::WaitForUserCreationScreen();
     test::TapUserCreationNext();
+
+    if (features::IsOobeGaiaInfoScreenEnabled()) {
+      HandleGaiaInfoScreen();
+    }
   }
+
   WaitForGaiaSignInScreen();
   LogInAsRegularUser();
 

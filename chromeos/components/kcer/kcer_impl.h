@@ -118,9 +118,34 @@ class KcerImpl : public Kcer {
       DoesKeyExistCallback callback,
       base::expected<absl::optional<Token>, Error> find_key_result);
 
-  void SetKeyNicknameWithToken(std::string nickname,
-                               StatusCallback callback,
-                               base::expected<PrivateKeyHandle, Error> key);
+  void SignWithToken(SigningScheme signing_scheme,
+                     DataToSign data,
+                     SignCallback callback,
+                     base::expected<PrivateKeyHandle, Error> key_or_error);
+
+  void SignRsaPkcs1RawWithToken(
+      DigestWithPrefix digest_with_prefix,
+      SignCallback callback,
+      base::expected<PrivateKeyHandle, Error> key_or_error);
+
+  void GetKeyInfoWithToken(
+      GetKeyInfoCallback callback,
+      base::expected<PrivateKeyHandle, Error> key_or_error);
+
+  void SetKeyNicknameWithToken(
+      std::string nickname,
+      StatusCallback callback,
+      base::expected<PrivateKeyHandle, Error> key_or_error);
+
+  void SetKeyPermissionsWithToken(
+      chaps::KeyPermissions key_permissions,
+      StatusCallback callback,
+      base::expected<PrivateKeyHandle, Error> key_or_error);
+
+  void SetCertProvisioningProfileIdWithToken(
+      std::string profile_id,
+      StatusCallback callback,
+      base::expected<PrivateKeyHandle, Error> key_or_error);
 
   // Task runner for the tokens. Can be nullptr if no tokens are available
   // to the current Kcer instance.

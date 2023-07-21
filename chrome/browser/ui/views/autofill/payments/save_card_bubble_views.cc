@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -152,26 +153,15 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
           .GetImageNamed(CreditCard::IconResourceId(card.network()))
           .AsImageSkia());
   card_network_icon->SetTooltipText(card.NetworkForDisplay());
+  auto* card_identifier_view =
+      description_view->AddChildView(GetCardIdentifierView());
 
-  auto* const card_identifier_label =
-      description_view->AddChildView(std::make_unique<views::Label>(
-          GetCardIdentifierString(), views::style::CONTEXT_DIALOG_BODY_TEXT,
-          views::style::STYLE_PRIMARY));
-  card_identifier_label->SetMultiLine(true);
-  card_identifier_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-  // Flex |card_identifier_label| to fill up remaining space and tail align the
-  // expiry date.
-  description_view->SetFlexForView(card_identifier_label, 1);
-
-  if (!card.IsExpired(base::Time::Now())) {
-    auto* expiration_date_label =
-        description_view->AddChildView(std::make_unique<views::Label>(
-            card.AbbreviatedExpirationDateForDisplay(false),
-            views::style::CONTEXT_DIALOG_BODY_TEXT,
-            views::style::STYLE_SECONDARY));
-    expiration_date_label->SetID(DialogViewId::EXPIRATION_DATE_LABEL);
+  // Flex |card_identifier_view| to fill up space before the expiry date.
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillMoveLegalTermsAndIconForNewCardEnrollment)) {
+    description_view->SetFlexForView(card_identifier_view, 1);
   }
+
   return view;
 }
 
@@ -179,6 +169,50 @@ void SaveCardBubbleViews::InitFootnoteView(views::View* footnote_view) {
   DCHECK(!footnote_view_);
   footnote_view_ = footnote_view;
   footnote_view_->SetID(DialogViewId::FOOTNOTE_VIEW);
+}
+
+std::unique_ptr<views::View> SaveCardBubbleViews::GetCardIdentifierView() {
+  // If feature enabled, display the expiration date of this view in a
+  // separate lines. Else, card name, last 4 digit and expiration date
+  // in the same line
+  auto card_identifier_view = std::make_unique<views::BoxLayoutView>();
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillMoveLegalTermsAndIconForNewCardEnrollment)) {
+    card_identifier_view->SetOrientation(
+        views::BoxLayout::Orientation::kVertical);
+    card_identifier_view->SetCrossAxisAlignment(
+        views::BoxLayout::CrossAxisAlignment::kStart);
+  } else {
+    card_identifier_view->SetBetweenChildSpacing(
+        ChromeLayoutProvider::Get()->GetDistanceMetric(
+            views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
+  }
+
+  auto* const card_identifier_label =
+      card_identifier_view->AddChildView(std::make_unique<views::Label>(
+          GetCardIdentifierString(), views::style::CONTEXT_DIALOG_BODY_TEXT,
+          views::style::STYLE_PRIMARY));
+  card_identifier_label->SetMultiLine(true);
+  card_identifier_label->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
+
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillMoveLegalTermsAndIconForNewCardEnrollment)) {
+    // Flex |card_identifier_label| to fill up remaining space and tail align
+    // the expiry date.
+    card_identifier_view->SetFlexForView(card_identifier_label, 1);
+  }
+
+  const CreditCard& card = controller_->GetCard();
+  if (!card.IsExpired(base::Time::Now())) {
+    auto* expiration_date_label =
+        card_identifier_view->AddChildView(std::make_unique<views::Label>(
+            card.AbbreviatedExpirationDateForDisplay(false),
+            views::style::CONTEXT_DIALOG_BODY_TEXT,
+            views::style::STYLE_SECONDARY));
+    expiration_date_label->SetID(DialogViewId::EXPIRATION_DATE_LABEL);
+  }
+
+  return card_identifier_view;
 }
 
 void SaveCardBubbleViews::AssignIdsToDialogButtons() {
@@ -196,14 +230,20 @@ void SaveCardBubbleViews::Init() {
   // For server cards, there is an explanation between the title and the
   // controls; use DialogContentType::kText. For local cards, since there is no
   // explanation, use DialogContentType::kControl instead.
+  // When feature kAutofillMoveLegalTermsAndIconForNewCardEnrollment is enabled,
+  // there are legal messages before the buttons for server cards, so use
+  // DialogContentType::kText. For local card, since there is no legal message,
+  // use DialogContentType::kControl instead.
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       controller_->GetExplanatoryMessage().empty()
           ? views::DialogContentType::kControl
           : views::DialogContentType::kText,
-      GetDialogButtons() == ui::DIALOG_BUTTON_NONE
+      base::FeatureList::IsEnabled(
+          features::kAutofillMoveLegalTermsAndIconForNewCardEnrollment) &&
+              !controller_->GetLegalMessageLines().empty()
           ? views::DialogContentType::kText
           : views::DialogContentType::kControl));
-  AddChildView(CreateMainContentView().release());
+  AddChildView(CreateMainContentView());
 }
 
 }  // namespace autofill

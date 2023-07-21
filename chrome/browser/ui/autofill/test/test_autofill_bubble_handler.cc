@@ -109,6 +109,17 @@ AutofillBubbleBase* TestAutofillBubbleHandler::ShowVirtualCardEnrollBubble(
   return virtual_card_enroll_bubble_view_.get();
 }
 
+AutofillBubbleBase* TestAutofillBubbleHandler::ShowMandatoryReauthBubble(
+    content::WebContents* web_contents,
+    MandatoryReauthBubbleController* controller,
+    bool is_user_gesture,
+    MandatoryReauthBubbleType bubble_type) {
+  if (!mandatory_reauth_bubble_view_) {
+    mandatory_reauth_bubble_view_ = std::make_unique<TestAutofillBubble>();
+  }
+  return mandatory_reauth_bubble_view_.get();
+}
+
 void TestAutofillBubbleHandler::OnPasswordSaved() {}
 
 }  // namespace autofill

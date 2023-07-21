@@ -101,6 +101,7 @@ export class XfCloudPanel extends XfBase {
   static get events() {
     return {
       DRIVE_SETTINGS_CLICKED: 'drive_settings_clicked',
+      PANEL_CLOSED: 'panel_closed',
     } as const;
   }
 
@@ -119,7 +120,7 @@ export class XfCloudPanel extends XfBase {
    * Show the element relative to the cloud icon that was clicked.
    */
   showAt(el: HTMLElement) {
-    this.$panel_!.showAt(el, {top: el.offsetTop + el.offsetHeight + 8});
+    this.$panel_!.showAt(el, {top: el.offsetTop + el.offsetHeight + 20});
   }
 
   /**
@@ -129,6 +130,21 @@ export class XfCloudPanel extends XfBase {
     if (this.open) {
       this.$panel_!.close();
     }
+  }
+
+  /**
+   * Refires the close event to ensure it's a known `XfCloudPanel` event to
+   * subscribe to.
+   */
+  override async connectedCallback() {
+    super.connectedCallback();
+    await this.updateComplete;
+    this.$panel_!.addEventListener('close', () => {
+      this.dispatchEvent(new CustomEvent(XfCloudPanel.events.PANEL_CLOSED, {
+        bubbles: true,
+        composed: true,
+      }));
+    });
   }
 
   /**
@@ -153,6 +169,9 @@ export class XfCloudPanel extends XfBase {
   override render() {
     return html`<cr-action-menu>
       <div class="body">
+        <div class="static progress" id="progress-preparing">
+          ${str('DRIVE_PREPARING_TO_SYNC')}
+        </div>
         <div id="progress-state">
           <div class="progress">${
         this.items && this.items > 1 ?
@@ -208,12 +227,18 @@ function getCSS() {
 
     :host(:not([items][percentage])) #progress-state,
     :host([percentage="100"]) #progress-state,
+    :host([percentage="0"]) #progress-state,
     :host([type]) #progress-state {
       display: none;
     }
 
     :host(:not([items][percentage="100"])) #progress-finished,
     :host([type]) #progress-finished {
+      display: none;
+    }
+
+    :host(:not([items][percentage="0"])) #progress-preparing,
+    :host([type]) #progress-preparing {
       display: none;
     }
 
@@ -226,6 +251,7 @@ function getCSS() {
     }
 
     .body {
+      background-color: var(--cros-sys-base_elevated);
       display: flex;
       flex-direction: column;
       margin: -8px 0;
@@ -255,7 +281,7 @@ function getCSS() {
     }
 
     .status-description {
-      color: var(--cros-text-color-secondary);
+      color: var(--cros-sys-on_surface_variant);
       font: var(--cros-annotation-1-font);
       line-height: 20px;
       padding: 0px 16px 20px;
@@ -263,7 +289,7 @@ function getCSS() {
     }
 
     .progress {
-      color: var(--cros-text-color-primary);
+      color: var(--cros-sys-on_surface);
       font: var(--cros-button-2-font);
       line-height: 20px;
       margin-inline: 16px;
@@ -271,7 +297,7 @@ function getCSS() {
     }
 
     .progress-description {
-      color: var(--cros-text-color-secondary);
+      color: var(--cros-sys-on_surface_variant);
       font: var(--cros-annotation-1-font);
       padding-bottom: 20px;
       padding-inline: 16px;
@@ -283,6 +309,11 @@ function getCSS() {
       margin: 8px 0 8px;
       margin-inline: 16px;
       width: calc(100% - 32px);
+    }
+
+    #progress-preparing {
+      align-self: start;
+      padding-bottom: 20px;
     }
 
     progress::-webkit-progress-bar {
@@ -328,9 +359,12 @@ function getCSS() {
 
 export type CloudPanelSettingsClickEvent = CustomEvent;
 
+export type CloudPanelCloseEvent = CustomEvent;
+
 declare global {
   interface HTMLElementEventMap {
     [XfCloudPanel.events.DRIVE_SETTINGS_CLICKED]: CloudPanelSettingsClickEvent;
+    [XfCloudPanel.events.PANEL_CLOSED]: CloudPanelCloseEvent;
   }
 
   interface HTMLElementTagNameMap {

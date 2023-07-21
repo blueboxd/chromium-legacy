@@ -9,6 +9,7 @@
 #include "base/strings/strcat.h"
 #include "chrome/browser/companion/core/features.h"
 #include "chrome/browser/companion/core/mojom/companion.mojom.h"
+#include "chrome/browser/companion/core/utils.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/side_panel/companion/companion_side_panel_controller_utils.h"
 #include "chrome/browser/ui/webui/side_panel/companion/companion_page_handler.h"
@@ -36,7 +37,8 @@ void CompanionTabHelper::ShowCompanionSidePanelForSearchURL(
     const GURL& search_url) {
   CHECK(delegate_);
   SetTextQuery(GetTextQueryFromSearchUrl(search_url));
-  delegate_->ShowCompanionSidePanel();
+  delegate_->ShowCompanionSidePanel(
+      SidePanelOpenTrigger::kContextMenuSearchOption);
 }
 
 void CompanionTabHelper::ShowCompanionSidePanelForImage(
@@ -51,8 +53,7 @@ void CompanionTabHelper::ShowCompanionSidePanelForImage(
   CHECK(delegate_);
 
   // Create upload URL to load in companion.
-  std::string upload_url_string =
-      companion::features::kImageUploadURLForCompanion.Get();
+  std::string upload_url_string = companion::GetImageUploadURLForCompanion();
   base::StrAppend(&upload_url_string, {"?", additional_query_params_modified});
   GURL upload_url = GURL(upload_url_string);
   CHECK(upload_url.is_valid());
@@ -65,7 +66,6 @@ void CompanionTabHelper::ShowCompanionSidePanelForImage(
   auto image_query = side_panel::mojom::ImageQuery(
       upload_url, src_url, content_type, thumbnail_data, original_size.height(),
       original_size.width(), downscaled_size.height(), downscaled_size.width());
-
   if (companion_page_handler_) {
     // Send request immediately if page handler already exists.
     companion_page_handler_->OnImageQuery(image_query);
@@ -76,7 +76,7 @@ void CompanionTabHelper::ShowCompanionSidePanelForImage(
   }
 
   // Show the side panel.
-  delegate_->ShowCompanionSidePanel();
+  delegate_->ShowCompanionSidePanel(SidePanelOpenTrigger::kLensContextMenu);
 }
 
 GURL CompanionTabHelper::SetImageTranslateQueryParams(GURL upload_url) {
@@ -116,6 +116,15 @@ CompanionTabHelper::GetCompanionPageHandler() {
   return companion_page_handler_;
 }
 
+void CompanionTabHelper::AddCompanionFinishedLoadingCallback(
+    CompanionTabHelper::CompanionLoadedCallback callback) {
+  delegate_->AddCompanionFinishedLoadingCallback(std::move(callback));
+}
+
+content::WebContents* CompanionTabHelper::GetCompanionWebContentsForTesting() {
+  return delegate_->GetCompanionWebContentsForTesting();  // IN-TEST
+}
+
 std::unique_ptr<side_panel::mojom::ImageQuery>
 CompanionTabHelper::GetImageQuery() {
   return std::move(image_query_);
@@ -131,17 +140,27 @@ void CompanionTabHelper::SetTextQuery(const std::string& text_query) {
   CHECK(!text_query.empty());
   text_query_ = text_query;
   if (companion_page_handler_) {
-    companion_page_handler_->OnSearchTextQuery(GetTextQuery());
+    companion_page_handler_->OnSearchTextQuery();
   }
 }
 
-void CompanionTabHelper::UpdateNewTabButtonState() {
-  delegate_->UpdateNewTabButtonState();
+void CompanionTabHelper::OnCompanionSidePanelClosed() {
+  image_query_.reset();
+  text_query_.clear();
+  side_panel_open_trigger_ = absl::nullopt;
+  delegate_->OnCompanionSidePanelClosed();
 }
 
-GURL CompanionTabHelper::GetNewTabButtonUrl() {
-  return companion_page_handler_ ? companion_page_handler_->GetNewTabButtonUrl()
-                                 : GURL();
+void CompanionTabHelper::CreateAndRegisterEntry() {
+  delegate_->CreateAndRegisterEntry();
+}
+
+void CompanionTabHelper::DeregisterEntry() {
+  delegate_->DeregisterEntry();
+}
+
+void CompanionTabHelper::UpdateNewTabButton(GURL url_to_open) {
+  delegate_->UpdateNewTabButton(url_to_open);
 }
 
 std::string CompanionTabHelper::GetTextQueryFromSearchUrl(
@@ -167,6 +186,18 @@ void CompanionTabHelper::StartRegionSearch(content::WebContents* web_contents,
                                         /*is_google_default_search_provider=*/
                                         true);
 #endif
+}
+
+void CompanionTabHelper::SetMostRecentSidePanelOpenTrigger(
+    absl::optional<SidePanelOpenTrigger> side_panel_open_trigger) {
+  side_panel_open_trigger_ = side_panel_open_trigger;
+}
+
+absl::optional<SidePanelOpenTrigger>
+CompanionTabHelper::GetAndResetMostRecentSidePanelOpenTrigger() {
+  auto copy = side_panel_open_trigger_;
+  side_panel_open_trigger_ = absl::nullopt;
+  return copy;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(CompanionTabHelper);

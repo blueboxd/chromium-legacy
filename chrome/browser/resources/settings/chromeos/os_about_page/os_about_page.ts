@@ -15,12 +15,12 @@ import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
-import '../../icons.html.js';
+import '../icons.html.js';
 import '../os_settings_page/os_settings_animated_pages.js';
 import '../os_settings_page/os_settings_section.js';
 import '../os_settings_page/os_settings_subpage.js';
 import '../os_settings_page_styles.css.js';
-import '../../settings_shared.css.js';
+import '../settings_shared.css.js';
 import '../os_settings_icons.html.js';
 import '../os_reset_page/os_powerwash_dialog.js';
 import './eol_offer_section.js';
@@ -34,6 +34,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {isCrostiniSupported} from '../common/load_time_booleans.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {MainPageMixin} from '../main_page_mixin.js';
 import {recordSettingChange} from '../metrics_recorder.js';
@@ -162,8 +163,6 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBaseElement {
         value: 0,
       },
 
-      showCrostini: Boolean,
-
       showCrostiniLicense_: {
         type: Boolean,
         value: false,
@@ -267,7 +266,6 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBaseElement {
   private eolMessageWithMonthAndYear_: string;
   private hasInternetConnection_: boolean;
   private firmwareUpdateCount_: number;
-  private showCrostini: boolean;
   private showCrostiniLicense_: boolean;
   private showUpdateStatus_: boolean;
   private showButtonContainer_: boolean;
@@ -660,7 +658,7 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBaseElement {
    * @param enabled True if Crostini is enabled.
    */
   private handleCrostiniEnabledChanged_(enabled: boolean) {
-    this.showCrostiniLicense_ = enabled && this.showCrostini;
+    this.showCrostiniLicense_ = enabled && isCrostiniSupported();
   }
 
   private shouldShowSafetyInfo_(): boolean {

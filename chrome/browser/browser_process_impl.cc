@@ -73,6 +73,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/screen_ai/screen_ai_downloader.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/site_isolation/prefs_observer.h"
 #include "chrome/browser/ssl/secure_origin_prefs_observer.h"
@@ -98,6 +99,7 @@
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/timer_update_scheduler.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/embedder_support/origin_trials/origin_trials_settings_storage.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -636,7 +638,7 @@ void BrowserProcessImpl::FlushLocalStateAndReply(base::OnceClosure reply) {
 
 device::GeolocationManager* BrowserProcessImpl::geolocation_manager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return geolocation_manager_.get();
+  return device::GeolocationManager::GetInstance();
 }
 
 void BrowserProcessImpl::EndSession() {
@@ -725,7 +727,17 @@ metrics::MetricsService* BrowserProcessImpl::metrics_service() {
 void BrowserProcessImpl::SetGeolocationManager(
     std::unique_ptr<device::GeolocationManager> geolocation_manager) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  geolocation_manager_ = std::move(geolocation_manager);
+  device::GeolocationManager::SetInstance(std::move(geolocation_manager));
+}
+
+embedder_support::OriginTrialsSettingsStorage*
+BrowserProcessImpl::GetOriginTrialsSettingsStorage() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!origin_trials_settings_storage_) {
+    origin_trials_settings_storage_ =
+        std::make_unique<embedder_support::OriginTrialsSettingsStorage>();
+  }
+  return origin_trials_settings_storage_.get();
 }
 
 SystemNetworkContextManager*
@@ -1230,6 +1242,10 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   soda_installer_impl_ = std::make_unique<speech::SodaInstallerImplChromeOS>();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  screen_ai_download_ = std::make_unique<screen_ai::ScreenAIDownloader>();
+#endif
 
   base::FilePath user_data_dir;
   bool result = base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);

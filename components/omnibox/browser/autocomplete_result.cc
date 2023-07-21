@@ -530,11 +530,9 @@ void AutocompleteResult::SortAndCull(
         << debug_info;
   }
 #endif
-
-  TrimOmniboxActions();
 }
 
-void AutocompleteResult::TrimOmniboxActions() {
+void AutocompleteResult::TrimOmniboxActions(bool is_zero_suggest) {
   // Platform rules:
   // Android:
   // - First two positions allow all types of OmniboxActionId
@@ -544,6 +542,10 @@ void AutocompleteResult::TrimOmniboxActions() {
   // - In every case, HISTORY_CLUSTERS is preferred over PEDALs.
   // - TAB_SWITCH actions are not considered because they're never attached.
   if constexpr (is_android) {
+    const size_t ACTIONS_IN_SUGGEST_CUTOFF_THRESHOLD =
+        OmniboxFieldTrial::kActionsInSuggestPromoteEntitySuggestion.Get() ? 1
+                                                                          : 2;
+    static constexpr size_t PEDALS_CUTOFF_THRESHOLD = 3;
     std::vector<OmniboxActionId> include_all{OmniboxActionId::ACTION_IN_SUGGEST,
                                              OmniboxActionId::HISTORY_CLUSTERS,
                                              OmniboxActionId::PEDAL};
@@ -554,9 +556,13 @@ void AutocompleteResult::TrimOmniboxActions() {
 
     for (size_t index = 0u; index < matches_.size(); ++index) {
       matches_[index].FilterOmniboxActions(
-          index < 2   ? include_all
-          : index < 3 ? include_at_most_pedals
-                      : include_at_most_history_clusters);
+          (!is_zero_suggest && index < ACTIONS_IN_SUGGEST_CUTOFF_THRESHOLD)
+              ? include_all
+          : index < PEDALS_CUTOFF_THRESHOLD ? include_at_most_pedals
+                                            : include_at_most_history_clusters);
+      if (index < ACTIONS_IN_SUGGEST_CUTOFF_THRESHOLD) {
+        matches_[index].FilterAndSortActionsInSuggest();
+      }
     }
   }
 }
@@ -678,9 +684,11 @@ void AutocompleteResult::AttachPedalsToMatches(
   for (size_t i = 0; i < max_index && pedals_found.size() < kMaxPedalCount;
        i++) {
     AutocompleteMatch& match = matches_[i];
-    // Skip matches that already have an `action` or are not suitable
-    // for actions.
-    if (!match.actions.empty() || !match.IsActionCompatible()) {
+    // Skip matches that already have a pedal or are not suitable for actions.
+    constexpr auto is_pedal = [](const auto& action) {
+      return action->ActionId() == OmniboxActionId::PEDAL;
+    };
+    if (match.GetActionWhere(is_pedal) || !match.IsActionCompatible()) {
       continue;
     }
 

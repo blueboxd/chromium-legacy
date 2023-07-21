@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {AndroidSmsInfo, MultiDeviceBrowserProxy, MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData, MultiDeviceSettingsMode, PhoneHubPermissionsSetupAction, PhoneHubPermissionsSetupFeatureCombination, PhoneHubPermissionsSetupFlowScreens} from 'chrome://os-settings/chromeos/os_settings.js';
+import {AndroidSmsInfo, MultiDeviceBrowserProxy, MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData, MultiDeviceSettingsMode, PhoneHubPermissionsSetupAction, PhoneHubPermissionsSetupFeatureCombination, PhoneHubPermissionsSetupFlowScreens} from 'chrome://os-settings/os_settings.js';
 import {webUIListenerCallback} from 'chrome://resources/ash/common/cr.m.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
@@ -47,7 +47,6 @@ export class TestMultideviceBrowserProxy extends TestBrowserProxy implements
       createFakePageContentData(MultiDeviceSettingsMode.NO_HOST_SET);
   private androidSmsInfo_:
       AndroidSmsInfo = {origin: TEST_ANDROID_SMS_ORIGIN, enabled: true};
-  private smartLockSignInAllowed_: boolean = true;
 
   constructor() {
     super([
@@ -55,7 +54,6 @@ export class TestMultideviceBrowserProxy extends TestBrowserProxy implements
       'getPageContentData',
       'setFeatureEnabledState',
       'setUpAndroidSms',
-      'getSmartLockSignInAllowed',
       'getAndroidSmsInfo',
       'attemptNotificationSetup',
       'cancelNotificationSetup',
@@ -69,6 +67,7 @@ export class TestMultideviceBrowserProxy extends TestBrowserProxy implements
       'logPhoneHubPermissionSetUpScreenAction',
       'logPhoneHubPermissionOnboardingSetupMode',
       'logPhoneHubPermissionOnboardingSetupResult',
+      'getSmartLockSignInAllowed',
     ]);
   }
 
@@ -95,12 +94,6 @@ export class TestMultideviceBrowserProxy extends TestBrowserProxy implements
 
   setUpAndroidSms(): void {
     this.methodCalled('setUpAndroidSms');
-  }
-
-  /** @override */
-  getSmartLockSignInAllowed() {
-    this.methodCalled('getSmartLockSignInAllowed');
-    return Promise.resolve(this.smartLockSignInAllowed_);
   }
 
   getAndroidSmsInfo(): Promise<AndroidSmsInfo> {
@@ -174,6 +167,10 @@ export class TestMultideviceBrowserProxy extends TestBrowserProxy implements
       completedMode: PhoneHubPermissionsSetupFeatureCombination): void {
     this.methodCalled(
         'logPhoneHubPermissionOnboardingSetupResult', [completedMode]);
+  }
+
+  getSmartLockSignInAllowed(): Promise<boolean> {
+    return Promise.resolve(true);
   }
 
   removeHostDevice(): void {}

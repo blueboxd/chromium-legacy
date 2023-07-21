@@ -20,25 +20,20 @@ namespace {
 using ::metrics::ChromeUserMetricsExtension;
 using ::metrics::SystemProfileProto;
 
-// This is set carefully: metrics logs are stored in a queue of limited size,
-// and are uploaded roughly every 30 minutes.
-constexpr base::TimeDelta kMinIndependentMetricsInterval = base::Minutes(45);
-
 }  // namespace
 
 StructuredMetricsProvider::StructuredMetricsProvider(
-    base::raw_ptr<metrics::MetricsProvider> system_profile_provider)
-    : StructuredMetricsProvider(kMinIndependentMetricsInterval,
-                                std::make_unique<StructuredMetricsRecorder>(
-                                    system_profile_provider)) {
-  DCHECK(system_profile_provider);
-}
+    base::raw_ptr<StructuredMetricsRecorder> structured_metrics_recorder)
+    : StructuredMetricsProvider(base::Minutes(GetUploadCadenceMinutes()),
+                                structured_metrics_recorder) {}
 
 StructuredMetricsProvider::StructuredMetricsProvider(
     base::TimeDelta min_independent_metrics_interval,
-    std::unique_ptr<StructuredMetricsRecorder> structured_metrics_recorder)
+    base::raw_ptr<StructuredMetricsRecorder> structured_metrics_recorder)
     : min_independent_metrics_interval_(min_independent_metrics_interval),
-      structured_metrics_recorder_(std::move(structured_metrics_recorder)) {}
+      structured_metrics_recorder_(structured_metrics_recorder) {
+  DCHECK(structured_metrics_recorder_);
+}
 
 StructuredMetricsProvider::~StructuredMetricsProvider() = default;
 
@@ -59,10 +54,22 @@ void StructuredMetricsProvider::OnRecordingDisabled() {
 void StructuredMetricsProvider::ProvideCurrentSessionData(
     ChromeUserMetricsExtension* uma_proto) {
   DCHECK(base::CurrentUIThread::IsSet());
+  // When StructuredMetricsService is enabled then the StructuredMetricsProvider
+  // will not upload metrics.
+  if (base::FeatureList::IsEnabled(kEnabledStructuredMetricsService)) {
+    return;
+  }
   recorder().ProvideUmaEventMetrics(*uma_proto);
 }
 
 bool StructuredMetricsProvider::HasIndependentMetrics() {
+  // If the StructuredMetricsService is enabled then we should not upload using
+  // |this|. When enabled this function will always return false, resulting in
+  // ProviderIndependentMetrics never being called.
+  if (base::FeatureList::IsEnabled(kEnabledStructuredMetricsService)) {
+    return false;
+  }
+
   if (!IsIndependentMetricsUploadEnabled()) {
     return false;
   }
@@ -85,17 +92,25 @@ void StructuredMetricsProvider::ProvideIndependentMetrics(
     base::HistogramSnapshotManager*) {
   DCHECK(base::CurrentUIThread::IsSet());
 
+  // When StructuredMetricsService is enabled then the StructuredMetricsProvider
+  // will not upload metrics.
+  if (base::FeatureList::IsEnabled(kEnabledStructuredMetricsService)) {
+    return;
+  }
+
   if (!recording_enabled_) {
     return;
   }
 
   last_provided_independent_metrics_ = base::Time::Now();
 
+  Recorder::GetInstance()->OnProvideIndependentMetrics(uma_proto);
   recorder().ProvideEventMetrics(*uma_proto);
 
   // Independent events should not be associated with the client_id, so clear
   // it.
   uma_proto->clear_client_id();
+
   // TODO(crbug/1052796): Remove the UMA timer code, which is currently used to
   // determine if it is worth to finalize independent logs in the background
   // by measuring the time it takes to execute the callback

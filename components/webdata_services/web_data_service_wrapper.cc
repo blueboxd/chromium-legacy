@@ -13,7 +13,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -32,7 +31,7 @@
 #include "components/webdata/common/web_database_service.h"
 #include "components/webdata/common/webdata_constants.h"
 
-#if !BUILDFLAG(IS_IOS)
+#if BUILDFLAG(USE_BLINK)
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/payment_method_manifest_table.h"
 #include "components/payments/content/web_app_manifest_section_table.h"
@@ -114,20 +113,13 @@ WebDataServiceWrapper::WebDataServiceWrapper(
   profile_database_->AddTable(std::make_unique<autofill::AutofillTable>());
   profile_database_->AddTable(std::make_unique<KeywordTable>());
   profile_database_->AddTable(std::make_unique<TokenServiceTable>());
-#if !BUILDFLAG(IS_IOS)
+#if BUILDFLAG(USE_BLINK)
   profile_database_->AddTable(
       std::make_unique<payments::PaymentMethodManifestTable>());
   profile_database_->AddTable(
       std::make_unique<payments::WebAppManifestSectionTable>());
 #endif
   profile_database_->LoadDatabase();
-
-  // Ensure the CountryNames instance has the locale set. It is used in
-  // the autofill profile bridge, but putting it into the bridge directly
-  // creates a data race with PDM, where the locale is set as well. This is
-  // a tmp solution until the bug below is resolved.
-  // TODO(1430250): Find a unified place for setting the locale
-  autofill::CountryNames::SetLocaleString(application_locale);
 
   profile_autofill_web_data_ =
       base::MakeRefCounted<autofill::AutofillWebDataService>(
@@ -145,7 +137,7 @@ WebDataServiceWrapper::WebDataServiceWrapper(
   token_web_data_->Init(
       base::BindOnce(show_error_callback, ERROR_LOADING_TOKEN));
 
-#if !BUILDFLAG(IS_IOS)
+#if BUILDFLAG(USE_BLINK)
   payment_manifest_web_data_ =
       base::MakeRefCounted<payments::PaymentManifestWebDataService>(
           profile_database_, ui_task_runner);
@@ -170,11 +162,11 @@ WebDataServiceWrapper::WebDataServiceWrapper(
   }
 
   base::FilePath account_storage_path;
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_ANDROID) || !BUILDFLAG(USE_BLINK)
   account_storage_path = context_path.Append(kAccountWebDataFilename);
 #else
   account_storage_path = base::FilePath(WebDatabase::kInMemoryPath);
-#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+#endif  // BUILDFLAG(IS_ANDROID) || !BUILDFLAG(USE_BLINK)
   account_database_ = base::MakeRefCounted<WebDatabaseService>(
       account_storage_path, ui_task_runner, db_task_runner);
   account_database_->AddTable(std::make_unique<autofill::AutofillTable>());
@@ -203,7 +195,7 @@ void WebDataServiceWrapper::Shutdown() {
   keyword_web_data_->ShutdownOnUISequence();
   token_web_data_->ShutdownOnUISequence();
 
-#if !BUILDFLAG(IS_IOS)
+#if BUILDFLAG(USE_BLINK)
   payment_manifest_web_data_->ShutdownOnUISequence();
 #endif
 
@@ -230,7 +222,7 @@ scoped_refptr<TokenWebData> WebDataServiceWrapper::GetTokenWebData() {
   return token_web_data_.get();
 }
 
-#if !BUILDFLAG(IS_IOS)
+#if BUILDFLAG(USE_BLINK)
 scoped_refptr<payments::PaymentManifestWebDataService>
 WebDataServiceWrapper::GetPaymentManifestWebData() {
   return payment_manifest_web_data_.get();

@@ -42,7 +42,6 @@
 #include "components/autofill/core/browser/geo/address_i18n.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/geo/country_data.h"
-#include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
 #include "components/autofill/core/browser/manual_testing_import.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
@@ -71,9 +70,9 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/base/user_selectable_type.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_service_utils.h"
-#include "components/sync/driver/sync_user_settings.h"
+#include "components/sync/service/sync_service.h"
+#include "components/sync/service/sync_service_utils.h"
+#include "components/sync/service/sync_user_settings.h"
 #include "components/version_info/version_info.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
@@ -319,7 +318,6 @@ void PersonalDataManager::Init(
     StrikeDatabaseBase* strike_database,
     AutofillImageFetcher* image_fetcher,
     bool is_off_the_record) {
-  CountryNames::SetLocaleString(app_locale_);
   database_helper_->Init(profile_database, account_database);
 
   SetPrefService(pref_service);
@@ -1870,7 +1868,7 @@ void PersonalDataManager::RemoveStrikesToBlockProfileUpdate(
 
 bool PersonalDataManager::IsSyncEnabledFor(
     syncer::UserSelectableType data_type) const {
-  return sync_service_ != nullptr && sync_service_->CanSyncFeatureStart() &&
+  return sync_service_ != nullptr && sync_service_->IsSyncFeatureEnabled() &&
          sync_service_->GetUserSettings()->GetSelectedTypes().Has(data_type);
 }
 

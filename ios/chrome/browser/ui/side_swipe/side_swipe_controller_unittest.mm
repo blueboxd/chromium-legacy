@@ -3,14 +3,15 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
+#import "ios/chrome/browser/ui/side_swipe/side_swipe_controller+private.h"
 
 #import <WebKit/WebKit.h>
 
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
-#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/test/scoped_key_window.h"
 #import "ios/web/common/crw_web_view_content_view.h"
 #import "ios/web/common/features.h"
@@ -29,12 +30,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-@interface SideSwipeController (ExposedForTesting)
-@property(nonatomic, assign) BOOL leadingEdgeNavigationEnabled;
-@property(nonatomic, assign) BOOL trailingEdgeNavigationEnabled;
-- (void)updateNavigationEdgeSwipeForWebState:(web::WebState*)webState;
-@end
 
 namespace {
 

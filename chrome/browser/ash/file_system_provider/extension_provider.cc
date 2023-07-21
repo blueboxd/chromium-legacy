@@ -13,12 +13,14 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/file_system_provider/mount_request_handler.h"
+#include "chrome/browser/ash/file_system_provider/odfs_metrics.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system.h"
 #include "chrome/browser/ash/file_system_provider/request_dispatcher_impl.h"
 #include "chrome/browser/ash/file_system_provider/throttled_file_system.h"
 #include "chrome/browser/chromeos/extensions/file_system_provider/service_worker_lifetime_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "extensions/browser/event_router.h"
@@ -28,6 +30,10 @@
 namespace ash {
 namespace file_system_provider {
 namespace {
+
+// Timeout before an onMountRequested request is considered as stale and hence
+// aborted.
+constexpr base::TimeDelta kDefaultMountTimeout = base::Minutes(5);
 
 extensions::file_system_provider::ServiceWorkerLifetimeManager*
 GetServiceWorkerLifetimeManager(Profile* profile) {
@@ -123,7 +129,7 @@ bool ExtensionProvider::RequestMount(Profile* profile,
   // signals an error (by returning request_id == 0).
   auto split_callback = base::SplitOnceCallback(std::move(callback));
   const int request_id = request_manager_->CreateRequest(
-      REQUEST_MOUNT,
+      RequestType::kMount,
       std::make_unique<MountRequestHandler>(request_dispatcher_.get(),
                                             std::move(split_callback.first)));
   if (!request_id) {
@@ -149,8 +155,16 @@ ExtensionProvider::ExtensionProvider(Profile* profile,
       base::BindRepeating(&ExtensionProvider::OnLacrosOperationForwarded,
                           weak_ptr_factory_.GetWeakPtr()),
       GetServiceWorkerLifetimeManager(profile));
+  if (chromeos::features::IsUploadOfficeToCloudEnabled() &&
+      provider_id_.GetExtensionId() == extension_misc::kODFSExtensionId) {
+    odfs_metrics_ = std::make_unique<ODFSMetrics>();
+  }
   request_manager_ = std::make_unique<RequestManager>(
-      profile, /*notification_manager=*/nullptr);
+      profile, /*notification_manager=*/nullptr, kDefaultMountTimeout);
+  if (chromeos::features::IsUploadOfficeToCloudEnabled() &&
+      provider_id_.GetExtensionId() == extension_misc::kODFSExtensionId) {
+    request_manager_->AddObserver(odfs_metrics_.get());
+  }
   ObserveAppServiceForIcons(profile);
 }
 

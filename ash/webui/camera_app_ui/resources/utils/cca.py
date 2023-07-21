@@ -30,14 +30,14 @@ def shell_join(cmd):
     return ' '.join(shlex.quote(c) for c in cmd)
 
 
-def run(args, cwd=None):
+def run(args):
     logging.debug(f'$ {shell_join(args)}')
-    subprocess.check_call(args, cwd=cwd)
+    subprocess.check_call(args)
 
 
-def check_output(args, cwd=None):
+def check_output(args):
     logging.debug(f'$ {shell_join(args)}')
-    return subprocess.check_output(args, cwd=cwd, text=True)
+    return subprocess.check_output(args, text=True)
 
 
 def run_node(args):
@@ -52,19 +52,37 @@ def build_preload_images_js(outdir):
         in_app_images = ast.literal_eval(
             re.search(r'in_app_images\s*=\s*(\[.*?\])', f.read(),
                       re.DOTALL).group(1))
+
+    preload_images_js_path = os.path.join(outdir, 'preload_images.js')
+    if os.path.exists(preload_images_js_path):
+        with open(preload_images_js_path) as f:
+            preload_images_js = f.read()
+    else:
+        preload_images_js = None
+
     with tempfile.NamedTemporaryFile('w') as f:
         f.writelines(
             os.path.abspath(f'images/{asset}') + '\n'
             for asset in in_app_images)
         f.flush()
-        cmd = [
-            'utils/gen_preload_images_js.py',
-            '--images_list_file',
-            f.name,
-            '--output_file',
-            os.path.join(outdir, 'preload_images.js'),
-        ]
-        subprocess.check_call(cmd)
+        with tempfile.NamedTemporaryFile('r') as temp_file:
+            cmd = [
+                'utils/gen_preload_images_js.py',
+                '--images_list_file',
+                f.name,
+                '--output_file',
+                temp_file.name,
+            ]
+            run(cmd)
+
+            new_preload_images_js = temp_file.read()
+            # Only write when the generated preload_images.js changes, to avoid
+            # changing mtime of the preload_images.js file when the images are
+            # not changed, so rsync won't copy the file again on deploy.
+            if new_preload_images_js == preload_images_js:
+                return
+            with open(preload_images_js_path, 'w') as output_file:
+                output_file.write(new_preload_images_js)
 
 
 CCA_OVERRIDE_PATH = '/etc/camera/cca'
@@ -188,12 +206,67 @@ def generate_tsconfig(board):
         json.dump(tsconfig, f)
 
 
+# Script to reload all CSS on the page by appending a different search
+# parameter to the URL each time this is run. Note that Date.now() has
+# milliseconds accuracy, so in practice multiple run of the cca.py deploy
+# script will have different search parameter.
+CSS_RELOAD_SCRIPT = """
+for (const link of document.querySelectorAll('link[rel="stylesheet"]')) {
+    const url = new URL(link.href);
+    url.searchParams.set('cca-deploy-refresh', Date.now().toString());
+    link.href = url.toString();
+}
+console.log('All CSS reloaded');
+"""
+
+
+def can_only_reload_css(changed_files):
+    for file in changed_files:
+        # Ignore deployed_version.js since this always change every deploy, and
+        # doesn't affect anything other than the startup console log and toast.
+        if file.endswith('/deployed_version.js'):
+            continue
+        # Ignore folders.
+        if file.endswith('/'):
+            continue
+        # .css change is okay.
+        if file.endswith('.css'):
+            continue
+        return False
+    return True
+
+
+def reload_cca(device, changed_files):
+    try:
+        reload_script = "document.location.reload()"
+        if can_only_reload_css(changed_files):
+            reload_script = CSS_RELOAD_SCRIPT
+        run([
+            'ssh',
+            device,
+            '--',
+            'cca',
+            'open',
+            '&&',
+            'cca',
+            'eval',
+            shlex.quote(reload_script),
+            ">",
+            "/dev/null",
+        ])
+    except subprocess.CalledProcessError as e:
+        print('Failed to reload CCA on DUT, '
+              'please make sure that the DUT is logged in '
+              'and `cca setup` has been run on DUT.')
+
+
 # Use a fixed temporary output folder for deploy, so incremental compilation
 # works and deploy is faster.
 DEPLOY_OUTPUT_TEMP_DIR = '/tmp/cca-deploy-out'
 
 
 def rsync_to_device(device, src, target, *, extra_arguments=[]):
+    """Returns list of files that are changed."""
     cmd = [
         'rsync',
         '--recursive',
@@ -211,11 +284,16 @@ def rsync_to_device(device, src, target, *, extra_arguments=[]):
         # will have their permission fixed.
         '--perms',
         '--chmod=a+rX',
+        # Sets rsync output format to %n which prints file path that are
+        # changed. (By default rsync only copies file that have different size
+        # or modified time.)
+        '--out-format=%n',
         *extra_arguments,
         src,
         f'{device}:{target}',
     ]
-    run(cmd)
+    output = check_output(cmd)
+    return [os.path.join(target, file) for file in output.splitlines()]
 
 
 def deploy(args):
@@ -250,14 +328,19 @@ def deploy(args):
 
     build_preload_images_js(js_out_dir)
 
-    rsync_to_device(args.device,
-                    f'{js_out_dir}/',
-                    f'{CCA_OVERRIDE_PATH}/js/',
-                    extra_arguments=['--exclude=tsconfig.tsbuildinfo'])
+    # Note that although we always rerun tsc, when the JS inputs are not
+    # changed, tsc also doesn't change the output file's mtime, so rsync will
+    # correctly skip those unchanged files.
+    changed_files = rsync_to_device(
+        args.device,
+        f'{js_out_dir}/',
+        f'{CCA_OVERRIDE_PATH}/js/',
+        extra_arguments=['--exclude=tsconfig.tsbuildinfo'])
 
     for dir in ['css', 'images', 'views', 'sounds']:
-        rsync_to_device(args.device, f'{os.path.join(cca_root, dir)}/',
-                        f'{CCA_OVERRIDE_PATH}/{dir}/')
+        changed_files += rsync_to_device(args.device,
+                                         f'{os.path.join(cca_root, dir)}/',
+                                         f'{CCA_OVERRIDE_PATH}/{dir}/')
 
     current_time = time.strftime('%F %T%z')
     run([
@@ -274,6 +357,9 @@ def deploy(args):
     ])
 
     ensure_local_override_enabled(args.device, args.force)
+
+    if args.reload:
+        reload_cca(args.device, changed_files)
 
 
 def test(args):
@@ -456,6 +542,142 @@ def check_strings(args):
     return returncode
 
 
+# Ref: https://developer.mozilla.org/en-US/docs/Web/CSS/named-color
+CSS_NAMED_COLORS = '''
+aliceblue antiquewhite aqua aquamarine azure beige bisque black blanchedalmond
+blue blueviolet brown burlywood cadetblue chartreuse chocolate coral
+cornflowerblue cornsilk crimson cyan darkblue darkcyan darkgoldenrod darkgray
+darkgreen darkgrey darkkhaki darkmagenta darkolivegreen darkorange darkorchid
+darkred darksalmon darkseagreen darkslateblue darkslategray darkslategrey
+darkturquoise darkviolet deeppink deepskyblue dimgray dimgrey dodgerblue
+firebrick floralwhite forestgreen fuchsia gainsboro ghostwhite gold goldenrod
+gray green greenyellow grey honeydew hotpink indianred indigo ivory khaki
+lavender lavenderblush lawngreen lemonchiffon lightblue lightcoral lightcyan
+lightgoldenrodyellow lightgray lightgreen lightgrey lightpink lightsalmon
+lightseagreen lightskyblue lightslategray lightslategrey lightsteelblue
+lightyellow lime limegreen linen magenta maroon mediumaquamarine mediumblue
+mediumorchid mediumpurple mediumseagreen mediumslateblue mediumspringgreen
+mediumturquoise mediumvioletred midnightblue mintcream mistyrose moccasin
+navajowhite navy oldlace olive olivedrab orange orangered orchid palegoldenrod
+palegreen paleturquoise palevioletred papayawhip peachpuff peru pink plum
+powderblue purple rebeccapurple red rosybrown royalblue saddlebrown salmon
+sandybrown seagreen seashell sienna silver skyblue slateblue slategray
+slategrey snow springgreen steelblue tan teal thistle tomato turquoise violet
+wheat white whitesmoke yellow yellowgreen
+'''.split()
+CSS_NAMED_COLORS_REGEX = '|'.join(CSS_NAMED_COLORS)
+
+# named color or #rgb / #rrggbb / #rrggbbaa
+CSS_COLOR_REGEX = f'{CSS_NAMED_COLORS_REGEX}|#[0-9a-fA-F]{{3,8}}'
+
+# colors_default.css is fallback for colors when dynamic color is not enabled.
+CSS_ALLOWLIST = ['css/colors_default.css']
+
+
+def check_color_tokens_css():
+    css_files = glob.glob('**/*.css', recursive=True)
+    returncode = 0
+
+    def print_error(filename, lineno, msg):
+        nonlocal returncode
+        print(f'{filename}:{lineno} - {msg}')
+        returncode = 1
+
+    for filename in css_files:
+        if filename in CSS_ALLOWLIST:
+            continue
+        with open(filename) as f:
+            css_lines = f.read().splitlines()
+
+        ignore_next_line = False
+        for lineno, line in enumerate(css_lines, 1):
+            if 'color-token-disable-next-line' in line:
+                ignore_next_line = True
+                continue
+            if ignore_next_line:
+                ignore_next_line = False
+                continue
+
+            line = line.strip()
+            # Ignore comments
+            if line.startswith('/*'):
+                continue
+
+            # Check all rgb() / rgba() uses are for box-shadow.
+            # This is a heuristic since this doesn't consider multi-line rule
+            # for now.
+            # TODO(pihsun): Use CSS variables for different kind of box-shadow,
+            # and remove this special casing of box-shadow.
+            if (re.search('rgba?\(', line)
+                    and not line.startswith('box-shadow: ')):
+                print_error(filename, lineno, 'hardcoded rgba() value found.')
+
+            # Check for color names and hexadecimal notations.
+            match = re.search(
+                # start of line or space
+                '(?:^|[ ])'
+                # ... followed by color
+                f'({CSS_COLOR_REGEX})'
+                # .. followed by end of line or space or ;
+                '(?:$|[ ;])',
+                line)
+            if match is not None:
+                print_error(filename, lineno,
+                            f'hardcoded color "{match[1]}" found.')
+
+    return returncode
+
+
+SVG_ALLOWLIST = [
+    # This image is only used as -webkit-mask, which needs to have
+    # solid fill color but the fill color itself is not used.
+    'images/barcode_scan_box_border_mask.svg',
+]
+
+
+def check_color_tokens_svg():
+    svg_files = glob.glob('**/*.svg', recursive=True)
+    returncode = 0
+
+    def print_error(filename, lineno, msg):
+        nonlocal returncode
+        print(f'{filename}:{lineno} - {msg}')
+        returncode = 1
+
+    for filename in svg_files:
+        if filename in SVG_ALLOWLIST:
+            continue
+        with open(filename) as f:
+            svg_lines = f.read().splitlines()
+
+        for lineno, line in enumerate(svg_lines, 1):
+            line = line.strip()
+            # Check for color names and hexadecimal notations.
+            match = re.search(
+                # start of line or space (for inline CSS) or {fill,stroke}="
+                '(?:^|[ ]|fill="|stroke=")'
+                # ... followed by color
+                f'({CSS_COLOR_REGEX})'
+                # .. followed by end of line or space or ; or "
+                '(?:$|[ ;"])',
+                line)
+            if match is not None:
+                print_error(
+                    filename, lineno, f'hardcoded color "{match[1]}" found. '
+                    'Please omit the fill/stroke value and specify it in CSS, '
+                    "or use var(--secondary-color) if two colors are needed.")
+
+    return returncode
+
+
+def check_color_tokens(args):
+    """Checks all colors used in CSS and SVG files are using color tokens."""
+    returncode = 0
+    returncode |= check_color_tokens_css()
+    returncode |= check_color_tokens_svg()
+    return returncode
+
+
 def parse_args(args):
     parser = argparse.ArgumentParser(description='CCA developer tools.')
     parser.add_argument('--debug', action='store_true')
@@ -464,7 +686,7 @@ def parse_args(args):
     deploy_parser = subparsers.add_parser('deploy',
                                           help='deploy to device',
                                           description='''Deploy CCA to device.
-            This script only works if there is no file added/deleted.
+            This script only works if there's no .cc / .grd changes.
             And please build Chrome at least once before running the command.'''
                                           )
     deploy_parser.add_argument('board')
@@ -472,6 +694,11 @@ def parse_args(args):
     deploy_parser.add_argument('--force',
                                help="Don't prompt for restarting Chrome.",
                                action='store_true')
+    deploy_parser.add_argument(
+        '--reload',
+        help='Try reloading CCA window after deploy. '
+        'Please run `cca setup` on DUT once before using this argument.',
+        action='store_true')
     deploy_parser.set_defaults(func=deploy)
 
     test_parser = subparsers.add_parser('test',
@@ -509,6 +736,14 @@ def parse_args(args):
             resources/strings/camera_strings.grd and
             resources/js/i18n_string.ts.''')
     check_strings_parser.set_defaults(func=check_strings)
+
+    # TODO(pihsun): Add argument to automatically generate / fix the files to a
+    # consistent state.
+    check_color_tokens_parser = subparsers.add_parser(
+        'check-color-tokens',
+        help='check color token usage in CSS and SVG files',
+        description='''Ensure all CSS files and SVG files.''')
+    check_color_tokens_parser.set_defaults(func=check_color_tokens)
 
     parser.set_defaults(func=lambda _args: parser.print_help())
 

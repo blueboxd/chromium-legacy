@@ -18,8 +18,8 @@
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
-#include "base/allocator/partition_allocator/pkey.h"
 #include "base/allocator/partition_allocator/tagging.h"
+#include "base/allocator/partition_allocator/thread_isolation/alignment.h"
 #include "build/build_config.h"
 
 namespace partition_alloc::internal {
@@ -64,7 +64,8 @@ static constexpr uint16_t kOffsetTagNormalBuckets =
 //    to further determine which part of the super page is used by
 //    PartitionAlloc. This isn't a problem in 64-bit mode, where allocation
 //    granularity is kSuperPageSize.
-class PA_COMPONENT_EXPORT(PARTITION_ALLOC) ReservationOffsetTable {
+class PA_COMPONENT_EXPORT(PARTITION_ALLOC)
+    PA_THREAD_ISOLATED_ALIGN ReservationOffsetTable {
  public:
 #if BUILDFLAG(HAS_64_BIT_POINTERS)
   // There is one reservation offset table per Pool in 64-bit mode.
@@ -96,16 +97,13 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) ReservationOffsetTable {
     }
   };
 #if BUILDFLAG(HAS_64_BIT_POINTERS)
-  // If pkey support is enabled, we need to pkey-tag the tables of the pkey
-  // pool. For this, we need to pad the tables so that the pkey ones start on a
-  // page boundary.
-  struct _PaddedReservationOffsetTables {
-    char pad_[PA_PKEY_ARRAY_PAD_SZ(_ReservationOffsetTable, kNumPools)] = {};
-    struct _ReservationOffsetTable tables[kNumPools];
-    char pad_after_[PA_PKEY_FILL_PAGE_SZ(sizeof(_ReservationOffsetTable))] = {};
-  };
-  static PA_CONSTINIT _PaddedReservationOffsetTables
-      padded_reservation_offset_tables_ PA_PKEY_ALIGN;
+  // If thread isolation support is enabled, we need to write-protect the tables
+  // of the thread isolated pool. For this, we need to pad the tables so that
+  // the thread isolated ones start on a page boundary.
+  char pad_[PA_THREAD_ISOLATED_ARRAY_PAD_SZ(_ReservationOffsetTable,
+                                            kNumPools)] = {};
+  struct _ReservationOffsetTable tables[kNumPools];
+  static PA_CONSTINIT ReservationOffsetTable singleton_;
 #else
   // A single table for the entire 32-bit address space.
   static PA_CONSTINIT struct _ReservationOffsetTable reservation_offset_table_;
@@ -115,9 +113,7 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) ReservationOffsetTable {
 #if BUILDFLAG(HAS_64_BIT_POINTERS)
 PA_ALWAYS_INLINE uint16_t* GetReservationOffsetTable(pool_handle handle) {
   PA_DCHECK(kNullPoolHandle < handle && handle <= kNumPools);
-  return ReservationOffsetTable::padded_reservation_offset_tables_
-      .tables[handle - 1]
-      .offsets;
+  return ReservationOffsetTable::singleton_.tables[handle - 1].offsets;
 }
 
 PA_ALWAYS_INLINE const uint16_t* GetReservationOffsetTableEnd(
@@ -183,8 +179,9 @@ PA_ALWAYS_INLINE uintptr_t GetDirectMapReservationStart(uintptr_t address) {
   bool is_in_regular_pool = IsManagedByPartitionAllocRegularPool(address);
   bool is_in_configurable_pool =
       IsManagedByPartitionAllocConfigurablePool(address);
-#if BUILDFLAG(ENABLE_PKEYS)
-  bool is_in_pkey_pool = IsManagedByPartitionAllocPkeyPool(address);
+#if BUILDFLAG(ENABLE_THREAD_ISOLATION)
+  bool is_in_thread_isolated_pool =
+      IsManagedByPartitionAllocThreadIsolatedPool(address);
 #endif
 
   // When ENABLE_BACKUP_REF_PTR_SUPPORT is off, BRP pool isn't used.
@@ -218,9 +215,9 @@ PA_ALWAYS_INLINE uintptr_t GetDirectMapReservationStart(uintptr_t address) {
             IsManagedByPartitionAllocRegularPool(reservation_start));
   PA_DCHECK(is_in_configurable_pool ==
             IsManagedByPartitionAllocConfigurablePool(reservation_start));
-#if BUILDFLAG(ENABLE_PKEYS)
-  PA_DCHECK(is_in_pkey_pool ==
-            IsManagedByPartitionAllocPkeyPool(reservation_start));
+#if BUILDFLAG(ENABLE_THREAD_ISOLATION)
+  PA_DCHECK(is_in_thread_isolated_pool ==
+            IsManagedByPartitionAllocThreadIsolatedPool(reservation_start));
 #endif
   PA_DCHECK(*ReservationOffsetPointer(reservation_start) == 0);
 #endif  // BUILDFLAG(PA_DCHECK_IS_ON)

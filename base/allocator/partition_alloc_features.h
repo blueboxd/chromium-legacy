@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -61,7 +62,6 @@ BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScan);
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanBrowserOnly);
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanRendererOnly);
-BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocBackupRefPtrControl);
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocLargeThreadCacheSize);
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocLargeEmptySlotSpanRing);
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
@@ -87,9 +87,6 @@ enum class BackupRefPtrMode {
   // This entails splitting the main partition.
   kEnabled,
 
-  // Same as kEnabled but without zapping quarantined objects.
-  kEnabledWithoutZapping,
-
   // Same as kEnabled but registers the main partition to memory reclaimer.
   kEnabledWithMemoryReclaimer,
 
@@ -104,11 +101,38 @@ enum class BackupRefPtrMode {
   // BRP is disabled, but the main partition *and* aligned partition are split
   // out, as if BRP was enabled in the "before allocation" mode.
   kDisabledButSplitPartitions3Way,
+};
 
-  //  BRP is disabled, but add dummy ref count to each allocation. This will
-  // increase allocation size but not change any of the logic. If an issue
-  // reproduce in this mode, it means the increase in size is causing it.
-  kDisabledButAddDummyRefCount,
+// Decides the amount of memory uses for BRP ref-count. The actual ref-count may
+// be smaller, in which case extra padding is added.
+enum class BackupRefPtrRefCountSize {
+  // Whatever sizeof(PartitionRefCount) happens to be, which is influence by
+  // buildflags.
+  // The remaining options require sizeof(PartitionRefCount) not to exceed the
+  // desired size, which will be asserted.
+  kNatural,
+  // 4 bytes.
+  k4B,
+  // 8 bytes
+  k8B,
+  // 16 bytes.
+  k16B,
+};
+
+enum class MemtagMode {
+  // memtagMode will be SYNC.
+  kSync,
+  // memtagMode will be ASYNC.
+  kAsync,
+};
+
+enum class MemoryTaggingEnabledProcesses {
+  // Memory tagging enabled only in the browser process.
+  kBrowserOnly,
+  // Memory tagging enabled in all processes, except renderer.
+  kNonRenderer,
+  // Memory tagging enabled in all processes.
+  kAllProcesses,
 };
 
 enum class AlternateBucketDistributionMode : uint8_t {
@@ -121,6 +145,15 @@ extern const BASE_EXPORT base::FeatureParam<BackupRefPtrEnabledProcesses>
     kBackupRefPtrEnabledProcessesParam;
 extern const BASE_EXPORT base::FeatureParam<BackupRefPtrMode>
     kBackupRefPtrModeParam;
+extern const BASE_EXPORT base::FeatureParam<BackupRefPtrRefCountSize>
+    kBackupRefPtrRefCountSizeParam;
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocMemoryTagging);
+extern const BASE_EXPORT base::FeatureParam<MemtagMode> kMemtagModeParam;
+extern const BASE_EXPORT base::FeatureParam<MemoryTaggingEnabledProcesses>
+    kMemoryTaggingEnabledProcessesParam;
+// Kill switch for memory tagging. Skips any code related to memory tagging when
+// enabled.
+BASE_EXPORT BASE_DECLARE_FEATURE(kKillPartitionAllocMemoryTagging);
 extern const BASE_EXPORT base::FeatureParam<bool>
     kBackupRefPtrAsanEnableDereferenceCheckParam;
 extern const BASE_EXPORT base::FeatureParam<bool>
@@ -143,6 +176,11 @@ BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocUseAlternateDistribution);
 #if BUILDFLAG(IS_WIN)
 BASE_EXPORT BASE_DECLARE_FEATURE(kPageAllocatorRetryOnCommitFailure);
 #endif
+
+// Name of the synthetic trial associated with forcibly enabling BRP in
+// all processes.
+inline constexpr base::StringPiece kRendererLiveBRPSyntheticTrialName =
+    "BackupRefPtrRendererLive";
 
 }  // namespace features
 }  // namespace base

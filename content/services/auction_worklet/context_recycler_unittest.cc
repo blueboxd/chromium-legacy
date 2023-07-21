@@ -343,6 +343,8 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     EXPECT_EQ("https://example.com/ad1", bid->ad_descriptor.url);
     EXPECT_EQ(10.0, bid->bid);
     EXPECT_EQ(base::Milliseconds(500), bid->bid_duration);
+    EXPECT_EQ(mojom::RejectReason::kNotAvailable,
+              context_recycler.set_bid_bindings()->reject_reason());
   }
 
   {
@@ -377,6 +379,8 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
                     "bid render URL 'https://example.com/ad1' isn't one of "
                     "the registered creative URLs."));
     EXPECT_FALSE(context_recycler.set_bid_bindings()->has_bid());
+    EXPECT_EQ(mojom::RejectReason::kNotAvailable,
+              context_recycler.set_bid_bindings()->reject_reason());
   }
 
   {
@@ -622,6 +626,8 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     EXPECT_EQ(10.0, bid->bid);
     ASSERT_TRUE(bid->bid_currency.has_value());
     EXPECT_EQ("USD", bid->bid_currency->currency_code());
+    EXPECT_EQ(mojom::RejectReason::kNotAvailable,
+              context_recycler.set_bid_bindings()->reject_reason());
   }
 
   {
@@ -655,6 +661,45 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
             "https://example.org/script.js:3 Uncaught TypeError: bidCurrency "
             "mismatch; returned 'USD', expected 'CAD'."));
     EXPECT_FALSE(context_recycler.set_bid_bindings()->has_bid());
+    EXPECT_EQ(mojom::RejectReason::kWrongGenerateBidCurrency,
+              context_recycler.set_bid_bindings()->reject_reason());
+  }
+
+  {
+    // Make sure the reject reason doesn't latch.
+    ContextRecyclerScope scope(context_recycler);
+    mojom::BidderWorkletNonSharedParamsPtr params =
+        mojom::BidderWorkletNonSharedParams::New();
+    params->ads.emplace();
+    params->ads.value().emplace_back(GURL("https://example.com/ad2"),
+                                     absl::nullopt);
+
+    context_recycler.set_bid_bindings()->ReInitialize(
+        base::TimeTicks::Now(),
+        /*has_top_level_seller_origin=*/false, params.get(),
+        blink::AdCurrency::From("CAD"),
+        /*is_ad_excluded=*/matches_ad1,
+        /*is_component_ad_excluded=*/matches_ad1);
+
+    gin::Dictionary bid_dict = gin::Dictionary::CreateEmpty(helper_->isolate());
+    bid_dict.Set("render", std::string("https://example.com/ad2"));
+    bid_dict.Set("bid", 10.0);
+    bid_dict.Set("bidCurrency", std::string("CAD"));
+
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "test", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), bid_dict));
+
+    EXPECT_THAT(error_msgs, ElementsAre());
+    ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bid());
+    mojom::BidderWorkletBidPtr bid =
+        context_recycler.set_bid_bindings()->TakeBid();
+    EXPECT_EQ("https://example.com/ad2", bid->ad_descriptor.url);
+    EXPECT_EQ(10.0, bid->bid);
+    ASSERT_TRUE(bid->bid_currency.has_value());
+    EXPECT_EQ("CAD", bid->bid_currency->currency_code());
+    EXPECT_EQ(mojom::RejectReason::kNotAvailable,
+              context_recycler.set_bid_bindings()->reject_reason());
   }
 }
 
@@ -815,7 +860,8 @@ TEST_F(ContextRecyclerTest, BidderLazyFiller) {
         "{\"userBiddingSignals\":{\"k\":2},"
         "\"trustedBiddingSignalsKeys\":[\"c\",\"d\"],"
         "\"priorityVector\":{\"e\":12},"
-        "\"prevWins\":[[240,[\"d\"]],[180,[\"c\"]]]}",
+        "\"prevWins\":[[240,[\"d\"]],[180,[\"c\"]]],"
+        "\"prevWinsMs\":[[240000,[\"d\"]],[180000,[\"c\"]]]}",
         str_result);
   }
 }
@@ -908,7 +954,8 @@ TEST_F(ContextRecyclerTest, BidderLazyFiller2) {
         "{\"userBiddingSignals\":null,"
         "\"trustedBiddingSignalsKeys\":null,"
         "\"priorityVector\":null,"
-        "\"prevWins\":[]}",
+        "\"prevWins\":[],"
+        "\"prevWinsMs\":[]}",
         str_result);
   }
 }
@@ -1227,7 +1274,7 @@ class ContextRecyclerPrivateAggregationEnabledTest
   template <typename T>
   v8::Local<v8::Value> WrapDebugKey(T debug_key) {
     gin::Dictionary dict = gin::Dictionary::CreateEmpty(helper_->isolate());
-    dict.Set("debug_key", debug_key);
+    dict.Set("debugKey", debug_key);
     return gin::ConvertToV8(helper_->isolate(), dict);
   }
 
@@ -1266,10 +1313,10 @@ class ContextRecyclerPrivateAggregationEnabledTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// Exercise `sendHistogramReport()` of PrivateAggregationBindings, and make sure
-// they reset properly.
+// Exercise `contributeToHistogram()` of PrivateAggregationBindings, and make
+// sure they reset properly.
 TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
-       PrivateAggregationBindingsSendHistogramReport) {
+       PrivateAggregationBindingsContributeToHistogram) {
   using PrivateAggregationRequests =
       std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>;
 
@@ -1280,7 +1327,7 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
       if (typeof args.bucket === "string") {
         args.bucket = BigInt(args.bucket);
       }
-      privateAggregation.sendHistogramReport(args);
+      privateAggregation.contributeToHistogram(args);
     }
     function doNothing() {}
   )";
@@ -1557,7 +1604,7 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
         error_msgs,
         ElementsAre(
             "https://example.org/script.js:8 Uncaught TypeError: "
-            "Invalid or missing bucket in sendHistogramReport argument."));
+            "Invalid or missing bucket in contributeToHistogram argument."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -1578,7 +1625,7 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
         error_msgs,
         ElementsAre(
             "https://example.org/script.js:8 Uncaught TypeError: "
-            "Invalid or missing value in sendHistogramReport argument."));
+            "Invalid or missing value in contributeToHistogram argument."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -1616,7 +1663,7 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
       if (typeof args.bucket === "string") {
         args.bucket = BigInt(args.bucket);
       }
-      privateAggregation.sendHistogramReport(args);
+      privateAggregation.contributeToHistogram(args);
     }
     function enableDebugMode(arg) {
       if (arg === undefined) {
@@ -1626,8 +1673,8 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
 
       // Passing BigInts in directly is complicated so we construct them from
       // strings.
-      if (typeof arg.debug_key === "string") {
-        arg.debug_key = BigInt(arg.debug_key);
+      if (typeof arg.debugKey === "string") {
+        arg.debugKey = BigInt(arg.debugKey);
       }
       privateAggregation.enableDebugMode(arg);
     }
@@ -1755,7 +1802,7 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
     EXPECT_THAT(
         error_msgs,
         ElementsAre("https://example.org/script.js:21 Uncaught TypeError: "
-                    "debug_key must be a BigInt."));
+                    "debugKey must be a BigInt."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -1959,7 +2006,7 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
           typeof args.bucket.offset === 'string') {
         args.bucket.offset = BigInt(args.bucket.offset);
       }
-      privateAggregation.reportContributionForEvent('reserved.win', args);
+      privateAggregation.contributeToHistogramOnEvent('reserved.win', args);
     }
 
     function testDifferentEventTypes(args) {
@@ -1968,41 +2015,42 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
       if (typeof args.bucket === "string") {
         args.bucket = BigInt(args.bucket);
       }
-      privateAggregation.reportContributionForEvent('reserved.win', args);
+      privateAggregation.contributeToHistogramOnEvent('reserved.win', args);
       // Add 1 to value, to let reserved.loss request gets different
       // contribution from reserved.win request.
       args.value += 1;
-      privateAggregation.reportContributionForEvent('reserved.loss', args);
+      privateAggregation.contributeToHistogramOnEvent('reserved.loss', args);
       args.value += 1;
-      privateAggregation.reportContributionForEvent('reserved.always', args);
+      privateAggregation.contributeToHistogramOnEvent('reserved.always', args);
       args.value += 1;
       // Arbitrary unreserved event type.
-      privateAggregation.reportContributionForEvent('click', args);
+      privateAggregation.contributeToHistogramOnEvent('click', args);
     }
 
     function testMissingEventType(args) {
       if (typeof args.bucket === "string") {
         args.bucket = BigInt(args.bucket);
       }
-      privateAggregation.reportContributionForEvent(args);
+      privateAggregation.contributeToHistogramOnEvent(args);
     }
 
     function testMissingContribution() {
-      privateAggregation.reportContributionForEvent('reserved.win');
+      privateAggregation.contributeToHistogramOnEvent('reserved.win');
     }
 
     function testWrongArgumentsOrder(args) {
       if (typeof args.bucket === "string") {
         args.bucket = BigInt(args.bucket);
       }
-      privateAggregation.reportContributionForEvent(args, 'reserved.win');
+      privateAggregation.contributeToHistogramOnEvent(args, 'reserved.win');
     }
 
     function testInvalidReservedEventType(args) {
       if (typeof args.bucket === "string") {
         args.bucket = BigInt(args.bucket);
       }
-      privateAggregation.reportContributionForEvent("reserved.something", args);
+      privateAggregation.contributeToHistogramOnEvent(
+          "reserved.something", args);
     }
 
     function doNothing() {}
@@ -2053,7 +2101,7 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
                     .empty());
   }
 
-  // Missing event_type (the first argument) to reportContributionForEvent()
+  // Missing event_type (the first argument) to contributeToHistogramOnEvent()
   // API.
   {
     ContextRecyclerScope scope(context_recycler);
@@ -2069,7 +2117,7 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
         error_msgs,
         ElementsAre(
             "https://example.org/script.js:37 Uncaught TypeError: "
-            "reportContributionForEvent requires 2 parameters, with first "
+            "contributeToHistogramOnEvent requires 2 parameters, with first "
             "parameter being a string and second parameter being an object."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
@@ -2077,8 +2125,8 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
                     .empty());
   }
 
-  // Missing contribution (the second argument) to reportContributionForEvent()
-  // API.
+  // Missing contribution (the second argument) to
+  // contributeToHistogramOnEvent() API.
   {
     ContextRecyclerScope scope(context_recycler);
     std::vector<std::string> error_msgs;
@@ -2091,7 +2139,7 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
         error_msgs,
         ElementsAre(
             "https://example.org/script.js:41 Uncaught TypeError: "
-            "reportContributionForEvent requires 2 parameters, with first "
+            "contributeToHistogramOnEvent requires 2 parameters, with first "
             "parameter being a string and second parameter being an object."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
@@ -2099,7 +2147,7 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
                     .empty());
   }
 
-  // The two arguments to reportContributionForEvent() API are in wrong order.
+  // The two arguments to contributeToHistogramOnEvent() API are in wrong order.
   {
     ContextRecyclerScope scope(context_recycler);
     std::vector<std::string> error_msgs;
@@ -2114,7 +2162,7 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
         error_msgs,
         ElementsAre(
             "https://example.org/script.js:48 Uncaught TypeError: "
-            "reportContributionForEvent requires 2 parameters, with first "
+            "contributeToHistogramOnEvent requires 2 parameters, with first "
             "parameter being a string and second parameter being an object."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
@@ -2690,9 +2738,10 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
         gin::ConvertToV8(helper_->isolate(), dict));
     EXPECT_THAT(
         error_msgs,
-        ElementsAre("https://example.org/script.js:12 Uncaught TypeError: "
-                    "Invalid or missing bucket in reportContributionForEvent's "
-                    "argument."));
+        ElementsAre(
+            "https://example.org/script.js:12 Uncaught TypeError: "
+            "Invalid or missing bucket in contributeToHistogramOnEvent's "
+            "argument."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -2711,9 +2760,10 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
         gin::ConvertToV8(helper_->isolate(), dict));
     EXPECT_THAT(
         error_msgs,
-        ElementsAre("https://example.org/script.js:12 Uncaught TypeError: "
-                    "Invalid or missing value in reportContributionForEvent's "
-                    "argument."));
+        ElementsAre(
+            "https://example.org/script.js:12 Uncaught TypeError: "
+            "Invalid or missing value in contributeToHistogramOnEvent's "
+            "argument."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -2759,7 +2809,7 @@ TEST_F(ContextRecyclerPrivateAggregationDisabledTest,
       if (typeof args.bucket === "string") {
         args.bucket = BigInt(args.bucket);
       }
-      privateAggregation.sendHistogramReport(args);
+      privateAggregation.contributeToHistogram(args);
     }
   )";
 
@@ -2817,7 +2867,7 @@ TEST_F(ContextRecyclerPrivateAggregationDisabledForFledgeOnlyTest,
       if (typeof args.bucket === "string") {
         args.bucket = BigInt(args.bucket);
       }
-      privateAggregation.sendHistogramReport(args);
+      privateAggregation.contributeToHistogram(args);
     }
   )";
 
@@ -2865,8 +2915,8 @@ class ContextRecyclerPrivateAggregationOnlyFledgeExtensionsDisabledTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// Make sure that `reportContributionForEvent()` isn't available, but the other
-// `privateAggregation` functions are.
+// Make sure that `contributeToHistogramOnEvent()` isn't available, but the
+// other `privateAggregation` functions are.
 TEST_F(ContextRecyclerPrivateAggregationOnlyFledgeExtensionsDisabledTest,
        PrivateAggregationForEventBindings) {
   using PrivateAggregationRequests =
@@ -2879,8 +2929,8 @@ TEST_F(ContextRecyclerPrivateAggregationOnlyFledgeExtensionsDisabledTest,
       if (typeof args.bucket === "string") {
         args.bucket = BigInt(args.bucket);
       }
-      privateAggregation.sendHistogramReport(args);
-      privateAggregation.reportContributionForEvent("example", args);
+      privateAggregation.contributeToHistogram(args);
+      privateAggregation.contributeToHistogramOnEvent("example", args);
     }
   )";
 
@@ -2907,7 +2957,7 @@ TEST_F(ContextRecyclerPrivateAggregationOnlyFledgeExtensionsDisabledTest,
     EXPECT_THAT(
         error_msgs,
         ElementsAre("https://example.org/script.js:9 Uncaught TypeError: "
-                    "privateAggregation.reportContributionForEvent is not a "
+                    "privateAggregation.contributeToHistogramOnEvent is not a "
                     "function."));
 
     PrivateAggregationRequests pa_requests =

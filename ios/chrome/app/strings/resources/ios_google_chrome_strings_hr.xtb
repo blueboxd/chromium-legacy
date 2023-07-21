@@ -12,6 +12,7 @@
 <translation id="1554731936187952550">Imate najjaču Chromeovu zaštitu od štetnih web-lokacija</translation>
 <translation id="1682483655351012182">Sinkroniziraj podatke iz Chromea</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1843217788865538014">Automatski koristite Chrome kada dodirnete veze u porukama, dokumentima i drugim aplikacijama.</translation>
 <translation id="1917964099031477364">Taj račun i svi nespremljeni podaci uklonit će se iz Chromea i drugih Googleovih aplikacija na ovom uređaju.</translation>
 <translation id="2009224836393115614">Chrome nije uspio provjeriti vaše zaporke. Provjerite internetsku vezu.</translation>
 <translation id="2056123005618757196">Veća učinkovitost uz Google Chrome, jednostavniji, sigurniji i brži nego ikad.</translation>
@@ -34,6 +35,7 @@
 <translation id="2732745070297234559">Chrome nije uspio provjeriti sve zaporke. Pokušajte ponovo sutra.</translation>
 <translation id="2736805085127235148">Obavijesti Chromea trenutačno su isključene u postavkama uređaja.</translation>
 <translation id="2767464022270041271">Nema nijedne spremljene zaporke. Google upravitelj zaporki može provjeriti vaše zaporke kad ih spremite.</translation>
+<translation id="2840432500933227975">Otvorite postavke Chromea na iOS-u, zatim dodirnite "Zadana aplikacija preglednika" i odaberite Chrome.</translation>
 <translation id="2869959624320573933">Prijava u Chrome</translation>
 <translation id="2957447865124070833">Odaberite <ph name="BEGIN_BOLD" />Chrome<ph name="END_BOLD" /></translation>
 <translation id="3030414234702425231">Budući da se odjavljujete s računa kojim upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />, vaši podaci iz Chromea izbrisat će se s ovog uređaja, no ostat će na vašem Google računu.</translation>
@@ -49,6 +51,7 @@
 <translation id="3655656110921623717">To znači da će Chrome svaki put zahtijevati web-lokaciju za mobilne uređaje.</translation>
 <translation id="3706101708757577809">Sad možete koristiti Chrome svaki put kad dodirnete veze u porukama, dokumentima i drugim aplikacijama.</translation>
 <translation id="3720541637541300822">Zaključajte anonimne kartice pri zatvaranju Chromea</translation>
+<translation id="3827545470516145620">Imate standardnu zaštitu sigurnosti na ovom uređaju</translation>
 <translation id="384394811301901750">Google Chrome trenutačno ne može upotrebljavati vaš fotoaparat</translation>
 <translation id="3980220367029651214">Prebacujete sinkronizaciju s računa <ph name="USER_EMAIL1" /> na račun <ph name="USER_EMAIL2" />. Vašim postojećim podacima na Chromeu upravlja <ph name="DOMAIN" />. Vaši će se podaci izbrisati s ovog uređaja, no ostat će na računu <ph name="USER_EMAIL1" />.</translation>
 <translation id="3984746313391923992">Vaša organizacija zahtijeva da ostanete odjavljeni s Chromea.</translation>
@@ -58,6 +61,7 @@
 <translation id="4233521129555661685">Korisnik <ph name="USER_EMAIL1" /> upotrebljavao je Chrome i ostavio oznake, zaporke i druge postavke na ovom uređaju.</translation>
 <translation id="424864128008805179">Želite li se odjaviti s Chromea?</translation>
 <translation id="4249068189593983585">Savjet za Chrome. Za više opcija za kartice dodirnite i držite gumb Prikaži kartice na alatnoj traci pri dnu ili vrhu zaslona.</translation>
+<translation id="4508370294876102450">Otvaranje Chromea iz bilo koje aplikacije</translation>
 <translation id="4523886039239821078">Neki programski dodaci uzrokuju rušenje preglednika Chrome. Deinstalirajte:</translation>
 <translation id="4633328489441962921">Chrome ne može provjeriti ima li ažuriranja</translation>
 <translation id="4636900170638246267">Prijavite se na ovu web-lokaciju i Chrome.</translation>
@@ -87,6 +91,7 @@
 <translation id="6110625574506755980">Neke značajke Chromea više neće biti dostupne.</translation>
 <translation id="6181930887571472871">Prelazak na Chrome</translation>
 <translation id="6238746320622508509">Dopustite Chromeu da zaključa vaše anonimne kartice.</translation>
+<translation id="6247557882553405851">Google upravitelj zaporki</translation>
 <translation id="6412673304250309937">Provjerava URL-ove s popisom nesigurnih web-lokacija pohranjenih u Chromeu. Ako neka web-lokacija pokuša ukrasti vašu zaporku ili ako preuzmete štetnu datoteku, Chrome također može poslati URL-ove, uključujući dijelove sadržaja web-stranice, Sigurnom pregledavanju.</translation>
 <translation id="6427126399757991875">Vaša organizacija postavlja Chrome...</translation>
 <translation id="6600954340915313787">Kopirano u Chrome</translation>
@@ -97,7 +102,6 @@
 <translation id="6822673484890854830">Chrome nije uspio provjeriti sve zaporke. Pokušajte ponovo kasnije.</translation>
 <translation id="6964931465519938134">Sad možete koristiti Chrome svaki put kad dodirnete veze u porukama, dokumentima i drugim aplikacijama.</translation>
 <translation id="6975725306479268850">Odabir Chromea za automatsko popunjavanje</translation>
-<translation id="701356708427365932">Upoznajte novi izbornik preglednika Chrome</translation>
 <translation id="7059914902409643750">Prilagodite Chrome sebi</translation>
 <translation id="7124339256045485976">Ažuriranje Chromea</translation>
 <translation id="7161390184744336561">Google Chrome je zastario</translation>
@@ -148,7 +152,6 @@ Važne napomene:
   • Ako se Chrome sruši, pojedinosti o rušenju mogu uključivati neke osobne podatke.
 
   • Ako uključite sinkronizaciju, mjerni podaci mogu uključivati i podatke o URL-ovima koje posjetite.<ph name="END_INDENT" /></translation>
-<translation id="9103442491611662960">Imate standardnu zaštitu sigurnosti za ovaj profil u Chromeu</translation>
 <translation id="9112744793181547300">Želite li postaviti Chrome kao zadani preglednik?</translation>
 <translation id="9122931302567044771">To znači da će Chrome svaki put zahtijevati web-lokaciju za računalo.</translation>
 </translationbundle>

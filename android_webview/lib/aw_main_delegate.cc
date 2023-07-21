@@ -70,6 +70,7 @@
 #include "services/network/public/cpp/features.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/switches.h"
 #include "tools/v8_context_snapshot/buildflags.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -154,6 +155,10 @@ absl::optional<int> AwMainDelegate::BasicStartupComplete() {
   // See crbug.com/1309151.
   cl->AppendSwitch(switches::kDisableGpuShaderDiskCache);
 
+  // Keep data: URL support in SVGUseElement for webview until deprecation is
+  // completed in the Web Platform.
+  cl->AppendSwitch(blink::switches::kDataUrlInSvgUseEnabled);
+
   if (cl->GetSwitchValueASCII(switches::kProcessType).empty()) {
     // Browser process (no type specified).
 
@@ -232,6 +237,7 @@ absl::optional<int> AwMainDelegate::BasicStartupComplete() {
     if (cl->HasSwitch(switches::kWebViewFencedFrames)) {
       features.EnableIfNotSet(blink::features::kFencedFrames);
       features.EnableIfNotSet(blink::features::kFencedFramesAPIChanges);
+      features.EnableIfNotSet(blink::features::kFencedFramesDefaultMode);
       features.EnableIfNotSet(blink::features::kSharedStorageAPI);
       features.EnableIfNotSet(::features::kPrivacySandboxAdsAPIsOverride);
     }
@@ -280,8 +286,11 @@ absl::optional<int> AwMainDelegate::BasicStartupComplete() {
 
     // TODO(crbug.com/921655): Add support for User Agent Client hints on
     // WebView.
-    features.DisableIfNotSet(blink::features::kUserAgentClientHint);
-
+    if (cl->HasSwitch(switches::kWebViewEnableUserAgentClientHints)) {
+      features.EnableIfNotSet(blink::features::kUserAgentClientHint);
+    } else {
+      features.DisableIfNotSet(blink::features::kUserAgentClientHint);
+    }
     // Disable Reducing User Agent minor version on WebView.
     features.DisableIfNotSet(blink::features::kReduceUserAgentMinorVersion);
 

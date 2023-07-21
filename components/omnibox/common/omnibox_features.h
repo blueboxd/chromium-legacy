@@ -69,7 +69,6 @@ BASE_DECLARE_FEATURE(kOnDeviceHeadProviderNonIncognito);
 BASE_DECLARE_FEATURE(kOnDeviceTailModel);
 
 // Provider-specific - These features change the behavior of specific providers.
-BASE_DECLARE_FEATURE(kOmniboxExperimentalSuggestScoring);
 BASE_DECLARE_FEATURE(kDisableCGIParamMatching);
 BASE_DECLARE_FEATURE(kShortcutBoost);
 // TODO(crbug.com/1202964): Clean up feature flag used in staged roll-out of
@@ -162,6 +161,9 @@ BASE_DECLARE_FEATURE(kInspireMe);
 // Actions in Suggest - Action Chips for Entity Suggestions.
 // Data driven feature; flag helps tune behavior.
 BASE_DECLARE_FEATURE(kActionsInSuggest);
+
+// Adds support for categorical suggestion type.
+BASE_DECLARE_FEATURE(kCategoricalSuggestions);
 
 }  // namespace omnibox
 

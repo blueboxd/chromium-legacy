@@ -80,7 +80,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/search_engines/default_search_manager.h"
-#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -107,12 +106,6 @@
 #include "extensions/common/manifest.h"
 #endif
 
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-#include "chrome/browser/accessibility/pdf_ocr_controller.h"
-#include "chrome/browser/accessibility/pdf_ocr_controller_factory.h"
-#include "ui/accessibility/accessibility_features.h"
-#endif
-
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
 #include "chrome/browser/sessions/app_session_service_factory.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -121,8 +114,8 @@
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "components/supervised_user/core/browser/supervised_user_service.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
 #endif
 
@@ -940,9 +933,12 @@ void ProfileManager::CreateMultiProfileAsync(
   // adding an entry to ProfileAttributesStorage. Creating a new
   // ProfileAttributesEntry consistently before writing the profile folder to
   // disk would resolve this.
+  // The TaskPriority should be `USER_BLOCKING` because `CreateProfileAsync`
+  // will eventually open a new browser window or navigates to the sign-in page,
+  // either of which will block the user's interaction.
   base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&NukeProfileFromDisk, new_path,
                      base::BindOnce(&ProfileManager::CreateProfileAsync,
@@ -1534,14 +1530,6 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   if (accessibility_service)
     accessibility_service->Init();
 
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  // TODO(crbug.com/1393069): Dynamically create PdfOcrController when needed
-  // and destroy it when no longer used.
-  if (features::IsPdfOcrEnabled()) {
-    screen_ai::PdfOcrControllerFactory::GetForProfile(profile);
-  }
-#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::AccountManagerPolicyControllerFactory::GetForBrowserContext(profile);
 #endif
@@ -2012,6 +2000,7 @@ void ProfileManager::SaveActiveProfiles() {
   base::Value::List& profile_list = update.Get();
 
   profile_list.clear();
+  has_updated_last_opened_profiles_ = true;
 
   // crbug.com/120112 -> several non-off-the-record profiles might have the same
   // GetBaseName(). In that case, we cannot restore both

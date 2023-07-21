@@ -8008,7 +8008,115 @@
     ]
   },
   "AppLaunchAutomation": {
-    "reason_for_missing_test": "TODO(b/268538092): Feature not yet implemented"
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "AppLaunchAutomation": [
+            {
+              "auto_launch_on_startup": true,
+              "created_time_usec": "13320917261678808",
+              "desk": {
+                "apps": [{
+                  "app_type": "browser",
+                  "browser_tabs": [{
+                    "url": "https://www.chromium.org/"
+                  }],
+                  "window_id": 30002
+                }, {
+                  "app_type": "browser",
+                  "browser_tabs": [{
+                    "url": "chrome://version/"
+                  }, {
+                    "url": "https://dev.chromium.org/"
+                  }],
+                  "window_id": 30001
+                }]
+              },
+              "name": "App Launch Automation 1",
+              "updated_time_usec": "13320917261678808",
+              "uuid": "27ea906b-a7d3-40b1-8c36-76d332d7f184"
+            },
+            {
+              "auto_launch_on_startup": false,
+              "created_time_usec": "13320917271679905",
+              "desk": {
+                "apps": [{
+                  "app_type": "browser",
+                  "browser_tabs": [{
+                    "url": "https://www.google.com/"
+                  }, {
+                    "url": "https://www.youtube.com/"
+                  }],
+                  "window_id": 30001
+                }]
+              },
+              "name": "App Launch Automation 2",
+              "updated_time_usec": "13320917271679905",
+              "uuid": "3aa30d88-576e-48ea-ab26-cbdd2cbe43a1"
+            }
+          ]
+        },
+        "prefs": {
+          "ash.app_launch_automation": {
+            "value": [
+              {
+                "auto_launch_on_startup": true,
+                "created_time_usec": "13320917261678808",
+                "desk": {
+                  "apps": [{
+                    "app_type": "browser",
+                    "browser_tabs": [{
+                      "url": "https://www.chromium.org/"
+                    }],
+                    "window_id": 30002
+                  }, {
+                    "app_type": "browser",
+                    "browser_tabs": [{
+                      "url": "chrome://version/"
+                    }, {
+                      "url": "https://dev.chromium.org/"
+                    }],
+                    "window_id": 30001
+                  }]
+                },
+                "name": "App Launch Automation 1",
+                "updated_time_usec": "13320917261678808",
+                "uuid": "27ea906b-a7d3-40b1-8c36-76d332d7f184"
+              },
+              {
+                "auto_launch_on_startup": false,
+                "created_time_usec": "13320917271679905",
+                "desk": {
+                  "apps": [{
+                    "app_type": "browser",
+                    "browser_tabs": [{
+                      "url": "https://www.google.com/"
+                    }, {
+                      "url": "https://www.youtube.com/"
+                    }],
+                    "window_id": 30001
+                  }]
+                },
+                "name": "App Launch Automation 2",
+                "updated_time_usec": "13320917271679905",
+                "uuid": "3aa30d88-576e-48ea-ab26-cbdd2cbe43a1"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "ash.app_launch_automation": {
+            "default_value": []
+          }
+        }
+      }
+    ]
   },
   "AllowedDomainsForApps": {
     "os": [
@@ -11484,7 +11592,8 @@
                   "enabled": false,
                   "policy_update_action": 1
                 },
-                "oem_strings": []
+                "oem_strings": [],
+                "display_order": 0
               }
             }
           }
@@ -11510,7 +11619,8 @@
                   "enabled": false,
                   "policy_update_action": 1
                 },
-                "oem_strings": []
+                "oem_strings": [],
+                "display_order": 0
               }
             }
           }
@@ -11536,7 +11646,8 @@
                   "enabled": false,
                   "policy_update_action": 1
                 },
-                "oem_strings": []
+                "oem_strings": [],
+                "display_order": 0
               }
             }
           }
@@ -11566,7 +11677,8 @@
                   "enabled": true,
                   "policy_update_action": 0
                 },
-                "oem_strings": []
+                "oem_strings": [],
+                "display_order": 0
               }
             }
           }
@@ -11596,7 +11708,8 @@
                   "enabled": true,
                   "policy_update_action": 1
                 },
-                "oem_strings": []
+                "oem_strings": [],
+                "display_order": 0
               }
             }
           }
@@ -11626,7 +11739,8 @@
                   "enabled": true,
                   "policy_update_action": 2
                 },
-                "oem_strings": []
+                "oem_strings": [],
+                "display_order": 0
               }
             }
           }
@@ -11659,7 +11773,8 @@
                 "oem_strings": [
                   "oem string 1",
                   "oem string 2"
-                ]
+                ],
+                "display_order": 0
               }
             }
           }
@@ -11708,7 +11823,8 @@
                   "enabled": false,
                   "policy_update_action": 1
                 },
-                "oem_strings": []
+                "oem_strings": [],
+                "display_order": 0
               }
             }
           }
@@ -11742,7 +11858,8 @@
                   "enabled": false,
                   "policy_update_action": 1
                 },
-                "oem_strings": []
+                "oem_strings": [],
+                "display_order": 0
               }
             }
           }
@@ -11798,7 +11915,8 @@
                   "enabled": false,
                   "policy_update_action": 1
                 },
-                "oem_strings": []
+                "oem_strings": [],
+                "display_order": 0
               }
             }
           }
@@ -11854,7 +11972,8 @@
                   "enabled": false,
                   "policy_update_action": 1
                 },
-                "oem_strings": []
+                "oem_strings": [],
+                "display_order": 0
               }
             }
           }
@@ -11888,7 +12007,8 @@
                   "enabled": false,
                   "policy_update_action": 1
                 },
-                "oem_strings": []
+                "oem_strings": [],
+                "display_order": 0
               }
             }
           }
@@ -11911,7 +12031,8 @@
               },
               "vtpm": {
                 "enabled": true
-              }
+              },
+              "display_order": 0
             },
             "another-vm-type": {
               "name": "Weird Virtual Machine",
@@ -11930,7 +12051,8 @@
               },
               "oem_strings": [
                 "some weird config"
-              ]
+              ],
+              "display_order": 2
             },
             "old-vm-type": {
               "name": "Legacy VM",
@@ -11950,7 +12072,8 @@
             },
             "vulnerable-vm-type": {
               "name": "Forbidden VM",
-              "enabled_state": "BLOCKED"
+              "enabled_state": "BLOCKED",
+              "display_order": 1
             }
           }
         },
@@ -11972,7 +12095,8 @@
                   "enabled": true,
                   "policy_update_action": 1
                 },
-                "oem_strings": []
+                "oem_strings": [],
+                "display_order": 0
               },
               "another-vm-type": {
                 "name": "Weird Virtual Machine",
@@ -11991,7 +12115,8 @@
                 },
                 "oem_strings": [
                   "some weird config"
-                ]
+                ],
+                "display_order": 2
               },
               "old-vm-type": {
                 "name": "Legacy VM",
@@ -12000,7 +12125,8 @@
                   "enabled": false,
                   "policy_update_action": 1
                 },
-                "oem_strings": []
+                "oem_strings": [],
+                "display_order": 0
               },
               "old-vm-type-2": {
                 "name": "Legacy VM",
@@ -12009,7 +12135,8 @@
                   "enabled": false,
                   "policy_update_action": 1
                 },
-                "oem_strings": []
+                "oem_strings": [],
+                "display_order": 0
               },
               "vulnerable-vm-type": {
                 "name": "Forbidden VM",
@@ -12018,7 +12145,8 @@
                   "enabled": false,
                   "policy_update_action": 1
                 },
-                "oem_strings": []
+                "oem_strings": [],
+                "display_order": 1
               }
             }
           }
@@ -12132,39 +12260,7 @@
     ]
   },
   "SmartLockSigninAllowed": {
-    "os": [
-      "chromeos_ash"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {},
-        "prefs": {
-          "smart_lock_signin.allowed": {
-            "value": false
-          }
-        }
-      },
-      {
-        "policies": {
-          "SmartLockSigninAllowed": false
-        },
-        "prefs": {
-          "smart_lock_signin.allowed": {
-            "value": false
-          }
-        }
-      },
-      {
-        "policies": {
-          "SmartLockSigninAllowed": true
-        },
-        "prefs": {
-          "smart_lock_signin.allowed": {
-            "value": true
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
   "InstantTetheringAllowed": {
     "os": [
@@ -14314,6 +14410,10 @@
           "enterprise_connectors.device_trust.origins": {
             "default_value": [],
             "location": "signin_profile"
+          },
+          "enterprise_connectors.device_trust_user.origins": {
+            "default_value": [],
+            "location": "signin_profile"
           }
         }
       },
@@ -14328,6 +14428,14 @@
         },
         "prefs": {
           "enterprise_connectors.device_trust.origins": {
+            "value": [
+              "https://example1.com",
+              "https://[*.]example2.com",
+              "https://foo.example3.com/path"
+            ],
+            "location": "signin_profile"
+          },
+          "enterprise_connectors.device_trust_user.origins": {
             "value": [
               "https://example1.com",
               "https://[*.]example2.com",
@@ -19031,6 +19139,28 @@
       }
     ]
   },
+  "PdfUseSkiaRendererEnabled": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "PdfUseSkiaRendererEnabled": true
+        },
+        "prefs": {
+          "pdf.enable_skia": {
+            "location": "user_profile",
+            "value": true
+          }
+        }
+      }
+    ]
+  },
   "ExplicitlyAllowedNetworkPorts": {
     "os": [
       "win",
@@ -21815,118 +21945,13 @@
     ]
   },
   "UseMojoVideoDecoderForPepperAllowed": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_ash",
-      "chromeos_lacros"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {},
-        "prefs": {
-          "policy.use_mojo_video_decoder_for_pepper_allowed": {
-            "location": "local_state",
-            "default_value": true
-          }
-        }
-      },
-      {
-        "policies": { "UseMojoVideoDecoderForPepperAllowed": true },
-        "prefs": {
-          "policy.use_mojo_video_decoder_for_pepper_allowed": {
-            "location": "local_state",
-            "value": true
-          }
-        }
-      },
-      {
-        "policies": { "UseMojoVideoDecoderForPepperAllowed": false },
-        "prefs": {
-          "policy.use_mojo_video_decoder_for_pepper_allowed": {
-            "location": "local_state",
-            "value": false
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
   "PPAPISharedImagesSwapChainAllowed": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_ash",
-      "chromeos_lacros"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {},
-        "prefs": {
-          "policy.ppapi_shared_images_swap_chain_allowed": {
-            "location": "local_state",
-            "default_value": true
-          }
-        }
-      },
-      {
-        "policies": { "PPAPISharedImagesSwapChainAllowed": true },
-        "prefs": {
-          "policy.ppapi_shared_images_swap_chain_allowed": {
-            "location": "local_state",
-            "value": true
-          }
-        }
-      },
-      {
-        "policies": { "PPAPISharedImagesSwapChainAllowed": false },
-        "prefs": {
-          "policy.ppapi_shared_images_swap_chain_allowed": {
-            "location": "local_state",
-            "value": false
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
   "ForceEnablePepperVideoDecoderDevAPI": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_ash",
-      "chromeos_lacros"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {},
-        "prefs": {
-          "policy.force_enable_pepper_video_decoder_dev_api": {
-            "location": "local_state",
-            "default_value": false
-          }
-        }
-      },
-      {
-        "policies": { "ForceEnablePepperVideoDecoderDevAPI": true },
-        "prefs": {
-          "policy.force_enable_pepper_video_decoder_dev_api": {
-            "location": "local_state",
-            "value": true
-          }
-        }
-      },
-      {
-        "policies": { "ForceEnablePepperVideoDecoderDevAPI": false },
-        "prefs": {
-          "policy.force_enable_pepper_video_decoder_dev_api": {
-            "location": "local_state",
-            "value": false
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
   "PrivacySandboxPromptEnabled": {
     "os": [
@@ -23025,6 +23050,186 @@
         "prefs": {
           "reporting.report_app_usage_collection_rate_ms": {
             "value": 300000
+          }
+        }
+      }
+    ]
+  },
+  "BrowserContextAwareAccessSignalsAllowlist": {
+    "os": [
+      "win",
+      "linux",
+      "mac"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "BrowserContextAwareAccessSignalsAllowlist": [
+            "https://example1.com",
+            "https://[*.]example2.com",
+            "https://foo.example3.com/path"
+          ]
+        },
+        "prefs": {
+          "enterprise_connectors.device_trust_browser.origins": {
+            "value": [
+              "https://example1.com",
+              "https://[*.]example2.com",
+              "https://foo.example3.com/path"
+            ]
+          }
+        }
+      }
+    ]
+  },
+"UserContextAwareAccessSignalsAllowlist": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "UserContextAwareAccessSignalsAllowlist": [
+            "https://example1.com",
+            "https://[*.]example2.com",
+            "https://foo.example3.com/path"
+          ]
+        },
+        "prefs": {
+          "enterprise_connectors.device_trust_user.origins": {
+            "value": [
+              "https://example1.com",
+              "https://[*.]example2.com",
+              "https://foo.example3.com/path"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "GoogleSearchSidePanelEnabled": {
+    "os": [
+      "chromeos_ash",
+      "chromeos_lacros",
+      "linux",
+      "mac",
+      "win"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Check with GoogleSearchSidePanelEnabled default.",
+        "policies": {
+        },
+        "prefs": {
+          "side_panel.google_search_side_panel_enabled": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "note": "Check with GoogleSearchSidePanelEnabled enabled.",
+        "policies": {
+          "GoogleSearchSidePanelEnabled": true
+        },
+        "prefs": {
+          "side_panel.google_search_side_panel_enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "note": "Check with GoogleSearchSidePanelEnabled disabled.",
+        "policies": {
+          "GoogleSearchSidePanelEnabled": false
+        },
+        "prefs": {
+          "side_panel.google_search_side_panel_enabled": {
+            "value": false
+          }
+        }
+      }
+    ]
+  },
+  "DataUrlInSvgUseEnabled": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Default value (no policies set).",
+        "policies": {},
+        "prefs": {
+          "profile.content_settings.data_url_in_svg_use_enabled": {
+            "default_value": false,
+            "location": "user_profile"
+          }
+        }
+      },
+      {
+        "policies": {
+          "DataUrlInSvgUseEnabled": true
+        },
+        "prefs": {
+          "profile.content_settings.data_url_in_svg_use_enabled": {
+            "value": true,
+            "location": "user_profile"
+          }
+        }
+      },
+      {
+        "policies": {
+          "DataUrlInSvgUseEnabled": false
+        },
+        "prefs": {
+          "profile.content_settings.data_url_in_svg_use_enabled": {
+            "value": false,
+            "location": "user_profile"
+          }
+        }
+      }
+    ]
+  },
+  "ArcVmDataMigrationStrategy": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Default value (no policies set).",
+        "policies": {},
+        "prefs": {
+          "arc.vm_data_migration_strategy": {
+            "default_value": 0
+          }
+        }
+      },
+      {
+        "policies": {
+          "ArcVmDataMigrationStrategy": 0
+        },
+        "prefs": {
+          "arc.vm_data_migration_strategy": {
+            "value": 0
+          }
+        }
+      },
+      {
+        "policies": {
+          "ArcVmDataMigrationStrategy": 1
+        },
+        "prefs": {
+          "arc.vm_data_migration_strategy": {
+            "value": 1
           }
         }
       }

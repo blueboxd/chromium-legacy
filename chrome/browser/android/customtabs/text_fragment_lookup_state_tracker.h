@@ -5,12 +5,11 @@
 #ifndef CHROME_BROWSER_ANDROID_CUSTOMTABS_TEXT_FRAGMENT_LOOKUP_STATE_TRACKER_H_
 #define CHROME_BROWSER_ANDROID_CUSTOMTABS_TEXT_FRAGMENT_LOOKUP_STATE_TRACKER_H_
 
+#include "base/gtest_prod_util.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace customtabs {
-
-const size_t kMaxNumLookupPerPage = 15;
 
 class TextFragmentLookupStateTracker
     : public content::WebContentsObserver,
@@ -48,6 +47,8 @@ class TextFragmentLookupStateTracker
 
   // Implements `content::WebContentsObserver`:
   void PrimaryPageChanged(content::Page& page) override;
+
+  size_t max_lookups_per_page() const;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

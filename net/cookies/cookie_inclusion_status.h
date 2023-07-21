@@ -102,14 +102,25 @@ class NET_EXPORT CookieInclusionStatus {
     // Special case for when a cookie is blocked by third-party cookie blocking
     // but the two sites are in the same First-Party Set.
     EXCLUDE_THIRD_PARTY_BLOCKED_WITHIN_FIRST_PARTY_SET = 22,
+    // Cookie's source_port did not match the port of the request.
+    EXCLUDE_PORT_MISMATCH = 23,
+    // Cookie's source_scheme did not match the scheme of the request.
+    EXCLUDE_SCHEME_MISMATCH = 24,
 
     // This should be kept last.
     NUM_EXCLUSION_REASONS
   };
 
-  // Reason to warn about a cookie. Any information contained in WarningReason
-  // of an included cookie may be passed to an untrusted renderer.
-  // If you add one, please update GetDebugString().
+  // Mojom and some tests assume that all the exclusion reasons will fit within
+  // a uint32_t. Once that's not longer true those assumptions need to be
+  // updated (along with this assert).
+  static_assert(ExclusionReason::NUM_EXCLUSION_REASONS <= 32,
+                "Expanding ExclusionReasons past 32 reasons requires updating "
+                "usage assumptions.");
+
+  // Reason to warn about a cookie. Any information contained in
+  // WarningReason of an included cookie may be passed to an untrusted
+  // renderer. If you add one, please update GetDebugString().
   enum WarningReason {
     // Of the following 3 SameSite warnings, there will be, at most, a single
     // active one.
@@ -172,7 +183,8 @@ class NET_EXPORT CookieInclusionStatus {
     // Advisory warning attached when a Secure cookie is accessed from (sent to,
     // or set by) a non-cryptographic URL. This can happen if the URL is
     // potentially trustworthy (e.g. a localhost URL, or another URL that
-    // the CookieAccessDelegate is configured to allow).
+    // the CookieAccessDelegate is configured to allow). This also applies to
+    // cookies with secure source schemes when scheme binding is enabled.
     // TODO(chlily): Add metrics for how often and where this occurs.
     WARN_SECURE_ACCESS_GRANTED_NON_CRYPTOGRAPHIC = 8,
 
@@ -212,12 +224,28 @@ class NET_EXPORT CookieInclusionStatus {
     // notifies the user that an attribute value was ignored.
     WARN_ATTRIBUTE_VALUE_EXCEEDS_MAX_SIZE = 13,
 
-    // Cookie was set with a Domain attribute containing non ASCII characters.
+    // The cookie was set with a Domain attribute containing non ASCII
+    // characters.
     WARN_DOMAIN_NON_ASCII = 14,
+    // The cookie's source_port did not match the port of the request.
+    WARN_PORT_MISMATCH = 15,
+    // The cookie's source_scheme did not match the scheme of the request.
+    WARN_SCHEME_MISMATCH = 16,
+    // The cookie's creation url is non-cryptographic but it specified the
+    // "Secure" attribute. A trustworthy url may be setting this cookie, but we
+    // can't confirm/deny that at the time of creation.
+    WARN_TENTATIVELY_ALLOWING_SECURE_SOURCE_SCHEME = 17,
 
     // This should be kept last.
     NUM_WARNING_REASONS
   };
+
+  // Mojom and some tests assume that all the warning reasons will fit within
+  // a uint32_t. Once that's not longer true those assumptions need to be
+  // updated (along with this assert).
+  static_assert(WarningReason::NUM_WARNING_REASONS <= 32,
+                "Expanding WarningReasons past 32 reasons requires updating "
+                "usage assumptions.");
 
   // These enums encode the context downgrade warnings + the secureness of the
   // url sending/setting the cookie. They're used for metrics only. The format

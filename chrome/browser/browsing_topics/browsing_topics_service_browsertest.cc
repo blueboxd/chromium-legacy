@@ -72,17 +72,14 @@ constexpr char kExpectedApiResult[] =
     "\"configVersion\":\"chrome.1\",\"modelVersion\":\"2\","
     "\"taxonomyVersion\":\"1\",\"topic\":10,\"version\":\"chrome.1:1:2\"};]";
 
+constexpr char kExpectedHeaderValueForEmptyTopics[] =
+    "();p=P0000000000000000000000000000000";
+
 constexpr char kExpectedHeaderValueForSiteA[] =
-    "1;version=\"chrome.1:1:2\";config_version=\"chrome.1\";model_version="
-    "\"2\";taxonomy_version=\"1\", "
-    "10;version=\"chrome.1:1:2\";config_version=\"chrome.1\";model_version="
-    "\"2\";taxonomy_version=\"1\"";
+    "(1 10);v=chrome.1:1:2, ();p=P00000000";
 
 constexpr char kExpectedHeaderValueForSiteB[] =
-    "1;version=\"chrome.1:1:2\";config_version=\"chrome.1\";model_version="
-    "\"2\";taxonomy_version=\"1\", "
-    "7;version=\"chrome.1:1:2\";config_version=\"chrome.1\";model_version="
-    "\"2\";taxonomy_version=\"1\"";
+    "(1 7);v=chrome.1:1:2, ();p=P000000000";
 
 static constexpr char kBrowsingTopicsApiActionTypeHistogramId[] =
     "BrowsingTopics.ApiActionType";
@@ -1233,9 +1230,8 @@ IN_PROC_BROWSER_TEST_F(
   // away later.
   content::TestNavigationObserver popup_observer(main_frame_url);
   popup_observer.StartWatchingNewWebContents();
-  EXPECT_TRUE(
-      ExecuteScript(web_contents()->GetPrimaryMainFrame(),
-                    content::JsReplace("window.open($1)", main_frame_url)));
+  EXPECT_TRUE(ExecJs(web_contents()->GetPrimaryMainFrame(),
+                     content::JsReplace("window.open($1)", main_frame_url)));
   popup_observer.Wait();
 
   GURL new_url =
@@ -1334,7 +1330,7 @@ IN_PROC_BROWSER_TEST_F(
   // Expect an empty header value as "b.test" did not observe the candidate
   // topics.
   EXPECT_TRUE(topics_header_value);
-  EXPECT_TRUE(topics_header_value->empty());
+  EXPECT_EQ(topics_header_value, kExpectedHeaderValueForEmptyTopics);
 
   // No observation should have been recorded in addition to the pre-existing
   // one, as the response did not have the `Observe-Browsing-Topics: ?1` header.
@@ -1634,7 +1630,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
 
     // An empty topics header value was sent, because "c.test" did not observe
     // the candidate topics.
-    EXPECT_TRUE(topics_header_value->empty());
+    EXPECT_EQ(topics_header_value, kExpectedHeaderValueForEmptyTopics);
   }
 
   // Two new observations should have been recorded in addition to the
@@ -1734,7 +1730,7 @@ IN_PROC_BROWSER_TEST_F(
 
     // An empty topics header value was sent, as "c.test" did not observe the
     // candidate topics.
-    EXPECT_TRUE(topics_header_value->empty());
+    EXPECT_EQ(topics_header_value, kExpectedHeaderValueForEmptyTopics);
   }
 
   // A new observation should have been recorded in addition to the pre-existing
@@ -2319,7 +2315,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
 
     // An empty topics header value was sent, because "c.test" did not observe
     // the candidate topics.
-    EXPECT_TRUE(topics_header_value->empty());
+    EXPECT_EQ(topics_header_value, kExpectedHeaderValueForEmptyTopics);
   }
 
   // Two new observations should have been recorded in addition to the

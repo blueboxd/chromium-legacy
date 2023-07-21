@@ -9,11 +9,11 @@
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/services/screen_ai/buildflags/buildflags.h"
-#include "components/services/screen_ai/public/cpp/utilities.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "content/utility/sandbox_delegate_data.mojom.h"
 #include "printing/buildflags/buildflags.h"
 #include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "sandbox/policy/win/sandbox_win.h"
@@ -222,20 +222,31 @@ bool ScreenAIInitializeConfig(sandbox::TargetConfig* config,
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 
-  base::FilePath library_binary_path =
-      screen_ai::GetLatestComponentBinaryPath();
-  if (library_binary_path.empty())
-    return false;
-  DCHECK_EQ(library_binary_path.Extension(), FILE_PATH_LITERAL(".dll"));
-
-  // TODO(https://crbug.com/1278249): Preload the binary instead of giving
-  // read permission to the sandbox.
-  result = config->AddRule(sandbox::SubSystem::kFiles,
-                           sandbox::Semantics::kFilesAllowReadonly,
-                           library_binary_path.value().c_str());
-  return result == sandbox::SBOX_ALL_OK;
+  return true;
 }
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+
+// If preload-libraries or pinuser32 is required, adds delegate blob for
+// utility_main() to access before lockdown is initialized.
+void AddDelegateData(sandbox::TargetPolicy* policy,
+                     bool pin_user32,
+                     std::vector<base::FilePath>& preload_libraries) {
+  if (!pin_user32 && preload_libraries.empty()) {
+    return;
+  }
+  auto sandbox_config = content::mojom::sandbox::UtilityConfig::New();
+  if (pin_user32) {
+    sandbox_config->pin_user32 = true;
+  }
+  if (!preload_libraries.empty()) {
+    for (const auto& library_path : preload_libraries) {
+      sandbox_config->preload_libraries.push_back(library_path);
+    }
+  }
+  std::vector<uint8_t> blob =
+      content::mojom::sandbox::UtilityConfig::Serialize(&sandbox_config);
+  policy->AddDelegateData(blob);
+}
 
 }  // namespace
 
@@ -343,16 +354,14 @@ bool UtilitySandboxedProcessLauncherDelegate::InitializeConfig(
   }
 
   if (sandbox_type_ == sandbox::mojom::Sandbox::kService ||
-      sandbox_type_ == sandbox::mojom::Sandbox::kServiceWithJit ||
-      sandbox_type_ == sandbox::mojom::Sandbox::kFileUtil) {
+      sandbox_type_ == sandbox::mojom::Sandbox::kServiceWithJit) {
     auto result = sandbox::policy::SandboxWin::AddWin32kLockdownPolicy(config);
     if (result != sandbox::SBOX_ALL_OK) {
       return false;
     }
   }
 
-  if (sandbox_type_ == sandbox::mojom::Sandbox::kService ||
-      sandbox_type_ == sandbox::mojom::Sandbox::kFileUtil) {
+  if (sandbox_type_ == sandbox::mojom::Sandbox::kService) {
     auto delayed_flags = config->GetDelayedProcessMitigations();
     delayed_flags |= sandbox::MITIGATION_DYNAMIC_CODE_DISABLE;
     auto result = config->SetDelayedProcessMitigations(delayed_flags);
@@ -397,5 +406,11 @@ bool UtilitySandboxedProcessLauncherDelegate::AllowWindowsFontsDir() {
     return true;
   }
   return false;
+}
+
+bool UtilitySandboxedProcessLauncherDelegate::PreSpawnTarget(
+    sandbox::TargetPolicy* policy) {
+  AddDelegateData(policy, pin_user32_, preload_libraries_);
+  return SandboxedProcessLauncherDelegate::PreSpawnTarget(policy);
 }
 }  // namespace content

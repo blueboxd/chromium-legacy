@@ -2,24 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <codecvt>
+#include <stddef.h>
+#include <memory>
+#include <set>
 #include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 #include "base/barrier_callback.h"
-#include "base/containers/contains.h"
-#include "base/feature_list.h"
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/functional/callback.h"
-#include "base/strings/strcat.h"
-#include "base/strings/string_number_conversions.h"
+#include "base/memory/raw_ptr.h"
+#include "base/run_loop.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -30,20 +36,19 @@
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/browser_features.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/protocol/browser_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/scoped_disable_client_side_decorations_for_test.h"
-#include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_test.h"
@@ -57,10 +62,11 @@
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_utils.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
-#include "chrome/browser/web_applications/commands/run_on_os_login_command.h"
 #include "chrome/browser/web_applications/external_install_options.h"
-#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom-shared.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
+#include "chrome/browser/web_applications/os_integration/web_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/test/os_integration_test_override_impl.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
@@ -70,39 +76,49 @@
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
+#include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
-#include "components/sessions/core/tab_restore_service.h"
 #include "components/webapps/browser/features.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
-#include "components/webapps/browser/uninstall_result_code.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/background_color_change_waiter.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/common/constants.h"
-#include "net/base/filename_util.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
+#include "ui/base/models/menu_model.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/native_theme/native_theme.h"
+#include "url/gurl.h"
+#include "url/url_constants.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/system_web_apps/color_helpers.h"
@@ -111,20 +127,38 @@
 #include "chromeos/constants/chromeos_features.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/metrics/structured/event_logging_features.h"
+#include "chrome/browser/metrics/structured/test/test_structured_metrics_recorder.h"
+#include "components/metrics/structured/structured_events.h"
+#endif
+
 #if BUILDFLAG(IS_MAC)
+#include "chrome/browser/shell_integration.h"
+#include "net/base/filename_util.h"
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
 
 #if BUILDFLAG(IS_WIN)
+#include "base/strings/strcat.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/web_applications/os_integration/web_app_handler_registration_utils_win.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcuts_menu_win.h"
 #include "chrome/browser/win/jumplist_updater.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/shell_util.h"
 #endif
 
+namespace webapps {
+enum class InstallResultCode;
+}
+
 namespace {
+
+#if BUILDFLAG(IS_CHROMEOS)
+namespace cros_events = metrics::structured::events::v2::cr_os_events;
+#endif
 
 constexpr const char kExampleURL[] = "http://example.org/";
 constexpr const char16_t kExampleURL16[] = u"http://example.org/";
@@ -203,7 +237,8 @@ class WebAppBrowserTest : public WebAppControllerBrowserTest {
     base::HistogramTester tester;
     const GURL app_url = https_server()->GetURL(
         base::StringPrintf("/web_apps/basic.html?index=%d", index++));
-    auto web_app_info = std::make_unique<WebAppInstallInfo>();
+    auto web_app_info = std::make_unique<WebAppInstallInfo>(
+        GenerateManifestIdFromStartUrlOnly(app_url));
     web_app_info->start_url = app_url;
     web_app_info->scope = app_url;
     web_app_info->display_mode = display_mode;
@@ -270,13 +305,6 @@ class WebAppBrowserTest_DetailedInstallDialog : public WebAppBrowserTest {
       webapps::features::kDesktopPWAsDetailedInstallDialog};
 };
 
-// TODO(crbug.com/1257751): Stabilize the test.
-#if BUILDFLAG(IS_POSIX)
-#define DISABLE_POSIX(TEST) DISABLED_##TEST
-#else
-#define DISABLE_POSIX(TEST) TEST
-#endif
-
 #if BUILDFLAG(IS_WIN)
 using WebAppBrowserTest_ShortcutMenu = WebAppBrowserTest;
 #endif
@@ -286,10 +314,11 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ThemeColor) {
     const SkColor theme_color = SkColorSetA(SK_ColorBLUE, 0xF0);
     blink::mojom::Manifest manifest;
     manifest.start_url = GURL(kExampleURL);
+    manifest.id = GenerateManifestIdFromStartUrlOnly(manifest.start_url);
     manifest.scope = GURL(kExampleURL);
     manifest.has_theme_color = true;
     manifest.theme_color = theme_color;
-    auto web_app_info = std::make_unique<WebAppInstallInfo>();
+    auto web_app_info = std::make_unique<WebAppInstallInfo>(manifest.id);
     web_app::UpdateWebAppInfoFromManifest(manifest, GURL(kExampleManifestURL),
                                           web_app_info.get());
 
@@ -301,7 +330,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ThemeColor) {
               app_browser->app_controller()->GetThemeColor());
   }
   {
-    auto web_app_info = std::make_unique<WebAppInstallInfo>();
+    auto web_app_info = std::make_unique<WebAppInstallInfo>(
+        GenerateManifestIdFromStartUrlOnly(GURL("http://example.org/2")));
     web_app_info->start_url = GURL("http://example.org/2");
     web_app_info->scope = GURL("http://example.org/");
     web_app_info->theme_color = absl::optional<SkColor>();
@@ -316,10 +346,11 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ThemeColor) {
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, BackgroundColor) {
   blink::mojom::Manifest manifest;
   manifest.start_url = GURL(kExampleURL);
+  manifest.id = GenerateManifestIdFromStartUrlOnly(manifest.start_url);
   manifest.scope = GURL(kExampleURL);
   manifest.has_background_color = true;
   manifest.background_color = SkColorSetA(SK_ColorBLUE, 0xF0);
-  auto web_app_info = std::make_unique<WebAppInstallInfo>();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>(manifest.id);
   web_app::UpdateWebAppInfoFromManifest(manifest, GURL(kExampleManifestURL),
                                         web_app_info.get());
   AppId app_id = InstallWebApp(std::move(web_app_info));
@@ -354,7 +385,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ManifestWithColor) {
 // below.
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, BackgroundColorChange) {
   const GURL app_url = GetSecureAppURL();
-  auto web_app_info = std::make_unique<WebAppInstallInfo>();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>(
+      GenerateManifestIdFromStartUrlOnly(app_url));
   web_app_info->start_url = app_url;
   web_app_info->scope = app_url.GetWithoutFilename();
   web_app_info->theme_color = SK_ColorWHITE;
@@ -380,7 +412,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, BackgroundColorChange) {
   // Changing background color should update the toolbar color.
   {
     content::BackgroundColorChangeWaiter waiter(web_contents);
-    EXPECT_TRUE(content::ExecuteScript(
+    EXPECT_TRUE(content::ExecJs(
         web_contents, "document.body.style.backgroundColor = 'cyan';"));
     waiter.Wait();
     EXPECT_EQ(app_browser->app_controller()->GetBackgroundColor().value(),
@@ -486,7 +518,7 @@ IN_PROC_BROWSER_TEST_P(BackgroundColorChangeSystemWebAppBrowserTest,
   // colors.
   {
     content::BackgroundColorChangeWaiter waiter(web_contents);
-    EXPECT_TRUE(content::ExecuteScript(
+    EXPECT_TRUE(content::ExecJs(
         web_contents, "document.body.style.backgroundColor = 'cyan';"));
     waiter.Wait();
     EXPECT_EQ(app_browser->app_controller()->GetBackgroundColor().value(),
@@ -512,28 +544,21 @@ INSTANTIATE_TEST_SUITE_P(All,
                                              : "WithoutUseSystemThemeColor";
                          });
 
-IN_PROC_BROWSER_TEST_P(DynamicColorSystemWebAppBrowserTest, BackgroundColor) {
-  const AppId app_id = WaitForSwaInstall();
-  Browser* const app_browser = LaunchWebAppBrowser(app_id);
-  auto* app_controller = app_browser->app_controller();
-
-  // Ensure app controller is pulling the color from the OS.
-  EXPECT_EQ(app_controller->GetBackgroundColor().value(),
-            ash::GetSystemBackgroundColor());
-}
-
-IN_PROC_BROWSER_TEST_P(DynamicColorSystemWebAppBrowserTest, ThemeColor) {
+IN_PROC_BROWSER_TEST_P(DynamicColorSystemWebAppBrowserTest, Colors) {
   const AppId app_id = WaitForSwaInstall();
   Browser* const app_browser = LaunchWebAppBrowser(app_id);
   auto* app_controller = app_browser->app_controller();
   auto theme_color = app_controller->GetThemeColor().value();
+  auto bg_color = app_controller->GetBackgroundColor().value();
   if (UseSystemThemeColor()) {
     // Ensure app controller is pulling the color from the OS.
     EXPECT_EQ(theme_color, ash::GetSystemThemeColor());
+    EXPECT_EQ(bg_color, ash::GetSystemBackgroundColor());
   } else {
-    // If SWA has opted out, theme color should default to white or black
+    // If SWA has opted out, theme and bg color should default to white or black
     // depending on launch context.
     EXPECT_TRUE(theme_color == SK_ColorWHITE || theme_color == SK_ColorBLACK);
+    EXPECT_TRUE(bg_color == SK_ColorWHITE || bg_color == SK_ColorBLACK);
   }
 }
 
@@ -545,7 +570,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, AutoGeneratedUserThemeCrash) {
   ThemeServiceFactory::GetForProfile(browser()->profile())
       ->BuildAutogeneratedThemeFromColor(SK_ColorBLUE);
 
-  auto web_app_info = std::make_unique<WebAppInstallInfo>();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>(
+      GenerateManifestIdFromStartUrlOnly(GURL(kExampleURL)));
   web_app_info->start_url = GURL(kExampleURL);
   AppId app_id = InstallWebApp(std::move(web_app_info));
 
@@ -625,7 +651,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, AppLastLaunchTime) {
               before_launch);
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, DISABLE_POSIX(WithMinimalUiButtons)) {
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WithMinimalUiButtons) {
   EXPECT_TRUE(HasMinimalUiButtons(DisplayMode::kBrowser, absl::nullopt,
                                   /*open_as_window=*/true));
   EXPECT_TRUE(HasMinimalUiButtons(DisplayMode::kMinimalUi, absl::nullopt,
@@ -649,7 +675,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WithoutMinimalUiButtons) {
                                    /*open_as_window=*/false));
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, DISABLE_POSIX(DisplayOverride)) {
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, DisplayOverride) {
   GURL test_url = https_server()->GetURL(
       "/banners/"
       "manifest_test_page.html?manifest=manifest_display_override.json");
@@ -1034,8 +1060,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ShortcutMenuOptionsForCrashedTab) {
 }
 
 // Tests that an installed PWA is not used when out of scope by one path level.
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
-                       DISABLE_POSIX(MenuOptionsOutsideInstalledPwaScope)) {
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, MenuOptionsOutsideInstalledPwaScope) {
   NavigateToURLAndWait(
       browser(),
       https_server()->GetURL("/banners/scope_is_start_url/index.html"));
@@ -1051,8 +1076,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
             kNotPresent);
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
-                       DISABLE_POSIX(InstallInstallableSite)) {
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, InstallInstallableSite) {
   base::Time before_install_time = base::Time::Now();
   base::UserActionTester user_action_tester;
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
@@ -1079,8 +1103,63 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
-                       DISABLE_POSIX(CanInstallOverBrowserTabPwa)) {
+#if BUILDFLAG(IS_CHROMEOS)
+class WebAppBrowserCrOSEventsTest : public WebAppBrowserTest {
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_{
+      metrics::structured::kAppDiscoveryLogging};
+};
+
+IN_PROC_BROWSER_TEST_F(WebAppBrowserCrOSEventsTest,
+                       CorrectEventsOnBrowserTabPwaInstall) {
+  auto test_recorder =
+      std::make_unique<metrics::structured::TestStructuredMetricsRecorder>();
+  test_recorder->Initialize();
+
+  base::Time before_install_time = base::Time::Now();
+  NavigateToURLAndWait(browser(), GetInstallableAppURL());
+
+  const AppId app_id = test::InstallPwaForCurrentUrl(browser());
+  auto* provider = WebAppProvider::GetForTest(profile());
+  EXPECT_EQ(provider->registrar_unsafe().GetAppShortName(app_id),
+            GetInstallableAppName());
+
+  // Installed PWAs should launch in their own window.
+  EXPECT_EQ(provider->registrar_unsafe().GetAppUserDisplayMode(app_id),
+            web_app::mojom::UserDisplayMode::kStandalone);
+
+  // Installed PWAs should have install time set.
+  EXPECT_TRUE(provider->registrar_unsafe().GetAppInstallTime(app_id) >=
+              before_install_time);
+
+  const std::vector<metrics::structured::Event>& events =
+      test_recorder->GetEvents();
+  ASSERT_EQ(events.size(), 3U);
+
+  // Events that should be recorded will be ClickInstallAppFromMenu ->
+  // AppInstallDialogShown -> AppInstallDialogResult (Accepted).
+  cros_events::AppDiscovery_Browser_ClickInstallAppFromMenu event1;
+  event1.SetAppId(app_id);
+
+  EXPECT_EQ(events[0].event_name(), event1.event_name());
+  EXPECT_EQ(events[0].metric_values(), event1.metric_values());
+
+  cros_events::AppDiscovery_Browser_AppInstallDialogShown event2;
+  event2.SetAppId(app_id);
+
+  EXPECT_EQ(events[1].event_name(), event2.event_name());
+  EXPECT_EQ(events[1].metric_values(), event2.metric_values());
+
+  cros_events::AppDiscovery_Browser_AppInstallDialogResult event3;
+  event3.SetAppId(app_id).SetWebAppInstallStatus(
+      static_cast<int64_t>(web_app::WebAppInstallStatus::kAccepted));
+
+  EXPECT_EQ(events[2].event_name(), event3.event_name());
+  EXPECT_EQ(events[2].metric_values(), event3.metric_values());
+}
+#endif
+
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, CanInstallOverBrowserTabPwa) {
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
   const AppId app_id = test::InstallPwaForCurrentUrl(browser());
 
@@ -1099,8 +1178,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
             kNotPresent);
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
-                       DISABLE_POSIX(CannotInstallOverWindowPwa)) {
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, CannotInstallOverWindowPwa) {
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
   test::InstallPwaForCurrentUrl(browser());
 
@@ -1274,13 +1352,13 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_ExternalPrefMigration,
   AppId app_id =
       provider->registrar_unsafe().LookupExternalAppId(install_url).value();
 
-  EXPECT_FALSE(provider->install_finalizer().CanUserUninstallWebApp(app_id));
+  EXPECT_FALSE(provider->registrar_unsafe().CanUserUninstallWebApp(app_id));
 
   InstallWebAppFromPage(browser(), install_url);
 
   // Performing a user install on the page should not override the "policy"
   // install source.
-  EXPECT_FALSE(provider->install_finalizer().CanUserUninstallWebApp(app_id));
+  EXPECT_FALSE(provider->registrar_unsafe().CanUserUninstallWebApp(app_id));
   const WebApp& web_app = *provider->registrar_unsafe().GetAppById(app_id);
   EXPECT_TRUE(web_app.IsSynced());
   EXPECT_TRUE(web_app.IsPolicyInstalledApp());
@@ -1302,8 +1380,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ReparentWebAppForSecureActiveTab) {
 }
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
-                       DISABLE_POSIX(ShortcutIconCorrectColor)) {
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ShortcutIconCorrectColor) {
   os_hooks_suppress_.reset();
   base::ScopedAllowBlockingForTesting allow_blocking;
 
@@ -1491,7 +1568,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ShortcutMenu,
         // Verify that since the shortcuts menu items are not registered,
         // none of the buckets are filled.
         EXPECT_THAT(
-            tester.GetAllSamples("WebApp.ShortcutsMenuUnregistered.Result"),
+            tester.GetAllSamples("WebApp.ShortcutsMenuRegistered.Result"),
             BucketsAre(base::Bucket(true, 0), base::Bucket(false, 0)));
         run_loop_install.Quit();
       }));
@@ -1504,13 +1581,24 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ShortcutMenu,
   EXPECT_TRUE(shortcuts_menu_items.empty());
 
   base::RunLoop run_loop_uninstall;
+  bool sub_manager_execute_enabled = AreSubManagersExecuteEnabled();
   WebAppProvider::GetForTest(profile())->install_finalizer().UninstallWebApp(
       app_id, webapps::WebappUninstallSource::kAppMenu,
       base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
         EXPECT_EQ(code, webapps::UninstallResultCode::kSuccess);
-        EXPECT_THAT(
-            tester.GetAllSamples("WebApp.ShortcutsMenuUnregistered.Result"),
-            BucketsAre(base::Bucket(true, 1)));
+        if (sub_manager_execute_enabled) {
+          // TODO(crbug.com/1401125): Sub manager code smartly knows that there
+          // aren't any shortcuts menu data, so doesn't do anything. The old OS
+          // integration code does not read current OS states, so it triggers
+          // the histogram. Clean up once sub managers are released.
+          EXPECT_THAT(
+              tester.GetAllSamples("WebApp.ShortcutsMenuUnregistered.Result"),
+              BucketsAre(base::Bucket(true, 0), base::Bucket(false, 0)));
+        } else {
+          EXPECT_THAT(
+              tester.GetAllSamples("WebApp.ShortcutsMenuUnregistered.Result"),
+              BucketsAre(base::Bucket(true, 1)));
+        }
         run_loop_uninstall.Quit();
       }));
   run_loop_uninstall.Run();
@@ -1741,7 +1829,8 @@ INSTANTIATE_TEST_SUITE_P(
 // app window.
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ReparentDisplayBrowserApp) {
   const GURL app_url = GetSecureAppURL();
-  auto web_app_info = std::make_unique<WebAppInstallInfo>();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>(
+      GenerateManifestIdFromStartUrlOnly(app_url));
   web_app_info->start_url = app_url;
   web_app_info->scope = app_url.GetWithoutFilename();
   web_app_info->display_mode = DisplayMode::kBrowser;
@@ -1802,7 +1891,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, PermissionBubble) {
       app_browser->tab_strip_model()
           ->GetActiveWebContents()
           ->GetPrimaryMainFrame();
-  EXPECT_TRUE(content::ExecuteScript(
+  EXPECT_TRUE(content::ExecJs(
       render_frame_host,
       "navigator.geolocation.getCurrentPosition(function(){});"));
 }
@@ -1816,7 +1905,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_PrefixInTitle, PrefixExistsInTitle) {
       https_server()->GetURL("app.com", "/web_apps/title_appname_prefix.html");
   const std::u16string app_title = u"A Web App";
 
-  auto web_app_info = std::make_unique<WebAppInstallInfo>();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>(
+      GenerateManifestIdFromStartUrlOnly(app_url));
   web_app_info->start_url = app_url;
   web_app_info->scope = app_url.GetWithoutFilename();
   web_app_info->title = app_title;
@@ -1840,7 +1930,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_PrefixInTitle,
   // empty or simple title.
   const GURL app_url = https_server()->GetURL("app.site.test", "/empty.html");
   const std::u16string app_title = u"A Web App";
-  auto web_app_info = std::make_unique<WebAppInstallInfo>();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>(
+      GenerateManifestIdFromStartUrlOnly(app_url));
   web_app_info->start_url = app_url;
   web_app_info->scope = app_url.GetWithoutFilename();
   web_app_info->title = app_title;
@@ -1862,7 +1953,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_PrefixInTitle,
   const GURL app_url = GetSecureAppURL();
   const std::u16string app_title = u"A Web App";
 
-  auto web_app_info = std::make_unique<WebAppInstallInfo>();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>(
+      GenerateManifestIdFromStartUrlOnly(app_url));
   web_app_info->start_url = app_url;
   web_app_info->scope = app_url.GetWithoutFilename();
   web_app_info->title = app_title;
@@ -1891,7 +1983,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, InScopeHttpUrlsDisplayAppTitle) {
       embedded_test_server()->GetURL("app.site.test", "/simple.html");
   const std::u16string app_title = u"A Web App";
 
-  auto web_app_info = std::make_unique<WebAppInstallInfo>();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>(app_url);
   web_app_info->start_url = app_url;
   web_app_info->title = app_title;
   const AppId app_id = InstallWebApp(std::move(web_app_info));
@@ -2066,8 +2158,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, BrowserDisplayNotInstallable) {
   EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, new_browser), kNotPresent);
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
-                       DISABLE_POSIX(WindowControlsOverlay)) {
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WindowControlsOverlay) {
   GURL test_url = https_server()->GetURL(
       "/banners/"
       "manifest_test_page.html?manifest=manifest_window_controls_overlay.json");
@@ -2087,8 +2178,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
             app_browser->app_controller()->AppUsesWindowControlsOverlay());
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_Borderless,
-                       DISABLE_POSIX(Borderless)) {
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_Borderless, Borderless) {
   GURL test_url = https_server()->GetURL(
       "/banners/"
       "manifest_test_page.html?manifest=manifest_borderless.json");
@@ -2109,8 +2199,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_Borderless,
   EXPECT_TRUE(app_browser->app_controller()->AppUsesBorderlessMode());
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_Tabbed,
-                       DISABLE_POSIX(TabbedDisplayOverride)) {
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_Tabbed, TabbedDisplayOverride) {
   GURL test_url = https_server()->GetURL(
       "/banners/"
       "manifest_test_page.html?manifest=manifest_tabbed_display_override.json");
@@ -2128,7 +2217,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_Tabbed,
             provider->registrar_unsafe().IsTabbedWindowModeEnabled(app_id));
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, DISABLE_POSIX(RemoveStatusBar)) {
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, RemoveStatusBar) {
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
   const AppId app_id = test::InstallPwaForCurrentUrl(browser());
   Browser* const app_browser = LaunchWebAppBrowser(app_id);
@@ -2170,8 +2259,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_NoDestroyProfile, Shutdown) {
 
 using WebAppBrowserTest_ManifestId = WebAppBrowserTest;
 
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ManifestId,
-                       DISABLE_POSIX(NoManifestId)) {
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ManifestId, NoManifestId) {
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
 
   const AppId app_id = test::InstallPwaForCurrentUrl(browser());
@@ -2182,9 +2270,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ManifestId,
                 /*manifest_id=*/absl::nullopt,
                 provider->registrar_unsafe().GetAppStartUrl(app_id)),
             app_id);
-  EXPECT_EQ(app->start_url().spec().substr(
-                app->start_url().DeprecatedGetOriginAsURL().spec().size()),
-            app->manifest_id());
+  EXPECT_EQ(app->start_url(), app->manifest_id());
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ManifestId, ManifestIdSpecified) {
@@ -2197,8 +2283,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ManifestId, ManifestIdSpecified) {
   auto* provider = WebAppProvider::GetForTest(profile());
   auto* app = provider->registrar_unsafe().GetAppById(app_id);
 
-  EXPECT_EQ(web_app::GenerateAppId(app->manifest_id(), app->start_url()),
-            app_id);
+  EXPECT_EQ(web_app::GenerateAppIdFromManifestId(app->manifest_id()), app_id);
   EXPECT_NE(
       web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, app->start_url()),
       app_id);
@@ -2529,5 +2614,4 @@ INSTANTIATE_TEST_SUITE_P(
         test::ExternalPrefMigrationTestCases::kEnableMigrationReadPref,
         test::ExternalPrefMigrationTestCases::kEnableMigrationReadDB),
     test::GetExternalPrefMigrationTestName);
-
 }  // namespace web_app

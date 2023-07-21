@@ -206,13 +206,14 @@ class FrameSchedulerDelegateForTesting : public FrameScheduler::Delegate {
 };
 
 MATCHER(BlockingDetailsHasCCNS, "Blocking details has CCNS.") {
-  bool vector_empty = arg.non_sticky_features_and_js_locations.empty();
+  bool vector_empty =
+      arg.non_sticky_features_and_js_locations.details_list.empty();
   bool vector_has_ccns =
-      arg.sticky_features_and_js_locations.Contains(
+      arg.sticky_features_and_js_locations.details_list.Contains(
           FeatureAndJSLocationBlockingBFCache(
               SchedulingPolicy::Feature::kMainResourceHasCacheControlNoStore,
               nullptr)) &&
-      arg.sticky_features_and_js_locations.Contains(
+      arg.sticky_features_and_js_locations.details_list.Contains(
           FeatureAndJSLocationBlockingBFCache(
               SchedulingPolicy::Feature::kMainResourceHasCacheControlNoCache,
               nullptr));
@@ -226,14 +227,15 @@ MATCHER_P(BlockingDetailsHasWebSocket,
       (handle->GetFeatureAndJSLocationBlockingBFCache() ==
        FeatureAndJSLocationBlockingBFCache(
            SchedulingPolicy::Feature::kWebSocket, nullptr));
-  bool vector_empty = arg.sticky_features_and_js_locations.empty();
+  bool vector_empty = arg.sticky_features_and_js_locations.details_list.empty();
   return handle_has_web_socket && vector_empty;
 }
 
 MATCHER(BlockingDetailsIsEmpty, "BlockingDetails is empty.") {
   bool non_sticky_vector_empty =
-      arg.non_sticky_features_and_js_locations.empty();
-  bool sticky_vector_empty = arg.sticky_features_and_js_locations.empty();
+      arg.non_sticky_features_and_js_locations.details_list.empty();
+  bool sticky_vector_empty =
+      arg.sticky_features_and_js_locations.details_list.empty();
   return non_sticky_vector_empty && sticky_vector_empty;
 }
 class FrameSchedulerImplTest : public testing::Test {
@@ -1438,26 +1440,8 @@ TEST_F(FrameSchedulerImplTest,
       testing::UnorderedElementsAre(base::Bucket(1, 1), base::Bucket(2, 1)));
 }
 
-class InputHighPriorityFrameSchedulerImplTest : public FrameSchedulerImplTest {
- public:
-  InputHighPriorityFrameSchedulerImplTest()
-      : FrameSchedulerImplTest(
-            {},
-            {::blink::features::kInputTargetClientHighPriority}) {}
-};
-
 // TODO(farahcharab) Move priority testing to MainThreadTaskQueueTest after
 // landing the change that moves priority computation to MainThreadTaskQueue.
-
-TEST_F(InputHighPriorityFrameSchedulerImplTest,
-       NormalPriorityInputBlockingTaskQueue) {
-  page_scheduler_->SetPageVisible(false);
-  EXPECT_EQ(InputBlockingTaskQueue()->GetQueuePriority(),
-            TaskPriority::kNormalPriority);
-  page_scheduler_->SetPageVisible(true);
-  EXPECT_EQ(InputBlockingTaskQueue()->GetQueuePriority(),
-            TaskPriority::kNormalPriority);
-}
 
 TEST_F(FrameSchedulerImplTest, HighestPriorityInputBlockingTaskQueue) {
   page_scheduler_->SetPageVisible(false);
@@ -1802,6 +1786,43 @@ TEST_F(FrameSchedulerImplTest, FeatureUpload_FrameDestruction) {
   base::RunLoop().RunUntilIdle();
 
   testing::Mock::VerifyAndClearExpectations(frame_scheduler_delegate_.get());
+}
+
+TEST_F(FrameSchedulerImplTest, TasksRunAfterDetach) {
+  int counter = 0;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      frame_scheduler_->GetTaskRunner(TaskType::kJavascriptTimerImmediate);
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  task_runner->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)),
+      base::Milliseconds(100));
+  frame_scheduler_.reset();
+  task_environment_.FastForwardBy(base::Milliseconds(100));
+  EXPECT_EQ(counter, 2);
+
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(counter, 2);
+}
+
+TEST_F(FrameSchedulerImplTest, DetachedWebSchedulingTaskQueue) {
+  // Regression test for crbug.com/1446596. WebSchedulingTaskQueue methods
+  // should not crash if the underlying frame scheduler is destroyed and the
+  // underlying task queue has not yet been destroyed.
+  std::unique_ptr<WebSchedulingTaskQueue> web_scheduling_task_queue =
+      frame_scheduler_->CreateWebSchedulingTaskQueue(
+          WebSchedulingQueueType::kTaskQueue,
+          WebSchedulingPriority::kUserVisiblePriority);
+  frame_scheduler_->GetTaskRunner(TaskType::kJavascriptTimerImmediate)
+      ->PostTask(FROM_HERE, base::BindLambdaForTesting([&]() {
+                   frame_scheduler_.reset();
+                   web_scheduling_task_queue->SetPriority(
+                       WebSchedulingPriority::kBackgroundPriority);
+                   web_scheduling_task_queue.reset();
+                 }));
+  base::RunLoop().RunUntilIdle();
 }
 
 class WebSchedulingTaskQueueTest : public FrameSchedulerImplTest,
@@ -2966,14 +2987,13 @@ TEST_F(FrameSchedulerImplTest, ImmediateWebSchedulingTasksAreNotThrottled) {
   // Hide the page to start throttling timers.
   page_scheduler_->SetPageVisible(false);
 
+  std::unique_ptr<WebSchedulingTaskQueue> queue =
+      frame_scheduler_->CreateWebSchedulingTaskQueue(
+          WebSchedulingQueueType::kTaskQueue,
+          WebSchedulingPriority::kUserVisiblePriority);
   // Post a non-delayed task to a web scheduling task queue.
-  const scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      frame_scheduler_
-          ->CreateWebSchedulingTaskQueue(
-              WebSchedulingQueueType::kTaskQueue,
-              WebSchedulingPriority::kUserVisiblePriority)
-          ->GetTaskRunner();
-  task_runner->PostTask(FROM_HERE, base::BindOnce(&RecordRunTime, &run_times));
+  queue->GetTaskRunner()->PostTask(FROM_HERE,
+                                   base::BindOnce(&RecordRunTime, &run_times));
 
   // Run any ready tasks, which includes our non-delayed non-throttled web
   // scheduling task. If we are throttled, our task will not run.

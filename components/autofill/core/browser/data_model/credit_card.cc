@@ -164,7 +164,8 @@ std::unique_ptr<CreditCard> CreditCard::CreateVirtualCardWithGuidSuffix(
 }
 
 CreditCard::CreditCard(const std::string& guid, const std::string& origin)
-    : AutofillDataModel(guid, origin),
+    : AutofillDataModel(guid),
+      origin_(origin),
       record_type_(LOCAL_CARD),
       network_(kGenericCard),
       expiration_month_(0),
@@ -892,6 +893,11 @@ bool CreditCard::HasSameNumberAs(const CreditCard& other) const {
   return StripSeparators(number_) == StripSeparators(other.number_);
 }
 
+bool CreditCard::HasSameExpirationDateAs(const CreditCard& other) const {
+  return expiration_month() == other.expiration_month() &&
+         expiration_year() == other.expiration_year();
+}
+
 bool CreditCard::operator==(const CreditCard& credit_card) const {
   return guid() == credit_card.guid() && origin() == credit_card.origin() &&
          record_type() == credit_card.record_type() &&
@@ -900,6 +906,10 @@ bool CreditCard::operator==(const CreditCard& credit_card) const {
 
 bool CreditCard::operator!=(const CreditCard& credit_card) const {
   return !operator==(credit_card);
+}
+
+bool CreditCard::IsVerified() const {
+  return !origin_.empty() && !GURL(origin_).is_valid();
 }
 
 bool CreditCard::IsEmpty(const std::string& app_locale) const {

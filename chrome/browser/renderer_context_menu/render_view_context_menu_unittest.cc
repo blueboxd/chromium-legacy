@@ -79,6 +79,11 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_test_utils.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
+#endif
+
 using extensions::Extension;
 using extensions::MenuItem;
 using extensions::MenuManager;
@@ -1012,14 +1017,11 @@ TEST_F(RenderViewContextMenuPrefsTest, FollowOrUnfollow) {
   }
 }
 
-class RenderViewContestMenuAutofillTest
+class RenderViewContextMenuAutofillTest
     : public RenderViewContextMenuPrefsTest,
       public testing::WithParamInterface<bool> {
  public:
-  RenderViewContestMenuAutofillTest() {
-    feature_list_.InitAndEnableFeature(
-        autofill::features::kAutofillShowManualFallbackInContextMenu);
-  }
+  RenderViewContextMenuAutofillTest() = default;
 
   void SetUp() override {
     RenderViewContextMenuPrefsTest::SetUp();
@@ -1038,17 +1040,14 @@ class RenderViewContestMenuAutofillTest
   }
 
  private:
-  base::test::ScopedFeatureList feature_list_;
+  base::test::ScopedFeatureList feature_list_{
+      autofill::features::kAutofillShowManualFallbackInContextMenu};
   autofill::TestAutofillClientInjector<autofill::TestContentAutofillClient>
       autofill_client_injector_;
 };
 
-INSTANTIATE_TEST_SUITE_P(AutofillContextMenuTest,
-                         RenderViewContestMenuAutofillTest,
-                         testing::Bool());
-
 // Verify that Autofill context menu items are displayed on a plain text field.
-TEST_P(RenderViewContestMenuAutofillTest, ShowAutofillOptions) {
+TEST_P(RenderViewContextMenuAutofillTest, ShowAutofillOptions) {
   autofill::PersonalDataManager* pdm =
       autofill::PersonalDataManagerFactory::GetForProfile(
           profile()->GetOriginalProfile());
@@ -1068,6 +1067,47 @@ TEST_P(RenderViewContestMenuAutofillTest, ShowAutofillOptions) {
   EXPECT_TRUE(
       menu->IsItemInRangePresent(IDC_CONTENT_CONTEXT_AUTOFILL_CUSTOM_FIRST,
                                  IDC_CONTENT_CONTEXT_AUTOFILL_CUSTOM_LAST));
+}
+
+INSTANTIATE_TEST_SUITE_P(AutofillContextMenuTest,
+                         RenderViewContextMenuAutofillTest,
+                         testing::Bool());
+
+class RenderViewContextMenuHideAutofillPopupTest
+    : public RenderViewContextMenuPrefsTest {
+ public:
+  RenderViewContextMenuHideAutofillPopupTest() = default;
+
+ protected:
+  autofill::TestContentAutofillClient* autofill_client() {
+    return autofill_client_injector_[web_contents()];
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_{
+      autofill::features::kAutofillPopupDoesNotOverlapWithContextMenu};
+  autofill::TestAutofillClientInjector<autofill::TestContentAutofillClient>
+      autofill_client_injector_;
+};
+
+// Always hide the autofill popup when the context menu opens.
+TEST_F(RenderViewContextMenuHideAutofillPopupTest, HideAutofillPopup) {
+  NavigateAndCommit(GURL("http://www.foo.com/"));
+  content::ContextMenuParams params = CreateParams(MenuItem::EDITABLE);
+  params.input_field_type =
+      blink::mojom::ContextMenuDataInputFieldType::kPlainText;
+  auto menu = std::make_unique<TestRenderViewContextMenu>(
+      *web_contents()->GetPrimaryMainFrame(), params);
+
+  const autofill::AutofillClient::PopupOpenArgs args;
+  autofill_client()->ShowAutofillPopup(args, /*delegate=*/nullptr);
+  EXPECT_TRUE(autofill_client()->IsShowingAutofillPopup());
+
+  menu->Init();
+
+  EXPECT_FALSE(autofill_client()->IsShowingAutofillPopup());
+  EXPECT_EQ(autofill_client()->popup_hiding_reason(),
+            autofill::PopupHidingReason::kContextMenuOpened);
 }
 
 // Verify that the Lens Image Search menu item is disabled on non-image content
@@ -1128,6 +1168,36 @@ TEST_F(RenderViewContextMenuPrefsTest, LensImageSearchEnabled) {
   EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHWEB));
   EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS));
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Verify that the Lens Image Search menu item is disabled on image content in
+// Ash, if Lacros is the only browser.
+TEST_F(RenderViewContextMenuPrefsTest,
+       LensImageSearchDisabledIfAshBrowserIsDisabled) {
+  auto scoped_lacros_primary =
+      crosapi::browser_util::SetLacrosPrimaryBrowserForTest(true);
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatures(
+      {lens::features::kLensStandalone, lens::features::kEnableImageTranslate,
+       ash::features::kLacrosOnly},
+      {});
+  ASSERT_FALSE(crosapi::browser_util::IsAshWebBrowserEnabled());
+
+  SetUserSelectedDefaultSearchProvider("https://www.google.com",
+                                       /*supports_image_search=*/true);
+  content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
+  params.has_image_contents = true;
+  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                 params);
+  menu.SetBrowser(GetBrowser());
+  menu.Init();
+
+  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE));
+  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE));
+  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHWEB));
+  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS));
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Verify that the Lens Image Search menu item is enabled for Progressive Web
 // Apps
@@ -1304,6 +1374,30 @@ TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearch) {
 
   EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Verify that the Lens Region Search menu item is not displayed even when the
+// feature is enabled if Lacros is the only browser.
+TEST_F(RenderViewContextMenuPrefsTest,
+       LensRegionSearchDisabledIfAshBrowserIsDisabled) {
+  auto scoped_lacros_primary =
+      crosapi::browser_util::SetLacrosPrimaryBrowserForTest(true);
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatures(
+      {lens::features::kLensStandalone, ash::features::kLacrosOnly}, {});
+  ASSERT_FALSE(crosapi::browser_util::IsAshWebBrowserEnabled());
+
+  SetUserSelectedDefaultSearchProvider("https://www.google.com",
+                                       /*supports_image_search=*/true);
+  content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
+  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                 params);
+  menu.SetBrowser(GetBrowser());
+  menu.Init();
+
+  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchPdfEnabled) {
   base::test::ScopedFeatureList features;

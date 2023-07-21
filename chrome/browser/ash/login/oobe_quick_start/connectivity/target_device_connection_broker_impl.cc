@@ -138,8 +138,9 @@ TargetDeviceConnectionBrokerImpl::TargetDeviceConnectionBrokerImpl(
     bool is_resume_after_update)
     : nearby_connections_manager_(nearby_connections_manager),
       connection_factory_(std::move(connection_factory)),
-      quick_start_decoder_(std::move(quick_start_decoder)) {
-  if (is_resume_after_update) {
+      quick_start_decoder_(std::move(quick_start_decoder)),
+      is_resume_after_update_(is_resume_after_update) {
+  if (is_resume_after_update_) {
     FetchPersistedSessionContext();
   } else {
     random_session_id_ = RandomSessionId();
@@ -221,9 +222,13 @@ void TargetDeviceConnectionBrokerImpl::StartAdvertising(
   use_pin_authentication_ = use_pin_authentication;
   connection_lifecycle_listener_ = listener;
 
-  // This will start Nearby Connections advertising if Fast Pair advertising
-  // succeeds.
-  StartFastPairAdvertising(std::move(on_start_advertising_callback));
+  if (is_resume_after_update_) {
+    StartNearbyConnectionsAdvertising(std::move(on_start_advertising_callback));
+  } else {
+    // This will start Nearby Connections advertising if Fast Pair advertising
+    // succeeds.
+    StartFastPairAdvertising(std::move(on_start_advertising_callback));
+  }
 }
 
 void TargetDeviceConnectionBrokerImpl::StartFastPairAdvertising(
@@ -470,6 +475,13 @@ void TargetDeviceConnectionBrokerImpl::OnStopNearbyConnectionsAdvertising(
 void TargetDeviceConnectionBrokerImpl::OnIncomingConnectionInitiated(
     const std::string& endpoint_id,
     const std::vector<uint8_t>& endpoint_info) {
+  if (is_resume_after_update_) {
+    QS_LOG(INFO) << "Skipped manual verification and will attempt an "
+                    "\"automatic handshake\": endpoint_id="
+                 << endpoint_id;
+    return;
+  }
+
   QS_LOG(INFO) << "Incoming Nearby Connection Initiated: endpoint_id="
                << endpoint_id
                << " use_pin_authentication=" << use_pin_authentication_;
@@ -505,7 +517,7 @@ void TargetDeviceConnectionBrokerImpl::OnIncomingConnectionAccepted(
           &TargetDeviceConnectionBrokerImpl::OnConnectionAuthenticated,
           weak_ptr_factory_.GetWeakPtr()));
 
-  if (use_pin_authentication_) {
+  if (use_pin_authentication_ && !is_resume_after_update_) {
     QS_LOG(INFO) << "Pin authentication completed!";
     connection_->MarkConnectionAuthenticated();
   } else {

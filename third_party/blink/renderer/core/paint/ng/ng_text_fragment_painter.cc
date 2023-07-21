@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/core/mobile_metrics/mobile_friendliness_checker.h"
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
 #include "third_party/blink/renderer/core/paint/document_marker_painter.h"
-#include "third_party/blink/renderer/core/paint/highlight_painting_utils.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_highlight_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_inline_paint_context.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_text_decoration_painter.h"
@@ -234,14 +233,16 @@ void NGTextFragmentPainter::PaintSymbol(const LayoutObject* layout_object,
   const AtomicString& type = LayoutCounter::ListStyle(layout_object, style);
   AutoDarkMode auto_dark_mode(
       PaintAutoDarkMode(style, DarkModeFilter::ElementRole::kListSymbol));
-  if (type == "disc") {
+  if (type == keywords::kDisc) {
     context.FillEllipse(gfx::RectF(snapped_rect), auto_dark_mode);
-  } else if (type == "circle") {
+  } else if (type == keywords::kCircle) {
     context.StrokeEllipse(gfx::RectF(snapped_rect), auto_dark_mode);
-  } else if (type == "square") {
+  } else if (type == keywords::kSquare) {
     context.FillRect(snapped_rect, color, auto_dark_mode);
-  } else if (type == "disclosure-open" || type == "disclosure-closed") {
-    Path path = GetCanonicalDisclosurePath(style, type == "disclosure-open");
+  } else if (type == keywords::kDisclosureOpen ||
+             type == keywords::kDisclosureClosed) {
+    Path path =
+        GetCanonicalDisclosurePath(style, type == keywords::kDisclosureOpen);
     path.Transform(AffineTransform().Scale(marker.Width(), marker.Height()));
     path.Translate(gfx::Vector2dF(marker.X(), marker.Y()));
     context.FillPath(path, auto_dark_mode);

@@ -4,6 +4,7 @@
 
 #include "components/feedback/redaction_tool/redaction_tool.h"
 
+#include <algorithm>
 #include <set>
 #include <utility>
 #include <vector>
@@ -19,6 +20,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/feedback/redaction_tool/ip_address.h"
 #include "components/feedback/redaction_tool/pii_types.h"
+#include "components/feedback/redaction_tool/validation.h"
 #ifdef USE_SYSTEM_RE2
 #include <re2/re2.h>
 #else
@@ -29,6 +31,18 @@ using re2::RE2;
 using redaction_internal::IPAddress;
 
 namespace redaction {
+
+namespace features {
+COMPONENT_EXPORT(REDACTION_TOOL)
+BASE_FEATURE(kEnableCreditCardRedaction,
+             "EnableCreditCardRedaction",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+COMPONENT_EXPORT(REDACTION_TOOL)
+BASE_FEATURE(kEnableIbanRedaction,
+             "EnableIbanRedaction",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+}  // namespace features
 
 namespace {
 
@@ -56,9 +70,10 @@ namespace {
 // (?:regex) denotes non-capturing parentheses group.
 CustomPatternWithAlias kCustomPatternsWithContext[] = {
     // ModemManager
-    {"CellID", "(\\bCell ID: ')([0-9a-fA-F]+)(')", PIIType::kLocationInfo},
+    {"CellID", "(\\bCell ID: ')([0-9a-fA-F]+)(')",
+     PIIType::kCellularLocationInfo},
     {"LocAC", "(\\bLocation area code: ')([0-9a-fA-F]+)(')",
-     PIIType::kLocationInfo},
+     PIIType::kCellularLocationInfo},
 
     // Android. Must run first since this expression matches the replacement.
     //
@@ -500,6 +515,12 @@ bool FindAndConsumeAndGetSkipped(re2::StringPiece* input,
                                       std::size(args));
 }
 
+bool HasRepeatedChar(re2::StringPiece text, char c) {
+  return std::adjacent_find(text.begin(), text.end(), [c](char c1, char c2) {
+           return (c1 == c) && (c2 == c);
+         }) != text.end();
+}
+
 // The following MAC addresses will not be redacted as they are not specific
 // to a device but have general meanings.
 const char* const kUnredactedMacAddresses[] = {
@@ -508,8 +529,31 @@ const char* const kUnredactedMacAddresses[] = {
 };
 constexpr size_t kNumUnredactedMacs = std::size(kUnredactedMacAddresses);
 
-constexpr char kFeedbackRedactionToolHistogramName[] = "Feedback.RedactionTool";
+void RecordPIIRedactedHistogram(const PIIType pii_type) {
+  UMA_HISTOGRAM_ENUMERATION("Feedback.RedactionTool", pii_type);
+}
 
+// These values are logged to UMA. Entries should not be renumbered and
+// numeric values should never be reused. Please keep in sync with
+// "CreditCardDetection" in //tools/metrics/histograms/enums.xml.
+enum class CreditCardDetection {
+  kRegexMatch = 1,
+  kTimestamp = 2,
+  kRepeatedChars = 3,
+  kDoesntValidate = 4,
+  kValidated = 5,
+  kMaxValue = kValidated,
+};
+
+void RecordCreditCardRedactionHistogram(CreditCardDetection step) {
+  UMA_HISTOGRAM_ENUMERATION("Feedback.RedactionTool.CreditCardMatch", step);
+}
+
+bool IsFeatureEnabled(const base::Feature& feature) {
+  return base::FeatureList::GetInstance()
+             ? base::FeatureList::IsEnabled(feature)
+             : feature.default_state == base::FEATURE_ENABLED_BY_DEFAULT;
+}
 }  // namespace
 
 RedactionTool::RedactionTool(const char* const* first_party_extension_ids)
@@ -532,6 +576,9 @@ std::map<PIIType, std::set<std::string>> RedactionTool::Detect(
 
   std::map<PIIType, std::set<std::string>> detected;
 
+  if (IsFeatureEnabled(features::kEnableCreditCardRedaction)) {
+    RedactCreditCardNumbers(input, &detected);
+  }
   RedactMACAddresses(input, &detected);
   // This function will add to |detected| only on Chrome OS as Android app
   // storage paths are only detected for Chrome OS.
@@ -540,6 +587,9 @@ std::map<PIIType, std::set<std::string>> RedactionTool::Detect(
   // Do hashes last since they may appear in URLs and they also prevent us from
   // properly recognizing the Android storage paths.
   RedactHashes(input, &detected);
+  if (IsFeatureEnabled(features::kEnableIbanRedaction)) {
+    RedactIbans(input, &detected);
+  }
   return detected;
 }
 
@@ -557,6 +607,14 @@ std::string RedactionTool::RedactAndKeepSelected(
   // Copy |input| so we can modify it.
   std::string redacted = input;
 
+  // Do this before MAC addresses as credit cards can use the - as identifier as
+  // well and the length could also match a MAC address. Since the credit card
+  // check does additional validation against issuer length and Luhns checksum
+  // the number of false positives should be lower when ordered like this.
+  if (IsFeatureEnabled(features::kEnableCreditCardRedaction) &&
+      pii_types_to_keep.find(PIIType::kCreditCard) == pii_types_to_keep.end()) {
+    redacted = RedactCreditCardNumbers(std::move(redacted), nullptr);
+  }
   if (pii_types_to_keep.find(PIIType::kMACAddress) == pii_types_to_keep.end()) {
     redacted = RedactMACAddresses(std::move(redacted), nullptr);
   }
@@ -577,7 +635,15 @@ std::string RedactionTool::RedactAndKeepSelected(
     // PIIType::kAndroidAppStoragePath and not PIIType::kStableIdentifier.
     redacted = RedactHashes(std::move(redacted), nullptr);
   }
+  if (IsFeatureEnabled(features::kEnableIbanRedaction) &&
+      pii_types_to_keep.find(PIIType::kIBAN) == pii_types_to_keep.end()) {
+    redacted = RedactIbans(std::move(redacted), nullptr);
+  }
   return redacted;
+}
+
+void RedactionTool::EnableCreditCardRedaction(const bool enabled) {
+  redact_credit_cards_ = enabled;
 }
 
 RE2* RedactionTool::GetRegExp(const std::string& pattern) {
@@ -637,14 +703,12 @@ std::string RedactionTool::RedactMACAddresses(
     if (detected != nullptr) {
       (*detected)[PIIType::kMACAddress].insert(mac);
     }
-    skipped.AppendToString(&result);
+    result.append(skipped.data(), skipped.size());
     result += replacement_mac;
+    RecordPIIRedactedHistogram(PIIType::kMACAddress);
   }
 
-  text.AppendToString(&result);
-
-  UMA_HISTOGRAM_ENUMERATION(kFeedbackRedactionToolHistogramName,
-                            PIIType::kMACAddress);
+  result.append(text.data(), text.size());
 
   return result;
 }
@@ -669,8 +733,8 @@ std::string RedactionTool::RedactHashes(
   re2::StringPiece skipped, pre_whitespace, hash_prefix, hash_suffix;
   while (FindAndConsumeAndGetSkipped(&text, *hash_re, &skipped, &pre_whitespace,
                                      &hash_prefix, &hash_suffix)) {
-    skipped.AppendToString(&result);
-    pre_whitespace.AppendToString(&result);
+    result.append(skipped.data(), skipped.size());
+    result.append(pre_whitespace.data(), pre_whitespace.size());
 
     // Check if it's a valid length for our hashes or if we need to skip due to
     // the whitespace check.
@@ -678,8 +742,8 @@ std::string RedactionTool::RedactHashes(
     if ((hash_length != 32 && hash_length != 40 && hash_length != 64) ||
         (hash_length == 32 && pre_whitespace.length() >= 3)) {
       // This is not a hash string, skip it.
-      hash_prefix.AppendToString(&result);
-      hash_suffix.AppendToString(&result);
+      result.append(hash_prefix.data(), hash_prefix.size());
+      result.append(hash_suffix.data(), hash_suffix.size());
       continue;
     }
 
@@ -700,12 +764,11 @@ std::string RedactionTool::RedactHashes(
     }
 
     result += replacement_hash;
+
+    RecordPIIRedactedHistogram(PIIType::kStableIdentifier);
   }
 
-  text.AppendToString(&result);
-
-  UMA_HISTOGRAM_ENUMERATION(kFeedbackRedactionToolHistogramName,
-                            PIIType::kStableIdentifier);
+  result.append(text.data(), text.size());
 
   return result;
 }
@@ -743,8 +806,8 @@ std::string RedactionTool::RedactAndroidAppStoragePaths(
   while (FindAndConsumeAndGetSkipped(&text, *path_re, &skipped, &path_prefix,
                                      &pre_data, &post_data, &app_specific)) {
     // We can record these parts as-is.
-    skipped.AppendToString(&result);
-    path_prefix.AppendToString(&result);
+    result.append(skipped.data(), skipped.size());
+    result.append(path_prefix.data(), path_prefix.size());
 
     // |app_specific| has to be redacted. First, convert it into components,
     // and then redact each component as follows:
@@ -752,7 +815,8 @@ std::string RedactionTool::RedactAndroidAppStoragePaths(
     // - Otherwise, remove all the characters in the component but the first
     //   one.
     // - If the original component has 2 or more bytes, add '_'.
-    const base::FilePath path(app_specific.as_string());
+    const base::FilePath path(
+        std::string(app_specific.data(), app_specific.size()));
     std::vector<std::string> components = path.GetComponents();
     DCHECK(!components.empty());
 
@@ -768,19 +832,201 @@ std::string RedactionTool::RedactAndroidAppStoragePaths(
     }
     if (detected != nullptr) {
       (*detected)[PIIType::kAndroidAppStoragePath].insert(
-          app_specific.as_string());
+          std::string(app_specific.data(), app_specific.size()));
     }
+    RecordPIIRedactedHistogram(PIIType::kAndroidAppStoragePath);
   }
 
-  text.AppendToString(&result);
-
-  UMA_HISTOGRAM_ENUMERATION(kFeedbackRedactionToolHistogramName,
-                            PIIType::kAndroidAppStoragePath);
+  result.append(text.data(), text.size());
 
   return result;
 #else
   return input;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
+
+std::string RedactionTool::RedactCreditCardNumbers(
+    const std::string& input,
+    std::map<PIIType, std::set<std::string>>* detected) {
+  std::string result;
+  result.reserve(input.size());
+
+  RE2* cc_re = GetRegExp(
+      "[^\\d\\n]{1,5}[ :='\"]"  // pre sequence: Make sure we're not
+                                // matching a memory dump or in some
+                                // continuous string of numbers.
+      "((?:[\\d -]){12,37})"    // sequence: Creditcard length is 12-19 and we
+                                // allow up to one separation character (space
+                                // or hyphen) between each of them.
+      "(\n|\\D{2,3})");         // post sequence: Not trying to match inside a
+                                // continuous number block, so the characters
+                                // after the potential match should either be a
+                                // newline or 2-3 non digits.
+
+  re2::StringPiece text(input);
+  re2::StringPiece skipped;
+  re2::StringPiece sequence;
+  re2::StringPiece post_sequence;
+
+  while (FindAndConsumeAndGetSkipped(&text, *cc_re, &skipped, &sequence,
+                                     &post_sequence)) {
+    result.append(skipped.data(), skipped.size());
+    RecordCreditCardRedactionHistogram(CreditCardDetection::kRegexMatch);
+
+    // Timestamps in ms have a surprisingly high number of false positives.
+    // Also log entries but those usually only match if there are several spaces
+    // tying unrelated numbers together.
+    if (post_sequence.find("ms") != re2::StringPiece::npos) {
+      RecordCreditCardRedactionHistogram(CreditCardDetection::kTimestamp);
+      result.append(sequence.data(), sequence.size());
+      result.append(post_sequence.data(), post_sequence.size());
+      continue;
+    }
+
+    if (HasRepeatedChar(sequence, ' ') || HasRepeatedChar(sequence, '-')) {
+      RecordCreditCardRedactionHistogram(CreditCardDetection::kRepeatedChars);
+      result.append(sequence.data(), sequence.size());
+      result.append(post_sequence.data(), post_sequence.size());
+      continue;
+    }
+
+    std::string number;
+    base::RemoveChars(base::StringPiece(sequence), "- ", &number);
+
+    const auto cc_it = credit_cards_.find(number);
+    if (cc_it != credit_cards_.cend()) {
+      result += cc_it->second;
+      result.append(post_sequence.data(), post_sequence.size());
+      RecordCreditCardRedactionHistogram(CreditCardDetection::kValidated);
+      continue;
+    }
+
+    if (redaction::IsValidCreditCardNumber(number)) {
+      RecordCreditCardRedactionHistogram(CreditCardDetection::kValidated);
+      const auto& [it, success] = credit_cards_.emplace(
+          number,
+          base::StrCat({"(CREDITCARD: ",
+                        base::NumberToString(credit_cards_.size() + 1), ")"}));
+      if (redact_credit_cards_) {
+        RecordPIIRedactedHistogram(PIIType::kCreditCard);
+        result += it->second;
+      } else {
+        result.append(sequence.data(), sequence.size());
+      }
+      if (detected) {
+        (*detected)[PIIType::kCreditCard].insert(it->first);
+      }
+    } else {
+      RecordCreditCardRedactionHistogram(CreditCardDetection::kDoesntValidate);
+      result.append(sequence.data(), sequence.size());
+    }
+    result.append(post_sequence.data(), post_sequence.size());
+  }
+
+  result.append(text.data(), text.size());
+
+  return result;
+}
+
+std::string RedactionTool::RedactIbans(
+    const std::string& input,
+    std::map<PIIType, std::set<std::string>>* detected) {
+  std::string result;
+  result.reserve(input.size());
+
+  RE2* iban_re = GetRegExp(
+      "((?:A[DELAOTZ]|B[AEFGHIJR]|C[HIMRVYZ]|D[EKOZ]|E[ES]|F[IOR]|G[BEILRT]|"
+      "H[RU]|I[ELRST]|JO|K[WZ]|L[BITUV]|M[CDEGKLRTUZ]|N[LO]|P[KLST]|QA|R[OS]|"
+      "S[AEIKMN]|T[NR]|UA|VG|XK)(?:\\d{2})[ -]?(?:[ "
+      "\\-A-Z0-9]){11,30})");
+
+  re2::StringPiece text(input);
+  re2::StringPiece skipped;
+  re2::StringPiece iban;
+  while (FindAndConsumeAndGetSkipped(&text, *iban_re, &skipped, &iban)) {
+    result.append(skipped.data(), skipped.size());
+    // Validation sequence as per [1].
+    //
+    // [1]
+    // https://en.wikipedia.org/wiki/International_Bank_Account_Number#Validating_the_IBAN
+
+    // Remove the separating characters.
+    std::string stripped;
+    base::RemoveChars(std::string(iban.data(), iban.size()), " -", &stripped);
+
+    if (const auto previous_iban = ibans_.find(stripped);
+        previous_iban != ibans_.end()) {
+      result += previous_iban->second;
+      continue;
+    }
+
+    // Since the logic later relies on the size of this string not changing use
+    // a lambda to initialize the constant.
+    const std::string numbers_only = [](base::StringPiece stripped) {
+      // Move the first 2 chars+digits to the back of the string.
+      constexpr size_t prefix_offset = 4;
+      std::string rearranged = std::string(stripped.substr(prefix_offset));
+      rearranged.append(stripped.substr(0, prefix_offset));
+
+      // Replace letters with two digits, where A = 10, B = 11, ..., Z = 35.
+      std::string tmp;
+      for (const char c : rearranged) {
+        if (base::IsAsciiDigit(c)) {
+          tmp.push_back(c);
+        } else {
+          const char based_char = c - 'A';
+          constexpr size_t iban_char_conversion_offset = 10;
+          tmp.append(base::NumberToString(static_cast<int>(based_char) +
+                                          iban_char_conversion_offset));
+        }
+      }
+      return tmp;
+    }(stripped);
+
+    // Calculate the remainder using chunks.
+    constexpr size_t chunk_size = 9;
+
+    std::string chunk;
+    chunk.reserve(chunk_size);
+
+    unsigned remainder = 0;
+
+    for (size_t remaining = numbers_only.size(); remaining > 0;) {
+      const size_t pos = numbers_only.size() - remaining;
+      const size_t next_chunk_size =
+          std::min(chunk_size - chunk.size(), remaining);
+
+      chunk.append(numbers_only.substr(pos, next_chunk_size));
+
+      const unsigned long chunk_number =
+          std::strtoul(chunk.c_str(), nullptr, 10);
+
+      remainder = chunk_number % 97;
+      chunk = base::NumberToString(remainder);
+
+      remaining -= next_chunk_size;
+    }
+
+    if (remainder != 1) {
+      result.append(iban.data(), iban.size());
+      continue;
+    }
+
+    const auto& [it, success] = ibans_.emplace(
+        stripped, base::StrCat({"(IBAN: ",
+                                base::NumberToString(ibans_.size() + 1), ")"}));
+    result += it->second;
+
+    if (detected != nullptr) {
+      (*detected)[PIIType::kIBAN].insert(it->first);
+    }
+
+    RecordPIIRedactedHistogram(PIIType::kIBAN);
+  }
+
+  result.append(text.data(), text.size());
+
+  return result;
 }
 
 std::string RedactionTool::RedactAndKeepSelectedCustomPatterns(
@@ -843,15 +1089,13 @@ std::string RedactionTool::RedactCustomPatternWithContext(
     if (detected != nullptr) {
       (*detected)[pattern.pii_type].insert(matched_id_as_string);
     }
-    skipped.AppendToString(&result);
-    pre_matched_id.AppendToString(&result);
+    result.append(skipped.data(), skipped.size());
+    result.append(pre_matched_id.data(), pre_matched_id.size());
     result += replacement_id;
-    post_matched_id.AppendToString(&result);
+    result.append(post_matched_id.data(), post_matched_id.size());
+    RecordPIIRedactedHistogram(pattern.pii_type);
   }
-  text.AppendToString(&result);
-
-  UMA_HISTOGRAM_ENUMERATION(kFeedbackRedactionToolHistogramName,
-                            pattern.pii_type);
+  result.append(text.data(), text.size());
 
   return result;
 }
@@ -861,7 +1105,7 @@ std::string RedactionTool::RedactCustomPatternWithContext(
 bool IsUrlExempt(re2::StringPiece url,
                  const char* const* first_party_extension_ids) {
   // We do not exempt anything with a query parameter.
-  if (url.contains("?")) {
+  if (url.find("?") != re2::StringPiece::npos) {
     return false;
   }
 
@@ -932,8 +1176,8 @@ std::string RedactionTool::RedactCustomPatternWithoutContext(
   re2::StringPiece matched_id;
   while (FindAndConsumeAndGetSkipped(&text, *re, &skipped, &matched_id)) {
     if (IsUrlExempt(matched_id, first_party_extension_ids_)) {
-      skipped.AppendToString(&result);
-      matched_id.AppendToString(&result);
+      result.append(skipped.data(), skipped.size());
+      result.append(matched_id.data(), matched_id.size());
       continue;
     }
     std::string matched_id_as_string(matched_id);
@@ -944,8 +1188,8 @@ std::string RedactionTool::RedactCustomPatternWithoutContext(
         // Double-check overly opportunistic IPv4 address matching.
         if ((strcmp("IPv4", pattern.alias) == 0) &&
             ShouldSkipIPAddress(skipped)) {
-          skipped.AppendToString(&result);
-          matched_id.AppendToString(&result);
+          result.append(skipped.data(), skipped.size());
+          result.append(matched_id.data(), matched_id.size());
           continue;
         }
 
@@ -967,13 +1211,12 @@ std::string RedactionTool::RedactCustomPatternWithoutContext(
       }
     }
 
-    skipped.AppendToString(&result);
+    result.append(skipped.data(), skipped.size());
     result += replacement_id;
-  }
-  text.AppendToString(&result);
 
-  UMA_HISTOGRAM_ENUMERATION(kFeedbackRedactionToolHistogramName,
-                            pattern.pii_type);
+    RecordPIIRedactedHistogram(pattern.pii_type);
+  }
+  result.append(text.data(), text.size());
 
   return result;
 }

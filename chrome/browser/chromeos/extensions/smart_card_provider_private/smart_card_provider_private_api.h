@@ -99,6 +99,10 @@ class SmartCardProviderPrivateAPI
   void Transmit(device::mojom::SmartCardProtocol protocol,
                 const std::vector<uint8_t>& data,
                 TransmitCallback callback) override;
+  void Control(uint32_t control_code,
+               const std::vector<uint8_t>& data,
+               ControlCallback callback) override;
+  void GetAttrib(uint32_t id, GetAttribCallback callback) override;
 
   // Called by extension functions:
   void ReportResult(RequestId request_id,
@@ -173,6 +177,15 @@ class SmartCardProviderPrivateAPI
                     device::mojom::SmartCardProtocol protocol,
                     const std::vector<uint8_t>& data,
                     TransmitCallback callback);
+  void SendControl(ContextId scard_context,
+                   Handle handle,
+                   uint32_t control_code,
+                   const std::vector<uint8_t>& data,
+                   ControlCallback callback);
+  void SendGetAttrib(ContextId scard_context,
+                     Handle handle,
+                     uint32_t id,
+                     GetAttribCallback callback);
 
   // Called when a device::mojom::SmartCardContext loses its mojo connection.
   // eg: because its mojo Remote was destroyed.
@@ -204,6 +217,10 @@ class SmartCardProviderPrivateAPI
                            RequestId request_id);
   void OnTransmitTimeout(const std::string& provider_extension_id,
                          RequestId request_id);
+  void OnControlTimeout(const std::string& provider_extension_id,
+                        RequestId request_id);
+  void OnGetAttribTimeout(const std::string& provider_extension_id,
+                          RequestId request_id);
 
   template <typename ResultPtr>
   void DispatchEventWithTimeout(

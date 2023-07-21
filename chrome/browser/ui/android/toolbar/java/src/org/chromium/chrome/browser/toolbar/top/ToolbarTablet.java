@@ -127,6 +127,10 @@ public class ToolbarTablet
                 getResources().getDimensionPixelOffset(R.dimen.toolbar_edge_padding);
     }
 
+    public boolean isToolbarButtonReorderingEnabled() {
+        return ChromeFeatureList.sTabletToolbarReordering.isEnabled();
+    }
+
     @Override
     public void onFinishInflate() {
         super.onFinishInflate();
@@ -135,8 +139,9 @@ public class ToolbarTablet
         mForwardButton = findViewById(R.id.forward_button);
         mReloadButton = findViewById(R.id.refresh_button);
 
-        // Reposition home button to align with desktop ordering when TSR enabled.
-        if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+        // Reposition home button to align with desktop ordering when TSR enabled and toolbar
+        // reordering not disabled
+        if (isToolbarButtonReorderingEnabled()) {
             // Remove home button view added in XML and adding back with different ordering
             // programmatically.
             ((ViewGroup) mHomeButton.getParent()).removeView(mHomeButton);
@@ -190,7 +195,7 @@ public class ToolbarTablet
         mHomeButton.setOnKeyListener(new KeyboardNavigationListener() {
             @Override
             public View getNextFocusForward() {
-                if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+                if (isToolbarButtonReorderingEnabled()) {
                     return findViewById(R.id.url_bar);
                 } else {
                     if (mBackButton.isFocusable()) {
@@ -205,7 +210,7 @@ public class ToolbarTablet
 
             @Override
             public View getNextFocusBackward() {
-                if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+                if (isToolbarButtonReorderingEnabled()) {
                     return findViewById(R.id.refresh_button);
                 } else {
                     return findViewById(R.id.menu_button);
@@ -227,7 +232,7 @@ public class ToolbarTablet
 
             @Override
             public View getNextFocusBackward() {
-                if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+                if (isToolbarButtonReorderingEnabled()) {
                     return findViewById(R.id.menu_button);
                 } else {
                     if (mHomeButton.getVisibility() == VISIBLE) {
@@ -251,7 +256,7 @@ public class ToolbarTablet
             public View getNextFocusBackward() {
                 if (mBackButton.isFocusable()) {
                     return mBackButton;
-                } else if (!ChromeFeatureList.sTabStripRedesign.isEnabled()
+                } else if (!isToolbarButtonReorderingEnabled()
                         && mHomeButton.getVisibility() == VISIBLE) {
                     return findViewById(R.id.home_button);
                 } else {
@@ -265,8 +270,7 @@ public class ToolbarTablet
         mReloadButton.setOnKeyListener(new KeyboardNavigationListener() {
             @Override
             public View getNextFocusForward() {
-                if (ChromeFeatureList.sTabStripRedesign.isEnabled()
-                        && mHomeButton.getVisibility() == VISIBLE) {
+                if (isToolbarButtonReorderingEnabled() && mHomeButton.getVisibility() == VISIBLE) {
                     return findViewById(R.id.home_button);
                 } else {
                     return findViewById(R.id.url_bar);
@@ -279,7 +283,7 @@ public class ToolbarTablet
                     return mForwardButton;
                 } else if (mBackButton.isFocusable()) {
                     return mBackButton;
-                } else if (!ChromeFeatureList.sTabStripRedesign.isEnabled()
+                } else if (!isToolbarButtonReorderingEnabled()
                         && mHomeButton.getVisibility() == VISIBLE) {
                     return findViewById(R.id.home_button);
                 } else {
@@ -557,8 +561,7 @@ public class ToolbarTablet
     }
 
     @Override
-    void setTabSwitcherMode(boolean inTabSwitcherMode, boolean showToolbar, boolean delayAnimation,
-            MenuButtonCoordinator menuButtonCoordinator) {
+    void setTabSwitcherMode(boolean inTabSwitcherMode) {
         mIsInTabSwitcherMode = inTabSwitcherMode;
         mSwitcherButton.setClickable(!inTabSwitcherMode);
         int importantForAccessibility = inTabSwitcherMode

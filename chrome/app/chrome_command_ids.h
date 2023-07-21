@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/services/screen_ai/buildflags/buildflags.h"
+#include "ui/base/command_id_constants.h"
 
 // This file lists all the command IDs understood by e.g. the browser.
 // It is used by Windows RC files, Mac NIB files, and other platforms too.
@@ -69,9 +70,12 @@
 #define IDC_TOGGLE_MULTITASK_MENU       34050
 #endif
 
+#if BUILDFLAG(IS_LINUX)
+#define IDC_USE_SYSTEM_TITLE_BAR        34051
+#endif
+
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch of lacros-chrome is complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-#define IDC_USE_SYSTEM_TITLE_BAR        34051
 #define IDC_RESTORE_WINDOW              34052
 #endif
 
@@ -127,7 +131,8 @@
 #define IDC_FOLLOW                      35033
 #define IDC_UNFOLLOW                    35034
 #define IDC_SAVE_IBAN_FOR_PAGE          35035
-#define IDC_AUTOFILL_MENU               35040
+#define IDC_AUTOFILL_MANDATORY_REAUTH   35036
+#define IDC_PASSWORDS_AND_AUTOFILL_MENU 35040
 #define IDC_SHOW_PASSWORD_MANAGER       35041
 #define IDC_SHOW_PAYMENT_METHODS        35042
 #define IDC_SHOW_ADDRESSES              35043
@@ -248,6 +253,7 @@
 #define IDC_BOOKMARKS_LIST_TITLE        40273
 #define IDC_SHOW_BOOKMARK_SIDE_PANEL    40274
 #define IDC_SHOW_SEARCH_COMPANION       40275
+#define IDC_SHOW_CHROME_LABS            40276
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.
@@ -520,6 +526,6 @@
 // otherwise it'll conflict. Unbounded menus must also avoid conflicting with
 // each other, by only using every Nth id (where N is the number of unbounded
 // menus).
-#define IDC_FIRST_UNBOUNDED_MENU 0xE000
+#define IDC_FIRST_UNBOUNDED_MENU COMMAND_ID_FIRST_UNBOUNDED
 
 #endif  // CHROME_APP_CHROME_COMMAND_IDS_H_

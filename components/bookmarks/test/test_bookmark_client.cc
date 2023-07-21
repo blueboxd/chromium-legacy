@@ -97,6 +97,11 @@ bool TestBookmarkClient::HasFaviconLoadTasks() const {
   return !requests_per_page_url_.empty();
 }
 
+void TestBookmarkClient::SetStorageStateForUma(
+    metrics::StorageStateForUma storage_state) {
+  storage_state_for_uma_ = storage_state;
+}
+
 bool TestBookmarkClient::IsPermanentNodeVisibleWhenEmpty(
     BookmarkNode::Type type) {
   switch (type) {
@@ -115,12 +120,13 @@ bool TestBookmarkClient::IsPermanentNodeVisibleWhenEmpty(
   return false;
 }
 
-void TestBookmarkClient::RecordAction(const base::UserMetricsAction& action) {
-}
-
 LoadManagedNodeCallback TestBookmarkClient::GetLoadManagedNodeCallback() {
   return base::BindOnce(&TestBookmarkClient::LoadManagedNode,
                         std::move(managed_node_));
+}
+
+metrics::StorageStateForUma TestBookmarkClient::GetStorageStateForUma() {
+  return storage_state_for_uma_;
 }
 
 bool TestBookmarkClient::CanSetPermanentNodeTitle(
@@ -152,6 +158,12 @@ TestBookmarkClient::GetFaviconImageForPageURL(
   requests_per_page_url_[page_url].push_back(std::move(callback));
   return next_task_id_++;
 }
+
+void TestBookmarkClient::OnBookmarkNodeRemovedUndoable(
+    BookmarkModel* model,
+    const BookmarkNode* parent,
+    size_t index,
+    std::unique_ptr<BookmarkNode> node) {}
 
 // static
 std::unique_ptr<BookmarkPermanentNode> TestBookmarkClient::LoadManagedNode(

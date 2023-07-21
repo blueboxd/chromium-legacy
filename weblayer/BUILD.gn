@@ -24,6 +24,7 @@ import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
+  import("//build/config/features.gni")
   import("//components/safe_browsing/buildflags.gni")
 } else if (is_mac) {
   import("//build/apple/tweak_info_plist.gni")
@@ -57,6 +58,7 @@ if (is_android) {
       "enable_print_preview=$enable_print_preview",
       "enable_screen_ai_service=$enable_screen_ai_service",
       "enable_vr=$enable_vr",
+      "use_blink=$use_blink",
     ]
 
     # components_strings contains strings from all components. WebLayer
@@ -184,6 +186,11 @@ source_set("weblayer_lib_base") {
     "browser/bluetooth/weblayer_bluetooth_delegate_impl_client.h",
     "browser/browser_context_impl.cc",
     "browser/browser_context_impl.h",
+    "browser/browser_fragment_impl.cc",
+    "browser/browser_fragment_impl.h",
+    "browser/browser_fragment_list.cc",
+    "browser/browser_fragment_list.h",
+    "browser/browser_fragment_list_observer.h",
     "browser/browser_impl.cc",
     "browser/browser_impl.h",
     "browser/browser_list.cc",
@@ -731,6 +738,7 @@ source_set("weblayer_lib_base") {
       "//components/location/android:settings",
       "//components/media_router/browser",
       "//components/metrics",
+      "//components/metrics:content",
       "//components/minidump_uploader",
       "//components/navigation_interception",
       "//components/page_info/android",

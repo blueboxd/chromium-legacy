@@ -68,9 +68,15 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/style/anchor_specifier_value.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/core/style/coord_box_offset_path_operation.h"
+#include "third_party/blink/renderer/core/style/offset_path_operation.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
+#include "third_party/blink/renderer/core/style/reference_offset_path_operation.h"
 #include "third_party/blink/renderer/core/style/scoped_css_name.h"
+#include "third_party/blink/renderer/core/style/scroll_start_data.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
+#include "third_party/blink/renderer/core/style/shape_offset_path_operation.h"
 #include "third_party/blink/renderer/core/style/style_overflow_clip_margin.h"
 #include "third_party/blink/renderer/core/style/style_svg_resource.h"
 #include "third_party/blink/renderer/platform/fonts/opentype/open_type_math_support.h"
@@ -645,8 +651,7 @@ FontDescription::Size StyleBuilderConverter::ConvertFontSize(
       value, state.FontSizeConversionData(), parent_size, &state.GetDocument());
 }
 
-FontSizeAdjust StyleBuilderConverter::ConvertFontSizeAdjust(
-    StyleResolverState& state,
+FontSizeAdjust StyleBuilderConverterBase::ConvertFontSizeAdjust(
     const CSSValue& value) {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value && identifier_value->GetValueID() == CSSValueID::kNone) {
@@ -657,9 +662,23 @@ FontSizeAdjust StyleBuilderConverter::ConvertFontSizeAdjust(
     return FontBuilder::InitialSizeAdjust();
   }
 
-  const auto& primitive_value = To<CSSPrimitiveValue>(value);
-  DCHECK(primitive_value.IsNumber());
-  return FontSizeAdjust(primitive_value.GetFloatValue());
+  if (value.IsPrimitiveValue()) {
+    const auto& primitive_value = To<CSSPrimitiveValue>(value);
+    DCHECK(primitive_value.IsNumber());
+    return FontSizeAdjust(primitive_value.GetFloatValue());
+  }
+
+  DCHECK(value.IsValuePair());
+  const auto& pair = To<CSSValuePair>(value);
+  return FontSizeAdjust(
+      To<CSSPrimitiveValue>(pair.Second()).GetFloatValue(),
+      To<CSSIdentifierValue>(pair.First()).ConvertTo<FontSizeAdjust::Metric>());
+}
+
+FontSizeAdjust StyleBuilderConverter::ConvertFontSizeAdjust(
+    StyleResolverState&,
+    const CSSValue& value) {
+  return StyleBuilderConverterBase::ConvertFontSizeAdjust(value);
 }
 
 FontSelectionValue StyleBuilderConverterBase::ConvertFontStretch(
@@ -1593,6 +1612,21 @@ Length StyleBuilderConverter::ConvertLengthOrAuto(
       state.CssToLengthConversionData());
 }
 
+ScrollStartData StyleBuilderConverter::ConvertScrollStart(
+    const StyleResolverState& state,
+    const CSSValue& value) {
+  ScrollStartData scroll_start_data;
+  if (value.IsPrimitiveValue()) {
+    scroll_start_data.value_type = ScrollStartValueType::kLengthOrPercentage;
+    scroll_start_data.value = To<CSSPrimitiveValue>(value).ConvertToLength(
+        state.CssToLengthConversionData());
+    return scroll_start_data;
+  }
+  scroll_start_data.value_type =
+      To<CSSIdentifierValue>(value).ConvertTo<ScrollStartValueType>();
+  return scroll_start_data;
+}
+
 Length StyleBuilderConverter::ConvertLengthSizing(StyleResolverState& state,
                                                   const CSSValue& value) {
   const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
@@ -1710,6 +1744,12 @@ ScopedCSSName* StyleBuilderConverter::ConvertNoneOrCustomIdent(
     DCHECK_EQ(identifier_value->GetValueID(), CSSValueID::kNone);
     return nullptr;
   }
+  return ConvertCustomIdent(state, value);
+}
+
+ScopedCSSName* StyleBuilderConverter::ConvertCustomIdent(
+    StyleResolverState&,
+    const CSSValue& value) {
   const CSSCustomIdentValue& custom_ident = To<CSSCustomIdentValue>(value);
   return MakeGarbageCollected<ScopedCSSName>(custom_ident.Value(),
                                              custom_ident.GetTreeScope());
@@ -1997,7 +2037,7 @@ ShapeValue* StyleBuilderConverter::ConvertShapeValue(StyleResolverState& state,
         state.GetStyleImage(CSSPropertyID::kShapeOutside, value));
   }
 
-  scoped_refptr<BasicShape> shape;
+  scoped_refptr<const BasicShape> shape;
   CSSBoxType css_box = CSSBoxType::kMissing;
   const auto& value_list = To<CSSValueList>(value);
   for (unsigned i = 0; i < value_list.length(); ++i) {
@@ -2427,13 +2467,52 @@ scoped_refptr<StylePath> StyleBuilderConverter::ConvertPathOrNone(
   return nullptr;
 }
 
-scoped_refptr<BasicShape> StyleBuilderConverter::ConvertOffsetPath(
+namespace {
+
+scoped_refptr<OffsetPathOperation> ConvertOffsetPathValueToOperation(
+    StyleResolverState& state,
+    const CSSValue& value,
+    CoordBox coord_box) {
+  if (value.IsRayValue() || value.IsBasicShapeValue()) {
+    return ShapeOffsetPathOperation::Create(BasicShapeForValue(state, value),
+                                            coord_box);
+  }
+  if (auto* path_value = DynamicTo<cssvalue::CSSPathValue>(value)) {
+    return ShapeOffsetPathOperation::Create(path_value->GetStylePath(),
+                                            coord_box);
+  }
+  const auto& url_value = To<cssvalue::CSSURIValue>(value);
+  SVGResource* resource =
+      state.GetElementStyleResources().GetSVGResourceFromValue(
+          CSSPropertyID::kOffsetPath, url_value);
+  return ReferenceOffsetPathOperation::Create(url_value.ValueForSerialization(),
+                                              resource, coord_box);
+}
+
+}  // namespace
+
+scoped_refptr<OffsetPathOperation> StyleBuilderConverter::ConvertOffsetPath(
     StyleResolverState& state,
     const CSSValue& value) {
-  if (value.IsRayValue() || value.IsBasicShapeValue()) {
-    return BasicShapeForValue(state, value);
+  if (value.IsIdentifierValue()) {
+    DCHECK(To<CSSIdentifierValue>(value).GetValueID() == CSSValueID::kNone);
+    // none: The element does not have an offset transform.
+    return nullptr;
   }
-  return ConvertPathOrNone(state, value);
+  const auto& list = To<CSSValueList>(value);
+  if (const auto* identifier = DynamicTo<CSSIdentifierValue>(list.First())) {
+    // If <offset-path> is omitted, it defaults to inset(0 round X),
+    // where X is the value of border-radius on the element that
+    // establishes the containing block for this element.
+    return CoordBoxOffsetPathOperation::Create(
+        identifier->ConvertTo<CoordBox>());
+  }
+  // If <coord-box> is omitted, it defaults to border-box.
+  CoordBox coord_box =
+      list.length() == 2
+          ? To<CSSIdentifierValue>(list.Last()).ConvertTo<CoordBox>()
+          : CoordBox::kBorderBox;
+  return ConvertOffsetPathValueToOperation(state, list.First(), coord_box);
 }
 
 scoped_refptr<BasicShape> StyleBuilderConverter::ConvertObjectViewBox(
@@ -3096,6 +3175,22 @@ ScopedCSSNameList* StyleBuilderConverter::ConvertViewTimelineName(
   HeapVector<Member<const ScopedCSSName>> names;
   for (const Member<const CSSValue>& item : To<CSSValueList>(value)) {
     names.push_back(ConvertNoneOrCustomIdent(state, *item));
+  }
+  return MakeGarbageCollected<ScopedCSSNameList>(std::move(names));
+}
+
+ScopedCSSNameList* StyleBuilderConverter::ConvertTimelineScope(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  if (value.IsIdentifierValue()) {
+    DCHECK_EQ(CSSValueID::kNone, To<CSSIdentifierValue>(value).GetValueID());
+    return nullptr;
+  }
+  DCHECK(value.IsScopedValue());
+  DCHECK(value.IsBaseValueList());
+  HeapVector<Member<const ScopedCSSName>> names;
+  for (const Member<const CSSValue>& item : To<CSSValueList>(value)) {
+    names.push_back(ConvertCustomIdent(state, *item));
   }
   return MakeGarbageCollected<ScopedCSSNameList>(std::move(names));
 }

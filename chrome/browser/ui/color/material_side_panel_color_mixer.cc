@@ -16,6 +16,9 @@ void AddMaterialSidePanelColorMixer(ui::ColorProvider* provider,
   mixer[kColorSidePanelContentBackground] = {ui::kColorSysSurface4};
   mixer[kColorSidePanelScrollbarThumb] = {ui::kColorSysPrimary};
   mixer[kColorSidePanelCardBackground] = {ui::kColorSysSurface};
+  mixer[kColorSidePanelCardPrimaryForeground] = {ui::kColorSysOnSurface};
+  mixer[kColorSidePanelCardSecondaryForeground] = {
+      ui::kColorSysOnSurfaceSubtle};
   mixer[kColorSidePanelDivider] = {ui::kColorSysDivider};
 
   mixer[kColorSidePanelBadgeBackground] = {ui::kColorSysSurfaceVariant};
@@ -39,7 +42,25 @@ void AddMaterialSidePanelColorMixer(ui::ColorProvider* provider,
   mixer[kColorSidePanelFilterChipBackgroundSelected] = {
       ui::kColorSysTonalContainer};
 
-  mixer[kColorSidePanelTextfieldBackgroundHover] = {
-      ui::kColorSysStateHoverOnSubtle};
   mixer[kColorSidePanelTextfieldBorder] = {ui::kColorSysNeutralOutline};
+
+  /* Customize Chrome */
+  mixer[kColorSidePanelCustomizeChromeColorPickerCheckmarkBackground] = {
+      ui::kColorSysOnSurface};
+  mixer[kColorSidePanelCustomizeChromeColorPickerCheckmarkForeground] = {
+      ui::kColorSysInverseOnSurface};
+  mixer[kColorSidePanelCustomizeChromeColorPickerOptionBackground] = {
+      ui::kColorSysNeutralContainer};
+  mixer[kColorSidePanelCustomizeChromeCustomOptionBackground] = {
+      ui::kColorSysTertiaryContainer};
+  mixer[kColorSidePanelCustomizeChromeCustomOptionForeground] = {
+      ui::kColorSysOnTertiaryContainer};
+  mixer[kColorSidePanelCustomizeChromeThemeBackground] = {
+      ui::kColorSysBaseContainerElevated};
+  mixer[kColorSidePanelCustomizeChromeThemeCheckmarkBackground] = {
+      ui::kColorSysPrimary};
+  mixer[kColorSidePanelCustomizeChromeThemeCheckmarkForeground] = {
+      ui::kColorSysOnPrimary};
+  mixer[kColorSidePanelCustomizeChromeWebStoreOptionBorder] = {
+      ui::kColorSysNeutralOutline};
 }

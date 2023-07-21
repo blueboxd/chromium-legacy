@@ -254,8 +254,7 @@ SkImageInfo CanvasResource::CreateSkImageInfo() const {
 }
 
 viz::SharedImageFormat CanvasResource::GetSharedImageFormat() const {
-  return viz::SharedImageFormat::SinglePlane(
-      viz::SkColorTypeToResourceFormat(info_.colorType()));
+  return viz::SkColorTypeToSinglePlaneSharedImageFormat(info_.colorType());
 }
 
 gfx::BufferFormat CanvasResource::GetBufferFormat() const {
@@ -322,7 +321,7 @@ scoped_refptr<StaticBitmapImage> CanvasResourceSharedBitmap::Bitmap() {
   AddRef();
   sk_sp<SkImage> sk_image = SkImages::RasterFromPixmap(
       pixmap,
-      [](const void*, SkImage::ReleaseContext resource_to_unref) {
+      [](const void*, SkImages::ReleaseContext resource_to_unref) {
         static_cast<CanvasResourceSharedBitmap*>(resource_to_unref)->Release();
       },
       this);
@@ -727,9 +726,9 @@ void CanvasResourceRasterSharedImage::CopyRenderingResultsToGpuMemoryBuffer(
   if (!ContextProviderWrapper() || !gpu_memory_buffer_->Map())
     return;
 
-  auto surface = SkSurface::MakeRasterDirect(CreateSkImageInfo(),
-                                             gpu_memory_buffer_->memory(0),
-                                             gpu_memory_buffer_->stride(0));
+  auto surface =
+      SkSurfaces::WrapPixels(CreateSkImageInfo(), gpu_memory_buffer_->memory(0),
+                             gpu_memory_buffer_->stride(0));
   SkPixmap pixmap;
   image->peekPixels(&pixmap);
   surface->writePixels(pixmap, 0, 0);

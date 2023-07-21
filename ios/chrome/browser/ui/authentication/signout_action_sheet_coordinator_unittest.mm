@@ -9,12 +9,13 @@
 #import "base/mac/foundation_util.h"
 #import "base/test/task_environment.h"
 #import "components/prefs/pref_service.h"
+#import "components/signin/public/base/signin_metrics.h"
 #import "components/sync/test/mock_sync_service.h"
 #import "ios/chrome/browser/policy/policy_util.h"
-#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/fake_authentication_service_delegate.h"
@@ -111,8 +112,9 @@ class SignoutActionSheetCoordinatorTest : public PlatformTest {
 // Tests that a signed-in user with Sync enabled will have an action sheet with
 // a sign-out title.
 TEST_F(SignoutActionSheetCoordinatorTest, SignedInUserWithSync) {
-  authentication_service()->SignIn(identity_);
-  ON_CALL(*sync_setup_service_mock_, IsFirstSetupComplete())
+  authentication_service()->SignIn(
+      identity_, signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
+  ON_CALL(*sync_setup_service_mock_, IsInitialSyncFeatureSetupComplete())
       .WillByDefault(testing::Return(true));
 
   SignoutActionSheetCoordinator* signout_coordinator = CreateCoordinator();
@@ -124,8 +126,9 @@ TEST_F(SignoutActionSheetCoordinatorTest, SignedInUserWithSync) {
 // Tests that a signed-in user with Sync disabled will have an action sheet with
 // no title.
 TEST_F(SignoutActionSheetCoordinatorTest, SignedInUserWithoutSync) {
-  authentication_service()->SignIn(identity_);
-  ON_CALL(*sync_setup_service_mock_, IsFirstSetupComplete())
+  authentication_service()->SignIn(
+      identity_, signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
+  ON_CALL(*sync_setup_service_mock_, IsInitialSyncFeatureSetupComplete())
       .WillByDefault(testing::Return(false));
 
   SignoutActionSheetCoordinator* signout_coordinator = CreateCoordinator();
@@ -141,8 +144,9 @@ TEST_F(SignoutActionSheetCoordinatorTest, SignedInUserWithForcedSignin) {
   GetLocalState()->SetInteger(prefs::kBrowserSigninPolicy,
                               static_cast<int>(BrowserSigninMode::kForced));
 
-  authentication_service()->SignIn(identity_);
-  ON_CALL(*sync_setup_service_mock_, IsFirstSetupComplete())
+  authentication_service()->SignIn(
+      identity_, signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
+  ON_CALL(*sync_setup_service_mock_, IsInitialSyncFeatureSetupComplete())
       .WillByDefault(testing::Return(false));
 
   SignoutActionSheetCoordinator* signout_coordinator = CreateCoordinator();
@@ -155,8 +159,9 @@ TEST_F(SignoutActionSheetCoordinatorTest, SignedInUserWithForcedSignin) {
 // Tests that a signed-in managed user with Sync enabled will have an action
 // sheet with a sign-out title.
 TEST_F(SignoutActionSheetCoordinatorTest, SignedInManagedUserWithSync) {
-  authentication_service()->SignIn(identity_);
-  ON_CALL(*sync_setup_service_mock_, IsFirstSetupComplete())
+  authentication_service()->SignIn(
+      identity_, signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
+  ON_CALL(*sync_setup_service_mock_, IsInitialSyncFeatureSetupComplete())
       .WillByDefault(testing::Return(true));
 
   SignoutActionSheetCoordinator* signout_coordinator = CreateCoordinator();
@@ -168,8 +173,9 @@ TEST_F(SignoutActionSheetCoordinatorTest, SignedInManagedUserWithSync) {
 // Tests that a signed-in managed user with Sync disabled will have an action
 // sheet with no title.
 TEST_F(SignoutActionSheetCoordinatorTest, SignedInManagedUserWithoutSync) {
-  authentication_service()->SignIn(identity_);
-  ON_CALL(*sync_setup_service_mock_, IsFirstSetupComplete())
+  authentication_service()->SignIn(
+      identity_, signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
+  ON_CALL(*sync_setup_service_mock_, IsInitialSyncFeatureSetupComplete())
       .WillByDefault(testing::Return(false));
 
   SignoutActionSheetCoordinator* signout_coordinator = CreateCoordinator();

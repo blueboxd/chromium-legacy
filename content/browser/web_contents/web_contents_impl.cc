@@ -2885,11 +2885,14 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
   prefs.threaded_scrolling_enabled =
       !command_line.HasSwitch(blink::switches::kDisableThreadedScrolling);
 
+#if BUILDFLAG(IS_ANDROID)
   if (prefs.viewport_enabled &&
       base::FeatureList::IsEnabled(
-          blink::features::kDefaultViewportIsDeviceWidth)) {
+          blink::features::kDefaultViewportIsDeviceWidth) &&
+      ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
     prefs.viewport_style = blink::mojom::ViewportStyle::kDefault;
   }
+#endif
 
   if (GetController().GetVisibleEntry() &&
       GetController().GetVisibleEntry()->GetIsOverridingUserAgent()) {
@@ -5354,7 +5357,7 @@ void WebContentsImpl::GenerateMHTMLWithResult(
 }
 
 const std::string& WebContentsImpl::GetContentsMimeType() {
-  return GetPrimaryPage().contents_mime_type();
+  return GetPrimaryPage().GetContentsMimeType();
 }
 
 blink::RendererPreferences* WebContentsImpl::GetMutableRendererPrefs() {
@@ -5901,15 +5904,6 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
     if (navigation_handle->IsInPrimaryMainFrame() &&
         !navigation_handle->IsSameDocument()) {
       was_ever_audible_ = false;
-    }
-
-    // Clear the stored prerender activation result if this is not a prerender
-    // activation. If this is another prerender activation, it will override
-    // the old result in DevTools.
-    if (!navigation_handle->IsPrerenderedPageActivation() &&
-        !navigation_handle->IsSameDocument() &&
-        navigation_handle->IsInPrimaryMainFrame()) {
-      last_navigation_was_prerender_activation_for_devtools_ = false;
     }
 
     if (!navigation_handle->IsSameDocument())

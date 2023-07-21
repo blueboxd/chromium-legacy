@@ -367,6 +367,7 @@ ShelfView::ShelfView(ShelfModel* model,
   shelf_->AddObserver(this);
   bounds_animator_->AddObserver(this);
   bounds_animator_->SetAnimationDuration(
+      ui::ScopedAnimationDurationScaleMode::duration_multiplier() *
       ShelfConfig::Get()->shelf_animation_duration());
   set_context_menu_controller(this);
   set_allow_deactivate_on_esc(true);
@@ -1225,8 +1226,13 @@ void ShelfView::EndDrag(bool cancel,
       // and it might have moved within the bounds. In that case the item need
       // to animate back to its correct location.
       AnimateToIdealBounds();
-      bounds_animator_->SetAnimationDelegate(drag_and_drop_view,
-                                             std::move(animation_delegate));
+      // TODO(crbug/1442378): Remove the check below once the bounds animator
+      // works better with zero animation duration.
+      if (!bounds_animator_->GetAnimationDuration().is_zero()) {
+        bounds_animator_->SetAnimationDelegate(drag_and_drop_view,
+                                               std::move(animation_delegate));
+      }
+
     } else {
       drag_and_drop_view->SetSize(pre_drag_and_drop_size_);
     }
@@ -1994,7 +2000,7 @@ bool ShelfView::CanDragAcrossSeparator(views::View* drag_view) const {
 
   // Note that |drag_and_drop_shelf_id_| is set only when the current drag view
   // is from app list, which can not be dragged to the unpinned app side.
-  return !ShelfItemForView(drag_view)->pinned_by_policy &&
+  return !ShelfItemForView(drag_view)->IsPinStateForced() &&
          drag_and_drop_shelf_id_ == ShelfID() && can_change_pin_state;
 }
 
@@ -2244,9 +2250,13 @@ void ShelfView::ShelfItemAdded(int model_index) {
   // it. When done we'll fade the view in.
   AnimateToIdealBounds();
   DCHECK_LE(static_cast<size_t>(model_index), visible_views_indices_.back());
-  bounds_animator_->SetAnimationDelegate(
-      view, std::unique_ptr<gfx::AnimationDelegate>(
-                new StartFadeAnimationDelegate(this, view)));
+  // TODO(crbug/1442378): Remove the check below once the bounds animator works
+  // better with zero animation duration.
+  if (!bounds_animator_->GetAnimationDuration().is_zero()) {
+    bounds_animator_->SetAnimationDelegate(
+        view, std::unique_ptr<gfx::AnimationDelegate>(
+                  new StartFadeAnimationDelegate(this, view)));
+  }
 }
 
 void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
@@ -2296,9 +2306,13 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
     // of the views to their target location.
     bounds_animator_->AnimateViewTo(view.get(), view->bounds());
     auto* const view_ptr = view.get();
-    bounds_animator_->SetAnimationDelegate(
-        view_ptr,
-        std::make_unique<FadeOutAnimationDelegate>(this, std::move(view)));
+    // TODO(crbug/1442378): Remove the check below once the bounds animator
+    // works better with zero animation duration.
+    if (!bounds_animator_->GetAnimationDuration().is_zero()) {
+      bounds_animator_->SetAnimationDelegate(
+          view_ptr,
+          std::make_unique<FadeOutAnimationDelegate>(this, std::move(view)));
+    }
   } else {
     // Ensures that |view| is not used after destruction.
     StopAnimatingViewIfAny(view.get());
@@ -2907,8 +2921,8 @@ bool ShelfView::CanDrop(const OSExchangeData& data) {
     return true;
   }
 
-  auto app_id = GetAppIdFromDropData(data);
-  if (app_id->empty()) {
+  auto app_info = GetAppInfoFromDropDataForAppType(data);
+  if (!app_info || app_info->IsValid()) {
     return false;
   }
 
@@ -2931,15 +2945,20 @@ void ShelfView::OnDragEntered(const ui::DropTargetEvent& event) {
     return;
   }
 
-  auto app_id = GetAppIdFromDropData(event.data());
-  if (app_id->empty()) {
+  auto app_info = GetAppInfoFromDropDataForAppType(event.data());
+  if (!app_info || app_info->IsValid()) {
+    return;
+  }
+
+  std::string app_id = app_info->app_id;
+  if (app_id.empty() || app_info->type != DraggableAppType::kAppGridItem) {
     views::View::OnDragEntered(event);
     return;
   }
 
   gfx::Point drag_point_in_screen = event.location();
   views::View::ConvertPointToScreen(this, &drag_point_in_screen);
-  StartDrag(app_id.value(), drag_point_in_screen, gfx::Rect());
+  StartDrag(app_id, drag_point_in_screen, gfx::Rect());
 }
 
 int ShelfView::OnDragUpdated(const ui::DropTargetEvent& event) {

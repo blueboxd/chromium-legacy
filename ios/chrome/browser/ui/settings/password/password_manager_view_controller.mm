@@ -29,15 +29,16 @@
 #import "components/prefs/pref_service.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/base/features.h"
-#import "components/sync/driver/sync_service.h"
-#import "components/sync/driver/sync_service_utils.h"
-#import "components/sync/driver/sync_user_settings.h"
+#import "components/sync/service/sync_service.h"
+#import "components/sync/service/sync_service_utils.h"
+#import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/passwords/password_checkup_metrics.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/ui/elements/home_waiting_view.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_text_item.h"
@@ -74,7 +75,6 @@
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller+toolbar_settings.h"
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
-#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
@@ -436,7 +436,7 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
   [self setSearchBarEnabled:self.shouldEnableSearchBar];
   [self updatePasswordCheckButtonWithState:self.passwordCheckState];
   [self updatePasswordCheckStatusLabelWithState:self.passwordCheckState];
-  [self updatePasswordCheckSection];
+  [self updatePasswordCheckSectionWithState:self.passwordCheckState];
   [self updateUIForEditState];
 }
 
@@ -833,7 +833,7 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
     return;
   }
 
-  [self updatePasswordCheckSection];
+  [self updatePasswordCheckSectionWithState:state];
 
   // When the Password Checkup feature is enabled, this timestamp only appears
   // in the detail text of the Password Checkup status cell. It is therefore
@@ -1688,6 +1688,19 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
   }
 }
 
+- (void)setPasswordProblemsItemAccessibilityLabelForSafeState {
+  NSIndexPath* indexPath =
+      [self.tableViewModel indexPathForItemType:ItemTypePasswordCheckStatus
+                              sectionIdentifier:SectionIdentifierPasswordCheck];
+  UITableViewCell* passwordProblemsCell =
+      [self.tableView cellForRowAtIndexPath:indexPath];
+  passwordProblemsCell.accessibilityLabel = [NSString
+      stringWithFormat:
+          @"%@. %@", passwordProblemsCell.accessibilityLabel,
+          l10n_util::GetNSString(
+              IDS_IOS_PASSWORD_CHECKUP_SAFE_STATE_ACCESSIBILITY_LABEL)];
+}
+
 // Logs metrics related to favicons for the Password Manager.
 - (void)logMetricsForFavicons {
   DCHECK(!_faviconMetricLogged);
@@ -1825,7 +1838,7 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
   [self deleteItemAtIndexPaths:indexPaths];
 }
 
-- (void)updatePasswordCheckSection {
+- (void)updatePasswordCheckSectionWithState:(PasswordCheckUIState)state {
   if (![self.tableViewModel
           hasSectionForSectionIdentifier:SectionIdentifierPasswordCheck]) {
     return;
@@ -1835,6 +1848,11 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
       performBatchUpdates:^{
         if (_passwordProblemsItem) {
           [self reconfigureCellsForItems:@[ _passwordProblemsItem ]];
+          // When in safe state, a custom accessibility label needs to be set
+          // for the Password Checkup cell.
+          if (state == PasswordCheckStateSafe) {
+            [self setPasswordProblemsItemAccessibilityLabelForSafeState];
+          }
         }
         if (_checkForProblemsItem) {
           // If kIOSPasswordCheckup feature is disabled, only reconfigure the

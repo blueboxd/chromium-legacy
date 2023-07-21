@@ -109,5 +109,37 @@
     // https://github.com/whatwg/html/pull/5465
     "open",
     "closed",
+
+    // visibilityState
+    // https://w3c.github.io/page-visibility/#visibilitystate-enum
+    "hidden",
+    "visible",
+
+    // Blocking attributes
+    // https://html.spec.whatwg.org/C/#blocking-attribute
+    "render",
+
+    // dropEffect IDL attribute
+    // https://html.spec.whatwg.org/C/#dom-datatransfer-dropeffect
+    "none",
+
+    // Various Aria attribute values
+    // https://www.w3.org/TR/wai-aria-1.1/#valuetype_true-false
+    "false",
+    "true",
+
+    // ol[type] https://html.spec.whatwg.org/C/#attr-ol-type and
+    // symbolic predefined counter style
+    // https://drafts.csswg.org/css-counter-styles-3/#simple-symbolic
+    "decimal",
+    "lower-roman",
+    "upper-roman",
+    "lower-alpha",
+    "upper-alpha",
+    "disc",
+    "circle",
+    "square",
+    "disclosure-open",
+    "disclosure-closed",
   ],
 }

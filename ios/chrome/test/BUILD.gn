@@ -2,12 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/c++/c++.gni")
 import("//ios/build/chrome_build.gni")
 import("//ios/build/config.gni")
 import("//ios/chrome/features.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
 import("//testing/test.gni")
 import("//third_party/protobuf/proto_library.gni")
+
+declare_args() {
+  # Controls whether to build the Swift - C++ interop tests.
+  # TODO(crbug.com/1444308): the Swift - C++ interop miscompiles when using
+  # a custom libc++. Re-enable those tests when the interop is fixed.
+  ios_enable_swift_interop_tests = !use_custom_libcxx
+}
 
 # All tests needs to be listed in that target to be built as part of
 # "gn_all" target (i.e. by the bots).
@@ -16,10 +24,13 @@ group("all_tests") {
   deps = [
     ":all_fuzzer_tests",
     ":ios_chrome_unittests",
-    "//ios/chrome/test/swift_interop:ios_swift_interop_xcuitests",
     "//ios/chrome/test/xcuitest:ios_chrome_device_check_xcuitests_module",
     "//ios/chrome/test/xcuitest:ios_chrome_xcuitests",
   ]
+
+  if (ios_enable_swift_interop_tests) {
+    deps += [ "//ios/chrome/test/swift_interop:ios_swift_interop_xcuitests" ]
+  }
 }
 
 group("all_fuzzer_tests") {
@@ -61,11 +72,11 @@ source_set("test_support") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/policy:policy",
-    "//ios/chrome/browser/prefs:browser_prefs",
     "//ios/chrome/browser/promos_manager:features",
     "//ios/chrome/browser/promos_manager:test_support",
     "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser_state",
+    "//ios/chrome/browser/shared/model/prefs:browser_prefs",
     "//ios/chrome/browser/shared/ui/util",
     "//ios/components/security_interstitials/safe_browsing:test_support",
     "//ios/components/webui:url_constants",
@@ -102,8 +113,6 @@ source_set("eg_test_support+eg2") {
 }
 
 source_set("block_cleanup_test") {
-  # TODO(crbug.com/733237): Replace this comment with an explicit disable_arc config.
-  # The files in this target depend on non-ARC memory management.
   testonly = true
   sources = [
     "block_cleanup_test.h",
@@ -114,6 +123,7 @@ source_set("block_cleanup_test") {
     "//base",
     "//testing/gtest",
   ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("ios_chrome_unit_test_suite") {
@@ -129,7 +139,7 @@ source_set("ios_chrome_unit_test_suite") {
     "//components/content_settings/core/common",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/paths",
-    "//ios/chrome/browser/url:constants",
+    "//ios/chrome/browser/shared/model/url:constants",
     "//ios/chrome/browser/web/web_performance_metrics:unit_tests",
     "//ios/chrome/test:test_support",
     "//ios/components/webui:url_constants",
@@ -232,7 +242,6 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/net:unit_tests",
     "//ios/chrome/browser/ntp:unit_tests",
     "//ios/chrome/browser/omaha:unit_tests",
-    "//ios/chrome/browser/open_in:unit_tests",
     "//ios/chrome/browser/optimization_guide:unit_tests",
     "//ios/chrome/browser/overlays:unit_tests",
     "//ios/chrome/browser/overlays/public/common/confirmation:unit_tests",
@@ -260,6 +269,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/shared/coordinator/scene:unit_tests",
     "//ios/chrome/browser/shared/model/browser:unit_tests",
     "//ios/chrome/browser/shared/model/browser_state:unit_tests",
+    "//ios/chrome/browser/shared/model/url:unit_tests",
     "//ios/chrome/browser/shared/model/web_state_list:unit_tests",
     "//ios/chrome/browser/shared/public/commands:unit_tests",
     "//ios/chrome/browser/shared/ui/elements:unit_tests",
@@ -336,7 +346,6 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/ntp/metrics:unit_tests",
     "//ios/chrome/browser/ui/omnibox:unit_tests",
     "//ios/chrome/browser/ui/omnibox/popup:unit_tests",
-    "//ios/chrome/browser/ui/open_in:unit_tests",
     "//ios/chrome/browser/ui/overlays:unit_tests",
     "//ios/chrome/browser/ui/overlays/infobar_banner:unit_tests",
     "//ios/chrome/browser/ui/overlays/infobar_banner/autofill_address_profile:unit_tests",
@@ -412,7 +421,6 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/whats_new/promo:unit_tests",
     "//ios/chrome/browser/update_client:unit_tests",
     "//ios/chrome/browser/upgrade:unit_tests",
-    "//ios/chrome/browser/url:unit_tests",
     "//ios/chrome/browser/url_loading:unit_tests",
     "//ios/chrome/browser/variations:unit_tests",
     "//ios/chrome/browser/voice:unit_tests",

@@ -503,29 +503,15 @@ IN_PROC_BROWSER_TEST_F(AutofillAcrossIframesTest_Simple,
 // Test fixture for "shared-autofill". The parameter indicates whether or not
 // shared-autofill has the "relaxed" semantics.
 class AutofillAcrossIframesTest_SharedAutofill
-    : public AutofillAcrossIframesTest_Simple,
-      public ::testing::WithParamInterface<bool> {
- public:
-  AutofillAcrossIframesTest_SharedAutofill() {
-    feature_list_.InitAndEnableFeatureWithParameters(
-        features::kAutofillSharedAutofill,
-        {{features::kAutofillSharedAutofillRelaxedParam.name,
-          is_relaxed() ? "true" : "false"}});
-  }
-
-  bool is_relaxed() const { return GetParam(); }
-
+    : public AutofillAcrossIframesTest_Simple {
  private:
-  base::test::ScopedFeatureList feature_list_;
+  base::test::ScopedFeatureList feature_list_{
+      features::kAutofillSharedAutofill};
 };
-
-INSTANTIATE_TEST_SUITE_P(AutofillAcrossIframesTest,
-                         AutofillAcrossIframesTest_SharedAutofill,
-                         ::testing::Bool());
 
 // Tests that autofilling on a main-origin field also fills cross-origin fields
 // whose frames have shared-autofill enabled.
-IN_PROC_BROWSER_TEST_P(AutofillAcrossIframesTest_SharedAutofill,
+IN_PROC_BROWSER_TEST_F(AutofillAcrossIframesTest_SharedAutofill,
                        FillWhenTriggeredOnMainOrigin) {
   const FormStructure* form =
       LoadForm({"$1", "$2", "$3", "$4"}, {"", "", "", "allow=shared-autofill"});
@@ -534,27 +520,15 @@ IN_PROC_BROWSER_TEST_P(AutofillAcrossIframesTest_SharedAutofill,
               ElementsAre(kNameFull, "", "", kCvc));
 }
 
-// Tests that autofilling on a cross-origin field also fills cross-origin fields
-// whose frames have shared-autofill enabled iff shared-autofill is relaxed.
-IN_PROC_BROWSER_TEST_P(AutofillAcrossIframesTest_SharedAutofill,
+// Tests that autofilling on a cross-origin field does not fill cross-origin
+// fields, even if shared-autofill in their document.
+IN_PROC_BROWSER_TEST_F(AutofillAcrossIframesTest_SharedAutofill,
                        FillWhenTriggeredOnNonMainOriginIffRelaxed) {
   const FormStructure* form =
       LoadForm({"$1", "$2", "$3", "$4"}, {"", "", "", "allow=shared-autofill"});
   ASSERT_TRUE(form);
   EXPECT_THAT(FillForm(*form, *form->field(1)),
-              ElementsAre(kNameFull, kNumber, "", is_relaxed() ? kCvc : ""));
-}
-
-// Tests that autofilling on a cross-origin field also fills main-origin fields
-// irrespective of their type if shared-autofill is relaxed.
-IN_PROC_BROWSER_TEST_P(
-    AutofillAcrossIframesTest_SharedAutofill,
-    FillEverythingOnMainOriginWhenTriggeredOnNonMainOriginIffRelaxed) {
-  const FormStructure* form =
-      LoadForm({"$1", "$2", "$1", "$1"}, {"", "", "", "allow=shared-autofill"});
-  ASSERT_TRUE(form);
-  EXPECT_THAT(FillForm(*form, *form->field(1)),
-              ElementsAre(kNameFull, kNumber, kExp, is_relaxed() ? kCvc : ""));
+              ElementsAre(kNameFull, kNumber, "", ""));
 }
 
 // Test fixture where a form changes dynamically when it is filled.
@@ -698,6 +672,10 @@ class AutofillAcrossIframesTest_NestedAndLargeForm
            </style>)",
         height * 100, 100 + height * 10);
   }
+
+ protected:
+  base::test::ScopedFeatureList scoped_features_{
+      features::kAutofillEnableExpirationDateImprovements};
 };
 
 // Tests that a large and deeply nested form is extracted and filled correctly.
@@ -740,7 +718,7 @@ IN_PROC_BROWSER_TEST_F(AutofillAcrossIframesTest_NestedAndLargeForm,
     // and <form> elements.
     auto name = HtmlFieldType::kCreditCardNameFull;
     auto num = HtmlFieldType::kCreditCardNumber;
-    auto exp = HtmlFieldType::kCreditCardExp;
+    auto exp = HtmlFieldType::kCreditCardExpDate4DigitYear;
     auto cvc = HtmlFieldType::kCreditCardVerificationCode;
     auto unspecified = HtmlFieldType::kUnspecified;
     auto m = [](base::StringPiece host, HtmlFieldType type) {
@@ -1024,7 +1002,7 @@ class AutofillAcrossIframesTest_FullIframes
   [[nodiscard]] const FormStructure* FormAfterRemovalOfExtraFields() {
     // A core part of this test is in the following lines: We check that after
     // removing fields, the BrowserAutofillAgent learns about that.
-    if (!content::ExecuteScript(web_contents(), "removeFields();")) {
+    if (!content::ExecJs(web_contents(), "removeFields();")) {
       ADD_FAILURE() << "Failed to call removeFields();";
       return nullptr;
     }
@@ -1066,7 +1044,7 @@ IN_PROC_BROWSER_TEST_F(AutofillAcrossIframesTest_FullIframes,
   ASSERT_TRUE(LoadForm());
 
   // This removes the entire <form> element for the first iframe.
-  ASSERT_TRUE(content::ExecuteScript(web_contents(), R"(
+  ASSERT_TRUE(content::ExecJs(web_contents(), R"(
       document.getElementsByTagName("IFRAME")[0]
         .contentWindow
         .deleteForm();
@@ -1086,7 +1064,7 @@ IN_PROC_BROWSER_TEST_F(AutofillAcrossIframesTest_FullIframes,
   ASSERT_TRUE(LoadForm());
 
   // This removes the entire <form> element for the first iframe.
-  ASSERT_TRUE(content::ExecuteScript(web_contents(), R"(
+  ASSERT_TRUE(content::ExecJs(web_contents(), R"(
       document.getElementsByTagName("IFRAME")[0]
         .contentWindow
         .deleteParentOfForm();

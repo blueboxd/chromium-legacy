@@ -60,7 +60,6 @@
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
-using autofill::PopupItemId;
 using views::BubbleBorder;
 
 namespace autofill {
@@ -70,7 +69,10 @@ namespace {
 // By spec, dropdowns should always have a width which is a multiple of 12.
 constexpr int kAutofillPopupWidthMultiple = 12;
 
-constexpr int kAutofillPopupMinWidth = 0;
+// The minimum width should exceed the maximum size of a cursor, which is 128
+// (see crbug.com/1434330).
+constexpr int kAutofillPopupMinWidth = kAutofillPopupWidthMultiple * 13;
+static_assert(kAutofillPopupMinWidth > 128);
 // TODO(crbug.com/831603): move handling the max width to the base class.
 constexpr int kAutofillPopupMaxWidth = kAutofillPopupWidthMultiple * 38;
 
@@ -88,8 +90,9 @@ bool IsFooterItem(const std::vector<Suggestion>& suggestions,
 
   // Separators are a special case: They belong into the footer iff the next
   // item exists and is a footer item.
-  int frontend_id = suggestions[line_number].frontend_id;
-  return frontend_id == PopupItemId::POPUP_ITEM_ID_SEPARATOR
+  PopupItemId frontend_id =
+      suggestions[line_number].frontend_id.as_popup_item_id();
+  return frontend_id == PopupItemId::kSeparator
              ? IsFooterItem(suggestions, line_number + 1)
              : IsFooterFrontendId(frontend_id);
 }
@@ -275,10 +278,11 @@ bool PopupViewViews::AcceptSelectedCell(bool tab_key_pressed) {
     if (index->second != PopupRowView::CellType::kContent) {
       return false;
     }
-    int frontend_id = controller_->GetSuggestionAt(index->first).frontend_id;
-    if (frontend_id <= 0 &&
+    Suggestion::FrontendId frontend_id =
+        controller_->GetSuggestionAt(index->first).frontend_id;
+    if (frontend_id.as_int() <= 0 &&
         !base::Contains(kItemsTriggeringFieldFilling, frontend_id) &&
-        frontend_id != POPUP_ITEM_ID_SCAN_CREDIT_CARD) {
+        frontend_id != PopupItemId::kScanCreditCard) {
       return false;
     }
   }
@@ -303,7 +307,7 @@ bool PopupViewViews::RemoveSelectedCell() {
 
   bool was_autocomplete =
       controller_->GetSuggestionAt(index->first).frontend_id ==
-      POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY;
+      PopupItemId::kAutocompleteEntry;
   if (!controller_->RemoveSuggestion(index->first)) {
     return false;
   }
@@ -401,16 +405,16 @@ void PopupViewViews::CreateChildViews() {
     for (; current_line_number < kSuggestions.size() &&
            !IsFooterItem(kSuggestions, current_line_number);
          ++current_line_number) {
-      int frontend_id = kSuggestions[current_line_number].frontend_id;
-      switch (frontend_id) {
-        case PopupItemId::POPUP_ITEM_ID_SEPARATOR:
+      Suggestion::FrontendId frontend_id =
+          kSuggestions[current_line_number].frontend_id;
+      switch (frontend_id.as_popup_item_id()) {
+        case PopupItemId::kSeparator:
           rows_.push_back(body_container->AddChildView(
               std::make_unique<PopupSeparatorView>()));
           break;
 
-        case PopupItemId::POPUP_ITEM_ID_MIXED_FORM_MESSAGE:
-        case PopupItemId::
-            POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
+        case PopupItemId::kMixedFormMessage:
+        case PopupItemId::kInsecureContextPaymentDisabledMessage:
           rows_.push_back(
               body_container->AddChildView(std::make_unique<PopupWarningView>(
                   kSuggestions[current_line_number])));
@@ -475,7 +479,7 @@ void PopupViewViews::CreateChildViews() {
     DCHECK(IsFooterItem(kSuggestions, current_line_number));
     // The footer can contain either footer views or separator lines.
     if (kSuggestions[current_line_number].frontend_id ==
-        POPUP_ITEM_ID_SEPARATOR) {
+        PopupItemId::kSeparator) {
       rows_.push_back(footer_container->AddChildView(
           std::make_unique<PopupSeparatorView>()));
     } else {

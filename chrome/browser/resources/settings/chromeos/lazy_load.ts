@@ -10,7 +10,7 @@
  *  - All subpages
  */
 
-import '../strings.m.js';
+import './strings.m.js';
 /** Top-level Advanced section pages */
 import './crostini_page/crostini_page.js';
 import './date_time_page/date_time_page.js';
@@ -25,6 +25,7 @@ import './internet_page/internet_detail_subpage.js';
 import './internet_page/internet_known_networks_subpage.js';
 import './internet_page/internet_subpage.js';
 import './internet_page/passpoint_subpage.js';
+import './kerberos_page/kerberos_accounts_subpage.js';
 import './os_a11y_page/manage_a11y_subpage.js';
 import './os_a11y_page/display_and_magnification_subpage.js';
 import './os_a11y_page/keyboard_and_text_input_page.js';
@@ -111,8 +112,11 @@ export {TimeZoneBrowserProxyImpl} from './date_time_page/timezone_browser_proxy.
 export {TimezoneSelectorElement} from './date_time_page/timezone_selector.js';
 export {TimezoneSubpageElement} from './date_time_page/timezone_subpage.js';
 export {CROSTINI_TYPE, GuestOsBrowserProxy, GuestOsBrowserProxyImpl, GuestOsSharedUsbDevice, PLUGIN_VM_TYPE} from './guest_os/guest_os_browser_proxy.js';
+export {SettingsGuestOsSharedPathsElement} from './guest_os/guest_os_shared_paths.js';
 export {SettingsGuestOsSharedUsbDevicesElement} from './guest_os/guest_os_shared_usb_devices.js';
+export {SettingsPasspointSubpageElement} from './internet_page/passpoint_subpage.js';
 export {TetherConnectionDialogElement} from './internet_page/tether_connection_dialog.js';
+export {KerberosAccount, KerberosAccountsBrowserProxy, KerberosAccountsBrowserProxyImpl, KerberosConfigErrorCode, KerberosErrorType, ValidateKerberosConfigResult} from './kerberos_page/kerberos_accounts_browser_proxy.js';
 export {KeyboardShortcutBanner} from './keyboard_shortcut_banner/keyboard_shortcut_banner.js';
 export {SettingsMultideviceCombinedSetupItemElement} from './multidevice_page/multidevice_combined_setup_item.js';
 export {SettingsMultideviceFeatureItemElement} from './multidevice_page/multidevice_feature_item.js';
@@ -132,7 +136,7 @@ export {SettingsKeyboardAndTextInputPageElement} from './os_a11y_page/keyboard_a
 export {SettingsManageA11ySubpageElement} from './os_a11y_page/manage_a11y_subpage.js';
 export {SettingsSwitchAccessActionAssignmentDialogElement} from './os_a11y_page/switch_access_action_assignment_dialog.js';
 export {SwitchAccessCommand} from './os_a11y_page/switch_access_constants.js';
-export {SettingsTextToSpeechSubpageElement} from './os_a11y_page/text_to_speech_subpage.js';
+export {PdfOcrUserSelection, SettingsTextToSpeechSubpageElement} from './os_a11y_page/text_to_speech_subpage.js';
 export {SettingsTtsVoiceSubpageElement} from './os_a11y_page/tts_voice_subpage.js';
 export {SettingsGoogleDriveSubpageElement} from './os_files_page/google_drive_subpage.js';
 export {SettingsOfficePageElement} from './os_files_page/office_page.js';
@@ -144,22 +148,24 @@ export {InputsShortcutReminderState, LanguagesMetricsProxyImpl, LanguagesPageInt
 export {LanguageState} from './os_languages_page/languages_types.js';
 export {OsSettingsClearPersonalizedDataDialogElement} from './os_languages_page/os_japanese_clear_ime_data_dialog.js';
 export {OsSettingsSmartInputsPageElement} from './os_languages_page/smart_inputs_page.js';
-export {AccountManagerBrowserProxy, AccountManagerBrowserProxyImpl} from './os_people_page/account_manager_browser_proxy.js';
+export {Account, AccountManagerBrowserProxy, AccountManagerBrowserProxyImpl} from './os_people_page/account_manager_browser_proxy.js';
 export {SettingsUsersAddUserDialogElement} from './os_people_page/add_user_dialog.js';
-export {FingerprintBrowserProxyImpl, FingerprintResultType} from './os_people_page/fingerprint_browser_proxy.js';
+export {FingerprintBrowserProxy, FingerprintBrowserProxyImpl, FingerprintInfo, FingerprintResultType} from './os_people_page/fingerprint_browser_proxy.js';
+export {SettingsFingerprintListSubpageElement} from './os_people_page/fingerprint_list_subpage.js';
 export {SettingsLockScreenElement} from './os_people_page/lock_screen_subpage.js';
 export {OsSyncBrowserProxy, OsSyncBrowserProxyImpl, OsSyncPrefs} from './os_people_page/os_sync_browser_proxy.js';
-export {FingerprintSetupStep} from './os_people_page/setup_fingerprint_dialog.js';
-export {PrinterType} from './os_printing_page/cups_printer_types.js';
+export {FingerprintSetupStep, SettingsSetupFingerprintDialogElement} from './os_people_page/setup_fingerprint_dialog.js';
+export {PrinterListEntry, PrinterType} from './os_printing_page/cups_printer_types.js';
 export {CupsPrintersBrowserProxy, CupsPrintersBrowserProxyImpl, PrinterSetupResult, PrintServerResult} from './os_printing_page/cups_printers_browser_proxy.js';
+export {SettingsCupsPrintersEntryElement} from './os_printing_page/cups_printers_entry.js';
 export {CupsPrintersEntryManager} from './os_printing_page/cups_printers_entry_manager.js';
 export {OsSettingsPrintingPageElement} from './os_printing_page/os_printing_page.js';
-export {getStatusReasonFromPrinterStatus, PrinterStatusReason, PrinterStatusSeverity} from './os_printing_page/printer_status.js';
+export {computePrinterState, getStatusReasonFromPrinterStatus, PrinterState, PrinterStatusReason, PrinterStatusSeverity} from './os_printing_page/printer_status.js';
 export {MediaDevicesProxy} from './os_privacy_page/media_devices_proxy.js';
 export {PrivacyHubBrowserProxy, PrivacyHubBrowserProxyImpl} from './os_privacy_page/privacy_hub_browser_proxy.js';
 export {SettingsPrivacyHubSubpage} from './os_privacy_page/privacy_hub_subpage.js';
 export {SettingsSmartPrivacySubpage} from './os_privacy_page/smart_privacy_subpage.js';
 export {OsResetBrowserProxyImpl} from './os_reset_page/os_reset_browser_proxy.js';
-export {GoogleAssistantBrowserProxyImpl} from './os_search_page/google_assistant_browser_proxy.js';
-export {ConsentStatus, DspHotwordState} from './os_search_page/google_assistant_subpage.js';
+export {GoogleAssistantBrowserProxy, GoogleAssistantBrowserProxyImpl} from './os_search_page/google_assistant_browser_proxy.js';
+export {ConsentStatus, DspHotwordState, SettingsGoogleAssistantSubpageElement} from './os_search_page/google_assistant_subpage.js';
 export {SettingsSearchSubpageElement} from './os_search_page/search_subpage.js';

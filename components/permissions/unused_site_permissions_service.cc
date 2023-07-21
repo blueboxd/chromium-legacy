@@ -9,6 +9,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/run_loop.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -38,6 +39,15 @@ constexpr base::TimeDelta kRevocationCleanUpThresholdWithDelayForTesting =
 
 namespace permissions {
 namespace {
+// Reflects the maximum number of days between a permissions being revoked and
+// the time when the user regrants the permission through the unused site
+// permission module of Safete Check. The maximum number of days is determined
+// by `kRevocationCleanUpThreshold`.
+size_t kAllowAgainMetricsExclusiveMaxCount = 31;
+
+// Using a single bucket per day, following the value of
+// |kAllowAgainMetricsExclusiveMaxCount|.
+size_t kAllowAgainMetricsBuckets = 31;
 
 // Called on a background thread.
 UnusedSitePermissionsService::UnusedPermissionMap GetUnusedPermissionsMap(
@@ -128,9 +138,35 @@ UnusedSitePermissionsService::UnusedSitePermissionsService(
     HostContentSettingsMap* hcsm)
     : hcsm_(hcsm), clock_(base::DefaultClock::GetInstance()) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  content_settings_observation_.Observe(hcsm);
 }
 
 UnusedSitePermissionsService::~UnusedSitePermissionsService() = default;
+
+void UnusedSitePermissionsService::OnContentSettingChanged(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsTypeSet content_type_set) {
+  if (content_type_set.Contains(
+          ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS)) {
+    return;
+  }
+
+  // When permissions change for a pattern it is either (1) through resetting
+  // permissions, e.g. in page info or site settings, (2) user modifying
+  // permissions manually, or (3) through the auto-revocation that this module
+  // performs. In (1) and (2) the pattern should no longer be shown to the user.
+  // 1: After resetting permissions the browser state should be in a
+  //    state as if the permission had never been granted.
+  // 2: The user is actively engaging with the permissions of the site, so it is
+  //    no longer considered an unused site for the purposes of this module.
+  //    This includes the case where unrelated permissions to the revoked ones
+  //    are changed.
+  // 3: Current logic ensures this does not happen for sites that already have
+  //    revoked permissions. This module revokes permissions in an all-or-none
+  //    fashion.
+  DeletePatternFromRevokedPermissionList(primary_pattern, secondary_pattern);
+}
 
 void UnusedSitePermissionsService::Shutdown() {
   update_timer_.Stop();
@@ -162,11 +198,7 @@ void UnusedSitePermissionsService::RegrantPermissionsForOrigin(
 
   base::Value::List* permission_type_list =
       stored_value.GetDict().FindList(kRevokedKey);
-  // Check the format of the returned value since it is coming from disk.
-  if (!permission_type_list) {
-    NOTREACHED();
-    return;
-  }
+  CHECK(permission_type_list);
 
   // Re-grant the permissions that are revoked. This service only auto-revokes
   // permissions that were ALLOW, so re-granting will switch those permissions
@@ -187,9 +219,18 @@ void UnusedSitePermissionsService::RegrantPermissionsForOrigin(
   IgnoreOriginForAutoRevocation(origin);
 
   // Remove origin from revoked permissions list.
-  hcsm_->SetWebsiteSettingCustomScope(
-      info.primary_pattern, info.secondary_pattern,
-      ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS, {});
+  DeletePatternFromRevokedPermissionList(info.primary_pattern,
+                                         info.secondary_pattern);
+
+  // Record the days elapsed from auto-revocation to regrant.
+  base::Time revoked_time =
+      info.metadata.expiration -
+      content_settings::features::
+          kSafetyCheckUnusedSitePermissionsRevocationCleanUpThreshold.Get();
+  base::UmaHistogramCustomCounts(
+      "Settings.SafetyCheck.UnusedSitePermissionsAllowAgainDays",
+      (clock_->Now() - revoked_time).InDays(), 0,
+      kAllowAgainMetricsExclusiveMaxCount, kAllowAgainMetricsBuckets);
 }
 
 void UnusedSitePermissionsService::UndoRegrantPermissionsForOrigin(
@@ -213,10 +254,9 @@ void UnusedSitePermissionsService::ClearRevokedPermissionsList() {
       ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS, &settings);
 
   for (const auto& revoked_permissions : settings) {
-    hcsm_->SetWebsiteSettingCustomScope(
+    DeletePatternFromRevokedPermissionList(
         revoked_permissions.primary_pattern,
-        revoked_permissions.secondary_pattern,
-        ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS, {});
+        revoked_permissions.secondary_pattern);
   }
 }
 
@@ -287,6 +327,14 @@ void UnusedSitePermissionsService::OnUnusedPermissionsMapRetrieved(
   if (callback) {
     std::move(callback).Run();
   }
+}
+
+void UnusedSitePermissionsService::DeletePatternFromRevokedPermissionList(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern) {
+  hcsm_->SetWebsiteSettingCustomScope(
+      primary_pattern, secondary_pattern,
+      ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS, {});
 }
 
 void UnusedSitePermissionsService::RevokeUnusedPermissions() {
@@ -439,6 +487,45 @@ UnusedSitePermissionsService::GetTrackedUnusedPermissionsForTesting() {
 
 void UnusedSitePermissionsService::SetClockForTesting(base::Clock* clock) {
   clock_ = clock;
+}
+
+// static
+absl::optional<uint32_t> UnusedSitePermissionsService::GetDaysSinceRevocation(
+    const GURL& origin,
+    ContentSettingsType content_settings_type,
+    base::Time current_time,
+    HostContentSettingsMap* hcsm) {
+  content_settings::SettingInfo info;
+  base::Value stored_value(hcsm->GetWebsiteSetting(
+      origin, origin, ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS,
+      &info));
+  if (!stored_value.is_dict()) {
+    return absl::nullopt;
+  }
+  base::Value::List* permission_type_list =
+      stored_value.GetDict().FindList(permissions::kRevokedKey);
+  if (!permission_type_list) {
+    return absl::nullopt;
+  }
+  base::Time revoked_time =
+      info.metadata.expiration -
+      content_settings::features::
+          kSafetyCheckUnusedSitePermissionsRevocationCleanUpThreshold.Get();
+  ;
+  uint32_t days_since_revoked = (current_time - revoked_time).InDays();
+
+  for (auto& permission_type : *permission_type_list) {
+    auto type_int = permission_type.GetIfInt();
+    if (!type_int.has_value()) {
+      continue;
+    }
+    if (content_settings_type ==
+        static_cast<ContentSettingsType>(type_int.value())) {
+      return days_since_revoked;
+    }
+  }
+
+  return absl::nullopt;
 }
 
 }  // namespace permissions

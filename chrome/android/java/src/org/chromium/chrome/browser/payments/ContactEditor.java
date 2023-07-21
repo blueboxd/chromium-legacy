@@ -174,16 +174,16 @@ public class ContactEditor extends EditorBase<AutofillContact> {
         super.edit(toEdit, doneCallback, cancelCallback);
 
         final AutofillContact contact = toEdit == null
-                ? new AutofillContact(mContext, new AutofillProfile(), null, null, null,
-                          INVALID_NAME | INVALID_PHONE_NUMBER | INVALID_EMAIL, mRequestPayerName,
-                          mRequestPayerPhone, mRequestPayerEmail)
+                ? new AutofillContact(mContext, AutofillProfile.builder().build(), null, null, null,
+                        INVALID_NAME | INVALID_PHONE_NUMBER | INVALID_EMAIL, mRequestPayerName,
+                        mRequestPayerPhone, mRequestPayerEmail)
                 : toEdit;
 
         final EditorFieldModel nameField = mRequestPayerName
                 ? EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_PERSON_NAME,
                         mContext.getString(R.string.payments_name_field_in_contact_details),
-                        mPayerNames, null /* suggestions */, null /* formatter */,
-                        null /* validator */,
+                        mPayerNames, /*suggestions=*/null, /*formatter=*/null,
+                        /*validator=*/null,
                         mContext.getString(
                                 R.string.pref_edit_dialog_field_required_validation_message),
                         null, EditorFieldModel.LENGTH_COUNTER_LIMIT_NONE, contact.getPayerName())

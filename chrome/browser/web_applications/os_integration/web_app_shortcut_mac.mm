@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/web_applications/os_integration/web_app_shortcut_mac.h"
-#include "base/check_is_test.h"
 
 #import <Cocoa/Cocoa.h>
 #include <stdint.h>
@@ -15,7 +14,9 @@
 #include <string>
 #include <utility>
 
+#include "base/apple/bundle_locations.h"
 #include "base/base_switches.h"
+#include "base/check_is_test.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
@@ -26,7 +27,6 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
-#include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #import "base/mac/launch_application.h"
 #include "base/mac/mac_util.h"
@@ -383,15 +383,15 @@ base::CommandLine BuildCommandLineForShimLaunch() {
       app_mode::kLaunchedByChromeProcessId,
       base::NumberToString(base::GetCurrentProcId()));
   command_line.AppendSwitchPath(app_mode::kLaunchedByChromeBundlePath,
-                                base::mac::MainBundlePath());
+                                base::apple::MainBundlePath());
 
   // When running unbundled (e.g, when running browser_tests), the path
-  // returned by base::mac::FrameworkBundlePath will not include the version.
+  // returned by base::apple::FrameworkBundlePath will not include the version.
   // Manually append it.
   // https://crbug.com/1286681
   const base::FilePath framework_bundle_path =
-      base::mac::AmIBundled() ? base::mac::FrameworkBundlePath()
-                              : base::mac::FrameworkBundlePath()
+      base::mac::AmIBundled() ? base::apple::FrameworkBundlePath()
+                              : base::apple::FrameworkBundlePath()
                                     .Append("Versions")
                                     .Append(version_info::GetVersionNumber());
   command_line.AppendSwitchPath(app_mode::kLaunchedByChromeFrameworkBundlePath,
@@ -1144,7 +1144,8 @@ bool WebAppShortcutCreator::BuildShortcut(
     return false;
   }
 
-  const base::FilePath framework_bundle_path = base::mac::FrameworkBundlePath();
+  const base::FilePath framework_bundle_path =
+      base::apple::FrameworkBundlePath();
 
   const base::FilePath executable_path =
       framework_bundle_path.Append("Helpers").Append("app_mode_loader");
@@ -1515,6 +1516,18 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
   }
 
   if (!protocol_handlers.empty()) {
+    scoped_refptr<OsIntegrationTestOverride> os_override =
+        OsIntegrationTestOverride::Get();
+    if (os_override) {
+      CHECK_IS_TEST();
+      std::vector<std::string> protocol_handlers_vec;
+      protocol_handlers_vec.insert(protocol_handlers_vec.end(),
+                                   protocol_handlers.begin(),
+                                   protocol_handlers.end());
+      os_override->RegisterProtocolSchemes(info_->app_id,
+                                           std::move(protocol_handlers_vec));
+    }
+
     base::scoped_nsobject<NSMutableArray> handlers(
         [[NSMutableArray alloc] init]);
     for (const auto& protocol_handler : protocol_handlers)
@@ -1525,17 +1538,6 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
           base::SysUTF8ToNSString(GetBundleIdentifier(info_->app_id)),
       app_mode::kCFBundleURLSchemesKey : handlers
     } ];
-  }
-  scoped_refptr<OsIntegrationTestOverride> os_override =
-      OsIntegrationTestOverride::Get();
-  if (os_override) {
-    CHECK_IS_TEST();
-    std::vector<std::string> protocol_handlers_vec;
-    protocol_handlers_vec.insert(protocol_handlers_vec.end(),
-                                 protocol_handlers.begin(),
-                                 protocol_handlers.end());
-    os_override->RegisterProtocolSchemes(info_->app_id,
-                                         std::move(protocol_handlers_vec));
   }
 
   // TODO(crbug.com/1273526): If we decide to rename app bundles on app title
@@ -1840,6 +1842,12 @@ void DeletePlatformShortcuts(const base::FilePath& app_data_path,
   // `GetChromeAppsFolder()`).
   scoped_refptr<OsIntegrationTestOverride> test_override =
       web_app::OsIntegrationTestOverride::Get();
+
+  if (test_override) {
+    CHECK_IS_TEST();
+    test_override->RegisterProtocolSchemes(shortcut_info.app_id,
+                                           std::vector<std::string>());
+  }
   const std::string bundle_id =
       GetBundleIdentifier(shortcut_info.app_id, shortcut_info.profile_path);
   auto bundle_infos = SearchForBundlesById(bundle_id);

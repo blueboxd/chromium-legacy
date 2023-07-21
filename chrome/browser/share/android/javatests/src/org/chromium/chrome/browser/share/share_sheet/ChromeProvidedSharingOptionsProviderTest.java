@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.share.send_tab_to_self.SendTabToSelfAndroidBr
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetLinkToggleCoordinator.LinkToggleState;
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetLinkToggleMetricsHelper.LinkToggleMetricsDetails;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.ui.signin.DeviceLockActivityLauncher;
 import org.chromium.chrome.test.AutomotiveContextWrapperTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
@@ -114,6 +115,8 @@ public class ChromeProvidedSharingOptionsProviderTest {
     private ShareParams.TargetChosenCallback mTargetChosenCallback;
     @Mock
     private WindowAndroid mWindowAndroid;
+    @Mock
+    private DeviceLockActivityLauncher mDeviceLockActivityLauncher;
 
     private TestActivity mActivity;
     private ChromeProvidedSharingOptionsProvider mChromeProvidedSharingOptionsProvider;
@@ -232,8 +235,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
         assertCorrectModelsAreInTheRightOrder(propertyModels,
                 ImmutableList.of(mActivity.getResources().getString(R.string.sharing_copy_url),
-                        mActivity.getResources().getString(
-                                R.string.send_tab_to_self_share_activity_title),
+                        mActivity.getResources().getString(R.string.sharing_send_tab_to_self),
                         mActivity.getResources().getString(R.string.qr_code_share_icon_label)));
     }
 
@@ -251,12 +253,12 @@ public class ChromeProvidedSharingOptionsProviderTest {
         List<String> expectedModels = new ArrayList<String>();
         expectedModels.add(mActivity.getResources().getString(R.string.sharing_screenshot));
         expectedModels.add(mActivity.getResources().getString(R.string.sharing_long_screenshot));
-        expectedModels.addAll(ImmutableList.of(
-                mActivity.getResources().getString(R.string.sharing_copy_url),
-                mActivity.getResources().getString(R.string.sharing_copy_image),
-                mActivity.getResources().getString(R.string.send_tab_to_self_share_activity_title),
-                mActivity.getResources().getString(R.string.qr_code_share_icon_label),
-                mActivity.getResources().getString(R.string.sharing_save_image)));
+        expectedModels.addAll(
+                ImmutableList.of(mActivity.getResources().getString(R.string.sharing_copy_url),
+                        mActivity.getResources().getString(R.string.sharing_copy_image),
+                        mActivity.getResources().getString(R.string.sharing_send_tab_to_self),
+                        mActivity.getResources().getString(R.string.qr_code_share_icon_label),
+                        mActivity.getResources().getString(R.string.sharing_save_image)));
 
         assertCorrectModelsAreInTheRightOrder(propertyModels, expectedModels);
     }
@@ -273,11 +275,11 @@ public class ChromeProvidedSharingOptionsProviderTest {
         List<String> expectedModels = new ArrayList<String>();
         expectedModels.add(mActivity.getResources().getString(R.string.sharing_screenshot));
         expectedModels.add(mActivity.getResources().getString(R.string.sharing_long_screenshot));
-        expectedModels.addAll(ImmutableList.of(
-                mActivity.getResources().getString(R.string.sharing_copy_image),
-                mActivity.getResources().getString(R.string.send_tab_to_self_share_activity_title),
-                mActivity.getResources().getString(R.string.qr_code_share_icon_label),
-                mActivity.getResources().getString(R.string.sharing_save_image)));
+        expectedModels.addAll(
+                ImmutableList.of(mActivity.getResources().getString(R.string.sharing_copy_image),
+                        mActivity.getResources().getString(R.string.sharing_send_tab_to_self),
+                        mActivity.getResources().getString(R.string.qr_code_share_icon_label),
+                        mActivity.getResources().getString(R.string.sharing_save_image)));
 
         assertCorrectModelsAreInTheRightOrder(propertyModels, expectedModels);
     }
@@ -332,8 +334,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
         assertCorrectModelsAreInTheRightOrder(propertyModels,
                 ImmutableList.of(mActivity.getResources().getString(R.string.sharing_copy_url),
-                        mActivity.getResources().getString(
-                                R.string.send_tab_to_self_share_activity_title),
+                        mActivity.getResources().getString(R.string.sharing_send_tab_to_self),
                         mActivity.getResources().getString(R.string.qr_code_share_icon_label)));
     }
 
@@ -351,8 +352,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
         assertCorrectModelsAreInTheRightOrder(propertyModels,
                 ImmutableList.of(mActivity.getResources().getString(R.string.sharing_copy),
-                        mActivity.getResources().getString(
-                                R.string.send_tab_to_self_share_activity_title),
+                        mActivity.getResources().getString(R.string.sharing_send_tab_to_self),
                         mActivity.getResources().getString(R.string.qr_code_share_icon_label)));
     }
 
@@ -369,8 +369,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
         assertCorrectModelsAreInTheRightOrder(propertyModels,
                 ImmutableList.of(mActivity.getResources().getString(R.string.sharing_copy_url),
-                        mActivity.getResources().getString(
-                                R.string.send_tab_to_self_share_activity_title),
+                        mActivity.getResources().getString(R.string.sharing_send_tab_to_self),
                         mActivity.getResources().getString(R.string.qr_code_share_icon_label)));
     }
 
@@ -422,7 +421,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
                 /*imageEditorModuleProvider*/ null, mTracker, URL, linkGenerationStatus,
                 new LinkToggleMetricsDetails(
                         LinkToggleState.COUNT, DetailedContentType.NOT_SPECIFIED),
-                mProfile);
+                mProfile, mDeviceLockActivityLauncher);
     }
 
     private boolean propertyModelsContain(List<PropertyModel> propertyModels, int labelId) {

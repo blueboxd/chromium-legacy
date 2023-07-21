@@ -35,6 +35,7 @@
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -218,11 +219,6 @@ class TestExternallyManagedAppInstallFinalizer : public WebAppInstallFinalizer {
             }));
   }
 
-  bool CanUserUninstallWebApp(const AppId& app_id) const override {
-    NOTIMPLEMENTED();
-    return false;
-  }
-
   void UninstallWebApp(const AppId& app_id,
                        webapps::WebappUninstallSource uninstall_source,
                        UninstallWebAppCallback callback) override {
@@ -365,6 +361,7 @@ class ExternallyManagedAppInstallTaskTest
 
     auto manifest = blink::mojom::Manifest::New();
     manifest->start_url = options.install_url;
+    manifest->id = GenerateManifestIdFromStartUrlOnly(options.install_url);
     manifest->name = u"Manifest Name";
 
     if (!mock_empty_web_app_info)

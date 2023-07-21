@@ -56,6 +56,7 @@
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "chromeos/components/drivefs/mojom/drivefs_native_messaging.mojom.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/drive_notification_manager.h"
@@ -1033,11 +1034,12 @@ void DriveIntegrationService::MaybeMountDrive(const base::FilePath& data_dir,
                  << "' was missing and got created again";
 
     if (util::IsDriveFsBulkPinningEnabled()) {
+      VLOG(1) << "Displaying system notification";
       // Show system notification.
       file_manager::SystemNotificationManager snm(profile_);
       const std::unique_ptr<const message_center::Notification> notification =
           snm.CreateNotification("drive_data_dir_missing",
-                                 IDS_FILE_BROWSER_DRIVE_DIRECTORY_LABEL,
+                                 IDS_FILE_BROWSER_DRIVE_SYNC_ERROR_TITLE,
                                  IDS_FILE_BROWSER_DRIVE_DATA_DIR_MISSING);
       DCHECK(notification);
       snm.GetNotificationDisplayService()->Display(
@@ -1662,8 +1664,9 @@ void DriveIntegrationService::PollHostedFilePinStates() {
 void DriveIntegrationService::ForceReSyncFile(const base::FilePath& local_path,
                                               base::OnceClosure callback) {
   base::FilePath drive_path;
-  if (!ash::features::IsForceReSyncDriveEnabled() || !IsMounted() ||
-      !GetDriveFsInterface() ||
+  bool is_feature_enabled = ash::features::IsForceReSyncDriveEnabled() &&
+                            chromeos::features::IsUploadOfficeToCloudEnabled();
+  if (!is_feature_enabled || !IsMounted() || !GetDriveFsInterface() ||
       !GetRelativeDrivePath(local_path, &drive_path)) {
     std::move(callback).Run();
     return;
@@ -1733,6 +1736,17 @@ void DriveIntegrationService::RegisterDriveFsNativeMessageHostBridge(
   drivefs_holder_->RegisterDriveFsNativeMessageHostBridge(std::move(bridge));
 }
 
+void DriveIntegrationService::GetDocsOfflineStats(
+    DriveFs::GetDocsOfflineStatsCallback callback) {
+  if (!IsMounted() || !GetDriveFsInterface()) {
+    std::move(callback).Run(drive::FILE_ERROR_SERVICE_UNAVAILABLE,
+                            drivefs::mojom::DocsOfflineStats::New());
+    return;
+  }
+
+  GetDriveFsInterface()->GetDocsOfflineStats(std::move(callback));
+}
+
 //===================== DriveIntegrationServiceFactory =======================
 
 DriveIntegrationServiceFactory::FactoryCallback*
@@ -1772,7 +1786,12 @@ DriveIntegrationServiceFactory* DriveIntegrationServiceFactory::GetInstance() {
 DriveIntegrationServiceFactory::DriveIntegrationServiceFactory()
     : ProfileKeyedServiceFactory(
           "DriveIntegrationService",
-          ProfileSelections::BuildRedirectedInIncognito()) {
+          ProfileSelections::Builder()
+              .WithRegular(ProfileSelection::kRedirectedToOriginal)
+              // TODO(crbug.com/1418376): Check if this service is needed in
+              // Guest mode.
+              .WithGuest(ProfileSelection::kRedirectedToOriginal)
+              .Build()) {
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(DriveNotificationManagerFactory::GetInstance());
   DependsOn(DownloadCoreServiceFactory::GetInstance());

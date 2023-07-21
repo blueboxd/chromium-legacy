@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "components/webapps/browser/android/webapp_icon.h"
 #include "services/device/public/mojom/screen_orientation_lock_types.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
@@ -56,7 +57,8 @@ struct ShortcutInfo {
   static std::unique_ptr<ShortcutInfo> CreateShortcutInfo(
       const GURL& manifest_url,
       const blink::mojom::Manifest& manifest,
-      const GURL& primary_icon_url);
+      const GURL& primary_icon_url,
+      bool primary_icon_maskable);
 
   // This enum is used to back a UMA histogram, and must be treated as
   // append-only.
@@ -134,9 +136,9 @@ struct ShortcutInfo {
   // Updates the source of the shortcut.
   void UpdateSource(const Source source);
 
-  // Returns a set of icons including |best_primary_icon_url|,
+  // Returns a vector of icons including |best_primary_icon_url|,
   // |splash_image_url| and |best_shortcut_icon_urls| if they are not empty
-  std::set<GURL> GetWebApkIcons();
+  std::vector<WebappIcon> GetWebApkIcons();
 
   GURL manifest_url;
   GURL url;
@@ -154,9 +156,10 @@ struct ShortcutInfo {
   absl::optional<SkColor> background_color;
   int ideal_splash_image_size_in_px = 0;
   int minimum_splash_image_size_in_px = 0;
+  GURL best_primary_icon_url;
+  bool is_primary_icon_maskable = false;
   GURL splash_image_url;
   bool is_splash_image_maskable = false;
-  GURL best_primary_icon_url;
   std::vector<std::string> icon_urls;
   std::vector<GURL> screenshot_urls;
   absl::optional<ShareTarget> share_target;

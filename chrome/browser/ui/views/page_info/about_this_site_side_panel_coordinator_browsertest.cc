@@ -70,8 +70,7 @@ class AboutThisSiteSidePanelCoordinatorBrowserTest
   }
 
   SidePanelCoordinator* side_panel_coordinator() {
-    return BrowserView::GetBrowserViewForBrowser(browser())
-        ->side_panel_coordinator();
+    return SidePanelUtil::GetSidePanelCoordinatorForBrowser(browser());
   }
 
   base::test::ScopedFeatureList feature_list_;
@@ -206,8 +205,8 @@ IN_PROC_BROWSER_TEST_F(AboutThisSiteKeepSidePanelOpenBrowserTest,
 
   // Push state with new path.
   GURL kRegularGURL1WithPath2 = kRegularGURL1.Resolve("/title2.html");
-  ASSERT_TRUE(content::ExecuteScript(web_contents(),
-                                     "history.pushState({},'','title2.html')"));
+  ASSERT_TRUE(content::ExecJs(web_contents(),
+                              "history.pushState({},'','title2.html')"));
   EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   // Check that side panel remains open on push state.
@@ -240,8 +239,8 @@ IN_PROC_BROWSER_TEST_F(AboutThisSiteKeepSidePanelOpenBrowserTest,
 
   // Replace state with new path.
   GURL kRegularGURL1WithPath2 = kRegularGURL1.Resolve("/title2.html");
-  ASSERT_TRUE(content::ExecuteScript(
-      web_contents(), "history.replaceState({},'','title2.html')"));
+  ASSERT_TRUE(content::ExecJs(web_contents(),
+                              "history.replaceState({},'','title2.html')"));
   EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   // Check that side panel remains open on replace state.
@@ -273,8 +272,8 @@ IN_PROC_BROWSER_TEST_F(AboutThisSiteKeepSidePanelOpenBrowserTest,
             SidePanelEntry::Id::kAboutThisSite);
 
   // Replace state with anchor.
-  ASSERT_TRUE(content::ExecuteScript(web_contents(),
-                                     "history.replaceState({},'','#ref')"));
+  ASSERT_TRUE(
+      content::ExecJs(web_contents(), "history.replaceState({},'','#ref')"));
   EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   // Check that side panel remains open on replace state.

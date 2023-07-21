@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/ash/authpolicy/authpolicy_helper.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen_view.h"
 #include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/ash/login/error_screens_histogram_helper.h"
@@ -124,6 +123,9 @@ class EnrollmentScreen
     return base::BindOnce(&EnrollmentScreen::OnTpmStatusResponse,
                           weak_ptr_factory_.GetWeakPtr());
   }
+
+  // Changes network state. Useful for simulating network issues in tests.
+  void SetNetworkStateForTesting(const NetworkState* state);
 
  protected:
   // BaseScreen:

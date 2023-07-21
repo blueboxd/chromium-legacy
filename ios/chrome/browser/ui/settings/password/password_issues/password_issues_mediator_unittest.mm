@@ -5,9 +5,11 @@
 #import "ios/chrome/browser/ui/settings/password/password_issues/password_issues_mediator.h"
 
 #import "base/strings/sys_string_conversions.h"
+#import "base/test/bind.h"
 #import "base/test/scoped_feature_list.h"
 #import "components/google/core/common/google_util.h"
 #import "components/keyed_service/core/service_access_type.h"
+#import "components/password_manager/core/browser/affiliation/fake_affiliation_service.h"
 #import "components/password_manager/core/browser/password_form.h"
 #import "components/password_manager/core/browser/password_manager_test_utils.h"
 #import "components/password_manager/core/browser/test_password_store.h"
@@ -16,6 +18,7 @@
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/net/crurl.h"
+#import "ios/chrome/browser/passwords/ios_chrome_affiliation_service_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
@@ -61,6 +64,9 @@ constexpr char kUsername2[] = "bob";
 
 constexpr char kPassword[] = "s3cre3t";
 constexpr char kPassword2[] = "s3cre3t2";
+constexpr char kStrongPassword[] = "pmsFlsnoab4nsl#losb@skpfnsbkjb^klsnbs!cns";
+constexpr char kStrongPassword2[] = "sfdf#losb@sdf^klsnbs!cns";
+constexpr char kStrongPassword3[] = "sdfsdfwer@313QaDSdsd!cns";
 
 NSString* GetUsername() {
   return base::SysUTF8ToNSString(kUsername);
@@ -120,6 +126,8 @@ GURL GetLocalizedURL(const GURL& original) {
 class PasswordIssuesMediatorTest : public BlockCleanupTest {
  protected:
   void SetUp() override {
+    feature_list_.InitAndEnableFeature(
+        password_manager::features::kPasswordsGrouping);
     BlockCleanupTest::SetUp();
     // Create BrowserState.
     TestChromeBrowserState::Builder test_cbs_builder;
@@ -131,6 +139,12 @@ class PasswordIssuesMediatorTest : public BlockCleanupTest {
         base::BindRepeating(
             &password_manager::BuildPasswordStore<web::BrowserState,
                                                   TestPasswordStore>));
+    test_cbs_builder.AddTestingFactory(
+        IOSChromeAffiliationServiceFactory::GetInstance(),
+        base::BindRepeating(base::BindLambdaForTesting([](web::BrowserState*) {
+          return std::unique_ptr<KeyedService>(
+              std::make_unique<password_manager::FakeAffiliationService>());
+        })));
     chrome_browser_state_ = test_cbs_builder.Build();
 
     store_ =
@@ -215,6 +229,7 @@ class PasswordIssuesMediatorTest : public BlockCleanupTest {
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   scoped_refptr<TestPasswordStore> store_;
@@ -281,15 +296,15 @@ TEST_F(PasswordIssuesMediatorTest, TestPasswordIssuesFilteredByWarningType) {
   // Weak.
   MakeTestPasswordIssue(kExampleCom, kUsername, kPassword, InsecureType::kWeak);
   // Reused.
-  MakeTestPasswordIssue(kExampleCom2, kUsername, kPassword,
+  MakeTestPasswordIssue(kExampleCom2, kUsername, kStrongPassword,
                         InsecureType::kReused);
-  MakeTestPasswordIssue(kExampleCom3, kUsername2, kPassword,
+  MakeTestPasswordIssue(kExampleCom3, kUsername2, kStrongPassword,
                         InsecureType::kReused);
   // Dismissed Compromised
-  MakeTestPasswordIssue(kExampleCom3, kUsername, kPassword,
+  MakeTestPasswordIssue(kExampleCom3, kUsername, kStrongPassword2,
                         InsecureType::kLeaked, /*muted=*/true);
   // Compromised.
-  MakeTestPasswordIssue(kExampleCom, kUsername2, kPassword,
+  MakeTestPasswordIssue(kExampleCom, kUsername2, kStrongPassword3,
                         InsecureType::kPhished);
   RunUntilIdle();
 

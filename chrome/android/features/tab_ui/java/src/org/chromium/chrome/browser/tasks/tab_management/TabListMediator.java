@@ -11,7 +11,6 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.Card
 import static org.chromium.chrome.browser.tasks.tab_management.TabProperties.CLOSE_BUTTON_DESCRIPTION_STRING;
 import static org.chromium.chrome.browser.tasks.tab_management.TabProperties.TAB_ID;
 
-import android.app.Activity;
 import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -41,7 +40,6 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
@@ -567,7 +565,9 @@ class TabListMediator {
                     // undo, identify the related TabIds and determine newIndex based on if any of
                     // the related ids are present in model.
                     newIndex = getIndexForTabWithRelatedTabs(tab);
-                    model.updateTabListModelIdForGroup(tab, newIndex);
+                    if (newIndex != Tab.INVALID_TAB_ID) {
+                        model.updateTabListModelIdForGroup(tab, newIndex);
+                    }
                 }
 
                 mLastSelectedTabListModelIndex = oldIndex;
@@ -781,6 +781,13 @@ class TabListMediator {
      */
     void setDefaultGridCardSize(Size size) {
         mDefaultGridCardSize = size;
+    }
+
+    /**
+     * @return The default size to use for any tab cards.
+     */
+    Size getDefaultGridCardSize() {
+        return mDefaultGridCardSize;
     }
 
     private void selectTab(int oldIndex, int newIndex) {
@@ -1160,32 +1167,6 @@ class TabListMediator {
         return position != TabModel.INVALID_TAB_INDEX && position < mModel.size();
     }
 
-    /**
-     * Hide the blue border for selected tab for the Tab-to-Grid resizing stage.
-     * The selected border should re-appear in the final fading-in stage.
-     * TODO(https://crbug.com/1413213): Revist this it is very inefficient for multi-thumbnails.
-     */
-    void prepareTabSwitcherView() {
-        if (!TabUiFeatureUtilities.isTabToGtsAnimationEnabled(mContext)
-                || !mTabModelSelector.isTabStateInitialized()) {
-            return;
-        }
-
-        assert mVisible;
-        int selectedTabCount = 0;
-        int tabsCount = 0;
-        for (int i = 0; i < mModel.size(); i++) {
-            if (mModel.get(i).model.get(CARD_TYPE) != TAB) continue;
-
-            if (mModel.get(i).model.get(TabProperties.IS_SELECTED)) selectedTabCount++;
-            mModel.get(i).model.set(TabProperties.IS_SELECTED, false);
-            tabsCount += 1;
-        }
-        assert (selectedTabCount == 1 || tabsCount == 0)
-            : "There should be exactly one selected tab or no tabs at all when calling "
-              + "TabListMediator.prepareOverview()";
-    }
-
     private boolean areTabsUnchanged(@Nullable List<PseudoTab> tabs) {
         int tabsCount = 0;
         for (int i = 0; i < mModel.size(); i++) {
@@ -1411,8 +1392,7 @@ class TabListMediator {
         mComponentCallbacks = new ComponentCallbacks() {
             @Override
             public void onConfigurationChanged(Configuration newConfig) {
-                updateSpanCount(
-                        manager, newConfig.orientation, newConfig.screenWidthDp);
+                updateSpanCount(manager, newConfig.screenWidthDp);
                 if (mMode == TabListMode.GRID && mUiType != UiType.SELECTABLE) updateLayout();
             }
 
@@ -1426,13 +1406,13 @@ class TabListMediator {
     /**
      * Update the grid layout span count and span size lookup base on orientation.
      * @param manager     The {@link GridLayoutManager} used to update the span count.
-     * @param orientation The orientation based on which we update the span count.
      * @param screenWidthDp The screnWidth based on which we update the span count.
+     * @return whether the span count changed.
      */
-    void updateSpanCount(
-            GridLayoutManager manager, int orientation, int screenWidthDp) {
-        int spanCount = getSpanCount(orientation, screenWidthDp);
-        manager.setSpanCount(spanCount);
+    boolean updateSpanCount(GridLayoutManager manager, int screenWidthDp) {
+        final int oldSpanCount = manager.getSpanCount();
+        final int newSpanCount = getSpanCount(screenWidthDp);
+        manager.setSpanCount(newSpanCount);
         manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
@@ -1446,6 +1426,7 @@ class TabListMediator {
                 return 1;
             }
         });
+        return oldSpanCount != newSpanCount;
     }
 
     /**
@@ -1487,7 +1468,7 @@ class TabListMediator {
      * When in multi-window mode on phone, the span count is fixed to 2 to keep tab card size
      * reasonable.
      */
-    private int getSpanCount(int orientation, int screenWidthDp) {
+    private int getSpanCount(int screenWidthDp) {
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext)
                 && TabUiFeatureUtilities.isGridTabSwitcherEnabled(mContext)) {
             return screenWidthDp < TabListCoordinator.MAX_SCREEN_WIDTH_COMPACT_DP
@@ -1496,8 +1477,7 @@ class TabListMediator {
                             ? TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_MEDIUM
                             : TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_LARGE;
         }
-        return orientation == Configuration.ORIENTATION_PORTRAIT
-                        || MultiWindowUtils.getInstance().isInMultiWindowMode((Activity) mContext)
+        return screenWidthDp < TabListCoordinator.MAX_SCREEN_WIDTH_COMPACT_DP
                 ? TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_COMPACT
                 : TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_MEDIUM;
     }

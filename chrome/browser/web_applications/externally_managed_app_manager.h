@@ -21,6 +21,10 @@
 class GURL;
 class Profile;
 
+namespace base {
+class Value;
+}
+
 namespace webapps {
 enum class InstallResultCode;
 }
@@ -183,7 +187,7 @@ class ExternallyManagedAppManager {
   CreateInstallationTask(ExternalInstallOptions install_options);
 
   virtual std::unique_ptr<ExternallyManagedAppRegistrationTaskBase>
-  StartRegistration(GURL launch_url);
+  CreateRegistration(GURL launch_url);
 
   virtual void OnRegistrationFinished(const GURL& launch_url,
                                       RegistrationResultCode result);
@@ -212,7 +216,7 @@ class ExternallyManagedAppManager {
     std::map<GURL, bool> uninstall_results;
   };
 
-  void SynchronizeInstalledAppsOnLockAcquired(
+  base::Value SynchronizeInstalledAppsOnLockAcquired(
       std::vector<ExternalInstallOptions> desired_apps_install_options,
       ExternalInstallSource install_source,
       SynchronizeCallback callback,

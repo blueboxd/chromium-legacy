@@ -29,11 +29,15 @@
 #include "components/password_manager/core/browser/webauthn_credentials_delegate.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/sync/driver/sync_service.h"
+#include "components/sync/service/sync_service.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 class PrefService;
+
+#if BUILDFLAG(IS_ANDROID)
+class WebAuthnCredManDelegate;
+#endif  // BUILDFLAG(IS_ANDROID)
 
 namespace autofill {
 class AutofillDownloadManager;
@@ -465,6 +469,12 @@ class PasswordManagerClient {
   // Returns the WebAuthnCredentialsDelegate for the given driver, if available.
   virtual WebAuthnCredentialsDelegate* GetWebAuthnCredentialsDelegateForDriver(
       PasswordManagerDriver* driver);
+
+#if BUILDFLAG(IS_ANDROID)
+  // Returns the WebAuthnCredManDelegate for the driver.
+  virtual WebAuthnCredManDelegate* GetWebAuthnCredManDelegateForDriver(
+      PasswordManagerDriver* driver);
+#endif  // BUILDFLAG(IS_ANDROID)
 
   // Returns the Chrome channel for the installation.
   virtual version_info::Channel GetChannel() const;

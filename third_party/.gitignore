@@ -47,10 +47,12 @@
 /apache-win32/bin/iconv/*.so
 /apache-win32/modules/*.dll
 /apache-win32/modules/*.so
+/apache-windows-arm64
 /arcore-android-sdk/src/
 /arcore-android-sdk/test-apks/arcore/*.apk
 /asan
 /barhopper
+/beto-core/src
 /bison
 /boringssl/src
 /bouncycastle/lib/
@@ -71,6 +73,7 @@
 /chromevox/third_party/sre/src
 /chromite
 /crossbench
+/clang_format/script
 /cld_2/src
 /cld_3/src
 /colorama/src

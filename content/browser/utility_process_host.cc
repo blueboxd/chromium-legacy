@@ -201,6 +201,16 @@ void UtilityProcessHost::SetExtraCommandLineSwitches(
   extra_switches_ = std::move(switches);
 }
 
+#if BUILDFLAG(IS_WIN)
+void UtilityProcessHost::SetPreloadLibraries(
+    const std::vector<base::FilePath>& preloads) {
+  preload_libraries_ = preloads;
+}
+void UtilityProcessHost::SetPinUser32() {
+  pin_user32_ = true;
+}
+#endif  // BUILDFLAG(IS_WIN)
+
 #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
 void UtilityProcessHost::AddFileToPreload(
     std::string key,
@@ -303,6 +313,7 @@ bool UtilityProcessHost::StartProcess() {
       network::switches::kIgnoreUrlFetcherCertRequests,
       network::switches::kLogNetLog,
       network::switches::kNetLogCaptureMode,
+      network::switches::kTestThirdPartyCookiePhaseout,
       sandbox::policy::switches::kNoSandbox,
 #if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
       switches::kDisableDevShmUsage,
@@ -435,11 +446,20 @@ bool UtilityProcessHost::StartProcess() {
         std::make_unique<UtilitySandboxedProcessLauncherDelegate>(
             sandbox_type_, env_, *cmd_line);
 
+#if BUILDFLAG(IS_WIN)
+    if (!preload_libraries_.empty()) {
+      delegate->SetPreloadLibraries(preload_libraries_);
+    }
+    if (pin_user32_) {
+      delegate->SetPinUser32();
+    }
+#endif  // BUILDFLAG(IS_WIN)
+
 #if BUILDFLAG(USE_ZYGOTE)
     if (zygote_for_testing_.has_value()) {
       delegate->SetZygote(zygote_for_testing_.value());
     }
-#endif
+#endif  // BUILDFLAG(USE_ZYGOTE)
 
     process_->LaunchWithFileData(std::move(delegate), std::move(cmd_line),
                                  std::move(file_data_), true);

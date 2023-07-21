@@ -160,7 +160,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.Homepage.LocationType" enum="HomepageLocationType"
-    expires_after="2023-09-10">
+    expires_after="2023-11-12">
   <owner>bttk@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
@@ -274,7 +274,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.PrivacyElementInteractions"
-    enum="SettingsPrivacyElementInteractions" expires_after="2023-08-27">
+    enum="SettingsPrivacyElementInteractions" expires_after="2023-11-12">
   <owner>harrisonsean@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <owner>sauski@chromium.org</owner>
@@ -342,7 +342,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Settings.PrivacyGuide.StepsEligibleAndReached"
     enum="SettingsPrivacyGuideStepsEligibleAndReached"
-    expires_after="2023-08-21">
+    expires_after="2023-11-19">
   <owner>rainhard@chromium.org</owner>
   <owner>aisulu@chromium.org</owner>
   <owner>chrome-friendly-settings@google.com</owner>
@@ -354,7 +354,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.PrivacySandbox.AdMeasurement.Enabled"
-    enum="BooleanEnabled" expires_after="2023-08-27">
+    enum="BooleanEnabled" expires_after="2023-11-12">
   <owner>sauski@google.com</owner>
   <owner>olesiamarukhno@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
@@ -415,7 +415,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.PrivacySandbox.Enabled"
-    enum="SettingsPrivacySandboxEnabled" expires_after="2023-09-10">
+    enum="SettingsPrivacySandboxEnabled" expires_after="2023-11-12">
   <owner>harrisonsean@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <owner>chrome-friendly-settings@google.com</owner>
@@ -427,7 +427,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.PrivacySandbox.Fledge.Enabled" enum="BooleanEnabled"
-    expires_after="2023-08-27">
+    expires_after="2023-11-12">
   <owner>sauski@google.com</owner>
   <owner>olesiamarukhno@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
@@ -569,7 +569,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.SafetyCheck.PasswordsResult"
-    enum="SafetyCheckPasswordsStatus" expires_after="2023-08-27">
+    enum="SafetyCheckPasswordsStatus" expires_after="2023-11-12">
   <owner>andzaytsev@google.com</owner>
   <owner>msramek@chromium.org</owner>
   <summary>Resulting state of the safety check password check.</summary>
@@ -630,6 +630,45 @@ chromium-metrics-reviews@google.com.
     in Chrome settings. Recorded every time the user interacts with the
     respective UI element.
   </summary>
+</histogram>
+
+<histogram
+    name="Settings.SafetyCheck.UnusedSitePermissionsRegrantDays{SourceUI}.All"
+    units="days" expires_after="2023-12-21">
+  <owner>sideyilmaz@chromium.org</owner>
+  <owner>tov@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <summary>
+    Captures the number of days since the permission was revoked for any
+    permission type, up until the cleanup threshold for revoked permissions has
+    been reached. The metric is recorded when the user regrants a permission
+    that was previously revoked by the unused site permission module of
+    SafetyCheck.
+  </summary>
+  <token key="SourceUI">
+    <variant name="Prompt"/>
+    <variant name="Settings"/>
+  </token>
+</histogram>
+
+<histogram
+    name="Settings.SafetyCheck.UnusedSitePermissionsRegrantDays{SourceUI}.{PermissionType}"
+    units="days" expires_after="2023-12-21">
+  <owner>sideyilmaz@chromium.org</owner>
+  <owner>tov@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <summary>
+    Captures the number of days since the permission was revoked for the
+    {PermissionType} permission type, up until the cleanup threshold for revoked
+    permissions has been reached. The metric is recorded when the user regrants
+    a permission that was previously revoked by the unused site permission
+    module of SafetyCheck.
+  </summary>
+  <token key="PermissionType" variants="AllPermissionTypes"/>
+  <token key="SourceUI">
+    <variant name="Prompt"/>
+    <variant name="Settings"/>
+  </token>
 </histogram>
 
 <histogram name="Settings.SafetyCheck.UpdatesResult"
@@ -832,7 +871,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.TrackedPreferenceChanged" enum="TrackedPreference"
-    expires_after="2023-09-03">
+    expires_after="2023-11-12">
   <owner>proberge@chromium.org</owner>
   <owner>junhao.huang@microsoft.com</owner>
   <summary>
@@ -891,7 +930,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.TrackedPreferenceReset" enum="TrackedPreference"
-    expires_after="2023-09-03">
+    expires_after="2023-11-12">
   <owner>proberge@chromium.org</owner>
   <owner>junhao.huang@microsoft.com</owner>
   <summary>The id of a tracked preference which was reset by Chrome.</summary>
@@ -931,7 +970,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.TrackedPreferenceWantedReset"
-    enum="TrackedPreference" expires_after="2023-09-17">
+    enum="TrackedPreference" expires_after="2023-11-19">
   <owner>proberge@chromium.org</owner>
   <owner>junhao.huang@microsoft.com</owner>
   <summary>

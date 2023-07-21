@@ -46,6 +46,7 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/updater/constants.h"
+#include "chrome/updater/device_management/dm_storage.h"
 #include "chrome/updater/external_constants_builder.h"
 #include "chrome/updater/external_constants_override.h"
 #include "chrome/updater/persisted_data.h"
@@ -54,6 +55,7 @@
 #include "chrome/updater/service_proxy_factory.h"
 #include "chrome/updater/test/request_matcher.h"
 #include "chrome/updater/test/server.h"
+#include "chrome/updater/test_scope.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
@@ -354,7 +356,6 @@ void PrintLog(UpdaterScope scope) {
 // each failed test. It is useful to capture a few logs from previous failures
 // instead of the log of the last run only.
 void CopyLog(const base::FilePath& src_dir) {
-  // TODO(crbug.com/1159189): copy other test artifacts.
   base::FilePath dest_dir = GetLogDestinationDir();
   const base::FilePath log_path = src_dir.AppendASCII("updater.log");
   if (!dest_dir.empty() && base::PathExists(dest_dir) &&
@@ -836,6 +837,22 @@ void ExpectCleanProcesses() {
   for (const base::FilePath::StringType& process_name : GetTestProcessNames()) {
     EXPECT_FALSE(IsProcessRunning(process_name)) << process_name;
   }
+}
+
+void DMDeregisterDevice(UpdaterScope scope) {
+  if (!IsSystemInstall(GetTestScope())) {
+    return;
+  }
+  EXPECT_TRUE(GetDefaultDMStorage()->InvalidateDMToken());
+}
+
+void DMCleanup(UpdaterScope scope) {
+  if (!IsSystemInstall(GetTestScope())) {
+    return;
+  }
+  scoped_refptr<DMStorage> storage = GetDefaultDMStorage();
+  EXPECT_TRUE(storage->StoreEnrollmentToken(""));
+  EXPECT_TRUE(storage->DeleteDMToken());
 }
 
 }  // namespace updater::test

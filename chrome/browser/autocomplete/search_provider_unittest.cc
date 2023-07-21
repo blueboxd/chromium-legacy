@@ -2286,10 +2286,8 @@ TEST_F(SearchProviderTest, DontCacheCalculatorSuggestions) {
   // answer fields on Desktop. See https://crbug.com/1325124#c1.
   // As a result of the field flip, the Calculator answer is only permitted
   // to be the default suggestion on the Desktop.
-  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_DESKTOP) {
-    cases[0].async_matches[1].contents = "1+2";
-    cases[0].async_matches[1].allowed_to_be_default_match = true;
-  }
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_DESKTOP)
+    cases[0].async_matches[1].contents = "1+2 = 3";
 
   for (size_t i = 0; i < std::size(cases); ++i) {
     // First, send the query "1+2" and receive the JSON response |first_json|.
@@ -2845,8 +2843,10 @@ TEST_F(SearchProviderTest, NavigationInline) {
     QueryForInput(ASCIIToUTF16(cases[i].input), false, false);
     SearchSuggestionParser::NavigationResult result(
         ChromeAutocompleteSchemeClassifier(profile_.get()), GURL(cases[i].url),
-        AutocompleteMatchType::NAVSUGGEST, {}, std::u16string(), std::string(),
-        false, 0, false, ASCIIToUTF16(cases[i].input));
+        AutocompleteMatchType::NAVSUGGEST,
+        /*suggest_type=*/omnibox::TYPE_NATIVE_CHROME, /*subtypes=*/{},
+        std::u16string(), std::string(), false, 0, false,
+        ASCIIToUTF16(cases[i].input));
     result.set_received_after_last_keystroke(false);
     AutocompleteMatch match(provider_->NavigationToMatch(result));
     EXPECT_EQ(ASCIIToUTF16(cases[i].inline_autocompletion),
@@ -2859,8 +2859,10 @@ TEST_F(SearchProviderTest, NavigationInline) {
     QueryForInput(ASCIIToUTF16(cases[i].input), true, false);
     SearchSuggestionParser::NavigationResult result_prevent_inline(
         ChromeAutocompleteSchemeClassifier(profile_.get()), GURL(cases[i].url),
-        AutocompleteMatchType::NAVSUGGEST, {}, std::u16string(), std::string(),
-        false, 0, false, ASCIIToUTF16(cases[i].input));
+        AutocompleteMatchType::NAVSUGGEST,
+        /*suggest_type=*/omnibox::TYPE_NATIVE_CHROME, /*subtypes=*/{},
+        std::u16string(), std::string(), false, 0, false,
+        ASCIIToUTF16(cases[i].input));
     result_prevent_inline.set_received_after_last_keystroke(false);
     AutocompleteMatch match_prevent_inline(
         provider_->NavigationToMatch(result_prevent_inline));
@@ -2879,8 +2881,9 @@ TEST_F(SearchProviderTest, NavigationInlineSchemeSubstring) {
   const std::u16string url(u"http://a.com");
   SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(profile_.get()), GURL(url),
-      AutocompleteMatchType::NAVSUGGEST, {}, std::u16string(), std::string(),
-      false, 0, false, input);
+      AutocompleteMatchType::NAVSUGGEST,
+      /*suggest_type=*/omnibox::TYPE_NATIVE_CHROME, /*subtypes=*/{},
+      std::u16string(), std::string(), false, 0, false, input);
   result.set_received_after_last_keystroke(false);
 
   // Check the offset and strings when inline autocompletion is allowed.
@@ -2905,7 +2908,8 @@ TEST_F(SearchProviderTest, NavigationInlineDomainClassify) {
   QueryForInput(u"h", false, false);
   SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(profile_.get()),
-      GURL("http://www.http.com/http"), AutocompleteMatchType::NAVSUGGEST, {},
+      GURL("http://www.http.com/http"), AutocompleteMatchType::NAVSUGGEST,
+      /*suggest_type=*/omnibox::TYPE_NATIVE_CHROME, /*subtypes=*/{},
       std::u16string(), std::string(), false, 0, false, u"h");
   result.set_received_after_last_keystroke(false);
   AutocompleteMatch match(provider_->NavigationToMatch(result));
@@ -2931,7 +2935,8 @@ TEST_F(SearchProviderTest, NavigationPrefixClassify) {
   QueryForInput(u"moon", false, false);
   SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(profile_.get()),
-      GURL("http://moon.com/moon"), AutocompleteMatchType::NAVSUGGEST, {},
+      GURL("http://moon.com/moon"), AutocompleteMatchType::NAVSUGGEST,
+      /*suggest_type=*/omnibox::TYPE_NATIVE_CHROME, /*subtypes=*/{},
       std::u16string(), std::string(), false, 0, false, u"moon");
   result.set_received_after_last_keystroke(false);
   AutocompleteMatch match(provider_->NavigationToMatch(result));
@@ -2951,7 +2956,8 @@ TEST_F(SearchProviderTest, NavigationMidWordClassify) {
   QueryForInput(u"acebook", false, false);
   SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(profile_.get()),
-      GURL("http://www.facebook.com"), AutocompleteMatchType::NAVSUGGEST, {},
+      GURL("http://www.facebook.com"), AutocompleteMatchType::NAVSUGGEST,
+      /*suggest_type=*/omnibox::TYPE_NATIVE_CHROME, /*subtypes=*/{},
       std::u16string(), std::string(), false, 0, false, u"acebook");
   result.set_received_after_last_keystroke(false);
   AutocompleteMatch match(provider_->NavigationToMatch(result));
@@ -2969,8 +2975,9 @@ TEST_F(SearchProviderTest, NavigationWordBreakClassify) {
   SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(profile_.get()),
       GURL("http://www.yellow-animals.com/duck"),
-      AutocompleteMatchType::NAVSUGGEST, {}, std::u16string(), std::string(),
-      false, 0, false, u"duck");
+      AutocompleteMatchType::NAVSUGGEST,
+      /*suggest_type=*/omnibox::TYPE_NATIVE_CHROME, /*subtypes=*/{},
+      std::u16string(), std::string(), false, 0, false, u"duck");
   result.set_received_after_last_keystroke(false);
   AutocompleteMatch match(provider_->NavigationToMatch(result));
   EXPECT_EQ(u"yellow-animals.com/duck", match.contents);
@@ -2990,8 +2997,9 @@ TEST_F(SearchProviderTest, DoTrimHttpScheme) {
   const std::u16string url(u"http://www.facebook.com");
   SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(profile_.get()), GURL(url),
-      AutocompleteMatchType::NAVSUGGEST, {}, std::u16string(), std::string(),
-      false, 0, false, input);
+      AutocompleteMatchType::NAVSUGGEST,
+      /*suggest_type=*/omnibox::TYPE_NATIVE_CHROME, /*subtypes=*/{},
+      std::u16string(), std::string(), false, 0, false, input);
 
   QueryForInput(input, false, false);
   AutocompleteMatch match_inline(provider_->NavigationToMatch(result));
@@ -3005,8 +3013,9 @@ TEST_F(SearchProviderTest, DontTrimHttpSchemeIfInputHasScheme) {
   const std::u16string url(u"http://www.facebook.com");
   SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(profile_.get()), GURL(url),
-      AutocompleteMatchType::NAVSUGGEST, {}, std::u16string(), std::string(),
-      false, 0, false, input);
+      AutocompleteMatchType::NAVSUGGEST,
+      /*suggest_type=*/omnibox::TYPE_NATIVE_CHROME, /*subtypes=*/{},
+      std::u16string(), std::string(), false, 0, false, input);
 
   QueryForInput(input, false, false);
   AutocompleteMatch match_inline(provider_->NavigationToMatch(result));
@@ -3020,8 +3029,9 @@ TEST_F(SearchProviderTest, DontTrimHttpsSchemeIfInputHasScheme) {
   const std::u16string url(u"https://www.facebook.com");
   SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(profile_.get()), GURL(url),
-      AutocompleteMatchType::NAVSUGGEST, {}, std::u16string(), std::string(),
-      false, 0, false, input);
+      AutocompleteMatchType::NAVSUGGEST,
+      /*suggest_type=*/omnibox::TYPE_NATIVE_CHROME, /*subtypes=*/{},
+      std::u16string(), std::string(), false, 0, false, input);
 
   QueryForInput(input, false, false);
   AutocompleteMatch match_inline(provider_->NavigationToMatch(result));
@@ -3034,8 +3044,9 @@ TEST_F(SearchProviderTest, DoTrimHttpsScheme) {
   const std::u16string url(u"https://www.facebook.com");
   SearchSuggestionParser::NavigationResult result(
       ChromeAutocompleteSchemeClassifier(profile_.get()), GURL(url),
-      AutocompleteMatchType::NAVSUGGEST, {}, std::u16string(), std::string(),
-      false, 0, false, input);
+      AutocompleteMatchType::NAVSUGGEST,
+      /*suggest_type=*/omnibox::TYPE_NATIVE_CHROME, /*subtypes=*/{},
+      std::u16string(), std::string(), false, 0, false, input);
 
   QueryForInput(input, false, false);
   AutocompleteMatch match_inline(provider_->NavigationToMatch(result));
@@ -3911,7 +3922,8 @@ TEST_F(SearchProviderTest, AnswersCache) {
   std::u16string query = u"weather los angeles";
   SearchSuggestionParser::SuggestResult suggest_result(
       query, AutocompleteMatchType::SEARCH_HISTORY,
-      /*subtypes=*/{}, /*from_keyword_provider=*/false,
+      /*suggest_type=*/omnibox::TYPE_NATIVE_CHROME, /*subtypes=*/{},
+      /*from_keyword_provider=*/false,
       /*relevance=*/1200, /*relevance_from_server=*/false,
       /*input_text=*/query);
   QueryForInput(u"weather l", false, false);

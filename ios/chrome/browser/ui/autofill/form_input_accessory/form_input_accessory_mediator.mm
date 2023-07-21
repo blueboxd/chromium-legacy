@@ -23,9 +23,9 @@
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
 #import "ios/chrome/browser/default_browser/utils.h"
-#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/coordinator/chrome_coordinator/chrome_coordinator.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/security_alert_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -528,15 +528,6 @@ using base::UmaHistogramEnumeration;
 
   // If suggestions are enabled, update `currentProvider`.
   self.currentProvider = provider;
-
-  // Notify that we are showing the keyboard accessory for a given type of
-  // suggestion. Note that this is called here so that it does get called when
-  // the keyboard accessory is about to show a set of suggestions, but this
-  // notification should NOT get propagated if the suggestions are accessed
-  // by clicking the key icon on the keyboard. This is specifically for the
-  // keyboard accessory.
-  [self.formNavigationHandler
-      willShowKeyboardAccessory:provider.suggestionType];
 
   // Post it to the consumer.
   self.consumer.suggestionType = provider.suggestionType;

@@ -83,10 +83,15 @@ class HistoryClustersService : public base::SupportsUserData,
   // KeyedService:
   void Shutdown() override;
 
-  // Returns true if the Journeys feature is enabled for the current application
-  // locale. This is a cached wrapper of `IsJourneysEnabled()` within features.h
-  // that's already evaluated against the g_browser_process application locale.
-  bool IsJourneysEnabled() const;
+  // Returns true if the Journeys feature is enabled both by feature flag AND
+  // by the user pref / policy value. Virtual for testing.
+  virtual bool IsJourneysEnabledAndVisible() const;
+
+  // Returns true if the Journeys feature is enabled by feature flag, but
+  // ignores the pref / policy value.
+  bool is_journeys_feature_flag_enabled() const {
+    return is_journeys_feature_flag_enabled_;
+  }
 
   // Returns true if the Journeys use of Images is enabled.
   static bool IsJourneysImagesEnabled();
@@ -133,7 +138,8 @@ class HistoryClustersService : public base::SupportsUserData,
   //   if the caller wants the newest visits.
   // - `recluster`, if true, forces reclustering as if
   //   `persist_clusters_in_history_db` were false.
-  // Virtual for testing.
+  // The caller is responsible for checking `IsJourneysEnabled()` before calling
+  // this method. Virtual for testing.
   virtual std::unique_ptr<HistoryClustersServiceTask> QueryClusters(
       ClusteringRequestSource clustering_request_source,
       QueryClustersFilterParams filter_params,
@@ -209,8 +215,10 @@ class HistoryClustersService : public base::SupportsUserData,
   // Whether keyword caches should persisted via the pref service.
   const bool persist_caches_to_prefs_;
 
-  // True if Journeys is enabled based on field trial and locale checks.
-  const bool is_journeys_enabled_;
+  // True if Journeys is enabled based on feature flag and locale checks.
+  // But critically, this does NOT check the pref or policy value to see if
+  // either the user or Enterprise has disabled Journeys.
+  const bool is_journeys_feature_flag_enabled_;
 
   // Non-owning pointer, but never nullptr.
   history::HistoryService* const history_service_;

@@ -52,10 +52,9 @@ align-self: auto
 alignment-baseline: auto
 anchor-default: implicit
 anchor-name: none
-anchor-scroll: none
+anchor-scroll: default
 animation-composition: replace
-animation-delay-end: 0s
-animation-delay-start: 0s
+animation-delay: 0s
 animation-direction: normal
 animation-duration: 0s
 animation-fill-mode: none
@@ -311,6 +310,14 @@ scroll-padding-block-end: auto
 scroll-padding-block-start: auto
 scroll-padding-inline-end: auto
 scroll-padding-inline-start: auto
+scroll-start-block: auto
+scroll-start-inline: auto
+scroll-start-target-block: none
+scroll-start-target-inline: none
+scroll-start-target-x: none
+scroll-start-target-y: none
+scroll-start-x: auto
+scroll-start-y: auto
 scroll-timeline-attachment: local
 scroll-timeline-axis: block
 scroll-timeline-name: none
@@ -353,6 +360,7 @@ text-size-adjust: auto
 text-transform: none
 text-underline-position: auto
 text-wrap: wrap
+timeline-scope: none
 toggle-group: none
 toggle-root: none
 toggle-trigger: none

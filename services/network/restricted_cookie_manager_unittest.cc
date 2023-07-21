@@ -268,8 +268,9 @@ class TestCookieChangeListener : public network::mojom::CookieChangeListener {
 class WithSamePartyAttributeFeatureState {
  public:
   WithSamePartyAttributeFeatureState() {
-    feature_list_.InitAndEnableFeature(
-        net::features::kSamePartyAttributeEnabled);
+    feature_list_.InitWithFeatures({net::features::kSamePartyAttributeEnabled,
+                                    net::features::kWaitForFirstPartySetsInit},
+                                   {});
   }
 
  private:
@@ -542,7 +543,7 @@ INSTANTIATE_TEST_SUITE_P(
         testing::Values(
             net::CookieSettingOverrides(),
             net::CookieSettingOverrides(
-                net::CookieSettingOverride::kForceThirdPartyByUser))));
+                {net::CookieSettingOverride::kForceThirdPartyByUser}))));
 
 namespace {
 
@@ -2016,7 +2017,7 @@ INSTANTIATE_TEST_SUITE_P(
         testing::Values(
             net::CookieSettingOverrides(),
             net::CookieSettingOverrides(
-                net::CookieSettingOverride::kForceThirdPartyByUser))));
+                {net::CookieSettingOverride::kForceThirdPartyByUser}))));
 
 class UnpartitionedCookiesRestrictedCookieManagerTest
     : public RestrictedCookieManagerTest {
@@ -2463,6 +2464,6 @@ INSTANTIATE_TEST_SUITE_P(
         testing::Values(
             net::CookieSettingOverrides(),
             net::CookieSettingOverrides(
-                net::CookieSettingOverride::kForceThirdPartyByUser))));
+                {net::CookieSettingOverride::kForceThirdPartyByUser}))));
 
 }  // namespace network

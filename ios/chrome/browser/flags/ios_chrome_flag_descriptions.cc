@@ -33,14 +33,20 @@ const char kAutofillAccountProfilesUnionViewDescription[] =
 
 const char kAutofillBrandingIOSName[] = "Autofill Branding on iOS";
 const char kAutofillBrandingIOSDescription[] =
-    "Adds the Chrome logo in the form input suggestions bar. Full color by "
-    "default.";
+    "Adds the Chrome logo in the form input suggestions bar. If select "
+    "\"Enabled\", the branding logo shows twice, and would not be "
+    "dismissed with any animation.";
 
 const char kAutofillCreditCardUploadName[] =
     "Offers uploading Autofilled credit cards";
 const char kAutofillCreditCardUploadDescription[] =
     "Offers uploading Autofilled credit cards to Google Payments after form "
     "submission.";
+
+const char kAutofillEnableCardArtImageName[] = "Enable showing card art images";
+const char kAutofillEnableCardArtImageDescription[] =
+    "When enabled, card product images (instead of network icons) will be "
+    "shown in Payments Autofill UI.";
 
 const char kAutofillEnableRankingFormulaAddressProfilesName[] =
     "Enable new Autofill suggestion ranking formula for address profiles";
@@ -283,8 +289,8 @@ const char kEnableBookmarksAccountStorageName[] =
 const char kEnableBookmarksAccountStorageDescription[] =
     "Enable bookmarks account storage and related UI features.";
 
-const char kEnableBrowserLockdownModeName[] = "Enable Browser Lockdown Mode";
-const char kEnableBrowserLockdownModeDescription[] =
+const char kBrowserLockdownModeAvailableName[] = "Enable Browser Lockdown Mode";
+const char kBrowserLockdownModeAvailableDescription[] =
     "Enable browser lockdown mode.";
 
 const char kEnableCBDSignOutName[] = "Enable Clear Browsing Data Sign-out";
@@ -364,10 +370,6 @@ const char kPasswordsGroupingDescription[] =
     "Group passwords into the same affiliated group in the Password Manager "
     "for the Saved Passwords section";
 
-const char kEnableOpenInDownloadName[] = "Enable Open In download";
-const char kEnableOpenInDownloadDescription[] =
-    "Enable new download for Open In menu (iOS 14.5+).";
-
 const char kEnablePasswordsAccountStorageName[] =
     "Enable the account data storage for passwords";
 const char kEnablePasswordsAccountStorageDescription[] =
@@ -398,6 +400,12 @@ const char kEnableRefineDataSourceReloadReportingName[] =
 const char kEnableRefineDataSourceReloadReportingDescription[] =
     "Enable refining data source reload reporting when having a very short "
     "attention log";
+
+const char kEnableSignedOutViewDemotionName[] =
+    "Enable signed out user view demotion";
+const char kEnableSignedOutViewDemotionDescription[] =
+    "Enable signed out user view demotion to avoid repeated content for signed "
+    "out users.";
 
 const char kEnableSuggestionsScrollingOnIPadName[] =
     "Enable omnibox suggestions scrolling on iPad";
@@ -485,6 +493,11 @@ const char kFullscreenSmoothScrollingDescription[] =
     "When enabled, the web view's insets are updated for scoll events. If "
     "disabled, the the web view's frame are updated.";
 
+extern const char kHideContentSuggestionTilesName[] =
+    "Hide content suggestions tiles";
+extern const char kHideContentSuggestionTilesDescription[] =
+    "Hides content suggestions tiles from the new tab page.";
+
 extern const char kHistorySyncOptInName[] = "History Sync Opt-In";
 extern const char kHistorySyncOptInDescription[] =
     "Enables history sync opt-in";
@@ -566,9 +579,9 @@ const char kIOSPasswordBottomSheetName[] = "IOS Password Manager Bottom Sheet";
 const char kIOSPasswordBottomSheetDescription[] =
     "Enables the display of the password bottom sheet on IOS.";
 
-const char kNewTabPageRetentionName[] =
+const char kNewTabPageFieldTrialName[] =
     "New tab page features that target new users";
-const char kNewTabPageRetentionDescription[] =
+const char kNewTabPageFieldTrialDescription[] =
     "Enables new tab page features that are available on first run for new "
     "Chrome iOS users.";
 
@@ -595,12 +608,6 @@ const char kLockBottomToolbarDescription[] =
 const char kLogBreadcrumbsName[] = "Log Breadcrumb Events";
 const char kLogBreadcrumbsDescription[] =
     "When enabled, breadcrumb events will be logged.";
-
-const char kMediaPermissionsControlName[] =
-    "Camera and Microphone Access Permissions Control";
-const char kMediaPermissionsControlDescription[] =
-    "Enables user control for camera and/or microphone access for a specific "
-    "site through site settings during its lifespan.";
 
 const char kMetrickitNonCrashReportName[] = "Metrickit non-crash reports";
 const char kMetrickitNonCrashReportDescription[] =
@@ -641,10 +648,9 @@ const char kNewNTPOmniboxLayoutDescription[] =
 const char kNewOverflowMenuName[] = "New Overflow Menu";
 const char kNewOverflowMenuDescription[] = "Enables the new overflow menu";
 
-const char kNewOverflowMenuAlternateIPHName[] =
-    "New Overflow Menu Alternative IPH";
-const char kNewOverflowMenuAlternateIPHDescription[] =
-    "Uses the alternative IPH flow for the new overflow menu";
+const char kOverflowMenuCustomizationName[] = "Overflow Menu Customization";
+const char kOverflowMenuCustomizationDescription[] =
+    "Allow users to customize the order of the overflow menu";
 
 const char kNTPViewHierarchyRepairName[] = "NTP View Hierarchy Repair";
 const char kNTPViewHierarchyRepairDescription[] =
@@ -803,6 +809,12 @@ const char kOptimizationGuideDebugLogsDescription[] =
     "Enables the optimization guide to log and save debug messages that can be "
     "shown in the internals page.";
 
+const char kOptimizationGuideInstallWideModelStoreName[] =
+    "Enables the new optimization guide install-wide model store";
+const char kOptimizationGuideInstallWideModelStoreDescription[] =
+    "Enables the new model store that is per Chrome installation and can "
+    "share models across user profiles.";
+
 const char kOptimizationGuidePushNotificationClientName[] =
     "Enable optimization guide push notification client";
 const char kOptimizationGuidePushNotificationClientDescription[] =
@@ -853,6 +865,11 @@ const char kRemoveExcessNTPsExperimentName[] = "Remove extra New Tab Pages";
 const char kRemoveExcessNTPsExperimentDescription[] =
     "When enabled, extra tabs with the New Tab Page open and no navigation "
     "history will be removed.";
+
+const char kReplaceSyncPromosWithSignInPromosName[] =
+    "Replace all sync-related UI with sign-in ones";
+const char kReplaceSyncPromosWithSignInPromosDescription[] =
+    "When enabled, all sync-related promos will be replaced by sign-in ones.";
 
 const char kRestoreSessionFromCacheName[] =
     "Use native WKWebView sesion restoration (iOS15 only).";
@@ -1037,11 +1054,6 @@ const char kUseLoadSimulatedRequestForOfflinePageName[] =
 const char kUseLoadSimulatedRequestForOfflinePageDescription[] =
     "When enabled, the offline pages uses the iOS 15 "
     "loadSimulatedRequest:responseHTMLString: API";
-
-const char kUseSFSymbolsInOmniboxName[] =
-    "Replace Image by SFSymbols in Omnibox";
-const char kUseSFSymbolsInOmniboxDescription[] =
-    "When enabled, images are replaced by SFSymbols in the omnibox";
 
 const char kWaitThresholdMillisecondsForCapabilitiesApiName[] =
     "Maximum wait time (in seconds) for a response from the Account "

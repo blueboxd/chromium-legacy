@@ -145,6 +145,7 @@ const std::string ResourceTypeName(ResourceType type) {
     RESOURCE_TYPE_NAME(Manifest)          // 12
     RESOURCE_TYPE_NAME(SpeculationRules)  // 13
     RESOURCE_TYPE_NAME(Mock)              // 14
+    RESOURCE_TYPE_NAME(Dictionary)        // 15
   }
 }
 
@@ -173,6 +174,7 @@ ResourceLoadPriority TypeToPriority(ResourceType type) {
       return ResourceLoadPriority::kLow;
     case ResourceType::kLinkPrefetch:
     case ResourceType::kSpeculationRules:
+    case ResourceType::kDictionary:
       return ResourceLoadPriority::kVeryLow;
   }
 
@@ -396,6 +398,8 @@ mojom::blink::RequestContextType ResourceFetcher::DetermineRequestContext(
       return mojom::blink::RequestContextType::SUBRESOURCE;
     case ResourceType::kSpeculationRules:
       return mojom::blink::RequestContextType::SUBRESOURCE;
+    case ResourceType::kDictionary:
+      return mojom::blink::RequestContextType::SUBRESOURCE;
   }
   NOTREACHED();
   return mojom::blink::RequestContextType::SUBRESOURCE;
@@ -427,6 +431,7 @@ network::mojom::RequestDestination ResourceFetcher::DetermineRequestDestination(
     case ResourceType::kRaw:
     case ResourceType::kLinkPrefetch:
     case ResourceType::kMock:
+    case ResourceType::kDictionary:
       return network::mojom::RequestDestination::kEmpty;
   }
   NOTREACHED();
@@ -716,9 +721,10 @@ bool ResourceFetcher::ShouldDeferResource(ResourceType type,
   if (type == ResourceType::kFont && !params.IsLinkPreload())
     return true;
 
-  // Defer loading images either when:
-  // - images are disabled
-  // - instructed to defer loading images from network
+  // Defer loading images when:
+  // - images are disabled.
+  // - image loading is disabled and the image is not a data url.
+  // - instructed to defer loading images from network.
   if (type == ResourceType::kImage &&
       (ShouldDeferImageLoad(params.Url()) ||
        params.GetImageRequestBehavior() ==
@@ -790,6 +796,7 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
     if (!resource_timing_report_timer_.IsActive())
       resource_timing_report_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
   }
+  resource->SetIsLoadedFromMemoryCache();
 }
 
 Resource* ResourceFetcher::CreateResourceForStaticData(
@@ -1088,7 +1095,8 @@ absl::optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
     // Add the "Sec-Purpose: prefetch;prerender" header to requests issued from
     // prerendered pages. Add "Purpose: prefetch" as well for compatibility
     // concerns (See https://github.com/WICG/nav-speculation/issues/133).
-    resource_request.SetHttpHeaderField("Sec-Purpose", "prefetch;prerender");
+    resource_request.SetHttpHeaderField(http_names::kSecPurpose,
+                                        AtomicString("prefetch;prerender"));
     resource_request.SetPurposeHeader("prefetch");
   }
 
@@ -1255,7 +1263,11 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   bool is_data_url = resource_request.Url().ProtocolIsData();
   bool is_static_data = is_data_url || archive_;
   bool is_stale_revalidation = params.IsStaleRevalidation();
-  if (!is_stale_revalidation && is_static_data) {
+  bool should_defer = ShouldDeferResource(resource_type, params);
+  // MHTML archives do not load from the network and must load immediately. Data
+  // urls can also load immediately, except in cases when they should be
+  // deferred.
+  if (!is_stale_revalidation && (archive_ || (is_data_url && !should_defer))) {
     resource = CreateResourceForStaticData(params, factory);
     if (resource) {
       policy =
@@ -1301,9 +1313,6 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
       }
     }
   }
-
-  // Use factory.GetType() since resource can be nullptr here.
-  bool should_defer = ShouldDeferResource(factory.GetType(), params);
 
   UpdateMemoryCacheStats(
       resource, MapToPolicyForMetrics(policy, resource, should_defer), params,
@@ -1471,7 +1480,7 @@ void ResourceFetcher::InitializeRevalidation(
     if (revalidating_request.GetCacheMode() ==
         mojom::blink::FetchCacheMode::kValidateCache) {
       revalidating_request.SetHttpHeaderField(http_names::kCacheControl,
-                                              "max-age=0");
+                                              AtomicString("max-age=0"));
     }
   }
   if (!last_modified.empty()) {
@@ -1999,7 +2008,8 @@ void ResourceFetcher::SetImagesEnabled(bool enable) {
 }
 
 bool ResourceFetcher::ShouldDeferImageLoad(const KURL& url) const {
-  return !Context().AllowImage(images_enabled_, url) || !auto_load_images_;
+  return !Context().AllowImage(images_enabled_, url) ||
+         (!auto_load_images_ && !url.ProtocolIsData());
 }
 
 void ResourceFetcher::ReloadImagesIfNotDeferred() {
@@ -2237,7 +2247,7 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
           network::mojom::FetchResponseType::kOpaque &&
       resource->GetResponse().HasRangeRequested() &&
       !resource->GetResourceRequest().HttpHeaderFields().Contains(
-          net::HttpRequestHeaders::kRange)) {
+          http_names::kRange)) {
     RemovePreload(resource);
   }
 
@@ -2720,7 +2730,8 @@ void ResourceFetcher::PopulateAndAddResourceTimingInfo(
     if (!response.NetworkAccessed() &&
         (!response.WasFetchedViaServiceWorker() ||
          response.IsServiceWorkerPassThrough())) {
-      initiator_type = "early-hints";
+      initiator_type = AtomicString("early-hints");
+      resource->SetIsPreloadedByEarlyHints();
     }
   }
 
@@ -2969,6 +2980,13 @@ void ResourceFetcher::UpdateServiceWorkerSubresourceMetrics(
         metrics.mock_handled |= true;
       } else {
         metrics.mock_fallback |= true;
+      }
+      break;
+    case ResourceType::kDictionary:  // 14
+      if (handled_by_serviceworker) {
+        metrics.dictionary_handled |= true;
+      } else {
+        metrics.dictionary_fallback |= true;
       }
       break;
   }

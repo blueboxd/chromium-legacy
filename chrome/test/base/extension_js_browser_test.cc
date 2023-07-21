@@ -89,16 +89,12 @@ bool ExtensionJSBrowserTest::RunJavascriptTestF(bool is_async,
     ADD_FAILURE() << "ExtensionHost failed to start";
     return false;
   }
-  std::vector<base::Value> args;
-  args.emplace_back(test_fixture);
-  args.emplace_back(test_name);
   std::vector<std::u16string> scripts;
 
-  base::Value test_runner_params(base::Value::Type::DICT);
+  base::Value::Dict test_runner_params;
   if (embedded_test_server()->Started()) {
-    test_runner_params.SetKey(
-        "testServerBaseUrl",
-        base::Value(embedded_test_server()->base_url().spec()));
+    test_runner_params.Set("testServerBaseUrl",
+                           embedded_test_server()->base_url().spec());
   }
 
   if (!libs_loaded_) {
@@ -109,8 +105,9 @@ bool ExtensionJSBrowserTest::RunJavascriptTestF(bool is_async,
   scripts.push_back(base::UTF8ToUTF16(content::JsReplace(
       "const testRunnerParams = $1;", std::move(test_runner_params))));
 
-  scripts.push_back(
-      BuildRunTestJSCall(is_async, "RUN_TEST_F", std::move(args)));
+  scripts.push_back(BuildRunTestJSCall(
+      is_async, "RUN_TEST_F",
+      base::Value::List().Append(test_fixture).Append(test_name)));
 
   std::u16string script_16 = base::JoinString(scripts, u"\n");
   std::string script = base::UTF16ToUTF8(script_16);

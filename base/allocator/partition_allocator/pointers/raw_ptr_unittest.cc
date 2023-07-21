@@ -1499,41 +1499,9 @@ TEST_F(RawPtrTest, ToAddressGivesBackRawAddress) {
   EXPECT_EQ(base::to_address(raw), base::to_address(miracle));
 }
 
-// Verifies that `raw_ptr_experimental` is aliased appropriately.
-//
-// The `DisableDanglingPtrDetection` trait is arbitrarily chosen and is
-// just there to ensure that `raw_ptr_experimental` knows how to field
-// the traits template argument.
-#if BUILDFLAG(ENABLE_RAW_PTR_EXPERIMENTAL)
-static_assert(
-    std::is_same_v<raw_ptr_experimental<int, DisableDanglingPtrDetection>,
-                   raw_ptr<int, DisableDanglingPtrDetection>>);
-static_assert(
-    std::is_same_v<raw_ptr_experimental<const int, DisableDanglingPtrDetection>,
-                   raw_ptr<const int, DisableDanglingPtrDetection>>);
-static_assert(
-    std::is_same_v<
-        const raw_ptr_experimental<const int, DisableDanglingPtrDetection>,
-        const raw_ptr<const int, DisableDanglingPtrDetection>>);
-#else   // BUILDFLAG(ENABLE_RAW_PTR_EXPERIMENTAL)
-// `DisableDanglingPtrDetection` means nothing here and is silently
-// ignored.
-static_assert(
-    std::is_same_v<raw_ptr_experimental<int, DisableDanglingPtrDetection>,
-                   int*>);
-static_assert(
-    std::is_same_v<raw_ptr_experimental<const int, DisableDanglingPtrDetection>,
-                   const int*>);
-static_assert(
-    std::is_same_v<
-        const raw_ptr_experimental<const int, DisableDanglingPtrDetection>,
-        const int* const>);
-#endif  // BUILDFLAG(ENABLE_RAW_PTR_EXPERIMENTAL)
-
 }  // namespace
 
-namespace base {
-namespace internal {
+namespace base::internal {
 
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && \
     !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
@@ -1542,23 +1510,21 @@ void HandleOOM(size_t unused_size) {
   LOG(FATAL) << "Out of memory";
 }
 
-static constexpr partition_alloc::PartitionOptions kOpts = {
-    partition_alloc::PartitionOptions::AlignedAlloc::kDisallowed,
-    partition_alloc::PartitionOptions::ThreadCache::kDisabled,
-    partition_alloc::PartitionOptions::Quarantine::kDisallowed,
-    partition_alloc::PartitionOptions::Cookie::kAllowed,
-    partition_alloc::PartitionOptions::BackupRefPtr::kEnabled,
-    partition_alloc::PartitionOptions::BackupRefPtrZapping::kEnabled,
-    partition_alloc::PartitionOptions::UseConfigurablePool::kNo,
-};
-
 class BackupRefPtrTest : public testing::Test {
  protected:
   void SetUp() override {
     // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to
     // new/delete once PartitionAlloc Everywhere is fully enabled.
     partition_alloc::PartitionAllocGlobalInit(HandleOOM);
-    allocator_.init(kOpts);
+    allocator_.init(
+        {.cookie = partition_alloc::PartitionOptions::Cookie::kAllowed,
+         .backup_ref_ptr =
+             partition_alloc::PartitionOptions::BackupRefPtr::kEnabled,
+         .memory_tagging =
+             base::CPU::GetInstanceNoAllocation().has_mte()
+                 ? partition_alloc::PartitionOptions::MemoryTagging::kEnabled
+                 : partition_alloc::PartitionOptions::MemoryTagging::
+                       kDisabled});
   }
 
   partition_alloc::PartitionAllocator allocator_;
@@ -2424,5 +2390,4 @@ TEST(DanglingPtrTest, DetectResetAndDestructor) {
   EXPECT_EQ(instrumentation->dangling_ptr_released(), 1u);
 }
 
-}  // namespace internal
-}  // namespace base
+}  // namespace base::internal

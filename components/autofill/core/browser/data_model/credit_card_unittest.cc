@@ -605,6 +605,35 @@ TEST(CreditCardTest, HasSameNumberAs) {
   EXPECT_TRUE(masked_server_card.HasSameNumberAs(full_server_card));
 }
 
+// Test that `HasSameExpirationDateAs` returns true only if two cards have the
+// same expiration year and month.
+TEST(CreditCardTest, HasSameExpirationDateAs) {
+  CreditCard card_1;
+  test::SetCreditCardInfo(&card_1, "John Dillinger", "4111 1111 1111 1111",
+                          "09", "2017", "1");
+
+  CreditCard card_2;
+  // Set the same expiration date as `card_1`.
+  test::SetCreditCardInfo(&card_2, "John Dillinger", "4111 1111 1111 1111",
+                          "09", "2017", "1");
+  EXPECT_TRUE(card_1.HasSameExpirationDateAs(card_2));
+
+  // Set the same month and different year as `card_1`.
+  test::SetCreditCardInfo(&card_2, "John Dillinger", "4111 1111 1111 1111",
+                          "09", "2018", "1");
+  EXPECT_FALSE(card_1.HasSameExpirationDateAs(card_2));
+
+  // Set the same year and different month as `card_1`.
+  test::SetCreditCardInfo(&card_2, "John Dillinger", "4111 1111 1111 1111",
+                          "01", "2017", "1");
+  EXPECT_FALSE(card_1.HasSameExpirationDateAs(card_2));
+
+  // Set the different expiration date as `card_1`.
+  test::SetCreditCardInfo(&card_2, "John Dillinger", "4111 1111 1111 1111",
+                          "01", "2018", "1");
+  EXPECT_FALSE(card_1.HasSameExpirationDateAs(card_2));
+}
+
 struct SetExpirationYearFromStringTestCase {
   std::string expiration_year;
   int expected_year;
@@ -883,6 +912,35 @@ TEST(CreditCardTest, MatchingCardDetails) {
   b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, u"2026");
   EXPECT_FALSE(a.MatchingCardDetails(b));
   EXPECT_FALSE(b.MatchingCardDetails(a));
+}
+
+TEST(CreditCardTest, IsVerified) {
+  CreditCard card;
+  EXPECT_FALSE(card.IsVerified());
+
+  card.set_origin("http://www.example.com");
+  EXPECT_FALSE(card.IsVerified());
+
+  card.set_origin("https://www.example.com");
+  EXPECT_FALSE(card.IsVerified());
+
+  card.set_origin("file:///tmp/example.txt");
+  EXPECT_FALSE(card.IsVerified());
+
+  card.set_origin("data:text/plain;charset=utf-8;base64,ZXhhbXBsZQ==");
+  EXPECT_FALSE(card.IsVerified());
+
+  card.set_origin("chrome://settings/autofill");
+  EXPECT_FALSE(card.IsVerified());
+
+  card.set_origin(kSettingsOrigin);
+  EXPECT_TRUE(card.IsVerified());
+
+  card.set_origin("Some gibberish string");
+  EXPECT_TRUE(card.IsVerified());
+
+  card.set_origin(std::string());
+  EXPECT_FALSE(card.IsVerified());
 }
 
 TEST(CreditCardTest, Compare) {

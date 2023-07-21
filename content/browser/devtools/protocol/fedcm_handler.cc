@@ -36,8 +36,18 @@ void FedCmHandler::Wire(UberDispatcher* dispatcher) {
 }
 
 DispatchResponse FedCmHandler::Enable(Maybe<bool> in_disableRejectionDelay) {
+  auto* auth_request = GetFederatedAuthRequest();
+  bool was_enabled = enabled_;
   enabled_ = true;
   disable_delay_ = in_disableRejectionDelay.fromMaybe(false);
+
+  // OnDialogShown should have been called previously if was_enabled is true.
+  // This could happen if FedCmHandler::Enable was called to enable/disable the
+  // rejection delay.
+  if (!was_enabled && auth_request && auth_request->GetDialogController()) {
+    OnDialogShown();
+  }
+
   return DispatchResponse::Success();
 }
 
@@ -47,14 +57,13 @@ DispatchResponse FedCmHandler::Disable() {
 }
 
 void FedCmHandler::OnDialogShown() {
-  static int next_dialog_id_ = 0;
-
-  dialog_id_ = base::NumberToString(next_dialog_id_++);
-
   DCHECK(frontend_);
   if (!enabled_) {
     return;
   }
+
+  static int next_dialog_id_ = 0;
+  dialog_id_ = base::NumberToString(next_dialog_id_++);
 
   auto* auth_request = GetFederatedAuthRequest();
   const auto* idp_data = GetIdentityProviderData(auth_request);
@@ -113,13 +122,17 @@ void FedCmHandler::OnDialogShown() {
   }
   IdentityRequestDialogController* dialog = auth_request->GetDialogController();
   CHECK(dialog);
+
+  FedCm::DialogType dialog_type = auth_request->IsAutoReauthn()
+                                      ? FedCm::DialogTypeEnum::AutoReauthn
+                                      : FedCm::DialogTypeEnum::AccountChooser;
   Maybe<String> maybe_subtitle;
   absl::optional<std::string> subtitle = dialog->GetSubtitle();
   if (subtitle) {
     maybe_subtitle = *subtitle;
   }
-  frontend_->DialogShown(dialog_id_, std::move(accounts), dialog->GetTitle(),
-                         std::move(maybe_subtitle));
+  frontend_->DialogShown(dialog_id_, dialog_type, std::move(accounts),
+                         dialog->GetTitle(), std::move(maybe_subtitle));
 }
 
 DispatchResponse FedCmHandler::SelectAccount(const String& in_dialogId,

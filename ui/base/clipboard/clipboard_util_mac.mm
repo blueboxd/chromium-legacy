@@ -4,10 +4,45 @@
 
 #include "ui/base/clipboard/clipboard_util_mac.h"
 
+#include <AppKit/AppKit.h>
+#include <CoreServices/CoreServices.h>                      // pre-macOS 11
+#include <UniformTypeIdentifiers/UniformTypeIdentifiers.h>  // macOS 11
+
+#include <string>
+
+#include "base/apple/bridging.h"
+#include "base/files/file_path.h"
 #include "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/notreached.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+@interface URLAndTitle ()
+
+@property(copy) NSString* URL;
+@property(copy) NSString* title;
+
++ (instancetype)URLAndTitleWithURL:(NSString*)url title:(NSString*)title;
+
+@end
+
+@implementation URLAndTitle
+
+@synthesize URL = _url;
+@synthesize title = _title;
+
++ (instancetype)URLAndTitleWithURL:(NSString*)url title:(NSString*)title {
+  URLAndTitle* result = [[URLAndTitle alloc] init];
+  result.URL = url;
+  result.title = title;
+  return result;
+}
+
+@end
 
 namespace ui {
 
@@ -94,7 +129,7 @@ bool ReadURLItemsWithTitles(NSPasteboard* pboard,
 }  // namespace
 
 UniquePasteboard::UniquePasteboard()
-    : pasteboard_([[NSPasteboard pasteboardWithUniqueName] retain]) {}
+    : pasteboard_([NSPasteboard pasteboardWithUniqueName]) {}
 
 UniquePasteboard::~UniquePasteboard() {
   [pasteboard_ releaseGlobally];

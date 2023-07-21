@@ -17,8 +17,10 @@
 #include "base/types/pass_key.h"
 #include "content/browser/attribution_reporting/attribution_beacon_id.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/cpp/attribution_reporting_runtime_features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config.h"
@@ -134,6 +136,8 @@ class CONTENT_EXPORT FencedFrameReporter
   // pending. In that case, errors are currently never reported, even if the
   // reporting URL map results in no request being sent.
   //
+  // `initiator_frame_tree_node_id` is used for DevTools support only.
+  //
   // Note: `navigation_id` will only be non-null in the case of an automatic
   // beacon `reserved.top_navigation` sent as a result of a top-level navigation
   // from a fenced frame. It will be set to the ID of the navigation request
@@ -145,7 +149,10 @@ class CONTENT_EXPORT FencedFrameReporter
       const std::string& event_data,
       blink::FencedFrame::ReportingDestination reporting_destination,
       RenderFrameHostImpl* request_initiator_frame,
+      network::AttributionReportingRuntimeFeatures
+          attribution_reporting_runtime_features,
       std::string& error_message,
+      int initiator_frame_tree_node_id = RenderFrameHost::kNoFrameTreeNodeId,
       absl::optional<int64_t> navigation_id = absl::nullopt);
 
   // Called when a mapping for private aggregation requests of non-reserved
@@ -193,6 +200,8 @@ class CONTENT_EXPORT FencedFrameReporter
   struct AttributionReportingData {
     BeaconId beacon_id;
     bool is_automatic_beacon;
+    network::AttributionReportingRuntimeFeatures
+        attribution_reporting_runtime_features;
   };
 
   struct PendingEvent {
@@ -200,7 +209,8 @@ class CONTENT_EXPORT FencedFrameReporter
         const std::string& type,
         const std::string& data,
         const url::Origin& request_initiator,
-        absl::optional<AttributionReportingData> attribution_reporting_data);
+        absl::optional<AttributionReportingData> attribution_reporting_data,
+        int initiator_frame_tree_node_id);
 
     PendingEvent(const PendingEvent&);
     PendingEvent(PendingEvent&&);
@@ -216,6 +226,7 @@ class CONTENT_EXPORT FencedFrameReporter
     // The data necessary for attribution reporting. Will be `absl::nullopt` if
     // attribution reporting is disallowed in the initiator frame.
     absl::optional<AttributionReportingData> attribution_reporting_data;
+    int initiator_frame_tree_node_id;
   };
 
   // The per-blink::FencedFrame::ReportingDestination reporting information.
@@ -249,7 +260,8 @@ class CONTENT_EXPORT FencedFrameReporter
       const url::Origin& request_initiator,
       const absl::optional<AttributionReportingData>&
           attribution_reporting_data,
-      std::string& error_message);
+      std::string& error_message,
+      int initiator_frame_tree_node_id);
 
   // Helper to send private aggregation requests in
   // `private_aggregation_event_map_` with key `pa_event_type`.

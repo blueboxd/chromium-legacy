@@ -6,16 +6,28 @@
 
 #include <cmath>
 
+#include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace content {
+
+namespace {
+
+const base::FeatureParam<int> kMaxReportingOriginsPerSiteParam{
+    &blink::features::kConversionMeasurement,
+    "max_reporting_origins_per_source_reporting_site",
+    AttributionConfig::RateLimitConfig::
+        kDefaultMaxReportingOriginsPerSourceReportingSite};
+
+}
 
 bool AttributionConfig::Validate() const {
   if (max_sources_per_origin <= 0) {
     return false;
   }
 
-  if (max_destinations_per_source_site_reporting_origin <= 0) {
+  if (max_destinations_per_source_site_reporting_site <= 0) {
     return false;
   }
 
@@ -54,6 +66,11 @@ bool AttributionConfig::RateLimitConfig::Validate() const {
   return true;
 }
 
+int AttributionConfig::RateLimitConfig::
+    GetMaxSourceReportingOriginsPerReportingSite() const {
+  return kMaxReportingOriginsPerSiteParam.Get();
+}
+
 bool AttributionConfig::EventLevelLimit::Validate() const {
   if (navigation_source_trigger_data_cardinality == 0u) {
     return false;
@@ -80,8 +97,15 @@ bool AttributionConfig::EventLevelLimit::Validate() const {
     return false;
   }
 
-  if (first_report_window_deadline < base::TimeDelta() ||
-      second_report_window_deadline <= first_report_window_deadline) {
+  if (first_navigation_report_window_deadline < base::TimeDelta() ||
+      second_navigation_report_window_deadline <=
+          first_navigation_report_window_deadline) {
+    return false;
+  }
+
+  if (first_event_report_window_deadline < base::TimeDelta() ||
+      second_event_report_window_deadline <=
+          first_event_report_window_deadline) {
     return false;
   }
 
@@ -115,7 +139,23 @@ bool AttributionConfig::AggregateLimit::Validate() const {
     return false;
   }
 
+  if (max_aggregatable_reports_per_source <= 0) {
+    return false;
+  }
+
   return true;
 }
+
+AttributionConfig::EventLevelLimit::EventLevelLimit() = default;
+AttributionConfig::EventLevelLimit::EventLevelLimit(const EventLevelLimit&) =
+    default;
+AttributionConfig::EventLevelLimit::EventLevelLimit(EventLevelLimit&&) =
+    default;
+AttributionConfig::EventLevelLimit::~EventLevelLimit() = default;
+
+AttributionConfig::EventLevelLimit&
+AttributionConfig::EventLevelLimit::operator=(const EventLevelLimit&) = default;
+AttributionConfig::EventLevelLimit&
+AttributionConfig::EventLevelLimit::operator=(EventLevelLimit&&) = default;
 
 }  // namespace content

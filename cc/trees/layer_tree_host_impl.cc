@@ -2211,13 +2211,12 @@ void LayerTreeHostImpl::ReclaimResources(
   }
 
   // If we're not visible, we likely released resources, so we want to
-  // aggressively flush here to make sure those DeleteTextures make it to the
-  // GPU process to free up the memory.
+  // aggressively flush here to make sure those DeleteSharedImage() calls make
+  // it to the GPU process to free up the memory.
   if (!visible_ && layer_tree_frame_sink_->context_provider()) {
-    auto* compositor_context = layer_tree_frame_sink_->context_provider();
-    compositor_context->ContextGL()->ShallowFlushCHROMIUM();
     if (base::FeatureList::IsEnabled(
             features::kReclaimResourcesFlushInBackground)) {
+      auto* compositor_context = layer_tree_frame_sink_->context_provider();
       compositor_context->ContextSupport()->FlushPendingWork();
     }
   }
@@ -2834,6 +2833,22 @@ int LayerTreeHostImpl::RequestedMSAASampleCount() const {
     float device_scale_factor = pending_tree_
                                     ? pending_tree_->device_scale_factor()
                                     : active_tree_->device_scale_factor();
+
+    // Note: this feature ensures that we correctly report the device scale
+    // factor. As of June 2023, without this feature, the vast majority (or
+    // possibly all?) high-dpi screens are incorrectly considered normal DPI
+    // ones here. See the UMA histogram
+    // "Gpu.Rasterization.Raster.MSAASampleCountLog2", which almost always
+    // report "3", i.e. 8xMSAA on macOS, where High-DPI screens are prevalent.
+    if (base::FeatureList::IsEnabled(features::kDetectHiDpiForMsaa)) {
+      float painted_device_scale_factor =
+          pending_tree_ ? pending_tree_->painted_device_scale_factor()
+                        : active_tree_->painted_device_scale_factor();
+      DCHECK(painted_device_scale_factor == 1 || device_scale_factor == 1);
+
+      device_scale_factor *= painted_device_scale_factor;
+    }
+
     return device_scale_factor >= 2.0f ? 4 : 8;
   }
 
@@ -3806,16 +3821,16 @@ void LayerTreeHostImpl::CleanUpTileManagerResources() {
   // contexts. Flushing now helps ensure these are cleaned up quickly
   // preventing driver cache growth. See crbug.com/643251
   if (layer_tree_frame_sink_) {
-    if (auto* compositor_context = layer_tree_frame_sink_->context_provider()) {
-      // TODO(ericrk): Remove ordering barrier once |compositor_context| no
-      // longer uses GL.
-      compositor_context->ContextGL()->OrderingBarrierCHROMIUM();
-      compositor_context->ContextSupport()->FlushPendingWork();
-    }
     if (auto* worker_context =
             layer_tree_frame_sink_->worker_context_provider()) {
       viz::RasterContextProvider::ScopedRasterContextLock hold(worker_context);
-      hold.RasterInterface()->ShallowFlushCHROMIUM();
+      hold.RasterInterface()->OrderingBarrierCHROMIUM();
+    }
+    // There can sometimes be a compositor context with no worker context so use
+    // it to flush. cc doesn't use the compositor context to issue GPU work so
+    // it doesn't require an ordering barrier.
+    if (auto* compositor_context = layer_tree_frame_sink_->context_provider()) {
+      compositor_context->ContextSupport()->FlushPendingWork();
     }
   }
 }
@@ -3925,6 +3940,12 @@ bool LayerTreeHostImpl::InitializeFrameSink(
         worker_context_provider);
     max_texture_size_ =
         worker_context_provider->ContextCapabilities().max_texture_size;
+#if BUILDFLAG(IS_ANDROID)
+    // On Android, DMSAA is only enabled for vulkan until GL regressions are
+    // fixed.
+    use_dmsaa_for_tiles_ &=
+        worker_context_provider->ContextCapabilities().using_vulkan_context;
+#endif
   } else if (context_provider) {
     max_texture_size_ =
         context_provider->ContextCapabilities().max_texture_size;
@@ -4684,7 +4705,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
       SkImageInfo dst_info =
           SkImageInfo::MakeN32Premul(gfx::SizeToSkISize(upload_size));
 
-      sk_sp<SkSurface> surface = SkSurface::MakeRasterDirect(
+      sk_sp<SkSurface> surface = SkSurfaces::WrapPixels(
           dst_info, shm.mapping.memory(), dst_info.minRowBytes());
       surface->getCanvas()->writePixels(
           src_info, const_cast<uint8_t*>(bitmap.GetPixels()),
@@ -4715,13 +4736,13 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
     // directly into the shared memory backing.
     sk_sp<SkSurface> scaled_surface;
     if (layer_tree_frame_sink_->context_provider()) {
-      scaled_surface = SkSurface::MakeRasterN32Premul(upload_size.width(),
-                                                      upload_size.height());
+      scaled_surface = SkSurfaces::Raster(SkImageInfo::MakeN32Premul(
+          upload_size.width(), upload_size.height()));
     } else {
       SkImageInfo dst_info =
           SkImageInfo::MakeN32Premul(gfx::SizeToSkISize(upload_size));
-      scaled_surface = SkSurface::MakeRasterDirect(
-          dst_info, shm.mapping.memory(), dst_info.minRowBytes());
+      scaled_surface = SkSurfaces::WrapPixels(dst_info, shm.mapping.memory(),
+                                              dst_info.minRowBytes());
     }
     SkCanvas* scaled_canvas = scaled_surface->getCanvas();
     scaled_canvas->scale(canvas_scale_x, canvas_scale_y);

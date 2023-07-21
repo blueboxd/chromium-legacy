@@ -14,8 +14,6 @@ anchorScroll
 animation
 animationComposition
 animationDelay
-animationDelayEnd
-animationDelayStart
 animationDirection
 animationDuration
 animationFillMode
@@ -389,6 +387,16 @@ scrollPaddingTop
 scrollSnapAlign
 scrollSnapStop
 scrollSnapType
+scrollStart
+scrollStartBlock
+scrollStartInline
+scrollStartTarget
+scrollStartTargetBlock
+scrollStartTargetInline
+scrollStartTargetX
+scrollStartTargetY
+scrollStartX
+scrollStartY
 scrollTimeline
 scrollTimelineAttachment
 scrollTimelineAxis
@@ -446,6 +454,7 @@ textTransform
 textUnderlineOffset
 textUnderlinePosition
 textWrap
+timelineScope
 toggle
 toggleGroup
 toggleRoot

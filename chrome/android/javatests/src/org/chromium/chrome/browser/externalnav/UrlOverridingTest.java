@@ -56,6 +56,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.PackageManagerUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -1052,6 +1053,12 @@ public class UrlOverridingTest {
             Criteria.checkThat(mActivityTestRule.getActivity().getActivityTab().getUrl().getSpec(),
                     Matchers.is(mTestServer.getURL(HELLO_PAGE)));
         });
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertTrue(
+                    RedirectHandlerTabHelper
+                            .getOrCreateHandlerFor(mActivityTestRule.getActivity().getActivityTab())
+                            .shouldNotOverrideUrlLoading());
+        });
     }
 
     @Test
@@ -1243,8 +1250,8 @@ public class UrlOverridingTest {
 
     @Test
     @LargeTest
-    @Features.
-    EnableFeatures({"FencedFrames<Study,PrivacySandboxAdsAPIsOverride,FencedFramesAPIChanges"})
+    @Features.EnableFeatures(
+            {"FencedFrames<Study,PrivacySandboxAdsAPIsOverride,FencedFramesAPIChanges,FencedFramesDefaultMode"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
             "force-fieldtrial-params=Study.Group:implementation_type/mparch"})
     public void

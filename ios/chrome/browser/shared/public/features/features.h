@@ -123,9 +123,6 @@ BASE_DECLARE_FEATURE(kRemoveExcessNTPs);
 // Chrome.
 BASE_DECLARE_FEATURE(kEnableShortenedPasswordAutoFillInstruction);
 
-// Feature flag to switch images to SFSymbols in the omnibox when enabled.
-BASE_DECLARE_FEATURE(kUseSFSymbolsInOmnibox);
-
 // Feature flag for the follow up of the SF Symbols.
 BASE_DECLARE_FEATURE(kSFSymbolsFollowUp);
 
@@ -185,13 +182,16 @@ bool IsIndicateSyncErrorInOverflowMenuEnabled();
 // Feature flag to move the steady-state (unfocused) omnibox to the bottom.
 BASE_DECLARE_FEATURE(kBottomOmniboxSteadyState);
 
-// Returns true if `kBottomOmniboxSteadyState` feature flag is enabled.
-// This checks that the flag is enabled, not that the omnibox is currently at
-// the bottom.
+// Returns true if `kBottomOmniboxSteadyState` feature flag is enabled and the
+// current device is a phone. This checks that the flag is enabled, not that the
+// omnibox is currently at the bottom.
 bool IsBottomOmniboxSteadyStateEnabled();
 
 // Feature flag to put all clipboard access onto a background thread. Any
 // synchronous clipboard access will always return nil/false.
 BASE_DECLARE_FEATURE(kOnlyAccessClipboardAsync);
+
+// Feature flag to replace all sync-related UI with sign-in ones.
+BASE_DECLARE_FEATURE(kReplaceSyncPromosWithSignInPromos);
 
 #endif  // IOS_CHROME_BROWSER_SHARED_PUBLIC_FEATURES_FEATURES_H_

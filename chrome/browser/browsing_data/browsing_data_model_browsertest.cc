@@ -19,6 +19,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/browsing_data/content/browsing_data_model.h"
 #include "components/browsing_data/content/browsing_data_model_test_util.h"
+#include "components/browsing_data/content/browsing_data_test_util.h"
 #include "components/browsing_data/core/features.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -88,7 +89,7 @@ void JoinInterestGroup(const content::ToRenderFrameHost& adapter,
               trustedBiddingSignalsKeys: ['key1'],
               userBiddingSignals: {some: 'json', data: {here: [1, 2, 3]}},
               ads: [{
-                renderUrl: $4,
+                renderURL: $4,
                 metadata: {ad: 'metadata', here: [1, 2, 3]},
               }],
             },
@@ -180,6 +181,8 @@ void EnsurePageAccessedStorage(content::WebContents* web_contents) {
 using browsing_data_model_test_util::ValidateBrowsingDataEntries;
 using browsing_data_model_test_util::ValidateBrowsingDataEntriesIgnoreUsage;
 using OperationResult = storage::SharedStorageDatabase::OperationResult;
+using browsing_data_test_util::HasDataForType;
+using browsing_data_test_util::SetDataForType;
 
 class BrowsingDataModelBrowserTest
     : public InProcessBrowserTest,
@@ -309,8 +312,9 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
       browsing_data_model.get(),
       {{kTestHost,
         blink::StorageKey::CreateFirstParty(testOrigin),
-        {BrowsingDataModel::StorageType::kSharedStorage,
-         test_entry_storage_size.Get(), /*cookie_count=*/0}}});
+        {{BrowsingDataModel::StorageType::kSharedStorage},
+         test_entry_storage_size.Get(),
+         /*cookie_count=*/0}}});
 
   // Remove origin.
   {
@@ -352,11 +356,13 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
   // Validate that the allowed browsing data model is populated with
   // SharedStorage entry for `kTestHost`.
   url::Origin testOrigin = https_test_server()->GetOrigin(kTestHost);
-  ValidateBrowsingDataEntries(content_settings->allowed_browsing_data_model(),
-                              {{kTestHost,
-                                blink::StorageKey::CreateFirstParty(testOrigin),
-                                {BrowsingDataModel::StorageType::kSharedStorage,
-                                 /*storage_size=*/0, /*cookie_count=*/0}}});
+  ValidateBrowsingDataEntries(
+      content_settings->allowed_browsing_data_model(),
+      {{kTestHost,
+        blink::StorageKey::CreateFirstParty(testOrigin),
+        {{BrowsingDataModel::StorageType::kSharedStorage},
+         /*storage_size=*/0,
+         /*cookie_count=*/0}}});
 }
 
 IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest, TrustTokenIssuance) {
@@ -400,7 +406,7 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest, TrustTokenIssuance) {
       browsing_data_model.get(),
       {{kTestHost,
         https_test_server()->GetOrigin(kTestHost),
-        {BrowsingDataModel::StorageType::kTrustTokens, 100, 0}}});
+        {{BrowsingDataModel::StorageType::kTrustTokens}, 100, 0}}});
 
   // Remove data for the host, and confirm the model updates appropriately.
   {
@@ -440,11 +446,13 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
   url::Origin testOrigin = https_test_server()->GetOrigin(kTestHost);
   content::InterestGroupManager::InterestGroupDataKey data_key{testOrigin,
                                                                testOrigin};
-  ValidateBrowsingDataEntries(browsing_data_model.get(),
-                              {{kTestHost,
-                                data_key,
-                                {BrowsingDataModel::StorageType::kInterestGroup,
-                                 /*storage_size=*/1024, /*cookie_count=*/0}}});
+  ValidateBrowsingDataEntries(
+      browsing_data_model.get(),
+      {{kTestHost,
+        data_key,
+        {{BrowsingDataModel::StorageType::kInterestGroup},
+         /*storage_size=*/1024,
+         /*cookie_count=*/0}}});
   // Remove Interest Group.
   {
     base::RunLoop run_loop;
@@ -480,11 +488,13 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
   url::Origin testOrigin = https_test_server()->GetOrigin(kTestHost);
   content::InterestGroupManager::InterestGroupDataKey data_key{testOrigin,
                                                                testOrigin};
-  ValidateBrowsingDataEntries(allowed_browsing_data_model,
-                              {{kTestHost,
-                                data_key,
-                                {BrowsingDataModel::StorageType::kInterestGroup,
-                                 /*storage_size=*/0, /*cookie_count=*/0}}});
+  ValidateBrowsingDataEntries(
+      allowed_browsing_data_model,
+      {{kTestHost,
+        data_key,
+        {{BrowsingDataModel::StorageType::kInterestGroup},
+         /*storage_size=*/0,
+         /*cookie_count=*/0}}});
 }
 
 IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
@@ -514,11 +524,13 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
   url::Origin testOrigin = https_test_server()->GetOrigin(kTestHost);
   content::InterestGroupManager::InterestGroupDataKey data_key{testOrigin,
                                                                testOrigin};
-  ValidateBrowsingDataEntries(allowed_browsing_data_model,
-                              {{kTestHost,
-                                data_key,
-                                {BrowsingDataModel::StorageType::kInterestGroup,
-                                 /*storage_size=*/0, /*cookie_count=*/0}}});
+  ValidateBrowsingDataEntries(
+      allowed_browsing_data_model,
+      {{kTestHost,
+        data_key,
+        {{BrowsingDataModel::StorageType::kInterestGroup},
+         /*storage_size=*/0,
+         /*cookie_count=*/0}}});
 }
 
 IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
@@ -559,8 +571,9 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
         allowed_browsing_data_model,
         {{kTestHost,
           data_key,
-          {BrowsingDataModel::StorageType::kAttributionReporting,
-           /*storage_size=*/0, /*cookie_count=*/0}}});
+          {{BrowsingDataModel::StorageType::kAttributionReporting},
+           /*storage_size=*/0,
+           /*cookie_count=*/0}}});
   }
 }
 
@@ -590,9 +603,10 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
       allowed_browsing_data_model,
       {{kTestHost,
         testOrigin,
-        {static_cast<BrowsingDataModel::StorageType>(
-             ChromeBrowsingDataModelDelegate::StorageType::kTopics),
-         /*storage_size=*/0, /*cookie_count=*/0}}});
+        {{static_cast<BrowsingDataModel::StorageType>(
+             ChromeBrowsingDataModelDelegate::StorageType::kTopics)},
+         /*storage_size=*/0,
+         /*cookie_count=*/0}}});
   ASSERT_EQ(allowed_browsing_data_model->size(), 1u);
 
   // Clear Topic via BDM
@@ -638,41 +652,114 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
       browsing_data_model.get(),
       {{iwa_url_info1.origin(),
         iwa_url_info1.origin(),
-        {static_cast<BrowsingDataModel::StorageType>(
-             ChromeBrowsingDataModelDelegate::StorageType::kIsolatedWebApp),
-         /*storage_size=*/105, /*cookie_count=*/0}},
+        {{static_cast<BrowsingDataModel::StorageType>(
+             ChromeBrowsingDataModelDelegate::StorageType::kIsolatedWebApp)},
+         /*storage_size=*/105,
+         /*cookie_count=*/0}},
        {iwa_url_info2.origin(),
         iwa_url_info2.origin(),
-        {static_cast<BrowsingDataModel::StorageType>(
-             ChromeBrowsingDataModelDelegate::StorageType::kIsolatedWebApp),
-         /*storage_size=*/505, /*cookie_count=*/0}}});
+        {{static_cast<BrowsingDataModel::StorageType>(
+             ChromeBrowsingDataModelDelegate::StorageType::kIsolatedWebApp)},
+         /*storage_size=*/505,
+         /*cookie_count=*/0}}});
 }
 
 IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
                        QuotaManagedDataHandledCorrectly) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(),
+      https_test_server()->GetURL(kTestHost, "/browsing_data/site_data.html")));
   // Ensure that there isn't any data fetched.
   std::unique_ptr<BrowsingDataModel> browsing_data_model =
       BuildBrowsingDataModel();
   ValidateBrowsingDataEntries(browsing_data_model.get(), {});
   ASSERT_EQ(browsing_data_model->size(), 0u);
 
-  AccessStorage();
+  // TODO(crbug.com/1442473): Investigate and include remaining quota managed
+  // data types ["ServiceWorker", "WebSql", "MediaLicense"].
+  std::string quota_managed_data_types[] = {"IndexedDb", "FileSystem"};
 
-  // Ensure that quota data is fetched
+  for (auto data_type : quota_managed_data_types) {
+    SetDataForType(data_type, web_contents());
+
+    // Ensure that quota data is fetched
+    browsing_data_model = BuildBrowsingDataModel();
+
+    bool is_cookies_tree_model_deprecated = GetParam();
+    if (is_cookies_tree_model_deprecated) {
+      // Validate that quota data is fetched to browsing data model.
+      url::Origin testOrigin = https_test_server()->GetOrigin(kTestHost);
+      auto data_key = blink::StorageKey::CreateFirstParty(testOrigin);
+      ValidateBrowsingDataEntriesIgnoreUsage(
+          browsing_data_model.get(),
+          {{kTestHost,
+            data_key,
+            {{BrowsingDataModel::StorageType::kUnpartitionedQuotaStorage},
+             /*storage_size=*/0,
+             /*cookie_count=*/0}}});
+      ASSERT_EQ(browsing_data_model->size(), 1u);
+
+      // Remove quota entry.
+      {
+        base::RunLoop run_loop;
+        browsing_data_model.get()->RemoveBrowsingData(kTestHost,
+                                                      run_loop.QuitClosure());
+        run_loop.Run();
+      }
+
+      // Rebuild Browsing Data Model and verify entries are empty.
+      browsing_data_model = BuildBrowsingDataModel();
+      ValidateBrowsingDataEntries(browsing_data_model.get(), {});
+      ASSERT_EQ(browsing_data_model->size(), 0u);
+    } else {
+      ValidateBrowsingDataEntries(browsing_data_model.get(), {});
+      ASSERT_EQ(browsing_data_model->size(), 0u);
+    }
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
+                       LocalStorageHandledCorrectly) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(),
+      https_test_server()->GetURL(kTestHost, "/browsing_data/site_data.html")));
+  // Ensure that there isn't any data fetched.
+  std::unique_ptr<BrowsingDataModel> browsing_data_model =
+      BuildBrowsingDataModel();
+  ValidateBrowsingDataEntries(browsing_data_model.get(), {});
+  ASSERT_EQ(browsing_data_model->size(), 0u);
+
+  SetDataForType("LocalStorage", web_contents());
+
+  // Ensure that local storage is fetched
   browsing_data_model = BuildBrowsingDataModel();
+
   bool is_cookies_tree_model_deprecated = GetParam();
   if (is_cookies_tree_model_deprecated) {
-    // Validate that quota data is fetched to browsing data model.
+    // Validate that local storage is fetched to browsing data model.
     url::Origin testOrigin = https_test_server()->GetOrigin(kTestHost);
     auto data_key = blink::StorageKey::CreateFirstParty(testOrigin);
     ValidateBrowsingDataEntriesIgnoreUsage(
         browsing_data_model.get(),
         {{kTestHost,
           data_key,
-          {BrowsingDataModel::StorageType::kUnpartitionedQuotaStorage,
-           /*storage_size=*/0, /*cookie_count=*/0}}});
-
+          {{BrowsingDataModel::StorageType::kLocalStorage},
+           /*storage_size=*/0,
+           /*cookie_count=*/0}}});
     ASSERT_EQ(browsing_data_model->size(), 1u);
+
+    // Remove local storage entry.
+    {
+      base::RunLoop run_loop;
+      browsing_data_model.get()->RemoveBrowsingData(kTestHost,
+                                                    run_loop.QuitClosure());
+      run_loop.Run();
+    }
+
+    // Rebuild Browsing Data Model and verify entries are empty.
+    browsing_data_model = BuildBrowsingDataModel();
+    ValidateBrowsingDataEntries(browsing_data_model.get(), {});
+    ASSERT_EQ(browsing_data_model->size(), 0u);
   } else {
     ValidateBrowsingDataEntries(browsing_data_model.get(), {});
     ASSERT_EQ(browsing_data_model->size(), 0u);

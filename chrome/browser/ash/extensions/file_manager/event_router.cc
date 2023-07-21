@@ -25,6 +25,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -50,6 +51,7 @@
 #include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
+#include "chrome/browser/chromeos/policy/dlp/dialogs/files_policy_dialog.h"
 #include "chrome/browser/extensions/api/file_system/chrome_file_system_delegate_ash.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -152,8 +154,6 @@ file_manager_private::IOTaskState GetIOTaskState(
       return file_manager_private::IO_TASK_STATE_QUEUED;
     case file_manager::io_task::State::kScanning:
       return file_manager_private::IO_TASK_STATE_SCANNING;
-    case file_manager::io_task::State::kWarning:
-      return file_manager_private::IO_TASK_STATE_WARNING;
     case file_manager::io_task::State::kInProgress:
       return file_manager_private::IO_TASK_STATE_IN_PROGRESS;
     case file_manager::io_task::State::kPaused:
@@ -200,18 +200,31 @@ file_manager_private::IOTaskType GetIOTaskType(
   }
 }
 
-file_manager_private::SecurityErrorType GetSecurityErrorType(
-    file_manager::io_task::SecurityErrorType type) {
-  switch (type) {
-    case io_task::SecurityErrorType::kDlp:
-      return file_manager_private::SECURITY_ERROR_TYPE_DLP;
-    case io_task::SecurityErrorType::kEnterpriseConnectors:
-      return file_manager_private::SECURITY_ERROR_TYPE_ENTERPRISE_CONNECTORS;
-    case io_task::SecurityErrorType::kDlpWarningTimeout:
-      return file_manager_private::SECURITY_ERROR_TYPE_DLP_WARNING_TIMEOUT;
+file_manager_private::PolicyErrorType GetPolicyErrorType(
+    absl::optional<file_manager::io_task::PolicyErrorType> type) {
+  if (!type.has_value()) {
+    return file_manager_private::PolicyErrorType::POLICY_ERROR_TYPE_NONE;
+  }
+  switch (type.value()) {
+    case io_task::PolicyErrorType::kDlp:
+      return file_manager_private::POLICY_ERROR_TYPE_DLP;
+    case io_task::PolicyErrorType::kEnterpriseConnectors:
+      return file_manager_private::POLICY_ERROR_TYPE_ENTERPRISE_CONNECTORS;
+    case io_task::PolicyErrorType::kDlpWarningTimeout:
+      return file_manager_private::POLICY_ERROR_TYPE_DLP_WARNING_TIMEOUT;
     default:
       NOTREACHED();
-      return file_manager_private::SECURITY_ERROR_TYPE_NONE;
+      return file_manager_private::POLICY_ERROR_TYPE_NONE;
+  }
+}
+
+file_manager_private::PolicyErrorType GetPolicyErrorType(
+    policy::Policy policy) {
+  switch (policy) {
+    case policy::Policy::kDlp:
+      return file_manager_private::POLICY_ERROR_TYPE_DLP;
+    case policy::Policy::kEnterpriseConnectors:
+      return file_manager_private::POLICY_ERROR_TYPE_ENTERPRISE_CONNECTORS;
   }
 }
 
@@ -1241,10 +1254,7 @@ void EventRouter::OnIOTaskStatus(const io_task::ProgressStatus& status) {
   event_status.task_id = status.task_id;
   event_status.type = GetIOTaskType(status.type);
   event_status.state = GetIOTaskState(status.state);
-  event_status.security_error =
-      status.security_error.has_value()
-          ? GetSecurityErrorType(status.security_error.value())
-          : file_manager_private::SECURITY_ERROR_TYPE_NONE;
+  event_status.policy_error = GetPolicyErrorType(status.policy_error);
   event_status.destination_volume_id = status.GetDestinationVolumeId();
   event_status.show_notification = status.show_notification;
 
@@ -1300,16 +1310,20 @@ void EventRouter::OnIOTaskStatus(const io_task::ProgressStatus& status) {
   event_status.total_bytes = status.total_bytes;
 
   // CopyOrMoveIOTask can enter PAUSED state when it needs the user to resolve
-  // a file name conflict. Add PauseParams for the file name conflict, to send
-  // to the files app UI conflict dialog.
+  // a file name conflict, or because it needs user to review a policy warning.
   if (GetIOTaskState(status.state) ==
       file_manager_private::IO_TASK_STATE_PAUSED) {
     file_manager_private::PauseParams pause_params;
-    pause_params.conflict_name = status.pause_params.conflict_name;
-    pause_params.conflict_multiple = status.pause_params.conflict_multiple;
-    pause_params.conflict_is_directory =
-        status.pause_params.conflict_is_directory;
-    pause_params.conflict_target_url = status.pause_params.conflict_target_url;
+    pause_params.conflict_params->conflict_name =
+        status.pause_params.conflict_params->conflict_name;
+    pause_params.conflict_params->conflict_multiple =
+        status.pause_params.conflict_params->conflict_multiple;
+    pause_params.conflict_params->conflict_is_directory =
+        status.pause_params.conflict_params->conflict_is_directory;
+    pause_params.conflict_params->conflict_target_url =
+        status.pause_params.conflict_params->conflict_target_url;
+    pause_params.policy_params->type =
+        GetPolicyErrorType(status.pause_params.policy_params->type);
     event_status.pause_params = std::move(pause_params);
   }
 

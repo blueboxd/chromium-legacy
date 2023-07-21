@@ -12,6 +12,7 @@ import {PropStatus} from '../../externs/ts/state.js';
 import {getStore} from '../../state/store.js';
 
 import {DirectoryModel} from './directory_model.js';
+import {ProvidersModel} from './providers_model.js';
 
 /**
  * The empty state image for the Recents folder.
@@ -38,6 +39,15 @@ const TRASH_EMPTY_FOLDER =
     'foreground/images/files/ui/empty_trash_folder.svg#empty_trash_folder';
 
 /**
+ * The reauthentication required image for ODFS. There are no files when
+ * reauthentication is required (scan fails).
+ * @type {string}
+ * @const
+ */
+const ODFS_REAUTHENTICATION_REQUIRED = 'foreground/images/files/ui/' +
+    'odfs_reauthentication_required.svg#odfs_reauthentication_required';
+
+/**
  * Empty folder controller which controls the empty folder element inside
  * the file list container.
  */
@@ -45,9 +55,10 @@ export class EmptyFolderController {
   /**
    * @param {!HTMLElement} emptyFolder Empty folder element.
    * @param {!DirectoryModel} directoryModel Directory model.
+   * @param {!ProvidersModel} providersModel Providers model.
    * @param {!FakeEntry} recentEntry Entry represents Recent view.
    */
-  constructor(emptyFolder, directoryModel, recentEntry) {
+  constructor(emptyFolder, directoryModel, providersModel, recentEntry) {
     /**
      * @private {!HTMLElement}
      */
@@ -57,6 +68,12 @@ export class EmptyFolderController {
      * @private {!DirectoryModel}
      */
     this.directoryModel_ = directoryModel;
+
+    /**
+     * Model for providers (providing extensions).
+     * @private {!ProvidersModel}
+     */
+    this.providersModel_ = providersModel;
 
     /**
      * @private {!FakeEntry}
@@ -82,7 +99,7 @@ export class EmptyFolderController {
     this.directoryModel_.addEventListener(
         'scan-started', this.onScanStarted_.bind(this));
     this.directoryModel_.addEventListener(
-        'scan-failed', this.onScanFinished_.bind(this));
+        'scan-failed', this.onScanFailed_.bind(this));
     this.directoryModel_.addEventListener(
         'scan-cancelled', this.onScanFinished_.bind(this));
     this.directoryModel_.addEventListener(
@@ -98,6 +115,24 @@ export class EmptyFolderController {
   onScanStarted_() {
     this.isScanning_ = true;
     this.updateUI_();
+  }
+
+  /**
+   * Handles scan fail.
+   * @private
+   */
+  onScanFailed_(event) {
+    this.isScanning_ = false;
+    let odfsAndReauthenticationRequired = false;
+    // Check if ODFS is the volume and reauthentication is required.
+    // NO_MODIFICATION_ALLOWED_ERR is equivalent to the ACCESS_DENIED error
+    // thrown by ODFS.
+    const currentVolumeInfo = this.directoryModel_.getCurrentVolumeInfo();
+    if (util.isOneDrive(currentVolumeInfo) &&
+        event.error.name == util.FileError.NO_MODIFICATION_ALLOWED_ERR) {
+      odfsAndReauthenticationRequired = true;
+    }
+    this.updateUI_(odfsAndReauthenticationRequired);
   }
 
   /**
@@ -133,10 +168,56 @@ export class EmptyFolderController {
   }
 
   /**
-   * Updates visibility of empty folder UI.
+   * TODO(b/254586358): i18n these strings.
+   * Shows the ODFS reauthentication required message. Include the "Sign in"
+   * and "Settings" links and set the handlers.
    * @private
    */
-  updateUI_() {
+  showODFSReauthenticationMessage_() {
+    const titleSpan = document.createElement('span');
+    titleSpan.id = 'empty-folder-title';
+    titleSpan.innerText = 'You\'ve been logged out';
+
+    const text = document.createElement('span');
+    text.innerText = 'Sign in to your Microsoft account';
+
+    const signInLink = document.createElement('a');
+    signInLink.setAttribute('class', 'sign-in');
+    signInLink.innerText = 'Sign in';
+    signInLink.addEventListener('click', this.onODFSSignIn_.bind(this));
+
+    const descSpan = document.createElement('span');
+    descSpan.id = 'empty-folder-desc';
+    descSpan.appendChild(text);
+    descSpan.appendChild(document.createElement('br'));
+    descSpan.appendChild(signInLink);
+
+    this.label_.appendChild(titleSpan);
+    this.label_.appendChild(document.createElement('br'));
+    this.label_.appendChild(descSpan);
+  }
+
+  /**
+   * Called when "Sign in" link for ODFS reauthentication is clicked. Request
+   * a new ODFS mount. ODFS will unmount the old mount if the authentication is
+   * successful in the new mount.
+   * @private
+   */
+  onODFSSignIn_() {
+    const currentVolumeInfo = this.directoryModel_.getCurrentVolumeInfo();
+    if (util.isOneDrive(currentVolumeInfo) &&
+        currentVolumeInfo.providerId !== undefined) {
+      this.providersModel_.requestMount(currentVolumeInfo.providerId);
+    }
+  }
+
+  /**
+   * Updates visibility of empty folder UI. `odfsAndReauthenticationRequired` is
+   * true when the volume is ODFS and reauthentication is required.
+   * @param {boolean} odfsAndReauthenticationRequired
+   * @private
+   */
+  updateUI_(odfsAndReauthenticationRequired = false) {
     const currentRootType = this.directoryModel_.getCurrentRootType();
 
     let svgRef = null;
@@ -144,6 +225,8 @@ export class EmptyFolderController {
       svgRef = RECENTS_EMPTY_FOLDER;
     } else if (currentRootType === VolumeManagerCommon.RootType.TRASH) {
       svgRef = TRASH_EMPTY_FOLDER;
+    } else if (odfsAndReauthenticationRequired) {
+      svgRef = ODFS_REAUTHENTICATION_REQUIRED;
     } else {
       if (util.isSearchV2Enabled()) {
         const {search} = getStore().getState();
@@ -169,6 +252,11 @@ export class EmptyFolderController {
     if (svgRef === TRASH_EMPTY_FOLDER) {
       this.showMessage_(
           str('EMPTY_TRASH_FOLDER_TITLE'), str('EMPTY_TRASH_FOLDER_DESC'));
+      return;
+    }
+
+    if (svgRef == ODFS_REAUTHENTICATION_REQUIRED) {
+      this.showODFSReauthenticationMessage_();
       return;
     }
 

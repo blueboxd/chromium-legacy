@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/rust.gni")
 import("//build/rust/rust_executable.gni")
 import("//build/rust/rust_macro.gni")
 import("//build/rust/rust_static_library.gni")
@@ -104,7 +103,7 @@ template("cargo_crate") {
   if (defined(invoker.rustc_metadata)) {
     _rustc_metadata = invoker.rustc_metadata
   } else if (defined(invoker.epoch)) {
-    _rustc_metadata = invoker.epoch
+    _rustc_metadata = "${_crate_name}-${invoker.epoch}"
   }
 
   # Executables need to have unique names. Work out a prefix.
@@ -217,7 +216,12 @@ template("cargo_crate") {
     rustenv = _rustenv
 
     if (!defined(build_native_rust_unit_tests)) {
-      build_native_rust_unit_tests = true
+      build_native_rust_unit_tests = _crate_type != "proc-macro"
+    }
+    if (build_native_rust_unit_tests) {
+      # Unit tests in a proc-macro crate type don't make sense, you can't
+      # compile executables against the `proc_macro` crate.
+      assert(_crate_type != "proc-macro")
     }
 
     # The unit tests for each target, if generated, should be unique as well.
@@ -291,8 +295,7 @@ template("cargo_crate") {
     # Extra targets required to make build script work
     action("${_build_script_name}_output") {
       script = rebase_path("//build/rust/run_build_script.py")
-      build_script_target =
-          ":${_build_script_name}($host_toolchain_no_sanitizers)"
+      build_script_target = ":${_build_script_name}($rust_macro_toolchain)"
       deps = [ build_script_target ]
 
       # The build script may be built with a different toolchain when
@@ -347,7 +350,10 @@ template("cargo_crate") {
       }
     }
 
-    if (current_toolchain == host_toolchain_no_sanitizers) {
+    if (toolchain_for_rust_host_build_tools) {
+      # The build script is only available to be built on the host, and we use
+      # the rust_macro_toolchain for it to unblock building them while the
+      # Chromium stdlib is still being compiled.
       rust_executable(_build_script_name) {
         sources = invoker.build_sources
         crate_root = invoker.build_root
@@ -370,7 +376,21 @@ template("cargo_crate") {
                                  "edition",
                                  "rustflags",
                                ])
-        configs -= [ "//build/config/compiler:chromium_code" ]
+        configs -= [
+          "//build/config/compiler:chromium_code",
+
+          # Avoid generating profiling data for build scripts.
+          #
+          # TODO(crbug.com/1426472): determine for sure whether to remove this
+          # config. I'm not sure of the overlap between PGO instrumentation and
+          # code coverage instrumentation, but we definitely don't want build
+          # script coverage for PGO, while we might for test coverage metrics.
+          #
+          # If we do include build script output in test metrics, it could be
+          # misleading: exercising some code from a build script doesn't give us
+          # the same signal as an actual test.
+          "//build/config/coverage:default_coverage",
+        ]
         configs += [ "//build/config/compiler:no_chromium_code" ]
       }
     } else {

@@ -41,6 +41,10 @@
 using metrics::OmniboxEventProto;
 using Selection = OmniboxPopupSelection;
 
+namespace ui {
+struct AXNodeData;
+}
+
 namespace {
 
 class TestOmniboxPopupView : public OmniboxPopupView {
@@ -52,6 +56,11 @@ class TestOmniboxPopupView : public OmniboxPopupView {
   void ProvideButtonFocusHint(size_t line) override {}
   void OnMatchIconUpdated(size_t match_index) override {}
   void OnDragCanceled() override {}
+  void GetPopupAccessibleNodeData(ui::AXNodeData* node_data) override {}
+  void AddPopupAccessibleNodeData(ui::AXNodeData* node_data) override {}
+  std::u16string GetAccessibleButtonTextForResult(size_t line) override {
+    return u"";
+  }
 };
 
 void OpenUrlFromEditBox(TestOmniboxEditModel* model,
@@ -83,13 +92,11 @@ class OmniboxEditModelTest : public testing::Test {
     feature_list.InitAndEnableFeature(omnibox::kSiteSearchStarterPack);
 
     edit_model_delegate_ = std::make_unique<TestOmniboxEditModelDelegate>();
-    auto omnibox_client = std::make_unique<TestOmniboxClient>();
-    auto* omnibox_client_ptr = omnibox_client.get();
-    view_ = std::make_unique<TestOmniboxView>(edit_model_delegate_.get(),
-                                              std::move(omnibox_client));
+    view_ = std::make_unique<TestOmniboxView>(
+        edit_model_delegate_.get(), std::make_unique<TestOmniboxClient>());
 
-    view_->SetEditModel(std::make_unique<TestOmniboxEditModel>(
-        view_.get(), edit_model_delegate_.get(), omnibox_client_ptr, nullptr));
+    view_->controller()->set_edit_model(std::make_unique<TestOmniboxEditModel>(
+        view_->controller(), view_.get(), edit_model_delegate_.get(), nullptr));
   }
 
   TestOmniboxView* view() { return view_.get(); }
@@ -634,13 +641,11 @@ class OmniboxEditModelPopupTest : public ::testing::Test {
  public:
   OmniboxEditModelPopupTest() {
     edit_model_delegate_ = std::make_unique<TestOmniboxEditModelDelegate>();
-    auto omnibox_client = std::make_unique<TestOmniboxClient>();
-    auto* omnibox_client_ptr = omnibox_client.get();
-    view_ = std::make_unique<TestOmniboxView>(edit_model_delegate_.get(),
-                                              std::move(omnibox_client));
+    view_ = std::make_unique<TestOmniboxView>(
+        edit_model_delegate_.get(), std::make_unique<TestOmniboxClient>());
 
-    view_->SetEditModel(std::make_unique<TestOmniboxEditModel>(
-        view_.get(), edit_model_delegate_.get(), omnibox_client_ptr,
+    view_->controller()->set_edit_model(std::make_unique<TestOmniboxEditModel>(
+        view_->controller(), view_.get(), edit_model_delegate_.get(),
         &pref_service_));
 
     omnibox::RegisterProfilePrefs(pref_service_.registry());

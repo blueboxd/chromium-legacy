@@ -38,8 +38,8 @@ class FakeMojoPasswordManagerDriver
 
 #if BUILDFLAG(IS_ANDROID)
   MOCK_METHOD(void,
-              ShowTouchToFill,
-              (autofill::mojom::SubmissionReadinessState),
+              ShowKeyboardReplacingSurface,
+              (autofill::mojom::SubmissionReadinessState, bool),
               (override));
 #endif
 

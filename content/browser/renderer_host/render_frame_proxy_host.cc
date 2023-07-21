@@ -213,8 +213,7 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
 }
 
 std::string RenderFrameProxyHost::ToDebugString() {
-  return "RFPH:" +
-         GetRenderViewHost()->GetDelegate()->GetCreatorLocation().ToString();
+  return "RFPH:" + frame_tree_node_->current_frame_host()->ToDebugString();
 }
 
 bool RenderFrameProxyHost::InitRenderFrameProxy(
@@ -366,18 +365,17 @@ void RenderFrameProxyHost::VisibilityChanged(
 }
 
 void RenderFrameProxyHost::UpdateOpener() {
-  // Another frame in this proxy's SiteInstance may reach the new opener by
+  // Another frame in this proxy's SiteInstanceGroup may reach the new opener by
   // first reaching this proxy and then referencing its window.opener.  Ensure
   // the new opener's proxy exists in this case. If this is already a proxy for
   // a frame in another BrowsingInstance in the same CoopRelatedGroup, we should
   // not add extra proxies, as these are not discoverable via window.opener
   // because property access is restricted.
-  bool is_coop_rp_proxy = frame_tree_node_->current_frame_host()
-                              ->GetSiteInstance()
-                              ->IsCoopRelatedSiteInstance(GetSiteInstance()) &&
-                          !frame_tree_node_->current_frame_host()
-                               ->GetSiteInstance()
-                               ->IsRelatedSiteInstance(GetSiteInstance());
+  SiteInstanceGroup* current_group =
+      frame_tree_node_->current_frame_host()->GetSiteInstance()->group();
+  bool is_coop_rp_proxy =
+      current_group->IsCoopRelatedSiteInstanceGroup(site_instance_group()) &&
+      !current_group->IsRelatedSiteInstanceGroup(site_instance_group());
   if (is_coop_rp_proxy) {
     return;
   }
@@ -758,6 +756,9 @@ void RenderFrameProxyHost::OpenURL(blink::mojom::OpenURLParamsPtr params) {
   // See also https://crbug.com/647772.
   // TODO(clamy): The transition should probably be changed for POST navigations
   // to PAGE_TRANSITION_FORM_SUBMIT. See https://crbug.com/829827.
+  // TODO(https://crbug.com/1261963): Determine which source_site_instance from
+  // site_instance_group_ to use for navigations to about:blank, once
+  // RenderFrameProxyHost no longer has a site_instance_.
   frame_tree_node_->navigator().NavigateFromFrameProxy(
       current_rfh, validated_url,
       base::OptionalToPtr(params->initiator_frame_token), GetProcess()->GetID(),

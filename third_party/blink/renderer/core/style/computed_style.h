@@ -108,6 +108,7 @@ class StyleDifference;
 class StyleImage;
 class StyleInheritedVariables;
 class StyleInitialData;
+class StyleRay;
 class StyleResolver;
 class StyleResolverState;
 class StyleSelfAlignmentData;
@@ -399,11 +400,6 @@ class ComputedStyle : public ComputedStyleBase,
     // The container-name property affects which container is queried by
     // rules matching descedant elements.
     kDescendantAffecting,
-    // Properties which can affect the follow elements changed:
-    // descendants, subsequent siblings, and descendants of subsequent siblings.
-    //
-    // For example, scroll-timeline-* properties.
-    kSiblingDescendantAffecting,
   };
   CORE_EXPORT static Difference ComputeDifference(
       const ComputedStyle* old_style,
@@ -1006,9 +1002,9 @@ class ComputedStyle : public ComputedStyleBase,
     return !HasAutoColumnCount() || !HasAutoColumnWidth();
   }
   bool ColumnRuleIsTransparent() const {
-    return !ColumnRuleColor()
-                .Resolve(GetCurrentColor(), UsedColorScheme())
-                .AlphaAsInteger();
+    return ColumnRuleColor()
+        .Resolve(GetCurrentColor(), UsedColorScheme())
+        .IsFullyTransparent();
   }
   bool ColumnRuleEquivalent(const ComputedStyle& other_style) const;
   bool HasColumnRule() const {
@@ -1765,6 +1761,10 @@ class ComputedStyle : public ComputedStyleBase,
     return IsInlineOrBlockSizeContainer() && StyleType() == kPseudoIdNone;
   }
 
+  bool DependsOnContainerQueries() const {
+    return DependsOnSizeContainerQueries() || DependsOnStyleContainerQueries();
+  }
+
   static bool IsContentVisibilityVisible(
       EContentVisibility content_visibility,
       const AtomicString& toggle_visibility) {
@@ -1909,6 +1909,10 @@ class ComputedStyle : public ComputedStyleBase,
   AppliedTextDecorationData() const {
     return IsDecoratingBox() ? EnsureAppliedTextDecorationsCache()
                              : BaseTextDecorationDataInternal().get();
+  }
+  const Vector<AppliedTextDecoration, 1>* BaseAppliedTextDecorations() const {
+    const auto base = BaseTextDecorationDataInternal();
+    return base ? &base->data : nullptr;
   }
 
   // Returns true if this a "decorating box".
@@ -2642,12 +2646,16 @@ class ComputedStyle : public ComputedStyleBase,
                                 const gfx::RectF& bounding_box,
                                 gfx::Transform&) const;
   PointAndTangent CalculatePointAndTangentOnBasicShape(
+      const BasicShape& shape,
       const LayoutBox* box,
-      const gfx::RectF& bounding_box) const;
+      const gfx::PointF starting_point,
+      const gfx::SizeF reference_box_size) const;
   PointAndTangent CalculatePointAndTangentOnRay(
+      const StyleRay& ray,
       const LayoutBox* box,
-      const gfx::RectF& bounding_box) const;
-  PointAndTangent CalculatePointAndTangentOnPath() const;
+      const gfx::PointF starting_point,
+      const gfx::SizeF reference_box_size) const;
+  PointAndTangent CalculatePointAndTangentOnPath(const Path& path) const;
 
   bool ScrollAnchorDisablingPropertyChanged(const ComputedStyle& other,
                                             const StyleDifference&) const;

@@ -172,8 +172,9 @@ ExtensionMenuItemView::ExtensionMenuItemView(
 
 ExtensionMenuItemView::ExtensionMenuItemView(
     Browser* browser,
+    bool is_enterprise,
     std::unique_ptr<ToolbarActionViewController> controller,
-    views::Button::PressedCallback site_access_toggle_callback,
+    base::RepeatingCallback<void(bool)> site_access_toggle_callback,
     views::Button::PressedCallback site_permissions_button_callback)
     : browser_(browser),
       controller_(std::move(controller)),
@@ -220,7 +221,14 @@ ExtensionMenuItemView::ExtensionMenuItemView(
                   // Site access toggle.
                   views::Builder<views::ToggleButton>()
                       .CopyAddressTo(&site_access_toggle_)
-                      .SetCallback(site_access_toggle_callback),
+                      .SetCallback(base::BindRepeating(
+                          [](views::ToggleButton* toggle_button,
+                             base::RepeatingCallback<void(bool)>
+                                 site_access_toggle_callback) {
+                            site_access_toggle_callback.Run(
+                                toggle_button->GetIsOn());
+                          },
+                          site_access_toggle_, site_access_toggle_callback)),
                   // Context menu button.
                   views::Builder<HoverButton>(
                       std::make_unique<HoverButton>(
@@ -239,7 +247,12 @@ ExtensionMenuItemView::ExtensionMenuItemView(
               views::Builder<HoverButton>(
                   std::make_unique<HoverButton>(
                       site_permissions_button_callback,
-                      /*icon_view=*/nullptr, std::u16string(), std::u16string(),
+                      is_enterprise ? std::make_unique<views::ImageView>(
+                                          ui::ImageModel::FromVectorIcon(
+                                              vector_icons::kBusinessIcon,
+                                              ui::kColorIcon, icon_size))
+                                    : nullptr,
+                      std::u16string(), std::u16string(),
                       std::move(site_permissions_button_icon)))
                   .CopyAddressTo(&site_permissions_button_)
                   // Margin to align the main and secondary row text. Icon

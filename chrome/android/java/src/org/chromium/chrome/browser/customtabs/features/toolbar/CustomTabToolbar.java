@@ -395,6 +395,11 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         return (ImageButton) mCustomActionButtons.getChildAt(index);
     }
 
+    @VisibleForTesting
+    public ImageButton getMaximizeButtonForTest() {
+        return (ImageButton) findViewById(R.id.custom_tabs_sidepanel_maximize);
+    }
+
     @Override
     protected int getTabStripHeight() {
         return 0;
@@ -1275,10 +1280,15 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                 displayText = formattedDisplayText;
             } else {
                 UrlBarData urlBarData = mLocationBarDataProvider.getUrlBarData();
-                displayText = urlBarData.displayText.subSequence(
-                        urlBarData.originStartIndex, urlBarData.originEndIndex);
                 originStart = 0;
-                originEnd = displayText.length();
+                if (urlBarData.displayText != null) {
+                    displayText = urlBarData.displayText.subSequence(
+                            urlBarData.originStartIndex, urlBarData.originEndIndex);
+                    originEnd = displayText.length();
+                } else {
+                    displayText = null;
+                    originEnd = 0;
+                }
             }
 
             mUrlCoordinator.setUrlBarData(

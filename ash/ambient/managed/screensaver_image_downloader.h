@@ -7,8 +7,10 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ash/ash_export.h"
+#include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
@@ -50,19 +52,45 @@ class ASH_EXPORT ScreensaverImageDownloader {
   };
 
  public:
-  // Convenience definition for the callback provided by clients wanting to
-  // download images.
-  using ResultCallback =
-      base::OnceCallback<void(ScreensaverImageDownloadResult result,
-                              absl::optional<base::FilePath> path)>;
+  using ImageListUpdatedCallback =
+      base::RepeatingCallback<void(const std::vector<base::FilePath>& images)>;
+
+  ScreensaverImageDownloader() = delete;
+
+  ScreensaverImageDownloader(
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+      const base::FilePath& download_directory,
+      ImageListUpdatedCallback image_list_updated_callback);
+
+  ~ScreensaverImageDownloader();
+
+  ScreensaverImageDownloader(const ScreensaverImageDownloader&) = delete;
+  ScreensaverImageDownloader& operator=(const ScreensaverImageDownloader&) =
+      delete;
+
+  // Updates the list of images to be cached to `image_url_list`. Processing the
+  // new list can download new images and delete images that are no longer being
+  // referenced in the new list.
+  void UpdateImageUrlList(const base::Value::List& image_url_list);
+
+  std::vector<base::FilePath> GetScreensaverImages();
+
+  // Used for setting images in tests.
+  void SetImagesForTesting(const std::vector<base::FilePath>& images);
+
+  base::FilePath GetDowloadDirForTesting();
+
+ private:
+  friend class ScreensaverImageDownloaderTest;
 
   // Represents a single image download request from `image_url` to
   // `download_directory_`. Once this job has been completed, `result_callback`
   // will be invoked with the actual result, and the path to the downloaded file
   // if the operation succeeded.
+  // TODO(b/280810255): Delete this class, and use a plain std::string.
   struct Job {
     Job() = delete;
-    Job(const std::string& image_url, ResultCallback result_callback);
+    explicit Job(const std::string& image_url);
     ~Job();
 
     // Creates a unique name based on a hash operation on the image URL to
@@ -70,20 +98,17 @@ class ASH_EXPORT ScreensaverImageDownloader {
     std::string file_name() const;
 
     const std::string image_url;
-    ResultCallback result_callback;
   };
 
-  ScreensaverImageDownloader() = delete;
+  // Deletes all images on disk in the cache directory that are not referenced
+  // by the given `new_image_urls`.
+  std::vector<base::FilePath> DeleteUnreferencedImageFiles(
+      const std::vector<std::string>& new_image_urls);
 
-  ScreensaverImageDownloader(
-      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
-      const base::FilePath& download_directory);
-
-  ~ScreensaverImageDownloader();
-
-  ScreensaverImageDownloader(const ScreensaverImageDownloader&) = delete;
-  ScreensaverImageDownloader& operator=(const ScreensaverImageDownloader&) =
-      delete;
+  // Called when unreferenced images have been deleted. Used for removing stale
+  // file references from the in-memory `downloaded_images_` cache.
+  void OnUnreferencedImagesDeleted(
+      std::vector<base::FilePath> file_paths_deleted);
 
   // Downloads a new external image from `image_url` to the download folder as
   // `file_name`. The async `callback` will pass the result, and the file path
@@ -96,11 +121,6 @@ class ASH_EXPORT ScreensaverImageDownloader {
 
   // Clears out the download folder.
   void DeleteDownloadedImages();
-
-  base::FilePath GetDowloadDirForTesting();
-
- private:
-  friend class ScreensaverImageDownloaderTest;
 
   // Verifies that the download directory is present and writable, or attempts
   // to create it otherwise. The result of this operation is passed along to
@@ -144,9 +164,14 @@ class ASH_EXPORT ScreensaverImageDownloader {
   // jobs will be queued, and executed sequentially.
   base::queue<std::unique_ptr<Job>> downloading_queue_;
 
+  base::flat_set<base::FilePath> downloaded_images_;
+
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   base::FilePath download_directory_;
+
+  // Used to notify changes in the list of downloaded images.
+  ImageListUpdatedCallback image_list_updated_callback_;
 
   base::WeakPtrFactory<ScreensaverImageDownloader> weak_ptr_factory_{this};
 };

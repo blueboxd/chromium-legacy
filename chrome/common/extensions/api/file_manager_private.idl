@@ -306,7 +306,6 @@ enum SharesheetLaunchSource {
 enum IOTaskState {
   queued,
   scanning,
-  warning,
   in_progress,
   paused,
   success,
@@ -327,10 +326,15 @@ enum IOTaskType {
   zip
 };
 
-enum SecurityErrorType {
+enum PolicyErrorType {
   dlp,
   enterprise_connectors,
   dlp_warning_timeout
+};
+
+enum PolicyDialogType {
+  warning,
+  error
 };
 
 enum RecentDateBucket {
@@ -1063,8 +1067,8 @@ dictionary IOTaskParams {
   boolean? showNotification;
 };
 
-// IO task state::PAUSED parameters, see file_manager::io_task::PauseParams.
-dictionary PauseParams {
+// IO task state::PAUSED name conflict parameters, see file_manager::io_task::ConflictPauseParams.
+dictionary ConflictPauseParams {
   // The conflict file name.
   DOMString? conflictName;
 
@@ -1078,14 +1082,40 @@ dictionary PauseParams {
   DOMString? conflictTargetUrl;
 };
 
-// Resume IO Task parameters, see file_manager::io_task::ResumeParams.
-dictionary ResumeParams {
+// IO task state::PAUSED policy parameters, see file_manager::io_task::PolicyPauseParams.
+dictionary PolicyPauseParams {
+  PolicyErrorType type;
+};
+
+// IO task state::PAUSED parameters, see file_manager::io_task::PauseParams.
+dictionary PauseParams {
+  // Set iff pausing due to name conflict.
+  ConflictPauseParams? conflictParams;
+  // Set iff pausing due to policy.
+  PolicyPauseParams? policyParams;
+};
+
+// Resume IO Task parameters, see file_manager::io_task::ConflictResumeParams.
+dictionary ConflictResumeParams {
   // How to resolve a CopyOrMoveIOTask file name conflict: either 'keepboth'
   // or 'replace'.
   DOMString? conflictResolve;
 
   // Set true if conflictResolve should apply to future file name conflicts.
   boolean? conflictApplyToAll;
+};
+
+// Resume IO Task parameters, see file_manager::io_task::PolicyResumeParams.
+dictionary PolicyResumeParams {
+  PolicyErrorType type;
+};
+
+// Resume IO Task parameters, see file_manager::io_task::ResumeParams.
+dictionary ResumeParams {
+  // Set iff paused due to name conflict.
+  ConflictResumeParams? conflictParams;
+  // Set iff paused due to policy.
+  PolicyResumeParams? policyParams;
 };
 
 // IO Task Progress status, see file_manager::io_task::ProgressStatus.
@@ -1097,9 +1127,9 @@ dictionary ProgressStatus {
   // Current state of the task sending the progress.
   IOTaskState state;
 
-  // Type of security error that occurred, if any.
+  // Type of policy error that occurred, if any.
   // Used only if Data Leak Prevention or Enterprise Connectors policies apply.
-  SecurityErrorType securityError;
+  PolicyErrorType? policyError;
 
   // Name of the first source entry.
   DOMString sourceName;
@@ -1940,6 +1970,10 @@ interface Functions {
   // each I/O task's progress status.
   static void resumeIOTask(long taskId, ResumeParams params);
 
+  // Shows a policy dialog for a task. Task ids are communicated to the Files
+  // App in each I/O task's progress status.
+  static void showPolicyDialog(long taskId, PolicyDialogType type, optional PolicyErrorType policy);
+
   // Makes I/O tasks in state::PAUSED emit (broadcast) their current I/O task
   // progress status.
   static void progressPausedTasks();
@@ -1967,7 +2001,7 @@ interface Functions {
 
   // Starts calculating the space required to pin all the items in a users My
   // drive.
-  static void calculateBulkPinRequiredSpace();
+  static void calculateBulkPinRequiredSpace(SimpleCallback callback);
 };
 
 // Events supported by fileManagerPrivate API. These events are broadcasted.

@@ -28,9 +28,9 @@
 #include "content/public/test/content_browser_test_content_browser_client.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/local_network_access_util.h"
+#include "content/public/test/resource_load_observer.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
-#include "content/test/resource_load_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_util.h"
@@ -2943,7 +2943,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  // TODO(https://crbug.com/1170335): Expect `kAllow` here once inheritance is
+  // TODO(https://crbug.com/1291252): Expect `kAllow` here once inheritance is
   // properly implemented.
   EXPECT_EQ(security_state->local_network_request_policy,
             network::mojom::LocalNetworkRequestPolicy::kBlock);
@@ -2961,7 +2961,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  // TODO(https://crbug.com/1170335): Expect `kAllow` here once inheritance is
+  // TODO(https://crbug.com/1291252): Expect `kAllow` here once inheritance is
   // properly implemented.
   EXPECT_EQ(security_state->local_network_request_policy,
             network::mojom::LocalNetworkRequestPolicy::kBlock);
@@ -3949,7 +3949,7 @@ IN_PROC_BROWSER_TEST_F(
 // against the parent document's address space. This is incorrect, as the
 // initiator of the navigation is not always the parent document.
 //
-// TODO(https://crbug.com/1170335): Revisit this when the initiator's address
+// TODO(https://crbug.com/1291252): Revisit this when the initiator's address
 // space is used instead.
 //
 // Top-level navigations are never blocked.

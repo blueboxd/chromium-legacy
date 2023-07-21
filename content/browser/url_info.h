@@ -42,6 +42,7 @@ namespace content {
 // SiteInfo::requires_origin_keyed_process().
 //
 // Note: it is not expected that this struct will be exposed in content/public.
+class IsolationContext;
 class UrlInfoInit;
 
 struct CONTENT_EXPORT UrlInfo {
@@ -55,14 +56,15 @@ struct CONTENT_EXPORT UrlInfo {
     kNone = (1 << 0),
     // The Origin-Agent-Cluster header is requesting OAC isolation for `url`'s
     // origin in the renderer. If granted, this is tracked for consistency in
-    // ChildProcessSecurityPolicyImpl. If kRequiresOriginKeyedProcess is not
-    // set, then this only affects the renderer.
-    kOriginAgentCluster = (1 << 1),
-    // If kOriginAgentCluster is set, the following bit triggers an origin-keyed
-    // process for `url`'s origin. If kRequiresOriginKeyedProcess is not set and
-    // kOriginAgentCluster is,  then OAC will be logical only, i.e. implemented
-    // in the renderer via a separate AgentCluster.
-    kRequiresOriginKeyedProcess = (1 << 2),
+    // ChildProcessSecurityPolicyImpl. If kRequiresOriginKeyedProcessByHeader is
+    // not set, then this only affects the renderer.
+    kOriginAgentClusterByHeader = (1 << 1),
+    // If kOriginAgentClusterByHeader is set, the following bit triggers an
+    // origin-keyed process for `url`'s origin. If
+    // kRequiresOriginKeyedProcessByHeader is not set and
+    // kOriginAgentClusterByHeader is, then OAC will be logical only, i.e.
+    // implemented in the renderer via a separate AgentCluster.
+    kRequiresOriginKeyedProcessByHeader = (1 << 2),
   };
 
   // For isolated sandboxed iframes, when per-document mode is used, we
@@ -93,17 +95,23 @@ struct CONTENT_EXPORT UrlInfo {
   }
   // Returns whether this UrlInfo is requesting an origin-keyed agent cluster
   // for `url`'s origin due to the OriginAgentCluster header.
-  bool requests_origin_agent_cluster() const {
+  bool requests_origin_agent_cluster_by_header() const {
     return (origin_isolation_request &
-            OriginIsolationRequest::kOriginAgentCluster);
+            OriginIsolationRequest::kOriginAgentClusterByHeader);
   }
 
   // Returns whether this UrlInfo is requesting an origin-keyed process for
-  // for `url`'s origin due to the OriginAgentCluster header.
-  bool requests_origin_keyed_process() const {
+  // `url`'s origin due to the OriginAgentCluster header.
+  bool requests_origin_keyed_process_by_header() const {
     return (origin_isolation_request &
-            OriginIsolationRequest::kRequiresOriginKeyedProcess);
+            OriginIsolationRequest::kRequiresOriginKeyedProcessByHeader);
   }
+
+  // Returns whether this UrlInfo is requesting an origin-keyed process for
+  // `url`'s origin due to the OriginAgentCluster header, or whether it should
+  // try to use an origin-keyed process by default within the given `context`,
+  // in cases without an explicit header.
+  bool RequestsOriginKeyedProcess(const IsolationContext& context) const;
 
   // Returns whether this UrlInfo is requesting site isolation for its site in
   // response to the Cross-Origin-Opener-Policy header. See

@@ -5,6 +5,7 @@
 #include "components/browsing_topics/common/semantic_tree.h"
 
 #include "components/strings/grit/components_strings.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace browsing_topics {
 
@@ -37,13 +38,13 @@ const uint16_t kChildToParent[] = {
     344, 344, 344, 332,
 };
 
-constexpr size_t kNumTopics = std::size(kChildToParent);
 constexpr Topic kNullTopic = Topic(0);
 
-static_assert(kNumTopics == 349);
+static_assert(SemanticTree::kNumTopics == std::size(kChildToParent));
 static_assert(IDS_PRIVACY_SANDBOX_TOPICS_TAXONOMY_V1_TOPIC_ID_349 -
                   IDS_PRIVACY_SANDBOX_TOPICS_TAXONOMY_V1_TOPIC_ID_1 + 1 ==
-              kNumTopics);
+              SemanticTree::kNumTopics);
+
 // These asserts also have a side-effect of preventing unused resource
 // removal from removing them.
 #define ASSERT_RESOURCE_ID(num)                                              \
@@ -401,7 +402,7 @@ ASSERT_RESOURCE_ID(349);
 
 bool IsTopicValid(Topic topic) {
   int i = static_cast<int>(topic);
-  return i > 0 && i <= static_cast<int>(kNumTopics);
+  return i > 0 && i <= static_cast<int>(SemanticTree::kNumTopics);
 }
 
 Topic GetParentTopic(Topic topic) {
@@ -444,6 +445,12 @@ std::vector<Topic> SemanticTree::GetAncestorTopics(const Topic& topic) {
     }
   }
   return ancestor_topics;
+}
+
+absl::optional<int> SemanticTree::GetLatestLocalizedNameMessageId(
+    const Topic& topic) {
+  return SemanticTree::GetLocalizedNameMessageId(
+      topic, blink::features::kBrowsingTopicsTaxonomyVersion.Get());
 }
 
 absl::optional<int> SemanticTree::GetLocalizedNameMessageId(

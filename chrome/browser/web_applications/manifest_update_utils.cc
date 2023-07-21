@@ -52,6 +52,10 @@ std::ostream& operator<<(std::ostream& os, ManifestUpdateResult result) {
       return os << "kSystemShutdown";
     case ManifestUpdateResult::kAppIdentityUpdateRejectedAndUninstalled:
       return os << "kAppIdentityUpdateRejectedAndUninstalled";
+    case ManifestUpdateResult::kAppIsIsolatedWebApp:
+      return os << "kAppIsIsolatedWebApp";
+    case ManifestUpdateResult::kCancelledDueToMainFrameNavigation:
+      return os << "kCancelledDueToMainFrameNavigation";
   }
 }
 
@@ -92,6 +96,8 @@ std::ostream& operator<<(std::ostream& os, ManifestUpdateCheckResult stage) {
       return os << "kIconReadFromDiskFailed";
     case ManifestUpdateCheckResult::kWebContentsDestroyed:
       return os << "kWebContentsDestroyed";
+    case ManifestUpdateCheckResult::kCancelledDueToMainFrameNavigation:
+      return os << "kCancelledDueToMainFrameNavigation";
   }
 }
 
@@ -119,6 +125,8 @@ ManifestUpdateResult FinalResultFromManifestUpdateCheckResult(
       return ManifestUpdateResult::kIconReadFromDiskFailed;
     case ManifestUpdateCheckResult::kWebContentsDestroyed:
       return ManifestUpdateResult::kWebContentsDestroyed;
+    case ManifestUpdateCheckResult::kCancelledDueToMainFrameNavigation:
+      return ManifestUpdateResult::kCancelledDueToMainFrameNavigation;
   }
 }
 
@@ -322,8 +330,9 @@ ManifestDataChanges GetManifestDataChanges(
             new_install_info.validated_scope_extensions.value()) {
       return true;
     }
-    // TODO(crbug.com/897314): Check changes to tab_strip field once
-    // icons are stored.
+    if (existing_web_app.tab_strip() != new_install_info.tab_strip) {
+      return true;
+    }
     // TODO(crbug.com/926083): Check more manifest fields.
     return false;
   }();

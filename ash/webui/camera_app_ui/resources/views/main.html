@@ -6,6 +6,7 @@
   <head>
     <title>$i18n{name}</title>
     <meta charset="utf-8">
+    <link rel="stylesheet" href="chrome://theme/typography.css">
     <!-- main.css contains all :root styles require to be loaded first. -->
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/menu.css">
@@ -81,9 +82,8 @@
             <div id="preview-grid-vertical"></div>
           </div>
           <div id="preview-focus">
-            <object id="preview-focus-aim" type="image/svg+xml"
-                    data="/images/camera_focus_aim.svg"
-                    tabindex="-1" hidden></object>
+            <svg-wrapper id="preview-focus-aim" name="camera_focus_aim.svg"
+                    hidden></svg-wrapper>
           </div>
           <div id="preview-document-corner-overlay">
             <div class="no-document-toast" tabindex="0" aria-live="polite"
@@ -92,7 +92,16 @@
           </div>
           <div class="barcode-scan-box centered-overlay"></div>
           <div class="snackbar" aria-live="polite"></div>
-          <div id="camera-mode" class="centered-overlay"></div>
+          <div id="camera-mode" class="centered-overlay">
+            <svg-wrapper name="camera_mode_photo.svg" class="photo">
+            </svg-wrapper>
+            <svg-wrapper name="camera_mode_scan.svg" class="scan">
+            </svg-wrapper>
+            <svg-wrapper name="camera_mode_video.svg" class="video">
+            </svg-wrapper>
+            <svg-wrapper name="camera_mode_portrait.svg" class="portrait">
+            </svg-wrapper>
+          </div>
         </div>
         <div id="barcode-chip-url-container"
              class="invisible barcode-chip-container">
@@ -221,19 +230,22 @@
                 data-svg="camera_shutter_video_snapshot.svg"></button>
       </div>
       <div id="shutters-group" class="buttons right-stripe circle">
-        <button id="recordvideo" class="shutter inkdrop" tabindex="0"
-                i18n-label="record_video_start_button">
-          <div class="red-dot"></div>
-          <div class="white-square"></div>
+        <div id="recordvideo-container">
+          <button id="recordvideo" class="shutter inkdrop" tabindex="0"
+                  i18n-label="record_video_start_button">
+            <div class="red-dot"></div>
+            <div class="white-square"></div>
+          </button>
           <svg id="shutter-progress-bar">
             <circle></circle>
           </svg>
-        </button>
+        </div>
         <button id="start-takephoto" class="shutter inkdrop" tabindex="0"
                 i18n-label="take_photo_button"
                 data-svg="camera_shutter_photo_start.svg"></button>
         <button id="stop-takephoto" class="shutter inkdrop" tabindex="0"
-                i18n-label="take_photo_cancel_button"></button>
+                i18n-label="take_photo_cancel_button"
+                data-svg="camera_shutter_photo_stop.svg"></button>
       </div>
       <div id="pause-recordvideo-holder" class="buttons right-stripe circle">
         <button id="pause-recordvideo" tabindex="0"
@@ -296,7 +308,7 @@
         <div id="timer-tick-msg"></div>
       </div>
       <div id="nudge" tabindex="0" role="alert" hidden>
-        <div class="warning-icon"></div>
+        <div class="warning-icon" data-svg="circle_warning_icon.svg"></div>
         <div class="warning-msg"
              i18n-text="low_storage_nudge_warning_msg"></div>
      </div>
@@ -310,46 +322,50 @@
         </div>
         <button id="settings-photo-resolution" class="menu-item inkdrop
                 expandable" tabindex="0">
-          <div class="icon"></div>
+          <div class="icon" data-svg="settings_resolution.svg"></div>
           <div>
             <div i18n-text="photo_resolution_button"></div>
             <div class="description">
               <span></span>
             </div>
           </div>
+          <div class="expand" data-svg="settings_button_expand.svg"></div>
         </button>
         <button id="settings-video-resolution" class="menu-item inkdrop
                 expandable" tabindex="0">
-          <div class="icon"></div>
+          <div class="icon" data-svg="settings_resolution.svg"></div>
           <div>
             <div i18n-text="video_resolution_button"></div>
             <div class="description">
               <span></span>
             </div>
           </div>
+          <div class="expand" data-svg="settings_button_expand.svg"></div>
         </button>
         <button id="settings-photo-aspect-ratio" class="menu-item inkdrop
                 expandable" tabindex="0">
-          <div class="icon"></div>
+          <div class="icon" data-svg="settings_aspect_ratio.svg"></div>
           <div>
             <div i18n-text="photo_aspect_ratio_button"></div>
             <div class="description">
               <span></span>
             </div>
           </div>
+          <div class="expand" data-svg="settings_button_expand.svg"></div>
         </button>
         <button id="settings-expert" class="menu-item inkdrop expandable"
                 tabindex="0">
-          <div class="icon"></div>
+          <div class="icon" data-svg="settings_expert.svg"></div>
           <div i18n-text="expert_mode_button">
           </div>
+          <div class="expand" data-svg="settings_button_expand.svg"></div>
         </button>
         <button id="settings-feedback" class="menu-item inkdrop" tabindex="0">
-          <div class="icon"></div>
+          <div class="icon" data-svg="settings_feedback.svg"></div>
           <div i18n-text="feedback_button"></div>
         </button>
         <button id="settings-help" class="menu-item inkdrop" tabindex="0">
-          <div class="icon"></div>
+          <div class="icon" data-svg="settings_help.svg"></div>
           <div i18n-text="help_button"></div>
         </button>
       </div>
@@ -413,13 +429,29 @@
                  data-key="customVideoParameters">
           <span i18n-text="expert_custom_video_parameters"></span>
         </label>
-        <label class="menu-item inkdrop require-chromeos-vcd">
-          <input class="icon" id="expert-enable-multistream-recording"
-                 type="checkbox" tabindex="0"
-                 data-state="enable-multistream-recording"
-                 data-key="enableMultistreamRecording">
-          <span i18n-text="expert_multistream_recording"></span>
-        </label>
+        <div id="multistream-group" role="radiogroup">
+          <label class="menu-item inkdrop require-chromeos-vcd"
+                 i18n-text="expert_multistream_recording"></label>
+          <label class="menu-item inkdrop require-chromeos-vcd">
+            <input class="icon" type="radio" tabindex="0" name="multistream"
+                   checked>
+            <span i18n-text="expert_multistream_recording_disabled"></span>
+          </label>
+          <label class="menu-item inkdrop require-chromeos-vcd">
+            <input class="icon" id="expert-enable-multistream-recording"
+                   type="radio" tabindex="0" name="multistream"
+                   data-state="enable-multistream-recording"
+                   data-key="enableMultistreamRecording">
+            <span i18n-text="expert_multistream_recording_hal"></span>
+          </label>
+          <label class="menu-item inkdrop require-chromeos-vcd">
+            <input class="icon" id="expert-enable-multistream-recording-chrome"
+                   type="radio" tabindex="0" name="multistream"
+                   data-state="enable-multistream-recording-chrome"
+                   data-key="enableMultistreamRecordingChrome">
+            <span i18n-text="expert_multistream_recording_chrome"></span>
+          </label>
+        </div>
         <label class="menu-item inkdrop">
           <input id="expert-enable-full-sized-video-snapshot" class="icon"
                  type="checkbox" tabindex="0"
@@ -524,14 +556,17 @@
     </div>
     <div id="view-flash">
       <div id="processing-indicator" class="centered-overlay">
-        <div class="icon"></div>
+        <svg-wrapper class="icon" name="document_mode_spinner.svg">
+        </svg-wrapper>
         <div class="msg" tabindex="0" i18n-text="msg_processing_image"></div>
       </div>
     </div>
     <div id="view-warning">
       <div id="error-msg" aria-live="polite"></div>
     </div>
-    <div id="view-splash"></div>
+    <div id="view-splash">
+      <div class="icon"></div>
+    </div>
     <div id="toast" class="centered-overlay" tabindex="-1"
          aria-live="polite"></div>
     <div id="tooltip" aria-hidden="true"></div>
@@ -563,14 +598,18 @@
       </label>
     </template>
     <template id="video-resolution-item-template">
-      <label class="menu-item circle resolution-option inkdrop">
+      <label class="menu-item resolution-option inkdrop">
         <input class="icon" type="radio" tabindex="0">
         <span></span>
         <div class="fps-buttons">
           <button class="fps-button fps-30" i18n-aria="label_30fps"
-                  tabindex="0"></button>
+                  tabindex="0">
+            <svg-wrapper name="camera_button_fps_30.svg"></svg-wrapper>
+          </button>
           <button class="fps-button fps-60" i18n-aria="label_60fps"
-                  tabindex="0"></button>
+                  tabindex="0">
+            <svg-wrapper name="camera_button_fps_60.svg"></svg-wrapper>
+          </button>
         </div>
       </label>
     </template>
@@ -600,14 +639,13 @@
     </template>
     <template id="new-feature-toast-template">
       <div id="new-feature-toast" class="custom-toast" tabindex="0">
+        <svg-wrapper name="new_feature_toast_icon.svg"></svg-wrapper>
         <span class="custom-toast-text" aria-hidden="true"></span>
       </div>
     </template>
     <template id="indicator-toast-template">
       <div id="indicator-toast" class="custom-toast" tabindex="0">
-        <div>
-          <img id="indicator-icon" alt="">
-        </div>
+        <svg-wrapper id="indicator-icon"></svg-wrapper>
         <span class="custom-toast-text" aria-hidden="true"></span>
       </div>
       <div id="indicator-dot"></div>
@@ -654,7 +692,7 @@
             </button>
             <button class="icon-button dark inkdrop"
               i18n-label="label_share" tabindex="0">
-              <svg-wrapper name="document_review_share.svg"></svg-wrapper>
+              <svg-wrapper name="review_share.svg"></svg-wrapper>
             </button>
             <button class="icon-button dark inkdrop"
               i18n-label="fix_page_button" tabindex="0">

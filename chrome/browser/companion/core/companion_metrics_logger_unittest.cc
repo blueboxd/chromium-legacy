@@ -7,6 +7,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/companion/core/mojom/companion.mojom.h"
+#include "chrome/browser/ui/side_panel/side_panel_enums.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -72,40 +73,268 @@ class CompanionMetricsLoggerTest : public testing::Test {
 
 TEST_F(CompanionMetricsLoggerTest, RecordOpenTrigger) {
   base::HistogramTester histogram_tester;
-  logger_->RecordOpenTrigger(OpenTrigger::kContextMenuTextSearch);
+  logger_->RecordOpenTrigger(SidePanelOpenTrigger::kContextMenuSearchOption);
 
   // Destroy the logger. Verify that UKM event is recorded.
   logger_.reset();
 
-  ExpectUkmEntry(ukm::builders::Companion_PageView::kOpenTriggerName,
-                 static_cast<int>(OpenTrigger::kContextMenuTextSearch));
+  ExpectUkmEntry(
+      ukm::builders::Companion_PageView::kOpenTriggerName,
+      static_cast<int>(SidePanelOpenTrigger::kContextMenuSearchOption));
 }
 
-TEST_F(CompanionMetricsLoggerTest, RecordUiSurfaceShown) {
+TEST_F(CompanionMetricsLoggerTest, TextSearch) {
+  logger_->RecordUiSurfaceClicked(UiSurface::kSearchBox, kInvalidPosition);
+  logger_.reset();
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kTextSearchCountName, 1);
+}
+
+TEST_F(CompanionMetricsLoggerTest, TextSearchMaxClamp) {
+  for (auto i = 1; i <= 11; i++) {
+    logger_->RecordUiSurfaceClicked(UiSurface::kSearchBox, kInvalidPosition);
+  }
+  logger_.reset();
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kTextSearchCountName, 10);
+}
+
+TEST_F(CompanionMetricsLoggerTest, RegionSearchClicks) {
+  base::HistogramTester histogram_tester;
+
+  logger_->RecordUiSurfaceClicked(UiSurface::kRegionSearch, kInvalidPosition);
+  logger_->RecordUiSurfaceClicked(UiSurface::kRegionSearch, kInvalidPosition);
+  logger_->RecordUiSurfaceClicked(UiSurface::kRegionSearch, kInvalidPosition);
+
+  histogram_tester.ExpectBucketCount("Companion.RegionSearch.Clicked",
+                                     /*sample=*/true, /*expected_count=*/3);
+  logger_.reset();
+  ExpectUkmEntry(
+      ukm::builders::Companion_PageView::kRegionSearch_ClickCountName, 3);
+}
+
+TEST_F(CompanionMetricsLoggerTest, RecordPhFeedback) {
+  base::HistogramTester histogram_tester;
+
+  // Show a promo, user accepts it.
+  logger_->OnPhFeedback(PhFeedback::kThumbsDown);
+
+  // Destroy the logger. Verify that UKM event is recorded.
+  logger_.reset();
+
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kPH_FeedbackName,
+                 static_cast<int>(PhFeedback::kThumbsDown));
+  histogram_tester.ExpectBucketCount("Companion.PHFeedback.Result",
+                                     PhFeedback::kThumbsDown, 1);
+}
+
+TEST_F(CompanionMetricsLoggerTest, TwoSurfaces_PH_and_CQ) {
   base::HistogramTester histogram_tester;
 
   // Show two surfaces, user clicks one.
-  logger_->RecordUiSurfaceShown(UiSurface::kPH, /*child_element_count=*/0);
-  logger_->RecordUiSurfaceShown(UiSurface::kCQ, /*child_element_count=*/3);
-  logger_->RecordUiSurfaceClicked(UiSurface::kCQ);
+  logger_->RecordUiSurfaceShown(UiSurface::kPH, /*ui_surface_position=*/2,
+                                /*child_element_available_count=*/-1,
+                                /*child_element_shown_count=*/-1);
+  logger_->RecordUiSurfaceShown(UiSurface::kCQ, /*ui_surface_position=*/4,
+                                /*child_element_available_count=*/8,
+                                /*child_element_shown_count=*/3);
+  logger_->RecordUiSurfaceClicked(UiSurface::kCQ, /*click_position=*/2);
 
   // Verify histograms for click and shown events.
   histogram_tester.ExpectBucketCount("Companion.PH.Shown",
-                                     /*sample=*/true, /*expected_count=*/0);
+                                     /*sample=*/true, /*expected_count=*/1);
   histogram_tester.ExpectBucketCount("Companion.CQ.Shown",
                                      /*sample=*/true, /*expected_count=*/1);
   histogram_tester.ExpectBucketCount("Companion.CQ.Clicked",
                                      /*sample=*/true, /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount("Companion.CQ.ClickPosition",
+                                     /*sample=*/2, /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount("Companion.CQ.ChildElementCount",
+                                     /*sample=*/3, /*expected_count=*/1);
 
   // Destroy the logger. Verify that UKM event is recorded.
   logger_.reset();
 
+  // PH metrics.
   ExpectUkmEntry(ukm::builders::Companion_PageView::kPH_LastEventName,
                  static_cast<int>(UiEvent::kShown));
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kPH_ComponentPositionName,
+                 2);
+
+  // CQ metrics.
   ExpectUkmEntry(ukm::builders::Companion_PageView::kCQ_LastEventName,
                  static_cast<int>(UiEvent::kClicked));
-  ExpectUkmEntry(ukm::builders::Companion_PageView::kCQ_ChildElementCountName,
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kCQ_NumEntriesAvailableName,
+                 8);
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kCQ_NumEntriesShownName, 3);
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kCQ_ComponentPositionName,
+                 4);
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kCQ_ClickPositionName, 2);
+}
+
+TEST_F(CompanionMetricsLoggerTest, VQ) {
+  base::HistogramTester histogram_tester;
+
+  // Show VQ.
+  logger_->RecordUiSurfaceShown(UiSurface::kVQ, /*ui_surface_position=*/4,
+                                /*child_element_available_count=*/8,
+                                /*child_element_shown_count=*/3);
+  logger_->RecordUiSurfaceClicked(UiSurface::kVQ, /*click_position=*/2);
+
+  // Verify histograms for click and shown events.
+  histogram_tester.ExpectBucketCount("Companion.VQ.Shown",
+                                     /*sample=*/true, /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount("Companion.VQ.Clicked",
+                                     /*sample=*/true, /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount("Companion.VQ.ClickPosition",
+                                     /*sample=*/2, /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount("Companion.VQ.ChildElementCount",
+                                     /*sample=*/3, /*expected_count=*/1);
+
+  // Destroy the logger. Verify that UKM event is recorded.
+  logger_.reset();
+
+  // VQ metrics.
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kVQ_LastEventName,
+                 static_cast<int>(UiEvent::kClicked));
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kVQ_NumEntriesAvailableName,
+                 8);
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kVQ_NumEntriesShownName, 3);
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kVQ_ComponentPositionName,
+                 4);
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kVQ_ClickPositionName, 2);
+}
+
+TEST_F(CompanionMetricsLoggerTest, RelQr) {
+  base::HistogramTester histogram_tester;
+
+  // Show RelQr.
+  logger_->RecordUiSurfaceShown(UiSurface::kRelQr, /*ui_surface_position=*/4,
+                                /*child_element_available_count=*/8,
+                                /*child_element_shown_count=*/3);
+  logger_->RecordUiSurfaceClicked(UiSurface::kRelQr, /*click_position=*/2);
+
+  // Verify histograms for click and shown events.
+  histogram_tester.ExpectBucketCount("Companion.RelQr.Shown",
+                                     /*sample=*/true, /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount("Companion.RelQr.Clicked",
+                                     /*sample=*/true, /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount("Companion.RelQr.ClickPosition",
+                                     /*sample=*/2, /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount("Companion.RelQr.ChildElementCount",
+                                     /*sample=*/3, /*expected_count=*/1);
+
+  // Destroy the logger. Verify that UKM event is recorded.
+  logger_.reset();
+
+  // RelQr metrics.
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kRelQr_LastEventName,
+                 static_cast<int>(UiEvent::kClicked));
+  ExpectUkmEntry(
+      ukm::builders::Companion_PageView::kRelQr_NumEntriesAvailableName, 8);
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kRelQr_NumEntriesShownName,
                  3);
+  ExpectUkmEntry(
+      ukm::builders::Companion_PageView::kRelQr_ComponentPositionName, 4);
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kRelQr_ClickPositionName,
+                 2);
+}
+
+TEST_F(CompanionMetricsLoggerTest, RelQs) {
+  base::HistogramTester histogram_tester;
+
+  // Show RelQs.
+  logger_->RecordUiSurfaceShown(UiSurface::kRelQs, /*ui_surface_position=*/4,
+                                /*child_element_available_count=*/8,
+                                /*child_element_shown_count=*/3);
+  logger_->RecordUiSurfaceClicked(UiSurface::kRelQs, /*click_position=*/2);
+
+  // Verify histograms for click and shown events.
+  histogram_tester.ExpectBucketCount("Companion.RelQs.Shown",
+                                     /*sample=*/true, /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount("Companion.RelQs.Clicked",
+                                     /*sample=*/true, /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount("Companion.RelQs.ClickPosition",
+                                     /*sample=*/2, /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount("Companion.RelQs.ChildElementCount",
+                                     /*sample=*/3, /*expected_count=*/1);
+
+  // Destroy the logger. Verify that UKM event is recorded.
+  logger_.reset();
+
+  // RelQs metrics.
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kRelQs_LastEventName,
+                 static_cast<int>(UiEvent::kClicked));
+  ExpectUkmEntry(
+      ukm::builders::Companion_PageView::kRelQs_NumEntriesAvailableName, 8);
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kRelQs_NumEntriesShownName,
+                 3);
+  ExpectUkmEntry(
+      ukm::builders::Companion_PageView::kRelQs_ComponentPositionName, 4);
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kRelQs_ClickPositionName,
+                 2);
+}
+
+TEST_F(CompanionMetricsLoggerTest, PageEntities) {
+  base::HistogramTester histogram_tester;
+
+  // Show PageEntities.
+  logger_->RecordUiSurfaceShown(UiSurface::kPageEntities,
+                                /*ui_surface_position=*/4,
+                                /*child_element_available_count=*/8,
+                                /*child_element_shown_count=*/3);
+  logger_->RecordUiSurfaceClicked(UiSurface::kPageEntities,
+                                  /*click_position=*/2);
+
+  // Verify histograms for click and shown events.
+  histogram_tester.ExpectBucketCount("Companion.PageEntities.Shown",
+                                     /*sample=*/true, /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount("Companion.PageEntities.Clicked",
+                                     /*sample=*/true, /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount("Companion.PageEntities.ClickPosition",
+                                     /*sample=*/2, /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount("Companion.PageEntities.ChildElementCount",
+                                     /*sample=*/3, /*expected_count=*/1);
+
+  // Destroy the logger. Verify that UKM event is recorded.
+  logger_.reset();
+
+  // PageEntities metrics.
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kPageEntities_LastEventName,
+                 static_cast<int>(UiEvent::kClicked));
+  ExpectUkmEntry(
+      ukm::builders::Companion_PageView::kPageEntities_NumEntriesAvailableName,
+      8);
+  ExpectUkmEntry(
+      ukm::builders::Companion_PageView::kPageEntities_NumEntriesShownName, 3);
+  ExpectUkmEntry(
+      ukm::builders::Companion_PageView::kPageEntities_ComponentPositionName,
+      4);
+  ExpectUkmEntry(
+      ukm::builders::Companion_PageView::kPageEntities_ClickPositionName, 2);
+}
+
+TEST_F(CompanionMetricsLoggerTest, ATX) {
+  base::HistogramTester histogram_tester;
+
+  // Show ATX.
+  logger_->RecordUiSurfaceShown(UiSurface::kATX, /*ui_surface_position=*/4,
+                                /*child_element_available_count=*/-1,
+                                /*child_element_shown_count=*/-1);
+  logger_->RecordUiSurfaceClicked(UiSurface::kATX, /*click_position=*/-1);
+
+  // Verify histograms for click and shown events.
+  histogram_tester.ExpectBucketCount("Companion.ATX.Shown",
+                                     /*sample=*/true, /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount("Companion.ATX.Clicked",
+                                     /*sample=*/true, /*expected_count=*/1);
+
+  // Destroy the logger. Verify that UKM event is recorded.
+  logger_.reset();
+
+  // RelQs metrics.
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kATX_LastEventName,
+                 static_cast<int>(UiEvent::kClicked));
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kATX_ComponentPositionName,
+                 4);
 }
 
 TEST_F(CompanionMetricsLoggerTest, RecordPromoEvent) {
@@ -127,31 +356,43 @@ TEST_F(CompanionMetricsLoggerTest, RecordPromoEvent) {
   TestPromoEvent(PromoType::kExps, PromoAction::kShown, PromoEvent::kExpsShown);
 }
 
-TEST_F(CompanionMetricsLoggerTest, RegionSearchClicks) {
+TEST_F(CompanionMetricsLoggerTest, PHShown) {
   base::HistogramTester histogram_tester;
 
-  logger_->RecordUiSurfaceClicked(UiSurface::kRegionSearch);
-  logger_->RecordUiSurfaceClicked(UiSurface::kRegionSearch);
-  logger_->RecordUiSurfaceClicked(UiSurface::kRegionSearch);
+  logger_->RecordUiSurfaceShown(UiSurface::kPH, /*ui_surface_position=*/2,
+                                /*child_element_available_count=*/-1,
+                                /*child_element_shown_count=*/-1);
+  logger_->RecordUiSurfaceShown(UiSurface::kPHResult, /*ui_surface_position=*/2,
+                                /*child_element_available_count=*/3,
+                                /*child_element_shown_count=*/1);
+  logger_->RecordUiSurfaceClicked(UiSurface::kPHResult, /*click_position=*/1);
 
-  histogram_tester.ExpectBucketCount("Companion.RegionSearch.Clicked",
-                                     /*sample=*/true, /*expected_count=*/3);
-  logger_.reset();
-  ExpectUkmEntry(
-      ukm::builders::Companion_PageView::kRegionSearch_ClickCountName, 3);
-}
-
-TEST_F(CompanionMetricsLoggerTest, RecordPhFeedback) {
-  base::HistogramTester histogram_tester;
-
-  // Show a promo, user accepts it.
-  logger_->OnPhFeedback(PhFeedback::kThumbsDown);
+  // Verify histograms for click and shown events.
+  histogram_tester.ExpectBucketCount("Companion.PH.Shown",
+                                     /*sample=*/true, /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount("Companion.PHResult.Shown",
+                                     /*sample=*/true, /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount("Companion.PHResult.Clicked",
+                                     /*sample=*/true, /*expected_count=*/1);
 
   // Destroy the logger. Verify that UKM event is recorded.
   logger_.reset();
 
-  ExpectUkmEntry(ukm::builders::Companion_PageView::kPH_FeedbackName,
-                 static_cast<int>(PhFeedback::kThumbsDown));
+  // PH metrics.
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kPH_LastEventName,
+                 static_cast<int>(UiEvent::kShown));
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kPH_ComponentPositionName,
+                 2);
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kPHResult_LastEventName,
+                 static_cast<int>(UiEvent::kClicked));
+  ExpectUkmEntry(
+      ukm::builders::Companion_PageView::kPHResult_ComponentPositionName, 2);
+  ExpectUkmEntry(
+      ukm::builders::Companion_PageView::kPHResult_NumEntriesAvailableName, 3);
+  ExpectUkmEntry(
+      ukm::builders::Companion_PageView::kPHResult_NumEntriesShownName, 1);
+  ExpectUkmEntry(ukm::builders::Companion_PageView::kPHResult_ClickPositionName,
+                 1);
 }
 
 }  // namespace companion

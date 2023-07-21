@@ -18,6 +18,7 @@ import {TestRealboxBrowserProxy} from './test_realbox_browser_proxy.js';
 function createAutocompleteMatch(): AutocompleteMatch {
   return {
     a11yLabel: mojoString16(''),
+    actions: [],
     allowedToBeDefaultMatch: false,
     isSearchType: false,
     swapContentsAndDescription: false,
@@ -80,11 +81,8 @@ suite('Lens search', () => {
     document.body.appendChild(realbox);
   });
 
-  test('Lens search button is visible when feature is flipped', async () => {
+  test('Lens search button is visible by default', async () => {
     // Arrange.
-    loadTimeData.overrideValues({
-      realboxLensSearch: true,
-    });
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
     realbox = document.createElement('ntp-realbox');
     document.body.appendChild(realbox);

@@ -20,7 +20,6 @@
 #include "chrome/browser/ash/app_restore/full_restore_service_factory.h"
 #include "chrome/browser/ash/apps/apk_web_app_service_factory.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
-#include "chrome/browser/ash/authpolicy/authpolicy_credentials_manager.h"
 #include "chrome/browser/ash/bluetooth/debug_logs_manager_factory.h"
 #include "chrome/browser/ash/borealis/borealis_service_factory.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_service_factory.h"
@@ -35,6 +34,7 @@
 #include "chrome/browser/ash/crosapi/persistent_forced_extension_keep_alive.h"
 #include "chrome/browser/ash/crostini/ansible/ansible_management_service_factory.h"
 #include "chrome/browser/ash/crostini/crostini_export_import.h"
+#include "chrome/browser/ash/crostini/crostini_installer.h"
 #include "chrome/browser/ash/crostini/crostini_metrics_service.h"
 #include "chrome/browser/ash/crostini/crostini_package_service.h"
 #include "chrome/browser/ash/crostini/crostini_port_forwarder.h"
@@ -90,6 +90,7 @@
 #include "chrome/browser/ash/printing/print_management/printing_manager_factory.h"
 #include "chrome/browser/ash/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/ash/remote_apps/remote_apps_manager_factory.h"
+#include "chrome/browser/ash/scanning/scan_service_factory.h"
 #include "chrome/browser/ash/secure_channel/nearby_connector_factory.h"
 #include "chrome/browser/ash/smb_client/smb_service_factory.h"
 #include "chrome/browser/ash/sync/sync_appsync_service_factory.h"
@@ -102,6 +103,7 @@
 #include "chrome/browser/speech/cros_speech_recognition_service_factory.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_observer_chromeos.h"
 #include "chrome/browser/ui/ash/calendar/calendar_keyed_service_factory.h"
+#include "chrome/browser/ui/ash/desks/admin_template_service_factory.h"
 #include "chrome/browser/ui/ash/glanceables/glanceables_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/global_media_controls/cast_media_notification_producer_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
@@ -124,6 +126,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   apps::ArcAppsFactory::GetInstance();
   arc::ArcServiceLauncher::EnsureFactoriesBuilt();
   ash::AccountManagerPolicyControllerFactory::GetInstance();
+  ash::AdminTemplateServiceFactory::GetInstance();
   ash::ApkWebAppServiceFactory::GetInstance();
   ash::ArcKioskAppServiceFactory::GetInstance();
   ash::AuthErrorObserverFactory::GetInstance();
@@ -155,7 +158,6 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   ash::quick_unlock::QuickUnlockFactory::GetInstance();
   ash::settings::OsSettingsHatsManagerFactory::GetInstance();
   ash::settings::OsSettingsManagerFactory::GetInstance();
-  AuthPolicyCredentialsManagerFactory::GetInstance();
   ax::AccessibilityServiceRouterFactory::EnsureFactoryBuilt();
   bluetooth::DebugLogsManagerFactory::GetInstance();
   borealis::BorealisServiceFactory::GetInstance();
@@ -169,6 +171,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   CrosSpeechRecognitionServiceFactory::EnsureFactoryBuilt();
   crostini::AnsibleManagementServiceFactory::GetInstance();
   crostini::CrostiniExportImport::EnsureFactoryBuilt();
+  crostini::CrostiniInstaller::EnsureFactoryBuilt();
   crostini::CrostiniMetricsService::Factory::GetInstance();
   crostini::CrostiniPackageService::EnsureFactoryBuilt();
   crostini::CrostiniPortForwarder::EnsureFactoryBuilt();
@@ -219,6 +222,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   policy::UserCloudPolicyTokenForwarderFactory::GetInstance();
   printing::print_management::PrintingManagerFactory::GetInstance();
   PrintJobHistoryServiceFactory::GetInstance();
+  ScanServiceFactory::GetInstance();
   secure_channel::NearbyConnectorFactory::GetInstance();
   sharesheet::SharesheetServiceFactory::GetInstance();
   smb_client::SmbServiceFactory::GetInstance();

@@ -65,7 +65,6 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
@@ -81,6 +80,7 @@
 #include "components/autofill/core/browser/suggestions_context.h"
 #include "components/autofill/core/browser/ui/payments/bubble_show_options.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autocomplete_parsing_util.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -203,39 +203,40 @@ void LogValuePatternsMetric(const FormData& form) {
   }
 }
 
-FillDataType GetEventTypeFromSingleFieldSuggestionFrontendId(int frontend_id) {
-  switch (static_cast<PopupItemId>(frontend_id)) {
-    case POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY:
+FillDataType GetEventTypeFromSingleFieldSuggestionFrontendId(
+    Suggestion::FrontendId frontend_id) {
+  switch (frontend_id.as_popup_item_id()) {
+    case PopupItemId::kAutocompleteEntry:
       return FillDataType::kSingleFieldFormFillerAutocomplete;
-    case POPUP_ITEM_ID_MERCHANT_PROMO_CODE_ENTRY:
+    case PopupItemId::kMerchantPromoCodeEntry:
       return FillDataType::kSingleFieldFormFillerPromoCode;
-    case POPUP_ITEM_ID_IBAN_ENTRY:
+    case PopupItemId::kIbanEntry:
       return FillDataType::kSingleFieldFormFillerIban;
-    case POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
-    case POPUP_ITEM_ID_PASSWORD_ENTRY:
-    case POPUP_ITEM_ID_SEPARATOR:
-    case POPUP_ITEM_ID_CLEAR_FORM:
-    case POPUP_ITEM_ID_AUTOFILL_OPTIONS:
-    case POPUP_ITEM_ID_DATALIST_ENTRY:
-    case POPUP_ITEM_ID_SCAN_CREDIT_CARD:
-    case POPUP_ITEM_ID_TITLE:
-    case POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
-    case POPUP_ITEM_ID_USERNAME_ENTRY:
-    case POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY:
-    case POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY:
-    case POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS:
-    case POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN:
-    case POPUP_ITEM_ID_USE_VIRTUAL_CARD:
-    case POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE:
-    case POPUP_ITEM_ID_ACCOUNT_STORAGE_PASSWORD_ENTRY:
-    case POPUP_ITEM_ID_ACCOUNT_STORAGE_USERNAME_ENTRY:
-    case POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN:
-    case POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY:
-    case POPUP_ITEM_ID_MIXED_FORM_MESSAGE:
-    case POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY:
-    case POPUP_ITEM_ID_WEBAUTHN_CREDENTIAL:
-    case POPUP_ITEM_ID_SEE_PROMO_CODE_DETAILS:
-    case POPUP_ITEM_ID_WEBAUTHN_SIGN_IN_WITH_ANOTHER_DEVICE:
+    case PopupItemId::kInsecureContextPaymentDisabledMessage:
+    case PopupItemId::kPasswordEntry:
+    case PopupItemId::kSeparator:
+    case PopupItemId::kClearForm:
+    case PopupItemId::kAutofillOptions:
+    case PopupItemId::kDatalistEntry:
+    case PopupItemId::kScanCreditCard:
+    case PopupItemId::kTitle:
+    case PopupItemId::kCreditCardSigninPromo:
+    case PopupItemId::kUsernameEntry:
+    case PopupItemId::kAllSavedPasswordsEntry:
+    case PopupItemId::kGeneratePasswordEntry:
+    case PopupItemId::kShowAccountCards:
+    case PopupItemId::kPasswordAccountStorageOptIn:
+    case PopupItemId::kUseVirtualCard:
+    case PopupItemId::kPasswordAccountStorageOptInAndGenerate:
+    case PopupItemId::kAccountStoragePasswordEntry:
+    case PopupItemId::kAccountStorageUsernameEntry:
+    case PopupItemId::kPasswordAccountStorageReSignin:
+    case PopupItemId::kPasswordAccountStorageEmpty:
+    case PopupItemId::kMixedFormMessage:
+    case PopupItemId::kVirtualCreditCardEntry:
+    case PopupItemId::kWebauthnCredential:
+    case PopupItemId::kSeePromoCodeDetails:
+    case PopupItemId::kWebauthnSignInWithAnotherDevice:
       NOTREACHED();
   }
   NOTREACHED();
@@ -541,8 +542,6 @@ BrowserAutofillManager::BrowserAutofillManager(AutofillDriver* driver,
   credit_card_access_manager_ = std::make_unique<CreditCardAccessManager>(
       driver, client, client->GetPersonalDataManager(),
       credit_card_form_event_logger_.get());
-
-  CountryNames::SetLocaleString(app_locale_);
 }
 
 BrowserAutofillManager::~BrowserAutofillManager() {
@@ -645,14 +644,6 @@ PopupType BrowserAutofillManager::GetPopupType(const FormData& form,
       return FormHasAddressField(form) ? PopupType::kAddresses
                                        : PopupType::kPersonalInformation;
   }
-}
-
-// TODO(crbug/1346550): Remove ShouldShowCreditCardSigninPromo() as it only
-// returns false.
-bool BrowserAutofillManager::ShouldShowCreditCardSigninPromo(
-    const FormData& form,
-    const FormFieldData& field) {
-  return false;
 }
 
 bool BrowserAutofillManager::ShouldShowCardsFromAccountOption(
@@ -1161,11 +1152,10 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
   }
 
   auto ShouldOfferSingleFieldFormFill = [&] {
-    // Do not offer single field form fill if one of the following is true:
-    //  * There are already suggestions.
-    //  * Credit card sign-in promo is offered.
-    if (!suggestions.empty() || ShouldShowCreditCardSigninPromo(form, field))
+    // Do not offer single field form fill if there are already suggestions.
+    if (!suggestions.empty()) {
       return false;
+    }
 
     // Do not offer single field form fill suggestions for credit card number,
     // cvc, and expiration date related fields. Standalone cvc fields (used to
@@ -1352,7 +1342,7 @@ void BrowserAutofillManager::FillOrPreviewForm(
     mojom::RendererFormDataAction action,
     const FormData& form,
     const FormFieldData& field,
-    int unique_id,
+    Suggestion::BackendId backend_id,
     const AutofillTriggerSource trigger_source) {
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
@@ -1362,8 +1352,8 @@ void BrowserAutofillManager::FillOrPreviewForm(
   if (!RefreshDataModels() || !driver()->RendererIsAvailable())
     return;
 
-  const AutofillProfile* profile = GetProfile(unique_id);
-  const CreditCard* credit_card = GetCreditCard(unique_id);
+  const AutofillProfile* profile = GetProfile(backend_id);
+  const CreditCard* credit_card = GetCreditCard(backend_id);
 
   if (credit_card) {
     FillOrPreviewCreditCardForm(action, form, field, credit_card,
@@ -1576,10 +1566,11 @@ void BrowserAutofillManager::OnHidePopupImpl() {
 
 bool BrowserAutofillManager::GetDeletionConfirmationText(
     const std::u16string& value,
-    int identifier,
+    Suggestion::FrontendId identifier,
+    Suggestion::BackendId backend_id,
     std::u16string* title,
     std::u16string* body) {
-  if (identifier == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY) {
+  if (identifier == PopupItemId::kAutocompleteEntry) {
     if (title)
       title->assign(value);
     if (body) {
@@ -1590,11 +1581,12 @@ bool BrowserAutofillManager::GetDeletionConfirmationText(
     return true;
   }
 
-  if (identifier < 0)
+  if (identifier.as_int() < 0) {
     return false;
+  }
 
-  const CreditCard* credit_card = GetCreditCard(identifier);
-  const AutofillProfile* profile = GetProfile(identifier);
+  const CreditCard* credit_card = GetCreditCard(backend_id);
+  const AutofillProfile* profile = GetProfile(backend_id);
 
   if (credit_card) {
     return credit_card_access_manager_->GetDeletionConfirmationText(
@@ -1623,13 +1615,14 @@ bool BrowserAutofillManager::GetDeletionConfirmationText(
   return false;  // The ID was valid. The entry may have been deleted in a race.
 }
 
-bool BrowserAutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
-  const CreditCard* credit_card = GetCreditCard(unique_id);
+bool BrowserAutofillManager::RemoveAutofillProfileOrCreditCard(
+    Suggestion::BackendId backend_id) {
+  const CreditCard* credit_card = GetCreditCard(backend_id);
   if (credit_card) {
     return credit_card_access_manager_->DeleteCard(credit_card);
   }
 
-  const AutofillProfile* profile = GetProfile(unique_id);
+  const AutofillProfile* profile = GetProfile(backend_id);
   if (profile) {
     bool is_local = profile->record_type() == AutofillProfile::LOCAL_PROFILE;
     if (is_local)
@@ -1644,14 +1637,14 @@ bool BrowserAutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
 void BrowserAutofillManager::RemoveCurrentSingleFieldSuggestion(
     const std::u16string& name,
     const std::u16string& value,
-    int frontend_id) {
+    Suggestion::FrontendId frontend_id) {
   single_field_form_fill_router_->OnRemoveCurrentSingleFieldSuggestion(
       name, value, frontend_id);
 }
 
 void BrowserAutofillManager::OnSingleFieldSuggestionSelected(
     const std::u16string& value,
-    int frontend_id,
+    Suggestion::FrontendId frontend_id,
     const FormData& form,
     const FormFieldData& field) {
   single_field_form_fill_router_->OnSingleFieldSuggestionSelected(value,
@@ -2142,18 +2135,15 @@ bool BrowserAutofillManager::RefreshDataModels() {
          !client()->GetPersonalDataManager()->GetCreditCards().empty();
 }
 
-CreditCard* BrowserAutofillManager::GetCreditCard(int unique_id) {
-  Suggestion::BackendId credit_card_id =
-      suggestion_generator_->GetBackendIdFromFrontendId(unique_id);
+CreditCard* BrowserAutofillManager::GetCreditCard(
+    Suggestion::BackendId unique_id) {
   return client()->GetPersonalDataManager()->GetCreditCardByGUID(
-      credit_card_id.value());
+      unique_id.value());
 }
 
-AutofillProfile* BrowserAutofillManager::GetProfile(int unique_id) {
-  Suggestion::BackendId profile_id =
-      suggestion_generator_->GetBackendIdFromFrontendId(unique_id);
-
-  std::string guid = profile_id.value();
+AutofillProfile* BrowserAutofillManager::GetProfile(
+    Suggestion::BackendId unique_id) {
+  std::string guid = unique_id.value();
   if (base::Uuid::ParseCaseInsensitive(guid).is_valid()) {
     return client()->GetPersonalDataManager()->GetProfileByGUID(guid);
   }
@@ -3240,7 +3230,7 @@ void BrowserAutofillManager::GetAvailableSuggestions(
     } else {
       Suggestion warning_suggestion(
           l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_MIXED_FORM));
-      warning_suggestion.frontend_id = POPUP_ITEM_ID_MIXED_FORM_MESSAGE;
+      warning_suggestion.frontend_id = PopupItemId::kMixedFormMessage;
       suggestions->emplace_back(warning_suggestion);
     }
     return;
@@ -3319,7 +3309,7 @@ void BrowserAutofillManager::GetAvailableSuggestions(
   if (ShouldShowVirtualCardOption(context->form_structure)) {
     suggestions->emplace_back(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_CLOUD_TOKEN_DROPDOWN_OPTION_LABEL));
-    suggestions->back().frontend_id = POPUP_ITEM_ID_USE_VIRTUAL_CARD;
+    suggestions->back().frontend_id = PopupItemId::kUseVirtualCard;
   }
 #endif
 
@@ -3333,7 +3323,7 @@ void BrowserAutofillManager::GetAvailableSuggestions(
     Suggestion warning_suggestion(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION));
     warning_suggestion.frontend_id =
-        POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE;
+        PopupItemId::kInsecureContextPaymentDisabledMessage;
     suggestions->assign(1, warning_suggestion);
   }
 }
@@ -3455,7 +3445,7 @@ void BrowserAutofillManager::ReportAutofillWebOTPMetrics(bool used_web_otp) {
 void BrowserAutofillManager::OnSeePromoCodeOfferDetailsSelected(
     const GURL& offer_details_url,
     const std::u16string& value,
-    int frontend_id,
+    Suggestion::FrontendId frontend_id,
     const FormData& form,
     const FormFieldData& field) {
   client()->OpenPromoCodeOfferDetailsURL(offer_details_url);

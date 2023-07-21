@@ -56,7 +56,7 @@
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/instance.h"
 #include "components/services/app_service/public/cpp/instance_registry.h"
-#include "components/sync/driver/sync_service.h"
+#include "components/sync/service/sync_service.h"
 #include "components/sync/test/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -1283,7 +1283,7 @@ TEST_P(AppPlatformMetricsServiceTest, UsageTimeUkm) {
 
   // Set sync is not allowed.
   sync_service()->SetDisableReasons(
-      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
+      {syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY});
 
   // Fast forward by 2 hours and verify no usage data is reported to UKM.
   task_environment_.FastForwardBy(base::Hours(2));
@@ -1902,12 +1902,17 @@ TEST_P(AppPlatformMetricsServiceTest, LaunchApps) {
   // Simulate registering publishers for the launch interface to record metrics.
   proxy->RegisterPublishersForTesting();
   FakePublisher fake_arc_apps(proxy, AppType::kArc);
+  FakePublisher fake_borealis_apps(proxy, AppType::kBorealis);
   FakePublisher fake_standalone_browser(proxy, AppType::kStandaloneBrowser);
   FakePublisher fake_standalone_browser_chrome_app(
       proxy, AppType::kStandaloneBrowserChromeApp);
   FakePublisher fake_standalone_browser_extension(
       proxy, AppType::kStandaloneBrowserExtension);
 
+  EXPECT_CALL(fake_borealis_apps,
+              Launch(/*app_id=*/borealis::kClientAppId, ui::EF_NONE,
+                     LaunchSource::kFromChromeInternal, _))
+      .Times(1);
   proxy->Launch(
       /*app_id=*/borealis::kClientAppId, ui::EF_NONE,
       LaunchSource::kFromChromeInternal, nullptr);
@@ -1917,9 +1922,12 @@ TEST_P(AppPlatformMetricsServiceTest, LaunchApps) {
   VerifyAppLaunchPerAppTypeHistogram(1, AppTypeName::kBorealis);
   VerifyAppLaunchPerAppTypeV2Histogram(1, AppTypeNameV2::kBorealis);
 
-  proxy->Launch(
-      /*app_id=*/borealis::FakeAppId("borealistest"), ui::EF_NONE,
-      LaunchSource::kFromChromeInternal, nullptr);
+  std::string fake_borealis_app = borealis::FakeAppId("borealistest");
+  EXPECT_CALL(fake_borealis_apps, Launch(fake_borealis_app, ui::EF_NONE,
+                                         LaunchSource::kFromChromeInternal, _))
+      .Times(1);
+  proxy->Launch(fake_borealis_app, ui::EF_NONE,
+                LaunchSource::kFromChromeInternal, nullptr);
   VerifyAppsLaunchUkm("app://borealis/123", AppTypeName::kBorealis,
                       LaunchSource::kFromChromeInternal);
 
@@ -2122,8 +2130,8 @@ TEST_P(AppPlatformMetricsServiceTest,
   const auto& usage_dict_pref = GetPrefService()->GetDict(kAppUsageTime);
   ASSERT_THAT(usage_dict_pref.size(), Eq(1UL));
   ASSERT_THAT(usage_dict_pref.Find(kInstanceId.ToString()), NotNull());
-  EXPECT_THAT(*usage_dict_pref.Find(kInstanceId.ToString())
-                   ->FindStringKey(kUsageTimeAppIdKey),
+  EXPECT_THAT(*usage_dict_pref.FindDict(kInstanceId.ToString())
+                   ->FindString(kUsageTimeAppIdKey),
               StrEq(kAppId));
   EXPECT_THAT(
       base::ValueToTimeDelta(usage_dict_pref.FindDict(kInstanceId.ToString())
@@ -2152,7 +2160,7 @@ TEST_P(AppPlatformMetricsServiceTest,
 
   // Disable sync state.
   sync_service()->SetDisableReasons(
-      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
+      {syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY});
 
   // Fast forward by two hours and verify usage info is cleared from the pref
   // store.
@@ -2181,8 +2189,8 @@ TEST_P(AppPlatformMetricsServiceTest,
   const auto& usage_dict_pref = GetPrefService()->GetDict(kAppUsageTime);
   ASSERT_THAT(usage_dict_pref.size(), Eq(1UL));
   ASSERT_THAT(usage_dict_pref.Find(kInstanceId.ToString()), NotNull());
-  EXPECT_THAT(*usage_dict_pref.Find(kInstanceId.ToString())
-                   ->FindStringKey(kUsageTimeAppIdKey),
+  EXPECT_THAT(*usage_dict_pref.FindDict(kInstanceId.ToString())
+                   ->FindString(kUsageTimeAppIdKey),
               StrEq(kAppId));
   EXPECT_THAT(
       base::ValueToTimeDelta(usage_dict_pref.FindDict(kInstanceId.ToString())
@@ -2206,8 +2214,8 @@ TEST_P(AppPlatformMetricsServiceTest,
       GetPrefService()->GetDict(kAppUsageTime);
   ASSERT_THAT(updated_usage_dict_pref.size(), Eq(1UL));
   EXPECT_THAT(updated_usage_dict_pref.Find(kInstanceId.ToString()), NotNull());
-  EXPECT_THAT(*usage_dict_pref.Find(kInstanceId.ToString())
-                   ->FindStringKey(kUsageTimeAppIdKey),
+  EXPECT_THAT(*usage_dict_pref.FindDict(kInstanceId.ToString())
+                   ->FindString(kUsageTimeAppIdKey),
               StrEq(kAppId));
   EXPECT_THAT(
       base::ValueToTimeDelta(usage_dict_pref.FindDict(kInstanceId.ToString())
@@ -2222,7 +2230,7 @@ TEST_P(AppPlatformMetricsServiceTest,
 TEST_P(AppPlatformMetricsServiceTest, ShouldNotPersistUsageDataIfSyncDisabled) {
   // Disable sync state.
   sync_service()->SetDisableReasons(
-      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
+      {syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY});
 
   // Create a new window for the app.
   auto window = std::make_unique<aura::Window>(nullptr);
@@ -2786,7 +2794,7 @@ class AppPlatformMetricsObserverTest : public AppPlatformMetricsServiceTest {
 TEST_P(AppPlatformMetricsObserverTest, ShouldNotifyObserverOnAppInstalled) {
   // Observers should be notified even when app sync is disabled.
   sync_service()->SetDisableReasons(
-      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
+      {syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY});
 
   const std::string app_id(borealis::FakeAppId("borealis-fake"));
   EXPECT_CALL(
@@ -2802,7 +2810,7 @@ TEST_P(AppPlatformMetricsObserverTest, ShouldNotifyObserverOnAppInstalled) {
 TEST_P(AppPlatformMetricsObserverTest, ShouldNotifyObserverOnAppLaunch) {
   // Observers should be notified even when app sync is disabled.
   sync_service()->SetDisableReasons(
-      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
+      {syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY});
 
   // Launch a pre-installed app and verify the observer is notified.
   const std::string& app_id = "a";
@@ -2821,7 +2829,7 @@ TEST_P(AppPlatformMetricsObserverTest, ShouldNotifyObserverOnAppLaunch) {
 TEST_P(AppPlatformMetricsObserverTest, ShouldNotifyObserverOnAppUninstall) {
   // Observers should be notified even when app sync is disabled.
   sync_service()->SetDisableReasons(
-      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
+      {syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY});
 
   // Uninstall a pre-installed app and verify the observer is notified.
   const std::string& app_id = "a";
@@ -2839,7 +2847,7 @@ TEST_P(AppPlatformMetricsObserverTest, ShouldNotifyObserverOnAppUninstall) {
 TEST_P(AppPlatformMetricsObserverTest, ShouldNotifyObserverOnAppUsage) {
   // Observers should be notified even when app sync is disabled.
   sync_service()->SetDisableReasons(
-      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
+      {syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY});
 
   // Create a new window for the app.
   auto window = std::make_unique<aura::Window>(nullptr);

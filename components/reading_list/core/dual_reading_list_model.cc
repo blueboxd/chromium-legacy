@@ -97,6 +97,7 @@ base::flat_set<GURL> DualReadingListModel::GetKeys() const {
 
 size_t DualReadingListModel::size() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(loaded());
   DCHECK_EQ(unread_entry_count_ + read_entry_count_, GetKeys().size());
 
   return unread_entry_count_ + read_entry_count_;
@@ -222,11 +223,9 @@ bool DualReadingListModel::NeedsExplicitUploadToSyncServer(
   DCHECK(!local_or_syncable_model_->IsTrackingSyncMetadata() ||
          !account_model_->IsTrackingSyncMetadata());
 
-  return !local_or_syncable_model_->IsTrackingSyncMetadata() &&
+  return account_model_->IsTrackingSyncMetadata() &&
          local_or_syncable_model_->GetEntryByURL(url) != nullptr &&
-         account_model_->GetEntryByURL(url) == nullptr &&
-         base::FeatureList::IsEnabled(
-             switches::kReadingListEnableSyncTransportModeUponSignIn);
+         account_model_->GetEntryByURL(url) == nullptr;
 }
 
 void DualReadingListModel::MarkAllForUploadToSyncServerIfNeeded() {
@@ -498,6 +497,11 @@ void DualReadingListModel::RemoveObserver(ReadingListModelObserver* observer) {
 
 void DualReadingListModel::ReadingListModelBeganBatchUpdates(
     const ReadingListModel* model) {
+  DCHECK(!suppress_observer_notifications_);
+
+  if (!loaded()) {
+    return;
+  }
   ++current_batch_updates_count_;
   if (current_batch_updates_count_ == 1) {
     for (auto& observer : observers_) {
@@ -508,6 +512,11 @@ void DualReadingListModel::ReadingListModelBeganBatchUpdates(
 
 void DualReadingListModel::ReadingListModelCompletedBatchUpdates(
     const ReadingListModel* model) {
+  DCHECK(!suppress_observer_notifications_);
+
+  if (!loaded()) {
+    return;
+  }
   --current_batch_updates_count_;
   if (current_batch_updates_count_ == 0) {
     for (auto& observer : observers_) {
@@ -535,11 +544,9 @@ void DualReadingListModel::ReadingListModelLoaded(
 void DualReadingListModel::ReadingListWillRemoveEntry(
     const ReadingListModel* model,
     const GURL& url) {
-  if (suppress_observer_notifications_) {
+  if (!loaded() || suppress_observer_notifications_) {
     return;
   }
-
-  DCHECK(ToReadingListModelImpl(model)->IsTrackingSyncMetadata());
 
   if (model == account_model_.get() &&
       local_or_syncable_model_->GetEntryByURL(url)) {
@@ -557,11 +564,9 @@ void DualReadingListModel::ReadingListWillRemoveEntry(
 void DualReadingListModel::ReadingListDidRemoveEntry(
     const ReadingListModel* model,
     const GURL& url) {
-  if (suppress_observer_notifications_) {
+  if (!loaded() || suppress_observer_notifications_) {
     return;
   }
-
-  DCHECK(ToReadingListModelImpl(model)->IsTrackingSyncMetadata());
 
   if (local_or_syncable_model_->GetEntryByURL(url)) {
     // The entry is still present in `local_or_syncable_model_`, so this is an
@@ -578,7 +583,7 @@ void DualReadingListModel::ReadingListDidRemoveEntry(
 void DualReadingListModel::ReadingListWillMoveEntry(
     const ReadingListModel* model,
     const GURL& url) {
-  if (suppress_observer_notifications_) {
+  if (!loaded() || suppress_observer_notifications_) {
     return;
   }
 
@@ -592,7 +597,7 @@ void DualReadingListModel::ReadingListWillMoveEntry(
 void DualReadingListModel::ReadingListDidMoveEntry(
     const ReadingListModel* model,
     const GURL& url) {
-  if (suppress_observer_notifications_) {
+  if (!loaded() || suppress_observer_notifications_) {
     return;
   }
 
@@ -606,7 +611,7 @@ void DualReadingListModel::ReadingListDidMoveEntry(
 void DualReadingListModel::ReadingListWillAddEntry(
     const ReadingListModel* model,
     const ReadingListEntry& entry) {
-  if (suppress_observer_notifications_) {
+  if (!loaded() || suppress_observer_notifications_) {
     return;
   }
 
@@ -629,7 +634,7 @@ void DualReadingListModel::ReadingListDidAddEntry(
     const ReadingListModel* model,
     const GURL& url,
     reading_list::EntrySource source) {
-  if (suppress_observer_notifications_) {
+  if (!loaded() || suppress_observer_notifications_) {
     return;
   }
 
@@ -671,9 +676,10 @@ void DualReadingListModel::ReadingListDidUpdateEntry(
 }
 
 void DualReadingListModel::ReadingListDidApplyChanges(ReadingListModel* model) {
-  if (!suppress_observer_notifications_) {
-    NotifyObserversWithDidApplyChanges();
+  if (!loaded() || suppress_observer_notifications_) {
+    return;
   }
+  NotifyObserversWithDidApplyChanges();
 }
 
 DualReadingListModel::StorageStateForTesting

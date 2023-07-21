@@ -102,6 +102,11 @@ void OrderChildWindow(NSWindow* child_window,
 - (void)_zoomToScreenEdge:(NSUInteger)edge;
 @end
 
+// Private API as of at least macOS 13.
+@interface NSWindow (NSWindow_Theme)
+- (void)_regularMinimizeToDock;
+@end
+
 @interface NativeWidgetMacNSWindow () <NSKeyedArchiverDelegate>
 - (ViewsNSWindowDelegate*)viewsNSWindowDelegate;
 - (BOOL)hasViewsMenuActive;
@@ -196,6 +201,7 @@ NSPoint clickedLocation;
   BOOL _preventKeyWindow;
   BOOL _isTooltip;
   BOOL _isHeadless;
+  BOOL _miniaturizationInProgress;
 }
 @synthesize bridgedNativeWidgetId = _bridgedNativeWidgetId;
 @synthesize bridge = _bridge;
@@ -317,6 +323,8 @@ NSPoint clickedLocation;
 }
 
 - (void)orderFrontKeepWindowKeyState {
+  _miniaturizationInProgress = NO;
+
   if ([self isOnActiveSpace]) {
     [self orderWindow:NSWindowAbove relativeTo:0];
     return;
@@ -523,6 +531,53 @@ NSPoint clickedLocation;
          relativeTo:(NSInteger)otherWindowNumber {
   [super orderWindow:orderingMode relativeTo:otherWindowNumber];
   [[self viewsNSWindowDelegate] onWindowOrderChanged:nil];
+}
+
+- (void)miniaturize:(id)sender {
+  static const BOOL isMacOS13OrHigher = base::mac::IsAtLeastOS13();
+  // On macOS 13, the miniaturize operation appears to no longer be "atomic"
+  // because of non-blocking roundtrip IPC with the Dock. We want to note here
+  // that miniaturization is in progress. The process completes when we
+  // reach -_regularMinimizeToDock:.
+  _miniaturizationInProgress = isMacOS13OrHigher;
+
+  [super miniaturize:sender];
+}
+
+- (void)_regularMinimizeToDock {
+  // On macOS 13, a call to -miniaturize: kicks of an async round-trip IPC with
+  // the Dock that ends up in this method. Unfortunately, it appears that if we
+  // immediately follow a call to -miniaturize: with -makeKeyAndOrderFront:,
+  // the AppKit doesn't cancel the in-flight round-trip IPC. As a result,
+  // _regularMinimizeToDock gets called sometime after -makeKeyAndOrderFront:
+  // and miniaturizes the window anyway. This is  a potential problem in
+  // session restore where we might restart with a single browser window
+  // sitting Dock. In that case, Session Restore creates the window,
+  // miniaturizes to the dock, and then brings it back out. With this new macOS
+  // 13 behavior (which seems like a bug), the browser window may not be
+  // restored from the Dock.
+  //
+  // To get around this problem, if we arrive here and
+  // _miniaturizationInProgress is NO, the miniaturization process was
+  // cancelled by a call to -makeKeyAndOrderFront:. In that case, we don't want
+  // to proceed with miniaturization.
+  static const BOOL isMacOS13OrHigher = base::mac::IsAtLeastOS13();
+  if (isMacOS13OrHigher && !_miniaturizationInProgress) {
+    return;
+  }
+
+  _miniaturizationInProgress = NO;
+  [super _regularMinimizeToDock];
+}
+
+- (void)makeKeyAndOrderFront:(id)sender {
+  _miniaturizationInProgress = NO;
+  [super makeKeyAndOrderFront:sender];
+}
+
+- (void)orderOut:(id)sender {
+  _miniaturizationInProgress = NO;
+  [super orderOut:sender];
 }
 
 // NSResponder implementation.

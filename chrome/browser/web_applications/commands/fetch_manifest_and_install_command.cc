@@ -9,6 +9,7 @@
 
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
 #include "base/strings/to_string.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
@@ -29,7 +31,10 @@
 #include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "url/origin.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/mojom/app.mojom.h"
@@ -169,16 +174,17 @@ const LockDescription& FetchManifestAndInstallCommand::lock_description()
 void FetchManifestAndInstallCommand::StartWithLock(
     std::unique_ptr<NoopLock> lock) {
   noop_lock_ = std::move(lock);
+  if (IsWebContentsDestroyed()) {
+    Abort(webapps::InstallResultCode::kWebContentsDestroyed);
+    return;
+  }
+
+  Observe(web_contents_.get());
 
   // This metric is recorded regardless of the installation result.
   if (webapps::InstallableMetrics::IsReportableInstallSource(
           install_surface_)) {
     webapps::InstallableMetrics::TrackInstallEvent(install_surface_);
-  }
-
-  if (IsWebContentsDestroyed()) {
-    Abort(webapps::InstallResultCode::kWebContentsDestroyed);
-    return;
   }
 
   DCHECK(AreWebAppsUserInstallable(
@@ -190,7 +196,6 @@ void FetchManifestAndInstallCommand::StartWithLock(
         base::BindOnce(&FetchManifestAndInstallCommand::OnGetWebAppInstallInfo,
                        weak_ptr_factory_.GetWeakPtr()));
   } else {
-    web_app_info_ = std::make_unique<WebAppInstallInfo>();
     FetchManifest();
   }
 }
@@ -212,11 +217,28 @@ base::Value FetchManifestAndInstallCommand::ToDebugValue() const {
   return base::Value(std::move(debug_value));
 }
 
+void FetchManifestAndInstallCommand::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
+      !navigation_handle->HasCommitted() ||
+      navigation_handle->IsSameDocument()) {
+    return;
+  }
+
+  if (url::IsSameOriginWith(navigation_handle->GetPreviousPrimaryMainFrameURL(),
+                            navigation_handle->GetURL())) {
+    return;
+  }
+
+  Abort(webapps::InstallResultCode::kCancelledDueToMainFrameNavigation);
+}
+
 void FetchManifestAndInstallCommand::Abort(webapps::InstallResultCode code) {
   if (!install_callback_)
     return;
   debug_log_.Set("result_code", base::ToString(code));
   webapps::InstallableMetrics::TrackInstallResult(false);
+  Observe(nullptr);
   SignalCompletionAndSelfDestruct(
       CommandResult::kFailure,
       base::BindOnce(std::move(install_callback_), AppId(), code));
@@ -275,6 +297,9 @@ void FetchManifestAndInstallCommand::OnDidPerformInstallableCheck(
     return;
   }
   if (opt_manifest) {
+    if (!web_app_info_) {
+      web_app_info_ = std::make_unique<WebAppInstallInfo>(opt_manifest->id);
+    }
     UpdateWebAppInfoFromManifest(*opt_manifest, manifest_url,
                                  web_app_info_.get());
     LogInstallInfo();
@@ -298,7 +323,7 @@ void FetchManifestAndInstallCommand::OnDidPerformInstallableCheck(
   const bool skip_page_favicons =
       opt_manifest_ && !opt_manifest_->icons.empty();
 
-  app_id_ = GenerateAppId(web_app_info_->manifest_id, web_app_info_->start_url);
+  app_id_ = GenerateAppIdFromManifestId(web_app_info_->manifest_id);
 
   app_lock_description_ =
       command_manager()->lock_manager().UpgradeAndAcquireLock(
@@ -516,8 +541,6 @@ void FetchManifestAndInstallCommand::OnInstallFinalizedMaybeReparentTab(
           ->GetPrefs(),
       app_id, install_surface_);
 
-  RecordAppBanner(web_contents_.get(), web_app_info_->start_url);
-
   bool error = os_hooks_errors[OsHookType::kShortcuts];
   DCHECK(app_lock_);
   const bool can_reparent_tab =
@@ -577,10 +600,7 @@ void FetchManifestAndInstallCommand::OnInstallCompleted(
 }
 
 void FetchManifestAndInstallCommand::LogInstallInfo() {
-  debug_log_.Set("manifest_id",
-                 web_app_info_->manifest_id.has_value()
-                     ? base::Value(web_app_info_->manifest_id.value())
-                     : base::Value());
+  debug_log_.Set("manifest_id", web_app_info_->manifest_id.spec());
   debug_log_.Set("start_url", web_app_info_->start_url.spec());
   debug_log_.Set("name", web_app_info_->title);
 }

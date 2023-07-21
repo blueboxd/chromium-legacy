@@ -459,6 +459,25 @@ void ShellSurfaceBase::UpdateSystemModal() {
       system_modal_ ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_NONE);
 }
 
+void ShellSurfaceBase::UpdateShape() {
+  if (!host_window() || !host_window()->layer()) {
+    return;
+  }
+
+  if (!shape_rects_dp_.has_value()) {
+    host_window()->layer()->SetAlphaShape(nullptr);
+    return;
+  }
+
+  auto scaled_rects = std::make_unique<std::vector<gfx::Rect>>();
+  for (const gfx::Rect& rect_dp : shape_rects_dp_.value()) {
+    const float scale_factor = host_window()->layer()->device_scale_factor();
+    scaled_rects->push_back(gfx::ScaleToEnclosedRect(rect_dp, scale_factor));
+  }
+
+  host_window()->layer()->SetAlphaShape(std::move(scaled_rects));
+}
+
 void ShellSurfaceBase::SetApplicationId(const char* application_id) {
   // Store the value in |application_id_| in case the window does not exist yet.
   if (application_id)
@@ -655,36 +674,50 @@ void ShellSurfaceBase::SetWindowBounds(const gfx::Rect& bounds) {
     return;
   }
 
-  // Currently, clients do not know the size of the server-side decorations,
-  // so may not be able to compute correct bounds for decorated windows.
-  //
-  // TODO(crbug.com/1261321, b/268395213): Instead, tell clients how large the
-  // decorations are, so they can make better decisions.
-  if (GetSecurityDelegate() &&
-      GetSecurityDelegate()->CanSetBoundsWithServerSideDecoration(
-          widget_->GetNativeWindow())) {
-    // For selected clients (Borealis) work around this by expanding
-    // the requested bounds to include the decorations, if any.
-    if (widget_->non_client_view()) {
-      gfx::Rect expanded_bounds{
-          widget_->non_client_view()->GetWindowBoundsForClientBounds(bounds)};
+  SecurityDelegate* security = GetSecurityDelegate();
+  if (!security) {
+    return;
+  }
 
-      // If this expansion pushes the title bar offscreen, push it back
-      // onscreen while preserving requested X coordinate, width, and height.
-      gfx::Rect work_area =
-          display::Screen::GetScreen()->GetDisplayMatching(bounds).work_area();
-      if (!work_area.IsEmpty() && expanded_bounds.y() < work_area.y()) {
-        expanded_bounds.Offset(0, work_area.y() - expanded_bounds.y());
+  switch (security->CanSetBounds(widget_->GetNativeWindow())) {
+    // Disallowed by default.
+    case SecurityDelegate::SetBoundsPolicy::IGNORE:
+      break;
+
+    // For selected clients (Borealis) expand the requested bounds to include
+    // the decorations, if any.
+    //
+    // TODO(crbug.com/1261321, b/268395213): Instead, tell clients how large the
+    // decorations are, so they can make better decisions.
+    case SecurityDelegate::SetBoundsPolicy::ADJUST_IF_DECORATED:
+      if (widget_->non_client_view()) {
+        gfx::Rect expanded_bounds{
+            widget_->non_client_view()->GetWindowBoundsForClientBounds(bounds)};
+
+        // If this expansion pushes the title bar offscreen, push it back
+        // onscreen while preserving requested X coordinate, width, and height.
+        gfx::Rect work_area = display::Screen::GetScreen()
+                                  ->GetDisplayMatching(bounds)
+                                  .work_area();
+        if (!work_area.IsEmpty() && expanded_bounds.y() < work_area.y()) {
+          expanded_bounds.Offset(0, work_area.y() - expanded_bounds.y());
+        }
+        widget_->SetBounds(expanded_bounds);
+      } else {
+        // No decorations, so no adjustment needed.
+        widget_->SetBounds(bounds);
       }
-      widget_->SetBounds(expanded_bounds);
-    } else {
-      // No decorations, so no adjustment needed.
+      break;
+
+    // Other clients (Lacros) may set bounds, but it's a bug to do so for
+    // decorated windows. The chosen way to detect such bugs is a DCHECK.
+    //
+    // TODO(crbug.com/1261321, b/268395213): Instead, tell clients how large the
+    // decorations are, so they can make better decisions.
+    case SecurityDelegate::SetBoundsPolicy::DCHECK_IF_DECORATED:
+      DCHECK(!frame_enabled());
       widget_->SetBounds(bounds);
-    }
-  } else {
-    // Don't permit other clients (Lacros) to set bounds for decorated windows.
-    DCHECK(!frame_enabled());
-    widget_->SetBounds(bounds);
+      break;
   }
 }
 
@@ -909,6 +942,7 @@ void ShellSurfaceBase::AddOverlay(OverlayParams&& overlay_params) {
         aura::client::kSkipImeProcessing, false);
   }
 
+  set_bounds_is_dirty(true);
   UpdateWidgetBounds();
   UpdateResizability();
 }
@@ -997,6 +1031,7 @@ void ShellSurfaceBase::OnSetFrame(SurfaceFrameType frame_type) {
   widget_->GetRootView()->Layout();
   // TODO(oshima): We probably should wait applying these if the
   // window is animating.
+  set_bounds_is_dirty(true);
   UpdateWidgetBounds();
   UpdateSurfaceBounds();
 }
@@ -1633,11 +1668,24 @@ gfx::Rect ShellSurfaceBase::ComputeAdjustedBounds(
 
 void ShellSurfaceBase::UpdateWidgetBounds() {
   DCHECK(widget_);
-
   absl::optional<gfx::Rect> bounds = GetWidgetBounds();
-  if (!bounds)
+  if (!bounds) {
     return;
+  }
+
+  ash::WindowState* window_state =
+      ash::WindowState::Get(widget_->GetNativeWindow());
   gfx::Rect adjusted_bounds = ComputeAdjustedBounds(*bounds);
+
+  bool should_update_widget_bounds = bounds_is_dirty() ||
+                                     adjusted_bounds != *bounds ||
+                                     (window_state && window_state->IsPip());
+
+  set_bounds_is_dirty(false);
+
+  if (!should_update_widget_bounds) {
+    return;
+  }
 
   if (overlay_widget_) {
     gfx::Rect content_bounds(adjusted_bounds.size());
@@ -1653,7 +1701,6 @@ void ShellSurfaceBase::UpdateWidgetBounds() {
   }
 
   aura::Window* window = widget_->GetNativeWindow();
-  ash::WindowState* window_state = ash::WindowState::Get(window);
   // Return early if the shell is currently managing the bounds of the widget.
   if (window_state && !window_state->allow_set_bounds_direct()) {
     // 1) When a window is either maximized/fullscreen/pinned.
@@ -1683,6 +1730,8 @@ void ShellSurfaceBase::UpdateSurfaceBounds() {
   gfx::Rect surface_bounds(origin, host_window()->bounds().size());
   if (host_window()->bounds() == surface_bounds)
     return;
+  // This may not be necessary
+  set_bounds_is_dirty(true);
   host_window()->SetBounds(surface_bounds);
 }
 
@@ -1692,7 +1741,8 @@ void ShellSurfaceBase::UpdateShadow() {
 
   aura::Window* window = widget_->GetNativeWindow();
 
-  if (!shadow_bounds_) {
+  // Window shadows should be disabled if a window shape has been set.
+  if (!shadow_bounds_ || shape_rects_dp_.has_value()) {
     wm::SetShadowElevation(window, wm::kShadowElevationNone);
   } else {
     // Use a small style shadow for popup surface.
@@ -1890,13 +1940,19 @@ bool ShellSurfaceBase::CalculateCanResize() const {
 }
 
 void ShellSurfaceBase::CommitWidget() {
+  bool size_constraint_changed = minimum_size_ != pending_minimum_size_ ||
+                                 maximum_size_ != pending_maximum_size_;
+  set_bounds_is_dirty(
+      bounds_is_dirty() || origin_ != pending_geometry_.origin() ||
+      geometry_ != pending_geometry_ || display_id_ != pending_display_id_ ||
+      size_constraint_changed);
+
   // Apply new window geometry.
   geometry_ = pending_geometry_;
   display_id_ = pending_display_id_;
+  shape_rects_dp_ = pending_shape_rects_dp_;
 
   // Apply new minimum/maximium size.
-  bool size_constraint_changed = minimum_size_ != pending_minimum_size_ ||
-                                 maximum_size_ != pending_maximum_size_;
   minimum_size_ = pending_minimum_size_;
   maximum_size_ = pending_maximum_size_;
   UpdateResizability();
@@ -1949,6 +2005,7 @@ void ShellSurfaceBase::CommitWidget() {
   }
 
   UpdateSurfaceBounds();
+  UpdateShape();
 
   // Don't show yet if the shell surface doesn't have content or is minimized
   // while waiting for content.
@@ -2054,6 +2111,20 @@ void ShellSurfaceBase::SetZOrder(ui::ZOrderLevel z_order) {
 
   // Otherwise, we want to save `z_order` for when `widget_` is initialized.
   initial_z_order_ = z_order;
+}
+
+void ShellSurfaceBase::SetShape(absl::optional<cc::Region> shape) {
+  pending_shape_rects_dp_.reset();
+  if (!shape) {
+    return;
+  }
+
+  ShapeRects shape_rects_dp;
+  for (gfx::Rect rect : shape.value()) {
+    shape_rects_dp.push_back(std::move(rect));
+  }
+
+  pending_shape_rects_dp_ = std::move(shape_rects_dp);
 }
 
 // static

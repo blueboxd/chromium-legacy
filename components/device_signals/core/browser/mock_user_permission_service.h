@@ -15,13 +15,15 @@ class MockUserPermissionService : public UserPermissionService {
   MockUserPermissionService();
   ~MockUserPermissionService() override;
 
-  MOCK_METHOD(bool, ShouldCollectConsent, (), (override));
+  MOCK_METHOD(bool, HasUserConsented, (), (const override));
+  MOCK_METHOD(bool, ShouldCollectConsent, (), (const override));
   MOCK_METHOD(UserPermission,
               CanUserCollectSignals,
               (const UserContext&),
-              (override));
+              (const override));
 
-  MOCK_METHOD(UserPermission, CanCollectSignals, (), (override));
+  MOCK_METHOD(UserPermission, CanCollectSignals, (), (const override));
+  MOCK_METHOD(void, ResetUserConsentIfNeeded, (), (override));
 };
 
 }  // namespace device_signals

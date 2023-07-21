@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_event_logger.h"
 
+#include "base/containers/span.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/cert/x509_certificate.h"
 #include "net/log/net_log_values.h"
@@ -238,15 +239,6 @@ base::Value::Dict NetLogQuicVersionNegotiationPacketParams(
     versions.Append(ParsedQuicVersionToString(version));
   }
   dict.Set("versions", std::move(versions));
-  return dict;
-}
-
-base::Value::Dict NetLogQuicPublicResetPacketParams(
-    const IPEndPoint& server_hello_address,
-    const quic::QuicSocketAddress& public_reset_address) {
-  base::Value::Dict dict;
-  dict.Set("server_hello_address", server_hello_address.ToString());
-  dict.Set("public_reset_address", public_reset_address.ToString());
   return dict;
 }
 
@@ -655,12 +647,6 @@ void QuicEventLogger::OnMaxStreamsFrame(
                     [&] { return NetLogQuicMaxStreamsFrameParams(frame); });
 }
 
-void QuicEventLogger::OnStopWaitingFrame(
-    const quic::QuicStopWaitingFrame& frame) {
-  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_STOP_WAITING_FRAME_RECEIVED,
-                    [&] { return NetLogQuicStopWaitingFrameParams(&frame); });
-}
-
 void QuicEventLogger::OnRstStreamFrame(const quic::QuicRstStreamFrame& frame) {
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_RST_STREAM_FRAME_RECEIVED,
                     [&] { return NetLogQuicRstStreamFrameParams(&frame); });
@@ -740,15 +726,6 @@ void QuicEventLogger::OnCoalescedPacketSent(
   net_log_.AddEventWithStringParams(
       NetLogEventType::QUIC_SESSION_COALESCED_PACKET_SENT, "info",
       coalesced_packet.ToString(length));
-}
-
-void QuicEventLogger::OnPublicResetPacket(
-    const quic::QuicPublicResetPacket& packet) {
-  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_PUBLIC_RESET_PACKET_RECEIVED,
-                    [&] {
-                      return NetLogQuicPublicResetPacketParams(
-                          local_address_from_shlo_, packet.client_address);
-                    });
 }
 
 void QuicEventLogger::OnVersionNegotiationPacket(
@@ -838,6 +815,16 @@ void QuicEventLogger::OnTransportParametersResumed(
 void QuicEventLogger::OnZeroRttRejected(int reason) {
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_ZERO_RTT_REJECTED,
                     [reason] { return NetLogQuicZeroRttRejectReason(reason); });
+}
+
+void QuicEventLogger::OnEncryptedClientHelloSent(
+    std::string_view client_hello) {
+  net_log_.AddEvent(NetLogEventType::SSL_ENCRYPTED_CLIENT_HELLO, [&] {
+    base::Value::Dict dict;
+    dict.Set("bytes",
+             NetLogBinaryValue(base::as_bytes(base::make_span(client_hello))));
+    return dict;
+  });
 }
 
 }  // namespace net

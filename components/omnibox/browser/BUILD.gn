@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
+import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//components/optimization_guide/features.gni")
 import("//components/vector_icons/vector_icons.gni")
@@ -27,17 +28,28 @@ aggregate_vector_icons("omnibox_vector_icons") {
   sources = [
     "answer_calculator.icon",
     "answer_currency.icon",
+    "answer_currency_chrome_refresh.icon",
     "answer_default.icon",
     "answer_dictionary.icon",
+    "answer_dictionary_chrome_refresh.icon",
     "answer_finance.icon",
+    "answer_finance_chrome_refresh.icon",
     "answer_sunrise.icon",
+    "answer_sunrise_chrome_refresh.icon",
     "answer_translation.icon",
+    "answer_translation_chrome_refresh.icon",
     "answer_when_is.icon",
+    "answer_when_is_chrome_refresh.icon",
+    "arrow_down_chrome_refresh.icon",
+    "arrow_up_chrome_refresh.icon",
     "bookmark.icon",
+    "bookmark_chrome_refresh.icon",
     "calculator.icon",
+    "calculator_chrome_refresh.icon",
     "chevron.icon",
     "clear.icon",
     "clock.icon",
+    "clock_chrome_refresh.icon",
     "cookie_chrome_refresh.icon",
     "cookie_crossed_chrome_refresh.icon",
     "dino.icon",
@@ -59,9 +71,11 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "incognito.icon",
     "install_desktop.icon",
     "journeys.icon",
+    "journeys_chrome_refresh.icon",
     "keyword_search.icon",
     "offline_pin.icon",
     "page.icon",
+    "page_chrome_refresh.icon",
     "pedal.icon",
     "price_tracking_disabled.icon",
     "price_tracking_enabled_filled.icon",
@@ -77,6 +91,7 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "switch.icon",
     "tab.icon",
     "trending_up.icon",
+    "trending_up_chrome_refresh.icon",
   ]
 
   if (is_mac) {
@@ -113,6 +128,8 @@ static_library("browser") {
     "actions/omnibox_action.cc",
     "actions/omnibox_action.h",
     "actions/omnibox_action_concepts.h",
+    "actions/omnibox_action_in_suggest.cc",
+    "actions/omnibox_action_in_suggest.h",
     "actions/omnibox_pedal.cc",
     "actions/omnibox_pedal.h",
     "actions/omnibox_pedal_concepts.h",
@@ -369,7 +386,7 @@ static_library("browser") {
     deps += [ "//components/keep_alive_registry" ]
   }
 
-  if (!is_ios) {
+  if (use_blink) {
     sources += [
       "actions/history_clusters_action.cc",
       "actions/history_clusters_action.h",
@@ -378,13 +395,8 @@ static_library("browser") {
     ]
     deps += [
       "//components/history_clusters/core",
-      "//components/optimization_guide/core:entities",
-    ]
-  }
-
-  if (use_blink) {
-    deps += [
       "//components/keyed_service/content",
+      "//components/optimization_guide/core:entities",
       "//content/public/browser",
     ]
   }
@@ -401,10 +413,8 @@ static_library("browser") {
 
   if (is_android) {
     sources += [
-      "actions/omnibox_action_in_suggest.cc",
-      "actions/omnibox_action_in_suggest.h",
-      "actions/omnibox_pedal_jni_wrapper.cc",
-      "actions/omnibox_pedal_jni_wrapper.h",
+      "actions/omnibox_action_factory_android.cc",
+      "actions/omnibox_action_factory_android.h",
       "autocomplete_match_android.cc",
       "autocomplete_result_android.cc",
     ]
@@ -496,7 +506,7 @@ if (is_android) {
       "android/java/res/drawable-xxxhdpi/omnibox_not_secure_warning.png",
       "android/java/res/drawable/action_call.xml",
       "android/java/res/drawable/action_directions.xml",
-      "android/java/res/drawable/action_web.xml",
+      "android/java/res/drawable/action_reviews.xml",
       "android/java/res/values/colors.xml",
       "android/java/res/values/drawables.xml",
     ]
@@ -506,26 +516,42 @@ if (is_android) {
     ]
   }
 
+  android_library("scheme_classifier_java") {
+    resources_package = "org.chromium.components.omnibox"
+    sources = [
+      "android/java/src/org/chromium/components/omnibox/AutocompleteSchemeClassifier.java",
+      "android/java/src/org/chromium/components/omnibox/OmniboxUrlEmphasizer.java",
+      "android/java/src/org/chromium/components/omnibox/SecurityStatusIcon.java",
+    ]
+    deps = [
+      ":java_resources",
+      "//base:jni_java",
+      "//components/embedder_support/android:util_java",
+      "//components/security_state/core:security_state_enums_java",
+      "//third_party/androidx:androidx_annotation_annotation_java",
+    ]
+    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  }
+
   android_library("browser_java") {
     sources = [
       "android/java/src/org/chromium/components/omnibox/AutocompleteMatch.java",
       "android/java/src/org/chromium/components/omnibox/AutocompleteResult.java",
-      "android/java/src/org/chromium/components/omnibox/AutocompleteSchemeClassifier.java",
-      "android/java/src/org/chromium/components/omnibox/OmniboxUrlEmphasizer.java",
       "android/java/src/org/chromium/components/omnibox/SecurityButtonAnimationDelegate.java",
-      "android/java/src/org/chromium/components/omnibox/SecurityStatusIcon.java",
       "android/java/src/org/chromium/components/omnibox/SuggestionAnswer.java",
-      "android/java/src/org/chromium/components/omnibox/action/HistoryClustersAction.java",
       "android/java/src/org/chromium/components/omnibox/action/OmniboxAction.java",
-      "android/java/src/org/chromium/components/omnibox/action/OmniboxActionInSuggest.java",
-      "android/java/src/org/chromium/components/omnibox/action/OmniboxPedal.java",
+      "android/java/src/org/chromium/components/omnibox/action/OmniboxActionDelegate.java",
+      "android/java/src/org/chromium/components/omnibox/action/OmniboxActionFactory.java",
+      "android/java/src/org/chromium/components/omnibox/suggestions/OmniboxSuggestionUiType.java",
     ]
 
     resources_package = "org.chromium.components.omnibox"
     deps = [
       ":java_resources",
+      "//base:base_java",
       "//base:jni_java",
       "//build/android:build_java",
+      "//components/browser_ui/settings/android:java",
       "//components/browser_ui/styles/android:java_resources",
       "//components/browser_ui/widget/android:java",
       "//components/embedder_support/android:util_java",
@@ -536,11 +562,15 @@ if (is_android) {
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_collection_collection_java",
       "//third_party/androidx:androidx_core_core_java",
+      "//third_party/metrics_proto:metrics_proto_java",
       "//ui/android:ui_full_java",
       "//url:gurl_java",
     ]
 
-    public_deps = [ "//third_party/omnibox_proto:omnibox_proto_java" ]
+    public_deps = [
+      ":scheme_classifier_java",
+      "//third_party/omnibox_proto:omnibox_proto_java",
+    ]
 
     srcjar_deps = [ ":browser_java_enums_srcjar" ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -548,21 +578,20 @@ if (is_android) {
 
   robolectric_library("junit") {
     resources_package = "org.chromium.components.omnibox"
-    sources = [
-      "android/java/src/org/chromium/components/omnibox/AutocompleteResultUnitTest.java",
-      "android/java/src/org/chromium/components/omnibox/action/HistoryClustersActionUnitTest.java",
-      "android/java/src/org/chromium/components/omnibox/action/OmniboxActionInSuggestUnitTest.java",
-      "android/java/src/org/chromium/components/omnibox/action/OmniboxPedalUnitTest.java",
-    ]
+    sources = [ "android/java/src/org/chromium/components/omnibox/AutocompleteResultUnitTest.java" ]
     deps = [
       ":browser_java",
       ":java_resources",
       ":junit_test_support",
+      "//base:base_java",
       "//base:base_java_test_support",
       "//base:base_junit_test_support",
+      "//components/browser_ui/settings/android:java",
       "//components/browser_ui/styles/android:java_resources",
+      "//components/embedder_support/android:util_java",
       "//third_party/android_deps:protobuf_lite_runtime_java",
       "//third_party/junit:junit",
+      "//third_party/mockito:mockito_java",
       "//url:gurl_junit_shadows",
     ]
   }
@@ -603,9 +632,7 @@ if (is_android) {
       "android/java/src/org/chromium/components/omnibox/AutocompleteSchemeClassifier.java",
       "android/java/src/org/chromium/components/omnibox/OmniboxUrlEmphasizer.java",
       "android/java/src/org/chromium/components/omnibox/SuggestionAnswer.java",
-      "android/java/src/org/chromium/components/omnibox/action/HistoryClustersAction.java",
-      "android/java/src/org/chromium/components/omnibox/action/OmniboxActionInSuggest.java",
-      "android/java/src/org/chromium/components/omnibox/action/OmniboxPedal.java",
+      "android/java/src/org/chromium/components/omnibox/action/OmniboxActionFactory.java",
     ]
   }
 }
@@ -701,6 +728,7 @@ bundle_data("unit_tests_bundle_data") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "actions/omnibox_action_in_suggest_unittest.cc",
     "actions/omnibox_pedal_provider_unittest.cc",
     "actions/omnibox_pedal_unittest.cc",
     "answers_cache_unittest.cc",
@@ -827,6 +855,9 @@ source_set("unit_tests") {
       "actions/history_clusters_action_unittest.cc",
       "history_cluster_provider_unittest.cc",
     ]
+  }
+
+  if (use_blink) {
     deps += [ "//components/history_clusters/core:test_support" ]
   }
 }

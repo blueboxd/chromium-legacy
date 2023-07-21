@@ -64,8 +64,7 @@ const CLIENT_DELEGATE = {
    * @return {Promise<Array<!projectorApp.Account>>}
    */
   getAccounts() {
-    return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
-        'getAccounts', []);
+    return browserProxy.getAccounts();
   },
 
   /**
@@ -83,8 +82,7 @@ const CLIENT_DELEGATE = {
    * @return {Promise<boolean>}
    */
   startProjectorSession(storageDir) {
-    return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
-        'startProjectorSession', [storageDir]);
+    return browserProxy.startProjectorSession(storageDir);
   },
 
   /**
@@ -93,8 +91,7 @@ const CLIENT_DELEGATE = {
    * @return {!Promise<!projectorApp.OAuthToken>}
    */
   getOAuthTokenForAccount(account) {
-    return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
-        'getOAuthTokenForAccount', [account]);
+    return Promise.reject('Unsupported method getOauthTokenForAccount');
   },
 
   /**
@@ -104,8 +101,7 @@ const CLIENT_DELEGATE = {
    * @param {!Array<ProjectorError>} msg Error messages.
    */
   onError(msg) {
-    AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
-        'onError', [msg]);
+    console.error('Received error messages:', msg);
   },
 
   /**
@@ -133,16 +129,9 @@ const CLIENT_DELEGATE = {
   sendXhr(
       url, method, requestBody, useCredentials, useApiKey, headers,
       accountEmail) {
-    return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
-        'sendXhr', [
-          url,
-          method,
-          requestBody ? requestBody : '',
-          !!useCredentials,
-          !!useApiKey,
-          headers,
-          accountEmail,
-        ]);
+    return browserProxy.sendXhr(
+        url, method, requestBody, !!useCredentials, !!useApiKey, headers,
+        accountEmail);
   },
 
   /**
@@ -203,15 +192,16 @@ const CLIENT_DELEGATE = {
    */
   async getVideo(videoFileId, resourceKey) {
     try {
-      const video =
-          await AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
-              'getVideo', [videoFileId, resourceKey]);
+      const video = await browserProxy.getVideo(videoFileId, resourceKey);
       const videoFile = await getOrCreateLoadFilePromise(videoFileId).promise;
-      // The streaming url must be generated in the untrusted context.
-      // The corresponding cleanup call to URL.revokeObjectURL() happens in
-      // ProjectorViewer::maybeResetUI() in Google3.
-      video.srcUrl = URL.createObjectURL(videoFile);
-      return video;
+      return {
+        fileId: videoFileId,
+        durationMillis: video.durationMillis.toString(),
+        // The streaming url must be generated in the untrusted context.
+        // The corresponding cleanup call to URL.revokeObjectURL() happens in
+        // ProjectorViewer::maybeResetUI() in Google3.
+        srcUrl: URL.createObjectURL(videoFile),
+      };
     } catch (e) {
       return Promise.reject(e);
     } finally {

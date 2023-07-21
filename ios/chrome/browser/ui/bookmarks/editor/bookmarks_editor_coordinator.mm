@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/bookmarks/editor/bookmarks_editor_coordinator.h"
 
+#import <MaterialComponents/MaterialSnackbar.h>
+
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/bookmarks/account_bookmark_model_factory.h"
@@ -11,9 +13,9 @@
 #import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
-#import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/bookmarks/editor/bookmarks_editor_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/editor/bookmarks_editor_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/editor/bookmarks_editor_mediator_delegate.h"
@@ -79,7 +81,6 @@
   _viewController =
       [[BookmarksEditorViewController alloc] initWithBrowser:self.browser];
   _viewController.delegate = self;
-  _viewController.snackbarCommandsHandler = _snackbarCommandsHandler;
   ChromeBrowserState* browserState =
       self.browser->GetBrowserState()->GetOriginalChromeBrowserState();
   bookmarks::BookmarkModel* profileBookmarkModel =
@@ -87,15 +88,15 @@
           browserState);
   bookmarks::BookmarkModel* accountBookmarkModel =
       ios::AccountBookmarkModelFactory::GetForBrowserState(browserState);
+  syncer::SyncService* syncService =
+      SyncServiceFactory::GetForBrowserState(browserState);
   _mediator = [[BookmarksEditorMediator alloc]
       initWithProfileBookmarkModel:profileBookmarkModel
               accountBookmarkModel:accountBookmarkModel
                       bookmarkNode:_node
                              prefs:browserState->GetPrefs()
-                  syncSetupService:SyncSetupServiceFactory::GetForBrowserState(
-                                       browserState)
-                       syncService:SyncServiceFactory::GetForBrowserState(
-                                       browserState)];
+                       syncService:syncService
+                      browserState:browserState];
   _mediator.consumer = _viewController;
   _mediator.delegate = self;
   _viewController.mutator = _mediator;
@@ -118,7 +119,6 @@
   _mediator.consumer = nil;
   _mediator = nil;
   _viewController.delegate = nil;
-  _viewController.snackbarCommandsHandler = nil;
   _viewController.mutator = nil;
   _viewController = nil;
   _snackbarCommandsHandler = nil;
@@ -129,6 +129,7 @@
   // animatedDismissal should have been explicitly set before calling stop.
   [_navigationController dismissViewControllerAnimated:self.animatedDismissal
                                             completion:nil];
+  _navigationController.presentationController.delegate = nil;
   _navigationController = nil;
 }
 
@@ -163,10 +164,6 @@
   [self.delegate bookmarksEditorCoordinatorShouldStop:self];
 }
 
-- (void)bookmarkEditorWillCommitTitleOrURLChange:
-    (BookmarksEditorViewController*)controller {
-  [self.delegate bookmarkEditorWillCommitTitleOrURLChange:self];
-}
 #pragma mark - UIAdaptivePresentationControllerDelegate
 
 - (void)presentationControllerDidAttemptToDismiss:
@@ -244,6 +241,15 @@
   [_folderChooserCoordinator setSelectedFolder:newParent];
 }
 
+- (void)showSnackbarMessage:(MDCSnackbarMessage*)message {
+  [_snackbarCommandsHandler showSnackbarMessage:message];
+}
+
+- (void)bookmarkEditorWillCommitTitleOrURLChange:
+    (BookmarksEditorMediator*)mediator {
+  [self.delegate bookmarkEditorWillCommitTitleOrURLChange:self];
+}
+
 #pragma mark - BookmarksFolderChooserCoordinatorDelegate
 
 - (void)bookmarksFolderChooserCoordinatorDidConfirm:
@@ -256,7 +262,7 @@
   _folderChooserCoordinator.delegate = nil;
   _folderChooserCoordinator = nil;
 
-  [_mediator changeFolder:folder];
+  [_mediator manuallyChangeFolder:folder];
 }
 
 - (void)bookmarksFolderChooserCoordinatorDidCancel:

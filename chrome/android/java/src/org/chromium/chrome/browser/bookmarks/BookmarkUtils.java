@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -16,7 +17,6 @@ import android.os.LocaleList;
 import android.provider.Browser;
 import android.text.TextUtils;
 
-import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -54,6 +54,7 @@ import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.components.commerce.core.ShoppingService;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -527,21 +528,31 @@ public class BookmarkUtils {
      * @param type The bookmark type of the folder.
      * @return A {@link Drawable} to use for displaying bookmark folders.
      */
-    public static Drawable getFolderIcon(Context context, @BookmarkType int type) {
+    public static Drawable getFolderIcon(
+            Context context, @BookmarkType int type, @BookmarkRowDisplayPref int displayPref) {
+        ColorStateList tint = getFolderIconTint(context, type);
         if (type == BookmarkType.READING_LIST) {
-            return UiUtils.getTintedDrawable(
-                    context, R.drawable.ic_reading_list_folder_24dp, getFolderIconTint(type));
+            return UiUtils.getTintedDrawable(context, R.drawable.ic_reading_list_folder_24dp, tint);
         }
-        return UiUtils.getTintedDrawable(
-                context, R.drawable.ic_folder_blue_24dp, getFolderIconTint(type));
+
+        return UiUtils.getTintedDrawable(context,
+                displayPref == BookmarkRowDisplayPref.VISUAL ? R.drawable.ic_folder_outline_24dp
+                                                             : R.drawable.ic_folder_blue_24dp,
+                tint);
     }
 
     /**
-     * @param type The bookmark type.
+     * @param context {@link Context} used to retrieve the drawable.
+     * @param type The bookmark type of the folder.
      * @return The tint used on the bookmark folder icon.
      */
-    public static @ColorRes int getFolderIconTint(@BookmarkType int type) {
-        return R.color.default_icon_color_tint_list;
+    public static ColorStateList getFolderIconTint(Context context, @BookmarkType int type) {
+        if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()
+                && type == BookmarkType.READING_LIST) {
+            return ColorStateList.valueOf(SemanticColorUtils.getDefaultIconColorAccent1(context));
+        }
+
+        return ColorStateList.valueOf(context.getColor(R.color.default_icon_color_tint_list));
     }
 
     /**
@@ -633,36 +644,49 @@ public class BookmarkUtils {
     }
 
     /**
+     * Gets the display count for folders.
+     * @param id The bookmark to get the description for, must be a folder.
+     * @param bookmarkModel The bookmark model to get info on the bookmark.
+     */
+    public static int getChildCountForDisplay(BookmarkId id, BookmarkModel bookmarkModel) {
+        if (id.getType() == BookmarkType.READING_LIST) {
+            return bookmarkModel.getUnreadCount(id);
+        } else {
+            return bookmarkModel.getTotalBookmarkCount(id);
+        }
+    }
+
+    /**
      * Returns the description to use for the folder in bookamrks manager.
-     * @param id The bookmark to get the description for.
+     * @param id The bookmark to get the description for, must be a folder.
      * @param bookmarkModel The bookmark model to get info on the bookmark.
      * @param resources Android resources object to get strings.
      */
     public static String getFolderDescriptionText(
             BookmarkId id, BookmarkModel bookmarkModel, Resources resources) {
+        int count = getChildCountForDisplay(id, bookmarkModel);
         if (id.getType() == BookmarkType.READING_LIST) {
-            int unreadCount = bookmarkModel.getUnreadCount(id);
-            return (unreadCount > 0) ? resources.getQuantityString(
-                           R.plurals.reading_list_unread_page_count, unreadCount, unreadCount)
-                                     : resources.getString(R.string.reading_list_no_unread_pages);
+            return (count > 0) ? resources.getQuantityString(
+                           R.plurals.reading_list_unread_page_count, count, count)
+                               : resources.getString(R.string.reading_list_no_unread_pages);
         } else {
-            int childCount = bookmarkModel.getTotalBookmarkCount(id);
-            return (childCount > 0)
-                    ? resources.getQuantityString(R.plurals.bookmarks_count, childCount, childCount)
+            return (count > 0)
+                    ? resources.getQuantityString(R.plurals.bookmarks_count, count, count)
                     : resources.getString(R.string.no_bookmarks);
         }
     }
 
     /** Returns the RoundedIconGenerator with the appropriate size. */
     public static RoundedIconGenerator getRoundedIconGenerator(
-            Context context, Resources resources, @BookmarkRowDisplayPref int displayPref) {
+            Context context, @BookmarkRowDisplayPref int displayPref) {
+        Resources res = context.getResources();
         boolean visual = displayPref == BookmarkRowDisplayPref.VISUAL;
-        int displayIconSize = getDisplayIconSize(resources, displayPref);
+        int displayIconSize = getFaviconDisplaySize(res, displayPref);
 
         return visual
                 ? new RoundedIconGenerator(displayIconSize, displayIconSize, displayIconSize / 2,
                         context.getColor(R.color.default_favicon_background_color),
-                        getDisplayTextSize(resources, displayPref))
+                        getDisplayTextSize(res))
                 : FaviconUtils.createCircularIconGenerator(context);
     }
 
@@ -671,48 +695,43 @@ public class BookmarkUtils {
         return resources.getDimensionPixelSize(R.dimen.default_favicon_min_size);
     }
 
+    /** Returns the size to use when displaying an image. */
+    public static int getImageIconSize(
+            Resources resources, @BookmarkRowDisplayPref int displayPref) {
+        if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
+            return displayPref == BookmarkRowDisplayPref.VISUAL
+                    ? resources.getDimensionPixelSize(
+                            R.dimen.improved_bookmark_start_image_size_visual)
+                    : resources.getDimensionPixelSize(
+                            R.dimen.improved_bookmark_start_image_size_compact);
+        }
+
+        return BookmarkFeatures.isLegacyBookmarksVisualRefreshEnabled()
+                ? resources.getDimensionPixelSize(R.dimen.list_item_v2_start_icon_width_compact)
+                : resources.getDimensionPixelSize(R.dimen.list_item_start_icon_width);
+    }
+
     /** Returns the size to use when displaying the favicon. */
     public static int getFaviconDisplaySize(
             Resources resources, @BookmarkRowDisplayPref int displayPref) {
         if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
-            return displayPref == BookmarkRowDisplayPref.VISUAL
-                    ? resources.getDimensionPixelSize(
-                            R.dimen.bookmark_refresh_preferred_start_icon_size)
-                    : resources.getDimensionPixelSize(R.dimen.circular_monogram_size);
+            return resources.getDimensionPixelSize(R.dimen.improved_bookmark_favicon_display_size);
         }
 
         return BookmarkFeatures.isLegacyBookmarksVisualRefreshEnabled()
-                ? resources.getDimensionPixelSize(
-                        R.dimen.bookmark_refresh_preferred_start_icon_size)
-                : resources.getDimensionPixelSize(R.dimen.circular_monogram_size);
+                ? resources.getDimensionPixelSize(R.dimen.list_item_v2_start_icon_width_compact)
+                : resources.getDimensionPixelSize(R.dimen.list_item_start_icon_width);
     }
 
-    private static int getDisplayTextSize(
-            Resources resources, @BookmarkRowDisplayPref int displayPref) {
+    private static int getDisplayTextSize(Resources resources) {
         if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
-            return displayPref == BookmarkRowDisplayPref.VISUAL
-                    ? resources.getDimensionPixelSize(
-                            R.dimen.bookmark_refresh_circular_monogram_text_size)
-                    : resources.getDimensionPixelSize(R.dimen.circular_monogram_text_size);
+            return resources.getDimensionPixelSize(R.dimen.circular_monogram_text_size);
         }
 
         return BookmarkFeatures.isLegacyBookmarksVisualRefreshEnabled()
                 ? resources.getDimensionPixelSize(
                         R.dimen.bookmark_refresh_circular_monogram_text_size)
                 : resources.getDimensionPixelSize(R.dimen.circular_monogram_text_size);
-    }
-
-    public static int getDisplayIconSize(
-            Resources resources, @BookmarkRowDisplayPref int displayPref) {
-        if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
-            return displayPref == BookmarkRowDisplayPref.VISUAL
-                    ? resources.getDimensionPixelSize(R.dimen.improved_bookmark_icon_visual_size)
-                    : resources.getDimensionPixelSize(R.dimen.improved_bookmark_icon_size);
-        }
-
-        return BookmarkFeatures.isLegacyBookmarksVisualRefreshEnabled()
-                ? resources.getDimensionPixelSize(R.dimen.list_item_v2_start_icon_width_compact)
-                : resources.getDimensionPixelSize(R.dimen.list_item_start_icon_width);
     }
 
     private static Locale getLocale(Activity activity) {

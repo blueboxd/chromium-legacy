@@ -211,6 +211,10 @@ class MockCustomizeChromeFeaturePromoHelper
               CloseCustomizeChromeFeaturePromo,
               (content::WebContents*),
               (override));
+  MOCK_METHOD(bool,
+              IsSigninModalDialogOpen,
+              (content::WebContents*),
+              (override));
 
   ~MockCustomizeChromeFeaturePromoHelper() override = default;
 };
@@ -366,7 +370,7 @@ class NewTabPageHandlerTest : public testing::Test {
 
 class NewTabPageHandlerThemeTest
     : public NewTabPageHandlerTest,
-      public ::testing::WithParamInterface<std::tuple<bool, bool, bool>> {
+      public ::testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   NewTabPageHandlerThemeTest() {
     std::vector<base::test::FeatureRef> enabled_features;
@@ -376,12 +380,6 @@ class NewTabPageHandlerThemeTest
       enabled_features.push_back(ntp_features::kNtpRemoveScrim);
     } else {
       disabled_features.push_back(ntp_features::kNtpRemoveScrim);
-    }
-
-    if (ComprehensiveTheme()) {
-      enabled_features.push_back(ntp_features::kNtpComprehensiveTheming);
-    } else {
-      disabled_features.push_back(ntp_features::kNtpComprehensiveTheming);
     }
 
     if (CustomizeChromeSidePanel()) {
@@ -395,8 +393,7 @@ class NewTabPageHandlerThemeTest
   }
 
   bool RemoveScrim() const { return std::get<0>(GetParam()); }
-  bool ComprehensiveTheme() const { return std::get<1>(GetParam()); }
-  bool CustomizeChromeSidePanel() const { return std::get<2>(GetParam()); }
+  bool CustomizeChromeSidePanel() const { return std::get<1>(GetParam()); }
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -560,11 +557,7 @@ TEST_P(NewTabPageHandlerThemeTest, SetCustomBackground) {
     EXPECT_FALSE(theme->background_image->scrim_display.has_value());
   }
 
-  if (ComprehensiveTheme()) {
-    EXPECT_EQ(SkColorSetRGB(0, 0, 4), theme->most_visited->background_color);
-  } else {
-    EXPECT_EQ(SkColorSetRGB(0, 0, 5), theme->most_visited->background_color);
-  }
+  EXPECT_EQ(SkColorSetRGB(0, 0, 4), theme->most_visited->background_color);
 }
 
 TEST_P(NewTabPageHandlerThemeTest, SetDailyRefresh) {
@@ -673,7 +666,6 @@ TEST_P(NewTabPageHandlerThemeTest, SetThirdPartyTheme) {
 INSTANTIATE_TEST_SUITE_P(All,
                          NewTabPageHandlerThemeTest,
                          ::testing::Combine(::testing::Bool(),
-                                            ::testing::Bool(),
                                             ::testing::Bool()));
 
 TEST_F(NewTabPageHandlerTest, Histograms) {
@@ -1148,6 +1140,9 @@ TEST_F(NewTabPageHandlerTest, IncrementCustomizeChromeButtonOpenCount) {
 }
 
 TEST_F(NewTabPageHandlerTest, MaybeShowCustomizeChromeFeaturePromo) {
+  EXPECT_CALL(*mock_customize_chrome_feature_promo_helper_,
+              IsSigninModalDialogOpen)
+      .WillRepeatedly(testing::Return(false));
   EXPECT_EQ(profile_->GetPrefs()->GetInteger(
                 prefs::kNtpCustomizeChromeButtonOpenCount),
             0);
@@ -1161,6 +1156,23 @@ TEST_F(NewTabPageHandlerTest, MaybeShowCustomizeChromeFeaturePromo) {
   EXPECT_EQ(profile_->GetPrefs()->GetInteger(
                 prefs::kNtpCustomizeChromeButtonOpenCount),
             1);
+  EXPECT_CALL(*mock_customize_chrome_feature_promo_helper_,
+              MaybeShowCustomizeChromeFeaturePromo)
+      .Times(0);
+
+  handler_->MaybeShowCustomizeChromeFeaturePromo();
+
+  mock_page_.FlushForTesting();
+}
+
+TEST_F(NewTabPageHandlerTest,
+       DontShowCustomizeChromeFeaturePromoWhenModalDialogIsOpen) {
+  EXPECT_CALL(*mock_customize_chrome_feature_promo_helper_,
+              IsSigninModalDialogOpen)
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_EQ(profile_->GetPrefs()->GetInteger(
+                prefs::kNtpCustomizeChromeButtonOpenCount),
+            0);
   EXPECT_CALL(*mock_customize_chrome_feature_promo_helper_,
               MaybeShowCustomizeChromeFeaturePromo)
       .Times(0);

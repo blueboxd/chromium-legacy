@@ -10,6 +10,7 @@
 #include "ash/system/media/unified_media_controls_container.h"
 #include "ash/system/tray/interacted_by_tap_recorder.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/unified/detailed_view_controller.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_tile.h"
@@ -33,6 +34,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/view_utils.h"
 
 namespace ash {
 
@@ -155,8 +157,7 @@ QuickSettingsView::QuickSettingsView(UnifiedSystemTrayController* controller)
   if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsCrOSUpdatedUI)) {
     media_view_container_ = system_tray_container_->AddChildView(
         std::make_unique<QuickSettingsMediaViewContainer>(controller_));
-  } else if (base::FeatureList::IsEnabled(
-                 media::kGlobalMediaControlsForChromeOS)) {
+  } else {
     media_controls_container_ = system_tray_container_->AddChildView(
         std::make_unique<UnifiedMediaControlsContainer>());
     media_controls_container_->SetExpandedAmount(1.0f);
@@ -208,6 +209,7 @@ void QuickSettingsView::AddMediaControlsView(views::View* media_controls) {
 }
 
 void QuickSettingsView::ShowMediaControls() {
+  DCHECK(media_controls_container_);
   media_controls_container_->SetShouldShowMediaControls(true);
 
   if (detailed_view_container_->GetVisible()) {
@@ -218,8 +220,8 @@ void QuickSettingsView::ShowMediaControls() {
     PreferredSizeChanged();
   }
 
-  feature_tiles_container_->SetRowsFromHeight(
-      CalculateHeightForFeatureTilesContainer());
+  feature_tiles_container_->AdjustRowsForMediaViewVisibility(
+      true, CalculateHeightForFeatureTilesContainer());
 }
 
 void QuickSettingsView::AddMediaView(std::unique_ptr<views::View> media_view) {
@@ -231,6 +233,8 @@ void QuickSettingsView::AddMediaView(std::unique_ptr<views::View> media_view) {
 void QuickSettingsView::SetShowMediaView(bool show_media_view) {
   DCHECK(media_view_container_);
   media_view_container_->SetShowMediaView(show_media_view);
+  feature_tiles_container_->AdjustRowsForMediaViewVisibility(
+      show_media_view, CalculateHeightForFeatureTilesContainer());
   PreferredSizeChanged();
 }
 
@@ -291,7 +295,6 @@ int QuickSettingsView::CalculateHeightForFeatureTilesContainer() {
       media_view_container_ ? media_view_container_->GetExpandedHeight() : 0;
 
   return max_height_ - header_->GetPreferredSize().height() -
-         footer_->GetPreferredSize().height() -
          page_indicator_view_->GetPreferredSize().height() -
          sliders_container_->GetPreferredSize().height() -
          media_controls_container_height - media_view_container_height -
@@ -315,6 +318,13 @@ void QuickSettingsView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_SCROLL_FLING_START) {
     controller_->Fling(event->details().velocity_y());
   }
+}
+
+TrayDetailedView* QuickSettingsView::GetDetailedViewForTest() {
+  CHECK(!detailed_view_container_->children().empty());
+  views::View* view = detailed_view_container_->children()[0];
+  CHECK(views::IsViewClass<TrayDetailedView>(view));
+  return static_cast<TrayDetailedView*>(view);
 }
 
 BEGIN_METADATA(QuickSettingsView, views::View)

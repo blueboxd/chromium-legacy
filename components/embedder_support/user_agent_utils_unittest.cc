@@ -4,6 +4,7 @@
 
 #include "components/embedder_support/user_agent_utils.h"
 
+#include <string>
 #include <vector>
 
 #include "base/command_line.h"
@@ -220,10 +221,16 @@ void CheckUserAgentStringOrdering(bool mobile_device) {
   }
 
   if (!model.empty()) {
-    if (base::SysInfo::GetAndroidBuildCodename() == "REL")
-      ASSERT_EQ(base::SysInfo::HardwareModelName(), model);
-    else
+    if (base::SysInfo::GetAndroidBuildCodename() == "REL") {
+      // In UA reduction Phase 6, we change the deviceModel token to "K".
+      ASSERT_EQ(base::FeatureList::IsEnabled(
+                    blink::features::kReduceUserAgentAndroidVersionDeviceModel)
+                    ? "K"
+                    : base::SysInfo::HardwareModelName(),
+                model);
+    } else {
       ASSERT_EQ("", model);
+    }
   }
 #elif BUILDFLAG(IS_FUCHSIA)
   // X11; Fuchsia
@@ -456,7 +463,7 @@ TEST_F(UserAgentUtilsTest, InvalidCustomUserAgent) {
   // Make sure all APIs have the correct behavior once user provide invalid
   // custom user agent.
   const std::string major_version = version_info::GetMajorVersionNumber();
-  const std::string full_version = version_info::GetVersionNumber();
+  const std::string full_version(version_info::GetVersionNumber());
 
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(blink::features::kReduceUserAgent);
@@ -818,7 +825,7 @@ TEST_F(UserAgentUtilsTest, UserAgentMetadata) {
   auto metadata = GetUserAgentMetadata();
 
   const std::string major_version = version_info::GetMajorVersionNumber();
-  const std::string full_version = version_info::GetVersionNumber();
+  const std::string full_version(version_info::GetVersionNumber());
   const std::string major_to_minor_full_version = MajorToMinorVersionNumber();
 
   // According to spec, Sec-CH-UA should contain what project the browser is
@@ -831,9 +838,9 @@ TEST_F(UserAgentUtilsTest, UserAgentMetadata) {
   const blink::UserAgentBrandVersion major_to_minor_chromium_brand_version = {
       "Chromium", "99"};
   const blink::UserAgentBrandVersion product_brand_version = {
-      version_info::GetProductName(), major_version};
+      std::string(version_info::GetProductName()), major_version};
   const blink::UserAgentBrandVersion major_to_minor_product_brand_version = {
-      version_info::GetProductName(), "99"};
+      std::string(version_info::GetProductName()), "99"};
 
   EXPECT_TRUE(ContainsBrandVersion(metadata.brand_version_list,
                                    chromium_brand_version));
@@ -847,9 +854,10 @@ TEST_F(UserAgentUtilsTest, UserAgentMetadata) {
       major_to_minor_chromium_brand_full_version = {
           "Chromium", major_to_minor_full_version};
   const blink::UserAgentBrandVersion product_brand_full_version = {
-      version_info::GetProductName(), full_version};
+      std::string(version_info::GetProductName()), full_version};
   const blink::UserAgentBrandVersion major_to_minor_product_brand_full_version =
-      {version_info::GetProductName(), major_to_minor_full_version};
+      {std::string(version_info::GetProductName()),
+       major_to_minor_full_version};
 
   EXPECT_TRUE(ContainsBrandVersion(metadata.brand_full_version_list,
                                    chromium_brand_full_version));

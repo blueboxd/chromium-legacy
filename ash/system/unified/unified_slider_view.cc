@@ -8,9 +8,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/quick_settings_catalogs.h"
-#include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/quick_settings_metrics_util.h"
 #include "ash/system/unified/quick_settings_slider.h"
 #include "base/check_op.h"
@@ -20,6 +18,7 @@
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
@@ -30,8 +29,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-
-using ContentLayerType = AshColorProvider::ContentLayerType;
 
 namespace {
 
@@ -67,9 +64,7 @@ UnifiedSliderView::UnifiedSliderView(views::Button::PressedCallback callback,
                                      int accessible_name_id,
                                      bool read_only,
                                      QuickSettingsSlider::Style slider_style)
-    : icon_(&icon),
-      accessible_name_id_(accessible_name_id),
-      callback_(callback) {
+    : icon_(&icon), callback_(callback) {
   if (!features::IsQsRevampEnabled()) {
     button_ = AddChildView(std::make_unique<IconButton>(
         std::move(callback), IconButton::Type::kMedium, &icon,
@@ -124,6 +119,7 @@ UnifiedSliderView::UnifiedSliderView(views::Button::PressedCallback callback,
       /*is_togglable=*/true,
       /*has_border=*/true));
   slider_button_->SetIconColorId(cros_tokens::kCrosSysSystemOnPrimaryContainer);
+  slider_button_->SetFocusBehavior(FocusBehavior::NEVER);
 
   // Prevent an accessibility event while initiallizing this view.
   // Typically the first update of the slider value is conducted by the
@@ -163,26 +159,24 @@ void UnifiedSliderView::SetSliderValue(float value, bool by_user) {
 
 UnifiedSliderView::~UnifiedSliderView() = default;
 
-void UnifiedSliderView::CreateToastLabel() {
-  if (features::IsQsRevampEnabled()) {
-    button_ = AddChildView(std::make_unique<IconButton>(
-        std::move(callback_), IconButton::Type::kMedium, icon_,
-        accessible_name_id_,
-        /*is_togglable=*/true,
-        /*has_border=*/true));
-    slider_->SetVisible(false);
+void UnifiedSliderView::OnEvent(ui::Event* event) {
+  if (!event->IsKeyEvent()) {
+    views::View::OnEvent(event);
+    return;
   }
-  toast_label_ = AddChildView(std::make_unique<views::Label>());
-  TrayPopupUtils::SetLabelFontList(toast_label_,
-                                   TrayPopupUtils::FontStyle::kPodMenuHeader);
-}
 
-void UnifiedSliderView::OnThemeChanged() {
-  views::View::OnThemeChanged();
-  if (toast_label_) {
-    toast_label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextColorPrimary));
+  auto* key_event = event->AsKeyEvent();
+  auto key_code = key_event->key_code();
+
+  // Only handles press event to avoid handling the event again when the key is
+  // released.
+  if (features::IsQsRevampEnabled() && key_code == ui::VKEY_RETURN &&
+      key_event->type() == ui::EventType::ET_KEY_PRESSED) {
+    slider_button_->NotifyClick(*event);
+    return;
   }
+
+  views::View::OnEvent(event);
 }
 
 BEGIN_METADATA(UnifiedSliderView, views::View)

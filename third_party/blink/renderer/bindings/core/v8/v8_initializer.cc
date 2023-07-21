@@ -109,14 +109,9 @@ namespace blink {
 
 static String ExtractMessageForConsole(v8::Isolate* isolate,
                                        v8::Local<v8::Value> data) {
-  if (V8DOMWrapper::IsWrapper(isolate, data)) {
-    v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(data);
-    const WrapperTypeInfo* type = ToWrapperTypeInfo(obj);
-    if (V8DOMException::GetWrapperTypeInfo()->IsSubclass(type)) {
-      DOMException* exception = V8DOMException::ToImpl(obj);
-      if (exception && !exception->MessageForConsole().empty())
-        return exception->ToStringForConsole();
-    }
+  DOMException* exception = V8DOMException::ToWrappable(isolate, data);
+  if (exception && !exception->MessageForConsole().empty()) {
+    return exception->ToStringForConsole();
   }
   return g_empty_string;
 }
@@ -146,8 +141,8 @@ mojom::ConsoleMessageLevel MessageLevelFromNonFatalErrorLevel(int error_level) {
 
 // NOTE: when editing this, please also edit the error messages we throw when
 // the size is exceeded (see uses of the constant), which use the human-friendly
-// "4KB" text.
-const size_t kWasmWireBytesLimit = 1 << 12;
+// "8MB" text.
+const size_t kWasmWireBytesLimit = 1 << 23;
 
 }  // namespace
 
@@ -415,7 +410,7 @@ TrustedTypesCodeGenerationCheck(v8::Local<v8::Context> context,
 
   // If the input is not a string or TrustedScript, pass it through.
   if (!source->IsString() && !is_code_like &&
-      !V8TrustedScript::HasInstance(source, isolate)) {
+      !V8TrustedScript::HasInstance(isolate, source)) {
     return {true, v8::MaybeLocal<v8::String>()};
   }
 
@@ -538,10 +533,16 @@ void ThrowRangeException(v8::Isolate* isolate, const char* message) {
   isolate->ThrowException(NewRangeException(isolate, message));
 }
 
+BASE_FEATURE(kWebAssemblyUnlimitedSyncCompilation,
+             "WebAssemblyUnlimitedSyncCompilation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 bool WasmModuleOverride(const v8::FunctionCallbackInfo<v8::Value>& args) {
   // Return false if we want the base behavior to proceed.
-  if (!WTF::IsMainThread() || args.Length() < 1)
+  if (!WTF::IsMainThread() || args.Length() < 1 ||
+      base::FeatureList::IsEnabled(kWebAssemblyUnlimitedSyncCompilation)) {
     return false;
+  }
   v8::Local<v8::Value> source = args[0];
   if ((source->IsArrayBuffer() &&
        v8::Local<v8::ArrayBuffer>::Cast(source)->ByteLength() >
@@ -549,10 +550,12 @@ bool WasmModuleOverride(const v8::FunctionCallbackInfo<v8::Value>& args) {
       (source->IsArrayBufferView() &&
        v8::Local<v8::ArrayBufferView>::Cast(source)->ByteLength() >
            kWasmWireBytesLimit)) {
-    ThrowRangeException(args.GetIsolate(),
-                        "WebAssembly.Compile is disallowed on the main thread, "
-                        "if the buffer size is larger than 4KB. Use "
-                        "WebAssembly.compile, or compile on a worker thread.");
+    ThrowRangeException(
+        args.GetIsolate(),
+        "WebAssembly.Compile is disallowed on the main thread, "
+        "if the buffer size is larger than 8MB. Use "
+        "WebAssembly.compile, compile on a worker thread, or use the flag "
+        "`--enable-features=WebAssemblyUnlimitedSyncCompilation`.");
     // Return true because we injected new behavior and we do not
     // want the default behavior.
     return true;
@@ -562,8 +565,10 @@ bool WasmModuleOverride(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
 bool WasmInstanceOverride(const v8::FunctionCallbackInfo<v8::Value>& args) {
   // Return false if we want the base behavior to proceed.
-  if (!WTF::IsMainThread() || args.Length() < 1)
+  if (!WTF::IsMainThread() || args.Length() < 1 ||
+      base::FeatureList::IsEnabled(kWebAssemblyUnlimitedSyncCompilation)) {
     return false;
+  }
   v8::Local<v8::Value> source = args[0];
   if (!source->IsWasmModuleObject())
     return false;
@@ -574,8 +579,9 @@ bool WasmInstanceOverride(const v8::FunctionCallbackInfo<v8::Value>& args) {
     ThrowRangeException(
         args.GetIsolate(),
         "WebAssembly.Instance is disallowed on the main thread, "
-        "if the buffer size is larger than 4KB. Use "
-        "WebAssembly.instantiate.");
+        "if the buffer size is larger than 8MB. Use "
+        "WebAssembly.instantiate, or use the flag "
+        "`--enable-features=WebAssemblyUnlimitedSyncCompilation`.");
     return true;
   }
   return false;

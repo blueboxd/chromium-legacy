@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "build/config/chromebox_for_meetings/buildflags.h"
+#include "components/commerce/core/commerce_constants.h"
 #include "components/history_clusters/history_clusters_internals/webui/url_constants.h"
 #include "components/lens/buildflags.h"
 #include "components/nacl/common/buildflags.h"
@@ -243,9 +244,6 @@ const char kChromeUINativeHistoryURL[] = "chrome-native://history/";
 const char kChromeUINativeNewTabURL[] = "chrome-native://newtab/";
 const char kChromeUIOfflineInternalsHost[] = "offline-internals";
 const char kChromeUISnippetsInternalsHost[] = "snippets-internals";
-const char kChromeUIUntrustedVideoTutorialsHost[] = "video-tutorials";
-const char kChromeUIUntrustedVideoPlayerUrl[] =
-    "chrome-untrusted://video-tutorials/";
 const char kChromeUIWebApksHost[] = "webapks";
 #else
 const char kChromeUIAppServiceInternalsHost[] = "app-service-internals";
@@ -420,7 +418,6 @@ const char kOsUIBluetoothInternalsURL[] = "os://bluetooth-internals";
 const char kOsUICrashesURL[] = "os://crashes";
 const char kOsUICreditsURL[] = "os://credits";
 const char kOsUIDeviceEmulatorURL[] = "os://device-emulator";
-const char kOsUIDeviceLogURL[] = "os://device-log";
 const char kOsUIDriveInternalsURL[] = "os://drive-internals";
 const char kOsUIEmojiPickerURL[] = "os://emoji-picker";
 const char kOsUIExtensionsInternalsURL[] = "os://extensions-internals";
@@ -433,6 +430,7 @@ const char kOsUIMultiDeviceInternalsURL[] = "os://multidevice-internals";
 const char kOsUINearbyInternalsURL[] = "os://nearby-internals";
 const char kOsUINetworkURL[] = "os://network";
 const char kOsUINetExportURL[] = "os://net-export";
+const char kOsUINotificationTesterURL[] = "os://notification-tester";
 const char kOsUIPrefsInternalsURL[] = "os://prefs-internals";
 const char kOsUIRestartURL[] = "os://restart";
 const char kOsUISettingsURL[] = "os://settings";
@@ -505,6 +503,7 @@ const char kOsUIAboutURL[] = "os://about";
 const char kOsUIComponentsURL[] = "os://components";
 const char kOsUIConnectivityDiagnosticsAppURL[] =
     "os://connectivity-diagnostics";
+const char kOsUIDeviceLogURL[] = "os://device-log";
 const char kOsUIDiagnosticsAppURL[] = "os://diagnostics";
 const char kOsUIFirmwareUpdaterAppURL[] = "os://accessory-update";
 const char kOsUIFlagsURL[] = "os://flags";
@@ -679,6 +678,7 @@ const char* const kChromeHostURLs[] = {
     kChromeUIBrowsingTopicsInternalsHost,
     kChromeUIChromeURLsHost,
     kChromeUIComponentsHost,
+    commerce::kChromeUICommerceInternalsHost,
     kChromeUICrashesHost,
     kChromeUICreditsHost,
 #if BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OFFICIAL_BUILD)

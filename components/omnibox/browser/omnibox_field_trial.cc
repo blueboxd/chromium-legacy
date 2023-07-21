@@ -660,7 +660,7 @@ bool OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() {
 const base::FeatureParam<bool> OmniboxFieldTrial::kSquareSuggestIconAnswers(
     &omnibox::kSquareSuggestIcons,
     "OmniboxSquareSuggestIconAnswers",
-    false);
+    true);
 const base::FeatureParam<bool> OmniboxFieldTrial::kSquareSuggestIconIcons(
     &omnibox::kSquareSuggestIcons,
     "OmniboxSquareSuggestIconIcons",
@@ -690,6 +690,12 @@ bool OmniboxFieldTrial::IsChromeRefreshIconsEnabled() {
           features::ChromeRefresh2023Level::kLevel2 ||
       base::FeatureList::IsEnabled(omnibox::kOmniboxCR23SteadyStateIcons);
   return enabled;
+}
+
+bool OmniboxFieldTrial::IsChromeRefreshSuggestIconsEnabled() {
+  return features::GetChromeRefresh2023Level() ==
+             features::ChromeRefresh2023Level::kLevel2 ||
+         base::FeatureList::IsEnabled(omnibox::kExpandedStateSuggestIcons);
 }
 
 bool OmniboxFieldTrial::IsGM3TextStyleEnabled() {
@@ -1010,9 +1016,15 @@ const base::FeatureParam<bool> kDomainSuggestionsAlternativeScoring(
 
 // If true, enables scoring signal annotators for logging Omnibox scoring
 // signals to OmniboxEventProto.
-const base::FeatureParam<bool> kEnableScoringSignalsAnnotators(
+const base::FeatureParam<bool> kEnableScoringSignalsAnnotatorsForLogging(
     &omnibox::kLogUrlScoringSignals,
     "enable_scoring_signals_annotators",
+    false);
+
+// If true, enables scoring signal annotators for ML scoring.
+const base::FeatureParam<bool> kEnableScoringSignalsAnnotatorsForMlScoring(
+    &omnibox::kMlUrlScoring,
+    "enable_scoring_signals_annotators_for_ml_scoring",
     false);
 
 // If true, runs the ML scoring model but does not assign new relevance scores
@@ -1047,11 +1059,19 @@ const base::FeatureParam<bool> kMlUrlScoringPreserveDefault(
     "MlUrlScoringPreserveDefault",
     false);
 
+// If true, the ML model scores a batch of urls.
+const base::FeatureParam<bool> kMlBatchUrlScoring(&omnibox::kMlUrlScoring,
+                                                  "MlBatchUrlScoring",
+                                                  true);
+
 MLConfig::MLConfig() {
   log_url_scoring_signals =
       base::FeatureList::IsEnabled(omnibox::kLogUrlScoringSignals);
-  enable_scoring_signals_annotators = kEnableScoringSignalsAnnotators.Get();
+  enable_scoring_signals_annotators =
+      kEnableScoringSignalsAnnotatorsForLogging.Get() ||
+      kEnableScoringSignalsAnnotatorsForMlScoring.Get();
   ml_url_scoring = base::FeatureList::IsEnabled(omnibox::kMlUrlScoring);
+  ml_batch_url_scoring = kMlBatchUrlScoring.Get();
   ml_url_scoring_counterfactual = kMlUrlScoringCounterfactual.Get();
   ml_url_scoring_increase_num_candidates =
       kMlUrlScoringIncreaseNumCandidates.Get();
@@ -1076,9 +1096,14 @@ const MLConfig& GetMLConfig() {
   return GetMLConfigInternal();
 }
 
-bool IsLogUrlScoringSignalsEnabled() {
+bool IsReportingUrlScoringSignalsEnabled() {
   return GetMLConfig().log_url_scoring_signals;
 }
+
+bool IsPopulatingUrlScoringSignalsEnabled() {
+  return IsReportingUrlScoringSignalsEnabled() || IsMlUrlScoringEnabled();
+}
+
 bool AreScoringSignalsAnnotatorsEnabled() {
   return GetMLConfig().enable_scoring_signals_annotators;
 }
@@ -1088,6 +1113,9 @@ bool IsMlUrlScoringEnabled() {
 #else
   return false;
 #endif  // BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+}
+bool IsMlBatchUrlScoringEnabled() {
+  return IsMlUrlScoringEnabled() && GetMLConfig().ml_batch_url_scoring;
 }
 bool IsMlUrlScoringCounterfactual() {
   return IsMlUrlScoringEnabled() && GetMLConfig().ml_url_scoring_counterfactual;
@@ -1129,15 +1157,6 @@ const base::FeatureParam<int> kInspireMeAdditionalTrendingQueries(
     0);
 
 // <- Inspire Me
-// ---------------------------------------------------------
-// Actions In Suggest ->
-// When set to true, permits Entity suggestion with associated Actions to be
-// promoted over the Escape Hatch.
-const base::FeatureParam<bool> kActionsInSuggestPromoteEntitySuggestion(
-    &omnibox::kActionsInSuggest,
-    "PromoteEntitySuggestion",
-    false);
-// <- Actions In Suggest
 // ---------------------------------------------------------
 // Android UI Revamp ->
 const base::FeatureParam<bool> kOmniboxModernizeVisualUpdateMergeClipboardOnNTP(

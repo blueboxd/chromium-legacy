@@ -46,7 +46,6 @@ std::u16string GetSuggestionLabel(AutofillProfile* profile) {
 
 void SetupTestProfile(AutofillProfile& profile) {
   profile.set_guid(base::Uuid::GenerateRandomV4().AsLowercaseString());
-  profile.set_origin(kSettingsOrigin);
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                        "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                        "Hollywood", "CA", "91601", "US", "12345678910");
@@ -1031,14 +1030,12 @@ TEST(AutofillProfileTest, MergeDataFrom_DifferentProfile) {
   SetupTestProfile(a);
 
   // Create an identical profile except that the new profile:
-  //   (1) Has a different origin,
-  //   (2) Has a different address line 2,
-  //   (3) Lacks a company name,
-  //   (4) Has a different full name, and
-  //   (5) Has a language code.
+  //   (1) Has a different address line 2,
+  //   (2) Lacks a company name,
+  //   (3) Has a different full name, and
+  //   (4) Has a language code.
   AutofillProfile b = a;
   b.set_guid(base::Uuid::GenerateRandomV4().AsLowercaseString());
-  b.set_origin(kSettingsOrigin);
   b.SetRawInfoWithVerificationStatus(ADDRESS_HOME_LINE2, u"Unit 5, area 51",
                                      VerificationStatus::kObserved);
   b.SetRawInfoWithVerificationStatus(COMPANY_NAME, std::u16string(),
@@ -1052,7 +1049,6 @@ TEST(AutofillProfileTest, MergeDataFrom_DifferentProfile) {
 
   EXPECT_TRUE(a.MergeDataFrom(b, "en-US"));
   // Merge has modified profile a, the validation is not updated.
-  EXPECT_EQ(kSettingsOrigin, a.origin());
   EXPECT_EQ("Unit 5, area 51",
             base::UTF16ToUTF8(a.GetRawInfo(ADDRESS_HOME_LINE2)));
   EXPECT_EQ(u"Fox", a.GetRawInfo(COMPANY_NAME));
@@ -1227,6 +1223,7 @@ TEST(AutofillProfileTest, Compare_StructuredTypes) {
       ADDRESS_HOME_SORTING_CODE,
       ADDRESS_HOME_COUNTRY,
       ADDRESS_HOME_LANDMARK,
+      ADDRESS_HOME_BETWEEN_STREETS,
       ADDRESS_HOME_HOUSE_NUMBER,
       ADDRESS_HOME_STREET_NAME,
       ADDRESS_HOME_DEPENDENT_STREET_NAME,
@@ -1275,12 +1272,14 @@ TEST(AutofillProfileTest, IsPresentButInvalid) {
   EXPECT_FALSE(profile.IsPresentButInvalid(ADDRESS_HOME_ZIP));
   EXPECT_FALSE(profile.IsPresentButInvalid(PHONE_HOME_WHOLE_NUMBER));
   EXPECT_FALSE(profile.IsPresentButInvalid(ADDRESS_HOME_LANDMARK));
+  EXPECT_FALSE(profile.IsPresentButInvalid(ADDRESS_HOME_BETWEEN_STREETS));
 
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, u"US");
   EXPECT_FALSE(profile.IsPresentButInvalid(ADDRESS_HOME_STATE));
   EXPECT_FALSE(profile.IsPresentButInvalid(ADDRESS_HOME_ZIP));
   EXPECT_FALSE(profile.IsPresentButInvalid(PHONE_HOME_WHOLE_NUMBER));
   EXPECT_FALSE(profile.IsPresentButInvalid(ADDRESS_HOME_LANDMARK));
+  EXPECT_FALSE(profile.IsPresentButInvalid(ADDRESS_HOME_BETWEEN_STREETS));
 
   profile.SetRawInfo(ADDRESS_HOME_STATE, u"C");
   EXPECT_TRUE(profile.IsPresentButInvalid(ADDRESS_HOME_STATE));
@@ -1335,6 +1334,14 @@ TEST(AutofillProfileTest, SetRawInfoWorksForLandmark) {
 
   profile.SetRawInfo(ADDRESS_HOME_LANDMARK, u"Red tree");
   EXPECT_EQ(u"Red tree", profile.GetRawInfo(ADDRESS_HOME_LANDMARK));
+}
+
+TEST(AutofillProfileTest, SetRawInfoWorksForBetweenStreets) {
+  AutofillProfile profile;
+
+  profile.SetRawInfo(ADDRESS_HOME_BETWEEN_STREETS, u"Between streets example");
+  EXPECT_EQ(u"Between streets example",
+            profile.GetRawInfo(ADDRESS_HOME_BETWEEN_STREETS));
 }
 
 TEST(AutofillProfileTest, SetInfoTrimsWhitespace) {
@@ -1520,35 +1527,6 @@ TEST(AutofillProfileTest, LabelsInAssignmentAndComparisonOperator) {
   // Now test that the comparison returns false if the label is not the same.
   ASSERT_EQ(p1, p2);
   p2.set_profile_label("another label");
-  EXPECT_NE(p1, p2);
-}
-
-// Test that the state to disallow confirmable merges is correctly set and
-// retrieved from the profile.
-TEST(AutofillProfileTest, SetAndGetProfileDisallowConfirmableMergestate) {
-  AutofillProfile p;
-  EXPECT_EQ(p.disallow_settings_visible_updates(), false);
-
-  p.set_disallow_settings_visible_updates(true);
-  EXPECT_EQ(p.disallow_settings_visible_updates(), true);
-}
-
-TEST(AutofillProfileTest, LockStateInAssignmentAndComparisonOperator) {
-  AutofillProfile p1;
-  p1.set_disallow_settings_visible_updates(true);
-
-  AutofillProfile p2;
-  EXPECT_EQ(p2.disallow_settings_visible_updates(), false);
-
-  p2 = p1;
-
-  // Check that the lock state was assigned correctly to p2.
-  EXPECT_EQ(p2.disallow_settings_visible_updates(), true);
-
-  // Now test that the comparison returns false if the lock state is not the
-  // same.
-  ASSERT_EQ(p1, p2);
-  p2.set_disallow_settings_visible_updates(false);
   EXPECT_NE(p1, p2);
 }
 

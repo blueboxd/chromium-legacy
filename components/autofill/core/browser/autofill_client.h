@@ -20,8 +20,8 @@
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/risk_data_loader.h"
 #include "components/autofill/core/browser/ui/fast_checkout_client.h"
-#include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/aliases.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -261,12 +261,20 @@ class AutofillClient : public RiskDataLoader {
       return *this;
     }
 
+    SaveCreditCardOptions&
+    with_same_last_four_as_server_card_but_different_expiration_date(bool b) {
+      has_same_last_four_as_server_card_but_different_expiration_date = b;
+      return *this;
+    }
+
     bool from_dynamic_change_form = false;
     bool has_non_focusable_field = false;
     bool should_request_name_from_user = false;
     bool should_request_expiration_date_from_user = false;
     bool show_prompt = false;
     bool has_multiple_legal_lines = false;
+    bool has_same_last_four_as_server_card_but_different_expiration_date =
+        false;
   };
 
   // Used for options of save (and update) address profile prompt.
@@ -498,6 +506,14 @@ class AutofillClient : public RiskDataLoader {
       const VirtualCardEnrollmentFields& virtual_card_enrollment_fields,
       base::OnceClosure accept_virtual_card_callback,
       base::OnceClosure decline_virtual_card_callback);
+
+  // Prompt the user to enable mandatory reauthentication for payment method
+  // autofill. When enabled, the user will be asked to authenticate using
+  // biometrics or device unlock before filling in payment method information.
+  virtual void ShowMandatoryReauthOptInPrompt(
+      base::OnceClosure accept_mandatory_reauth_callback,
+      base::OnceClosure cancel_mandatory_reauth_callback,
+      base::RepeatingClosure close_mandatory_reauth_callback);
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   // Hides the virtual card enroll bubble and icon if it is visible.
@@ -734,7 +750,9 @@ class AutofillClient : public RiskDataLoader {
       AutofillProgressDialogType autofill_progress_dialog_type,
       base::OnceClosure cancel_callback);
   virtual void CloseAutofillProgressDialog(
-      bool show_confirmation_before_closing);
+      bool show_confirmation_before_closing,
+      base::OnceClosure no_interactive_authentication_callback =
+          base::OnceClosure());
 
   // Whether the Autocomplete feature of Autofill should be enabled.
   virtual bool IsAutocompleteEnabled() const = 0;
@@ -762,7 +780,7 @@ class AutofillClient : public RiskDataLoader {
   virtual bool IsContextSecure() const = 0;
 
   // Handles simple actions for the autofill popups.
-  virtual void ExecuteCommand(int id) = 0;
+  virtual void ExecuteCommand(Suggestion::FrontendId id) = 0;
 
   // Returns a LogManager instance. May be null for platforms that don't support
   // this.

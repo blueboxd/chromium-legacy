@@ -33,6 +33,7 @@
   X("accessibility")                                                     \
   X("AccountFetcherService")                                             \
   X("android_webview")                                                   \
+  X("android_webview.timeline")                                          \
   /* Actions on Google Hardware, used in Google-internal code. */        \
   X("aogh")                                                              \
   X("audio")                                                             \
@@ -82,7 +83,6 @@
   X("DXVA_Decoding")                                                     \
   X("evdev")                                                             \
   X("event")                                                             \
-  X("event_latency")                                                     \
   X("exo")                                                               \
   X("extensions")                                                        \
   X("explore_sites")                                                     \
@@ -103,6 +103,7 @@
   X("ime")                                                               \
   X("IndexedDB")                                                         \
   X("input")                                                             \
+  X("input.scrolling")                                                   \
   X("io")                                                                \
   X("ipc")                                                               \
   X("Java")                                                              \
@@ -122,6 +123,7 @@
   X("mus")                                                               \
   X("native")                                                            \
   X("navigation")                                                        \
+  X("navigation.debug")                                                  \
   X("net")                                                               \
   X("netlog")                                                            \
   X("offline_pages")                                                     \
@@ -257,7 +259,9 @@
   X(TRACE_DISABLED_BY_DEFAULT("skia.gpu"))                               \
   X(TRACE_DISABLED_BY_DEFAULT("skia.gpu.cache"))                         \
   X(TRACE_DISABLED_BY_DEFAULT("skia.shaders"))                           \
+  X(TRACE_DISABLED_BY_DEFAULT("skottie"))                                \
   X(TRACE_DISABLED_BY_DEFAULT("SyncFileSystem"))                         \
+  X(TRACE_DISABLED_BY_DEFAULT("system_power"))                           \
   X(TRACE_DISABLED_BY_DEFAULT("system_stats"))                           \
   X(TRACE_DISABLED_BY_DEFAULT("thread_pool_diagnostics"))                \
   X(TRACE_DISABLED_BY_DEFAULT("toplevel.ipc"))                           \
@@ -295,6 +299,7 @@
   X("base,toplevel")                                                          \
   X("benchmark,drm")                                                          \
   X("benchmark,latencyInfo,rail")                                             \
+  X("benchmark,latencyInfo,rail,input.scrolling")                             \
   X("benchmark,loading")                                                      \
   X("benchmark,rail")                                                         \
   X("benchmark,uma")                                                          \
@@ -315,7 +320,7 @@
   X("browser,startup")                                                        \
   X("category1,category2")                                                    \
   X("cc,benchmark")                                                           \
-  X("cc,benchmark,input,event_latency")                                       \
+  X("cc,benchmark,input,input.scrolling")                                     \
   X("cc,benchmark," TRACE_DISABLED_BY_DEFAULT("devtools.timeline.frame"))     \
   X("cc,input")                                                               \
   X("cc,raf_investigation")                                                   \
@@ -340,6 +345,7 @@
   X("input,benchmark,latencyInfo")                                            \
   X("input,latency")                                                          \
   X("input,rail")                                                             \
+  X("input,input.scrolling")                                                  \
   X("input,views")                                                            \
   X("ipc,security")                                                           \
   X("ipc,toplevel")                                                           \

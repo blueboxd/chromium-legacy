@@ -1685,6 +1685,57 @@ TEST_F(PrivacySandboxSettingsM1Test, TopicsConsentStatus) {
            static_cast<int>(Status::kApisDisabled)}});
 }
 
+class PrivacySandboxSettingsM1RestrictedNotice
+    : public PrivacySandboxSettingsM1Test {
+  void InitializeFeaturesBeforeStart() override {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        privacy_sandbox::kPrivacySandboxSettings4,
+        {{"notice-required", "true"},
+         {privacy_sandbox::kPrivacySandboxSettings4RestrictedNotice.name,
+          "true"}});
+  }
+};
+
+TEST_F(PrivacySandboxSettingsM1RestrictedNotice,
+       AllApisAreOffExceptMeasurementForRestrictedAccounts) {
+  RunTestCase(
+      TestState{{MultipleStateKeys{kM1TopicsEnabledUserPrefValue,
+                                   kM1FledgeEnabledUserPrefValue,
+                                   kM1AdMeasurementEnabledUserPrefValue,
+                                   kIsRestrictedAccount},
+                 true}},
+      TestInput{
+          {kTopFrameOrigin, url::Origin::Create(GURL("https://top-frame.com"))},
+          {kTopicsURL, GURL("https://embedded.com")},
+          {MultipleInputKeys{kFledgeAuctionPartyOrigin,
+                             kAdMeasurementReportingOrigin, kAccessingOrigin},
+           url::Origin::Create(GURL("https://embedded.com"))},
+          {kAdMeasurementSourceOrigin,
+           url::Origin::Create(GURL("https://source-origin.com"))},
+          {kAdMeasurementDestinationOrigin,
+           url::Origin::Create(GURL("https://dest-origin.com"))}},
+      TestOutput{
+          {MultipleOutputKeys{kIsTopicsAllowed, kIsTopicsAllowedForContext,
+                              kIsFledgeAllowed, kIsSharedStorageAllowed,
+                              kIsSharedStorageSelectURLAllowed},
+           false},
+          {MultipleOutputKeys{
+               kIsTopicsAllowedMetric, kIsTopicsAllowedForContextMetric,
+               kIsFledgeAllowedMetric, kIsSharedStorageAllowedMetric,
+               kIsSharedStorageSelectURLAllowedMetric},
+           static_cast<int>(Status::kRestricted)},
+
+          {MultipleOutputKeys{kIsAttributionReportingAllowed,
+                              kIsAttributionReportingEverAllowed,
+                              kMaySendAttributionReport,
+                              kIsPrivateAggregationAllowed},
+           true},
+          {MultipleOutputKeys{kIsAttributionReportingEverAllowedMetric,
+                              kMaySendAttributionReportMetric,
+                              kIsPrivateAggregationAllowedMetric},
+           static_cast<int>(Status::kAllowed)}});
+}
+
 class PrivacySandboxAttestationsTest : public PrivacySandboxSettingsTest {
   void InitializeFeaturesBeforeStart() override {
     feature_list_.InitAndEnableFeature(
@@ -1739,6 +1790,31 @@ TEST_F(PrivacySandboxAttestationsTest, IsTopicsAllowedForContextAttestation) {
   histogram_tester.ExpectUniqueSample(
       "PrivacySandbox.IsTopicsAllowedForContext", Status::kAttestationFailed,
       3);
+}
+
+TEST_F(PrivacySandboxAttestationsTest, SetOverrideFromDevtools) {
+  privacy_sandbox_test_util::SetupTestState(
+      prefs(), host_content_settings_map(),
+      /*privacy_sandbox_enabled=*/true,
+      /*block_third_party_cookies=*/false,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+  privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
+
+  GURL top_level_url("https://top-level-origin.com");
+  GURL caller_url("https://embedded.com");
+
+  // With an empty attestation map, Topics is not allowed.
+  EXPECT_FALSE(privacy_sandbox_settings()->IsTopicsAllowedForContext(
+      url::Origin::Create(top_level_url), caller_url));
+
+  // With an override of the site from a devtools call, Topics is allowed.
+  privacy_sandbox_settings()->AddPrivacySandboxAttestationOverride(
+      GURL("https://embedded.com"));
+  EXPECT_TRUE(privacy_sandbox_settings()->IsTopicsAllowedForContext(
+      url::Origin::Create(top_level_url), caller_url));
 }
 
 }  // namespace privacy_sandbox

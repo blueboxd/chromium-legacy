@@ -303,10 +303,10 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
       RecommitSystemPages(reservation_start + SystemPageSize(),
                           SystemPageSize(),
 #if PA_CONFIG(ENABLE_SHADOW_METADATA)
-                          root->PageAccessibilityWithPkeyIfEnabled(
+                          root->PageAccessibilityWithThreadIsolationIfEnabled(
                               PageAccessibilityConfiguration::kRead),
 #else
-                          root->PageAccessibilityWithPkeyIfEnabled(
+                          root->PageAccessibilityWithThreadIsolationIfEnabled(
                               PageAccessibilityConfiguration::kReadWrite),
 #endif
                           PageAccessibilityDisposition::kRequireUpdate);
@@ -320,7 +320,7 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
       ScopedSyscallTimer timer{root};
       RecommitSystemPages(reservation_start + SystemPageSize() * 2,
                           SystemPageSize(),
-                          root->PageAccessibilityWithPkeyIfEnabled(
+                          root->PageAccessibilityWithThreadIsolationIfEnabled(
                               PageAccessibilityConfiguration::kReadWrite),
                           PageAccessibilityDisposition::kRequireUpdate);
     }
@@ -331,7 +331,7 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
       ScopedSyscallTimer timer{root};
       RecommitSystemPages(ShadowMetadataStart(reservation_start, pool),
                           SystemPageSize(),
-                          root->PageAccessibilityWithPkeyIfEnabled(
+                          root->PageAccessibilityWithThreadIsolationIfEnabled(
                               PageAccessibilityConfiguration::kReadWrite),
                           PageAccessibilityDisposition::kRequireUpdate);
     }
@@ -419,8 +419,12 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
     // Note that we didn't check above, because if we cannot even commit a
     // single page, then this is likely hopeless anyway, and we will crash very
     // soon.
+    //
+    // Direct map never uses tagging, as size is always >kMaxMemoryTaggingSize.
+    PA_DCHECK(raw_size > kMaxMemoryTaggingSize);
     const bool ok = root->TryRecommitSystemPagesForData(
-        slot_start, slot_size, PageAccessibilityDisposition::kRequireUpdate);
+        slot_start, slot_size, PageAccessibilityDisposition::kRequireUpdate,
+        false);
     if (!ok) {
       if (!return_null) {
         PartitionOutOfMemoryCommitFailure(root, slot_size);
@@ -577,6 +581,20 @@ uint8_t ComputeSystemPagesPerSlotSpanInternal(size_t slot_size) {
   return static_cast<uint8_t>(best_pages);
 }
 
+#if PA_CONFIG(HAS_MEMORY_TAGGING)
+// Returns size that should be tagged. Avoiding the previous slot ref count if
+// it exists to avoid a race (crbug.com/1445816).
+template <bool thread_safe>
+PA_ALWAYS_INLINE size_t TagSizeForSlot(PartitionRoot<thread_safe>* root,
+                                       size_t slot_size) {
+#if PA_CONFIG(INCREASE_REF_COUNT_SIZE_FOR_MTE)
+  return slot_size - root->flags.ref_count_size;
+#else
+  return slot_size;
+#endif
+}
+#endif  // PA_CONFIG(HAS_MEMORY_TAGGING)
+
 }  // namespace
 
 uint8_t ComputeSystemPagesPerSlotSpan(size_t slot_size,
@@ -682,7 +700,8 @@ PartitionBucket<thread_safe>::AllocNewSlotSpan(PartitionRoot<thread_safe>* root,
 
     root->RecommitSystemPagesForData(
         slot_span_start, slot_span_committed_size,
-        PageAccessibilityDisposition::kRequireUpdate);
+        PageAccessibilityDisposition::kRequireUpdate,
+        slot_size <= kMaxMemoryTaggingSize);
   }
 
   PA_CHECK(get_slots_per_span() <=
@@ -785,10 +804,10 @@ PA_ALWAYS_INLINE uintptr_t PartitionBucket<thread_safe>::InitializeSuperPage(
     ScopedSyscallTimer timer{root};
     RecommitSystemPages(super_page + SystemPageSize(), SystemPageSize(),
 #if PA_CONFIG(ENABLE_SHADOW_METADATA)
-                        root->PageAccessibilityWithPkeyIfEnabled(
+                        root->PageAccessibilityWithThreadIsolationIfEnabled(
                             PageAccessibilityConfiguration::kRead),
 #else
-                        root->PageAccessibilityWithPkeyIfEnabled(
+                        root->PageAccessibilityWithThreadIsolationIfEnabled(
                             PageAccessibilityConfiguration::kReadWrite),
 #endif
                         PageAccessibilityDisposition::kRequireUpdate);
@@ -800,7 +819,7 @@ PA_ALWAYS_INLINE uintptr_t PartitionBucket<thread_safe>::InitializeSuperPage(
   if (root->ChoosePool() == kBRPPoolHandle) {
     ScopedSyscallTimer timer{root};
     RecommitSystemPages(super_page + SystemPageSize() * 2, SystemPageSize(),
-                        root->PageAccessibilityWithPkeyIfEnabled(
+                        root->PageAccessibilityWithThreadIsolationIfEnabled(
                             PageAccessibilityConfiguration::kReadWrite),
                         PageAccessibilityDisposition::kRequireUpdate);
   }
@@ -811,7 +830,7 @@ PA_ALWAYS_INLINE uintptr_t PartitionBucket<thread_safe>::InitializeSuperPage(
     ScopedSyscallTimer timer{root};
     RecommitSystemPages(ShadowMetadataStart(super_page, root->ChoosePool()),
                         SystemPageSize(),
-                        root->PageAccessibilityWithPkeyIfEnabled(
+                        root->PageAccessibilityWithThreadIsolationIfEnabled(
                             PageAccessibilityConfiguration::kReadWrite),
                         PageAccessibilityDisposition::kRequireUpdate);
   }
@@ -872,7 +891,7 @@ PA_ALWAYS_INLINE uintptr_t PartitionBucket<thread_safe>::InitializeSuperPage(
     {
       ScopedSyscallTimer timer{root};
       RecommitSystemPages(state_bitmap, state_bitmap_size_to_commit,
-                          root->PageAccessibilityWithPkeyIfEnabled(
+                          root->PageAccessibilityWithThreadIsolationIfEnabled(
                               PageAccessibilityConfiguration::kReadWrite),
                           PageAccessibilityDisposition::kRequireUpdate);
     }
@@ -887,7 +906,7 @@ PA_ALWAYS_INLINE uintptr_t PartitionBucket<thread_safe>::InitializeSuperPage(
     PA_DCHECK(SuperPageFreeSlotBitmapAddr(super_page) == freeslot_bitmap_addr);
     ScopedSyscallTimer timer{root};
     RecommitSystemPages(freeslot_bitmap_addr, CommittedFreeSlotBitmapSize(),
-                        root->PageAccessibilityWithPkeyIfEnabled(
+                        root->PageAccessibilityWithThreadIsolationIfEnabled(
                             PageAccessibilityConfiguration::kReadWrite),
                         PageAccessibilityDisposition::kRequireUpdate);
   }
@@ -965,30 +984,38 @@ PartitionBucket<thread_safe>::ProvisionMoreSlotsAndAllocOne(
     // TODO(lizeb): Handle commit failure.
     root->RecommitSystemPagesForData(
         commit_start, commit_end - commit_start,
-        PageAccessibilityDisposition::kRequireUpdate);
+        PageAccessibilityDisposition::kRequireUpdate,
+        slot_size <= kMaxMemoryTaggingSize);
   }
 
-  if (PA_LIKELY(slot_size <= kMaxMemoryTaggingSize &&
-                root->memory_tagging_enabled())) {
+#if PA_CONFIG(HAS_MEMORY_TAGGING)
+  const bool use_tagging =
+      root->IsMemoryTaggingEnabled() && slot_size <= kMaxMemoryTaggingSize;
+  if (PA_LIKELY(use_tagging)) {
     // Ensure the MTE-tag of the memory pointed by |return_slot| is unguessable.
-    TagMemoryRangeRandomly(return_slot, slot_size);
+    TagMemoryRangeRandomly(return_slot, TagSizeForSlot(root, slot_size));
   }
-
+#endif  // PA_CONFIG(HAS_MEMORY_TAGGING)
   // Add all slots that fit within so far committed pages to the free list.
   PartitionFreelistEntry* prev_entry = nullptr;
   uintptr_t next_slot_end = next_slot + slot_size;
   size_t free_list_entries_added = 0;
   while (next_slot_end <= commit_end) {
     void* next_slot_ptr;
-    if (PA_LIKELY(slot_size <= kMaxMemoryTaggingSize)) {
+#if PA_CONFIG(HAS_MEMORY_TAGGING)
+    if (PA_LIKELY(use_tagging)) {
       // Ensure the MTE-tag of the memory pointed by other provisioned slot is
       // unguessable. They will be returned to the app as is, and the MTE-tag
       // will only change upon calling Free().
-      next_slot_ptr = TagMemoryRangeRandomly(next_slot, slot_size);
+      next_slot_ptr =
+          TagMemoryRangeRandomly(next_slot, TagSizeForSlot(root, slot_size));
     } else {
       // No MTE-tagging for larger slots, just cast.
       next_slot_ptr = reinterpret_cast<void*>(next_slot);
     }
+#else  // PA_CONFIG(HAS_MEMORY_TAGGING)
+    next_slot_ptr = reinterpret_cast<void*>(next_slot);
+#endif
     auto* entry = PartitionFreelistEntry::EmplaceAndInitNull(next_slot_ptr);
     if (!slot_span->get_freelist_head()) {
       PA_DCHECK(!prev_entry);
@@ -1407,7 +1434,8 @@ uintptr_t PartitionBucket<thread_safe>::SlowPathAlloc(
         // TODO(lizeb): Handle commit failure.
         root->RecommitSystemPagesForData(
             slot_span_start, new_slot_span->bucket->get_bytes_per_span(),
-            PageAccessibilityDisposition::kAllowKeepForPerf);
+            PageAccessibilityDisposition::kAllowKeepForPerf,
+            slot_size <= kMaxMemoryTaggingSize);
       }
 
       new_slot_span->Reset();

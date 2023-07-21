@@ -73,11 +73,10 @@ class IntentPickerBrowserTest
 
   // Inserts an iframe in the main frame of |web_contents|.
   bool InsertIFrame(content::WebContents* web_contents) {
-    return content::ExecuteScript(
-        web_contents,
-        "let iframe = document.createElement('iframe');"
-        "iframe.id = 'iframe';"
-        "document.body.appendChild(iframe);");
+    return content::ExecJs(web_contents,
+                           "let iframe = document.createElement('iframe');"
+                           "iframe.id = 'iframe';"
+                           "document.body.appendChild(iframe);");
   }
 
   views::Button* GetIntentPickerIcon() {
@@ -147,8 +146,16 @@ IN_PROC_BROWSER_TEST_P(IntentPickerIconBrowserTest,
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
 // Tests that clicking a link from a tabbed browser to within the scope of an
 // installed app shows the intent picker icon in Omnibox.
+// TODO(crbug.com/1427908): Flaky on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_NavigationToInScopeLinkShowsIntentPicker \
+  DISABLED_NavigationToInScopeLinkShowsIntentPicker
+#else
+#define MAYBE_NavigationToInScopeLinkShowsIntentPicker \
+  NavigationToInScopeLinkShowsIntentPicker
+#endif
 IN_PROC_BROWSER_TEST_P(IntentPickerIconBrowserTest,
-                       NavigationToInScopeLinkShowsIntentPicker) {
+                       MAYBE_NavigationToInScopeLinkShowsIntentPicker) {
   InstallTestWebApp();
 
   const GURL in_scope_url =

@@ -71,6 +71,7 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
@@ -177,7 +178,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext,
   }
 
   bool OnMouseDragged(const ui::MouseEvent& event) override {
-    ContinueDrag(this, event);
+    (void)ContinueDrag(this, event);
     return true;
   }
 
@@ -188,6 +189,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext,
   void OnMouseCaptureLost() override { EndDrag(END_DRAG_CAPTURE_LOST); }
 
   void OnGestureEvent(ui::GestureEvent* event) override {
+    Liveness tabstrip_alive = Liveness::kAlive;
     switch (event->type()) {
       case ui::ET_GESTURE_SCROLL_END:
       case ui::ET_SCROLL_FLING_START:
@@ -201,7 +203,8 @@ class TabStrip::TabDragContextImpl : public TabDragContext,
       }
 
       case ui::ET_GESTURE_SCROLL_UPDATE:
-        ContinueDrag(this, *event);
+        // N.B. !! ContinueDrag may enter a nested run loop !!
+        tabstrip_alive = ContinueDrag(this, *event);
         break;
 
       case ui::ET_GESTURE_TAP_DOWN:
@@ -212,6 +215,12 @@ class TabStrip::TabDragContextImpl : public TabDragContext,
         break;
     }
     event->SetHandled();
+
+    // If tabstrip was destroyed (during ContinueDrag above), return early to
+    // avoid UAF below.
+    if (tabstrip_alive == Liveness::kDeleted) {
+      return;
+    }
 
     // TabDragContext gets event capture as soon as a drag session begins, which
     // precludes TabStrip from ever getting events like tap or long tap. Forward
@@ -301,20 +310,20 @@ class TabStrip::TabDragContextImpl : public TabDragContext,
       std::move(drag_controller_set_callback_).Run(drag_controller_.get());
   }
 
-  void ContinueDrag(views::View* view, const ui::LocatedEvent& event) {
-    if (drag_controller_.get() &&
-        drag_controller_->event_source() == EventSourceFromEvent(event)) {
-      gfx::Point screen_location(event.location());
-      views::View::ConvertPointToScreen(view, &screen_location);
-
-      // Note: |tab_strip_| can be destroyed during drag, also destroying
-      // |this|.
-      base::WeakPtr<TabDragContext> weak_ptr(weak_factory_.GetWeakPtr());
-      drag_controller_->Drag(screen_location);
-
-      if (!weak_ptr)
-        return;
+  Liveness ContinueDrag(views::View* view, const ui::LocatedEvent& event) {
+    if (!drag_controller_.get() ||
+        drag_controller_->event_source() != EventSourceFromEvent(event)) {
+      return Liveness::kAlive;
     }
+
+    gfx::Point screen_location(event.location());
+    views::View::ConvertPointToScreen(view, &screen_location);
+
+    // Note: `tab_strip_` can be destroyed during drag, also destroying `this`.
+    base::WeakPtr<TabDragContext> weak_ptr(weak_factory_.GetWeakPtr());
+    drag_controller_->Drag(screen_location);
+
+    return weak_ptr ? Liveness::kAlive : Liveness::kDeleted;
   }
 
   bool EndDrag(EndDragReason reason) {
@@ -603,7 +612,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext,
     int source_view_index = static_cast<int>(
         base::ranges::find(views, source_view) - views.begin());
 
-    const auto should_animate_tab = [=, &views, this](int index_in_views) {
+    const auto should_animate_tab = [&](size_t index_in_views) {
       // If the tab at `index_in_views` is already animating, don't interrupt
       // it.
       if (bounds_animator_.IsAnimating(views[index_in_views]))
@@ -1162,6 +1171,12 @@ bool TabStrip::ShouldDrawStrokes() const {
     return false;
   }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (chromeos::features::IsJellyrollEnabled()) {
+    return false;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
   // The tabstrip normally avoids strokes and relies on the active tab
   // contrasting sufficiently with the frame background.  When there isn't
   // enough contrast, fall back to a stroke.  Always compute the contrast ratio
@@ -1586,8 +1601,10 @@ void TabStrip::MaybeStartDrag(
   drag_context_->MaybeStartDrag(source, event, original_selection);
 }
 
-void TabStrip::ContinueDrag(views::View* view, const ui::LocatedEvent& event) {
-  drag_context_->ContinueDrag(view, event);
+TabSlotController::Liveness TabStrip::ContinueDrag(
+    views::View* view,
+    const ui::LocatedEvent& event) {
+  return drag_context_->ContinueDrag(view, event);
 }
 
 bool TabStrip::EndDrag(EndDragReason reason) {

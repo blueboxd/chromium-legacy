@@ -12,7 +12,7 @@
 <translation id="1467231725790366244"><ph name="CAMERA" /> ажыратылды.</translation>
 <translation id="1473110567575736769">3 секунддук таймер</translation>
 <translation id="148783771699678004">Жогорку оң жакка жылууда</translation>
-<translation id="1545749641540134597">QR кодун скандоо</translation>
+<translation id="1545749641540134597">QR кодду скандоо</translation>
 <translation id="1560052704389894104">GIF</translation>
 <translation id="1588438908519853928">Кадыресе</translation>
 <translation id="1620510694547887537">Камера</translation>
@@ -30,7 +30,7 @@
 <translation id="2064538373111010176"><ph name="CAMERA" /> жигердүү</translation>
 <translation id="2134029355740465625">Видеонун параметрлери</translation>
 <translation id="2144806332417375165">Жеке видеонун параметрлери</translation>
-<translation id="2175927920773552910">QR коду</translation>
+<translation id="2175927920773552910">QR код</translation>
 <translation id="2244252133441425811">Видеодогу кадр/сек. тандагычты иштетүү</translation>
 <translation id="2271433936731426666">Толук экрандагы видеону жаздыруу учурунда тартылып алынган сүрөттү иштетүү</translation>
 <translation id="2320741269052147773">Солго жылдырып кароо</translation>
@@ -65,9 +65,10 @@
 <translation id="4118525110028899586">Видео жаздырууну тындыруу</translation>
 <translation id="4121305183798804752">Документ аныкталды</translation>
 <translation id="414641094616694804">Камеранын резолюциясын өзгөртүүгө болбойт</translation>
+<translation id="4176463684765177261">Өчүк</translation>
 <translation id="4269820728363426813">Шилтеме дарегин көчүрүү</translation>
-<translation id="4281620174117014503">Орточо резолюция</translation>
 <translation id="428234092390943511">Беттин эскизи</translation>
+<translation id="4349714250734879769">Chrome менен кадрлардын өлчөмүн өзгөртүү</translation>
 <translation id="4383571725254449280">Басып чыгаруу майнаптуулугунун таржымалы</translation>
 <translation id="4445542136948522167">Сүрөткө тартууну токтотуу</translation>
 <translation id="4570032796877367747">Маңдайкы камера</translation>
@@ -93,6 +94,7 @@
 <translation id="5374917190292010970">4K (2160p)</translation>
 <translation id="5662366948659129155"><ph name="COUNT" /> бет скандалууда</translation>
 <translation id="5671277269877808209">Чарчы</translation>
+<translation id="574392208103952083">Орточо</translation>
 <translation id="5746169159649715125">PDF катары сактоо</translation>
 <translation id="5753488212459587150">Адис режимин иштетүү</translation>
 <translation id="5759254179196327752">Документти скандоо</translation>
@@ -125,7 +127,7 @@
 <translation id="7134221860976209830">10 секунддук таймер</translation>
 <translation id="7191890674911603392">Жаздыруу түрү</translation>
 <translation id="7243947652761655814">Видеонун дааналыгы</translation>
-<translation id="7337660886763914220">Файл тутумунда ката кетти.</translation>
+<translation id="7337660886763914220">Файл системасында ката кетти.</translation>
 <translation id="7450541714075000668">Текст көчүрүлдү</translation>
 <translation id="7488619942230388918">GIF видеосун жаздыруу</translation>
 <translation id="7557677699350329807">Кийинки камераны иштетүү</translation>
@@ -148,6 +150,7 @@
 <translation id="8145038249676204903">Сүрөт режимине которулуу</translation>
 <translation id="8167081290930651932">Сүрөт катары сактоо</translation>
 <translation id="8239780215768881278">Видео жаздыруу учурунда сүрөткө тартып алуу</translation>
+<translation id="8346544573713510785">Camera HAL менен кадрлардын өлчөмүн өзгөртүү</translation>
 <translation id="8425673304802773841">Төмөн кыйшайтуу</translation>
 <translation id="8428213095426709021">Параметрлер</translation>
 <translation id="8629662593426079630">360p</translation>

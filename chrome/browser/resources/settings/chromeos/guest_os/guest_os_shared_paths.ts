@@ -9,7 +9,7 @@
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
-import '../../settings_shared.css.js';
+import '../settings_shared.css.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -25,10 +25,18 @@ interface PathObject {
   pathDisplayText: string;
 }
 
+export interface SettingsGuestOsSharedPathsElement {
+  $: {
+    guestOsInstructionsRemove: HTMLElement,
+    guestOsList: HTMLElement,
+    guestOsListEmpty: HTMLElement,
+  };
+}
+
 const SettingsGuestOsSharedPathsElementBase = I18nMixin(PolymerElement);
 
 /** @polymer */
-class SettingsGuestOsSharedPathsElement extends
+export class SettingsGuestOsSharedPathsElement extends
     SettingsGuestOsSharedPathsElementBase {
   static get is() {
     return 'settings-guest-os-shared-paths';
@@ -75,6 +83,7 @@ class SettingsGuestOsSharedPathsElement extends
     ];
   }
 
+  prefs: {[key: string]: any};
   guestOsType: GuestOsType;
   private browserProxy_: GuestOsBrowserProxy;
   private sharedPaths_: PathObject[];

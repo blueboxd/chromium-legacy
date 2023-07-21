@@ -180,13 +180,13 @@ BASE_EXPORT void InitializeAllocatorShim();
 BASE_EXPORT void EnablePartitionAllocMemoryReclaimer();
 
 using EnableBrp = base::StrongAlias<class EnableBrpTag, bool>;
-using EnableBrpZapping = base::StrongAlias<class EnableBrpZappingTag, bool>;
 using EnableBrpPartitionMemoryReclaimer =
     base::StrongAlias<class EnableBrpPartitionMemoryReclaimerTag, bool>;
+using EnableMemoryTagging =
+    base::StrongAlias<class EnableMemoryTaggingTag, bool>;
 using SplitMainPartition = base::StrongAlias<class SplitMainPartitionTag, bool>;
 using UseDedicatedAlignedPartition =
     base::StrongAlias<class UseDedicatedAlignedPartitionTag, bool>;
-using AddDummyRefCount = base::StrongAlias<class AddDummyRefCountTag, bool>;
 using AlternateBucketDistribution =
     base::features::AlternateBucketDistributionMode;
 
@@ -195,12 +195,14 @@ using AlternateBucketDistribution =
 // thread-cache on the main (malloc) partition will be disabled.
 BASE_EXPORT void ConfigurePartitions(
     EnableBrp enable_brp,
-    EnableBrpZapping enable_brp_zapping,
     EnableBrpPartitionMemoryReclaimer enable_brp_memory_reclaimer,
+    EnableMemoryTagging enable_memory_tagging,
     SplitMainPartition split_main_partition,
     UseDedicatedAlignedPartition use_dedicated_aligned_partition,
-    AddDummyRefCount add_dummy_ref_count,
+    size_t ref_count_size,
     AlternateBucketDistribution use_alternate_bucket_distribution);
+
+BASE_EXPORT uint32_t GetMainPartitionRootExtrasSize();
 
 #if BUILDFLAG(USE_STARSCAN)
 BASE_EXPORT void EnablePCScan(partition_alloc::internal::PCScan::InitConfig);

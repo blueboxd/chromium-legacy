@@ -45,6 +45,10 @@
 #include "chrome/updater/util/util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace updater {
 
 namespace {
@@ -197,7 +201,7 @@ void MaybeInstallUpdater(UpdaterScope scope) {
   const absl::optional<base::FilePath> path = GetUpdaterExecutablePath(scope);
 
   if (path &&
-      [[NSFileManager defaultManager]
+      [NSFileManager.defaultManager
           fileExistsAtPath:base::mac::FilePathToNSString(path.value())]) {
     // Updater is already installed.
     return;
@@ -211,7 +215,7 @@ void MaybeInstallUpdater(UpdaterScope scope) {
   const absl::optional<base::FilePath> setup_path = GetUpdaterExecutablePath(
       IsSystemShim() ? UpdaterScope::kSystem : UpdaterScope::kUser);
   if (!setup_path ||
-      ![[NSFileManager defaultManager]
+      ![NSFileManager.defaultManager
           fileExistsAtPath:base::mac::FilePathToNSString(setup_path.value())]) {
     return;
   }
@@ -221,7 +225,9 @@ void MaybeInstallUpdater(UpdaterScope scope) {
   install_command.AppendSwitch(kEnableLoggingSwitch);
   install_command.AppendSwitchASCII(kLoggingModuleSwitch,
                                     kLoggingModuleSwitchValue);
-  // TODO(crbug.com/1281971): suppress the installer's UI.
+  if (IsSystemInstall(scope)) {
+    install_command.AppendSwitch(kSystemSwitch);
+  }
   int exit_code = -1;
   if (base::LaunchProcess(install_command, {}).WaitForExit(&exit_code)) {
     VLOG(0) << "Installer returned " << exit_code << ".";
@@ -301,13 +307,13 @@ class KSAdminApp : public App {
 
 KSTicket* KSAdminApp::TicketFromAppState(
     const updater::UpdateService::AppState& state) {
-  return [[[KSTicket alloc]
+  return [[KSTicket alloc]
       initWithAppId:base::SysUTF8ToNSString(state.app_id)
             version:base::SysUTF8ToNSString(state.version.GetString())
                 ecp:state.ecp
                 tag:base::SysUTF8ToNSString(state.ap)
           brandCode:base::SysUTF8ToNSString(state.brand_code)
-          brandPath:state.brand_path] autorelease];
+          brandPath:state.brand_path];
 }
 
 scoped_refptr<UpdateService> KSAdminApp::ServiceProxy(

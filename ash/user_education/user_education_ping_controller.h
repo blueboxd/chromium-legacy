@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace views {
 class View;
@@ -23,7 +24,8 @@ enum class PingId;
 class ASH_EXPORT UserEducationPingController {
  public:
   // Names for ping layers so they are easy to distinguish in debugging/testing.
-  static constexpr char kPingLayerName[] = "Ping";
+  static constexpr char kPingParentLayerName[] = "Ping::Parent";
+  static constexpr char kPingChildLayerName[] = "Ping::Child";
 
   UserEducationPingController();
   UserEducationPingController(const UserEducationPingController&) = delete;
@@ -43,10 +45,16 @@ class ASH_EXPORT UserEducationPingController {
   // (c) the specified `view` is not drawn.
   bool CreatePing(PingId ping_id, views::View* view);
 
+  // Returns the unique identifier for the ping currently being shown for the
+  // specified `view`. If no ping is currently being shown for `view`, an absent
+  // value is returned.
+  absl::optional<PingId> GetPingId(const views::View* view) const;
+
  private:
   class Ping;
 
-  // Owns pings, mapping them to their associated IDs.
+  // Owns pings, mapping them to their associated IDs. Note that pings are
+  // removed from the map on ping animation ended/aborted.
   std::map<PingId, std::unique_ptr<Ping>> pings_by_id_;
 };
 

@@ -39,7 +39,6 @@ from blinkpy.web_tests.models import test_run_results
 from blinkpy.web_tests.port.factory import configuration_options
 from blinkpy.web_tests.port.factory import platform_options
 from blinkpy.web_tests.port.factory import wpt_options
-from blinkpy.web_tests.port.factory import python_server_options
 from blinkpy.web_tests.views import printing
 
 _log = logging.getLogger(__name__)
@@ -112,29 +111,6 @@ def parse_args(args):
 
     option_group_definitions.append(('web-platform-tests (WPT) Options',
                                      wpt_options()))
-
-    option_group_definitions.append(('Python Server Options',
-                                     python_server_options()))
-
-    option_group_definitions.append((
-        'Android-specific Options',
-        [
-            optparse.make_option(
-                '--adb-device',
-                action='append',
-                default=[],
-                dest='adb_devices',
-                help='Run Android web tests on these devices'),
-            # FIXME: Flip this to be off by default once we can log the
-            # device setup more cleanly.
-            optparse.make_option(
-                '--no-android-logging',
-                dest='android_logging',
-                action='store_false',
-                default=True,
-                help=('Do not log android-specific debug messages (default '
-                      'is to log as part of --debug-rwt-logging)')),
-        ]))
 
     option_group_definitions.append(('Fuchsia-specific Options', [
         optparse.make_option(
@@ -267,12 +243,6 @@ def parse_args(args):
             optparse.make_option(
                 '--write-run-histories-to',
                 help='Path to write the JSON test run histories.'),
-            # FIXME(tansell): Remove this option if nobody is found who needs it.
-            optparse.make_option(
-                '--json-failing-test-results',
-                help=
-                'Path to write the JSON test results for only *failing* tests.'
-            ),
             optparse.make_option(
                 '--no-show-results',
                 dest='show_results',

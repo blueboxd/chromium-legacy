@@ -6,6 +6,7 @@
 
 #import <objc/runtime.h>
 
+#import "base/debug/dump_without_crashing.h"
 #import "base/functional/bind.h"
 #import "base/ios/ios_util.h"
 #import "base/logging.h"
@@ -314,12 +315,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [super viewDidLayoutSubviews];
   // Modify Incognito and Regular Tabs Insets.
   [self setInsetForGridViews];
-  // Reset bottom message width after bottom toolbar is updated after an
-  // orientation change. As this depends on
-  // `regularTabsViewController.gridView.contentOffset.x`, this should not be
-  // done in `-traitCollectionDidChange` when the updated layout has not been
-  // finalized.
-  [self updateRegularTabsBottomMessageConstraintsIfExists];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -355,6 +350,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (IsPinnedTabsEnabled()) {
     [self updatePinnedTabsViewControllerConstraints];
   }
+  [self updateRegularTabsBottomMessageConstraintsIfExists];
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -2222,14 +2218,17 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)reportTabSelectionTime {
-  CHECK(!self.tabGridEnterTime.is_null());
+  if (self.tabGridEnterTime.is_null()) {
+    // The enter time was not recorded. Bail out.
+    return;
+  }
   base::TimeDelta duration = base::TimeTicks::Now() - self.tabGridEnterTime;
   base::UmaHistogramLongTimes("IOS.TabSwitcher.TimeSpentOpeningExistingTab",
                               duration);
   self.tabGridEnterTime = base::TimeTicks();
 }
 
-#pragma mark UIGestureRecognizerDelegate
+#pragma mark - UIGestureRecognizerDelegate
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
     shouldRecognizeSimultaneouslyWithGestureRecognizer:
@@ -2239,7 +2238,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   return NO;
 }
 
-#pragma mark UISearchBarDelegate
+#pragma mark - UISearchBarDelegate
 
 - (void)searchBarTextDidBeginEditing:(UISearchBar*)searchBar {
   [self updateScrimVisibilityForText:searchBar.text];
@@ -2501,8 +2500,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     return;
   }
 
-  // Check if the tab being selected is already selected.
-  BOOL alreadySelected = NO;
   id<GridCommands> tabsDelegate;
   if (gridViewController == self.regularTabsViewController) {
     tabsDelegate = self.regularTabsDelegate;
@@ -2523,7 +2520,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // Record how long it took to select an item.
   [self reportTabSelectionTime];
 
-  alreadySelected = [tabsDelegate isItemWithIDSelected:itemID];
+  // Check if the tab being selected is already selected.
+  BOOL alreadySelected = [tabsDelegate isItemWithIDSelected:itemID];
   if (!alreadySelected) {
     [self setCurrentIdlePageStatus:NO];
   }
@@ -3179,6 +3177,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   self.regularTabsBottomMessageConstraints = nil;
 
   UIView* bottomMessageView = self.regularTabsBottomMessage.view;
+  [bottomMessageView invalidateIntrinsicContentSize];
   NSMutableArray<NSLayoutConstraint*>* constraints =
       [[NSMutableArray alloc] init];
   // left and right anchors.
@@ -3223,7 +3222,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     [bottomMessageView.bottomAnchor constraintEqualToAnchor:bottomAnchor],
     [bottomMessageView.topAnchor
         constraintGreaterThanOrEqualToAnchor:self.view.topAnchor
-                                    constant:topLayoutAnchorConstant]
+                                    constant:topLayoutAnchorConstant],
+    [bottomMessageView.heightAnchor
+        constraintLessThanOrEqualToConstant:bottomMessageView
+                                                .intrinsicContentSize.height],
   ]];
   self.regularTabsBottomMessageConstraints = constraints;
   [NSLayoutConstraint

@@ -31,7 +31,7 @@ class MockAutofillClient : public TestAutofillClient {
  public:
   MockAutofillClient();
   ~MockAutofillClient() override;
-  MOCK_METHOD(void, ExecuteCommand, (int), (override));
+  MOCK_METHOD(void, ExecuteCommand, (Suggestion::FrontendId), (override));
   MOCK_METHOD(bool, IsTouchToFillCreditCardSupported, (), (override));
   MOCK_METHOD(bool,
               ShowTouchToFillCreditCard,
@@ -168,11 +168,10 @@ class AutofillMetricsBaseTest {
   void FillTestProfile(const FormData& form) {
     autofill_manager().FillOrPreviewForm(
         mojom::RendererFormDataAction::kFill, form, form.fields.front(),
-        MakeFrontendId({.profile_id = kTestProfileId}),
-        AutofillTriggerSource::kPopup);
+        Suggestion::BackendId(kTestProfileId), AutofillTriggerSource::kPopup);
   }
 
-  int MakeFrontendId(
+  Suggestion::FrontendId MakeFrontendId(
       const TestBrowserAutofillManager::MakeFrontendIdParams& params) {
     return autofill_manager().MakeFrontendId(params);
   }

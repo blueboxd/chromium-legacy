@@ -4,7 +4,9 @@
 <translation id="1014750484722996375">Desktops</translation>
 <translation id="1018219910092211213">DNS kann nicht aufgelöst werden</translation>
 <translation id="1018656279737460067">Abgebrochen</translation>
+<translation id="1020274983236703756">Exklusive <ph name="PRODUCT_NAME" />-Assets jetzt verfügbar</translation>
 <translation id="1022433422498218992">Allgemeine Einstellungen</translation>
+<translation id="1022628058306505708">Earth Flow</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> Threads, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">Neue Funktion verfügbar. Verwende den Aufwärtspfeil, um mehr zu erfahren.</translation>
 <translation id="1059913517121127803">Scan konnte nicht gestartet werden</translation>
@@ -63,6 +65,7 @@
 <translation id="1476467821656042872"><ph name="MANAGER" /> verwaltet dieses Gerät und kann möglicherweise deine Aktivitäten überwachen.</translation>
 <translation id="1478594628797167447">Scanner</translation>
 <translation id="1483493594462132177">Senden</translation>
+<translation id="1488850966314959671">Mit den aktivierten benutzerdefinierten APNs kann keine Verbindung zu diesem Netzwerk hergestellt werden. Wende dich für weitere Informationen an deinen Mobilfunkanbieter.</translation>
 <translation id="1491076385728777984">Die Firmware auf „<ph name="DEVICE_NAME" />“ wird aktualisiert</translation>
 <translation id="1499041187027566160">Lautstärke erhöhen</translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> verwaltet diesen Nutzer und kann per Remotezugriff Einstellungen ändern und die Nutzeraktivität überwachen.</translation>
@@ -91,6 +94,7 @@
 <translation id="1669047024429367828">Sichtbarkeit</translation>
 <translation id="1672499492233627739">Webcam-Videofeed</translation>
 <translation id="1676557873873341166">Video wird aufgezeichnet</translation>
+<translation id="1684279041537802716">Akzentfarbe</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">DNS-Resolver vorhanden</translation>
 <translation id="1708602061922134366">Google-Blau</translation>
@@ -115,6 +119,9 @@
 <translation id="1801418420130173017">Dunkles Design deaktivieren</translation>
 <translation id="1807246157184219062">Hell</translation>
 <translation id="1827738518074806965">Kunstgalerie</translation>
+<translation id="1836553715834333258">Systemfarbe</translation>
+<translation id="1838374766361614909">Suche löschen</translation>
+<translation id="1840474674287087346">Desktopfarbe</translation>
 <translation id="1851218745569890714">Videokonferenz</translation>
 <translation id="1852934301711881861">Chrome OS Flex installieren</translation>
 <translation id="1856388568474281774">Abwärtspfeil</translation>
@@ -215,6 +222,7 @@
 <translation id="2638662041295312666">Log-in-Bild</translation>
 <translation id="2640549051766135490">Album <ph name="TITLE" /> <ph name="DESC" /> ausgewählt</translation>
 <translation id="267442004702508783">Aktualisieren</translation>
+<translation id="268270014981824665">Tastatur dimmen</translation>
 <translation id="2712812801627182647">TLS-Authentifizierungsschlüssel</translation>
 <translation id="2713444072780614174">Weiß</translation>
 <translation id="2717139507051041123">Dunklen Farbmodus aktivieren</translation>
@@ -222,6 +230,7 @@
 <translation id="2744221223678373668">Freigegeben</translation>
 <translation id="2751739896257479635">EAP-Phase 2-Authentifizierung</translation>
 <translation id="2783010256799387990">BESTANDEN</translation>
+<translation id="2787435249130282949">Tastatur heller</translation>
 <translation id="2789486458103222910">Ok</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="28232023175184696">Keine Verbindung zum Internet. Zum Wiederholen klicken.</translation>
@@ -231,7 +240,6 @@
 <translation id="2873483161362553159">Browsernavigation</translation>
 <translation id="2874939134665556319">Vorheriger Titel</translation>
 <translation id="2878387241690264070"><ph name="RATE" /> in <ph name="NUM_SECONDS" /> Sekunden entladen.</translation>
-<translation id="2902312830803030883">Weitere Aktionen</translation>
 <translation id="2926057806159140518">Gib Nutzernamen und Passwort ein oder scanne deinen QR-Code</translation>
 <translation id="2940811910881150316">Gerät kann nicht getestet werden. Klappe das Gerät zum Testen wieder auf.</translation>
 <translation id="3008341117444806826">AKTUALISIEREN</translation>
@@ -264,12 +272,15 @@
 <translation id="3226405216343213872">Suche nach Scannern läuft</translation>
 <translation id="3226657629376379887">Layout-Aktionsmenü</translation>
 <translation id="3246869037381808805">Druckaufträge, die älter als 1 Tag sind, werden entfernt</translation>
+<translation id="3248223063252096240">Exklusiv für <ph name="PRODUCT_NAME" /></translation>
 <translation id="3268178239013324452">Fehlgeschlagen – Druckerklappe offen</translation>
 <translation id="3275729367986477355">Avatarbild</translation>
 <translation id="3283504360622356314">{0,plural, =1{Datei bearbeiten}other{Dateien bearbeiten}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
 <translation id="3291996639387199448">Schlüsselrichtung</translation>
 <translation id="3294437725009624529">Gast</translation>
+<translation id="3303855915957856445">Keine Suchergebnisse gefunden</translation>
+<translation id="3305294846493618482">mehr</translation>
 <translation id="3310640316857623290">Die DNS-Latenz liegt deutlich über dem zulässigen Grenzwert</translation>
 <translation id="3328783797891415197">Test wird ausgeführt</translation>
 <translation id="3340011300870565703">Der Akkustand des rechten Kopfhörers liegt bei <ph name="BATTERY_PERCENTAGE" /> %.</translation>
@@ -314,6 +325,7 @@
 <translation id="3632579075709132555">Privatsphärefunktion</translation>
 <translation id="3639846061339007994">oben</translation>
 <translation id="3651050199673793219">Temperatureinheit auswählen</translation>
+<translation id="3663574643422533538">Exklusives Kunstwerk für <ph name="PRODUCT_NAME" /> auswählen</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> – Test</translation>
 <translation id="370665806235115550">Wird geladen...</translation>
 <translation id="3708186454126126312">Zuletzt verbundene Geräte</translation>
@@ -322,11 +334,13 @@
 <translation id="3749289110408117711">Dateiname</translation>
 <translation id="3771294271822695279">Videodateien</translation>
 <translation id="3784455785234192852">Sperre</translation>
+<translation id="380097101658023925">RGB-Einstellungen</translation>
 <translation id="38114475217616659">Gesamten Verlauf löschen</translation>
 <translation id="3820172043799983114">Ungültige PIN.</translation>
 <translation id="3824259034819781947">Dateien anhängen</translation>
 <translation id="3838338534323494292">Neues Passwort</translation>
 <translation id="3845880861638660475">Drücke die Tastenkombination <ph name="ALT_SHORTCUT_START" />Alt<ph name="ALT_SHORTCUT_END" /> + <ph name="ESC_SHORTCUT_START" />Esc<ph name="ESC_SHORTCUT_END" />, um das Dialogfeld zu schließen.</translation>
+<translation id="3848280697030027394">Tastatur abdunkeln</translation>
 <translation id="385051799172605136">Zurück</translation>
 <translation id="3858860766373142691">Name</translation>
 <translation id="3862598938296403232">Gib eine Beschreibung ein</translation>
@@ -361,6 +375,7 @@
 <translation id="4095829376260267438">WPA2/WPA3</translation>
 <translation id="4110686435123617899">Album <ph name="TITLE" /> <ph name="DESC" /> auswählen</translation>
 <translation id="4111761024568264522">USB-Touchpad</translation>
+<translation id="4113067922640381334">Neue <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />Hintergründe<ph name="END_LINK_WALLPAPER_SUBPAGE" /> jetzt verfügbar</translation>
 <translation id="4117637339509843559">Dunkler Modus</translation>
 <translation id="4130035430755296270">Für weitere Layoutoptionen Mauszeiger weiter darauf halten</translation>
 <translation id="4131410914670010031">Schwarz-Weiß</translation>
@@ -397,6 +412,7 @@
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4394049700291259645">Deaktivieren</translation>
 <translation id="439429847087949098">„<ph name="DEVICE_NAME" />“ wird neu gestartet</translation>
+<translation id="4395835743215824109">Tastatur anpassen</translation>
 <translation id="4415951057168511744">Aktueller Avatar</translation>
 <translation id="4422041425070339732">Abwärtspfeil</translation>
 <translation id="4425149324548788773">Meine Ablage</translation>
@@ -408,6 +424,7 @@
 <translation id="4454245904991689773">Speichern unter</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Das nicht standardmäßige Netzwerk-Gateway konnte nicht kontaktiert werden</translation>
+<translation id="4500966230243561393">Farbe der Benutzeroberfläche</translation>
 <translation id="4503223151711056411">Linkspfeil</translation>
 <translation id="4507392511610824664">Helligkeit erhöhen</translation>
 <translation id="4511264077854731334">Portal</translation>
@@ -420,6 +437,7 @@
 <translation id="455835558791489930"><ph name="CHARGE_VALUE" />-mAh-Akku</translation>
 <translation id="4561801978359312462">SIM-Karte entsperrt</translation>
 <translation id="4562494484721939086">Dienst nicht verfügbar</translation>
+<translation id="4573777384450697571">Fehler – Zertifikat abgelaufen</translation>
 <translation id="458794348635939462">Es konnten nicht alle Hosts aufgelöst werden</translation>
 <translation id="4593212453765072419">Proxy-Authentifizierung erforderlich</translation>
 <translation id="4609350030397390689">Tastaturhelligkeit verringern</translation>
@@ -436,6 +454,7 @@
 <translation id="4731797938093519117">Elternzugang</translation>
 <translation id="473775607612524610">Aktualisieren</translation>
 <translation id="4744944742468440486">Informationen in Bezug auf deine Auswahl</translation>
+<translation id="4771607256327216405">Tastatur aufhellen</translation>
 <translation id="4773299976671772492">Angehalten</translation>
 <translation id="4782311465517282004">Du kannst Definitionen oder Übersetzungen anzeigen oder Einheiten umrechnen lassen, indem du Text gedrückt hältst oder mit der rechten Maustaste darauf klickst</translation>
 <translation id="4791000909649665275"><ph name="NUMBER" /> Foto(s)</translation>
@@ -473,7 +492,6 @@
 <translation id="4921665434385737356"><ph name="RATE" /> in <ph name="NUM_SECONDS" /> Sekunden aufgeladen.</translation>
 <translation id="4930320165497208503">Gehe zum Einrichten oder Aktualisieren einer Verbindung zu den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" />.</translation>
 <translation id="4932733599132424254">Datum</translation>
-<translation id="4937657825850660613">Hälfte</translation>
 <translation id="4950314376641394653">Firmware deines Geräts (<ph name="DEVICE_NAME" />) wurde auf Version <ph name="VERSION" /> aktualisiert</translation>
 <translation id="4971925105143343452">Teilweise</translation>
 <translation id="4972592110715526173">Modusänderung</translation>
@@ -485,6 +503,8 @@
 <translation id="500920857929044050">Test beenden</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5019310272469539976">Wenn der Bildschirm inaktiv ist, kannst du dir Fotos, die Zeit sowie Wetter- und Medieninformationen anzeigen lassen.</translation>
+<translation id="5035083460461104704">Designfarbe</translation>
+<translation id="5038292761217083259">Mehrfarbige Tastatur</translation>
 <translation id="5039804452771397117">Zulassen</translation>
 <translation id="5049856988445523908">SIM-Karte gesperrt (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Gruppenname</translation>
@@ -527,14 +547,13 @@
 <translation id="5372659122375744710">WLAN ist nicht sicher</translation>
 <translation id="5376354385557966694">Automatischer heller Modus</translation>
 <translation id="5378184552853359930">IP-Typ</translation>
-<translation id="5389159777326897627">Hintergrund &amp; Stil</translation>
+<translation id="5389159777326897627">Hintergrund und Stil</translation>
 <translation id="5389224261615877010">Regenbogen</translation>
 <translation id="5400907029458559844">Das Gerät wird verbunden.</translation>
 <translation id="5401938042319910061">Alle Abläufe ausführen</translation>
 <translation id="5423849171846380976">Aktiviert</translation>
 <translation id="5430931332414098647">Instant Tethering</translation>
 <translation id="5431318178759467895">Farbe</translation>
-<translation id="5456936324019847994">Es kann keine Verbindung zu aktivierten benutzerdefinierten APNs hergestellt werden. Wende dich für weitere Informationen an deinen Mobilfunkanbieter.</translation>
 <translation id="5457599981699367932">Als Gast nutzen</translation>
 <translation id="54609108002486618">Verwaltet</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Noch {0} Versuch}other{Noch {0} Versuche}}</translation>
@@ -550,6 +569,7 @@
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">Neu scannen</translation>
 <translation id="5583640892426849032">Rücktaste</translation>
+<translation id="5584044598279886848">Dieser APN kann nicht deaktiviert oder entfernt werden. Aktivierte APNs zum Anhängen müssen deaktiviert oder entfernt werden.</translation>
 <translation id="5600027863942488546">Die Taste „<ph name="KEY_NAME" />“ wurde getestet</translation>
 <translation id="5620281292257375798">Nur zur internen Nutzung</translation>
 <translation id="5649768706273821470">Anhören</translation>
@@ -622,6 +642,7 @@
 <translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">Die Akkukapazität sinkt mit fortschreitender Nutzung</translation>
 <translation id="6191293864534840972">Nameserver hat fehlerhaftes Format</translation>
+<translation id="6205145102504628069">Cloud Flow</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223066887782788441">Status „Vollbild“ beenden</translation>
 <translation id="6223752125779001553">Keine Scanner verfügbar</translation>
@@ -633,6 +654,7 @@
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Dunkles Design einschalten</translation>
 <translation id="6285899124799306373">Launcher öffnen</translation>
+<translation id="629550705077076970">Dimmen der Tastatur</translation>
 <translation id="6302401976930124515">Test „<ph name="TEST_NAME" />“ wurde abgebrochen</translation>
 <translation id="631063167932043783">Entdecken</translation>
 <translation id="6319207335391420837">Firmware von <ph name="DEVICE_NAME" /> aktualisieren</translation>
@@ -651,6 +673,7 @@
 <translation id="6401427872449207797">Browsersuche</translation>
 <translation id="6410257289063177456">Bilddateien</translation>
 <translation id="641081527798843608">subject-match</translation>
+<translation id="6411934471898487866">Tastaturhelligkeit</translation>
 <translation id="6412715219990689313">Eingebaute Tastatur</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
@@ -664,6 +687,7 @@
 <translation id="6494974875566443634">Anpassung</translation>
 <translation id="6500818810472529210">Ergebnis in der Google Suche anzeigen</translation>
 <translation id="650266656685499220">Gehe zu Google Fotos, um Alben zu erstellen</translation>
+<translation id="6505750420152840539">Sonnenaufgang bis Sonnenuntergang</translation>
 <translation id="6516990319416533844">Wenn du die Aufladegeschwindigkeit deines Akkus testen möchtest, warte zuerst, bis er ein wenig entladen ist</translation>
 <translation id="6517239166834772319">Entdecken</translation>
 <translation id="6526200165918397681">An Hintergrund anpassen</translation>
@@ -703,7 +727,6 @@
 <translation id="6798678288485555829">Textnavigation</translation>
 <translation id="680983167891198932">Schlüssel</translation>
 <translation id="6816797338148849397">Informationen in Bezug auf deine Auswahl sind verfügbar. Verwende für Zugriff den Aufwärtspfeil.</translation>
-<translation id="6838167112108853532">Dieser APN kann nicht deaktiviert oder entfernt werden. Achte darauf, dass die angehängten aktivierten APNs deaktiviert oder entfernt werden.</translation>
 <translation id="6853312040151791195">Entladestrom</translation>
 <translation id="6889786074662672253">Während des Neustarts darf dieses externe Gerät nicht getrennt oder der Computer heruntergefahren werden. Du kannst das Fenster aber minimieren. Der Vorgang kann einige Minuten dauern. Unter Umständen funktioniert dein externes Gerät während dieser Zeit nicht.</translation>
 <translation id="6900701049656042631">Dieses Album enthält keine Fotos. Du kannst Fotos unter <ph name="LINK" /> hinzufügen.</translation>
@@ -733,6 +756,7 @@
 <translation id="7130438335435247835">Zugangspunkt (APN)</translation>
 <translation id="7131634559772719176">Voreinstellung bestätigen</translation>
 <translation id="7134436342991564651">{0,plural, =1{Nameserver}other{Nameserver}}</translation>
+<translation id="7135814714616751706">Tastenkombinationen suchen</translation>
 <translation id="7143207342074048698">Verbindung...</translation>
 <translation id="7144878232160441200">Wiederholen</translation>
 <translation id="714876143603641390">LAN-Konnektivität</translation>
@@ -763,6 +787,7 @@
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Drücke zum Anzeigen des Ergebnisses in der Google Suche die Suchtaste + Leertaste.</translation>
 <translation id="7343649194310845056">Netzwerkgeräte</translation>
+<translation id="7353413232959255829">Suchergebnis <ph name="LIST_POSITION" /> von <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Drücke die Eingabetaste, um die Tastenkombination aufzurufen.</translation>
 <translation id="7359657277149375382">Dateityp</translation>
 <translation id="73631062356239394">Diagnosedaten teilen</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -778,6 +803,7 @@
 <translation id="7490813197707563893">MAC-Adresse</translation>
 <translation id="7491478667760509108">Status „Unverankert“ beenden</translation>
 <translation id="7497215489070763236">CA-Serverzertifikat</translation>
+<translation id="7501957181231305652">oder</translation>
 <translation id="7502658306369382406">IPv6-Adresse</translation>
 <translation id="7515998400212163428">Android</translation>
 <translation id="7528507600602050979">Hilfeinhalte nicht verfügbar</translation>
@@ -793,14 +819,18 @@
 <translation id="7618774594543487847">Neutral</translation>
 <translation id="7620771111601174153">Weitere Informationen in der Hilfe</translation>
 <translation id="763165478673169849">Zuletzt zurückgesetzt</translation>
+<translation id="7633068090678117093">Hintergrundbild</translation>
 <translation id="7648838807254605802">Hohe HTTPS-Latenz</translation>
+<translation id="765159867434478292">Unterteilt</translation>
 <translation id="7656388927906093505">Das Gerät ist eine Maus.</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7665800271478495366">Avatar ändern</translation>
+<translation id="7683228889864052081">Tastaturfarbton</translation>
 <translation id="7690294790491645610">Neues Passwort bestätigen</translation>
 <translation id="7701040980221191251">Keine</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
+<translation id="7718231387947923843">Tastaturbeleuchtung</translation>
 <translation id="773153675489693198">Ladezyklen</translation>
 <translation id="7747039790905080783">Vorinstallierter Schlüssel</translation>
 <translation id="7762130827864645708">Du hast dein Passwort geändert. Bitte verwende ab jetzt das neue Passwort.</translation>
@@ -844,6 +874,7 @@
 <translation id="8075838845814659848">Akkustand</translation>
 <translation id="8076492880354921740">Tabs</translation>
 <translation id="8082366717211101304">Auflösen des DNS von Android-Apps aus nicht möglich</translation>
+<translation id="8082644724189923105">Tastaturzone</translation>
 <translation id="808894953321890993">Passwort ändern</translation>
 <translation id="8094062939584182041">Zulassen, dass Google dir eine E-Mail zu diesem Problem sendet</translation>
 <translation id="8104083085214006426">Du verwendest ein offenes und unsicheres Netzwerk</translation>
@@ -892,6 +923,7 @@
 <translation id="8456761643544401578">Automatischer dunkler Modus</translation>
 <translation id="8461329675984532579">Name des Homepageanbieters</translation>
 <translation id="8475690821716466388">Das WLAN ist mit dem schwachen Protokoll WEP PSK gesichert</translation>
+<translation id="8476242415522716722">Leuchten auf Tastatur-Unterseite</translation>
 <translation id="8477551185774834963">Die DNS-Latenz liegt etwas über dem zulässigen Grenzwert</translation>
 <translation id="8483248364096924578">IP-Adresse</translation>
 <translation id="8491311378305535241">Eine Verbindung zu HTTP-Websites durch eine Firewall ist von Android-Apps aus nicht möglich</translation>
@@ -906,6 +938,7 @@
 <translation id="8576249514688522074">Noch nicht initialisiert</translation>
 <translation id="8593058461203131755">Medienwiedergabe pausieren</translation>
 <translation id="8620617069779373398">Roaming-Status</translation>
+<translation id="8626489604350149811">Weitere Aktionen für „<ph name="APN_NAME" />“</translation>
 <translation id="86356131183441916">Hellviolett</translation>
 <translation id="8651481478098336970">Stummschalten</translation>
 <translation id="8655295600908251630">Kanal</translation>
@@ -935,6 +968,7 @@
 <translation id="8845001906332463065">Hilfe aufrufen</translation>
 <translation id="8855781559874488009">Eine Verbindung zu HTTP-Websites durch eine Firewall ist nicht möglich</translation>
 <translation id="885701979325669005">Speicher</translation>
+<translation id="885704831271383379">Tastatur dunkler</translation>
 <translation id="8863170912498892583">Dunkles Design aktivieren</translation>
 <translation id="8863888432376731307"><ph name="INTENT" /> für „<ph name="QUERY" />“ bekommen und mehr</translation>
 <translation id="8864415976656252616">Keine vorgeschlagenen Artikel. Du kannst dir häufig gelesene Hilfeartikel ansehen.</translation>
@@ -952,6 +986,7 @@
 <translation id="8930521118335213258">Peer</translation>
 <translation id="8930622219860340959">Drahtlos</translation>
 <translation id="8936793075252196307">IP-Adresse des Clients</translation>
+<translation id="8944651180182756621">Launcher-Farbe</translation>
 <translation id="894617464444543719">Das Gerät ist ein Smartphone.</translation>
 <translation id="8957423540740801332">Rechts</translation>
 <translation id="8968751544471797276">Ladestrom</translation>
@@ -985,8 +1020,10 @@
 <translation id="9149391708638971077">Speichertest ausführen</translation>
 <translation id="9161276708550942948">Leerzeichen</translation>
 <translation id="9173638680043580060">Nur noch wenige Sekunden</translation>
+<translation id="9174334653006917325">UI-Farbe</translation>
 <translation id="917720651393141712">Testen</translation>
 <translation id="9188992814426075118">Die Tastatur kann automatisch an den Hintergrund angepasst werden</translation>
+<translation id="9189000703457422362">Über automatisch erkannte APNs kann keine Verbindung zu diesem Netzwerk hergestellt werden. Wende dich für weitere Informationen an deinen Mobilfunkanbieter.</translation>
 <translation id="9193744392140377127">APN*</translation>
 <translation id="9204237731135241582">Gateway kann von Android-Apps aus nicht kontaktiert werden</translation>
 <translation id="9211490828691860325">Alle Desktops</translation>

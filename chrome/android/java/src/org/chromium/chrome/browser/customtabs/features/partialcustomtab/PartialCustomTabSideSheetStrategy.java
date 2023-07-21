@@ -17,7 +17,6 @@ import static org.chromium.chrome.browser.browserservices.intents.BrowserService
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Handler;
@@ -27,9 +26,9 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
-import android.view.accessibility.AccessibilityManager;
 
 import androidx.annotation.Px;
+import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.MathUtils;
@@ -40,6 +39,7 @@ import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntent
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.ui.base.LocalizationUtils;
 
 /**
@@ -48,6 +48,7 @@ import org.chromium.ui.base.LocalizationUtils;
  */
 public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrategy {
     private static final int WINDOW_WIDTH_EXPANDED_CUTOFF_DP = 840;
+    private static final int SIDE_SHEET_UI_DELAY = 20;
     private static final float MINIMAL_WIDTH_RATIO_EXPANDED = 0.33f;
     private static final float MINIMAL_WIDTH_RATIO_MEDIUM = 0.5f;
     private static final NoAnimator NO_ANIMATOR = new NoAnimator();
@@ -100,6 +101,12 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
     @PartialCustomTabType
     public int getStrategyType() {
         return PartialCustomTabType.SIDE_SHEET;
+    }
+
+    @Override
+    @StringRes
+    public int getTypeStringId() {
+        return R.string.accessibility_partial_custom_tab_side_sheet;
     }
 
     @Override
@@ -156,9 +163,6 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
         if (mIsMaximized) {
             if (shouldDrawDividerLine()) resetCoordinatorLayoutInsets();
             setTopMargins(0, 0);
-        } else {
-            if (shouldDrawDividerLine()) drawDividerLine();
-            updateShadowOffset();
         }
 
         AnimatorUpdateListener updateListener;
@@ -177,7 +181,12 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
         } else {
             start = windowLayout.width;
             end = mIsMaximized ? displayWidth : clampedInitialWidth;
-            updateListener = (anim) -> setWindowWidth((int) anim.getAnimatedValue());
+            View content = (ViewGroup) mActivity.findViewById(R.id.compositor_view_holder);
+            updateListener = (anim) -> {
+                // Switch the invisibility type to GONE to prevent sluggish resizing artifacts.
+                if (content.getVisibility() != View.GONE) content.setVisibility(View.GONE);
+                setWindowWidth((int) anim.getAnimatedValue());
+            };
         }
         // Keep the WebContents invisible during the animation to hide the jerky visual artifacts
         // of the contents due to resizing.
@@ -191,13 +200,15 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
         if (visible) {
             // Set a slight delay in restoring the view to hide the visual glitch caused by
             // the resized web contents.
-            new Handler().postDelayed(() -> content.setVisibility(View.VISIBLE), 20);
+            new Handler().postDelayed(
+                    () -> content.setVisibility(View.VISIBLE), SIDE_SHEET_UI_DELAY);
         } else {
             content.setVisibility(View.INVISIBLE);
         }
     }
 
     private void onMaximizeEnd() {
+        setContentVisible(false);
         if (isMaximized()) {
             if (mSheetOnRight) {
                 configureLayoutBeyondScreen(false);
@@ -213,14 +224,17 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
                     maybeResetTalkbackFocus();
                 }
                 initializeSize();
+                if (shouldDrawDividerLine()) drawDividerLine();
+                // We have a delay before showing the resized web contents so it has to be done
+                // for the shadow as well.
+                new Handler().postDelayed(this::updateShadowOffset, SIDE_SHEET_UI_DELAY);
                 maybeInvokeResizeCallback();
             });
         }
     }
 
     private void maybeResetTalkbackFocus() {
-        var am = (AccessibilityManager) mActivity.getSystemService(Context.ACCESSIBILITY_SERVICE);
-        if (am != null && am.isTouchExplorationEnabled()) {
+        if (ChromeAccessibilityUtil.get().isTouchExplorationEnabled()) {
             // After resizing the view, notify the window state change to let the talkback
             // focus navigation work as before.
             mToolbarView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED);
@@ -241,7 +255,7 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
 
     @Override
     protected int getHandleHeight() {
-        return mRoundedCornersPosition == ACTIVITY_SIDE_SHEET_ROUNDED_CORNERS_NONE
+        return isFullscreen() || mRoundedCornersPosition == ACTIVITY_SIDE_SHEET_ROUNDED_CORNERS_NONE
                 ? 0
                 : mToolbarCornerRadius;
     }

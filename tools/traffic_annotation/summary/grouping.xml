@@ -162,7 +162,6 @@ after discussions on the right group.
       <annotation id="password_requirements_spec_fetch"/>
       <annotation id="payment_manifest_downloader"/>
       <annotation id="proxy_config_settings"/>
-      <annotation id="video_tutorial_fetcher"/>
       <annotation id="qr_code_save"/>
       <annotation id="desktop_screenshot_save"/>
       <annotation id="safe_browsing_cache_collector"/>
@@ -207,7 +206,6 @@ after discussions on the right group.
       <annotation id="reporting"/>
       <annotation id="socket_bio_adapter"/>
       <annotation id="spdy_session_control"/>
-      <annotation id="spdy_push_stream"/>
       <annotation id="websocket_basic_stream"/>
       <annotation id="websocket_stream"/>
       <annotation id="notification_client"/>
@@ -289,6 +287,9 @@ after discussions on the right group.
       <annotation id="back_navigation_cache_query"/>
       <annotation id="cws_info_service"/>
       <annotation id="promise_app_service"/>
+      <annotation id="unified_state_determination_kill_switch"/>
+      <annotation id="crash_file_uploader"/>
+      <annotation id="glanceables_classroom_integration"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">
@@ -381,6 +382,7 @@ after discussions on the right group.
       <annotation id="gaia_auth_log_out"/>
       <annotation id="gaia_auth_merge_sessions"/>
       <annotation id="gaia_auth_revoke_token"/>
+      <annotation id="gaia_auth_rotate_bound_cookies"/>
       <annotation id="gaia_auth_multilogin"/>
       <annotation id="gaia_cookie_manager_external_cc_result"/>
       <annotation id="gaia_create_reauth_proof_token_for_parent"/>

@@ -649,6 +649,26 @@ TEST_F(ArcUtilTest, SetAndGetArcVmDataMigrationStatus) {
   }
 }
 
+TEST_F(ArcUtilTest, SetAndGetArcVmDataMigrationStrategy) {
+  profile_prefs()->SetInteger(prefs::kArcVmDataMigrationStrategy, -1);
+  EXPECT_EQ(ArcVmDataMigrationStrategy::kDoNotPrompt,
+            GetArcVmDataMigrationStrategy(profile_prefs()));
+
+  profile_prefs()->SetInteger(prefs::kArcVmDataMigrationStrategy, 0);
+  EXPECT_EQ(ArcVmDataMigrationStrategy::kDoNotPrompt,
+            GetArcVmDataMigrationStrategy(profile_prefs()));
+
+  profile_prefs()->SetInteger(prefs::kArcVmDataMigrationStrategy, 1);
+  EXPECT_EQ(ArcVmDataMigrationStrategy::kPrompt,
+            GetArcVmDataMigrationStrategy(profile_prefs()));
+
+  profile_prefs()->SetInteger(
+      prefs::kArcVmDataMigrationStrategy,
+      static_cast<int>(ArcVmDataMigrationStrategy::kMaxValue) + 1);
+  EXPECT_EQ(ArcVmDataMigrationStrategy::kPrompt,
+            GetArcVmDataMigrationStrategy(profile_prefs()));
+}
+
 // Tests that ShouldUseVirtioBlkData() returns true when virtio-blk /data is
 // enabled via the kEnableVirtioBlkForData feature.
 TEST_F(ArcUtilTest, ShouldUseVirtioBlkData_VirtioBlkForDataFeatureEnabled) {
@@ -772,18 +792,32 @@ TEST_F(ArcUtilTest, GetDesiredDiskImageSizeForArcVmDataMigrationInBytes) {
 }
 
 TEST_F(ArcUtilTest, GetRequiredFreeDiskSpaceForArcVmDataMigrationInBytes) {
-  EXPECT_EQ(GetRequiredFreeDiskSpaceForArcVmDataMigrationInBytes(0, 0),
+  EXPECT_EQ(GetRequiredFreeDiskSpaceForArcVmDataMigrationInBytes(0, 0, 0),
             1ULL << 30 /* kMinimumRequiredFreeDiskSpaceInBytes = 1 GB */);
 
   EXPECT_EQ(GetRequiredFreeDiskSpaceForArcVmDataMigrationInBytes(
-                4ULL << 30 /* android_data_size_in_bytes = 4 GB */,
+                4ULL << 30 /* android_data_size_src_in_bytes = 4 GB */,
+                4ULL << 30 /* android_data_size_dest_in_bytes = 4 GB */,
                 32ULL << 30 /* free_disk_space_in_bytes = 32 GB */),
             3ULL * (512ULL << 20) /* 1.5 GB */);
 
   EXPECT_EQ(GetRequiredFreeDiskSpaceForArcVmDataMigrationInBytes(
-                32ULL << 30 /* android_data_size_in_bytes = 32 GB */,
+                32ULL << 30 /* android_data_size_src_in_bytes = 32 GB */,
+                32ULL << 30 /* android_data_size_dest_in_bytes = 32 GB */,
                 4ULL << 30 /* free_disk_space_in_bytes = 4 GB */),
             4ULL << 30 /* 4 GB */);
+
+  EXPECT_EQ(GetRequiredFreeDiskSpaceForArcVmDataMigrationInBytes(
+                33ULL << 30 /* android_data_size_src_in_bytes = 33 GB */,
+                32ULL << 30 /* android_data_size_dest_in_bytes = 32 GB */,
+                4ULL << 30 /* free_disk_space_in_bytes = 4 GB */),
+            4ULL << 30 /* 4 GB */);
+
+  EXPECT_EQ(GetRequiredFreeDiskSpaceForArcVmDataMigrationInBytes(
+                16ULL << 30 /* android_data_size_src_in_bytes = 16 GB */,
+                32ULL << 30 /* android_data_size_dest_in_bytes = 32 GB */,
+                4ULL << 30 /* free_disk_space_in_bytes = 4 GB */),
+            20ULL << 30 /* 20 GB */);
 }
 
 }  // namespace

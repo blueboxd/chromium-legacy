@@ -8,7 +8,7 @@ import {assert} from '//resources/js/assert_ts.js';
 import {loadTimeData} from '//resources/js/load_time_data.js';
 import {Url} from '//resources/mojo/url/mojom/url.mojom-webui.js';
 
-import {ImageQuery, MethodType, PromoAction, PromoType} from './companion.mojom-webui.js';
+import {ImageQuery, LinkOpenMetadata, MethodType, PromoAction, PromoType} from './companion.mojom-webui.js';
 import {CompanionProxy, CompanionProxyImpl} from './companion_proxy.js';
 
 /**
@@ -43,10 +43,24 @@ enum ParamType {
   UI_SURFACE = 'uiSurface',
 
   // Arguments for MethodType.kRecordUiSurfaceShown.
-  CHILD_ELEMENT_COUNT = 'childElementCount',
+  UI_SURFACE_POSITION = 'uiSurfacePosition',
+  CHILD_ELEMENT_AVAILABLE_COUNT = 'childElementAvailableCount',
+  CHILD_ELEMENT_SHOWN_COUNT = 'childElementShownCount',
+
+  // Arguments for MethodType.kRecordUiSurfaceClicked.
+  CLICK_POSITION = 'clickPosition',
 
   // Arguments for MethodType.kOnCqJamptagClicked.
   CQ_JUMPTAG_TEXT = 'cqJumptagText',
+
+  // Arguments for MethodType.kOpenUrlInBrowser
+  URL_TO_OPEN = 'urlToOpen',
+  USE_NEW_TAB = 'useNewTab',
+
+  // Arguments for MethodType.kNotifyLinkOpen for browser -> iframe
+  // communication.
+  LINK_OPEN_OPENED_URL = 'openedUrl',
+  LINK_OPEN_METADATA = 'openMetadata',
 
   // Arguments for browser -> iframe communication.
   COMPANION_UPDATE_PARAMS = 'companionUpdateParams',
@@ -156,6 +170,23 @@ function initialize() {
         }
       });
 
+  companionProxy.callbackRouter.notifyLinkOpen.addListener(
+      (openedUrl: Url, metadata: LinkOpenMetadata) => {
+        const companionOrigin =
+            new URL(loadTimeData.getString('companion_origin')).origin;
+        const message = {
+          [ParamType.METHOD_TYPE]: MethodType.kNotifyLinkOpen,
+          [ParamType.LINK_OPEN_OPENED_URL]: openedUrl.url,
+          [ParamType.LINK_OPEN_METADATA]: metadata,
+        };
+
+        const frame = document.body.querySelector('iframe');
+        assert(frame);
+        if (frame.contentWindow) {
+          frame.contentWindow.postMessage(message, companionOrigin);
+        }
+      });
+
   companionProxy.handler.showUI();
 }
 
@@ -189,10 +220,18 @@ function onCompanionMessageEvent(event: MessageEvent) {
     openInNewTabUrl.url = data[ParamType.URL_FOR_OPEN_IN_NEW_TAB];
     companionProxy.handler.onOpenInNewTabButtonURLChanged(openInNewTabUrl);
   } else if (methodType === MethodType.kRecordUiSurfaceShown) {
+    const uiSurfacePosition = data[ParamType.UI_SURFACE_POSITION] || -1;
+    const childElementAvailableCount =
+        data[ParamType.CHILD_ELEMENT_AVAILABLE_COUNT] || -1;
+    const childElementShownCount =
+        data[ParamType.CHILD_ELEMENT_SHOWN_COUNT] || -1;
     companionProxy.handler.recordUiSurfaceShown(
-        data[ParamType.UI_SURFACE], data[ParamType.CHILD_ELEMENT_COUNT]);
+        data[ParamType.UI_SURFACE], uiSurfacePosition,
+        childElementAvailableCount, childElementShownCount);
   } else if (methodType === MethodType.kRecordUiSurfaceClicked) {
-    companionProxy.handler.recordUiSurfaceClicked(data[ParamType.UI_SURFACE]);
+    const clickPosition = data[ParamType.CLICK_POSITION] || -1;
+    companionProxy.handler.recordUiSurfaceClicked(
+        data[ParamType.UI_SURFACE], clickPosition);
   } else if (methodType === MethodType.kOnCqCandidatesAvailable) {
     companionProxy.handler.onCqCandidatesAvailable(
         data[ParamType.CQ_TEXT_DIRECTIVES]);
@@ -200,6 +239,11 @@ function onCompanionMessageEvent(event: MessageEvent) {
     companionProxy.handler.onPhFeedback(data[ParamType.PH_FEEDBACK]);
   } else if (methodType === MethodType.kOnCqJumptagClicked) {
     companionProxy.handler.onCqJumptagClicked(data[ParamType.CQ_JUMPTAG_TEXT]);
+  } else if (methodType === MethodType.kOpenUrlInBrowser) {
+    const urlToOpen = new Url();
+    urlToOpen.url = data[ParamType.URL_TO_OPEN] || '';
+    companionProxy.handler.openUrlInBrowser(
+        urlToOpen, data[ParamType.USE_NEW_TAB]);
   }
 }
 

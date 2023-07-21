@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "base/uuid.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/common/autofill_features.h"
 
 namespace autofill {
 
@@ -194,6 +195,15 @@ sync_pb::ContactInfoSpecifics ContactInfoSpecificsFromAutofillProfile(
   s.Set(specifics.mutable_address_subpremise_name(), ADDRESS_HOME_SUBPREMISE);
   s.Set(specifics.mutable_address_apt_num(), ADDRESS_HOME_APT_NUM);
   s.Set(specifics.mutable_address_floor(), ADDRESS_HOME_FLOOR);
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForLandmark)) {
+    s.Set(specifics.mutable_address_landmark(), ADDRESS_HOME_LANDMARK);
+  }
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForBetweenStreets)) {
+    s.Set(specifics.mutable_address_between_streets(),
+          ADDRESS_HOME_BETWEEN_STREETS);
+  }
 
   // Set email, phone and company values and statuses.
   s.Set(specifics.mutable_email_address(), EMAIL_ADDRESS);
@@ -292,6 +302,14 @@ std::unique_ptr<AutofillProfile> CreateAutofillProfileFromContactInfoSpecifics(
   s.Set(specifics.address_subpremise_name(), ADDRESS_HOME_SUBPREMISE);
   s.Set(specifics.address_apt_num(), ADDRESS_HOME_APT_NUM);
   s.Set(specifics.address_floor(), ADDRESS_HOME_FLOOR);
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForLandmark)) {
+    s.Set(specifics.address_landmark(), ADDRESS_HOME_LANDMARK);
+  }
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForBetweenStreets)) {
+    s.Set(specifics.address_between_streets(), ADDRESS_HOME_BETWEEN_STREETS);
+  }
 
   // Set email, phone and company values and statuses.
   s.Set(specifics.email_address(), EMAIL_ADDRESS);
@@ -427,6 +445,14 @@ sync_pb::ContactInfoSpecifics TrimContactInfoSpecificsDataForCaching(
 
   if (d.Delete(trimmed_specifics.mutable_address_floor())) {
     trimmed_specifics.clear_address_floor();
+  }
+
+  if (d.Delete(trimmed_specifics.mutable_address_landmark())) {
+    trimmed_specifics.clear_address_landmark();
+  }
+
+  if (d.Delete(trimmed_specifics.mutable_address_between_streets())) {
+    trimmed_specifics.clear_address_between_streets();
   }
 
   // Delete email, phone and company values and statuses.

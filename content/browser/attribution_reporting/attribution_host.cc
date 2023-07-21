@@ -34,6 +34,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "services/network/public/cpp/attribution_reporting_runtime_features.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -262,7 +263,8 @@ void AttributionHost::NotifyNavigationRegistrationData(
       navigation_handle->GetResponseHeaders(), std::move(*reporting_origin),
       it->second.source_origin, it->second.input_event, impression->nav_type,
       it->second.is_within_fenced_frame, it->second.initiator_root_frame_id,
-      navigation_handle->GetNavigationId(), is_final_response);
+      navigation_handle->GetNavigationId(), impression->runtime_features,
+      is_final_response);
 }
 
 absl::optional<SuitableOrigin>
@@ -362,22 +364,22 @@ void AttributionHost::BindReceiver(
   attribution_host->receivers_.Bind(rfh, std::move(receiver));
 }
 
-void AttributionHost::NotifyFencedFrameReportingBeaconStarted(
+bool AttributionHost::NotifyFencedFrameReportingBeaconStarted(
     BeaconId beacon_id,
     absl::optional<int64_t> navigation_id,
     RenderFrameHostImpl* initiator_frame_host) {
   if (!base::FeatureList::IsEnabled(
           features::kAttributionFencedFrameReportingBeacon)) {
-    return;
+    return false;
   }
 
   if (!initiator_frame_host) {
-    return;
+    return false;
   }
 
   if (!initiator_frame_host->IsFeatureEnabled(
           blink::mojom::PermissionsPolicyFeature::kAttributionReporting)) {
-    return;
+    return false;
   }
 
   RenderFrameHostImpl* initiator_root_frame =
@@ -388,7 +390,7 @@ void AttributionHost::NotifyFencedFrameReportingBeaconStarted(
       SuitableOrigin::Create(initiator_root_frame->GetLastCommittedOrigin());
 
   if (!initiator_root_frame_origin) {
-    return;
+    return false;
   }
 
   AttributionInputEvent input_event;
@@ -407,6 +409,7 @@ void AttributionHost::NotifyFencedFrameReportingBeaconStarted(
           beacon_id, navigation_id, std::move(*initiator_root_frame_origin),
           initiator_frame_host->IsNestedWithinFencedFrame(), input_event,
           initiator_root_frame->GetGlobalId());
+  return true;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(AttributionHost);

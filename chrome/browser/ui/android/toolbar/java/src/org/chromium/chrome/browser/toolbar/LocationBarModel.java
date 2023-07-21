@@ -159,7 +159,6 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     @Nullable
     private LruCache<SpannableDisplayTextCacheKey, SpannableStringBuilder>
             mSpannableDisplayTextCache;
-    private boolean mOptimizationsEnabled;
 
     private Tab mTab;
     private int mPrimaryColor;
@@ -189,7 +188,6 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
             new MutableFlagWithSafeDefault(
                     ChromeFeatureList.REDUCE_TOOLBAR_UPDATES_FOR_SAME_DOC_NAVIGATIONS, false);
     private boolean mIsInSameDocNav;
-    private boolean mIsSameDocNavFinished;
     private boolean mAlreadyUpdatedUrlBarForSameDocNav;
     private boolean mAlreadyChangedSecurityStateForSameDocNav;
 
@@ -214,25 +212,21 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
         mOfflineStatus = offlineStatus;
         mPrimaryColor = ChromeColors.getDefaultThemeColor(context, false);
         mSearchEngineLogoUtils = searchEngineLogoUtils;
+        mUrlForDisplay = "";
+        mFormattedFullUrl = "";
     }
 
     /**
      * Handle any initialization that must occur after native has been initialized.
      */
     public void initializeWithNative() {
-        mOptimizationsEnabled =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SCROLL_OPTIMIZATIONS);
         mOmniboxUpdatedConnectionSecurityIndicatorsEnabled = ChromeFeatureList.isEnabled(
                 ChromeFeatureList.OMNIBOX_UPDATED_CONNECTION_SECURITY_INDICATORS);
         mLastUsedNonOTRProfile = Profile.getLastUsedRegularProfile();
         mNativeLocationBarModelAndroid = LocationBarModelJni.get().init(LocationBarModel.this);
-
-        if (mOptimizationsEnabled) {
-            mSpannableDisplayTextCache = new LruCache<>(LRU_CACHE_SIZE);
-            mChromeAutocompleteSchemeClassifier =
-                    new ChromeAutocompleteSchemeClassifier(getProfile());
-            recalculateFormattedUrls();
-        }
+        mSpannableDisplayTextCache = new LruCache<>(LRU_CACHE_SIZE);
+        mChromeAutocompleteSchemeClassifier = new ChromeAutocompleteSchemeClassifier(getProfile());
+        recalculateFormattedUrls();
     }
 
     /**
@@ -314,12 +308,7 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
             return UrlConstants.ntpGurl();
         }
 
-        if (mOptimizationsEnabled) {
-            return mVisibleGurl;
-        }
-
-        Tab tab = getTab();
-        return tab != null && tab.isInitialized() ? tab.getUrl() : GURL.emptyGURL();
+        return mVisibleGurl;
     }
 
     /**
@@ -328,7 +317,6 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
      */
     @VisibleForTesting
     boolean updateVisibleGurl() {
-        if (!mOptimizationsEnabled) return true;
         try (TraceEvent te = TraceEvent.scoped("LocationBarModel.updateVisibleGurl")) {
             if (isInOverviewAndShowingOmnibox()) {
                 mFormattedFullUrl = "";
@@ -363,9 +351,6 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
 
         if (isSameDocOptimizationEnabled()) {
             mAlreadyUpdatedUrlBarForSameDocNav = mIsInSameDocNav;
-            if (mIsSameDocNavFinished) {
-                resetSameDocNavFlags();
-            }
         }
     }
 
@@ -442,8 +427,8 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
 
     private UrlBarData buildUrlBarData(
             String url, boolean isOfflinePage, String displayText, String editingText) {
-        SpannableStringBuilder spannableDisplayText = new SpannableStringBuilder(displayText);
-        if (mNativeLocationBarModelAndroid != 0 && spannableDisplayText.length() > 0
+        SpannableStringBuilder spannableDisplayText = null;
+        if (mNativeLocationBarModelAndroid != 0 && displayText != null && displayText.length() > 0
                 && shouldEmphasizeUrl()) {
             final @BrandedColorScheme int brandedColorScheme =
                     OmniboxResourceProvider.getBrandedColorScheme(
@@ -463,30 +448,19 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
             SpannableDisplayTextCacheKey cacheKey =
                     new SpannableDisplayTextCacheKey(url, displayText, securityLevel,
                             nonEmphasizedColor, emphasizedColor, dangerColor, secureColor);
-            SpannableStringBuilder cachedSpannableDisplayText = null;
-            if (mOptimizationsEnabled) {
-                autocompleteSchemeClassifier = mChromeAutocompleteSchemeClassifier;
-                cachedSpannableDisplayText = mSpannableDisplayTextCache.get(cacheKey);
-            } else {
-                autocompleteSchemeClassifier = new ChromeAutocompleteSchemeClassifier(getProfile());
-            }
+            SpannableStringBuilder cachedSpannableDisplayText =
+                    mSpannableDisplayTextCache.get(cacheKey);
+            autocompleteSchemeClassifier = mChromeAutocompleteSchemeClassifier;
 
-            try {
-                if (cachedSpannableDisplayText != null) {
-                    return UrlBarData.forUrlAndText(url, cachedSpannableDisplayText, editingText);
-                } else {
-                    OmniboxUrlEmphasizer.emphasizeUrl(spannableDisplayText,
-                            autocompleteSchemeClassifier, getSecurityLevel(),
-                            shouldEmphasizeHttpsScheme(), nonEmphasizedColor, emphasizedColor,
-                            dangerColor, secureColor);
-                    if (mOptimizationsEnabled) {
-                        mSpannableDisplayTextCache.put(cacheKey, spannableDisplayText);
-                    }
-                }
-            } finally {
-                if (!mOptimizationsEnabled) {
-                    autocompleteSchemeClassifier.destroy();
-                }
+            if (cachedSpannableDisplayText != null) {
+                return UrlBarData.forUrlAndText(url, cachedSpannableDisplayText, editingText);
+            } else {
+                spannableDisplayText = new SpannableStringBuilder(displayText);
+                OmniboxUrlEmphasizer.emphasizeUrl(spannableDisplayText,
+                        autocompleteSchemeClassifier, getSecurityLevel(),
+                        shouldEmphasizeHttpsScheme(), nonEmphasizedColor, emphasizedColor,
+                        dangerColor, secureColor);
+                mSpannableDisplayTextCache.put(cacheKey, spannableDisplayText);
             }
         }
         return UrlBarData.forUrlAndText(url, spannableDisplayText, editingText);
@@ -800,9 +774,6 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
 
         if (isSameDocOptimizationEnabled()) {
             mAlreadyChangedSecurityStateForSameDocNav = mIsInSameDocNav;
-            if (mIsSameDocNavFinished) {
-                resetSameDocNavFlags();
-            }
         }
     }
 
@@ -812,19 +783,11 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     }
 
     private String getFormattedFullUrl() {
-        if (mOptimizationsEnabled) {
-            return mFormattedFullUrl;
-        }
-
-        return calculateFormattedFullUrl();
+        return mFormattedFullUrl;
     }
 
     private String getUrlForDisplay() {
-        if (mOptimizationsEnabled) {
-            return mUrlForDisplay;
-        }
-
-        return calculateUrlForDisplay();
+        return mUrlForDisplay;
     }
 
     /** @return The formatted URL suitable for editing. */
@@ -880,15 +843,12 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     public void notifyDidStartNavigation(boolean isSameDocument) {
         if (isSameDocOptimizationEnabled()) {
             resetSameDocNavFlags();
-            mIsSameDocNavFinished = false;
             mIsInSameDocNav = isSameDocument;
         }
     }
 
-    public void notifyDidFinishNavigation(boolean isSameDocument) {
-        if (isSameDocOptimizationEnabled()) {
-            mIsSameDocNavFinished = true;
-        }
+    public void notifyDidFinishNavigationEnd() {
+        resetSameDocNavFlags();
     }
 
     public void notifyOnCrash() {

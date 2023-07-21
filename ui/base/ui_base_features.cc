@@ -391,7 +391,8 @@ bool IsSwipeToMoveCursorEnabled() {
       base::android::BuildInfo::GetInstance()->sdk_int() >=
       base::android::SDK_VERSION_R;
 #else
-      base::FeatureList::IsEnabled(kSwipeToMoveCursor);
+      base::FeatureList::IsEnabled(kSwipeToMoveCursor) ||
+      IsTouchTextEditingRedesignEnabled();
 #endif
   return enabled;
 }
@@ -424,10 +425,6 @@ BASE_FEATURE(kUseToastManager,
 bool UseToastManager() {
   return base::FeatureList::IsEnabled(kUseToastManager);
 }
-
-BASE_FEATURE(kKeepAndroidTintedResources,
-             "KeepAndroidTintedResources",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 BASE_FEATURE(kEnableVariableRefreshRate,
@@ -506,8 +503,19 @@ ChromeRefresh2023Level GetChromeRefresh2023Level() {
 #if !BUILDFLAG(IS_LINUX)
 BASE_FEATURE(kWebUiSystemFont,
              "WebUiSystemFont",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
+
+#if BUILDFLAG(IS_MAC)
+// When enabled, images will be written to the system clipboard as both a TIFF
+// and a PNG (as opposed to just a TIFF). This requires encoding the sanitized
+// bitmap to a PNG on the UI thread on copy, which may cause jank. This matches
+// the behavior of other platforms.
+// TODO(https://crbug.com/1443646): Remove this flag eventually.
+BASE_FEATURE(kMacClipboardWriteImageWithPng,
+             "MacClipboardWriteImageWithPng",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_APPLE)
 // Font Smoothing was enabled by default prior to introducing this feature.

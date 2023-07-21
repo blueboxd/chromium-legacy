@@ -4969,39 +4969,6 @@
 
     <issue
         id="WrongConstant"
-        message="Must be one of: UserAction.CHANGE_LANGUAGE, UserAction.WATCH_NEXT_VIDEO, UserAction.TRY_NOW, UserAction.SHARE, UserAction.CLOSE, UserAction.BACK_PRESS_WHEN_SHOWING_VIDEO_PLAYER, UserAction.OPEN_SHARED_VIDEO, UserAction.INVALID_SHARE_URL, UserAction.IPH_NTP_SHOWN, UserAction.IPH_NTP_CLICKED, UserAction.IPH_NTP_DISMISSED, UserAction.PLAYED_FROM_RECAP"
-        errorLine1="                UserAction.NUM_ENTRIES);"
-        errorLine2="                           ~~~~~~~~~~~">
-        <location
-            file="../../chrome/browser/video_tutorials/android/java/src/org/chromium/chrome/browser/video_tutorials/metrics/VideoTutorialMetrics.java"
-            line="74"
-            column="28"/>
-    </issue>
-
-    <issue
-        id="WrongConstant"
-        message="Must be one of: WatchState.STARTED, WatchState.COMPLETED, WatchState.PAUSED, WatchState.RESUMED, WatchState.WATCHED"
-        errorLine1="                WatchState.NUM_ENTRIES);"
-        errorLine2="                           ~~~~~~~~~~~">
-        <location
-            file="../../chrome/browser/video_tutorials/android/java/src/org/chromium/chrome/browser/video_tutorials/metrics/VideoTutorialMetrics.java"
-            line="86"
-            column="28"/>
-    </issue>
-
-    <issue
-        id="WrongConstant"
-        message="Must be one of: LanguagePickerAction.BACK_PRESS, LanguagePickerAction.CLOSE, LanguagePickerAction.WATCH"
-        errorLine1="                &quot;VideoTutorials.LanguagePicker.Action&quot;, action, LanguagePickerAction.NUM_ENTRIES);"
-        errorLine2="                                                                                     ~~~~~~~~~~~">
-        <location
-            file="../../chrome/browser/video_tutorials/android/java/src/org/chromium/chrome/browser/video_tutorials/metrics/VideoTutorialMetrics.java"
-            line="92"
-            column="86"/>
-    </issue>
-
-    <issue
-        id="WrongConstant"
         message="Must be one of: VoiceInteractionSource.OMNIBOX, VoiceInteractionSource.NTP, VoiceInteractionSource.SEARCH_WIDGET, VoiceInteractionSource.TASKS_SURFACE, VoiceInteractionSource.TOOLBAR"
         errorLine1="                &quot;VoiceInteraction.StartEventSource&quot;, source, VoiceInteractionSource.NUM_ENTRIES);"
         errorLine2="                                                                                    ~~~~~~~~~~~">
@@ -7121,17 +7088,6 @@
             file="../../chrome/android/java/src/org/chromium/chrome/browser/password_manager/settings/PasswordSettings.java"
             line="658"
             column="16"/>
-    </issue>
-
-    <issue
-        id="AssertionSideEffect"
-        message="Assertion condition has a side effect: sValuesReturned.boolValues.put(preferenceName, flag)"
-        errorLine1="            assert ChromeFeatureList.sInstantStart.isEnabled();"
-        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/pseudotab/PseudoTab.java"
-            line="300"
-            column="20"/>
     </issue>
 
     <issue

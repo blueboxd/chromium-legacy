@@ -9,6 +9,7 @@
 #include "base/functional/bind.h"
 #include "base/json/json_writer.h"
 #include "base/notreached.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fido_assertion_info.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/random_session_id.h"
@@ -24,6 +25,13 @@
 #include "crypto/random.h"
 
 namespace ash::quick_start {
+
+namespace {
+
+constexpr base::TimeDelta kNotifySourceOfUpdateResponseTimeout =
+    base::Seconds(3);
+
+}  // namespace
 
 Connection::Factory::~Factory() = default;
 
@@ -83,7 +91,12 @@ Connection::State Connection::GetState() {
 
 void Connection::Close(
     TargetDeviceConnectionBroker::ConnectionClosedReason reason) {
-  CHECK(connection_state_ == State::kOpen);
+  if (response_timeout_timer_.IsRunning()) {
+    response_timeout_timer_.Stop();
+  }
+  if (connection_state_ != State::kOpen) {
+    return;
+  }
 
   connection_state_ = State::kClosing;
 
@@ -120,6 +133,9 @@ void Connection::NotifySourceOfUpdate(int32_t session_id,
   std::string shared_secret_str(secondary_shared_secret_.begin(),
                                 secondary_shared_secret_.end());
 
+  response_timeout_timer_.Start(FROM_HERE, kNotifySourceOfUpdateResponseTimeout,
+                                base::BindOnce(&Connection::OnResponseTimeout,
+                                               weak_ptr_factory_.GetWeakPtr()));
   SendMessage(
       requests::BuildNotifySourceOfUpdateMessage(session_id, shared_secret_str),
       base::BindOnce(&Connection::OnNotifySourceOfUpdateResponse,
@@ -146,13 +162,20 @@ void Connection::RequestAccountTransferAssertion(
                      requests::BuildGetInfoRequestMessage(),
                      std::move(request_assertion)));
 
+  auto bootstrap_configurations_response =
+      base::BindOnce(&Connection::OnBootstrapConfigurationsResponse,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(get_info));
+
   // Call into SetBootstrapOptions, starting the chain of callbacks.
-  SendMessage(requests::BuildBootstrapOptionsRequest(), std::move(get_info));
+  SendMessage(requests::BuildBootstrapOptionsRequest(),
+              std::move(bootstrap_configurations_response));
 }
 
 void Connection::OnNotifySourceOfUpdateResponse(
     NotifySourceOfUpdateCallback callback,
     absl::optional<std::vector<uint8_t>> response_bytes) {
+  response_timeout_timer_.Stop();
+
   if (!response_bytes.has_value()) {
     QS_LOG(ERROR)
         << "No response bytes received for notify source of update message";
@@ -224,6 +247,21 @@ void Connection::GenerateFidoAssertionInfo(
   std::move(callback).Run(assertion_info);
 }
 
+void Connection::OnBootstrapConfigurationsResponse(
+    BootstrapConfigurationsCallback callback,
+    absl::optional<std::vector<uint8_t>> response_bytes) {
+  if (!response_bytes.has_value()) {
+    return;
+  }
+
+  // TODO(b/280306851): Finish parsing response and save cryptauth_device_id.
+  DecodeData<mojom::BootstrapConfigurations>(
+      &mojom::QuickStartDecoder::DecodeBootstrapConfigurations,
+      base::DoNothing(), std::move(response_bytes));
+
+  std::move(callback).Run(absl::nullopt);
+}
+
 void Connection::SendMessage(std::unique_ptr<QuickStartMessage> message,
                              ConnectionResponseCallback callback) {
   SendPayload(*message->GenerateEncodedMessage());
@@ -237,6 +275,48 @@ void Connection::InitiateHandshake(const std::string& authentication_token,
       authentication_token, shared_secret_, nonce));
 
   // TODO(b/234655072): Read response from phone and run callback.
+}
+
+void Connection::WaitForUserVerification(
+    AwaitUserVerificationCallback callback) {
+  auto on_decoding_completed =
+      base::BindOnce(&Connection::OnUserVerificationRequested,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+
+  ConnectionResponseCallback on_message_received =
+      base::BindOnce(&Connection::DecodeData<mojom::UserVerificationRequested>,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     &mojom::QuickStartDecoder::DecodeUserVerificationRequested,
+                     std::move(on_decoding_completed));
+
+  nearby_connection_->Read(std::move(on_message_received));
+}
+
+void Connection::OnUserVerificationRequested(
+    AwaitUserVerificationCallback callback,
+    absl::optional<mojom::UserVerificationRequested>
+        user_verification_request) {
+  if (!user_verification_request.has_value()) {
+    QS_LOG(ERROR) << "No user verification request received from phone.";
+    std::move(callback).Run(absl::nullopt);
+    return;
+  }
+
+  if (!user_verification_request->is_awaiting_user_verification) {
+    QS_LOG(ERROR) << "User verification request received from phone, but "
+                     "is_awaiting_user_verification is false.";
+
+    std::move(callback).Run(absl::nullopt);
+    return;
+  }
+
+  ConnectionResponseCallback on_response_received =
+      base::BindOnce(&Connection::DecodeData<mojom::UserVerificationResponse>,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     &mojom::QuickStartDecoder::DecodeUserVerificationResult,
+                     std::move(callback));
+
+  nearby_connection_->Read(std::move(on_response_received));
 }
 
 template <typename T>
@@ -285,6 +365,11 @@ void Connection::OnConnectionClosed(
     TargetDeviceConnectionBroker::ConnectionClosedReason reason) {
   connection_state_ = Connection::State::kClosed;
   std::move(on_connection_closed_).Run(reason);
+}
+
+void Connection::OnResponseTimeout() {
+  QS_LOG(ERROR) << "Timed out waiting for a response from source device.";
+  Close(TargetDeviceConnectionBroker::ConnectionClosedReason::kResponseTimeout);
 }
 
 }  // namespace ash::quick_start

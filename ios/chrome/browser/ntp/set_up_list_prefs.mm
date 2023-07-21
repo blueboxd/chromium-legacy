@@ -7,6 +7,7 @@
 #import "components/prefs/pref_registry_simple.h"
 #import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/ntp/set_up_list_item_type.h"
+#import "ios/chrome/browser/ntp/set_up_list_metrics.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -19,6 +20,8 @@ const char kDefaultBrowserItemState[] =
     "set_up_list.default_browser_item.state";
 const char kAutofillItemState[] = "set_up_list.autofill_item.state";
 const char kFollowItemState[] = "set_up_list.follow_item.state";
+const char kDisabled[] = "set_up_list.disabled";
+const char kLastInteraction[] = "set_up_list.last_interaction";
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
   int unknown = static_cast<int>(SetUpListItemState::kUnknown);
@@ -26,6 +29,8 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kDefaultBrowserItemState, unknown);
   registry->RegisterIntegerPref(kAutofillItemState, unknown);
   registry->RegisterIntegerPref(kFollowItemState, unknown);
+  registry->RegisterBooleanPref(kDisabled, false);
+  registry->RegisterTimePref(kLastInteraction, base::Time());
 }
 
 const char* PrefNameForItem(SetUpListItemType type) {
@@ -38,6 +43,8 @@ const char* PrefNameForItem(SetUpListItemType type) {
       return kAutofillItemState;
     case SetUpListItemType::kFollow:
       return kFollowItemState;
+    case SetUpListItemType::kAllSet:
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -55,11 +62,33 @@ void SetItemState(PrefService* prefs,
 
 void MarkItemComplete(PrefService* prefs, SetUpListItemType type) {
   // If it is already completed and already removed from list, skip setting.
-  if (GetItemState(prefs, type) == SetUpListItemState::kCompleteNotInList) {
-    return;
+  switch (GetItemState(prefs, type)) {
+    case SetUpListItemState::kUnknown:
+    case SetUpListItemState::kNotComplete:
+      set_up_list_metrics::RecordItemCompleted(type);
+      SetItemState(prefs, type, SetUpListItemState::kCompleteInList);
+      break;
+    case SetUpListItemState::kCompleteInList:
+    case SetUpListItemState::kCompleteNotInList:
+      // Already complete, so there is nothing to do.
+      break;
   }
+}
 
-  SetItemState(prefs, type, SetUpListItemState::kCompleteInList);
+bool IsSetUpListDisabled(PrefService* prefs) {
+  return prefs->GetBoolean(kDisabled);
+}
+
+void DisableSetUpList(PrefService* prefs) {
+  prefs->SetBoolean(kDisabled, true);
+}
+
+void RecordInteraction(PrefService* prefs) {
+  prefs->SetTime(kLastInteraction, base::Time::Now());
+}
+
+base::Time GetLastInteraction(PrefService* prefs) {
+  return prefs->GetTime(kLastInteraction);
 }
 
 }  // namespace set_up_list_prefs

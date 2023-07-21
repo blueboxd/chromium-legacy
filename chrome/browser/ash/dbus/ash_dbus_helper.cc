@@ -27,7 +27,6 @@
 #include "chromeos/ash/components/dbus/attestation/attestation_client.h"
 #include "chromeos/ash/components/dbus/audio/cras_audio_client.h"
 #include "chromeos/ash/components/dbus/audio/floss_media_client.h"
-#include "chromeos/ash/components/dbus/authpolicy/authpolicy_client.h"
 #include "chromeos/ash/components/dbus/biod/biod_client.h"
 #include "chromeos/ash/components/dbus/cdm_factory_daemon/cdm_factory_daemon_client.h"
 #include "chromeos/ash/components/dbus/cec_service/cec_service_client.h"
@@ -66,6 +65,7 @@
 #include "chromeos/ash/components/dbus/shill/shill_clients.h"
 #include "chromeos/ash/components/dbus/smbprovider/smb_provider_client.h"
 #include "chromeos/ash/components/dbus/spaced/spaced_client.h"
+#include "chromeos/ash/components/dbus/swap_management/swap_management_client.h"
 #include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
 #include "chromeos/ash/components/dbus/system_proxy/system_proxy_client.h"
 #include "chromeos/ash/components/dbus/typecd/typecd_client.h"
@@ -143,7 +143,6 @@ void InitializeDBus() {
   InitializeDBusClient<ArcQuotaClient>(bus);
   InitializeDBusClient<ArcVmDataMigratorClient>(bus);
   InitializeDBusClient<AttestationClient>(bus);
-  InitializeDBusClient<AuthPolicyClient>(bus);
   InitializeDBusClient<BiodClient>(bus);  // For device::Fingerprint.
   InitializeDBusClient<CdmFactoryDaemonClient>(bus);
   InitializeDBusClient<CecServiceClient>(bus);
@@ -188,6 +187,7 @@ void InitializeDBus() {
   InitializeDBusClient<SessionManagerClient>(bus);
   InitializeDBusClient<SmbProviderClient>(bus);
   InitializeDBusClient<SpacedClient>(bus);
+  InitializeDBusClient<SwapManagementClient>(bus);
   InitializeDBusClient<SystemClockClient>(bus);
   InitializeDBusClient<SystemProxyClient>(bus);
   InitializeDBusClient<chromeos::TpmManagerClient>(bus);
@@ -277,6 +277,7 @@ void ShutdownDBus() {
   chromeos::TpmManagerClient::Shutdown();
   SystemProxyClient::Shutdown();
   SystemClockClient::Shutdown();
+  SwapManagementClient::Shutdown();
   SpacedClient::Shutdown();
   SmbProviderClient::Shutdown();
   SessionManagerClient::Shutdown();
@@ -326,7 +327,6 @@ void ShutdownDBus() {
   CecServiceClient::Shutdown();
   CdmFactoryDaemonClient::Shutdown();
   BiodClient::Shutdown();
-  AuthPolicyClient::Shutdown();
   AttestationClient::Shutdown();
   ArcVmDataMigratorClient::Shutdown();
   ArcQuotaClient::Shutdown();

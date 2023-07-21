@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/component_export.h"
+#include "base/functional/callback_helpers.h"
 #include "base/time/time.h"
 
 namespace network::shared_dictionary {
@@ -15,6 +16,15 @@ namespace network::shared_dictionary {
 // The default value (1 year) of expiration time in "use-as-dictionary"
 // HTTP header.
 constexpr base::TimeDelta kDefaultExpiration = base::Seconds(31536000);
+
+// The size limit of a shared dictionary.
+size_t GetDictionarySizeLimit();
+
+// Changes the size limit of a shared dictionary, and returns a
+// ScopedClosureRunner which will reset the size limit in the destructor.
+COMPONENT_EXPORT(NETWORK_SERVICE)
+base::ScopedClosureRunner SetDictionarySizeLimitForTesting(
+    size_t dictionary_size_limit);
 
 // The header name of "use-as-dictionary".
 COMPONENT_EXPORT(NETWORK_SERVICE)

@@ -192,6 +192,10 @@ function getCSS() {
       -webkit-mask-image: url(../foreground/images/volumes/camera.svg);
     }
 
+    :host([type="cant-pin"]) span {
+      -webkit-mask-image: url(../foreground/images/files/ui/cant_pin.svg);
+    }
+
     :host([type="computer"]) span {
       -webkit-mask-image: url(../foreground/images/volumes/computer.svg);
     }
@@ -218,6 +222,10 @@ function getCSS() {
 
     :host([type="drive_logo"]) span {
       -webkit-mask-image: url(../foreground/images/files/ui/drive_logo.svg);
+    }
+
+    :host([type="drive_bulk_pinning"]) span {
+      -webkit-mask-image: url(../foreground/images/files/ui/drive_bulk_pinning.svg);
     }
 
     :host([type="excel"]) span {

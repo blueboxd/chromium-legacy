@@ -4,7 +4,8 @@
 
 package org.chromium.net;
 
-import static org.junit.Assert.assertEquals;
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -107,8 +108,8 @@ public class ExperimentalOptionsTest {
         UrlRequest urlRequest = builder.build();
         urlRequest.start();
         callback.blockForDone();
-        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-        assertEquals("GET", callback.mResponseAsString);
+        assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
+        assertThat(callback.mResponseAsString).isEqualTo("GET");
         cronetEngine.stopNetLog();
         assertFileContainsString(logfile, "HostResolverRules");
         assertTrue(logfile.delete());
@@ -139,7 +140,6 @@ public class ExperimentalOptionsTest {
         cronetEngine.shutdown();
     }
 
-    @DisabledTest(message = "crbug.com/1021941")
     @Test
     @MediumTest
     @OnlyRunNativeCronet
@@ -158,10 +158,10 @@ public class ExperimentalOptionsTest {
         UrlRequest urlRequest = builder.build();
         urlRequest.start();
         callback.blockForDone();
-        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-        assertEquals("GET", callback.mResponseAsString);
+        assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
+        assertThat(callback.mResponseAsString).isEqualTo("GET");
 
-        assertFileContainsString(file, "CLIENT_RANDOM");
+        assertFileContainsString(file, "CLIENT_HANDSHAKE_TRAFFIC_SECRET");
         assertTrue(file.delete());
         assertFalse(file.exists());
         cronetEngine.shutdown();
@@ -247,7 +247,7 @@ public class ExperimentalOptionsTest {
         urlRequest.start();
         callback.blockForDone();
         assertNull(callback.mError);
-        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
 
         // Shut down the context, persisting contents to disk, and build a new one.
         context.shutdown();
@@ -261,7 +261,7 @@ public class ExperimentalOptionsTest {
         urlRequest.start();
         callback.blockForDone();
         assertNull(callback.mError);
-        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
         context.shutdown();
     }
 
@@ -298,8 +298,8 @@ public class ExperimentalOptionsTest {
         BidirectionalStream stream = builder.build();
         stream.start();
         callback.blockForDone();
-        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-        assertEquals("GET", callback.mResponseAsString);
+        assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
+        assertThat(callback.mResponseAsString).isEqualTo("GET");
         cronetEngine.shutdown();
     }
 
@@ -330,8 +330,8 @@ public class ExperimentalOptionsTest {
         assertTrue(callback.mOnErrorCalled);
         assertContains("Exception in BidirectionalStream: net::ERR_HTTP2_PING_FAILED",
                 callback.mError.getMessage());
-        assertEquals(NetError.ERR_HTTP2_PING_FAILED,
-                ((NetworkException) callback.mError).getCronetInternalErrorCode());
+        assertThat(((NetworkException) callback.mError).getCronetInternalErrorCode())
+                .isEqualTo(NetError.ERR_HTTP2_PING_FAILED);
         cronetEngine.shutdown();
     }
 
@@ -475,10 +475,23 @@ public class ExperimentalOptionsTest {
     @Test
     @MediumTest
     @OnlyRunNativeCronet
-    public void testExperimentalOptions_allSet() throws Exception {
+    public void testExperimentalOptions_allSet_viaExperimentalEngine() throws Exception {
         MockCronetBuilderImpl mockBuilderImpl = MockCronetBuilderImpl.withoutNativeSetterSupport();
-        mBuilder = new ExperimentalCronetEngine.Builder(mockBuilderImpl);
+        testExperimentalOptionsAllSetImpl(
+                new ExperimentalCronetEngine.Builder(mockBuilderImpl), mockBuilderImpl);
+    }
 
+    @Test
+    @MediumTest
+    @OnlyRunNativeCronet
+    public void testExperimentalOptions_allSet_viaNonExperimentalEngine() throws Exception {
+        MockCronetBuilderImpl mockBuilderImpl = MockCronetBuilderImpl.withoutNativeSetterSupport();
+        testExperimentalOptionsAllSetImpl(
+                new CronetEngine.Builder(mockBuilderImpl), mockBuilderImpl);
+    }
+
+    private static void testExperimentalOptionsAllSetImpl(
+            CronetEngine.Builder builder, MockCronetBuilderImpl mockBuilderImpl) throws Exception {
         QuicOptions quicOptions =
                 QuicOptions.builder()
                         .addAllowedQuicHost("quicHost1.com")
@@ -551,7 +564,7 @@ public class ExperimentalOptionsTest {
                                 toTelephoneKeyboardSequence("badPathErr"))
                         .build();
 
-        mBuilder.setDnsOptions(dnsOptions)
+        builder.setDnsOptions(dnsOptions)
                 .setConnectionMigrationOptions(connectionMigrationOptions)
                 .setQuicOptions(quicOptions)
                 .build();
@@ -667,7 +680,7 @@ public class ExperimentalOptionsTest {
 
     private static void assertJsonEquals(JSONObject expected, JSONObject actual)
             throws JSONException {
-        assertEquals(jsonKeys(expected), jsonKeys(actual));
+        assertThat(jsonKeys(actual)).isEqualTo(jsonKeys(expected));
 
         for (String key : jsonKeys(expected)) {
             Object expectedValue = expected.get(key);
@@ -683,7 +696,7 @@ public class ExperimentalOptionsTest {
                             + actualValue + "]");
                 }
             } else {
-                assertEquals(expectedValue, actualValue);
+                assertThat(actualValue).isEqualTo(expectedValue);
             }
         }
     }

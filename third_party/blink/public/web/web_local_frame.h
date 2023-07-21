@@ -562,6 +562,9 @@ class BLINK_EXPORT WebLocalFrame : public WebFrame {
       int composition_end,
       const WebVector<ui::ImeTextSpan>& ime_text_spans) = 0;
   virtual void ExtendSelectionAndDelete(int before, int after) = 0;
+  virtual void ExtendSelectionAndReplace(int before,
+                                         int after,
+                                         const WebString& replacement_text) = 0;
 
   // Moves the selection extent point. This function does not allow the
   // selection to collapse. If the new extent is set to the same position as
@@ -767,10 +770,8 @@ class BLINK_EXPORT WebLocalFrame : public WebFrame {
   // not in printing mode.
   virtual float GetPrintPageShrink(uint32_t page) = 0;
 
-  // Prints one page, and returns the calculated page shrinking factor
-  // (usually between 1/1.33 and 1/2).  Returns 0 if the page number is
-  // invalid or not in printing mode.
-  virtual float PrintPage(uint32_t page_to_print, cc::PaintCanvas*) = 0;
+  // Prints one page.
+  virtual void PrintPage(uint32_t page_to_print, cc::PaintCanvas*) = 0;
 
   // Reformats the WebFrame for screen display.
   virtual void PrintEnd() = 0;

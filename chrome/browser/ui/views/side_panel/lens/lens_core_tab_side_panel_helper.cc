@@ -4,8 +4,12 @@
 
 #include "chrome/browser/ui/lens/lens_core_tab_side_panel_helper.h"
 
+#include "chrome/browser/companion/core/constants.h"
+#include "chrome/browser/companion/core/features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/views/side_panel/side_panel.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "components/lens/buildflags.h"
 #include "components/lens/lens_features.h"
 #include "components/search/search.h"
@@ -17,6 +21,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/side_panel/companion/companion_utils.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
 namespace lens {
@@ -53,11 +58,34 @@ TemplateURLService* GetTemplateURLService(content::WebContents* web_contents) {
 
 }  // namespace internal
 
+gfx::Size GetSidePanelInitialContentSizeUpperBound(
+    content::WebContents* web_contents) {
+#if !BUILDFLAG(IS_ANDROID)
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  const SidePanel* side_panel =
+      BrowserView::GetBrowserViewForBrowser(browser)->unified_side_panel();
+  return side_panel->GetContentSizeUpperBound();
+#else
+  return gfx::Size();
+#endif  // !BUILDFLAG(IS_ANDROID)
+}
+
 bool IsSidePanelEnabledForLens(content::WebContents* web_contents) {
   // Companion feature being enabled should disable Lens in the side panel.
   bool is_companion_enabled = false;
 #if !BUILDFLAG(IS_ANDROID)
-  is_companion_enabled = companion::IsCompanionFeatureEnabled();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  // Consider companion as enabled if (i) It's enabled via field trial, or (ii)
+  // User has cleared exps waiting list and is in the corresponding field trial.
+  is_companion_enabled =
+      base::FeatureList::IsEnabled(
+          companion::features::internal::kSidePanelCompanion) ||
+      (base::FeatureList::IsEnabled(
+           companion::features::internal::
+               kCompanionEnabledByObservingExpsNavigations) &&
+       profile->GetPrefs()->GetBoolean(
+           companion::kHasNavigatedToExpsSuccessPage));
 #endif
   return search::DefaultSearchProviderIsGoogle(
              lens::internal::GetTemplateURLService(web_contents)) &&

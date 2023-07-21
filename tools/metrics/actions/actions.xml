@@ -5796,6 +5796,21 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="CapsLock_Toggled">
+  <owner>dpad@google.com</owner>
+  <owner>zentaro@google.com</owner>
+  <description>
+    User toggled capslock via capslock key press or keyboard shortcut (alt +
+    search).
+  </description>
+</action>
+
+<action name="CapsLock_Toggled_Using_CapsLockKey">
+  <owner>dpad@google.com</owner>
+  <owner>zentaro@google.com</owner>
+  <description>User toggled capslock via capslock key press.</description>
+</action>
+
 <action name="Caption_ClickTogglesMaximize">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -9049,6 +9064,17 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action
+    name="Extensions.Toolbar.ExtensionActivatedFromAllowingRequestAccessInMenu">
+  <owner>emiliapaz@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user triggered an extension to run by allowing it from the extensions
+    menu. Their actions may or may not run, depending on other checks. This is
+    recorded for both keyboard and mouse activation.
+  </description>
+</action>
+
 <action name="Extensions.Toolbar.ExtensionActivatedFromMenu">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
@@ -11686,6 +11712,32 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IOS.DefaultBrowserPromo.SetUpList.Accepted">
+  <owner>scottyoder@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    The user accepted a Set Up List default browser promo modal, and was taken
+    to the Settings app. iOS only.
+  </description>
+</action>
+
+<action name="IOS.DefaultBrowserPromo.SetUpList.Appear">
+  <owner>scottyoder@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    The user triggered the SetUpList default browser promo and it appeared, iOS
+    only.
+  </description>
+</action>
+
+<action name="IOS.DefaultBrowserPromo.SetUpList.Dismiss">
+  <owner>scottyoder@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    The user dismissed a Set Up List default browser promo modal. iOS only.
+  </description>
+</action>
+
 <action name="IOS.DefaultBrowserPromo.TailoredFullscreen.Accepted">
   <owner>rkgibson@google.com</owner>
   <owner>djean@chromium.org</owner>
@@ -11855,6 +11907,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="IOS.OpenIn.Presented" not_user_triggered="true">
+  <obsolete>
+    This flag no longer exists. OpenIn toolbar been removed in M113.
+  </obsolete>
   <owner>mrefaat@chromium.org</owner>
   <owner>ewannpv@chromium.org</owner>
   <description>
@@ -11864,6 +11919,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="IOS.OpenIn.Tapped">
+  <obsolete>
+    This flag no longer exists. OpenIn toolbar been removed in M113.
+  </obsolete>
   <owner>mrefaat@chromium.org</owner>
   <owner>ewannpv@chromium.org</owner>
   <description>
@@ -19210,6 +19268,24 @@ should be able to be added at any place in this file.
   <owner>gambard@chromium.org</owner>
   <description>
     User confirmed provided credentials in HTTP Authentication dialog. iOS only.
+  </description>
+</action>
+
+<action name="MobileInactiveTabGridEntered">
+  <owner>alionadangla@chromium.org</owner>
+  <owner>lpromero@google.com</owner>
+  <owner>chromeleon@google.com</owner>
+  <description>
+    User entered the iOS Inactive Tabs grid (from anywhere).
+  </description>
+</action>
+
+<action name="MobileInactiveTabGridExited">
+  <owner>alionadangla@chromium.org</owner>
+  <owner>lpromero@google.com</owner>
+  <owner>chromeleon@google.com</owner>
+  <description>
+    User exited the iOS Inactive Tabs grid (by any means).
   </description>
 </action>
 
@@ -26851,6 +26927,26 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="PaymentsUserAuthSuccessfulForMandatoryAuthToggle">
+  <owner>koulvipul@google.com</owner>
+  <owner>vinnypersky@google.com</owner>
+  <owner>sujiezhu@google.com</owner>
+  <description>
+    Recorded when user completes a successful auth after trying to change the
+    mandatory auth toggle in the chrome://settings/payments page.
+  </description>
+</action>
+
+<action name="PaymentsUserAuthTriggeredForMandatoryAuthToggle">
+  <owner>koulvipul@google.com</owner>
+  <owner>vinnypersky@google.com</owner>
+  <owner>sujiezhu@google.com</owner>
+  <description>
+    Recorded when user is asked for an auth after trying to change the mandatory
+    auth toggle in the chrome://settings/payments page.
+  </description>
+</action>
+
 <action name="PDF.FitToHeightButton">
   <obsolete>Removed with Out of Process PDF (issue 303491)</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -27137,6 +27233,7 @@ should be able to be added at any place in this file.
 
 <action name="PhishingInterstitial.Advanced">
   <owner>psarouthakis@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <description>
     User opened the &quot;Advanced&quot; tab on the Phishing interstitial.
   </description>
@@ -27144,11 +27241,13 @@ should be able to be added at any place in this file.
 
 <action name="PhishingInterstitial.Back">
   <owner>psarouthakis@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <description>User pressed back on a Phishing interstitial.</description>
 </action>
 
 <action name="PhishingInterstitial.CloseInterstitialWithoutUI">
   <owner>skrakowi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <description>
     User exits interstitial page without clicking the back button on a Phishing
     interstitial.
@@ -27157,6 +27256,7 @@ should be able to be added at any place in this file.
 
 <action name="PhishingInterstitial.Diagnostic">
   <owner>skrakowi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <description>
     User clicks to show diagnostic on a Phishing interstitial.
   </description>
@@ -27164,6 +27264,7 @@ should be able to be added at any place in this file.
 
 <action name="PhishingInterstitial.EnhancedProtectionMessage">
   <owner>skrakowi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <description>
     User clicks to show enhanced protection message on a Phishing interstitial.
   </description>
@@ -27171,6 +27272,7 @@ should be able to be added at any place in this file.
 
 <action name="PhishingInterstitial.EnhancedProtectionSettings">
   <owner>skrakowi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <description>
     User clicks to open enhanced protection settings on a Phishing interstitial.
   </description>
@@ -27178,6 +27280,7 @@ should be able to be added at any place in this file.
 
 <action name="PhishingInterstitial.LearnMore">
   <owner>skrakowi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <description>
     User clicks to learn more on a Phishing interstitial.
   </description>
@@ -27185,6 +27288,7 @@ should be able to be added at any place in this file.
 
 <action name="PhishingInterstitial.PrivacyPolicy">
   <owner>skrakowi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <description>
     User clicks to show privacy policy on a Phishing interstitial.
   </description>
@@ -27192,11 +27296,13 @@ should be able to be added at any place in this file.
 
 <action name="PhishingInterstitial.Proceed">
   <owner>psarouthakis@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <description>User proceeded on a Phishing interstitial.</description>
 </action>
 
 <action name="PhishingInterstitial.ReportPhishingError">
   <owner>skrakowi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <description>
     User clicks to report an error on a Phishing interstitial.
   </description>
@@ -27204,6 +27310,7 @@ should be able to be added at any place in this file.
 
 <action name="PhishingInterstitial.SetExtendedReportingDisabled">
   <owner>skrakowi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <description>
     User clicks to disable extended reporting on a Phishing interstitial.
   </description>
@@ -27211,6 +27318,7 @@ should be able to be added at any place in this file.
 
 <action name="PhishingInterstitial.SetExtendedReportingEnabled">
   <owner>skrakowi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <description>
     User clicks to enable extended reporting on a Phishing interstitial.
   </description>
@@ -27218,13 +27326,48 @@ should be able to be added at any place in this file.
 
 <action name="PhishingInterstitial.Show">
   <owner>psarouthakis@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <description>User saw the Phishing interstitial.</description>
 </action>
 
 <action name="PhishingInterstitial.WhitePaper">
   <owner>skrakowi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
   <description>
     User clicks to show white paper on a Phishing interstitial.
+  </description>
+</action>
+
+<action name="PhishyPage.FirstClickEvent">
+  <owner>skrakowi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>First user click event within a phishy page.</description>
+</action>
+
+<action name="PhishyPage.FirstKeyEvent">
+  <owner>skrakowi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>First user keyboard entry into a phishy page.</description>
+</action>
+
+<action name="PhishyPage.FirstPasteEvent">
+  <owner>skrakowi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>First user paste event into a phishy page.</description>
+</action>
+
+<action name="PhishyPage.UserStartsInteraction">
+  <owner>skrakowi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>User starts interacting with the phishy page.</description>
+</action>
+
+<action name="PhishyPage.UserStopsInteraction">
+  <owner>skrakowi@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <description>
+    User has either closed the phishy page, navigated away, or has had a
+    significant period of inactivity with the page.
   </description>
 </action>
 
@@ -29651,6 +29794,25 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Settings.PrivacySandbox.RestrictedNotice.ClosedNoInteraction"
+    not_user_triggered="true">
+  <owner>tommasin@chromium.org</owner>
+  <owner>kartoffel-core@google.com</owner>
+  <owner>kartoffel-core-eng@google.com</owner>
+  <description>
+    Restricted Notice closed with no interaction (e.g. browser shutdown).
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.RestrictedNotice.MoreButtonClicked">
+  <owner>tommasin@chromium.org</owner>
+  <owner>kartoffel-core@google.com</owner>
+  <owner>kartoffel-core-eng@google.com</owner>
+  <description>
+    User clicked on the More button in the Privacy Sandbox Restricted Notice.
+  </description>
+</action>
+
 <action name="Settings.PrivacySandbox.RestrictedNotice.OpenedSettings">
   <owner>djmitche@chromium.org</owner>
   <owner>kartoffel-core@google.com</owner>
@@ -29658,6 +29820,14 @@ should be able to be added at any place in this file.
   <description>
     User opened settings from the Restricted Privacy Sandbox notice.
   </description>
+</action>
+
+<action name="Settings.PrivacySandbox.RestrictedNotice.Shown"
+    not_user_triggered="true">
+  <owner>tommasin@chromium.org</owner>
+  <owner>kartoffel-core@google.com</owner>
+  <owner>kartoffel-core-eng@google.com</owner>
+  <description>Restricted Privacy Sandbox notice is shown.</description>
 </action>
 
 <action name="Settings.PrivacySandbox.SpamFraud.Opened">
@@ -30968,6 +31138,14 @@ should be able to be added at any place in this file.
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <description>
     Recorded when the reading list side panel entry is shown.
+  </description>
+</action>
+
+<action name="SidePanel.ShoppingInsights.Shown">
+  <owner>zhiyuancai@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Recorded when the shopping insights side panel entry is shown.
   </description>
 </action>
 
@@ -35333,6 +35511,72 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="TabGroups_SavedTabGroups_Closed">
+  <owner>dljames@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    User right-clicked the tab group header on a SavedTabGroup, and pressed the
+    close group button.
+  </description>
+</action>
+
+<action name="TabGroups_SavedTabGroups_Deleted">
+  <owner>dljames@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    User performed an action that would delete a SavedTabGroup (Ex: Right-click
+    a button in the bookmarks bar and press delete group, close the last tab in
+    a group, unsave a group). This user action is not emitted when a change
+    originated from the sync service that would cause a group to be deleted.
+  </description>
+</action>
+
+<action name="TabGroups_SavedTabGroups_Focused">
+  <owner>dljames@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    User attempted to open a SavedTabGroup that was already open by clicking a
+    SavedTabGroup button in the bookmarks bar, but focused the group instead.
+  </description>
+</action>
+
+<action name="TabGroups_SavedTabGroups_Opened">
+  <owner>dljames@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    User opened a SavedTabGroup by clicking a SavedTabGroup button in the
+    bookmarks bar.
+  </description>
+</action>
+
+<action name="TabGroups_SavedTabGroups_TabAdded">
+  <owner>dljames@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    User added a tab into a SavedTabGroup, for example by clicking on a link
+    that opens a new tab or by manually adding a new tab into the group.
+  </description>
+</action>
+
+<action name="TabGroups_SavedTabGroups_TabNavigated">
+  <owner>dljames@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    User navigated within a tab to a new url in a SavedTabGroup, for example by
+    clicking on a link, by using the omnibox.
+  </description>
+</action>
+
+<action name="TabGroups_SavedTabGroups_TabRemoved">
+  <owner>dljames@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    User removed a tab from a SavedTabGroup. This is emitted whenever a user
+    performs an action that would remove a tab from the group (for example,
+    click the x on a tab, ctrl + w, drag a tab out of the group).
+  </description>
+</action>
+
 <action name="TabGroups_SwitchGroupedTab">
   <owner>dpenning@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
@@ -37392,6 +37636,24 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action-suffix separator="." ordering="suffix">
+  <suffix name="AccountStorage" label="Bookmark added in account storage."/>
+  <suffix name="LocalStorage"
+      label="Bookmark added in local storage which is not being synced."/>
+  <suffix name="LocalStorageSyncing"
+      label="Bookmark added in local storage which is being synced."/>
+  <affected-action name="Bookmarks.Added"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="AccountStorage" label="Folder added in account storage."/>
+  <suffix name="LocalStorage"
+      label="Folder added in local storage which is not being synced."/>
+  <suffix name="LocalStorageSyncing"
+      label="Folder added in local storage which is being synced."/>
+  <affected-action name="Bookmarks.FolderAdded"/>
+</action-suffix>
+
 <action-suffix separator="_" ordering="suffix">
   <suffix name="AdaptiveButtonInTopToolbarCustomization_AddToBookmarks"
       label="For AdaptiveButtonInTopToolbarCustomization add to bookmarks
@@ -37443,6 +37705,9 @@ should be able to be added at any place in this file.
       label="For ChromeReengagementNotification2 feature."/>
   <suffix name="ChromeReengagementNotification3"
       label="For ChromeReengagementNotification3 feature."/>
+  <suffix name="CompanionSidePanel" label="For companion side panel feature."/>
+  <suffix name="CompanionSidePanelRegionSearch"
+      label="For companion side panel region search feature."/>
   <suffix name="ContextualPageActions_PriceTracking"
       label="For Contextual page actions price tracking feature."/>
   <suffix name="ContextualPageActions_PriceTrackingActionChip"
@@ -37557,6 +37822,8 @@ should be able to be added at any place in this file.
       label="For iOSDefaultBrowserOverflowMenuBadge feature"/>
   <suffix name="iOSDefaultBrowserSettingsBadge"
       label="For iOSDefaultBrowserSettingsBadge feature"/>
+  <suffix name="iOSDefaultBrowserVideoPromoTrigger"
+      label="For iOSDefaultBrowserVideoPromoTrigger feature"/>
   <suffix name="iOSHistoryOnOverflowMenuFeature"
       label="For iOSHistoryOnOverflowMenuFeature feature"/>
   <suffix name="iOSNewTabToolbarItemFeature"
@@ -37595,8 +37862,6 @@ should be able to be added at any place in this file.
   <suffix name="NewTabPageHomeButton"
       label="For NewTabPageHomeButton feature."/>
   <suffix name="NewTabTip" label="For NewTabTip feature."/>
-  <suffix name="OverflowMenuTip"
-      label="For the overflow menu help tip on iOS."/>
   <suffix name="PageInfo" label="In product help for opening PageInfo."/>
   <suffix name="PageInfoStoreInfo" label="For PageInfoStoreInfo feature."/>
   <suffix name="PageZoom" label="For Page Zoom feature."/>
@@ -37635,6 +37900,8 @@ should be able to be added at any place in this file.
   <suffix name="ReadingListInSidePanel"
       label="For ReadingListInSidePanel feature."/>
   <suffix name="ReadingListMessages" label="For ReadingListMessages feature."/>
+  <suffix name="ReadingModeSidePanel"
+      label="For reading mode side panel feature."/>
   <suffix name="ReadLaterAppMenuBookmarks"
       label="For ReadLaterAppMenuBookmarks feature."/>
   <suffix name="ReadLaterAppMenuBookmarkThisPage"

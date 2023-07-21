@@ -64,6 +64,11 @@ class FixedTopicsContentBrowserClient
 
     return true;
   }
+
+  int NumVersionsInTopicsEpochs(
+      content::RenderFrameHost* main_frame) const override {
+    return 1;
+  }
 };
 }  // namespace
 
@@ -212,8 +217,7 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxAdsAPIsAllEnabledBrowserTest,
   EXPECT_TRUE(last_request_is_topics_request());
   EXPECT_TRUE(last_topics_header());
   EXPECT_EQ(last_topics_header().value(),
-            "1;version=\"chrome.1:1:2\";config_version=\"chrome.1\";model_"
-            "version=\"2\";taxonomy_version=\"1\"");
+            "(1);v=chrome.1:1:2, ();p=P00000000000");
 }
 
 IN_PROC_BROWSER_TEST_F(PrivacySandboxAdsAPIsAllEnabledBrowserTest,
@@ -258,8 +262,7 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxAdsAPIsAllEnabledBrowserTest,
   EXPECT_TRUE(last_request_is_topics_request());
   EXPECT_TRUE(last_topics_header());
   EXPECT_EQ(last_topics_header().value(),
-            "1;version=\"chrome.1:1:2\";config_version=\"chrome.1\";model_"
-            "version=\"2\";taxonomy_version=\"1\"");
+            "(1);v=chrome.1:1:2, ();p=P00000000000");
 }
 
 IN_PROC_BROWSER_TEST_F(PrivacySandboxAdsAPIsAllEnabledBrowserTest,
@@ -451,8 +454,7 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxAdsAPIsTopicsXHRDisabledBrowserTest,
   EXPECT_TRUE(last_request_is_topics_request());
   EXPECT_TRUE(last_topics_header());
   EXPECT_EQ(last_topics_header().value(),
-            "1;version=\"chrome.1:1:2\";config_version=\"chrome.1\";model_"
-            "version=\"2\";taxonomy_version=\"1\"");
+            "(1);v=chrome.1:1:2, ();p=P00000000000");
 }
 
 IN_PROC_BROWSER_TEST_F(PrivacySandboxAdsAPIsTopicsXHRDisabledBrowserTest,
@@ -595,6 +597,47 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxAdsAPIsDisabledBrowserTest,
 
   EXPECT_TRUE(ExecJs(root(), kAddFencedFrameScript));
   EXPECT_EQ(0U, root()->child_count());
+}
+
+class PrivacySandboxAdsAPIsM1OverrideBrowserTest
+    : public PrivacySandboxAdsAPIsBrowserTestBase {
+ public:
+  PrivacySandboxAdsAPIsM1OverrideBrowserTest() {
+    feature_list_.InitWithFeatures(
+        {features::kPrivacySandboxAdsAPIsM1Override,
+         blink::features::kBrowsingTopics,
+         blink::features::kInterestGroupStorage, blink::features::kFencedFrames,
+         blink::features::kSharedStorageAPI},
+        /*disabled_features=*/{});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PrivacySandboxAdsAPIsM1OverrideBrowserTest,
+                       NoOT_FeatureDetected) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GURL("https://example.test/page_without_ads_apis_ot.html")));
+
+  EXPECT_EQ(true, EvalJs(shell(),
+                         "document.featurePolicy.features().includes('"
+                         "attribution-reporting')"));
+  EXPECT_EQ(true, EvalJs(shell(),
+                         "document.featurePolicy.features().includes('"
+                         "browsing-topics')"));
+  EXPECT_EQ(true, EvalJs(shell(),
+                         "document.featurePolicy.features().includes('"
+                         "join-ad-interest-group')"));
+
+  EXPECT_EQ(true, ExecJs(root(), "sharedStorage !== undefined"));
+  EXPECT_EQ(true, EvalJs(shell(), "document.browsingTopics !== undefined"));
+  EXPECT_EQ(true, EvalJs(shell(), "navigator.runAdAuction !== undefined"));
+  EXPECT_EQ(true,
+            EvalJs(shell(), "navigator.joinAdInterestGroup !== undefined"));
+
+  EXPECT_TRUE(ExecJs(root(), kAddFencedFrameScript));
+  EXPECT_EQ(1U, root()->child_count());
 }
 
 }  // namespace content

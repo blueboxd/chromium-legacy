@@ -6,10 +6,10 @@
 
 #include "base/containers/adapters.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/highlight/highlight_style_utils.h"
 #include "third_party/blink/renderer/core/layout/text_decoration_offset_base.h"
 #include "third_party/blink/renderer/core/paint/applied_decoration_painter.h"
 #include "third_party/blink/renderer/core/paint/box_painter_base.h"
-#include "third_party/blink/renderer/core/paint/highlight_painting_utils.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/text_decoration_info.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -79,8 +79,9 @@ void NGTextPainterBase::PaintUnderOrOverLineDecorationShadows(
     const Color& color = shadow.GetColor().Resolve(text_style.current_color,
                                                    text_style.color_scheme);
     // Detect when there's no effective shadow.
-    if (color.IsTransparent())
+    if (color.IsFullyTransparent()) {
       continue;
+    }
 
     const gfx::Vector2dF& offset = shadow.Location().OffsetFromOrigin();
 

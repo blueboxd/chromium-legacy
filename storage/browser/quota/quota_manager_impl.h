@@ -18,6 +18,7 @@
 #include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
@@ -450,7 +451,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   static constexpr int kEvictionIntervalInMilliSeconds =
       30 * kMinutesInMilliSeconds;
   static constexpr int kThresholdOfErrorsToBeDenylisted = 3;
-  static constexpr int kThresholdOfErrorsToDisableDatabase = 3;
   static constexpr int kThresholdRandomizationPercent = 5;
 
   static constexpr char kDatabaseName[] = "QuotaManager";
@@ -636,6 +636,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
       BucketInfo bucket_info,
       QuotaErrorOr<mojom::BucketTableEntryPtr> result);
 
+  // Called when the quota database encounters an error.
+  void OnDbError(int error_code);
+
   // Called when the quota database or a quota client run into low disk space
   // errors.
   void OnFullDiskError(absl::optional<blink::StorageKey> storage_key);
@@ -688,9 +691,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   void ContinueIncognitoGetStorageCapacity(const QuotaSettings& settings);
   void DidGetStorageCapacity(const QuotaAvailability& total_and_available);
 
-  void DidDatabaseWork(bool success, bool is_bootstrap_work = false);
   void DidRazeForReBootstrap(QuotaError raze_and_reopen_result);
-  void OnComplete(QuotaError result);
 
   void NotifyUpdatedBucket(const QuotaErrorOr<BucketInfo>& result);
   void OnBucketDeleted(
@@ -767,7 +768,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   // points to never changes), and the underlying object is thread-safe.
   const scoped_refptr<QuotaManagerProxy> proxy_;
 
-  int db_error_count_ = 0;
   bool db_disabled_ = false;
   bool eviction_disabled_ = false;
   bool bootstrap_disabled_for_testing_ = false;

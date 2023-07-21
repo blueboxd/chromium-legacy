@@ -10,6 +10,7 @@
 
 #include "base/check.h"
 #include "base/memory/scoped_refptr.h"
+#include "content/browser/browsing_instance.h"
 #include "content/browser/coop_related_group.h"
 #include "content/browser/isolation_context.h"
 #include "content/browser/site_info.h"
@@ -30,7 +31,6 @@ namespace content {
 
 class AgentSchedulingGroupHost;
 class BrowserContext;
-class BrowsingInstance;
 class SiteInstanceGroup;
 class StoragePartitionConfig;
 class StoragePartitionImpl;
@@ -459,10 +459,18 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance {
   // same BrowsingInstance, they are related and COOP related.
   bool IsCoopRelatedSiteInstance(const SiteInstanceImpl* instance) const;
 
-  // Returns the ID of the CoopRelatedGroup this SiteInstance belongs to. Prefer
-  // using IsCoopRelatedSiteInstance() instead of directly comparing IDs to know
-  // if two SiteInstances belong to the same CoopRelatedGroup.
-  CoopRelatedGroupId GetCoopRelatedGroupId() const;
+  // Returns the token uniquely identifying the BrowsingInstance this
+  // SiteInstance belongs to. Can safely be sent to the renderer unlike the
+  // BrowsingInstanceID.
+  base::UnguessableToken browsing_instance_token() const {
+    return browsing_instance_->token();
+  }
+
+  // Returns the token uniquely identifying the CoopRelatedGroup this
+  // SiteInstance belongs to. Can safely be sent to the renderer.
+  base::UnguessableToken coop_related_group_token() const {
+    return browsing_instance_->coop_related_group_token();
+  }
 
   // Returns the unique origin of all top-level documents in this
   // BrowsingInstance. This is only guaranteed by the use of a unique COOP value
@@ -487,6 +495,28 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance {
 
   // Sets the process for `this`, creating a SiteInstanceGroup if necessary.
   void SetProcessForTesting(RenderProcessHost* process);
+
+  // Returns the number of active documents using `this`, potentially spanning
+  // multiple pages/WebContents, but still within the same BrowsingInstance.
+  size_t active_document_count() const { return active_document_count_; }
+
+  // Increments the active document count after a new document that uses `this`
+  // finishes committing and becomes active.
+  void IncrementActiveDocumentCount() { active_document_count_++; }
+
+  // Decrement the active document count after a previously document that uses
+  // `this` got swapped out and becomes inactive due to another document
+  // committing in the same frame.
+  void DecrementActiveDocumentCount() {
+    CHECK_GT(active_document_count_, 0u);
+    active_document_count_--;
+  }
+
+  // Set a callback to be run from this SiteInstance's destructor. Used only in
+  // tests.
+  void set_destruction_callback_for_testing(base::OnceClosure callback) {
+    destruction_callback_for_testing_ = std::move(callback);
+  }
 
  private:
   friend class BrowsingInstance;
@@ -631,6 +661,12 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance {
   // Keeps track of whether we need to verify that the StoragePartition
   // information does not change when `site_info_` is set.
   bool verify_storage_partition_info_ = false;
+
+  // Tracks the number of active documents currently in this SiteInstance.
+  size_t active_document_count_ = 0;
+
+  // Test-only callback to run when this SiteInstance is destroyed.
+  base::OnceClosure destruction_callback_for_testing_;
 };
 
 }  // namespace content

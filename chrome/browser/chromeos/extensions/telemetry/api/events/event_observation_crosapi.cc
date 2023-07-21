@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/events/events_api_converters.h"
 #include "chrome/common/chromeos/extensions/api/events.h"
@@ -87,6 +88,24 @@ class DefaultEventDelegate : public EventObservationCrosapi::Delegate {
             extensions::events::OS_EVENTS_ON_SD_CARD_EVENT,
             api::os_events::OnSdCardEvent::kEventName, std::move(args),
             browser_context_);
+        break;
+      }
+      case crosapi::internal::TelemetryEventInfo_Data::TelemetryEventInfo_Tag::
+          kPowerEventInfo: {
+        base::Value::List args;
+        args.Append(
+            converters::ConvertStructPtr<api::os_events::PowerEventInfo>(
+                std::move(info->get_power_event_info()))
+                .ToValue());
+        event = std::make_unique<extensions::Event>(
+            extensions::events::OS_EVENTS_ON_POWER_EVENT,
+            api::os_events::OnPowerEvent::kEventName, std::move(args),
+            browser_context_);
+        break;
+      }
+      case crosapi::internal::TelemetryEventInfo_Data::TelemetryEventInfo_Tag::
+          kKeyboardDiagnosticEventInfo: {
+        NOTIMPLEMENTED();
         break;
       }
     }

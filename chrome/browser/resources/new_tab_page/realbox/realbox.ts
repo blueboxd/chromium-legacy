@@ -214,6 +214,18 @@ export class RealboxElement extends PolymerElement {
         type: String,
         computed: `computeInputAriaLive_(selectedMatch_)`,
       },
+
+      widthBehavior_: {
+        type: String,
+        value: loadTimeData.getString('realboxWidthBehavior'),
+        reflectToAttribute: true,
+      },
+
+      isTall_: {
+        type: Boolean,
+        value: loadTimeData.getBoolean('realboxIsTall'),
+        reflectToAttribute: true,
+      },
     };
   }
 

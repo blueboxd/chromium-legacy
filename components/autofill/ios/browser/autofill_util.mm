@@ -28,6 +28,10 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using base::NumberToString;
 using base::StringToUint;
 
@@ -245,8 +249,8 @@ bool ExtractFormFieldData(const base::Value::Dict& field,
   if (absl::optional<int> max_length = field.FindInt("max_length")) {
     field_data->max_length = *max_length;
   }
-  field_data->parsed_autocomplete = ParseAutocompleteAttribute(
-      field_data->autocomplete_attribute, field_data->max_length);
+  field_data->parsed_autocomplete =
+      ParseAutocompleteAttribute(field_data->autocomplete_attribute);
 
   // TODO(crbug.com/427614): Extract |is_checked|.
   bool is_checkable = field.FindBool("is_checkable").value_or(false);
@@ -320,7 +324,7 @@ JavaScriptResultCallback CreateBoolCallback(
 }
 
 void ExecuteJavaScriptFunction(const std::string& name,
-                               const std::vector<base::Value>& parameters,
+                               const base::Value::List& parameters,
                                web::WebFrame* frame,
                                JavaScriptResultCallback callback) {
   __block JavaScriptResultCallback cb = std::move(callback);

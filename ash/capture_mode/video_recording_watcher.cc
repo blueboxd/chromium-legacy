@@ -16,7 +16,6 @@
 #include "ash/capture_mode/capture_mode_metrics.h"
 #include "ash/capture_mode/recording_overlay_controller.h"
 #include "ash/constants/ash_features.h"
-#include "ash/projector/projector_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/wm/desks/desks_util.h"
@@ -183,7 +182,6 @@ VideoRecordingWatcher::VideoRecordingWatcher(
     aura::Window* window_being_recorded,
     mojo::PendingRemote<viz::mojom::FrameSinkVideoCaptureOverlay>
         cursor_capture_overlay,
-    bool projector_mode,
     bool is_recording_audio)
     : controller_(controller),
       active_behavior_(active_behavior),
@@ -192,7 +190,6 @@ VideoRecordingWatcher::VideoRecordingWatcher(
       current_root_(window_being_recorded->GetRootWindow()),
       recording_source_(controller_->source()),
       cursor_capture_overlay_remote_(std::move(cursor_capture_overlay)),
-      is_in_projector_mode_(projector_mode),
       is_recording_audio_(is_recording_audio) {
   CHECK(controller_);
   CHECK(window_being_recorded_);
@@ -250,9 +247,7 @@ VideoRecordingWatcher::VideoRecordingWatcher(
                                                      GetOverlayWidgetBounds());
   }
 
-  // TODO(michelefan): Refactor this function to be more general.
-  controller_->camera_controller()->OnRecordingStarted(
-      /*is_in_projector_mode=*/should_create_recording_overlay);
+  controller_->camera_controller()->OnRecordingStarted(active_behavior_);
 
   if (features::AreCaptureModeDemoToolsEnabled() &&
       controller_->enable_demo_tools()) {

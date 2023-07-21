@@ -16,6 +16,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/webid/fake_identity_request_dialog_controller.h"
 #include "content/browser/webid/identity_registry.h"
+#include "content/browser/webid/test/mock_identity_request_dialog_controller.h"
 #include "content/browser/webid/test/mock_mdoc_provider.h"
 #include "content/browser/webid/test/mock_modal_dialog_view_delegate.h"
 #include "content/browser/webid/test/webid_test_content_browser_client.h"
@@ -755,10 +756,13 @@ IN_PROC_BROWSER_TEST_F(WebIdAuthzBrowserTest, Authz_openPopUpWindow) {
   // Points the id assertion endpoint to a servlet.
   config_details.id_assertion_endpoint_url = "/authz/id_assertion_endpoint.php";
 
+  auto continue_on = GURL(BaseIdpUrl()).Resolve("/authz.html");
+
   // Add a servlet to serve a response for the id assertoin endpoint.
   config_details.servlets["/authz/id_assertion_endpoint.php"] =
       base::BindRepeating(
-          [](const HttpRequest& request) -> std::unique_ptr<HttpResponse> {
+          [](GURL url,
+             const HttpRequest& request) -> std::unique_ptr<HttpResponse> {
             std::string content;
             content += "client_id=client_id_1&";
             content += "nonce=12345&";
@@ -773,16 +777,52 @@ IN_PROC_BROWSER_TEST_F(WebIdAuthzBrowserTest, Authz_openPopUpWindow) {
             response->set_content_type("text/json");
             // scope=calendar.readonly was requested, so need to
             // return a continuation url instead of a token.
-            response->set_content(
-                R"({"continue_on": "https://idp.example/continue.php"})");
+            auto body = R"({"continue_on": ")" + url.spec() + R"("})";
+            response->set_content(body);
             return response;
-          });
+          },
+          continue_on);
 
   idp_server()->SetConfigResponseDetails(config_details);
 
+  auto mock = std::make_unique<
+      ::testing::NiceMock<MockIdentityRequestDialogController>>();
+  test_browser_client_->SetIdentityRequestDialogController(std::move(mock));
+
+  MockIdentityRequestDialogController* controller =
+      static_cast<MockIdentityRequestDialogController*>(
+          test_browser_client_->GetIdentityRequestDialogControllerForTests());
+
+  auto config_url = GURL(BaseIdpUrl());
+
+  // Expects the account chooser to be opened. Selects the first account.
+  EXPECT_CALL(*controller, ShowAccountsDialog(_, _, _, _, _, _, _, _))
+      .WillOnce(::testing::WithArg<6>([&config_url](auto on_selected) {
+        std::move(on_selected)
+            .Run(config_url,
+                 /* account_id=*/"not_real_account",
+                 /* is_sign_in= */ true);
+      }));
+
+  // Create a WebContents that represents the modal dialog, specifically
+  // the structure that the Identity Registry hangs to.
+  Shell* modal = CreateBrowser();
+  modal->LoadURL(config_url);
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(*controller, ShowModalDialog(_, _))
+      .WillOnce(::testing::WithArg<0>(
+          [&continue_on, &modal, &run_loop](const GURL& url) {
+            EXPECT_EQ(url, continue_on);
+            // When the pop-up window is opened, resolve it immediately by
+            // returning a test web contents, which can then later be used
+            // to refer to the identity registry.
+            run_loop.Quit();
+            return modal->web_contents();
+          }));
+
   std::string script = R"(
-        (async () => {
-          var x = (await navigator.credentials.get({
+          var result = navigator.credentials.get({
             identity: {
               providers: [{
                 configURL: ')" +
@@ -794,15 +834,27 @@ IN_PROC_BROWSER_TEST_F(WebIdAuthzBrowserTest, Authz_openPopUpWindow) {
                 ],
               }]
             }
-          }));
-          return x.token;
-        }) ()
+         }).then(({token}) => token);
     )";
 
-  // Assert that a fake token was returned from the pop-up window,
-  // as opposed to directly from the id assertion endpoint.
-  EXPECT_EQ(std::string("--fake-token-from-pop-up-window--"),
-            EvalJs(shell(), script));
+  // Kick off the identity credential request and deliberately
+  // leave the promise hanging, since it requires UX permission
+  // prompts to be accepted later.
+  EXPECT_TRUE(content::ExecJs(shell(), script,
+                              content::EXECUTE_SCRIPT_NO_RESOLVE_PROMISES));
+
+  // Wait for the modal dialog to be resolved.
+  run_loop.Run();
+
+  std::string token = "--fake-token-from-pop-up-window--";
+
+  // Resolve the hanging token request by notifying the registry.
+  EXPECT_TRUE(content::ExecJs(
+      modal, R"(IdentityProvider.resolve(')" + token + R"('))"));
+
+  // Finally, wait for the promise to resolve and compare its result
+  // to the expected token that was provided in the modal dialog.
+  EXPECT_EQ(token, EvalJs(shell(), "result"));
 }
 
 }  // namespace content

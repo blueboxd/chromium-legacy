@@ -97,15 +97,16 @@ void ShoppingListUiTabHelper::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kShouldShowSidePanelBookmarkTab, false);
 }
 
-void ShoppingListUiTabHelper::NavigationEntryCommitted(
-    const content::LoadCommittedDetails& load_details) {
-  if (!load_details.is_in_active_page ||
-      IsInitialNavigationCommitted(load_details) ||
-      IsSameDocumentWithSameCommittedUrl(load_details)) {
+void ShoppingListUiTabHelper::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
+      ShouldIgnoreSameUrlNavigation() ||
+      IsSameDocumentWithSameCommittedUrl(navigation_handle)) {
     is_initial_navigation_committed_ = true;
     return;
   }
 
+  previous_main_frame_url_ = navigation_handle->GetURL();
   last_fetched_image_ = gfx::Image();
   last_fetched_image_url_ = GURL();
   is_cluster_id_tracked_by_user_ = false;
@@ -127,18 +128,15 @@ void ShoppingListUiTabHelper::NavigationEntryCommitted(
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-bool ShoppingListUiTabHelper::IsInitialNavigationCommitted(
-    const content::LoadCommittedDetails& load_details) {
-  return load_details.previous_main_frame_url ==
-             web_contents()->GetLastCommittedURL() &&
+bool ShoppingListUiTabHelper::ShouldIgnoreSameUrlNavigation() {
+  return previous_main_frame_url_ == web_contents()->GetLastCommittedURL() &&
          is_initial_navigation_committed_;
 }
 
 bool ShoppingListUiTabHelper::IsSameDocumentWithSameCommittedUrl(
-    const content::LoadCommittedDetails& load_details) {
-  return load_details.previous_main_frame_url ==
-             web_contents()->GetLastCommittedURL() &&
-         load_details.is_same_document;
+    content::NavigationHandle* navigation_handle) {
+  return previous_main_frame_url_ == web_contents()->GetLastCommittedURL() &&
+         navigation_handle->IsSameDocument();
 }
 
 void ShoppingListUiTabHelper::DidStopLoading() {
@@ -217,10 +215,11 @@ void ShoppingListUiTabHelper::HandleProductInfoResponse(
   if (url != web_contents()->GetLastCommittedURL())
     return;
 
-  if (!info.has_value() || info.value().image_url.is_empty())
+  if (!CanTrackPrice(info) || !info.has_value() || info->image_url.is_empty()) {
     return;
+  }
 
-  cluster_id_for_page_.emplace(info->product_cluster_id);
+  cluster_id_for_page_.emplace(info->product_cluster_id.value());
   UpdatePriceTrackingStateFromSubscriptions();
 
   // TODO(1360850): Delay this fetch by possibly waiting until page load has
@@ -269,8 +268,9 @@ void ShoppingListUiTabHelper::SetPriceTrackingState(
             web_contents()->GetLastCommittedURL());
     if (info.has_value()) {
       commerce::SetPriceTrackingStateForClusterId(
-          shopping_service_.get(), bookmark_model_, info->product_cluster_id,
-          enable, std::move(wrapped_callback));
+          shopping_service_.get(), bookmark_model_,
+          info->product_cluster_id.value(), enable,
+          std::move(wrapped_callback));
     }
   }
 }

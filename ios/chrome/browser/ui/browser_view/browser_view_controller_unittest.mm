@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
+#import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
@@ -238,7 +239,8 @@ class BrowserViewControllerTest : public BlockCleanupTest {
         [[SecondaryToolbarCoordinator alloc] initWithBrowser:browser_.get()];
 
     bubble_presenter_ = [[BubblePresenter alloc]
-        initWithBrowserState:chrome_browser_state_.get()];
+        initWithBrowserState:chrome_browser_state_.get()
+                webStateList:browser_->GetWebStateList()];
     [dispatcher startDispatchingToTarget:bubble_presenter_
                              forProtocol:@protocol(HelpCommands)];
 
@@ -287,6 +289,8 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     dependencies.safeAreaProvider = safe_area_provider_;
     dependencies.pagePlaceholderBrowserAgent = page_placeholder_browser_agent_;
     dependencies.applicationCommandsHandler = mockApplicationCommandHandler_;
+    dependencies.webStateUpdateBrowserAgent =
+        WebStateUpdateBrowserAgent::FromBrowser(browser_.get());
 
     bvc_ = [[BrowserViewController alloc]
         initWithBrowserContainerViewController:container_

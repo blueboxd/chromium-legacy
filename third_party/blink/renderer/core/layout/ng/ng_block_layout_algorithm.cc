@@ -220,6 +220,16 @@ LogicalOffset LogicalFromBfcOffsets(const NGBfcOffset& child_bfc_offset,
           child_bfc_offset.block_offset - parent_bfc_offset.block_offset};
 }
 
+// Whether the `node` reuqires `NGLineInfoList` or not.
+inline bool NeedsOptimalInlineChildLayoutContext(const NGInlineNode& node) {
+  const TextWrap wrap = node.Style().GetTextWrap();
+  if (UNLIKELY(wrap == TextWrap::kPretty)) {
+    DCHECK(RuntimeEnabledFeatures::CSSTextWrapPrettyEnabled());
+    return !node.IsScoreLineBreakDisabled();
+  }
+  return false;
+}
+
 }  // namespace
 
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
@@ -456,11 +466,16 @@ const NGLayoutResult* NGBlockLayoutAlgorithm::Layout() {
   // Inline children require an inline child layout context to be
   // passed between siblings. We want to stack-allocate that one, but
   // only on demand, as it's quite big.
-  NGLayoutInputNode first_child(nullptr);
-  if (Node().IsInlineFormattingContextRoot(&first_child))
-    result = LayoutWithInlineChildLayoutContext(first_child);
-  else
+  NGInlineNode inline_child(nullptr);
+  if (Node().IsInlineFormattingContextRoot(&inline_child)) {
+    if (UNLIKELY(NeedsOptimalInlineChildLayoutContext(inline_child))) {
+      result = LayoutWithOptimalInlineChildLayoutContext(inline_child);
+    } else {
+      result = LayoutWithSimpleInlineChildLayoutContext(inline_child);
+    }
+  } else {
     result = Layout(nullptr);
+  }
 
   if (result->Status() == NGLayoutResult::kSuccess) {
     return result;
@@ -500,10 +515,17 @@ NGBlockLayoutAlgorithm::HandleNonsuccessfulLayoutResult(
 }
 
 NOINLINE const NGLayoutResult*
-NGBlockLayoutAlgorithm::LayoutWithInlineChildLayoutContext(
-    const NGLayoutInputNode& first_child) {
-  NGInlineChildLayoutContext context(To<NGInlineNode>(first_child),
-                                     &container_builder_);
+NGBlockLayoutAlgorithm::LayoutWithSimpleInlineChildLayoutContext(
+    const NGInlineNode& child) {
+  NGSimpleInlineChildLayoutContext context(child, &container_builder_);
+  const NGLayoutResult* result = Layout(&context);
+  return result;
+}
+
+NOINLINE const NGLayoutResult*
+NGBlockLayoutAlgorithm::LayoutWithOptimalInlineChildLayoutContext(
+    const NGInlineNode& child) {
+  NGOptimalInlineChildLayoutContext context(child, &container_builder_);
   const NGLayoutResult* result = Layout(&context);
   return result;
 }
@@ -2072,8 +2094,16 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
           has_processed_first_child_ ||
           (!container_builder_.IsPushedByFloats() &&
            (layout_result->IsPushedByFloats() || is_line_box_pushed_by_floats));
+
+      // If this is a line with a block-in-inline, use the result for the
+      // block-in-inline instead of that for the line. That's where we find the
+      // relevant info for block fragmentation considerations, including the
+      // block break token, if any.
+      const NGLayoutResult& layout_result_to_use =
+          container_builder_.LayoutResultForPropagation(*layout_result);
+
       NGBreakStatus break_status = BreakBeforeChildIfNeeded(
-          child, *layout_result, previous_inflow_position,
+          child, layout_result_to_use, previous_inflow_position,
           line_box_bfc_block_offset.value_or(*child_bfc_block_offset),
           has_container_separation);
       if (break_status == NGBreakStatus::kBrokeBefore)

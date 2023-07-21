@@ -33,6 +33,7 @@
 #include <memory>
 
 #include "base/check_op.h"
+#include "base/containers/enum_set.h"
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
@@ -79,6 +80,7 @@
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap_observer_set.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -271,18 +273,27 @@ enum NodeListInvalidationType : int {
 };
 const int kNumNodeListInvalidationTypes = kInvalidateOnAnyAttrChange + 1;
 
-enum DocumentClass {
-  kDefaultDocumentClass = 0,
-  kHTMLDocumentClass = 1,
-  kXHTMLDocumentClass = 1 << 1,
-  kImageDocumentClass = 1 << 2,
-  kPluginDocumentClass = 1 << 3,
-  kMediaDocumentClass = 1 << 4,
-  kSVGDocumentClass = 1 << 5,
-  kXMLDocumentClass = 1 << 6,
+// Specifies a class of document. Values are not mutually exclusive, and can be
+// combined using `DocumentClassFlags`.
+//
+// Remember to keep `kMinValue` and `kMaxValue` up to date.
+enum class DocumentClass {
+  kHTML,
+  kXHTML,
+  kImage,
+  kPlugin,
+  kMedia,
+  kSVG,
+  kXML,
+  kText,
+
+  // For `DocumentClassFlags`.
+  kMinValue = kHTML,
+  kMaxValue = kText,
 };
 
-using DocumentClassFlags = unsigned char;
+using DocumentClassFlags = base::
+    EnumSet<DocumentClass, DocumentClass::kMinValue, DocumentClass::kMaxValue>;
 
 // A map of IDL attribute name to Element list value, for one particular
 // element. For example,
@@ -352,7 +363,7 @@ class CORE_EXPORT Document : public ContainerNode,
   static Document* Create(Document&);
 
   explicit Document(const DocumentInit& init,
-                    DocumentClassFlags flags = kDefaultDocumentClass);
+                    DocumentClassFlags flags = DocumentClassFlags());
   ~Document() override;
 
   // Constructs a Document instance without a subclass for testing.
@@ -557,20 +568,29 @@ class CORE_EXPORT Document : public ContainerNode,
   // "defaultView" attribute defined in HTML spec.
   DOMWindow* defaultView() const;
 
-  bool IsHTMLDocument() const { return document_classes_ & kHTMLDocumentClass; }
+  bool IsHTMLDocument() const {
+    return document_classes_.Has(DocumentClass::kHTML);
+  }
   bool IsXHTMLDocument() const {
-    return document_classes_ & kXHTMLDocumentClass;
+    return document_classes_.Has(DocumentClass::kXHTML);
   }
-  bool IsXMLDocument() const { return document_classes_ & kXMLDocumentClass; }
+  bool IsXMLDocument() const {
+    return document_classes_.Has(DocumentClass::kXML);
+  }
   bool IsImageDocument() const {
-    return document_classes_ & kImageDocumentClass;
+    return document_classes_.Has(DocumentClass::kImage);
   }
-  bool IsSVGDocument() const { return document_classes_ & kSVGDocumentClass; }
+  bool IsSVGDocument() const {
+    return document_classes_.Has(DocumentClass::kSVG);
+  }
   bool IsPluginDocument() const {
-    return document_classes_ & kPluginDocumentClass;
+    return document_classes_.Has(DocumentClass::kPlugin);
   }
   bool IsMediaDocument() const {
-    return document_classes_ & kMediaDocumentClass;
+    return document_classes_.Has(DocumentClass::kMedia);
+  }
+  bool IsTextDocument() const {
+    return document_classes_.Has(DocumentClass::kText);
   }
 
   bool HasSVGRootNode() const;
@@ -704,8 +724,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // does its own ancestor tree walk).
   void UpdateStyleAndLayoutTreeForThisDocument();
 
-  void UpdateStyleAndLayoutTreeForNode(const Node*);
-  void UpdateStyleAndLayoutTreeForSubtree(const Node*);
+  void UpdateStyleAndLayoutTreeForNode(const Node*, DocumentUpdateReason);
+  void UpdateStyleAndLayoutTreeForSubtree(const Node*, DocumentUpdateReason);
 
   void UpdateStyleAndLayout(DocumentUpdateReason);
   void LayoutUpdated();
@@ -1105,9 +1125,16 @@ class CORE_EXPORT Document : public ContainerNode,
     kScrollListener = 1 << 14,
     kLoadListenerAtCapturePhaseOrAtStyleElement = 1 << 15,
     // 0 bits remaining
+    kDOMMutationEventListener =
+        kDOMSubtreeModifiedListener | kDOMNodeInsertedListener |
+        kDOMNodeRemovedListener | kDOMNodeRemovedFromDocumentListener |
+        kDOMNodeInsertedIntoDocumentListener |
+        kDOMCharacterDataModifiedListener,
   };
 
   bool HasListenerType(ListenerType listener_type) const {
+    DCHECK(RuntimeEnabledFeatures::MutationEventsEnabled() ||
+           !(listener_types_ & kDOMMutationEventListener));
     return (listener_types_ & listener_type);
   }
   void AddListenerTypeIfNeeded(const AtomicString& event_type, EventTarget&);
@@ -1747,6 +1774,7 @@ class CORE_EXPORT Document : public ContainerNode,
   LazyLoadImageObserver& EnsureLazyLoadImageObserver();
 
   void IncrementNumberOfCanvases();
+  unsigned GetNumberOfCanvases() const { return num_canvases_; }
 
   void ProcessJavaScriptUrl(const KURL&,
                             scoped_refptr<const DOMWrapperWorld> world);
@@ -1980,6 +2008,8 @@ class CORE_EXPORT Document : public ContainerNode,
                            BeforeMatchExpandedHiddenMatchableUkm);
   FRIEND_TEST_ALL_PREFIXES(TextFinderSimTest,
                            BeforeMatchExpandedHiddenMatchableUkmNoHandler);
+  FRIEND_TEST_ALL_PREFIXES(DictionaryLoadFromHeaderTest,
+                           LoadDictionaryFromHeader);
 
   // Listed elements that are not associated to a <form> element.
   class UnassociatedListedElementsList {
@@ -2091,8 +2121,6 @@ class CORE_EXPORT Document : public ContainerNode,
   }
   void AddMutationEventListenerTypeIfEnabled(ListenerType);
 
-  void DidAddOrRemoveFormRelatedElementsTimerFired(TimerBase*);
-
   void ClearFocusedElementTimerFired(TimerBase*);
 
   bool HaveScriptBlockingStylesheetsLoaded() const;
@@ -2182,6 +2210,12 @@ class CORE_EXPORT Document : public ContainerNode,
       ScriptPromiseResolver* resolver,
       bool use_existing_status,
       mojom::blink::PermissionStatus status);
+
+  // Fetch the compression dictionary sent in the response header after the
+  // document load completes.
+  void FetchDictionaryFromLinkHeader();
+
+  Resource* GetPendingLinkPreloadForTesting(const KURL&);
 
   const DocumentToken token_;
 
@@ -2506,8 +2540,6 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<Document> template_document_;
   Member<Document> template_document_host_;
 
-  HeapTaskRunnerTimer<Document> did_add_or_remove_form_related_elements_timer_;
-
   HeapHashSet<Member<SVGUseElement>> use_elements_needing_update_;
 
   ParserSynchronizationPolicy parser_sync_policy_;
@@ -2552,7 +2584,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool is_vertical_scroll_enforced_ = false;
 
   // The number of canvas elements on the document
-  int num_canvases_ = 0;
+  unsigned num_canvases_ = 0;
 
   bool deferred_compositor_commit_is_allowed_ = false;
 

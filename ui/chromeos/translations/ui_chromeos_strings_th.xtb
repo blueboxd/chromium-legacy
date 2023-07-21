@@ -108,6 +108,7 @@
 <translation id="1838709767668011582">เว็บไซต์ Google</translation>
 <translation id="1853795129690976061">โฟลเดอร์นี้แชร์กับ Linux อยู่</translation>
 <translation id="1864756863218646478">ไม่พบไฟล์</translation>
+<translation id="1877377730633446520">การดำเนินการนี้จะใช้พื้นที่ประมาณ <ph name="REQUIRED_SPACE" /> ขณะนี้คุณมีพื้นที่เหลืออยู่ <ph name="FREE_SPACE" /></translation>
 <translation id="1884013283844450420">เครือข่ายที่ <ph name="NETWORK_INDEX" /> จาก <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, เชื่อมต่อ</translation>
 <translation id="1920670151694390848">มาลายาลัม (การทับศัพท์)</translation>
 <translation id="1920798810075583923">แตงโม</translation>
@@ -119,6 +120,7 @@
 <translation id="1972984168337863910">ขยายแผงความคิดเห็นเกี่ยวกับไฟล์</translation>
 <translation id="1995337122023280937">ไปยังตำแหน่งที่ตั้งไฟล์</translation>
 <translation id="2001796770603320721">จัดการใน Google ไดรฟ์</translation>
+<translation id="2004942826429452291">ระบบจะจัดเก็บไฟล์ไว้ในระบบคลาวด์และใน Chromebook เครื่องนี้</translation>
 <translation id="2009067268969781306">การฟอร์แมตไดรฟ์จะลบข้อมูลทั้งหมดที่เก็บไว้ในไดรฟ์ การดำเนินการนี้ยกเลิกไม่ได้</translation>
 <translation id="2025955442973426285">ตีกรินยา</translation>
 <translation id="2037845485764049925">รัสเซีย</translation>
@@ -129,6 +131,7 @@
 <translation id="2084108471225856927">การตั้งค่าอุปกรณ์</translation>
 <translation id="2084809735218147718">กำลังเขียนขอบคุณ</translation>
 <translation id="2088690981887365033">เครือข่าย VPN</translation>
+<translation id="2089751716171649322">เข้าถึงไฟล์ใน Google ไดรฟ์ได้โดยง่ายเมื่อคุณออฟไลน์</translation>
 <translation id="2111134541987263231">เปิด<ph name="BEGIN_BOLD" />อนุญาตในโหมดไม่ระบุตัวตน<ph name="END_BOLD" /></translation>
 <translation id="2114191879048183086">ระบบจะลบ <ph name="NUMBER_OF_ITEMS" /> รายการและคุณจะกู้คืนไม่ได้</translation>
 <translation id="2122305276694332719">การเชื่อมต่อเครือข่ายที่ซ่อนอยู่โดยอัตโนมัติจะทำให้คนอื่นๆ เห็นอุปกรณ์ของคุณและการตั้งค่าเครือข่ายบางอย่าง เราไม่แนะนำให้เชื่อมต่อ</translation>
@@ -147,7 +150,6 @@
 <translation id="2208919847696382164">ติดตั้งด้วย Linux</translation>
 <translation id="2225536596944493418">แน่ใจไหมว่าต้องการลบ <ph name="NUMBER_OF_ITEMS" /> รายการ</translation>
 <translation id="2230062665678605299">ไม่สามารถสร้างโฟลเดอร์ "<ph name="FOLDER_NAME" />" <ph name="ERROR_MESSAGE" /></translation>
-<translation id="2236732657580416950">ล้างแคช Google ไดรฟ์แล้ว</translation>
 <translation id="2239068707900391003">คนกับกาแฟ</translation>
 <translation id="2251368349685848079">กู้คืนจากถังขยะ</translation>
 <translation id="2278133026967558505">การเข้าถึงไฟล์จากเว็บไซต์และ URL ทั้งหมด</translation>
@@ -166,7 +168,6 @@
 <translation id="23721837607121582">ดาวน์โหลดโปรไฟล์อุปกรณ์เคลื่อนที่, เครือข่าย <ph name="NETWORK_INDEX" /> จาก <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">เปลี่ยนเป็นมุมมองรายการ</translation>
 <translation id="2377590462528165447">แชร์กับ Linux แล้ว <ph name="NUMBER_OF_ITEMS" /> โฟลเดอร์</translation>
-<translation id="2378075407703503998">เลือก <ph name="SELCTED_FILE_COUNT" /> ไฟล์</translation>
 <translation id="2383454254762599978">ย้ายไปที่ถังขยะ</translation>
 <translation id="2387458720915042159">ประเภทการเชื่อมต่อพร็อกซี</translation>
 <translation id="2389832672041313158">พม่า/เมียนมา</translation>
@@ -299,6 +300,7 @@
 <translation id="3479552764303398839">ไม่ใช่ตอนนี้</translation>
 <translation id="3486821258960016770">มองโกเลีย</translation>
 <translation id="3495304270784461826">ข้อผิดพลาด <ph name="COUNT" /> รายการ</translation>
+<translation id="3501954296166022751">ไฟล์ Google ไดรฟ์พร้อมใช้งานแบบออฟไลน์</translation>
 <translation id="3509680540198371098">เครือข่ายที่ <ph name="NETWORK_INDEX" /> จาก <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ความแรงสัญญาณ <ph name="SIGNAL_STRENGTH" />%, รายละเอียด</translation>
 <translation id="3511705761158917664">กำลังเตรียมการซิงค์ <ph name="NUMBER_OF_ITEMS" /> รายการ...</translation>
 <translation id="3522708245912499433">โปรตุเกส</translation>
@@ -321,6 +323,7 @@
 <translation id="3619593063686672873">ไม่มีวิดีโอล่าสุด</translation>
 <translation id="3634507049637220048">เครือข่ายที่ <ph name="NETWORK_INDEX" /> จาก <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, จัดการโดยผู้ดูแลระบบ, รายละเอียด</translation>
 <translation id="3645233063072417428">ย้าย <ph name="NUMBER_OF_ITEMS" /> รายการแล้ว</translation>
+<translation id="3658269352872031728">เลือกไว้ <ph name="SELECTED_FILE_COUNT" /> ไฟล์</translation>
 <translation id="3685122418104378273">เมื่อใช้ข้อมูลมือถือ การซิงค์ Google ไดรฟ์จะปิดใช้อยู่เป็นค่าเริ่มต้น</translation>
 <translation id="3689865792480713551">ยกเลิก<ph name="ACTIVITY_DESCRIPTION" /></translation>
 <translation id="3690128548376345212"><ph name="NETWORK_INDEX" /> จาก <ph name="NETWORK_COUNT" /> เครือข่าย, <ph name="NETWORK_NAME" />, ไม่ได้เปิดใช้งาน, <ph name="CONNECTION_STATUS" />, ความแรงของสัญญาณ <ph name="SIGNAL_STRENGTH" />%, รายละเอียด</translation>
@@ -419,6 +422,7 @@
 <translation id="4462159676511157176">เซิร์ฟเวอร์ชื่อที่กำหนดเอง</translation>
 <translation id="4465725236958772856">เครือข่ายที่ <ph name="NETWORK_INDEX" /> จาก <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, จัดการโดยผู้ดูแลระบบ, เชื่อมต่อ</translation>
 <translation id="4470564870223067757">ฮังกูลแบบ 2 ชุด</translation>
+<translation id="4472575034687746823">เริ่มต้น</translation>
 <translation id="4474142134969976028">ไม่มีผลลัพธ์ที่ตรงกัน</translation>
 <translation id="4477002475007461989">โรมาเนีย</translation>
 <translation id="4477219268485577442">การออกเสียงภาษาบัลแกเรีย</translation>
@@ -471,7 +475,6 @@
 <translation id="4823651846660089135">อุปกรณ์เป็นแบบอ่านอย่างเดียว</translation>
 <translation id="4826849268470072925">ทมิฬ (ITRANS)</translation>
 <translation id="482932175346970750">พิมพ์ <ph name="BEGIN_BOLD" />chrome://extensions<ph name="END_BOLD" /> ลงในเบราว์เซอร์</translation>
-<translation id="4839847978919684242">เลือก <ph name="SELCTED_FILES_COUNT" /> รายการ</translation>
 <translation id="4843566743023903107">Chromebase</translation>
 <translation id="4850886885716139402">มุมมอง</translation>
 <translation id="485316830061041779">เยอรมัน</translation>
@@ -574,11 +577,13 @@
 <translation id="5494920125229734069">เลือกทั้งหมด</translation>
 <translation id="5500122897333236901">ไอซ์แลนดิก</translation>
 <translation id="5508696409934741614">จุด</translation>
+<translation id="5519161320735100193">การตั้งค่า Google ไดรฟ์</translation>
 <translation id="5522908512596376669">เปลี่ยนรายการไฟล์เป็นมุมมองรายการแล้ว</translation>
 <translation id="5524517123096967210">ไม่สามารถอ่านไฟล์</translation>
 <translation id="5533102081734025921">รูปภาพ <ph name="IMAGE_TYPE" /></translation>
 <translation id="5534520101572674276">กำลังคำนวณขนาด</translation>
 <translation id="554153475311314364">กรีก (การทับศัพท์)</translation>
+<translation id="5554171655917412781">เลือกไว้ <ph name="SELECTED_FOLDERS_COUNT" /> โฟลเดอร์</translation>
 <translation id="5580591966435005537">เครื่องเสมือน</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5583664733673201137">ความกว้างเครื่องหมายวรรคตอนเป็นแบบเต็ม</translation>
@@ -601,6 +606,7 @@
 <translation id="5724172041621205163">ไทยด้วยแป้นพิมพ์ปัตตะโชติ</translation>
 <translation id="57383366388012121">เดือนที่แล้ว</translation>
 <translation id="5756666464756035725">QWERTY ภาษาฮังการี</translation>
+<translation id="5760252553414789727">เลือกไว้ <ph name="SELECTED_FILES_COUNT" /> รายการ</translation>
 <translation id="5763377084591234761">เยอรมัน (สวิตเซอร์แลนด์)</translation>
 <translation id="5769519078756170258">โฮสต์หรือโดเมนที่จะยกเว้น</translation>
 <translation id="5775750595919327203">อูรดู</translation>
@@ -618,6 +624,7 @@
 <translation id="5838451609423551646">นำรายการทั้งหมดออกจากรายการที่เลือกไว้</translation>
 <translation id="5838825566232597749">Workman สหรัฐฯ แบบสากล</translation>
 <translation id="5845721951356578987">พยาบาล</translation>
+<translation id="5860491529813859533">เปิด</translation>
 <translation id="5861477046012235702">เกมเมอร์</translation>
 <translation id="5864471791310927901">การค้นหา DHCP ล้มเหลว</translation>
 <translation id="5896749729057314184"><ph name="NETWORK_INDEX" /> จาก <ph name="NETWORK_COUNT" /> เครือข่าย, <ph name="NETWORK_NAME" />, ไม่ได้เปิดใช้งาน, ความแรงของสัญญาณ <ph name="SIGNAL_STRENGTH" />%, รายละเอียด</translation>
@@ -756,7 +763,6 @@
 <translation id="6989942356279143254">สวีเดน</translation>
 <translation id="6990081529015358884">คุณไม่มีพื้นที่เหลือแล้ว</translation>
 <translation id="6993826899923627728">รายการเหล่านี้อยู่ในถังขยะ</translation>
-<translation id="6998711733709403587">เลือก <ph name="SELCTED_FOLDERS_COUNT" /> โฟลเดอร์</translation>
 <translation id="7008426324576352165">องค์กรต้องมีพื้นที่เก็บข้อมูลมากกว่านี้เพื่ออัปโหลดให้เสร็จสิ้น</translation>
 <translation id="7009985720488544166">นโยบายของผู้ดูแลระบบบล็อกการย้ายไฟล์ <ph name="COUNT" /> รายการ</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -864,6 +870,7 @@
 <translation id="7805768142964895445">สถานะ</translation>
 <translation id="7806708061868529807">ฮิบรู</translation>
 <translation id="78104721049218340">ไทยด้วยแป้นพิมพ์เกษมณี</translation>
+<translation id="7814857791038398352">Microsoft OneDrive</translation>
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7831491651892296503">เกิดข้อผิดพลาดในการกำหนดค่าเครือข่าย</translation>
 <translation id="7839804798877833423">การดึงไฟล์เหล่านี้จะใช้ข้อมูลมือถือขนาดประมาณ <ph name="FILE_SIZE" /></translation>
@@ -876,15 +883,18 @@
 <translation id="7903984238293908205">คะตะคะนะ</translation>
 <translation id="7908793776359722643">การฟอร์แมตพาร์ติชันจะลบข้อมูลทั้งหมดที่จัดเก็บในพาร์ติชันนั้น การดำเนินการนี้เลิกทำไม่ได้</translation>
 <translation id="7911118814695487383">Linux</translation>
+<translation id="7920501309908018401">ไฟล์ใน "ไดรฟ์ของฉัน" จะซิงค์กับ Chromebook โดยอัตโนมัติ เพื่อให้คุณเข้าถึงได้โดยไม่ต้องเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="7925247922861151263">การตรวจสอบ AAA ล้มเหลว</translation>
 <translation id="7925686952655276919">อย่าใช้ข้อมูลมือถือสำหรับการซิงค์</translation>
 <translation id="7928710562641958568">ยกเลิกการต่อเชื่อมอุปกรณ์</translation>
+<translation id="7933875256234974853">กำลังเตรียมซิงค์ไฟล์ในไดรฟ์...</translation>
 <translation id="7943385054491506837">Colemak แบบสหรัฐอเมริกา</translation>
 <translation id="7953739707111622108">ไม่สามารถเปิดอุปกรณ์นี้ได้เนื่องจากระบบไฟล์ของอุปกรณ์ไม่เป็นที่รู้จัก</translation>
 <translation id="7969525169268594403">สโลวีเนีย</translation>
 <translation id="7972920761225148017">ฝรั่งเศส (สวิตเซอร์แลนด์)</translation>
 <translation id="7973962044839454485">การตรวจสอบสิทธิ์ PPP ล้มเหลวเนื่องจากชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</translation>
 <translation id="7980421588063892270">อังกฤษ (สหรัฐฯ) ด้วยแป้นพิมพ์ Colemak</translation>
+<translation id="7985008041109611710">กำลังซิงค์ <ph name="NUMBER_OF_FILES_SYNCING" /> ไฟล์</translation>
 <translation id="8000066093800657092">ไม่มีเครือข่าย</translation>
 <translation id="8008366997883261463">สุนัข</translation>
 <translation id="8028993641010258682">ขนาด</translation>
@@ -920,6 +930,7 @@
 <translation id="8264024885325823677">การตั้งค่านี้จัดการโดยผู้ดูแลระบบ</translation>
 <translation id="8269755669432358899">ยุบแผงความคิดเห็นเกี่ยวกับไฟล์</translation>
 <translation id="8280151743281770066">การออกเสียงภาษาอาร์เมเนีย</translation>
+<translation id="8285791779547722821"><ph name="ORIGINAL_MIME_TYPE" />ที่เข้ารหัส</translation>
 <translation id="8294431847097064396">แหล่งที่มา</translation>
 <translation id="8297012244086013755">ฮังกูลแบบ 3 ชุด (ไม่มี Shift)</translation>
 <translation id="8299269255470343364">ญี่ปุ่น</translation>
@@ -1038,6 +1049,7 @@
 <translation id="9213073329713032541">เริ่มการติดตั้งสำเร็จแล้ว</translation>
 <translation id="9219103736887031265">ภาพ</translation>
 <translation id="9219908252191632183">ดวงจันทร์</translation>
+<translation id="937795003075802289">กำลังซิงค์ 1 ไฟล์</translation>
 <translation id="938470336146445890">โปรดติดตั้งใบรับรองของผู้ใช้</translation>
 <translation id="939736085109172342">โฟลเดอร์ใหม่</translation>
 <translation id="943972244133411984">แก้ไขโดย</translation>

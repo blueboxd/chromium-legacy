@@ -18,8 +18,8 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/base/user_selectable_type.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_user_settings.h"
+#include "components/sync/service/sync_service.h"
+#include "components/sync/service/sync_user_settings.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 using password_manager::PasswordManagerSetting;
@@ -98,7 +98,6 @@ PasswordManagerSettingsServiceAndroidImpl::
                                               syncer::SyncService* sync_service)
     : pref_service_(pref_service), sync_service_(sync_service) {
   DCHECK(pref_service_);
-  DCHECK(sync_service_);
   DCHECK(password_manager::features::UsesUnifiedPasswordManagerUi());
   if (!PasswordSettingsUpdaterAndroidBridgeHelper::CanCreateAccessor())
     return;
@@ -121,7 +120,6 @@ PasswordManagerSettingsServiceAndroidImpl::
       bridge_helper_(std::move(bridge_helper)),
       lifecycle_helper_(std::move(lifecycle_helper)) {
   DCHECK(pref_service_);
-  DCHECK(sync_service_);
   if (!bridge_helper_)
     return;
   Init();
@@ -202,7 +200,11 @@ void PasswordManagerSettingsServiceAndroidImpl::Init() {
       &PasswordManagerSettingsServiceAndroidImpl::OnChromeForegrounded,
       weak_ptr_factory_.GetWeakPtr()));
   is_password_sync_enabled_ = IsPasswordSyncEnabled(sync_service_);
-  sync_service_->AddObserver(this);
+  if (sync_service_) {
+    // The `sync_service_` can be null when --disable-sync has been passed in as
+    // a command line flag.
+    sync_service_->AddObserver(this);
+  }
 
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(

@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.customtabs.content;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -25,12 +23,12 @@ import static org.chromium.cc.mojom.RootScrollOffsetUpdateFrequency.NONE;
 import static org.chromium.cc.mojom.RootScrollOffsetUpdateFrequency.ON_SCROLL_END;
 import static org.chromium.chrome.browser.customtabs.content.RealtimeEngagementSignalObserver.REAL_VALUES;
 import static org.chromium.chrome.browser.customtabs.content.RealtimeEngagementSignalObserver.TIME_CAN_UPDATE_AFTER_END;
+import static org.chromium.url.JUnitTestGURLs.HTTP_URL;
+import static org.chromium.url.JUnitTestGURLs.TEXT_FRAGMENT_URL;
 import static org.chromium.url.JUnitTestGURLs.URL_1;
 
 import android.graphics.Point;
 import android.os.SystemClock;
-
-import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -47,7 +45,6 @@ import org.robolectric.shadows.ShadowSystemClock;
 
 import org.chromium.base.FeatureList;
 import org.chromium.base.FeatureList.TestValues;
-import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.cc.mojom.RootScrollOffsetUpdateFrequency;
 import org.chromium.chrome.browser.customtabs.content.RealtimeEngagementSignalObserver.ScrollState;
@@ -64,15 +61,17 @@ import org.chromium.content.browser.GestureListenerManagerImpl;
 import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.LoadCommittedDetails;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.url.JUnitTestGURLs;
+import org.chromium.url.ShadowGURL;
 
 import java.util.List;
 
 /** Unit test for {@link RealtimeEngagementSignalObserver}. */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(shadows = {ShadowSystemClock.class})
+@Config(shadows = {ShadowSystemClock.class, ShadowGURL.class})
 @Features.EnableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS})
 @Features.DisableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS_ALTERNATIVE_IMPL})
 public class RealtimeEngagementSignalObserverUnitTest {
@@ -501,52 +500,6 @@ public class RealtimeEngagementSignalObserverUnitTest {
     }
 
     @Test
-    public void returnsRetroactiveMaxScroll() {
-        initializeTabForTest();
-        GestureStateListener gestureStateListener = captureGestureStateListener();
-        Supplier<Integer> scrollPercentageSupplier = captureGreatestScrollPercentageSupplier();
-
-        // Scroll down to 58%.
-        gestureStateListener.onScrollStarted(0, SCROLL_EXTENT, false);
-        gestureStateListener.onScrollUpdateGestureConsumed(new Point(0, 58));
-        gestureStateListener.onScrollEnded(58, SCROLL_EXTENT);
-
-        assertEquals(Integer.valueOf(55), scrollPercentageSupplier.get());
-    }
-
-    @Test
-    public void returnsRetroactiveMaxScroll_zeroIfNotScrolled() {
-        initializeTabForTest();
-        Supplier<Integer> scrollPercentageSupplier = captureGreatestScrollPercentageSupplier();
-
-        assertEquals(Integer.valueOf(0), scrollPercentageSupplier.get());
-    }
-
-    @Test
-    public void returnsRetroactiveMaxScroll_nullIfNotReportingUsage() {
-        doReturn(false).when(mPrivacyPreferencesManagerImpl).isUsageAndCrashReportingPermitted();
-        initializeTabForTest();
-
-        Supplier<Integer> scrollPercentageSupplier = captureGreatestScrollPercentageSupplier();
-        assertNull(scrollPercentageSupplier.get());
-    }
-
-    @Test
-    public void returnsRetroactiveMaxScroll_zeroIfSendingFakeValues() {
-        setFeatureParams(false, null);
-        initializeTabForTest();
-        GestureStateListener gestureStateListener = captureGestureStateListener();
-        Supplier<Integer> scrollPercentageSupplier = captureGreatestScrollPercentageSupplier();
-
-        // Scroll down to 46%.
-        gestureStateListener.onScrollStarted(0, SCROLL_EXTENT, false);
-        gestureStateListener.onScrollUpdateGestureConsumed(new Point(0, 46));
-        gestureStateListener.onScrollEnded(46, SCROLL_EXTENT);
-
-        assertEquals(Integer.valueOf(0), scrollPercentageSupplier.get());
-    }
-
-    @Test
     public void sendsFalseForScrollDirectionIfSendingFakeValues() {
         setFeatureParams(false, null);
         initializeTabForTest();
@@ -772,6 +725,94 @@ public class RealtimeEngagementSignalObserverUnitTest {
         verify(env.connection, times(1)).notifyDidGetUserInteraction(env.session, false);
     }
 
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS_ALTERNATIVE_IMPL})
+    public void pauseAndUnpauseSignalsOnPageWithTextFragment() {
+        initializeTabForTest();
+        GestureStateListener listener = captureGestureStateListener(ON_SCROLL_END);
+        WebContentsObserver webContentsObserver = captureWebContentsObserver();
+
+        // Navigate to a URL with text fragment.
+        var navigationHandle = NavigationHandle.createForTesting(
+                JUnitTestGURLs.getGURL(TEXT_FRAGMENT_URL), false, 0, false);
+        webContentsObserver.didStartNavigationInPrimaryMainFrame(navigationHandle);
+
+        // Do a scroll.
+        listener.onScrollStarted(0, SCROLL_EXTENT, false);
+        when(mRenderCoordinatesImpl.getScrollYPixInt()).thenReturn(24);
+        listener.onScrollOffsetOrExtentChanged(24, SCROLL_EXTENT);
+        listener.onScrollEnded(24, SCROLL_EXTENT);
+        // We shouldn't get scroll signals.
+        verify(env.connection, never()).notifyVerticalScrollEvent(eq(env.session), anyBoolean());
+        verify(env.connection, never())
+                .notifyGreatestScrollPercentageIncreased(eq(env.session), anyInt());
+
+        // Navigate back to a URL with no text fragment.
+        var navigationHandle2 = NavigationHandle.createForTesting(
+                JUnitTestGURLs.getGURL(HTTP_URL), false, 0, false);
+        webContentsObserver.didStartNavigationInPrimaryMainFrame(navigationHandle2);
+
+        // Do a scroll.
+        listener.onScrollStarted(24, SCROLL_EXTENT, false);
+        when(mRenderCoordinatesImpl.getScrollYPixInt()).thenReturn(50);
+        listener.onScrollOffsetOrExtentChanged(50, SCROLL_EXTENT);
+        listener.onScrollEnded(50, SCROLL_EXTENT);
+        // We should normally get signals.
+        verify(env.connection).notifyVerticalScrollEvent(eq(env.session), eq(false));
+        verify(env.connection).notifyGreatestScrollPercentageIncreased(eq(env.session), eq(50));
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS_ALTERNATIVE_IMPL})
+    public void doesNotSendSignalsBeforeDownScroll() {
+        initializeTabForTest();
+        GestureStateListener listener = captureGestureStateListener(ON_SCROLL_END);
+
+        // Assume we started further down on the page and scroll up.
+        listener.onScrollStarted(50, SCROLL_EXTENT, true);
+        when(mRenderCoordinatesImpl.getScrollYPixInt()).thenReturn(30);
+        listener.onScrollOffsetOrExtentChanged(30, SCROLL_EXTENT);
+        listener.onScrollEnded(30, SCROLL_EXTENT);
+        // We shouldn't get any signals.
+        verify(env.connection, never()).notifyVerticalScrollEvent(eq(env.session), anyBoolean());
+        verify(env.connection, never())
+                .notifyGreatestScrollPercentageIncreased(eq(env.session), anyInt());
+        // Now scroll down from here.
+        listener.onScrollStarted(30, SCROLL_EXTENT, false);
+        when(mRenderCoordinatesImpl.getScrollYPixInt()).thenReturn(45);
+        listener.onScrollOffsetOrExtentChanged(45, SCROLL_EXTENT);
+        listener.onScrollEnded(45, SCROLL_EXTENT);
+        // We should get signals as if we've only scrolled down to this %.
+        verify(env.connection).notifyVerticalScrollEvent(eq(env.session), eq(false));
+        verify(env.connection).notifyGreatestScrollPercentageIncreased(eq(env.session), eq(45));
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS_ALTERNATIVE_IMPL})
+    public void doesNotSendSignalsBeforeDownScroll_AfterNavigation() {
+        initializeTabForTest();
+        GestureStateListener listener = captureGestureStateListener(ON_SCROLL_END);
+
+        // Scroll down.
+        listener.onScrollStarted(0, SCROLL_EXTENT, false);
+        when(mRenderCoordinatesImpl.getScrollYPixInt()).thenReturn(25);
+        listener.onScrollOffsetOrExtentChanged(25, SCROLL_EXTENT);
+        listener.onScrollEnded(25, SCROLL_EXTENT);
+        // We should get signals as usual.
+        verify(env.connection).notifyVerticalScrollEvent(eq(env.session), eq(false));
+        verify(env.connection).notifyGreatestScrollPercentageIncreased(eq(env.session), eq(25));
+        // Now, navigate to another page.
+        WebContentsObserver webContentsObserver = captureWebContentsObserver();
+        LoadCommittedDetails details = new LoadCommittedDetails(0, JUnitTestGURLs.getGURL(URL_1),
+                false, /*isSameDocument=*/false, /*isMainFrame=*/true, 200);
+        webContentsObserver.navigationEntryCommitted(details);
+        // Scroll up from some point in the page, e.g. back navigation or anchor fragment on page.
+        // We shouldn't get any (more) signals.
+        verify(env.connection, times(1)).notifyVerticalScrollEvent(eq(env.session), anyBoolean());
+        verify(env.connection, times(1))
+                .notifyGreatestScrollPercentageIncreased(eq(env.session), anyInt());
+    }
+
     private void advanceTime(long millis) {
         SystemClock.setCurrentTimeMillis(CURRENT_TIME_MS + millis);
     }
@@ -848,15 +889,6 @@ public class RealtimeEngagementSignalObserverUnitTest {
         verify(env.tabProvider.getTab(), atLeastOnce())
                 .addObserver(tabObserverArgumentCaptor.capture());
         return tabObserverArgumentCaptor.getAllValues();
-    }
-
-    private Supplier<Integer> captureGreatestScrollPercentageSupplier() {
-        ArgumentCaptor<Supplier<Integer>> greatestScrollPercentageSupplierArgumentCaptor =
-                ArgumentCaptor.forClass(Supplier.class);
-        verify(env.connection)
-                .setGreatestScrollPercentageSupplier(any(CustomTabsSessionToken.class),
-                        greatestScrollPercentageSupplierArgumentCaptor.capture());
-        return greatestScrollPercentageSupplierArgumentCaptor.getValue();
     }
 
     private void verifyNoMemoryLeakForGestureStateListener(GestureStateListener listener) {

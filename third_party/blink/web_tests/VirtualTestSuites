@@ -142,34 +142,12 @@
     "expires": "Sep 1, 2023"
   },
   {
-    "prefix": "composite-background-attachment-fixed",
-    "platforms": ["Linux"],
-    "bases": ["compositing/fixed-background-after-style-recalc.html",
-              "compositing/fixed-background-composited-html.html",
-              "compositing/fixed-background-negative-z-index-fixed.html",
-              "compositing/fixed-body-background-positioned.html",
-              "compositing/backgrounds",
-              "fast/backgrounds",
-              "paint/background",
-              "paint/invalidation/background",
-              "external/wpt/acid/acid2/reftest.html",
-              "external/wpt/css/CSS2/backgrounds",
-              "external/wpt/css/css-backgrounds",
-              "external/wpt/css/css-break/background-image-000.html",
-              "external/wpt/css/css-break/background-image-001.html",
-              "external/wpt/css/css-break/background-image-002.html",
-              "external/wpt/css/css-break/background-attachment-fixed.html"],
-    "args": ["--enable-features=CompositeBackgroundAttachmentFixed",
-             "--enable-prefer-compositing-to-lcd-text"],
-    "expires": "Aug 1, 2023"
-  },
-  {
     "prefix": "attribution-reporting-debug-mode",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["wpt_internal/attribution-reporting"],
     "exclusive_tests": "ALL",
     "args": ["--attribution-reporting-debug-mode",
-             "--enable-features=AttributionReportingCrossAppWeb,AttributionReportingReportVerification",
+             "--enable-features=AttributionReportingCrossAppWeb,AttributionReportingReportVerification,PrivacySandboxAdsAPIsOverride,PrivacySandboxAggregationService:trusted_server_url/https%3A%2F%2Fweb-platform.test%3A8444%2Fwpt_internal%2Fattribution-reporting%2Fresources%2FpublicKeys",
              "--additional-private-state-token-key-commitments={\"https://web-platform.test:8444\":{\"PrivateStateTokenV3VOPRF\":{\"protocol_version\":\"PrivateStateTokenV3VOPRF\",\"id\":1,\"batchsize\":1,\"keys\":{\"0\":{\"Y\":\"AAAAAASqh8oivosFN46xxx7zIK10bh07Younm5hZ90HgglQqOFUC8l2/VSlsOlReOHJ2CrfJ6CG1adnTkKJhZ0BtbSPWBwviQtdl64MWJc7sSg9HPvWfTjDigX5ihbzihG8V8aA=\",\"expiry\":\"253402300799000000\"}}}}}"],
     "expires": "Jul 1, 2023"
   },
@@ -178,7 +156,7 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["http/tests/inspector-protocol/attribution-reporting/os"],
     "exclusive_tests": "ALL",
-    "args": ["--enable-features=AttributionReportingCrossAppWeb"],
+    "args": ["--enable-features=AttributionReportingCrossAppWeb,PrivacySandboxAdsAPIsOverride"],
     "expires": "Jul 1, 2023"
   },
   {
@@ -219,7 +197,8 @@
     "bases": ["fast/scroll-behavior",
               "fast/scroll-snap",
               "fast/scrolling",
-              "external/wpt/css/cssom-view"],
+              "external/wpt/css/cssom-view",
+              "external/wpt/scroll-animations"],
     "exclusive_tests": ["fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar-thumb-scaled.html"],
     "args": ["--enable-threaded-compositing",
              "--enable-prefer-compositing-to-lcd-text"],
@@ -250,6 +229,8 @@
              "--force-raster-color-profile=color-spin-gamma24"],
     "expires": "Jul 1, 2023"
   },
+  "The stable suite tests for conformance to HTML/web specifications, and",
+  "detects unintentional changes to web exposed surface, so should not expire.",
   {
     "prefix": "stable",
     "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
@@ -269,7 +250,7 @@
     "args": ["--stable-release-mode",
              "--disable-auto-wpt-origin-isolation",
              "--disable-field-trial-config"],
-    "expires": "Jul 1, 2023"
+    "expires": "never"
   },
   {
     "prefix": "feature-policy-permissions",
@@ -280,13 +261,15 @@
              "--use-fake-ui-for-media-stream"],
     "expires": "Jul 1, 2023"
   },
+  "The origin trials suite tests that OT-controlled features are exposed to",
+  "the web as expected, so should not expire.",
   {
     "prefix": "origin-trials-runtimeflags-disabled",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["http/tests/origin_trials/webexposed"],
     "args": ["--disable-origin-trial-controlled-blink-features",
              "--stable-release-mode"],
-    "expires": "Jul 1, 2023"
+    "expires": "never"
   },
   {
     "prefix": "android",
@@ -351,10 +334,33 @@
   {
     "prefix": "composite-clip-path-animation",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/css/css-masking/clip-path/animations"],
+    "bases": ["external/wpt/css/css-masking/clip-path/animations",
+              "animations/responsive/interpolation/clip-path-responsive.html",
+              "css3/masking/clip-path-animation.html",
+              "fast/css/clip-path-crash.html",
+              "http/tests/devtools/animation/animation-timeline.js",
+              "http/tests/devtools/animation/animation-web-anim-negative-start-time.js",
+              "paint/invalidation/svg/invalid-clip-path-crash.html",
+              "transitions/webkit-clip-path-equality.html"],
+    "exclusive_tests": "ALL",
     "args": ["--enable-blink-features=CompositeClipPathAnimation",
              "--enable-threaded-compositing"],
     "expires": "Jul 1, 2023"
+  },
+  {
+    "prefix": "main-thread-clip-path-animation",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/css/css-masking/clip-path/animations",
+              "animations/responsive/interpolation/clip-path-responsive.html",
+              "css3/masking/clip-path-animation.html",
+              "fast/css/clip-path-crash.html",
+              "http/tests/devtools/animation/animation-timeline.js",
+              "http/tests/devtools/animation/animation-web-anim-negative-start-time.js",
+              "paint/invalidation/svg/invalid-clip-path-crash.html",
+              "transitions/webkit-clip-path-equality.html"],
+    "exclusive_tests": "ALL",
+    "args": ["--disable-blink-features=CompositeClipPathAnimation"],
+    "expires": "never"
   },
   {
     "prefix": "fractional-scroll-offsets",
@@ -901,6 +907,16 @@
     "expires": "Jul 1, 2023"
   },
   {
+    "prefix": "fluent-non-overlay-scrollbar-hc",
+    "platforms": ["Win"],
+    "bases": ["virtual/fluent-non-overlay-scrollbar/composited",
+              "virtual/fluent-non-overlay-scrollbar/hover-over-scrollbar-thumb.html"],
+    "args": ["--enable-features=FluentScrollbar",
+             "--enable-threaded-compositing",
+             "--force-high-contrast"],
+    "expires": "Jul 1, 2023"
+  },
+  {
     "prefix": "fluent-non-overlay-scrollbar-dark-mode",
     "platforms": ["Win"],
     "bases": ["fast/forms/color-scheme/scrollbar"],
@@ -1222,6 +1238,16 @@
     "expires": "Jul 1, 2023"
   },
   {
+    "prefix": "force-renderer-accessibility-form-controls",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/accessibility/crashtests/bdo-table-cell.html",
+              "external/wpt/accessibility/crashtests/displaylocked-serialize.html",
+              "external/wpt/accessibility/crashtests/img-map-pseudo.html",
+              "external/wpt/accessibility/crashtests/map-inside-map.html"],
+    "args": ["--force-renderer-accessibility=form-controls"],
+    "expires": "never"
+  },
+  {
     "prefix": "no-alloc-direct-call",
     "platforms": ["Linux"],
     "bases": ["fast/canvas"],
@@ -1262,9 +1288,52 @@
     "expires": "Jul 1, 2023"
   },
   {
+    "prefix": "view-transition-mpa-serialization",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/css/css-view-transitions",
+              "wpt_internal/view-transition",
+              "view-transition",
+              "inspector-protocol/css/css-get-styles-for-view-transition.js",
+              "external/wpt/soft-navigation-heuristics/navigation-api-view-transition.tentative.html"],
+    "exclusive_tests": "ALL",
+    "args": ["--enable-threaded-compositing",
+             "--enable-blink-features=SerializeViewTransitionStateInSPA"],
+    "expires": "Feb 1, 2024"
+  },
+  {
+    "prefix": "mutation-events-disabled",
+    "platforms": ["Linux"],
+    "bases": [],
+    "args": ["--disable-blink-features=MutationEvents"],
+    "expires": "Sep 1, 2024"
+  },
+  {
     "prefix": "popover-hint-disabled",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/html/semantics/popovers/"],
+    "bases": [
+      "external/wpt/html/semantics/popovers/popover-anchor-idl-property.html",
+      "external/wpt/html/semantics/popovers/popover-anchor-nesting.html",
+      "external/wpt/html/semantics/popovers/popover-attribute-all-elements.html",
+      "external/wpt/html/semantics/popovers/popover-attribute-basic.html",
+      "external/wpt/html/semantics/popovers/popover-beforetoggle-opening-event.html",
+      "external/wpt/html/semantics/popovers/popover-change-type.html",
+      "external/wpt/html/semantics/popovers/popover-css-properties.tentative.html",
+      "external/wpt/html/semantics/popovers/popover-document-open.html",
+      "external/wpt/html/semantics/popovers/popover-events.html",
+      "external/wpt/html/semantics/popovers/popover-focus-2.html",
+      "external/wpt/html/semantics/popovers/popover-focus.html",
+      "external/wpt/html/semantics/popovers/popover-invoker-reset.html",
+      "external/wpt/html/semantics/popovers/popover-invoking-attribute.html",
+      "external/wpt/html/semantics/popovers/popover-light-dismiss.html",
+      "external/wpt/html/semantics/popovers/popover-move-documents.html",
+      "external/wpt/html/semantics/popovers/popover-overlay.html",
+      "external/wpt/html/semantics/popovers/popover-removal-2.html",
+      "external/wpt/html/semantics/popovers/popover-removal.html",
+      "external/wpt/html/semantics/popovers/popover-shadow-dom.html",
+      "external/wpt/html/semantics/popovers/popover-target-action-hover.tentative.html",
+      "external/wpt/html/semantics/popovers/popover-types-with-hints.tentative.html",
+      "external/wpt/html/semantics/popovers/popover-types.html"
+    ],
     "args": ["--enable-blink-features=HTMLPopoverAttribute",
       "--disable-blink-features=HTMLPopoverHint"],
     "expires": "Jan 1, 2024"
@@ -1308,7 +1377,7 @@
       "http/tests/inspector-protocol/storage/interest-groups.js"
     ],
     "args": [
-      "--enable-features=InterestGroupStorage,AdInterestGroupAPI,Fledge,PrivacySandboxAdsAPIsOverride,FencedFrames:implementation_type/mparch,FencedFramesAPIChanges"
+      "--enable-features=InterestGroupStorage,AdInterestGroupAPI,Fledge,FledgeBiddingAndAuctionServer,PrivacySandboxAdsAPIsOverride,FencedFrames:implementation_type/mparch,FencedFramesAPIChanges,FencedFramesDefaultMode"
     ],
     "expires": "Dec 1, 2023"
   },
@@ -1444,7 +1513,7 @@
       "wpt_internal/shared_storage",
       "external/wpt/shared-storage"
     ],
-    "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,FencedFramesAPIChanges"],
+    "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,FencedFramesAPIChanges,FencedFramesDefaultMode"],
     "expires": "Jul 1, 2023"
   },
   {
@@ -1456,7 +1525,7 @@
     "exclusive_tests": [
       "wpt_internal/shared_storage_selecturl_limit/"
     ],
-    "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,FencedFramesAPIChanges,PrivacySandboxAdsAPIsOverride,SharedStorageSelectURLLimit"],
+    "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,FencedFramesAPIChanges,FencedFramesDefaultMode,PrivacySandboxAdsAPIsOverride,SharedStorageSelectURLLimit"],
     "expires": "Jul 1, 2023"
   },
   {
@@ -1475,17 +1544,21 @@
       "wpt_internal/fenced_frame",
       "http/tests/inspector-protocol/fenced-frame",
       "external/wpt/html/anonymous-iframe",
-      "external/wpt/fenced-frame"
+      "external/wpt/fenced-frame",
+      "external/wpt/fetch/local-network-access/fenced-frame-subresource-fetch.tentative.https.window.js",
+      "external/wpt/fetch/local-network-access/fenced-frame.tentative.https.window.js"
     ],
     "exclusive_tests": [
       "http/tests/fenced_frame",
       "wpt_internal/fenced_frame",
       "external/wpt/fenced-frame",
-      "http/tests/inspector-protocol/fenced-frame"
+      "http/tests/inspector-protocol/fenced-frame",
+      "external/wpt/fetch/local-network-access/fenced-frame-subresource-fetch.tentative.https.window.js",
+      "external/wpt/fetch/local-network-access/fenced-frame.tentative.https.window.js"
     ],
     "args": ["--enable-features=FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,NoncedPartitionedCookies,Fledge,InterestGroupStorage,AdInterestGroupAPI,AllowURNsInIframes,BiddingAndScoringDebugReportingAPI,ComputePressure",
-             "--enable-blink-features=FencedFramesAPIChanges"],
-    "expires": "Jul 1, 2023"
+             "--enable-blink-features=FencedFramesAPIChanges,FencedFramesDefaultMode"],
+    "expires": "Dec 31, 2023"
   },
   {
     "prefix": "cors-non-wildcard-request-headers",
@@ -1678,8 +1751,8 @@
     ],
     "exclusive_tests": "ALL",
     "args": [
-      "--enable-blink-features=SpeculationRulesPrefetchProxy,SpeculationRulesFetchFromHeader,SpeculationRulesDocumentRules,NoVarySearchPrefetch,SpeculationRulesEagerness,SpeculationRulesDocumentRulesSelectorMatches",
-      "--enable-features=SpeculationRulesPrefetchProxy,PrefetchUseContentRefactor",
+      "--enable-blink-features=SpeculationRulesPrefetchProxy,SpeculationRulesFetchFromHeader,SpeculationRulesDocumentRules,NoVarySearchPrefetch,SpeculationRulesNoVarySearchHint,SpeculationRulesEagerness,SpeculationRulesDocumentRulesSelectorMatches",
+      "--enable-features=SpeculationRulesPrefetchProxy,PrefetchUseContentRefactor:block_until_head_eager_prefetch/true",
       "--bypass-prefetch-proxy-for-host=not-web-platform.test"
     ],
     "expires": "Jul 1, 2023"
@@ -1692,8 +1765,8 @@
     ],
     "exclusive_tests": "ALL",
     "args": [
-      "--enable-blink-features=NoVarySearchPrefetch",
-      "--enable-features=PrefetchUseContentRefactor"
+      "--enable-blink-features=NoVarySearchPrefetch,SpeculationRulesNoVarySearchHint",
+      "--enable-features=PrefetchUseContentRefactor:block_until_head_eager_prefetch/true"
     ],
     "expires": "Jul 1, 2023"
   },
@@ -1927,6 +2000,17 @@
     "expires": "Dec 21, 2023"
   },
   {
+    "prefix": "abort-signal-any-disabled",
+    "platforms": ["Linux"],
+    "bases": [
+      "external/wpt/fetch/api/abort/general.any.js",
+      "external/wpt/service-workers/cache-storage/cache-abort.https.any.js",
+      "external/wpt/service-workers/cache-storage/cache-add.https.any.js"
+    ],
+    "args": ["--disable-blink-features=AbortSignalAny"],
+    "expires": "Dec 21, 2023"
+  },
+  {
     "prefix": "keepalive-in-browser-migration",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
@@ -1981,10 +2065,27 @@
     "expires": "Dec 1, 2023"
   },
   {
+    "prefix": "environment-integrity",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["wpt_internal/environment-integrity"],
+    "exclusive_tests": "ALL",
+    "args": ["--enable-features=WebEnvironmentIntegrity"],
+    "expires": "Dec 1, 2023"
+  },
+  {
     "prefix": "longtask-from-loaf",
     "platforms": ["Linux"],
     "bases": ["external/wpt/longtask-timing"],
     "args": ["--enable-blink-features=LongTaskFromLongAnimationFrame"],
     "expires": "Aug 1, 2023"
+  },
+  {
+    "prefix": "netinfo-constant-type",
+    "platforms": ["Linux"],
+    "bases": ["netinfo/"],
+    "args": [
+      "--enable-blink-features=NetInfoConstantType"
+    ],
+    "expires": "Dec 1, 2023"
   }
 ]

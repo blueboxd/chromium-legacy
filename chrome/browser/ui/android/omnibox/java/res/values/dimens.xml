@@ -45,12 +45,14 @@ found in the LICENSE file.
     <dimen name="location_bar_status_icon_holding_space_size">8dp</dimen>
     <dimen name="location_bar_icon_end_padding">0dp</dimen>
     <dimen name="location_bar_icon_end_padding_focused">12dp</dimen>
+    <dimen name="location_bar_icon_end_padding_focused_smaller">10dp</dimen>
     <dimen name="location_bar_verbose_start_padding_verbose_text">4dp</dimen>
     <dimen name="location_bar_status_extra_padding">4dp</dimen>
     <dimen name="location_bar_url_action_offset">-8dp</dimen>
     <dimen name="location_bar_url_action_padding">8dp</dimen>
 
-    <dimen name="location_bar_status_view_left_space_width">8dp</dimen>
+    <dimen name="location_bar_status_view_left_space_width">10dp</dimen>
+    <dimen name="location_bar_status_view_left_space_width_bigger">12dp</dimen>
 
     <dimen name="tablet_toolbar_start_padding">4dp</dimen>
 
@@ -60,9 +62,13 @@ found in the LICENSE file.
     <dimen name="omnibox_suggestion_header_padding_start_modern_smaller">28dp</dimen>
     <dimen name="omnibox_suggestion_header_padding_start_modern_smallest">24dp</dimen>
     <dimen name="omnibox_suggestion_header_padding_top">12dp</dimen>
+    <dimen name="omnibox_suggestion_header_padding_top_smaller">8dp</dimen>
+    <dimen name="omnibox_suggestion_header_padding_top_smallest">4dp</dimen>
     <dimen name="omnibox_suggestion_header_padding_bottom">12dp</dimen>
     <dimen name="omnibox_suggestion_header_height">44dp</dimen>
     <dimen name="omnibox_suggestion_header_height_modern_phase2">32dp</dimen>
+    <dimen name="omnibox_suggestion_header_height_modern_phase2_smaller">24dp</dimen>
+    <dimen name="omnibox_suggestion_header_height_modern_phase2_smallest">24dp</dimen>
     <dimen name="omnibox_suggestion_content_height">56dp</dimen>
     <dimen name="omnibox_suggestion_content_padding">8dp</dimen>
     <dimen name="omnibox_suggestion_compact_content_height">48dp</dimen>
@@ -74,6 +80,8 @@ found in the LICENSE file.
     <dimen name="omnibox_suggestion_list_non_active_top_small_margin">4dp</dimen>
     <dimen name="omnibox_suggestion_list_non_active_top_big_margin">12dp</dimen>
     <dimen name="omnibox_carousel_suggestion_padding">12dp</dimen>
+    <dimen name="omnibox_carousel_suggestion_padding_smaller">5dp</dimen>
+    <dimen name="omnibox_carousel_suggestion_padding_smallest">1dp</dimen>
     <dimen name="omnibox_carousel_suggestion_small_bottom_padding">4dp</dimen>
     <dimen name="omnibox_carousel_icon_rounding_radius">4dp</dimen>
     <dimen name="omnibox_carousel_start_padding_reduction">4dp</dimen>
@@ -85,14 +93,11 @@ found in the LICENSE file.
     <dimen name="omnibox_suggestion_36dp_icon_size">36dp</dimen>
     <dimen name="omnibox_suggestion_24dp_icon_size">24dp</dimen>
     <dimen name="omnibox_suggestion_36dp_icon_margin_start">10dp</dimen>
-    <dimen name="omnibox_suggestion_36dp_icon_margin_start_smaller">9dp</dimen>
     <dimen name="omnibox_suggestion_36dp_icon_margin_start_smallest">8dp</dimen>
     <dimen name="omnibox_suggestion_36dp_icon_margin_end">10dp</dimen>
-    <dimen name="omnibox_suggestion_36dp_icon_margin_end_smaller">9dp</dimen>
     <dimen name="omnibox_suggestion_36dp_icon_margin_end_smallest">8dp</dimen>
     <dimen name="omnibox_suggestion_24dp_icon_margin_start">16dp</dimen>
-    <dimen name="omnibox_suggestion_24dp_icon_margin_start_modern">12dp</dimen>
-    <dimen name="omnibox_suggestion_24dp_icon_margin_end">16dp</dimen>
+    <dimen name="omnibox_suggestion_24dp_icon_margin_start_modern_bigger">14dp</dimen>
     <dimen name="omnibox_suggestion_favicon_size">24dp</dimen>
     <dimen name="omnibox_suggestion_decoration_image_size">36dp</dimen>
     <dimen name="omnibox_suggestion_icon_area_size">56dp</dimen>

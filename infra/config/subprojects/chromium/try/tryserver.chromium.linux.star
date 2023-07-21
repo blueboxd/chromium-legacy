@@ -138,6 +138,7 @@ try_.builder(
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
         location_filters = [
+            "components/headless/.+",
             "headless/.+",
         ],
     ),
@@ -729,12 +730,14 @@ try_.builder(
     name = "linux-js-code-coverage",
     mirrors = ["ci/linux-js-code-coverage"],
     execution_timeout = 20 * time.hour,
+    use_javascript_coverage = True,
 )
 
 try_.builder(
     name = "chromeos-js-code-coverage",
     mirrors = ["ci/chromeos-js-code-coverage"],
     execution_timeout = 20 * time.hour,
+    use_javascript_coverage = True,
 )
 
 # ML experimental builder, modifies RTS itself to use a ml model

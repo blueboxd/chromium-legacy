@@ -13,6 +13,7 @@
 
 #include "content/browser/devtools/devtools_device_request_prompt_info.h"
 #include "content/browser/devtools/devtools_throttle_handle.h"
+#include "content/browser/preloading/prefetch/prefetch_status.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/browser/renderer_host/frame_tree.h"
@@ -206,13 +207,15 @@ void DidUpdatePrefetchStatus(
     FrameTreeNode* ftn,
     const base::UnguessableToken& initiator_devtools_navigation_token,
     const GURL& prefetch_url,
-    PreloadingTriggeringOutcome status);
+    PreloadingTriggeringOutcome status,
+    PrefetchStatus prefetch_status);
 
 void DidUpdatePrerenderStatus(
     int initiator_frame_tree_node_id,
     const base::UnguessableToken& initiator_devtools_navigation_token,
     const GURL& prerender_url,
-    PreloadingTriggeringOutcome status);
+    PreloadingTriggeringOutcome status,
+    absl::optional<PrerenderFinalStatus> prerender_status);
 
 void OnSignedExchangeReceived(
     FrameTreeNode* frame_tree_node,
@@ -402,6 +405,17 @@ void WillSendFedCmRequest(RenderFrameHost* render_frame_host,
                           bool* disable_delay);
 void WillShowFedCmDialog(RenderFrameHost* render_frame_host, bool* intercept);
 void OnFedCmAccountsDialogShown(RenderFrameHost* render_frame_host);
+
+// Handles dev tools integration for fenced frame reporting beacons. Used in
+// `FencedFrameReporter`.
+void OnFencedFrameReportRequestSent(int initiator_frame_tree_node_id,
+                                    const std::string& devtools_request_id,
+                                    network::ResourceRequest& request);
+void OnFencedFrameReportResponseReceived(
+    int initiator_frame_tree_node_id,
+    const std::string& devtools_request_id,
+    const GURL& final_url,
+    scoped_refptr<net::HttpResponseHeaders> headers);
 
 }  // namespace devtools_instrumentation
 

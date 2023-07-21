@@ -11,8 +11,8 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
-#include "ios/chrome/browser/prefs/pref_names.h"
 #include "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/shared/model/prefs/pref_names.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
@@ -86,6 +86,8 @@ void SetLastUsedBookmarkFolder(PrefService* prefs,
                                const bookmarks::BookmarkNode* folder,
                                bookmarks::StorageType type) {
   DCHECK(folder);
+  DCHECK(folder->is_folder()) << "node type: " << folder->type()
+                              << ", storage type: " << static_cast<int>(type);
   prefs->SetInt64(prefs::kIosBookmarkLastUsedFolderReceivingBookmarks,
                   folder->id());
   prefs->SetInteger(prefs::kIosBookmarkLastUsedStorageReceivingBookmarks,
@@ -108,7 +110,7 @@ const bookmarks::BookmarkNode* GetDefaultBookmarkFolder(
         type, profile_bookmark_model, account_bookmark_model);
     const BookmarkNode* result =
         bookmarks::GetBookmarkNodeByID(bookmark_model, node_id);
-    if (result) {
+    if (result && result->is_folder()) {
       return result;
     }
   }

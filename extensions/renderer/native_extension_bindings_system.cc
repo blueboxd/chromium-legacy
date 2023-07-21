@@ -27,7 +27,6 @@
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/common/mojom/event_dispatcher.mojom.h"
 #include "extensions/common/mojom/frame.mojom.h"
-#include "extensions/common/trace_util.h"
 #include "extensions/renderer/api/declarative_content_hooks_delegate.h"
 #include "extensions/renderer/api/dom_hooks_delegate.h"
 #include "extensions/renderer/api/feedback_private_hooks_delegate.h"
@@ -53,6 +52,7 @@
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set_iterable.h"
 #include "extensions/renderer/storage_area.h"
+#include "extensions/renderer/trace_util.h"
 #include "extensions/renderer/worker_thread_util.h"
 #include "gin/converter.h"
 #include "gin/data_object_builder.h"
@@ -851,11 +851,8 @@ void NativeExtensionBindingsSystem::SendRequest(
       << "Attempting to send a request from an unspecified context type. "
       << "Request: " << request->method_name
       << ", Context: " << script_context->GetDebugString();
-  TRACE_EVENT("extensions", "NativeExtensionBindingsSystem::SendRequest",
-              ChromeTrackEvent::kRenderProcessHost,
-              *content::RenderThread::Get(),
-              ChromeTrackEvent::kChromeExtensionId,
-              ExtensionIdForTracing(script_context->GetExtensionID()));
+  TRACE_RENDERER_EXTENSION_EVENT("NativeExtensionBindingsSystem::SendRequest",
+                                 script_context->GetExtensionID());
 
   GURL url;
   blink::WebLocalFrame* frame = script_context->web_frame();

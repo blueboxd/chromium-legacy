@@ -569,7 +569,8 @@ class BrowserManager : public session_manager::SessionManagerObserver,
 
   // Starts the lacros-chrome process and redirects stdout/err to file pointed
   // by |params.logfd|.
-  void StartWithLogFile(LaunchParamsFromBackground params);
+  void StartWithLogFile(bool launching_at_login_screen,
+                        LaunchParamsFromBackground params);
 
   // ash::SessionManagerClient::Observer:
   void EmitLoginPromptVisibleCalled() override;
@@ -609,6 +610,9 @@ class BrowserManager : public session_manager::SessionManagerObserver,
 
   // Resume Lacros startup process after login.
   void ResumeLaunch();
+
+  // Writes post login data to the Lacros process after login.
+  void WritePostLoginData();
 
   // Launch "Go to files" if the migration error page was clicked.
   void HandleGoToFiles();
@@ -701,6 +705,10 @@ class BrowserManager : public session_manager::SessionManagerObserver,
 
   // Time when the lacros process was launched.
   base::TimeTicks lacros_launch_time_;
+
+  // Time when the lacros process was resumed (when pre-launching at login
+  // screen).
+  base::TimeTicks lacros_resume_time_;
 
   // Process handle for the lacros-chrome process.
   base::Process lacros_process_;

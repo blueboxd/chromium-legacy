@@ -6,15 +6,14 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "components/reading_list/core/fake_reading_list_model_storage.h"
 #include "components/reading_list/core/mock_reading_list_model_observer.h"
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
-#include "components/reading_list/features/reading_list_switches.h"
 #include "components/sync/base/storage_type.h"
+#include "components/sync/model/client_tag_based_model_type_processor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -191,11 +190,27 @@ class DualReadingListModelTest : public testing::Test {
         /*initial_account_entries_builders=*/{});
   }
 
-  bool ResetStorageAndMimicSignedInSyncDisabled(
+  bool TriggerAccountStorageLoadCompletionSignedInSyncDisabled(
+      std::vector<TestEntryBuilder> initial_account_entries_builders = {}) {
+    auto metadata_batch = std::make_unique<syncer::MetadataBatch>();
+    sync_pb::ModelTypeState state;
+    state.set_initial_sync_state(
+        sync_pb::ModelTypeState_InitialSyncState_INITIAL_SYNC_DONE);
+    state.set_authenticated_account_id(kTestAccountId);
+    metadata_batch->SetModelTypeState(state);
+
+    std::vector<scoped_refptr<ReadingListEntry>> initial_account_entries;
+    for (auto entry_builder : initial_account_entries_builders) {
+      initial_account_entries.push_back(entry_builder.Build());
+    }
+
+    return account_model_storage_ptr_->TriggerLoadCompletion(
+        std::move(initial_account_entries), std::move(metadata_batch));
+  }
+
+  bool TriggerStorageLoadCompletionSignedInSyncDisabled(
       std::vector<TestEntryBuilder> initial_local_entries_builders = {},
       std::vector<TestEntryBuilder> initial_account_entries_builders = {}) {
-    ResetStorage();
-
     auto metadata_batch = std::make_unique<syncer::MetadataBatch>();
     sync_pb::ModelTypeState state;
     state.set_initial_sync_state(
@@ -217,6 +232,14 @@ class DualReadingListModelTest : public testing::Test {
                std::move(initial_local_entries)) &&
            account_model_storage_ptr_->TriggerLoadCompletion(
                std::move(initial_account_entries), std::move(metadata_batch));
+  }
+
+  bool ResetStorageAndMimicSignedInSyncDisabled(
+      std::vector<TestEntryBuilder> initial_local_entries_builders = {},
+      std::vector<TestEntryBuilder> initial_account_entries_builders = {}) {
+    ResetStorage();
+    return TriggerStorageLoadCompletionSignedInSyncDisabled(
+        initial_local_entries_builders, initial_account_entries_builders);
   }
 
   bool ResetStorageAndMimicSyncEnabled(
@@ -276,6 +299,46 @@ TEST_F(DualReadingListModelTest, ModelLoadFailure) {
       base::unexpected("Fake error")));
   ASSERT_TRUE(account_model_storage_ptr_->TriggerLoadCompletion());
   EXPECT_FALSE(dual_model_->loaded());
+}
+
+TEST_F(DualReadingListModelTest, MetaDataClearedBeforeModelLoaded) {
+  ResetStorage();
+  static_cast<syncer::ClientTagBasedModelTypeProcessor*>(
+      account_model_ptr_->GetSyncBridgeForTest()->change_processor())
+      ->ClearMetadataWhileStopped();
+
+  EXPECT_CALL(observer_, ReadingListModelBeganBatchUpdates).Times(0);
+  EXPECT_CALL(observer_, ReadingListModelCompletedBatchUpdates).Times(0);
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry).Times(0);
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry).Times(0);
+  EXPECT_CALL(observer_, ReadingListDidApplyChanges).Times(0);
+  EXPECT_CALL(observer_, ReadingListModelLoaded);
+  TriggerStorageLoadCompletionSignedInSyncDisabled(
+      /*initial_local_entries_builders=*/{},
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())});
+
+  EXPECT_EQ(0ul, account_model_ptr_->size());
+  EXPECT_EQ(0ul, dual_model_->size());
+}
+
+TEST_F(DualReadingListModelTest, UpdatesFromSyncBeforeTheLocalModelIsLoaded) {
+  ResetStorage();
+  TriggerAccountStorageLoadCompletionSignedInSyncDisabled(
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())});
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry).Times(0);
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry).Times(0);
+  EXPECT_CALL(observer_, ReadingListWillAddEntry).Times(0);
+  EXPECT_CALL(observer_, ReadingListDidAddEntry).Times(0);
+  EXPECT_CALL(observer_, ReadingListDidApplyChanges).Times(0);
+
+  // DCHECKs verify that sync updates are issued as batch updates.
+  auto token = account_model_ptr_->BeginBatchUpdates();
+  account_model_ptr_->SyncRemoveEntry(kUrl);
+  account_model_ptr_->AddEntry(TestEntryBuilder(kUrl, clock_.Now()).Build(),
+                               reading_list::ADDED_VIA_SYNC);
 }
 
 TEST_F(DualReadingListModelTest, ReturnAccountModelSize) {
@@ -657,26 +720,18 @@ TEST_F(DualReadingListModelTest, GetAccountWhereEntryIsSavedToWhenSyncEnabled) {
 }
 
 TEST_F(DualReadingListModelTest, NeedsExplicitUploadToSyncServerWhenSignedOut) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      switches::kReadingListEnableSyncTransportModeUponSignIn);
-
   ASSERT_TRUE(ResetStorageAndMimicSignedOut(/*initial_local_entries_builders=*/{
       TestEntryBuilder(kUrl, clock_.Now())}));
   ASSERT_EQ(dual_model_->GetStorageStateForURLForTesting(kUrl),
             StorageStateForTesting::kExistsInLocalOrSyncableModelOnly);
 
-  EXPECT_TRUE(dual_model_->NeedsExplicitUploadToSyncServer(kUrl));
+  EXPECT_FALSE(dual_model_->NeedsExplicitUploadToSyncServer(kUrl));
   EXPECT_FALSE(dual_model_->NeedsExplicitUploadToSyncServer(
       GURL("http://non_existing_url.com/")));
 }
 
 TEST_F(DualReadingListModelTest,
        NeedsExplicitUploadToSyncServerWhenSignedInSyncDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      switches::kReadingListEnableSyncTransportModeUponSignIn);
-
   const GURL kLocalURL("http://local_url.com/");
   const GURL kAccountURL("http://account_url.com/");
   const GURL kCommonURL("http://common_url.com/");
@@ -704,10 +759,6 @@ TEST_F(DualReadingListModelTest,
 
 TEST_F(DualReadingListModelTest,
        NeedsExplicitUploadToSyncServerWhenSyncEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      switches::kReadingListEnableSyncTransportModeUponSignIn);
-
   ASSERT_TRUE(
       ResetStorageAndMimicSyncEnabled(/*initial_syncable_entries_builders=*/{
           TestEntryBuilder(kUrl, clock_.Now())}));
@@ -720,10 +771,6 @@ TEST_F(DualReadingListModelTest,
 }
 
 TEST_F(DualReadingListModelTest, MarkAllForUploadToSyncServerIfNeeded) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      switches::kReadingListEnableSyncTransportModeUponSignIn);
-
   const GURL kLocalURL("http://local_url.com/");
   const GURL kAccountURL("http://account_url.com/");
 

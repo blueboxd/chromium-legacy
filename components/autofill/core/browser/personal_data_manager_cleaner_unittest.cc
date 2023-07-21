@@ -271,9 +271,6 @@ TEST_F(PersonalDataManagerCleanerTest, UpdateCardsBillingAddressReference) {
 // based on the deduped profiles.
 TEST_F(PersonalDataManagerCleanerTest,
        ApplyDedupingRoutine_CardsBillingAddressIdUpdated) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(features::kAutofillEnableProfileDeduplication);
-
   // A set of 6 profiles will be created. They should merge in this way:
   //  1 -> 2 -> 3
   //  4 -> 5
@@ -414,9 +411,6 @@ TEST_F(PersonalDataManagerCleanerTest,
 // ranking score.
 TEST_F(PersonalDataManagerCleanerTest,
        ApplyDedupingRoutine_MergedProfileValues) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(features::kAutofillEnableProfileDeduplication);
-
   // Create a profile with a higher ranking score.
   AutofillProfile profile1;
   test::SetProfileInfo(&profile1, "Homer", "J", "Simpson",
@@ -499,9 +493,6 @@ TEST_F(PersonalDataManagerCleanerTest,
 // that the resulting profiles have the right values. It has no effect on the
 // other profiles.
 TEST_F(PersonalDataManagerCleanerTest, ApplyDedupingRoutine_MultipleDedupes) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(features::kAutofillEnableProfileDeduplication);
-
   // Create a Homer home profile with a higher ranking score than other Homer
   // profiles.
   AutofillProfile Homer1;
@@ -609,17 +600,12 @@ TEST_F(PersonalDataManagerCleanerTest, ApplyDedupingRoutine_MultipleDedupes) {
 }
 
 TEST_F(PersonalDataManagerCleanerTest, ApplyDedupingRoutine_NopIfZeroProfiles) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(features::kAutofillEnableProfileDeduplication);
   EXPECT_TRUE(personal_data_->GetProfiles().empty());
   EXPECT_FALSE(
       personal_data_manager_cleaner_->ApplyDedupingRoutineForTesting());
 }
 
 TEST_F(PersonalDataManagerCleanerTest, ApplyDedupingRoutine_NopIfOneProfile) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(features::kAutofillEnableProfileDeduplication);
-
   // Create a profile to dedupe.
   AutofillProfile profile;
   test::SetProfileInfo(&profile, "Homer", "J", "Simpson",
@@ -636,9 +622,6 @@ TEST_F(PersonalDataManagerCleanerTest, ApplyDedupingRoutine_NopIfOneProfile) {
 // Tests that ApplyDedupingRoutine is not run a second time on the same major
 // version.
 TEST_F(PersonalDataManagerCleanerTest, ApplyDedupingRoutine_OncePerVersion) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(features::kAutofillEnableProfileDeduplication);
-
   // Create a profile to dedupe.
   AutofillProfile profile1;
   test::SetProfileInfo(&profile1, "Homer", "J", "Simpson",
@@ -919,68 +902,6 @@ TEST_F(PersonalDataManagerCleanerTest,
   // Verify histograms are logged.
   histogram_tester.ExpectTotalCount(kHistogramName, 1);
   histogram_tester.ExpectBucketCount(kHistogramName, 1, 1);
-}
-
-// Tests that all the non settings origins of autofill profiles are cleared but
-// that the settings origins are untouched.
-TEST_F(PersonalDataManagerCleanerTest, ClearProfileNonSettingsOrigins) {
-  // Create three profile with a nonsettings, non-empty origin.
-  AutofillProfile profile0;
-  profile0.set_origin("https://www.example.com");
-  test::SetProfileInfo(&profile0, "Marion0", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-  profile0.set_use_count(10000);
-  AddProfileToPersonalDataManager(profile0);
-
-  AutofillProfile profile1;
-  test::SetProfileInfo(&profile1, "Marion1", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-  profile1.set_use_count(1000);
-  AddProfileToPersonalDataManager(profile1);
-
-  AutofillProfile profile2;
-  profile2.set_origin("1234");
-  test::SetProfileInfo(&profile2, "Marion2", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-  profile2.set_use_count(100);
-  AddProfileToPersonalDataManager(profile2);
-
-  // Create a profile with a settings origin.
-  AutofillProfile profile3;
-  profile3.set_origin(kSettingsOrigin);
-  test::SetProfileInfo(&profile3, "Marion3", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-  profile3.set_use_count(10);
-  AddProfileToPersonalDataManager(profile3);
-
-  ASSERT_EQ(4U, personal_data_->GetProfiles().size());
-
-  base::RunLoop run_loop;
-  EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
-      .WillRepeatedly(QuitMessageLoop(&run_loop));
-  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
-      .Times(2);  // The setting of profiles 0 and 2 will be cleared.
-
-  personal_data_manager_cleaner_->ClearProfileNonSettingsOriginsForTesting();
-  run_loop.Run();
-
-  ASSERT_EQ(4U, personal_data_->GetProfiles().size());
-
-  // The first three profiles' origin should be cleared and the fourth one still
-  // be the settings origin.
-  EXPECT_TRUE(personal_data_->GetProfilesToSuggest()[0]->origin().empty());
-  EXPECT_TRUE(personal_data_->GetProfilesToSuggest()[1]->origin().empty());
-  EXPECT_TRUE(personal_data_->GetProfilesToSuggest()[2]->origin().empty());
-  EXPECT_EQ(kSettingsOrigin,
-            personal_data_->GetProfilesToSuggest()[3]->origin());
 }
 
 // Tests that all the non settings origins of autofill credit cards are cleared

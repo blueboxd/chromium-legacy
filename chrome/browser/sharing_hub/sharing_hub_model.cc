@@ -17,7 +17,6 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
-#include "chrome/browser/share/share_features.h"
 #include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -71,7 +70,7 @@ void SharingHubModel::GetFirstPartyActionList(
     std::vector<SharingHubAction>* list) {
   for (const auto& action : first_party_action_list_) {
     if (action.command_id == IDC_SEND_TAB_TO_SELF) {
-      if (DoShowSendTabToSelfForWebContents(web_contents)) {
+      if (send_tab_to_self::ShouldDisplayEntryPoint(web_contents)) {
         list->push_back(action);
       }
     } else if (action.command_id == IDC_QRCODE_GENERATOR) {
@@ -115,8 +114,7 @@ void SharingHubModel::PopulateFirstPartyActions() {
   }
 
   first_party_action_list_.emplace_back(
-      IDC_SEND_TAB_TO_SELF,
-      l10n_util::GetStringUTF16(IDS_CONTEXT_MENU_SEND_TAB_TO_SELF),
+      IDC_SEND_TAB_TO_SELF, l10n_util::GetStringUTF16(IDS_SEND_TAB_TO_SELF),
       &kLaptopAndSmartphoneIcon, "SharingHubDesktop.SendTabToSelfSelected", 0);
 
   first_party_action_list_.emplace_back(
@@ -145,11 +143,6 @@ void SharingHubModel::PopulateFirstPartyActions() {
   first_party_action_list_.emplace_back(
       IDC_SAVE_PAGE, l10n_util::GetStringUTF16(IDS_SHARING_HUB_SAVE_PAGE_LABEL),
       &kSavePageIcon, "SharingHubDesktop.SavePageSelected", 0);
-}
-
-bool SharingHubModel::DoShowSendTabToSelfForWebContents(
-    content::WebContents* web_contents) {
-  return send_tab_to_self::ShouldDisplayEntryPoint(web_contents);
 }
 
 }  // namespace sharing_hub

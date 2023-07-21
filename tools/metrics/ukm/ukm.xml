@@ -176,6 +176,65 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Accessibility.ReadAnything">
+  <owner>abigailbklein@google.com</owner>
+  <summary>
+    Records the time taken to distill a web page.
+  </summary>
+  <metric name="MergedDistillationTime.Failure">
+    <summary>
+      The amount of time (ms) required to distill a web page with the merged
+      algorithm if distillation failed.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="MergedDistillationTime.Success">
+    <summary>
+      The amount of time (ms) required to distill a web page with the merged
+      algorithm if distillation succeeded.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="RulesDistillationTime.Failure">
+    <summary>
+      The amount of time (ms) required to distill a web page with the rules
+      based algorithm if distillation failed.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="RulesDistillationTime.Success">
+    <summary>
+      The amount of time (ms) required to distill a web page with the rules
+      based algorithm if distillation succeeded.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="Accessibility.Renderer">
   <owner>aleventhal@chromium.org</owner>
   <owner>nektar@chromium.org</owner>
@@ -680,7 +739,7 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
-<event name="AdsInterestGroup.AuctionLatency">
+<event name="AdsInterestGroup.AuctionLatency.V2">
   <owner>orrb@google.com</owner>
   <owner>chrome-ads-core@google.com</owner>
   <summary>
@@ -3202,6 +3261,16 @@ be describing additional metrics about the same event.
       |SkipStatus|.
     </summary>
   </metric>
+  <metric name="AutofillStatusVector">
+    <summary>
+      A bit vector of autofill statuses for a field, listed in
+      |AutofillMetrics::AutofillStatus|. The first bit represents whether the
+      field is focusable, the second means whether the field was focused....
+      These autofill statuses will not be stored in UKM individually. We create
+      functions to read the individual autofill status from a bit vector in
+      queries.
+    </summary>
+  </metric>
   <metric name="FieldSessionIdentifier">
     <summary>
       A random variable assigned to a specific instance of a form control (e.g.
@@ -3218,6 +3287,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="FilledValueWasModified" enum="Boolean">
+    <obsolete>
+      Deprecated as of 06/2023. Replaced by AutofillStatusVector.
+    </obsolete>
     <summary>
       Whether the user modified a field after autofilling/autocompleting it.
     </summary>
@@ -3240,12 +3312,18 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="HadTypedOrFilledValueAtSubmission" enum="Boolean">
+    <obsolete>
+      Deprecated as of 06/2023. Replaced by AutofillStatusVector.
+    </obsolete>
     <summary>
       Whether there was a value after user typed or autofilled in the field at
       form submission or form destruction time.
     </summary>
   </metric>
   <metric name="HadValueBeforeFilling" enum="Boolean">
+    <obsolete>
+      Deprecated as of 06/2023. Replaced by AutofillStatusVector.
+    </obsolete>
     <summary>
       Whether there was a value before autofill in the field.
     </summary>
@@ -3298,6 +3376,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="IsFocusable" enum="Boolean">
+    <obsolete>
+      Deprecated as of 06/2023. Replaced by AutofillStatusVector.
+    </obsolete>
     <summary>
       Whether the field is focusable to the user. This is an approximation of
       visibility with false positives.
@@ -3361,6 +3442,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="SuggestionWasAccepted" enum="Boolean">
+    <obsolete>
+      Deprecated as of 06/2023. Replaced by AutofillStatusVector.
+    </obsolete>
     <summary>
       Whether the suggestion was accepted. This is only set for a field where a
       suggestion was shown and accepted by the user. It is not the same as
@@ -3371,12 +3455,18 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="SuggestionWasAvailable" enum="Boolean">
+    <obsolete>
+      Deprecated as of 06/2023. Replaced by AutofillStatusVector.
+    </obsolete>
     <summary>
       Whether there was a suggestion available for the field from user data.
       This is only set for a field that was focused by the user.
     </summary>
   </metric>
   <metric name="SuggestionWasShown" enum="Boolean">
+    <obsolete>
+      Deprecated as of 06/2023. Replaced by AutofillStatusVector.
+    </obsolete>
     <summary>
       Whether a suggestion popup was ever shown on this field (i.e. the field
       had focus and user had data on file).
@@ -3388,11 +3478,17 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="UserTypedIntoField" enum="Boolean">
+    <obsolete>
+      Deprecated as of 06/2023. Replaced by AutofillStatusVector.
+    </obsolete>
     <summary>
       Whether the user ever typed into the field (regardless of autofill).
     </summary>
   </metric>
   <metric name="WasAutofilled" enum="Boolean">
+    <obsolete>
+      Deprecated as of 06/2023. Replaced by AutofillStatusVector.
+    </obsolete>
     <summary>
       Whether the field was ever filled by autofill. This applies to all the
       fields that were autofilled, not just the field that was clicked. If a
@@ -3402,11 +3498,17 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="WasFocused" enum="Boolean">
+    <obsolete>
+      Deprecated as of 06/2023. Replaced by AutofillStatusVector.
+    </obsolete>
     <summary>
       Whether the user ever focused on the field.
     </summary>
   </metric>
   <metric name="WasRefill" enum="Boolean">
+    <obsolete>
+      Deprecated as of 06/2023. Replaced by AutofillStatusVector.
+    </obsolete>
     <summary>
       Whether the form was refilled by autofill.
     </summary>
@@ -3786,6 +3888,14 @@ be describing additional metrics about the same event.
       before this metric is recorded.
     </summary>
   </metric>
+  <metric name="AutoReauthn.BlockedByPreventSilentAccess" enum="Boolean">
+    <summary>
+      Records whether the FedCM auto re-authn call is blocked because
+      preventSilentAccess() has been called on this site. Records at most one
+      sample per FedCM API with auto re-authn enabled: some failures could occur
+      before this metric is recorded.
+    </summary>
+  </metric>
   <metric name="AutoReauthn.ReturningAccounts" enum="FedCmReturningAccounts">
     <summary>
       Records whether there was zero, one, or multiple returning accounts when a
@@ -3820,6 +3930,24 @@ be describing additional metrics about the same event.
       Records the session ID associated to the FedCM call for which this event
       is recording metrics. Each FedCM call gets a random integer session id,
       which helps group UKM events by the session id.
+    </summary>
+  </metric>
+  <metric name="PreventSilentAccessFrameType"
+      enum="FedCmPreventSilentAccessFrameType">
+    <summary>
+      Records the type of frame that invokes preventSilentAccess(). Records only
+      when there is an existing FedCM sharing permission on the main frame, and
+      some frame in the page invokes the preventSilentAccess() JavaScript call.
+      Possible values are: main frame, same-site iframe, and cros-site iframe,
+      where the site of the iframe is compared with the site of the main frame.
+    </summary>
+  </metric>
+  <metric name="Status.MediationRequirement"
+      enum="CredentialManagerMediationRequirement">
+    <summary>
+      Records the the mediation requirement of a request token call to the FedCM
+      API. Records a sample when the call is completed, i.e. at the same time as
+      Status.RequestIdToken.
     </summary>
   </metric>
   <metric name="Status.RequestIdToken" enum="FedCmRequestIdTokenStatus">
@@ -3883,6 +4011,14 @@ be describing additional metrics about the same event.
       Records the session ID associated to the FedCM call for which this event
       is recording metrics. Each FedCM call gets a random integer session id,
       which helps group UKM events by the session id.
+    </summary>
+  </metric>
+  <metric name="Status.MediationRequirement"
+      enum="CredentialManagerMediationRequirement">
+    <summary>
+      Records the the mediation requirement of a request token call to the FedCM
+      API. Records a sample when the call is completed, i.e. at the same time as
+      Status.RequestIdToken.
     </summary>
   </metric>
   <metric name="Status.RequestIdToken" enum="FedCmRequestIdTokenStatus">
@@ -4027,6 +4163,48 @@ be describing additional metrics about the same event.
     <summary>
       The maximum time between parsing of two chunks, in microseconds. Will be
       zero if only one chunk was parsed.
+    </summary>
+  </metric>
+</event>
+
+<event name="Blink.JavaScriptFramework.Versions" singular="True">
+  <owner>houssein@chromium.org</owner>
+  <owner>nrosenthal@chromium.org</owner>
+  <summary>
+    Metrics stating the detected major+minor version of known frameworks when
+    detected. This event is recorded when the page is loaded. Note that a page
+    can use multiple frameworks at the same time, hence why this reports each
+    framework individually instead of a single number. The version numbers here
+    are a bit mask: 0xMMmm (Major+minor), e.g. version 16.3 would be 0x1003
+  </summary>
+  <metric name="AngularVersion">
+    <summary>
+      A bitmask (0xMMmm) representing the Angular version
+    </summary>
+  </metric>
+  <metric name="DrupalVersion">
+    <summary>
+      A bitmask (0xMMmm) representing the Drupal version
+    </summary>
+  </metric>
+  <metric name="NextJSVersion">
+    <summary>
+      A bitmask (0xMMmm) representing the NextJS version
+    </summary>
+  </metric>
+  <metric name="NuxtVersion">
+    <summary>
+      A bitmask (0xMMmm) representing the Nuxt version
+    </summary>
+  </metric>
+  <metric name="VueVersion">
+    <summary>
+      A bitmask (0xMMmm) representing the Vue version
+    </summary>
+  </metric>
+  <metric name="WordPressVersion">
+    <summary>
+      A bitmask (0xMMmm) representing the WordPress version
     </summary>
   </metric>
 </event>
@@ -6676,11 +6854,25 @@ be describing additional metrics about the same event.
     navigates away. For most of the UI surfaces, only the last event (e.g.
     displayed or clicked) is recorded.
   </summary>
-  <metric name="CQ.ChildElementCount">
+  <metric name="ATX.ComponentPosition">
     <summary>
-      The number of child elements shown within the CQ suface, e.g. the number
-      of related queries in the related queries component. Clamped to a max
-      value of 10.
+      The position of the ATX surface in the page.
+    </summary>
+  </metric>
+  <metric name="ATX.LastEvent" enum="Companion.UiEvent">
+    <summary>
+      The last event on the ATX surface.
+    </summary>
+  </metric>
+  <metric name="CQ.ClickPosition">
+    <summary>
+      The position of the CQ element that was clicked with respect to its parent
+      list.
+    </summary>
+  </metric>
+  <metric name="CQ.ComponentPosition">
+    <summary>
+      The position of the CQ surface in the page.
     </summary>
   </metric>
   <metric name="CQ.LastEvent" enum="Companion.UiEvent">
@@ -6688,9 +6880,54 @@ be describing additional metrics about the same event.
       The last event on the CQ surface.
     </summary>
   </metric>
-  <metric name="OpenTrigger" enum="Companion.OpenTrigger">
+  <metric name="CQ.NumEntriesAvailable">
+    <summary>
+      The number of child elements available within the CQ surface after
+      eligibility check after text finder API. Clamped to a max value of 10.
+    </summary>
+  </metric>
+  <metric name="CQ.NumEntriesShown">
+    <summary>
+      The number of child elements actually shown within the CQ surface after
+      eligibility check through text finder API. Clamped to a max value of 10.
+    </summary>
+  </metric>
+  <metric name="OpenTrigger" enum="SidePanelOpenTrigger">
     <summary>
       The UI location from which the companion page was opened.
+    </summary>
+  </metric>
+  <metric name="PageEntities.ClickPosition">
+    <summary>
+      The position of the page entities element that was clicked with respect to
+      its parent list.
+    </summary>
+  </metric>
+  <metric name="PageEntities.ComponentPosition">
+    <summary>
+      The position of the page entities surface in the page.
+    </summary>
+  </metric>
+  <metric name="PageEntities.LastEvent" enum="Companion.UiEvent">
+    <summary>
+      The last event on the page entities surface.
+    </summary>
+  </metric>
+  <metric name="PageEntities.NumEntriesAvailable">
+    <summary>
+      The number of child elements available within the page entities surface.
+      Clamped to a max value of 10.
+    </summary>
+  </metric>
+  <metric name="PageEntities.NumEntriesShown">
+    <summary>
+      The number of child elements shown within the page entities surface.
+      Clamped to a max value of 10.
+    </summary>
+  </metric>
+  <metric name="PH.ComponentPosition">
+    <summary>
+      The position of the PH surface in the page.
     </summary>
   </metric>
   <metric name="PH.Feedback" enum="Companion.PhFeedback">
@@ -6703,6 +6940,35 @@ be describing additional metrics about the same event.
       The last event on the PH surface.
     </summary>
   </metric>
+  <metric name="PHResult.ClickPosition">
+    <summary>
+      The position of the PH element that was clicked with respect to its parent
+      list.
+    </summary>
+  </metric>
+  <metric name="PHResult.ComponentPosition">
+    <summary>
+      The position of the PH surface in the page.
+    </summary>
+  </metric>
+  <metric name="PHResult.LastEvent" enum="Companion.UiEvent">
+    <summary>
+      The last event on the PH surface.
+    </summary>
+  </metric>
+  <metric name="PHResult.NumEntriesAvailable">
+    <summary>
+      The number of child elements available within the PH surface, regardless
+      of text finder API results. Clamped to a max value of 10.
+    </summary>
+  </metric>
+  <metric name="PHResult.NumEntriesShown">
+    <summary>
+      The number of child elements within the PH surface that pass text finder
+      API elibigility check, this is the count bullet points that have jump
+      tags. Clamped to a max value of 10.
+    </summary>
+  </metric>
   <metric name="PromoEvent" enum="Companion.PromoEvent">
     <summary>
       The last event on the promo surface.
@@ -6711,6 +6977,95 @@ be describing additional metrics about the same event.
   <metric name="RegionSearch.ClickCount">
     <summary>
       The number of times region search in the multimodal box was clicked.
+    </summary>
+  </metric>
+  <metric name="RelQr.ClickPosition">
+    <summary>
+      The position of the RelQr element that was clicked with respect to its
+      parent list.
+    </summary>
+  </metric>
+  <metric name="RelQr.ComponentPosition">
+    <summary>
+      The position of the RelQr surface in the page.
+    </summary>
+  </metric>
+  <metric name="RelQr.LastEvent" enum="Companion.UiEvent">
+    <summary>
+      The last event on the RelQr surface.
+    </summary>
+  </metric>
+  <metric name="RelQr.NumEntriesAvailable">
+    <summary>
+      The number of child elements available within the RelQr surface. Clamped
+      to a max value of 10.
+    </summary>
+  </metric>
+  <metric name="RelQr.NumEntriesShown">
+    <summary>
+      The number of child elements shown within the RelQr surface. Clamped to a
+      max value of 10.
+    </summary>
+  </metric>
+  <metric name="RelQs.ClickPosition">
+    <summary>
+      The position of the RelQs element that was clicked with respect to its
+      parent list.
+    </summary>
+  </metric>
+  <metric name="RelQs.ComponentPosition">
+    <summary>
+      The position of the RelQs surface in the page.
+    </summary>
+  </metric>
+  <metric name="RelQs.LastEvent" enum="Companion.UiEvent">
+    <summary>
+      The last event on the RelQs surface.
+    </summary>
+  </metric>
+  <metric name="RelQs.NumEntriesAvailable">
+    <summary>
+      The number of child elements available within the RelQs surface. Clamped
+      to a max value of 10.
+    </summary>
+  </metric>
+  <metric name="RelQs.NumEntriesShown">
+    <summary>
+      The number of child elements shown within the RelQs surface. Clamped to a
+      max value of 10.
+    </summary>
+  </metric>
+  <metric name="TextSearchCount">
+    <summary>
+      The number of times text search box was used, clamped to a max of 10.
+    </summary>
+  </metric>
+  <metric name="VQ.ClickPosition">
+    <summary>
+      The position of the VQ element that was clicked with respect to its parent
+      list.
+    </summary>
+  </metric>
+  <metric name="VQ.ComponentPosition">
+    <summary>
+      The position of the VQ surface in the page.
+    </summary>
+  </metric>
+  <metric name="VQ.LastEvent" enum="Companion.UiEvent">
+    <summary>
+      The last event on the VQ surface.
+    </summary>
+  </metric>
+  <metric name="VQ.NumEntriesAvailable">
+    <summary>
+      The number of child elements available within the VQ surface. Clamped to a
+      max value of 10.
+    </summary>
+  </metric>
+  <metric name="VQ.NumEntriesShown">
+    <summary>
+      The number of child elements shown within the VQ surface. Clamped to a max
+      value of 10.
     </summary>
   </metric>
 </event>
@@ -7392,12 +7747,22 @@ be describing additional metrics about the same event.
   <owner>dc-komics@google.com</owner>
   <summary>
     Recorded when DIPS judges a site to be an incidental party and deletes its
-    storage.
+    state if specific conditions are met.
   </summary>
-  <metric name="Detected" enum="BooleanDetected">
+  <metric name="HasCookieException" enum="Boolean">
     <summary>
-      Always set to true (only present because UKM events require at least one
-      metric).
+      True iff the user has a third-party cookies blocking exception for the
+      site (as a third-party).
+    </summary>
+  </metric>
+  <metric name="IsDeletionEnabled" enum="Boolean">
+    <summary>
+      True iff site data deletion is enabled for the DIPS service.
+    </summary>
+  </metric>
+  <metric name="ShouldBlockThirdPartyCookies" enum="Boolean">
+    <summary>
+      True when third-party cookies are blocked.
     </summary>
   </metric>
 </event>
@@ -7432,6 +7797,12 @@ be describing additional metrics about the same event.
     <summary>
       True when the site before the redirect chain is the same as the site at
       the end of the chain.
+    </summary>
+  </metric>
+  <metric name="IsPartialRedirectChain">
+    <summary>
+      True if the chain is missing the end URL. Any comparisons to the final
+      site are invalid for this redirect.
     </summary>
   </metric>
   <metric name="RedirectAndFinalSiteSame" enum="BooleanSameSite">
@@ -11740,10 +12111,20 @@ be describing additional metrics about the same event.
       framework.
     </summary>
   </metric>
+  <metric name="DrupalPageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the Drupal CMS.
+    </summary>
+  </metric>
   <metric name="GatsbyPageLoad" enum="Boolean">
     <summary>
       True if the page loaded in the main frame uses the Gatsby JavaScript
       framework.
+    </summary>
+  </metric>
+  <metric name="JoomlaPageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the Joomloa CMS.
     </summary>
   </metric>
   <metric name="NextJSPageLoad" enum="Boolean">
@@ -11776,6 +12157,16 @@ be describing additional metrics about the same event.
       framework.
     </summary>
   </metric>
+  <metric name="ShopifyPageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the Shopify CMS.
+    </summary>
+  </metric>
+  <metric name="SquarespacePageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the Squarespace CMS.
+    </summary>
+  </metric>
   <metric name="SveltePageLoad" enum="Boolean">
     <summary>
       True if the page loaded in the main frame uses the Svelte JavaScript
@@ -11792,6 +12183,16 @@ be describing additional metrics about the same event.
     <summary>
       True if the page loaded in the main frame uses the VuePress JavaScript
       framework.
+    </summary>
+  </metric>
+  <metric name="WixPageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the Wix CMS.
+    </summary>
+  </metric>
+  <metric name="WordPressPageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the WordPress CMS.
     </summary>
   </metric>
 </event>
@@ -14799,6 +15200,58 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="NewTabPage.HistoryClusters">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <summary>
+    Metrics related to a History Clusters module shown on the New Tab Page.
+    Recorded for each History Clusters module shown on a 1P New Tab Page load,
+    which can be multiple for a page load.
+  </summary>
+  <metric name="BelongsToBoostedCategory" enum="Boolean">
+    <summary>
+      Cluster is of a boosted category.
+    </summary>
+  </metric>
+  <metric name="DidEngageWithModule" enum="Boolean">
+    <summary>
+      Whether the user engaged with the module.
+    </summary>
+  </metric>
+  <metric name="LayoutTypeShown" enum="NTPHistoryClustersModuleDisplayLayout">
+    <summary>
+      The layout type that was shown to the user for this module.
+    </summary>
+  </metric>
+  <metric name="MinutesSinceMostRecentVisit">
+    <summary>
+      Minutes since the shown cluster's most recent visit, exponentially
+      bucketed using GetExponentialBucketMin with a spacing of 1.3.
+    </summary>
+  </metric>
+  <metric name="NumAbandonedCarts">
+    <summary>
+      Number of abandoned carts associated with the cluster.
+    </summary>
+  </metric>
+  <metric name="NumTotalVisits">
+    <summary>
+      Number of total visits in the same cluster including ones that are not
+      necessarily shown in the module.
+    </summary>
+  </metric>
+  <metric name="NumUniqueHosts">
+    <summary>
+      Number of unique hosts represented in the cluster.
+    </summary>
+  </metric>
+  <metric name="NumVisitsWithImage">
+    <summary>
+      Number of visits with an image to show.
+    </summary>
+  </metric>
+</event>
+
 <event name="NoStatePrefetch" singular="True">
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -15029,6 +15482,44 @@ be describing additional metrics about the same event.
   <metric name="Submitted">
     <summary>
       Placeholder metric, always true.
+    </summary>
+  </metric>
+</event>
+
+<event name="OpenerHeuristic.PopupInteraction">
+  <owner>rtarpine@chromium.org</owner>
+  <owner>dc-komics@chromium.org</owner>
+  <summary>
+    Recorded when the user first interacts in a pop-up with opener access.
+  </summary>
+  <metric name="SecondsSinceCommitted">
+    <summary>
+      The number of seconds since the initial pop-up navigation committed, until
+      the user interacted with the pop-up. Clamped to three minutes at most, and
+      rounded down to the nearest exponential bucket (out of 50 buckets).
+    </summary>
+  </metric>
+  <metric name="UrlIndex">
+    <summary>
+      The number of URLs visited (including redirects) in the pop-up before the
+      user interacted with it. For example, the initial URL has index 1. If the
+      page redirected once before the user interacted, the index would be 2.
+    </summary>
+  </metric>
+</event>
+
+<event name="OpenerHeuristic.PopupPastInteraction">
+  <owner>rtarpine@chromium.org</owner>
+  <owner>dc-komics@chromium.org</owner>
+  <summary>
+    Recorded when a pop-up with opener access is initially opened, and the user
+    has previously interacted on the site of the URL passed to window.open().
+  </summary>
+  <metric name="HoursSinceLastInteraction">
+    <summary>
+      The number of hours since the user last interacted with the site, until
+      the pop-up was opened. Clamped to 720 hours at most, and rounded down to
+      the nearest exponential bucket (out of 50 buckets).
     </summary>
   </metric>
 </event>
@@ -21370,6 +21861,18 @@ be describing additional metrics about the same event.
     <summary>
       True if there are service workers handling sub-resource loads of
       CSSStyleSheet in the page. (boolean value. true: 1 or false: 0)
+    </summary>
+  </metric>
+  <metric name="DictionaryFallback">
+    <summary>
+      True if there are network fallback sub-resources of Dictionary in the
+      page. (boolean value. true: 1 or false: 0)
+    </summary>
+  </metric>
+  <metric name="DictionaryHandled">
+    <summary>
+      True if there are service workers handling sub-resource loads of
+      Dictionary in the page. (boolean value. true: 1 or false: 0)
     </summary>
   </metric>
   <metric name="FontFallback">

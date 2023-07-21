@@ -557,7 +557,7 @@ public class SyncConsentFragmentTest {
     @Test
     @LargeTest
     @DisableFeatures({ChromeFeatureList.TANGIBLE_SYNC})
-    public void testClickingSettingsDoesNotSetFirstSetupComplete() {
+    public void testClickingSettingsDoesNotSetInitialSyncFeatureSetupComplete() {
         CoreAccountInfo accountInfo =
                 mSigninTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
         mSyncConsentActivity = ActivityTestUtils.waitForActivity(
@@ -577,7 +577,7 @@ public class SyncConsentFragmentTest {
         });
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             assertTrue(SyncService.get().hasSyncConsent());
-            assertFalse(SyncService.get().isFirstSetupComplete());
+            assertFalse(SyncService.get().isInitialSyncFeatureSetupComplete());
             assertEquals(ALL_CLANK_SYNCABLE_DATA_TYPES, SyncService.get().getSelectedTypes());
             assertTrue(SyncService.get().hasKeepEverythingSynced());
         });
@@ -588,7 +588,7 @@ public class SyncConsentFragmentTest {
     @Test
     @LargeTest
     @EnableFeatures({ChromeFeatureList.TANGIBLE_SYNC})
-    public void testClickingSettingsDoesNotSetFirstSetupCompleteWithTangibleSync() {
+    public void testClickingSettingsDoesNotSetInitialSyncFeatureSetupCompleteWithTangibleSync() {
         CoreAccountInfo accountInfo =
                 mSigninTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
         mSyncConsentActivity = ActivityTestUtils.waitForActivity(
@@ -608,7 +608,7 @@ public class SyncConsentFragmentTest {
         });
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             assertTrue(SyncService.get().hasSyncConsent());
-            assertFalse(SyncService.get().isFirstSetupComplete());
+            assertFalse(SyncService.get().isInitialSyncFeatureSetupComplete());
             assertEquals(HISTORY_SYNC_DATA_TYPES, SyncService.get().getSelectedTypes());
             assertFalse(SyncService.get().hasKeepEverythingSynced());
         });
@@ -643,7 +643,7 @@ public class SyncConsentFragmentTest {
         });
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             assertTrue(SyncService.get().hasSyncConsent());
-            assertFalse(SyncService.get().isFirstSetupComplete());
+            assertFalse(SyncService.get().isInitialSyncFeatureSetupComplete());
         });
         // Click the cancel button to exit the activity.
         onView(withId(R.id.cancel_button)).perform(click());
@@ -709,8 +709,10 @@ public class SyncConsentFragmentTest {
         onView(withId(R.id.button_primary)).check(matches(withText(R.string.signin_add_account)));
         onView(withId(R.id.button_secondary)).check(matches(withText(R.string.cancel)));
         settingsHistogram.assertExpected();
+        // As there is no account on the device, the set of selected types will be empty. Sync Setup
+        // UI in this case does not link to the types list.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            assertEquals(ALL_CLANK_SYNCABLE_DATA_TYPES, SyncService.get().getSelectedTypes());
+            assertEquals(Set.of(), SyncService.get().getSelectedTypes());
             assertTrue(SyncService.get().hasKeepEverythingSynced());
         });
     }

@@ -214,13 +214,16 @@ class LocalVisitor
     if (const auto* ptr =
             BoundNodesView.getNodeAs<clang::FunctionDecl>("fct_decl")) {
       fct_decl_ = BoundNodesView.getNodeAs<clang::FunctionDecl>("fct_decl");
+      is_lambda_ = false;
     } else {
       const clang::LambdaExpr* lambda_expr =
           BoundNodesView.getNodeAs<clang::LambdaExpr>("lambda_expr");
       fct_decl_ = lambda_expr->getCallOperator();
+      is_lambda_ = true;
     }
   }
   const clang::FunctionDecl* fct_decl_;
+  bool is_lambda_;
 };
 
 // This is used to map arguments passed to std::make_unique to the underlying
@@ -297,12 +300,25 @@ AST_MATCHER_P2(clang::CallExpr,
       LocalVisitor l;
       arg_matches.visitMatches(&l);
       const auto* fct_decl = l.fct_decl_;
-      if (fct_decl->getNumParams() != num_args - 1) {
-        return false;
-      }
-      // i-1 because we start with second arg for Bind and first arg for
+
+      // start_index=1 when we start with second arg for Bind and first arg for
       // lambda/fct
-      const auto* param = fct_decl->getParamDecl(i - 1);
+      unsigned start_index = 1;
+      // start_index=2 when the second arg is a pointer to the object on which
+      // the function is to be invoked. This is done when the function pointer is
+      // not a static class function.
+      // isGlobal is true for free functions as well as static member functions,
+      // both of which don't need a pointer to the object on which they are
+      // invoked.
+      if (!l.is_lambda_ && !l.fct_decl_->isGlobal()) {
+        start_index = 2;
+        // Skip the second argument passed to BindOnce/BindRepeating as it is an
+        // object pointer unrelated to target function args.
+        if (i == 1) {
+          continue;
+        }
+      }
+      const auto* param = fct_decl->getParamDecl(i - start_index);
       clang::ast_matchers::internal::BoundNodesTreeBuilder
           parm_var_decl_matches(arg_matches);
       if (parm_var_decl_matcher.matches(*param, Finder,
@@ -656,15 +672,11 @@ class AffectedPtrExprRewriter : public MatchFinder::MatchCallback {
           replacement_text, replacement_range, source_manager, ast_context);
       lhs.include_directive = lhs.replacement;
 
-    } else if (const clang::MemberExpr* member_expr =
-                   result.Nodes.getNodeAs<clang::MemberExpr>(
+    } else if (const clang::CXXMemberCallExpr* member_expr =
+                   result.Nodes.getNodeAs<clang::CXXMemberCallExpr>(
                        "affectedMemberExpr")) {
-      clang::SourceLocation member_name_start = member_expr->getMemberLoc();
-      size_t member_name_length =
-          member_expr->getMemberDecl()->getName().size();
-      // +2 to skip trailing ()
       clang::SourceLocation insertion_loc =
-          member_name_start.getLocWithOffset(member_name_length + 2);
+          member_expr->getEndLoc().getLocWithOffset(1);
 
       clang::SourceRange replacement_range(insertion_loc, insertion_loc);
       std::string replacement_text = ".get()";
@@ -678,6 +690,27 @@ class AffectedPtrExprRewriter : public MatchFinder::MatchCallback {
           op_call_expr->getEndLoc().getLocWithOffset(1);
       clang::SourceRange replacement_range(insertion_loc, insertion_loc);
       std::string replacement_text = ".get()";
+      lhs.replacement = getReplacementDirective(
+          replacement_text, replacement_range, source_manager, ast_context);
+      lhs.include_directive = lhs.replacement;
+    } else if (const clang::ParmVarDecl* var_decl =
+                   result.Nodes.getNodeAs<clang::ParmVarDecl>(
+                       "lambda_parmVarDecl")) {
+      auto* type_loc =
+          result.Nodes.getNodeAs<clang::TypeLoc>("template_type_param_loc");
+
+      auto* md = result.Nodes.getNodeAs<clang::CXXMethodDecl>("md");
+
+      clang::SourceRange replacement_range(var_decl->getBeginLoc(),
+                                           type_loc->getEndLoc());
+
+      std::string replacement_text =
+          (md->getParamDecl(var_decl->getFunctionScopeIndex()))
+              ->getType()
+              ->getPointeeType()
+              .getAsString();
+
+      replacement_text = RemovePrefix(replacement_text);
       lhs.replacement = getReplacementDirective(
           replacement_text, replacement_range, source_manager, ast_context);
       lhs.include_directive = lhs.replacement;
@@ -895,10 +928,18 @@ class VectorRawPtrRewriter {
                 0, hasTypeLoc(pointerTypeLoc().bind("rhs_argPointerLoc"))))
             .bind("rhs_tst_loc");
 
+    auto exclude_callbacks = anyOf(
+        hasType(typedefNameDecl(hasType(qualType(hasDeclaration(
+            recordDecl(anyOf(hasName("base::RepeatingCallback"),
+                             hasName("base::OnceCallback")))))))),
+        hasType(qualType(
+            hasDeclaration(recordDecl(anyOf(hasName("base::RepeatingCallback"),
+                                            hasName("base::OnceCallback")))))));
+
     auto field_exclusions =
         anyOf(isExpansionInSystemHeader(), isInExternCContext(),
               isInThirdPartyLocation(), isInGeneratedLocation(),
-              ImplicitFieldDeclaration());
+              ImplicitFieldDeclaration(), exclude_callbacks);
 
     // Supports typedefs as well.
     auto lhs_type_loc =
@@ -992,6 +1033,14 @@ class VectorRawPtrRewriter {
 
     // rewrite affected expressions
     {
+      // This is needed to handle container-like types that implement a begin()
+      // method. Range-based for loops over such types also need to be
+      // rewritten.
+      auto ctn_like_type =
+          expr(hasType(cxxRecordDecl(has(functionDecl(
+                   hasName("begin"), hasReturnTypeLoc(rhs_type_loc))))),
+               unless(isExpansionInSystemHeader()));
+
       auto reversed_expr =
           callExpr(callee(functionDecl(hasName("base::Reversed"))),
                    hasArgument(0, rhs_expr_variations));
@@ -1004,7 +1053,8 @@ class VectorRawPtrRewriter {
               has(varDecl(hasDescendant(loc(qualType(pointsTo(autoType())))
                                             .bind("autoLoc")))
                       .bind("autoVarDecl")),
-              has(expr(anyOf(rhs_expr_variations, reversed_expr)))));
+              has(expr(
+                  anyOf(rhs_expr_variations, reversed_expr, ctn_like_type)))));
       match_finder_.addMatcher(auto_star_in_range_stmt,
                                &affected_ptr_expr_rewriter_);
 
@@ -1012,10 +1062,13 @@ class VectorRawPtrRewriter {
       // This becomes: auto* var = member.front().get();
       auto affected_expr = traverse(
           clang::TK_IgnoreUnlessSpelledInSource,
-          declStmt(has(varDecl(hasType(pointsTo(autoType())),
-                               has(cxxMemberCallExpr(has(
-                                   memberExpr(has(expr(rhs_expr_variations)))
-                                       .bind("affectedMemberExpr"))))))));
+          declStmt(has(varDecl(
+              hasType(pointsTo(autoType())),
+              has(cxxMemberCallExpr(
+                      callee(functionDecl(anyOf(
+                          hasName("front"), hasName("back"), hasName("at")))),
+                      has(memberExpr(has(expr(rhs_expr_variations)))))
+                      .bind("affectedMemberExpr"))))));
       match_finder_.addMatcher(affected_expr, &affected_ptr_expr_rewriter_);
 
       // handles expressions of the form: auto* var = member[0];
@@ -1027,6 +1080,33 @@ class VectorRawPtrRewriter {
                        has(cxxOperatorCallExpr(has(expr(rhs_expr_variations)))
                                .bind("affectedOpCall"))))));
       match_finder_.addMatcher(affected_op_call, &affected_ptr_expr_rewriter_);
+
+      // handles expressions of the form:
+      // base::ranges::any_of(view->children(), [](const auto* v) {
+      //     ...
+      //   });
+      // where auto* needs to be rewritten into type_name*.
+      auto range_exprs = callExpr(
+          callee(functionDecl(anyOf(
+              matchesName("find"), matchesName("any_of"), matchesName("all_of"),
+              matchesName("transform"), matchesName("copy"),
+              matchesName("accumulate"), matchesName("count")))),
+          hasArgument(0, traverse(clang::TK_IgnoreUnlessSpelledInSource,
+                                  expr(anyOf(rhs_expr_variations, reversed_expr,
+                                             ctn_like_type)))),
+          hasAnyArgument(expr(allOf(
+              traverse(
+                  clang::TK_IgnoreUnlessSpelledInSource,
+                  lambdaExpr(
+                      has(parmVarDecl(
+                              hasTypeLoc(loc(qualType(anything()))
+                                             .bind("template_type_param_loc")),
+                              hasType(pointsTo(templateTypeParmType())))
+                              .bind("lambda_parmVarDecl")))
+                      .bind("lambda_expr")),
+              lambdaExpr(has(cxxRecordDecl(has(functionTemplateDecl(has(
+                  cxxMethodDecl(isTemplateInstantiation()).bind("md")))))))))));
+      match_finder_.addMatcher(range_exprs, &affected_ptr_expr_rewriter_);
     }
 
     // needed for ternary operator expr: (cond) ? true_expr : false_expr;
@@ -1150,13 +1230,20 @@ class VectorRawPtrRewriter {
     // Handles: std::swap(member, temp); std::swap(temp, member);
     auto std_swap_call =
         traverse(clang::TK_IgnoreUnlessSpelledInSource,
-                 callExpr(anyOf(callee(functionDecl(hasName("std::swap"))),
-                                isExpandedFromMacro("EXPECT_EQ"),
-                                isExpandedFromMacro("ASSERT_EQ")),
+                 callExpr(callee(functionDecl(hasName("std::swap"))),
                           hasArgument(0, lhs_expr_variations),
                           hasArgument(1, rhs_expr_variations),
                           unless(isExpansionInSystemHeader())));
     match_finder_.addMatcher(std_swap_call, &potentail_nodes_);
+
+    auto assert_expect_eq =
+        traverse(clang::TK_IgnoreUnlessSpelledInSource,
+                 callExpr(anyOf(isExpandedFromMacro("EXPECT_EQ"),
+                                isExpandedFromMacro("ASSERT_EQ")),
+                          hasArgument(2, lhs_expr_variations),
+                          hasArgument(3, rhs_expr_variations),
+                          unless(isExpansionInSystemHeader())));
+    match_finder_.addMatcher(assert_expect_eq, &potentail_nodes_);
 
     // Supports:
     // std::vector<S*> temp;
@@ -1255,14 +1342,20 @@ class VectorRawPtrRewriter {
             .bind("fct_decl"));
     match_finder_.addMatcher(fct_decls_returns, &fct_sig_nodes_);
 
-    auto macro_fct_signatures = traverse(
-        clang::TK_IgnoreUnlessSpelledInSource,
-        templateSpecializationTypeLoc(
-            rhs_location,
-            hasAncestor(functionDecl(isInMacroLocation(),
+    auto macro_fct_signatures =
+        traverse(clang::TK_IgnoreUnlessSpelledInSource,
+                 templateSpecializationTypeLoc(
+                     rhs_location,
+                     hasAncestor(cxxMethodDecl(
+                                     isInMacroLocation(),
+                                     anyOf(isExpandedFromMacro("MOCK_METHOD"),
+                                           isExpandedFromMacro("MOCK_METHOD0"),
+                                           isExpandedFromMacro("MOCK_METHOD1"),
+                                           isExpandedFromMacro("MOCK_METHOD2"),
+                                           isExpandedFromMacro("MOCK_METHOD3"),
+                                           isExpandedFromMacro("MOCK_METHOD4")),
                                      unless(isExpansionInSystemHeader()))
-                            .bind("fct_decl")),
-            unless(hasAncestor(varDecl()))));
+                                     .bind("fct_decl"))));
     match_finder_.addMatcher(macro_fct_signatures, &fct_sig_nodes_);
 
     // TODO: handle calls to templated functions

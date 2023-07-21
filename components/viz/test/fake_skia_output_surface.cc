@@ -22,7 +22,7 @@
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
-#include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_format_service_utils.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
@@ -30,6 +30,7 @@
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/ganesh/SkImageGanesh.h"
+#include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/presentation_feedback.h"
@@ -68,8 +69,8 @@ void FakeSkiaOutputSurface::Reshape(const ReshapeParams& params) {
   SkImageInfo image_info = SkImageInfo::Make(
       params.size.width(), params.size.height(), color_type,
       kPremul_SkAlphaType, params.color_space.ToSkColorSpace());
-  sk_surface = SkSurface::MakeRenderTarget(gr_context(), skgpu::Budgeted::kNo,
-                                           image_info);
+  sk_surface =
+      SkSurfaces::RenderTarget(gr_context(), skgpu::Budgeted::kNo, image_info);
 
   DCHECK(sk_surface);
 }
@@ -189,8 +190,8 @@ SkCanvas* FakeSkiaOutputSurface::BeginPaintRenderPass(
     SkImageInfo image_info = SkImageInfo::Make(
         surface_size.width(), surface_size.height(), color_type,
         kPremul_SkAlphaType, std::move(color_space));
-    sk_surface = SkSurface::MakeRenderTarget(gr_context(), skgpu::Budgeted::kNo,
-                                             image_info);
+    sk_surface = SkSurfaces::RenderTarget(gr_context(), skgpu::Budgeted::kNo,
+                                          image_info);
   }
   return sk_surface->getCanvas();
 }

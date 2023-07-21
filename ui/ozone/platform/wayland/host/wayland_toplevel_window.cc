@@ -319,6 +319,13 @@ ZOrderLevel WaylandToplevelWindow::GetZOrderLevel() const {
   return z_order_;
 }
 
+void WaylandToplevelWindow::SetShape(std::unique_ptr<ShapeRects> native_shape,
+                                     const gfx::Transform& transform) {
+  if (shell_toplevel_) {
+    shell_toplevel_->SetShape(std::move(native_shape));
+  }
+}
+
 std::string WaylandToplevelWindow::GetWindowUniqueId() const {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   return window_unique_id_;
@@ -647,8 +654,19 @@ void WaylandToplevelWindow::SetWindowGeometry(gfx::Size size_dip) {
   gfx::Rect geometry_dip(size_dip);
 
   const auto insets = GetDecorationInsetsInDIP();
-  if (state_ == PlatformWindowState::kNormal && !insets.IsEmpty())
+  if (state_ == PlatformWindowState::kNormal && !insets.IsEmpty()) {
     geometry_dip.Inset(insets);
+
+    // Shrinking the bounds by the decoration insets might result in empty
+    // bounds. For the reasons already explained in WaylandWindow::Initialize(),
+    // we mustn't request an empty window geometry.
+    if (geometry_dip.width() == 0) {
+      geometry_dip.set_width(1);
+    }
+    if (geometry_dip.height() == 0) {
+      geometry_dip.set_height(1);
+    }
+  }
   shell_toplevel_->SetWindowGeometry(geometry_dip);
 }
 

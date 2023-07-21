@@ -12,6 +12,13 @@
 #include "base/memory/ref_counted.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 
+@interface URLAndTitle : NSObject
+
+@property(readonly) NSString* URL;
+@property(readonly) NSString* title;
+
+@end
+
 namespace ui {
 
 // A publicly-used UTI for the name of a URL. It really should be in a system

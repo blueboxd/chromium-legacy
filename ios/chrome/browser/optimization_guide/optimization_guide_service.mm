@@ -79,9 +79,12 @@ OptimizationGuideService::OptimizationGuideService(
   // In off the record profile, the stores of normal profile should be
   // passed to the constructor. In normal profile, they will be created.
   DCHECK(!off_the_record_ || hint_store);
-  DCHECK(
-      !off_the_record_ || prediction_model_and_features_store ||
-      !optimization_guide::features::IsOptimizationTargetPredictionEnabled());
+  if (off_the_record_ &&
+      optimization_guide::features::IsOptimizationTargetPredictionEnabled()) {
+    DCHECK(prediction_model_and_features_store ||
+           optimization_guide::features::IsInstallWideModelStoreEnabled());
+  }
+  base::FilePath models_dir;
   if (!off_the_record_) {
     // Only create a top host provider from the command line if provided.
     top_host_provider_ =
@@ -99,13 +102,22 @@ OptimizationGuideService::OptimizationGuideService(
                   pref_service)
             : nullptr;
     hint_store = hint_store_ ? hint_store_->AsWeakPtr() : nullptr;
-    if (optimization_guide::features::IsOptimizationTargetPredictionEnabled()) {
+    if (optimization_guide::features::IsOptimizationTargetPredictionEnabled() &&
+        !optimization_guide::features::IsInstallWideModelStoreEnabled()) {
+      // Do not explicitly hand off the model downloads directory to
+      // off-the-record profiles. Underneath the hood, this variable is only
+      // used in non off-the-record profiles to know where to download the model
+      // files to. Off-the-record profiles read the model locations from the
+      // original profiles they are associated with.
+      models_dir = profile_path.Append(
+          optimization_guide::kOptimizationGuidePredictionModelDownloads);
       prediction_model_and_features_store_ =
           std::make_unique<optimization_guide::OptimizationGuideStore>(
               proto_db_provider,
               profile_path.Append(
                   optimization_guide::
                       kOptimizationGuidePredictionModelMetadataStore),
+              models_dir,
               base::ThreadPool::CreateSequencedTaskRunner(
                   {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
               pref_service);
@@ -119,24 +131,17 @@ OptimizationGuideService::OptimizationGuideService(
       top_host_provider_.get(), tab_url_provider_.get(), url_loader_factory,
       optimization_guide_logger_.get());
 
-  base::FilePath models_dir;
-  if (!off_the_record_) {
-    // Do not explicitly hand off the model downloads directory to
-    // off-the-record profiles. Underneath the hood, this variable is only used
-    // in non off-the-record profiles to know where to download the model files
-    // to. Off-the-record profiles read the model locations from the original
-    // profiles they are associated with.
-    models_dir = profile_path.Append(
-        optimization_guide::kOptimizationGuidePredictionModelDownloads);
-  }
   if (optimization_guide::features::IsOptimizationTargetPredictionEnabled()) {
-    // TODO(crbug.com/1284363): Support the new prediction model store.
     prediction_manager_ =
         std::make_unique<optimization_guide::PredictionManager>(
-            prediction_model_and_features_store,
-            /*prediction_model_store=*/nullptr, url_loader_factory,
-            pref_service, off_the_record_, application_locale, models_dir,
-            optimization_guide_logger_.get(),
+            optimization_guide::features::IsInstallWideModelStoreEnabled()
+                ? nullptr
+                : prediction_model_and_features_store,
+            optimization_guide::features::IsInstallWideModelStoreEnabled()
+                ? optimization_guide::PredictionModelStore::GetInstance()
+                : nullptr,
+            url_loader_factory, pref_service, off_the_record_,
+            application_locale, models_dir, optimization_guide_logger_.get(),
             std::move(background_download_service_provider),
             base::BindRepeating([]() {
               return GetApplicationContext()->GetLocalState()->GetBoolean(
@@ -165,7 +170,8 @@ OptimizationGuideService::~OptimizationGuideService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void OptimizationGuideService::DoFinalInit() {
+void OptimizationGuideService::DoFinalInit(
+    download::BackgroundDownloadService* background_download_service) {
   if (!off_the_record_) {
     bool optimization_guide_fetching_enabled =
         optimization_guide::IsUserPermittedToFetchFromRemoteOptimizationGuide(
@@ -176,6 +182,11 @@ void OptimizationGuideService::DoFinalInit() {
         "SyntheticOptimizationGuideRemoteFetching",
         optimization_guide_fetching_enabled ? "Enabled" : "Disabled",
         variations::SyntheticTrialAnnotationMode::kCurrentLog);
+    if (optimization_guide::features::IsInstallWideModelStoreEnabled() &&
+        background_download_service) {
+      prediction_manager_->MaybeInitializeModelDownloads(
+          background_download_service);
+    }
   }
 }
 

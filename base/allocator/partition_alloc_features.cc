@@ -81,12 +81,6 @@ BASE_FEATURE(kPartitionAllocPCScanRendererOnly,
              "PartitionAllocPCScanRendererOnly",
              FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, this instance belongs to the Control group of the BackupRefPtr
-// binary experiment.
-BASE_FEATURE(kPartitionAllocBackupRefPtrControl,
-             "PartitionAllocBackupRefPtrControl",
-             FEATURE_DISABLED_BY_DEFAULT);
-
 // Use a larger maximum thread cache cacheable bucket size.
 BASE_FEATURE(kPartitionAllocLargeThreadCacheSize,
              "PartitionAllocLargeThreadCacheSize",
@@ -143,10 +137,21 @@ const base::FeatureParam<BackupRefPtrEnabledProcesses>
       &kBackupRefPtrEnabledProcessesOptions
 };
 
+constexpr FeatureParam<BackupRefPtrRefCountSize>::Option
+    kBackupRefPtrRefCountSizeOptions[] = {
+        {BackupRefPtrRefCountSize::kNatural, "natural"},
+        {BackupRefPtrRefCountSize::k4B, "4B"},
+        {BackupRefPtrRefCountSize::k8B, "8B"},
+        {BackupRefPtrRefCountSize::k16B, "16B"}};
+
+const base::FeatureParam<BackupRefPtrRefCountSize>
+    kBackupRefPtrRefCountSizeParam{
+        &kPartitionAllocBackupRefPtr, "ref-count-size",
+        BackupRefPtrRefCountSize::kNatural, &kBackupRefPtrRefCountSizeOptions};
+
 constexpr FeatureParam<BackupRefPtrMode>::Option kBackupRefPtrModeOptions[] = {
     {BackupRefPtrMode::kDisabled, "disabled"},
     {BackupRefPtrMode::kEnabled, "enabled"},
-    {BackupRefPtrMode::kEnabledWithoutZapping, "enabled-without-zapping"},
     {BackupRefPtrMode::kEnabledWithMemoryReclaimer,
      "enabled-with-memory-reclaimer"},
     {BackupRefPtrMode::kDisabledButSplitPartitions2Way,
@@ -155,13 +160,39 @@ constexpr FeatureParam<BackupRefPtrMode>::Option kBackupRefPtrModeOptions[] = {
      "disabled-but-2-way-split-with-memory-reclaimer"},
     {BackupRefPtrMode::kDisabledButSplitPartitions3Way,
      "disabled-but-3-way-split"},
-    {BackupRefPtrMode::kDisabledButAddDummyRefCount,
-     "disabled-but-add-dummy-ref-count"},
 };
 
 const base::FeatureParam<BackupRefPtrMode> kBackupRefPtrModeParam{
     &kPartitionAllocBackupRefPtr, "brp-mode", BackupRefPtrMode::kEnabled,
     &kBackupRefPtrModeOptions};
+
+BASE_FEATURE(kPartitionAllocMemoryTagging,
+             "PartitionAllocMemoryTagging",
+             FEATURE_DISABLED_BY_DEFAULT);
+
+constexpr FeatureParam<MemtagMode>::Option kMemtagModeOptions[] = {
+    {MemtagMode::kSync, "sync"},
+    {MemtagMode::kAsync, "async"}};
+
+const base::FeatureParam<MemtagMode> kMemtagModeParam{
+    &kPartitionAllocMemoryTagging, "memtag-mode", MemtagMode::kAsync,
+    &kMemtagModeOptions};
+
+constexpr FeatureParam<MemoryTaggingEnabledProcesses>::Option
+    kMemoryTaggingEnabledProcessesOptions[] = {
+        {MemoryTaggingEnabledProcesses::kBrowserOnly, "browser-only"},
+        {MemoryTaggingEnabledProcesses::kNonRenderer, "non-renderer"},
+        {MemoryTaggingEnabledProcesses::kAllProcesses, "all-processes"}};
+
+const base::FeatureParam<MemoryTaggingEnabledProcesses>
+    kMemoryTaggingEnabledProcessesParam{
+        &kPartitionAllocMemoryTagging, "enabled-processes",
+        MemoryTaggingEnabledProcesses::kBrowserOnly,
+        &kMemoryTaggingEnabledProcessesOptions};
+
+BASE_FEATURE(kKillPartitionAllocMemoryTagging,
+             "KillPartitionAllocMemoryTagging",
+             FEATURE_DISABLED_BY_DEFAULT);
 
 const base::FeatureParam<bool> kBackupRefPtrAsanEnableDereferenceCheckParam{
     &kPartitionAllocBackupRefPtr, "asan-enable-dereference-check", true};

@@ -244,9 +244,11 @@ reviewer.
   <summary>
     The number of sites that may have had their storage cleared by DIPS.
 
-    If DIPS deletion is on, this is the number of sites that have had storage
-    cleared by DIPS. Otherwise, this number is the sites that would've had their
-    storage cleared if the DIPS deletion feature was on.
+    If DIPS deletion is on, third-party cookies are blocked, and there are no
+    url-specific exemptions by the user for the latter, then, this is the number
+    of sites that have had storage cleared by DIPS. Otherwise, this number is
+    the sites that would've had their storage cleared if the above conditions
+    were met for all the sites.
 
     This is recorded every time the DIPS timer is fired, which is determined by
     the `timer_delay` parameter of the DIPS feature.
@@ -335,8 +337,22 @@ reviewer.
   </summary>
 </histogram>
 
+<histogram name="Privacy.DIPS.Deletion{DIPSCookieMode}"
+    enum="DIPSDeletionAction" expires_after="2023-11-01">
+  <owner>njeunje@chromium.org</owner>
+  <owner>src/chrome/browser/dips/OWNERS</owner>
+  <summary>
+    This is recorded each time we initiate a possible deletion of state on
+    DIPS-eligible (incidental) sites. This metric will represents the action
+    taken based on multiple conditions gating the actual deletion.
+
+    This is recorded with {DIPSCookieMode} profiles.
+  </summary>
+  <token key="DIPSCookieMode" variants="DIPSCookieMode"/>
+</histogram>
+
 <histogram name="Privacy.DIPS.DIPSErrorCodes" enum="DIPSErrorCode"
-    expires_after="2023-09-13">
+    expires_after="2023-11-12">
   <owner>wanderview@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -586,7 +602,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.ScheduledRequests.NumRetriesBeforeSuccess"
-    units="retries" expires_after="M117">
+    units="retries" expires_after="2023-11-12">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -597,7 +613,7 @@ reviewer.
 </histogram>
 
 <histogram name="PrivacySandbox.AggregationService.ScheduledRequests.Status"
-    enum="AggregationServiceObserverReportStatus" expires_after="M117">
+    enum="AggregationServiceObserverReportStatus" expires_after="2023-11-12">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -647,7 +663,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.Storage.Sql.StoreRequestHasCapacity"
-    enum="Boolean" expires_after="M117">
+    enum="Boolean" expires_after="2023-11-12">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -658,7 +674,7 @@ reviewer.
 </histogram>
 
 <histogram name="PrivacySandbox.AggregationService.UnscheduledRequests.Status"
-    enum="AggregationServiceObserverReportStatus" expires_after="M117">
+    enum="AggregationServiceObserverReportStatus" expires_after="2023-11-12">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -669,9 +685,9 @@ reviewer.
 </histogram>
 
 <histogram
-    name="PrivacySandbox.PrivateAggregation.Budgeter.BudgetValidityStatus"
-    enum="PrivacySandboxPrivateAggregationBudgeterBudgetValidityStatus"
-    expires_after="2023-10-08">
+    name="PrivacySandbox.PrivateAggregation.Budgeter.BudgetValidityStatus2"
+    enum="PrivacySandboxPrivateAggregationBudgeterBudgetValidityStatus2"
+    expires_after="2023-11-23">
   <owner>anthonygarant@chromium.org</owner>
   <owner>alexmt@chromium.org</owner>
   <owner>measurement-api-dev+metrics@google.com</owner>
@@ -685,15 +701,49 @@ reviewer.
   </summary>
 </histogram>
 
-<histogram name="PrivacySandbox.PrivateAggregation.Budgeter.RequestResult"
-    enum="PrivacySandboxPrivateAggregationBudgeterRequestResult"
-    expires_after="2023-09-03">
+<histogram
+    name="PrivacySandbox.PrivateAggregation.Budgeter.NumReportingOriginsStoredPerSite"
+    units="counts" expires_after="2023-11-22">
+  <owner>alexmt@chromium.org</owner>
+  <owner>linnan@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records the number of reporting origins stored per site in budget storage.
+    Recorded once every time that budget is attempted to be consumed to reflect
+    the state of stored budget data for the requested site and API. Not recorded
+    in the case of certain errors that fail before the storage is actually
+    queried.
+  </summary>
+</histogram>
+
+<histogram name="PrivacySandbox.PrivateAggregation.Budgeter.RequestResult2"
+    enum="PrivacySandboxPrivateAggregationBudgeterRequestResult2"
+    expires_after="2023-11-24">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
     Records the result of a request to consume budget for the Private
     Aggregation API. Recorded for each individual aggregatable report request
     (but not each individual histogram contribution).
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.PrivateAggregation.BudgetStorage.BeginInitializationCount"
+    units="units" expires_after="2023-11-12">
+  <owner>anthonygarant@chromium.org</owner>
+  <owner>alexmt@chromium.org</owner>
+  <summary>
+    Count the number of times the budget storage begins initialization. This
+    metric is intended to be used in conjunction with the
+    &quot;PrivacySandbox.PrivateAggregation.BudgetStorage.ShutdownBeforeFinishingInitialization&quot;
+    metric, which does not measure cases where the browser is shut down
+    abruptly.
+
+    To get the actual number of times the browser is shut down before finishing
+    initialization, including cases where shut down abruptly, subtract the
+    number of true events for &quot;ShutdownBeforeFinishingInitialization&quot;;
+    from this metric's total count.
   </summary>
 </histogram>
 
@@ -711,7 +761,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.PrivateAggregation.BudgetStorage.ShutdownBeforeFinishingInitialization"
-    enum="Boolean" expires_after="M117">
+    enum="Boolean" expires_after="2023-11-12">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>

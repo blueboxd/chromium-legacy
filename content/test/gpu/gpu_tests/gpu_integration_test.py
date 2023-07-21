@@ -19,6 +19,8 @@ from telemetry.util import minidump_utils
 from telemetry.util import screenshot
 from typ import json_results
 
+import gpu_path_util
+
 from gpu_tests import common_browser_args as cba
 from gpu_tests import common_typing as ct
 from gpu_tests import gpu_helper
@@ -366,6 +368,11 @@ class GpuIntegrationTest(
       try:
         super(GpuIntegrationTest, cls).StartBrowser()
         cls.tab = cls.browser.tabs[0]
+        # The GPU tests don't function correctly if the screen is not on, so
+        # ensure that this is the case. We do this on browser start instead of
+        # before every test since the overhead can be non-trivial, particularly
+        # when running many small tests like for WebGPU.
+        cls._EnsureScreenOn()
         return
       except Exception as e:  # pylint: disable=broad-except
         last_exception = e
@@ -428,6 +435,13 @@ class GpuIntegrationTest(
       cls.SetBrowserOptions(cls._finder_options)
       cls.StartBrowser()
 
+  @classmethod
+  def _EnsureScreenOn(cls) -> None:
+    """Ensures the screen is on for applicable platforms."""
+    os_name = cls.browser.platform.GetOSName()
+    if os_name == 'android':
+      cls.browser.platform.android_action_runner.TurnScreenOn()
+
   # pylint: disable=no-self-use
   def _ShouldForceRetryOnFailureFirstTest(self) -> bool:
     return False
@@ -476,12 +490,6 @@ class GpuIntegrationTest(
 
   # pylint: enable=no-self-use
 
-  def _EnsureScreenOn(self) -> None:
-    """Ensures the screen is on for applicable platforms."""
-    os_name = self.browser.platform.GetOSName()
-    if os_name == 'android':
-      self.browser.platform.android_action_runner.TurnScreenOn()
-
   def _RunGpuTest(self, url: str, test_name: str, args: ct.TestArgs) -> None:
     expected_results, should_retry_on_failure = (
         self.GetExpectationsForTest()[:2])
@@ -491,9 +499,6 @@ class GpuIntegrationTest(
     expected_crashes = {}
     try:
       expected_crashes = self.GetExpectedCrashes(args)
-      # The GPU tests don't function correctly if the screen is not on, so
-      # ensure that this is the case.
-      self._EnsureScreenOn()
       self.RunActualGpuTest(url, args)
     except unittest.SkipTest:
       # pylint: disable=attribute-defined-outside-init
@@ -940,6 +945,15 @@ class GpuIntegrationTest(
         'unknown-gpu-0x8c',
         'unknown-gpu-',
     ]
+
+  @classmethod
+  def GetExpectationsFilesRepoPath(cls) -> str:
+    """Gets the path to the repo that the expectation files live in.
+
+    In most cases, this will be Chromium src/, but it's possible that an
+    expectation file lives in a third party repo.
+    """
+    return gpu_path_util.CHROMIUM_SRC_DIR
 
 
 def _ConsolidateBrowserArgs(browser_args: List[str]):

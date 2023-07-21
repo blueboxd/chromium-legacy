@@ -722,7 +722,8 @@ void NativeWidgetNSWindowBridge::SetVisibilityState(
   //  - A parent changing visibility updates child window visibility.
   //    * But only when changed via this function - ignore changes via the
   //      NSWindow API, or changes propagating out from here.
-  wants_to_be_visible_ = new_state != WindowVisibilityState::kHideWindow;
+  wants_to_be_visible_ = new_state != WindowVisibilityState::kHideWindow &&
+                         new_state != WindowVisibilityState::kMiniaturizeWindow;
 
   [show_animation_ stopAnimation];  // If set, calls OnShowAnimationComplete().
   CHECK(!show_animation_);
@@ -743,6 +744,9 @@ void NativeWidgetNSWindowBridge::SetVisibilityState(
 
     [window_ orderOut:nil];
     DCHECK(!window_visible_);
+    return;
+  } else if (new_state == WindowVisibilityState::kMiniaturizeWindow) {
+    [window_ miniaturize:nil];
     return;
   }
 
@@ -926,19 +930,17 @@ void NativeWidgetNSWindowBridge::SetCursor(const ui::Cursor& cursor) {
 
 void NativeWidgetNSWindowBridge::EnableImmersiveFullscreen(
     uint64_t fullscreen_overlay_widget_id,
-    uint64_t tab_widget_id,
-    EnableImmersiveFullscreenCallback callback) {
+    uint64_t tab_widget_id) {
   NativeWidgetNSWindowBridge* tab_widget_bridge = GetFromId(tab_widget_id);
   if (tab_widget_bridge) {
     NSWindow* tab_window = tab_widget_bridge->ns_window();
     immersive_mode_controller_ =
         std::make_unique<ImmersiveModeTabbedController>(
             ns_window(), GetFromId(fullscreen_overlay_widget_id)->ns_window(),
-            tab_window, std::move(callback));
+            tab_window);
   } else {
     immersive_mode_controller_ = std::make_unique<ImmersiveModeController>(
-        ns_window(), GetFromId(fullscreen_overlay_widget_id)->ns_window(),
-        std::move(callback));
+        ns_window(), GetFromId(fullscreen_overlay_widget_id)->ns_window());
   }
   immersive_mode_controller_->Enable();
 

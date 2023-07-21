@@ -107,6 +107,7 @@ EncoderStatus SetUpAomConfig(const VideoEncoder::Options& opts,
   svc_params = {};
   svc_params.framerate_factor[0] = 1;
   svc_params.number_spatial_layers = 1;
+  svc_params.number_temporal_layers = 1;
   if (opts.scalability_mode.has_value()) {
     switch (opts.scalability_mode.value()) {
       case SVCScalabilityMode::kL1T1:
@@ -350,28 +351,28 @@ void Av1VideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
 
   aom_img_fmt fmt = frame->format() == PIXEL_FORMAT_NV12 ? AOM_IMG_FMT_NV12
                                                          : AOM_IMG_FMT_I420;
-  aom_image_t* image = aom_img_wrap(&image_, fmt, options_.frame_size.width(),
-                                    options_.frame_size.height(), 1,
-                                    frame->writable_data(VideoFrame::kYPlane));
+  aom_image_t* image = aom_img_wrap(
+      &image_, fmt, options_.frame_size.width(), options_.frame_size.height(),
+      1, const_cast<uint8_t*>(frame->visible_data(VideoFrame::kYPlane)));
   DCHECK_EQ(image, &image_);
 
   switch (frame->format()) {
     case PIXEL_FORMAT_I420:
       image->planes[AOM_PLANE_Y] =
-          frame->GetWritableVisibleData(VideoFrame::kYPlane);
+          const_cast<uint8_t*>(frame->visible_data(VideoFrame::kYPlane));
       image->planes[AOM_PLANE_U] =
-          frame->GetWritableVisibleData(VideoFrame::kUPlane);
+          const_cast<uint8_t*>(frame->visible_data(VideoFrame::kUPlane));
       image->planes[AOM_PLANE_V] =
-          frame->GetWritableVisibleData(VideoFrame::kVPlane);
+          const_cast<uint8_t*>(frame->visible_data(VideoFrame::kVPlane));
       image->stride[AOM_PLANE_Y] = frame->stride(VideoFrame::kYPlane);
       image->stride[AOM_PLANE_U] = frame->stride(VideoFrame::kUPlane);
       image->stride[AOM_PLANE_V] = frame->stride(VideoFrame::kVPlane);
       break;
     case PIXEL_FORMAT_NV12:
       image->planes[AOM_PLANE_Y] =
-          frame->GetWritableVisibleData(VideoFrame::kYPlane);
+          const_cast<uint8_t*>(frame->visible_data(VideoFrame::kYPlane));
       image->planes[AOM_PLANE_U] =
-          frame->GetWritableVisibleData(VideoFrame::kUVPlane);
+          const_cast<uint8_t*>(frame->visible_data(VideoFrame::kUVPlane));
       image->planes[AOM_PLANE_V] = nullptr;
       image->stride[AOM_PLANE_Y] = frame->stride(VideoFrame::kYPlane);
       image->stride[AOM_PLANE_U] = frame->stride(VideoFrame::kUVPlane);

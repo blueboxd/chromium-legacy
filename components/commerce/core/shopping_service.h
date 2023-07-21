@@ -39,6 +39,7 @@ class Value;
 
 namespace bookmarks {
 class BookmarkModel;
+class BookmarkNode;
 }  // namespace bookmarks
 
 namespace network {
@@ -60,16 +61,24 @@ class PowerBookmarkService;
 
 namespace commerce {
 
-extern const char kOgTitle[];
+// Open graph keys.
 extern const char kOgImage[];
-extern const char kOgPriceCurrency[];
 extern const char kOgPriceAmount[];
+extern const char kOgPriceCurrency[];
+extern const char kOgProductLink[];
+extern const char kOgTitle[];
+extern const char kOgType[];
+
+// Specific open graph values we're interested in.
+extern const char kOgTypeOgProduct[];
+extern const char kOgTypeProductItem[];
 
 // The conversion multiplier to go from standard currency units to
 // micro-currency units.
 extern const long kToMicroCurrency;
 
 extern const char kImageAvailabilityHistogramName[];
+extern const char kProductInfoJavascriptTime[];
 
 // The amount of time to wait after the last "stopped loading" event to run the
 // on-page extraction for product info.
@@ -117,8 +126,8 @@ struct ProductInfo {
 
   std::string title;
   GURL image_url;
-  uint64_t product_cluster_id{0};
-  uint64_t offer_id{0};
+  absl::optional<uint64_t> product_cluster_id;
+  absl::optional<uint64_t> offer_id;
   std::string currency_code;
   int64_t amount_micros{0};
   absl::optional<int64_t> previous_amount_micros;
@@ -147,6 +156,10 @@ struct ProductInfoCacheEntry {
 
   // Whether the fallback javascript needs to run for page.
   bool needs_javascript_run{false};
+
+  // The time that the javascript execution started. This is primarily used for
+  // metrics.
+  base::Time javascript_execution_start_time;
 
   std::unique_ptr<base::CancelableOnceClosure> run_javascript_task;
 
@@ -270,6 +283,17 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
   // by this API is not guaranteed to be correct.
   virtual bool IsSubscribedFromCache(const CommerceSubscription& subscription);
 
+  // Gets all bookmarks that are price tracked. Internally this calls the
+  // function by the same name in price_tracking_utils.h.
+  virtual void GetAllPriceTrackedBookmarks(
+      base::OnceCallback<void(std::vector<const bookmarks::BookmarkNode*>)>
+          callback);
+
+  // Gets all bookmarks that have shopping information associated with them.
+  // Internally this calls the function by the same name in
+  // price_tracking_utils.h.
+  virtual std::vector<const bookmarks::BookmarkNode*> GetAllShoppingBookmarks();
+
   // Fetch users' pref from server on whether to receive price tracking emails.
   void FetchPriceEmailPref();
 
@@ -300,6 +324,13 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
   // if the user has the feature flag enabled or (if applicable) is in an
   // enabled country and locale.
   virtual bool IsCommercePriceTrackingEnabled();
+
+  // This is a feature check for the "price insights", which will return true
+  // if the user has the feature flag enabled, has MSBB enabled, and (if
+  // applicable) is in an eligible country and locale. The value returned by
+  // this method can change at runtime, so it should not be used when deciding
+  // whether to create critical, feature-related infrastructure.
+  virtual bool IsPriceInsightsEligible();
 
   // Get a weak pointer for this service instance.
   base::WeakPtr<ShoppingService> AsWeakPtr();
@@ -399,6 +430,11 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
   void OnProductInfoJsonSanitizationCompleted(
       const GURL url,
       data_decoder::DataDecoder::ValueOrError result);
+
+  // Tries to determine whether a page is a PDP only from information in meta
+  // tags extracted from the page. If enough information is present to call the
+  // page a PDP, this function returns true.
+  static bool CheckIsPDPFromMetaOnly(const base::Value::Dict& on_page_meta_map);
 
   // Merge shopping data from existing |info| and the result of on-page
   // heuristics -- a JSON object holding key -> value pairs (a map) stored in

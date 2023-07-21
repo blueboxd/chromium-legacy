@@ -23,9 +23,13 @@ V4L2StatelessVideoDecoder::V4L2StatelessVideoDecoder(
     base::WeakPtr<VideoDecoderMixin::Client> client)
     : VideoDecoderMixin(std::move(media_log),
                         std::move(decoder_task_runner),
-                        std::move(client)) {}
+                        std::move(client)) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+}
 
-V4L2StatelessVideoDecoder::~V4L2StatelessVideoDecoder() {}
+V4L2StatelessVideoDecoder::~V4L2StatelessVideoDecoder() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+}
 
 // static
 absl::optional<SupportedVideoDecoderConfigs>
@@ -40,50 +44,84 @@ void V4L2StatelessVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                            InitCB init_cb,
                                            const OutputCB& output_cb,
                                            const WaitingCB& waiting_cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   NOTIMPLEMENTED();
 }
 
 void V4L2StatelessVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                        DecodeCB decode_cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   NOTIMPLEMENTED();
 }
 
 void V4L2StatelessVideoDecoder::Reset(base::OnceClosure reset_cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   NOTIMPLEMENTED();
 }
 
 bool V4L2StatelessVideoDecoder::NeedsBitstreamConversion() const {
-  NOTIMPLEMENTED();
+  NOTREACHED() << "Our only owner VideoDecoderPipeline never calls here";
   return false;
 }
 
 bool V4L2StatelessVideoDecoder::CanReadWithoutStalling() const {
-  NOTIMPLEMENTED();
+  NOTREACHED() << "Our only owner VideoDecoderPipeline never calls here";
   return false;
 }
 
 int V4L2StatelessVideoDecoder::GetMaxDecodeRequests() const {
-  NOTIMPLEMENTED();
+  NOTREACHED() << "Our only owner VideoDecoderPipeline never calls here";
   return -1;
 }
 
 VideoDecoderType V4L2StatelessVideoDecoder::GetDecoderType() const {
-  NOTIMPLEMENTED();
-  return VideoDecoderType::kUnknown;
+  NOTREACHED() << "Our only owner VideoDecoderPipeline never calls here";
+  return VideoDecoderType::kV4L2;
 }
 
 bool V4L2StatelessVideoDecoder::IsPlatformDecoder() const {
-  NOTIMPLEMENTED();
-  return false;
+  NOTREACHED() << "Our only owner VideoDecoderPipeline never calls here";
+  return true;
 }
 
 void V4L2StatelessVideoDecoder::ApplyResolutionChange() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   NOTIMPLEMENTED();
 }
 
 size_t V4L2StatelessVideoDecoder::GetMaxOutputFramePoolSize() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   NOTIMPLEMENTED();
   return 0;
+}
+
+scoped_refptr<V4L2DecodeSurface> V4L2StatelessVideoDecoder::CreateSurface() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
+bool V4L2StatelessVideoDecoder::SubmitSlice(V4L2DecodeSurface* dec_surface,
+                                            const uint8_t* data,
+                                            size_t size) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void V4L2StatelessVideoDecoder::DecodeSurface(
+    scoped_refptr<V4L2DecodeSurface> dec_surface) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  NOTIMPLEMENTED();
+}
+
+void V4L2StatelessVideoDecoder::SurfaceReady(
+    scoped_refptr<V4L2DecodeSurface> dec_surface,
+    int32_t bitstream_id,
+    const gfx::Rect& visible_rect,
+    const VideoColorSpace& color_space) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  NOTIMPLEMENTED();
 }
 
 }  // namespace media

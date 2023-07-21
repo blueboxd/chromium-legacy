@@ -69,6 +69,8 @@ constexpr int kMarginDip = 10;
 
 constexpr auto kMainViewInsets = gfx::Insets::VH(4, 0);
 constexpr auto kContentViewInsets = gfx::Insets::TLBR(8, 0, 8, 16);
+constexpr auto kRichCardRedesignContentViewInsets =
+    gfx::Insets::TLBR(8, 0, 8, 0);
 constexpr int kMaxRows = 3;
 
 // Google icon.
@@ -107,12 +109,27 @@ constexpr char kGoogleSansFont[] = "Google Sans";
 constexpr int kReportQueryButtonMarginDip = 16;
 constexpr int kReportQueryViewFontSize = 12;
 
+// Expansion affordance indicator.
+constexpr char kRobotoFont[] = "Roboto";
+constexpr int kExpansionIndicatorLabelFontSize = 12;
+constexpr int kExpansionIndicatorIconSizeDip = 12;
+constexpr int kExpansionIndicatorIconBorderDip = 4;
+constexpr int kExpansionIndicatorSizeDip = 72;
+constexpr auto kExpansionIndicatorViewInsets = gfx::Insets::TLBR(8, 8, 12, 12);
+
 // TTS audio.
 constexpr char kGoogleTtsEngineId[] = "com.google.android.tts";
 
+gfx::Insets GetContentViewInsets() {
+  if (chromeos::features::IsQuickAnswersRichCardEnabled()) {
+    return kRichCardRedesignContentViewInsets;
+  }
+  return kContentViewInsets;
+}
+
 // Maximum height QuickAnswersView can expand to.
 int MaximumViewHeight() {
-  return kMainViewInsets.height() + kContentViewInsets.height() +
+  return kMainViewInsets.height() + GetContentViewInsets().height() +
          kMaxRows * kDefaultLineHeightDip + (kMaxRows - 1) * kLineSpacingDip;
 }
 
@@ -314,19 +331,50 @@ QuickAnswersView::QuickAnswersView(
           base::BindRepeating(&QuickAnswersView::GetFocusableViews,
                               base::Unretained(this)))) {
   InitLayout();
-  InitWidget();
 
   // Focus.
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   set_suppress_default_focus_handling();
-
-  // Allow tooltips to be shown despite menu-controller owning capture.
-  GetWidget()->SetNativeWindowProperty(
-      views::TooltipManager::kGroupingPropertyKey,
-      reinterpret_cast<void*>(views::MenuConfig::kMenuControllerGroupingId));
 }
 
 QuickAnswersView::~QuickAnswersView() = default;
+
+views::UniqueWidgetPtr QuickAnswersView::CreateWidget(
+    const gfx::Rect& anchor_view_bounds,
+    const std::string& title,
+    bool is_internal,
+    base::WeakPtr<QuickAnswersUiController> controller) {
+  views::Widget::InitParams params;
+  params.activatable = views::Widget::InitParams::Activatable::kNo;
+  params.shadow_elevation = 2;
+  params.shadow_type = views::Widget::InitParams::ShadowType::kDrop;
+  params.type = views::Widget::InitParams::TYPE_POPUP;
+  params.z_order = ui::ZOrderLevel::kFloatingUIElement;
+
+  // Parent the widget to the owner of the menu.
+  auto* active_menu_controller = views::MenuController::GetActiveInstance();
+  DCHECK(active_menu_controller && active_menu_controller->owner());
+
+  // This widget has to be a child of menu owner's widget to make keyboard focus
+  // work.
+  params.parent = active_menu_controller->owner()->GetNativeView();
+  params.child = true;
+  params.name = kWidgetName;
+
+  views::UniqueWidgetPtr widget =
+      std::make_unique<views::Widget>(std::move(params));
+  QuickAnswersView* quick_answers_view =
+      widget->SetContentsView(std::make_unique<QuickAnswersView>(
+          anchor_view_bounds, title, is_internal, controller));
+  quick_answers_view->UpdateBounds();
+
+  // Allow tooltips to be shown despite menu-controller owning capture.
+  widget->SetNativeWindowProperty(
+      views::TooltipManager::kGroupingPropertyKey,
+      reinterpret_cast<void*>(views::MenuConfig::kMenuControllerGroupingId));
+
+  return widget;
+}
 
 void QuickAnswersView::OnFocus() {
   View* wants_focus = focus_search_->FindNextFocusableView(
@@ -443,7 +491,8 @@ void QuickAnswersView::ShowRetryView() {
 }
 
 ui::ImageModel QuickAnswersView::GetIconImageModelForTesting() {
-  return vector_icon_ ? vector_icon_->GetImageModel() : ui::ImageModel();
+  return result_type_icon_ ? result_type_icon_->GetImageModel()
+                           : ui::ImageModel();
 }
 
 void QuickAnswersView::InitLayout() {
@@ -461,12 +510,11 @@ void QuickAnswersView::InitLayout() {
   auto* layout =
       main_view_->SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout->SetOrientation(views::LayoutOrientation::kHorizontal)
-      .SetInteriorMargin(kMainViewInsets)
-      .SetCrossAxisAlignment(views::LayoutAlignment::kStart);
+      .SetInteriorMargin(kMainViewInsets);
 
   if (chromeos::features::IsQuickAnswersRichCardEnabled()) {
     // Add icon that corresponds to the quick answer result type.
-    AddResultTypeIcon();
+    AddDefaultResultTypeIcon();
   } else {
     // Add branding icon.
     AddGoogleIcon();
@@ -480,37 +528,13 @@ void QuickAnswersView::InitLayout() {
   }
 }
 
-void QuickAnswersView::InitWidget() {
-  views::Widget::InitParams params;
-  params.activatable = views::Widget::InitParams::Activatable::kNo;
-  params.shadow_elevation = 2;
-  params.shadow_type = views::Widget::InitParams::ShadowType::kDrop;
-  params.type = views::Widget::InitParams::TYPE_POPUP;
-  params.z_order = ui::ZOrderLevel::kFloatingUIElement;
-
-  // Parent the widget to the owner of the menu.
-  auto* active_menu_controller = views::MenuController::GetActiveInstance();
-  DCHECK(active_menu_controller && active_menu_controller->owner());
-
-  // This widget has to be a child of menu owner's widget to make keyboard focus
-  // work.
-  params.parent = active_menu_controller->owner()->GetNativeView();
-  params.child = true;
-  params.name = kWidgetName;
-
-  views::Widget* widget = new views::Widget();
-  widget->Init(std::move(params));
-  widget->SetContentsView(this);
-  UpdateBounds();
-}
-
 void QuickAnswersView::AddContentView() {
   // Add content view.
   content_view_ = main_view_->AddChildView(std::make_unique<View>());
   auto* layout =
       content_view_->SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout->SetOrientation(views::LayoutOrientation::kVertical)
-      .SetInteriorMargin(kContentViewInsets)
+      .SetInteriorMargin(GetContentViewInsets())
       .SetDefault(views::kMarginsKey,
                   gfx::Insets::TLBR(0, 0, kLineSpacingDip, 0));
   auto* title_label = content_view_->AddChildView(
@@ -586,18 +610,24 @@ void QuickAnswersView::AddPhoneticsAudioButton(
 
 void QuickAnswersView::AddGoogleIcon() {
   // Add Google icon.
+  auto* google_icon_container = main_view_->AddChildView(
+      views::Builder<views::FlexLayoutView>()
+          .SetOrientation(views::LayoutOrientation::kHorizontal)
+          .SetCrossAxisAlignment(views::LayoutAlignment::kStart)
+          .Build());
+
   auto* google_icon =
-      main_view_->AddChildView(std::make_unique<views::ImageView>());
+      google_icon_container->AddChildView(std::make_unique<views::ImageView>());
   google_icon->SetBorder(views::CreateEmptyBorder(kGoogleIconInsets));
   google_icon->SetImage(gfx::CreateVectorIcon(vector_icons::kGoogleColorIcon,
                                               kGoogleIconSizeDip,
                                               gfx::kPlaceholderColor));
 }
 
-void QuickAnswersView::AddResultTypeIcon() {
+void QuickAnswersView::AddDefaultResultTypeIcon() {
   // Use a container view for the icon and circle background to set
   // the correct margins.
-  auto* vector_icon_container = main_view_->AddChildView(
+  auto* result_type_icon_container = main_view_->AddChildView(
       views::Builder<views::FlexLayoutView>()
           .SetOrientation(views::LayoutOrientation::kHorizontal)
           .SetCrossAxisAlignment(views::LayoutAlignment::kStart)
@@ -605,19 +635,20 @@ void QuickAnswersView::AddResultTypeIcon() {
           .Build());
 
   // Add a circle background behind the icon.
-  auto* vector_icon_circle = vector_icon_container->AddChildView(
+  auto* result_type_icon_circle = result_type_icon_container->AddChildView(
       std::make_unique<views::FlexLayoutView>());
-  vector_icon_circle->SetBackground(views::CreateThemedRoundedRectBackground(
-      cros_tokens::kCrosSysPrimary, kResultTypeIconContainerRadius));
-  vector_icon_circle->SetBorder(
+  result_type_icon_circle->SetBackground(
+      views::CreateThemedRoundedRectBackground(cros_tokens::kCrosSysPrimary,
+                                               kResultTypeIconContainerRadius));
+  result_type_icon_circle->SetBorder(
       views::CreateEmptyBorder(kResultTypeIconCircleInsets));
 
   // Use the default result type icon until a valid quick answers result is
   // received and the view is updated. In the `no result` case, this will be
   // kept as the default icon.
-  vector_icon_ =
-      vector_icon_circle->AddChildView(std::make_unique<views::ImageView>());
-  vector_icon_->SetImage(
+  result_type_icon_ = result_type_icon_circle->AddChildView(
+      std::make_unique<views::ImageView>());
+  result_type_icon_->SetImage(
       ui::ImageModel::FromVectorIcon(GetResultTypeIcon(ResultType::kNoResult),
                                      cros_tokens::kCrosSysSystemBaseElevated,
                                      /*icon_size=*/kResultTypeIconSizeDip));
@@ -628,9 +659,17 @@ int QuickAnswersView::GetBoundsWidth() {
 }
 
 int QuickAnswersView::GetLabelWidth() {
-  return GetBoundsWidth() - kMainViewInsets.width() -
-         kContentViewInsets.width() - kGoogleIconInsets.width() -
-         kGoogleIconSizeDip;
+  int label_width = GetBoundsWidth() - kMainViewInsets.width() -
+                    GetContentViewInsets().width() - kGoogleIconInsets.width() -
+                    kGoogleIconSizeDip;
+
+  // If the rich card feature flag is enabled, leave additional space
+  // for the expansion affordance indicator.
+  if (chromeos::features::IsQuickAnswersRichCardEnabled()) {
+    return label_width - kExpansionIndicatorSizeDip;
+  }
+
+  return label_width;
 }
 
 void QuickAnswersView::ResetContentView() {
@@ -680,9 +719,11 @@ void QuickAnswersView::UpdateQuickAnswerResult(
     report_query_view_ = nullptr;
   }
 
-  // Update the icon representing the quick answers result type.
-  if (vector_icon_) {
-    vector_icon_->SetImage(ui::ImageModel::FromVectorIcon(
+  // Update the icon representing the quick answers result type if it's shown.
+  // In the case that the rich card feature is not enabled, this icon is null
+  // and the google icon is being shown instead.
+  if (result_type_icon_ && quick_answer.result_type != ResultType::kNoResult) {
+    result_type_icon_->SetImage(ui::ImageModel::FromVectorIcon(
         GetResultTypeIcon(quick_answer.result_type),
         cros_tokens::kCrosSysSystemBaseElevated,
         /*icon_size=*/kResultTypeIconSizeDip));
@@ -748,6 +789,36 @@ void QuickAnswersView::UpdateQuickAnswerResult(
         std::make_unique<ReportQueryView>(base::BindRepeating(
             &QuickAnswersUiController::OnReportQueryButtonPressed,
             controller_)));
+  }
+
+  if (chromeos::features::IsQuickAnswersRichCardEnabled() &&
+      quick_answer.result_type != ResultType::kNoResult) {
+    // Show the expansion affordance indicator if rich card view is available.
+    auto* expansion_indicator_view = main_view_->AddChildView(
+        views::Builder<views::FlexLayoutView>()
+            .SetOrientation(views::LayoutOrientation::kHorizontal)
+            .SetInteriorMargin(kExpansionIndicatorViewInsets)
+            .SetMainAxisAlignment(views::LayoutAlignment::kStart)
+            .SetCrossAxisAlignment(views::LayoutAlignment::kEnd)
+            .Build());
+
+    auto* expansion_indicator_label =
+        expansion_indicator_view->AddChildView(std::make_unique<Label>(
+            l10n_util::GetStringUTF16(
+                IDS_QUICK_ANSWERS_VIEW_EXPANSION_INDICATOR_LABEL),
+            Label::CustomFont{gfx::FontList({kRobotoFont}, gfx::Font::NORMAL,
+                                            kExpansionIndicatorLabelFontSize,
+                                            gfx::Font::Weight::MEDIUM)}));
+    expansion_indicator_label->SetEnabledColorId(
+        cros_tokens::kTextColorProminent);
+
+    auto* expansion_indicator_icon = expansion_indicator_view->AddChildView(
+        std::make_unique<views::ImageView>());
+    expansion_indicator_icon->SetImage(ui::ImageModel::FromVectorIcon(
+        vector_icons::kCaretDownIcon, cros_tokens::kTextColorProminent,
+        /*icon_size=*/kExpansionIndicatorIconSizeDip));
+    expansion_indicator_icon->SetBorder(
+        views::CreateEmptyBorder(kExpansionIndicatorIconBorderDip));
   }
 }
 

@@ -6,8 +6,8 @@ import 'chrome://webui-test/mojo_webui_test_support.js';
 
 import {Cart} from 'chrome://new-tab-page/cart.mojom-webui.js';
 import {Cluster, URLVisit} from 'chrome://new-tab-page/history_cluster_types.mojom-webui.js';
-import {PageHandlerRemote} from 'chrome://new-tab-page/history_clusters.mojom-webui.js';
-import {DismissModuleEvent, HistoryClusterElementType, HistoryClusterImageDisplayState, HistoryClusterLayoutType, historyClustersDescriptor, HistoryClustersModuleElement, HistoryClustersProxyImpl, LAYOUT_1_MIN_IMAGE_VISITS, LAYOUT_1_MIN_VISITS, LAYOUT_2_MIN_IMAGE_VISITS, LAYOUT_2_MIN_VISITS, LAYOUT_3_MIN_IMAGE_VISITS, LAYOUT_3_MIN_VISITS, PageImageServiceBrowserProxy} from 'chrome://new-tab-page/lazy_load.js';
+import {LayoutType, PageHandlerRemote} from 'chrome://new-tab-page/history_clusters.mojom-webui.js';
+import {DismissModuleEvent, HistoryClusterElementType, HistoryClusterImageDisplayState, historyClustersDescriptor, HistoryClustersModuleElement, HistoryClustersProxyImpl, LAYOUT_1_MIN_IMAGE_VISITS, LAYOUT_1_MIN_VISITS, LAYOUT_2_MIN_IMAGE_VISITS, LAYOUT_2_MIN_VISITS, LAYOUT_3_MIN_IMAGE_VISITS, LAYOUT_3_MIN_VISITS, PageImageServiceBrowserProxy} from 'chrome://new-tab-page/lazy_load.js';
 import {$$, NewTabPageProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {PageRemote} from 'chrome://new-tab-page/new_tab_page.mojom-webui.js';
 import {PageImageServiceHandlerRemote} from 'chrome://resources/cr_components/page_image_service/page_image_service.mojom-webui.js';
@@ -25,8 +25,7 @@ import {assertModuleHeaderTitle, createRelatedSearches, createSampleVisits, GOOG
 const DISPLAY_LAYOUT_METRIC_NAME = 'NewTabPage.HistoryClusters.DisplayLayout';
 
 function assertLayoutSet(
-    moduleElement: HistoryClustersModuleElement,
-    layoutType: HistoryClusterLayoutType) {
+    moduleElement: HistoryClustersModuleElement, layoutType: LayoutType) {
   const layoutElements = moduleElement.shadowRoot!.querySelectorAll('.layout');
   assertEquals(layoutType, moduleElement.layoutType);
   assertEquals(layoutElements.length, 1);
@@ -34,27 +33,27 @@ function assertLayoutSet(
 }
 
 function createLayoutSuitableSampleVisits(
-    layoutType: HistoryClusterLayoutType =
-        HistoryClusterLayoutType.LAYOUT_1): URLVisit[] {
+    layoutType: LayoutType = LayoutType.kLayout1): URLVisit[] {
   switch (layoutType) {
-    case HistoryClusterLayoutType.LAYOUT_1:
+    case LayoutType.kLayout1:
       return createSampleVisits(LAYOUT_1_MIN_VISITS, LAYOUT_1_MIN_IMAGE_VISITS);
-    case HistoryClusterLayoutType.LAYOUT_2:
+    case LayoutType.kLayout2:
       return createSampleVisits(LAYOUT_2_MIN_VISITS, LAYOUT_2_MIN_IMAGE_VISITS);
-    case HistoryClusterLayoutType.LAYOUT_3:
+    case LayoutType.kLayout3:
       return createSampleVisits(LAYOUT_3_MIN_VISITS, LAYOUT_3_MIN_IMAGE_VISITS);
   }
   return [];
 }
 
 function createSampleCluster(
-    layout?: HistoryClusterLayoutType, numRelatedSearches?: number,
+    layout?: LayoutType, numRelatedSearches?: number,
     overrides?: Partial<Cluster>): Cluster {
   const cluster: Cluster = Object.assign(
       {
         id: BigInt(111),
         visits: createLayoutSuitableSampleVisits(layout),
         label: '',
+        tabGroupName: 'My Tab Group Name',
         labelMatchPositions: [],
         relatedSearches: createRelatedSearches(numRelatedSearches),
         imageUrl: undefined,
@@ -109,9 +108,7 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
       assertEquals(null, moduleElement);
       assertEquals(1, metrics.count(DISPLAY_LAYOUT_METRIC_NAME));
       assertEquals(
-          1,
-          metrics.count(
-              DISPLAY_LAYOUT_METRIC_NAME, HistoryClusterLayoutType.NONE));
+          1, metrics.count(DISPLAY_LAYOUT_METRIC_NAME, LayoutType.kNone));
     });
 
     test('No module created when data does not match layouts', async () => {
@@ -119,8 +116,8 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
       const cluster: Partial<Cluster> = {
         visits: createSampleVisits(2, 0),
       };
-      const moduleElement = await initializeModule([createSampleCluster(
-          HistoryClusterLayoutType.NONE, undefined, cluster)]);
+      const moduleElement = await initializeModule(
+          [createSampleCluster(LayoutType.kNone, undefined, cluster)]);
 
       // Assert.
       assertEquals(null, moduleElement);
@@ -174,26 +171,29 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
           headerElement.querySelector('#showAllButton') as HTMLElement;
       assertTrue(!!showAllButton);
 
+      const waitForUsageEvent = eventToPromise('usage', moduleElement);
       showAllButton.click();
+
       const query = await handler.whenCalled('showJourneysSidePanel');
       assertEquals(sampleClusterUnquotedLabel, query);
       assertEquals(
           1,
-          metrics.count(`NewTabPage.HistoryClusters.Layout${
-              HistoryClusterLayoutType.LAYOUT_1}.Click`));
+          metrics.count(
+              `NewTabPage.HistoryClusters.Layout${LayoutType.kLayout1}.Click`));
       assertEquals(
           1,
           metrics.count(
-              `NewTabPage.HistoryClusters.Layout${
-                  HistoryClusterLayoutType.LAYOUT_1}.Click`,
+              `NewTabPage.HistoryClusters.Layout${LayoutType.kLayout1}.Click`,
               HistoryClusterElementType.SHOW_ALL));
+      const clusterId = await handler.whenCalled('recordClick');
+      assertEquals(BigInt(111), clusterId);
+      await waitForUsageEvent;
     });
 
     test(
         'Backend is notified when "Open all in tab group" is triggered',
         async () => {
-          const sampleCluster =
-              createSampleCluster(HistoryClusterLayoutType.LAYOUT_1);
+          const sampleCluster = createSampleCluster(LayoutType.kLayout1);
           const moduleElement = await initializeModule([sampleCluster]);
           assertTrue(!!moduleElement);
 
@@ -204,13 +204,18 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
               (loadTimeData.getString(
                   'modulesJourneysOpenAllInNewTabGroupButtonText')),
               openAllButton.innerText.trim());
+
+          const waitForUsageEvent = eventToPromise('usage', moduleElement);
           openAllButton.click();
 
-          const urls = await handler.whenCalled('openUrlsInTabGroup');
+          const [urls, tabGroupName] =
+              await handler.whenCalled('openUrlsInTabGroup');
           assertEquals(3, urls.length);
           assertEquals(`${GOOGLE_SEARCH_BASE_URL}?q=foo`, urls[0].url);
           assertEquals('https://www.foo.com/1', urls[1].url);
           assertEquals('https://www.foo.com/2', urls[2].url);
+          assertEquals('My Tab Group Name', tabGroupName);
+          await waitForUsageEvent;
         });
 
     test('Backend is notified when module is dismissed', async () => {
@@ -247,9 +252,37 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
       element.click();
     }
 
-    [HistoryClusterLayoutType.LAYOUT_1, HistoryClusterLayoutType.LAYOUT_2,
-     HistoryClusterLayoutType.LAYOUT_3]
-        .forEach(layoutType => {
+    [LayoutType.kLayout1, LayoutType.kLayout2, LayoutType.kLayout3].forEach(
+        layoutType => {
+          test('Scrollable content when overflowing', async () => {
+            loadTimeData.overrideValues({
+              modulesOverflowScrollbarEnabled: true,
+            });
+
+            const clusters = [createSampleCluster(layoutType)];
+            handler.setResultFor('getClusters', Promise.resolve({clusters}));
+            handler.setResultFor(
+                'getCartForCluster', Promise.resolve({cart: null}));
+            const moduleElement = await historyClustersDescriptor.initialize(
+                                      0) as HistoryClustersModuleElement;
+            await handler.whenCalled('getClusters');
+
+            const overflowWidth = 766;
+            const containerWidth = 360;
+
+            const containerElement = document.createElement('div');
+            containerElement.style.maxWidth = `${containerWidth}px`;
+            containerElement.appendChild(moduleElement);
+            document.body.append(containerElement);
+            await waitAfterNextRender(containerElement);
+
+            assertEquals(containerWidth, containerElement.offsetWidth);
+            assertEquals(
+                overflowWidth,
+                moduleElement.shadowRoot!.querySelector(
+                                             '.layout')!.scrollWidth);
+          });
+
           test(`Layout ${layoutType}: Visit tile click metrics`, async () => {
             // Arrange.
             const moduleElement =
@@ -261,6 +294,7 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
                 $$(moduleElement, 'ntp-history-clusters-tile') as HTMLElement;
             assertTrue(!!tileElement);
 
+            const waitForUsageEvent = eventToPromise('usage', moduleElement);
             removeHrefAndClick($$(tileElement, '#content') as HTMLElement);
             assertEquals(
                 1,
@@ -275,6 +309,9 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
                 metrics.count(
                     `NewTabPage.HistoryClusters.Layout${layoutType}.Click`,
                     HistoryClusterElementType.VISIT));
+            const clusterId = await handler.whenCalled('recordClick');
+            assertEquals(BigInt(111), clusterId);
+            await waitForUsageEvent;
           });
 
           test(`Layout ${layoutType}: Suggest tile click metrics`, async () => {
@@ -288,6 +325,7 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
                 $$(moduleElement, 'ntp-history-clusters-suggest-tile');
             assertTrue(!!suggestTileElement);
 
+            const waitForUsageEvent = eventToPromise('usage', moduleElement);
             removeHrefAndClick(
                 $$(suggestTileElement, '.related-search') as HTMLElement);
             assertEquals(
@@ -303,6 +341,9 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
                 metrics.count(
                     `NewTabPage.HistoryClusters.Layout${layoutType}.Click`,
                     HistoryClusterElementType.SUGGEST));
+            const clusterId = await handler.whenCalled('recordClick');
+            assertEquals(BigInt(111), clusterId);
+            await waitForUsageEvent;
           });
 
           const LAYOUT_MIN_VISITS =
@@ -324,6 +365,11 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
             assertEquals(1, metrics.count(DISPLAY_LAYOUT_METRIC_NAME));
             assertEquals(
                 1, metrics.count(DISPLAY_LAYOUT_METRIC_NAME, layoutType));
+
+            const [recordedLayoutType, clusterId] =
+                await handler.whenCalled('recordLayoutTypeShown');
+            assertEquals(layoutType, recordedLayoutType);
+            assertEquals(BigInt(111), clusterId);
             // Check that the visits are processed and set properly.
             const visits = moduleElement.cluster.visits;
             assertEquals(visits.length, LAYOUT_MIN_VISITS[layoutType - 1]);
@@ -342,8 +388,8 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
       imageServiceHandler.setResultFor(
           'getPageImageUrl', Promise.resolve(null));
 
-      const moduleElement = await initializeModule(
-          [createSampleCluster(HistoryClusterLayoutType.LAYOUT_1)]);
+      const moduleElement =
+          await initializeModule([createSampleCluster(LayoutType.kLayout1)]);
       assertTrue(!!moduleElement);
       await waitAfterNextRender(moduleElement);
 
@@ -353,12 +399,12 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
       assertEquals(
           1,
           metrics.count(`NewTabPage.HistoryClusters.Layout${
-              HistoryClusterLayoutType.LAYOUT_1}.ImageDisplayState`));
+              LayoutType.kLayout1}.ImageDisplayState`));
       assertEquals(
           1,
           metrics.count(
               `NewTabPage.HistoryClusters.Layout${
-                  HistoryClusterLayoutType.LAYOUT_1}.ImageDisplayState`,
+                  LayoutType.kLayout1}.ImageDisplayState`,
               HistoryClusterImageDisplayState.NONE));
     });
   });
@@ -369,8 +415,8 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
         result: {imageUrl: {url: 'https://example.com/image.png'}},
       }));
 
-      const moduleElement = await initializeModule(
-          [createSampleCluster(HistoryClusterLayoutType.LAYOUT_1)]);
+      const moduleElement =
+          await initializeModule([createSampleCluster(LayoutType.kLayout1)]);
       assertTrue(!!moduleElement);
       await waitAfterNextRender(moduleElement);
 
@@ -380,12 +426,12 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
       assertEquals(
           1,
           metrics.count(`NewTabPage.HistoryClusters.Layout${
-              HistoryClusterLayoutType.LAYOUT_1}.ImageDisplayState`));
+              LayoutType.kLayout1}.ImageDisplayState`));
       assertEquals(
           1,
           metrics.count(
               `NewTabPage.HistoryClusters.Layout${
-                  HistoryClusterLayoutType.LAYOUT_1}.ImageDisplayState`,
+                  LayoutType.kLayout1}.ImageDisplayState`,
               HistoryClusterImageDisplayState.ALL));
     });
   });
@@ -397,7 +443,7 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
       });
 
       const moduleElement = await initializeModule(
-          [createSampleCluster(HistoryClusterLayoutType.LAYOUT_1)], null);
+          [createSampleCluster(LayoutType.kLayout1)], null);
 
       assertEquals(0, handler.getCallCount('getCartForCluster'));
       assertTrue(!!moduleElement);
@@ -415,7 +461,7 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
           });
 
           const moduleElement = await initializeModule(
-              [createSampleCluster(HistoryClusterLayoutType.LAYOUT_1)], null);
+              [createSampleCluster(LayoutType.kLayout1)], null);
 
           assertEquals(1, handler.getCallCount('getCartForCluster'));
           assertTrue(!!moduleElement);
@@ -439,7 +485,7 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
         relativeDate: '6 mins ago',
       });
       const moduleElement = await initializeModule(
-          [createSampleCluster(HistoryClusterLayoutType.LAYOUT_1)], cart);
+          [createSampleCluster(LayoutType.kLayout1)], cart);
 
       assertEquals(1, handler.getCallCount('getCartForCluster'));
       assertTrue(!!moduleElement);
@@ -464,7 +510,7 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
         relativeDate: '6 mins ago',
       });
       const moduleElement = await initializeModule(
-          [createSampleCluster(HistoryClusterLayoutType.LAYOUT_1)], cart);
+          [createSampleCluster(LayoutType.kLayout1)], cart);
 
       assertEquals(1, handler.getCallCount('getCartForCluster'));
       assertTrue(!!moduleElement);
@@ -499,6 +545,44 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
       assertTrue(!!cartTile);
       assertTrue(!!moduleElement.cart);
       assertEquals(1, questTiles.length);
+    });
+
+    test('Cart tile clicking metrics are collected', async () => {
+      loadTimeData.overrideValues({
+        modulesChromeCartInHistoryClustersModuleEnabled: true,
+      });
+
+      const cart: Cart = Object.assign({
+        domain: 'foo.com',
+        merchant: 'Foo',
+        cartUrl: {url: 'https://foo.com'},
+        productImageUrls: [],
+        discountText: '',
+        relativeDate: '6 mins ago',
+      });
+      const moduleElement = await initializeModule(
+          [createSampleCluster(LayoutType.kLayout1)], cart);
+
+      assertEquals(1, handler.getCallCount('getCartForCluster'));
+      assertTrue(!!moduleElement);
+      await waitAfterNextRender(moduleElement);
+      const cartTile = moduleElement.shadowRoot!.getElementById('cartTile');
+      assertTrue(!!cartTile);
+      assertTrue(!!moduleElement.cart);
+
+      // Act.
+      const waitForUsageEvent = eventToPromise('usage', moduleElement);
+      cartTile.click();
+
+      // Assert.
+      assertEquals(
+          1,
+          metrics.count(
+              `NewTabPage.HistoryClusters.Layout1.Click`,
+              HistoryClusterElementType.CART));
+      const clusterId = await handler.whenCalled('recordClick');
+      assertEquals(BigInt(111), clusterId);
+      await waitForUsageEvent;
     });
   });
 });

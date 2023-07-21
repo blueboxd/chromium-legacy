@@ -8,21 +8,25 @@
 
 #include "base/check_op.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace gfx {
 
 struct ScopedNSGraphicsContextSaveGState::ObjCStorage {
-  NSGraphicsContext* context_;  // weak
+  NSGraphicsContext* __weak context;
 };
 
 ScopedNSGraphicsContextSaveGState::ScopedNSGraphicsContextSaveGState()
     : objc_storage_(std::make_unique<ObjCStorage>()) {
-  objc_storage_->context_ = NSGraphicsContext.currentContext;
+  objc_storage_->context = NSGraphicsContext.currentContext;
   [NSGraphicsContext saveGraphicsState];
 }
 
 ScopedNSGraphicsContextSaveGState::~ScopedNSGraphicsContextSaveGState() {
   [NSGraphicsContext restoreGraphicsState];
-  DCHECK_EQ(objc_storage_->context_, NSGraphicsContext.currentContext);
+  DCHECK_EQ(objc_storage_->context, NSGraphicsContext.currentContext);
 }
 
 }  // namespace gfx

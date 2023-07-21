@@ -13,7 +13,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNIAdditionalImport;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
 import org.chromium.base.annotations.NativeMethods;
@@ -51,8 +50,6 @@ import javax.annotation.concurrent.GuardedBy;
  * any thread it is protected by mUrlRequestAdapterLock.
  */
 @JNINamespace("cronet")
-// Qualifies VersionSafeCallbacks.UrlRequestStatusListener which is used in onStatus, a JNI method.
-@JNIAdditionalImport(VersionSafeCallbacks.class)
 @VisibleForTesting
 public final class CronetUrlRequest extends UrlRequestBase {
     private final boolean mAllowDirectExecutor;
@@ -278,6 +275,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
                 // If there's an exception, cleanup and then throw the exception to the caller.
                 // start() is synchronized so we do not acquire mUrlRequestAdapterLock here.
                 destroyRequestAdapterLocked(RequestFinishedInfo.FAILED);
+                mRequestContext.onRequestFinished();
                 throw e;
             }
             mStarted = true;
@@ -704,10 +702,10 @@ public final class CronetUrlRequest extends UrlRequestBase {
                 }
                 try {
                     mCallback.onSucceeded(CronetUrlRequest.this, mResponseInfo);
-                    maybeReportMetrics();
                 } catch (Exception e) {
                     Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onSucceeded method", e);
                 }
+                maybeReportMetrics();
             }
         };
         postTaskToExecutor(task);
@@ -752,10 +750,10 @@ public final class CronetUrlRequest extends UrlRequestBase {
             public void run() {
                 try {
                     mCallback.onCanceled(CronetUrlRequest.this, mResponseInfo);
-                    maybeReportMetrics();
                 } catch (Exception e) {
                     Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onCanceled method", e);
                 }
+                maybeReportMetrics();
             }
         };
         postTaskToExecutor(task);
@@ -826,10 +824,10 @@ public final class CronetUrlRequest extends UrlRequestBase {
             public void run() {
                 try {
                     mCallback.onFailed(CronetUrlRequest.this, mResponseInfo, mException);
-                    maybeReportMetrics();
                 } catch (Exception e) {
                     Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onFailed method", e);
                 }
+                maybeReportMetrics();
             }
         };
         try {
@@ -963,7 +961,11 @@ public final class CronetUrlRequest extends UrlRequestBase {
     // Maybe report metrics. This method should only be called on Callback's executor thread and
     // after Callback's onSucceeded, onFailed and onCanceled.
     private void maybeReportMetrics() {
-        if (mMetrics != null) {
+        final RefCountDelegate inflightCallbackCount =
+                new RefCountDelegate(() -> mRequestContext.onRequestFinished());
+        try {
+            if (mMetrics == null) return;
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 try {
                     mLogger.logCronetTrafficInfo(mCronetEngineId, buildCronetTrafficInfo());
@@ -977,20 +979,31 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
             final RequestFinishedInfo requestInfo = new RequestFinishedInfoImpl(mInitialUrl,
                     mRequestAnnotations, mMetrics, mFinishedReason, mResponseInfo, mException);
-            mRequestContext.reportRequestFinished(requestInfo);
+            mRequestContext.reportRequestFinished(requestInfo, inflightCallbackCount);
             if (mRequestFinishedListener != null) {
+                inflightCallbackCount.increment();
                 try {
                     mRequestFinishedListener.getExecutor().execute(new Runnable() {
                         @Override
                         public void run() {
-                            mRequestFinishedListener.onRequestFinished(requestInfo);
+                            try {
+                                mRequestFinishedListener.onRequestFinished(requestInfo);
+                            } catch (Exception e) {
+                                Log.e(CronetUrlRequestContext.LOG_TAG,
+                                        "Exception thrown from request finished listener", e);
+                            } finally {
+                                inflightCallbackCount.decrement();
+                            }
                         }
                     });
                 } catch (RejectedExecutionException failException) {
                     Log.e(CronetUrlRequestContext.LOG_TAG, "Exception posting task to executor",
                             failException);
+                    inflightCallbackCount.decrement();
                 }
             }
+        } finally {
+            inflightCallbackCount.decrement();
         }
     }
 

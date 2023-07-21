@@ -56,6 +56,10 @@
 #include "ui/linux/linux_ui.h"
 #endif
 
+#if BUILDFLAG(IS_WIN)
+#include "chrome/browser/win/titlebar_config.h"
+#endif
+
 namespace {
 
 bool IsUsingLinuxSystemTheme(Profile* profile) {
@@ -401,6 +405,10 @@ void BrowserFrame::SetTabDragKind(TabDragKind tab_drag_kind) {
   tab_drag_kind_ = tab_drag_kind;
 }
 
+void BrowserFrame::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
+  UserChangedTheme(BrowserThemeChangeType::kNativeTheme);
+}
+
 ui::ColorProviderManager::Key BrowserFrame::GetColorProviderKey() const {
   auto key = Widget::GetColorProviderKey();
   key.frame_type = UseCustomFrame()
@@ -432,6 +440,25 @@ absl::optional<SkColor> BrowserFrame::GetUserColor() const {
              : views::Widget::GetUserColor();
 }
 
+ui::ColorProviderManager::ColorMode BrowserFrame::GetColorMode() const {
+  // Currently the incognito browser is implemented as unthemed dark mode.
+  if (IsIncognitoBrowser()) {
+    return ui::ColorProviderManager::ColorMode::kDark;
+  }
+
+  const auto* theme_service =
+      ThemeServiceFactory::GetForProfile(browser_view_->browser()->profile());
+  const auto browser_color_scheme = theme_service->GetBrowserColorScheme();
+
+  if (browser_color_scheme == ThemeService::BrowserColorScheme::kSystem) {
+    return Widget::GetColorMode();
+  }
+
+  return browser_color_scheme == ThemeService::BrowserColorScheme::kLight
+             ? ui::ColorProviderManager::ColorMode::kLight
+             : ui::ColorProviderManager::ColorMode::kDark;
+}
+
 void BrowserFrame::OnMenuClosed() {
   menu_runner_.reset();
 }
@@ -453,12 +480,13 @@ void BrowserFrame::OnTouchUiChanged() {
 }
 
 void BrowserFrame::SelectNativeTheme() {
-  // Select between regular, dark and Linux toolkit themes.
+  // Select between regular and Linux toolkit themes.
   ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
 
+  // Use the regular NativeTheme instance if running incognito mode, regardless
+  // of system theme (gtk, qt etc).
   if (IsIncognitoBrowser()) {
-    // Incognito browsers should always use the dark NativeTheme instance.
-    SetNativeTheme(ui::NativeTheme::GetInstanceForDarkUI());
+    SetNativeTheme(native_theme);
     return;
   }
 
@@ -489,8 +517,11 @@ bool BrowserFrame::RegenerateFrameOnThemeChange(
   // On Windows, DWM transition does not performed for a frame regeneration in
   // fullscreen mode, so do a lighweight theme change to refresh a bookmark bar
   // on new tab. (see crbug/1002480)
+  // With Mica, toggling titlebar accent colors in the native theme needs a
+  // frame regen to switch between the system-drawn and custom-drawn titlebars.
   need_regenerate |=
-      theme_change_type == BrowserThemeChangeType::kBrowserTheme &&
+      (theme_change_type == BrowserThemeChangeType::kBrowserTheme ||
+       SystemTitlebarCanUseMicaMaterial()) &&
       !IsFullscreen();
 #else
   need_regenerate |= theme_change_type == BrowserThemeChangeType::kBrowserTheme;

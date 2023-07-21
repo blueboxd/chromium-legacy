@@ -119,13 +119,20 @@ class WebDriverTestharnessProtocolPart(TestharnessProtocolPart):
         self.webdriver.actions.release()
         handles = [item for item in self.webdriver.handles if item != self.runner_handle]
         for handle in handles:
-            try:
-                self.webdriver.window_handle = handle
-                self.webdriver.window.close()
-            except error.NoSuchWindowException:
-                pass
+            self._close_window(handle)
         self.webdriver.window_handle = self.runner_handle
         return self.runner_handle
+
+    def _close_window(self, window_handle):
+        try:
+            self.webdriver.window_handle = window_handle
+            self.webdriver.window.close()
+        except error.NoSuchWindowException:
+            pass
+
+    def open_test_window(self, window_id):
+        self.webdriver.execute_script(
+            "window.open('about:blank', '%s', 'noopener')" % window_id)
 
     def get_test_window(self, window_id, parent, timeout=5):
         """Find the test window amongst all the open windows.
@@ -150,12 +157,7 @@ class WebDriverTestharnessProtocolPart(TestharnessProtocolPart):
                 pass
 
             if test_window is None:
-                after = self.webdriver.handles
-                if len(after) == 2:
-                    test_window = next(iter(set(after) - {parent}))
-                elif after[0] == parent and len(after) > 2:
-                    # Hope the first one here is the test window
-                    test_window = after[1]
+                test_window = self._poll_handles_for_test_window(parent)
 
             if test_window is not None:
                 assert test_window != parent
@@ -164,6 +166,16 @@ class WebDriverTestharnessProtocolPart(TestharnessProtocolPart):
             time.sleep(0.1)
 
         raise Exception("unable to find test window")
+
+    def _poll_handles_for_test_window(self, parent):
+        test_window = None
+        after = self.webdriver.handles
+        if len(after) == 2:
+            test_window = next(iter(set(after) - {parent}))
+        elif after[0] == parent and len(after) > 2:
+            # Hope the first one here is the test window
+            test_window = after[1]
+        return test_window
 
     def test_window_loaded(self):
         """Wait until the page in the new window has been loaded.
@@ -226,6 +238,7 @@ class WebDriverCookiesProtocolPart(CookiesProtocolPart):
         except error.NoSuchCookieException:
             return None
 
+
 class WebDriverWindowProtocolPart(WindowProtocolPart):
     def setup(self):
         self.webdriver = self.parent.webdriver
@@ -237,6 +250,7 @@ class WebDriverWindowProtocolPart(WindowProtocolPart):
     def set_rect(self, rect):
         self.logger.info("Restoring")
         self.webdriver.window.rect = rect
+
 
 class WebDriverSendKeysProtocolPart(SendKeysProtocolPart):
     def setup(self):
@@ -466,8 +480,7 @@ class WebDriverTestharnessExecutor(TestharnessExecutor):
 
     def __init__(self, logger, browser, server_config, timeout_multiplier=1,
                  close_after_done=True, capabilities=None, debug_info=None,
-                 supports_eager_pageload=True, cleanup_after_test=True,
-                 **kwargs):
+                 cleanup_after_test=True, **kwargs):
         """WebDriver-based executor for testharness.js tests"""
         TestharnessExecutor.__init__(self, logger, browser, server_config,
                                      timeout_multiplier=timeout_multiplier,
@@ -480,7 +493,6 @@ class WebDriverTestharnessExecutor(TestharnessExecutor):
 
         self.close_after_done = close_after_done
         self.window_id = str(uuid.uuid4())
-        self.supports_eager_pageload = supports_eager_pageload
         self.cleanup_after_test = cleanup_after_test
 
     def is_alive(self):
@@ -513,7 +525,7 @@ class WebDriverTestharnessExecutor(TestharnessExecutor):
         parent_window = protocol.testharness.close_old_windows()
 
         # Now start the test harness
-        protocol.base.execute_script("window.open('about:blank', '%s', 'noopener')" % self.window_id)
+        protocol.testharness.open_test_window(self.window_id)
         test_window = protocol.testharness.get_test_window(self.window_id,
                                                            parent_window,
                                                            timeout=5*self.timeout_multiplier)
@@ -524,9 +536,6 @@ class WebDriverTestharnessExecutor(TestharnessExecutor):
 
         handler = WebDriverCallbackHandler(self.logger, protocol, test_window)
         protocol.webdriver.url = url
-
-        if not self.supports_eager_pageload:
-            self.wait_for_load(protocol)
 
         while True:
             result = protocol.base.execute_script(
@@ -557,29 +566,6 @@ class WebDriverTestharnessExecutor(TestharnessExecutor):
             protocol.testharness.close_old_windows()
 
         return rv
-
-    def wait_for_load(self, protocol):
-        # pageLoadStrategy=eager doesn't work in Chrome so try to emulate in user script
-        loaded = False
-        seen_error = False
-        while not loaded:
-            try:
-                loaded = protocol.base.execute_script("""
-var callback = arguments[arguments.length - 1];
-if (location.href === "about:blank") {
-  callback(false);
-} else if (document.readyState !== "loading") {
-  callback(true);
-} else {
-  document.addEventListener("readystatechange", () => {if (document.readyState !== "loading") {callback(true)}});
-}""", asynchronous=True)
-            except error.JavascriptErrorException:
-                # We can get an error here if the script runs in the initial about:blank
-                # document before it has navigated, with the driver returning an error
-                # indicating that the document was unloaded
-                if seen_error:
-                    raise
-                seen_error = True
 
 
 class WebDriverRefTestExecutor(RefTestExecutor):

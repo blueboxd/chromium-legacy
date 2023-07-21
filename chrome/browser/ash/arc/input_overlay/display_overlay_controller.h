@@ -24,6 +24,7 @@ namespace arc::input_overlay {
 class Action;
 class ActionEditMenu;
 class ActionView;
+class ButtonOptionsMenu;
 class EditFinishView;
 class EditingList;
 class EducationalView;
@@ -102,11 +103,13 @@ class DisplayOverlayController : public ui::EventHandler,
 
  private:
   friend class ArcInputOverlayManagerTest;
+  friend class ButtonOptionsMenu;
   friend class DisplayOverlayControllerTest;
   friend class EditingList;
   friend class EducationalView;
   friend class InputMappingView;
   friend class InputMenuView;
+  friend class MenuEntryView;
   friend class MenuEntryViewTest;
 
   // Display overlay is added for starting |display_mode|.
@@ -143,13 +146,14 @@ class DisplayOverlayController : public ui::EventHandler,
   void RemoveEducationalView();
   void OnEducationalViewDismissed();
 
+  bool HasButtonOptionsMenu() const;
+  void RemoveButtonOptionsMenu();
+
   void AddEditingList();
   void RemoveEditingList();
 
   views::Widget* GetOverlayWidget();
   views::View* GetOverlayWidgetContentsView();
-  gfx::Point CalculateMenuEntryPosition();
-  views::View* GetParentView();
   bool HasMenuView() const;
   // Used for edit mode, in which the input mapping must be temporarily visible
   // regardless of user setting, until it is overridden when the user presses
@@ -185,6 +189,7 @@ class DisplayOverlayController : public ui::EventHandler,
   // References to UI elements owned by the overlay widget.
   raw_ptr<InputMappingView> input_mapping_view_ = nullptr;
   raw_ptr<InputMenuView> input_menu_view_ = nullptr;
+  raw_ptr<ButtonOptionsMenu> button_options_menu_ = nullptr;
   raw_ptr<MenuEntryView> menu_entry_ = nullptr;
   raw_ptr<ActionEditMenu> action_edit_menu_ = nullptr;
   raw_ptr<EditFinishView> edit_finish_view_ = nullptr;

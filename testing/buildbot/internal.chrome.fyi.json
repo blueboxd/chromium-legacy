@@ -10,6 +10,48 @@
           "--avd-config=../../tools/android/avd/proto/generic_android24.textpb",
           "--git-revision=${got_revision}"
         ],
+        "isolate_name": "chrome_finch_smoke_tests",
+        "merge": {
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "chrome_finch_smoke_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-22.04|Ubuntu-18.04",
+              "pool": "chrome.tests.finch"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "generic_android24",
+              "path": ".android_emulator/generic_android24"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "generic_android24"
+              }
+            ]
+          },
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://clank/java:chrome_finch_smoke_tests/"
+      },
+      {
+        "args": [
+          "--finch-seed-path",
+          "../../variations_seed",
+          "--avd-config=../../tools/android/avd/proto/generic_android24.textpb",
+          "--git-revision=${got_revision}"
+        ],
         "isolate_name": "monochrome_finch_smoke_tests",
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -24,7 +66,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04|Ubuntu-18.04",
               "pool": "chrome.tests.finch"
             }
           ],
@@ -90,43 +132,13 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04|Ubuntu-18.04",
               "pool": "chrome.tests.finch"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test/variations:variations_desktop_smoke_tests/"
-      },
-      {
-        "args": [
-          "--git-revision=${got_revision}"
-        ],
-        "isolate_name": "variations_smoke_tests",
-        "merge": {
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "variations_smoke_tests",
-        "precommit_args": [
-          "--gerrit-issue=${patch_issue}",
-          "--gerrit-patchset=${patch_set}",
-          "--buildbucket-id=${buildbucket_build_id}"
-        ],
-        "resultdb": {
-          "enable": true,
-          "result_format": "single"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04",
-              "pool": "chrome.tests.finch"
-            }
-          ],
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:variations_smoke_tests/"
       }
     ]
   },
@@ -155,44 +167,13 @@
           "dimension_sets": [
             {
               "cpu": "arm64",
-              "os": "Mac-12",
+              "os": "Mac-12|Mac-13",
               "pool": "chrome.tests.finch"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test/variations:variations_desktop_smoke_tests/"
-      },
-      {
-        "args": [
-          "--git-revision=${got_revision}"
-        ],
-        "isolate_name": "variations_smoke_tests",
-        "merge": {
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "variations_smoke_tests",
-        "precommit_args": [
-          "--gerrit-issue=${patch_issue}",
-          "--gerrit-patchset=${patch_set}",
-          "--buildbucket-id=${buildbucket_build_id}"
-        ],
-        "resultdb": {
-          "enable": true,
-          "result_format": "single"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "arm64",
-              "os": "Mac-12",
-              "pool": "chrome.tests.finch"
-            }
-          ],
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:variations_smoke_tests/"
       }
     ]
   },
@@ -2823,36 +2804,6 @@
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test/variations:variations_desktop_smoke_tests/"
-      },
-      {
-        "args": [
-          "--git-revision=${got_revision}"
-        ],
-        "isolate_name": "variations_smoke_tests",
-        "merge": {
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "variations_smoke_tests",
-        "precommit_args": [
-          "--gerrit-issue=${patch_issue}",
-          "--gerrit-patchset=${patch_set}",
-          "--buildbucket-id=${buildbucket_build_id}"
-        ],
-        "resultdb": {
-          "enable": true,
-          "result_format": "single"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10",
-              "pool": "chrome.tests.finch"
-            }
-          ],
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:variations_smoke_tests/"
       }
     ]
   }

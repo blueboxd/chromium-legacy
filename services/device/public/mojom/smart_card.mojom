@@ -181,12 +181,18 @@ interface SmartCardConnection {
   Transmit(SmartCardProtocol protocol, array<uint8> data)
       => (SmartCardDataResult result);
 
+  // Sends a command directly to the Interface Device (IFD) Handler (reader
+  // driver) to be processed by the reader.
+  Control(uint32 control_code, array<uint8> data)
+      => (SmartCardDataResult result);
+
+  // Gets an attribute from the Interface Device Handler (reader driver).
+  GetAttrib(uint32 id) => (SmartCardDataResult result);
+
   // TODO(crbug.com/1386175): Add methods:
   // * BeginTransaction()
   // * EndTransaction()
   // * Status()
-  // * Control()
-  // * GetAttrib()
   // * SetAttrib()
 };
 

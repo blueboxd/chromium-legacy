@@ -82,8 +82,8 @@ import org.chromium.chrome.browser.suggestions.tile.Tile;
 import org.chromium.chrome.browser.suggestions.tile.TileGroup;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.util.BrowserUiUtils;
 import org.chromium.chrome.browser.util.BrowserUiUtils.ModuleTypeOnStartAndNTP;
@@ -134,7 +134,7 @@ import java.util.concurrent.TimeUnit;
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "disable-features=IPH_FeedHeaderMenu"})
-@Features.DisableFeatures({ChromeFeatureList.QUERY_TILES, ChromeFeatureList.VIDEO_TUTORIALS})
+@Features.DisableFeatures({ChromeFeatureList.QUERY_TILES})
 public class NewTabPageTest {
     /**
      * Parameter set controlling whether scrollable mvt is enabled.
@@ -974,14 +974,8 @@ public class NewTabPageTest {
                 singleTabCardView.getVisibility());
 
         TabObserver tabObserver = ntp.getTabObserverForTesting();
-        ntp.setIsHiddenForTesting(true);
-        Assert.assertTrue(
-                "The variable controlling whether to show the single tab card hasn't been "
-                        + "set to false.",
-                ntp.getIsHiddenForTesting());
-        ntpLayout.setMostVisitedTilesCoordinatorForTesting(null);
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { tabObserver.onShown(newTab, TabSelectionType.FROM_NEW); });
+                () -> { tabObserver.onHidden(newTab, TabHidingType.ACTIVITY_HIDDEN); });
         assertEquals("The single tab card container is still visible after hiding it.", View.GONE,
                 singleTabCardViewContainer.getVisibility());
         assertEquals("The single tab card is still visible after hiding it.", View.GONE,

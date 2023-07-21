@@ -12,6 +12,7 @@
 <translation id="1554731936187952550">Chrome の最高強度のセキュリティで有害なウェブサイトから保護します</translation>
 <translation id="1682483655351012182">Chrome のデータを同期する</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1843217788865538014">メッセージ、ドキュメント、他のアプリのリンクをタップすると、Chrome が自動的に開きます。</translation>
 <translation id="1917964099031477364">このアカウントと保存されていないデータは、Chrome やこのデバイスの他の Google アプリから削除されます。</translation>
 <translation id="2009224836393115614">Chrome でパスワードを確認できませんでした。インターネット接続を確認してみてください。</translation>
 <translation id="2056123005618757196">シンプル、安全で、さらに高速になった Google Chrome をご活用ください。</translation>
@@ -34,6 +35,7 @@
 <translation id="2732745070297234559">Chrome ですべてのパスワードを確認できませんでした。明日もう一度お試しください。</translation>
 <translation id="2736805085127235148">現在、デバイスの設定で Chrome の通知がオフになっています。</translation>
 <translation id="2767464022270041271">保存されているパスワードがありません。パスワードを保存すると、Google パスワード マネージャーで確認できるようになります。</translation>
+<translation id="2840432500933227975">iOS で Chrome の設定を開き、[デフォルトのブラウザアプリ] をタップして [Chrome] を選択します。</translation>
 <translation id="2869959624320573933">Chrome へのログイン</translation>
 <translation id="2957447865124070833">[<ph name="BEGIN_BOLD" />Chrome<ph name="END_BOLD" />] を選択する</translation>
 <translation id="3030414234702425231"><ph name="SIGNOUT_MANAGED_DOMAIN" /> で管理されているアカウントからログアウトするにあたり、Chrome データはこのデバイスから削除されます（ただし Google アカウントには残ります）。</translation>
@@ -49,6 +51,7 @@
 <translation id="3655656110921623717">Chrome は毎回モバイルサイトをリクエストします。</translation>
 <translation id="3706101708757577809">メッセージ、ドキュメント、他のアプリのリンクをタップしたときに、常に Chrome が使えるようになります。</translation>
 <translation id="3720541637541300822">Chrome を終了するときにシークレット タブをロックする</translation>
+<translation id="3827545470516145620">このデバイスは標準のセキュリティ機能で保護されます</translation>
 <translation id="384394811301901750">現在 Google Chrome ではカメラを使用できません</translation>
 <translation id="3980220367029651214">同期アカウントを <ph name="USER_EMAIL1" /> から <ph name="USER_EMAIL2" /> へ切り替えます。既存の Chrome データは <ph name="DOMAIN" /> で管理されています。データはこのデバイスから削除されますが、<ph name="USER_EMAIL1" /> で保持されます。</translation>
 <translation id="3984746313391923992">組織が Chrome にログインしないように求めています。</translation>
@@ -58,6 +61,7 @@
 <translation id="4233521129555661685"><ph name="USER_EMAIL1" /> は Chrome を使用しており、ブックマークやパスワードなどの設定がこのデバイスに残っています。</translation>
 <translation id="424864128008805179">Chrome からログアウトしますか？</translation>
 <translation id="4249068189593983585">Chrome の使い方のヒント: タブのオプションをさらに表示するには、画面の下部または上部のツールバーにある [タブを表示] を長押しします。</translation>
+<translation id="4508370294876102450">他のアプリから Chrome を開く</translation>
 <translation id="4523886039239821078">アドオンが原因でChromeがクラッシュしました。次をアンインストールしてください:</translation>
 <translation id="4633328489441962921">Chrome でアップデートを確認できません</translation>
 <translation id="4636900170638246267">このサイトと Chrome にログインしてください。</translation>
@@ -87,6 +91,7 @@
 <translation id="6110625574506755980">Chrome の一部の機能は使用できなくなります。</translation>
 <translation id="6181930887571472871">Chrome に切り替え</translation>
 <translation id="6238746320622508509">Chrome でシークレット タブをロックできるようにします。</translation>
+<translation id="6247557882553405851">Google パスワード マネージャー</translation>
 <translation id="6412673304250309937">Chrome に保存されている安全でないサイトのリストと URL を照合します。サイトがパスワードを不正に取得しようとしている場合や、ユーザーが安全でないファイルをダウンロードしようとした場合は、URL とページ コンテンツの一部をセーフ ブラウジングに送信することがあります。</translation>
 <translation id="6427126399757991875">組織で Chrome を設定しています...</translation>
 <translation id="6600954340915313787">Chrome にコピー済み</translation>
@@ -97,7 +102,6 @@
 <translation id="6822673484890854830">Chrome ですべてのパスワードを確認できませんでした。しばらくしてからもう一度お試しください。</translation>
 <translation id="6964931465519938134">メッセージ、ドキュメント、他のアプリでタップしたリンクが常に Chrome で開かれるようになります。</translation>
 <translation id="6975725306479268850">自動入力で Chrome を選択する</translation>
-<translation id="701356708427365932">新しい Chrome メニューについて</translation>
 <translation id="7059914902409643750">Chrome を独自にカスタマイズ</translation>
 <translation id="7124339256045485976">Chrome を最新の状態に維持します</translation>
 <translation id="7161390184744336561">Google Chrome は古いバージョンです</translation>
@@ -148,7 +152,6 @@
   • Chrome がクラッシュした場合、クラッシュに関する情報として、一部の個人情報が送信される場合があります。
 
   • 同期をオンにした場合、アクセスした URL に関する情報も送信される場合があります。<ph name="END_INDENT" /></translation>
-<translation id="9103442491611662960">この Chrome プロフィールは標準のセキュリティで保護されます</translation>
 <translation id="9112744793181547300">Chrome を既定に設定しますか？</translation>
 <translation id="9122931302567044771">Chrome は毎回 PC 版サイトをリクエストします。</translation>
 </translationbundle>

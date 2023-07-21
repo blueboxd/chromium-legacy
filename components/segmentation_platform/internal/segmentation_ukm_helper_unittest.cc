@@ -7,21 +7,25 @@
 #include <cmath>
 
 #include "base/bit_cast.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/segmentation_platform/internal/constants.h"
 #include "components/segmentation_platform/internal/selection/segmentation_result_prefs.h"
 #include "components/segmentation_platform/public/config.h"
 #include "components/segmentation_platform/public/features.h"
 #include "components/segmentation_platform/public/local_state_helper.h"
+#include "components/segmentation_platform/public/proto/prediction_result.pb.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
 #include "components/segmentation_platform/public/segmentation_platform_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using Segmentation_ModelExecution = ukm::builders::Segmentation_ModelExecution;
 
@@ -45,10 +49,15 @@ void CompareEncodeDecodeDifference(float tensor) {
       kRoundingError);
 }
 
-absl::optional<proto::PredictionResult> GetPredictionResult() {
+absl::optional<proto::PredictionResult> GetPredictionResult(
+    absl::optional<base::Time> prediction_time = absl::nullopt) {
   proto::PredictionResult result;
   result.add_result(0.5);
   result.add_result(0.4);
+  if (prediction_time.has_value()) {
+    result.set_timestamp_us(
+        prediction_time->ToDeltaSinceWindowsEpoch().InMicroseconds());
+  }
   return result;
 }
 
@@ -99,6 +108,14 @@ class SegmentationUkmHelperTest : public testing::Test {
     EXPECT_EQ(0u, test_recorder_.GetEntriesByName(entry_name).size());
   }
 
+  void SetSamplingRate(int sampling_rate) {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        features::kSegmentationPlatformModelExecutionSampling,
+        {{kModelExecutionSamplingRateKey,
+          base::NumberToString(sampling_rate)}});
+    InitializeUkmHelper();
+  }
+
  protected:
   base::test::TaskEnvironment task_environment_;
   ukm::TestAutoSetUkmRecorder test_recorder_;
@@ -107,6 +124,7 @@ class SegmentationUkmHelperTest : public testing::Test {
 
 // Tests that basic execution results recording works properly.
 TEST_F(SegmentationUkmHelperTest, TestExecutionResultReporting) {
+  SetSamplingRate(1);
   // Allow results for OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB to be recorded.
   ModelProvider::Request input_tensors = {0.1, 0.7, 0.8, 0.5};
   SegmentationUkmHelper::GetInstance()->RecordModelExecutionResult(
@@ -133,6 +151,18 @@ TEST_F(SegmentationUkmHelperTest, TestExecutionResultReporting) {
                    });
 }
 
+// Tests that execution results recording are disabled if sampling rate is 0.
+TEST_F(SegmentationUkmHelperTest,
+       TestExecutionResultReportingwithZeroSampling) {
+  SetSamplingRate(0);
+  // Allow results for OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB to be recorded.
+  ModelProvider::Request input_tensors = {0.1, 0.7, 0.8, 0.5};
+  EXPECT_EQ(SegmentationUkmHelper::GetInstance()->RecordModelExecutionResult(
+                proto::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB, 101,
+                input_tensors, {0.6, 0.3}),
+            ukm::NoURLSourceId());
+}
+
 // Tests that the training data collection recording works properly.
 TEST_F(SegmentationUkmHelperTest, TestTrainingDataCollectionReporting) {
   ModelProvider::Request input_tensors = {0.1};
@@ -144,7 +174,8 @@ TEST_F(SegmentationUkmHelperTest, TestTrainingDataCollectionReporting) {
   selected_segment.selection_time = base::Time::Now() - base::Seconds(10);
   SegmentationUkmHelper::GetInstance()->RecordTrainingData(
       proto::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB, 101, input_tensors,
-      outputs, output_indexes, GetPredictionResult(), selected_segment);
+      outputs, output_indexes,
+      GetPredictionResult(selected_segment.selection_time), selected_segment);
   ExpectUkmMetrics(Segmentation_ModelExecution::kEntryName,
                    {Segmentation_ModelExecution::kOptimizationTargetName,
                     Segmentation_ModelExecution::kModelVersionName,
@@ -223,6 +254,7 @@ TEST_F(SegmentationUkmHelperTest, FloatEncodeDeocode) {
 
 // Tests that there are too many input tensors to record.
 TEST_F(SegmentationUkmHelperTest, TooManyInputTensors) {
+  SetSamplingRate(1);
   base::HistogramTester tester;
   std::string histogram_name(
       "SegmentationPlatform.StructuredMetrics.TooManyTensors.Count");

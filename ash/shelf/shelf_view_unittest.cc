@@ -31,6 +31,7 @@
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
+#include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_observer.h"
@@ -204,9 +205,6 @@ class ShelfObserverIconTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     observer_ = std::make_unique<TestShelfObserver>(GetPrimaryShelf());
-    shelf_view_test_ = std::make_unique<ShelfViewTestAPI>(
-        GetPrimaryShelf()->GetShelfViewForTesting());
-    shelf_view_test_->SetAnimationDuration(base::Milliseconds(1));
   }
 
   void TearDown() override {
@@ -216,11 +214,8 @@ class ShelfObserverIconTest : public AshTestBase {
 
   TestShelfObserver* observer() { return observer_.get(); }
 
-  ShelfViewTestAPI* shelf_view_test() { return shelf_view_test_.get(); }
-
  private:
   std::unique_ptr<TestShelfObserver> observer_;
-  std::unique_ptr<ShelfViewTestAPI> shelf_view_test_;
 };
 
 // A ShelfItemDelegate that tracks selections and reports a custom action.
@@ -274,19 +269,21 @@ class EmptyContextMenuBuilder : public ShelfItemDelegate {
 };
 
 TEST_F(ShelfObserverIconTest, AddRemove) {
+  SetShelfAnimationDuration(base::Milliseconds(1));
+
   ShelfItem item;
   item.id = ShelfID("foo");
   item.type = TYPE_APP;
   EXPECT_FALSE(observer()->icon_positions_changed());
   const int shelf_item_index = ShelfModel::Get()->Add(
       item, std::make_unique<TestShelfItemDelegate>(item.id));
-  shelf_view_test()->RunMessageLoopUntilAnimationsDone();
+  WaitForShelfAnimation();
   EXPECT_TRUE(observer()->icon_positions_changed());
   observer()->Reset();
 
   EXPECT_FALSE(observer()->icon_positions_changed());
   ShelfModel::Get()->RemoveItemAt(shelf_item_index);
-  shelf_view_test()->RunMessageLoopUntilAnimationsDone();
+  WaitForShelfAnimation();
   EXPECT_TRUE(observer()->icon_positions_changed());
   observer()->Reset();
 }
@@ -295,12 +292,12 @@ TEST_F(ShelfObserverIconTest, AddRemove) {
 // shelf on external display as well as one on primary.
 TEST_F(ShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
   UpdateDisplay("500x400,500x400");
+  SetShelfAnimationDuration(base::Milliseconds(1));
+
   observer()->Reset();
 
-  Shelf* second_shelf = Shelf::ForWindow(Shell::GetAllRootWindows()[1]);
-  TestShelfObserver second_observer(second_shelf);
-  ShelfViewTestAPI second_shelf_test_api(
-      second_shelf->GetShelfViewForTesting());
+  TestShelfObserver second_observer(
+      Shelf::ForWindow(Shell::GetAllRootWindows()[1]));
 
   ShelfItem item;
   item.id = ShelfID("foo");
@@ -311,8 +308,7 @@ TEST_F(ShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
   // Add item and wait for all animations to finish.
   const int shelf_item_index = ShelfModel::Get()->Add(
       item, std::make_unique<TestShelfItemDelegate>(item.id));
-  shelf_view_test()->RunMessageLoopUntilAnimationsDone();
-  second_shelf_test_api.RunMessageLoopUntilAnimationsDone();
+  WaitForShelfAnimation();
 
   EXPECT_TRUE(observer()->icon_positions_changed());
   EXPECT_TRUE(second_observer.icon_positions_changed());
@@ -325,8 +321,7 @@ TEST_F(ShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
 
   // Remove the item, and wait for all the animations to complete.
   ShelfModel::Get()->RemoveItemAt(shelf_item_index);
-  shelf_view_test()->RunMessageLoopUntilAnimationsDone();
-  second_shelf_test_api.RunMessageLoopUntilAnimationsDone();
+  WaitForShelfAnimation();
 
   EXPECT_TRUE(observer()->icon_positions_changed());
   EXPECT_TRUE(second_observer.icon_positions_changed());
@@ -856,6 +851,36 @@ TEST_F(ShelfViewTest, DragAppsToPin) {
   // After pinning the last unpinned app by dragging, the separator is removed
   // as there is no unpinned app on the shelf.
   EXPECT_EQ(test_api_->GetSeparatorIndex(), absl::nullopt);
+}
+
+// Ensure that the unpinnable apps can not be pinned by dragging.
+TEST_F(ShelfViewTest, NotPinnableItemCantBePinnedByDragging) {
+  std::vector<std::pair<ShelfID, views::View*>> id_map;
+  SetupForDragTest(&id_map);
+  size_t pinned_apps_size = id_map.size();
+
+  // Add an unpinnable app.
+  const ShelfItem unpinnable_app =
+      ShelfTestUtil::AddAppNotPinnable(base::NumberToString(id_++));
+  const ShelfID id = unpinnable_app.id;
+  id_map.emplace_back(id, GetButtonByID(id));
+
+  ASSERT_TRUE(GetButtonByID(id)->state() & ShelfAppButton::STATE_RUNNING);
+  ASSERT_FALSE(IsAppPinned(id));
+  EXPECT_EQ(test_api_->GetSeparatorIndex(), pinned_apps_size - 1);
+
+  // Drag an unpinnable app and move it to the beginning of the shelf. The app
+  // can not be moved across the separator so the dragged app will stay unpinned
+  // beside the separator after release.
+  views::View* dragged_button =
+      SimulateDrag(ShelfView::MOUSE, id_map.size() - 1, 0, false);
+  EXPECT_EQ(1, GetHapticTickEventsCount());
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+  shelf_view_->PointerReleasedOnButton(dragged_button, ShelfView::MOUSE, false);
+  test_api_->RunMessageLoopUntilAnimationsDone();
+  EXPECT_EQ(1, GetHapticTickEventsCount());
+  EXPECT_EQ(test_api_->GetSeparatorIndex(), pinned_apps_size - 1);
+  EXPECT_FALSE(IsAppPinned(id));
 }
 
 // Check that separator index updates as expected when a drag view is dragged

@@ -82,6 +82,12 @@ chromium-metrics-reviews@google.com.
       summary="Chrome Home shown on cold start"/>
   <variant name="IPH_ChromeHomePullToRefresh"
       summary="Chrome Home shown after a pull-to-refresh"/>
+  <variant name="IPH_CompanionSidePanel"
+      summary="prompting users to view the companion feature in the side
+               panel"/>
+  <variant name="IPH_CompanionSidePanelRegionSearch"
+      summary="prompting users to use the region search feature in the
+               companion side panel"/>
   <variant name="IPH_ContextualPageActions_PriceTracking"
       summary="contextual page price tracking action in the top toolbar"/>
   <variant name="IPH_ContextualPageActions_PriceTrackingActionChip"
@@ -177,6 +183,9 @@ chromium-metrics-reviews@google.com.
       summary="default browser badge promo on the overflow menu"/>
   <variant name="IPH_iOSDefaultBrowserSettingsBadge"
       summary="default browser badge promo on the settings menu row"/>
+  <variant name="IPH_iOSDefaultBrowserVideoPromoTrigger"
+      summary="notifying that the conditions to show the default browser
+               video promo have been met."/>
   <variant name="IPH_iOSHistoryOnOverflowMenuFeature"
       summary="history item on the overflow menu on iOS"/>
   <variant name="IPH_iOSNewTabToolbarItemFeature"
@@ -212,8 +221,6 @@ chromium-metrics-reviews@google.com.
   <variant name="IPH_NewTab" summary="new tab"/>
   <variant name="IPH_NewTabPageHomeButton" summary="new tab page button"/>
   <variant name="IPH_NewTabTip" summary="new tab tip"/>
-  <variant name="IPH_OverflowMenuTip"
-      summary="the Overflow Menu help tip on iOS"/>
   <variant name="IPH_PageInfo" summary="opening PageInfo"/>
   <variant name="IPH_PageInfoStoreInfo" summary="PageInfoStoreInfo feature"/>
   <variant name="IPH_PageZoom"
@@ -259,6 +266,9 @@ chromium-metrics-reviews@google.com.
                list"/>
   <variant name="IPH_ReadingListMessages"
       summary="the Reading List entry point in iOS tools menu"/>
+  <variant name="IPH_ReadingMode"
+      summary="educating users to click the side panel icon to open reading
+               mode"/>
   <variant name="IPH_ReadLaterAppMenuBookmarks" summary="read later app menu"/>
   <variant name="IPH_ReadLaterAppMenuBookmarkThisPage"
       summary="read later app menu"/>
@@ -345,7 +355,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="InProductHelp.Config.ParsingEvent" enum="ConfigParsingEvent"
-    expires_after="2023-09-03">
+    expires_after="2023-11-05">
   <owner>nyquist@chromium.org</owner>
   <summary>
     Records if in-product help configuration is parsed correctly, and the
@@ -392,7 +402,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.DismissalReason.iOS"
-    enum="InProductHelpDismissalReason" expires_after="2023-09-03">
+    enum="InProductHelpDismissalReason" expires_after="2023-11-19">
   <owner>lpromero@google.com</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -508,7 +518,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.SnoozeAction" enum="InProductHelpSnoozeAction"
-    expires_after="2023-09-03">
+    expires_after="2023-11-19">
   <owner>haileywang@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>

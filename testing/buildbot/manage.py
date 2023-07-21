@@ -275,8 +275,6 @@ def process_file(mode, test_name, tests_location, filepath, ninja_targets,
         raise Error('%s: %s / %s is listed multiple times.' %
                     (filename, builder, name))
       seen.add(name)
-      d.setdefault('swarming', {}).setdefault(
-          'can_use_on_swarming_builders', False)
 
     if gtest_tests:
       config[builder]['gtest_tests'] = sorted(
@@ -291,7 +289,8 @@ def process_file(mode, test_name, tests_location, filepath, ninja_targets,
       if name in ninja_targets:
         ninja_targets_seen.add(name)
 
-    for d in data.get('instrumentation_tests', []):
+    for d in (data.get('instrumentation_tests', []) +
+              data.get('skylab_tests', [])):
       name = d['test']
       if (name not in ninja_targets and
           name not in SKIP_GN_ISOLATE_MAP_TARGETS):

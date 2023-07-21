@@ -18,12 +18,12 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import org.chromium.base.FeatureList;
 import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -34,6 +34,8 @@ import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.history.HistoryActivity;
+import org.chromium.chrome.browser.omnibox.suggestions.action.HistoryClustersAction;
+import org.chromium.chrome.browser.omnibox.suggestions.action.OmniboxActionInSuggest;
 import org.chromium.chrome.browser.omnibox.suggestions.base.ActionChipsAdapter;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionView;
 import org.chromium.chrome.browser.tab.Tab;
@@ -43,6 +45,8 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils.SuggestionInfo;
+import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteMatchBuilder;
@@ -50,9 +54,7 @@ import org.chromium.components.omnibox.AutocompleteResult;
 import org.chromium.components.omnibox.EntityInfoProto.ActionInfo;
 import org.chromium.components.omnibox.OmniboxSuggestionType;
 import org.chromium.components.omnibox.action.ActionInSuggestUmaType;
-import org.chromium.components.omnibox.action.HistoryClustersAction;
 import org.chromium.components.omnibox.action.OmniboxAction;
-import org.chromium.components.omnibox.action.OmniboxActionInSuggest;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
@@ -77,6 +79,7 @@ public class OmniboxActionsTest {
             new DisableAnimationsTestRule();
     public @Rule JniMocker mJniMocker = new JniMocker();
     public @Rule MockitoRule mMockitoRule = MockitoJUnit.rule();
+    public @Rule TestRule mFeaturesProcessor = new Features.JUnitProcessor();
     private @Mock AutocompleteController.Natives mAutocompleteControllerJniMock;
 
     private OmniboxTestUtils mOmniboxUtils;
@@ -84,11 +87,6 @@ public class OmniboxActionsTest {
 
     @BeforeClass
     public static void beforeClass() {
-        FeatureList.TestValues featureTestValues = new FeatureList.TestValues();
-        featureTestValues.addFeatureFlagOverride(ChromeFeatureList.HISTORY_JOURNEYS, true);
-        FeatureList.setTestValues(featureTestValues);
-        FeatureList.setTestCanUseDefaultsForTesting();
-
         sActivityTestRule.startMainActivityOnBlankPage();
         sActivityTestRule.waitForActivityNativeInitializationComplete();
         sActivityTestRule.waitForDeferredStartup();
@@ -162,8 +160,8 @@ public class OmniboxActionsTest {
     private AutocompleteMatch createDummyActionInSuggest(ActionInfo.ActionType... types) {
         var actions = new ArrayList<OmniboxAction>();
         for (var type : types) {
-            actions.add(new OmniboxActionInSuggest(
-                    "hint", ActionInfo.newBuilder().setActionType(type).build()));
+            actions.add(
+                    new OmniboxActionInSuggest("hint", type.getNumber(), "https://www.google.com"));
         }
 
         return createDummySuggestion(actions);
@@ -171,8 +169,11 @@ public class OmniboxActionsTest {
 
     @Test
     @MediumTest
-    @EnableFeatures({ChromeFeatureList.HISTORY_JOURNEYS})
-    public void testHistoryClustersAction() throws Exception {
+    @DisableFeatures({ChromeFeatureList.OMNIBOX_HISTORY_CLUSTER_PROVIDER})
+    @EnableFeatures({ChromeFeatureList.HISTORY_JOURNEYS,
+            ChromeFeatureList.OMNIBOX_HISTORY_CLUSTER_ACTION_CHIP})
+    public void
+    testHistoryClustersAction() throws Exception {
         setSuggestions(createDummyHistoryClustersAction("query"));
         clickOnAction(0);
 
@@ -233,17 +234,17 @@ public class OmniboxActionsTest {
         // None of these actions have a linked intent, so no action will be taken.
         setSuggestions(createDummySuggestion(null),
                 createDummyActionInSuggest(ActionInfo.ActionType.CALL,
-                        ActionInfo.ActionType.DIRECTIONS, ActionInfo.ActionType.WEBSITE));
+                        ActionInfo.ActionType.DIRECTIONS, ActionInfo.ActionType.REVIEWS));
 
         var histogramWatcher = HistogramWatcher.newBuilder()
                                        .expectIntRecord("Omnibox.ActionInSuggest.Shown",
                                                ActionInSuggestUmaType.CALL)
                                        .expectIntRecord("Omnibox.ActionInSuggest.Shown",
                                                ActionInSuggestUmaType.DIRECTIONS)
-                                       .expectIntRecord("Omnibox.ActionInSuggest.Shown",
-                                               ActionInSuggestUmaType.WEBSITE)
                                        .expectIntRecord("Omnibox.ActionInSuggest.Used",
-                                               ActionInSuggestUmaType.WEBSITE)
+                                               ActionInSuggestUmaType.REVIEWS)
+                                       .expectIntRecord("Omnibox.ActionInSuggest.Shown",
+                                               ActionInSuggestUmaType.REVIEWS)
                                        .build();
         clickOnAction(2);
         histogramWatcher.assertExpected();

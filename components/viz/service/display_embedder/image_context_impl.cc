@@ -13,7 +13,7 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
-#include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_format_service_utils.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -22,6 +22,7 @@
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrContextThreadSafeProxy.h"
 #include "third_party/skia/include/gpu/graphite/Recorder.h"
+#include "third_party/skia/include/gpu/graphite/Surface.h"
 
 namespace {
 
@@ -151,7 +152,7 @@ void ImageContextImpl::CreateFallbackImage(
       SkColorType color_type =
           ToClosestSkColorType(/*gpu_compositing=*/true, format(), plane_index);
 
-      auto sk_surface = SkSurface::MakeGraphiteFromBackendTexture(
+      auto sk_surface = SkSurfaces::WrapBackendTexture(
           context_state->gpu_main_graphite_recorder(),
           graphite_fallback_textures_[plane_index], color_type, color_space(),
           /*props=*/nullptr);

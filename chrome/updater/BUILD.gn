@@ -150,7 +150,6 @@ if (is_win || is_mac || is_linux) {
       "//components/policy/proto",
       "//components/prefs",
       "//components/update_client",
-      "//components/update_client:buildflags",
       "//components/update_client:in_process_patcher",
       "//components/update_client:in_process_unzipper",
       "//components/version_info",
@@ -206,6 +205,8 @@ if (is_win || is_mac || is_linux) {
         "//mojo/public/cpp/platform",
         "//net",
       ]
+
+      configs += [ "//build/config/compiler:enable_arc" ]
 
       frameworks = [
         "AppKit.framework",
@@ -369,6 +370,8 @@ if (is_win || is_mac || is_linux) {
         "mac/setup/ks_tickets.h",
         "mac/setup/ks_tickets.mm",
       ]
+
+      configs += [ "//build/config/compiler:enable_arc" ]
 
       deps = [ "//base" ]
     }
@@ -600,6 +603,8 @@ if (is_win || is_mac || is_linux) {
         "util/mac_util.mm",
       ]
 
+      configs += [ "//build/config/compiler:enable_arc" ]
+
       frameworks = [ "Foundation.framework" ]
     }
 
@@ -690,7 +695,7 @@ if (is_win || is_mac || is_linux) {
     ]
     if (is_win) {
       sources += [
-        # TODO(crbug.com/1402743) - eliminate the dependency on //chrome/test.
+        # TODO(crbug.com/1447274) - eliminate the dependency on //chrome/test.
         "//chrome/test/base/process_inspector_win.cc",
         "//chrome/test/base/process_inspector_win.h",
       ]
@@ -872,6 +877,8 @@ if (is_win || is_mac || is_linux) {
         "//chrome/updater/mac:privileged_helper_sources",
         "//third_party/ocmock",
       ]
+
+      configs += [ "//build/config/compiler:enable_arc" ]
 
       data += [
         "//chrome/test/data/updater/CountingMetrics.plist",

@@ -74,8 +74,9 @@ class LeakySingleton {
 
   PA_ALWAYS_INLINE T* Get() {
     auto* instance = instance_.load(std::memory_order_acquire);
-    if (PA_LIKELY(instance))
+    if (PA_LIKELY(instance)) {
       return instance;
+    }
 
     return GetSlowPath();
   }
@@ -130,8 +131,9 @@ T* LeakySingleton<T, Constructor>::GetSlowPath() {
 
   T* instance = instance_.load(std::memory_order_relaxed);
   // Someone beat us.
-  if (instance)
+  if (instance) {
     return instance;
+  }
 
   instance = Constructor::New(reinterpret_cast<void*>(instance_buffer_));
   instance_.store(instance, std::memory_order_release);
@@ -155,15 +157,17 @@ class MainPartitionConstructor {
         // and only one is supported at a time.
         partition_alloc::PartitionOptions::ThreadCache::kDisabled;
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-    auto* new_root = new (buffer) partition_alloc::ThreadSafePartitionRoot({
-        partition_alloc::PartitionOptions::AlignedAlloc::kAllowed,
-        thread_cache,
-        partition_alloc::PartitionOptions::Quarantine::kAllowed,
-        partition_alloc::PartitionOptions::Cookie::kAllowed,
-        partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
-        partition_alloc::PartitionOptions::BackupRefPtrZapping::kDisabled,
-        partition_alloc::PartitionOptions::UseConfigurablePool::kNo,
-    });
+    auto* new_root = new (buffer) partition_alloc::ThreadSafePartitionRoot(
+        partition_alloc::PartitionOptions{
+            .aligned_alloc =
+                partition_alloc::PartitionOptions::AlignedAlloc::kAllowed,
+            .thread_cache = thread_cache,
+            .quarantine =
+                partition_alloc::PartitionOptions::Quarantine::kAllowed,
+            .cookie = partition_alloc::PartitionOptions::Cookie::kAllowed,
+            .backup_ref_ptr =
+                partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
+        });
 
     return new_root;
   }
@@ -250,10 +254,11 @@ void PartitionAllocSetCallNewHandlerOnMallocFailure(bool value) {
   // Apple only since it's not needed elsewhere, and there is a performance
   // penalty.
 
-  if (value)
+  if (value) {
     g_alloc_flags = 0;
-  else
+  } else {
     g_alloc_flags = partition_alloc::AllocFlags::kReturnNull;
+  }
 #endif
 }
 
@@ -318,12 +323,14 @@ void* PartitionAlignedRealloc(const AllocatorDispatch* dispatch,
     new_ptr = AllocateAlignedMemory(alignment, size);
   } else {
     // size == 0 and address != null means just "free(address)".
-    if (address)
+    if (address) {
       partition_alloc::ThreadSafePartitionRoot::FreeNoHooks(address);
+    }
   }
   // The original memory block (specified by address) is unchanged if ENOMEM.
-  if (!new_ptr)
+  if (!new_ptr) {
     return nullptr;
+  }
   // TODO(tasak): Need to compare the new alignment with the address' alignment.
   // If the two alignments are not the same, need to return nullptr with EINVAL.
   if (address) {
@@ -418,8 +425,9 @@ size_t PartitionGetSizeEstimate(const AllocatorDispatch*,
                                 void* context) {
   // This is used to implement malloc_usable_size(3). Per its man page, "if ptr
   // is NULL, 0 is returned".
-  if (!address)
+  if (!address) {
     return 0;
+  }
 
 #if BUILDFLAG(IS_APPLE)
   if (!partition_alloc::IsManagedByPartitionAlloc(
@@ -528,9 +536,10 @@ void EnablePartitionAllocMemoryReclaimer() {
   ::partition_alloc::MemoryReclaimer::Instance()->RegisterPartition(
       Allocator());
   auto* original_root = OriginalAllocator();
-  if (original_root)
+  if (original_root) {
     ::partition_alloc::MemoryReclaimer::Instance()->RegisterPartition(
         original_root);
+  }
   if (AlignedAllocator() != Allocator()) {
     ::partition_alloc::MemoryReclaimer::Instance()->RegisterPartition(
         AlignedAllocator());
@@ -539,11 +548,11 @@ void EnablePartitionAllocMemoryReclaimer() {
 
 void ConfigurePartitions(
     EnableBrp enable_brp,
-    EnableBrpZapping enable_brp_zapping,
     EnableBrpPartitionMemoryReclaimer enable_brp_memory_reclaimer,
+    EnableMemoryTagging enable_memory_tagging,
     SplitMainPartition split_main_partition,
     UseDedicatedAlignedPartition use_dedicated_aligned_partition,
-    AddDummyRefCount add_dummy_ref_count,
+    size_t ref_count_size,
     AlternateBucketDistribution use_alternate_bucket_distribution) {
   // BRP cannot be enabled without splitting the main partition. Furthermore, in
   // the "before allocation" mode, it can't be enabled without further splitting
@@ -589,25 +598,26 @@ void ConfigurePartitions(
   // shouldn't bite us here. Mentioning just in case we move this code earlier.
   static partition_alloc::internal::base::NoDestructor<
       partition_alloc::ThreadSafePartitionRoot>
-      new_main_partition(partition_alloc::PartitionOptions(
-          !use_dedicated_aligned_partition
-              ? partition_alloc::PartitionOptions::AlignedAlloc::kAllowed
-              : partition_alloc::PartitionOptions::AlignedAlloc::kDisallowed,
-          partition_alloc::PartitionOptions::ThreadCache::kDisabled,
-          partition_alloc::PartitionOptions::Quarantine::kAllowed,
-          partition_alloc::PartitionOptions::Cookie::kAllowed,
-          enable_brp
-              ? partition_alloc::PartitionOptions::BackupRefPtr::kEnabled
-              : partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
-          enable_brp_zapping
-              ? partition_alloc::PartitionOptions::BackupRefPtrZapping::kEnabled
-              : partition_alloc::PartitionOptions::BackupRefPtrZapping::
-                    kDisabled,
-          partition_alloc::PartitionOptions::UseConfigurablePool::kNo,
-          add_dummy_ref_count
-              ? partition_alloc::PartitionOptions::AddDummyRefCount::kEnabled
-              : partition_alloc::PartitionOptions::AddDummyRefCount::
-                    kDisabled));
+      new_main_partition(partition_alloc::PartitionOptions{
+          .aligned_alloc =
+              !use_dedicated_aligned_partition
+                  ? partition_alloc::PartitionOptions::AlignedAlloc::kAllowed
+                  : partition_alloc::PartitionOptions::AlignedAlloc::
+                        kDisallowed,
+          .thread_cache =
+              partition_alloc::PartitionOptions::ThreadCache::kDisabled,
+          .quarantine = partition_alloc::PartitionOptions::Quarantine::kAllowed,
+          .cookie = partition_alloc::PartitionOptions::Cookie::kAllowed,
+          .backup_ref_ptr =
+              enable_brp
+                  ? partition_alloc::PartitionOptions::BackupRefPtr::kEnabled
+                  : partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
+          .ref_count_size = ref_count_size,
+          .memory_tagging =
+              enable_memory_tagging
+                  ? partition_alloc::PartitionOptions::MemoryTagging::kEnabled
+                  : partition_alloc::PartitionOptions::MemoryTagging::
+                        kDisabled});
   partition_alloc::ThreadSafePartitionRoot* new_root = new_main_partition.get();
 
   partition_alloc::ThreadSafePartitionRoot* new_aligned_root;
@@ -617,13 +627,15 @@ void ConfigurePartitions(
     static partition_alloc::internal::base::NoDestructor<
         partition_alloc::ThreadSafePartitionRoot>
         new_aligned_partition(partition_alloc::PartitionOptions{
-            partition_alloc::PartitionOptions::AlignedAlloc::kAllowed,
-            partition_alloc::PartitionOptions::ThreadCache::kDisabled,
-            partition_alloc::PartitionOptions::Quarantine::kAllowed,
-            partition_alloc::PartitionOptions::Cookie::kAllowed,
-            partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
-            partition_alloc::PartitionOptions::BackupRefPtrZapping::kDisabled,
-            partition_alloc::PartitionOptions::UseConfigurablePool::kNo,
+            .aligned_alloc =
+                partition_alloc::PartitionOptions::AlignedAlloc::kAllowed,
+            .thread_cache =
+                partition_alloc::PartitionOptions::ThreadCache::kDisabled,
+            .quarantine =
+                partition_alloc::PartitionOptions::Quarantine::kAllowed,
+            .cookie = partition_alloc::PartitionOptions::Cookie::kAllowed,
+            .backup_ref_ptr =
+                partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
         });
     new_aligned_root = new_aligned_partition.get();
   } else {
@@ -669,6 +681,16 @@ void ConfigurePartitions(
   }
 }
 
+// No synchronization provided: `PartitionRoot.flags` is only written
+// to in `PartitionRoot::Init()`.
+uint32_t GetMainPartitionRootExtrasSize() {
+#if PA_CONFIG(EXTRAS_REQUIRED)
+  return g_root.Get()->flags.extras_size;
+#else
+  return 0;
+#endif  // PA_CONFIG(EXTRAS_REQUIRED)
+}
+
 #if BUILDFLAG(USE_STARSCAN)
 void EnablePCScan(partition_alloc::internal::PCScan::InitConfig config) {
   partition_alloc::internal::base::PlatformThread::SetThreadNameHook(
@@ -676,12 +698,14 @@ void EnablePCScan(partition_alloc::internal::PCScan::InitConfig config) {
   partition_alloc::internal::PCScan::Initialize(config);
 
   partition_alloc::internal::PCScan::RegisterScannableRoot(Allocator());
-  if (OriginalAllocator() != nullptr)
+  if (OriginalAllocator() != nullptr) {
     partition_alloc::internal::PCScan::RegisterScannableRoot(
         OriginalAllocator());
-  if (Allocator() != AlignedAllocator())
+  }
+  if (Allocator() != AlignedAllocator()) {
     partition_alloc::internal::PCScan::RegisterScannableRoot(
         AlignedAllocator());
+  }
 
   base::internal::NonScannableAllocator::Instance().NotifyPCScanEnabled();
   base::internal::NonQuarantinableAllocator::Instance().NotifyPCScanEnabled();
@@ -760,15 +784,17 @@ SHIM_ALWAYS_EXPORT struct mallinfo mallinfo(void) __THROW {
   auto& nonscannable_allocator =
       base::internal::NonScannableAllocator::Instance();
   partition_alloc::SimplePartitionStatsDumper nonscannable_allocator_dumper;
-  if (auto* nonscannable_root = nonscannable_allocator.root())
+  if (auto* nonscannable_root = nonscannable_allocator.root()) {
     nonscannable_root->DumpStats("malloc", true,
                                  &nonscannable_allocator_dumper);
+  }
   auto& nonquarantinable_allocator =
       base::internal::NonQuarantinableAllocator::Instance();
   partition_alloc::SimplePartitionStatsDumper nonquarantinable_allocator_dumper;
-  if (auto* nonquarantinable_root = nonquarantinable_allocator.root())
+  if (auto* nonquarantinable_root = nonquarantinable_allocator.root()) {
     nonquarantinable_root->DumpStats("malloc", true,
                                      &nonquarantinable_allocator_dumper);
+  }
 
   struct mallinfo info = {0};
   info.arena = 0;  // Memory *not* allocated with mmap().

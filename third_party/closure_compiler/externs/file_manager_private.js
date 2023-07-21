@@ -352,7 +352,6 @@ chrome.fileManagerPrivate.SharesheetLaunchSource = {
 chrome.fileManagerPrivate.IOTaskState = {
   QUEUED: 'queued',
   SCANNING: 'scanning',
-  WARNING: 'warning',
   IN_PROGRESS: 'in_progress',
   PAUSED: 'paused',
   SUCCESS: 'success',
@@ -379,10 +378,18 @@ chrome.fileManagerPrivate.IOTaskType = {
 /**
  * @enum {string}
  */
-chrome.fileManagerPrivate.SecurityErrorType = {
+chrome.fileManagerPrivate.PolicyErrorType = {
   DLP: 'dlp',
   ENTERPRISE_CONNECTORS: 'enterprise_connectors',
   DLP_WARNING_TIMEOUT: 'dlp_warning_timeout',
+};
+
+/**
+ * @enum {string}
+ */
+chrome.fileManagerPrivate.PolicyDialogType = {
+  WARNING: 'warning',
+  ERROR: 'error',
 };
 
 /**
@@ -871,6 +878,21 @@ chrome.fileManagerPrivate.IOTaskParams;
  *   conflictTargetUrl: (string|undefined)
  * }}
  */
+chrome.fileManagerPrivate.ConflictPauseParams;
+
+/**
+ * @typedef {{
+ *   type: !chrome.fileManagerPrivate.PolicyErrorType
+ * }}
+ */
+chrome.fileManagerPrivate.PolicyPauseParams;
+
+/**
+ * @typedef {{
+ *   conflictParams: (!chrome.fileManagerPrivate.ConflictPauseParams|undefined),
+ *   policyParams: (!chrome.fileManagerPrivate.PolicyPauseParams|undefined)
+ * }}
+ */
 chrome.fileManagerPrivate.PauseParams;
 
 /**
@@ -879,13 +901,28 @@ chrome.fileManagerPrivate.PauseParams;
  *   conflictApplyToAll: (boolean|undefined)
  * }}
  */
+chrome.fileManagerPrivate.ConflictResumeParams;
+
+/**
+ * @typedef {{
+ *   type: !chrome.fileManagerPrivate.PolicyErrorType
+ * }}
+ */
+chrome.fileManagerPrivate.PolicyResumeParams;
+
+/**
+ * @typedef {{
+ *   conflictParams: (!chrome.fileManagerPrivate.ConflictResumeParams|undefined),
+ *   policyParams: (!chrome.fileManagerPrivate.PolicyResumeParams|undefined)
+ * }}
+ */
 chrome.fileManagerPrivate.ResumeParams;
 
 /**
  * @typedef {{
  *   type: !chrome.fileManagerPrivate.IOTaskType,
  *   state: !chrome.fileManagerPrivate.IOTaskState,
- *   securityError: !chrome.fileManagerPrivate.SecurityErrorType,
+ *   policyError: (!chrome.fileManagerPrivate.PolicyErrorType|undefined),
  *   sourceName: string,
  *   numRemainingItems: number,
  *   itemCount: number,
@@ -1704,6 +1741,15 @@ chrome.fileManagerPrivate.cancelIOTask = function(taskId) {};
 chrome.fileManagerPrivate.resumeIOTask = function(taskId, params) {};
 
 /**
+ * Shows a policy dialog for a task. Task ids are communicated to the Files App
+ * in each I/O task's progress status.
+ * @param {number} taskId
+ * @param {!chrome.fileManagerPrivate.PolicyDialogType} type
+ * @param {!chrome.fileManagerPrivate.PolicyErrorType=} policy
+ */
+chrome.fileManagerPrivate.showPolicyDialog = function(taskId, type, policy) {};
+
+/**
  * Makes I/O tasks in state::PAUSED emit (broadcast) their current I/O task
  * progress status.
  */
@@ -1750,8 +1796,9 @@ chrome.fileManagerPrivate.getBulkPinProgress = function(callback) {};
 /**
  * Starts calculating the space required to pin all the items in a users My
  * drive.
+ * @param {function(): void} callback Callback that does not take arguments.
  */
-chrome.fileManagerPrivate.calculateBulkPinRequiredSpace = function() {};
+chrome.fileManagerPrivate.calculateBulkPinRequiredSpace = function(callback) {};
 
 /**
  * @type {!ChromeEvent}

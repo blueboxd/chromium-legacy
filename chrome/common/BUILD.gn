@@ -187,6 +187,7 @@ static_library("common_lib") {
     "//components/cdm/common",
     "//components/client_hints/common",
     "//components/cloud_devices/common",
+    "//components/commerce/core:commerce_constants",
     "//components/component_updater",
     "//components/content_settings/core/common",
     "//components/crash/core/common",
@@ -223,7 +224,6 @@ static_library("common_lib") {
     "//components/services/app_service/public/cpp:app_types",
     "//components/services/heap_profiling/public/cpp",
     "//components/strings",
-    "//components/supervised_user/core/common",
     "//components/supervised_user/core/common:buildflags",
     "//components/translate/content/common",
     "//components/translate/core/common",
@@ -269,6 +269,10 @@ static_library("common_lib") {
     "//components/page_load_metrics/common:common",
     "//components/password_manager/content/common",
   ]
+
+  if (enable_supervised_users) {
+    public_deps += [ "//components/supervised_user/core/common" ]
+  }
 
   if (enable_pdf) {
     deps += [ "//components/pdf/common" ]

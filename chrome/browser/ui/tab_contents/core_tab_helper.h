@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/functional/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
@@ -100,8 +101,6 @@ class CoreTabHelper : public content::WebContentsObserver,
  private:
   explicit CoreTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<CoreTabHelper>;
-  FRIEND_TEST_ALL_PREFIXES(CoreTabHelperWindowUnitTest,
-                           SearchWithLens_LensPingEnabled_TriggersLensPing);
 
   static bool GetStatusTextForWebContents(std::u16string* status_text,
                                           content::WebContents* source);

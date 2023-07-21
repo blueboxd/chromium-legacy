@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/html/forms/validity_state.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -365,16 +366,37 @@ HTMLFormControlElement::popoverTargetElement() {
   return PopoverTargetElement{.popover = target_popover, .action = action};
 }
 
+AtomicString HTMLFormControlElement::popoverTargetAction() const {
+  auto attribute_value =
+      FastGetAttribute(html_names::kPopovertargetactionAttr).LowerASCII();
+  // ReflectEmpty="toggle", ReflectMissing="toggle"
+  if (attribute_value.IsNull() || attribute_value.empty()) {
+    return kPopoverTargetActionToggle;
+  } else if (attribute_value == kPopoverTargetActionToggle ||
+             attribute_value == kPopoverTargetActionShow ||
+             attribute_value == kPopoverTargetActionHide) {
+    return attribute_value;  // ReflectOnly
+  } else if (RuntimeEnabledFeatures::HTMLPopoverHintEnabled() &&
+             attribute_value == kPopoverTargetActionHover) {
+    return attribute_value;  // ReflectOnly (with HTMLPopoverHint enabled)
+  } else {
+    return kPopoverTargetActionToggle;  // ReflectInvalid = "toggle"
+  }
+}
+void HTMLFormControlElement::setPopoverTargetAction(const AtomicString& value) {
+  setAttribute(html_names::kPopovertargetactionAttr, value);
+}
+
 void HTMLFormControlElement::DefaultEventHandler(Event& event) {
   if (!IsDisabledFormControl()) {
     auto popover = popoverTargetElement();
     if (popover.popover) {
       auto& document = GetDocument();
-      DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
+      CHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
           document.GetExecutionContext()));
       auto trigger_support = SupportsPopoverTriggering();
-      DCHECK_NE(popover.action, PopoverTriggerAction::kNone);
-      DCHECK_NE(trigger_support, PopoverTriggerSupport::kNone);
+      CHECK_NE(popover.action, PopoverTriggerAction::kNone);
+      CHECK_NE(trigger_support, PopoverTriggerSupport::kNone);
       // Note that the order is: `mousedown` which runs popover light dismiss
       // code, then (for clicked elements) focus is set to the clicked
       // element, then |DOMActivate| runs here. Also note that the light
@@ -443,7 +465,7 @@ void HTMLFormControlElement::HandlePopoverInvokerHovered(bool hovered) {
     }
     float hover_delay_seconds = computed_style->PopoverShowDelay();
     // If the value is infinite or NaN, don't queue a task at all.
-    DCHECK_GE(hover_delay_seconds, 0);
+    CHECK_GE(hover_delay_seconds, 0);
     if (!std::isfinite(hover_delay_seconds)) {
       return;
     }

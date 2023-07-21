@@ -121,6 +121,10 @@ class IntegrationTest : public ::testing::Test {
                       base::StrCat({"unix:path=", xdg_runtime_dir, "/bus"})));
     }
 #endif
+
+    // Mark the device as de-registered. This stops sending DM requests
+    // that mess up the request expectations in the mock server.
+    ASSERT_NO_FATAL_FAILURE(DMDeregisterDevice());
   }
 
   void TearDown() override {
@@ -131,10 +135,9 @@ class IntegrationTest : public ::testing::Test {
     ExpectNoCrashes();
 
     PrintLog();
-
-    // TODO(crbug.com/1159189): Use a specific test output directory
-    // because Uninstall() deletes the files under GetInstallDirectory().
     CopyLog();
+
+    DMCleanup();
 
     // TODO(crbug.com/1233612) - reenable the code when system tests pass.
     // TearDownTestService();
@@ -419,6 +422,10 @@ class IntegrationTest : public ::testing::Test {
   void RunOfflineInstall(bool is_legacy_install, bool is_silent_install) {
     test_commands_->RunOfflineInstall(is_legacy_install, is_silent_install);
   }
+
+  void DMDeregisterDevice() { test_commands_->DMDeregisterDevice(); }
+
+  void DMCleanup() { test_commands_->DMCleanup(); }
 
   scoped_refptr<IntegrationTestCommands> test_commands_;
 
@@ -795,7 +802,8 @@ TEST_F(IntegrationTest, MarshalInterface) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
-TEST_F(IntegrationTest, LegacyProcessLauncher) {
+// TODO(https://crbug.com/1453749): Flaky on bots
+TEST_F(IntegrationTest, DISABLED_LegacyProcessLauncher) {
   ASSERT_NO_FATAL_FAILURE(Install());
   ASSERT_NO_FATAL_FAILURE(ExpectLegacyProcessLauncherSucceeds());
   ASSERT_NO_FATAL_FAILURE(Uninstall());
@@ -887,7 +895,6 @@ TEST_F(IntegrationTest, UninstallUpdaterWhenAllAppsUninstalled) {
   ASSERT_NO_FATAL_FAILURE(InstallApp("test1"));
   ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
   ASSERT_TRUE(WaitForUpdaterExit());
-  // TODO(crbug.com/1287235): The test is flaky without the following line.
   ASSERT_NO_FATAL_FAILURE(SetServerStarts(24));
   ASSERT_NO_FATAL_FAILURE(RunWake(0));
   ASSERT_TRUE(WaitForUpdaterExit());

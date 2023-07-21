@@ -65,16 +65,18 @@ class AllocatorShimTest : public testing::Test {
   static void* MockAlloc(const AllocatorDispatch* self,
                          size_t size,
                          void* context) {
-    if (instance_ && size < MaxSizeTracked())
+    if (instance_ && size < MaxSizeTracked()) {
       ++(instance_->allocs_intercepted_by_size[size]);
+    }
     return self->next->alloc_function(self->next, size, context);
   }
 
   static void* MockAllocUnchecked(const AllocatorDispatch* self,
                                   size_t size,
                                   void* context) {
-    if (instance_ && size < MaxSizeTracked())
+    if (instance_ && size < MaxSizeTracked()) {
       ++(instance_->allocs_intercepted_by_size[size]);
+    }
     return self->next->alloc_unchecked_function(self->next, size, context);
   }
 
@@ -83,8 +85,9 @@ class AllocatorShimTest : public testing::Test {
                                  size_t size,
                                  void* context) {
     const size_t real_size = n * size;
-    if (instance_ && real_size < MaxSizeTracked())
+    if (instance_ && real_size < MaxSizeTracked()) {
       ++(instance_->zero_allocs_intercepted_by_size[real_size]);
+    }
     return self->next->alloc_zero_initialized_function(self->next, n, size,
                                                        context);
   }
@@ -94,10 +97,12 @@ class AllocatorShimTest : public testing::Test {
                                 size_t size,
                                 void* context) {
     if (instance_) {
-      if (size < MaxSizeTracked())
+      if (size < MaxSizeTracked()) {
         ++(instance_->aligned_allocs_intercepted_by_size[size]);
-      if (alignment < MaxSizeTracked())
+      }
+      if (alignment < MaxSizeTracked()) {
         ++(instance_->aligned_allocs_intercepted_by_alignment[alignment]);
+      }
     }
     return self->next->alloc_aligned_function(self->next, alignment, size,
                                               context);
@@ -120,8 +125,9 @@ class AllocatorShimTest : public testing::Test {
         return address;
       }
 
-      if (size < MaxSizeTracked())
+      if (size < MaxSizeTracked()) {
         ++(instance_->reallocs_intercepted_by_size[size]);
+      }
       ++instance_->reallocs_intercepted_by_addr[Hash(address)];
     }
     return self->next->realloc_function(self->next, address, size, context);
@@ -140,8 +146,9 @@ class AllocatorShimTest : public testing::Test {
                                     void* address,
                                     void* context) {
     // Special testing values for GetSizeEstimate() interception.
-    if (address == kTestSizeEstimateAddress)
+    if (address == kTestSizeEstimateAddress) {
       return kTestSizeEstimate;
+    }
     return self->next->get_size_estimate_function(self->next, address, context);
   }
 
@@ -149,8 +156,9 @@ class AllocatorShimTest : public testing::Test {
                                  void* address,
                                  void* context) {
     // The same as MockGetSizeEstimate.
-    if (address == kTestSizeEstimateAddress)
+    if (address == kTestSizeEstimateAddress) {
       return true;
+    }
     return self->next->claimed_address_function(self->next, address, context);
   }
 
@@ -217,8 +225,9 @@ class AllocatorShimTest : public testing::Test {
                                   size_t alignment,
                                   void* context) {
     if (instance_) {
-      if (size < MaxSizeTracked())
+      if (size < MaxSizeTracked()) {
         ++instance_->aligned_reallocs_intercepted_by_size[size];
+      }
       ++instance_->aligned_reallocs_intercepted_by_addr[Hash(address)];
     }
     return self->next->aligned_realloc_function(self->next, address, size,
@@ -235,8 +244,9 @@ class AllocatorShimTest : public testing::Test {
   }
 
   static void NewHandler() {
-    if (!instance_)
+    if (!instance_) {
       return;
+    }
     instance_->num_new_handler_calls.fetch_add(1, std::memory_order_relaxed);
   }
 
@@ -603,15 +613,17 @@ TEST_F(AllocatorShimTest, NewHandlerConcurrency) {
 
   ThreadDelegateForNewHandlerTest mock_thread_main(&event);
 
-  for (auto& thread : threads)
+  for (auto& thread : threads) {
     base::PlatformThread::Create(0, &mock_thread_main, &thread);
+  }
 
   std::set_new_handler(&AllocatorShimTest::NewHandler);
   SetCallNewHandlerOnMallocFailure(true);  // It's going to fail on realloc().
   InsertAllocatorDispatch(&g_mock_dispatch);
   event.Signal();
-  for (auto& thread : threads)
+  for (auto& thread : threads) {
     base::PlatformThread::Join(thread);
+  }
   RemoveAllocatorDispatchForTesting(&g_mock_dispatch);
   ASSERT_EQ(kNumThreads, GetNumberOfNewHandlerCalls());
 }
@@ -662,8 +674,9 @@ TEST_F(AllocatorShimTest, ShimDoesntChangeMallocSizeWhenEnabled) {
 TEST_F(AllocatorShimTest, InterceptCLibraryFunctions) {
   auto total_counts = [](const std::vector<size_t>& counts) {
     size_t total = 0;
-    for (const auto count : counts)
+    for (const auto count : counts) {
       total += count;
+    }
     return total;
   };
   size_t counts_before;
@@ -731,6 +744,28 @@ TEST_F(AllocatorShimTest, InterceptVasprintf) {
   stream << std::setprecision(1) << std::showpoint << std::fixed << 1.e38;
   EXPECT_GT(stream.str().size(), 30u);
   // Should not crash.
+}
+
+TEST_F(AllocatorShimTest, InterceptLongVasprintf) {
+  char* str = nullptr;
+  const char* lorem_ipsum =
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. "
+      "Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, "
+      "ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula "
+      "massa, varius a, semper congue, euismod non, mi. Proin porttitor, orci "
+      "nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit "
+      "amet erat. Duis semper. Duis arcu massa, scelerisque vitae, consequat "
+      "in, pretium a, enim. Pellentesque congue. Ut in risus volutpat libero "
+      "pharetra tempor. Cras vestibulum bibendum augue. Praesent egestas leo "
+      "in pede. Praesent blandit odio eu enim. Pellentesque sed dui ut augue "
+      "blandit sodales. Vestibulum ante ipsum primis in faucibus orci luctus "
+      "et ultrices posuere cubilia Curae; Aliquam nibh. Mauris ac mauris sed "
+      "pede pellentesque fermentum. Maecenas adipiscing ante non diam sodales "
+      "hendrerit.";
+  int err = asprintf(&str, "%s", lorem_ipsum);
+  EXPECT_EQ(err, static_cast<int>(strlen(lorem_ipsum)));
+  EXPECT_TRUE(str);
+  free(str);
 }
 
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)

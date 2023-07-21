@@ -52,6 +52,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/browser_sync/browser_sync_switches.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
@@ -74,11 +75,11 @@
 #include "components/sync/base/command_line_switches.h"
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/glue/sync_transport_data_prefs.h"
-#include "components/sync/driver/sync_service_impl.h"
-#include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/engine/sync_scheduler_impl.h"
 #include "components/sync/invalidations/sync_invalidations_service_impl.h"
+#include "components/sync/service/glue/sync_transport_data_prefs.h"
+#include "components/sync/service/sync_service_impl.h"
+#include "components/sync/service/sync_user_settings.h"
 #include "components/sync/test/fake_server_network_resources.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/network_service_instance.h"
@@ -255,6 +256,17 @@ SyncTest::SyncTest(TestType test_type)
       num_clients_ = 2;
       break;
     }
+  }
+
+  if (num_clients_ > 1) {
+    // Workaround to turn off single client optimization for sync standalone
+    // invalidations in tests.
+    // TODO(crbug.com/1438806): remove once resolved.
+    feature_list_.InitWithFeaturesAndParameters(
+        /*enabled_features=*/{{switches::
+                                   kSyncFilterOutInactiveDevicesForSingleClient,
+                               {{"SyncActiveDeviceMargin", "-2d"}}}},
+        /*disabled_features=*/{});
   }
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -854,6 +866,7 @@ bool SyncTest::SetupSync(SetupSyncMode setup_mode) {
   }
 #endif
 
+  DLOG(INFO) << "SyncTest::SetupSync() completed.";
   return true;
 }
 

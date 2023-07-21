@@ -42,6 +42,11 @@ The test verifies functionality of querying style information for view-transitio
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 1
+                                }
                                 text : html
                             }
                         ]
@@ -78,6 +83,11 @@ The test verifies functionality of querying style information for view-transitio
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 1
+                                    c : 0
+                                }
                                 text : :root
                             }
                         ]
@@ -119,6 +129,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 1
+                                            c : 1
+                                        }
                                         text : html::view-transition
                                     }
                                 ]
@@ -180,6 +195,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 1
+                                        }
                                         text : html::view-transition-group()
                                     }
                                 ]
@@ -224,6 +244,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 1
+                                        }
                                         text : html::view-transition-group()
                                     }
                                 ]
@@ -264,6 +289,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 1
+                                            c : 1
+                                        }
                                         text : html::view-transition-group(root)
                                     }
                                 ]
@@ -310,6 +340,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 1
+                                        }
                                         text : html::view-transition-group()
                                     }
                                 ]
@@ -354,6 +389,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 1
+                                        }
                                         text : html::view-transition-group()
                                     }
                                 ]
@@ -394,6 +434,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 1
+                                            c : 1
+                                        }
                                         text : html::view-transition-group(shared)
                                     }
                                 ]
@@ -442,6 +487,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 1
+                                            c : 1
+                                        }
                                         text : html::view-transition-group(shared)
                                     }
                                 ]
@@ -458,27 +508,19 @@ The test verifies functionality of querying style information for view-transitio
                                         value : ease
                                     }
                                     [2] : {
-                                        name : animation-delay-start
+                                        name : animation-delay
                                         value : 0s
                                     }
                                     [3] : {
-                                        name : animation-delay-end
-                                        value : 0s
-                                    }
-                                    [4] : {
                                         name : animation-iteration-count
                                         value : 1
                                     }
-                                    [5] : {
+                                    [4] : {
                                         name : animation-direction
                                         value : normal
                                     }
                                 ]
                                 shorthandEntries : [
-                                    [0] : {
-                                        name : animation-delay
-                                        value : 0s
-                                    }
                                 ]
                             }
                             supports : [
@@ -508,6 +550,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 0
+                                        }
                                         text : ::view-transition-image-pair()
                                     }
                                 ]
@@ -564,6 +611,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 1
+                                        }
                                         text : html::view-transition-image-pair()
                                     }
                                 ]
@@ -604,6 +656,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 1
+                                            c : 1
+                                        }
                                         text : html::view-transition-image-pair(root)
                                     }
                                 ]
@@ -646,6 +703,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 0
+                                        }
                                         text : ::view-transition-image-pair()
                                     }
                                 ]
@@ -702,6 +764,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 1
+                                        }
                                         text : html::view-transition-image-pair()
                                     }
                                 ]
@@ -742,6 +809,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 1
+                                            c : 1
+                                        }
                                         text : html::view-transition-image-pair(shared)
                                     }
                                 ]
@@ -784,9 +856,19 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 0
+                                        }
                                         text : ::view-transition-new()
                                     }
                                     [1] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 0
+                                        }
                                         text : ::view-transition-old()
                                     }
                                 ]
@@ -835,6 +917,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 1
+                                        }
                                         text : html::view-transition-old()
                                     }
                                 ]
@@ -879,6 +966,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 1
+                                            c : 1
+                                        }
                                         text : html::view-transition-old(root)
                                     }
                                 ]
@@ -920,6 +1012,11 @@ The test verifies functionality of querying style information for view-transitio
                                             endLine : 0
                                             startColumn : 1
                                             startLine : 0
+                                        }
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 0
                                         }
                                         text : ::view-transition-old(*)
                                     }
@@ -1067,9 +1164,19 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 0
+                                        }
                                         text : ::view-transition-new()
                                     }
                                     [1] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 0
+                                        }
                                         text : ::view-transition-old()
                                     }
                                 ]
@@ -1118,6 +1225,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 1
+                                        }
                                         text : html::view-transition-old()
                                     }
                                 ]
@@ -1162,6 +1274,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 1
+                                            c : 1
+                                        }
                                         text : html::view-transition-old(shared)
                                     }
                                 ]
@@ -1203,6 +1320,11 @@ The test verifies functionality of querying style information for view-transitio
                                             endLine : 0
                                             startColumn : 1
                                             startLine : 0
+                                        }
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 0
                                         }
                                         text : ::view-transition-old(*)
                                     }
@@ -1350,9 +1472,19 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 0
+                                        }
                                         text : ::view-transition-new()
                                     }
                                     [1] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 0
+                                        }
                                         text : ::view-transition-old()
                                     }
                                 ]
@@ -1401,6 +1533,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 1
+                                        }
                                         text : html::view-transition-new()
                                     }
                                 ]
@@ -1445,6 +1582,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 1
+                                            c : 1
+                                        }
                                         text : html::view-transition-new(root)
                                     }
                                 ]
@@ -1487,9 +1629,19 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 0
+                                        }
                                         text : ::view-transition-new()
                                     }
                                     [1] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 0
+                                        }
                                         text : ::view-transition-old()
                                     }
                                 ]
@@ -1538,6 +1690,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 0
+                                            c : 1
+                                        }
                                         text : html::view-transition-new()
                                     }
                                 ]
@@ -1582,6 +1739,11 @@ The test verifies functionality of querying style information for view-transitio
                             selectorList : {
                                 selectors : [
                                     [0] : {
+                                        specificity : {
+                                            a : 0
+                                            b : 1
+                                            c : 1
+                                        }
                                         text : html::view-transition-new(shared)
                                     }
                                 ]
@@ -1623,6 +1785,11 @@ The test verifies functionality of querying style information for view-transitio
                                             endLine : 0
                                             startColumn : 1
                                             startLine : 0
+                                        }
+                                        specificity : {
+                                            a : 0
+                                            b : 1
+                                            c : 0
                                         }
                                         text : ::view-transition-new(shared)
                                     }
@@ -1696,6 +1863,11 @@ Dumping styles for : ::view-transition with id undefined{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 1
+                                    c : 1
+                                }
                                 text : html::view-transition
                             }
                         ]
@@ -1762,6 +1934,11 @@ Dumping styles for : ::view-transition-group with id root{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 1
+                                }
                                 text : html::view-transition-group()
                             }
                         ]
@@ -1806,6 +1983,11 @@ Dumping styles for : ::view-transition-group with id root{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 1
+                                }
                                 text : html::view-transition-group()
                             }
                         ]
@@ -1846,6 +2028,11 @@ Dumping styles for : ::view-transition-group with id root{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 1
+                                    c : 1
+                                }
                                 text : html::view-transition-group(root)
                             }
                         ]
@@ -1896,6 +2083,11 @@ Dumping styles for : ::view-transition-image-pair with id root{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 0
+                                }
                                 text : ::view-transition-image-pair()
                             }
                         ]
@@ -1952,6 +2144,11 @@ Dumping styles for : ::view-transition-image-pair with id root{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 1
+                                }
                                 text : html::view-transition-image-pair()
                             }
                         ]
@@ -1992,6 +2189,11 @@ Dumping styles for : ::view-transition-image-pair with id root{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 1
+                                    c : 1
+                                }
                                 text : html::view-transition-image-pair(root)
                             }
                         ]
@@ -2038,9 +2240,19 @@ Dumping styles for : ::view-transition-old with id root{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 0
+                                }
                                 text : ::view-transition-new()
                             }
                             [1] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 0
+                                }
                                 text : ::view-transition-old()
                             }
                         ]
@@ -2089,6 +2301,11 @@ Dumping styles for : ::view-transition-old with id root{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 1
+                                }
                                 text : html::view-transition-old()
                             }
                         ]
@@ -2133,6 +2350,11 @@ Dumping styles for : ::view-transition-old with id root{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 1
+                                    c : 1
+                                }
                                 text : html::view-transition-old(root)
                             }
                         ]
@@ -2174,6 +2396,11 @@ Dumping styles for : ::view-transition-old with id root{
                                     endLine : 0
                                     startColumn : 1
                                     startLine : 0
+                                }
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 0
                                 }
                                 text : ::view-transition-old(*)
                             }
@@ -2325,9 +2552,19 @@ Dumping styles for : ::view-transition-new with id root{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 0
+                                }
                                 text : ::view-transition-new()
                             }
                             [1] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 0
+                                }
                                 text : ::view-transition-old()
                             }
                         ]
@@ -2376,6 +2613,11 @@ Dumping styles for : ::view-transition-new with id root{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 1
+                                }
                                 text : html::view-transition-new()
                             }
                         ]
@@ -2420,6 +2662,11 @@ Dumping styles for : ::view-transition-new with id root{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 1
+                                    c : 1
+                                }
                                 text : html::view-transition-new(root)
                             }
                         ]
@@ -2466,6 +2713,11 @@ Dumping styles for : ::view-transition-group with id shared{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 1
+                                }
                                 text : html::view-transition-group()
                             }
                         ]
@@ -2510,6 +2762,11 @@ Dumping styles for : ::view-transition-group with id shared{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 1
+                                }
                                 text : html::view-transition-group()
                             }
                         ]
@@ -2550,6 +2807,11 @@ Dumping styles for : ::view-transition-group with id shared{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 1
+                                    c : 1
+                                }
                                 text : html::view-transition-group(shared)
                             }
                         ]
@@ -2598,6 +2860,11 @@ Dumping styles for : ::view-transition-group with id shared{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 1
+                                    c : 1
+                                }
                                 text : html::view-transition-group(shared)
                             }
                         ]
@@ -2614,27 +2881,19 @@ Dumping styles for : ::view-transition-group with id shared{
                                 value : ease
                             }
                             [2] : {
-                                name : animation-delay-start
+                                name : animation-delay
                                 value : 0s
                             }
                             [3] : {
-                                name : animation-delay-end
-                                value : 0s
-                            }
-                            [4] : {
                                 name : animation-iteration-count
                                 value : 1
                             }
-                            [5] : {
+                            [4] : {
                                 name : animation-direction
                                 value : normal
                             }
                         ]
                         shorthandEntries : [
-                            [0] : {
-                                name : animation-delay
-                                value : 0s
-                            }
                         ]
                     }
                     supports : [
@@ -2668,6 +2927,11 @@ Dumping styles for : ::view-transition-image-pair with id shared{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 0
+                                }
                                 text : ::view-transition-image-pair()
                             }
                         ]
@@ -2724,6 +2988,11 @@ Dumping styles for : ::view-transition-image-pair with id shared{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 1
+                                }
                                 text : html::view-transition-image-pair()
                             }
                         ]
@@ -2764,6 +3033,11 @@ Dumping styles for : ::view-transition-image-pair with id shared{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 1
+                                    c : 1
+                                }
                                 text : html::view-transition-image-pair(shared)
                             }
                         ]
@@ -2810,9 +3084,19 @@ Dumping styles for : ::view-transition-old with id shared{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 0
+                                }
                                 text : ::view-transition-new()
                             }
                             [1] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 0
+                                }
                                 text : ::view-transition-old()
                             }
                         ]
@@ -2861,6 +3145,11 @@ Dumping styles for : ::view-transition-old with id shared{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 1
+                                }
                                 text : html::view-transition-old()
                             }
                         ]
@@ -2905,6 +3194,11 @@ Dumping styles for : ::view-transition-old with id shared{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 1
+                                    c : 1
+                                }
                                 text : html::view-transition-old(shared)
                             }
                         ]
@@ -2946,6 +3240,11 @@ Dumping styles for : ::view-transition-old with id shared{
                                     endLine : 0
                                     startColumn : 1
                                     startLine : 0
+                                }
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 0
                                 }
                                 text : ::view-transition-old(*)
                             }
@@ -3097,9 +3396,19 @@ Dumping styles for : ::view-transition-new with id shared{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 0
+                                }
                                 text : ::view-transition-new()
                             }
                             [1] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 0
+                                }
                                 text : ::view-transition-old()
                             }
                         ]
@@ -3148,6 +3457,11 @@ Dumping styles for : ::view-transition-new with id shared{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 0
+                                    c : 1
+                                }
                                 text : html::view-transition-new()
                             }
                         ]
@@ -3192,6 +3506,11 @@ Dumping styles for : ::view-transition-new with id shared{
                     selectorList : {
                         selectors : [
                             [0] : {
+                                specificity : {
+                                    a : 0
+                                    b : 1
+                                    c : 1
+                                }
                                 text : html::view-transition-new(shared)
                             }
                         ]
@@ -3233,6 +3552,11 @@ Dumping styles for : ::view-transition-new with id shared{
                                     endLine : 0
                                     startColumn : 1
                                     startLine : 0
+                                }
+                                specificity : {
+                                    a : 0
+                                    b : 1
+                                    c : 0
                                 }
                                 text : ::view-transition-new(shared)
                             }

@@ -1360,6 +1360,28 @@ TEST_F(AcceleratorConfigurationProviderTest, AddAcceleratorBadSource) {
   EXPECT_EQ(mojom::AcceleratorConfigResult::kActionLocked, result->result);
 }
 
+TEST_F(AcceleratorConfigurationProviderTest, AddSameAccelerator) {
+  // Initialize default accelerators.
+  const AcceleratorData test_data[] = {
+      {/*trigger_on_press=*/true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN,
+       AcceleratorAction::kToggleMirrorMode},
+  };
+
+  AshAcceleratorConfiguration* config =
+      Shell::Get()->ash_accelerator_configuration();
+  config->Initialize(test_data);
+  base::RunLoop().RunUntilIdle();
+
+  AcceleratorResultDataPtr result;
+  const ui::Accelerator accelerator(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
+  ash::shortcut_customization::mojom::
+      AcceleratorConfigurationProviderAsyncWaiter(provider_.get())
+          .AddAccelerator(mojom::AcceleratorSource::kAsh,
+                          AcceleratorAction::kToggleMirrorMode, accelerator,
+                          &result);
+  EXPECT_EQ(mojom::AcceleratorConfigResult::kConflict, result->result);
+}
+
 TEST_F(AcceleratorConfigurationProviderTest, AddAcceleratorBadAccelerator) {
   // Initialize default accelerators.
   const AcceleratorData test_data[] = {
@@ -1401,6 +1423,38 @@ TEST_F(AcceleratorConfigurationProviderTest, AddAcceleratorBadAccelerator) {
                           AcceleratorAction::kToggleMirrorMode,
                           top_row_accelerator, &result);
   EXPECT_EQ(mojom::AcceleratorConfigResult::kKeyNotAllowed, result->result);
+}
+
+TEST_F(AcceleratorConfigurationProviderTest, AddAcceleratorExceedsMaximum) {
+  // Initialize default accelerators.
+  const AcceleratorData test_data[] = {
+      {/*trigger_on_press=*/true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN,
+       AcceleratorAction::kToggleMirrorMode},
+      {/*trigger_on_press=*/true, ui::VKEY_A, ui::EF_CONTROL_DOWN,
+       AcceleratorAction::kToggleMirrorMode},
+      {/*trigger_on_press=*/true, ui::VKEY_S, ui::EF_CONTROL_DOWN,
+       AcceleratorAction::kToggleMirrorMode},
+      {/*trigger_on_press=*/true, ui::VKEY_D, ui::EF_CONTROL_DOWN,
+       AcceleratorAction::kToggleMirrorMode},
+      {/*trigger_on_press=*/true, ui::VKEY_F, ui::EF_CONTROL_DOWN,
+       AcceleratorAction::kToggleMirrorMode},
+  };
+
+  AshAcceleratorConfiguration* config =
+      Shell::Get()->ash_accelerator_configuration();
+  config->Initialize(test_data);
+  base::RunLoop().RunUntilIdle();
+
+  AcceleratorResultDataPtr result;
+  // Attempting to add a 6th accelerator will result in an error.
+  const ui::Accelerator accelerator(ui::VKEY_M, ui::EF_CONTROL_DOWN);
+  ash::shortcut_customization::mojom::
+      AcceleratorConfigurationProviderAsyncWaiter(provider_.get())
+          .AddAccelerator(mojom::AcceleratorSource::kAsh,
+                          AcceleratorAction::kToggleMirrorMode, accelerator,
+                          &result);
+  EXPECT_EQ(mojom::AcceleratorConfigResult::kMaximumAcceleratorsReached,
+            result->result);
 }
 
 TEST_F(AcceleratorConfigurationProviderTest, ReservedKeysNotAllowed) {
@@ -2011,6 +2065,56 @@ TEST_F(AcceleratorConfigurationProviderTest,
   EXPECT_EQ(mojom::AcceleratorType::kDefault, actual_infos2[0]->type);
   EXPECT_EQ(mojom::AcceleratorState::kEnabled, actual_infos2[1]->state);
   EXPECT_EQ(mojom::AcceleratorType::kDefault, actual_infos2[1]->type);
+}
+
+TEST_F(AcceleratorConfigurationProviderTest,
+       VerifyAllAcceleratorsHaveKeyString) {
+  // The following is a set of VKEYs that are ignored in this test. If there is
+  // a keycode that should be ignored, please add it to the following set. Only
+  // do this if the keycode does not require an icon, otherwise there is a risk
+  // that the shortcut app will display an empty icon for the accelerator.
+  std::set<ui::KeyboardCode> ignore_list = {
+      ui::KeyboardCode::VKEY_LSHIFT,  // kDisableCapsLock
+      ui::KeyboardCode::VKEY_RSHIFT,  // kDisableCapsLock
+  };
+
+  AshAcceleratorConfiguration* ash_config =
+      Shell::Get()->ash_accelerator_configuration();
+  ash_config->Initialize();
+  base::RunLoop().RunUntilIdle();
+
+  AcceleratorConfigurationProvider::AcceleratorConfigurationMap config =
+      provider_->GetAcceleratorConfig();
+  // Iterate through the entire config and check that all accelerators have a
+  // non-empty key string.
+  for (const auto& [source, id_to_accelerator_info] : config) {
+    for (const auto& [action_id, accelerators] : id_to_accelerator_info) {
+      for (const auto& accelerator : accelerators) {
+        if (!accelerator->layout_properties->is_standard_accelerator()) {
+          continue;
+        }
+
+        ui::KeyboardCode key_code =
+            accelerator->layout_properties->get_standard_accelerator()
+                ->accelerator.key_code();
+        // Ignore accelerators that have ignored keycodes or are disabled.
+        if (ignore_list.contains(key_code) ||
+            accelerator->state ==
+                mojom::AcceleratorState::kDisabledByUnavailableKeys) {
+          continue;
+        }
+
+        EXPECT_FALSE(ash::GetKeyDisplay(key_code).empty())
+            << "Missing display string for the keycode: " << key_code
+            << " if you are adding a new accelerator, "
+            << "please add a new mapping to `GetKeyDisplayMap()` in "
+            << "ash/webui/shortcut_customization_ui/backend/"
+            << "accelerator_layout_table.h along with the corresponding icon. "
+            << "See examples at "
+            << "ash/webui/shortcut_customization_ui/resources/js/input_key.ts.";
+      }
+    }
+  }
 }
 
 using FlagsKeyboardCodesVariant =

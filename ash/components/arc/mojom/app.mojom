@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 59
+// Next MinVersion: 60
 
 module arc.mojom;
 
@@ -152,6 +152,9 @@ enum ShowPackageInfoPage {
 
   // Page for managing links assigned to the app.
   MANAGE_LINKS = 1,
+
+  // Page for managing permissions assigned to the app.
+  [MinVersion=59] MANAGE_PERMISSIONS = 2,
 };
 
 // Describes the raw icon png data published by an Android application.
@@ -415,18 +418,8 @@ interface AppInstance {
   // Establishes full-duplex communication with the host.
   [MinVersion=26] Init@21(pending_remote<AppHost> host_remote) => ();
 
-  [MinVersion=1] CanHandleResolutionDeprecated@4(
-      string package_name, string activity, Rect dimension) =>
-          (bool can_handle);
-
   // Closes the the given task.
   [MinVersion=4] CloseTask@8(int32 task_id);
-
-  // Requests information about task. Deprecated: b/265158447
-  // Use the kArcPackageNameKey window property to get the package name, and
-  // OnTaskCreated to get the activity.
-  [MinVersion=3] GetTaskInfoDeprecated@6(int32 task_id) =>
-      (string package_name, string activity);
 
   // Sends a request to ARC to install package.
   [MinVersion=8] InstallPackage@11(ArcPackageInfo arcPackageInfo);

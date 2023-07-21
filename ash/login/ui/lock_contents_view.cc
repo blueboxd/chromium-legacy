@@ -647,6 +647,11 @@ bool LockContentsView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 }
 
 void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
+  if (Shell::Get()->login_screen_controller()->IsAuthenticating()) {
+    // TODO(b/276246832): We should avoid re-layouting during Authentication.
+    LOG(WARNING)
+        << "LockContentsView::OnUsersChanged called during Authentication.";
+  }
   // The debug view will potentially call this method many times. Make sure to
   // invalidate any child references.
   primary_big_view_ = nullptr;
@@ -1906,9 +1911,6 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
         auth_metadata.autosubmit_pin_length = state->autosubmit_pin_length;
         if (state->show_pin) {
           to_update_auth |= LoginAuthUserView::AUTH_PIN;
-        }
-        if (state->enable_tap_auth) {
-          to_update_auth |= LoginAuthUserView::AUTH_TAP;
         }
         if (state->fingerprint_state != FingerprintState::UNAVAILABLE) {
           to_update_auth |= LoginAuthUserView::AUTH_FINGERPRINT;

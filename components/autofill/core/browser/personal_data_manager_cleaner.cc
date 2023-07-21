@@ -114,9 +114,6 @@ void PersonalDataManagerCleaner::ApplyAddressFixesAndCleanups() {
   // Once per major version, otherwise NOP.
   DeleteDisusedAddresses();
 
-  // Ran everytime it is called.
-  ClearProfileNonSettingsOrigins();
-
   // Once per user profile startup.
   RemoveInaccessibleProfileValues();
 }
@@ -168,11 +165,6 @@ void PersonalDataManagerCleaner::RemoveInaccessibleProfileValues() {
 }
 
 bool PersonalDataManagerCleaner::ApplyDedupingRoutine() {
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillEnableProfileDeduplication)) {
-    return false;
-  }
-
   // Check if de-duplication has already been performed on this major version.
   if (!is_autofill_profile_cleanup_pending_) {
     DVLOG(1)
@@ -428,17 +420,6 @@ bool PersonalDataManagerCleaner::DeleteDisusedAddresses() {
   AutofillMetrics::LogNumberOfAddressesDeletedForDisuse(num_deleted_addresses);
 
   return true;
-}
-
-void PersonalDataManagerCleaner::ClearProfileNonSettingsOrigins() {
-  // `kAccount` profiles don't store an origin.
-  for (AutofillProfile* profile : personal_data_manager_->GetProfilesFromSource(
-           AutofillProfile::Source::kLocalOrSyncable)) {
-    if (profile->origin() != kSettingsOrigin && !profile->origin().empty()) {
-      profile->set_origin(std::string());
-      personal_data_manager_->UpdateProfileInDB(*profile, /*enforced=*/true);
-    }
-  }
 }
 
 void PersonalDataManagerCleaner::ClearCreditCardNonSettingsOrigins() {

@@ -55,13 +55,17 @@
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/file_manager/restore_io_task.h"
 #include "chrome/browser/ash/file_manager/restore_to_destination_io_task.h"
+#include "chrome/browser/ash/file_manager/trash_common_util.h"
 #include "chrome/browser/ash/file_manager/trash_io_task.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_manager/zip_io_task.h"
 #include "chrome/browser/ash/fileapi/file_system_backend.h"
 #include "chrome/browser/ash/fileapi/recent_disk_source.h"
 #include "chrome/browser/ash/policy/dlp/dlp_files_controller_ash.h"
+#include "chrome/browser/ash/policy/dlp/files_policy_notification_manager.h"
+#include "chrome/browser/ash/policy/dlp/files_policy_notification_manager_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/dlp/dialogs/files_policy_dialog.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
@@ -100,6 +104,7 @@
 #include "storage/common/file_system/file_system_info.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/constants/cryptohome.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/clipboard_non_backed.h"
@@ -252,10 +257,9 @@ extensions::api::file_manager_private::DlpLevel DlpRulesManagerLevelToApiEnum(
 }
 
 extensions::api::file_manager_private::VolumeType
-DlpRulesManagerComponentToApiEnum(
-    policy::DlpRulesManager::Component component) {
+DlpRulesManagerComponentToApiEnum(data_controls::Component component) {
   using ::extensions::api::file_manager_private::VolumeType;
-  using Component = ::policy::DlpRulesManager::Component;
+  using Component = ::data_controls::Component;
   switch (component) {
     case Component::kArc:
       return VolumeType::VOLUME_TYPE_ANDROID_FILES;
@@ -267,12 +271,44 @@ DlpRulesManagerComponentToApiEnum(
       return VolumeType::VOLUME_TYPE_REMOVABLE;
     case Component::kDrive:
       return VolumeType::VOLUME_TYPE_DRIVE;
+    case Component::kOneDrive:
+      return VolumeType::VOLUME_TYPE_PROVIDED;
     case Component::kUnknownComponent:
       NOTREACHED() << "DLP component not set.";
       return {};
   }
   NOTREACHED() << "Unknown component type.";
   return {};
+}
+
+policy::FilesDialogType ApiPolicyDialogTypeToChromeEnum(
+    api::file_manager_private::PolicyDialogType type) {
+  switch (type) {
+    case api::file_manager_private::POLICY_DIALOG_TYPE_NONE:
+      return policy::FilesDialogType::kUnknown;
+    case api::file_manager_private::POLICY_DIALOG_TYPE_WARNING:
+      return policy::FilesDialogType::kWarning;
+    case api::file_manager_private::POLICY_DIALOG_TYPE_ERROR:
+      return policy::FilesDialogType::kError;
+  }
+  NOTREACHED() << "Unknown policy dialog type " << type;
+  return policy::FilesDialogType::kUnknown;
+}
+
+absl::optional<policy::Policy> ApiPolicyErrorTypeToChromeEnum(
+    api::file_manager_private::PolicyErrorType type) {
+  switch (type) {
+    case api::file_manager_private::POLICY_ERROR_TYPE_DLP:
+      return policy::Policy::kDlp;
+    case api::file_manager_private::POLICY_ERROR_TYPE_ENTERPRISE_CONNECTORS:
+      return policy::Policy::kEnterpriseConnectors;
+    case api::file_manager_private::POLICY_ERROR_TYPE_NONE:
+      return absl::nullopt;
+    case api::file_manager_private::POLICY_ERROR_TYPE_DLP_WARNING_TIMEOUT:
+      NOTREACHED() << "Unexpected policy type " << type;
+  }
+  NOTREACHED() << "Unknown policy error type " << type;
+  return absl::nullopt;
 }
 
 }  // namespace
@@ -1106,7 +1142,7 @@ FileManagerPrivateGetDlpBlockedComponentsFunction::Run() {
   const absl::optional<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  const std::vector<policy::DlpRulesManager::Component> components =
+  const std::vector<data_controls::Component> components =
       files_controller->GetBlockedComponents(params->source_url);
 
   using extensions::api::file_manager_private::VolumeType;
@@ -1413,10 +1449,21 @@ FileManagerPrivateInternalSearchFilesFunction::Run() {
     return RespondNow(Error("Cannot convert category to file type"));
   }
 
+  std::vector<base::FilePath> excluded_paths;
+  if (file_manager::trash::IsTrashEnabledForProfile((profile))) {
+    auto enabled_trash_locations =
+        file_manager::trash::GenerateEnabledTrashLocationsForProfile(
+            profile, /*base_path=*/base::FilePath());
+    for (const auto& it : enabled_trash_locations) {
+      excluded_paths.emplace_back(
+          it.first.Append(it.second.relative_folder_path));
+    }
+  }
+
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
-          &SearchByPattern, root_path, search_params.query,
+          &SearchByPattern, root_path, excluded_paths, search_params.query,
           base::Time::FromJsTime(search_params.timestamp), file_type,
           base::internal::checked_cast<size_t>(search_params.max_results)),
       base::BindOnce(
@@ -1666,13 +1713,53 @@ FileManagerPrivateResumeIOTaskFunction::Run() {
   }
 
   file_manager::io_task::ResumeParams io_task_resume_params;
-  io_task_resume_params.conflict_resolve =
-      params->params.conflict_resolve.value_or("");
-  io_task_resume_params.conflict_apply_to_all =
-      params->params.conflict_apply_to_all.value_or(false);
+  io_task_resume_params.conflict_params->conflict_resolve =
+      params->params.conflict_params->conflict_resolve.value_or("");
+  io_task_resume_params.conflict_params->conflict_apply_to_all =
+      params->params.conflict_params->conflict_apply_to_all.value_or(false);
+  absl::optional<policy::Policy> policy =
+      ApiPolicyErrorTypeToChromeEnum(params->params.policy_params->type);
+  if (policy.has_value()) {
+    io_task_resume_params.policy_params->type = policy.value();
+  }
 
   volume_manager->io_task_controller()->Resume(
       params->task_id, std::move(io_task_resume_params));
+
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateShowPolicyDialogFunction::Run() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  using extensions::api::file_manager_private::ShowPolicyDialog::Params;
+  const absl::optional<Params> params = Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  if (params->task_id <= 0) {
+    return RespondNow(Error("Invalid task id"));
+  }
+
+  policy::FilesDialogType type = ApiPolicyDialogTypeToChromeEnum(params->type);
+  if (type == policy::FilesDialogType::kUnknown) {
+    return RespondNow(Error("No dialog type passed for task_id *",
+                            base::NumberToString(params->task_id)));
+  }
+
+  absl::optional<policy::Policy> policy =
+      ApiPolicyErrorTypeToChromeEnum(params->policy);
+
+  policy::FilesPolicyNotificationManager* manager =
+      policy::FilesPolicyNotificationManagerFactory::GetForBrowserContext(
+          browser_context());
+  if (!manager) {
+    LOG(ERROR) << "No FilesPolicyNotificationManager instantiated,"
+                  "can't show policy dialog for task_id "
+               << params->task_id;
+    Respond(NoArguments());
+  }
+  manager->ShowDialog(params->task_id, type, policy);
 
   return RespondNow(NoArguments());
 }

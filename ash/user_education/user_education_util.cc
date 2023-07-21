@@ -21,6 +21,10 @@
 namespace ash::user_education_util {
 namespace {
 
+// Keys used in `user_education::HelpBubbleParams::ExtendedProperties`.
+constexpr char kHelpBubbleIdKey[] = "helpBubbleId";
+constexpr char kHelpBubbleStyleKey[] = "helpBubbleStyle";
+
 // Helpers ---------------------------------------------------------------------
 
 AccountId GetActiveAccountId(const SessionControllerImpl* session_controller) {
@@ -52,8 +56,41 @@ session_manager::SessionState GetSessionState(
 
 // Utilities -------------------------------------------------------------------
 
+user_education::HelpBubbleParams::ExtendedProperties CreateExtendedProperties(
+    HelpBubbleId help_bubble_id) {
+  user_education::HelpBubbleParams::ExtendedProperties extended_properties;
+  extended_properties.values().Set(kHelpBubbleIdKey,
+                                   static_cast<int>(help_bubble_id));
+  return extended_properties;
+}
+
+user_education::HelpBubbleParams::ExtendedProperties CreateExtendedProperties(
+    HelpBubbleStyle help_bubble_style) {
+  user_education::HelpBubbleParams::ExtendedProperties extended_properties;
+  extended_properties.values().Set(kHelpBubbleStyleKey,
+                                   static_cast<int>(help_bubble_style));
+  return extended_properties;
+}
+
 const AccountId& GetAccountId(const UserSession* user_session) {
   return user_session ? user_session->user_info.account_id : EmptyAccountId();
+}
+
+HelpBubbleId GetHelpBubbleId(
+    const user_education::HelpBubbleParams::ExtendedProperties&
+        extended_properties) {
+  return static_cast<HelpBubbleId>(
+      extended_properties.values().FindInt(kHelpBubbleIdKey).value());
+}
+
+absl::optional<HelpBubbleStyle> GetHelpBubbleStyle(
+    const user_education::HelpBubbleParams::ExtendedProperties&
+        extended_properties) {
+  if (absl::optional<int> help_bubble_style =
+          extended_properties.values().FindInt(kHelpBubbleStyleKey)) {
+    return static_cast<HelpBubbleStyle>(help_bubble_style.value());
+  }
+  return absl::nullopt;
 }
 
 views::View* GetMatchingViewInRootWindow(int64_t display_id,
@@ -97,6 +134,8 @@ std::string ToString(TutorialId tutorial_id) {
       return "AshHoldingSpaceTourPrototype1";
     case TutorialId::kHoldingSpaceTourPrototype2:
       return "AshHoldingSpaceTourPrototype2";
+    case TutorialId::kTest:
+      return "AshTest";
     case TutorialId::kWelcomeTourPrototype1:
       return "AshWelcomeTourPrototype1";
   }

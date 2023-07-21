@@ -173,9 +173,6 @@
     }
   }
 
-  if (reason == ActiveWebStateChangeReason::Inserted) {
-    [self didInsertActiveWebState:newWebState];
-  }
   if (oldWebState) {
     [self.consumer prepareForNewTabAnimation];
   }
@@ -192,6 +189,14 @@
         NewTabPageTabHelper::FromWebState(newWebState);
     if (NTPHelper->IsActive()) {
       [_ntpCoordinator didNavigateToNTPInWebState:newWebState];
+    }
+
+    if (reason == ActiveWebStateChangeReason::Inserted) {
+      // This starts the new tab animation. It is important for the
+      // NTPCoordinator to know about the new web state
+      // (via the call to `-didNavigateToNTPInWebState:` above) before this is
+      // called.
+      [self didInsertActiveWebState:newWebState];
     }
 
     [self.consumer webStateSelected];
@@ -213,9 +218,9 @@
   // Add `newTab`'s view to the hierarchy if it's the current Tab.
   if (currentWebState == newWebState) {
     // Set this before triggering any of the possible page loads in
-    // displayWebStateIfActive.
+    // displayTabViewIfActive.
     newWebState->SetKeepRenderProcessAlive(true);
-    [self.consumer displayWebStateIfActive:newWebState];
+    [self.consumer displayTabViewIfActive];
   }
 }
 
@@ -254,9 +259,6 @@
   }
   NewTabPageTabHelper* NTPHelper =
       NewTabPageTabHelper::FromWebState(newWebState);
-  if (NTPHelper->IsActive()) {
-    [_ntpCoordinator start];
-  }
   BOOL inBackground =
       (NTPHelper && NTPHelper->ShouldShowStartSurface()) || !animated;
   if (inBackground) {

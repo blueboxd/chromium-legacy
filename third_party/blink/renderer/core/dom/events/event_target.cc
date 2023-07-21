@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_boolean_eventlisteneroptions.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/abort_signal_registry.h"
+#include "third_party/blink/renderer/core/dom/context_features.h"
 #include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
@@ -49,6 +50,7 @@
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/events/event_util.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
+#include "third_party/blink/renderer/core/frame/deprecation/deprecation.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
@@ -62,6 +64,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -512,38 +515,54 @@ bool EventTarget::AddEventListenerInternal(
 void EventTarget::AddedEventListener(
     const AtomicString& event_type,
     RegisteredEventListener& registered_listener) {
-  if (const LocalDOMWindow* executing_window = ExecutingWindow()) {
-    if (Document* document = executing_window->document()) {
-      if (event_type == event_type_names::kAuxclick) {
-        UseCounter::Count(*document, WebFeature::kAuxclickAddListenerCount);
-      } else if (event_type == event_type_names::kAppinstalled) {
-        UseCounter::Count(*document, WebFeature::kAppInstalledEventAddListener);
-      } else if (event_util::IsPointerEventType(event_type)) {
-        UseCounter::Count(*document, WebFeature::kPointerEventAddListenerCount);
-      } else if (event_type == event_type_names::kSlotchange) {
-        UseCounter::Count(*document, WebFeature::kSlotChangeEventAddListener);
-      } else if (event_type == event_type_names::kBeforematch) {
-        UseCounter::Count(*document, WebFeature::kBeforematchHandlerRegistered);
-      } else if (event_type ==
-                 event_type_names::kContentvisibilityautostatechange) {
-        UseCounter::Count(
-            *document,
-            WebFeature::kContentVisibilityAutoStateChangeHandlerRegistered);
-      } else if (event_type == event_type_names::kScrollend) {
-        UseCounter::Count(*document, WebFeature::kScrollend);
-      }
+  const LocalDOMWindow* executing_window = ExecutingWindow();
+  Document* document =
+      executing_window ? executing_window->document() : nullptr;
+  if (document) {
+    if (event_type == event_type_names::kAuxclick) {
+      UseCounter::Count(*document, WebFeature::kAuxclickAddListenerCount);
+    } else if (event_type == event_type_names::kAppinstalled) {
+      UseCounter::Count(*document, WebFeature::kAppInstalledEventAddListener);
+    } else if (event_util::IsPointerEventType(event_type)) {
+      UseCounter::Count(*document, WebFeature::kPointerEventAddListenerCount);
+    } else if (event_type == event_type_names::kSlotchange) {
+      UseCounter::Count(*document, WebFeature::kSlotChangeEventAddListener);
+    } else if (event_type == event_type_names::kBeforematch) {
+      UseCounter::Count(*document, WebFeature::kBeforematchHandlerRegistered);
+    } else if (event_type ==
+               event_type_names::kContentvisibilityautostatechange) {
+      UseCounter::Count(
+          *document,
+          WebFeature::kContentVisibilityAutoStateChangeHandlerRegistered);
+    } else if (event_type == event_type_names::kScrollend) {
+      UseCounter::Count(*document, WebFeature::kScrollend);
     }
   }
 
-  if (event_util::IsDOMMutationEventType(event_type)) {
-    if (ExecutionContext* context = GetExecutionContext()) {
-      String message_text = String::Format(
-          "Added synchronous DOM mutation listener to a '%s' event. "
-          "Consider using MutationObserver to make the page more responsive.",
-          event_type.GetString().Utf8().c_str());
-      PerformanceMonitor::ReportGenericViolation(
-          context, PerformanceMonitor::kDiscouragedAPIUse, message_text,
-          base::TimeDelta(), nullptr);
+  if (RuntimeEnabledFeatures::MutationEventsEnabled() &&
+      (!document || ContextFeatures::MutationEventsEnabled(document))) {
+    WebFeature mutation_event_feature;
+    Document::ListenerType listener_type;
+    if (event_util::IsDOMMutationEventType(event_type, mutation_event_feature,
+                                           listener_type)) {
+      if (ExecutionContext* context = GetExecutionContext()) {
+        String message_text = String::Format(
+            "Listener added for a synchronous '%s' DOM Mutation Event. "
+            "This event type is deprecated "
+            "(https://w3c.github.io/uievents/#legacy-event-types) "
+            "and work is underway to remove it from this browser. Usage of "
+            "this event listener will cause performance issues today, and "
+            "represents a risk of future incompatibility. Consider using "
+            "MutationObserver instead.",
+            event_type.GetString().Utf8().c_str());
+        PerformanceMonitor::ReportGenericViolation(
+            context, PerformanceMonitor::kDiscouragedAPIUse, message_text,
+            base::TimeDelta(), nullptr);
+        context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kDeprecation,
+            mojom::blink::ConsoleMessageLevel::kWarning, message_text));
+        Deprecation::CountDeprecation(context, mutation_event_feature);
+      }
     }
   }
 }

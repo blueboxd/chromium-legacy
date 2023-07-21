@@ -139,12 +139,12 @@
 <translation id="3403537308306431953"><ph name="ZOOM_LEVEL" />%%</translation>
 <translation id="3521663503435878242"><ph name="DOMAIN" />의 사이트</translation>
 <translation id="3538390592868664640">사이트에서 주변 환경의 3D 지도를 생성하거나 카메라 위치를 추적하지 못하도록 차단</translation>
-<translation id="3544058026430919413">회사는 쿠키를 사용하여 내 그룹 활동을 공유하는 사이트 그룹을 정의할 수 있습니다. 시크릿 모드에서는 이 기능이 사용 중지되어 있습니다.</translation>
+<translation id="3544058026430919413">쿠키를 사용하여 내 그룹 활동을 공유할 수 있는 사이트 그룹을 회사가 정의할 수 있습니다. 시크릿 모드에서는 이 기능이 사용 중지되어 있습니다.</translation>
 <translation id="3551268116566418498">시크릿 모드를 종료하시겠습니까?</translation>
 <translation id="3586500876634962664">카메라 및 마이크 사용</translation>
 <translation id="358794129225322306">사이트에서 여러 파일을 자동으로 다운로드하도록 허용합니다.</translation>
 <translation id="3594780231884063836">동영상 음소거</translation>
-<translation id="3596414637720633074">시크릿 모드에서 타사 쿠키 차단</translation>
+<translation id="3596414637720633074">시크릿 모드에서 서드 파티 쿠키 차단</translation>
 <translation id="3600792891314830896">소리를 재생하는 사이트 음소거</translation>
 <translation id="3602290021589620013">미리보기</translation>
 <translation id="3628308229821498208">추천 검색어</translation>
@@ -189,7 +189,6 @@
 <translation id="4412992751769744546">서드 파티 쿠키 허용</translation>
 <translation id="4428065317363009941">광고 개인 최적화</translation>
 <translation id="4434045419905280838">팝업 및 리디렉션</translation>
-<translation id="4440642537584213025"><ph name="TARGET_DESCRIPTION" /> 펼치기</translation>
 <translation id="4468959413250150279">특정 사이트를 음소거합니다.</translation>
 <translation id="4475912480633855319">{COOKIES,plural, =1{쿠키 #개}other{쿠키 #개}}</translation>
 <translation id="4478158430052450698">여러 사이트의 확대/축소 맞춤설정이 더 쉬워집니다.</translation>
@@ -311,6 +310,7 @@
 <translation id="6612358246767739896">보호된 콘텐츠</translation>
 <translation id="662080504995468778">머무르기</translation>
 <translation id="6643016212128521049">삭제</translation>
+<translation id="6653342741369270081">전체화면을 종료하려면 뒤로 버튼을 누르세요.</translation>
 <translation id="6689172468748959065">프로필 사진</translation>
 <translation id="6697925417670533197">진행 중인 다운로드</translation>
 <translation id="6722828510648505498">ID 서비스의 로그인 메시지를 차단합니다.</translation>
@@ -371,6 +371,7 @@
 <translation id="7846076177841592234">선택 취소</translation>
 <translation id="7882806643839505685">특정 사이트에서 소리를 재생하도록 허용합니다.</translation>
 <translation id="789180354981963912">시크릿 모드에서 서드 파티 쿠키 차단:</translation>
+<translation id="7895868624847501462">이 작업을 실행하면 쿠키를 포함한 모든 로컬 데이터가 삭제되고, <ph name="DOMAIN" /> 및 모든 하위 사이트에 대한 권한이 재설정됩니다.</translation>
 <translation id="7940722705963108451">알림</translation>
 <translation id="7974024493641668069">{COUNT,plural, =1{사이트 <ph name="FPS_MEMBERS_COUNT" />개는 <ph name="FPS_OWNER" />의 사이트 그룹에 있으며, 여기에서는 그룹 내 활동을 볼 수 있습니다.}other{사이트 <ph name="FPS_MEMBERS_COUNT" />개는 <ph name="FPS_OWNER" />의 사이트 그룹에 있으며, 여기에서는 그룹 내 활동을 볼 수 있습니다.}}</translation>
 <translation id="7986741934819883144">연락처 선택</translation>
@@ -396,6 +397,7 @@
 <translation id="8284326494547611709">자막</translation>
 <translation id="8300705686683892304">앱에서 관리함</translation>
 <translation id="8324158725704657629">다시 묻지 않음</translation>
+<translation id="8338445138528827481">이 작업을 실행하면 쿠키를 포함한 모든 로컬 데이터가 삭제되고, <ph name="ORIGIN" />에 대한 모든 권한이 재설정됩니다.</translation>
 <translation id="8362795839483915693">방문하는 사이트를 확대 또는 축소할 수 있습니다.</translation>
 <translation id="8372893542064058268">특정 사이트에서 백그라운드 동기화를 허용합니다.</translation>
 <translation id="8376384591331888629">이 사이트의 서드 파티 쿠키 포함</translation>

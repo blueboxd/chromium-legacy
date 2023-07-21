@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/check_is_test.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -75,6 +76,7 @@ class PermissionRequestManager
  public:
   class Observer : public base::CheckedObserver {
    public:
+    virtual void OnTabVisibilityChanged(content::Visibility visibility) {}
     virtual void OnPromptAdded() {}
     virtual void OnPromptRemoved() {}
     // Called when recreation of the permission prompt is not possible. It means
@@ -237,6 +239,10 @@ class PermissionRequestManager
     enabled_app_level_notification_permission_for_testing_ = enabled;
   }
 
+  void set_embedding_origin_for_testing(const GURL& embedding_origin) {
+    embedding_origin_for_testing_ = embedding_origin;
+  }
+
   base::ObserverList<Observer>* get_observer_list_for_testing() {
     CHECK_IS_TEST();
     return &observer_list_;
@@ -358,6 +364,7 @@ class PermissionRequestManager
   // Calls RequestFinished on a request and all its duplicates.
   void RequestFinishedIncludingDuplicates(PermissionRequest* request);
 
+  void NotifyTabVisibilityChanged(content::Visibility visibility);
   void NotifyPromptAdded();
   void NotifyPromptRemoved();
   void NotifyPromptRecreateFailed();
@@ -493,6 +500,8 @@ class PermissionRequestManager
   absl::optional<base::TimeDelta> time_to_decision_for_test_;
 
   absl::optional<bool> enabled_app_level_notification_permission_for_testing_;
+
+  absl::optional<GURL> embedding_origin_for_testing_;
 
   // A timer is used to pre-ignore the permission request if it's been displayed
   // as a quiet chip.

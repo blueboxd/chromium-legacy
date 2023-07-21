@@ -295,8 +295,6 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
     NOTREACHED();
   }
 
-  browser_->window()->OnTabRestored(command_id);
-
   UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.OpenRecentTab",
                              menu_opened_timer_.Elapsed());
   UMA_HISTOGRAM_ENUMERATION("WrenchMenu.MenuAction", MENU_ACTION_RECENT_TAB,
@@ -721,8 +719,7 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id,
   const size_t index_in_menu =
       menu_model->GetIndexOfCommandId(command_id).value();
   // Set default icon first.
-  menu_model->SetIcon(index_in_menu,
-                      ui::ImageModel::FromImage(favicon::GetDefaultFavicon()));
+  menu_model->SetIcon(index_in_menu, favicon::GetDefaultFaviconModel());
 
   const bool is_local_tab = IsLocalTabModelCommandId(command_id) ||
                             IsWindowModelCommandId(command_id) ||

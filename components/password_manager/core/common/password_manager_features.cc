@@ -5,6 +5,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 
 #include "base/feature_list.h"
+#include "build/blink_buildflags.h"
 #include "build/build_config.h"
 
 namespace password_manager::features {
@@ -176,12 +177,25 @@ BASE_FEATURE(kPasswordReuseDetectionEnabled,
              "PasswordReuseDetectionEnabled",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables different experiments that modify content and behavior of the
+// existing generated password suggestion dropdown.
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
+BASE_FEATURE(kPasswordGenerationExperiment,
+             "PasswordGenerationExperiment",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
 // Enables requesting and saving passwords grouping information from the
 // affiliation service.
-// TODO(crbug.com/1359392): Remove once launched.
+// TODO(crbug.com/1359392): Remove once launched on all platforms.
 BASE_FEATURE(kPasswordsGrouping,
              "PasswordsGrouping",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(USE_BLINK)
+             base::FEATURE_DISABLED_BY_DEFAULT
+#else
+             base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+);
 
 // Enables showing UI which allows users to easily revert their choice to
 // never save passwords on a certain website.
@@ -225,10 +239,6 @@ BASE_FEATURE(kPasswordGenerationBottomSheet,
              "PasswordGenerationBottomSheet",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kShowUPMErrorNotification,
-             "ShowUpmErrorNotification",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables the intent fetching for the credential manager in Google Mobile
 // Services. It does not enable launching the credential manager.
 BASE_FEATURE(kUnifiedCredentialManagerDryRun,
@@ -240,6 +250,11 @@ BASE_FEATURE(kUnifiedCredentialManagerDryRun,
 BASE_FEATURE(kUnifiedPasswordManagerAndroid,
              "UnifiedPasswordManagerAndroid",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables use of Google Mobile services for non-sycned password storage.
+BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsAndroid,
+             "UnifiedPasswordManagerLocalPasswordsAndroid",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables showing the warning about UPM migrating local passwords.
 BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsMigrationWarning,
@@ -265,6 +280,10 @@ BASE_FEATURE(kUnifiedPasswordManagerAndroidBranding,
 BASE_FEATURE(kExploratorySaveUpdatePasswordStrings,
              "ExploratorySaveUpdatePasswordStrings",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kPasswordsInCredMan,
+             "PasswordsInCredMan",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 // Enables support of sending additional votes on username first flow. The votes
@@ -286,13 +305,9 @@ BASE_FEATURE(kUsernameFirstFlowHonorAutocomplete,
 // cleartext.
 BASE_FEATURE(kPasswordGenerationPreviewOnHover,
              "PasswordGenerationPreviewOnHover",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_ANDROID)
-// Current migration version to Google Mobile Services. If version saved in pref
-// is lower than 'kMigrationVersion' passwords will be re-uploaded.
-extern const base::FeatureParam<int> kMigrationVersion = {
-    &kUnifiedPasswordManagerAndroid, "migration_version", 1};
 
 // The string version to use for the save/update password prompts when the user
 // is syncing passwords. Version 1 is outdated, so the only supported versions
@@ -361,23 +376,6 @@ bool RequiresMigrationForUnifiedPasswordManager() {
   return false;
 }
 
-bool ManagesLocalPasswordsInUnifiedPasswordManager() {
-  if (!base::FeatureList::IsEnabled(kUnifiedPasswordManagerAndroid)) {
-    return false;
-  }
-  UpmExperimentVariation variation = kUpmExperimentVariationParam.Get();
-  switch (variation) {
-    case UpmExperimentVariation::kEnableForSyncingUsers:
-    case UpmExperimentVariation::kShadowSyncingUsers:
-    case UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers:
-      return false;
-    case UpmExperimentVariation::kEnableForAllUsers:
-      return true;
-  }
-  NOTREACHED()
-      << "Define explicitly whether local password management is supported!";
-  return false;
-}
 #endif  // IS_ANDROID
 
 #if BUILDFLAG(IS_IOS)

@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_app_interface.h"
 
+#import <vector>
+
 #import "base/format_macros.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -14,8 +16,8 @@
 #import "components/query_parser/query_parser.h"
 #import "ios/chrome/browser/bookmarks/account_bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
-#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
@@ -242,8 +244,7 @@
     }
     folder = iteratorFolder.Next();
   }
-  std::set<const bookmarks::BookmarkNode*> toMove;
-  toMove.insert(bookmark);
+  std::vector<const bookmarks::BookmarkNode*> toMove{bookmark};
   bookmarks::BookmarkModel* accountBookmarkModel =
       [BookmarkEarlGreyAppInterface accountBookmarkModel];
   if (!bookmark_utils_ios::MoveBookmarks(toMove, localOrSyncableBookmarkModel,

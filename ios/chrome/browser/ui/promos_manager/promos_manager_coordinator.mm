@@ -9,15 +9,18 @@
 
 #import "base/check.h"
 #import "base/containers/small_map.h"
+#import "base/debug/dump_without_crashing.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
+#import "components/crash/core/common/crash_key.h"
 #import "components/feature_engagement/public/tracker.h"
 #import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/credential_provider_promo/features.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/flags/system_flags.h"
+#import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/promos_manager/features.h"
 #import "ios/chrome/browser/promos_manager/promo_config.h"
 #import "ios/chrome/browser/promos_manager/promos_manager.h"
@@ -206,8 +209,16 @@
     return;
   }
 
-  CHECK(!current_promo.has_value()) << "Current promo is already set: "
-                                    << NameForPromo(current_promo.value());
+  // Trying to display a promo while the previous dismissal was not communicated
+  // back to the promos manager.
+  // TODO(crbug.com/1452233): Remove once all promos dismiss themselves.
+  if (current_promo.has_value()) {
+    static crash_reporter::CrashKeyString<40> key("current-promo");
+    crash_reporter::ScopedCrashKeyString crashKey(
+        &key, ShortNameForPromo(current_promo.value()));
+    base::debug::DumpWithoutCrashing();
+  }
+
   current_promo = promo;
 
   auto handler_it = _displayHandlerPromos.find(promo);
@@ -552,7 +563,7 @@
   }
 
   // CredentialProvider Promo handler
-  if (IsCredentialProviderExtensionPromoEnabled()) {
+  if (IsCredentialProviderExtensionPromoEnabled() || IsIOSSetUpListEnabled()) {
     id<CredentialProviderPromoCommands> handler = HandlerForProtocol(
         self.browser->GetCommandDispatcher(), CredentialProviderPromoCommands);
     _displayHandlerPromos[promos_manager::Promo::CredentialProviderExtension] =

@@ -223,7 +223,7 @@ void VersionUI::AddVersionDetailStrings(content::WebUIDataSource* html_source) {
 
   // Data strings.
   html_source->AddString(version_ui::kVersion,
-                         version_info::GetVersionNumber());
+                         std::string(version_info::GetVersionNumber()));
 
   html_source->AddString(version_ui::kVersionModifier, GetProductModifier());
 
@@ -239,8 +239,10 @@ void VersionUI::AddVersionDetailStrings(content::WebUIDataSource* html_source) {
       base::i18n::MessageFormatter::FormatWithNumberedArgs(
           l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COPYRIGHT),
           base::Time::Now()));
-  html_source->AddString(version_ui::kCL, version_info::GetLastChange());
+  html_source->AddString(version_ui::kCL,
+                         std::string(version_info::GetLastChange()));
   html_source->AddString("build_date", __TIMESTAMP__);
+
   html_source->AddString(version_ui::kUserAgent,
                          embedder_support::GetUserAgent());
   // Note that the executable path and profile path are retrieved asynchronously
@@ -252,7 +254,8 @@ void VersionUI::AddVersionDetailStrings(content::WebUIDataSource* html_source) {
 #if BUILDFLAG(IS_MAC)
   html_source->AddString(version_ui::kOSType, base::mac::GetOSDisplayName());
 #elif !BUILDFLAG(IS_CHROMEOS_ASH)
-  html_source->AddString(version_ui::kOSType, version_info::GetOSType());
+  html_source->AddString(version_ui::kOSType,
+                         std::string(version_info::GetOSType()));
 #endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_ANDROID)
@@ -308,7 +311,7 @@ void VersionUI::AddVersionDetailStrings(content::WebUIDataSource* html_source) {
           : std::string());
 
   html_source->AddString(version_ui::kSanitizer,
-                         version_info::GetSanitizerList());
+                         std::string(version_info::GetSanitizerList()));
 }
 
 #if !BUILDFLAG(IS_ANDROID)

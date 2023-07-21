@@ -8,17 +8,13 @@
 
 #include <string>
 
-#include "base/android/jni_array.h"
-#include "base/android/jni_string.h"
-#include "base/containers/flat_map.h"
+#include "base/android/feature_map.h"
 #include "base/feature_list.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/no_destructor.h"
-#include "base/strings/string_piece_forward.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/feature_guide/notifications/feature_notification_guide_service.h"
 #include "chrome/browser/flags/android/chrome_session_state.h"
-#include "chrome/browser/flags/jni_headers/ChromeFeatureList_jni.h"
+#include "chrome/browser/flags/jni_headers/ChromeFeatureMap_jni.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/notifications/chime/android/features.h"
 #include "chrome/browser/push_messaging/push_messaging_features.h"
@@ -26,7 +22,6 @@
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/thumbnail/cc/features.h"
 #include "chrome/browser/ui/ui_features.h"
-#include "chrome/browser/video_tutorials/switches.h"
 #include "chrome/common/chrome_features.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
@@ -69,16 +64,10 @@
 #include "content/public/common/content_features.h"
 #include "device/fido/features.h"
 #include "media/base/media_switches.h"
-#include "services/audio/public/cpp/audio_features.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/ui_base_features.h"
-
-using base::android::ConvertJavaStringToUTF8;
-using base::android::ConvertUTF8ToJavaString;
-using base::android::JavaParamRef;
-using base::android::ScopedJavaLocalRef;
 
 namespace chrome {
 namespace android {
@@ -115,10 +104,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kPWAsDefaultOfflinePage,
     &features::kEarlyLibraryLoad,
     &features::kGenericSensorExtraClasses,
-    &features::kAsyncSensorCalls,
     &features::kBackForwardCache,
     &features::kBackForwardTransitions,
-    &features::kBlockMidiByDefault,
     &features::kHttpsOnlyMode,
     &features::kMetricsSettingsAndroid,
     &features::kNetworkServiceInProcess,
@@ -134,7 +121,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kWebNfc,
     &features::kIncognitoDownloadsWarning,
     &features::kIncognitoNtpRevamp,
-    &features::kKeepAndroidTintedResources,
     &feature_engagement::kIPHNewTabPageHomeButtonFeature,
     &feature_engagement::kIPHTabSwitcherButtonFeature,
     &feature_engagement::kUseClientConfigIPH,
@@ -142,12 +128,14 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &feature_guide::features::kSkipCheckForLowEngagedUsers,
     &feed::kCormorant,
     &feed::kFeedBackToTop,
+    &feed::kFeedDynamicColors,
     &feed::kFeedHeaderStickToTop,
     &feed::kFeedImageMemoryCacheSizePercentage,
     &feed::kFeedLoadingPlaceholder,
     &feed::kFeedNoViewCache,
     &feed::kFeedPerformanceStudy,
     &feed::kFeedShowSignInCommand,
+    &feed::kFeedSignedOutViewDemotion,
     &feed::kFeedBoCSigninInterstitial,
     &feed::kFeedUserInteractionReliabilityReport,
     &feed::kInterestFeedContentSuggestions,
@@ -162,16 +150,15 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &feed::kXsurfaceMetricsReporting,
     &history::kOrganicRepeatableQueries,
     &history_clusters::internal::kJourneys,
+    &history_clusters::internal::kOmniboxAction,
     &history_clusters::internal::kOmniboxHistoryClusterProvider,
     &kAdaptiveButtonInTopToolbar,
     &kAdaptiveButtonInTopToolbarTranslate,
     &kAdaptiveButtonInTopToolbarAddToBookmarks,
     &kAdaptiveButtonInTopToolbarCustomizationV2,
-    &kAddEduAccountFromAccountSettingsForSupervisedUsers,
     &kAddToHomescreenIPH,
     &kAllowNewIncognitoTabIntents,
     &kAndroidAppIntegration,
-    &kAndroidScrollOptimizations,
     &kAndroidSearchEngineChoiceNotification,
     &kAndroidWidgetFullscreenToast,
     &kAndroidImprovedBookmarks,
@@ -189,7 +176,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCloseTabSaveTabList,
     &kCriticalPersistedTabData,
     &kCreateNewTabInitializeRenderer,
-    &kCCTAllowCrossUidActivitySwitchFromBelow,
     &kCCTBackgroundTab,
     &kCCTBottomBarSwipeUpGesture,
     &kCCTBrandTransparency,
@@ -199,6 +185,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTIncognitoAvailableToThirdParty,
     &kCCTIntentFeatureOverrides,
     &kCCTNewDownloadTab,
+    &kCCTPageInsightsHub,
     &kCCTPostMessageAPI,
     &kCCTPrefetchDelayShowOnStart,
     &kCCTRealTimeEngagementSignals,
@@ -257,6 +244,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kNotificationPermissionVariant,
     &kNotificationPermissionBottomSheet,
     &kPageAnnotationsService,
+    &kPreconnectOnTabCreation,
     &kBookmarksImprovedSaveFlow,
     &kBookmarksRefresh,
     &kOmahaMinSdkVersionAndroid,
@@ -266,7 +254,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kOmniboxConsumesImeInsets,
     &kOmniboxWarmRecycledViewPool,
     &kOpaqueOriginForIncomingIntents,
-    &kPartnerHomepageInitialLoadImprovement,
     &kProbabilisticCryptidRenderer,
     &kQuickDeleteForAndroid,
     &kReachedCodeProfiler,
@@ -306,14 +293,16 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kSplitCompositorTask,
     &kStoreHoursAndroid,
     &kSwapPixelFormatToFixConvertFromTranslucent,
+    &kTabDragDropAndroid,
     &kTabEngagementReportingAndroid,
     &kTabGroupsAndroid,
     &kTabGroupsContinuationAndroid,
     &kTabGroupsForTablets,
     &kDiscoverFeedMultiColumn,
     &kTabStripRedesign,
+    &kTabletToolbarReordering,
+    &kTabStripStartupRefactoring,
     &kTabGridLayoutAndroid,
-    &kTabStateV1Optimizations,
     &kTabToGTSAnimation,
     &kTestDefaultDisabled,
     &kTestDefaultEnabled,
@@ -403,7 +392,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &syncer::kSyncAndroidLimitNTPPromoImpressions,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
     &thumbnail::kThumbnailCacheRefactor,
-    &video_tutorials::features::kVideoTutorials,
     &webapps::features::kInstallableAmbientBadgeInfoBar,
     &webapps::features::kInstallableAmbientBadgeMessage,
     &webapps::features::kWebApkInstallFailureNotification,
@@ -412,26 +400,18 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &network::features::kPrivateStateTokens,
 };
 
-const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
-  static auto kFeaturesExposedToJavaMap = base::NoDestructor(
-      base::MakeFlatMap<base::StringPiece, const base::Feature*>(
-          kFeaturesExposedToJava, {},
-          [](const base::Feature* a)
-              -> std::pair<base::StringPiece, const base::Feature*> {
-            return std::make_pair(a->name, a);
-          }));
-
-  auto it = kFeaturesExposedToJavaMap->find(base::StringPiece(feature_name));
-  if (it != kFeaturesExposedToJavaMap->end()) {
-    return it->second;
-  }
-
-  NOTREACHED() << "Queried feature cannot be found in ChromeFeatureList: "
-               << feature_name;
-  return nullptr;
+// static
+base::android::FeatureMap* GetFeatureMap() {
+  static base::NoDestructor<base::android::FeatureMap> kFeatureMap(std::vector(
+      std::begin(kFeaturesExposedToJava), std::end(kFeaturesExposedToJava)));
+  return kFeatureMap.get();
 }
 
 }  // namespace
+
+static jlong JNI_ChromeFeatureMap_GetNativeMap(JNIEnv* env) {
+  return reinterpret_cast<jlong>(GetFeatureMap());
+}
 
 // Alphabetical:
 
@@ -451,10 +431,6 @@ BASE_FEATURE(kAdaptiveButtonInTopToolbarCustomizationV2,
              "AdaptiveButtonInTopToolbarCustomizationV2",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kAddEduAccountFromAccountSettingsForSupervisedUsers,
-             "AddEduAccountFromAccountSettingsForSupervisedUsers",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kAddToHomescreenIPH,
              "AddToHomescreenIPH",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -470,10 +446,6 @@ BASE_FEATURE(kFocusOmniboxInIncognitoTabIntents,
 BASE_FEATURE(kAndroidAppIntegration,
              "AndroidAppIntegration",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kAndroidScrollOptimizations,
-             "AndroidScrollOptimizations",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAndroidSearchEngineChoiceNotification,
              "AndroidSearchEngineChoiceNotification",
@@ -535,10 +507,6 @@ BASE_FEATURE(kCriticalPersistedTabData,
              "CriticalPersistedTabData",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kCCTAllowCrossUidActivitySwitchFromBelow,
-             "CCTAllowCrossUidActivitySwitchFromBelow",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kCCTBottomBarSwipeUpGesture,
              "CCTBottomBarSwipeUpGesture",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -572,6 +540,10 @@ BASE_FEATURE(kCCTIncognitoAvailableToThirdParty,
 BASE_FEATURE(kCCTIntentFeatureOverrides,
              "CCTIntentFeatureOverrides",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCCTPageInsightsHub,
+             "CCTPageInsightsHub",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTPostMessageAPI,
              "CCTPostMessageAPI",
@@ -631,7 +603,7 @@ BASE_FEATURE(kCCTRetainingStateInMemory,
 
 BASE_FEATURE(kCCTTextFragmentLookupApiEnabled,
              "CCTTextFragmentLookupApiEnabled",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTToolbarCustomizations,
              "CCTToolbarCustomizations",
@@ -771,7 +743,7 @@ BASE_FEATURE(kGridTabSwitcherForTablets,
 
 BASE_FEATURE(kHideNonDisplayableAccountEmail,
              "HideNonDisplayableAccountEmail",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kIncognitoReauthenticationForAndroid,
              "IncognitoReauthenticationForAndroid",
@@ -801,6 +773,10 @@ BASE_FEATURE(kInstanceSwitcher,
 
 BASE_FEATURE(kPageAnnotationsService,
              "PageAnnotationsService",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kPreconnectOnTabCreation,
+             "PreconnectOnTabCreation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kBookmarksImprovedSaveFlow,
@@ -851,10 +827,6 @@ BASE_FEATURE(kOmniboxWarmRecycledViewPool,
 
 BASE_FEATURE(kOpaqueOriginForIncomingIntents,
              "OpaqueOriginForIncomingIntents",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kPartnerHomepageInitialLoadImprovement,
-             "PartnerHomepageInitialLoadImprovement",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kProbabilisticCryptidRenderer,
@@ -971,11 +943,11 @@ BASE_FEATURE(kShowScrollableMVTOnNTPAndroid,
 
 BASE_FEATURE(kShareSheetCustomActionsPolish,
              "ShareSheetCustomActionsPolish",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kShareSheetMigrationAndroid,
              "ShareSheetMigrationAndroid",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSpecialLocaleWrapper,
              "SpecialLocaleWrapper",
@@ -1001,6 +973,10 @@ BASE_FEATURE(kSwapPixelFormatToFixConvertFromTranslucent,
              "SwapPixelFormatToFixConvertFromTranslucent",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kTabDragDropAndroid,
+             "TabDragDropAndroid",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kTabEngagementReportingAndroid,
              "TabEngagementReportingAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1024,16 +1000,20 @@ BASE_FEATURE(kTabGridLayoutAndroid,
              "TabGridLayoutAndroid",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kTabStateV1Optimizations,
-             "TabStateV1Optimizations",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kDiscoverFeedMultiColumn,
              "DiscoverFeedMultiColumn",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTabStripRedesign,
              "TabStripRedesign",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kTabletToolbarReordering,
+             "TabletToolbarReordering",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kTabStripStartupRefactoring,
+             "TabStripStartupRefactoring",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enabled, but often disabled in tests to reduce animation flakes and test
@@ -1060,7 +1040,7 @@ BASE_FEATURE(kToolbarScrollAblationAndroid,
 
 BASE_FEATURE(kTrustedWebActivityPostMessage,
              "TrustedWebActivityPostMessage",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kResizeOnlyActiveTab,
              "ResizeOnlyActiveTab",
@@ -1156,80 +1136,6 @@ BASE_FEATURE(kWebApkInstallService,
 BASE_FEATURE(kWebApkTrampolineOnInitialIntent,
              "WebApkTrampolineOnInitialIntent",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-static jboolean JNI_ChromeFeatureList_IsEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jstring>& jfeature_name) {
-  const base::Feature* feature =
-      FindFeatureExposedToJava(ConvertJavaStringToUTF8(env, jfeature_name));
-  return base::FeatureList::IsEnabled(*feature);
-}
-
-static ScopedJavaLocalRef<jstring>
-JNI_ChromeFeatureList_GetFieldTrialParamByFeature(
-    JNIEnv* env,
-    const JavaParamRef<jstring>& jfeature_name,
-    const JavaParamRef<jstring>& jparam_name) {
-  const base::Feature* feature =
-      FindFeatureExposedToJava(ConvertJavaStringToUTF8(env, jfeature_name));
-  const std::string& param_name = ConvertJavaStringToUTF8(env, jparam_name);
-  const std::string& param_value =
-      base::GetFieldTrialParamValueByFeature(*feature, param_name);
-  return ConvertUTF8ToJavaString(env, param_value);
-}
-
-static jint JNI_ChromeFeatureList_GetFieldTrialParamByFeatureAsInt(
-    JNIEnv* env,
-    const JavaParamRef<jstring>& jfeature_name,
-    const JavaParamRef<jstring>& jparam_name,
-    const jint jdefault_value) {
-  const base::Feature* feature =
-      FindFeatureExposedToJava(ConvertJavaStringToUTF8(env, jfeature_name));
-  const std::string& param_name = ConvertJavaStringToUTF8(env, jparam_name);
-  return base::GetFieldTrialParamByFeatureAsInt(*feature, param_name,
-                                                jdefault_value);
-}
-
-static jdouble JNI_ChromeFeatureList_GetFieldTrialParamByFeatureAsDouble(
-    JNIEnv* env,
-    const JavaParamRef<jstring>& jfeature_name,
-    const JavaParamRef<jstring>& jparam_name,
-    const jdouble jdefault_value) {
-  const base::Feature* feature =
-      FindFeatureExposedToJava(ConvertJavaStringToUTF8(env, jfeature_name));
-  const std::string& param_name = ConvertJavaStringToUTF8(env, jparam_name);
-  return base::GetFieldTrialParamByFeatureAsDouble(*feature, param_name,
-                                                   jdefault_value);
-}
-
-static jboolean JNI_ChromeFeatureList_GetFieldTrialParamByFeatureAsBoolean(
-    JNIEnv* env,
-    const JavaParamRef<jstring>& jfeature_name,
-    const JavaParamRef<jstring>& jparam_name,
-    const jboolean jdefault_value) {
-  const base::Feature* feature =
-      FindFeatureExposedToJava(ConvertJavaStringToUTF8(env, jfeature_name));
-  const std::string& param_name = ConvertJavaStringToUTF8(env, jparam_name);
-  return base::GetFieldTrialParamByFeatureAsBool(*feature, param_name,
-                                                 jdefault_value);
-}
-
-static ScopedJavaLocalRef<jobjectArray>
-JNI_ChromeFeatureList_GetFlattedFieldTrialParamsForFeature(
-    JNIEnv* env,
-    const JavaParamRef<jstring>& feature_name) {
-  base::FieldTrialParams params;
-  std::vector<std::string> keys_and_values;
-  const base::Feature* feature =
-      FindFeatureExposedToJava(ConvertJavaStringToUTF8(env, feature_name));
-  if (feature && base::GetFieldTrialParamsByFeature(*feature, &params)) {
-    for (const auto& param_pair : params) {
-      keys_and_values.push_back(param_pair.first);
-      keys_and_values.push_back(param_pair.second);
-    }
-  }
-  return base::android::ToJavaArrayOfStrings(env, keys_and_values);
-}
 
 }  // namespace android
 }  // namespace chrome

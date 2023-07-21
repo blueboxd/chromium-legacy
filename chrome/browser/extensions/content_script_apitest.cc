@@ -82,9 +82,10 @@ const char kWebstoreDomain[] = "cws.com";
 bool RunAllPending(content::WebContents* web_contents) {
   // This is slight hack to achieve a RunPendingInRenderer() method. Since IPCs
   // are sent synchronously, anything started prior to this method will finish
-  // before this method returns (as content::ExecuteScript() is synchronous).
-  if (!content::ExecuteScript(web_contents, "1 == 1;"))
+  // before this method returns (as content::ExecJs() is synchronous).
+  if (!content::ExecJs(web_contents, "1 == 1;")) {
     return false;
+  }
   base::RunLoop().RunUntilIdle();
   return true;
 }
@@ -658,7 +659,7 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptExtensionAPIs) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), extension->GetResourceURL("fire_event.html"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+      ui_test_utils::BROWSER_TEST_NO_WAIT);
   EXPECT_TRUE(catcher.GetNextResult());
 }
 
@@ -839,7 +840,7 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptBlockingScript) {
   // Navigate! Both extensions will try to inject.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), embedded_test_server()->GetURL("/empty.html"),
-      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NO_WAIT);
 
   dialog_wait.Run();
   // Right now, the alert dialog is showing and blocking injection of anything
@@ -893,7 +894,7 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
   // Navigate!
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), embedded_test_server()->GetURL("/empty.html"),
-      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NO_WAIT);
 
   // Now, instead of closing the dialog, just close the tab. Later scripts
   // should never get a chance to run (and we shouldn't crash).
@@ -930,7 +931,7 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
   // Navigate!
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), embedded_test_server()->GetURL("/empty.html"),
-      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NO_WAIT);
 
   dialog_wait.Run();
 
@@ -1529,7 +1530,7 @@ content::WebContents* ContentScriptRelatedFrameTest::OpenPopup(
   int initial_tab_count = browser()->tab_strip_model()->count();
   content::TestNavigationObserver popup_observer(nullptr /* web_contents */);
   popup_observer.StartWatchingNewWebContents();
-  EXPECT_TRUE(content::ExecuteScript(
+  EXPECT_TRUE(content::ExecJs(
       opener_web_contents, content::JsReplace("window.open($1);", url.spec())));
   popup_observer.Wait();
   EXPECT_EQ(initial_tab_count + 1, browser()->tab_strip_model()->count());
@@ -1554,7 +1555,7 @@ void ContentScriptRelatedFrameTest::NavigateIframe(
                                           url.spec().c_str());
   content::TestNavigationObserver navigation_observer(url);
   navigation_observer.WatchExistingWebContents();
-  EXPECT_TRUE(content::ExecuteScript(navigating_host, script));
+  EXPECT_TRUE(content::ExecJs(navigating_host, script));
   navigation_observer.Wait();
   EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
 
@@ -2309,7 +2310,8 @@ class ContentScriptApiFencedFrameTest : public ContentScriptApiTest {
     feature_list_.InitWithFeaturesAndParameters(
         {{blink::features::kFencedFrames, {{"implementation_type", "mparch"}}},
          {features::kPrivacySandboxAdsAPIsOverride, {}},
-         {blink::features::kFencedFramesAPIChanges, {}}},
+         {blink::features::kFencedFramesAPIChanges, {}},
+         {blink::features::kFencedFramesDefaultMode, {}}},
         {/* disabled_features */});
     UseHttpsTestServer();
   }

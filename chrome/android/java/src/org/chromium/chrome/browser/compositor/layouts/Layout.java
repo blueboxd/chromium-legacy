@@ -15,7 +15,6 @@ import androidx.annotation.IntDef;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.EventFilter;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.layouts.animation.CompositorAnimationHandler;
@@ -458,8 +457,7 @@ public abstract class Layout {
             mNextTabId = Tab.INVALID_TAB_ID;
         }
         mUpdateHost.doneHiding();
-        if (mRenderHost != null && mRenderHost.getResourceManager() != null
-                && !ChromeFeatureList.isEnabled(ChromeFeatureList.KEEP_ANDROID_TINTED_RESOURCES)) {
+        if (mRenderHost != null && mRenderHost.getResourceManager() != null) {
             mRenderHost.getResourceManager().clearTintedResourceCache();
         }
 
@@ -580,15 +578,6 @@ public abstract class Layout {
     }
 
     /**
-     * Called when a tab is about to be closed. When called, the closing tab will still
-     * be part of the model.
-     * @param time  The current time of the app in ms.
-     * @param tabId The id of the tab being closed
-     */
-    public void onTabClosing(long time, int tabId) {
-    }
-
-    /**
      * Called when a tab is being closed. When called, the closing tab will not
      * be part of the model.
      * @param time      The current time of the app in ms.
@@ -668,19 +657,6 @@ public abstract class Layout {
      */
     public LayoutTab[] getLayoutTabsToRender() {
         return mLayoutTabs;
-    }
-
-    /**
-     * @param id The id of the {@link LayoutTab} to search for.
-     * @return   A {@link LayoutTab} represented by a {@link Tab} with an id of {@code id}.
-     */
-    public LayoutTab getLayoutTab(int id) {
-        if (mLayoutTabs != null) {
-            for (int i = 0; i < mLayoutTabs.length; i++) {
-                if (mLayoutTabs[i].getId() == id) return mLayoutTabs[i];
-            }
-        }
-        return null;
     }
 
     /**

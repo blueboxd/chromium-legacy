@@ -5,10 +5,10 @@
 #include "third_party/blink/renderer/core/layout/anchor_scroll_data.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_anchor_query.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 
@@ -25,42 +25,19 @@ const LayoutObject* AnchorScrollObject(const LayoutObject* layout_object) {
   if (!value)
     return nullptr;
 
-  const NGPhysicalAnchorQuery* anchor_query =
-      NGPhysicalAnchorQuery::GetFromLayoutResult(*layout_object);
-  if (!anchor_query)
-    return nullptr;
-
-  bool can_use_invalid_anchors = layout_object->IsInTopOrViewTransitionLayer();
-
-  const NGPhysicalFragment* fragment = nullptr;
+  const LayoutBox* box = To<LayoutBox>(layout_object);
+  const LayoutObject* anchor = nullptr;
   if (value->IsNamed()) {
-    fragment =
-        anchor_query->Fragment(&value->GetName(), can_use_invalid_anchors);
+    anchor = box->FindTargetAnchor(value->GetName());
   } else if (value->IsDefault() && style.AnchorDefault()) {
-    fragment =
-        anchor_query->Fragment(style.AnchorDefault(), can_use_invalid_anchors);
+    anchor = box->FindTargetAnchor(*style.AnchorDefault());
   } else {
     DCHECK(value->IsImplicit() ||
            (value->IsDefault() && !style.AnchorDefault()));
-    Element* element = DynamicTo<Element>(layout_object->GetNode());
-    Element* anchor = element ? element->ImplicitAnchorElement() : nullptr;
-    LayoutObject* anchor_layout_object =
-        anchor ? anchor->GetLayoutObject() : nullptr;
-    if (anchor_layout_object) {
-      fragment =
-          anchor_query->Fragment(anchor_layout_object, can_use_invalid_anchors);
-    }
+    anchor = box->AcceptableImplicitAnchor();
   }
 
-  // |can_use_invalid_anchors| allows NGPhysicalAnchorQuery to return elements
-  // that are rendered after, and hence, can't be used as anchors for
-  // |layout_object|.
-  if (can_use_invalid_anchors && fragment &&
-      layout_object->IsBeforeInPreOrder(*fragment->GetLayoutObject())) {
-    return nullptr;
-  }
-
-  return fragment ? fragment->GetLayoutObject() : nullptr;
+  return anchor;
 }
 
 // Returns the PaintLayer of the scroll container of |anchor|.
@@ -204,6 +181,11 @@ void AnchorScrollData::UpdateSnapshot() {
 }
 
 bool AnchorScrollData::ValidateSnapshot() {
+  if (is_snapshot_validated_) {
+    return true;
+  }
+  is_snapshot_validated_ = true;
+
   // If this AnchorScrollData is detached in the previous style recalc, we no
   // longer need to validate it.
   if (!IsActive())

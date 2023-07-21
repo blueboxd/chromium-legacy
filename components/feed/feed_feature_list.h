@@ -24,7 +24,6 @@ BASE_DECLARE_FEATURE(kInterestFeedV2Hearts);
 BASE_DECLARE_FEATURE(kInterestFeedV2Scrolling);
 
 extern const base::FeatureParam<std::string> kDisableTriggerTypes;
-extern const base::FeatureParam<int> kSuppressRefreshDurationMinutes;
 extern const base::FeatureParam<int> kTimeoutDurationSeconds;
 extern const base::FeatureParam<bool> kThrottleBackgroundFetches;
 extern const base::FeatureParam<bool> kOnlySetLastRefreshAttemptOnSuccess;
@@ -148,6 +147,12 @@ BASE_DECLARE_FEATURE(kCormorant);
 
 // Feature that enables reporting feed user interaction reliability.
 BASE_DECLARE_FEATURE(kFeedUserInteractionReliabilityReport);
+
+// Feature that enables signed-out view demotion.
+BASE_DECLARE_FEATURE(kFeedSignedOutViewDemotion);
+
+// Feature that enables dynamic colors in the feed.
+BASE_DECLARE_FEATURE(kFeedDynamicColors);
 
 }  // namespace feed
 

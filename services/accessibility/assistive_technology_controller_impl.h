@@ -15,6 +15,7 @@
 
 namespace ax {
 class V8Manager;
+class InterfaceBinder;
 
 // Implementation of the assistive technology controller interface
 // for Chrome OS. This tracks which features are enabled and will
@@ -38,11 +39,12 @@ class AssistiveTechnologyControllerImpl
           accessibility_client_remote);
 
   // Called by AutomationInternalBindings owned by a V8 instance
-  // to request binding of Automation and AutomationClient in the OS.
+  // to request binding of mojo interfaces in the OS.
   // mojom::AccessibilityServiceClient:
   void BindAutomation(mojo::PendingRemote<mojom::Automation> automation,
                       mojo::PendingReceiver<mojom::AutomationClient>
                           automation_client) override;
+  void BindTts(mojo::PendingReceiver<mojom::Tts> tts_receiver) override;
 
   // mojom::AssistiveTechnologyController:
   void EnableAssistiveTechnology(
@@ -55,6 +57,8 @@ class AssistiveTechnologyControllerImpl
   void RunScriptForTest(mojom::AssistiveTechnologyType type,
                         const std::string& script,
                         base::OnceClosure on_complete);
+  void SetTestInterface(mojom::AssistiveTechnologyType type,
+                        std::unique_ptr<InterfaceBinder> test_interface);
 
  private:
   scoped_refptr<V8Manager> GetOrMakeV8Manager(

@@ -62,10 +62,11 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   // system to that of the client view.
   void ConvertPointToClientView(EditingHandleView* source, gfx::Point* point);
 
-  // Convenience method to update a handle's selection bound and visibility.
-  void UpdateHandle(EditingHandleView* handle,
-                    const gfx::SelectionBound& bound_in_screen,
-                    bool should_show_handle);
+  // Convenience method to set a handle's selection bound and hide it if it is
+  // located out of client view.
+  void SetHandleBound(EditingHandleView* handle,
+                      const gfx::SelectionBound& bound,
+                      const gfx::SelectionBound& bound_in_screen);
 
   // Checks if handle should be shown for selection bound.
   // |bound| should be the clipped version of the selection bound.
@@ -100,6 +101,12 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   // Convenience method to calculate anchor rect for quick menu, in screen
   // coordinates.
   gfx::Rect GetQuickMenuAnchorRect() const;
+
+  // Shows the touch selection magnifier (if there is one) at the focus bound.
+  void ShowMagnifier(const gfx::SelectionBound& focus_bound_in_screen);
+
+  // Hides the touch selection magnifier.
+  void HideMagnifier();
 
   // Convenience methods for testing.
   gfx::NativeView GetCursorHandleNativeView();
@@ -151,6 +158,11 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   // Selection bounds, clipped to client view's boundaries.
   gfx::SelectionBound selection_bound_1_clipped_;
   gfx::SelectionBound selection_bound_2_clipped_;
+
+  // Used to track whether the client is selection dragging. If the client's
+  // selection dragging state changes, then the handles need to be updated on
+  // the next selection change notification.
+  bool is_client_selection_dragging_ = false;
 };
 
 }  // namespace views

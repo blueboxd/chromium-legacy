@@ -1010,6 +1010,11 @@ const char kUserCameraAllowed[] = "ash.user.camera_allowed";
 // A boolean pref indicating whether the microphone is allowed to be used.
 const char kUserMicrophoneAllowed[] = "ash.user.microphone_allowed";
 
+// A boolean pref indicating whether a user has enabled the speak-on-mute
+// detection.
+const char kUserSpeakOnMuteDetectionEnabled[] =
+    "ash.user.speak_on_mute_detection_enabled";
+
 // A boolean pref indicating whether the geolocation is allowed for the user.
 const char kUserGeolocationAllowed[] = "ash.user.geolocation_allowed";
 // An enum pref indicating whether the geolocation is allowed outside user
@@ -1243,6 +1248,10 @@ const char kFastPairEnabled[] = "ash.fast_pair.enabled";
 // pair entry point.
 const char kUserPairedWithFastPair[] = "ash.user.paired_with_fast_pair";
 
+// A list pref that contains predefined automation configured by policy
+// administrators.
+const char kAppLaunchAutomation[] = "ash.app_launch_automation";
+
 // A boolean pref that controls whether the user is allowed to use the Desk
 // Templates feature - including creating Desks templates and using predefined
 // Desks templates.
@@ -1360,6 +1369,10 @@ const char kAutozoomState[] = "ash.camera.autozoom_state";
 // nudge was shown.
 const char kAutozoomNudges[] = "ash.camera.autozoom_nudges";
 
+// Boolean pref to record if the DevTools should be opened with the camera app
+// by default.
+const char kCameraAppDevToolsOpen[] = "ash.camera.cca_dev_tools_open";
+
 // An boolean pref that specifies the recovery service activation for user.
 // When the pref is set to `true`, the user data recovery is activated. When the
 // pref is set to `false`, the user data recovery is not activated. The default
@@ -1462,17 +1475,15 @@ const char kOwnerPrimaryPointingStickButtonRight[] =
 // Copy of owner tap-to-click option to use on login screen.
 const char kOwnerTapToClickEnabled[] = "owner.touchpad.enable_tap_to_click";
 
-// A boolean pref set to true if a user simulates a right click using their
-// keyboard and touchpad with either Alt+Click or Search+Click.
-// The value of this pref will be used to set the default behavior for
-// remapping to right click once the setting is added/configurable in device
-// settings.
-// Default setting:
-//  Boolean Pref is false: Off
-//  Boolean Pref is true: Use state of "kUseSearchForRightClick" flag to
-//  determine if Alt+Click or Search+Click should be the default.
-const char kEventRemappedToRightClick[] =
-    "ash.settings.event_remapped_to_right_click";
+// An integer pref that is incremented anytime a user simulates a right click
+// using their keyboard and touchpad with Alt+Click.
+const char kAltEventRemappedToRightClick[] =
+    "ash.settings.alt_event_remapped_to_right_click";
+
+// An integer pref that is incremented anytime a user simulates a right click
+// using their keyboard and touchpad with Search+Click.
+const char kSearchEventRemappedToRightClick[] =
+    "ash.settings.search_event_remapped_to_right_click";
 
 // An integer pref for tracking Alt and Search based key event rewrites for
 // the Delete "six pack" key. The value of this pref will be used to set the

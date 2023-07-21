@@ -26,7 +26,6 @@ extern const char kAggressiveCacheDiscardThreshold[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAllowFailedPolicyFetchForTest[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAllowOsInstall[];
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAllowRAInDevMode[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAlmanacApiUrl[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAlwaysEnableHdcp[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAppAutoLaunched[];
@@ -299,6 +298,7 @@ extern const char kScheduledRebootGracePeriodInSecondsForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShelfHotseat[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShowLoginDevOverlay[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShowOobeDevOverlay[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShowOobeQuickStartDebugger[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShowTaps[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSkipForceOnlineSignInForTesting[];

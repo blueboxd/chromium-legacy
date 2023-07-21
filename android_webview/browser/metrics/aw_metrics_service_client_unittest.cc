@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "base/version.h"
 #include "components/embedder_support/android/metrics/android_metrics_service_client.h"
+#include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/metrics/metrics_switches.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/browser_task_environment.h"
@@ -63,6 +64,16 @@ class AwMetricsServiceClientTest : public testing::Test {
   AwMetricsServiceClientTest(AwMetricsServiceClientTest&&) = delete;
   AwMetricsServiceClientTest& operator=(AwMetricsServiceClientTest&&) = delete;
 
+ public:
+  void SetUp() override {
+    // Since the server-side allowlist is now enabled by default,
+    // the simplest thing to do in order to preserve the same testing logic
+    // is to disable it.
+    base::test::ScopedFeatureList scoped_list;
+    scoped_list.InitAndDisableFeature(
+        android_webview::features::kWebViewAppsPackageNamesServerSideAllowlist);
+  }
+
  protected:
   AwMetricsServiceClientTest()
       : task_runner_(new base::TestSimpleTaskRunner),
@@ -71,6 +82,9 @@ class AwMetricsServiceClientTest : public testing::Test {
             std::make_unique<AwMetricsServiceClientTestDelegate>())) {
     base::SetRecordActionTaskRunner(task_runner_);
     AwMetricsServiceTestClient::RegisterMetricsPrefs(prefs_->registry());
+    // Needed because RegisterMetricsProvidersAndInitState() checks for this.
+    metrics::SubprocessMetricsProvider::CreateInstance();
+
     client_->Initialize(prefs_.get());
   }
 
@@ -98,6 +112,9 @@ class AwMetricsServiceClientTest : public testing::Test {
 
 TEST_F(AwMetricsServiceClientTest, TestShouldRecordPackageName_CacheNotSet) {
   base::HistogramTester histogram_tester;
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndDisableFeature(
+      android_webview::features::kWebViewAppsPackageNamesServerSideAllowlist);
 
   AwMetricsServiceClient* client = GetClient();
   EXPECT_FALSE(client->ShouldRecordPackageName());
@@ -116,6 +133,9 @@ TEST_F(AwMetricsServiceClientTest, TestShouldRecordPackageName_CacheNotSet) {
 
 TEST_F(AwMetricsServiceClientTest, TestShouldRecordPackageName_WithCache) {
   base::HistogramTester histogram_tester;
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndDisableFeature(
+      android_webview::features::kWebViewAppsPackageNamesServerSideAllowlist);
 
   AwMetricsServiceClient* client = GetClient();
   TestingPrefServiceSimple* prefs = GetPrefs();
@@ -150,6 +170,9 @@ TEST_F(AwMetricsServiceClientTest, TestShouldRecordPackageName_WithCache) {
 TEST_F(AwMetricsServiceClientTest,
        TestShouldRecordPackageName_TestShouldNotRecordPackageName) {
   base::HistogramTester histogram_tester;
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndDisableFeature(
+      android_webview::features::kWebViewAppsPackageNamesServerSideAllowlist);
 
   AwMetricsServiceClient* client = GetClient();
   AppPackageNameLoggingRule expected_record(
@@ -176,6 +199,9 @@ TEST_F(AwMetricsServiceClientTest,
 TEST_F(AwMetricsServiceClientTest,
        TestShouldRecordPackageName_TestShouldRecordPackageName) {
   base::HistogramTester histogram_tester;
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndDisableFeature(
+      android_webview::features::kWebViewAppsPackageNamesServerSideAllowlist);
 
   AwMetricsServiceClient* client = GetClient();
 
@@ -207,10 +233,6 @@ TEST_F(AwMetricsServiceClientTest,
 TEST_F(
     AwMetricsServiceClientTest,
     TestServerSideAllowlist_TestShouldRecordPackageNameWithServerSideAllowlistEnabled) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(
-      android_webview::features::kWebViewAppsPackageNamesServerSideAllowlist);
-
   AwMetricsServiceClient* client = GetClient();
   EXPECT_TRUE(client->ShouldRecordPackageName());
   EXPECT_FALSE(client->GetCachedAppPackageNameLoggingRule().has_value());
@@ -219,6 +241,9 @@ TEST_F(
 TEST_F(AwMetricsServiceClientTest,
        TestShouldRecordPackageName_TestFailureAfterValidResult) {
   base::HistogramTester histogram_tester;
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndDisableFeature(
+      android_webview::features::kWebViewAppsPackageNamesServerSideAllowlist);
 
   AwMetricsServiceClient* client = GetClient();
 
@@ -251,6 +276,9 @@ TEST_F(AwMetricsServiceClientTest,
 
 TEST_F(AwMetricsServiceClientTest, TestShouldRecordPackageName_FailedResult) {
   base::HistogramTester histogram_tester;
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndDisableFeature(
+      android_webview::features::kWebViewAppsPackageNamesServerSideAllowlist);
 
   AwMetricsServiceClient* client = GetClient();
   client->SetAppPackageNameLoggingRule(
@@ -271,6 +299,9 @@ TEST_F(AwMetricsServiceClientTest, TestShouldRecordPackageName_FailedResult) {
 
 TEST_F(AwMetricsServiceClientTest, TestShouldRecordPackageName_SameAsCache) {
   base::HistogramTester histogram_tester;
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndDisableFeature(
+      android_webview::features::kWebViewAppsPackageNamesServerSideAllowlist);
 
   AwMetricsServiceClient* client = GetClient();
   TestingPrefServiceSimple* prefs = GetPrefs();

@@ -137,7 +137,13 @@ public abstract class CronetEngine {
          * <p>{@hide}
          */
         public Builder(ICronetEngineBuilder builderDelegate) {
-            mBuilderDelegate = builderDelegate;
+            if (builderDelegate instanceof ExperimentalOptionsTranslatingCronetEngineBuilder) {
+                // Already wrapped at the top level, no need to do it again
+                mBuilderDelegate = builderDelegate;
+            } else {
+                mBuilderDelegate =
+                        new ExperimentalOptionsTranslatingCronetEngineBuilder(builderDelegate);
+            }
         }
 
         /**
@@ -713,16 +719,33 @@ public abstract class CronetEngine {
             String url, UrlRequest.Callback callback, Executor executor);
 
     /**
-     * Returns the number of in-flight requests.
+     * Creates a builder for {@link BidirectionalStream} objects. All callbacks for generated {@code
+     * BidirectionalStream} objects will be invoked on {@code executor}. {@code executor} must not
+     * run tasks on the current thread, otherwise the networking operations may block and exceptions
+     * may be thrown at shutdown time.
+     *
+     * @param url URL for the generated streams.
+     * @param callback the {@link BidirectionalStream.Callback} object that gets invoked upon
+     * different events occurring.
+     * @param executor the {@link Executor} on which {@code callback} methods will be invoked.
+     * @return the created builder.
+     *
+     * {@hide}
+     */
+    public BidirectionalStream.Builder newBidirectionalStreamBuilder(
+            String url, BidirectionalStream.Callback callback, Executor executor) {
+        throw new UnsupportedOperationException("Not implemented.");
+    }
+
+    /**
+     * Returns the number of active requests.
      * <p>
-     * A request is in-flight if its start() method has been called but it hasn't reached a final
-     * state yet. A request reaches the final state when one of the following callbacks has been
-     * called:
-     * <ul>
-     *    <li>onSucceeded</li>
-     *    <li>onCanceled</li>
-     *    <li>onFailed</li>
-     * </ul>
+     * A request becomes "active" in UrlRequest.start(), assuming that method
+     * does not throw an exception. It becomes inactive when all callbacks have
+     * returned and no additional callbacks can be triggered in the future. In
+     * practice, that means the request is inactive once
+     * onSucceeded/onCanceled/onFailed has returned and all request finished
+     * listeners have returned.
      *
      * <a href="https://developer.android.com/guide/topics/connectivity/cronet/lifecycle">Cronet
      *         requests's lifecycle</a> for more information.

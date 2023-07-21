@@ -158,6 +158,14 @@ public class CustomTabActivity extends BaseCustomTabActivity {
     }
 
     @Override
+    protected boolean isPageInsightsHubEnabled() {
+        // TODO(b/282739536): Add supplemental Web and App activity(sWAA) user setting.
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_PAGE_INSIGHTS_HUB)
+                && CustomTabsConnection.getInstance().shouldEnablePageInsightsForIntent(
+                        mIntentDataProvider);
+    }
+
+    @Override
     public void finishNativeInitialization() {
         if (!mIntentDataProvider.isInfoPage()) {
             FirstRunSignInProcessor.openSyncSettingsIfScheduled(this);
@@ -249,6 +257,9 @@ public class CustomTabActivity extends BaseCustomTabActivity {
                     mRootUiCoordinator.getMerchantTrustSignalsCoordinatorSupplier()::get,
                     mRootUiCoordinator.getEphemeralTabCoordinatorSupplier())
                     .show(tab, ChromePageInfoHighlight.noHighlight());
+            return true;
+        } else if (id == R.id.page_insights_id) {
+            // TODO(b/282739536): Open PageInsights Hub.
             return true;
         }
         return super.onMenuOrKeyboardAction(id, fromMenu);

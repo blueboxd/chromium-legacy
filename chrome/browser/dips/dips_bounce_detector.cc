@@ -26,10 +26,14 @@
 #include "chrome/browser/dips/dips_service.h"
 #include "chrome/browser/dips/dips_storage.h"
 #include "chrome/browser/dips/dips_utils.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_handle_user_data.h"
+#include "content/public/browser/page.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 #include "url/gurl.h"
@@ -78,7 +82,9 @@ void DIPSWebContentsObserver::MaybeCreateForWebContents(
 DIPSWebContentsObserver::DIPSWebContentsObserver(
     content::WebContents* web_contents,
     DIPSService* dips_service)
-    : content::WebContentsObserver(web_contents),
+    : content_settings::PageSpecificContentSettings::SiteDataObserver(
+          web_contents),
+      content::WebContentsObserver(web_contents),
       content::WebContentsUserData<DIPSWebContentsObserver>(*web_contents),
       dips_service_(dips_service),
       detector_(this,
@@ -86,41 +92,9 @@ DIPSWebContentsObserver::DIPSWebContentsObserver(
                 base::DefaultClock::GetInstance()) {
   issue_reporting_callback_ = base::BindRepeating(
       &DIPSWebContentsObserver::EmitDIPSIssue, weak_factory_.GetWeakPtr());
-  dips_site_data_observer_ =
-      std::make_unique<DIPSSiteDataObserver>(web_contents, this);
 }
 
 DIPSWebContentsObserver::~DIPSWebContentsObserver() = default;
-
-DIPSWebContentsObserver::DIPSSiteDataObserver::DIPSSiteDataObserver(
-    content::WebContents* web_contents,
-    DIPSWebContentsObserver* dips_web_contents_observer)
-    : content_settings::PageSpecificContentSettings::SiteDataObserver(
-          web_contents),
-      dips_web_contents_observer_(dips_web_contents_observer) {}
-
-void DIPSWebContentsObserver::DIPSSiteDataObserver::OnSiteDataAccessed(
-    const content_settings::AccessDetails& access_details) {
-  // NOTE: The current implementation is only acting on all site data types
-  // collapsed under `content_settings::SiteDataType::kStorage` with the
-  // exception of WebLocks (not monitored by the
-  // `content_settings::PageSpecificContentSettings`) as it's not persistent.
-  if (access_details.site_data_type !=
-      content_settings::SiteDataType::kStorage) {
-    return;
-  }
-
-  DCHECK(access_details.render_frame_host);
-
-  // TODO(crbug.com/1434764): handle same-site iframes.
-  if (!access_details.render_frame_host->IsInPrimaryMainFrame() ||
-      access_details.blocked_by_policy) {
-    return;
-  }
-
-  dips_web_contents_observer_->detector_.OnClientSiteDataAccessed(
-      access_details.url, ToCookieOperation(access_details.access_type));
-}
 
 const base::TimeDelta DIPSBounceDetector::kTimestampUpdateInterval =
     base::Minutes(1);
@@ -134,13 +108,14 @@ DIPSBounceDetector::DIPSBounceDetector(DIPSBounceDetectorDelegate* delegate,
       // It's safe to use Unretained because the callback is owned by the
       // DIPSRedirectContext which is owned by `this`, and the delegate must
       // outlive `this`.
-      redirect_context_(
+      committed_redirect_context_(
           base::BindRepeating(&DIPSBounceDetectorDelegate::HandleRedirectChain,
                               base::Unretained(delegate)),
           base::BindRepeating(
               &DIPSBounceDetectorDelegate::ReportRedirectorsWithoutInteraction,
               base::Unretained(delegate)),
-          /*initial_url=*/GURL::EmptyGURL()),
+          /*initial_url=*/GURL::EmptyGURL(),
+          /*redirect_prefix_count=*/0u),
       client_bounce_detection_timer_(
           FROM_HERE,
           dips::kClientBounceDetectionTimeout.Get(),
@@ -162,10 +137,12 @@ ukm::SourceId DIPSNavigationHandle::GetRedirectSourceId(int index) const {
 
 DIPSRedirectContext::DIPSRedirectContext(DIPSRedirectChainHandler handler,
                                          DIPSIssueHandler issue_handler,
-                                         const GURL& initial_url)
+                                         const GURL& initial_url,
+                                         size_t redirect_prefix_count)
     : handler_(handler),
       issue_handler_(issue_handler),
-      initial_url_(initial_url) {}
+      initial_url_(initial_url),
+      redirect_prefix_count_(redirect_prefix_count) {}
 
 DIPSRedirectContext::~DIPSRedirectContext() = default;
 
@@ -178,7 +155,9 @@ void DIPSRedirectContext::AppendClientRedirect(
   if (client_redirect->access_type > SiteDataAccessType::kRead) {
     redirectors_.insert(GetSiteForDIPS(client_redirect->url));
   }
+  client_redirect->chain_index = GetRedirectChainLength();
   redirects_.push_back(std::move(client_redirect));
+  TrimRedirectsFromFront();
 }
 
 void DIPSRedirectContext::AppendServerRedirects(
@@ -191,8 +170,21 @@ void DIPSRedirectContext::AppendServerRedirects(
     if (redirect->access_type > SiteDataAccessType::kRead) {
       redirectors_.insert(GetSiteForDIPS(redirect->url));
     }
+    redirect->chain_index = GetRedirectChainLength();
     redirects_.push_back(std::move(redirect));
   }
+  TrimRedirectsFromFront();
+}
+
+void DIPSRedirectContext::TrimRedirectsFromFront() {
+  size_t trim_count = base::ClampSub(redirects_.size(), kDIPSRedirectChainMax);
+  if (trim_count == 0) {
+    return;
+  }
+
+  TrimAndHandleRedirects(trim_count);
+
+  update_offset_ = base::ClampSub(update_offset_, trim_count);
 }
 
 void DIPSRedirectContext::ReportIssue(const GURL& final_url) {
@@ -224,7 +216,8 @@ void DIPSRedirectContext::HandleUncommitted(
             // `DIPSRedirectContext`, whilst leaving *this*
             // `DIPSRedirectContext`'s in-progress chain unchanged.
             DIPSRedirectContext temp_context(handler_, issue_handler_,
-                                             initial_url_);
+                                             initial_url_,
+                                             GetRedirectChainLength());
             temp_context.AppendClientRedirect(std::move(client_redirect));
             temp_context.AppendServerRedirects(std::move(server_redirects));
             temp_context.ReportIssue(final_url);
@@ -236,7 +229,8 @@ void DIPSRedirectContext::HandleUncommitted(
             // process it immediately (the in-progress chain in *this*
             // `DIPSRedirectContext` is irrelevant).
             DIPSRedirectContext temp_context(handler_, issue_handler_,
-                                             previous_nav_last_committed_url);
+                                             previous_nav_last_committed_url,
+                                             /*redirect_prefix_count=*/0);
             temp_context.AppendServerRedirects(std::move(server_redirects));
             temp_context.ReportIssue(final_url);
             temp_context.EndChain(std::move(final_url));
@@ -272,15 +266,32 @@ void DIPSRedirectContext::AppendCommitted(
   ReportIssue(final_url);
 }
 
+void DIPSRedirectContext::TrimAndHandleRedirects(size_t trim_count) {
+  DCHECK_GE(redirects_.size(), trim_count);
+
+  // Use an empty final_URL. This processes the redirect as different from the
+  // final URL, which allows recording in the DIPS database.
+  auto chain = std::make_unique<DIPSRedirectChainInfo>(
+      initial_url_,
+      /*final_url=*/GURL(), GetRedirectChainLength(),
+      /*is_partial_chain=*/true);
+
+  std::vector<DIPSRedirectInfoPtr> redirect_subchain;
+  for (size_t ind = 0; ind < trim_count; ind++) {
+    redirect_subchain.push_back(std::move(redirects_.at(ind)));
+  }
+
+  redirects_.erase(redirects_.begin(), redirects_.begin() + trim_count);
+  redirect_prefix_count_ += trim_count;
+
+  handler_.Run(std::move(redirect_subchain), std::move(chain));
+}
+
 void DIPSRedirectContext::EndChain(GURL final_url) {
   if (!initial_url_.is_empty()) {
-    // Uncommitted chains may omit earlier (committed) redirects in the chain,
-    // so |redirects_.size()| may not tell us the correct chain length. Instead,
-    // use the index of the last item in the chain (since it was generated based
-    // on the committed chain length).
-    int length = redirects_.empty() ? 0 : redirects_.back()->index + 1;
-    auto chain = std::make_unique<DIPSRedirectChainInfo>(initial_url_,
-                                                         final_url, length);
+    auto chain = std::make_unique<DIPSRedirectChainInfo>(
+        initial_url_, final_url, GetRedirectChainLength(),
+        /*is_partial_chain=*/false);
     handler_.Run(std::move(redirects_), std::move(chain));
   }
 
@@ -378,7 +389,25 @@ ukm::SourceId DIPSWebContentsObserver::GetPageUkmSourceId() const {
 void DIPSWebContentsObserver::HandleRedirectChain(
     std::vector<DIPSRedirectInfoPtr> redirects,
     DIPSRedirectChainInfoPtr chain) {
-  dips_service_->HandleRedirectChain(std::move(redirects), std::move(chain));
+  dips_service_->HandleRedirectChain(
+      std::move(redirects), std::move(chain),
+      base::BindRepeating(
+          &DIPSWebContentsObserver::IncrementPageSpecificBounceCount,
+          weak_factory_.GetWeakPtr()));
+}
+
+void DIPSWebContentsObserver::IncrementPageSpecificBounceCount(
+    const GURL& final_url) {
+  // Do nothing if the current URL doesn't match the final URL of the chain.
+  // This means that the user has navigated away from the bounce destination, so
+  // we don't want to update settings for the wrong site.
+  if (WebContentsObserver::web_contents()->GetURL() != final_url) {
+    return;
+  }
+
+  auto* pscs = content_settings::PageSpecificContentSettings::GetForPage(
+      WebContentsObserver::web_contents()->GetPrimaryPage());
+  pscs->IncrementStatefulBounceCount();
 }
 
 // A thin wrapper around NavigationHandle to implement DIPSNavigationHandle.
@@ -449,15 +478,14 @@ void DIPSBounceDetector::DidStartNavigation(
     UmaHistogramTimeToBounce(client_bounce_delay);
   }
 
-  // We cannot append this client-redirect to |redirect_context_| immediately,
-  // because we don't know if the navigation will commit. We must wait until
-  // DidFinishNavigation() is triggered.
+  // We cannot append this client-redirect to |committed_redirect_context_|
+  // immediately, because we don't know if the navigation will commit. We must
+  // wait until DidFinishNavigation() is triggered.
   server_bounce_detection_state->navigation_start =
       std::make_unique<DIPSRedirectInfo>(
           /*url=*/delegate_->GetLastCommittedURL(),
           /*redirect_type=*/DIPSRedirectType::kClient,
           /*access_type=*/client_detection_state_->site_data_access_type,
-          /*index=*/redirect_context_.size(),
           /*source_id=*/
           delegate_->GetPageUkmSourceId(),
           /*time=*/clock_->Now(),
@@ -465,6 +493,31 @@ void DIPSBounceDetector::DidStartNavigation(
           /*has_sticky_activation=*/
           client_detection_state_->last_activation_time.has_value());
 }
+
+void DIPSWebContentsObserver::OnSiteDataAccessed(
+    const content_settings::AccessDetails& access_details) {
+  // NOTE: The current implementation is only acting on all site data types
+  // collapsed under `content_settings::SiteDataType::kStorage` with the
+  // exception of WebLocks (not monitored by the
+  // `content_settings::PageSpecificContentSettings`) as it's not persistent.
+  if (access_details.site_data_type !=
+      content_settings::SiteDataType::kStorage) {
+    return;
+  }
+
+  DCHECK(access_details.render_frame_host);
+
+  // TODO(crbug.com/1434764): handle same-site iframes.
+  if (!access_details.render_frame_host->IsInPrimaryMainFrame() ||
+      access_details.blocked_by_policy) {
+    return;
+  }
+
+  detector_.OnClientSiteDataAccessed(
+      access_details.url, ToCookieOperation(access_details.access_type));
+}
+
+void DIPSWebContentsObserver::OnStatefulBounceDetected() {}
 
 void DIPSBounceDetector::OnClientSiteDataAccessed(const GURL& url,
                                                   CookieOperation op) {
@@ -493,10 +546,8 @@ void DIPSBounceDetector::OnClientSiteDataAccessed(const GURL& url,
 void DIPSWebContentsObserver::OnCookiesAccessed(
     content::RenderFrameHost* render_frame_host,
     const content::CookieAccessDetails& details) {
-  // TODO(crbug.com/1434764): handle same-site iframes.
-  if (!render_frame_host->IsInPrimaryMainFrame() || details.blocked_by_policy ||
-      !net::SiteForCookies::FromUrl(details.first_party_url)
-           .IsFirstParty(details.url)) {
+  if (!IsInPrimaryPage(render_frame_host) || details.blocked_by_policy ||
+      !IsSameSiteForDIPS(details.first_party_url, details.url)) {
     return;
   }
 
@@ -513,7 +564,7 @@ void DIPSBounceDetector::OnClientCookiesAccessed(const GURL& url,
   //
   // TODO(rtarpine): Is it possible for cookie accesses to be reported late for
   // uncommitted navigations?
-  if (redirect_context_.AddLateCookieAccess(url, op)) {
+  if (committed_redirect_context_.AddLateCookieAccess(url, op)) {
     if (op == CookieOperation::kChange) {
       delegate_->RecordEvent(DIPSRecordedEvent::kStorage, url, now);
     }
@@ -526,9 +577,20 @@ void DIPSBounceDetector::OnClientCookiesAccessed(const GURL& url,
 void DIPSWebContentsObserver::OnCookiesAccessed(
     NavigationHandle* navigation_handle,
     const content::CookieAccessDetails& details) {
-  if (!navigation_handle->IsInPrimaryMainFrame() || details.blocked_by_policy ||
-      !net::SiteForCookies::FromUrl(details.first_party_url)
-           .IsFirstParty(details.url)) {
+  // Discard all notifications that are:
+  // - From other page types like FencedFrames, and Prerendered.
+  // - Blocked by policies.
+  // - That are not same site (wrt GetSiteForDIPS()) with the first party URL.
+  // TODO(crbug.com/1445739): Treat partitioned 3P cookies as 1P cookies.
+  if (!IsInPrimaryPage(navigation_handle) || details.blocked_by_policy ||
+      !IsSameSiteForDIPS(details.first_party_url, details.url)) {
+    return;
+  }
+
+  // All access within the primary page iframes are attributed to the URL of the
+  // main frame (ie the first party URL).
+  if (IsInPrimaryPageIFrame(navigation_handle)) {
+    detector_.OnClientSiteDataAccessed(details.url, details.type);
     return;
   }
 
@@ -594,21 +656,16 @@ void DIPSBounceDetector::DidFinishNavigation(
         /*url=*/navigation_handle->GetRedirectChain()[i],
         /*redirect_type=*/DIPSRedirectType::kServer,
         /*access_type=*/access_types[i],
-        /*index=*/
-        absl::holds_alternative<DIPSRedirectInfoPtr>(
-            server_state->navigation_start)
-            ? redirect_context_.size() + i + 1
-            : i,
         /*source_id=*/navigation_handle->GetRedirectSourceId(i),
         /*time=*/clock_->Now()));
   }
 
   if (navigation_handle->HasCommitted()) {
-    redirect_context_.AppendCommitted(std::move(server_state->navigation_start),
-                                      std::move(redirects),
-                                      navigation_handle->GetURL());
+    committed_redirect_context_.AppendCommitted(
+        std::move(server_state->navigation_start), std::move(redirects),
+        navigation_handle->GetURL());
   } else {
-    redirect_context_.HandleUncommitted(
+    committed_redirect_context_.HandleUncommitted(
         std::move(server_state->navigation_start), std::move(redirects),
         navigation_handle->GetURL());
   }
@@ -663,16 +720,21 @@ bool DIPSBounceDetector::ShouldUpdateTimestamp(
 }
 
 void DIPSWebContentsObserver::WebContentsDestroyed() {
-  dips_site_data_observer_.reset();
   detector_.BeforeDestruction();
 }
 
 void DIPSBounceDetector::BeforeDestruction() {
-  redirect_context_.EndChain(delegate_->GetLastCommittedURL());
+  committed_redirect_context_.EndChain(delegate_->GetLastCommittedURL());
 }
 
 void DIPSBounceDetector::OnClientBounceDetectionTimeout() {
-  redirect_context_.EndChain(delegate_->GetLastCommittedURL());
+  committed_redirect_context_.EndChain(delegate_->GetLastCommittedURL());
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(DIPSWebContentsObserver);
+
+ukm::SourceId GetInitialRedirectSourceId(
+    content::NavigationHandle* navigation_handle) {
+  DIPSNavigationHandleImpl handle(navigation_handle);
+  return handle.GetRedirectSourceId(0);
+}

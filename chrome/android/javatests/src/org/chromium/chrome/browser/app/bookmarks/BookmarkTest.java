@@ -21,6 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.chromium.components.browser_ui.widget.highlight.ViewHighlighterTestUtils.checkHighlightOff;
 import static org.chromium.components.browser_ui.widget.highlight.ViewHighlighterTestUtils.checkHighlightPulse;
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
+import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlockingNoException;
 
 import android.text.TextUtils;
 import android.view.View;
@@ -52,6 +53,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterizedRunner;
@@ -81,6 +83,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkUiState.BookmarkUiMode;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.bookmarks.PowerBookmarkShoppingItemRow;
 import org.chromium.chrome.browser.bookmarks.TestingDelegate;
+import org.chromium.chrome.browser.commerce.ShoppingFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
@@ -101,10 +104,11 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
+import org.chromium.components.browser_ui.widget.NumberRollView;
 import org.chromium.components.browser_ui.widget.RecyclerViewTestUtils;
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableRecyclerViewAdapter;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuButton;
-import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar.NavigationButton;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar.ViewType;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.power_bookmarks.PowerBookmarkMeta;
@@ -113,6 +117,7 @@ import org.chromium.components.profile_metrics.BrowserProfileType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.accessibility.AccessibilityState;
 import org.chromium.ui.test.util.NightModeTestUtils;
 import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.url.GURL;
@@ -190,6 +195,7 @@ public class BookmarkTest {
 
     @Before
     public void setUp() {
+        ShoppingFeatures.setShoppingListEligibleForTesting(false);
         mActivityTestRule.startMainActivityOnBlankPage();
         runOnUiThreadBlocking(() -> {
             mBookmarkModel = mActivityTestRule.getActivity().getBookmarkModelForTesting();
@@ -349,8 +355,7 @@ public class BookmarkTest {
 
         // Check that we are in the mobile bookmarks folder.
         assertEquals("Mobile bookmarks", mToolbar.getTitle());
-        assertEquals(SelectableListToolbar.NavigationButton.BACK,
-                mToolbar.getNavigationButtonForTests());
+        assertEquals(NavigationButton.BACK, mToolbar.getNavigationButtonForTests());
         assertFalse(mToolbar.getMenu().findItem(R.id.edit_menu_id).isVisible());
 
         // Open the new test folder.
@@ -358,8 +363,7 @@ public class BookmarkTest {
 
         // Check that we are in the editable test folder.
         assertEquals(TEST_FOLDER_TITLE, mToolbar.getTitle());
-        assertEquals(SelectableListToolbar.NavigationButton.BACK,
-                mToolbar.getNavigationButtonForTests());
+        assertEquals(NavigationButton.BACK, mToolbar.getNavigationButtonForTests());
         assertTrue(mToolbar.getMenu().findItem(R.id.edit_menu_id).isVisible());
 
         runOnUiThreadBlocking(
@@ -373,8 +377,7 @@ public class BookmarkTest {
 
         // Check that we are back in the mobile folder
         assertEquals("Mobile bookmarks", mToolbar.getTitle());
-        assertEquals(SelectableListToolbar.NavigationButton.BACK,
-                mToolbar.getNavigationButtonForTests());
+        assertEquals(NavigationButton.BACK, mToolbar.getNavigationButtonForTests());
         assertFalse(mToolbar.getMenu().findItem(R.id.edit_menu_id).isVisible());
 
         // Call BookmarkToolbar#onClick() to activate the navigation button.
@@ -382,8 +385,7 @@ public class BookmarkTest {
 
         // Check that we are in the root folder.
         assertEquals("Bookmarks", mToolbar.getTitle());
-        assertEquals(SelectableListToolbar.NavigationButton.NONE,
-                mToolbar.getNavigationButtonForTests());
+        assertEquals(NavigationButton.NONE, mToolbar.getNavigationButtonForTests());
         assertFalse(mToolbar.getMenu().findItem(R.id.edit_menu_id).isVisible());
     }
 
@@ -473,7 +475,7 @@ public class BookmarkTest {
         BookmarkRow itemView =
                 (BookmarkRow) mItemsContainer.findViewHolderForLayoutPosition(0).itemView;
 
-        toggleSelectionAndEndAnimation(getIdByPosition(0), itemView);
+        toggleSelectionThroughMoreMenu(0);
 
         // Make sure the Item "test" is selected.
         CriteriaHelper.pollUiThread(
@@ -527,10 +529,7 @@ public class BookmarkTest {
         assertEquals(search_view.getVisibility(), View.VISIBLE);
         assertEquals(1, mAdapter.getItemCount());
 
-        BookmarkRow itemView = (BookmarkRow) mBookmarkManagerCoordinator.getRecyclerViewForTesting()
-                                       .findViewHolderForAdapterPosition(0)
-                                       .itemView;
-        toggleSelectionAndEndAnimation(getIdByPosition(0), itemView);
+        toggleSelectionThroughMoreMenu(0);
 
         // Selecting an item should cause the search view to be hidden, replaced with menu items
         // that operate on the selected rows.
@@ -571,8 +570,7 @@ public class BookmarkTest {
 
         // Select testFolder2 and delete it. This deletion will refresh the current search, which
         // right now is the empty string. This will return all bookmarks (3).
-        toggleSelectionAndEndAnimation(testFolder2,
-                (BookmarkRow) mItemsContainer.findViewHolderForLayoutPosition(2).itemView);
+        toggleSelectionThroughMoreMenu(2);
         clickToolbarMenuItem(R.id.selection_mode_delete_menu_id);
 
         // Should still be searching with the folder gone.
@@ -649,11 +647,9 @@ public class BookmarkTest {
         mRenderTestRule.render(
                 mBookmarkManagerCoordinator.getView(), "bookmark_manager_one_folder");
 
-        BookmarkRow itemView = (BookmarkRow) mBookmarkManagerCoordinator.getRecyclerViewForTesting()
-                                       .findViewHolderForAdapterPosition(0)
-                                       .itemView;
+        BookmarkRow itemView = getBookmarkRow(0);
 
-        toggleSelectionAndEndAnimation(getIdByPosition(0), itemView);
+        toggleSelectionThroughMoreMenu(0);
 
         // Make sure the Item "test" is selected.
         CriteriaHelper.pollUiThread(
@@ -702,17 +698,15 @@ public class BookmarkTest {
         openBookmarkManager();
         BookmarkTestUtil.openMobileBookmarks(mItemsContainer, mDelegate, mBookmarkModel);
 
-        BookmarkRow test =
-                (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(2).itemView;
+        BookmarkRow test = getBookmarkRow(2);
         View testMoreButton = test.findViewById(R.id.more);
         View testDragHandle = test.getDragHandleViewForTesting();
 
-        BookmarkRow testFolderA =
-                (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        BookmarkRow testFolderA = getBookmarkRow(1);
         View aMoreButton = testFolderA.findViewById(R.id.more);
         View aDragHandle = testFolderA.getDragHandleViewForTesting();
 
-        toggleSelectionAndEndAnimation(testId, test);
+        toggleSelectionThroughMoreMenu(2);
 
         // Callback occurs when Item "test" is selected.
         CriteriaHelper.pollUiThread(test::isChecked, "Expected item \"test\" to become selected");
@@ -737,7 +731,7 @@ public class BookmarkTest {
     @Test
     @MediumTest
     public void testEndIconVisibilityInSearchMode() throws Exception {
-        BookmarkId testId = addFolder(TEST_FOLDER_TITLE);
+        addFolder(TEST_FOLDER_TITLE);
         addFolder(TEST_TITLE_A);
 
         BookmarkPromoHeader.forcePromoStateForTesting(
@@ -745,23 +739,19 @@ public class BookmarkTest {
         openBookmarkManager();
         BookmarkTestUtil.openMobileBookmarks(mItemsContainer, mDelegate, mBookmarkModel);
 
-        BookmarkRow test =
-                (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(2).itemView;
+        BookmarkRow test = getBookmarkRow(2);
         View testMoreButton = test.findViewById(R.id.more);
         View testDragHandle = test.getDragHandleViewForTesting();
 
-        BookmarkRow a = (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        BookmarkRow a = getBookmarkRow(1);
         View aMoreButton = a.findViewById(R.id.more);
         View aDragHandle = a.getDragHandleViewForTesting();
 
         clickToolbarMenuItem(R.id.search_menu_id);
-
-        // Callback occurs when Item "test" is selected.
         CriteriaHelper.pollUiThread(() -> mToolbar.isSearching(), "Expected to enter search mode");
 
-        toggleSelectionAndEndAnimation(testId, test);
-
-        // Callback occurs when Item "test" is selected.
+        // When searching, the promo is removed. Index 1 is now `test`.
+        toggleSelectionThroughMoreMenu(1);
         CriteriaHelper.pollUiThread(test::isChecked, "Expected item \"test\" to become selected");
 
         assertEquals("Expected drag handle of selected item to be gone "
@@ -827,10 +817,9 @@ public class BookmarkTest {
         // Perform registration to make callbacks work.
         runOnUiThreadBlocking(() -> { mBookmarkModel.addObserver(bookmarkModelObserver); });
 
-        BookmarkRow foo =
-                (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(3).itemView;
+        BookmarkRow foo = getBookmarkRow(3);
         assertEquals("Wrong bookmark item selected.", TEST_PAGE_TITLE_FOO, foo.getTitle());
-        toggleSelectionAndEndAnimation(fooId, foo);
+        toggleSelectionThroughMoreMenu(3);
 
         // Starts as last bookmark (2nd index) and ends as 0th bookmark (promo header not included).
         simulateDragForTestsOnUiThread(3, 1);
@@ -899,11 +888,10 @@ public class BookmarkTest {
         // Perform registration to make callbacks work.
         runOnUiThreadBlocking(() -> { mBookmarkModel.addObserver(bookmarkModelObserver); });
 
-        BookmarkFolderRow test =
-                (BookmarkFolderRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        BookmarkFolderRow test = getBookmarkFolderRow(1);
         assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE, test.getTitle());
 
-        toggleSelectionAndEndAnimation(testId, test);
+        toggleSelectionThroughMoreMenu(1);
 
         // Starts as 0th bookmark (not counting promo header) and ends as last (index 3).
         simulateDragForTestsOnUiThread(1, 4);
@@ -959,11 +947,10 @@ public class BookmarkTest {
         // Perform registration to make callbacks work.
         runOnUiThreadBlocking(() -> { mBookmarkModel.addObserver(bookmarkModelObserver); });
 
-        BookmarkFolderRow test =
-                (BookmarkFolderRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        BookmarkFolderRow test = getBookmarkFolderRow(1);
         assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE, test.getTitle());
 
-        toggleSelectionAndEndAnimation(testId, test);
+        toggleSelectionThroughMoreMenu(1);
 
         // Starts as 0th bookmark (not counting promo header) and ends at the 1st index.
         simulateDragForTestsOnUiThread(1, 2);
@@ -983,17 +970,16 @@ public class BookmarkTest {
     @Test
     @MediumTest
     public void testPromoDraggability() throws Exception {
-        BookmarkId testId = addFolder(TEST_FOLDER_TITLE);
+        addFolder(TEST_FOLDER_TITLE);
 
         BookmarkPromoHeader.forcePromoStateForTesting(
                 SyncPromoState.PROMO_FOR_SYNC_TURNED_OFF_STATE);
         openBookmarkManager();
         BookmarkTestUtil.openMobileBookmarks(mItemsContainer, mDelegate, mBookmarkModel);
 
-        ViewHolder promo = mItemsContainer.findViewHolderForAdapterPosition(0);
+        ViewHolder promo = getViewHolder(0);
 
-        toggleSelectionAndEndAnimation(
-                testId, (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView);
+        toggleSelectionThroughMoreMenu(1);
 
         assertFalse("Promo header should not be passively draggable",
                 isViewHolderPassivelyDraggable(promo));
@@ -1004,16 +990,15 @@ public class BookmarkTest {
     @Test
     @MediumTest
     public void testPartnerFolderDraggability() throws Exception {
-        BookmarkId testId = addFolderWithPartner(TEST_FOLDER_TITLE);
+        addFolderWithPartner(TEST_FOLDER_TITLE);
         BookmarkPromoHeader.forcePromoStateForTesting(
                 SyncPromoState.PROMO_FOR_SYNC_TURNED_OFF_STATE);
         openBookmarkManager();
         BookmarkTestUtil.openMobileBookmarks(mItemsContainer, mDelegate, mBookmarkModel);
 
-        ViewHolder partner = mItemsContainer.findViewHolderForAdapterPosition(2);
+        ViewHolder partner = getViewHolder(2);
 
-        toggleSelectionAndEndAnimation(
-                testId, (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView);
+        toggleSelectionThroughMoreMenu(1);
 
         assertFalse("Partner bookmarks folder should not be passively draggable",
                 isViewHolderPassivelyDraggable(partner));
@@ -1024,7 +1009,7 @@ public class BookmarkTest {
     @Test
     @MediumTest
     public void testUnselectedItemDraggability() throws Exception {
-        BookmarkId aId = addBookmark("a", mTestUrlA);
+        addBookmark("a", mTestUrlA);
         addFolder(TEST_FOLDER_TITLE);
 
         BookmarkPromoHeader.forcePromoStateForTesting(
@@ -1032,17 +1017,16 @@ public class BookmarkTest {
         openBookmarkManager();
         BookmarkTestUtil.openMobileBookmarks(mItemsContainer, mDelegate, mBookmarkModel);
 
-        ViewHolder test = mItemsContainer.findViewHolderForAdapterPosition(1);
+        ViewHolder viewHolder = getViewHolder(1);
         assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
-                ((BookmarkFolderRow) test.itemView).getTitle());
+                ((BookmarkFolderRow) viewHolder.itemView).getTitle());
 
-        toggleSelectionAndEndAnimation(
-                aId, (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(2).itemView);
+        toggleSelectionThroughMoreMenu(2);
 
         assertTrue("Unselected rows should be passively draggable",
-                isViewHolderPassivelyDraggable(test));
+                isViewHolderPassivelyDraggable(viewHolder));
         assertFalse("Unselected rows should not be actively draggable",
-                isViewHoldersActivelyDraggable(test));
+                isViewHoldersActivelyDraggable(viewHolder));
     }
 
     @Test
@@ -1055,7 +1039,7 @@ public class BookmarkTest {
         openBookmarkManager();
         RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
 
-        View promo = mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
+        View promo = getViewHolder(0).itemView;
         TouchCommon.longPressView(promo);
         RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
         assertFalse("Expected that we would not be in selection mode "
@@ -1071,7 +1055,7 @@ public class BookmarkTest {
                 SyncPromoState.PROMO_FOR_SYNC_TURNED_OFF_STATE);
         openBookmarkManager();
 
-        View partner = mItemsContainer.findViewHolderForAdapterPosition(2).itemView;
+        View partner = getViewHolder(2).itemView;
         TouchCommon.longPressView(partner);
         RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
         assertFalse("Expected that we would not be in selection mode "
@@ -1090,7 +1074,7 @@ public class BookmarkTest {
         openBookmarkManager();
         BookmarkTestUtil.openMobileBookmarks(mItemsContainer, mDelegate, mBookmarkModel);
 
-        View google = mItemsContainer.findViewHolderForAdapterPosition(2).itemView;
+        View google = getViewHolder(2).itemView;
         assertEquals("Wrong bookmark item selected.", TEST_PAGE_TITLE_GOOGLE,
                 ((BookmarkItemRow) google).getTitle());
         View more = google.findViewById(R.id.more);
@@ -1098,12 +1082,8 @@ public class BookmarkTest {
         onView(withText("Move up")).perform(click());
 
         // Confirm that the "Google" bookmark is now on top, and that the "test" folder is 2nd
-        assertTrue(((BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView)
-                           .getTitle()
-                           .equals(TEST_PAGE_TITLE_GOOGLE));
-        assertTrue(((BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(2).itemView)
-                           .getTitle()
-                           .equals(TEST_FOLDER_TITLE));
+        assertTrue((getBookmarkRow(1)).getTitle().equals(TEST_PAGE_TITLE_GOOGLE));
+        assertTrue((getBookmarkRow(2)).getTitle().equals(TEST_FOLDER_TITLE));
     }
 
     @Test
@@ -1116,20 +1096,15 @@ public class BookmarkTest {
         openBookmarkManager();
         BookmarkTestUtil.openMobileBookmarks(mItemsContainer, mDelegate, mBookmarkModel);
 
-        View testFolder = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
-        assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
-                ((BookmarkFolderRow) testFolder).getTitle());
+        BookmarkFolderRow testFolder = getBookmarkFolderRow(1);
+        assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE, testFolder.getTitle());
         ListMenuButton more = testFolder.findViewById(R.id.more);
         runOnUiThreadBlocking(more::callOnClick);
         onView(withText("Move down")).perform(click());
 
         // Confirm that the "Google" bookmark is now on top, and that the "test" folder is 2nd
-        assertTrue(((BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView)
-                           .getTitle()
-                           .equals(TEST_PAGE_TITLE_GOOGLE));
-        assertTrue(((BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(2).itemView)
-                           .getTitle()
-                           .equals(TEST_FOLDER_TITLE));
+        assertTrue((getBookmarkRow(1)).getTitle().equals(TEST_PAGE_TITLE_GOOGLE));
+        assertTrue((getBookmarkRow(2)).getTitle().equals(TEST_FOLDER_TITLE));
     }
 
     @Test
@@ -1142,9 +1117,8 @@ public class BookmarkTest {
         openBookmarkManager();
         BookmarkTestUtil.openMobileBookmarks(mItemsContainer, mDelegate, mBookmarkModel);
 
-        View google = mItemsContainer.findViewHolderForAdapterPosition(2).itemView;
-        assertEquals("Wrong bookmark item selected.", TEST_PAGE_TITLE_GOOGLE,
-                ((BookmarkItemRow) google).getTitle());
+        BookmarkItemRow google = getBookmarkItemRow(2);
+        assertEquals("Wrong bookmark item selected.", TEST_PAGE_TITLE_GOOGLE, google.getTitle());
         View more = google.findViewById(R.id.more);
         runOnUiThreadBlocking(more::callOnClick);
         onView(withText("Move down")).check(doesNotExist());
@@ -1160,9 +1134,8 @@ public class BookmarkTest {
         openBookmarkManager();
         BookmarkTestUtil.openMobileBookmarks(mItemsContainer, mDelegate, mBookmarkModel);
 
-        View testFolder = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
-        assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
-                ((BookmarkFolderRow) testFolder).getTitle());
+        BookmarkFolderRow testFolder = getBookmarkFolderRow(1);
+        assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE, testFolder.getTitle());
         ListMenuButton more = testFolder.findViewById(R.id.more);
         runOnUiThreadBlocking(more::callOnClick);
         onView(withText("Move up")).check(doesNotExist());
@@ -1180,9 +1153,8 @@ public class BookmarkTest {
         // Callback occurs when Item "test" is selected.
         CriteriaHelper.pollUiThread(() -> mToolbar.isSearching(), "Expected to enter search mode");
 
-        View testFolder = mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
-        assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
-                ((BookmarkFolderRow) testFolder).getTitle());
+        BookmarkFolderRow testFolder = getBookmarkFolderRow(0);
+        assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE, testFolder.getTitle());
         View more = testFolder.findViewById(R.id.more);
         runOnUiThreadBlocking(more::callOnClick);
 
@@ -1199,9 +1171,8 @@ public class BookmarkTest {
         openBookmarkManager();
         BookmarkTestUtil.openMobileBookmarks(mItemsContainer, mDelegate, mBookmarkModel);
 
-        View testFolder = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
-        assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
-                ((BookmarkFolderRow) testFolder).getTitle());
+        BookmarkFolderRow testFolder = getBookmarkFolderRow(1);
+        assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE, testFolder.getTitle());
         View more = testFolder.findViewById(R.id.more);
         runOnUiThreadBlocking(more::callOnClick);
 
@@ -1236,7 +1207,7 @@ public class BookmarkTest {
         });
 
         // Verify that bookmark 2 is editable (so more button can be triggered) but not movable.
-        View partnerBookmarkView1 = mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
+        View partnerBookmarkView1 = getBookmarkRow(0);
         View more1 = partnerBookmarkView1.findViewById(R.id.more);
         runOnUiThreadBlocking(more1::callOnClick);
         onView(withText("Move up")).check(doesNotExist());
@@ -1255,7 +1226,7 @@ public class BookmarkTest {
         });
 
         // Verify that bookmark 2 does not have move up/down items.
-        View partnerBookmarkView2 = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        View partnerBookmarkView2 = getBookmarkRow(1);
         View more2 = partnerBookmarkView2.findViewById(R.id.more);
         runOnUiThreadBlocking(more2::callOnClick);
         onView(withText("Move up")).check(doesNotExist());
@@ -1303,7 +1274,7 @@ public class BookmarkTest {
         enterSearch();
 
         // Click "Show in folder".
-        View testFolder = mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
+        View testFolder = getBookmarkFolderRow(0);
         clickMoreButtonOnFirstItem(TEST_FOLDER_TITLE);
         onView(withText("Show in folder")).perform(click());
 
@@ -1355,12 +1326,12 @@ public class BookmarkTest {
         onView(withText("Show in folder")).perform(click());
 
         // This should be in the 8th position now.
-        ViewHolder testFolderInList = mItemsContainer.findViewHolderForAdapterPosition(8);
+        BookmarkFolderRow testFolderInList = getBookmarkFolderRow(8);
         assertFalse("Expected list to scroll bookmark item into view", testFolderInList == null);
         assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
-                ((BookmarkFolderRow) testFolderInList.itemView).getTitle());
+                ((BookmarkFolderRow) testFolderInList).getTitle());
         assertTrue("Expected highlight to pulse on after scrolling to the item!",
-                checkHighlightPulse(testFolderInList.itemView));
+                checkHighlightPulse(testFolderInList));
     }
 
     @Test
@@ -1387,9 +1358,8 @@ public class BookmarkTest {
         RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
 
         // Make sure that we're in the right folder (index 1 because of promo).
-        View itemA = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
-        assertEquals("Wrong bookmark item selected.", TEST_TITLE_A,
-                ((BookmarkItemRow) itemA).getTitle());
+        BookmarkItemRow itemA = getBookmarkItemRow(1);
+        assertEquals("Wrong bookmark item selected.", TEST_TITLE_A, itemA.getTitle());
 
         assertTrue("Expected highlight to pulse after opening an item in another folder!",
                 checkHighlightPulse(itemA));
@@ -1401,9 +1371,8 @@ public class BookmarkTest {
         });
         RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
 
-        View itemASecondView = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
-        assertEquals("Wrong bookmark item selected.", TEST_TITLE_A,
-                ((BookmarkItemRow) itemASecondView).getTitle());
+        BookmarkItemRow itemASecondView = getBookmarkItemRow(1);
+        assertEquals("Wrong bookmark item selected.", TEST_TITLE_A, itemASecondView.getTitle());
         assertTrue("Expected highlight to not be highlighted after exiting and re-entering folder!",
                 checkHighlightOff(itemASecondView));
     }
@@ -1412,7 +1381,7 @@ public class BookmarkTest {
     @SmallTest
     public void testAddBookmarkInBackgroundWithSelection() throws Exception {
         BookmarkId folder = addFolder(TEST_FOLDER_TITLE);
-        BookmarkId id = addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo, folder);
+        addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo, folder);
         BookmarkPromoHeader.forcePromoStateForTesting(SyncPromoState.NO_PROMO);
         openBookmarkManager();
 
@@ -1420,9 +1389,7 @@ public class BookmarkTest {
         openFolder(folder);
 
         assertEquals(1, mAdapter.getItemCount());
-        BookmarkRow row =
-                (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
-        toggleSelectionAndEndAnimation(id, row);
+        toggleSelectionThroughMoreMenu(0);
 
         runOnUiThreadBlocking(() -> {
             mBookmarkModel.addBookmark(folder, 1, TEST_PAGE_TITLE_GOOGLE, mTestPage);
@@ -1433,7 +1400,8 @@ public class BookmarkTest {
             assertTrue(isItemPresentInBookmarkList(TEST_PAGE_TITLE_FOO));
             assertTrue(isItemPresentInBookmarkList(TEST_PAGE_TITLE_GOOGLE));
             assertEquals(2, mAdapter.getItemCount());
-            assertTrue("The selected row should be kept selected", row.isItemSelected());
+            assertTrue(
+                    "The selected row should be kept selected", getBookmarkRow(0).isItemSelected());
         });
     }
 
@@ -1453,9 +1421,7 @@ public class BookmarkTest {
         openFolder(folder);
 
         assertEquals(3, mAdapter.getItemCount());
-        BookmarkRow row =
-                (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
-        toggleSelectionAndEndAnimation(googleId, row);
+        toggleSelectionThroughMoreMenu(1);
         CallbackHelper helper = new CallbackHelper();
         runOnUiThreadBlocking(() -> {
             mDelegate.getSelectionDelegate().addObserver((x) -> helper.notifyCalled());
@@ -1489,12 +1455,8 @@ public class BookmarkTest {
         openFolder(folder);
 
         assertEquals(3, mAdapter.getItemCount());
-        BookmarkRow row =
-                (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
-        toggleSelectionAndEndAnimation(googleId, row);
-        BookmarkRow aRow =
-                (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
-        toggleSelectionAndEndAnimation(aId, aRow);
+        toggleSelectionThroughLongPress(1);
+        toggleSelectionThroughLongPress(0);
         CallbackHelper helper = new CallbackHelper();
 
         runOnUiThreadBlocking(() -> {
@@ -1508,7 +1470,7 @@ public class BookmarkTest {
         runOnUiThreadBlocking(() -> {
             assertFalse("Item is not deleted", isItemPresentInBookmarkList(TEST_PAGE_TITLE_GOOGLE));
             assertEquals(2, mAdapter.getItemCount());
-            assertTrue("Item selected should not be cleared", aRow.isItemSelected());
+            assertTrue("Item selected should not be cleared", getBookmarkRow(0).isItemSelected());
             assertEquals("Should stay in selection mode because there is one selected",
                     mToolbar.getCurrentViewType(), ViewType.SELECTION_VIEW);
         });
@@ -1526,9 +1488,7 @@ public class BookmarkTest {
         openFolder(folder);
 
         assertEquals(1, mAdapter.getItemCount());
-        BookmarkRow row =
-                (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
-        toggleSelectionAndEndAnimation(id, row);
+        toggleSelectionThroughMoreMenu(0);
         CallbackHelper helper = new CallbackHelper();
         runOnUiThreadBlocking(() -> mBookmarkModel.addObserver(new BookmarkModelObserver() {
             @Override
@@ -1545,7 +1505,7 @@ public class BookmarkTest {
             assertFalse(isItemPresentInBookmarkList(TEST_PAGE_TITLE_FOO));
             assertTrue(isItemPresentInBookmarkList(TEST_PAGE_TITLE_GOOGLE));
             assertEquals(1, mAdapter.getItemCount());
-            assertTrue("The selected row should stay selected", row.isItemSelected());
+            assertTrue("The selected row should stay selected", getBookmarkRow(0).isItemSelected());
         });
     }
 
@@ -1650,11 +1610,9 @@ public class BookmarkTest {
 
         mRenderTestRule.render(
                 mBookmarkManagerCoordinator.getView(), "bookmarks_visual_refresh_folders");
-        BookmarkRow itemView = (BookmarkRow) mBookmarkManagerCoordinator.getRecyclerViewForTesting()
-                                       .findViewHolderForAdapterPosition(0)
-                                       .itemView;
+        BookmarkRow itemView = getBookmarkRow(0);
 
-        toggleSelectionAndEndAnimation(getIdByPosition(0), itemView);
+        toggleSelectionThroughMoreMenu(0);
 
         // Make sure the Item "test" is selected.
         CriteriaHelper.pollUiThread(
@@ -1678,17 +1636,11 @@ public class BookmarkTest {
 
         mRenderTestRule.render(mBookmarkManagerCoordinator.getView(),
                 "bookmarks_visual_refresh_bookmarksandfolders");
-        BookmarkRow itemView1 =
-                (BookmarkRow) mBookmarkManagerCoordinator.getRecyclerViewForTesting()
-                        .findViewHolderForAdapterPosition(0)
-                        .itemView;
-        BookmarkRow itemView2 =
-                (BookmarkRow) mBookmarkManagerCoordinator.getRecyclerViewForTesting()
-                        .findViewHolderForAdapterPosition(1)
-                        .itemView;
+        BookmarkRow itemView1 = getBookmarkRow(0);
+        BookmarkRow itemView2 = getBookmarkRow(1);
 
-        toggleSelectionAndEndAnimation(getIdByPosition(0), itemView1);
-        toggleSelectionAndEndAnimation(getIdByPosition(1), itemView2);
+        toggleSelectionThroughLongPress(0);
+        toggleSelectionThroughLongPress(1);
 
         // Make sure the Item "test" is selected.
         CriteriaHelper.pollUiThread(
@@ -1703,8 +1655,8 @@ public class BookmarkTest {
     @Test
     @MediumTest
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
-    @Features.EnableFeatures({ChromeFeatureList.SHOPPING_LIST})
     public void testShoppingFilterInBookmarks() throws InterruptedException, ExecutionException {
+        ShoppingFeatures.setShoppingListEligibleForTesting(true);
         BookmarkPromoHeader.forcePromoStateForTesting(SyncPromoState.NO_PROMO);
         openBookmarkManager();
         BookmarkTestUtil.waitForBookmarkModelLoaded();
@@ -1714,16 +1666,15 @@ public class BookmarkTest {
 
         // Check that we are in the mobile bookmarks folder.
         assertEquals("Tracked products", mToolbar.getTitle());
-        assertEquals(SelectableListToolbar.NavigationButton.BACK,
-                mToolbar.getNavigationButtonForTests());
+        assertEquals(NavigationButton.BACK, mToolbar.getNavigationButtonForTests());
     }
 
     @Test
     @MediumTest
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
-    @Features.EnableFeatures({ChromeFeatureList.SHOPPING_LIST})
     public void testShoppingDataPresentButFeatureDisabled()
             throws InterruptedException, ExecutionException {
+        ShoppingFeatures.setShoppingListEligibleForTesting(true);
         BookmarkId id = addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
         PowerBookmarkMeta.Builder meta = PowerBookmarkMeta.newBuilder().setShoppingSpecifics(
                 ShoppingSpecifics.newBuilder().setProductClusterId(1234L).build());
@@ -1732,10 +1683,47 @@ public class BookmarkTest {
         openBookmarkManager();
         BookmarkTestUtil.waitForBookmarkModelLoaded();
 
-        BookmarkRow itemView = (BookmarkRow) mBookmarkManagerCoordinator.getRecyclerViewForTesting()
-                                       .findViewHolderForAdapterPosition(0)
-                                       .itemView;
+        BookmarkRow itemView = getBookmarkRow(0);
         assertNotEquals(PowerBookmarkShoppingItemRow.class, itemView.getClass());
+    }
+
+    @Test
+    @MediumTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    public void testModelUpdateDuringEmptySearchAndSelection()
+            throws InterruptedException, ExecutionException {
+        BookmarkPromoHeader.forcePromoStateForTesting(SyncPromoState.NO_PROMO);
+        BookmarkId folderId = addFolder(TEST_FOLDER_TITLE);
+        BookmarkId itemId = addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo, folderId);
+        openBookmarkManager();
+        openFolder(folderId);
+        assertEquals(1, mAdapter.getItemCount());
+
+        // Inspired by https://crbug.com/1445826. Start a search but don't type anything, to get
+        // into the empty query state. Then select an item. This combinations of states is tricky
+        // for our logic to deal with correctly.
+        clickToolbarMenuItem(R.id.search_menu_id);
+        toggleSelectionThroughLongPress(0);
+
+        // Users would tap the R.id.edit_menu_id and edit the bookmark title, but we're going to
+        // fake it to avoid a dependency on the UI shown to edit bookmark.
+        runOnUiThreadBlocking(
+                () -> mBookmarkModel.setBookmarkTitle(itemId, TEST_PAGE_TITLE_GOOGLE));
+
+        // The item title change comes back async from the model, so we need to poll for it.
+        CriteriaHelper.pollUiThread(() -> {
+            return TEST_PAGE_TITLE_GOOGLE.equals(getBookmarkRow(0).getTitle());
+        }, "Title never updated to " + TEST_PAGE_TITLE_GOOGLE);
+
+        // We should be kicked out of the empty query state at this point, but still selecting the
+        // item. If events are not fired in the right order, the title/nav buttons will be broken.
+        assertTrue(getBookmarkRow(0).isItemSelected());
+        assertFalse(mToolbar.isSearching());
+        assertTrue(TextUtils.isEmpty(mToolbar.getTitle()));
+        // Don't try to validate the current number of selected items, just visibility.
+        NumberRollView numberRollView = mToolbar.findViewById(R.id.selection_mode_number);
+        assertEquals(View.VISIBLE, numberRollView.getVisibility());
+        assertEquals(NavigationButton.BACK, mToolbar.getNavigationButtonForTests());
     }
 
     /**
@@ -1772,7 +1760,8 @@ public class BookmarkTest {
         mAdapter = (DragReorderableRecyclerViewAdapter) mItemsContainer.getAdapter();
         mToolbar = mBookmarkManagerCoordinator.getToolbarForTesting();
 
-        runOnUiThreadBlocking(() -> mDelegate.getDragStateDelegate().setA11yStateForTesting(false));
+        runOnUiThreadBlocking(
+                () -> AccessibilityState.setIsAnyAccessibilityServiceEnabledForTesting(false));
     }
 
     private boolean isItemPresentInBookmarkList(final String expectedTitle) {
@@ -1846,10 +1835,9 @@ public class BookmarkTest {
     }
 
     private void clickMoreButtonOnFirstItem(String expectedBookmarkItemTitle) throws Exception {
-        View firstItem = mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
-        assertEquals("Wrong bookmark item selected.", expectedBookmarkItemTitle,
-                firstItem instanceof BookmarkItemRow ? ((BookmarkItemRow) firstItem).getTitle()
-                                                     : ((BookmarkFolderRow) firstItem).getTitle());
+        BookmarkRow firstItem = getBookmarkRow(0);
+        assertEquals(
+                "Wrong bookmark item selected.", expectedBookmarkItemTitle, firstItem.getTitle());
         View more = firstItem.findViewById(R.id.more);
         runOnUiThreadBlocking(more::performClick);
     }
@@ -1881,13 +1869,34 @@ public class BookmarkTest {
         });
     }
 
-    private void toggleSelectionAndEndAnimation(BookmarkId id, BookmarkRow view) {
+    private void toggleSelectionThroughLongPress(int index) {
+        toggleSelectionAndEndAnimation(index, (bookmarkRow) -> {
+            runOnUiThreadBlocking(() -> { bookmarkRow.onLongClick(bookmarkRow); });
+        });
+    }
+
+    private void toggleSelectionThroughMoreMenu(int index) {
+        toggleSelectionAndEndAnimation(index, (bookmarkRow) -> {
+            View moreButton = bookmarkRow.findViewById(R.id.more);
+            assertEquals(View.VISIBLE, moreButton.getVisibility());
+            assertTrue(moreButton.isEnabled());
+            runOnUiThreadBlockingNoException(() -> moreButton.callOnClick());
+            // Doesn't have a stable id to look up with. Use resolved text instead.
+            String selectText = bookmarkRow.getResources().getString(R.string.bookmark_item_select);
+            onView(withText(selectText)).perform(click());
+        });
+    }
+
+    private void toggleSelectionAndEndAnimation(int index, Callback<BookmarkRow> toggleRowImpl) {
+        BookmarkRow bookmarkRow = getBookmarkRow(index);
+        boolean wasInitiallySelected = bookmarkRow.isItemSelected();
+        toggleRowImpl.onResult(bookmarkRow);
         runOnUiThreadBlocking(() -> {
-            mDelegate.getSelectionDelegate().toggleSelectionForItem(id);
-            view.endAnimationsForTests();
+            bookmarkRow.endAnimationsForTests();
             mToolbar.endAnimationsForTesting();
         });
         RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+        assertNotEquals(wasInitiallySelected, bookmarkRow.isItemSelected());
     }
 
     private BookmarkId addBookmark(final String title, GURL url, BookmarkId parent)
@@ -1932,5 +1941,28 @@ public class BookmarkTest {
 
     private void clickToolbarMenuItem(@IdRes int menuId) throws ExecutionException {
         runOnUiThreadBlocking(() -> mToolbar.onMenuItemClick(mToolbar.getMenu().findItem(menuId)));
+    }
+
+    private ViewHolder getViewHolder(int index) {
+        return mItemsContainer.findViewHolderForAdapterPosition(index);
+    }
+
+    private BookmarkRow getBookmarkRow(int index) {
+        return getRowGeneric(BookmarkRow.class, index);
+    }
+
+    private BookmarkFolderRow getBookmarkFolderRow(int index) {
+        return getRowGeneric(BookmarkFolderRow.class, index);
+    }
+
+    private BookmarkItemRow getBookmarkItemRow(int index) {
+        return getRowGeneric(BookmarkItemRow.class, index);
+    }
+
+    private <T extends View> T getRowGeneric(Class<T> clazz, int index) {
+        View view = getViewHolder(index).itemView;
+        assertTrue("Found " + view.getClass() + " expected " + clazz,
+                clazz.isAssignableFrom(view.getClass()));
+        return (T) view;
     }
 }

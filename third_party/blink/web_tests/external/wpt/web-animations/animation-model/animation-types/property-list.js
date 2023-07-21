@@ -747,7 +747,7 @@ const gCSSProperties2 = {
     types: [ 'color' ]
   },
   'line-height': {
-    // https://w3c.github.io/csswg-drafts/css-inline/#line-height-property
+    // https://drafts.csswg.org/css-inline/#line-height-property
     types: [
         { type: 'discrete', options: [ [ 'normal', '10px' ],
                                        [ 'normal', '10', 'normal', '100px' ] ] }
@@ -1170,6 +1170,12 @@ const gCSSProperties2 = {
     // https://drafts.csswg.org/cssom-view/#propdef-scroll-behavior
     types: [
       { type: 'discrete', options: [ [ 'auto', 'smooth' ] ] }
+    ]
+  },
+  'scrollbar-width': {
+    // https://drafts.csswg.org/css-scrollbars/#propdef-scrollbar-width
+    types: [
+      { type: 'discrete', options: [ [ 'auto', 'thin' ], [ 'auto', 'none' ], [ 'thin', 'none' ] ] }
     ]
   },
   'shape-outside': {

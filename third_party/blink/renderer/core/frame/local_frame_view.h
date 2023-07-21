@@ -117,7 +117,6 @@ struct PhysicalOffset;
 struct PhysicalRect;
 
 enum class PaintBenchmarkMode;
-enum class PaintArtifactCompositorUpdateReason;
 
 typedef uint64_t DOMTimeStamp;
 using LayerTreeFlags = unsigned;
@@ -238,8 +237,7 @@ class CORE_EXPORT LocalFrameView final
 
   void ForceUpdateViewportIntersections();
 
-  void SetPaintArtifactCompositorNeedsUpdate(
-      PaintArtifactCompositorUpdateReason);
+  void SetPaintArtifactCompositorNeedsUpdate();
 
   // Methods for getting/setting the size Blink should use to layout the
   // contents.
@@ -415,7 +413,7 @@ class CORE_EXPORT LocalFrameView final
   void DisableAutoSizeMode();
 
   void ForceLayoutForPagination(const gfx::SizeF& page_size,
-                                const gfx::SizeF& original_page_size,
+                                const gfx::SizeF& aspect_ratio,
                                 float maximum_shrink_factor);
 
   // Updates the fragment anchor element based on URL's fragment identifier.

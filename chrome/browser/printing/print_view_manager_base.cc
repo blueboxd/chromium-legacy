@@ -75,6 +75,10 @@
 #include "chrome/browser/printing/print_job_utils_lacros.h"
 #endif
 
+#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#include "chrome/browser/enterprise/connectors/analysis/print_content_analysis_utils.h"
+#endif
+
 namespace printing {
 
 namespace {
@@ -179,6 +183,21 @@ PrintViewManagerBase::~PrintViewManagerBase() {
   ReleasePrinterQuery();
   DisconnectFromCurrentPrintJob();
 }
+
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+// TODO(crbug.com/892294):  Remove `DisableThirdPartyBlocking()` once OOP
+// printing is always enabled for Windows.
+// static
+void PrintViewManagerBase::DisableThirdPartyBlocking() {
+#if BUILDFLAG(ENABLE_OOP_PRINTING) && BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
+  if (!printing::features::kEnableOopPrintDriversJobPrint.Get()) {
+    ModuleDatabase::DisableThirdPartyBlocking();
+  }
+#else
+  ModuleDatabase::DisableThirdPartyBlocking();
+#endif
+}
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
   // Remember the ID for `rfh`, to enable checking that the `RenderFrameHost`
@@ -598,9 +617,8 @@ void PrintViewManagerBase::GetDefaultPrintSettings(
       !snapshotting_for_content_analysis_ &&
 #endif
       !query_with_ui_client_id_.has_value()) {
-    // Renderer process has requested settings outside of the expected setup.
-    GetDefaultPrintSettingsReply(std::move(callback), nullptr);
-    return;
+    // Script initiated print, this is first signal of start of printing.
+    RegisterSystemPrintClient();
   }
 #endif
 
@@ -752,14 +770,11 @@ void PrintViewManagerBase::ScriptedPrint(mojom::ScriptedPrintParamsPtr params,
     return;
   }
 #endif
-
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
-  enterprise_connectors::ContentAnalysisDelegate::Data scanning_data;
-  if (base::FeatureList::IsEnabled(features::kEnablePrintContentAnalysis) &&
-      enterprise_connectors::ContentAnalysisDelegate::IsEnabled(
-          Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
-          web_contents()->GetOutermostWebContents()->GetLastCommittedURL(),
-          &scanning_data, enterprise_connectors::AnalysisConnector::PRINT)) {
+  absl::optional<enterprise_connectors::ContentAnalysisDelegate::Data>
+      scanning_data = enterprise_connectors::GetBeforePrintPreviewAnalysisData(
+          web_contents());
+  if (scanning_data) {
     auto scanning_done_callback = base::BindOnce(
         &PrintViewManagerBase::CompleteScriptedPrintAfterContentAnalysis,
         weak_ptr_factory_.GetWeakPtr(), std::move(params), std::move(callback));
@@ -768,7 +783,7 @@ void PrintViewManagerBase::ScriptedPrint(mojom::ScriptedPrintParamsPtr params,
         ->SnapshotForContentAnalysis(base::BindOnce(
             &PrintViewManagerBase::OnGotSnapshotCallback,
             weak_ptr_factory_.GetWeakPtr(), std::move(scanning_done_callback),
-            std::move(scanning_data), render_frame_host->GetGlobalId()));
+            std::move(*scanning_data), render_frame_host->GetGlobalId()));
     return;
   }
 #endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
@@ -1192,7 +1207,7 @@ void PrintViewManagerBase::CompleteScriptedPrint(
       &PrintViewManagerBase::ScriptedPrintReply, weak_ptr_factory_.GetWeakPtr(),
       std::move(callback), render_process_host->GetID());
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  ModuleDatabase::GetInstance()->DisableThirdPartyBlocking();
+  DisableThirdPartyBlocking();
 #endif
 
   std::unique_ptr<PrinterQuery> printer_query =

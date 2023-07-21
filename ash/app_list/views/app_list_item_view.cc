@@ -73,6 +73,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -88,7 +89,8 @@ constexpr int kMouseDragUIDelayInMs = 200;
 // 650ms.
 constexpr int kTouchLongpressDelayInMs = 300;
 
-// For touch initiated dragging, shift the curcor anchor point by the following:
+// For touch initiated dragging, shift the cursor anchor point of the scaled
+// icon by the following:
 static const int kTouchDragImageVerticalOffset = 25;
 
 // The drag and drop app icon should get scaled by this factor.
@@ -507,23 +509,26 @@ AppListItemView::AppListItemView(const AppListConfig* app_list_config,
   focus_ring->SetColorId(is_jelly_enabled ? static_cast<ui::ColorId>(
                                                 cros_tokens::kCrosSysFocusRing)
                                           : ui::kColorAshFocusRing);
-  focus_ring->SetHasFocusPredicate([&](View* view) -> bool {
+  focus_ring->SetHasFocusPredicate(base::BindRepeating([](const View* view) {
+    const auto* v = views::AsViewClass<AppListItemView>(view);
+    CHECK(v);
+
     // With a `view_delegate_` present, focus ring should only show when
     // button is focused and keyboard traversal is engaged.
-    if (view_delegate_ && !view_delegate_->KeyboardTraversalEngaged()) {
+    if (v->view_delegate_ && !v->view_delegate_->KeyboardTraversalEngaged()) {
       return false;
     }
 
-    if (drag_state_ != DragState::kNone) {
+    if (v->drag_state_ != DragState::kNone) {
       return false;
     }
 
-    if (waiting_for_context_menu_options_ || IsShowingAppMenu()) {
+    if (v->waiting_for_context_menu_options_ || v->IsShowingAppMenu()) {
       return false;
     }
 
-    return view->HasFocus();
-  });
+    return v->HasFocus();
+  }));
 
   views::InstallRoundRectHighlightPathGenerator(
       this, gfx::Insets(1), app_list_config_->grid_focus_corner_radius());
@@ -893,6 +898,9 @@ bool AppListItemView::InitiateDrag(const gfx::Point& location,
                          weak_ptr_factory_.GetWeakPtr()),
           base::BindOnce(&AppListItemView::OnDragEnded,
                          weak_ptr_factory_.GetWeakPtr()))) {
+    return false;
+  }
+  if (!IsItemDraggable()) {
     return false;
   }
   drag_state_ = DragState::kInitialized;
@@ -1314,7 +1322,7 @@ void AppListItemView::OnBlur() {
 }
 
 int AppListItemView::GetDragOperations(const gfx::Point& press_pt) {
-  if (context_ == Context::kRecentAppsView) {
+  if (!IsItemDraggable()) {
     return ui::DragDropTypes::DRAG_NONE;
   }
 
@@ -1332,8 +1340,12 @@ void AppListItemView::WriteDragData(const gfx::Point& press_pt,
 
   if (item_weak_) {
     data->provider().SetDragImage(GetIconImage(), press_pt.OffsetFromOrigin());
+    const DraggableAppType app_type = is_folder_
+                                          ? DraggableAppType::kFolderAppGridItem
+                                          : DraggableAppType::kAppGridItem;
     base::Pickle data_pickle;
     data_pickle.WriteString(item_weak_->id());
+    data_pickle.WriteInt(static_cast<int>(app_type));
     data->SetPickledData(GetAppItemFormatType(), data_pickle);
   }
 }
@@ -1351,8 +1363,10 @@ bool AppListItemView::MaybeStartTouchDrag(const gfx::Point& location) {
 
   SetUIState(UI_STATE_TOUCH_DRAGGING);
   auto data = std::make_unique<ui::OSExchangeData>();
-  WriteDragData(location - gfx::Vector2d(0, kTouchDragImageVerticalOffset),
-                data.get());
+  WriteDragData(
+      location - gfx::Vector2d(0, std::ceil(kTouchDragImageVerticalOffset /
+                                            kDragDropAppIconScale)),
+      data.get());
 
   gfx::Point widget_location(location);
   views::View::ConvertPointToWidget(this, &widget_location);
@@ -1399,7 +1413,7 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
       }
       break;
     case ui::ET_GESTURE_TAP_DOWN:
-      if (GetState() != STATE_DISABLED) {
+      if (GetState() != STATE_DISABLED && IsItemDraggable()) {
         SetState(STATE_PRESSED);
         touch_drag_timer_.Start(
             FROM_HERE, base::Milliseconds(kTouchLongpressDelayInMs),
@@ -1541,6 +1555,10 @@ bool AppListItemView::FireTouchDragTimerForTest() {
 
 bool AppListItemView::IsShowingAppMenu() const {
   return item_menu_model_adapter_ && item_menu_model_adapter_->IsShowingMenu();
+}
+
+bool AppListItemView::IsItemDraggable() const {
+  return context_ != Context::kRecentAppsView;
 }
 
 bool AppListItemView::IsNotificationIndicatorShownForTest() const {

@@ -18,7 +18,9 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "third_party/omnibox_proto/entity_info.pb.h"
 
 namespace base {
 class TimeDelta;
@@ -382,6 +384,10 @@ extern const base::FeatureParam<int> kRichSuggestionVerticalMargin;
 // Returns true if the feature to enable GM3 icons is enabled.
 bool IsChromeRefreshIconsEnabled();
 
+// Omnibox CR23 - suggestion icons.
+// Returns true if the feature to enable CR23 suggestion icons is enabled.
+bool IsChromeRefreshSuggestIconsEnabled();
+
 // Omnibox GM3 - text style.
 // Returns true if the feature to enable GM3 text styling is enabled.
 bool IsGM3TextStyleEnabled();
@@ -596,15 +602,17 @@ struct MLConfig {
   // Equivalent to omnibox::kLogUrlScoringSignals.
   bool log_url_scoring_signals{false};
 
-  // If true, enables scoring signal annotators for logging Omnibox URL scoring
-  // signals to OmniboxEventProto. Equivalent to
-  // OmniboxFieldTrial::kLogUrlScoringSignalsEnableScoringSignalsAnnotators.
+  // If true, enables scoring signal annotators for populating additional
+  // Omnibox URL scoring signals for logging or ML scoring.
   bool enable_scoring_signals_annotators{false};
 
   // If true, runs the ML scoring model to assign new relevance scores to the
   // URL suggestions and reranks them.
   // Equivalent to omnibox::kMlUrlScoring.
   bool ml_url_scoring{false};
+
+  // If true, runs batch ML scoring of URL candidates.
+  bool ml_batch_url_scoring{false};
 
   // If true, runs the ML scoring model but does not assign new relevance scores
   // to the URL suggestions and does not rerank them.
@@ -655,7 +663,10 @@ const MLConfig& GetMLConfig();
 
 // If enabled, logs Omnibox scoring signals to OmniboxEventProto for training
 // the ML scoring models.
-bool IsLogUrlScoringSignalsEnabled();
+bool IsReportingUrlScoringSignalsEnabled();
+
+// If enabled, populates scoring signals of URL matches.
+bool IsPopulatingUrlScoringSignalsEnabled();
 
 // Whether the scoring signal annotators are enabled for logging Omnibox scoring
 // signals to OmniboxEventProto.
@@ -664,6 +675,9 @@ bool AreScoringSignalsAnnotatorsEnabled();
 // If enabled, runs the ML scoring model to assign new relevance scores to the
 // URL suggestions and reranks them.
 bool IsMlUrlScoringEnabled();
+
+// Whether batch ML url scoring is enabled.
+bool IsMlBatchUrlScoringEnabled();
 
 // If true, runs the ML scoring model but does not assign new relevance scores
 // to URL suggestions.
@@ -704,7 +718,33 @@ extern const base::FeatureParam<int> kInspireMeAdditionalTrendingQueries;
 //
 // When set to true, permits Entity suggestion with associated Actions to be
 // promoted over the Escape Hatch.
-extern const base::FeatureParam<bool> kActionsInSuggestPromoteEntitySuggestion;
+constexpr base::FeatureParam<bool> kActionsInSuggestPromoteEntitySuggestion(
+    &omnibox::kActionsInSuggest,
+    "PromoteEntitySuggestion",
+    false);
+
+// Specifies which actions in suggest will be offered to users.
+constexpr base::FeatureParam<omnibox::ActionInfo::ActionType>::Option
+    kActionsInSuggestRemoveActionTypesVariants[] = {
+        {{}, ""},
+        {omnibox::ActionInfo_ActionType_CALL, "call"},
+        {omnibox::ActionInfo_ActionType_DIRECTIONS, "directions"},
+        {omnibox::ActionInfo_ActionType_REVIEWS, "reviews"},
+};
+constexpr base::FeatureParam<omnibox::ActionInfo::ActionType>
+    kActionsInSuggestRemoveActionTypes(
+        &omnibox::kActionsInSuggest,
+        "RemoveActionTypes",
+        {},
+        &kActionsInSuggestRemoveActionTypesVariants);
+
+// Controls the placement of Reviews and Call actions position.
+// false => Call, Directions, Reviews.
+// true  => Reviews, Directions, Call.
+constexpr base::FeatureParam<bool> kActionsInSuggestPromoteReviewsAction(
+    &omnibox::kActionsInSuggest,
+    "PromoteReviewsAction",
+    false);
 // <- Actions In Suggest
 // ---------------------------------------------------------
 // Android UI Revamp ->

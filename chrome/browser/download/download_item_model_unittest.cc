@@ -537,8 +537,13 @@ TEST_F(DownloadItemModelTest, CompletedStatus) {
 
   EXPECT_CALL(item(), GetDangerType())
       .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE));
-  EXPECT_EQ("2 B \xE2\x80\xA2 Done, no issues found",
-            base::UTF16ToUTF8(model().GetStatusText()));
+  if (base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX)) {
+    EXPECT_EQ("2 B \xE2\x80\xA2 Scan is done",
+              base::UTF16ToUTF8(model().GetStatusText()));
+  } else {
+    EXPECT_EQ("2 B \xE2\x80\xA2 Done, no issues found",
+              base::UTF16ToUTF8(model().GetStatusText()));
+  }
 
 #if BUILDFLAG(IS_MAC)
   EXPECT_EQ("Show in Finder", base::UTF16ToUTF8(model().GetShowInFolderText()));
@@ -566,6 +571,15 @@ TEST_F(DownloadItemModelTest, CompletedBubbleWarningStatusText) {
         .WillByDefault(Return(test_case.mixed_content_status));
     EXPECT_EQ(base::UTF16ToUTF8(model().GetStatusText()),
               test_case.expected_bubble_status_msg);
+#if !BUILDFLAG(IS_ANDROID)
+    // Android doesn't have BubbleUI info.
+    // Whether it's v2 or not doesn't affect the primary button, so it doesn't
+    // matter what we pass here.
+    EXPECT_EQ(model()
+                  .GetBubbleUIInfo(/*is_download_bubble_v2=*/false)
+                  .primary_button_command.value(),
+              DownloadCommands::Command::KEEP);
+#endif  // !BUILDFLAG(IS_ANDROID)
   }
 
   const struct DangerTypeTestCase {
@@ -740,12 +754,16 @@ TEST_F(DownloadItemModelTest, DangerousWarningBubbleUIInfo_V2On) {
        {}},
   };
   for (const auto& test_case : kDangerTypeTestCases) {
+    SCOPED_TRACE(testing::Message()
+                 << "Failed for danger type "
+                 << download::GetDownloadDangerTypeString(test_case.danger_type)
+                 << std::endl);
     SetupDownloadItemDefaults();
     ON_CALL(item(), GetDangerType())
         .WillByDefault(Return(test_case.danger_type));
     DownloadUIModel::BubbleUIInfo bubble_ui_info =
         model().GetBubbleUIInfo(/*is_download_bubble_v2=*/true);
-    EXPECT_EQ(bubble_ui_info.has_checkbox, test_case.has_checkbox);
+    EXPECT_EQ(bubble_ui_info.HasCheckbox(), test_case.has_checkbox);
     EXPECT_EQ(bubble_ui_info.primary_button_command,
               test_case.primary_button_command);
     std::vector<DownloadCommands::Command> subpage_commands;
@@ -804,12 +822,16 @@ TEST_F(DownloadItemModelTest, DangerousWarningBubbleUIInfo_V2Off) {
        {}},
   };
   for (const auto& test_case : kDangerTypeTestCases) {
+    SCOPED_TRACE(testing::Message()
+                 << "Failed for danger type "
+                 << download::GetDownloadDangerTypeString(test_case.danger_type)
+                 << std::endl);
     SetupDownloadItemDefaults();
     ON_CALL(item(), GetDangerType())
         .WillByDefault(Return(test_case.danger_type));
     DownloadUIModel::BubbleUIInfo bubble_ui_info =
         model().GetBubbleUIInfo(/*is_download_bubble_v2=*/false);
-    EXPECT_EQ(bubble_ui_info.has_checkbox, test_case.has_checkbox);
+    EXPECT_EQ(bubble_ui_info.HasCheckbox(), test_case.has_checkbox);
     EXPECT_EQ(bubble_ui_info.primary_button_command,
               test_case.primary_button_command);
     std::vector<DownloadCommands::Command> subpage_commands;

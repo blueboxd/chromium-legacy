@@ -125,6 +125,8 @@ VALID_FILE_NAME_REGEX = re.compile(r'^[\w\-=]+$')
 # contain all the disc artifacts created by web tests
 ARTIFACTS_SUB_DIR = 'layout-test-results'
 
+ARCHIVED_RESULTS_LIMIT = 25
+
 ENABLE_THREADED_COMPOSITING_FLAG = '--enable-threaded-compositing'
 
 
@@ -158,6 +160,7 @@ class Port(object):
         ('mac13', 'x86_64'),
         ('mac13-arm64', 'arm64'),
         ('win10.20h2', 'x86'),
+        ('win11-arm64', 'arm64'),
         ('win11', 'x86_64'),
         ('trusty', 'x86_64'),
         ('fuchsia', 'x86_64'),
@@ -168,7 +171,7 @@ class Port(object):
             'mac10.13', 'mac10.14', 'mac10.15', 'mac11', 'mac11-arm64',
             'mac12', 'mac12-arm64', 'mac13', 'mac13-arm64'
         ],
-        'win': ['win10.20h2', 'win11'],
+        'win': ['win10.20h2', 'win11-arm64', 'win11'],
         'linux': ['trusty'],
         'fuchsia': ['fuchsia'],
     }
@@ -282,7 +285,6 @@ class Port(object):
             self.set_option_default('wpt_only', False)
         self._test_configuration = None
         self._results_directory = None
-        self._virtual_test_suites = None
         self._used_expectation_files = None
 
     def __str__(self):
@@ -1785,10 +1787,7 @@ class Port(object):
         """
         assert not self._websocket_server, 'Already running a websocket server.'
         output_dir = output_dir or self.artifacts_directory()
-        server = pywebsocket.PyWebSocket(
-            self,
-            output_dir,
-            python_executable=self._options.python_executable)
+        server = pywebsocket.PyWebSocket(self, output_dir)
         server.start()
         self._websocket_server = server
 
@@ -2085,6 +2084,68 @@ class Port(object):
     def default_configuration(self):
         return 'Release'
 
+    def _delete_dirs(self, dir_list):
+        for dir_path in dir_list:
+            self._filesystem.rmtree(dir_path)
+
+    def rename_results_folder(self):
+        try:
+            timestamp = time.strftime(
+                "%Y-%m-%d-%H-%M-%S",
+                time.localtime(
+                    self._filesystem.mtime(
+                        self._filesystem.join(self.artifacts_directory(),
+                                              'results.html'))))
+        except OSError as error:
+            # It might be possible that results.html was not generated in previous run, because the test
+            # run was interrupted even before testing started. In those cases, don't archive the folder.
+            # Simply override the current folder contents with new results.
+            import errno
+            if error.errno in (errno.EEXIST, errno.ENOENT):
+                _log.info(
+                    'No results.html file found in previous run, skipping it.')
+            return None
+        archived_name = ''.join(
+            (self._filesystem.basename(self.artifacts_directory()), '_',
+             timestamp))
+        archived_path = self._filesystem.join(
+            self._filesystem.dirname(self.artifacts_directory()),
+            archived_name)
+        self._filesystem.move(self.artifacts_directory(), archived_path)
+
+    def _get_artifact_directories(self, artifacts_directory_path):
+        results_directory_path = self._filesystem.dirname(
+            artifacts_directory_path)
+        file_list = self._filesystem.listdir(results_directory_path)
+        results_directories = []
+        for name in file_list:
+            file_path = self._filesystem.join(results_directory_path, name)
+            if (artifacts_directory_path in file_path
+                    and self._filesystem.isdir(file_path)):
+                results_directories.append(file_path)
+        results_directories.sort(key=self._filesystem.mtime)
+        return results_directories
+
+    def limit_archived_results_count(self):
+        _log.info('Clobbering excess archived results in %s' %
+                  self._filesystem.dirname(self.artifacts_directory()))
+        results_directories = self._get_artifact_directories(
+            self.artifacts_directory())
+        self._delete_dirs(results_directories[:-ARCHIVED_RESULTS_LIMIT])
+
+    def clobber_old_results(self):
+        dir_above_results_path = self._filesystem.dirname(
+            self.artifacts_directory())
+        _log.info('Clobbering old results in %s.' % dir_above_results_path)
+        if not self._filesystem.exists(dir_above_results_path):
+            return
+        results_directories = self._get_artifact_directories(
+            self.artifacts_directory())
+        self._delete_dirs(results_directories)
+
+        # Port specific clean-up.
+        self.clobber_old_port_specific_results()
+
     def clobber_old_port_specific_results(self):
         pass
 
@@ -2246,38 +2307,34 @@ class Port(object):
     def sample_process(self, name, pid):
         pass
 
+    @memoized
     def virtual_test_suites(self):
-        if self._virtual_test_suites is None:
-            path_to_virtual_test_suites = self._filesystem.join(
-                self.web_tests_dir(), 'VirtualTestSuites')
-            assert self._filesystem.exists(path_to_virtual_test_suites), \
-                path_to_virtual_test_suites + ' not found'
-            try:
-                test_suite_json = json.loads(
-                    self._filesystem.read_text_file(
-                        path_to_virtual_test_suites))
-                self._virtual_test_suites = []
-                current_time = datetime.now()
-                for json_config in test_suite_json:
-                    # Strings are treated as comments.
-                    if isinstance(json_config, str):
-                        continue
-                    expires = json_config.get('expires', 'never')
-                    if (expires.lower() != 'never' and datetime.strptime(
-                            expires, '%b %d, %Y') <= current_time):
-                        # do not load expired virtual suites
-                        continue
-                    vts = VirtualTestSuite(**json_config)
-                    if any(vts.full_prefix == s.full_prefix
-                           for s in self._virtual_test_suites):
-                        raise ValueError(
-                            '{} contains entries with the same prefix: {!r}. Please combine them'
-                            .format(path_to_virtual_test_suites, json_config))
-                    self._virtual_test_suites.append(vts)
-            except ValueError as error:
-                raise ValueError('{} is not a valid JSON file: {}'.format(
-                    path_to_virtual_test_suites, error))
-        return self._virtual_test_suites
+        path_to_virtual_test_suites = self._filesystem.join(
+            self.web_tests_dir(), 'VirtualTestSuites')
+        assert self._filesystem.exists(path_to_virtual_test_suites), \
+            path_to_virtual_test_suites + ' not found'
+        virtual_test_suites = []
+        try:
+            test_suite_json = json.loads(
+                self._filesystem.read_text_file(path_to_virtual_test_suites))
+            current_time = datetime.now()
+            for json_config in test_suite_json:
+                # Strings are treated as comments.
+                if isinstance(json_config, str):
+                    continue
+                # expired VTSs are loaded and continue to run. We will have a separate
+                # process to delete expired VTSs.
+                vts = VirtualTestSuite(**json_config)
+                if any(vts.full_prefix == s.full_prefix
+                       for s in virtual_test_suites):
+                    raise ValueError(
+                        '{} contains entries with the same prefix: {!r}. Please combine them'
+                        .format(path_to_virtual_test_suites, json_config))
+                virtual_test_suites.append(vts)
+        except ValueError as error:
+            raise ValueError('{} is not a valid JSON file: {}'.format(
+                path_to_virtual_test_suites, error))
+        return virtual_test_suites
 
     def _all_virtual_tests(self, tests_by_dir):
         tests = []
@@ -2623,6 +2680,7 @@ class VirtualTestSuite(object):
                  bases=None,
                  exclusive_tests=None,
                  args=None,
+                 owners=None,
                  expires=None):
         assert VALID_FILE_NAME_REGEX.match(prefix), \
             "Virtual test suite prefix '{}' contains invalid characters".format(prefix)

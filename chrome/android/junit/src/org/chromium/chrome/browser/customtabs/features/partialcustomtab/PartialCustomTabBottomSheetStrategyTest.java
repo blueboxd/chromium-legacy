@@ -327,6 +327,26 @@ public class PartialCustomTabBottomSheetStrategyTest {
     }
 
     @Test
+    public void setTitleWhenLaunched() {
+        final String title = "BottomSheet";
+        var coordinator = mPCCTTestRule.mCoordinatorLayout;
+        doReturn(false).when(coordinator).isAttachedToWindow();
+        doReturn(title).when(mPCCTTestRule.mResources).getString(anyInt());
+        PartialCustomTabBottomSheetStrategy strategy = createPcctAtHeight(500);
+        var listener = mPCCTTestRule.mAttachStateChangeListener;
+        verify(coordinator).addOnAttachStateChangeListener(listener.capture());
+        listener.getValue().onViewAttachedToWindow(null);
+        verify(mPCCTTestRule.mWindow).setTitle(eq(title));
+        verify(coordinator).removeOnAttachStateChangeListener(listener.getValue());
+        clearInvocations(coordinator);
+
+        // Once attached, the title is not set again.
+        doReturn(true).when(coordinator).isAttachedToWindow();
+        strategy.onPostInflationStartup();
+        verify(coordinator, never()).addOnAttachStateChangeListener(any());
+    }
+
+    @Test
     public void moveFromTop() {
         // Drag to the top
         PartialCustomTabBottomSheetStrategy strategy = createPcctAtHeight(500);
@@ -925,6 +945,7 @@ public class PartialCustomTabBottomSheetStrategyTest {
     @Features.EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET})
     public void enterAndExitHtmlFullscreen() {
         PartialCustomTabBottomSheetStrategy strategy = createPcctAtHeight(500);
+        strategy.createHandleStrategyForTesting();
         verify(mPCCTTestRule.mOnActivityLayoutCallback)
                 .onActivityLayout(anyInt(), anyInt(), anyInt(), anyInt(),
                         eq(ACTIVITY_LAYOUT_STATE_BOTTOM_SHEET));
@@ -987,6 +1008,7 @@ public class PartialCustomTabBottomSheetStrategyTest {
     @Test
     public void rotateAcrossFullscreenMode() {
         PartialCustomTabBottomSheetStrategy strategy = createPcctAtHeight(500);
+        strategy.createHandleStrategyForTesting();
         int height = getWindowAttributes().height;
 
         mPCCTTestRule.mConfiguration.orientation = Configuration.ORIENTATION_LANDSCAPE;

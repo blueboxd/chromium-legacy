@@ -13,16 +13,18 @@ static_library("core") {
     "constants.h",
     "features.cc",
     "features.h",
-    "msbb_delegate.h",
     "promo_handler.cc",
     "promo_handler.h",
     "signin_delegate.h",
+    "utils.cc",
+    "utils.h",
   ]
-
+  public_deps = [ "//third_party/abseil-cpp:absl" ]
   deps = [
     "mojom:mojo_bindings",
     "proto",
     "//base",
+    "//chrome/browser/ui/side_panel:side_panel_enums",
     "//components/prefs",
     "//components/unified_consent",
     "//content/public/browser",
@@ -38,7 +40,10 @@ source_set("unit_tests") {
   sources = [
     "companion_metrics_logger_unittest.cc",
     "companion_url_builder_unittest.cc",
+    "mock_signin_delegate.cc",
+    "mock_signin_delegate.h",
     "promo_handler_unittest.cc",
+    "utils_unittest.cc",
   ]
 
   deps = [
@@ -47,6 +52,7 @@ source_set("unit_tests") {
     "proto",
     "//base",
     "//base/test:test_support",
+    "//chrome/browser/ui/side_panel:side_panel_enums",
     "//chrome/test:test_support",
     "//components/prefs",
     "//components/ukm:test_support",

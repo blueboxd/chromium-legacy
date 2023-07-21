@@ -26,6 +26,7 @@
 
 namespace blink {
 
+class AdAuctionDataConfig;
 class AdRequestConfig;
 class Ads;
 class AuctionAdInterestGroup;
@@ -47,14 +48,19 @@ class MODULES_EXPORT NavigatorAuction final
   // See platform/Supplementable.h
   static NavigatorAuction& From(ExecutionContext*, Navigator&);
 
+  // TODO(crbug.com/1441988): Make `const AuctionAdInterestGroup*` after rename.
   ScriptPromise joinAdInterestGroup(ScriptState*,
-                                    const AuctionAdInterestGroup*,
-                                    double,
+                                    AuctionAdInterestGroup*,
+                                    absl::optional<double>,
                                     ExceptionState&);
   static ScriptPromise joinAdInterestGroup(ScriptState*,
                                            Navigator&,
-                                           const AuctionAdInterestGroup*,
+                                           AuctionAdInterestGroup*,
                                            double,
+                                           ExceptionState&);
+  static ScriptPromise joinAdInterestGroup(ScriptState*,
+                                           Navigator&,
+                                           AuctionAdInterestGroup*,
                                            ExceptionState&);
   ScriptPromise leaveAdInterestGroup(ScriptState*,
                                      const AuctionAdInterestGroupKey*,
@@ -72,12 +78,11 @@ class MODULES_EXPORT NavigatorAuction final
 
   void updateAdInterestGroups();
   static void updateAdInterestGroups(ScriptState*, Navigator&, ExceptionState&);
-  ScriptPromise runAdAuction(ScriptState*,
-                             const AuctionAdConfig*,
-                             ExceptionState&);
+  // TODO(crbug.com/1441988): Make `const AuctionAdConfig*` after rename.
+  ScriptPromise runAdAuction(ScriptState*, AuctionAdConfig*, ExceptionState&);
   static ScriptPromise runAdAuction(ScriptState*,
                                     Navigator&,
-                                    const AuctionAdConfig*,
+                                    AuctionAdConfig*,
                                     ExceptionState&);
 
   // If called from a FencedFrame that was navigated to the URN resulting from
@@ -121,6 +126,15 @@ class MODULES_EXPORT NavigatorAuction final
       Navigator& navigator,
       const V8UnionFencedFrameConfigOrUSVString* urn_or_config,
       const Vector<std::pair<String, String>>& replacement,
+      ExceptionState& exception_state);
+
+  ScriptPromise getInterestGroupAdAuctionData(ScriptState* script_state,
+                                              const AdAuctionDataConfig* config,
+                                              ExceptionState& exception_state);
+  static ScriptPromise getInterestGroupAdAuctionData(
+      ScriptState* script_state,
+      Navigator& navigator,
+      const AdAuctionDataConfig* config,
       ExceptionState& exception_state);
 
   ScriptPromise createAdRequest(ScriptState*,
@@ -201,6 +215,9 @@ class MODULES_EXPORT NavigatorAuction final
                              const absl::optional<KURL>&);
   // Completion callback for Mojo call made by deprecatedReplaceInURNComplete().
   void ReplaceInURNComplete(ScriptPromiseResolver* resolver);
+
+  void GetInterestGroupAdAuctionDataComplete(ScriptPromiseResolver* resolver,
+                                             mojo_base::BigBuffer data);
 
   // Manage queues of cross-site join and leave operations that have yet to be
   // sent to the browser process.

@@ -7,7 +7,7 @@ import 'chrome://resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_ar
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
-import '../../settings_shared.css.js';
+import '../settings_shared.css.js';
 
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {CrFingerprintProgressArcElement} from 'chrome://resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.js';
@@ -53,14 +53,14 @@ const ONBOARDING_ANIMATION_LIGHT: string =
 const SettingsSetupFingerprintDialogElementBase =
     I18nMixin(WebUiListenerMixin(PolymerElement));
 
-interface SettingsSetupFingerprintDialogElement {
+export interface SettingsSetupFingerprintDialogElement {
   $: {
     dialog: CrDialogElement,
     arc: CrFingerprintProgressArcElement,
   };
 }
 
-class SettingsSetupFingerprintDialogElement extends
+export class SettingsSetupFingerprintDialogElement extends
     SettingsSetupFingerprintDialogElementBase {
   static get is() {
     return 'settings-setup-fingerprint-dialog' as const;
@@ -206,6 +206,16 @@ class SettingsSetupFingerprintDialogElement extends
    * on scan results.
    */
   private onScanReceived_(scan: FingerprintScan): void {
+    if (scan.isComplete) {
+      this.problemMessage_ = '';
+      this.step_ = FingerprintSetupStep.READY;
+      this.clearSensorMessageTimeout_();
+      const event =
+          new CustomEvent('add-fingerprint', {bubbles: true, composed: true});
+      this.dispatchEvent(event);
+      this.percentComplete_ = scan.percentComplete;
+      return;
+    }
     switch (this.step_) {
       case FingerprintSetupStep.LOCATE_SCANNER:
         this.$.arc.reset();
@@ -214,16 +224,7 @@ class SettingsSetupFingerprintDialogElement extends
         this.setProblem_(scan.result);
         break;
       case FingerprintSetupStep.MOVE_FINGER:
-        if (scan.isComplete) {
-          this.problemMessage_ = '';
-          this.step_ = FingerprintSetupStep.READY;
-          this.clearSensorMessageTimeout_();
-          const event = new CustomEvent(
-              'add-fingerprint', {bubbles: true, composed: true});
-          this.dispatchEvent(event);
-        } else {
-          this.setProblem_(scan.result);
-        }
+        this.setProblem_(scan.result);
         this.percentComplete_ = scan.percentComplete;
         break;
       case FingerprintSetupStep.READY:

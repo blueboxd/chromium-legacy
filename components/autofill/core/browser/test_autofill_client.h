@@ -386,7 +386,9 @@ class TestAutofillClientTemplate : public T {
 
   void ShowAutofillPopup(
       const AutofillClient::PopupOpenArgs& open_args,
-      base::WeakPtr<AutofillPopupDelegate> delegate) override {}
+      base::WeakPtr<AutofillPopupDelegate> delegate) override {
+    is_showing_popup_ = true;
+  }
 
   void UpdateAutofillPopupDataListValues(
       const std::vector<std::u16string>& values,
@@ -403,12 +405,27 @@ class TestAutofillClientTemplate : public T {
   void UpdatePopup(const std::vector<Suggestion>& suggestions,
                    PopupType popup_type) override {}
 
-  void HideAutofillPopup(PopupHidingReason reason) override {}
+  void HideAutofillPopup(PopupHidingReason reason) override {
+    popup_hidden_reason_ = reason;
+    is_showing_popup_ = false;
+  }
+
+  bool IsShowingAutofillPopup() { return is_showing_popup_; }
+
+  PopupHidingReason popup_hiding_reason() { return popup_hidden_reason_; }
 
   void ShowVirtualCardErrorDialog(
       const AutofillErrorDialogContext& context) override {
     virtual_card_error_dialog_shown_ = true;
     autofill_error_dialog_context_ = context;
+  }
+
+  void CloseAutofillProgressDialog(
+      bool show_confirmation_before_closing,
+      base::OnceClosure no_user_perceived_authentication_callback) override {
+    if (no_user_perceived_authentication_callback) {
+      std::move(no_user_perceived_authentication_callback).Run();
+    }
   }
 
   bool IsAutocompleteEnabled() const override { return true; }
@@ -432,7 +449,7 @@ class TestAutofillClientTemplate : public T {
     return form_origin_.SchemeIs("https");
   }
 
-  void ExecuteCommand(int id) override {}
+  void ExecuteCommand(Suggestion::FrontendId id) override {}
 
   void OpenPromoCodeOfferDetailsURL(const GURL& url) override {}
 
@@ -692,6 +709,10 @@ class TestAutofillClientTemplate : public T {
   version_info::Channel channel_for_testing_ = version_info::Channel::UNKNOWN;
 
   bool is_off_the_record_ = false;
+
+  bool is_showing_popup_ = false;
+
+  PopupHidingReason popup_hidden_reason_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_ =

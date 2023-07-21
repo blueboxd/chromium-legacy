@@ -42,7 +42,6 @@
 #include "third_party/blink/renderer/core/animation/sampled_effect.h"
 #include "third_party/blink/renderer/core/animation/timing_calculations.h"
 #include "third_party/blink/renderer/core/animation/timing_input.h"
-#include "third_party/blink/renderer/core/animation/view_timeline.h"
 #include "third_party/blink/renderer/core/css/parser/css_selector_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/properties/longhands.h"
@@ -172,7 +171,8 @@ KeyframeEffect* KeyframeEffect::Create(
   if (!pseudo.empty()) {
     effect->target_pseudo_ = pseudo;
     if (element) {
-      element->GetDocument().UpdateStyleAndLayoutTreeForNode(element);
+      element->GetDocument().UpdateStyleAndLayoutTreeForNode(
+          element, DocumentUpdateReason::kWebAnimation);
       PseudoId pseudo_id =
           CSSSelectorParser::ParsePseudoElement(pseudo, element);
       AtomicString pseudo_argument =
@@ -269,7 +269,7 @@ void KeyframeEffect::RefreshTarget() {
     new_target = target_element_;
   } else {
     target_element_->GetDocument().UpdateStyleAndLayoutTreeForNode(
-        target_element_);
+        target_element_, DocumentUpdateReason::kWebAnimation);
     PseudoId pseudoId =
         CSSSelectorParser::ParsePseudoElement(target_pseudo_, target_element_);
     new_target = target_element_->GetPseudoElement(pseudoId);
@@ -303,9 +303,8 @@ HeapVector<ScriptValue> KeyframeEffect::getKeyframes(
     ScriptState* script_state) {
   if (Animation* animation = GetAnimation()) {
     animation->FlushPendingUpdates();
-    if (ViewTimeline* view_timeline =
-            DynamicTo<ViewTimeline>(animation->timeline())) {
-      view_timeline->ResolveTimelineOffsets();
+    if (AnimationTimeline* timeline = animation->TimelineInternal()) {
+      animation->ResolveTimelineOffsets(timeline->GetTimelineRange());
     }
   }
 
@@ -777,8 +776,8 @@ AnimationTimeDelta KeyframeEffect::CalculateTimeToEffectChange(
 }
 
 absl::optional<AnimationTimeDelta> KeyframeEffect::TimelineDuration() const {
-  if (GetAnimation() && GetAnimation()->timeline()) {
-    return GetAnimation()->timeline()->GetDuration();
+  if (GetAnimation() && GetAnimation()->TimelineInternal()) {
+    return GetAnimation()->TimelineInternal()->GetDuration();
   }
   return absl::nullopt;
 }

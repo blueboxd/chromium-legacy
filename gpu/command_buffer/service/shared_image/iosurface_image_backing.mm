@@ -14,13 +14,15 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/iosurface_image_backing_factory.h"
-#include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_format_service_utils.h"
 #include "gpu/command_buffer/service/shared_image/skia_graphite_dawn_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrContextThreadSafeProxy.h"
+#include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
 #include "third_party/skia/include/gpu/graphite/Recorder.h"
+#include "third_party/skia/include/gpu/graphite/Surface.h"
 #include "ui/gl/egl_surface_io_surface.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_display.h"
@@ -282,7 +284,7 @@ std::vector<sk_sp<SkSurface>> SkiaIOSurfaceRepresentation::BeginWriteAccess(
     if (sk_color_type == kGray_8_SkColorType) {
       sk_color_type = kAlpha_8_SkColorType;
     }
-    auto surface = SkSurface::MakeFromBackendTexture(
+    auto surface = SkSurfaces::WrapBackendTexture(
         context_state_->gr_context(),
         promise_textures_[plane_index]->backendTexture(), surface_origin(),
         final_msaa_count, sk_color_type,
@@ -396,7 +398,9 @@ class IOSurfaceImageBacking::SkiaGraphiteIOSurfaceRepresentation
   std::vector<sk_sp<SkSurface>> BeginWriteAccess(
       const SkSurfaceProps& surface_props,
       const gfx::Rect& update_rect) override {
-    backing_impl()->HandleBeginAccessSync(/*readonly=*/false);
+    if (!backing_impl()->HandleBeginAccessSync(/*readonly=*/false)) {
+      return {};
+    }
     if (!write_surfaces_.empty()) {
       // Write access is already in progress.
       return {};
@@ -416,7 +420,7 @@ class IOSurfaceImageBacking::SkiaGraphiteIOSurfaceRepresentation
 
       skgpu::graphite::BackendTexture backend_texture(
           sk_size, mtl_textures_[plane].get());
-      auto surface = SkSurface::MakeGraphiteFromBackendTexture(
+      auto surface = SkSurfaces::WrapBackendTexture(
           recorder_, backend_texture, sk_color_type,
           backing()->color_space().GetAsFullRangeRGB().ToSkColorSpace(),
           &surface_props);
@@ -426,7 +430,9 @@ class IOSurfaceImageBacking::SkiaGraphiteIOSurfaceRepresentation
   }
 
   std::vector<skgpu::graphite::BackendTexture> BeginWriteAccess() override {
-    backing_impl()->HandleBeginAccessSync(/*readonly=*/false);
+    if (!backing_impl()->HandleBeginAccessSync(/*readonly=*/false)) {
+      return {};
+    }
     return CreateGraphiteMetalTextures(mtl_textures_, format(), size());
   }
 
@@ -439,7 +445,9 @@ class IOSurfaceImageBacking::SkiaGraphiteIOSurfaceRepresentation
   }
 
   std::vector<skgpu::graphite::BackendTexture> BeginReadAccess() override {
-    backing_impl()->HandleBeginAccessSync(/*readonly=*/true);
+    if (!backing_impl()->HandleBeginAccessSync(/*readonly=*/true)) {
+      return {};
+    }
     return CreateGraphiteMetalTextures(mtl_textures_, format(), size());
   }
 
@@ -548,14 +556,15 @@ DawnIOSurfaceRepresentation::~DawnIOSurfaceRepresentation() {
   dawn_procs_.deviceRelease(device_);
 }
 
-WGPUTexture DawnIOSurfaceRepresentation::BeginAccess(WGPUTextureUsage usage) {
+WGPUTexture DawnIOSurfaceRepresentation::BeginAccess(
+    WGPUTextureUsage wgpu_texture_usage) {
   const std::string debug_label =
-      "IOSurface(" + CreateLabelForSharedImageUsage(usage) + ")";
+      "IOSurface(" + CreateLabelForSharedImageUsage(usage()) + ")";
 
   WGPUTextureDescriptor texture_descriptor = {};
   texture_descriptor.label = debug_label.c_str();
   texture_descriptor.format = wgpu_format_;
-  texture_descriptor.usage = usage;
+  texture_descriptor.usage = wgpu_texture_usage;
   texture_descriptor.dimension = WGPUTextureDimension_2D;
   texture_descriptor.size = {static_cast<uint32_t>(size().width()),
                              static_cast<uint32_t>(size().height()), 1};
@@ -1079,14 +1088,29 @@ void IOSurfaceImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
   }
 }
 
-void IOSurfaceImageBacking::HandleBeginAccessSync(bool readonly) {
-  CHECK(!ongoing_write_access_);
+bool IOSurfaceImageBacking::HandleBeginAccessSync(bool readonly) {
+  if (!readonly && ongoing_write_access_) {
+    DLOG(ERROR) << "Unable to begin write access because another "
+                   "write access is in progress";
+    return false;
+  }
+  // Track reads and writes if not being used for concurrent read/writes.
+  if (!(usage() & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE)) {
+    if (readonly && ongoing_write_access_) {
+      DLOG(ERROR) << "Unable to begin read access because another "
+                     "write access is in progress";
+      return false;
+    }
+    if (!readonly && num_ongoing_read_accesses_) {
+      DLOG(ERROR) << "Unable to begin write access because a read access is in "
+                     "progress";
+      return false;
+    }
+  }
+
   if (readonly) {
     num_ongoing_read_accesses_++;
   } else {
-    if (!(usage() & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE)) {
-      CHECK_EQ(num_ongoing_read_accesses_, 0u);
-    }
     ongoing_write_access_ = true;
   }
 
@@ -1098,6 +1122,8 @@ void IOSurfaceImageBacking::HandleBeginAccessSync(bool readonly) {
       fence.Wait();
     }
   }
+
+  return true;
 }
 
 void IOSurfaceImageBacking::HandleEndAccessSync(bool readonly) {
@@ -1121,7 +1147,9 @@ bool IOSurfaceImageBacking::IOSurfaceBackingEGLStateBeginAccess(
     bool readonly) {
   // It is in error to read or write an IOSurface while it is purgeable.
   CHECK(!purgeable_);
-  HandleBeginAccessSync(readonly);
+  if (!HandleBeginAccessSync(readonly)) {
+    return false;
+  }
 
   // If the GL texture is already bound (the bind is not marked as pending),
   // then early-out.

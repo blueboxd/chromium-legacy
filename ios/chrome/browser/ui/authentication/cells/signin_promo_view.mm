@@ -14,10 +14,12 @@
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_delegate.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
+#import "ios/chrome/common/ui/util/sdk_forward_declares.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -203,27 +205,22 @@ constexpr CGFloat kCompactStyleTextSize = 15.0;
     _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
 
     // Create and setup primary button.
-    // TODO(crbug.com/1418068): Simplify after minimum version required is >=
-    // iOS 15.
-    if (base::ios::IsRunningOnIOS15OrLater() &&
-        IsUIButtonConfigurationEnabled()) {
-      if (@available(iOS 15, *)) {
-        UIButtonConfiguration* buttonConfiguration =
-            [UIButtonConfiguration plainButtonConfiguration];
-        _primaryButton = [UIButton buttonWithConfiguration:buttonConfiguration
-                                             primaryAction:nil];
-      }
+    _primaryButton = [[UIButton alloc] init];
+    if (IsUIButtonConfigurationEnabled()) {
+      UIButtonConfiguration* buttonConfiguration =
+          [UIButtonConfiguration plainButtonConfiguration];
+      buttonConfiguration.titleLineBreakMode = NSLineBreakByTruncatingTail;
+      _primaryButton.configuration = buttonConfiguration;
     } else {
-      _primaryButton = [[UIButton alloc] init];
+      [_primaryButton.titleLabel
+          setFont:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]];
+      _primaryButton.titleLabel.adjustsFontSizeToFitWidth = YES;
+      _primaryButton.titleLabel.minimumScaleFactor = 0.7;
+      _primaryButton.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
     }
 
-    [_primaryButton.titleLabel
-        setFont:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]];
-    _primaryButton.titleLabel.adjustsFontSizeToFitWidth = YES;
-    _primaryButton.titleLabel.minimumScaleFactor = 0.7;
     _primaryButton.accessibilityIdentifier = kSigninPromoPrimaryButtonId;
     _primaryButton.translatesAutoresizingMaskIntoConstraints = NO;
-    _primaryButton.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
     [_primaryButton addTarget:self
                        action:@selector(onPrimaryButtonAction:)
              forControlEvents:UIControlEventTouchUpInside];
@@ -359,6 +356,11 @@ constexpr CGFloat kCompactStyleTextSize = 15.0;
       self.imageView.image = nil;
       self.imageView.backgroundColor =
           [UIColor colorNamed:kPrimaryBackgroundColor];
+      // TODO(b/287118358): Cleanup IsMagicStackEnabled() code from the sync
+      // promo after experiment.
+      if (IsMagicStackEnabled()) {
+        self.imageView.backgroundColor = [UIColor colorNamed:kGrey100Color];
+      }
       self.imageView.layer.cornerRadius = kNonProfileIconCornerRadius;
 
       logoImageView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -423,6 +425,42 @@ constexpr CGFloat kCompactStyleTextSize = 15.0;
   self.primaryButton.enabled = YES;
   self.secondaryButton.enabled = YES;
   self.closeButton.enabled = YES;
+}
+
+// Configures primary button with a standard font.
+- (void)configurePrimaryButtonWithTitle:(NSString*)title {
+  if (IsUIButtonConfigurationEnabled()) {
+    // Declaring variables that are used throughout different switch cases.
+    UIFont* font;
+    NSAttributedString* attributedTitle;
+    NSDictionary* attributes;
+    UIButtonConfiguration* buttonConfiguration =
+        self.primaryButton.configuration;
+
+    // Customize UIButton based on SigninPromoViewStyle.
+    switch (self.promoViewStyle) {
+      case SigninPromoViewStyleCompactVertical:
+        font = [[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
+            fontWithSize:kSignInPromoHeadlineFontSize];
+        attributes = @{NSFontAttributeName : font};
+        attributedTitle =
+            [[NSAttributedString alloc] initWithString:title
+                                            attributes:attributes];
+        buttonConfiguration.attributedTitle = attributedTitle;
+        break;
+      default:
+        font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+        attributes = @{NSFontAttributeName : font};
+        attributedTitle =
+            [[NSAttributedString alloc] initWithString:title
+                                            attributes:attributes];
+        buttonConfiguration.attributedTitle = attributedTitle;
+        break;
+    }
+    self.primaryButton.configuration = buttonConfiguration;
+  } else {
+    [self.primaryButton setTitle:title forState:UIControlStateNormal];
+  }
 }
 
 #pragma mark - NSObject(Accessibility)
@@ -656,27 +694,26 @@ constexpr CGFloat kCompactStyleTextSize = 15.0;
       self.textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
 
       // In the standard layout, the button has a background.
-      [self.primaryButton
-          setTitleColor:[UIColor colorNamed:kSolidButtonTextColor]
-               forState:UIControlStateNormal];
       self.primaryButton.backgroundColor = [UIColor colorNamed:kBlueColor];
       self.primaryButton.layer.cornerRadius =
           kStandardPromoStyle.kButtonCornerRadius;
       self.primaryButton.clipsToBounds = YES;
 
-      // TODO(crbug.com/1418068): Simplify after minimum version required is >=
-      // iOS 15.
-      if (base::ios::IsRunningOnIOS15OrLater() &&
-          IsUIButtonConfigurationEnabled()) {
-        if (@available(iOS 15, *)) {
-          self.primaryButton.configuration.contentInsets =
-              NSDirectionalEdgeInsetsMake(
-                  kStandardPromoStyle.kButtonTitleVerticalContentInset,
-                  kStandardPromoStyle.kButtonTitleHorizontalContentInset,
-                  kStandardPromoStyle.kButtonTitleVerticalContentInset,
-                  kStandardPromoStyle.kButtonTitleHorizontalContentInset);
-        }
+      if (IsUIButtonConfigurationEnabled()) {
+        UIButtonConfiguration* buttonConfiguration =
+            self.primaryButton.configuration;
+        buttonConfiguration.baseForegroundColor =
+            [UIColor colorNamed:kSolidButtonTextColor];
+        buttonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(
+            kStandardPromoStyle.kButtonTitleVerticalContentInset,
+            kStandardPromoStyle.kButtonTitleHorizontalContentInset,
+            kStandardPromoStyle.kButtonTitleVerticalContentInset,
+            kStandardPromoStyle.kButtonTitleHorizontalContentInset);
+        self.primaryButton.configuration = buttonConfiguration;
       } else {
+        [self.primaryButton
+            setTitleColor:[UIColor colorNamed:kSolidButtonTextColor]
+                 forState:UIControlStateNormal];
         UIEdgeInsets contentEdgeInsets = UIEdgeInsetsMake(
             kStandardPromoStyle.kButtonTitleVerticalContentInset,
             kStandardPromoStyle.kButtonTitleHorizontalContentInset,
@@ -715,26 +752,25 @@ constexpr CGFloat kCompactStyleTextSize = 15.0;
       self.textLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
 
       // In the titled compact layout, the primary button is plain.
-      [self.primaryButton setTitleColor:[UIColor colorNamed:kBlueColor]
-                               forState:UIControlStateNormal];
       self.primaryButton.backgroundColor = nil;
       self.primaryButton.layer.cornerRadius =
           kTitledCompactPromoStyle.kButtonCornerRadius;
       self.primaryButton.clipsToBounds = NO;
 
-      // TODO(crbug.com/1418068): Simplify after minimum version required is >=
-      // iOS 15.
-      if (base::ios::IsRunningOnIOS15OrLater() &&
-          IsUIButtonConfigurationEnabled()) {
-        if (@available(iOS 15, *)) {
-          self.primaryButton.configuration.contentInsets =
-              NSDirectionalEdgeInsetsMake(
-                  kTitledCompactPromoStyle.kButtonTitleVerticalContentInset,
-                  kTitledCompactPromoStyle.kButtonTitleHorizontalContentInset,
-                  kTitledCompactPromoStyle.kButtonTitleVerticalContentInset,
-                  kTitledCompactPromoStyle.kButtonTitleHorizontalContentInset);
-        }
+      if (IsUIButtonConfigurationEnabled()) {
+        UIButtonConfiguration* buttonConfiguration =
+            self.primaryButton.configuration;
+        buttonConfiguration.baseForegroundColor =
+            [UIColor colorNamed:kBlueColor];
+        buttonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(
+            kTitledCompactPromoStyle.kButtonTitleVerticalContentInset,
+            kTitledCompactPromoStyle.kButtonTitleHorizontalContentInset,
+            kTitledCompactPromoStyle.kButtonTitleVerticalContentInset,
+            kTitledCompactPromoStyle.kButtonTitleHorizontalContentInset);
+        self.primaryButton.configuration = buttonConfiguration;
       } else {
+        [self.primaryButton setTitleColor:[UIColor colorNamed:kBlueColor]
+                                 forState:UIControlStateNormal];
         UIEdgeInsets contentEdgeInsets = UIEdgeInsetsMake(
             kTitledCompactPromoStyle.kButtonTitleVerticalContentInset,
             kTitledCompactPromoStyle.kButtonTitleHorizontalContentInset,
@@ -771,26 +807,25 @@ constexpr CGFloat kCompactStyleTextSize = 15.0;
       self.textLabel.textColor = [UIColor colorNamed:kGrey800Color];
 
       // In the Compact Horizontal style, the primary button is plain.
-      [self.primaryButton setTitleColor:[UIColor colorNamed:kBlueColor]
-                               forState:UIControlStateNormal];
       self.primaryButton.backgroundColor = nil;
       self.primaryButton.layer.cornerRadius =
           kCompactHorizontalStyle.kButtonCornerRadius;
       self.primaryButton.clipsToBounds = NO;
 
-      // TODO(crbug.com/1418068): Simplify after minimum version required is >=
-      // iOS 15.
-      if (base::ios::IsRunningOnIOS15OrLater() &&
-          IsUIButtonConfigurationEnabled()) {
-        if (@available(iOS 15, *)) {
-          self.primaryButton.configuration.contentInsets =
-              NSDirectionalEdgeInsetsMake(
-                  kCompactHorizontalStyle.kButtonTitleVerticalContentInset,
-                  kCompactHorizontalStyle.kButtonTitleHorizontalContentInset,
-                  kCompactHorizontalStyle.kButtonTitleVerticalContentInset,
-                  kCompactHorizontalStyle.kButtonTitleHorizontalContentInset);
-        }
+      if (IsUIButtonConfigurationEnabled()) {
+        UIButtonConfiguration* buttonConfiguration =
+            self.primaryButton.configuration;
+        buttonConfiguration.baseForegroundColor =
+            [UIColor colorNamed:kBlueColor];
+        buttonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(
+            kCompactHorizontalStyle.kButtonTitleVerticalContentInset,
+            kCompactHorizontalStyle.kButtonTitleHorizontalContentInset,
+            kCompactHorizontalStyle.kButtonTitleVerticalContentInset,
+            kCompactHorizontalStyle.kButtonTitleHorizontalContentInset);
+        self.primaryButton.configuration = buttonConfiguration;
       } else {
+        [self.primaryButton setTitleColor:[UIColor colorNamed:kBlueColor]
+                                 forState:UIControlStateNormal];
         UIEdgeInsets contentEdgeInsets = UIEdgeInsetsMake(
             kCompactHorizontalStyle.kButtonTitleVerticalContentInset,
             kCompactHorizontalStyle.kButtonTitleHorizontalContentInset,
@@ -821,31 +856,35 @@ constexpr CGFloat kCompactStyleTextSize = 15.0;
           [[UIFont preferredFontForTextStyle:UIFontTextStyleBody]
               fontWithSize:kCompactStyleTextSize];
       self.textLabel.textColor = [UIColor colorNamed:kGrey800Color];
-
-      [self.primaryButton setTitleColor:[UIColor colorNamed:kBlueColor]
-                               forState:UIControlStateNormal];
-      self.primaryButton.titleLabel.font =
-          [[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
-              fontWithSize:kSignInPromoHeadlineFontSize];
       self.primaryButton.backgroundColor =
           [UIColor colorNamed:kBackgroundColor];
+      // TODO(b/287118358): Cleanup IsMagicStackEnabled() code from the sync
+      // promo after experiment.
+      if (IsMagicStackEnabled()) {
+        self.primaryButton.backgroundColor =
+            [UIColor colorNamed:kBlueHaloColor];
+      }
       self.primaryButton.layer.cornerRadius =
           kCompactVerticalStyle.kButtonCornerRadius;
       self.primaryButton.clipsToBounds = YES;
 
-      // TODO(crbug.com/1418068): Simplify after minimum version required is >=
-      // iOS 15.
-      if (base::ios::IsRunningOnIOS15OrLater() &&
-          IsUIButtonConfigurationEnabled()) {
-        if (@available(iOS 15, *)) {
-          self.primaryButton.configuration.contentInsets =
-              NSDirectionalEdgeInsetsMake(
-                  kCompactVerticalStyle.kButtonTitleVerticalContentInset,
-                  kCompactVerticalStyle.kButtonTitleHorizontalContentInset,
-                  kCompactVerticalStyle.kButtonTitleVerticalContentInset,
-                  kCompactVerticalStyle.kButtonTitleHorizontalContentInset);
-        }
+      if (IsUIButtonConfigurationEnabled()) {
+        UIButtonConfiguration* buttonConfiguration =
+            self.primaryButton.configuration;
+        buttonConfiguration.baseForegroundColor =
+            [UIColor colorNamed:kBlueColor];
+        buttonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(
+            kCompactVerticalStyle.kButtonTitleVerticalContentInset,
+            kCompactVerticalStyle.kButtonTitleHorizontalContentInset,
+            kCompactVerticalStyle.kButtonTitleVerticalContentInset,
+            kCompactVerticalStyle.kButtonTitleHorizontalContentInset);
+        self.primaryButton.configuration = buttonConfiguration;
       } else {
+        [self.primaryButton setTitleColor:[UIColor colorNamed:kBlueColor]
+                                 forState:UIControlStateNormal];
+        self.primaryButton.titleLabel.font =
+            [[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
+                fontWithSize:kSignInPromoHeadlineFontSize];
         UIEdgeInsets contentEdgeInsets = UIEdgeInsetsMake(
             kCompactVerticalStyle.kButtonTitleVerticalContentInset,
             kCompactVerticalStyle.kButtonTitleHorizontalContentInset,

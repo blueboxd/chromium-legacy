@@ -280,8 +280,11 @@ void CaptureModeSessionFocusCycler::HighlightableView::PseudoFocus() {
                                     : StyleUtil::SetUpFocusRingForView(view);
     // Use a custom focus predicate as the default one checks if |view| actually
     // has focus which won't be happening since our widgets are not activatable.
-    focus_ring_->SetHasFocusPredicate(
-        [&](views::View* view) { return view->GetVisible() && has_focus_; });
+    focus_ring_->SetHasFocusPredicate(base::BindRepeating(
+        [](const HighlightableView* highlightable, const views::View* view) {
+          return view->GetVisible() && highlightable->has_focus_;
+        },
+        base::Unretained(this)));
   }
 
   if (needs_highlight_path_) {
@@ -581,8 +584,10 @@ bool CaptureModeSessionFocusCycler::OnSpacePressed() {
   // currently has focus and we are already in region mode, as we still want to
   // create a default region in this case.
   CaptureModeBarView* bar_view = session_->capture_mode_bar_view_;
-  if (view->GetView() ==
-          bar_view->capture_source_view()->region_toggle_button() &&
+  if (const CaptureModeSourceView* capture_source_view =
+          bar_view->GetCaptureSourceView();
+      capture_source_view &&
+      view->GetView() == capture_source_view->region_toggle_button() &&
       CaptureModeController::Get()->source() == CaptureModeSource::kRegion) {
     return false;
   }
@@ -799,8 +804,11 @@ CaptureModeSessionFocusCycler::GetGroupItems(FocusGroup group) const {
       break;
     case FocusGroup::kTypeSource: {
       CaptureModeBarView* bar_view = session_->capture_mode_bar_view_;
-      CaptureModeTypeView* type_view = bar_view->capture_type_view();
-      CaptureModeSourceView* source_view = bar_view->capture_source_view();
+      CaptureModeTypeView* type_view = bar_view->GetCaptureTypeView();
+      CaptureModeSourceView* source_view = bar_view->GetCaptureSourceView();
+      if (!type_view || !source_view) {
+        break;
+      }
       for (auto* button :
            {type_view->image_toggle_button(), type_view->video_toggle_button(),
             source_view->fullscreen_toggle_button(),

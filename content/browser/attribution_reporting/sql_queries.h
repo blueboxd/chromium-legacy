@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_ATTRIBUTION_REPORTING_SQL_QUERIES_H_
 
 #include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
+#include "content/browser/attribution_reporting/rate_limit_table.h"
 
 namespace content::attribution_queries {
 
@@ -66,17 +67,17 @@ inline constexpr const char kDedupKeySql[] =
     "SELECT dedup_key FROM dedup_keys WHERE source_id=? AND report_type=?";
 
 inline constexpr const char kGetSourcesDataKeysSql[] =
-    "SELECT DISTINCT reporting_origin FROM sources";
+    "SELECT reporting_origin FROM sources";
 
 static_assert(
     static_cast<int>(
         attribution_reporting::mojom::ReportType::kNullAggregatable) == 2,
     "update `report_type=2` clause below");
 inline constexpr const char kGetNullReportsDataKeysSql[] =
-    "SELECT DISTINCT reporting_origin FROM reports WHERE report_type=2";
+    "SELECT reporting_origin FROM reports WHERE report_type=2";
 
 inline constexpr const char kGetRateLimitDataKeysSql[] =
-    "SELECT DISTINCT reporting_origin FROM rate_limits";
+    "SELECT reporting_origin FROM rate_limits";
 
 inline constexpr const char kCountReportsForDestinationSql[] =
     "SELECT COUNT(*)FROM source_destinations D "
@@ -117,6 +118,7 @@ inline constexpr const char kSetReportTimeSql[] =
   prefix "debug_key,"                          \
   prefix "num_attributions,"                   \
   prefix "aggregatable_budget_consumed,"       \
+  prefix "num_aggregatable_reports,"           \
   prefix "aggregatable_source,"                \
   prefix "filter_data,"                        \
   prefix "event_level_active,"                 \
@@ -165,14 +167,14 @@ inline constexpr const char kRateLimitAttributionAllowedSql[] =
     "WHERE scope=1 "
     "AND destination_site=? "
     "AND source_site=? "
-    "AND reporting_origin=? "
+    "AND reporting_site=? "
     "AND time>?";
 
 inline constexpr const char kRateLimitSourceAllowedSql[] =
     "SELECT destination_site FROM rate_limits "
     "WHERE scope=0 "
     "AND source_site=? "
-    "AND reporting_origin=? "
+    "AND reporting_site=? "
     "AND source_expiry_or_attribution_time>?";
 
 inline constexpr const char kRateLimitSelectReportingOriginsSql[] =
@@ -180,6 +182,15 @@ inline constexpr const char kRateLimitSelectReportingOriginsSql[] =
     "WHERE scope=? "
     "AND source_site=? "
     "AND destination_site=? "
+    "AND time>?";
+
+static_assert(static_cast<int>(RateLimitTable::Scope::kSource) == 0,
+              "update `scope=0` clause below");
+inline constexpr const char kRateLimitSelectSourceReportingOriginsBySiteSql[] =
+    "SELECT reporting_origin FROM rate_limits "
+    "WHERE scope=0 "
+    "AND source_site=?"
+    "AND reporting_site=? "
     "AND time>?";
 
 inline constexpr const char kDeleteRateLimitRangeSql[] =

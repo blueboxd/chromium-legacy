@@ -17,7 +17,6 @@
 #include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
-#include "components/sync/driver/glue/sync_transport_data_prefs.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/invalidations/sync_invalidations_service.h"
 #include "components/sync/protocol/data_type_progress_marker.pb.h"
@@ -26,6 +25,7 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/protocol/sync_entity.pb.h"
 #include "components/sync/protocol/sync_enums.pb.h"
+#include "components/sync/service/glue/sync_transport_data_prefs.h"
 #include "components/sync/test/bookmark_entity_builder.h"
 #include "components/sync/test/entity_builder_factory.h"
 #include "components/sync_device_info/device_info_sync_service.h"
@@ -95,7 +95,7 @@ MATCHER_P(InterestedDataTypesAre, expected_data_types, "") {
   return data_types == expected_data_types;
 }
 
-MATCHER_P(InterestedDataTypesContain, expected_data_types, "") {
+MATCHER_P(InterestedDataTypesContain, expected_data_type, "") {
   syncer::ModelTypeSet data_types;
   for (const int field_number : arg.specifics()
                                     .device_info()
@@ -108,7 +108,7 @@ MATCHER_P(InterestedDataTypesContain, expected_data_types, "") {
     }
     data_types.Put(data_type);
   }
-  return data_types.HasAll(expected_data_types);
+  return data_types.Has(expected_data_type);
 }
 
 MATCHER(HasInstanceIdToken, "") {

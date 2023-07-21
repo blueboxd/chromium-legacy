@@ -4,7 +4,7 @@
 
 //! Utilities to process `cargo metadata` dependency graph.
 
-use crate::crates::{self, Epoch};
+use crate::crates;
 use crate::platforms::{self, Platform, PlatformSet};
 
 use std::collections::{hash_map::Entry, HashMap, HashSet};
@@ -23,8 +23,6 @@ pub use cargo_metadata::PackageId;
 /// for generating build files later.
 #[derive(Clone, Debug)]
 pub struct Package {
-    /// Package ID in a particular set of dependencies.
-    pub id: PackageId,
     /// The package name as used by cargo.
     pub package_name: String,
     /// The package version as used by cargo.
@@ -64,11 +62,8 @@ pub struct Package {
 }
 
 impl Package {
-    pub fn third_party_crate_id(&self) -> crates::ChromiumVendoredCrate {
-        crates::ChromiumVendoredCrate {
-            name: self.package_name.clone(),
-            epoch: Epoch::from_version(&self.version),
-        }
+    pub fn crate_id(&self) -> crates::VendoredCrate {
+        crates::VendoredCrate { name: self.package_name.clone(), version: self.version.clone() }
     }
 }
 
@@ -89,11 +84,8 @@ pub struct DepOfDep {
 }
 
 impl DepOfDep {
-    pub fn third_party_crate_id(&self) -> crates::ChromiumVendoredCrate {
-        crates::ChromiumVendoredCrate {
-            name: self.package_name.clone(),
-            epoch: Epoch::from_version(&self.version),
-        }
+    pub fn crate_id(&self) -> crates::VendoredCrate {
+        crates::VendoredCrate { name: self.package_name.clone(), version: self.version.clone() }
     }
 }
 
@@ -254,7 +246,6 @@ pub fn collect_dependencies(
         let node: &cargo_metadata::Node = traversal_state.dep_graph.nodes.get(id).unwrap();
         let package: &cargo_metadata::Package = traversal_state.dep_graph.packages.get(id).unwrap();
 
-        dep.id = package.id.clone();
         dep.package_name = package.name.clone();
         dep.description = package.description.clone();
         dep.authors = package.authors.clone();
@@ -263,7 +254,7 @@ pub fn collect_dependencies(
         // TODO(crbug.com/1291994): Resolve features independently per kind
         // and platform. This may require using the unstable unit-graph feature:
         // https://doc.rust-lang.org/cargo/reference/unstable.html#unit-graph
-        for (_, mut kind_info) in dep.dependency_kinds.iter_mut() {
+        for (_, kind_info) in dep.dependency_kinds.iter_mut() {
             kind_info.features = node.features.clone();
             // Remove "default" feature to match behavior of crates.py. Note
             // that this is technically not correct since a crate's code may
@@ -379,7 +370,6 @@ fn explore_node<'a>(state: &mut TraversalState<'a>, node: &'a cargo_metadata::No
     // Helper to insert a placeholder `Dependency` into a map. We fill in the
     // fields later.
     let init_dep = |path| Package {
-        id: PackageId { repr: String::new() },
         package_name: String::new(),
         version: Version::new(0, 0, 0),
         description: None,

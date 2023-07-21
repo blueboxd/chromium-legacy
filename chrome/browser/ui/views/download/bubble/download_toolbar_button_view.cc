@@ -25,6 +25,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
@@ -40,6 +41,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/user_education/common/user_education_class_properties.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -64,6 +66,7 @@
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -150,6 +153,9 @@ DownloadToolbarButtonView::DownloadToolbarButtonView(BrowserView* browser_view)
   scanning_animation_.SetTweenType(gfx::Tween::LINEAR);
 
   bubble_controller_ = std::make_unique<DownloadBubbleUIController>(browser_);
+
+  BrowserList::GetInstance()->AddObserver(this);
+
   // Wait until we're done with everything else before creating `controller_`
   // since it can call `Show()` synchronously.
   controller_ = std::make_unique<DownloadDisplayController>(
@@ -157,6 +163,7 @@ DownloadToolbarButtonView::DownloadToolbarButtonView(BrowserView* browser_view)
 }
 
 DownloadToolbarButtonView::~DownloadToolbarButtonView() {
+  BrowserList::GetInstance()->RemoveObserver(this);
   controller_.reset();
   bubble_controller_.reset();
 }
@@ -405,7 +412,7 @@ bool DownloadToolbarButtonView::ShouldShowInkdropAfterIphInteraction() {
 std::unique_ptr<views::View> DownloadToolbarButtonView::GetPrimaryView() {
   if (is_primary_partial_view_) {
     return DownloadBubblePartialView::Create(
-        browser_, bubble_controller_.get(), this,
+        browser_->AsWeakPtr(), bubble_controller_->GetWeakPtr(), GetWeakPtr(),
         bubble_controller_->GetPartialView(),
         base::BindOnce(&DownloadToolbarButtonView::DeactivateAutoClose,
                        base::Unretained(this)));
@@ -413,7 +420,8 @@ std::unique_ptr<views::View> DownloadToolbarButtonView::GetPrimaryView() {
 
   std::unique_ptr<views::View> rows_with_scroll =
       DownloadBubbleRowListView::CreateWithScroll(
-          /*is_partial_view=*/false, browser_, bubble_controller_.get(), this,
+          /*is_partial_view=*/false, browser_->AsWeakPtr(),
+          bubble_controller_->GetWeakPtr(), GetWeakPtr(),
           bubble_controller_->GetMainView(),
           ChromeLayoutProvider::Get()->GetDistanceMetric(
               views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
@@ -426,6 +434,7 @@ void DownloadToolbarButtonView::OpenPrimaryDialog() {
   primary_view_->SetVisible(true);
   security_view_->SetVisible(false);
   bubble_delegate_->SetButtons(ui::DIALOG_BUTTON_NONE);
+  bubble_delegate_->SetDefaultButton(ui::DIALOG_BUTTON_NONE);
   bubble_delegate_->set_margins(GetPrimaryViewMargin());
   ResizeDialog();
 }
@@ -453,6 +462,11 @@ void DownloadToolbarButtonView::ResizeDialog() {
     bubble_delegate_->SizeToContents();
 }
 
+base::WeakPtr<DownloadBubbleNavigationHandler>
+DownloadToolbarButtonView::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void DownloadToolbarButtonView::OnBubbleDelegateDeleted() {
   bubble_delegate_ = nullptr;
   primary_view_ = nullptr;
@@ -475,6 +489,7 @@ void DownloadToolbarButtonView::CreateBubbleDialogDelegate(
   bubble_delegate->SetShowTitle(false);
   bubble_delegate->SetShowCloseButton(false);
   bubble_delegate->SetButtons(ui::DIALOG_BUTTON_NONE);
+  bubble_delegate->SetDefaultButton(ui::DIALOG_BUTTON_NONE);
   bubble_delegate->RegisterDeleteDelegateCallback(
       base::BindOnce(&DownloadToolbarButtonView::OnBubbleDelegateDeleted,
                      weak_factory_.GetWeakPtr()));
@@ -483,32 +498,56 @@ void DownloadToolbarButtonView::CreateBubbleDialogDelegate(
   switcher_view->SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical);
   primary_view_ = switcher_view->AddChildView(std::move(bubble_contents_view));
-  // raw ptr for this and member fields are safe as Toolbar Button view owns the
-  // Bubble.
+  // raw ptr for this bubble_delegate is safe as it owns the
+  // DownloadBubbleSecurityView.
   security_view_ =
       switcher_view->AddChildView(std::make_unique<DownloadBubbleSecurityView>(
-          bubble_controller_.get(), this, bubble_delegate.get()));
+          bubble_controller_->GetWeakPtr(), GetWeakPtr(),
+          bubble_delegate.get()));
   security_view_->SetVisible(false);
   bubble_delegate->set_margins(GetPrimaryViewMargin());
   bubble_delegate->SetEnableArrowKeyTraversal(true);
   bubble_delegate_ = bubble_delegate.get();
   views::BubbleDialogDelegate::CreateBubble(std::move(bubble_delegate));
-  bubble_delegate_->GetWidget()->Show();
+  // The bubble can either be shown as active or inactive. When the current
+  // browser is inactive, make the bubble inactive to avoid stealing focus from
+  // non-Chrome windows or showing on a different workspace.
+  if (browser_->window() && browser_->window()->IsActive()) {
+    bubble_delegate_->GetWidget()->Show();
+  } else {
+    bubble_delegate_->GetWidget()->ShowInactive();
+  }
 
   // For IPH bubble. The IPH should show when the partial view is closed, either
   // manually or automatically.
   if (is_primary_partial_view_) {
     bubble_delegate_->SetCloseCallback(
         base::BindOnce(&DownloadToolbarButtonView::OnPartialViewClosed,
-                       base::Unretained(this)));
+                       weak_factory_.GetWeakPtr()));
+  }
+}
+
+// If the browser was inactive when the bubble was shown, then the bubble would
+// be inactive. This would prevent close-on-deactivate, making the bubble
+// unclosable. To work around this, we activate the bubble when the current
+// browser becomes active, so that clicking outside the bubble will deactivate
+// and close it.
+void DownloadToolbarButtonView::OnBrowserSetLastActive(Browser* browser) {
+  if (browser == browser_ && bubble_delegate_) {
+    // We need to defer activating the download bubble when the browser window
+    // is being activated, otherwise this is ineffective on macOS.
+    content::GetUIThreadTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(&views::Widget::Activate,
+                                  bubble_delegate_->GetWidget()->GetWeakPtr()));
   }
 }
 
 void DownloadToolbarButtonView::OnPartialViewClosed() {
-  if (browser_->profile() && download::ShouldSuppressDownloadBubbleIph(
-                                 browser_->profile()->GetOriginalProfile())) {
+  if (download::ShouldSuppressDownloadBubbleIph(
+          browser_->profile()->GetOriginalProfile())) {
     return;
   }
+
   browser_->window()->MaybeShowFeaturePromo(
       feature_engagement::kIPHDownloadToolbarButtonFeature);
 }
@@ -517,6 +556,8 @@ void DownloadToolbarButtonView::CreateAutoCloseTimer() {
   auto_close_bubble_timer_ = std::make_unique<base::RetainingOneShotTimer>(
       FROM_HERE, kAutoClosePartialViewDelay,
       base::BindRepeating(&DownloadToolbarButtonView::AutoClosePartialView,
+                          // This is safe because `this` owns
+                          // `auto_close_bubble_timer_`.
                           base::Unretained(this)));
 }
 

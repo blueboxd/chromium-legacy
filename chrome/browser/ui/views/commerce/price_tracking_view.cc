@@ -99,6 +99,9 @@ PriceTrackingView::PriceTrackingView(Profile* profile,
   body_label_ = text_container->AddChildView(std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(body_string_id), label_style,
       views::style::STYLE_SECONDARY));
+  if (power_bookmarks_side_panel_enabled) {
+    body_label_->SetFontList(body_label_->font_list().DeriveWithSizeDelta(-1));
+  }
   body_label_->SetProperty(views::kMarginsKey,
                            gfx::Insets::TLBR(label_spacing, 0, 0, 0));
   body_label_->SetMultiLine(true);
@@ -185,10 +188,10 @@ void PriceTrackingView::UpdatePriceTrackingState(const GURL& url) {
     DCHECK(!is_price_track_enabled_);
     absl::optional<commerce::ProductInfo> info =
         service->GetAvailableProductInfoForUrl(url);
-    if (info.has_value()) {
+    if (commerce::CanTrackPrice(info)) {
       commerce::SetPriceTrackingStateForClusterId(
-          service, model, info->product_cluster_id, is_price_track_enabled_,
-          std::move(callback));
+          service, model, info->product_cluster_id.value(),
+          is_price_track_enabled_, std::move(callback));
     }
   }
 }

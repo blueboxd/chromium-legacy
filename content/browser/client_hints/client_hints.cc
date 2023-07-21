@@ -7,8 +7,10 @@
 #include <algorithm>
 #include <string>
 
+#include "base/check_is_test.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/dcheck_is_on.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
@@ -285,6 +287,14 @@ RenderWidgetHostView* GetRenderWidgetHostViewFromFrameTreeNode(
 
 gfx::Size GetViewportSize(FrameTreeNode* frame_tree_node,
                           ClientHintsControllerDelegate* delegate) {
+#if DCHECK_IS_ON()
+  // In some tests we need to force an empty viewport size.
+  if (delegate->ShouldForceEmptyViewportSize()) {
+    CHECK_IS_TEST();
+    return gfx::Size();
+  }
+#endif
+
   // If possible, return the current viewport size.
   RenderWidgetHostView* view =
       GetRenderWidgetHostViewFromFrameTreeNode(frame_tree_node);
@@ -300,12 +310,13 @@ gfx::Size GetViewportSize(FrameTreeNode* frame_tree_node,
     return cached_viewport_size;
   }
 
-  // Finally, use the display size if neither of the above methods work. Applies
-  // the device scale factor in this case, which is implicitly applied to other
+  // We used to return the display size here as a last resort if above methods
+  // didn't work, but this was so inaccurate as to be useless. Short of trying
+  // to build a more extensive caching method or restructuring the calculation
+  // path to make the estimated size available here, we simply return 0.
+  // Further context can be found in crbug.com/1430903.
   // viewport sizes already.
-  return ScaleToRoundedSize(
-      display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel(),
-      1.0 / GetDeviceScaleFactor());
+  return gfx::Size();
 }
 
 gfx::Size GetScaledViewportSize(BrowserContext* context,
@@ -353,8 +364,9 @@ void AddViewportWidthHeader(net::HttpRequestHeaders* headers,
   gfx::Size viewport_size =
       GetScaledViewportSize(context, url, frame_tree_node, delegate);
 
-  DCHECK_LT(0, viewport_size.width());
-  // TODO(yoav): Find out why this 0 check is needed...
+  // The width cannot be less than 0, but if it is zero that means we could not
+  // determine the width and should omit the header.
+  DCHECK_LE(0, viewport_size.width());
   if (viewport_size.width() > 0) {
     SetHeaderToInt(headers,
                    use_deprecated_version
@@ -375,9 +387,13 @@ void AddViewportHeightHeader(net::HttpRequestHeaders* headers,
   gfx::Size viewport_size =
       GetScaledViewportSize(context, url, frame_tree_node, delegate);
 
-  DCHECK_LT(0, viewport_size.height());
-  SetHeaderToInt(headers, network::mojom::WebClientHintsType::kViewportHeight,
-                 viewport_size.height());
+  // The height cannot be less than 0, but if it is zero that means we could not
+  // determine the height and should omit the header.
+  DCHECK_LE(0, viewport_size.height());
+  if (viewport_size.height() > 0) {
+    SetHeaderToInt(headers, network::mojom::WebClientHintsType::kViewportHeight,
+                   viewport_size.height());
+  }
 }
 
 void AddRttHeader(net::HttpRequestHeaders* headers,
@@ -1129,6 +1145,31 @@ ParseAndPersistAcceptCHForNavigation(
   for (const WebClientHintsType type : accept_ch) {
     enabled_hints.SetIsEnabled(outermost_main_frame_origin.GetURL(),
                                third_party_url, response_headers, type, true);
+  }
+
+  // Note that if Sec-CH-UA-Reduced or Sec-CH-UA-Full is persisted for an
+  // embedded frame and the response has a valid origin trial token, we should
+  // append the hint to Accept-CH cache instead of overwrite existing Accept-CH
+  // cache.
+  //
+  // TODO(crbug.com/1258063): Delete this call when the UserAgentReduction
+  // Origin Trial is finished.
+  if (!frame_tree_node->IsMainFrame()) {
+    // If embedded frame has no valid origin trial token, then stop update the
+    // Accept-CH cache.
+    if (!enabled_hints.IsEnabled(WebClientHintsType::kUAReduced) &&
+        !enabled_hints.IsEnabled(WebClientHintsType::kFullUserAgent)) {
+      return absl::nullopt;
+    }
+
+    // Add existing client hints to the enabled hints which contains the origin
+    // trial client hints to update the Accept-CH cache.
+    blink::EnabledClientHints existing_hints;
+    DCHECK(delegate);
+    delegate->GetAllowedClientHintsFromSource(origin, &existing_hints);
+    for (const WebClientHintsType type : existing_hints.GetEnabledHints()) {
+      enabled_hints.SetIsEnabled(type, true);
+    }
   }
 
   const std::vector<WebClientHintsType> persisted_hints =

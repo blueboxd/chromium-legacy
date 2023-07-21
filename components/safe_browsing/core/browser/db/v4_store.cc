@@ -181,9 +181,11 @@ const base::FilePath TemporaryFileForFilename(const base::FilePath& filename) {
 }
 
 std::unique_ptr<HashPrefixMap> CreateHashPrefixMap(
-    const base::FilePath& store_path) {
+    const base::FilePath& store_path,
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   if (base::FeatureList::IsEnabled(kMmapSafeBrowsingDatabase))
-    return std::make_unique<MmapHashPrefixMap>(store_path);
+    return std::make_unique<MmapHashPrefixMap>(store_path,
+                                               std::move(task_runner));
   return std::make_unique<InMemoryHashPrefixMap>();
 }
 
@@ -349,8 +351,8 @@ std::ostream& operator<<(std::ostream& os, const V4Store& store) {
 std::unique_ptr<V4Store> V4StoreFactory::CreateV4Store(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     const base::FilePath& store_path) {
-  auto new_store = std::make_unique<V4Store>(task_runner, store_path,
-                                             CreateHashPrefixMap(store_path));
+  auto new_store = std::make_unique<V4Store>(
+      task_runner, store_path, CreateHashPrefixMap(store_path, task_runner));
   new_store->Initialize();
   return new_store;
 }
@@ -533,7 +535,8 @@ void V4Store::ApplyUpdate(
     UpdatedStoreReadyCallback callback) {
   base::ElapsedThreadTimer thread_timer;
   auto new_store = std::make_unique<V4Store>(
-      task_runner_, store_path_, CreateHashPrefixMap(store_path_), file_size_);
+      task_runner_, store_path_, CreateHashPrefixMap(store_path_, task_runner_),
+      file_size_);
   ApplyUpdateResult apply_update_result;
   std::string metric;
   if (response->response_type() == ListUpdateResponse::PARTIAL_UPDATE) {
@@ -953,19 +956,24 @@ StoreWriteResult V4Store::WriteToDisk(V4StoreFileFormat* file_format) {
       },
       new_filename, store_path_, base::Unretained(file_format)));
 
-  if (!hash_prefix_map_->WriteToDisk(file_format))
-    return UNEXPECTED_WRITE_FAILURE;
-
-  file_format->set_magic_number(kFileMagic);
-  file_format->set_version_number(kFileVersion);
   int64_t written = 0;
-  {
-    BaseFileOutputStream output_stream(new_filename);
-    if (!file_format->SerializeToZeroCopyStream(&output_stream) ||
-        !output_stream.Flush()) {
-      return UNEXPECTED_BYTES_WRITTEN_FAILURE;
+  // `write_session` must remain alive until `file_format` is committed to disk.
+  // Additionally, note that `hash_prefix_map_` is unusable throughout the
+  // lifetime of `write_session`.
+  if (auto write_session = hash_prefix_map_->WriteToDisk(file_format);
+      write_session) {
+    file_format->set_magic_number(kFileMagic);
+    file_format->set_version_number(kFileVersion);
+    {
+      BaseFileOutputStream output_stream(new_filename);
+      if (!file_format->SerializeToZeroCopyStream(&output_stream) ||
+          !output_stream.Flush()) {
+        return UNEXPECTED_BYTES_WRITTEN_FAILURE;
+      }
+      written = output_stream.ByteCount();
     }
-    written = output_stream.ByteCount();
+  } else {
+    return UNEXPECTED_WRITE_FAILURE;
   }
 
   if (!base::Move(new_filename, store_path_))

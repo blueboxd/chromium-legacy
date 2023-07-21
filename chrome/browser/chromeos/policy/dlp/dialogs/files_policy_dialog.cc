@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/chromeos/policy/dlp/dialogs/policy_dialog_base.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_file.h"
@@ -43,20 +44,23 @@ std::u16string GetDestinationURL(DlpFileDestination destination) {
 const std::u16string GetDestinationComponent(DlpFileDestination destination) {
   DCHECK(destination.component().has_value());
   switch (destination.component().value()) {
-    case DlpRulesManager::Component::kArc:
+    case data_controls::Component::kArc:
       return l10n_util::GetStringUTF16(
           IDS_FILE_BROWSER_ANDROID_FILES_ROOT_LABEL);
-    case DlpRulesManager::Component::kCrostini:
+    case data_controls::Component::kCrostini:
       return l10n_util::GetStringUTF16(IDS_FILE_BROWSER_LINUX_FILES_ROOT_LABEL);
-    case DlpRulesManager::Component::kPluginVm:
+    case data_controls::Component::kPluginVm:
       return l10n_util::GetStringUTF16(
           IDS_FILE_BROWSER_PLUGIN_VM_DIRECTORY_LABEL);
-    case DlpRulesManager::Component::kUsb:
+    case data_controls::Component::kUsb:
       return l10n_util::GetStringUTF16(
           IDS_POLICY_DLP_FILES_DESTINATION_REMOVABLE_STORAGE);
-    case DlpRulesManager::Component::kDrive:
+    case data_controls::Component::kDrive:
       return l10n_util::GetStringUTF16(IDS_FILE_BROWSER_DRIVE_DIRECTORY_LABEL);
-    case DlpRulesManager::Component::kUnknownComponent:
+    case data_controls::Component::kOneDrive:
+      return l10n_util::GetStringUTF16(
+          IDS_FILE_BROWSER_DLP_COMPONENT_MICROSOFT_ONEDRIVE);
+    case data_controls::Component::kUnknownComponent:
       NOTREACHED();
       return u"";
   }
@@ -101,7 +105,9 @@ void FilesPolicyDialog::AddGeneralInformation() {
 }
 
 void FilesPolicyDialog::MaybeAddConfidentialRows() {
-  DCHECK(!files_.empty());
+  if (files_.empty()) {
+    return;
+  }
 
   SetupScrollView();
   for (const DlpConfidentialFile& file : files_) {
@@ -172,10 +178,13 @@ std::u16string FilesPolicyDialog::GetMessage() {
   int message_id;
   switch (action_) {
     case DlpFilesController::FileAction::kDownload:
-      DCHECK(files_.size() == 1);
       destination_str = GetDestinationComponent(destination_);
-      message_id = IDS_POLICY_DLP_FILES_DOWNLOAD_WARN_MESSAGE;
-      break;
+      // Download action is only allowed for one file.
+      return base::ReplaceStringPlaceholders(
+          l10n_util::GetPluralStringFUTF16(
+              IDS_POLICY_DLP_FILES_DOWNLOAD_WARN_MESSAGE, 1),
+          destination_str,
+          /*offset=*/nullptr);
     case DlpFilesController::FileAction::kUpload:
       destination_str = GetDestinationURL(destination_);
       message_id = IDS_POLICY_DLP_FILES_UPLOAD_WARN_MESSAGE;

@@ -95,6 +95,10 @@ const CGFloat kMinForwardVelocityToDismiss = 100;
 // dismissal of the view controller, when the swiped position is already more
 // than half of the screen's width.
 const CGFloat kMinBackwardVelocityToCancelDismiss = 10;
+// When closing all inactive tabs via the confirmation dialog, the Inactive Tabs
+// grid is popped, but to avoid having it emptied immediately (producing a
+// glitch), delay the closing of the tabs in the mediator.
+const base::TimeDelta kCloseAllInactiveTabsDelay = base::Seconds(0.3);
 
 // NSUserDefaults key to check whether the user education screen has ever been
 // shown. The associated value in user defaults is a BOOL.
@@ -180,6 +184,30 @@ NSString* const kInactiveTabsUserEducationShownOnce =
 - (void)start {
   [super start];
 
+  // Create the mediator.
+  SessionRestorationBrowserAgent* sessionRestorationBrowserAgent =
+      SessionRestorationBrowserAgent::FromBrowser(self.browser);
+  SnapshotBrowserAgent* snapshotBrowserAgent =
+      SnapshotBrowserAgent::FromBrowser(self.browser);
+  sessions::TabRestoreService* tabRestoreService =
+      IOSChromeTabRestoreServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
+
+  self.mediator = [[InactiveTabsMediator alloc]
+         initWithWebStateList:self.browser->GetWebStateList()
+                  prefService:GetApplicationContext()->GetLocalState()
+      sessionRestorationAgent:sessionRestorationBrowserAgent
+                snapshotAgent:snapshotBrowserAgent
+            tabRestoreService:tabRestoreService];
+}
+
+- (void)show {
+  if (self.showing) {
+    return;
+  }
+  self.showing = YES;
+  base::RecordAction(base::UserMetricsAction("MobileInactiveTabGridEntered"));
+
   // Create the view controller.
   self.viewController = [[InactiveTabsViewController alloc] init];
   self.viewController.delegate = self;
@@ -192,31 +220,9 @@ NSString* const kInactiveTabsUserEducationShownOnce =
   edgeSwipeRecognizer.edges = UIRectEdgeLeft;
   [self.viewController.view addGestureRecognizer:edgeSwipeRecognizer];
 
-  // Create the mediator.
-  SessionRestorationBrowserAgent* sessionRestorationBrowserAgent =
-      SessionRestorationBrowserAgent::FromBrowser(self.browser);
-  SnapshotBrowserAgent* snapshotBrowserAgent =
-      SnapshotBrowserAgent::FromBrowser(self.browser);
-  sessions::TabRestoreService* tabRestoreService =
-      IOSChromeTabRestoreServiceFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
-
-  self.mediator = [[InactiveTabsMediator alloc]
-             initWithConsumer:self.viewController.gridViewController
-                 webStateList:self.browser->GetWebStateList()
-                  prefService:GetApplicationContext()->GetLocalState()
-      sessionRestorationAgent:sessionRestorationBrowserAgent
-                snapshotAgent:snapshotBrowserAgent
-            tabRestoreService:tabRestoreService];
+  self.mediator.consumer = self.viewController.gridViewController;
 
   self.viewController.gridViewController.menuProvider = _menuProvider;
-}
-
-- (void)show {
-  if (self.showing) {
-    return;
-  }
-  self.showing = YES;
 
   // Add the Inactive Tabs view controller to the hierarchy.
   UIView* baseView = self.baseViewController.view;
@@ -261,6 +267,7 @@ NSString* const kInactiveTabsUserEducationShownOnce =
   if (!self.showing) {
     return;
   }
+  base::RecordAction(base::UserMetricsAction("MobileInactiveTabGridExited"));
 
   [self.userEducationCoordinator stop];
   self.userEducationCoordinator = nil;
@@ -608,6 +615,8 @@ NSString* const kInactiveTabsUserEducationShownOnce =
         [self.baseViewSnapshot removeFromSuperview];
         self.baseViewSnapshot = nil;
         self.showing = NO;
+        self.mediator.consumer = nil;
+        self.viewController = nil;
       }];
 }
 
@@ -634,7 +643,14 @@ NSString* const kInactiveTabsUserEducationShownOnce =
 // Called when the user confirmed wanting to close all inactive tabs.
 - (void)closeAllInactiveTabs {
   [_delegate inactiveTabsCoordinatorDidFinish:self];
-  [self.mediator closeAllItems];
+  // To prevent the Inactive Tabs grid from being immediately emptied, defer the
+  // closing to after the view is popped.
+  __weak __typeof(self) weakSelf = self;
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE, base::BindOnce(^{
+        [weakSelf.mediator closeAllItems];
+      }),
+      kCloseAllInactiveTabsDelay);
 }
 
 // Presents the Inactive Tabs settings modally in their own navigation

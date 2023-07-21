@@ -48,6 +48,10 @@ public class OmniboxFeatures {
     private static final MutableFlagWithSafeDefault sShouldAdaptToNarrowTabletWindows =
             new MutableFlagWithSafeDefault(
                     ChromeFeatureList.OMNIBOX_ADAPT_NARROW_TABLET_WINDOWS, false);
+
+    private static final MutableFlagWithSafeDefault sJourneysActionChipFlag =
+            new MutableFlagWithSafeDefault(
+                    ChromeFeatureList.OMNIBOX_HISTORY_CLUSTER_ACTION_CHIP, false);
     private static final MutableFlagWithSafeDefault sJourneysRowUiFlag =
             new MutableFlagWithSafeDefault(
                     ChromeFeatureList.OMNIBOX_HISTORY_CLUSTER_PROVIDER, false);
@@ -101,24 +105,18 @@ public class OmniboxFeatures {
     /**
      * Returns whether smaller vertical and horizontal margins should be used in the visual update.
      */
-    public static boolean shouldShowSmallerMargins() {
-        return MODERNIZE_VISUAL_UPDATE_SMALLER_MARGINS.getValue();
+    public static boolean shouldShowSmallerMargins(Context context) {
+        return shouldShowModernizeVisualUpdate(context)
+                && MODERNIZE_VISUAL_UPDATE_SMALLER_MARGINS.getValue();
     }
 
     /**
      * Returns whether even smaller vertical and horizontal margins should be used in the visual
      * update.
      */
-    public static boolean shouldShowSmallestMargins() {
-        return MODERNIZE_VISUAL_UPDATE_SMALLEST_MARGINS.getValue();
-    }
-
-    /**
-     * Returns whether the clipboard suggestion should be grouped with other zero suggest items on
-     * the NTP or start surface in the visual update.
-     * */
-    public static boolean shouldMergeClipboardOnNtp() {
-        return MODERNIZE_VISUAL_UPDATE_MERGE_CLIPBOARD_ON_NTP.getValue();
+    public static boolean shouldShowSmallestMargins(Context context) {
+        return shouldShowModernizeVisualUpdate(context)
+                && MODERNIZE_VISUAL_UPDATE_SMALLEST_MARGINS.getValue();
     }
 
     /** Returns whether the omnibox should directly consume IME (keyboard) insets. */
@@ -153,6 +151,11 @@ public class OmniboxFeatures {
      */
     public static boolean shouldAddMostVisitedTilesRecycledViewPool() {
         return ChromeFeatureList.sOmniboxMostVisitedTilesAddRecycledViewPool.isEnabled();
+    }
+
+    /** Whether Journeys suggestions should be shown as an action chip. */
+    public static boolean isJourneysActionChipEnabled() {
+        return sJourneysActionChipFlag.isEnabled();
     }
 
     /** Whether Journeys suggestions should be shown in a dedicated row. */

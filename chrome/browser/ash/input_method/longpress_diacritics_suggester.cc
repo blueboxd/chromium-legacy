@@ -6,12 +6,14 @@
 
 #include <string>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/system/tray/system_nudge.h"
 #include "ash/system/tray/system_nudge_controller.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/containers/flat_map.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
@@ -253,16 +255,17 @@ SuggestionStatus LongpressDiacriticsSuggester::HandleKeyEvent(
       if (highlighted_index_ == absl::nullopt) {
         // We want the cursor to start at the end if you press back, and at the
         // beginning if you press next.
-        new_index = move_next ? 0 : GetCurrentShownDiacritics().size() - 1;
+        new_index = move_next ? 0 : GetCurrentShownDiacritics().size();
       } else {
         SetButtonHighlighted(*highlighted_index_, false);
+        // Size+1 since we include the highlight button add 1 to size.
         if (move_next) {
-          new_index =
-              (*highlighted_index_ + 1) % GetCurrentShownDiacritics().size();
+          new_index = (*highlighted_index_ + 1) %
+                      (GetCurrentShownDiacritics().size() + 1);
         } else {
           new_index = (*highlighted_index_ > 0)
                           ? *highlighted_index_ - 1
-                          : GetCurrentShownDiacritics().size() - 1;
+                          : GetCurrentShownDiacritics().size();
         }
       }
       SetButtonHighlighted(new_index, true);
@@ -318,7 +321,10 @@ bool LongpressDiacriticsSuggester::AcceptSuggestion(size_t index) {
   std::string error;
   suggestion_handler_->AcceptSuggestionCandidate(
       *focused_context_id_, current_suggestions[index],
-      /* delete_previous_utf16_len=*/1, &error);
+      /* delete_previous_utf16_len=*/1, /*use_replace_surrounding_text=*/
+      base::FeatureList::IsEnabled(
+          features::kDiacriticsUseReplaceSurroundingText),
+      &error);
   if (error.empty()) {
     suggestion_handler_->Announce(
         l10n_util::GetStringUTF16(IDS_SUGGESTION_DIACRITICS_INSERTED));
@@ -367,10 +373,22 @@ void LongpressDiacriticsSuggester::SetButtonHighlighted(size_t index,
     return;
   }
   std::string error;
-  suggestion_handler_->SetButtonHighlighted(
-      *focused_context_id_,
-      CreateButtonFor(index, GetCurrentShownDiacritics()[index]),
-      /* highlighted=*/highlighted, &error);
+  if (index == GetCurrentShownDiacritics().size()) {
+    suggestion_handler_->SetButtonHighlighted(
+        *focused_context_id_,
+        {
+            .id = ui::ime::ButtonId::kLearnMore,
+            .window_type =
+                ash::ime::AssistiveWindowType::kLongpressDiacriticsSuggestion,
+        },
+        highlighted, &error);
+
+  } else {
+    suggestion_handler_->SetButtonHighlighted(
+        *focused_context_id_,
+        CreateButtonFor(index, GetCurrentShownDiacritics()[index]),
+        /* highlighted=*/highlighted, &error);
+  }
 
   if (!error.empty()) {
     LOG(ERROR) << "suggest: Failed to set button highlighted. " << error;

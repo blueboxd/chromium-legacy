@@ -183,87 +183,13 @@
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_features.h"
-#include "ash/constants/ash_switches.h"
 #include "ash/webui/camera_app_ui/url_constants.h"
-#include "ash/webui/color_internals/color_internals_ui.h"
-#include "ash/webui/color_internals/url_constants.h"
 #include "ash/webui/file_manager/url_constants.h"
-#include "ash/webui/files_internals/files_internals_ui.h"
 #include "ash/webui/files_internals/url_constants.h"
-#include "ash/webui/firmware_update_ui/firmware_update_app_ui.h"
-#include "ash/webui/firmware_update_ui/url_constants.h"
 #include "ash/webui/multidevice_debug/url_constants.h"
-#include "ash/webui/os_feedback_ui/backend/os_feedback_delegate.h"
-#include "ash/webui/os_feedback_ui/os_feedback_ui.h"
-#include "ash/webui/os_feedback_ui/url_constants.h"
-#include "ash/webui/print_management/print_management_ui.h"
-#include "ash/webui/print_management/url_constants.h"
-#include "ash/webui/system_extensions_internals_ui/system_extensions_internals_ui.h"
-#include "ash/webui/system_extensions_internals_ui/url_constants.h"
-#include "base/system/sys_info.h"
 #include "build/config/chromebox_for_meetings/buildflags.h"
-#include "chrome/browser/app_mode/app_mode_utils.h"
-#include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/extensions/url_constants.h"
-#include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
-#include "chrome/browser/ash/login/easy_unlock/easy_unlock_service_factory.h"
-#include "chrome/browser/ash/login/login_pref_names.h"
-#include "chrome/browser/ash/net/network_health/network_health_manager.h"
-#include "chrome/browser/ash/os_feedback/chrome_os_feedback_delegate.h"
-#include "chrome/browser/ash/printing/print_management/printing_manager.h"
-#include "chrome/browser/ash/printing/print_management/printing_manager_factory.h"
-#include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
-#include "chrome/browser/ash/web_applications/files_internals_ui_delegate.h"
-#include "chrome/browser/feedback/feedback_dialog_utils.h"
-#include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
-#include "chrome/browser/ui/webui/ash/account_manager/account_manager_error_ui.h"
-#include "chrome/browser/ui/webui/ash/account_manager/account_migration_welcome_ui.h"
-#include "chrome/browser/ui/webui/ash/add_supervision/add_supervision_ui.h"
-#include "chrome/browser/ui/webui/ash/arc_graphics_tracing/arc_graphics_tracing_ui.h"
-#include "chrome/browser/ui/webui/ash/arc_power_control/arc_power_control_ui.h"
-#include "chrome/browser/ui/webui/ash/assistant_optin/assistant_optin_ui.h"
-#include "chrome/browser/ui/webui/ash/audio/audio_ui.h"
-#include "chrome/browser/ui/webui/ash/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/ash/cellular_setup/mobile_setup_ui.h"
-#include "chrome/browser/ui/webui/ash/certificate_manager_dialog_ui.h"
-#include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_ui.h"
-#include "chrome/browser/ui/webui/ash/crostini_installer/crostini_installer_ui.h"
-#include "chrome/browser/ui/webui/ash/crostini_upgrader/crostini_upgrader_ui.h"
-#include "chrome/browser/ui/webui/ash/cryptohome_ui.h"
-#include "chrome/browser/ui/webui/ash/drive_internals_ui.h"
-#include "chrome/browser/ui/webui/ash/emoji/emoji_ui.h"
-#include "chrome/browser/ui/webui/ash/enterprise_reporting/enterprise_reporting_ui.h"
-#include "chrome/browser/ui/webui/ash/human_presence_internals_ui.h"
-#include "chrome/browser/ui/webui/ash/in_session_password_change/password_change_ui.h"
-#include "chrome/browser/ui/webui/ash/internet_config_dialog.h"
-#include "chrome/browser/ui/webui/ash/internet_detail_dialog.h"
-#include "chrome/browser/ui/webui/ash/launcher_internals/launcher_internals_ui.h"
-#include "chrome/browser/ui/webui/ash/lock_screen_reauth/lock_screen_network_ui.h"
-#include "chrome/browser/ui/webui/ash/lock_screen_reauth/lock_screen_start_reauth_ui.h"
-#include "chrome/browser/ui/webui/ash/manage_mirrorsync/manage_mirrorsync_ui.h"
-#include "chrome/browser/ui/webui/ash/multidevice_internals/multidevice_internals_ui.h"
-#include "chrome/browser/ui/webui/ash/multidevice_setup/multidevice_setup_dialog.h"
-#include "chrome/browser/ui/webui/ash/network_ui.h"
-#include "chrome/browser/ui/webui/ash/notification_tester/notification_tester_ui.h"
-#include "chrome/browser/ui/webui/ash/parent_access/parent_access_ui.h"
-#include "chrome/browser/ui/webui/ash/power_ui.h"
-#include "chrome/browser/ui/webui/ash/set_time_ui.h"
-#include "chrome/browser/ui/webui/ash/slow_trace_ui.h"
-#include "chrome/browser/ui/webui/ash/slow_ui.h"
-#include "chrome/browser/ui/webui/ash/smb_shares/smb_credentials_dialog.h"
-#include "chrome/browser/ui/webui/ash/smb_shares/smb_share_dialog.h"
-#include "chrome/browser/ui/webui/ash/sys_internals/sys_internals_ui.h"
-#include "chrome/browser/ui/webui/ash/vm/vm_ui.h"
-#include "chrome/browser/ui/webui/nearby_internals/nearby_internals_ui.h"
-#include "chrome/browser/ui/webui/nearby_share/nearby_share_dialog_ui.h"
-#include "chrome/browser/ui/webui/settings/ash/os_settings_ui.h"
-#include "chromeos/ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"  // nogncheck
-#include "chromeos/services/network_health/public/mojom/network_health.mojom.h"  // nogncheck
-#include "content/public/common/content_switches.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -274,10 +200,6 @@
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_ui.h"  // nogncheck
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OFFICIAL_BUILD)
-#include "chrome/browser/ui/webui/ash/emulator/device_emulator_ui.h"
-#endif
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/chrome_url_disabled/chrome_url_disabled_ui.h"
@@ -455,31 +377,6 @@ WebUIController* NewWebUI<HistoryClustersInternalsUI>(WebUI* web_ui,
           &SetUpWebUIDataSource, web_ui,
           history_clusters_internals::kChromeUIHistoryClustersInternalsHost));
 }
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-
-void BindPrintManagement(
-    Profile* profile,
-    mojo::PendingReceiver<
-        chromeos::printing::printing_manager::mojom::PrintingMetadataProvider>
-        receiver) {
-  ash::printing::print_management::PrintingManager* handler =
-      ash::printing::print_management::PrintingManagerFactory::GetForProfile(
-          profile);
-  if (handler)
-    handler->BindInterface(std::move(receiver));
-}
-
-template <>
-WebUIController* NewWebUI<ash::printing::printing_manager::PrintManagementUI>(
-    WebUI* web_ui,
-    const GURL& url) {
-  return new ash::printing::printing_manager::PrintManagementUI(
-      web_ui,
-      base::BindRepeating(&BindPrintManagement, Profile::FromWebUI(web_ui)));
-}
-
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 template <>
@@ -753,8 +650,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (url.host_piece() == chrome::kChromeUIMobileSetupHost)
     return &NewWebUI<ash::cellular_setup::MobileSetupUI>;
-  if (url.host_piece() == ash::kChromeUIPrintManagementHost)
-    return &NewWebUI<ash::printing::printing_manager::PrintManagementUI>;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   if (url.host_piece() == chrome::kChromeUIWebUIJsErrorHost)
@@ -1263,6 +1158,8 @@ std::vector<GURL> ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
         GURL(chrome::kOsUIHelpAppURL), GURL(chrome::kOsUINetExportURL),
         GURL(chrome::kOsUILauncherInternalsURL),
         GURL(chrome::kOsUIExtensionsInternalsURL),
+        GURL(chrome::kChromeUINotificationTesterURL),
+        GURL(chrome::kOsUINotificationTesterURL),
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
         // IME extension's Japanese options page. Opened via OS_URL_HANDLER SWA

@@ -158,10 +158,11 @@ const blink::InterestGroup::Ad* FindMatchingAd(
       // they have the same url.
       return &ad;
     }
-    if (!ad.size_group || !ad_descriptor.size) {
-      // Since only one of the ads has a size specification, they are considered
-      // not matching.
-      continue;
+    if (!ad.size_group != !ad_descriptor.size) {
+      // When only one of the two ads has a size specification, they are
+      // considered matching. The caller is responsible for discarding the
+      // extraneous size information
+      return &ad;
     }
     // Both `blink::InterestGroup::Ad` and the ad from the bid have size
     // specifications. They are considered as matching ad only if their
@@ -683,6 +684,8 @@ class InterestGroupAuction::BuyerHelper
       base::OnceClosure resume_generate_bid_callback) override {
     BidState* state = generate_bid_client_receiver_set_.current_context();
     const blink::InterestGroup& interest_group = state->bidder->interest_group;
+    state->pa_timings(PrivateAggregationPhase::kBidder).signals_fetch_time =
+        trusted_signals_fetch_latency;
     auction_->ReportTrustedSignalsFetchLatency(interest_group,
                                                trusted_signals_fetch_latency);
     absl::optional<double> new_priority;
@@ -720,9 +723,12 @@ class InterestGroupAuction::BuyerHelper
       base::TimeDelta bidding_latency,
       auction_worklet::mojom::GenerateBidDependencyLatenciesPtr
           generate_bid_dependency_latencies,
+      auction_worklet::mojom::RejectReason reject_reason,
       const std::vector<std::string>& errors) override {
     BidState* state = generate_bid_client_receiver_set_.current_context();
     const blink::InterestGroup& interest_group = state->bidder->interest_group;
+    state->pa_timings(PrivateAggregationPhase::kBidder).script_run_time =
+        bidding_latency;
     auction_->ReportBiddingLatency(interest_group, bidding_latency);
 
     // This is intentionally recorded here as opposed to in
@@ -739,7 +745,8 @@ class InterestGroupAuction::BuyerHelper
         bidding_signals_data_version, has_bidding_signals_data_version,
         debug_loss_report_url, debug_win_report_url, set_priority,
         has_set_priority, std::move(update_priority_signals_overrides),
-        std::move(pa_requests), std::move(non_kanon_pa_requests), errors);
+        std::move(pa_requests), std::move(non_kanon_pa_requests), reject_reason,
+        errors);
   }
 
   // Closes all Mojo pipes, releases all weak pointers, and stops the timeout
@@ -874,7 +881,7 @@ class InterestGroupAuction::BuyerHelper
       bool is_winner = state.get() == winner;
       for (auto& [key, requests] : state->private_aggregation_requests) {
         const url::Origin& origin = key.first;
-        bool is_top_level_seller = key.second;
+        PrivateAggregationPhase phase = key.second;
         double winning_bid_to_use = signals.winning_bid;
         double highest_scoring_other_bid_to_use =
             signals.highest_scoring_other_bid;
@@ -883,7 +890,8 @@ class InterestGroupAuction::BuyerHelper
         // top-level; in that case the relevant signals are in
         // `top_level_signals` and not `signals`. `highest_scoring_other_bid`
         // is also not reported for top-levels.
-        if (is_top_level_seller && auction_->parent_) {
+        if (phase == PrivateAggregationPhase::kTopLevelSeller &&
+            auction_->parent_) {
           highest_scoring_other_bid_to_use = 0;
           winning_bid_to_use = top_level_signals.has_value()
                                    ? top_level_signals->winning_bid
@@ -896,7 +904,7 @@ class InterestGroupAuction::BuyerHelper
               converted_request = FillInPrivateAggregationRequest(
                   std::move(request), winning_bid_to_use,
                   highest_scoring_other_bid_to_use, state->reject_reason,
-                  is_winner);
+                  state->pa_timings(phase), is_winner);
           if (converted_request.has_value()) {
             PrivateAggregationRequestWithEventType converted_request_value =
                 std::move(converted_request.value());
@@ -922,7 +930,7 @@ class InterestGroupAuction::BuyerHelper
                   std::move(request), signals.winning_bid,
                   signals.highest_scoring_other_bid,
                   auction_worklet::mojom::RejectReason::kBelowKAnonThreshold,
-                  false);
+                  state->pa_timings(PrivateAggregationPhase::kBidder), false);
           if (converted_request.has_value()) {
             PrivateAggregationRequestWithEventType converted_request_value =
                 std::move(converted_request.value());
@@ -1055,6 +1063,7 @@ class InterestGroupAuction::BuyerHelper
         /*update_priority_signals_overrides=*/{},
         /*pa_requests=*/{},
         /*non_kanon_pa_requests=*/{},
+        /*reject_reason=*/auction_worklet::mojom::RejectReason::kNotAvailable,
         /*errors=*/{});
   }
 
@@ -1227,6 +1236,7 @@ class InterestGroupAuction::BuyerHelper
           /*update_priority_signals_overrides=*/{},
           /*pa_requests=*/{},
           /*non_kanon_pa_requests=*/{},
+          /*reject_reason=*/auction_worklet::mojom::RejectReason::kNotAvailable,
           /*errors=*/{});
       // If this was the last bidder, and it was filtered out, there's nothing
       // else to do, and `this` may have already been deleted.
@@ -1282,6 +1292,7 @@ class InterestGroupAuction::BuyerHelper
         // to work.
         std::swap(bid_states_[i], bid_states_.back());
         bid_states_.pop_back();
+        size_limit_ = std::min(size_limit_, bid_states_.size());
         continue;
       }
       DCHECK(bid_states_[i]->resume_generate_bid_callback);
@@ -1322,6 +1333,7 @@ class InterestGroupAuction::BuyerHelper
           update_priority_signals_overrides,
       PrivateAggregationRequests pa_requests,
       PrivateAggregationRequests non_kanon_pa_requests,
+      auction_worklet::mojom::RejectReason reject_reason,
       const std::vector<std::string>& errors) {
     DCHECK(!state->made_bid);
     DCHECK_GT(num_outstanding_bids_, 0);
@@ -1396,7 +1408,7 @@ class InterestGroupAuction::BuyerHelper
     if (!pa_requests.empty()) {
       PrivateAggregationRequests& pa_requests_for_bidder =
           state->private_aggregation_requests[std::make_pair(
-              interest_group.owner, false /*not a top-level seller*/)];
+              interest_group.owner, PrivateAggregationPhase::kBidder)];
       pa_requests_for_bidder.insert(pa_requests_for_bidder.end(),
                                     std::move_iterator(pa_requests.begin()),
                                     std::move_iterator(pa_requests.end()));
@@ -1416,6 +1428,22 @@ class InterestGroupAuction::BuyerHelper
     // Ignore invalid bids.
     std::unique_ptr<Bid> bid;
     std::string ad_metadata;
+
+    if (reject_reason != auction_worklet::mojom::RejectReason::kNotAvailable &&
+        reject_reason !=
+            auction_worklet::mojom::RejectReason::kWrongGenerateBidCurrency) {
+      // Only possible reject reason from generateBid(), besides the default
+      // "not available", is "wrong generate bid currency".
+      mojo_bid.reset();
+      mojo_kanon_bid.reset();
+      state->reject_reason =
+          auction_worklet::mojom::RejectReason::kNotAvailable;
+      generate_bid_client_receiver_set_.ReportBadMessage(
+          "Invalid bid reject_reason");
+    } else {
+      state->reject_reason = reject_reason;
+    }
+
     // `mojo_bid` is null if the worklet doesn't bid, or if the bidder worklet
     // fails to load / crashes.
     if (mojo_bid) {
@@ -1603,6 +1631,11 @@ class InterestGroupAuction::BuyerHelper
           "Bid render ad must have a valid URL and size (if specified)");
       return nullptr;
     }
+    // If the matching ad does not have size specified, the bid to be created
+    // should not have size specified to fall back to old behavior.
+    blink::AdDescriptor ad_descriptor(
+        mojo_bid->ad_descriptor.url,
+        matching_ad->size_group ? mojo_bid->ad_descriptor.size : absl::nullopt);
 
     // Validate `ad_component` URLs, if present.
     std::vector<blink::AdDescriptor> ad_component_descriptors;
@@ -1626,15 +1659,21 @@ class InterestGroupAuction::BuyerHelper
       // group's `ad_components` field.
       for (const blink::AdDescriptor& ad_component_descriptor :
            *mojo_bid->ad_component_descriptors) {
-        if (!FindMatchingAd(*interest_group.ad_components, bid_state.kanon_keys,
-                            interest_group, bid_role, /*is_component_ad=*/true,
-                            ad_component_descriptor)) {
+        const blink::InterestGroup::Ad* matching_ad_component = FindMatchingAd(
+            *interest_group.ad_components, bid_state.kanon_keys, interest_group,
+            bid_role, /*is_component_ad=*/true, ad_component_descriptor);
+        if (!matching_ad_component) {
           generate_bid_client_receiver_set_.ReportBadMessage(
               "Bid ad component must have a valid URL and size (if specified)");
           return nullptr;
         }
+        // If the matching ad does not have size specified, the bid to be
+        // created should not have size specified to fall back to old behavior.
+        ad_component_descriptors.emplace_back(ad_component_descriptor.url,
+                                              matching_ad_component->size_group
+                                                  ? ad_component_descriptor.size
+                                                  : absl::nullopt);
       }
-      ad_component_descriptors = *std::move(mojo_bid->ad_component_descriptors);
     }
 
     // Validate `debug_loss_report_url` and `debug_win_report_url`, if present.
@@ -1654,7 +1693,7 @@ class InterestGroupAuction::BuyerHelper
     return std::make_unique<Bid>(
         bid_role, std::move(mojo_bid->ad), mojo_bid->bid,
         std::move(mojo_bid->bid_currency), mojo_bid->ad_cost,
-        std::move(mojo_bid->ad_descriptor), std::move(ad_component_descriptors),
+        std::move(ad_descriptor), std::move(ad_component_descriptors),
         std::move(mojo_bid->modeling_signals), mojo_bid->bid_duration,
         bidding_signals_data_version, matching_ad, &bid_state, auction_);
   }
@@ -1970,15 +2009,11 @@ InterestGroupAuction::CreateReporter(
   const InterestGroupAuction::Bid* bidder_bid =
       winner->bid->auction->top_bid()->bid.get();
   winning_bid_info.bid = bidder_bid->bid;
-  winning_bid_info.bid_currency = bidder_bid->bid_currency;
-  // We redact the bid currency if it's not a concrete currency from the config,
-  // to avoid the bidder being able to leak ~14 bits of information if the
-  // bidder currency configuration is not restrictive.
-  absl::optional<blink::AdCurrency> config_currency = PerBuyerCurrency(
+  // We redact the bid currency to just be the concrete currency from the
+  // config; passing in the currency from actual bid would permit leakage of
+  // information, if only via its absence.
+  winning_bid_info.bid_currency = PerBuyerCurrency(
       bidder_bid->interest_group->owner, *bidder_bid->auction->config_);
-  if (!config_currency.has_value()) {
-    winning_bid_info.bid_currency = absl::nullopt;
-  }
 
   winning_bid_info.ad_cost = bidder_bid->ad_cost;
   winning_bid_info.modeling_signals = bidder_bid->modeling_signals;
@@ -2069,7 +2104,8 @@ InterestGroupAuction::CreateReporter(
       maybe_log_private_aggregation_web_features_callback_,
       std::move(auction_config), main_frame_origin, frame_origin,
       std::move(client_security_state), std::move(url_loader_factory),
-      std::move(winning_bid_info), std::move(top_level_seller_winning_bid_info),
+      kanon_mode_, std::move(winning_bid_info),
+      std::move(top_level_seller_winning_bid_info),
       std::move(component_seller_winning_bid_info),
       std::move(interest_groups_that_bid), std::move(debug_win_report_urls),
       std::move(debug_loss_report_urls), GetKAnonKeysToJoin(),
@@ -2194,6 +2230,12 @@ base::StringPiece GetRejectReasonString(
       break;
     case auction_worklet::mojom::RejectReason::kBelowKAnonThreshold:
       reject_reason_str = "below-kanon-threshold";
+      break;
+    case auction_worklet::mojom::RejectReason::kWrongGenerateBidCurrency:
+      reject_reason_str = "wrong-generate-bid-currency";
+      break;
+    case auction_worklet::mojom::RejectReason::kWrongScoreAdCurrency:
+      reject_reason_str = "wrong-score-ad-currency";
       break;
   }
   return reject_reason_str;
@@ -3155,6 +3197,8 @@ void InterestGroupAuction::OnScoreAdComplete(
     const absl::optional<GURL>& debug_loss_report_url,
     const absl::optional<GURL>& debug_win_report_url,
     PrivateAggregationRequests pa_requests,
+    base::TimeDelta scoring_latency,
+    base::TimeDelta trusted_signals_fetch_latency,
     const std::vector<std::string>& errors) {
   DCHECK_GT(bids_being_scored_, 0);
 
@@ -3176,6 +3220,9 @@ void InterestGroupAuction::OnScoreAdComplete(
   } else {
     bid->bid_state->EndTracing();
   }
+  bid->bid_state->pa_timings(seller_phase()).script_run_time = scoring_latency;
+  bid->bid_state->pa_timings(seller_phase()).signals_fetch_time =
+      trusted_signals_fetch_latency;
 
   --bids_being_scored_;
 
@@ -3192,7 +3239,7 @@ void InterestGroupAuction::OnScoreAdComplete(
       DCHECK(config_);
       PrivateAggregationRequests& pa_requests_for_seller =
           bid->bid_state->private_aggregation_requests[std::make_pair(
-              config_->seller, !parent_)];
+              config_->seller, seller_phase())];
       for (auction_worklet::mojom::PrivateAggregationRequestPtr& request :
            pa_requests) {
         // A for-event private aggregation request with non-reserved event type

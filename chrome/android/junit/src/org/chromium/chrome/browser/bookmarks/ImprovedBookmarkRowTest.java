@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.bookmarks;
 
 import android.app.Activity;
-import android.graphics.drawable.Drawable;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -25,7 +26,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.R;
-import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuButtonDelegate;
 import org.chromium.ui.base.TestActivity;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -46,13 +47,11 @@ public class ImprovedBookmarkRowTest {
             new ActivityScenarioRule<>(TestActivity.class);
 
     @Mock
-    Drawable mIcon;
-    @Mock
     View mView;
     @Mock
     ViewGroup mViewGroup;
     @Mock
-    ListMenu mListMenu;
+    ListMenuButtonDelegate mListMenuButtonDelegate;
     @Mock
     Runnable mPopupListener;
     @Mock
@@ -61,17 +60,21 @@ public class ImprovedBookmarkRowTest {
     Activity mActivity;
     ImprovedBookmarkRow mImprovedBookmarkRow;
     PropertyModel mModel;
+    BitmapDrawable mDrawable;
 
     @Before
     public void setUp() {
         mActivityScenarioRule.getScenario().onActivity((activity) -> mActivity = activity);
 
+        mDrawable = new BitmapDrawable(
+                mActivity.getResources(), Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888));
         mImprovedBookmarkRow = ImprovedBookmarkRow.buildView(mActivity, /*isVisual=*/true);
         mModel = new PropertyModel.Builder(ImprovedBookmarkRowProperties.ALL_KEYS)
                          .with(ImprovedBookmarkRowProperties.TITLE, TITLE)
                          .with(ImprovedBookmarkRowProperties.DESCRIPTION, DESCRIPTION)
-                         .with(ImprovedBookmarkRowProperties.ICON, mIcon)
-                         .with(ImprovedBookmarkRowProperties.LIST_MENU, mListMenu)
+                         .with(ImprovedBookmarkRowProperties.START_ICON_DRAWABLE, mDrawable)
+                         .with(ImprovedBookmarkRowProperties.LIST_MENU_BUTTON_DELEGATE,
+                                 mListMenuButtonDelegate)
                          .with(ImprovedBookmarkRowProperties.POPUP_LISTENER, mPopupListener)
                          .with(ImprovedBookmarkRowProperties.OPEN_BOOKMARK_CALLBACK,
                                  mOpenBookmarkCallback)
@@ -137,5 +140,14 @@ public class ImprovedBookmarkRowTest {
         Assert.assertTrue(mImprovedBookmarkRow.findViewById(R.id.more).isEnabled());
         Assert.assertEquals(View.IMPORTANT_FOR_ACCESSIBILITY_YES,
                 mImprovedBookmarkRow.findViewById(R.id.more).getImportantForAccessibility());
+    }
+
+    @Test
+    public void testListMenuButtonDelegateDoesNotChangeVisibility() {
+        int visibility = mImprovedBookmarkRow.findViewById(R.id.more).getVisibility();
+        mModel.set(ImprovedBookmarkRowProperties.LIST_MENU_BUTTON_DELEGATE, null);
+        // Setting the delegate shouldn't affect visibility.
+        Assert.assertEquals(
+                visibility, mImprovedBookmarkRow.findViewById(R.id.more).getVisibility());
     }
 }

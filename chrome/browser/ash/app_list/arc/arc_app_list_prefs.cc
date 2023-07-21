@@ -95,6 +95,8 @@ constexpr char kUninstalled[] = "uninstalled";
 constexpr char kVPNProvider[] = "vpnprovider";
 constexpr char kPermissionStateGranted[] = "granted";
 constexpr char kPermissionStateManaged[] = "managed";
+constexpr char kPermissionStateDetails[] = "details";
+constexpr char kPermissionStateOneTime[] = "one_time";
 constexpr char kWebAppInfo[] = "web_app_info";
 constexpr char kTitle[] = "title";
 constexpr char kStartUrl[] = "start_url";
@@ -852,10 +854,22 @@ std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
                            .value_or(false);
         bool managed = permission_state_dict->FindBool(kPermissionStateManaged)
                            .value_or(false);
+        const std::string* details =
+            permission_state_dict->FindString(kPermissionStateDetails);
+
+        absl::optional<std::string> details_opt;
+        if (details != nullptr) {
+          details_opt = *details;
+        }
+
+        bool one_time = permission_state_dict->FindBool(kPermissionStateOneTime)
+                            .value_or(false);
+
         arc::mojom::AppPermission permission =
             static_cast<arc::mojom::AppPermission>(permission_type);
         permissions.emplace(permission,
-                            arc::mojom::PermissionState::New(granted, managed));
+                            arc::mojom::PermissionState::New(
+                                granted, managed, details_opt, one_time));
       } else {
         LOG(ERROR) << "Permission state was not a dictionary.";
       }
@@ -1783,15 +1797,23 @@ void ArcAppListPrefs::AddOrUpdatePackagePrefs(
 
   base::Value::Dict permissions_dict;
   if (package.permission_states.has_value()) {
-    // Support new format
-    for (const auto& permission : package.permission_states.value()) {
+    for (const auto& [permission_type, permission_state] :
+         package.permission_states.value()) {
       base::Value::Dict permission_state_dict;
       permission_state_dict.Set(kPermissionStateGranted,
-                                permission.second->granted);
+                                permission_state->granted);
       permission_state_dict.Set(kPermissionStateManaged,
-                                permission.second->managed);
+                                permission_state->managed);
+
+      if (permission_state->details.has_value()) {
+        permission_state_dict.Set(kPermissionStateDetails,
+                                  permission_state->details.value());
+      }
+      permission_state_dict.Set(kPermissionStateOneTime,
+                                permission_state->one_time);
+
       permissions_dict.Set(
-          base::NumberToString(static_cast<int64_t>(permission.first)),
+          base::NumberToString(static_cast<int64_t>(permission_type)),
           std::move(permission_state_dict));
     }
     package_dict.Set(kPermissionStates, std::move(permissions_dict));

@@ -12,7 +12,7 @@ emulator_package {
 
 system_image_package {
   package_name: "chromium/third_party/android_sdk/public/system-images/android-upsidedowncake/google_apis/x86_64"
-  version: "KG8hpMcAc1OrhFZ-UBuYb3GwK7a-3TZRq8UJqBsg9owC"  # r3
+  version: "KG8hpMcAc1OrhFZ-UBuYb3GwK7a-3TZRq8UJqBsg9owC"  # r3, UPB1.230309.013
   dest_path: "generic_androidu"
 }
 system_image_name: "system-images;android-UpsideDownCake;google_apis;x86_64"

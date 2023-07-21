@@ -10,7 +10,6 @@
 #include "ash/ambient/managed/screensaver_image_downloader.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/ambient/ambient_managed_photo_source.h"
-#include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
@@ -27,9 +26,13 @@ namespace ash {
 class ASH_EXPORT ScreensaverImagesPolicyHandler
     : public AmbientManagedPhotoSource {
  public:
+  enum HandlerType { kSignin, kUser, kManagedGuest };
+
+  static ScreensaverImagesPolicyHandler Create(PrefService* pref_service);
+
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  explicit ScreensaverImagesPolicyHandler(PrefService* pref_service);
+  ScreensaverImagesPolicyHandler(PrefService* pref_service, HandlerType state);
   ~ScreensaverImagesPolicyHandler() override;
 
   // AmbientManagedPhotoSource overrides
@@ -45,13 +48,9 @@ class ASH_EXPORT ScreensaverImagesPolicyHandler
 
   void OnAmbientModeManagedScreensaverImagesPrefChanged();
 
-  // Download completion handler.
-  void OnDownloadJobCompleted(ScreensaverImageDownloadResult result,
-                              absl::optional<base::FilePath> path);
+  void OnDownloadedImageListUpdated(const std::vector<base::FilePath>& images);
 
-  base::flat_set<base::FilePath> downloaded_images_;
-
-  raw_ptr<PrefService> user_pref_service_ = nullptr;
+  raw_ptr<PrefService> pref_service_ = nullptr;
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 

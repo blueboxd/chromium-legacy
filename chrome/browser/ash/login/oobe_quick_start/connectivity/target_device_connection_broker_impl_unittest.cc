@@ -11,6 +11,7 @@
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/task_environment.h"
+#include "chrome/browser/ash/login/oobe_quick_start/connectivity/fake_connection.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fast_pair_advertiser.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/random_session_id.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker.h"
@@ -286,54 +287,6 @@ class FakeConnectionLifecycleListener
       connection_closed_reason_;
 };
 
-class FakeConnection : public Connection {
- public:
-  class Factory : public Connection::Factory {
-   public:
-    // Connection::Factory:
-    std::unique_ptr<Connection> Create(
-        NearbyConnection* nearby_connection,
-        Connection::SessionContext session_context,
-        mojo::SharedRemote<mojom::QuickStartDecoder> quick_start_decoder,
-        ConnectionClosedCallback on_connection_closed,
-        ConnectionAuthenticatedCallback on_connection_authenticated) override {
-      auto connection = std::make_unique<FakeConnection>(
-          nearby_connection, session_context, std::move(quick_start_decoder),
-          std::move(on_connection_closed),
-          std::move(on_connection_authenticated));
-      instance_ = connection->weak_ptr_factory_.GetWeakPtr();
-      return std::move(connection);
-    }
-
-    base::WeakPtr<FakeConnection> instance_;
-  };
-
-  FakeConnection(
-      NearbyConnection* nearby_connection,
-      Connection::SessionContext session_context,
-      mojo::SharedRemote<mojom::QuickStartDecoder> quick_start_decoder,
-      ConnectionClosedCallback on_connection_closed,
-      ConnectionAuthenticatedCallback on_connection_authenticated)
-      : Connection(nearby_connection,
-                   session_context,
-                   std::move(quick_start_decoder),
-                   std::make_unique<Connection::NonceGenerator>(),
-                   std::move(on_connection_closed),
-                   std::move(on_connection_authenticated)) {}
-
-  // Connection:
-  void InitiateHandshake(const std::string& authentication_token,
-                         HandshakeSuccessCallback callback) override {
-    handshake_initiated_ = true;
-    handshake_success_callback_ = std::move(callback);
-  }
-
-  bool handshake_initiated_ = false;
-  HandshakeSuccessCallback handshake_success_callback_;
-
-  base::WeakPtrFactory<FakeConnection> weak_ptr_factory_{this};
-};
-
 }  // namespace
 
 class TargetDeviceConnectionBrokerImplTest : public testing::Test {
@@ -367,7 +320,7 @@ class TargetDeviceConnectionBrokerImplTest : public testing::Test {
         kEndpointId, kAuthenticationToken);
   }
 
-  void CreateConnectionBroker() {
+  void CreateConnectionBroker(bool is_resume_after_update = false) {
     auto connection_factory = std::make_unique<FakeConnection::Factory>();
     connection_factory_ = connection_factory.get();
     connection_broker_ = std::make_unique<TargetDeviceConnectionBrokerImpl>(
@@ -375,7 +328,7 @@ class TargetDeviceConnectionBrokerImplTest : public testing::Test {
         std::move(connection_factory),
         mojo::SharedRemote<mojom::QuickStartDecoder>(
             fake_quick_start_decoder_->GetRemote()),
-        false);
+        is_resume_after_update);
   }
 
   void FinishFetchingBluetoothAdapter() {
@@ -457,6 +410,23 @@ class TargetDeviceConnectionBrokerImplTest : public testing::Test {
   FakeConnection* connection() { return connection_factory_->instance_.get(); }
 
   PrefService* GetLocalState() { return local_state_.Get(); }
+
+  void ResumeAfterUpdate() {
+    // The connection broker expects these prefs to be set if resuming after an
+    // update.
+    GetLocalState()->SetBoolean(prefs::kShouldResumeQuickStartAfterReboot,
+                                true);
+    base::Value::Dict info = connection_broker_->GetPrepareForUpdateInfo();
+    GetLocalState()->SetDict(prefs::kResumeQuickStartAfterRebootInfo,
+                             std::move(info));
+    std::string expected_random_session_id = GetRandomSessionId().ToString();
+    TargetDeviceConnectionBroker::SharedSecret expected_shared_secret =
+        GetSecondarySharedSecret();
+
+    CreateConnectionBroker(/*is_resume_after_update=*/true);
+    ASSERT_EQ(expected_random_session_id, GetRandomSessionId().ToString());
+    ASSERT_EQ(expected_shared_secret, GetSharedSecret());
+  }
 
  protected:
   bool is_bluetooth_powered_ = true;
@@ -798,7 +768,7 @@ TEST_F(TargetDeviceConnectionBrokerImplTest,
       kEndpointId, std::vector<uint8_t>(), &fake_nearby_connection_);
 
   ASSERT_TRUE(connection());
-  EXPECT_TRUE(connection()->handshake_initiated_);
+  EXPECT_TRUE(connection()->WasHandshakeInitiated());
 }
 
 TEST_F(TargetDeviceConnectionBrokerImplTest,
@@ -863,26 +833,7 @@ TEST_F(TargetDeviceConnectionBrokerImplTest,
 }
 
 TEST_F(TargetDeviceConnectionBrokerImplTest, ConstructWhenResumeAfterUpdate) {
-  // The connection broker expects these prefs to be set if resuming after an
-  // update.
-  base::Value::Dict prepare_for_update_info =
-      connection_broker_->GetPrepareForUpdateInfo();
-  GetLocalState()->SetBoolean(prefs::kShouldResumeQuickStartAfterReboot, true);
-  base::Value::Dict info = connection_broker_->GetPrepareForUpdateInfo();
-  GetLocalState()->SetDict(prefs::kResumeQuickStartAfterRebootInfo,
-                           std::move(info));
-  std::string expected_random_session_id = GetRandomSessionId().ToString();
-  TargetDeviceConnectionBroker::SharedSecret expected_shared_secret =
-      GetSecondarySharedSecret();
-
-  connection_broker_ =
-      ash::quick_start::TargetDeviceConnectionBrokerFactory::Create(
-          fake_nearby_connections_manager_.GetWeakPtr(),
-          mojo::SharedRemote<mojom::QuickStartDecoder>(
-              fake_quick_start_decoder_->GetRemote()),
-          /*is_resume_after_update=*/true);
-  EXPECT_EQ(expected_random_session_id, GetRandomSessionId().ToString());
-  EXPECT_EQ(expected_shared_secret, GetSharedSecret());
+  ResumeAfterUpdate();
 
   // Prefs should be cleared after the |connection_broker_| construction.
   ASSERT_FALSE(
@@ -890,6 +841,77 @@ TEST_F(TargetDeviceConnectionBrokerImplTest, ConstructWhenResumeAfterUpdate) {
   ASSERT_TRUE(GetLocalState()
                   ->GetDict(prefs::kResumeQuickStartAfterRebootInfo)
                   .empty());
+}
+
+TEST_F(TargetDeviceConnectionBrokerImplTest,
+       StartAdvertisingWhenResumeAfterUpdate) {
+  ResumeAfterUpdate();
+  FinishFetchingBluetoothAdapter();
+  EXPECT_EQ(0u, fast_pair_advertiser_factory_->StartAdvertisingCount());
+  EXPECT_FALSE(fake_nearby_connections_manager_.IsAdvertising());
+
+  connection_broker_->StartAdvertising(
+      &connection_lifecycle_listener_, /* use_pin_authentication= */ false,
+      base::BindOnce(
+          &TargetDeviceConnectionBrokerImplTest::StartAdvertisingResultCallback,
+          weak_ptr_factory_.GetWeakPtr()));
+
+  // When the target device resumes the connection after an update, it should
+  // begin Nearby Connections advertising without ever Fast Pair advertising.
+  EXPECT_EQ(0u, fast_pair_advertiser_factory_->StartAdvertisingCount());
+  EXPECT_TRUE(fake_nearby_connections_manager_.IsAdvertising());
+  EXPECT_EQ(PowerLevel::kHighPower,
+            fake_nearby_connections_manager_.advertising_power_level());
+  EXPECT_TRUE(start_advertising_callback_called_);
+  EXPECT_TRUE(start_advertising_callback_success_);
+}
+
+TEST_F(TargetDeviceConnectionBrokerImplTest,
+       HandshakeInitiatedWhenResumeAfterUpdate_UseQRCodeAuthentication) {
+  ResumeAfterUpdate();
+  FinishFetchingBluetoothAdapter();
+  connection_broker_->StartAdvertising(&connection_lifecycle_listener_,
+                                       /* use_pin_authentication= */ false,
+                                       base::DoNothing());
+  ASSERT_FALSE(connection_lifecycle_listener_.qr_code_data_);
+  NearbyConnectionsManager::IncomingConnectionListener*
+      incoming_connection_listener =
+          fake_nearby_connections_manager_.GetAdvertisingListener();
+  ASSERT_TRUE(incoming_connection_listener);
+  incoming_connection_listener->OnIncomingConnectionInitiated(
+      kEndpointId, std::vector<uint8_t>());
+  // On the first attempt to resume the connection after an update, no QR code
+  // or PIN should be generated on connection initiated.
+  EXPECT_FALSE(connection_lifecycle_listener_.qr_code_data_);
+  incoming_connection_listener->OnIncomingConnectionAccepted(
+      kEndpointId, std::vector<uint8_t>(), &fake_nearby_connection_);
+
+  ASSERT_TRUE(connection());
+  EXPECT_TRUE(connection()->WasHandshakeInitiated());
+}
+
+TEST_F(TargetDeviceConnectionBrokerImplTest,
+       HandshakeInitiatedWhenResumeAfterUpdate_UsePinAuthentication) {
+  ResumeAfterUpdate();
+  FinishFetchingBluetoothAdapter();
+  connection_broker_->StartAdvertising(&connection_lifecycle_listener_,
+                                       /* use_pin_authentication= */ true,
+                                       base::DoNothing());
+  ASSERT_FALSE(connection_lifecycle_listener_.pin_);
+  NearbyConnectionsManager::IncomingConnectionListener*
+      incoming_connection_listener =
+          fake_nearby_connections_manager_.GetAdvertisingListener();
+  ASSERT_TRUE(incoming_connection_listener);
+  incoming_connection_listener->OnIncomingConnectionInitiated(
+      kEndpointId, std::vector<uint8_t>());
+  // On the first attempt to resume the connection after an update, no QR code
+  // or PIN should be generated on connection initiated.
+  EXPECT_FALSE(connection_lifecycle_listener_.pin_);
+  incoming_connection_listener->OnIncomingConnectionAccepted(
+      kEndpointId, std::vector<uint8_t>(), &fake_nearby_connection_);
+
+  ASSERT_TRUE(connection());
+  EXPECT_TRUE(connection()->WasHandshakeInitiated());
 }
 
 }  // namespace ash::quick_start

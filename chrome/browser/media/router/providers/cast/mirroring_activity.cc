@@ -25,10 +25,13 @@
 #include "base/values.h"
 #include "chrome/browser/media/cast_mirroring_service_host_factory.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
+#include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/access_code_cast/common/access_code_cast_metrics.h"
 #include "components/media_router/browser/media_router_debugger.h"
 #include "components/media_router/browser/mirroring_to_flinging_switcher.h"
 #include "components/media_router/common/discovery/media_sink_internal.h"
@@ -180,6 +183,26 @@ MirroringActivity::~MirroringActivity() {
   if (!did_start_mirroring_timestamp_) {
     return;
   }
+
+  // Record mirroring pause metrics.
+  if (mirroring_pause_timestamp_) {  // The session is ending while paused.
+    AccessCodeCastMetrics::RecordMirroringPauseDuration(
+        base::Time::Now() - mirroring_pause_timestamp_.value());
+  }
+  // We can only get a profile on the UI thread, so we must post a task to check
+  // if we should log certain metrics.
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](int pause_count) {
+            // Don't record pause count if the cast session cannot be paused.
+            if (pause_count > 0 ||
+                media_router::IsAccessCodeCastFreezeUiEnabled(
+                    ProfileManager::GetLastUsedProfile())) {
+              AccessCodeCastMetrics::RecordMirroringPauseCount(pause_count);
+            }
+          },
+          mirroring_pause_count_));
 
   auto cast_duration = base::Time::Now() - *did_start_mirroring_timestamp_;
   base::UmaHistogramLongTimes(kHistogramSessionLength, cast_duration);
@@ -346,7 +369,10 @@ void MirroringActivity::LogErrorMessage(const std::string& message) {
 
 void MirroringActivity::OnSourceChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_sequence_checker_);
-  DCHECK(host_);
+  if (!host_) {
+    return;
+  }
+
   absl::optional<int> frame_tree_node_id = host_->GetTabSourceId();
   if (!source_changed_callback_ || !frame_tree_node_id ||
       frame_tree_node_id == frame_tree_node_id_) {
@@ -359,7 +385,8 @@ void MirroringActivity::OnSourceChanged() {
   // The source changed, which means that a new capturer was created that is
   // now sending frames. Ensure the state is now PLAYING.
   media_status_->play_state = mojom::MediaStatus::PlayState::PLAYING;
-  NotifyMediaStatusObserver();
+  OnMirroringResumed();
+  NotifyMediaStatusObservers();
 
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
@@ -371,7 +398,8 @@ void MirroringActivity::OnRemotingStateChanged(bool is_remoting) {
   // Transitions to/from remoting restart the capturer. Set the state to
   // playing.
   media_status_->play_state = mojom::MediaStatus::PlayState::PLAYING;
-  NotifyMediaStatusObserver();
+  OnMirroringResumed();
+  NotifyMediaStatusObservers();
 }
 
 void MirroringActivity::OnMessage(mirroring::mojom::CastMessagePtr message) {
@@ -464,10 +492,8 @@ void MirroringActivity::CreateMediaController(
     mojo::PendingReceiver<mojom::MediaController> media_controller,
     mojo::PendingRemote<mojom::MediaStatusObserver> observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_sequence_checker_);
-  media_controller_receiver_.reset();
-  media_controller_receiver_.Bind(std::move(media_controller));
-  media_status_observer_.reset();
-  media_status_observer_.Bind(std::move(observer));
+  media_controller_receivers_.Add(this, std::move(media_controller));
+  media_status_observers_.Add(std::move(observer));
 }
 
 std::string MirroringActivity::GetRouteDescription(
@@ -579,12 +605,10 @@ void MirroringActivity::StartSession(const std::string& destination_id,
   // If this fails, it's probably because CreateMojoBindings() hasn't been
   // called.
   DCHECK(channel_to_service_receiver_);
-  DCHECK(host_);
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(
           &MirroringActivity::StartOnUiThread, weak_ptr_factory_.GetWeakPtr(),
-          host_->GetWeakPtr(),
           SessionParameters::New(
               session_type, cast_data_.ip_endpoint.address(),
               cast_data_.model_name, sink_.sink().name(), destination_id,
@@ -597,7 +621,6 @@ void MirroringActivity::StartSession(const std::string& destination_id,
 }
 
 void MirroringActivity::StartOnUiThread(
-    base::WeakPtr<mirroring::MirroringServiceHost> host,
     mirroring::mojom::SessionParametersPtr session_params,
     mojo::PendingRemote<mirroring::mojom::SessionObserver> observer,
     mojo::PendingRemote<mirroring::mojom::CastMessageChannel> outbound_channel,
@@ -606,13 +629,13 @@ void MirroringActivity::StartOnUiThread(
   DCHECK_CALLED_ON_VALID_SEQUENCE(ui_sequence_checker_);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!host) {
+  if (!host_) {
     return;
   }
 
-  host->Start(std::move(session_params), std::move(observer),
-              std::move(outbound_channel), std::move(inbound_channel),
-              sink_name);
+  host_->Start(std::move(session_params), std::move(observer),
+               std::move(outbound_channel), std::move(inbound_channel),
+               sink_name);
 }
 
 void MirroringActivity::StopMirroring() {
@@ -729,13 +752,37 @@ void MirroringActivity::Pause() {
 
 void MirroringActivity::SetPlayState(mojom::MediaStatus::PlayState play_state) {
   media_status_->play_state = play_state;
-  NotifyMediaStatusObserver();
+  if (play_state == mojom::MediaStatus::PlayState::PLAYING) {
+    OnMirroringResumed();
+  } else if (play_state == mojom::MediaStatus::PlayState::PAUSED) {
+    OnMirroringPaused();
+  }
+  NotifyMediaStatusObservers();
 }
 
-void MirroringActivity::NotifyMediaStatusObserver() {
-  if (media_status_observer_) {
-    media_status_observer_->OnMediaStatusUpdated(media_status_.Clone());
+void MirroringActivity::NotifyMediaStatusObservers() {
+  for (const mojo::Remote<mojom::MediaStatusObserver>& observer :
+       media_status_observers_) {
+    observer->OnMediaStatusUpdated(media_status_.Clone());
   }
+}
+
+void MirroringActivity::OnMirroringPaused() {
+  // Do nothing if we are already paused.
+  if (mirroring_pause_timestamp_) {
+    return;
+  }
+  mirroring_pause_timestamp_ = base::Time::Now();
+  mirroring_pause_count_++;
+}
+
+void MirroringActivity::OnMirroringResumed() {
+  if (!mirroring_pause_timestamp_) {
+    return;
+  }
+  AccessCodeCastMetrics::RecordMirroringPauseDuration(
+      base::Time::Now() - mirroring_pause_timestamp_.value());
+  mirroring_pause_timestamp_.reset();
 }
 
 }  // namespace media_router

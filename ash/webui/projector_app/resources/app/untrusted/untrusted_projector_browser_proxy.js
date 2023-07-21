@@ -1,10 +1,9 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import {Value} from '//resources/mojo/mojo/public/mojom/base/values.mojom-webui.js';
 
 import {UntrustedProjectorPageCallbackRouter, UntrustedProjectorPageHandlerFactory, UntrustedProjectorPageHandlerRemote, UntrustedProjectorPageRemote} from './ash/webui/projector_app/mojom/untrusted_projector.mojom-webui.js';
-import {PrefsThatProjectorCanAskFor} from './ash/webui/projector_app/public/mojom/projector_types.mojom-webui.js';
+import {PrefsThatProjectorCanAskFor, RequestType, XhrResponseCode} from './ash/webui/projector_app/public/mojom/projector_types.mojom-webui.js';
 
 const booleanUserPrefs = new Map([
   [
@@ -25,6 +24,48 @@ const intUserPrefs = new Map([
   [
     'ash.projector.viewer_onboarding_show_count',
     PrefsThatProjectorCanAskFor.kProjectorViewerOnboardingShowCount,
+  ],
+]);
+
+const requestMaps = new Map([
+  [
+    'POST',
+    RequestType.kPost,
+  ],
+  [
+    'GET',
+    RequestType.kGet,
+  ],
+  [
+    'PATCH',
+    RequestType.kPatch,
+  ],
+  [
+    'DELETE',
+    RequestType.kDelete,
+  ],
+]);
+
+const errorCodeMap = new Map([
+  [
+    XhrResponseCode.kSuccess,
+    '',
+  ],
+  [
+    XhrResponseCode.kTokenFetchFailure,
+    'TOKEN_FETCH_FAILURE',
+  ],
+  [
+    XhrResponseCode.kXhrFetchFailure,
+    'XHR_FETCH_FAILURE',
+  ],
+  [
+    XhrResponseCode.kUnsupportedURL,
+    'UNSUPPORTED_URL',
+  ],
+  [
+    XhrResponseCode.kInvalidAccountEmail,
+    'INVALID_ACCOUNT_EMAIL',
   ],
 ]);
 
@@ -119,6 +160,50 @@ export class UntrustedProjectorBrowserProxyImpl {
   async openFeedbackDialog() {
     await this.pageHandlerRemote.openFeedbackDialog();
     return;
+  }
+
+  async startProjectorSession(storageDir) {
+    const {success} = await this.pageHandlerRemote.startProjectorSession({
+      path: {
+        path: storageDir,
+      },
+    });
+    return success;
+  }
+
+  async sendXhr(
+      url, method, requestBody, useCredentials, useApiKey, headers,
+      accountEmail) {
+    if (!requestMaps.has(method)) {
+      throw new Error(`Invalid request method. ${method}`);
+    }
+
+    const requestMethod = requestMaps.get(method);
+    const {response} = await this.pageHandlerRemote.sendXhr(
+        {url}, requestMethod, requestBody, useCredentials, useApiKey, headers,
+        accountEmail);
+
+    // TODO(b/237337607): Remove the success field and just pass response
+    // directly.
+    return {
+      success: response.responseCode === XhrResponseCode.kSuccess,
+      response: response.response,
+      error: errorCodeMap.get(response.responseCode),
+    };
+  }
+
+  async getAccounts() {
+    const {accounts} = await this.pageHandlerRemote.getAccounts();
+    return accounts;
+  }
+
+  async getVideo(videoFileId, resourceKey) {
+    const {result} =
+        await this.pageHandlerRemote.getVideo(videoFileId, resourceKey);
+    if ('errorMessage' in result) {
+      return Promise.reject(result.errorMessage);
+    }
+    return result.video;
   }
 }
 

@@ -9,6 +9,7 @@
 #include <functional>
 #include <limits>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -42,6 +43,7 @@
 #include "content/browser/attribution_reporting/store_source_result.h"
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "content/browser/attribution_reporting/test/configurable_storage_delegate.h"
+#include "content/public/browser/attribution_data_model.h"
 #include "net/base/schemeful_site.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/trigger_verification.h"
@@ -352,7 +354,7 @@ TEST_F(AttributionStorageSqlTest,
     // [impression_origin_idx], [sources_by_source_time],
     // [reports_by_report_time], [reports_by_source_id_report_type],
     // [reports_by_trigger_time], [reports_by_reporting_origin],
-    // [rate_limit_source_site_reporting_origin_idx],
+    // [rate_limit_source_site_reporting_site_idx],
     // [rate_limit_reporting_origin_idx], [rate_limit_time_idx],
     // [rate_limit_impression_id_idx], [sources_by_destination_site], and the
     // meta table index.
@@ -951,11 +953,12 @@ TEST_F(AttributionStorageSqlTest, DeleteAttributionDataByDataKey) {
           .Build();
   storage()->MaybeCreateAndStoreReport(trigger);
 
-  std::vector keys = storage()->GetAllDataKeys();
+  std::set<AttributionDataModel::DataKey> keys = storage()->GetAllDataKeys();
   ASSERT_THAT(keys, SizeIs(2));
 
-  storage()->DeleteByDataKey(keys[0]);
-  storage()->DeleteByDataKey(keys[1]);
+  for (const auto& key : keys) {
+    storage()->DeleteByDataKey(key);
+  }
 
   CloseDatabase();
 

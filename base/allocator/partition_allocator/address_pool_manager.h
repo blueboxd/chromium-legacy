@@ -18,6 +18,8 @@
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_lock.h"
+#include "base/allocator/partition_allocator/thread_isolation/alignment.h"
+#include "base/allocator/partition_allocator/thread_isolation/thread_isolation.h"
 #include "build/build_config.h"
 
 #if !BUILDFLAG(HAS_64_BIT_POINTERS)
@@ -49,7 +51,8 @@ namespace partition_alloc::internal {
 // to judge whether a given address is in a pool that supports BackupRefPtr or
 // in a pool that doesn't. All PartitionAlloc allocations must be in either of
 // the pools.
-class PA_COMPONENT_EXPORT(PARTITION_ALLOC) AddressPoolManager {
+class PA_COMPONENT_EXPORT(PARTITION_ALLOC)
+    PA_THREAD_ISOLATED_ALIGN AddressPoolManager {
  public:
   static AddressPoolManager& GetInstance();
 
@@ -96,10 +99,10 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) AddressPoolManager {
 
  private:
   friend class AddressPoolManagerForTesting;
-#if BUILDFLAG(ENABLE_PKEYS)
-  // If we use a pkey pool, we need to tag its metadata with the pkey. Allow the
-  // function to get access to the pool pointer.
-  friend void TagGlobalsWithPkey(int pkey);
+#if BUILDFLAG(ENABLE_THREAD_ISOLATION)
+  // If we use a thread isolated pool, we need to write-protect its metadata.
+  // Allow the function to get access to the pool pointer.
+  friend void WriteProtectThreadIsolatedGlobals(ThreadIsolationOption);
 #endif
 
   constexpr AddressPoolManager() = default;
@@ -110,7 +113,12 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) AddressPoolManager {
   // if PartitionAlloc is wholly unused in this process.)
   bool GetStats(AddressSpaceStats* stats);
 
+#if BUILDFLAG(ENABLE_THREAD_ISOLATION)
+  static void AssertThreadIsolatedLayout();
+#endif  // BUILDFLAG(ENABLE_THREAD_ISOLATION)
+
 #if BUILDFLAG(HAS_64_BIT_POINTERS)
+
   class Pool {
    public:
     constexpr Pool() = default;
@@ -134,6 +142,12 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) AddressPoolManager {
     void GetStats(PoolStats* stats);
 
    private:
+    // The lock needs to be the first field in this class.
+    // We write-protect the pool in the ThreadIsolated case, except that the
+    // lock can be used without acquiring write-permission first (via
+    // DumpStats()). So instead of protecting the whole variable, we only
+    // protect the memory after the lock.
+    // See the alignment of ` below.
     Lock lock_;
 
     // The bitset stores the allocation state of the address pool. 1 bit per
@@ -151,25 +165,31 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) AddressPoolManager {
 #if BUILDFLAG(PA_DCHECK_IS_ON)
     uintptr_t address_end_ = 0;
 #endif
+
+#if BUILDFLAG(ENABLE_THREAD_ISOLATION)
+    friend class AddressPoolManager;
+#endif  // BUILDFLAG(ENABLE_THREAD_ISOLATION)
   };
 
   PA_ALWAYS_INLINE Pool* GetPool(pool_handle handle) {
     PA_DCHECK(kNullPoolHandle < handle && handle <= kNumPools);
-    return &aligned_pools_.pools_[handle - 1];
+    return &pools_[handle - 1];
   }
 
   // Gets the stats for the pool identified by `handle`, if
   // initialized.
   void GetPoolStats(pool_handle handle, PoolStats* stats);
 
-  // If pkey support is enabled, we need to pkey-tag the pkey pool (which needs
-  // to be last). For this, we need to add padding in front of the pools so that
-  // pkey one starts on a page boundary.
-  struct {
-    char pad_[PA_PKEY_ARRAY_PAD_SZ(Pool, kNumPools)] = {};
-    Pool pools_[kNumPools];
-    char pad_after_[PA_PKEY_FILL_PAGE_SZ(sizeof(Pool))] = {};
-  } aligned_pools_ PA_PKEY_ALIGN;
+  // If thread isolation support is enabled, we need to write-protect the
+  // isolated pool (which needs to be last). For this, we need to add padding in
+  // front of the pools so that the isolated one starts on a page boundary.
+  // We also skip the Lock at the beginning of the pool since it needs to be
+  // used in contexts where we didn't enable write access to the pool memory.
+  char pad_[PA_THREAD_ISOLATED_ARRAY_PAD_SZ_WITH_OFFSET(
+      Pool,
+      kNumPools,
+      offsetof(Pool, alloc_bitset_))] = {};
+  Pool pools_[kNumPools];
 
 #endif  // BUILDFLAG(HAS_64_BIT_POINTERS)
 

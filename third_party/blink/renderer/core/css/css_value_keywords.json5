@@ -154,6 +154,15 @@
     // math
 
     //
+    // font-size-adjust
+    //
+    //none
+    "ex-height",
+    "cap-height",
+    "ch-width",
+    "ic-width",
+
+    //
     // font-family (<generic-family> in CSS 2.1)
     //
     // If you modify this list, please make sure you update css_parsing_utils's
@@ -204,6 +213,8 @@
     "transparent",
     "-webkit-link",
     "-webkit-activelink",
+    "accentcolor",
+    "accentcolortext",
     "activeborder",
     "activecaption",
     "activetext",
@@ -1376,6 +1387,9 @@
     "path",
     "ray",
     "sides",
+
+    // coord-box
+    "stroke-box",
 
     // math functions
     // https://drafts.csswg.org/css-values-4/#math

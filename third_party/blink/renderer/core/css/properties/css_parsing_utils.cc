@@ -1143,14 +1143,12 @@ CSSPrimitiveValue* ConsumeLength(CSSParserTokenRange& range,
       case CSSPrimitiveValue::UnitType::kViewportHeight:
       case CSSPrimitiveValue::UnitType::kViewportMin:
       case CSSPrimitiveValue::UnitType::kViewportMax:
-        break;
+      case CSSPrimitiveValue::UnitType::kIcs:
+      case CSSPrimitiveValue::UnitType::kLhs:
       case CSSPrimitiveValue::UnitType::kRexs:
       case CSSPrimitiveValue::UnitType::kRchs:
       case CSSPrimitiveValue::UnitType::kRics:
       case CSSPrimitiveValue::UnitType::kRlhs:
-        if (!RuntimeEnabledFeatures::CSSNewRootFontUnitsEnabled()) {
-          return nullptr;
-        }
         break;
       case CSSPrimitiveValue::UnitType::kViewportInlineSize:
       case CSSPrimitiveValue::UnitType::kViewportBlockSize:
@@ -1182,16 +1180,6 @@ CSSPrimitiveValue* ConsumeLength(CSSParserTokenRange& range,
       case CSSPrimitiveValue::UnitType::kContainerBlockSize:
       case CSSPrimitiveValue::UnitType::kContainerMin:
       case CSSPrimitiveValue::UnitType::kContainerMax:
-        break;
-      case CSSPrimitiveValue::UnitType::kIcs:
-        if (!RuntimeEnabledFeatures::CSSIcUnitEnabled()) {
-          return nullptr;
-        }
-        break;
-      case CSSPrimitiveValue::UnitType::kLhs:
-        if (!RuntimeEnabledFeatures::CSSLhUnitEnabled()) {
-          return nullptr;
-        }
         break;
       default:
         return nullptr;
@@ -1998,10 +1986,6 @@ static bool ConsumeColorInterpolationSpace(
     CSSParserTokenRange& args,
     Color::ColorSpace& color_space,
     Color::HueInterpolationMethod& hue_interpolation) {
-  if (!RuntimeEnabledFeatures::CSSColor4Enabled()) {
-    return false;
-  }
-
   if (!ConsumeIdent<CSSValueID::kIn>(args)) {
     return false;
   }
@@ -2068,10 +2052,6 @@ static CSSValue* ConsumeColorMixFunction(CSSParserTokenRange& range,
                                          const CSSParserContext& context) {
   DCHECK(range.Peek().FunctionId() == CSSValueID::kColorMix);
   context.Count(WebFeature::kCSSColorMixFunction);
-
-  if (!RuntimeEnabledFeatures::CSSColor4Enabled()) {
-    return nullptr;
-  }
 
   CSSParserTokenRange range_copy = range;
   CSSParserTokenRange args = ConsumeFunction(range_copy);
@@ -2289,21 +2269,18 @@ static bool ParseFunctionalSyntaxColor(CSSParserTokenRange& range,
       break;
     case CSSValueID::kLab:
     case CSSValueID::kOklab:
-      if (!RuntimeEnabledFeatures::CSSColor4Enabled() ||
-          !ParseLABOrOKLABParameters(color_range, context, result)) {
+      if (!ParseLABOrOKLABParameters(color_range, context, result)) {
         return false;
       }
       break;
     case CSSValueID::kLch:
     case CSSValueID::kOklch:
-      if (!RuntimeEnabledFeatures::CSSColor4Enabled() ||
-          !ParseLCHOrOKLCHParameters(color_range, context, result)) {
+      if (!ParseLCHOrOKLCHParameters(color_range, context, result)) {
         return false;
       }
       break;
     case CSSValueID::kColor:
-      if (!RuntimeEnabledFeatures::CSSColor4Enabled() ||
-          !ParseColorFunctionParameters(color_range, context, result)) {
+      if (!ParseColorFunctionParameters(color_range, context, result)) {
         return false;
       }
       break;
@@ -2443,13 +2420,16 @@ CSSValue* ConsumeColor(CSSParserTokenRange& range,
     return ConsumeColorContrast(range, context, accept_quirky_colors);
   }
 
-  if (RuntimeEnabledFeatures::CSSColor4Enabled() &&
-      range.Peek().FunctionId() == CSSValueID::kColorMix) {
+  if (range.Peek().FunctionId() == CSSValueID::kColorMix) {
     CSSValue* color = ConsumeColorMixFunction(range, context);
     return color;
   }
 
   CSSValueID id = range.Peek().Id();
+  if ((id == CSSValueID::kAccentcolor || id == CSSValueID::kAccentcolortext) &&
+      !RuntimeEnabledFeatures::CSSSystemAccentColorEnabled()) {
+    return nullptr;
+  }
   if (StyleColor::IsColorKeyword(id)) {
     if (!isValueAllowedInMode(id, context.Mode())) {
       return nullptr;
@@ -3564,6 +3544,9 @@ static CSSImageSetOptionValue* ConsumeImageSetOption(
   }
 
   CSSPrimitiveValue* resolution = ConsumeResolution(range, context);
+  if (resolution && resolution->GetDoubleValue() < 0.0) {
+    return nullptr;
+  }
 
   if (!type) {
     type = ConsumeImageSetType(range);
@@ -3656,6 +3639,13 @@ CSSIdentifierValue* ConsumeShapeBox(CSSParserTokenRange& range) {
 CSSIdentifierValue* ConsumeVisualBox(CSSParserTokenRange& range) {
   return ConsumeIdent<CSSValueID::kContentBox, CSSValueID::kPaddingBox,
                       CSSValueID::kBorderBox>(range);
+}
+
+// https://drafts.csswg.org/css-box-4/#typedef-coord-box
+CSSIdentifierValue* ConsumeCoordBox(CSSParserTokenRange& range) {
+  return ConsumeIdent<CSSValueID::kContentBox, CSSValueID::kPaddingBox,
+                      CSSValueID::kBorderBox, CSSValueID::kFillBox,
+                      CSSValueID::kStrokeBox, CSSValueID::kViewBox>(range);
 }
 
 void AddProperty(CSSPropertyID resolved_property,
@@ -4224,8 +4214,7 @@ CSSValue* ConsumeScrollFunction(CSSParserTokenRange& range,
     }
     if (!axis) {
       if ((axis = ConsumeIdent<CSSValueID::kBlock, CSSValueID::kInline,
-                               CSSValueID::kVertical, CSSValueID::kHorizontal>(
-               block))) {
+                               CSSValueID::kX, CSSValueID::kY>(block))) {
         continue;
       }
     }
@@ -4262,8 +4251,7 @@ CSSValue* ConsumeViewFunction(CSSParserTokenRange& range,
     }
     if (!axis) {
       if ((axis = ConsumeIdent<CSSValueID::kBlock, CSSValueID::kInline,
-                               CSSValueID::kVertical, CSSValueID::kHorizontal>(
-               block))) {
+                               CSSValueID::kX, CSSValueID::kY>(block))) {
         continue;
       }
     }
@@ -4300,7 +4288,7 @@ CSSValue* ConsumeAnimationTimeline(CSSParserTokenRange& range,
   if (auto* value = ConsumeIdent<CSSValueID::kNone, CSSValueID::kAuto>(range)) {
     return value;
   }
-  if (auto* value = ConsumeCustomIdent(range, context)) {
+  if (auto* value = ConsumeDashedIdent(range, context)) {
     return value;
   }
   if (auto* value = ConsumeViewFunction(range, context)) {
@@ -4401,6 +4389,7 @@ bool ConsumeAnimationShorthand(
     const StylePropertyShorthand& shorthand,
     HeapVector<Member<CSSValueList>, kMaxNumAnimationLonghands>& longhands,
     ConsumeAnimationItemValue consumeLonghandItem,
+    IsResetOnlyFunction is_reset_only,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     bool use_legacy_parsing) {
@@ -4437,9 +4426,30 @@ bool ConsumeAnimationShorthand(
     } while (!range.AtEnd() && range.Peek().GetType() != kCommaToken);
 
     for (unsigned i = 0; i < longhand_count; ++i) {
+      const Longhand& longhand = *To<Longhand>(shorthand.properties()[i]);
       if (!parsed_longhand[i]) {
-        longhands[i]->Append(
-            *To<Longhand>(shorthand.properties()[i])->InitialValue());
+        // For each longhand that doesn't parse, add the initial (list-item)
+        // value instead. However, we only do this *once* for reset-only
+        // properties to end up with the initial value for the property as
+        // a whole.
+        //
+        // Example:
+        //
+        //  animation: anim1, anim2;
+        //
+        // Should expand to (ignoring longhands other than name and timeline):
+        //
+        //   animation-name: anim1, anim2;
+        //   animation-timeline: auto;
+        //
+        // It should *not* expand to:
+        //
+        //   animation-name: anim1, anim2;
+        //   animation-timeline: auto, auto;
+        //
+        if (!is_reset_only(longhand.PropertyID()) || !longhands[i]->length()) {
+          longhands[i]->Append(*longhand.InitialValue());
+        }
       }
       parsed_longhand[i] = false;
     }
@@ -4454,8 +4464,8 @@ CSSValue* ConsumeSingleTimelineAttachment(CSSParserTokenRange& range) {
 }
 
 CSSValue* ConsumeSingleTimelineAxis(CSSParserTokenRange& range) {
-  return ConsumeIdent<CSSValueID::kBlock, CSSValueID::kInline,
-                      CSSValueID::kVertical, CSSValueID::kHorizontal>(range);
+  return ConsumeIdent<CSSValueID::kBlock, CSSValueID::kInline, CSSValueID::kX,
+                      CSSValueID::kY>(range);
 }
 
 CSSValue* ConsumeSingleTimelineName(CSSParserTokenRange& range,
@@ -4463,7 +4473,7 @@ CSSValue* ConsumeSingleTimelineName(CSSParserTokenRange& range,
   if (CSSValue* value = ConsumeIdent<CSSValueID::kNone>(range)) {
     return value;
   }
-  return ConsumeCustomIdent(range, context);
+  return ConsumeDashedIdent(range, context);
 }
 
 namespace {
@@ -6415,7 +6425,8 @@ cssvalue::CSSPathValue* ConsumeBasicShapePath(CSSParserTokenRange& args) {
                                                       wind_rule);
 }
 
-CSSValue* ConsumePathFunction(CSSParserTokenRange& range) {
+CSSValue* ConsumePathFunction(CSSParserTokenRange& range,
+                              EmptyPathStringHandling empty_handling) {
   // FIXME: Add support for <url>, <basic-shape>, <geometry-box>.
   if (range.Peek().FunctionId() != CSSValueID::kPath) {
     return nullptr;
@@ -6429,10 +6440,19 @@ CSSValue* ConsumePathFunction(CSSParserTokenRange& range) {
     return nullptr;
   }
 
-  range = function_range;
+  // https://drafts.csswg.org/css-shapes-1/#funcdef-basic-shape-path
+  // A path data string that does not conform to the to the grammar
+  // and parsing rules of SVG 1.1, or that does conform but defines
+  // an empty path, is invalid and causes the entire path() to be invalid.
   if (byte_stream->IsEmpty()) {
-    return CSSIdentifierValue::Create(CSSValueID::kNone);
+    if (empty_handling == EmptyPathStringHandling::kTreatAsNone) {
+      range = function_range;
+      return CSSIdentifierValue::Create(CSSValueID::kNone);
+    }
+    return nullptr;
   }
+  range = function_range;
+
   return MakeGarbageCollected<cssvalue::CSSPathValue>(std::move(byte_stream));
 }
 
@@ -6549,26 +6569,72 @@ bool IsBasicShapeSupportedByOffsetPath(const CSSValueID& id) {
 
 }  // namespace
 
+CSSValue* ConsumeScrollStart(CSSParserTokenRange& range,
+                             const CSSParserContext& context) {
+  if (CSSIdentifierValue* ident =
+          ConsumeIdent<CSSValueID::kAuto, CSSValueID::kStart,
+                       CSSValueID::kCenter, CSSValueID::kEnd, CSSValueID::kTop,
+                       CSSValueID::kBottom, CSSValueID::kLeft,
+                       CSSValueID::kRight>(range)) {
+    return ident;
+  }
+  return ConsumeLengthOrPercent(range, context,
+                                CSSPrimitiveValue::ValueRange::kNonNegative);
+}
+
+CSSValue* ConsumeScrollStartTarget(CSSParserTokenRange& range) {
+  return ConsumeIdent<CSSValueID::kAuto, CSSValueID::kNone>(range);
+}
+
 CSSValue* ConsumeOffsetPath(CSSParserTokenRange& range,
                             const CSSParserContext& context) {
-  CSSValue* value = nullptr;
+  CSSValue* offset_path = nullptr;
+  CSSValue* coord_box = nullptr;
+
+  if (CSSValue* none = ConsumeIdent<CSSValueID::kNone>(range)) {
+    return none;
+  }
+  if (RuntimeEnabledFeatures::CSSOffsetPathCoordBoxEnabled()) {
+    coord_box = ConsumeCoordBox(range);
+  }
+
   const CSSValueID function_id = range.Peek().FunctionId();
   if (RuntimeEnabledFeatures::CSSOffsetPathRayEnabled() &&
       function_id == CSSValueID::kRay) {
-    value = ConsumeRay(range, context);
-  } else if (IsBasicShapeSupportedByOffsetPath(function_id)) {
-    value = ConsumeBasicShape(range, context, AllowPathValue::kAllow,
-                              AllowBasicShapeRectValue::kAllow,
-                              AllowBasicShapeXYWHValue::kAllow);
-  } else {
-    value = ConsumePathOrNone(range);
+    offset_path = ConsumeRay(range, context);
+  }
+  if (!offset_path && IsBasicShapeSupportedByOffsetPath(function_id)) {
+    offset_path = ConsumeBasicShape(range, context, AllowPathValue::kAllow,
+                                    AllowBasicShapeRectValue::kAllow,
+                                    AllowBasicShapeXYWHValue::kAllow);
+  }
+  if (!offset_path && RuntimeEnabledFeatures::CSSOffsetPathUrlEnabled()) {
+    offset_path = ConsumeUrl(range, context);
+  }
+  if (!offset_path) {
+    offset_path = ConsumePathFunction(range, EmptyPathStringHandling::kFailure);
+  }
+
+  if (!coord_box && RuntimeEnabledFeatures::CSSOffsetPathCoordBoxEnabled()) {
+    coord_box = ConsumeCoordBox(range);
+  }
+
+  if (!offset_path && !coord_box) {
+    return nullptr;
+  }
+
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (offset_path) {
+    list->Append(*offset_path);
+  }
+  if (coord_box) {
+    list->Append(*coord_box);
   }
 
   // Count when we receive a valid path other than 'none'.
-  if (value && !value->IsIdentifierValue()) {
-    context.Count(WebFeature::kCSSOffsetInEffect);
-  }
-  return value;
+  context.Count(WebFeature::kCSSOffsetInEffect);
+
+  return list;
 }
 
 CSSValue* ConsumePathOrNone(CSSParserTokenRange& range) {
@@ -6577,7 +6643,7 @@ CSSValue* ConsumePathOrNone(CSSParserTokenRange& range) {
     return ConsumeIdent(range);
   }
 
-  return ConsumePathFunction(range);
+  return ConsumePathFunction(range, EmptyPathStringHandling::kTreatAsNone);
 }
 
 CSSValue* ConsumeOffsetRotate(CSSParserTokenRange& range,
@@ -7226,22 +7292,40 @@ CSSValue* ConsumeContainerName(CSSParserTokenRange& range,
 }
 
 CSSValue* ConsumeContainerType(CSSParserTokenRange& range) {
+  // container-type: normal | [ [ size | inline-size ] || sticky ]
   if (CSSValue* value = ConsumeIdent<CSSValueID::kNormal>(range)) {
     return value;
   }
 
-  if (CSSValue* value =
-          ConsumeIdent<CSSValueID::kSize, CSSValueID::kInlineSize>(range)) {
-    // Note that StyleBuilderConverter::ConvertFlags requires that values
-    // other than the ZeroValue appear in a CSSValueList, hence we return a list
-    // with one item here. Also note that the full grammar will require multiple
-    // list items in the future, if we add support for non-size container types.
-    CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-    list->Append(*value);
-    return list;
-  }
+  CSSValue* size_value = nullptr;
+  CSSValue* sticky_value = nullptr;
 
-  return nullptr;
+  do {
+    if (!size_value) {
+      size_value =
+          ConsumeIdent<CSSValueID::kSize, CSSValueID::kInlineSize>(range);
+      if (size_value) {
+        continue;
+      }
+    }
+    if (!sticky_value &&
+        RuntimeEnabledFeatures::CSSStickyContainerQueriesEnabled()) {
+      sticky_value = ConsumeIdent<CSSValueID::kSticky>(range);
+      if (sticky_value) {
+        continue;
+      }
+    }
+    return nullptr;
+  } while (!range.AtEnd());
+
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (size_value) {
+    list->Append(*size_value);
+  }
+  if (sticky_value) {
+    list->Append(*sticky_value);
+  }
+  return list;
 }
 
 CSSValue* ConsumeSVGPaint(CSSParserTokenRange& range,
@@ -7334,6 +7418,27 @@ AtomicString ConsumeCounterStyleNameInPrelude(CSSParserTokenRange& prelude,
     name = name.LowerASCII();
   }
   return name;
+}
+
+CSSValue* ConsumeFontSizeAdjust(CSSParserTokenRange& range,
+                                const CSSParserContext& context) {
+  if (range.Peek().Id() == CSSValueID::kNone) {
+    return css_parsing_utils::ConsumeIdent(range);
+  }
+
+  CSSIdentifierValue* font_metric =
+      ConsumeIdent<CSSValueID::kExHeight, CSSValueID::kCapHeight,
+                   CSSValueID::kChWidth, CSSValueID::kIcWidth>(range);
+
+  CSSPrimitiveValue* value = css_parsing_utils::ConsumeNumber(
+      range, context, CSSPrimitiveValue::ValueRange::kNonNegative);
+  if (!value || !font_metric ||
+      font_metric->GetValueID() == CSSValueID::kExHeight) {
+    return value;
+  }
+
+  return MakeGarbageCollected<CSSValuePair>(font_metric, value,
+                                            CSSValuePair::kKeepIdenticalValues);
 }
 
 }  // namespace css_parsing_utils

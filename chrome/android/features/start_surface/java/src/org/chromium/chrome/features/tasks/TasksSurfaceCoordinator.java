@@ -139,8 +139,10 @@ public class TasksSurfaceCoordinator implements TasksSurface {
                     incognitoReauthControllerSupplier, null /*BackPressManager*/);
         } else if (tabSwitcherType == TabSwitcherType.SINGLE) {
             mTabSwitcher = new SingleTabSwitcherCoordinator(activity,
-                    mView.getCarouselTabSwitcherContainer(), tabModelSelector,
-                    /* isTablet= */ false, /* mostRecentTab= */ null);
+                    mView.getCarouselTabSwitcherContainer(), null, tabModelSelector,
+                    /* isTablet= */ false, /* isScrollableMvtEnabled */ true,
+                    /* mostRecentTab= */ null, /* singleTabCardClickedCallback */ null,
+                    /* snapshotParentViewRunnable */ null);
         } else if (tabSwitcherType == TabSwitcherType.NONE) {
             mTabSwitcher = null;
         } else {

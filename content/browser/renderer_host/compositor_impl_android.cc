@@ -48,6 +48,7 @@
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/surface_range.h"
 #include "components/viz/common/viz_utils.h"
 #include "components/viz/host/host_display_client.h"
 #include "content/browser/browser_main_loop.h"
@@ -57,7 +58,6 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/compositor_dependencies_android.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/common/features.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/compositor_client.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -121,19 +121,7 @@ gpu::ContextCreationAttribs GetCompositorContextAttributes(
   attributes.samples = 0;
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
-  if (display_color_space == gfx::ColorSpace::CreateSRGB()) {
-    attributes.color_space = gpu::COLOR_SPACE_SRGB;
-  } else if (display_color_space == gfx::ColorSpace::CreateDisplayP3D65()) {
-    attributes.color_space = gpu::COLOR_SPACE_DISPLAY_P3;
-  } else {
-    // We don't support HDR on Android yet, but when we do, this function should
-    // be updated to support it.
-    DCHECK(!display_color_space.IsHDR());
-
-    attributes.color_space = gpu::COLOR_SPACE_UNSPECIFIED;
-    DLOG(ERROR) << "Android color space is neither sRGB nor P3, output color "
-                   "will be incorrect.";
-  }
+  attributes.color_space = gpu::COLOR_SPACE_SRGB;
 
   if (requires_alpha_channel) {
     attributes.alpha_size = 8;
@@ -315,16 +303,24 @@ class CompositorImpl::ScopedCachedBackBuffer {
 class CompositorImpl::ReadbackRefImpl
     : public ui::WindowAndroidCompositor::ReadbackRef {
  public:
-  explicit ReadbackRefImpl(base::WeakPtr<CompositorImpl> weakptr);
+  ReadbackRefImpl(base::WeakPtr<CompositorImpl> weakptr,
+                  const viz::SurfaceId& surface_id_to_copy);
   ~ReadbackRefImpl() override;
 
  private:
   base::WeakPtr<CompositorImpl> compositor_weakptr_;
+  std::unique_ptr<cc::slim::LayerTree::ScopedKeepSurfaceAlive> keep_alive_;
 };
 
 CompositorImpl::ReadbackRefImpl::ReadbackRefImpl(
-    base::WeakPtr<CompositorImpl> weakptr)
-    : compositor_weakptr_(weakptr) {}
+    base::WeakPtr<CompositorImpl> weakptr,
+    const viz::SurfaceId& surface_id_to_copy)
+    : compositor_weakptr_(std::move(weakptr)) {
+  DCHECK(compositor_weakptr_);
+  DCHECK(compositor_weakptr_->host_);
+  keep_alive_ = compositor_weakptr_->host_->CreateScopedKeepSurfaceAlive(
+      surface_id_to_copy);
+}
 
 CompositorImpl::ReadbackRefImpl::~ReadbackRefImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -760,9 +756,11 @@ void CompositorImpl::DidLoseLayerTreeFrameSink() {
 }
 
 std::unique_ptr<ui::WindowAndroidCompositor::ReadbackRef>
-CompositorImpl::TakeReadbackRef() {
+CompositorImpl::TakeReadbackRef(const viz::SurfaceId& surface_id) {
+  DCHECK(surface_id.is_valid());
   ++pending_readbacks_;
-  return std::make_unique<ReadbackRefImpl>(weak_factory_.GetWeakPtr());
+  return std::make_unique<ReadbackRefImpl>(weak_factory_.GetWeakPtr(),
+                                           surface_id);
 }
 
 void CompositorImpl::RequestCopyOfOutputOnRootLayer(
@@ -825,6 +823,14 @@ void CompositorImpl::OnDisplayMetricsChanged(const display::Display& display,
   if (changed_metrics &
       display::DisplayObserver::DisplayMetric::DISPLAY_METRIC_ROTATION) {
     OnUpdateOverlayTransform();
+  }
+
+  if (changed_metrics &
+      display::DisplayObserver::DisplayMetric::DISPLAY_METRIC_COLOR_SPACE) {
+    display_color_spaces_ = display.color_spaces();
+    if (display_private_) {
+      display_private_->SetDisplayColorSpaces(display_color_spaces_);
+    }
   }
 }
 
@@ -926,16 +932,11 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
       root_window_->GetSupportedRefreshRates());
   MaybeUpdateObserveBeginFrame();
 
-  base::PlatformThreadId io_thread_id =
-      base::FeatureList::IsEnabled(content::kADPFForBrowserIOThread)
-          ? BrowserMainLoop::GetInstance()->GetIOThreadId()
-          : base::kInvalidThreadId;
-
   auto frame_sink = cc::slim::FrameSink::Create(
       std::move(sink_remote), std::move(client_receiver),
       std::move(context_provider), std::move(task_runner),
       BrowserGpuChannelHostFactory::instance()->GetGpuMemoryBufferManager(),
-      io_thread_id);
+      BrowserMainLoop::GetInstance()->GetIOThreadId());
   host_->SetFrameSink(std::move(frame_sink));
 }
 

@@ -465,11 +465,6 @@ const char kEnableWebGLImageChromium[] = "enable-webgl-image-chromium";
 // file:///alias/some/path.html into file:///replacement/some/path.html.
 const char kFileUrlPathAlias[] = "file-url-path-alias";
 
-// Force-enables the PPB_VideoDecoder(Dev) API, overriding the value from any
-// ongoing Finch experiment.
-const char kForceEnablePepperVideoDecoderDevAPI[] =
-    "force-enable-pepper-video-decoder-dev-api";
-
 // This forces pages to be loaded as presentation receivers.  Useful for testing
 // behavior specific to presentation receivers.
 // Spec: https://www.w3.org/TR/presentation-api/#interface-presentationreceiver
@@ -898,10 +893,6 @@ const char kDisableWebRtcHWDecoding[]       = "disable-webrtc-hw-decoding";
 // Disables HW encode acceleration for WebRTC.
 const char kDisableWebRtcHWEncoding[] = "disable-webrtc-hw-encoding";
 
-// Enables negotiation of GCM cipher suites from RFC 7714 for SRTP in WebRTC.
-// See https://tools.ietf.org/html/rfc7714 for further information.
-const char kEnableWebRtcSrtpAesGcm[] = "enable-webrtc-srtp-aes-gcm";
-
 // Enables negotiation of encrypted header extensions from RFC 6904 for SRTP
 // in WebRTC.
 // See https://tools.ietf.org/html/rfc6904 for further information.
@@ -921,12 +912,6 @@ const char kForceWebRtcIPHandlingPolicy[] = "force-webrtc-ip-handling-policy";
 // Override the maximum framerate as can be specified in calls to getUserMedia.
 // This flag expects a value.  Example: --max-gum-fps=17.5
 const char kWebRtcMaxCaptureFramerate[] = "max-gum-fps";
-
-// Configure the maximum CPU time percentage of a single core that can be
-// consumed for desktop capturing. Default is 50. Set 100 to disable the
-// throttling of the capture.
-const char kWebRtcMaxCpuConsumptionPercentage[] =
-    "webrtc-max-cpu-consumption-percentage";
 
 // Enable capture and local storage of WebRTC event logs without visiting
 // chrome://webrtc-internals. This is useful for automated testing. It accepts
@@ -948,8 +933,9 @@ const char kWebXrRuntimeNone[] = "no-vr-runtime";
 const char kWebXrRuntimeOrientationSensors[] = "orientation-sensors";
 
 // The following are the runtimes that WebXr supports.
+const char kWebXrRuntimeCardboard[] = "cardboard";
+const char kWebXrRuntimeGVR[] = "gvr";
 const char kWebXrRuntimeOpenXr[] = "openxr";
-const char kWebXrRuntimeWMR[] = "windows-mixed-reality";
 
 #if BUILDFLAG(IS_ANDROID)
 // Disable Media Session API

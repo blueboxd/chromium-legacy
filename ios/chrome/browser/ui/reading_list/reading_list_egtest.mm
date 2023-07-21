@@ -17,6 +17,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_app_interface.h"
@@ -157,10 +158,11 @@ void TapContextMenuButtonWithA11yLabelID(int a11y_label_id) {
 // scrolled down to find the entry.
 void PerformActionOnEntry(NSString* entryTitle, id<GREYAction> action) {
   ScrollToTop();
-  id<GREYMatcher> matcher =
-      grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(entryTitle),
-                 grey_ancestor(grey_kindOfClassName(@"TableViewURLCell")),
-                 grey_sufficientlyVisible(), nil);
+  id<GREYMatcher> matcher = grey_allOf(
+      grey_descendant(
+          chrome_test_util::StaticTextWithAccessibilityLabel(entryTitle)),
+      grey_kindOfClassName(@"TableViewURLCell"), grey_sufficientlyVisible(),
+      nil);
   [[[EarlGrey selectElementWithMatcher:matcher]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 100)
       onElementWithMatcher:grey_accessibilityID(kReadingListViewID)]
@@ -452,11 +454,12 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   }
 
   // Test the presence of the omnibox offline chip.
+  UIImage* symbol =
+      DefaultSymbolTemplateWithPointSize(kDownloadPromptFillSymbol, 10);
+
   [[EarlGrey selectElementWithMatcher:
                  grey_allOf(chrome_test_util::PageSecurityInfoIndicator(),
-                            chrome_test_util::ImageViewWithImageNamed(
-                                @"location_bar_connection_offline"),
-                            nil)]
+                            chrome_test_util::ImageViewWithImage(symbol), nil)]
       assertWithMatcher:online ? grey_nil() : grey_notNil()];
 }
 

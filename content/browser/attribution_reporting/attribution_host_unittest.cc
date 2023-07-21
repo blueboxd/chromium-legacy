@@ -229,21 +229,21 @@ TEST_F(AttributionHostTest, ValidSourceRegistrations_ForwardedToManager) {
       NotifyNavigationRegistrationData(
           impression.attribution_src_token, redirect_headers.get(),
           /*reporting_origin=*/b_origin, source_origin, _, impression.nav_type,
-          /*is_within_fenced_frame=*/false, frame_id, _,
+          /*is_within_fenced_frame=*/false, frame_id, _, _,
           /*is_final_response=*/false));
   EXPECT_CALL(
       *mock_data_host_manager(),
       NotifyNavigationRegistrationData(
           impression.attribution_src_token, redirect_headers.get(),
           /*reporting_origin=*/c_origin, source_origin, _, impression.nav_type,
-          /*is_within_fenced_frame=*/false, frame_id, _,
+          /*is_within_fenced_frame=*/false, frame_id, _, _,
           /*is_final_response=*/false));
   EXPECT_CALL(
       *mock_data_host_manager(),
       NotifyNavigationRegistrationData(
           impression.attribution_src_token, headers.get(),
           /*reporting_origin=*/d_origin, source_origin, _, impression.nav_type,
-          /*is_within_fenced_frame=*/false, frame_id, _,
+          /*is_within_fenced_frame=*/false, frame_id, _, _,
           /*is_final_response=*/true));
 
   contents()->NavigateAndCommit(GURL("https://secure_impression.com"));
@@ -306,7 +306,7 @@ TEST_F(AttributionHostTest,
 
   EXPECT_CALL(*mock_data_host_manager(),
               NotifyNavigationRegistrationData(impression.attribution_src_token,
-                                               _, _, _, _, _, _, _, _,
+                                               _, _, _, _, _, _, _, _, _,
                                                /*is_final_response=*/true));
 
   contents()->NavigateAndCommit(GURL("https://secure_impression.com"));
@@ -324,7 +324,7 @@ TEST_F(AttributionHostTest, AttributionSrcNavigationAborts_Notified) {
 
   EXPECT_CALL(*mock_data_host_manager(),
               NotifyNavigationRegistrationData(impression.attribution_src_token,
-                                               _, _, _, _, _, _, _, _,
+                                               _, _, _, _, _, _, _, _, _,
                                                /*is_final_response=*/true));
 
   contents()->NavigateAndCommit(GURL("https://secure_impression.com"));
@@ -592,9 +592,9 @@ TEST_F(AttributionHostTest, FeatureDisabled_FencedFrameReportingBeaconDropped) {
   fenced_frame = NavigationSimulatorImpl::NavigateAndCommitFromDocument(
       GURL("https://fencedframe.example"), fenced_frame);
 
-  attribution_host()->NotifyFencedFrameReportingBeaconStarted(
+  EXPECT_FALSE(attribution_host()->NotifyFencedFrameReportingBeaconStarted(
       kBeaconId, kNavigationId,
-      static_cast<RenderFrameHostImpl*>(fenced_frame));
+      static_cast<RenderFrameHostImpl*>(fenced_frame)));
 }
 
 TEST_F(AttributionHostTest, NotifyFencedFrameReportingBeaconStarted) {
@@ -636,9 +636,10 @@ TEST_F(AttributionHostTest, NotifyFencedFrameReportingBeaconStarted) {
     fenced_frame = NavigationSimulatorImpl::NavigateAndCommitFromDocument(
         GURL("https://fencedframe.example"), fenced_frame);
 
-    attribution_host()->NotifyFencedFrameReportingBeaconStarted(
-        kBeaconId, kNavigationId,
-        static_cast<RenderFrameHostImpl*>(fenced_frame));
+    EXPECT_EQ(attribution_host()->NotifyFencedFrameReportingBeaconStarted(
+                  kBeaconId, kNavigationId,
+                  static_cast<RenderFrameHostImpl*>(fenced_frame)),
+              test_case.expected_valid);
   }
 }
 
@@ -685,9 +686,10 @@ TEST_F(AttributionHostTest, FencedFrameReportingBeacon_FeaturePolicyChecked) {
     simulator->Commit();
     fenced_frame = simulator->GetFinalRenderFrameHost();
 
-    attribution_host()->NotifyFencedFrameReportingBeaconStarted(
-        kBeaconId, /*navigation_id=*/absl::nullopt,
-        static_cast<RenderFrameHostImpl*>(fenced_frame));
+    EXPECT_EQ(attribution_host()->NotifyFencedFrameReportingBeaconStarted(
+                  kBeaconId, /*navigation_id=*/absl::nullopt,
+                  static_cast<RenderFrameHostImpl*>(fenced_frame)),
+              test_case.expected);
   }
 }
 

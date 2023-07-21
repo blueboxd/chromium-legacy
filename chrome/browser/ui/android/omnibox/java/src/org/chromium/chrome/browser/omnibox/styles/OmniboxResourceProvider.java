@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.omnibox.styles;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Drawable.ConstantState;
 import android.util.SparseArray;
@@ -146,15 +145,13 @@ public class OmniboxResourceProvider {
      */
     public static @ColorInt int getUrlBarPrimaryTextColor(
             Context context, @BrandedColorScheme int brandedColorScheme) {
-        final Resources resources = context.getResources();
-        @ColorInt
-        int color;
+        final @ColorInt int color;
         if (brandedColorScheme == BrandedColorScheme.LIGHT_BRANDED_THEME) {
-            color = resources.getColor(R.color.branded_url_text_on_light_bg);
+            color = context.getColor(R.color.branded_url_text_on_light_bg);
         } else if (brandedColorScheme == BrandedColorScheme.DARK_BRANDED_THEME) {
-            color = resources.getColor(R.color.branded_url_text_on_dark_bg);
+            color = context.getColor(R.color.branded_url_text_on_dark_bg);
         } else if (brandedColorScheme == BrandedColorScheme.INCOGNITO) {
-            color = resources.getColor(R.color.url_bar_primary_text_incognito);
+            color = context.getColor(R.color.url_bar_primary_text_incognito);
         } else {
             color = MaterialColors.getColor(context, R.attr.colorOnSurface, TAG);
         }
@@ -170,15 +167,13 @@ public class OmniboxResourceProvider {
      */
     public static @ColorInt int getUrlBarSecondaryTextColor(
             Context context, @BrandedColorScheme int brandedColorScheme) {
-        final Resources resources = context.getResources();
-        @ColorInt
-        int color;
+        final @ColorInt int color;
         if (brandedColorScheme == BrandedColorScheme.LIGHT_BRANDED_THEME) {
-            color = resources.getColor(R.color.branded_url_text_variant_on_light_bg);
+            color = context.getColor(R.color.branded_url_text_variant_on_light_bg);
         } else if (brandedColorScheme == BrandedColorScheme.DARK_BRANDED_THEME) {
-            color = resources.getColor(R.color.branded_url_text_variant_on_dark_bg);
+            color = context.getColor(R.color.branded_url_text_variant_on_dark_bg);
         } else if (brandedColorScheme == BrandedColorScheme.INCOGNITO) {
-            color = resources.getColor(R.color.url_bar_secondary_text_incognito);
+            color = context.getColor(R.color.url_bar_secondary_text_incognito);
         } else {
             color = MaterialColors.getColor(context, R.attr.colorOnSurfaceVariant, TAG);
         }
@@ -207,15 +202,16 @@ public class OmniboxResourceProvider {
     public static @ColorInt int getUrlBarDangerColor(
             Context context, @BrandedColorScheme int brandedColorScheme) {
         // Danger color has semantic meaning and it doesn't change with dynamic colors.
-        @ColorRes
-        int colorId = R.color.default_red;
+        final @ColorRes int colorId;
         if (brandedColorScheme == BrandedColorScheme.DARK_BRANDED_THEME
                 || brandedColorScheme == BrandedColorScheme.INCOGNITO) {
             colorId = R.color.default_red_light;
         } else if (brandedColorScheme == BrandedColorScheme.LIGHT_BRANDED_THEME) {
             colorId = R.color.default_red_dark;
+        } else {
+            colorId = R.color.default_red;
         }
-        return context.getResources().getColor(colorId);
+        return context.getColor(colorId);
     }
 
     /**
@@ -228,15 +224,16 @@ public class OmniboxResourceProvider {
     public static @ColorInt int getUrlBarSecureColor(
             Context context, @BrandedColorScheme int brandedColorScheme) {
         // Secure color has semantic meaning and it doesn't change with dynamic colors.
-        @ColorRes
-        int colorId = R.color.default_green;
+        final @ColorRes int colorId;
         if (brandedColorScheme == BrandedColorScheme.DARK_BRANDED_THEME
                 || brandedColorScheme == BrandedColorScheme.INCOGNITO) {
             colorId = R.color.default_green_light;
         } else if (brandedColorScheme == BrandedColorScheme.LIGHT_BRANDED_THEME) {
             colorId = R.color.default_green_dark;
+        } else {
+            colorId = R.color.default_green;
         }
-        return context.getResources().getColor(colorId);
+        return context.getColor(colorId);
     }
 
     /**
@@ -386,95 +383,158 @@ public class OmniboxResourceProvider {
     /** Gets the margin, in pixels, on either side of an omnibox suggestion. */
     public static @Px int getSideSpacing(@NonNull Context context) {
         return context.getResources().getDimensionPixelSize(
-                selectMarginDimen(R.dimen.omnibox_suggestion_side_spacing,
+                selectMarginDimen(context, R.dimen.omnibox_suggestion_side_spacing,
                         R.dimen.omnibox_suggestion_side_spacing_smaller,
                         R.dimen.omnibox_suggestion_side_spacing_smallest));
     }
 
     /** Gets the start padding for an omnibox suggestion's decoration icon. */
     public static @Px int getIconStartPadding(Context context) {
-        return context.getResources().getDimensionPixelSize(
-                selectMarginDimen(R.dimen.omnibox_suggestion_24dp_icon_margin_start_modern,
-                        R.dimen.omnibox_suggestion_24dp_icon_margin_start_modern,
-                        R.dimen.omnibox_suggestion_24dp_icon_margin_start));
+        if (!OmniboxFeatures.shouldShowModernizeVisualUpdate(context)) {
+            return context.getResources().getDimensionPixelSize(
+                    R.dimen.omnibox_suggestion_24dp_icon_margin_start);
+        }
+        return context.getResources().getDimensionPixelSize(selectMarginDimen(context,
+                R.dimen.omnibox_suggestion_24dp_icon_margin_start_modern_bigger,
+                R.dimen.omnibox_suggestion_24dp_icon_margin_start,
+                R.dimen.omnibox_suggestion_24dp_icon_margin_start));
     }
 
     /** Gets the start padding for a large omnibox suggestion decoration icon. */
     public static @Px int getLargeIconStartPadding(Context context) {
-        return context.getResources().getDimensionPixelSize(
-                selectMarginDimen(R.dimen.omnibox_suggestion_36dp_icon_margin_start_smaller,
-                        R.dimen.omnibox_suggestion_36dp_icon_margin_start_smallest,
-                        R.dimen.omnibox_suggestion_36dp_icon_margin_start));
+        if (!OmniboxFeatures.shouldShowModernizeVisualUpdate(context)) {
+            return context.getResources().getDimensionPixelSize(
+                    R.dimen.omnibox_suggestion_36dp_icon_margin_start);
+        }
+
+        return context.getResources().getDimensionPixelSize(selectMarginDimen(context,
+                R.dimen.omnibox_suggestion_36dp_icon_margin_start_smallest,
+                R.dimen.omnibox_suggestion_36dp_icon_margin_start,
+                R.dimen.omnibox_suggestion_36dp_icon_margin_start));
     }
 
     /** Gets the end padding for a large omnibox suggestion decoration icon. */
     public static @Px int getLargeIconEndPadding(Context context) {
+        if (!OmniboxFeatures.shouldShowModernizeVisualUpdate(context)) {
+            return context.getResources().getDimensionPixelSize(
+                    R.dimen.omnibox_suggestion_36dp_icon_margin_end);
+        }
+
         return context.getResources().getDimensionPixelSize(
-                selectMarginDimen(R.dimen.omnibox_suggestion_36dp_icon_margin_end_smaller,
-                        R.dimen.omnibox_suggestion_36dp_icon_margin_end_smallest,
+                selectMarginDimen(context, R.dimen.omnibox_suggestion_36dp_icon_margin_end_smallest,
+                        R.dimen.omnibox_suggestion_36dp_icon_margin_end,
                         R.dimen.omnibox_suggestion_36dp_icon_margin_end));
     }
 
     /** Get the top margin for a suggestion that is the beginning of a group. */
     public static int getSuggestionGroupTopMargin(Context context) {
         return context.getResources().getDimensionPixelSize(
-                selectMarginDimen(R.dimen.omnibox_suggestion_group_vertical_margin,
+                selectMarginDimen(context, R.dimen.omnibox_suggestion_group_vertical_margin,
                         R.dimen.omnibox_suggestion_group_vertical_smaller_margin,
                         R.dimen.omnibox_suggestion_group_vertical_smallest_margin));
     }
 
     /** Get the top padding for the MV carousel. */
     public static @Px int getCarouselTopPadding(Context context) {
-        if (OmniboxFeatures.shouldShowSmallerMargins()) {
-            return 0;
+        if (!OmniboxFeatures.shouldShowModernizeVisualUpdate(context)) {
+            return context.getResources().getDimensionPixelSize(
+                    R.dimen.omnibox_carousel_suggestion_padding);
         }
 
-        int topPadding = context.getResources().getDimensionPixelSize(
-                R.dimen.omnibox_carousel_suggestion_padding);
-
-        if (OmniboxFeatures.shouldShowModernizeVisualUpdate(context)) {
-            topPadding -= context.getResources().getDimensionPixelSize(
-                    R.dimen.tile_view_icon_background_margin_top_modern);
-        }
-
-        return topPadding;
+        return context.getResources().getDimensionPixelSize(
+                selectMarginDimen(context, R.dimen.omnibox_carousel_suggestion_padding_smaller,
+                        R.dimen.omnibox_carousel_suggestion_padding_smallest,
+                        R.dimen.omnibox_carousel_suggestion_padding_smaller));
     }
 
     /** Get the bottom padding for the MV carousel. */
     public static @Px int getCarouselBottomPadding(Context context) {
-        if (OmniboxFeatures.shouldShowSmallerMargins()) {
-            return 0;
+        if (!OmniboxFeatures.shouldShowModernizeVisualUpdate(context)) {
+            return context.getResources().getDimensionPixelSize(
+                    R.dimen.omnibox_carousel_suggestion_padding);
         }
 
-        @DimenRes
-        int dimenRes = OmniboxFeatures.shouldShowModernizeVisualUpdate(context)
-                ? R.dimen.omnibox_carousel_suggestion_small_bottom_padding
-                : R.dimen.omnibox_carousel_suggestion_padding;
-        return context.getResources().getDimensionPixelSize(dimenRes);
+        return context.getResources().getDimensionPixelSize(
+                selectMarginDimen(context, R.dimen.omnibox_carousel_suggestion_small_bottom_padding,
+                        R.dimen.omnibox_carousel_suggestion_small_bottom_padding,
+                        R.dimen.omnibox_carousel_suggestion_padding));
     }
 
     /** Get the top margin for first suggestion in the omnibox with "active color" enabled. */
-    public static int getActiveOmniboxTopSmallMargin(Context context) {
+    public static @Px int getActiveOmniboxTopSmallMargin(Context context) {
         return context.getResources().getDimensionPixelSize(
-                selectMarginDimen(R.dimen.omnibox_suggestion_list_active_top_small_margin,
+                selectMarginDimen(context, R.dimen.omnibox_suggestion_list_active_top_small_margin,
                         R.dimen.omnibox_suggestion_list_active_top_smaller_margin,
                         R.dimen.omnibox_suggestion_list_active_top_small_margin));
     }
 
     /** Gets the start padding for a header suggestion. */
-    public static int getHeaderStartPadding(Context context) {
+    public static @Px int getHeaderStartPadding(Context context) {
         return context.getResources().getDimensionPixelSize(
-                selectMarginDimen(R.dimen.omnibox_suggestion_header_padding_start_modern,
+                selectMarginDimen(context, R.dimen.omnibox_suggestion_header_padding_start_modern,
                         R.dimen.omnibox_suggestion_header_padding_start_modern_smaller,
                         R.dimen.omnibox_suggestion_header_padding_start_modern_smallest));
     }
 
+    /** Gets the top padding for a header suggestion. */
+    public static int getHeaderTopPadding(Context context) {
+        return context.getResources().getDimensionPixelSize(
+                selectMarginDimen(context, R.dimen.omnibox_suggestion_header_padding_top,
+                        R.dimen.omnibox_suggestion_header_padding_top_smaller,
+                        R.dimen.omnibox_suggestion_header_padding_top_smallest));
+    }
+
+    /** Returns the min height of the header view. */
+    public static int getHeaderMinHeight(Context context) {
+        return context.getResources().getDimensionPixelSize(
+                selectMarginDimen(context, R.dimen.omnibox_suggestion_header_height_modern_phase2,
+                        R.dimen.omnibox_suggestion_header_height_modern_phase2_smaller,
+                        R.dimen.omnibox_suggestion_header_height_modern_phase2_smallest));
+    }
+
+    /**
+     * Returns the size of the spacer on the left side of the status view when the omnibox is
+     * focused.
+     */
+    public static @Px int getFocusedStatusViewLeftSpacing(Context context) {
+        return context.getResources().getDimensionPixelSize(
+                selectMarginDimen(context, R.dimen.location_bar_status_view_left_space_width,
+                        R.dimen.location_bar_status_view_left_space_width_bigger,
+                        R.dimen.location_bar_status_view_left_space_width_bigger));
+    }
+
+    /**
+     * Returns the amount of pixels the toolbar should increased its height by when the omnibox is
+     * focused.
+     */
+    public static @Px int getToolbarOnFocusHeightIncrease(Context context) {
+        if (!OmniboxFeatures.shouldShowModernizeVisualUpdate(context)) {
+            return 0;
+        }
+
+        return context.getResources().getDimensionPixelSize(
+                OmniboxFeatures.shouldShowActiveColorOnOmnibox()
+                        ? R.dimen.toolbar_url_focus_height_increase_active_color
+                        : R.dimen.toolbar_url_focus_height_increase_no_active_color);
+    }
+
+    /** Returns the amount of pixels for the toolbar's side padding when the omnibox is focused. */
+    public static @Px int getToolbarSidePadding(Context context) {
+        return context.getResources().getDimensionPixelSize(
+                OmniboxFeatures.shouldShowModernizeVisualUpdate(context)
+                        ? OmniboxResourceProvider.selectMarginDimen(context,
+                                R.dimen.toolbar_edge_padding_modern,
+                                R.dimen.toolbar_edge_padding_modern_smaller,
+                                R.dimen.toolbar_edge_padding)
+                        : R.dimen.toolbar_edge_padding);
+    }
+
     /** */
     public static @DimenRes int selectMarginDimen(
-            @DimenRes int regular, @DimenRes int smaller, @DimenRes int smallest) {
-        if (OmniboxFeatures.shouldShowSmallestMargins()) {
+            Context context, @DimenRes int regular, @DimenRes int smaller, @DimenRes int smallest) {
+        if (OmniboxFeatures.shouldShowSmallestMargins(context)) {
             return smallest;
-        } else if (OmniboxFeatures.shouldShowSmallerMargins()) {
+        } else if (OmniboxFeatures.shouldShowSmallerMargins(context)) {
             return smaller;
         }
         return regular;

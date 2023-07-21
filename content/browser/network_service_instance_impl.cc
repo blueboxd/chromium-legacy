@@ -32,7 +32,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
-#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/buildflags.h"
@@ -62,6 +61,7 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/cpp/thread_delegate.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -110,6 +110,15 @@ constexpr char kKrb5ConfFile[] = "krb5.conf";
 bool g_force_create_network_service_directly = false;
 mojo::Remote<network::mojom::NetworkService>* g_network_service_remote =
     nullptr;
+#if BUILDFLAG(IS_ANDROID)
+mojo::Remote<network::mojom::EmptyNetworkService>*
+    g_empty_network_service_remote = nullptr;
+bool IsEmptyNetworkServiceEnabledForUMA() {
+  return IsInProcessNetworkService() &&
+         base::FeatureList::IsEnabled(
+             network::features::kNetworkServiceEmptyOutOfProcess);
+}
+#endif
 network::NetworkConnectionTracker* g_network_connection_tracker;
 bool g_network_service_is_responding = false;
 base::Time g_last_network_service_crash;
@@ -128,6 +137,13 @@ std::unique_ptr<network::NetworkService>& GetLocalNetworkService() {
       service;
   return service.GetOrCreateValue();
 }
+
+// If this is enabled, RestrictedCookieManagers in the network service will
+// receive messages on a high priority task queue to improve performance of sync
+// cookie calls from the renderer.
+BASE_FEATURE(kNetworkServiceCookiesHighPriorityTaskRunner,
+             "NetworkServiceCookiesHighPriorityTaskRunner",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If this feature is enabled, the Network Service will run on its own thread
 // when running in-process; otherwise it will run on the IO thread.
@@ -354,6 +370,11 @@ void CreateInProcessNetworkService(
   scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   if (base::FeatureList::IsEnabled(kNetworkServiceDedicatedThread)) {
     base::Thread::Options options(base::MessagePumpType::IO, 0);
+    if (base::FeatureList::IsEnabled(
+            kNetworkServiceCookiesHighPriorityTaskRunner)) {
+      options.delegate =
+          std::make_unique<network::ThreadDelegate>(options.message_pump_type);
+    }
     GetNetworkServiceDedicatedThread().StartWithOptions(std::move(options));
     task_runner = GetNetworkServiceDedicatedThread().task_runner();
   } else {
@@ -365,6 +386,21 @@ void CreateInProcessNetworkService(
   GetNetworkTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&CreateInProcessNetworkServiceOnThread,
                                 std::move(receiver)));
+#if BUILDFLAG(IS_ANDROID)
+  if (IsEmptyNetworkServiceEnabledForUMA()) {
+    if (!g_empty_network_service_remote) {
+      g_empty_network_service_remote =
+          new mojo::Remote<network::mojom::EmptyNetworkService>;
+    }
+    g_empty_network_service_remote->reset();
+    mojo::PendingReceiver<network::mojom::EmptyNetworkService> empty_receiver =
+        g_empty_network_service_remote->BindNewPipeAndPassReceiver();
+    ServiceProcessHost::Launch(std::move(empty_receiver),
+                               ServiceProcessHost::Options()
+                                   .WithDisplayName(u"Empty Network Service")
+                                   .Pass());
+  }
+#endif
 }
 
 network::mojom::NetworkServiceParamsPtr CreateNetworkServiceParams() {
@@ -556,10 +592,14 @@ network::mojom::NetworkService* GetNetworkService() {
         } else {
           if (service_was_bound)
             LOG(ERROR) << "Network service crashed, restarting service.";
-          ServiceProcessHost::Launch(std::move(receiver),
-                                     ServiceProcessHost::Options()
-                                         .WithDisplayName(u"Network Service")
-                                         .Pass());
+          ServiceProcessHost::Options options;
+          options.WithDisplayName(u"Network Service");
+          if (base::FeatureList::IsEnabled(
+                  kNetworkServiceCookiesHighPriorityTaskRunner)) {
+            options.WithExtraCommandLineSwitches(
+                {network::switches::kNetworkServiceScheduler});
+          }
+          ServiceProcessHost::Launch(std::move(receiver), std::move(options));
         }
       } else {
         DCHECK(IsInProcessNetworkService())
@@ -673,6 +713,13 @@ network::mojom::NetworkService* GetNetworkService() {
   return g_network_service_remote->get();
 }
 
+#if BUILDFLAG(IS_ANDROID)
+network::mojom::EmptyNetworkService* GetEmptyNetworkServiceForTesting() {
+  DCHECK(IsEmptyNetworkServiceEnabledForUMA());
+  return g_empty_network_service_remote->get();
+}
+#endif
+
 base::CallbackListSubscription RegisterNetworkServiceCrashHandler(
     base::RepeatingClosure handler) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -751,6 +798,12 @@ void ShutDownNetworkService() {
     g_in_process_instance = nullptr;
   }
   GetNetworkTaskRunnerStorage().reset();
+
+#if BUILDFLAG(IS_ANDROID)
+  if (IsEmptyNetworkServiceEnabledForUMA() && g_empty_network_service_remote) {
+    g_empty_network_service_remote->reset();
+  }
+#endif
 }
 
 namespace {

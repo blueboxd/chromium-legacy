@@ -13,6 +13,8 @@
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
+#include "base/time/time.h"
+#include "base/timer/mock_timer.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fido_assertion_info.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/random_session_id.h"
@@ -89,6 +91,9 @@ class ConstantNonceGenerator : public Connection::NonceGenerator {
   Connection::Nonce Generate() override { return kNonce; }
 };
 
+constexpr base::TimeDelta kNotifySourceOfUpdateResponseTimeout =
+    base::Seconds(3);
+
 }  // namespace
 
 class ConnectionTest : public testing::Test {
@@ -134,7 +139,12 @@ class ConnectionTest : public testing::Test {
     assertion_info_ = assertion_info;
   }
 
-  base::test::SingleThreadTaskEnvironment task_environment_;
+  bool IsResponseTimeoutTimerRunning() {
+    return connection_->response_timeout_timer_.IsRunning();
+  }
+
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<FakeNearbyConnection> fake_nearby_connection_;
   std::unique_ptr<Connection> connection_;
   RandomSessionId session_id_ = RandomSessionId(kRandomSessionId);
@@ -242,8 +252,7 @@ TEST_F(ConnectionTest, RequestAccountTransferAssertion) {
   std::unique_ptr<ash::quick_start::QuickStartMessage>
       bootstrap_options_message =
           ash::quick_start::QuickStartMessage::ReadMessage(
-              bootstrap_options_data,
-              QuickStartMessageType::kBootstrapConfigurations);
+              bootstrap_options_data, QuickStartMessageType::kBootstrapOptions);
   ASSERT_TRUE(bootstrap_options_message != nullptr);
   base::Value::Dict& bootstrap_options =
       *bootstrap_options_message->GetPayload();
@@ -255,6 +264,11 @@ TEST_F(ConnectionTest, RequestAccountTransferAssertion) {
   EXPECT_EQ(*bootstrap_options.FindInt(kDeviceTypeKey), kDeviceTypeChrome);
 
   // Emulate a BootstrapConfigurations response.
+  std::vector<uint8_t> cryptauth_device_id = {0x01, 0x02, 0x03};
+  std::string expected_cryptauth_device_id(cryptauth_device_id.begin(),
+                                           cryptauth_device_id.end());
+  fake_quick_start_decoder_->SetBootstrapConfigurationsResponse(
+      expected_cryptauth_device_id, absl::nullopt);
   fake_nearby_connection_->AppendReadableData(kTestBytes);
 
   // OnBootstrapOptionsResponse should trigger a write of FIDO GetInfo
@@ -394,6 +408,19 @@ TEST_F(ConnectionTest, NotifySourceOfUpdate_NoAckReceivedValue) {
   EXPECT_FALSE(future.Get());
 }
 
+TEST_F(ConnectionTest, NotifySourceOfUpdate_ResponseTimeout) {
+  MarkConnectionAuthenticated();
+  int32_t session_id = 1;
+  ASSERT_FALSE(IsResponseTimeoutTimerRunning());
+  authenticated_connection_->NotifySourceOfUpdate(session_id,
+                                                  base::DoNothing());
+  EXPECT_TRUE(IsResponseTimeoutTimerRunning());
+  EXPECT_EQ(connection_->GetState(), Connection::State::kOpen);
+
+  task_environment_.FastForwardBy(kNotifySourceOfUpdateResponseTimeout);
+  EXPECT_EQ(connection_->GetState(), Connection::State::kClosed);
+}
+
 TEST_F(ConnectionTest, TestClose) {
   base::test::TestFuture<TargetDeviceConnectionBroker::ConnectionClosedReason>
       future;
@@ -450,6 +477,75 @@ TEST_F(ConnectionTest, InitiateHandshake) {
   for (size_t i = 0; i < kTargetDeviceAuthMessage.size(); i++) {
     EXPECT_EQ(kTargetDeviceAuthMessage[i], written_payload[i]);
   }
+}
+
+TEST_F(ConnectionTest, TestUserVerificationRequested_ReturnsResult) {
+  fake_quick_start_decoder_->SetUserVerificationRequested(true);
+  fake_quick_start_decoder_->SetUserVerificationResponse(
+      mojom::UserVerificationResult::kUserVerified, true);
+
+  MarkConnectionAuthenticated();
+
+  base::test::TestFuture<absl::optional<mojom::UserVerificationResponse>>
+      future;
+  authenticated_connection_->WaitForUserVerification(future.GetCallback());
+  fake_nearby_connection_->AppendReadableData(kTestBytes);
+  fake_nearby_connection_->AppendReadableData(kTestBytes);
+
+  ASSERT_TRUE(future.Get().has_value());
+  EXPECT_EQ(mojom::UserVerificationResult::kUserVerified, future.Get()->result);
+  EXPECT_TRUE(future.Get()->is_first_user_verification);
+}
+
+TEST_F(ConnectionTest,
+       TestUserVerificationRequested_ReturnsEmptyIfRequestIsEmpty) {
+  fake_quick_start_decoder_->SetDecoderError(
+      mojom::QuickStartDecoderError::kMessageDoesNotMatchSchema);
+  fake_quick_start_decoder_->SetUserVerificationResponse(
+      mojom::UserVerificationResult::kUserVerified, true);
+
+  MarkConnectionAuthenticated();
+
+  base::test::TestFuture<absl::optional<mojom::UserVerificationResponse>>
+      future;
+  authenticated_connection_->WaitForUserVerification(future.GetCallback());
+  fake_nearby_connection_->AppendReadableData(kTestBytes);
+
+  EXPECT_FALSE(future.Get().has_value());
+}
+
+TEST_F(
+    ConnectionTest,
+    TestUserVerificationRequested_ReturnsEmptyIfAwaitingUserVerificationIsFalse) {
+  fake_quick_start_decoder_->SetUserVerificationRequested(false);
+  fake_quick_start_decoder_->SetUserVerificationResponse(
+      mojom::UserVerificationResult::kUserVerified, true);
+
+  MarkConnectionAuthenticated();
+
+  base::test::TestFuture<absl::optional<mojom::UserVerificationResponse>>
+      future;
+  authenticated_connection_->WaitForUserVerification(future.GetCallback());
+  fake_nearby_connection_->AppendReadableData(kTestBytes);
+
+  EXPECT_FALSE(future.Get().has_value());
+}
+
+TEST_F(ConnectionTest,
+       TestUserVerificationRequested_ReturnsEmptyIfResponseReturnsError) {
+  fake_quick_start_decoder_->SetUserVerificationRequested(true);
+
+  MarkConnectionAuthenticated();
+
+  base::test::TestFuture<absl::optional<mojom::UserVerificationResponse>>
+      future;
+  authenticated_connection_->WaitForUserVerification(future.GetCallback());
+  fake_nearby_connection_->AppendReadableData(kTestBytes);
+  fake_quick_start_decoder_->SetDecoderError(
+      mojom::QuickStartDecoderError::kMessageDoesNotMatchSchema);
+  fake_nearby_connection_->AppendReadableData(kTestBytes);
+
+  EXPECT_FALSE(future.Get().has_value());
 }
 
 }  // namespace ash::quick_start

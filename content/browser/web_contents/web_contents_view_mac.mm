@@ -80,7 +80,7 @@ void WebContentsViewMac::InstallCreateHookForTests(
 std::unique_ptr<WebContentsView> CreateWebContentsView(
     WebContentsImpl* web_contents,
     std::unique_ptr<WebContentsViewDelegate> delegate,
-    RenderViewHostDelegateView** render_view_host_delegate_view) {
+    raw_ptr<RenderViewHostDelegateView>* render_view_host_delegate_view) {
   auto rv =
       std::make_unique<WebContentsViewMac>(web_contents, std::move(delegate));
   *render_view_host_delegate_view = rv.get();

@@ -68,7 +68,6 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
     // Instance ID for the activity associated with this manager.
     private int mInstanceId = INVALID_INSTANCE_ID;
 
-    private TabModelSelectorTabModelObserver mTabModelObserver;
     private Tab mActiveTab;
     private TabObserver mActiveTabObserver = new EmptyTabObserver() {
         @Override
@@ -273,6 +272,12 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
             state.addObserver(this::onMultiInstanceStateChanged);
         }
         ApplicationStatus.registerStateListenerForActivity(this, mActivity);
+    }
+
+    @Override
+    public void onTabStateInitialized() {
+        TabModelSelector selector = mTabModelOrchestratorSupplier.get().getTabModelSelector();
+        writeTabCount(mInstanceId, selector);
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
@@ -485,6 +490,7 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     static void writeTabCount(int index, TabModelSelector selector) {
+        if (!selector.isTabStateInitialized()) return;
         SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
         int tabCount = selector.getModel(false).getCount();
         prefs.writeInt(tabCountKey(index), tabCount);
@@ -687,10 +693,5 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
                     "Android.MultiInstance.TotalDuration", current - startTime);
             prefs.writeLong(ChromePreferenceKeys.MULTI_INSTANCE_START_TIME, 0);
         }
-    }
-
-    @VisibleForTesting
-    TabModelSelectorTabModelObserver getTabModelObserverForTesting() {
-        return mTabModelObserver;
     }
 }

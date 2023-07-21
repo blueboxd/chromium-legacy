@@ -5,7 +5,7 @@
 #include "gpu/command_buffer/service/shared_image/dawn_egl_image_representation.h"
 
 #include "build/build_config.h"
-#include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_format_service_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 
 #include <dawn/native/OpenGLBackend.h>
@@ -13,7 +13,7 @@
 namespace {
 GLenum ToSharedImageAccessGLMode(WGPUTextureUsage usage) {
   if (usage & (WGPUTextureUsage_CopyDst | WGPUTextureUsage_RenderAttachment |
-               WGPUTextureUsage_StorageBinding | WGPUTextureUsage_Present)) {
+               WGPUTextureUsage_StorageBinding)) {
     return GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM;
   } else {
     return GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM;

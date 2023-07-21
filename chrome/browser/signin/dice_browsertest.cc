@@ -1054,7 +1054,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncAfterToken) {
   EXPECT_EQ(GetMainAccountID(), GetIdentityManager()->GetPrimaryAccountId(
                                     signin::ConsentLevel::kSignin));
   EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
-      syncer::prefs::kSyncRequested));
+      syncer::prefs::internal::kSyncRequested));
 
   EXPECT_EQ(1, reconcilor_blocked_count_);
   WaitForReconcilorUnblockedCount(1);
@@ -1155,7 +1155,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest,
   EXPECT_EQ(GetMainAccountID(), GetIdentityManager()->GetPrimaryAccountId(
                                     signin::ConsentLevel::kSignin));
   EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
-      syncer::prefs::kSyncRequested));
+      syncer::prefs::internal::kSyncRequested));
 
   // Wait until the sync confirmation webUI is created but not fully loaded
   // yet. The native dialog is not displayed yet since it waits until the webUI
@@ -1245,7 +1245,8 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, TurnOffDice_NotOptedIntoSync) {
 IN_PROC_BROWSER_TEST_F(DiceBrowserTest, PRE_TurnOffDice_OptedIntoSync) {
   // Sign the profile in and turn sync on.
   SetupSignedInAccounts(signin::ConsentLevel::kSync);
-  syncer::SyncPrefs(browser()->profile()->GetPrefs()).SetFirstSetupComplete();
+  syncer::SyncPrefs(browser()->profile()->GetPrefs())
+      .SetInitialSyncFeatureSetupComplete();
 
   ASSERT_TRUE(
       GetIdentityManager()->HasPrimaryAccount(signin::ConsentLevel::kSync));

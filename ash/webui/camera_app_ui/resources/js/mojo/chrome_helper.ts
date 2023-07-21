@@ -16,7 +16,6 @@ import {
   CameraAppHelper,
   CameraAppHelperRemote,
   CameraIntentAction,
-  CameraUsageOwnershipMonitorCallbackRouter,
   DocumentOutputFormat,
   DocumentScannerReadyState,
   ExternalScreenMonitorCallbackRouter,
@@ -41,6 +40,10 @@ let instance: ChromeHelper|null = null;
  * Forces casting type from Uint8Array to number[].
  */
 function castToNumberArray(data: Uint8Array): number[] {
+  // This cast is to workaround that the generated mojo binding only accepts
+  // number[], but actually can be passed Uint8Array (which also supports
+  // indexing via [] and length).
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   return data as unknown as number[];
 }
 
@@ -136,29 +139,10 @@ export class ChromeHelper {
   }
 
   /**
-   * Starts camera usage monitor.
+   * Initializes the camera window controller and bootstraps the mojo
+   * communication to get window states.
    */
-  async initCameraUsageMonitor(
-      exploitUsage: () => Promise<void>,
-      releaseUsage: () => Promise<void>): Promise<void> {
-    const usageCallbackRouter =
-        wrapEndpoint(new CameraUsageOwnershipMonitorCallbackRouter());
-
-    usageCallbackRouter.onCameraUsageOwnershipChanged.addListener(
-        async (hasUsage: boolean) => {
-          if (hasUsage) {
-            await exploitUsage();
-          } else {
-            await releaseUsage();
-          }
-        });
-
-    const {isSuccess} = await this.remote.setCameraUsageMonitor(
-        usageCallbackRouter.$.bindNewPipeAndPassRemote());
-    if (!isSuccess) {
-      throw new Error('Failed to set camera usage monitor');
-    }
-
+  async initCameraWindowController(): Promise<void> {
     let {controller} = await this.remote.getWindowStateController();
     controller = wrapEndpoint(controller);
     await windowController.bind(controller);

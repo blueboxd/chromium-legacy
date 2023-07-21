@@ -447,11 +447,16 @@ proto::ClientResult CreateClientResultFromPredResult(
   return client_result;
 }
 
-bool ConfigUsesLegacyOutput(Config* config) {
-  // List of config segments ids that doesn't support multi output and uses
+bool ConfigUsesLegacyOutput(const Config* config) {
+  return (config->segments.size() >= 1 &&
+          SegmentUsesLegacyOutput(config->segments.begin()->first));
+}
+
+bool SegmentUsesLegacyOutput(proto::SegmentId segment_id) {
+  // List of segments ids that doesn't support multi output and uses
   // legacy output. Please delete `SegmentId` from this list if segment is
   // migrated to support multi output.
-  base::flat_set<SegmentId> config_ids_use_legacy{
+  base::flat_set<SegmentId> segment_ids_use_legacy{
       SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB,
       SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHARE,
       SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_VOICE,
@@ -468,8 +473,7 @@ bool ConfigUsesLegacyOutput(Config* config) {
       SegmentId::INTENTIONAL_USER_SEGMENT,
       SegmentId::RESUME_HEAVY_USER_SEGMENT};
 
-  return (config->segments.size() >= 1 &&
-          config_ids_use_legacy.contains(config->segments.begin()->first));
+  return segment_ids_use_legacy.contains(segment_id);
 }
 
 }  // namespace metadata_utils

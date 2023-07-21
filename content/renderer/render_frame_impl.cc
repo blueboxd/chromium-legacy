@@ -133,7 +133,6 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/action_after_pagehide.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/context_menu_data/context_menu_data.h"
@@ -945,6 +944,9 @@ blink::WebNavigationTimings BuildNavigationTimings(
   renderer_navigation_timings.parent_resource_timing_access =
       browser_navigation_timings.parent_resource_timing_access;
 
+  renderer_navigation_timings.system_entropy_at_navigation_start =
+      browser_navigation_timings.system_entropy_at_navigation_start;
+
   return renderer_navigation_timings;
 }
 
@@ -965,6 +967,10 @@ void FillMiscNavigationParams(
   navigation_params->navigation_timings = BuildNavigationTimings(
       common_params.navigation_start, *commit_params.navigation_timing,
       common_params.input_start);
+  if (!commit_params.redirect_infos.empty()) {
+    navigation_params->navigation_timings.critical_ch_restart =
+        commit_params.redirect_infos.back().critical_ch_restart_time;
+  }
 
   navigation_params->is_user_activated =
       commit_params.was_activated == blink::mojom::WasActivatedOption::kYes;
@@ -1499,8 +1505,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
     render_frame->loader_factories_ = render_frame->CreateLoaderFactoryBundle(
         std::move(params->subresource_loader_factories),
         /*subresource_overrides=*/absl::nullopt,
-        /*prefetch_loader_factory=*/mojo::NullRemote(),
-        /*topics_loader_factory=*/mojo::NullRemote(),
+        /*subresource_proxying_loader_factory=*/mojo::NullRemote(),
         /*keep_alive_loader_factory=*/mojo::NullRemote());
   }
 
@@ -2528,8 +2533,7 @@ void RenderFrameImpl::CommitNavigation(
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
     blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
-        prefetch_loader_factory,
-    mojo::PendingRemote<network::mojom::URLLoaderFactory> topics_loader_factory,
+        subresource_proxying_loader_factory,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         keep_alive_loader_factory,
     const blink::DocumentToken& document_token,
@@ -2593,7 +2597,7 @@ void RenderFrameImpl::CommitNavigation(
       common_params.Clone(), commit_params.Clone(),
       std::move(subresource_loader_factories), std::move(subresource_overrides),
       std::move(controller_service_worker_info), std::move(container_info),
-      std::move(prefetch_loader_factory), std::move(topics_loader_factory),
+      std::move(subresource_proxying_loader_factory),
       std::move(keep_alive_loader_factory), std::move(code_cache_host),
       std::move(resource_cache), std::move(cookie_manager_info),
       std::move(storage_info), std::move(document_state));
@@ -2712,8 +2716,7 @@ void RenderFrameImpl::CommitNavigationWithParams(
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
     blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
-        prefetch_loader_factory,
-    mojo::PendingRemote<network::mojom::URLLoaderFactory> topics_loader_factory,
+        subresource_proxying_loader_factory,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         keep_alive_loader_factory,
     mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host,
@@ -2731,8 +2734,7 @@ void RenderFrameImpl::CommitNavigationWithParams(
   scoped_refptr<blink::ChildURLLoaderFactoryBundle> new_loader_factories =
       CreateLoaderFactoryBundle(std::move(subresource_loader_factories),
                                 std::move(subresource_overrides),
-                                std::move(prefetch_loader_factory),
-                                std::move(topics_loader_factory),
+                                std::move(subresource_proxying_loader_factory),
                                 std::move(keep_alive_loader_factory));
 
   DCHECK(new_loader_factories);
@@ -2871,8 +2873,7 @@ void RenderFrameImpl::CommitFailedNavigation(
       CreateLoaderFactoryBundle(
           std::move(subresource_loader_factories),
           absl::nullopt /* subresource_overrides */,
-          mojo::NullRemote() /* prefetch_loader_factory */,
-          mojo::NullRemote() /* topics_loader_factory */,
+          mojo::NullRemote() /* subresource_proxying_loader_factory */,
           mojo::NullRemote() /* keep_alive_loader_factory */);
   DCHECK(new_loader_factories->HasBoundDefaultFactory());
 
@@ -3264,12 +3265,10 @@ RenderFrameImpl::CreateWorkerContentSettingsClient() {
 
 #if !BUILDFLAG(IS_ANDROID)
 std::unique_ptr<media::SpeechRecognitionClient>
-RenderFrameImpl::CreateSpeechRecognitionClient(
-    media::SpeechRecognitionClient::OnReadyCallback callback) {
+RenderFrameImpl::CreateSpeechRecognitionClient() {
   if (!frame_ || !frame_->View())
     return nullptr;
-  return GetContentClient()->renderer()->CreateSpeechRecognitionClient(
-      this, std::move(callback));
+  return GetContentClient()->renderer()->CreateSpeechRecognitionClient(this);
 }
 #endif
 
@@ -5089,16 +5088,6 @@ void RenderFrameImpl::BeginNavigation(
                url.possibly_invalid_spec(), "navigation_type",
                static_cast<int>(info->navigation_type));
 
-  if (GetWebFrame() && GetWebFrame()->DispatchedPagehideAndStillHidden()) {
-    // The navigation started after the pagehide event got dispatched. This
-    // navigation will be ignored by the browser, and we need to track that it's
-    // happening. Note that this problem is not unique to BackForwardCache/
-    // same-site BrowsingInstance swap, as navigations started after unload in
-    // normal scenarios will also be ignored by the browser.
-    UMA_HISTOGRAM_ENUMERATION("BackForwardCache.SameSite.ActionAfterPagehide2",
-                              blink::ActionAfterPagehide::kNavigation);
-  }
-
   // When an MHTML Archive is present, it should be used to serve iframe
   // content instead of doing a network request. This should never be true for
   // the main frame.
@@ -5197,10 +5186,10 @@ void RenderFrameImpl::BeginNavigation(
     }
   }
 
-  if (frame_->IsOutermostMainFrame() && url.SchemeIsHTTPOrHTTPS() &&
-      !url.is_empty() &&
+  if (frame_->IsOutermostMainFrame() && url.is_valid() &&
+      url.SchemeIsHTTPOrHTTPS() &&
       base::FeatureList::IsEnabled(kSpeculativeServiceWorkerStartup)) {
-    frame_->WillPotentiallyStartOutermostMainFrameNavigation(url);
+    frame_->MaybeStartOutermostMainFrameNavigation(WebVector<WebURL>({url}));
   }
 
   // Depending on navigation policy, send one of three IPCs to the browser
@@ -5533,8 +5522,7 @@ RenderFrameImpl::CreateLoaderFactoryBundle(
     absl::optional<std::vector<blink::mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
-        prefetch_loader_factory,
-    mojo::PendingRemote<network::mojom::URLLoaderFactory> topics_loader_factory,
+        subresource_proxying_loader_factory,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         keep_alive_loader_factory) {
   DCHECK(info);
@@ -5554,12 +5542,9 @@ RenderFrameImpl::CreateLoaderFactoryBundle(
   if (subresource_overrides) {
     loader_factories->UpdateSubresourceOverrides(&*subresource_overrides);
   }
-  if (prefetch_loader_factory) {
-    loader_factories->SetPrefetchLoaderFactory(
-        std::move(prefetch_loader_factory));
-  }
-  if (topics_loader_factory) {
-    loader_factories->SetTopicsLoaderFactory(std::move(topics_loader_factory));
+  if (subresource_proxying_loader_factory) {
+    loader_factories->SetSubresourceProxyingLoaderFactory(
+        std::move(subresource_proxying_loader_factory));
   }
   if (keep_alive_loader_factory) {
     loader_factories->SetKeepAliveLoaderFactory(
@@ -6032,8 +6017,7 @@ void RenderFrameImpl::LoadHTMLStringForTesting(const std::string& html,
       blink::ChildPendingURLLoaderFactoryBundle::CreateFromDefaultFactoryImpl(
           network::NotImplementedURLLoaderFactory::Create()),
       /*subresource_overrides=*/absl::nullopt,
-      /*prefetch_loader_factory=*/{},
-      /*topics_loader_factory=*/{},
+      /*subresource_proxying_loader_factory=*/{},
       /*keep_alive_loader_factory=*/{});
 
   auto navigation_params = std::make_unique<WebNavigationParams>();
@@ -6278,7 +6262,8 @@ WebView* RenderFrameImpl::CreateNewWindow(
     auto pip_mojom_opts = blink::mojom::PictureInPictureWindowOptions::New();
     pip_mojom_opts->width = pip_options->width;
     pip_mojom_opts->height = pip_options->height;
-    pip_mojom_opts->initial_aspect_ratio = pip_options->initial_aspect_ratio;
+    // TODO(crbug.com/1444658): Remove this from mojom and the browser side.
+    pip_mojom_opts->initial_aspect_ratio = 0.0;
     // TODO(crbug.com/1410379): Remove this from mojom and the browser side.
     pip_mojom_opts->lock_aspect_ratio = false;
     params->pip_options = std::move(pip_mojom_opts);
@@ -6364,6 +6349,7 @@ WebView* RenderFrameImpl::CreateNewWindow(
   view_params->replication_state->frame_policy.sandbox_flags = sandbox_flags;
   view_params->replication_state->name = frame_name_utf8;
   view_params->devtools_main_frame_token = reply->devtools_main_frame_token;
+  view_params->browsing_context_group_info = reply->browsing_context_group_info;
 
   auto main_frame_params = mojom::CreateLocalMainFrameParams::New();
   main_frame_params->frame_token = reply->main_frame_token;

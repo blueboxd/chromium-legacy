@@ -210,6 +210,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCSSCounterText) {
   RunCSSTest(FILE_PATH_LITERAL("counter-text.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityCSSDisplayContents) {
+  RunCSSTest(FILE_PATH_LITERAL("display-contents.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCSSFontStyle) {
   RunCSSTest(FILE_PATH_LITERAL("font-style.html"));
 }
@@ -2034,10 +2039,12 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 class DumpAccessibilityTreeFencedFrameTest : public DumpAccessibilityTreeTest {
  protected:
   DumpAccessibilityTreeFencedFrameTest() {
-    feature_list_.InitWithFeatures({{blink::features::kFencedFrames},
-                                    {features::kPrivacySandboxAdsAPIsOverride},
-                                    {blink::features::kFencedFramesAPIChanges}},
-                                   {/* disabled_features */});
+    feature_list_.InitWithFeatures(
+        {{blink::features::kFencedFrames},
+         {features::kPrivacySandboxAdsAPIsOverride},
+         {blink::features::kFencedFramesAPIChanges},
+         {blink::features::kFencedFramesDefaultMode}},
+        {/* disabled_features */});
 
     UseHttpsTestServer();
   }
@@ -2059,17 +2066,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::ValuesIn(ui::AXInspectTestHelper::TreeTestPasses()),
     DumpAccessibilityTreeTestPassToString());
 
-// TODO(crbug.com/1428918): Re-enable this test on ChromeOS.
-// TODO(crbug.com/1440049): Fix flaky timeouts on Windows ASAN.
-#if BUILDFLAG(IS_CHROMEOS) || (BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER))
-#define MAYBE_AccessibilityFencedFrameScrollable \
-  DISABLED_AccessibilityFencedFrameScrollable
-#else
-#define MAYBE_AccessibilityFencedFrameScrollable \
-  AccessibilityFencedFrameScrollable
-#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeFencedFrameTest,
-                       MAYBE_AccessibilityFencedFrameScrollable) {
+                       AccessibilityFencedFrameScrollable) {
   RunHtmlTest(FILE_PATH_LITERAL("fencedframe-scrollable-mparch.html"));
 }
 
@@ -2527,6 +2525,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityLink) {
   RunHtmlTest(FILE_PATH_LITERAL("link.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityLinkTarget) {
+  RunHtmlTest(FILE_PATH_LITERAL("link-target.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityLinkInsideHeading) {
   RunHtmlTest(FILE_PATH_LITERAL("link-inside-heading.html"));
@@ -2654,12 +2656,14 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityModalDialogClosed) {
+                       // TODO(crbug.com/1446550): Re-enable this test
+                       DISABLED_AccessibilityModalDialogClosed) {
   RunHtmlTest(FILE_PATH_LITERAL("modal-dialog-closed.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityModalDialogOpened) {
+                       // TODO(crbug.com/1446550): Re-enable this test
+                       DISABLED_AccessibilityModalDialogOpened) {
   RunHtmlTest(FILE_PATH_LITERAL("modal-dialog-opened.html"));
 }
 
@@ -2683,7 +2687,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTestWithIgnoredNodes,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityModalDialogStack) {
+                       // TODO(crbug.com/1446550): Re-enable this test
+                       DISABLED_AccessibilityModalDialogStack) {
   RunHtmlTest(FILE_PATH_LITERAL("modal-dialog-stack.html"));
 }
 
@@ -3438,6 +3443,12 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MissingParent) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        NullObjectOnHypertextOffsetComputation) {
+  if (!base::FeatureList::IsEnabled(blink::features::kMutationEvents)) {
+    // TODO(crbug.com/1446498) Remove this test (and the .html file) when
+    // MutationEvents are disabled for good. This is just a crash test related
+    // to `DOMNodeInserted`.
+    return;
+  }
   RunRegressionTest(
       FILE_PATH_LITERAL("null-object-on-hypertext-offset-computation.html"));
 }

@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/shared/public/features/features.h"
 
+#import "ui/base/device_form_factor.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -156,10 +158,6 @@ BASE_FEATURE(kEnableShortenedPasswordAutoFillInstruction,
              "EnableShortenedPasswordAutoFillInstruction",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kUseSFSymbolsInOmnibox,
-             "UseSFSymbolsInOmnibox",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kSFSymbolsFollowUp,
              "SFSymbolsFollowUp",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -173,6 +171,10 @@ BASE_FEATURE(kTabGridRecencySort,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsTabGridSortedByRecency() {
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+    return false;
+  }
+
   return base::FeatureList::IsEnabled(kTabGridRecencySort);
 }
 
@@ -243,9 +245,17 @@ BASE_FEATURE(kBottomOmniboxSteadyState,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsBottomOmniboxSteadyStateEnabled() {
+  // Bottom omnibox is only available on phones.
+  if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_PHONE) {
+    return false;
+  }
   return base::FeatureList::IsEnabled(kBottomOmniboxSteadyState);
 }
 
 BASE_FEATURE(kOnlyAccessClipboardAsync,
              "OnlyAccessClipboardAsync",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kReplaceSyncPromosWithSignInPromos,
+             "ReplaceSyncPromosWithSignInPromos",
              base::FEATURE_DISABLED_BY_DEFAULT);

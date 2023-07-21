@@ -149,15 +149,10 @@ class ProfileKeyedServiceBrowserTest : public InProcessBrowserTest {
     // tests. If a feature is integrated in the fieldtrial_testing_config.json,
     // it might not be considered under an official build. Adding it under a
     // InitWithFeatures to activate it would neglect that difference.
-    //
-    // Force init `kSystemProfileSelectionDefaultNone` to make sure that this
-    // test catches all new creation of services for System Profile, even during
-    // the transition period when the feature experiment is partially active.
-    //
+
     // clang-format off
     feature_list_.InitWithFeatures(
         {
-          kSystemProfileSelectionDefaultNone,
 #if !BUILDFLAG(IS_ANDROID)
           features::kTrustSafetySentimentSurvey,
 #endif  // !BUILDFLAG(IS_ANDROID)
@@ -177,13 +172,6 @@ class ProfileKeyedServiceBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
                        SystemProfileOTR_NeededServices) {
-  // clang-format off
-  // List of services expected to be created for the System OTR Profile.
-  std::set<std::string> system_otr_active_services {
-    "SiteDataCacheFacadeFactory"
-  };
-  // clang-format on
-
   Profile* system_profile =
       CreateProfileAndWaitForAllTasks(ProfileManager::GetSystemProfilePath());
   ASSERT_TRUE(system_profile->HasAnyOffTheRecordProfile());
@@ -191,23 +179,17 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
   ASSERT_TRUE(system_profile_otr->IsOffTheRecord());
   ASSERT_TRUE(system_profile_otr->IsSystemProfile());
   TestKeyedProfileServicesActives(system_profile_otr,
-                                  system_otr_active_services);
+                                  /*expected_active_services_names=*/{});
 }
 
 IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
                        SystemProfileParent_NeededServices) {
-  // clang-format off
-  // List of services expected to be created for the Parent System Profile.
-  std::set<std::string> system_active_services {
-    "SiteDataCacheFacadeFactory"
-  };
-  // clang-format on
-
   Profile* system_profile =
       CreateProfileAndWaitForAllTasks(ProfileManager::GetSystemProfilePath());
   ASSERT_FALSE(system_profile->IsOffTheRecord());
   ASSERT_TRUE(system_profile->IsSystemProfile());
-  TestKeyedProfileServicesActives(system_profile, system_active_services);
+  TestKeyedProfileServicesActives(system_profile,
+                                  /*expected_active_services_names=*/{});
 }
 
 IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
@@ -312,7 +294,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
     "AboutSigninInternals",
     "AboutThisSiteServiceFactory",
-    "AccountInvestigator",
     "AccountReconcilor",
     "ActivityLog",
     "ActivityLogPrivateAPI",
@@ -458,7 +439,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "PowerBookmarkService",
     "PrefWatcher",
     "PreferenceAPI",
-    "PrimaryAccountPolicyManager",
   #if BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(USE_CUPS)
     "PrintingMetricsService",
   #endif // BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(USE_CUPS)
@@ -500,8 +480,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "ShoppingService",
     "SidePanelService",
     "SigninErrorController",
-    "SigninManager",
-    "SigninProfileAttributesUpdater",
     "SiteDataCacheFacadeFactory",
     "SiteEngagementService",
     "SocketManager",

@@ -208,6 +208,9 @@ bool HasTimelines(const StyleResolverState& state) {
   if (state.StyleBuilder().ViewTimelineName()) {
     return true;
   }
+  if (state.StyleBuilder().TimelineScope()) {
+    return true;
+  }
   if (ElementAnimations* element_animations = GetElementAnimations(state)) {
     return element_animations->CssAnimations().HasTimelines();
   }
@@ -1444,8 +1447,8 @@ void StyleResolver::ApplyBaseStyleNoCache(
   if (match_result.HasFlag(MatchFlag::kAffectedByActive)) {
     state.StyleBuilder().SetAffectedByActive();
   }
-  if (match_result.HasFlag(MatchFlag::kAffectedByInitial)) {
-    state.StyleBuilder().SetIsPseudoInitialStyle();
+  if (match_result.HasFlag(MatchFlag::kAffectedByStartingStyle)) {
+    state.StyleBuilder().SetIsStartingStyle();
   }
   if (match_result.DependsOnSizeContainerQueries()) {
     state.StyleBuilder().SetDependsOnSizeContainerQueries(true);

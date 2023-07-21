@@ -68,6 +68,7 @@
 #include "chrome/browser/ash/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/ash/login/saml/password_sync_token_verifier.h"
 #include "chrome/browser/ash/login/saml/password_sync_token_verifier_factory.h"
+#include "chrome/browser/ash/login/screens/display_size_screen.h"
 #include "chrome/browser/ash/login/screens/sync_consent_screen.h"
 #include "chrome/browser/ash/login/security_token_session_controller_factory.h"
 #include "chrome/browser/ash/login/session/user_session_initializer.h"
@@ -157,7 +158,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/signin/public/identity_manager/tribool.h"
-#include "components/sync/driver/sync_service.h"
+#include "components/sync/service/sync_service.h"
 #include "components/user_manager/common_types.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
@@ -1372,12 +1373,12 @@ void UserSessionManager::InitProfilePreferences(
       user_manager::KnownUser(g_browser_process->local_state())
           .GetOnboardingCompletedVersion(user->GetAccountId());
   if (!onboarding_completed_version.has_value()) {
-    // Kiosks do not have onboarding.
+    // Device local accounts do not have onboarding.
     if (LoginDisplayHost::default_host() &&
         LoginDisplayHost::default_host()->GetSigninUI() &&
         user_manager->GetPrimaryUser() == user &&
         !user_manager->IsUserNonCryptohomeDataEphemeral(user->GetAccountId()) &&
-        !user->IsKioskType()) {
+        !user->IsDeviceLocalAccount()) {
       LoginDisplayHost::default_host()
           ->GetSigninUI()
           ->SetAuthSessionForOnboarding(user_context);
@@ -1635,22 +1636,22 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
         known_user.ClearPasswordSyncToken(account_id);
       }
     }
-    if (user->using_saml()) {
-      PasswordSyncTokenVerifier* password_sync_token_verifier =
-          PasswordSyncTokenVerifierFactory::GetForProfile(profile);
-      if (password_sync_token_verifier) {
-        if (auth_flow == UserContext::AUTH_FLOW_GAIA_WITH_SAML) {
-          // Update local sync token after online SAML login.
-          password_sync_token_verifier->FetchSyncTokenOnReauth();
-        } else if (auth_flow == UserContext::AUTH_FLOW_OFFLINE) {
-          // Verify local sync token to check whether the local password is out
-          // of sync.
-          password_sync_token_verifier->RecordTokenPollingStart();
-          password_sync_token_verifier->CheckForPasswordNotInSync();
-        } else {
-          // SAML user is not expected to go through other authentication flows.
-          NOTREACHED();
-        }
+    PasswordSyncTokenVerifier* password_sync_token_verifier =
+        PasswordSyncTokenVerifierFactory::GetForProfile(profile);
+    // PasswordSyncTokenVerifier can be created only for SAML users.
+    if (password_sync_token_verifier) {
+      CHECK(user->using_saml());
+      if (auth_flow == UserContext::AUTH_FLOW_GAIA_WITH_SAML) {
+        // Update local sync token after online SAML login.
+        password_sync_token_verifier->FetchSyncTokenOnReauth();
+      } else if (auth_flow == UserContext::AUTH_FLOW_OFFLINE) {
+        // Verify local sync token to check whether the local password is out
+        // of sync.
+        password_sync_token_verifier->RecordTokenPollingStart();
+        password_sync_token_verifier->CheckForPasswordNotInSync();
+      } else {
+        // SAML user is not expected to go through other authentication flows.
+        NOTREACHED();
       }
     }
 
@@ -2042,8 +2043,11 @@ void UserSessionManager::ShowNotificationsIfNeeded(Profile* profile) {
       ->ShowAdbSideloadingPolicyChangeNotificationIfNeeded();
 }
 
-void UserSessionManager::MaybeLaunchSettings(Profile* profile) {
+void UserSessionManager::PerformPostBrowserLaunchOOBEActions(Profile* profile) {
   SyncConsentScreen::MaybeLaunchSyncConsentSettings(profile);
+  if (features::IsOobeDisplaySizeEnabled()) {
+    DisplaySizeScreen::MaybeUpdateZoomFactor(profile);
+  }
 }
 
 void UserSessionManager::OnRestoreActiveSessions(
@@ -2259,7 +2263,7 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
       }
     } else if (!IsFullRestoreEnabled(profile)) {
       LaunchBrowser(profile);
-      MaybeLaunchSettings(profile);
+      PerformPostBrowserLaunchOOBEActions(profile);
     } else {
       full_restore::FullRestoreService::GetForProfile(profile)
           ->LaunchBrowserWhenReady();
@@ -2286,6 +2290,10 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
                  profile, kHatsBatteryLifeSurvey)) {
     hats_notification_controller_ =
         new HatsNotificationController(profile, kHatsBatteryLifeSurvey);
+  } else if (HatsNotificationController::ShouldShowSurveyToProfile(
+                 profile, kHatsPeripheralsSurvey)) {
+    hats_notification_controller_ =
+        new HatsNotificationController(profile, kHatsPeripheralsSurvey);
   }
 
   base::OnceClosure login_host_finalized_callback = base::BindOnce(

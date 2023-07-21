@@ -40,6 +40,7 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_shared_memory.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/metrics/statistics_recorder.h"
@@ -100,6 +101,7 @@
 #include "content/browser/media/frameless_media_interface_proxy.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/metrics/histogram_controller.h"
+#include "content/browser/metrics/histogram_shared_memory_config.h"
 #include "content/browser/mime_registry_impl.h"
 #include "content/browser/network_service_instance_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
@@ -137,6 +139,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_host.h"
 #include "content/public/browser/device_service.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
@@ -195,6 +198,7 @@
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/mojom/disk_allocator.mojom.h"
+#include "third_party/blink/public/mojom/origin_trials/origin_trials_settings.mojom.h"
 #include "third_party/blink/public/mojom/plugins/plugin_registry.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -223,8 +227,11 @@
 #include "third_party/blink/public/mojom/memory_usage_monitor_linux.mojom.h"  // nogncheck
 
 #include "content/browser/media/video_encode_accelerator_provider_launcher.h"
-#include "content/public/browser/stable_video_decoder_factory.h"
 #include "media/mojo/mojom/video_encode_accelerator.mojom.h"
+#endif
+
+#if BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
+#include "content/public/browser/stable_video_decoder_factory.h"
 #endif
 
 #if BUILDFLAG(IS_APPLE)
@@ -724,6 +731,57 @@ class RenderProcessHostIsReadyObserver : public RenderProcessHostObserver {
   base::WeakPtrFactory<RenderProcessHostIsReadyObserver> weak_factory_{this};
 };
 
+bool MayReuseAndIsSuitableWithMainFrameThreshold(
+    RenderProcessHost* host,
+    SiteInstanceImpl* site_instance,
+    absl::optional<size_t> main_frame_threshold) {
+  // It's possible that |host| has become unsuitable for hosting
+  // |site_instance|, for example if it was reused by a navigation to a
+  // different site, and |site_instance| requires a dedicated process. Do not
+  // allow such hosts to be reused.  See https://crbug.com/780661.
+  if (!RenderProcessHostImpl::MayReuseAndIsSuitable(host, site_instance)) {
+    return false;
+  }
+
+  if (!main_frame_threshold) {
+    return true;
+  }
+
+  size_t main_frame_count = 0;
+  bool devtools_attached = false;
+  host->ForEachRenderFrameHost(base::BindRepeating(
+      [](size_t& main_frame_count, bool& devtools_attached,
+         RenderFrameHost* render_frame_host) {
+        if (static_cast<RenderFrameHostImpl*>(render_frame_host)
+                ->IsOutermostMainFrame()) {
+          ++main_frame_count;
+        }
+
+        if (DevToolsAgentHost::GetForId(
+                render_frame_host->GetDevToolsFrameToken().ToString())) {
+          devtools_attached = true;
+        }
+      },
+      std::ref(main_frame_count), std::ref(devtools_attached)));
+
+  // If a threshold is specified, don't reuse `host` if it already hosts more
+  // main frames (including BFCached and prerendered) than the threshold.
+  if (main_frame_count >= *main_frame_threshold) {
+    return false;
+  }
+
+  // Don't reuse `host` if DevTools is attached to any frame in that process
+  // since DevTools doesn't work well when a renderer has multiple main frames.
+  // TODO(https://crbug.com/1449114): This is just a heuristic and won't work if
+  // DevTools is attached later, and hence this should be eventually removed and
+  // fixed properly in the renderer process.
+  if (devtools_attached) {
+    return false;
+  }
+
+  return true;
+}
+
 // The following class is used to track the sites each RenderProcessHost is
 // hosting frames for and expecting navigations to. There are two of them per
 // BrowserContext: one for frames and one for navigations.
@@ -809,29 +867,9 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
         continue;
       }
 
-      // It's possible that |host| has become unsuitable for hosting
-      // |site_instance|, for example if it was reused by a navigation to a
-      // different site, and |site_instance| requires a dedicated process. Do
-      // not allow such hosts to be reused.  See https://crbug.com/780661.
-      if (!RenderProcessHostImpl::MayReuseAndIsSuitable(host, site_instance))
+      if (!MayReuseAndIsSuitableWithMainFrameThreshold(host, site_instance,
+                                                       main_frame_threshold)) {
         continue;
-
-      // If a threshold is specified, don't reuse `host` if it already hosts
-      // more main frames (including BFCached and prerendered) than the
-      // threshold.
-      if (main_frame_threshold) {
-        size_t main_frame_count = 0;
-        host->ForEachRenderFrameHost(base::BindRepeating(
-            [](size_t& main_frame_count, RenderFrameHost* render_frame_host) {
-              if (static_cast<RenderFrameHostImpl*>(render_frame_host)
-                      ->IsOutermostMainFrame()) {
-                ++main_frame_count;
-              }
-            },
-            std::ref(main_frame_count)));
-        if (main_frame_count >= *main_frame_threshold) {
-          continue;
-        }
       }
 
       if (host->VisibleClientCount())
@@ -1564,6 +1602,12 @@ RenderProcessHostImpl::RenderProcessHostImpl(
                     perfetto::Track::FromPointer(this),
                     ChromeTrackEvent::kRenderProcessHost, *this);
 
+#if BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
+  stable_video_decoder_trackers_.set_disconnect_handler(base::BindRepeating(
+      &RenderProcessHostImpl::OnStableVideoDecoderDisconnected,
+      instance_weak_factory_.GetWeakPtr()));
+#endif  // BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
+
   widget_helper_ = new RenderWidgetHelper();
 
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID(), browser_context);
@@ -1770,7 +1814,8 @@ bool RenderProcessHostImpl::Init() {
       GetContentClient()->browser()->GetReducedUserAgent(),
       GetContentClient()->browser()->GetUserAgentMetadata(),
       storage_partition_impl_->cors_exempt_header_list(),
-      AttributionManager::GetSupport());
+      AttributionManager::GetSupport(),
+      GetContentClient()->browser()->GetOriginTrialsSettings());
 
   if (run_renderer_in_process()) {
     DCHECK(g_renderer_main_thread_factory);
@@ -2174,7 +2219,7 @@ void RenderProcessHostImpl::ReinitializeLogging(
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
 void RenderProcessHostImpl::CreateStableVideoDecoder(
     mojo::PendingReceiver<media::stable::mojom::StableVideoDecoder> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -2182,15 +2227,44 @@ void RenderProcessHostImpl::CreateStableVideoDecoder(
     LaunchStableVideoDecoderFactory(
         stable_video_decoder_factory_remote_.BindNewPipeAndPassReceiver());
     stable_video_decoder_factory_remote_.reset_on_disconnect();
+
+    // Version 1 introduced the ability to pass a
+    // mojo::PendingRemote<StableVideoDecoderTracker> to
+    // CreateStableVideoDecoder().
+    stable_video_decoder_factory_remote_.RequireVersion(1u);
   }
 
-  if (!stable_video_decoder_factory_remote_.is_bound())
-    return;
+  CHECK(stable_video_decoder_factory_remote_.is_bound());
 
+  mojo::PendingRemote<media::stable::mojom::StableVideoDecoderTracker>
+      tracker_remote;
+  stable_video_decoder_trackers_.Add(
+      this, tracker_remote.InitWithNewPipeAndPassReceiver());
   stable_video_decoder_factory_remote_->CreateStableVideoDecoder(
-      std::move(receiver));
+      std::move(receiver), std::move(tracker_remote));
 }
-#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+
+void RenderProcessHostImpl::OnStableVideoDecoderDisconnected() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (stable_video_decoder_trackers_.empty()) {
+    // All StableVideoDecoders have disconnected. Let's reset() the
+    // |stable_video_decoder_factory_remote_| so that the corresponding utility
+    // process gets terminated.
+    //
+    // TODO(b/195769334): maybe we shouldn't reset()
+    // |stable_video_decoder_factory_remote_| immediately because it's possible
+    // that the renderer process is about to create another decoder (e.g., the
+    // user manually changing the resolution of a YouTube video). In that case,
+    // we'll terminate the current video decoder process and start another one
+    // almost immediately. This is not incorrect, but it's unnecessary overhead.
+    // Maybe we should wait a few seconds before terminating the process: if no
+    // request to create a video decoder comes in during that time, then it's
+    // fine to terminate it.
+    stable_video_decoder_factory_remote_.reset();
+  }
+}
+#endif  // BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
 
 void RenderProcessHostImpl::DelayProcessShutdown(
     const base::TimeDelta& subframe_shutdown_timeout,
@@ -3379,7 +3453,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableOriginTrialControlledBlinkFeatures,
     switches::kDisablePepper3DImageChromium,
     switches::kDisablePermissionsAPI,
-    switches::kDisablePPAPISharedImagesSwapChain,
     switches::kDisablePresentationAPI,
     switches::kDisableRTCSmoothnessAlgorithm,
     switches::kDisableScrollToTextFragment,
@@ -3388,7 +3461,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableSpeechAPI,
     switches::kDisableThreadedCompositing,
     switches::kDisableTouchDragDrop,
-    switches::kDisableUseMojoVideoDecoderForPepper,
     switches::kDisableV8IdleTasks,
     switches::kDisableVideoCaptureUseGpuMemoryBuffer,
     switches::kDisableWebGLImageChromium,
@@ -3421,7 +3493,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kFileUrlPathAlias,
     switches::kForceDeviceScaleFactor,
     switches::kForceDisplayColorProfile,
-    switches::kForceEnablePepperVideoDecoderDevAPI,
     switches::kForceGpuMemAvailableMb,
     switches::kForceHighContrast,
     switches::kForceRasterColorProfile,
@@ -3521,7 +3592,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #endif
     switches::kDisableWebRtcHWDecoding,
     switches::kDisableWebRtcHWEncoding,
-    switches::kEnableWebRtcSrtpAesGcm,
     switches::kEnableWebRtcSrtpEncryptedHeaders,
     switches::kEnforceWebRtcIPPermissionCheck,
     switches::kWebRtcMaxCaptureFramerate,
@@ -4791,26 +4861,23 @@ void RenderProcessHostImpl::CreateSharedRendererHistogramAllocator() {
   if (destination == base::kNullProcessHandle)
     return;
 
-  // Create persistent/shared memory and allow histograms to be stored in
-  // it. Memory that is not actually used won't be physically mapped by the
-  // system. RendererMetrics usage, as reported in UMA, peaked around 0.7MiB
-  // as of 2016-12-20.
-  base::WritableSharedMemoryRegion shm_region =
-      base::WritableSharedMemoryRegion::Create(2 << 20);  // 2 MiB
-  base::WritableSharedMemoryMapping shm_mapping = shm_region.Map();
-  if (!shm_region.IsValid() || !shm_mapping.IsValid())
-    return;
+  // Get the renderer histogram shared memory configuration.
+  auto shared_memory_config =
+      GetHistogramSharedMemoryConfig(PROCESS_TYPE_RENDERER);
+  CHECK(shared_memory_config.has_value());
 
-  // If a renderer crashes before completing startup and gets restarted, this
-  // method will get called a second time meaning that a metrics-allocator
-  // already exists. We have to recreate it here because previously used
-  // |shm_region| is gone.
-  metrics_allocator_ =
-      std::make_unique<base::WritableSharedPersistentMemoryAllocator>(
-          std::move(shm_mapping), GetID(), "RendererMetrics");
+  // Create the shared memory region and allocator.
+  auto shared_memory = base::HistogramSharedMemory::Create(
+      GetID(), shared_memory_config.value());
+  if (!shared_memory.has_value()) {
+    return;
+  }
+
+  // Move the region and allocator out of the |shared_memory| helper.
+  metrics_allocator_ = shared_memory->TakeAllocator();
 
   HistogramController::GetInstance()->SetHistogramMemory<RenderProcessHost>(
-      this, std::move(shm_region));
+      this, shared_memory->TakeRegion());
 }
 
 ChildProcessTerminationInfo RenderProcessHostImpl::GetChildTerminationInfo(
@@ -4908,9 +4975,10 @@ void RenderProcessHostImpl::ResetIPC() {
   coordinator_connector_receiver_.reset();
   tracing_registration_.reset();
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
   stable_video_decoder_factory_remote_.reset();
-#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  stable_video_decoder_trackers_.Clear();
+#endif  // BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
 
   // Destroy all embedded CompositorFrameSinks.
   embedded_frame_sink_provider_.reset();

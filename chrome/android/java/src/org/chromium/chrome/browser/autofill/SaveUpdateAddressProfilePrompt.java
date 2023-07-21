@@ -17,7 +17,6 @@ import androidx.annotation.VisibleForTesting;
 import com.google.android.material.textfield.TextInputLayout;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNIAdditionalImport;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;
@@ -38,7 +37,6 @@ import org.chromium.ui.modelutil.PropertyModel;
  * TODO(crbug.com/1432549): cover with render tests.
  */
 @JNINamespace("autofill")
-@JNIAdditionalImport(PersonalDataManager.class)
 public class SaveUpdateAddressProfilePrompt {
     private final SaveUpdateAddressProfilePromptController mController;
     private final ModalDialogManager mModalDialogManager;
@@ -82,12 +80,17 @@ public class SaveUpdateAddressProfilePrompt {
         mEditorDialog = new EditorDialog(
                 activity, /*deleteRunnable=*/null, browserProfile, /*requiredIndicator=*/false);
         mEditorDialog.setShouldTriggerDoneCallbackBeforeCloseAnimation(true);
-        mAddressEditor = new AddressEditor(
-                mEditorDialog, /*saveToDisk=*/false, isUpdate, isMigrationToAccount);
-        AutofillAddress autofillAddress = new AutofillAddress(activity, autofillProfile);
+        AddressEditor.Delegate delegate = new AddressEditor.Delegate() {
+            @Override
+            public void onDone(AutofillAddress address) {
+                onEdited(address);
+            }
+        };
+        mAddressEditor = new AddressEditor(mEditorDialog, delegate,
+                new AutofillAddress(activity, autofillProfile),
+                /*saveToDisk=*/false, isUpdate, isMigrationToAccount);
         mDialogView.findViewById(R.id.edit_button).setOnClickListener(v -> {
-            mAddressEditor.edit(autofillAddress, /*doneCallback=*/this::onEdited,
-                    /*cancelCallback=*/unused -> {});
+            mAddressEditor.showEditorDialog();
         });
     }
 
@@ -250,7 +253,7 @@ public class SaveUpdateAddressProfilePrompt {
                 (v, hasFocus)
                         -> nicknameInputLayout.setHint(
                                 !hasFocus && TextUtils.isEmpty(nicknameInput.getText())
-                                        // TODO(crbug.com/1167061): Use localized strings.
+                                        // TODO(crbug.com/1445020): Use localized strings.
                                         ? "Add a label"
                                         : "Label"));
 

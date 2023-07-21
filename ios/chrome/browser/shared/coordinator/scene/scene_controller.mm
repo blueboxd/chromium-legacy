@@ -61,7 +61,6 @@
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/policy/policy_watcher_browser_agent.h"
 #import "ios/chrome/browser/policy/policy_watcher_browser_agent_observer_bridge.h"
-#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/promos_manager/features.h"
 #import "ios/chrome/browser/promos_manager/promos_manager_factory.h"
 #import "ios/chrome/browser/screenshot/screenshot_delegate.h"
@@ -76,6 +75,9 @@
 #import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
 #import "ios/chrome/browser/shared/model/browser/browser_provider_interface.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
+#import "ios/chrome/browser/shared/model/url/url_util.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
@@ -141,8 +143,6 @@
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_feature.h"
 #import "ios/chrome/browser/ui/whats_new/promo/whats_new_scene_agent.h"
 #import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
-#import "ios/chrome/browser/url/chrome_url_constants.h"
-#import "ios/chrome/browser/url/url_util.h"
 #import "ios/chrome/browser/url_loading/scene_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -250,6 +250,9 @@ void InjectNTP(Browser* browser) {
   std::unique_ptr<WebStateListObserverBridge> _webStateListForwardingObserver;
   std::unique_ptr<PolicyWatcherBrowserAgentObserverBridge>
       _policyWatcherObserverBridge;
+  // View controller presents the signed in accounts when they have changed
+  // while the application was in background.
+  __weak SignedInAccountsViewController* _accountsViewController;
 }
 
 // Navigation View controller for the settings.
@@ -1064,8 +1067,12 @@ void InjectNTP(Browser* browser) {
   }
 
   if (HasRecentFirstPartyIntentLaunchesAndRecordsCurrentLaunch()) {
-    feature_engagement::TrackerFactory::GetForBrowserState(browserState)
-        ->NotifyEvent(feature_engagement::events::kBlueDotPromoCriterionMet);
+    feature_engagement::Tracker* tracker =
+        feature_engagement::TrackerFactory::GetForBrowserState(browserState);
+
+    tracker->NotifyEvent(feature_engagement::events::kBlueDotPromoCriterionMet);
+    tracker->NotifyEvent(
+        feature_engagement::events::kDefaultBrowserVideoPromoConditionsMet);
   }
 }
 
@@ -1081,8 +1088,7 @@ void InjectNTP(Browser* browser) {
   }
   return postOpeningAction == NO_ACTION &&
          GetApplicationContext()->WasLastShutdownClean() &&
-         !IsChromeLikelyDefaultBrowser() &&
-         !HasUserOpenedSettingsFromFirstRunPromo();
+         !IsChromeLikelyDefaultBrowser();
 }
 
 - (void)maybeShowDefaultBrowserPromo:(Browser*)browser {
@@ -1163,6 +1169,9 @@ void InjectNTP(Browser* browser) {
   if (!self.sceneState.UIEnabled) {
     return;  // Nothing to do.
   }
+
+  [_accountsViewController teardownUI];
+  _accountsViewController = nil;
 
   // The UI should be stopped before the models they observe are stopped.
   // SigninCoordinator teardown is performed by the `signinCompletion` on
@@ -2917,7 +2926,7 @@ void InjectNTP(Browser* browser) {
   id<ApplicationSettingsCommands> settingsHandler =
       HandlerForProtocol(self.mainInterface.browser->GetCommandDispatcher(),
                          ApplicationSettingsCommands);
-  UIViewController* accountsViewController =
+  SignedInAccountsViewController* accountsViewController =
       [[SignedInAccountsViewController alloc]
           initWithBrowserState:browserState
                     dispatcher:settingsHandler];
@@ -2925,6 +2934,7 @@ void InjectNTP(Browser* browser) {
       presentViewController:accountsViewController
                    animated:YES
                  completion:nil];
+  _accountsViewController = accountsViewController;
 }
 
 // Close Settings, or Signin or the 3rd-party intents Incognito interstitial.
@@ -2944,19 +2954,28 @@ void InjectNTP(Browser* browser) {
   };
 
   if (self.settingsNavigationController) {
+    __weak SettingsNavigationController* settingsNavigationController =
+        self.settingsNavigationController;
+    self.settingsNavigationController = nil;
     // Store a reference to the presentingViewController in case the user
     // is dismissing the Signin screen and then dismisses Settings before
     // the Signin screen is done animating, which will delay the execution of
     // the `dismissSettings` block stopping the code from accessing
     // the `presentingViewController` property.
     __weak UIViewController* weakPresentingViewController =
-        [self.settingsNavigationController presentingViewController];
+        [settingsNavigationController presentingViewController];
     ProceduralBlock dismissSettings = ^() {
-      [weakSelf.settingsNavigationController cleanUpSettings];
-      DCHECK(weakPresentingViewController);
-      [weakPresentingViewController dismissViewControllerAnimated:animated
-                                                       completion:completion];
-      weakSelf.settingsNavigationController = nil;
+      [settingsNavigationController cleanUpSettings];
+      UIViewController* strongPresentingViewController =
+          weakPresentingViewController;
+      if (strongPresentingViewController) {
+        [strongPresentingViewController
+            dismissViewControllerAnimated:animated
+                               completion:completion];
+      } else {
+        // The view is already dismissed. Completion should still be called.
+        completion();
+      }
     };
     // `self.signinCoordinator` can be presented on top of the settings, to
     // present the Trusted Vault reauthentication `self.signinCoordinator` has
@@ -2966,7 +2985,7 @@ void InjectNTP(Browser* browser) {
       // happen when it is done animating.
       [self interruptSigninCoordinatorAnimated:animated
                                     completion:dismissSettings];
-    } else if (dismissSettings) {
+    } else {
       dismissSettings();
     }
   } else if (self.signinCoordinator) {

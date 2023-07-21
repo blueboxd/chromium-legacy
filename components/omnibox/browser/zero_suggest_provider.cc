@@ -397,8 +397,7 @@ ZeroSuggestProvider* ZeroSuggestProvider::Create(
 void ZeroSuggestProvider::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(omnibox::kZeroSuggestCachedResults,
                                std::string());
-  registry->RegisterDictionaryPref(omnibox::kZeroSuggestCachedResultsWithURL,
-                                   base::Value::Dict());
+  registry->RegisterDictionaryPref(omnibox::kZeroSuggestCachedResultsWithURL);
 }
 
 bool ZeroSuggestProvider::AllowZeroPrefixSuggestions(
@@ -696,6 +695,7 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
       AutocompleteMatch::SanitizeString(navigation.description());
   match.description_class = ClassifyTermMatches({}, match.description.length(),
                                                 0, ACMatchClassification::NONE);
+  match.suggest_type = navigation.suggest_type();
   for (const int subtype : navigation.subtypes()) {
     match.subtypes.insert(SuggestSubtypeForNumber(subtype));
   }

@@ -185,7 +185,9 @@ bool StructTraits<
           &out->devtools_accepted_stream_types) ||
       !data.ReadNetLogCreateInfo(&out->net_log_create_info) ||
       !data.ReadNetLogReferenceInfo(&out->net_log_reference_info) ||
-      !data.ReadNavigationRedirectChain(&out->navigation_redirect_chain)) {
+      !data.ReadNavigationRedirectChain(&out->navigation_redirect_chain) ||
+      !data.ReadAttributionReportingRuntimeFeatures(
+          &out->attribution_reporting_runtime_features)) {
     // Note that data.ReadTrustTokenParams is temporarily handled below.
     return false;
   }
@@ -209,6 +211,8 @@ bool StructTraits<
   out->destination = data.destination();
   out->keepalive = data.keepalive();
   out->browsing_topics = data.browsing_topics();
+  out->ad_auction_headers = data.ad_auction_headers();
+  out->shared_storage_writable = data.shared_storage_writable();
   out->has_user_gesture = data.has_user_gesture();
   out->enable_load_timing = data.enable_load_timing();
   out->enable_upload_progress = data.enable_upload_progress();

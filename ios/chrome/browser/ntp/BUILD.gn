@@ -19,11 +19,11 @@ source_set("ntp") {
     "//components/url_formatter",
     "//ios/chrome/browser/discover_feed:constants",
     "//ios/chrome/browser/flags:system_flags",
-    "//ios/chrome/browser/prefs:pref_names",
     "//ios/chrome/browser/shared/model/browser_state",
+    "//ios/chrome/browser/shared/model/prefs:pref_names",
+    "//ios/chrome/browser/shared/model/url",
+    "//ios/chrome/browser/shared/model/url:constants",
     "//ios/chrome/browser/shared/public/features",
-    "//ios/chrome/browser/url",
-    "//ios/chrome/browser/url:constants",
     "//ios/components/webui:url_constants",
     "//ios/web/common:features",
     "//ios/web/public",
@@ -39,7 +39,7 @@ source_set("util") {
   ]
   deps = [
     ":ntp",
-    "//ios/chrome/browser/url:constants",
+    "//ios/chrome/browser/shared/model/url:constants",
     "//ios/web/public",
   ]
 }
@@ -71,6 +71,7 @@ source_set("set_up_list") {
   deps = [
     ":features",
     ":set_up_list_item_type",
+    ":set_up_list_metrics",
     ":set_up_list_prefs",
     "//base",
     "//components/password_manager/core/browser",
@@ -86,6 +87,18 @@ source_set("set_up_list_item_type") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
+source_set("set_up_list_metrics") {
+  sources = [
+    "set_up_list_metrics.h",
+    "set_up_list_metrics.mm",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  deps = [
+    ":set_up_list_item_type",
+    "//base",
+  ]
+}
+
 source_set("set_up_list_prefs") {
   sources = [
     "set_up_list_prefs.h",
@@ -94,6 +107,7 @@ source_set("set_up_list_prefs") {
   configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
     ":set_up_list_item_type",
+    ":set_up_list_metrics",
     "//base",
     "//components/pref_registry",
     "//components/prefs",
@@ -121,17 +135,18 @@ source_set("unit_tests") {
     "//ios/chrome/browser/default_browser:utils",
     "//ios/chrome/browser/favicon:favicon",
     "//ios/chrome/browser/ntp",
-    "//ios/chrome/browser/prefs:pref_names",
+    "//ios/chrome/browser/policy:policy_util",
     "//ios/chrome/browser/search_engines:search_engines",
     "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser_state:test_support",
+    "//ios/chrome/browser/shared/model/prefs:pref_names",
+    "//ios/chrome/browser/shared/model/url:constants",
     "//ios/chrome/browser/shared/model/web_state_list",
     "//ios/chrome/browser/shared/model/web_state_list/test:test_support",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/signin:fake_system_identity",
     "//ios/chrome/browser/signin:fake_system_identity_manager",
     "//ios/chrome/browser/signin:test_support",
-    "//ios/chrome/browser/url:constants",
     "//ios/chrome/test:test_support",
     "//ios/web/public/test:test",
     "//ios/web/public/test/fakes",

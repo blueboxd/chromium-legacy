@@ -26,7 +26,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwDarkMode;
-import org.chromium.android_webview.AwFeatureList;
+import org.chromium.android_webview.AwFeatureMap;
 import org.chromium.android_webview.AwLocaleConfig;
 import org.chromium.android_webview.AwNetworkChangeNotifierRegistrationPolicy;
 import org.chromium.android_webview.AwOriginVerificationScheduler;
@@ -234,7 +234,8 @@ public class WebViewChromiumAwInit {
                         mFactory, awBrowserContext.getGeolocationPermissions());
                 mWebStorage =
                         new WebStorageAdapter(mFactory, mBrowserContext.getQuotaManagerBridge());
-                if (AwFeatureList.isEnabled(AwFeatures.WEBVIEW_RESTRICT_SENSITIVE_CONTENT)) {
+                if (AwFeatureMap.getInstance().isEnabled(
+                            AwFeatures.WEBVIEW_RESTRICT_SENSITIVE_CONTENT)) {
                     AwOriginVerificationScheduler.initAndScheduleAll(null);
                 }
                 mAwTracingController = getTracingController();
@@ -499,8 +500,9 @@ public class WebViewChromiumAwInit {
         synchronized (mLock) {
             ensureChromiumStartedLocked(true);
             if (mWebViewDatabase == null) {
-                mWebViewDatabase = new WebViewDatabaseAdapter(
-                        mFactory, HttpAuthDatabase.newInstance(context, HTTP_AUTH_DATABASE_FILE));
+                mWebViewDatabase = new WebViewDatabaseAdapter(mFactory,
+                        HttpAuthDatabase.newInstance(context, HTTP_AUTH_DATABASE_FILE),
+                        mBrowserContext);
             }
         }
         return mWebViewDatabase;

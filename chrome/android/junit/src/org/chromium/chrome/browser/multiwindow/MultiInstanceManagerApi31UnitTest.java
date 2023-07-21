@@ -475,6 +475,8 @@ public class MultiInstanceManagerApi31UnitTest {
         multiInstanceManager.initialize(INSTANCE_ID_1, TASK_ID_57);
         TabModelObserver tabModelObserver = multiInstanceManager.getTabModelObserverForTesting();
 
+        when(mTabModelSelector.isTabStateInitialized()).thenReturn(true);
+
         triggerSelectTab(tabModelObserver, mTab1);
         assertFalse("Normal tab should be selected",
                 MultiInstanceManagerApi31.readIncognitoSelected(INSTANCE_ID_1));
@@ -538,6 +540,8 @@ public class MultiInstanceManagerApi31UnitTest {
         when(mTab2.isIncognito()).thenReturn(false);
         when(mTab3.isIncognito()).thenReturn(true);
 
+        when(mTabModelSelector.isTabStateInitialized()).thenReturn(true);
+
         final String normalTabMessage = "Normal tab count does not match";
         final String incognitoTabMessage = "Normal tab count does not match";
         triggerAddTab(tabModelObserver, mTab1); // normal tab added
@@ -600,6 +604,8 @@ public class MultiInstanceManagerApi31UnitTest {
                         mModalDialogManagerSupplier, mMenuOrKeyboardActionController);
         multiInstanceManager.initialize(INSTANCE_ID_1, TASK_ID_57);
         TabModelObserver tabModelObserver = multiInstanceManager.getTabModelObserverForTesting();
+
+        when(mTabModelSelector.isTabStateInitialized()).thenReturn(true);
 
         triggerAddTab(tabModelObserver, mTab1);
         triggerSelectTab(tabModelObserver, mTab1);

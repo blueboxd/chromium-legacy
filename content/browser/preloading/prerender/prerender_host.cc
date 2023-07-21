@@ -12,6 +12,7 @@
 #include "base/trace_event/typed_macros.h"
 #include "content/browser/client_hints/client_hints.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
+#include "content/browser/preloading/prerender/devtools_prerender_attempt.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/preloading/prerender/prerender_host_registry.h"
 #include "content/browser/preloading/prerender/prerender_metrics.h"
@@ -33,7 +34,6 @@
 #include "url/origin.h"
 
 namespace content {
-
 namespace {
 
 bool AreHttpRequestHeadersCompatible(
@@ -79,19 +79,12 @@ bool AreHttpRequestHeadersCompatible(
   prerender_headers.RemoveHeader("sec-ch-viewport-height");
   potential_activation_headers.RemoveHeader("sec-ch-viewport-height");
 
-  // Compare headers in serialized strings. The spec doesn't require serialized
-  // string matches, but practically Chrome generates headers in a decisive way,
-  // i.e. in the same order and cases. So we can expect serialized string
-  // comparisons just work. We ensure this assumption through the metric we
-  // handled in AnalyzePrerenderActivationHeader.
-  if (prerender_headers.ToString() == potential_activation_headers.ToString()) {
+  if (PrerenderHost::IsActivationHeaderMatch(potential_activation_headers,
+                                             prerender_headers)) {
     return true;
   }
 
   // The headers mismatch. Analyze the headers asynchronously.
-  // TODO(https://crbug.com/1378921): This is only used to detect if prerender
-  // fails to set headers correctly. Remove this logic after we draw the
-  // conclusion.
   base::ThreadPool::PostTask(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&AnalyzePrerenderActivationHeader,
@@ -127,11 +120,21 @@ PrerenderHost* PrerenderHost::GetPrerenderHostFromFrameTreeNode(
   }
 }
 
-PrerenderHost::PrerenderHost(const PrerenderAttributes& attributes,
-                             WebContentsImpl& web_contents,
-                             base::WeakPtr<PreloadingAttempt> attempt)
+// static
+PrerenderHost& PrerenderHost::GetFromFrameTreeNode(
+    FrameTreeNode& frame_tree_node) {
+  CHECK(frame_tree_node.frame_tree().is_prerendering());
+  return *static_cast<PrerenderHost*>(frame_tree_node.frame_tree().delegate());
+}
+
+PrerenderHost::PrerenderHost(
+    const PrerenderAttributes& attributes,
+    WebContentsImpl& web_contents,
+    base::WeakPtr<PreloadingAttempt> attempt,
+    std::unique_ptr<DevToolsPrerenderAttempt> devtools_attempt)
     : attributes_(attributes),
       attempt_(std::move(attempt)),
+      devtools_attempt_(std::move(devtools_attempt)),
       web_contents_(web_contents),
       frame_tree_(std::make_unique<FrameTree>(web_contents.GetBrowserContext(),
                                               this,
@@ -190,6 +193,42 @@ PrerenderHost::PrerenderHost(const PrerenderAttributes& attributes,
       frame_tree_->root()->render_manager()->current_frame_host());
 
   frame_tree_node_id_ = frame_tree_->root()->frame_tree_node_id();
+}
+
+// static
+bool PrerenderHost::IsActivationHeaderMatch(
+    const net::HttpRequestHeaders& potential_activation_headers,
+    const net::HttpRequestHeaders& prerender_headers) {
+  // The numbers of headers are different.
+  if (potential_activation_headers.GetHeaderVector().size() !=
+      prerender_headers.GetHeaderVector().size()) {
+    return false;
+  }
+
+  // Normalize the headers.
+  using HeaderPair = net::HttpRequestHeaders::HeaderKeyValuePair;
+  auto cmp = [](const HeaderPair& a, const HeaderPair& b) {
+    return a.key < b.key;
+  };
+  auto lower_case = [](HeaderPair& x) { x.key = base::ToLowerASCII(x.key); };
+  auto same_predicate = [](const HeaderPair& a, const HeaderPair& b) {
+    return a.key == b.key && base::EqualsCaseInsensitiveASCII(a.value, b.value);
+  };
+  std::vector<HeaderPair> potential_header_list(
+      potential_activation_headers.GetHeaderVector());
+  std::vector<HeaderPair> prerender_header_list(
+      prerender_headers.GetHeaderVector());
+  std::for_each(potential_header_list.begin(), potential_header_list.end(),
+                lower_case);
+  std::for_each(prerender_header_list.begin(), prerender_header_list.end(),
+                lower_case);
+  std::sort(potential_header_list.begin(), potential_header_list.end(), cmp);
+  std::sort(prerender_header_list.begin(), prerender_header_list.end(), cmp);
+
+  // The two vectors should be exactly the same if the headers are the same.
+  return std::equal(potential_header_list.begin(), potential_header_list.end(),
+                    prerender_header_list.begin(), prerender_header_list.end(),
+                    same_predicate);
 }
 
 PrerenderHost::~PrerenderHost() {
@@ -384,6 +423,11 @@ void PrerenderHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
     status = PrerenderFinalStatus::kBlockedByClient;
   } else if (is_prerender_main_frame && net_error != net::Error::OK) {
     status = PrerenderFinalStatus::kNavigationRequestNetworkError;
+    if (!final_status_) {
+      // Only tracks the first error this instance encountered.
+      RecordPrerenderNavigationErrorCode(net_error, trigger_type(),
+                                         embedder_histogram_suffix());
+    }
   } else if (is_prerender_main_frame && !navigation_request->HasCommitted()) {
     status = PrerenderFinalStatus::kNavigationNotCommitted;
   }
@@ -921,24 +965,13 @@ void PrerenderHost::SetInitialNavigation(NavigationRequest* navigation) {
 }
 
 void PrerenderHost::SetTriggeringOutcome(PreloadingTriggeringOutcome outcome) {
-  if (initiator_devtools_navigation_token().has_value()) {
-    devtools_instrumentation::DidUpdatePrerenderStatus(
-        initiator_frame_tree_node_id(),
-        initiator_devtools_navigation_token().value(), prerendering_url(),
-        outcome);
+  if (attempt_) {
+    attempt_->SetTriggeringOutcome(outcome);
   }
 
-  if (!attempt_)
-    return;
-
-  attempt_->SetTriggeringOutcome(outcome);
-}
-
-void PrerenderHost::SetEligibility(PreloadingEligibility eligibility) {
-  if (!attempt_)
-    return;
-
-  attempt_->SetEligibility(eligibility);
+  if (devtools_attempt_) {
+    devtools_attempt_->SetTriggeringOutcome(attributes_, outcome);
+  }
 }
 
 void PrerenderHost::SetFailureReason(PrerenderFinalStatus status) {
@@ -1014,14 +1047,6 @@ void PrerenderHost::SetFailureReason(PrerenderFinalStatus status) {
     case PrerenderFinalStatus::kCrossSiteRedirectInMainFrameNavigation:
     case PrerenderFinalStatus::kMemoryPressureOnTrigger:
     case PrerenderFinalStatus::kMemoryPressureAfterTriggered:
-      // SetFailureReason() will call SetTriggeringOutcome() with kFailure.
-      if (initiator_devtools_navigation_token().has_value()) {
-        devtools_instrumentation::DidUpdatePrerenderStatus(
-            initiator_frame_tree_node_id(),
-            initiator_devtools_navigation_token().value(), prerendering_url(),
-            PreloadingTriggeringOutcome::kFailure);
-      }
-
       if (attempt_) {
         attempt_->SetFailureReason(ToPreloadingFailureReason(status));
         // We reset the attempt to ensure we don't update once we have reported
@@ -1029,6 +1054,12 @@ void PrerenderHost::SetFailureReason(PrerenderFinalStatus status) {
         // as PrerenderHost deletion is async.
         attempt_.reset();
       }
+
+      if (devtools_attempt_) {
+        devtools_attempt_->SetFailureReason(attributes_, status);
+        devtools_attempt_.reset();
+      }
+
       return;
     case PrerenderFinalStatus::kActivated:
       // The activation path does not call this method, so it should never reach

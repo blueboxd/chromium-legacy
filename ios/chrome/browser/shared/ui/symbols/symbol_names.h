@@ -123,6 +123,7 @@ extern NSString* const kTrashSymbol;
 extern NSString* const kInfoCircleSymbol;
 extern NSString* const kHistorySymbol;
 extern NSString* const kCheckmarkSealSymbol;
+extern NSString* const kCheckmarkSealFillSymbol;
 extern NSString* const kWifiSymbol;
 extern NSString* const kBookmarksSymbol;
 extern NSString* const kSyncErrorSymbol;
@@ -154,6 +155,7 @@ extern NSString* const kHighlighterSymbol;
 extern NSString* const kSquareOnSquareDashedSymbol;
 extern NSString* const kDocPlaintext;
 extern NSString* const kFlagSymbol;
+extern NSString* const kKeyboardSymbol;
 
 // Names of the default symbol being non-monochrome by default. When using them,
 // you probably want to set their color to monochrome.

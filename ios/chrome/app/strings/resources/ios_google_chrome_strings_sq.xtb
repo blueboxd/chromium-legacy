@@ -12,6 +12,7 @@
 <translation id="1554731936187952550">Ti ke sigurinë më të fortë të Chrome kundër sajteve të dëmshme të uebit</translation>
 <translation id="1682483655351012182">Sinkronizo të dhënat e tua të Chrome</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1843217788865538014">Përdor automatikisht Chrome kur troket lidhjet në mesazhe, dokumente dhe aplikacione të tjera.</translation>
 <translation id="1917964099031477364">Kjo llogari dhe të dhënat e paruajtura do të hiqen nga Chrome dhe nga aplikacionet e tjera në këtë pajisje.</translation>
 <translation id="2009224836393115614">Chrome nuk mund t'i kontrollonte fjalëkalimet e tua. Provo të kontrollosh lidhjen e internetit.</translation>
 <translation id="2056123005618757196">Bëj më shumë me një Google Chrome të thjeshtë, të sigurt dhe më të shpejtë se kurrë.</translation>
@@ -34,6 +35,7 @@
 <translation id="2732745070297234559">Chrome nuk mund t'i kontrollonte të gjitha fjalëkalimet. Provo sërish nesër.</translation>
 <translation id="2736805085127235148">Njoftimet e Chrome janë çaktivizuar aktualisht te cilësimet e pajisjes sate.</translation>
 <translation id="2767464022270041271">Nuk ka asnjë fjalëkalim të ruajtur. "Menaxheri i fjalëkalimeve i Google" mund t'i kontrollojë fjalëkalimet e tua kur ti i ruan ato.</translation>
+<translation id="2840432500933227975">Hap "Cilësimet" e Chrome në iOS dhe më pas trokit te "Browser Default APP" dhe zgjidh Chrome.</translation>
 <translation id="2869959624320573933">Identifikohu në Chrome</translation>
 <translation id="2957447865124070833">Zgjidh <ph name="BEGIN_BOLD" />Chrome<ph name="END_BOLD" /></translation>
 <translation id="3030414234702425231">Duke qenë se po del nga një llogari e menaxhuar nga <ph name="SIGNOUT_MANAGED_DOMAIN" />, të dhënat e tua të Chrome do të fshihen nga kjo pajisje. Të dhënat e tua do të mbeten në "Llogarinë tënde të Google".</translation>
@@ -49,6 +51,7 @@
 <translation id="3655656110921623717">Kjo do të thotë që Chrome do kërkojë sajtin në celular çdo herë.</translation>
 <translation id="3706101708757577809">Tani mund të përdorësh Chrome sa herë që troket te lidhjet në mesazhe, dokumente dhe aplikacione të tjera.</translation>
 <translation id="3720541637541300822">Kyçi skedat "e fshehta" kur të mbyllësh Chrome</translation>
+<translation id="3827545470516145620">Po merr mbrojtjen standarde të sigurisë në këtë pajisje</translation>
 <translation id="384394811301901750">Google Chrome nuk mund të përdorë kamerën tënde për momentin</translation>
 <translation id="3980220367029651214">Po i ndërron llogaritë e sinkronizimit nga <ph name="USER_EMAIL1" /> te <ph name="USER_EMAIL2" />. Të dhënat ekzistuese të Chrome po menaxhohen nga <ph name="DOMAIN" />. Kjo do t'i fshijë të dhënat e tua nga kjo pajisje, por të dhënat e tua do të mbeten në <ph name="USER_EMAIL1" />.</translation>
 <translation id="3984746313391923992">Organizata jote kërkon që të qëndrosh i dalë nga Chrome.</translation>
@@ -58,6 +61,7 @@
 <translation id="4233521129555661685"><ph name="USER_EMAIL1" /> po përdorte Chrome dhe ka lënë faqeshënues, fjalëkalime dhe cilësime të tjera në këtë pajisje.</translation>
 <translation id="424864128008805179">Do të dalësh nga Chrome?</translation>
 <translation id="4249068189593983585">Këshillë për Chrome. Për më shumë opsione për skedat, shtyp dhe mbaj shtypur butonin "Shfaq skedat" në shiritin e veglave që ndodhet në fund ose në krye të ekranit tënd.</translation>
+<translation id="4508370294876102450">Hap Chrome nga çdo aplikacion</translation>
 <translation id="4523886039239821078">Disa komponentë shtesë i shkaktojnë Chrome ndërprerje aksidentale. Çinstalo:</translation>
 <translation id="4633328489441962921">Chrome nuk mund të kontrollojë për përditësime</translation>
 <translation id="4636900170638246267">Identifikohu në këtë sajt dhe në Chrome.</translation>
@@ -87,6 +91,7 @@
 <translation id="6110625574506755980">Disa veçori të Chrome nuk do të ofrohen më.</translation>
 <translation id="6181930887571472871">Kalo te Chrome</translation>
 <translation id="6238746320622508509">Lejo që Chrome t'i kyçë skedat "e fshehta".</translation>
+<translation id="6247557882553405851">Menaxheri i fjalëkalimeve i Google</translation>
 <translation id="6412673304250309937">Kontrollon URL-të kundrejt një liste sajtesh të pasigurta të ruajtur në Chrome. Nëse një sajt përpiqet të vjedhë fjalëkalimin tënd, ose kur shkarkon një skedar të dëmshëm, Chrome mund t'i dërgojë po ashtu "Shfletimit të sigurt" URL-të, duke përfshirë pjesë të përmbajtjes së faqes.</translation>
 <translation id="6427126399757991875">Organizata jote po konfiguron Chrome...</translation>
 <translation id="6600954340915313787">Kopjuar në Chrome</translation>
@@ -97,7 +102,6 @@
 <translation id="6822673484890854830">Chrome nuk mund t'i kontrollonte të gjitha fjalëkalimet. Provo sërish më vonë.</translation>
 <translation id="6964931465519938134">Tani mund të përdorësh Chrome sa herë që troket te lidhjet në mesazhe, dokumente dhe aplikacione të tjera.</translation>
 <translation id="6975725306479268850">Zgjidh Chrome për AutoFill</translation>
-<translation id="701356708427365932">Njihu me menynë e re të Chrome</translation>
 <translation id="7059914902409643750">Bëje Chrome tëndin</translation>
 <translation id="7124339256045485976">Mbaje Chrome të përditësuar</translation>
 <translation id="7161390184744336561">Google Chrome është i papërditësuar</translation>
@@ -148,7 +152,6 @@ Gjëra për të pasur parasysh:
   • Nëse Chrome ndërpritet aksidentalisht, detajet në lidhje me ndërprerjen mund të përfshijnë disa informacione personale.
 
   • Nëse aktivizon sinkronizimin, metrikat mund të përfshijnë gjithashtu informacione rreth URL-ve që ti viziton.<ph name="END_INDENT" /></translation>
-<translation id="9103442491611662960">Po merr mbrojtjen standarde të sigurisë për këtë profil të Chrome</translation>
 <translation id="9112744793181547300">Të caktohet Chrome si parazgjedhje?</translation>
 <translation id="9122931302567044771">Kjo do të thotë që Chrome do kërkojë sajtin në desktop çdo herë.</translation>
 </translationbundle>

@@ -41,14 +41,12 @@ class SequenceManagerImpl;
 class TaskQueueImpl;
 }  // namespace internal
 
-// TODO(kraynov): Make TaskQueue to actually be an interface for TaskQueueImpl
-// and stop using ref-counting because we're no longer tied to task runner
-// lifecycle and there's no other need for ref-counting either.
+// TODO(crbug.com/1143007): Make TaskQueue to actually be an interface for
+// TaskQueueImpl and stop using ref-counting because we're no longer tied to
+// task runner lifecycle and there's no other need for ref-counting either.
 // NOTE: When TaskQueue gets automatically deleted on zero ref-count,
-// TaskQueueImpl gets gracefully shutdown. It means that it doesn't get
-// unregistered immediately and might accept some last minute tasks until
-// SequenceManager will unregister it at some point. It's done to ensure that
-// task queue always gets unregistered on the main thread.
+// TaskQueueImpl gets unregistered, meaning it stops posting new tasks and is
+// scheduled for deletion after the current task finishes.
 class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
  public:
   // Interface that lets a task queue be throttled by changing the wake up time
@@ -225,7 +223,7 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
 
     // Votes to enable or disable the associated TaskQueue. The TaskQueue will
     // only be enabled if all the voters agree it should be enabled, or if there
-    // are no voters.
+    // are no voters. Voters don't keep the queue alive.
     // NOTE this must be called on the thread the associated TaskQueue was
     // created on.
     void SetVoteToEnable(bool enabled);
@@ -233,11 +231,11 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
     bool IsVotingToEnable() const { return enabled_; }
 
    private:
-    friend class TaskQueue;
-    explicit QueueEnabledVoter(scoped_refptr<TaskQueue> task_queue);
+    friend class internal::TaskQueueImpl;
+    explicit QueueEnabledVoter(WeakPtr<internal::TaskQueueImpl> task_queue);
 
-    scoped_refptr<TaskQueue> const task_queue_;
-    bool enabled_;
+    WeakPtr<internal::TaskQueueImpl> task_queue_;
+    bool enabled_ = true;
   };
 
   // Returns an interface that allows the caller to vote on whether or not this
@@ -433,15 +431,7 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   friend class internal::SequenceManagerImpl;
   friend class internal::TaskQueueImpl;
 
-  void AddQueueEnabledVoter(bool voter_is_enabled);
-  void RemoveQueueEnabledVoter(bool voter_is_enabled);
-  bool AreAllQueueEnabledVotersEnabled() const;
-  void OnQueueEnabledVoteChanged(bool enabled);
-
   bool IsOnMainThread() const;
-
-  // Shuts down the queue when there are no more tasks queued.
-  void ShutdownTaskQueueGracefully();
 
   // TaskQueue has ownership of an underlying implementation but in certain
   // cases (e.g. detached frames) their lifetime may diverge.
@@ -463,8 +453,6 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   const scoped_refptr<const internal::AssociatedThreadId> associated_thread_;
   const scoped_refptr<SingleThreadTaskRunner> default_task_runner_;
 
-  int enabled_voter_count_ = 0;
-  int voter_count_ = 0;
   QueueName name_;
 
   base::WeakPtrFactory<TaskQueue> weak_ptr_factory_{this};

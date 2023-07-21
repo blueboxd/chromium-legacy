@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/policy/policy_watcher_browser_agent.h"
 
-#import "base/mac/backup_util.h"
+#import "base/apple/backup_util.h"
 #import "base/mac/foundation_util.h"
 #import "base/path_service.h"
 #import "base/test/ios/wait_util.h"
@@ -17,13 +17,13 @@
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/policy/policy_watcher_browser_agent_observer_bridge.h"
-#import "ios/chrome/browser/prefs/browser_prefs.h"
-#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/coordinator/scene/test/fake_scene_state.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/prefs/browser_prefs.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/policy_change_commands.h"
@@ -73,9 +73,7 @@ class PolicyWatcherBrowserAgentTest : public PlatformTest {
     agent_ = PolicyWatcherBrowserAgent::FromBrowser(browser_.get());
 
     // SceneState Browser Agent.
-    app_state_ = [[AppState alloc] initWithBrowserLauncher:nil
-                                        startupInformation:nil
-                                       applicationDelegate:nil];
+    app_state_ = [[AppState alloc] initWithStartupInformation:nil];
     scene_state_ =
         [[FakeSceneState alloc] initWithAppState:app_state_
                                     browserState:chrome_browser_state_.get()];
@@ -279,12 +277,8 @@ TEST_F(PolicyWatcherBrowserAgentTest, SignOutIfPolicyChangedAtColdStart) {
   PolicyWatcherBrowserAgent* agent =
       PolicyWatcherBrowserAgent::FromBrowser(browser.get());
 
-  // SceneState Browser Agent.
-  AppState* app_state = [[AppState alloc] initWithBrowserLauncher:nil
-                                               startupInformation:nil
-                                              applicationDelegate:nil];
   FakeSceneState* scene_state =
-      [[FakeSceneState alloc] initWithAppState:app_state
+      [[FakeSceneState alloc] initWithAppState:app_state_
                                   browserState:chrome_browser_state_.get()];
   scene_state.activationLevel = SceneActivationLevelForegroundActive;
   SceneStateBrowserAgent::CreateForBrowser(browser.get(), scene_state);
@@ -380,7 +374,7 @@ TEST_F(PolicyWatcherBrowserAgentTest, AlertIfSyncDisabledChanges) {
   NSUserDefaults* standard_defaults = [NSUserDefaults standardUserDefaults];
   [standard_defaults setBool:NO forKey:kSyncDisabledAlertShownKey];
   browser_->GetBrowserState()->GetPrefs()->SetBoolean(
-      syncer::prefs::kSyncManaged, false);
+      syncer::prefs::internal::kSyncManaged, false);
 
   // Browser Agent under test.
   // Set up the test browser and attach the browser agents.
@@ -392,13 +386,9 @@ TEST_F(PolicyWatcherBrowserAgentTest, AlertIfSyncDisabledChanges) {
   PolicyWatcherBrowserAgent* agent =
       PolicyWatcherBrowserAgent::FromBrowser(browser.get());
 
-  // SceneState Browser Agent.
-  AppState* app_state = [[AppState alloc] initWithBrowserLauncher:nil
-                                               startupInformation:nil
-                                              applicationDelegate:nil];
   @autoreleasepool {
     FakeSceneState* scene_state =
-        [[FakeSceneState alloc] initWithAppState:app_state
+        [[FakeSceneState alloc] initWithAppState:app_state_
                                     browserState:chrome_browser_state_.get()];
     scene_state.activationLevel = SceneActivationLevelForegroundActive;
     SceneStateBrowserAgent::CreateForBrowser(browser.get(), scene_state);
@@ -409,7 +399,7 @@ TEST_F(PolicyWatcherBrowserAgentTest, AlertIfSyncDisabledChanges) {
 
     // Update the pref.
     browser_->GetBrowserState()->GetPrefs()->SetBoolean(
-        syncer::prefs::kSyncManaged, true);
+        syncer::prefs::internal::kSyncManaged, true);
 
     EXPECT_OCMOCK_VERIFY(mockHandler);
     EXPECT_TRUE([standard_defaults boolForKey:kSyncDisabledAlertShownKey]);
@@ -418,7 +408,7 @@ TEST_F(PolicyWatcherBrowserAgentTest, AlertIfSyncDisabledChanges) {
 
     // Update the pref.
     browser_->GetBrowserState()->GetPrefs()->SetBoolean(
-        syncer::prefs::kSyncManaged, false);
+        syncer::prefs::internal::kSyncManaged, false);
 
     EXPECT_OCMOCK_VERIFY(mockHandler);
     EXPECT_FALSE([standard_defaults boolForKey:kSyncDisabledAlertShownKey]);
@@ -431,7 +421,7 @@ TEST_F(PolicyWatcherBrowserAgentTest, AlertIfSyncDisabledChangedAtColdStart) {
   NSUserDefaults* standard_defaults = [NSUserDefaults standardUserDefaults];
   [standard_defaults setBool:NO forKey:kSyncDisabledAlertShownKey];
   browser_->GetBrowserState()->GetPrefs()->SetBoolean(
-      syncer::prefs::kSyncManaged, true);
+      syncer::prefs::internal::kSyncManaged, true);
 
   // Browser Agent under test.
   // Set up the test browser and attach the browser agents.
@@ -443,13 +433,9 @@ TEST_F(PolicyWatcherBrowserAgentTest, AlertIfSyncDisabledChangedAtColdStart) {
   PolicyWatcherBrowserAgent* agent =
       PolicyWatcherBrowserAgent::FromBrowser(browser.get());
 
-  // SceneState Browser Agent.
-  AppState* app_state = [[AppState alloc] initWithBrowserLauncher:nil
-                                               startupInformation:nil
-                                              applicationDelegate:nil];
   @autoreleasepool {
     FakeSceneState* scene_state =
-        [[FakeSceneState alloc] initWithAppState:app_state
+        [[FakeSceneState alloc] initWithAppState:app_state_
                                     browserState:chrome_browser_state_.get()];
     scene_state.activationLevel = SceneActivationLevelForegroundActive;
     SceneStateBrowserAgent::CreateForBrowser(browser.get(), scene_state);
@@ -467,7 +453,7 @@ TEST_F(PolicyWatcherBrowserAgentTest, AlertIfSyncDisabledChangedAtColdStart) {
 
     // Update the pref.
     browser_->GetBrowserState()->GetPrefs()->SetBoolean(
-        syncer::prefs::kSyncManaged, false);
+        syncer::prefs::internal::kSyncManaged, false);
 
     EXPECT_OCMOCK_VERIFY(mockHandler);
     EXPECT_FALSE([standard_defaults boolForKey:kSyncDisabledAlertShownKey]);
@@ -482,19 +468,19 @@ TEST_F(PolicyWatcherBrowserAgentTest, BackupPreventionChanged) {
   base::FilePath storage_dir = base::mac::GetUserLibraryPath();
 
   // Ensure that backups are allowed initially.
-  ASSERT_TRUE(base::mac::ClearBackupExclusion(storage_dir));
+  ASSERT_TRUE(base::apple::ClearBackupExclusion(storage_dir));
 
   // Disallow backups.
   browser_->GetBrowserState()->GetPrefs()->SetBoolean(
       prefs::kAllowChromeDataInBackups, false);
   task_environment_.RunUntilIdle();
-  EXPECT_TRUE(base::mac::GetBackupExclusion(storage_dir));
+  EXPECT_TRUE(base::apple::GetBackupExclusion(storage_dir));
 
   // Allow backups.
   browser_->GetBrowserState()->GetPrefs()->SetBoolean(
       prefs::kAllowChromeDataInBackups, true);
   task_environment_.RunUntilIdle();
-  EXPECT_FALSE(base::mac::GetBackupExclusion(storage_dir));
+  EXPECT_FALSE(base::apple::GetBackupExclusion(storage_dir));
 }
 
 // Tests that disabling the backup-allowed preference marks the app container
@@ -503,7 +489,7 @@ TEST_F(PolicyWatcherBrowserAgentTest, BackupDisallowedAtColdStart) {
   base::FilePath storage_dir = base::mac::GetUserLibraryPath();
 
   // Ensure that backups are allowed initially.
-  ASSERT_TRUE(base::mac::ClearBackupExclusion(storage_dir));
+  ASSERT_TRUE(base::apple::ClearBackupExclusion(storage_dir));
 
   // Disallow backups
   browser_->GetBrowserState()->GetPrefs()->SetBoolean(
@@ -512,7 +498,7 @@ TEST_F(PolicyWatcherBrowserAgentTest, BackupDisallowedAtColdStart) {
   id mockHandler = OCMProtocolMock(@protocol(PolicyChangeCommands));
   agent_->Initialize(mockHandler);
   task_environment_.RunUntilIdle();
-  EXPECT_TRUE(base::mac::GetBackupExclusion(storage_dir));
+  EXPECT_TRUE(base::apple::GetBackupExclusion(storage_dir));
 }
 
 // Tests that enabling the backup-allowed preference marks the app container
@@ -521,7 +507,7 @@ TEST_F(PolicyWatcherBrowserAgentTest, BackupAllowedAtColdStart) {
   base::FilePath storage_dir = base::mac::GetUserLibraryPath();
 
   // Ensure that backups are disallowed initially.
-  ASSERT_TRUE(base::mac::SetBackupExclusion(storage_dir));
+  ASSERT_TRUE(base::apple::SetBackupExclusion(storage_dir));
 
   // Allow backups
   browser_->GetBrowserState()->GetPrefs()->SetBoolean(
@@ -530,5 +516,5 @@ TEST_F(PolicyWatcherBrowserAgentTest, BackupAllowedAtColdStart) {
   id mockHandler = OCMProtocolMock(@protocol(PolicyChangeCommands));
   agent_->Initialize(mockHandler);
   task_environment_.RunUntilIdle();
-  EXPECT_FALSE(base::mac::GetBackupExclusion(storage_dir));
+  EXPECT_FALSE(base::apple::GetBackupExclusion(storage_dir));
 }

@@ -720,15 +720,15 @@ void DownloadUIModel::ExecuteCommand(DownloadCommands* download_commands,
   }
 }
 
-DownloadUIModel::BubbleUIInfo::BubbleUIInfo(const std::u16string& summary)
-    : has_subpage(true), warning_summary(summary) {}
-DownloadUIModel::BubbleUIInfo::BubbleUIInfo(bool has_progress_bar)
-    : has_progress_bar(has_progress_bar) {}
 DownloadUIModel::BubbleUIInfo::SubpageButton::SubpageButton(
     DownloadCommands::Command command,
     std::u16string label,
-    bool is_prominent)
-    : command(command), label(label), is_prominent(is_prominent) {}
+    bool is_prominent,
+    absl::optional<ui::ColorId> color)
+    : command(command),
+      label(label),
+      is_prominent(is_prominent),
+      color(color) {}
 DownloadUIModel::BubbleUIInfo::QuickAction::QuickAction(
     DownloadCommands::Command command,
     const std::u16string& hover_text,
@@ -737,6 +737,16 @@ DownloadUIModel::BubbleUIInfo::QuickAction::QuickAction(
 DownloadUIModel::BubbleUIInfo::BubbleUIInfo() = default;
 DownloadUIModel::BubbleUIInfo::~BubbleUIInfo() = default;
 DownloadUIModel::BubbleUIInfo::BubbleUIInfo(const BubbleUIInfo& rhs) = default;
+DownloadUIModel::BubbleUIInfo& DownloadUIModel::BubbleUIInfo::AddSubpageSummary(
+    const std::u16string& summary) {
+  CHECK(!summary.empty());  // An empty summary is interpreted as no subpage
+  warning_summary = summary;
+  return *this;
+}
+DownloadUIModel::BubbleUIInfo& DownloadUIModel::BubbleUIInfo::AddProgressBar() {
+  has_progress_bar = true;
+  return *this;
+}
 DownloadUIModel::BubbleUIInfo& DownloadUIModel::BubbleUIInfo::AddIconAndColor(
     const gfx::VectorIcon& vector_icon,
     ui::ColorId color_id) {
@@ -756,17 +766,29 @@ DownloadUIModel::BubbleUIInfo& DownloadUIModel::BubbleUIInfo::AddPrimaryButton(
 }
 DownloadUIModel::BubbleUIInfo& DownloadUIModel::BubbleUIInfo::AddCheckbox(
     const std::u16string& label) {
-  has_checkbox = true;
+  CHECK(!label.empty());  // An empty summary is interpreted as no checkbox
   checkbox_label = label;
   return *this;
 }
-DownloadUIModel::BubbleUIInfo& DownloadUIModel::BubbleUIInfo::AddSubpageButton(
+DownloadUIModel::BubbleUIInfo&
+DownloadUIModel::BubbleUIInfo::AddPrimarySubpageButton(
+    const std::u16string& label,
+    DownloadCommands::Command command) {
+  // The subpage of the bubble supports at most 2 buttons. The primary one must
+  // come first, then the secondary.
+  CHECK(subpage_buttons.empty());
+  subpage_buttons.emplace_back(command, label, /*is_prominent=*/true);
+  return *this;
+}
+DownloadUIModel::BubbleUIInfo&
+DownloadUIModel::BubbleUIInfo::AddSecondarySubpageButton(
     const std::u16string& label,
     DownloadCommands::Command command,
-    bool is_prominent) {
-  // The subpage of the bubble supports at most 2 buttons.
-  DCHECK(subpage_buttons.size() <= 1);
-  subpage_buttons.emplace_back(command, label, is_prominent);
+    ui::ColorId color) {
+  // The subpage of the bubble supports at most 2 buttons. The primary one must
+  // come first, then the secondary.
+  CHECK(subpage_buttons.size() == 1);
+  subpage_buttons.emplace_back(command, label, /*is_prominent=*/false, color);
   return *this;
 }
 
@@ -788,6 +810,13 @@ ui::ColorId DownloadUIModel::BubbleUIInfo::GetColorForSecondaryText() const {
   return secondary_text_color.value_or(secondary_color);
 }
 
+bool DownloadUIModel::BubbleUIInfo::HasSubpage() const {
+  return !warning_summary.empty();
+}
+bool DownloadUIModel::BubbleUIInfo::HasCheckbox() const {
+  return !checkbox_label.empty();
+}
+
 DownloadUIModel::BubbleUIInfo DownloadUIModel::GetBubbleUIInfoForInterrupted(
     FailState fail_state) const {
   // Only handle danger types that are terminated in the interrupted state in
@@ -795,26 +824,26 @@ DownloadUIModel::BubbleUIInfo DownloadUIModel::GetBubbleUIInfoForInterrupted(
   // `GetBubbleUIInfoForInProgressOrComplete`.
   switch (GetDangerType()) {
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
-      return DownloadUIModel::BubbleUIInfo(
-                 l10n_util::GetStringUTF16(
-                     IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ENCRYPTED))
+      return DownloadUIModel::BubbleUIInfo()
+          .AddSubpageSummary(l10n_util::GetStringUTF16(
+              IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ENCRYPTED))
           .AddIconAndColor(views::kInfoIcon, ui::kColorAlertHighSeverity);
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE:
-      return DownloadUIModel::BubbleUIInfo(
-                 l10n_util::GetStringUTF16(
-                     IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_TOO_BIG))
+      return DownloadUIModel::BubbleUIInfo()
+          .AddSubpageSummary(l10n_util::GetStringUTF16(
+              IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_TOO_BIG))
           .AddIconAndColor(views::kInfoIcon, ui::kColorAlertHighSeverity);
     case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK: {
       if (enterprise_connectors::ShouldPromptReviewForDownload(
               profile(), GetDangerType())) {
-        return DownloadUIModel::BubbleUIInfo(/*has_progress_bar=*/false)
+        return DownloadUIModel::BubbleUIInfo()
             .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
                              ui::kColorAlertHighSeverity)
             .AddPrimaryButton(DownloadCommands::Command::REVIEW);
       } else {
-        return DownloadUIModel::BubbleUIInfo(
-                   l10n_util::GetStringUTF16(
-                       IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_SENSITIVE_CONTENT_BLOCK))
+        return DownloadUIModel::BubbleUIInfo()
+            .AddSubpageSummary(l10n_util::GetStringUTF16(
+                IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_SENSITIVE_CONTENT_BLOCK))
             .AddIconAndColor(views::kInfoIcon, ui::kColorAlertHighSeverity);
       }
     }
@@ -841,26 +870,26 @@ DownloadUIModel::BubbleUIInfo DownloadUIModel::GetBubbleUIInfoForInterrupted(
 
   switch (fail_state) {
     case FailState::FILE_BLOCKED:
-      return DownloadUIModel::BubbleUIInfo(
-                 l10n_util::GetStringUTF16(
-                     IDS_DOWNLOAD_BUBBLE_INTERRUPTED_SUBPAGE_SUMMARY_BLOCKED_ORGANIZATION))
+      return DownloadUIModel::BubbleUIInfo()
+          .AddSubpageSummary(l10n_util::GetStringUTF16(
+              IDS_DOWNLOAD_BUBBLE_INTERRUPTED_SUBPAGE_SUMMARY_BLOCKED_ORGANIZATION))
           .AddIconAndColor(views::kInfoIcon, ui::kColorAlertHighSeverity);
     case FailState::FILE_NAME_TOO_LONG:
-      return DownloadUIModel::BubbleUIInfo(
-                 l10n_util::GetStringUTF16(
-                     IDS_DOWNLOAD_BUBBLE_INTERRUPTED_SUBPAGE_SUMMARY_PATH_TOO_LONG))
+      return DownloadUIModel::BubbleUIInfo()
+          .AddSubpageSummary(l10n_util::GetStringUTF16(
+              IDS_DOWNLOAD_BUBBLE_INTERRUPTED_SUBPAGE_SUMMARY_PATH_TOO_LONG))
           .AddIconAndColor(vector_icons::kFileDownloadOffIcon,
                            ui::kColorAlertHighSeverity);
     case FailState::FILE_NO_SPACE:
-      return DownloadUIModel::BubbleUIInfo(
-                 l10n_util::GetStringUTF16(
-                     IDS_DOWNLOAD_BUBBLE_INTERRUPTED_SUBPAGE_SUMMARY_DISK_FULL))
+      return DownloadUIModel::BubbleUIInfo()
+          .AddSubpageSummary(l10n_util::GetStringUTF16(
+              IDS_DOWNLOAD_BUBBLE_INTERRUPTED_SUBPAGE_SUMMARY_DISK_FULL))
           .AddIconAndColor(vector_icons::kFileDownloadOffIcon,
                            ui::kColorAlertHighSeverity);
     case FailState::SERVER_UNAUTHORIZED:
-      return DownloadUIModel::BubbleUIInfo(
-                 l10n_util::GetStringUTF16(
-                     IDS_DOWNLOAD_BUBBLE_INTERRUPTED_SUBPAGE_SUMMARY_FILE_UNAVAILABLE))
+      return DownloadUIModel::BubbleUIInfo()
+          .AddSubpageSummary(l10n_util::GetStringUTF16(
+              IDS_DOWNLOAD_BUBBLE_INTERRUPTED_SUBPAGE_SUMMARY_FILE_UNAVAILABLE))
           .AddIconAndColor(vector_icons::kFileDownloadOffIcon,
                            ui::kColorAlertHighSeverity);
     // No Retry in these cases.
@@ -871,9 +900,8 @@ DownloadUIModel::BubbleUIInfo DownloadUIModel::GetBubbleUIInfoForInterrupted(
     case FailState::SERVER_FORBIDDEN:
     case FailState::FILE_SAME_AS_SOURCE:
     case FailState::SERVER_BAD_CONTENT:
-      return DownloadUIModel::BubbleUIInfo(/*has_progress_bar=*/false)
-          .AddIconAndColor(vector_icons::kFileDownloadOffIcon,
-                           ui::kColorAlertHighSeverity);
+      return DownloadUIModel::BubbleUIInfo().AddIconAndColor(
+          vector_icons::kFileDownloadOffIcon, ui::kColorAlertHighSeverity);
     // Try resume if possible or retry if not in these cases, and in the default
     // case.
     case FailState::NETWORK_INVALID_REQUEST:
@@ -903,13 +931,12 @@ DownloadUIModel::BubbleUIInfo DownloadUIModel::GetBubbleUIInfoForInterrupted(
       NOTREACHED();
       break;
     case FailState::NO_FAILURE:
-      return DownloadUIModel::BubbleUIInfo(/*has_progress_bar=*/false);
+      return DownloadUIModel::BubbleUIInfo();
   }
 
   DownloadUIModel::BubbleUIInfo bubble_ui_info =
-      DownloadUIModel::BubbleUIInfo(/*has_progress_bar=*/false)
-          .AddIconAndColor(vector_icons::kFileDownloadOffIcon,
-                           ui::kColorAlertHighSeverity);
+      DownloadUIModel::BubbleUIInfo().AddIconAndColor(
+          vector_icons::kFileDownloadOffIcon, ui::kColorAlertHighSeverity);
   if (IsBubbleV2Enabled()) {
     bubble_ui_info.AddPrimaryButton(CanResume()
                                         ? DownloadCommands::Command::RESUME
@@ -924,19 +951,20 @@ DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
   switch (GetInsecureDownloadStatus()) {
     case download::DownloadItem::InsecureDownloadStatus::BLOCK:
     case download::DownloadItem::InsecureDownloadStatus::WARN:
-      return DownloadUIModel::BubbleUIInfo(
-                 l10n_util::GetStringUTF16(
-                     IDS_DOWNLOAD_BUBBLE_WARNING_SUBPAGE_SUMMARY_INSECURE))
+      return DownloadUIModel::BubbleUIInfo()
+          .AddPrimaryButton(DownloadCommands::Command::KEEP)
+          .AddSubpageSummary(l10n_util::GetStringUTF16(
+              IDS_DOWNLOAD_BUBBLE_WARNING_SUBPAGE_SUMMARY_INSECURE))
           .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
                            ui::kColorAlertMediumSeverityIcon)
           .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText)
-          .AddSubpageButton(
+          .AddPrimarySubpageButton(
               l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
-              DownloadCommands::Command::DISCARD,
-              /*is_prominent=*/true)
-          .AddSubpageButton(
+              DownloadCommands::Command::DISCARD)
+          .AddSecondarySubpageButton(
               l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
-              DownloadCommands::Command::KEEP, /*is_prominent=*/false);
+              DownloadCommands::Command::KEEP,
+              ui::kColorAlertMediumSeverityText);
     case download::DownloadItem::InsecureDownloadStatus::UNKNOWN:
     case download::DownloadItem::InsecureDownloadStatus::SAFE:
     case download::DownloadItem::InsecureDownloadStatus::VALIDATED:
@@ -948,18 +976,18 @@ DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
                                                            GetDangerType())) {
     switch (GetDangerType()) {
       case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
-        return DownloadUIModel::BubbleUIInfo(/*has_progress_bar=*/false)
+        return DownloadUIModel::BubbleUIInfo()
             .AddIconAndColor(vector_icons::kDangerousIcon,
                              ui::kColorAlertHighSeverity)
             .AddPrimaryButton(DownloadCommands::Command::REVIEW);
       case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
-        return DownloadUIModel::BubbleUIInfo(/*has_progress_bar=*/false)
+        return DownloadUIModel::BubbleUIInfo()
             .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
                              ui::kColorAlertMediumSeverityIcon)
             .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText)
             .AddPrimaryButton(DownloadCommands::Command::REVIEW);
       case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING:
-        return DownloadUIModel::BubbleUIInfo(/*has_progress_bar=*/false)
+        return DownloadUIModel::BubbleUIInfo()
             .AddIconAndColor(views::kInfoIcon,
                              ui::kColorAlertMediumSeverityIcon)
             .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText)
@@ -977,104 +1005,95 @@ DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
   switch (GetDangerType()) {
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
       if (IsExtensionDownload()) {
-        return DownloadUIModel::BubbleUIInfo(
-                   l10n_util::GetStringFUTF16(
-                       IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_UNKNOWN_SOURCE,
-                       l10n_util::GetStringUTF16(
-                           IDS_EXTENSION_WEB_STORE_TITLE)))
+        return DownloadUIModel::BubbleUIInfo()
+            .AddSubpageSummary(l10n_util::GetStringFUTF16(
+                IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_UNKNOWN_SOURCE,
+                l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE)))
             .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
                              ui::kColorAlertMediumSeverityIcon)
             .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText)
-            .AddSubpageButton(
+            .AddPrimarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
-                DownloadCommands::Command::DISCARD,
-                /*is_prominent=*/true)
-            .AddSubpageButton(
+                DownloadCommands::Command::DISCARD)
+            .AddSecondarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
                 DownloadCommands::Command::KEEP,
-                /*is_prominent=*/false);
+                ui::kColorAlertMediumSeverityText);
       } else {
-        return DownloadUIModel::BubbleUIInfo(
-                   l10n_util::GetStringUTF16(
-                       IDS_DOWNLOAD_BUBBLE_DANGEROUS_FILE))
+        return DownloadUIModel::BubbleUIInfo()
+            .AddSubpageSummary(
+                l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DANGEROUS_FILE))
             .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
                              ui::kColorSecondaryForeground)
             .AddPrimaryButton(DownloadCommands::Command::KEEP)
-            .AddSubpageButton(
+            .AddPrimarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
-                DownloadCommands::Command::DISCARD,
-                /*is_prominent=*/false)
-            .AddSubpageButton(
+                DownloadCommands::Command::DISCARD)
+            .AddSecondarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
-                DownloadCommands::Command::KEEP,
-                /*is_prominent=*/false);
+                DownloadCommands::Command::KEEP, ui::kColorSecondaryForeground);
       }
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_ACCOUNT_COMPROMISE:
-      ui_info = DownloadUIModel::BubbleUIInfo(
-                    l10n_util::GetStringUTF16(
+      ui_info = DownloadUIModel::BubbleUIInfo()
+                    .AddSubpageSummary(l10n_util::GetStringUTF16(
                         IDS_DOWNLOAD_BUBBLE_MALICIOUS_URL_BLOCKED))
                     .AddIconAndColor(vector_icons::kDangerousIcon,
                                      ui::kColorAlertHighSeverity)
                     .AddPrimaryButton(DownloadCommands::Command::DISCARD)
-                    .AddSubpageButton(
+                    .AddPrimarySubpageButton(
                         l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
-                        DownloadCommands::Command::DISCARD,
-                        /*is_prominent=*/true);
+                        DownloadCommands::Command::DISCARD);
       if (!is_download_bubble_v2) {
         ui_info
             .AddCheckbox(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CHECKBOX_BYPASS))
-            .AddSubpageButton(
+            .AddSecondarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
-                DownloadCommands::Command::KEEP,
-                /*is_prominent=*/false);
+                DownloadCommands::Command::KEEP, ui::kColorAlertHighSeverity);
       }
       return ui_info;
 
     case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
-      ui_info = DownloadUIModel::BubbleUIInfo(
-                    l10n_util::GetStringUTF16(
+      ui_info = DownloadUIModel::BubbleUIInfo()
+                    .AddSubpageSummary(l10n_util::GetStringUTF16(
                         IDS_DOWNLOAD_BUBBLE_MALICIOUS_URL_BLOCKED))
                     .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
                                      ui::kColorAlertMediumSeverityIcon)
                     .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText)
                     .AddPrimaryButton(DownloadCommands::Command::DISCARD)
-                    .AddSubpageButton(
+                    .AddPrimarySubpageButton(
                         l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
-                        DownloadCommands::Command::DISCARD,
-                        /*is_prominent=*/true);
+                        DownloadCommands::Command::DISCARD);
       if (!is_download_bubble_v2) {
         ui_info
             .AddCheckbox(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CHECKBOX_BYPASS))
-            .AddSubpageButton(
+            .AddSecondarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
                 DownloadCommands::Command::KEEP,
-                /*is_prominent=*/false);
+                ui::kColorAlertMediumSeverityText);
       }
       return ui_info;
 
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
-      ui_info = DownloadUIModel::BubbleUIInfo(
-                    l10n_util::GetStringUTF16(
+      ui_info = DownloadUIModel::BubbleUIInfo()
+                    .AddSubpageSummary(l10n_util::GetStringUTF16(
                         IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_MALWARE))
                     .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
                                      ui::kColorAlertHighSeverity)
                     .AddPrimaryButton(DownloadCommands::Command::DISCARD)
-                    .AddSubpageButton(
+                    .AddPrimarySubpageButton(
                         l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
-                        DownloadCommands::Command::DISCARD,
-                        /*is_prominent=*/true);
+                        DownloadCommands::Command::DISCARD);
       if (!is_download_bubble_v2) {
         ui_info
             .AddCheckbox(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CHECKBOX_BYPASS))
-            .AddSubpageButton(
+            .AddSecondarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
-                DownloadCommands::Command::KEEP,
-                /*is_prominent=*/false);
+                DownloadCommands::Command::KEEP, ui::kColorAlertHighSeverity);
       }
       return ui_info;
     case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
@@ -1086,71 +1105,83 @@ DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
               ->IsUnderAdvancedProtection();
 #endif
       if (request_ap_verdicts) {
-        return DownloadUIModel::BubbleUIInfo(
-                   l10n_util::GetStringUTF16(
-                       IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ADVANCED_PROTECTION))
+        return DownloadUIModel::BubbleUIInfo()
+            .AddSubpageSummary(l10n_util::GetStringUTF16(
+                IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ADVANCED_PROTECTION))
             .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
                              ui::kColorAlertMediumSeverityIcon)
             .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText)
-            .AddSubpageButton(
+            .AddPrimarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
-                DownloadCommands::Command::DISCARD,
-                /*is_prominent=*/true)
-            .AddSubpageButton(
+                DownloadCommands::Command::DISCARD)
+            .AddSecondarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
                 DownloadCommands::Command::KEEP,
-                /*is_prominent=*/false);
+                ui::kColorAlertMediumSeverityText);
       } else {
-        return DownloadUIModel::BubbleUIInfo(
-                   l10n_util::GetStringUTF16(
-                       IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_UNCOMMON_FILE))
+        return DownloadUIModel::BubbleUIInfo()
+            .AddSubpageSummary(l10n_util::GetStringUTF16(
+                IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_UNCOMMON_FILE))
             .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
                              ui::kColorAlertMediumSeverityIcon)
             .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText)
             .AddPrimaryButton(DownloadCommands::Command::DISCARD)
-            .AddSubpageButton(
+            .AddPrimarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
-                DownloadCommands::Command::DISCARD,
-                /*is_prominent=*/true)
-            .AddSubpageButton(
+                DownloadCommands::Command::DISCARD)
+            .AddSecondarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
                 DownloadCommands::Command::KEEP,
-                /*is_prominent=*/false);
+                ui::kColorAlertMediumSeverityText);
       }
     }
     case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING:
-      return DownloadUIModel::BubbleUIInfo(
-                 l10n_util::GetStringUTF16(
-                     IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_SENSITIVE_CONTENT_WARNING))
+      return DownloadUIModel::BubbleUIInfo()
+          .AddSubpageSummary(l10n_util::GetStringUTF16(
+              IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_SENSITIVE_CONTENT_WARNING))
           .AddIconAndColor(views::kInfoIcon, ui::kColorAlertMediumSeverityIcon)
           .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText)
           .AddPrimaryButton(DownloadCommands::Command::DISCARD)
-          .AddSubpageButton(
+          .AddPrimarySubpageButton(
               l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
-              DownloadCommands::Command::DISCARD,
-              /*is_prominent=*/true)
-          .AddSubpageButton(
+              DownloadCommands::Command::DISCARD)
+          .AddSecondarySubpageButton(
               l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
               DownloadCommands::Command::KEEP,
-              /*is_prominent=*/false);
+              ui::kColorAlertMediumSeverityText);
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
-      return DownloadUIModel::BubbleUIInfo(
-                 l10n_util::GetStringUTF16(
-                     IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_DEEP_SCANNING_PROMPT))
-          .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
-                           ui::kColorAlertMediumSeverityIcon)
-          .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText)
-          .AddPrimaryButton(DownloadCommands::Command::DEEP_SCAN)
-          .AddSubpageButton(l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_SCAN),
-                            DownloadCommands::Command::DEEP_SCAN,
-                            /*is_prominent=*/true)
-          .AddSubpageButton(l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_OPEN),
-                            DownloadCommands::Command::BYPASS_DEEP_SCANNING,
-                            /*is_prominent=*/false);
+      ui_info =
+          DownloadUIModel::BubbleUIInfo()
+              .AddSubpageSummary(l10n_util::GetStringUTF16(
+                  IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_DEEP_SCANNING_PROMPT))
+              .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
+                               ui::kColorAlertMediumSeverityIcon)
+              .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText);
+      if (base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX)) {
+        ui_info
+            .AddPrimarySubpageButton(
+                l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_SCAN_UPDATED),
+                DownloadCommands::Command::DEEP_SCAN)
+            .AddSecondarySubpageButton(
+                l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_OPEN_UPDATED),
+                DownloadCommands::Command::BYPASS_DEEP_SCANNING,
+                ui::kColorButtonForeground);
+      } else {
+        ui_info.AddPrimaryButton(DownloadCommands::Command::DEEP_SCAN)
+            .AddPrimarySubpageButton(
+                l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_SCAN),
+                DownloadCommands::Command::DEEP_SCAN)
+            .AddSecondarySubpageButton(
+                l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_OPEN),
+                DownloadCommands::Command::BYPASS_DEEP_SCANNING,
+                ui::kColorAlertMediumSeverityText);
+      }
+
+      return ui_info;
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING: {
-      BubbleUIInfo bubble_ui_info =
-          DownloadUIModel::BubbleUIInfo(/*has_progress_bar=*/true)
-              .SetProgressBarLooping();
+      BubbleUIInfo bubble_ui_info = DownloadUIModel::BubbleUIInfo()
+                                        .AddProgressBar()
+                                        .SetProgressBarLooping();
       if (!download::IsDownloadConnectorEnabled(profile())) {
         bubble_ui_info.AddPrimaryButton(
             DownloadCommands::Command::BYPASS_DEEP_SCANNING);
@@ -1174,8 +1205,9 @@ DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
   // Add primary button/quick actions for in-progress (paused or active), and
   // completed downloads
   bool has_progress_bar = GetState() == DownloadItem::IN_PROGRESS;
-  BubbleUIInfo bubble_ui_info = DownloadUIModel::BubbleUIInfo(has_progress_bar);
+  BubbleUIInfo bubble_ui_info = DownloadUIModel::BubbleUIInfo();
   if (has_progress_bar) {
+    bubble_ui_info.AddProgressBar();
     if (IsPaused()) {
       if (is_download_bubble_v2) {
         bubble_ui_info.AddQuickAction(
@@ -1240,9 +1272,8 @@ DownloadUIModel::BubbleUIInfo DownloadUIModel::GetBubbleUIInfo(
       [[fallthrough]];
     case DownloadItem::CANCELLED:
     case DownloadItem::MAX_DOWNLOAD_STATE:
-      return DownloadUIModel::BubbleUIInfo(/*has_progress_bar=*/false)
-          .AddIconAndColor(vector_icons::kFileDownloadOffIcon,
-                           ui::kColorSecondaryForeground);
+      return DownloadUIModel::BubbleUIInfo().AddIconAndColor(
+          vector_icons::kFileDownloadOffIcon, ui::kColorSecondaryForeground);
   }
 }
 
@@ -1434,9 +1465,18 @@ DownloadUIModel::BubbleStatusTextBuilder::GetBubbleWarningStatusText() const {
       return l10n_util::GetStringUTF16(
           IDS_DOWNLOAD_BUBBLE_INTERRUPTED_STATUS_BLOCKED_ORGANIZATION);
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
-      // "Scan before opening"
-      return l10n_util::GetStringUTF16(
-          IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNING_PROMPT);
+      if (base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX)) {
+        // "Scan for malware • Suspicious"
+        return l10n_util::GetStringFUTF16(
+            IDS_DOWNLOAD_BUBBLE_DOWNLOAD_STATUS_MESSAGE_WITH_SEPARATOR,
+            l10n_util::GetStringUTF16(
+                IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNING_PROMPT_UPDATED),
+            l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_STATUS_SUSPICIOUS));
+      } else {
+        // "Scan before opening"
+        return l10n_util::GetStringUTF16(
+            IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNING_PROMPT);
+      }
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
 #if BUILDFLAG(IS_ANDROID)
       // "Scanning..."
@@ -1589,9 +1629,15 @@ DownloadUIModel::BubbleStatusTextBuilder::GetCompletedStatusText() const {
     std::u16string delta_str;
     if (model_->GetDangerType() ==
         download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE) {
-      // "2 B • Done, no issues found"
-      delta_str = l10n_util::GetStringUTF16(
-          IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNING_DONE);
+      if (base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX)) {
+        // "2 B • Scan is done"
+        delta_str = l10n_util::GetStringUTF16(
+            IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNING_DONE_UPDATED);
+      } else {
+        // "2 B • Done, no issues found"
+        delta_str = l10n_util::GetStringUTF16(
+            IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNING_DONE);
+      }
     } else {
       base::TimeDelta time_elapsed = base::Time::Now() - model_->GetEndTime();
       // If less than 1 minute has passed since download completed: "2 B • Done"

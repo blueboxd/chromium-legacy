@@ -8,9 +8,11 @@
 
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
+#include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -33,12 +35,16 @@
 #include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
 #include "extensions/common/constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/color/color_id.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -52,6 +58,7 @@
 #include "ui/views/view_class_properties.h"
 #include "ui/views/views_features.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 
@@ -107,66 +114,78 @@ PermissionPromptBubbleBaseView::PermissionPromptBubbleBaseView(
     extra_text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     extra_text_label->SetMultiLine(true);
   }
-
   if (is_one_time_permission_) {
     SetButtons(ui::DIALOG_BUTTON_NONE);
 
     auto buttons_container = std::make_unique<views::View>();
-    auto* buttons_layout_manager =
-        buttons_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-            views::BoxLayout::Orientation::kVertical, gfx::Insets(),
-            DISTANCE_BUTTON_VERTICAL));
-    buttons_layout_manager->set_cross_axis_alignment(
-        views::BoxLayout::CrossAxisAlignment::kStretch);
+    buttons_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+        DISTANCE_BUTTON_VERTICAL));
+
     auto allow_once_button = std::make_unique<views::MdTextButton>(
-        base::BindRepeating(
-            &PermissionPromptBubbleBaseView::AcceptPermissionThisTime,
-            base::Unretained(this)),
+        base::BindRepeating(&PermissionPromptBubbleBaseView::
+                                FilterUnintenedEventsAndRunCallbacks,
+                            base::Unretained(this),
+                            PermissionDialogButton::kAcceptOnce),
         l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW_THIS_TIME));
+    allow_once_button->SetID(GetViewId(PermissionDialogButton::kAcceptOnce));
 
     auto allow_always_button = std::make_unique<views::MdTextButton>(
-        base::BindRepeating(&PermissionPromptBubbleBaseView::AcceptPermission,
-                            base::Unretained(this)),
+        base::BindRepeating(&PermissionPromptBubbleBaseView::
+                                FilterUnintenedEventsAndRunCallbacks,
+                            base::Unretained(this),
+                            PermissionDialogButton::kAccept),
         l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW_EVERY_VISIT));
     allow_always_button->SetProperty(views::kElementIdentifierKey,
                                      kAllowButtonElementId);
+    allow_always_button->SetID(GetViewId(PermissionDialogButton::kAccept));
 
     int block_message_id =
         permissions::feature_params::kUseStrongerPromptLanguage.Get()
             ? IDS_PERMISSION_NEVER_ALLOW
             : IDS_PERMISSION_DONT_ALLOW;
     auto block_button = std::make_unique<views::MdTextButton>(
-        base::BindRepeating(&PermissionPromptBubbleBaseView::DenyPermission,
-                            base::Unretained(this)),
+        base::BindRepeating(&PermissionPromptBubbleBaseView::
+                                FilterUnintenedEventsAndRunCallbacks,
+                            base::Unretained(this),
+                            PermissionDialogButton::kDeny),
         l10n_util::GetStringUTF16(block_message_id));
+    block_button->SetID(GetViewId(PermissionDialogButton::kDeny));
 
     if (features::IsChromeRefresh2023()) {
-      allow_once_button->SetStyle(views::MdTextButton::Style::kTonal);
-      allow_always_button->SetStyle(views::MdTextButton::Style::kTonal);
-      block_button->SetStyle(views::MdTextButton::Style::kTonal);
+      allow_once_button->SetStyle(ui::ButtonStyle::kTonal);
+      allow_always_button->SetStyle(ui::ButtonStyle::kTonal);
+      block_button->SetStyle(ui::ButtonStyle::kTonal);
     }
 
     buttons_container->AddChildView(std::move(allow_once_button));
     buttons_container->AddChildView(std::move(allow_always_button));
     buttons_container->AddChildView(std::move(block_button));
-    AddChildView(std::move(buttons_container));
+
+    views::LayoutProvider* const layout_provider = views::LayoutProvider::Get();
+    buttons_container->SetPreferredSize(gfx::Size(
+        layout_provider->GetDistanceMetric(
+            views::DISTANCE_BUBBLE_PREFERRED_WIDTH) -
+            layout_provider->GetInsetsMetric(views::INSETS_DIALOG_BUTTON_ROW)
+                .width(),
+        buttons_container->GetPreferredSize().height()));
+    SetExtraView(std::move(buttons_container));
   } else {
     SetButtonLabel(ui::DIALOG_BUTTON_OK,
                    l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW));
-    SetAcceptCallback(
-        base::BindOnce(&PermissionPromptBubbleBaseView::AcceptPermission,
-                       base::Unretained(this)));
+    SetAcceptCallback(base::BindOnce(
+        &PermissionPromptBubbleBaseView::RunButtonCallbacks,
+        base::Unretained(this), PermissionDialogButton::kAccept));
 
     SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                    l10n_util::GetStringUTF16(IDS_PERMISSION_DENY));
     SetCancelCallback(
-        base::BindOnce(&PermissionPromptBubbleBaseView::DenyPermission,
-                       base::Unretained(this)));
+        base::BindOnce(&PermissionPromptBubbleBaseView::RunButtonCallbacks,
+                       base::Unretained(this), PermissionDialogButton::kDeny));
 
     if (features::IsChromeRefresh2023()) {
-      SetButtonStyle(ui::DIALOG_BUTTON_OK, views::MdTextButton::Style::kTonal);
-      SetButtonStyle(ui::DIALOG_BUTTON_CANCEL,
-                     views::MdTextButton::Style::kTonal);
+      SetButtonStyle(ui::DIALOG_BUTTON_OK, ui::ButtonStyle::kTonal);
+      SetButtonStyle(ui::DIALOG_BUTTON_CANCEL, ui::ButtonStyle::kTonal);
     }
   }
 
@@ -176,6 +195,11 @@ PermissionPromptBubbleBaseView::PermissionPromptBubbleBaseView(
 PermissionPromptBubbleBaseView::~PermissionPromptBubbleBaseView() = default;
 
 void PermissionPromptBubbleBaseView::Show() {
+  CreateWidget();
+  ShowWidget();
+}
+
+void PermissionPromptBubbleBaseView::CreateWidget() {
   DCHECK(browser_->window());
 
   UpdateAnchorPosition();
@@ -190,13 +214,15 @@ void PermissionPromptBubbleBaseView::Show() {
   if (base::FeatureList::IsEnabled(views::features::kWidgetLayering)) {
     widget->SetZOrderSublevel(ChromeWidgetSublevel::kSublevelSecurity);
   }
+}
 
+void PermissionPromptBubbleBaseView::ShowWidget() {
   // If a browser window (or popup) other than the bubble parent has focus,
   // don't take focus.
   if (browser_->window()->IsActive()) {
-    widget->Show();
+    GetWidget()->Show();
   } else {
-    widget->ShowInactive();
+    GetWidget()->ShowInactive();
   }
 
   SizeToContents();
@@ -261,25 +287,21 @@ std::u16string PermissionPromptBubbleBaseView::GetAccessibleWindowTitle()
   return accessible_window_title_;
 }
 
-void PermissionPromptBubbleBaseView::AcceptPermission() {
-  RecordDecision(permissions::PermissionAction::GRANTED);
-  if (delegate_) {
-    delegate_->Accept();
+bool PermissionPromptBubbleBaseView::ShouldIgnoreButtonPressedEventHandling(
+    View* button,
+    const ui::Event& event) const {
+  // Ignore the key pressed event if the button row bounds intersect with PiP
+  // windows bounds.
+  if (!event.IsKeyEvent()) {
+    return false;
   }
-}
 
-void PermissionPromptBubbleBaseView::AcceptPermissionThisTime() {
-  RecordDecision(permissions::PermissionAction::GRANTED_ONCE);
-  if (delegate_) {
-    delegate_->AcceptThisTime();
-  }
-}
+  absl::optional<gfx::Rect> pip_window_bounds =
+      PictureInPictureWindowManager::GetInstance()
+          ->GetPictureInPictureWindowBounds();
 
-void PermissionPromptBubbleBaseView::DenyPermission() {
-  RecordDecision(permissions::PermissionAction::DENIED);
-  if (delegate_) {
-    delegate_->Deny();
-  }
+  return pip_window_bounds &&
+         pip_window_bounds->Intersects(button->GetBoundsInScreen());
 }
 
 void PermissionPromptBubbleBaseView::ClosingPermission() {
@@ -288,6 +310,39 @@ void PermissionPromptBubbleBaseView::ClosingPermission() {
   if (delegate_) {
     delegate_->Dismiss();
   }
+}
+
+void PermissionPromptBubbleBaseView::FilterUnintenedEventsAndRunCallbacks(
+    PermissionDialogButton type,
+    const ui::Event& event) {
+  if (GetDialogClientView()->IsPossiblyUnintendedInteraction(event)) {
+    return;
+  }
+
+  View* button =
+      AsDialogDelegate()->GetExtraView()->GetViewByID(GetViewId(type));
+
+  if (ShouldIgnoreButtonPressedEventHandling(button, event)) {
+    return;
+  }
+
+  RunButtonCallbacks(type);
+}
+
+void PermissionPromptBubbleBaseView::RunButtonCallbacks(
+    PermissionDialogButton type) {
+  switch (type) {
+    case PermissionDialogButton::kAccept:
+      delegate_->Accept();
+      return;
+    case PermissionDialogButton::kAcceptOnce:
+      delegate_->AcceptThisTime();
+      return;
+    case PermissionDialogButton::kDeny:
+      delegate_->Deny();
+      return;
+  }
+  NOTREACHED();
 }
 
 // static

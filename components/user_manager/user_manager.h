@@ -418,14 +418,13 @@ class USER_MANAGER_EXPORT UserManager {
   // Accepted user types: USER_TYPE_REGULAR, USER_TYPE_GUEST, USER_TYPE_CHILD.
   virtual bool IsUserAllowed(const User& user) const = 0;
 
-  // Returns true if trusted device policies have successfully been retrieved
-  // and `account_id` is ephemeral by policies.
+  // Explicitly non-ephemeral accounts are Owner account (on consumer-owned
+  // devices) and Stub accounts (used in tests).
   //
-  // NOTE: this function does not handle neither device owner account nor
-  // explicitly-ephemeral accounts like MGS separately. This function gives an
-  // answer whether `account_id` is ephemeral by policies.
+  // Explicitly ephemeral accounts are Guest and Managed Guest sessions.
   //
-  // TODO(b:275059758): Add logic to handle owner ID separately.
+  // In all other cases the ephemeral status of account depends on set of
+  // policies.
   virtual bool IsEphemeralAccountId(const AccountId& account_id) const = 0;
 
   // Returns "Local State" PrefService instance.

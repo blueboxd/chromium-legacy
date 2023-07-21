@@ -59,8 +59,21 @@ enum class COMPONENT_EXPORT(KCER) Error {
   kFailedToImportCertificate = 10,
   kFailedToRemoveCertificate = 11,
   kKeyNotFound = 12,
-  kFailedToGetKeyId = 13,
-  kFailedToWriteAttribute = 14,
+  kUnknownKeyType = 13,
+  kFailedToGetKeyId = 14,
+  kFailedToReadAttribute = 15,
+  kFailedToWriteAttribute = 16,
+  kFailedToParseKeyPermissions = 17,
+  kUnexpectedSigningScheme = 18,
+  kKeyDoesNotSupportSigningScheme = 19,
+  kFailedToSignFailedToDigest = 20,
+  kFailedToSignFailedToAddPrefix = 21,
+  kFailedToSignFailedToGetSignatureLength = 22,
+  kFailedToSign = 23,
+  kFailedToSignBadSignatureLength = 24,
+  kFailedToDerEncode = 25,
+  kInputTooLong = 26,
+  kFailedToListKeys = 27,
 };
 
 // Handles for tokens on ChromeOS.
@@ -92,19 +105,19 @@ enum class COMPONENT_EXPORT(KCER) EllipticCurve {
   kP256,
 };
 
+// Possible sign schemes (aka algorithms) for Kcer::Sign() method. Maps 1-to-1
+// to OpenSSL SSL_* constants. It is allowed to cast SigningScheme to SSL_*.
 enum class COMPONENT_EXPORT(KCER) SigningScheme {
   kRsaPkcs1Sha1 = SSL_SIGN_RSA_PKCS1_SHA1,
   kRsaPkcs1Sha256 = SSL_SIGN_RSA_PKCS1_SHA256,
   kRsaPkcs1Sha384 = SSL_SIGN_RSA_PKCS1_SHA384,
   kRsaPkcs1Sha512 = SSL_SIGN_RSA_PKCS1_SHA512,
-  kEcdsaSha1 = SSL_SIGN_ECDSA_SHA1,
   kEcdsaSecp256r1Sha256 = SSL_SIGN_ECDSA_SECP256R1_SHA256,
   kEcdsaSecp384r1Sha384 = SSL_SIGN_ECDSA_SECP384R1_SHA384,
   kEcdsaSecp521r1Sha512 = SSL_SIGN_ECDSA_SECP521R1_SHA512,
   kRsaPssRsaeSha256 = SSL_SIGN_RSA_PSS_RSAE_SHA256,
   kRsaPssRsaeSha384 = SSL_SIGN_RSA_PSS_RSAE_SHA384,
   kRsaPssRsaeSha512 = SSL_SIGN_RSA_PSS_RSAE_SHA512,
-  kEd25519 = SSL_SIGN_ED25519,
 };
 
 class COMPONENT_EXPORT(KCER) PublicKey {
@@ -117,6 +130,9 @@ class COMPONENT_EXPORT(KCER) PublicKey {
   PublicKey(PublicKey&&);
   PublicKey& operator=(PublicKey&&);
   ~PublicKey();
+
+  bool operator==(const PublicKey& other) const;
+  bool operator!=(const PublicKey& other) const;
 
   Token GetToken() const { return token_; }
   const Pkcs11Id& GetPkcs11Id() const { return pkcs11_id_; }

@@ -397,15 +397,6 @@ Profile* GetPrivateProfileIfRequested(const base::CommandLine& command_line,
   bool open_guest_profile = profiles::IsGuestModeRequested(
       command_line, g_browser_process->local_state(),
       /* show_warning= */ true);
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (profiles::IsGuestModeEnabled()) {
-    const auto* init_params = chromeos::BrowserParamsProxy::Get();
-    open_guest_profile =
-        open_guest_profile ||
-        init_params->InitialBrowserAction() ==
-            crosapi::mojom::InitialBrowserAction::kOpenGuestWindow;
-  }
-#endif
   if (open_guest_profile) {
     Profile* profile = g_browser_process->profile_manager()->GetProfile(
         ProfileManager::GetGuestProfilePath());
@@ -424,12 +415,6 @@ Profile* GetPrivateProfileIfRequested(const base::CommandLine& command_line,
     return profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   } else {
     bool expect_incognito = command_line.HasSwitch(switches::kIncognito);
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    auto* init_params = chromeos::BrowserParamsProxy::Get();
-    expect_incognito |=
-        init_params->InitialBrowserAction() ==
-        crosapi::mojom::InitialBrowserAction::kOpenIncognitoWindow;
-#endif
     LOG_IF(WARNING, expect_incognito)
         << "Incognito mode disabled by policy, launching a normal "
         << "browser session.";
@@ -439,14 +424,6 @@ Profile* GetPrivateProfileIfRequested(const base::CommandLine& command_line,
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-base::FilePath GetProfilePickerStartupProfilePath() {
-  return base::FeatureList::IsEnabled(features::kObserverBasedPostProfileInit)
-             ? base::FilePath()
-             : ProfileManager::GetGuestProfilePath();
-}
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
 StartupProfileInfo GetProfilePickerStartupProfileInfo() {
   // We can only show the profile picker if the system profile (where the
   // profile picker lives) also exists (or is creatable).
@@ -454,18 +431,6 @@ StartupProfileInfo GetProfilePickerStartupProfileInfo() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (!profile_manager->GetProfile(ProfileManager::GetSystemProfilePath()))
     return {.profile = nullptr, .mode = StartupProfileMode::kError};
-
-  if (!base::FeatureList::IsEnabled(features::kObserverBasedPostProfileInit)) {
-    DCHECK_EQ(GetProfilePickerStartupProfilePath(),
-              ProfileManager::GetGuestProfilePath());
-    Profile* guest_profile =
-        profile_manager->GetProfile(ProfileManager::GetGuestProfilePath());
-    if (!guest_profile)
-      return {.profile = nullptr, .mode = StartupProfileMode::kError};
-    DCHECK(guest_profile->IsGuestSession());
-    return {.profile = guest_profile,
-            .mode = StartupProfileMode::kProfilePicker};
-  }
 
   return {.profile = nullptr, .mode = StartupProfileMode::kProfilePicker};
 }
@@ -865,19 +830,6 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
   // those as there is nothing to restore.
   bool restore_last_session =
       command_line.HasSwitch(switches::kRestoreLastSession);
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  auto* init_params = chromeos::BrowserParamsProxy::Get();
-  if (init_params->InitialBrowserAction() ==
-          crosapi::mojom::InitialBrowserAction::kOpenNewTabPageWindow ||
-      init_params->InitialBrowserAction() ==
-          crosapi::mojom::InitialBrowserAction::kOpenWindowWithUrls) {
-    pref.type = SessionStartupPref::DEFAULT;
-    return pref;
-  }
-  restore_last_session |=
-      init_params->InitialBrowserAction() ==
-      crosapi::mojom::InitialBrowserAction::kRestoreLastSession;
-#endif
   if ((restore_last_session || did_restart) && !profile->IsNewProfile()) {
     pref.type = SessionStartupPref::LAST;
   }
@@ -1458,9 +1410,7 @@ void StartupBrowserCreator::ProcessCommandLineWithProfile(
     StartupProfileMode mode,
     Profile* profile) {
   DCHECK_NE(mode, StartupProfileMode::kError);
-  if ((!base::FeatureList::IsEnabled(features::kObserverBasedPostProfileInit) ||
-       mode == StartupProfileMode::kBrowserWindow) &&
-      !profile) {
+  if (mode == StartupProfileMode::kBrowserWindow && !profile) {
     LOG(ERROR) << "Failed to load the profile.";
     return;
   }
@@ -1493,9 +1443,7 @@ void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
   Profile* profile = nullptr;
   StartupProfileMode mode =
       StartupProfileModeFromReason(profile_path_info.reason);
-  bool need_profile =
-      !base::FeatureList::IsEnabled(features::kObserverBasedPostProfileInit) ||
-      mode == StartupProfileMode::kBrowserWindow;
+  bool need_profile = mode == StartupProfileMode::kBrowserWindow;
   if (need_profile) {
     ProfileManager* profile_manager = g_browser_process->profile_manager();
     profile = profile_manager->GetProfileByPath(profile_path_info.path);
@@ -1652,8 +1600,7 @@ StartupProfilePathInfo GetStartupProfilePath(
 
   if (StartupProfileModeFromReason(show_picker_reason) ==
       StartupProfileMode::kProfilePicker) {
-    return {.path = GetProfilePickerStartupProfilePath(),
-            .reason = show_picker_reason};
+    return {.path = base::FilePath(), .reason = show_picker_reason};
   }
 
   return {.path = profile_manager->GetLastUsedProfileDir(),

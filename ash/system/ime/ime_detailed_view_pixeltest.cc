@@ -6,6 +6,7 @@
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/public/cpp/ime_info.h"
 #include "ash/shell.h"
+#include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/unified/quick_settings_view.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
@@ -63,12 +64,12 @@ TEST_F(IMEDetailedViewPixelTest, Basics) {
       ->ShowIMEDetailedView();
 
   // Compare pixels.
-  auto* detailed_view =
-      system_tray->bubble()->quick_settings_view()->detailed_view();
+  TrayDetailedView* detailed_view =
+      system_tray->bubble()->quick_settings_view()->GetDetailedViewForTest();
   ASSERT_TRUE(detailed_view);
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "check_view",
-      /*revision_number=*/1, detailed_view));
+      /*revision_number=*/2, detailed_view));
 }
 
 }  // namespace

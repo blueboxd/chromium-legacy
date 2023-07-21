@@ -12,6 +12,7 @@
 <translation id="1554731936187952550">नुकसान पहुंचाने वाली वेबसाइटों से बचने के लिए, आपके पास Chrome की सबसे बेहतरीन सुरक्षा है</translation>
 <translation id="1682483655351012182">अपना Chrome डेटा सिंक करें</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1843217788865538014">मैसेज, दस्तावेज़ों, और अन्य ऐप्लिकेशन में मौजूद लिंक को टैप करने पर, लिंक अपने-आप Chrome में खुल जाते हैं.</translation>
 <translation id="1917964099031477364">इस डिवाइस पर यह खाता और वह डेटा जो सेव नहीं है, Chrome और दूसरे Google ऐप्लिकेशन से हटा दिए जाएंगे.</translation>
 <translation id="2009224836393115614">Chrome आपके पासवर्ड की जांच नहीं कर सका. अपने इंटरनेट कनेक्शन की जांच करें.</translation>
 <translation id="2056123005618757196">Chrome के आसान, सुरक्षित, और अब तक के सबसे तेज़ वर्शन की मदद से, पहले से ज़्यादा काम करें.</translation>
@@ -34,6 +35,7 @@
 <translation id="2732745070297234559">Chrome सभी पासवर्ड की जांच नहीं कर सका. कल कोशिश करें.</translation>
 <translation id="2736805085127235148">फ़िलहाल, आपके डिवाइस की सेटिंग में, Chrome की सूचनाएं भेजने की सुविधा बंद है.</translation>
 <translation id="2767464022270041271">कोई भी पासवर्ड सेव नहीं किया गया है. पासवर्ड सेव होने पर ही, Google Password Manager आपके पासवर्ड की जांच कर सकता है.</translation>
+<translation id="2840432500933227975">iOS पर Chrome Settings खोलें. इसके बाद, "Browser Default APP" पर टैप करें और Chrome चुनें.</translation>
 <translation id="2869959624320573933">Chrome में साइन इन करें</translation>
 <translation id="2957447865124070833"><ph name="BEGIN_BOLD" />Chrome<ph name="END_BOLD" /> को चुनें</translation>
 <translation id="3030414234702425231">क्‍योंकि आप <ph name="SIGNOUT_MANAGED_DOMAIN" /> की ओर से प्रबंधित खाते से साइन आउट कर रहे हैं, इसलिए आपका Chrome डेटा इस डिवाइस से मिट जाएगा. आपका डेटा आपके Google खाते में बना रहेगा.</translation>
@@ -49,6 +51,7 @@
 <translation id="3655656110921623717">इसका मतलब है कि Chrome हर बार, साइट के मोबाइल वर्शन का अनुरोध करेगा.</translation>
 <translation id="3706101708757577809">अब आप मैसेज, दस्तावेज़ों, और दूसरे ऐप्लिकेशन में मिले लिंक पर टैप करके, किसी भी समय Chrome का इस्तेमाल कर सकते हैं.</translation>
 <translation id="3720541637541300822">Chrome बंद करने पर अपने गुप्त टैब लॉक करें</translation>
+<translation id="3827545470516145620">आपको इस डिवाइस पर मानक सुरक्षा दी जा रही है</translation>
 <translation id="384394811301901750">Google Chrome इस समय आपके कैमरे का उपयोग नहीं कर सकता</translation>
 <translation id="3980220367029651214">आप सिंक खातों को <ph name="USER_EMAIL1" /> से <ph name="USER_EMAIL2" /> में बदल रहे हैं. आपका मौजूदा Chrome डेटा <ph name="DOMAIN" /> से प्रबंधित किया जाता है. इससे आपका डेटा इस सेवा से मिट जाएगा, लेकिन आपका डेटा <ph name="USER_EMAIL1" /> में बना रहेगा.</translation>
 <translation id="3984746313391923992">आपके संगठन के लिए यह ज़रूरी है कि आप Chrome से साइन आउट रहें.</translation>
@@ -58,6 +61,7 @@
 <translation id="4233521129555661685"><ph name="USER_EMAIL1" /> से Chrome का इस्तेमाल किया गया था और इसमें सेव किए गए बुकमार्क, पासवर्ड, और दूसरी सेटिंग को इस डिवाइस से नहीं हटाया गया.</translation>
 <translation id="424864128008805179">Chrome से साइन आउट करें?</translation>
 <translation id="4249068189593983585">Chrome इस्तेमाल करने के लिए सलाह. ज़्यादा टैब विकल्पों के लिए, टूलबार में 'टैब दिखाएं' बटन को दबाकर रखें. यह बटन आपकी स्क्रीन के सबसे नीचे या सबसे ऊपर मिलेगा.</translation>
+<translation id="4508370294876102450">किसी भी ऐप्लिकेशन से Chrome खोलें</translation>
 <translation id="4523886039239821078">कुछ ऐड-ऑन के कारण Chrome बंद हो जा रहा है. कृपया उन्हें अनइंस्टॉल करें:</translation>
 <translation id="4633328489441962921">Chrome अपडेट की जांच नहीं कर सका</translation>
 <translation id="4636900170638246267">इस साइट और Chrome में साइन इन करें.</translation>
@@ -87,6 +91,7 @@
 <translation id="6110625574506755980">Chrome की कुछ सुविधाएं अब उपलब्ध नहीं होंगी.</translation>
 <translation id="6181930887571472871">Chrome पर स्विच करें</translation>
 <translation id="6238746320622508509">Chrome को आपके गुप्त टैब लॉक करने दें.</translation>
+<translation id="6247557882553405851">Google Password Manager</translation>
 <translation id="6412673304250309937">Chrome में पहले से सेव असुरक्षित साइटों के साथ यूआरएल की जांच करता है. अगर कोई साइट आपका पासवर्ड चुराने की कोशिश करती है या आप कोई नुकसान पहुंचाने वाली फ़ाइल डाउनलोड करते हैं, तो Chrome सुरक्षित ब्राउज़िंग की सेवा को उनका यूआरएल भेजता है. यूआरएल के साथ इनमें उन पेज की कुछ सामग्री भी शामिल होती है.</translation>
 <translation id="6427126399757991875">आपका संगठन Chrome सेट अप कर रहा है...</translation>
 <translation id="6600954340915313787">Chrome पर कॉपी किया गया</translation>
@@ -97,7 +102,6 @@
 <translation id="6822673484890854830">Chrome सभी पासवर्ड की जांच नहीं कर सका. कुछ देर बाद कोशिश करें.</translation>
 <translation id="6964931465519938134">अब आप मैसेज, दस्तावेज़ों, और दूसरे ऐप्लिकेशन में मिले लिंक पर टैप करके, किसी भी समय Chrome का इस्तेमाल कर सकते हैं.</translation>
 <translation id="6975725306479268850">AutoFill के लिए Chrome चुनें</translation>
-<translation id="701356708427365932">Chrome के नए मेन्यू के बारे में जानें</translation>
 <translation id="7059914902409643750">Chrome को पसंद के मुताबिक बनाएं</translation>
 <translation id="7124339256045485976">Chrome को अप-टू-डेट रखें</translation>
 <translation id="7161390184744336561">Google Chrome का यह वर्शन पुराना हो गया है</translation>
@@ -148,7 +152,6 @@
   • अगर Chrome बंद हो जाता है, तो बंद होने से जुड़ी जानकारी में, आपकी कुछ निजी जानकारी शामिल हो सकती है.
 
   • सिंक की सुविधा चालू करने पर मेट्रिक में, आपके देखे गए पेजों के यूआरएल की जानकारी भी शामिल हो सकती है.<ph name="END_INDENT" /></translation>
-<translation id="9103442491611662960">आपको इस Chrome प्रोफ़ाइल के लिए, सामान्य सुरक्षा दी जा रही है</translation>
 <translation id="9112744793181547300">Chrome को डिफ़ॉल्ट ब्राउज़र के तौर पर सेट करना चाहते हैं?</translation>
 <translation id="9122931302567044771">इसका मतलब है कि Chrome हर बार, साइट के डेस्कटॉप वर्शन का अनुरोध करेगा.</translation>
 </translationbundle>

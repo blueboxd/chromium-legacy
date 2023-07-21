@@ -30,6 +30,8 @@
 #include "ash/system/cast/cast_feature_pod_controller.h"
 #include "ash/system/cast/unified_cast_detailed_view_controller.h"
 #include "ash/system/dark_mode/dark_mode_feature_pod_controller.h"
+#include "ash/system/hotspot/hotspot_detailed_view_controller.h"
+#include "ash/system/hotspot/hotspot_feature_pod_controller.h"
 #include "ash/system/ime/ime_feature_pod_controller.h"
 #include "ash/system/ime/unified_ime_detailed_view_controller.h"
 #include "ash/system/locale/locale_feature_pod_controller.h"
@@ -171,8 +173,7 @@ UnifiedSystemTrayController::CreateUnifiedQuickSettingsView() {
 
   InitFeaturePods();
 
-  if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsForChromeOS) &&
-      !Shell::Get()->session_controller()->IsScreenLocked() &&
+  if (!Shell::Get()->session_controller()->IsScreenLocked() &&
       !MediaTray::IsPinnedToShelf()) {
     media_controls_controller_ =
         std::make_unique<UnifiedMediaControlsController>(this);
@@ -200,8 +201,7 @@ UnifiedSystemTrayController::CreateQuickSettingsView(int max_height) {
   auto qs_view = std::make_unique<QuickSettingsView>(this);
   quick_settings_view_ = qs_view.get();
 
-  if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsForChromeOS) &&
-      !Shell::Get()->session_controller()->IsScreenLocked() &&
+  if (!Shell::Get()->session_controller()->IsScreenLocked() &&
       !MediaTray::IsPinnedToShelf()) {
     if (base::FeatureList::IsEnabled(
             media::kGlobalMediaControlsCrOSUpdatedUI)) {
@@ -476,6 +476,12 @@ void UnifiedSystemTrayController::ShowNetworkDetailedView(bool force) {
   ShowDetailedView(std::make_unique<NetworkDetailedViewController>(this));
 }
 
+void UnifiedSystemTrayController::ShowHotspotDetailedView() {
+  DCHECK(features::IsQsRevampEnabled());
+
+  ShowDetailedView(std::make_unique<HotspotDetailedViewController>(this));
+}
+
 void UnifiedSystemTrayController::ShowBluetoothDetailedView() {
   // QSRevamp does not allow expand/collapse of the System Tray.
   if (!IsExpanded() && !features::IsQsRevampEnabled()) {
@@ -728,6 +734,10 @@ void UnifiedSystemTrayController::InitFeatureTiles() {
 
   create_tile(std::make_unique<NetworkFeaturePodController>(this),
               feature_pod_controllers_, tiles);
+  if (features::IsHotspotEnabled()) {
+    create_tile(std::make_unique<HotspotFeaturePodController>(this),
+                feature_pod_controllers_, tiles);
+  }
 
   // CaptureMode and QuietMode tiles will be compact if both are visible.
   bool capture_and_quiet_tiles_are_compact =

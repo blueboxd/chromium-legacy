@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/web/session_state/web_session_state_tab_helper.h"
 
-#import "base/feature_list.h"
 #import "base/files/file_path.h"
 #import "base/files/file_util.h"
 #import "base/logging.h"
@@ -18,7 +17,7 @@
 #import "build/branding_buildflags.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/url/chrome_url_constants.h"
+#import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_cache.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_cache_factory.h"
@@ -75,21 +74,9 @@ const int64_t kMaxSessionState = 1024 * 5;  // 5MB
 
 @end
 
-// static
-bool WebSessionStateTabHelper::IsEnabled() {
-  if (!base::FeatureList::IsEnabled(web::kRestoreSessionFromCache)) {
-    return false;
-  }
-
-  // This API is only available on iOS 15.
-  if (@available(iOS 15, *)) {
-    return true;
-  }
-  return false;
-}
-
 WebSessionStateTabHelper::WebSessionStateTabHelper(web::WebState* web_state)
     : web_state_(web_state) {
+  CHECK(web::UseNativeSessionRestorationCache());
   web_state_->AddObserver(this);
   web_state_->GetPageWorldWebFramesManager()->AddObserver(this);
   if (web_state_->IsRealized()) {
@@ -103,25 +90,11 @@ ChromeBrowserState* WebSessionStateTabHelper::GetBrowserState() {
   return ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
 }
 
-bool WebSessionStateTabHelper::RestoreSessionFromCache() {
-  if (!IsEnabled())
-    return false;
-
+NSData* WebSessionStateTabHelper::FetchSessionFromCache() {
   WebSessionStateCache* cache =
       WebSessionStateCacheFactory::GetForBrowserState(GetBrowserState());
   NSData* data = [cache sessionStateDataForWebState:web_state_];
-  if (!data.length)
-    return false;
-
-  bool restore_session_succeeded = web_state_->SetSessionStateData(data);
-  UMA_HISTOGRAM_BOOLEAN("Session.WebStates.NativeRestoreSessionFromCache",
-                        restore_session_succeeded);
-  if (!restore_session_succeeded)
-    return false;
-
-  DCHECK(web_state_->GetNavigationItemCount());
-  web::GetWebClient()->CleanupNativeRestoreURLs(web_state_);
-  return true;
+  return data.length ? data : nil;
 }
 
 void WebSessionStateTabHelper::SaveSessionStateIfStale() {
@@ -131,9 +104,6 @@ void WebSessionStateTabHelper::SaveSessionStateIfStale() {
 }
 
 void WebSessionStateTabHelper::SaveSessionState() {
-  if (!IsEnabled())
-    return;
-
   stale_ = false;
 
   NSData* data = web_state_->SessionStateData();
@@ -224,9 +194,6 @@ void WebSessionStateTabHelper::OnScrollEvent() {
 }
 
 void WebSessionStateTabHelper::MarkStale() {
-  if (!IsEnabled())
-    return;
-
   web::NavigationManager* navigationManager =
       web_state_->GetNavigationManager();
   item_count_ = web_state_->GetNavigationItemCount();

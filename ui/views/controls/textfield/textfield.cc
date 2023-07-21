@@ -235,7 +235,7 @@ Textfield::Textfield()
   cursor_view->GetViewAccessibility().OverrideIsIgnored(true);
   cursor_view_ = AddChildView(std::move(cursor_view));
   GetRenderText()->SetFontList(GetDefaultFontList());
-  UpdateBorder();
+  UpdateDefaultBorder();
   SetFocusBehavior(FocusBehavior::ALWAYS);
   views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
                                                 GetCornerRadius());
@@ -294,6 +294,8 @@ void Textfield::SetReadOnly(bool read_only) {
     SetColor(GetTextColor());
     UpdateBackgroundColor();
   }
+
+  UpdateDefaultBorder();
   OnPropertyChanged(&read_only_, kPropertyEffectsPaint);
 }
 
@@ -558,7 +560,7 @@ void Textfield::SetInvalid(bool invalid) {
   if (invalid == invalid_)
     return;
   invalid_ = invalid;
-  UpdateBorder();
+  UpdateDefaultBorder();
   if (FocusRing::Get(this))
     FocusRing::Get(this)->SetInvalid(invalid);
   OnPropertyChanged(&invalid_, kPropertyEffectsNone);
@@ -574,7 +576,7 @@ void Textfield::SetObscuredGlyphSpacing(int spacing) {
 
 void Textfield::SetExtraInsets(const gfx::Insets& insets) {
   extra_insets_ = insets;
-  UpdateBorder();
+  UpdateDefaultBorder();
 }
 
 void Textfield::FitToLocalBounds() {
@@ -597,6 +599,13 @@ void Textfield::FitToLocalBounds() {
   bounds.set_x(GetMirroredXForRect(bounds));
   GetRenderText()->SetDisplayRect(bounds);
   UpdateAfterChange(TextChangeType::kNone, true);
+}
+
+bool Textfield::GetUseDefaultBorder() const {
+  return use_default_border_;
+}
+void Textfield::SetUseDefaultBorder(bool use_default_border) {
+  use_default_border_ = use_default_border;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -625,6 +634,7 @@ gfx::Size Textfield::GetMinimumSize() const {
 void Textfield::SetBorder(std::unique_ptr<Border> b) {
   FocusRing::Remove(this);
   View::SetBorder(std::move(b));
+  use_default_border_ = false;
 }
 
 ui::Cursor Textfield::GetCursor(const ui::MouseEvent& event) {
@@ -845,12 +855,14 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
               GetRenderText()->GetUpdatedDisplayOffset().x();
           show_touch_handles_after_scroll_ =
               touch_selection_controller_ != nullptr;
+          // Deactivate touch selection controller when scrolling.
+          DestroyTouchSelection();
         } else {
+          // Create touch selection controller to show a magnifier when
+          // selection dragging.
+          CreateTouchSelectionControllerAndNotifyIt();
           show_touch_handles_after_scroll_ = true;
         }
-        // Deactivate touch selection handles when scrolling or selection
-        // dragging.
-        DestroyTouchSelection();
         event->SetHandled();
       }
       break;
@@ -864,6 +876,7 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
           drag_start_location_x_ = event->location().x();
           drag_start_display_offset_ =
               GetRenderText()->GetUpdatedDisplayOffset().x();
+          DestroyTouchSelection();
           show_touch_handles_after_scroll_ = true;
         }
         switch (selection_dragging_state_) {
@@ -889,11 +902,11 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_SCROLL_END:
     case ui::ET_SCROLL_FLING_START:
       if (HasFocus()) {
+        selection_dragging_state_ = SelectionDraggingState::kNone;
         if (show_touch_handles_after_scroll_) {
           CreateTouchSelectionControllerAndNotifyIt();
           show_touch_handles_after_scroll_ = false;
         }
-        selection_dragging_state_ = SelectionDraggingState::kNone;
         event->SetHandled();
       }
       break;
@@ -1268,64 +1281,114 @@ void Textfield::MoveRangeSelectionExtent(const gfx::Point& extent) {
     return;
   }
 
-  gfx::SelectionModel new_extent_caret =
-      GetRenderText()->FindCursorPosition(extent);
-  size_t new_extent_pos = new_extent_caret.caret_pos();
-  size_t extent_pos = extent_caret_.caret_pos();
-  if (new_extent_pos == extent_pos) {
+  gfx::RenderText* render_text = GetRenderText();
+  if (!::features::IsTouchTextEditingRedesignEnabled()) {
+    gfx::SelectionModel base_caret =
+        render_text->GetSelectionModelForSelectionStart();
+    gfx::SelectionModel extent_caret = render_text->FindCursorPosition(extent);
+    gfx::SelectionModel selection_model(
+        gfx::Range(base_caret.caret_pos(), extent_caret.caret_pos()),
+        extent_caret.caret_affinity());
+
+    OnBeforeUserAction();
+    SelectSelectionModel(selection_model);
+    OnAfterUserAction();
     return;
   }
 
-  gfx::SelectionModel base_caret =
-      GetRenderText()->GetSelectionModelForSelectionStart();
-  size_t base_pos = base_caret.caret_pos();
-  size_t end_pos = new_extent_pos;
-  gfx::LogicalCursorDirection cursor_direction =
-      new_extent_pos > base_pos ? gfx::CURSOR_FORWARD : gfx::CURSOR_BACKWARD;
+  const gfx::Range selection = GetSelectedRange();
+  const gfx::SelectionModel cursor_position_at_old_extent =
+      render_text->FindCursorPosition(selection_extent_);
+  const gfx::SelectionModel cursor_position_at_new_extent =
+      render_text->FindCursorPosition(extent);
 
-  bool selection_shrinking = cursor_direction == gfx::CURSOR_FORWARD
-                                 ? new_extent_pos < extent_pos
-                                 : new_extent_pos > extent_pos;
-
-  gfx::Range word_range =
-      GetRenderText()->ExpandRangeToWordBoundary(gfx::Range(extent_pos));
-  bool extent_moved_past_next_word_boundary =
-      (cursor_direction == gfx::CURSOR_BACKWARD &&
-       new_extent_pos <= word_range.start()) ||
-      (cursor_direction == gfx::CURSOR_FORWARD &&
-       new_extent_pos >= word_range.end());
-
-  if (::features::IsTouchTextEditingRedesignEnabled()) {
-    if (selection_shrinking) {
-      break_type_ = gfx::CHARACTER_BREAK;
-    } else if (extent_moved_past_next_word_boundary) {
-      // Switch to using word breaks only after the selection has expanded past
-      // a word boundary. This ensures that the selection can be adjusted by
-      // character when adjusting within a word after the selection has shrunk.
-      break_type_ = gfx::WORD_BREAK;
+  if (render_text->GetLineContainingCaret(cursor_position_at_old_extent) !=
+      render_text->GetLineContainingCaret(cursor_position_at_new_extent)) {
+    // Reset the offset if a line change has occurred.
+    extent_offset_x_ = 0;
+  } else {
+    // Otherwise, if the extent has moved in the direction of the offset, reduce
+    // the amount of offset.
+    const int dx = extent.x() - selection_extent_.x();
+    if (extent_offset_x_ > 0 && dx > 0) {
+      extent_offset_x_ = std::max(0, extent_offset_x_ - dx);
+    } else if (extent_offset_x_ < 0 && dx < 0) {
+      extent_offset_x_ = std::min(0, extent_offset_x_ - dx);
     }
   }
 
+  const gfx::Point old_extent_with_offset =
+      selection_extent_ + gfx::Vector2d(extent_offset_x_, 0);
+  const size_t caret_pos_at_old_extent_with_offset =
+      render_text->FindCursorPosition(old_extent_with_offset).caret_pos();
+  gfx::Point new_extent_with_offset =
+      extent + gfx::Vector2d(extent_offset_x_, 0);
+  size_t caret_pos_at_new_extent_with_offset =
+      render_text->FindCursorPosition(new_extent_with_offset).caret_pos();
+
+  // Determine whether we need to switch between character and word
+  // granularity and update the offset again if necessary.
+  if (break_type_ == gfx::CHARACTER_BREAK) {
+    // Switch to word granularity only after the selection has expanded past a
+    // word boundary. This ensures that the selection can be adjusted by
+    // character within a word after the selection has shrunk.
+    const bool selection_expanding =
+        selection.is_reversed() ? caret_pos_at_new_extent_with_offset <
+                                      caret_pos_at_old_extent_with_offset
+                                : caret_pos_at_new_extent_with_offset >
+                                      caret_pos_at_old_extent_with_offset;
+    const gfx::Range nearest_word_boundaries =
+        render_text->ExpandRangeToWordBoundary(selection);
+    const bool extent_moved_past_next_word_boundary =
+        caret_pos_at_new_extent_with_offset <=
+            nearest_word_boundaries.GetMin() ||
+        caret_pos_at_new_extent_with_offset >= nearest_word_boundaries.GetMax();
+    if (selection_expanding && extent_moved_past_next_word_boundary) {
+      break_type_ = gfx::WORD_BREAK;
+      extent_offset_x_ = 0;
+    }
+  } else {
+    const bool selection_shrinking =
+        selection.is_reversed() ? caret_pos_at_new_extent_with_offset >
+                                      caret_pos_at_old_extent_with_offset
+                                : caret_pos_at_new_extent_with_offset <
+                                      caret_pos_at_old_extent_with_offset;
+    if (selection_shrinking) {
+      break_type_ = gfx::CHARACTER_BREAK;
+      const gfx::Rect cursor_bounds =
+          render_text->GetCursorBounds(GetSelectionModel(), true);
+      extent_offset_x_ =
+          cursor_bounds.CenterPoint().x() - selection_extent_.x();
+    }
+  }
+  selection_extent_ = extent;
+  new_extent_with_offset = extent + gfx::Vector2d(extent_offset_x_, 0);
+  caret_pos_at_new_extent_with_offset =
+      render_text->FindCursorPosition(new_extent_with_offset).caret_pos();
+
+  size_t end = caret_pos_at_new_extent_with_offset;
   if (break_type_ == gfx::WORD_BREAK) {
-    // Compute the closest word boundary to the new extent position.
-    gfx::Range new_word_range =
-        GetRenderText()->ExpandRangeToWordBoundary(gfx::Range(new_extent_pos));
-    DCHECK(new_extent_pos >= new_word_range.start() &&
-           new_extent_pos <= new_word_range.end());
-    end_pos = new_extent_pos - new_word_range.start() <
-                      new_word_range.end() - new_extent_pos
-                  ? new_word_range.start()
-                  : new_word_range.end();
+    // Move the selection end to the nearest word boundary.
+    const gfx::Range nearest_word_boundaries =
+        render_text->ExpandRangeToWordBoundary(gfx::Range(end));
+    DCHECK(end >= nearest_word_boundaries.start() &&
+           end <= nearest_word_boundaries.end());
+    end = end - nearest_word_boundaries.start() <
+                  nearest_word_boundaries.end() - end
+              ? nearest_word_boundaries.start()
+              : nearest_word_boundaries.end();
+  }
+  if (end == selection.end()) {
+    return;
   }
 
-  gfx::SelectionModel selection(gfx::Range(base_pos, end_pos),
-                                cursor_direction);
+  const size_t start = selection.start();
+  const gfx::LogicalCursorDirection affinity =
+      start > end ? gfx::CURSOR_FORWARD : gfx::CURSOR_BACKWARD;
 
   OnBeforeUserAction();
-  SelectSelectionModel(selection);
+  SelectSelectionModel(gfx::SelectionModel(gfx::Range(start, end), affinity));
   OnAfterUserAction();
-
-  extent_caret_ = new_extent_caret;
 }
 
 void Textfield::SelectBetweenCoordinates(const gfx::Point& base,
@@ -1345,7 +1408,8 @@ void Textfield::SelectBetweenCoordinates(const gfx::Point& base,
   SelectSelectionModel(selection);
   OnAfterUserAction();
 
-  extent_caret_ = extent_caret;
+  selection_extent_ = extent;
+  extent_offset_x_ = 0;
   break_type_ = gfx::CHARACTER_BREAK;
 }
 
@@ -1387,6 +1451,10 @@ gfx::Rect Textfield::GetBounds() {
 
 gfx::NativeView Textfield::GetNativeView() const {
   return GetWidget()->GetNativeView();
+}
+
+bool Textfield::IsSelectionDragging() const {
+  return selection_dragging_state_ != SelectionDraggingState::kNone;
 }
 
 void Textfield::ConvertPointToScreen(gfx::Point* point) {
@@ -2500,7 +2568,12 @@ void Textfield::UpdateBackgroundColor() {
   OnPropertyChanged(&model_ + kTextfieldBackgroundColor, kPropertyEffectsPaint);
 }
 
-void Textfield::UpdateBorder() {
+void Textfield::UpdateDefaultBorder() {
+  // Only update the border if SetBorder() has not been called. This is to avoid
+  // overriding any custom borders.
+  if (!use_default_border_) {
+    return;
+  }
   auto border = std::make_unique<views::FocusableBorder>();
   const LayoutProvider* provider = LayoutProvider::Get();
   border->SetColorId(ui::kColorTextfieldOutline);
@@ -2823,6 +2896,7 @@ void Textfield::OnCursorBlinkTimerFired() {
 void Textfield::OnEnabledChanged() {
   if (GetInputMethod())
     GetInputMethod()->OnTextInputTypeChanged(this);
+  UpdateDefaultBorder();
 }
 
 void Textfield::DropDraggedText(

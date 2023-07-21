@@ -14,7 +14,6 @@
 <translation id="1617663976202781617">Data van Chromium-sinkronisering af</translation>
 <translation id="1722370509450468186">Jou wagwoord sal in jou rekening (<ph name="EMAIL" />) gestoor word.</translation>
 <translation id="1736662517232558588">Chromium-data is uitgevee</translation>
-<translation id="177102542580335555">Jy kry tans standaardsekuriteitbeskerming vir hierdie Chromium-profiel</translation>
 <translation id="1838412507805038478">Chromium het geverifieer dat <ph name="ISSUER" /> hierdie webwerf se sertifikaat uitgereik het.</translation>
 <translation id="1843424232666537147">Chromium het kenmerke wat jou help om jou internetdata te bestuur en hoe vinnig jy webblaaie kan laai.
 <ph name="BEGIN_LINK" />Kom meer te wete<ph name="END_LINK" /></translation>
@@ -47,8 +46,11 @@
 <translation id="3567399274263440288">Meld met jou Google-rekening aan om die meeste voordeel uit Chromium te trek.</translation>
 <translation id="3639997914391704523">Chromium kan jou wagwoorde nagaan as jy met jou Google-rekening aanmeld.</translation>
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> het Chromium gebruik en het boekmerke, wagwoorde en ander instellings op hierdie toestel gelos.</translation>
+<translation id="3661862315467204831">Maak Chromium-instellings in iOS oop, en tik dan op “Blaaierverstekapp” en kies Chromium.</translation>
 <translation id="372658070733623520">Verifieer dis jy om Chromium-data in jou Google-rekening te gebruik en te stoor.</translation>
 <translation id="3805899903892079518">Chromium het nie toegang tot jou foto's of video's nie. Aktiveer toegang in iOS-instellings &gt; Privacy &gt; Photos.</translation>
+<translation id="3827545470516145620">Jy kry tans standaardsekuriteitbeskerming op hierdie toestel</translation>
+<translation id="3955621079070267756">Maak Chromium uit enige app oop</translation>
 <translation id="4043291146360695975">Wagwoorde word slegs op hierdie toestel in Wagwoordbestuurder gestoor.</translation>
 <translation id="4099085513035183040">Nie op Chromium Beta gesteun nie</translation>
 <translation id="4432744876818348753">Meld aan om Chromium ten beste te benut.</translation>
@@ -82,6 +84,7 @@
 1. Maak Instellings oop
 2. Tik op Verstekblaaierprogram
 3. Kies Chromium.</translation>
+<translation id="6247557882553405851">Google Wagwoordbestuurder</translation>
 <translation id="6268381023930128611">Meld by Chromium af?</translation>
 <translation id="632825460376924298">Laat Chromium-aanmelding toe</translation>
 <translation id="6337530241089703714">Kies of jy jou Chromium-data van hierdie toestel wil verwyder, of dit wil hou</translation>
@@ -100,7 +103,6 @@
 <translation id="7192111075364461693">Chromium-kennisgewings is tans in jou toestelinstellings afgeskakel.</translation>
 <translation id="7208566199746267865">Chromium spaar jou tyd deur jou rekeninge na die web te bring. Jy kan rekeninge in Instellings byvoeg of verwyder.</translation>
 <translation id="725427773388857052">Chromium kan help om jou teen dataskendings, onveilige webwerwe en meer te beskerm.</translation>
-<translation id="7255976941681861701">Leer die nuwe Chromium-kieslys ken</translation>
 <translation id="7269362888766543920">Sekere byvoegings veroorsaak dat Chromium omval. Probeer om hulle te deïnstalleer.</translation>
 <translation id="7313655110045230863">Maak Instellings oop om Chromium jou verstekblaaier te maak. Tik op Verstekblaaierprogram en kies dan Chromium.</translation>
 <translation id="7337881442233988129">Chromium</translation>
@@ -143,5 +145,6 @@ Dinge om in ag te neem:
 <translation id="9089354809943900324">Chromium is verouderd</translation>
 <translation id="9110075932708282655">Gebruik Chromium by verstek</translation>
 <translation id="921174536258924340">Chromium kon nie alle wagwoorde nagaan nie. Probeer môre weer of <ph name="BEGIN_LINK" />gaan wagwoorde in jou Google-rekening na<ph name="END_LINK" />.</translation>
+<translation id="971488683725792095">Gebruik Chromium outomaties wanneer jy op skakels in boodskappe, dokumente en ander apps tik.</translation>
 <translation id="985602178874221306">Die Chromium-outeurs</translation>
 </translationbundle>

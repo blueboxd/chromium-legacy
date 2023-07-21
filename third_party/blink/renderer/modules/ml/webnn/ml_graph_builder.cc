@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/numerics/checked_math.h"
+#include "components/ml/webnn/graph_validation_utils.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_clamp_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_conv_2d_options.h"
@@ -77,41 +78,16 @@ bool ValidateClampOptions(const MLClampOptions* options,
   return true;
 }
 
-// Broadcast the input shapes and return the output shape.
-// If bidirectional is true, its behavior follows the numpy-broadcasting-rule:
-// https://numpy.org/doc/stable/user/basics.broadcasting.html#general-broadcasting-rules.
-// Otherwise, it unidirectionally broadcasts the lhs to the rhs.
 absl::optional<Vector<uint32_t>> BroadcastShapes(
     const Vector<uint32_t>& dims_lhs,
     const Vector<uint32_t>& dims_rhs,
     bool bidirectional = true) {
-  // If bidirectional is true, the rank of the output shape is the maximum rank
-  // of the input shapes. Otherwise it is as the same as the rhs' rank.
-  auto rank_lhs = dims_lhs.size(), rank_rhs = dims_rhs.size();
-  auto rank_output = bidirectional ? std::max(rank_lhs, rank_rhs) : rank_rhs;
-  Vector<uint32_t> dims_output(rank_output);
-  for (wtf_size_t i = 0; i < rank_output; ++i) {
-    auto dim_lhs = i < rank_lhs ? dims_lhs[rank_lhs - i - 1] : 1;
-    DCHECK_GT(dim_lhs, uint32_t(0));
-    auto dim_rhs = i < rank_rhs ? dims_rhs[rank_rhs - i - 1] : 1;
-    DCHECK_GT(dim_rhs, uint32_t(0));
-    // If bidirectional is true, two dimensions are compatible when they are
-    // equal, or one of them is 1. Otherwise, two dimensions are compatible when
-    // they are equal, or the lhs dimension is 1.
-    if (bidirectional) {
-      if (dim_lhs != dim_rhs && dim_lhs != 1 && dim_rhs != 1) {
-        return absl::nullopt;
-      }
-    } else if (dim_lhs != dim_rhs && dim_lhs != 1) {
-      return absl::nullopt;
-    }
-    // If bidirectional is true, for each dimension of the output tensor, its
-    // size is the maximum size along that dimension of the input shapes.
-    // Otherwise, its size is the same as the rhs.
-    dims_output[rank_output - i - 1] =
-        bidirectional ? std::max(dim_lhs, dim_rhs) : dim_rhs;
+  auto output_shape = webnn::BroadcastShapes(
+      base::make_span(dims_lhs), base::make_span(dims_rhs), bidirectional);
+  if (!output_shape) {
+    return absl::nullopt;
   }
-  return dims_output;
+  return Vector<uint32_t>(output_shape.value());
 }
 
 MLOperand* BuildElementWiseBinary(MLGraphBuilder* builder,
@@ -1877,6 +1853,77 @@ MLActivation* MLGraphBuilder::sigmoid(ExceptionState& exception_state) {
   // Create the sigmoid operator that would be used as an activation function.
   return MakeGarbageCollected<MLActivation>(this,
                                             MLOperator::OperatorKind::kSigmoid);
+}
+
+MLOperand* MLGraphBuilder::slice(const MLOperand* input,
+                                 const Vector<uint32_t>& starts,
+                                 const Vector<uint32_t>& sizes,
+                                 ExceptionState& exception_state) {
+  const auto input_rank = input->Dimensions().size();
+  if (starts.size() != input_rank) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+                                      "The length of starts must be "
+                                      "equal to the rank of the input tensor.");
+    return nullptr;
+  }
+  if (sizes.size() != input_rank) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+                                      "The length of sizes must be "
+                                      "equal to the rank of the input tensor.");
+    return nullptr;
+  }
+
+  for (wtf_size_t i = 0; i < input_rank; i++) {
+    if (starts[i] >= input->Dimensions()[i]) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kDataError,
+          String::Format("For dimension (%u): the starting index to slice must "
+                         "be less than input size (%u).",
+                         i, input->Dimensions()[i]));
+      return nullptr;
+    }
+    // WebNN plans to allow 0 size dimensions and an issue has been filed to
+    // track it: https://github.com/webmachinelearning/webnn/issues/391.
+    if (sizes[i] == 0) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kDataError,
+          String::Format("For dimension (%u): the number of elements to slice "
+                         "must not be 0.",
+                         i));
+      return nullptr;
+    }
+    auto checked_ending_index =
+        base::MakeCheckedNum<uint32_t>(starts[i]) + sizes[i];
+    if (!checked_ending_index.IsValid<uint32_t>()) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kDataError,
+          String::Format(
+              "For dimension (%u): the ending index to slice is too large.",
+              i));
+      return nullptr;
+    }
+    if (checked_ending_index.ValueOrDie() > input->Dimensions()[i]) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kDataError,
+          String::Format("For dimension (%u): the ending index to slice must "
+                         "not be greater "
+                         "than input size (%u).",
+                         i, input->Dimensions()[i]));
+      return nullptr;
+    }
+  }
+
+  auto* slice = MakeGarbageCollected<MLSliceOperator>(this, starts, sizes);
+  String error_message;
+  auto* output = MLOperand::ValidateAndCreateOutput(this, input->Type(), sizes,
+                                                    slice, error_message);
+  if (!output) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+                                      error_message);
+    return nullptr;
+  }
+  slice->Connect({input}, {output});
+  return output;
 }
 
 MLOperand* MLGraphBuilder::softmax(const MLOperand* input,

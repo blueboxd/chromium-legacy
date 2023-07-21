@@ -7,9 +7,9 @@
 #include "base/base64.h"
 #include "base/logging.h"
 #include "chrome/browser/companion/core/constants.h"
+#include "chrome/browser/companion/core/mock_signin_delegate.h"
 #include "chrome/browser/companion/core/promo_handler.h"
 #include "chrome/browser/companion/core/proto/companion_url_params.pb.h"
-#include "chrome/browser/companion/core/signin_delegate.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/unified_consent/pref_names.h"
@@ -26,13 +26,6 @@ namespace {
 constexpr char kValidUrl[] = "https://foo.com/";
 constexpr char kTextQuery[] = "Apples";
 constexpr char kOrigin[] = "chrome-untrusted://companion-side-panel.top-chrome";
-
-class MockSigninDelegate : public SigninDelegate {
- public:
-  MOCK_METHOD0(AllowedSignin, bool());
-  MOCK_METHOD0(IsSignedIn, bool());
-  MOCK_METHOD0(StartSigninFlow, void());
-};
 
 }  // namespace
 
@@ -52,6 +45,8 @@ class CompanionUrlBuilderTest : public testing::Test {
     SetSignInAndMsbbExpectations(/*is_sign_in_allowed=*/true,
                                  /*is_signed_in=*/true,
                                  /*msbb_pref_enabled=*/true);
+    EXPECT_CALL(signin_delegate_, ShouldShowRegionSearchIPH())
+        .WillRepeatedly(testing::Return(true));
     url_builder_ = std::make_unique<CompanionUrlBuilder>(&pref_service_,
                                                          &signin_delegate_);
   }
@@ -174,6 +169,8 @@ TEST_F(CompanionUrlBuilderTest, MsbbOff) {
 TEST_F(CompanionUrlBuilderTest, MsbbOn) {
   EXPECT_CALL(signin_delegate_, IsSignedIn())
       .WillRepeatedly(testing::Return(true));
+  pref_service_.SetUserPref(kExpsPromoShownCountPref, base::Value(2));
+
   GURL page_url(kValidUrl);
   GURL companion_url = url_builder_->BuildCompanionURL(page_url);
 
@@ -207,6 +204,8 @@ TEST_F(CompanionUrlBuilderTest, MsbbOn) {
   EXPECT_EQ(1, proto.promo_state().signin_promo_denial_count());
   EXPECT_EQ(0, proto.promo_state().msbb_promo_denial_count());
   EXPECT_EQ(0, proto.promo_state().exps_promo_denial_count());
+  EXPECT_EQ(2, proto.promo_state().exps_promo_shown_count());
+  EXPECT_TRUE(proto.promo_state().should_show_region_search_iph());
 }
 
 TEST_F(CompanionUrlBuilderTest, NonProtobufParams) {

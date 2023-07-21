@@ -60,6 +60,7 @@ class CORE_EXPORT StylePropertySerializer {
   String PageBreakPropertyValue(const StylePropertyShorthand&) const;
   String GetShorthandValue(const StylePropertyShorthand&,
                            String separator = " ") const;
+  String GetShorthandValueForColumnRule(const StylePropertyShorthand&) const;
   String GetShorthandValueForColumns(const StylePropertyShorthand&) const;
   // foo || bar || ... || baz
   // https://drafts.csswg.org/css-values-4/#component-combinators
@@ -83,6 +84,8 @@ class CORE_EXPORT StylePropertySerializer {
   String BackgroundRepeatPropertyValue() const;
   String ContainIntrinsicSizeValue() const;
   String WhiteSpaceValue() const;
+  String ScrollStartValue() const;
+  String ScrollStartTargetValue() const;
   String GetPropertyText(const CSSPropertyName&,
                          const String& value,
                          bool is_important,

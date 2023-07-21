@@ -9,8 +9,8 @@ import androidx.annotation.Nullable;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger;
-import org.chromium.chrome.browser.xsurface.FeedUserInteractionReliabilityLogger;
+import org.chromium.chrome.browser.xsurface.feed.FeedLaunchReliabilityLogger;
+import org.chromium.chrome.browser.xsurface.feed.FeedUserInteractionReliabilityLogger;
 import org.chromium.chrome.browser.xsurface.feed.FeedUserInteractionReliabilityLogger.PaginationResult;
 import org.chromium.components.feed.proto.wire.ReliabilityLoggingEnums.DiscoverAboveTheFoldRenderResult;
 import org.chromium.components.feed.proto.wire.ReliabilityLoggingEnums.DiscoverLaunchResult;
@@ -148,13 +148,6 @@ public class FeedReliabilityLoggingBridge {
     public void logLoadMoreStarted() {
         if (mUserInteractionLogger != null) {
             mUserInteractionLogger.onPaginationStarted();
-        }
-    }
-
-    @CalledByNative
-    public void logLoadMoreIndicatorShown() {
-        if (mUserInteractionLogger != null) {
-            mUserInteractionLogger.onPaginationIndicatorShown();
         }
     }
 

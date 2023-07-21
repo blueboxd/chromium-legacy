@@ -87,17 +87,14 @@ NSView* GetNSTitlebarContainerViewFromWindow(NSWindow* window) {
 // Host of the overlay view.
 @interface ImmersiveModeTitlebarViewController
     : NSTitlebarAccessoryViewController {
-  base::OnceClosure _view_will_appear_callback;
   base::scoped_nsobject<NSView> _blank_separator_view;
 }
 @end
 
 @implementation ImmersiveModeTitlebarViewController
 
-- (instancetype)initWithViewWillAppearCallback:
-    (base::OnceClosure)view_will_appear_callback {
+- (instancetype)init {
   if ((self = [super init])) {
-    _view_will_appear_callback = std::move(view_will_appear_callback);
     _blank_separator_view.reset([[NSView alloc] init]);
   }
   return self;
@@ -105,14 +102,6 @@ NSView* GetNSTitlebarContainerViewFromWindow(NSWindow* window) {
 
 - (void)viewWillAppear {
   [super viewWillAppear];
-
-  // Resize the views and run the callback on the first call to this method. We
-  // will most likely be in the fullscreen transition window and we want our
-  // views to be displayed.
-  if (!_view_will_appear_callback.is_null()) {
-    // Triggers Views to display top chrome.
-    std::move(_view_will_appear_callback).Run();
-  }
 
   // Sometimes AppKit incorrectly positions NSToolbarFullScreenWindow entirely
   // offscreen (particularly when this is a out-of-process app shim). Toggling
@@ -175,8 +164,7 @@ bool IsNSToolbarFullScreenWindow(NSWindow* window) {
 }
 
 ImmersiveModeController::ImmersiveModeController(NSWindow* browser_window,
-                                                 NSWindow* overlay_window,
-                                                 base::OnceClosure callback)
+                                                 NSWindow* overlay_window)
     : browser_window_(browser_window),
       overlay_window_(overlay_window),
       weak_ptr_factory_(this) {
@@ -191,8 +179,7 @@ ImmersiveModeController::ImmersiveModeController(NSWindow* browser_window,
   // Create a new NSTitlebarAccessoryViewController that will host the
   // overlay_view_.
   immersive_mode_titlebar_view_controller_.reset(
-      [[ImmersiveModeTitlebarViewController alloc]
-          initWithViewWillAppearCallback:std::move(callback)]);
+      [[ImmersiveModeTitlebarViewController alloc] init]);
 
   // Create a NSWindow delegate that will be used to map the AppKit created
   // NSWindow to the overlay view widget's NSWindow.
@@ -266,7 +253,6 @@ ImmersiveModeController::~ImmersiveModeController() {
 void ImmersiveModeController::Enable() {
   DCHECK(!enabled_);
   enabled_ = true;
-  immersive_mode_titlebar_view_controller_.get().hidden = YES;
   [browser_window_ addTitlebarAccessoryViewController:
                        immersive_mode_titlebar_view_controller_];
 
@@ -343,7 +329,7 @@ void ImmersiveModeController::UpdateToolbarVisibility(
   last_used_style_ = style;
 
   // Only make changes if there are no outstanding reveal locks.
-  if (!fullscreen_transition_complete_ || reveal_lock_count_ > 0) {
+  if (reveal_lock_count_ > 0) {
     return;
   }
 
@@ -352,7 +338,23 @@ void ImmersiveModeController::UpdateToolbarVisibility(
       immersive_mode_titlebar_view_controller_.get().fullScreenMinHeight =
           immersive_mode_titlebar_view_controller_.get().view.frame.size.height;
       thin_titlebar_view_controller_.get().hidden = YES;
-      browser_window_.styleMask &= ~NSWindowStyleMaskFullSizeContentView;
+
+      // Top chrome is removed from the content view when the browser window
+      // starts the fullscreen transition, however the request is asynchronous
+      // and sometimes top chrome is still present in the content view when the
+      // animation starts. This results in top chrome being painted twice during
+      // the fullscreen animation, once in the content view and once in
+      // `immersive_mode_titlebar_view_controller_`. Keep
+      // NSWindowStyleMaskFullSizeContentView active during the fullscreen
+      // transition to allow `immersive_mode_titlebar_view_controller_` to be
+      // displayed z-order on top of the content view. This will cover up any
+      // perceived jank.
+      // TODO(https://crbug.com/1375995): Handle fullscreen exit.
+      if (fullscreen_transition_complete_) {
+        browser_window_.styleMask &= ~NSWindowStyleMaskFullSizeContentView;
+      } else {
+        browser_window_.styleMask |= NSWindowStyleMaskFullSizeContentView;
+      }
 
       // Toggling the controller will allow the content view to resize below Top
       // Chrome.
@@ -507,6 +509,20 @@ bool ImmersiveModeController::IsTabbed() {
   return false;
 }
 
+double ImmersiveModeController::GetOffscreenYOrigin() {
+  // Get the height of the screen. Using this as the y origin will move a window
+  // offscreen.
+  double y = browser_window_.screen.frame.size.height;
+
+  // Make sure to make it past the safe area insets, otherwise some portion
+  // of the window may still be displayed.
+  if (@available(macOS 12.0, *)) {
+    y += browser_window_.screen.safeAreaInsets.top;
+  }
+
+  return y;
+}
+
 void ImmersiveModeController::LayoutWindowWithAnchorView(NSWindow* window,
                                                          NSView* anchor_view) {
   // Find the anchor view's point on screen (bottom left).
@@ -525,19 +541,16 @@ void ImmersiveModeController::LayoutWindowWithAnchorView(NSWindow* window,
     // state we don't want the window on screen, otherwise it may mask input to
     // the browser view. In all other cases will not enter this branch and the
     // window will be placed at the same coordinates as the anchor view.
-    // If the toolbar is hidden (mojom::ToolbarVisibilityStyle::kNone) also move
-    // the window offscreen.
-    if (anchor_view.visibleRect.size.height != anchor_view.frame.size.height ||
-        last_used_style_ == mojom::ToolbarVisibilityStyle::kNone) {
-      // Move the window off the top of the screen.
-      point_on_screen.y = browser_window_.screen.frame.size.height;
-
-      // Make sure to make it past the safe area insets, otherwise some portion
-      // of the window may still be displayed.
-      if (@available(macOS 12.0, *)) {
-        point_on_screen.y += browser_window_.screen.safeAreaInsets.top;
-      }
+    if (anchor_view.visibleRect.size.height != anchor_view.frame.size.height) {
+      point_on_screen.y = GetOffscreenYOrigin();
     }
+  }
+
+  // If the toolbar is hidden (mojom::ToolbarVisibilityStyle::kNone) also move
+  // the window offscreen. This applies to all versions of macOS where Chrome
+  // can be run.
+  if (last_used_style_ == mojom::ToolbarVisibilityStyle::kNone) {
+    point_on_screen.y = GetOffscreenYOrigin();
   }
 
   [window setFrameOrigin:point_on_screen];

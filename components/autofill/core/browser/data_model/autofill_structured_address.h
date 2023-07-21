@@ -20,14 +20,11 @@ class AddressComponentWithRewriter : public AddressComponent {
   using AddressComponent::AddressComponent;
 
  protected:
-  // Apply a country-specific rewriter to the normalized value.
-  std::u16string ValueForComparison(
+  // Normalizes and then applies a country-specific rewriter to the `value`
+  // provided.
+  std::u16string GetValueForComparison(
+      const std::u16string& value,
       const AddressComponent& other) const override;
-
-  // Applies the |country_code| specific rewriter to the normalized value. If
-  // |country_code| is empty, it defaults to US.
-  std::u16string RewriteValue(const std::u16string& value,
-                              const std::u16string& country_code) const;
 };
 
 // The name of the street.
@@ -105,8 +102,7 @@ class StreetAddressNode : public AddressComponentWithRewriter {
   explicit StreetAddressNode(AddressComponent* parent);
   ~StreetAddressNode() override;
 
-  void GetAdditionalSupportedFieldTypes(
-      ServerFieldTypeSet* supported_types) const override;
+  const ServerFieldTypeSet GetAdditionalSupportedFieldTypes() const override;
 
   void SetValue(std::u16string value, VerificationStatus status) override;
 
@@ -133,11 +129,11 @@ class StreetAddressNode : public AddressComponentWithRewriter {
 
  protected:
   // Implements support for getting the value of the individual address lines.
-  bool GetValueForOtherSupportedType(ServerFieldType field_type,
-                                     std::u16string* value) const override;
+  std::u16string GetValueForOtherSupportedType(
+      ServerFieldType field_type) const override;
 
   // Implements support for setting the value of the individual address lines.
-  bool SetValueForOtherSupportedType(ServerFieldType field_type,
+  void SetValueForOtherSupportedType(ServerFieldType field_type,
                                      const std::u16string& value,
                                      const VerificationStatus& status) override;
 
@@ -207,7 +203,11 @@ class PostalCodeNode : public AddressComponentWithRewriter {
  protected:
   // In contrast to the base class, the normalization removes all white spaces
   // from the value.
-  std::u16string NormalizedValue() const override;
+  std::u16string GetNormalizedValue() const override;
+
+  std::u16string GetValueForComparison(
+      const std::u16string& value,
+      const AddressComponent& other) const override;
 };
 
 // Stores the sorting code.
@@ -222,6 +222,13 @@ class LandmarkNode : public AddressComponent {
  public:
   explicit LandmarkNode(AddressComponent* parent);
   ~LandmarkNode() override;
+};
+
+// Stores the streets intersection of an address profile.
+class BetweenStreetsNode : public AddressComponent {
+ public:
+  explicit BetweenStreetsNode(AddressComponent* parent);
+  ~BetweenStreetsNode() override;
 };
 
 // Stores the overall Address that contains the StreetAddress, the PostalCode
@@ -248,6 +255,7 @@ class AddressNode : public AddressComponent {
   CityNode city_{this};
   StateNode state_{this};
   CountryCodeNode country_code_{this};
+  BetweenStreetsNode between_streets_{this};
   LandmarkNode landmark_code_{this};
 };
 

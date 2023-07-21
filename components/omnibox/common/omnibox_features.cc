@@ -258,14 +258,6 @@ BASE_FEATURE(kOnDeviceTailModel,
              "OmniboxOnDeviceTailModel",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, changes the way Google-provided search suggestions are scored by
-// the backend. Note that this Feature is only used for triggering a server-
-// side experiment config that will send experiment IDs to the backend. It is
-// not referred to in any of the Chromium code.
-BASE_FEATURE(kOmniboxExperimentalSuggestScoring,
-             "OmniboxExperimentalSuggestScoring",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // If enabled, suggestions from a cgi param name match are scored to 0.
 BASE_FEATURE(kDisableCGIParamMatching,
              "OmniboxDisableCGIParamMatching",
@@ -367,14 +359,18 @@ BASE_FEATURE(kOmniboxMostVisitedTilesOnSrp,
 
 // If enabled, adds a grey square background to search icons, and makes answer
 // icon square instead of round.
+// TODO(manukh): Clean up feature code 9/12 when m117 reaches stable; we're
+//   launching the rest of CR23 in m117.
 BASE_FEATURE(kSquareSuggestIcons,
              "OmniboxSquareIcons",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, forces omnibox suggestion rows to be uniformly sized.
+// TODO(manukh): Clean up feature code 9/12 when m117 reaches stable; we're
+//   launching the rest of CR23 in m117.
 BASE_FEATURE(kUniformRowHeight,
              "OmniboxUniformRowHeight",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, shows the omnibox suggestions popup in WebUI.
 BASE_FEATURE(kWebUIOmniboxPopup,
@@ -502,9 +498,11 @@ const base::FeatureParam<std::string> kOmniboxLightBackgroundColorHovered(
 
 // If enabled, Omnibox "steady state" height is increased from 28 dp to 34 dp to
 // match CR23 guidelines.
+// TODO(manukh): Clean up feature code 9/12 when m117 reaches stable; we're
+//   launching the rest of CR23 in m117.
 BASE_FEATURE(kOmniboxSteadyStateHeight,
              "OmniboxSteadyStateHeight",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, Omnibox "steady state" text style is updated to match CR23
 // guidelines.
@@ -685,5 +683,12 @@ BASE_FEATURE(kInspireMe, "OmniboxInspireMe", base::FEATURE_DISABLED_BY_DEFAULT);
 // The feature flag below helps us tune feature behaviors.
 BASE_FEATURE(kActionsInSuggest,
              "OmniboxActionsInSuggest",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// If enabled, treats categorical suggestions just like the entity suggestions
+// by reusing the `ACMatchType::SEARCH_SUGGEST_ENTITY` and reports the original
+// `omnibox::TYPE_CATEGORICAL_QUERY` to the server.
+BASE_FEATURE(kCategoricalSuggestions,
+             "CategoricalSuggestions",
              base::FEATURE_ENABLED_BY_DEFAULT);
 }  // namespace omnibox

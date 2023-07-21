@@ -68,6 +68,10 @@
 #include "extensions/common/extension.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chromeos/components/kiosk/kiosk_utils.h"
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_browser_controller_ash.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
@@ -358,7 +362,7 @@ std::unique_ptr<AppBrowserController> MaybeCreateAppBrowserController(
       WebAppProvider::GetForLocalAppsUnchecked(browser->profile());
   if (provider && provider->registrar_unsafe().IsInstalled(app_id)) {
 #if BUILDFLAG(IS_CHROMEOS)
-    if (profiles::IsKioskSession() &&
+    if (chromeos::IsKioskSession() &&
         base::FeatureList::IsEnabled(features::kKioskEnableAppService)) {
       controller = CreateWebKioskBrowserController(browser, provider, app_id);
     } else {
@@ -639,11 +643,6 @@ void UpdateLaunchStats(content::WebContents* web_contents,
   // app launch will provide an engagement boost to the origin.
   site_engagement::SiteEngagementService::Get(profile)
       ->SetLastShortcutLaunchTime(web_contents, launch_url);
-
-  // Refresh the app banner added to homescreen event. The user may have
-  // cleared their browsing data since installing the app, which removes the
-  // event and will potentially permit a banner to be shown for the site.
-  RecordAppBanner(web_contents, launch_url);
 }
 
 }  // namespace web_app

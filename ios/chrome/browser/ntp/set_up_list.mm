@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ntp/set_up_list_delegate.h"
 #import "ios/chrome/browser/ntp/set_up_list_item.h"
 #import "ios/chrome/browser/ntp/set_up_list_item_type.h"
+#import "ios/chrome/browser/ntp/set_up_list_metrics.h"
 #import "ios/chrome/browser/ntp/set_up_list_prefs.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 
@@ -33,7 +34,8 @@ bool GetIsItemComplete(SetUpListItemType type,
     case SetUpListItemType::kAutofill:
       return password_manager_util::IsCredentialProviderEnabledOnStartup(prefs);
     case SetUpListItemType::kFollow:
-      return false;
+    case SetUpListItemType::kAllSet:
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -53,6 +55,9 @@ SetUpListItem* BuildItem(SetUpListItemType type,
       new_state = complete ? SetUpListItemState::kCompleteNotInList
                            : SetUpListItemState::kNotComplete;
       set_up_list_prefs::SetItemState(local_state, type, new_state);
+      if (complete) {
+        set_up_list_metrics::RecordItemCompleted(type);
+      }
       return [[SetUpListItem alloc] initWithType:type complete:complete];
     case SetUpListItemState::kCompleteInList:
       // Display in list this time, but remove from list next time.
@@ -70,6 +75,20 @@ void AddItemIfNotNil(NSMutableArray* array, id item) {
     [array addObject:item];
   }
 }
+
+// Returns true if signin is allowed / enabled.
+bool IsSigninEnabled(AuthenticationService* auth_service) {
+  switch (auth_service->GetServiceStatus()) {
+    case AuthenticationService::ServiceStatus::SigninForcedByPolicy:
+    case AuthenticationService::ServiceStatus::SigninAllowed:
+      return true;
+    case AuthenticationService::ServiceStatus::SigninDisabledByUser:
+    case AuthenticationService::ServiceStatus::SigninDisabledByPolicy:
+    case AuthenticationService::ServiceStatus::SigninDisabledByInternal:
+      return false;
+  }
+}
+
 }  // namespace
 
 @interface SetUpList () <PrefObserverDelegate>
@@ -87,10 +106,15 @@ void AddItemIfNotNil(NSMutableArray* array, id item) {
 + (instancetype)buildFromPrefs:(PrefService*)prefs
                     localState:(PrefService*)localState
          authenticationService:(AuthenticationService*)authService {
+  if (set_up_list_prefs::IsSetUpListDisabled(localState)) {
+    return nil;
+  }
   NSMutableArray<SetUpListItem*>* items =
       [[NSMutableArray<SetUpListItem*> alloc] init];
-  AddItemIfNotNil(items, BuildItem(SetUpListItemType::kSignInSync, prefs,
-                                   localState, authService));
+  if (IsSigninEnabled(authService)) {
+    AddItemIfNotNil(items, BuildItem(SetUpListItemType::kSignInSync, prefs,
+                                     localState, authService));
+  }
   AddItemIfNotNil(items, BuildItem(SetUpListItemType::kDefaultBrowser, prefs,
                                    localState, authService));
   AddItemIfNotNil(items, BuildItem(SetUpListItemType::kAutofill, prefs,
@@ -123,6 +147,15 @@ void AddItemIfNotNil(NSMutableArray* array, id item) {
   _prefChangeRegistrar.RemoveAll();
   _prefObserverBridge.reset();
   _localState = nullptr;
+}
+
+- (BOOL)allItemsComplete {
+  for (SetUpListItem* item in _items) {
+    if (!item.complete) {
+      return NO;
+    }
+  }
+  return YES;
 }
 
 #pragma mark - PrefObserverDelegate

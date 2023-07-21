@@ -9,7 +9,7 @@
 #include <AppKit/AppKit.h>
 #include <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
-#include "base/mac/bundle_locations.h"
+#include "base/apple/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -45,7 +45,7 @@ bool SetAsDefaultBrowser() {
   if (@available(macOS 12, *)) {
     // We really do want the outer bundle here, not the main bundle since
     // setting a shortcut to Chrome as the default browser doesn't make sense.
-    NSURL* app_bundle = base::mac::OuterBundleURL();
+    NSURL* app_bundle = base::apple::OuterBundleURL();
     if (!app_bundle) {
       return false;
     }
@@ -69,7 +69,7 @@ bool SetAsDefaultBrowser() {
     // We really do want the outer bundle here, not the main bundle since
     // setting a shortcut to Chrome as the default browser doesn't make sense.
     CFStringRef identifier =
-        base::mac::NSToCFCast(base::mac::OuterBundle().bundleIdentifier);
+        base::mac::NSToCFCast(base::apple::OuterBundle().bundleIdentifier);
     if (!identifier) {
       return false;
     }
@@ -118,7 +118,7 @@ bool SetAsDefaultClientForScheme(const std::string& scheme) {
   if (@available(macOS 12, *)) {
     // We really do want the main bundle here since it makes sense to set an
     // app shortcut as a default scheme handler.
-    NSURL* app_bundle = base::mac::MainBundleURL();
+    NSURL* app_bundle = base::apple::MainBundleURL();
     if (!app_bundle) {
       return false;
     }
@@ -136,7 +136,7 @@ bool SetAsDefaultClientForScheme(const std::string& scheme) {
   } else {
     // We really do want the main bundle here since it makes sense to set an
     // app shortcut as a default scheme handler.
-    NSString* identifier = base::mac::MainBundle().bundleIdentifier;
+    NSString* identifier = base::apple::MainBundle().bundleIdentifier;
     if (!identifier) {
       return false;
     }
@@ -210,7 +210,7 @@ bool CanApplicationHandleURL(const base::FilePath& app_path, const GURL& url) {
 DefaultWebClientState GetDefaultBrowser() {
   // We really do want the outer bundle here, since this we want to know the
   // status of the main Chrome bundle and not a shortcut.
-  NSString* my_identifier = base::mac::OuterBundle().bundleIdentifier;
+  NSString* my_identifier = base::apple::OuterBundle().bundleIdentifier;
   if (!my_identifier) {
     return UNKNOWN_DEFAULT;
   }
@@ -259,7 +259,7 @@ DefaultWebClientState IsDefaultClientForScheme(const std::string& scheme) {
 
   // We really do want the main bundle here since it makes sense to set an
   // app shortcut as a default scheme handler.
-  NSString* my_identifier = base::mac::MainBundle().bundleIdentifier;
+  NSString* my_identifier = base::apple::MainBundle().bundleIdentifier;
   if (!my_identifier) {
     return UNKNOWN_DEFAULT;
   }

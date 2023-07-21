@@ -1203,10 +1203,10 @@ scoped_refptr<InspectorTaskRunner> LocalFrame::GetInspectorTaskRunner() {
 }
 
 void LocalFrame::StartPrinting(const gfx::SizeF& page_size,
-                               const gfx::SizeF& original_page_size,
+                               const gfx::SizeF& aspect_ratio,
                                float maximum_shrink_ratio) {
   DCHECK(!saved_scroll_offsets_);
-  SetPrinting(true, page_size, original_page_size, maximum_shrink_ratio);
+  SetPrinting(true, page_size, aspect_ratio, maximum_shrink_ratio);
 }
 
 void LocalFrame::EndPrinting() {
@@ -1216,7 +1216,7 @@ void LocalFrame::EndPrinting() {
 
 void LocalFrame::SetPrinting(bool printing,
                              const gfx::SizeF& page_size,
-                             const gfx::SizeF& original_page_size,
+                             const gfx::SizeF& aspect_ratio,
                              float maximum_shrink_ratio) {
   // In setting printing, we should not validate resources already cached for
   // the document.  See https://bugs.webkit.org/show_bug.cgi?id=43704
@@ -1231,7 +1231,7 @@ void LocalFrame::SetPrinting(bool printing,
     text_autosizer->UpdatePageInfo();
 
   if (ShouldUsePrintingLayout()) {
-    View()->ForceLayoutForPagination(page_size, original_page_size,
+    View()->ForceLayoutForPagination(page_size, aspect_ratio,
                                      maximum_shrink_ratio);
   } else {
     if (LayoutView* layout_view = View()->GetLayoutView()) {
@@ -1352,26 +1352,27 @@ void LocalFrame::RestoreScrollOffsets() {
 }
 
 gfx::SizeF LocalFrame::ResizePageRectsKeepingRatio(
-    const gfx::SizeF& original_size,
+    const gfx::SizeF& aspect_ratio,
     const gfx::SizeF& expected_size) const {
   auto* layout_object = ContentLayoutObject();
   if (!layout_object)
     return gfx::SizeF();
 
   bool is_horizontal = layout_object->StyleRef().IsHorizontalWritingMode();
-  float width = original_size.width();
-  float height = original_size.height();
-  if (!is_horizontal)
-    std::swap(width, height);
-  DCHECK_GT(fabs(width), std::numeric_limits<float>::epsilon());
-  float ratio = height / width;
+  float numerator =
+      is_horizontal ? aspect_ratio.height() : aspect_ratio.width();
+  float denominator =
+      is_horizontal ? aspect_ratio.width() : aspect_ratio.height();
+  DCHECK_GT(fabs(denominator), std::numeric_limits<float>::epsilon());
+  float ratio = numerator / denominator;
 
-  float result_width =
+  float inline_size =
       floorf(is_horizontal ? expected_size.width() : expected_size.height());
-  float result_height = floorf(result_width * ratio);
-  if (!is_horizontal)
-    std::swap(result_width, result_height);
-  return gfx::SizeF(result_width, result_height);
+  float block_size = floorf(inline_size * ratio);
+  if (!is_horizontal) {
+    return gfx::SizeF(block_size, inline_size);
+  }
+  return gfx::SizeF(inline_size, block_size);
 }
 
 void LocalFrame::SetPageZoomFactor(float factor) {
@@ -1943,13 +1944,12 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
   return false;
 }
 
-void LocalFrame::WillPotentiallyStartOutermostMainFrameNavigation(
-    const KURL& url) const {
-  TRACE_EVENT1("navigation",
-               "LocalFrame::WillPotentiallyStartOutermostMainFrameNavigation",
-               "url", url);
+void LocalFrame::MaybeStartOutermostMainFrameNavigation(
+    const Vector<KURL>& urls) const {
+  TRACE_EVENT0("navigation",
+               "LocalFrame::MaybeStartOutermostMainFrameNavigation");
   mojo_handler_->NonAssociatedLocalFrameHostRemote()
-      .WillPotentiallyStartOutermostMainFrameNavigation(url);
+      .MaybeStartOutermostMainFrameNavigation(urls);
 }
 
 ContentCaptureManager* LocalFrame::GetOrResetContentCaptureManager() {
@@ -2408,11 +2408,11 @@ BlockingDetailsList LocalFrame::ConvertFeatureAndLocationToMojomStruct(
     const BFCacheBlockingFeatureAndLocations& non_sticky,
     const BFCacheBlockingFeatureAndLocations& sticky) {
   BlockingDetailsList blocking_details_list;
-  for (auto feature : non_sticky) {
+  for (auto feature : non_sticky.details_list) {
     auto blocking_details = CreateBlockingDetailsMojom(feature);
     blocking_details_list.push_back(std::move(blocking_details));
   }
-  for (auto feature : sticky) {
+  for (auto feature : sticky.details_list) {
     auto blocking_details = CreateBlockingDetailsMojom(feature);
     blocking_details_list.push_back(std::move(blocking_details));
   }
@@ -3486,7 +3486,7 @@ void LocalFrame::UpdateScrollSnapshots() {
 bool LocalFrame::ValidateScrollSnapshotClients() {
   bool valid = true;
   for (auto& client : scroll_snapshot_clients_) {
-    valid &= client->ValidateSnapshotIfNeeded();
+    valid &= client->ValidateSnapshot();
   }
   return valid;
 }

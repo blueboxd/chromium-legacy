@@ -65,7 +65,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/caption_button_types.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
 
@@ -242,22 +241,9 @@ class CaptionButtonModel : public chromeos::CaptionButtonModel {
 
   // Overridden from ash::CaptionButtonModel:
   bool IsVisible(views::CaptionButtonIcon icon) const override {
-    // TODO(b/276933044): Remove this workaround when ARC is uprevved.
-    if (icon == views::CaptionButtonIcon::CAPTION_BUTTON_ICON_FLOAT) {
-      return !(
-          visible_button_mask_ &
-          (1
-           << views::CaptionButtonIcon::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE));
-    }
     return visible_button_mask_ & (1 << icon);
   }
   bool IsEnabled(views::CaptionButtonIcon icon) const override {
-    if (icon == views::CaptionButtonIcon::CAPTION_BUTTON_ICON_FLOAT) {
-      return !(
-          enabled_button_mask_ &
-          (1
-           << views::CaptionButtonIcon::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE));
-    }
     return enabled_button_mask_ & (1 << icon);
   }
   bool InZoomMode() const override {
@@ -411,7 +397,6 @@ void ClientControlledShellSurface::SetBoundsOrigin(int64_t display_id,
                                                    const gfx::Point& origin) {
   TRACE_EVENT2("exo", "ClientControlledShellSurface::SetBoundsOrigin",
                "display_id", display_id, "origin", origin.ToString());
-
   SetDisplay(display_id);
   EnsurePendingScale(/*commit_immediately=*/true);
   const gfx::Point origin_dp =
@@ -526,6 +511,7 @@ void ClientControlledShellSurface::CommitPendingScale() {
   transform.Scale(1.0 / pending_scale_, 1.0 / pending_scale_);
   host_window()->SetTransform(transform);
   scale_ = pending_scale_;
+  set_bounds_is_dirty(true);
   UpdateCornerRadius();
 }
 
@@ -999,6 +985,7 @@ void ClientControlledShellSurface::SetSystemModal(bool system_modal) {
 
 void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds,
                                                    bool adjusted_by_server) {
+  set_bounds_is_dirty(true);
   const auto* screen = display::Screen::GetScreen();
   aura::Window* window = widget_->GetNativeWindow();
   display::Display current_display = screen->GetDisplayNearestWindow(window);

@@ -9,19 +9,19 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "base/apple/bundle_locations.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -42,6 +42,10 @@
 #include "chrome/updater/util/util.h"
 #include "components/crash/core/common/crash_key.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace updater {
 namespace {
@@ -82,7 +86,7 @@ bool CopyBundle(UpdaterScope scope) {
     }
   }
 
-  if (!CopyDir(base::mac::OuterBundlePath(), *versioned_install_dir,
+  if (!CopyDir(base::apple::OuterBundlePath(), *versioned_install_dir,
                scope == UpdaterScope::kSystem)) {
     LOG(ERROR) << "Copying app to '" << versioned_install_dir->value().c_str()
                << "' failed";
@@ -95,12 +99,11 @@ bool CopyBundle(UpdaterScope scope) {
 bool CreateWakeLaunchdJobPlist(UpdaterScope scope) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  absl::optional<base::ScopedCFTypeRef<CFDictionaryRef>> plist =
-      CreateWakeLaunchdPlist(scope);
+  NSDictionary* plist = CreateWakeLaunchdPlist(scope);
   if (!plist) {
     return false;
   }
-  return EnsureWakeLaunchItemPresence(scope, *plist);
+  return EnsureWakeLaunchItemPresence(scope, plist);
 }
 
 void CleanAfterInstallFailure(UpdaterScope scope) {
@@ -197,10 +200,8 @@ int PromoteCandidate(UpdaterScope scope) {
 
 #pragma mark Uninstall
 int UninstallCandidate(UpdaterScope scope) {
-  return !DeleteCandidateInstallFolder(scope) ||
-                 !DeleteFolder(GetVersionedInstallDirectory(scope))
-             ? kErrorFailedToDeleteFolder
-             : kErrorOk;
+  return !DeleteCandidateInstallFolder(scope) ? kErrorFailedToDeleteFolder
+                                              : kErrorOk;
 }
 
 int Uninstall(UpdaterScope scope) {
@@ -216,6 +217,20 @@ int Uninstall(UpdaterScope scope) {
                              {base::MayBlock(), base::WithBaseSyncPrimitives()},
                              base::BindOnce(&UninstallKeystone, scope));
 
+  // Delete Keystone shim plists.
+  if (IsSystemInstall(scope)) {
+    base::DeleteFile(GetLibraryFolderPath(scope)
+                         ->Append("LaunchDaemons")
+                         .Append(base::ToLowerASCII(LEGACY_GOOGLE_UPDATE_APPID
+                                                    ".daemon.plist")));
+  } else {
+    base::FilePath launch_agent_dir =
+        GetLibraryFolderPath(scope)->Append("LaunchAgents");
+    base::DeleteFile(launch_agent_dir.Append(
+        base::ToLowerASCII(LEGACY_GOOGLE_UPDATE_APPID ".agent.plist"))) &&
+        base::DeleteFile(launch_agent_dir.Append(base::ToLowerASCII(
+            LEGACY_GOOGLE_UPDATE_APPID ".xpcservice.plist")));
+  }
   // Deleting the install folder is best-effort. Current running processes such
   // as the crash handler process may still write to the updater log file, thus
   // it is not always possible to delete the data folder.

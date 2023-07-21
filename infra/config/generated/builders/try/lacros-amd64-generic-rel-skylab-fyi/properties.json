@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "try",
               "builder": "lacros-amd64-generic-rel-skylab-fyi",
-              "project": "chromium"
+              "project": "chromium-m115"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-fyi-archive",
@@ -46,15 +46,10 @@
         {
           "bucket": "try",
           "builder": "lacros-amd64-generic-rel-skylab-fyi",
-          "project": "chromium"
+          "project": "chromium-m115"
         }
       ]
     }
-  },
-  "$build/goma": {
-    "enable_ats": true,
-    "rpc_extra_params": "?prod",
-    "server_host": "goma.chromium.org"
   },
   "$build/reclient": {
     "instance": "rbe-chromium-untrusted",

@@ -317,7 +317,7 @@ class WheelInputSource(InputSource):
 class Actions:
     def __init__(self) -> None:
         self.input_sources: List[InputSource] = []
-        self.seen_names: MutableMapping[str, Set[str]] = defaultdict(Set)
+        self.seen_names: MutableMapping[str, Set[str]] = defaultdict(set)
 
     def _add_source(self,
                     cls: Type[InputSourceType],
@@ -372,3 +372,7 @@ class Input(BidiModule):
     def release_actions(self, context: str) -> Mapping[str, Any]:
         params: MutableMapping[str, Any] = {"context": context}
         return params
+
+
+def get_element_origin(element: Any) -> Mapping[str, Any]:
+    return {"type": "element", "element": {"sharedId": element["sharedId"]}}

@@ -42,11 +42,20 @@ absl::optional<ui::KeyboardDevice> GetPriorityExternalKeyboard() {
   absl::optional<ui::KeyboardDevice> priority_keyboard;
   for (const ui::KeyboardDevice& keyboard :
        ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
+    // If the input device settings controlled does not recognize the device as
+    // a keyboard, skip it.
+    if (features::IsInputDeviceSettingsSplitEnabled() &&
+        Shell::Get()->input_device_settings_controller()->GetKeyboardSettings(
+            keyboard.id) == nullptr) {
+      continue;
+    }
+
     const auto device_type =
         Shell::Get()->keyboard_capability()->GetDeviceType(keyboard);
     switch (device_type) {
       case DeviceType::kDeviceUnknown:
       case DeviceType::kDeviceInternalKeyboard:
+      case DeviceType::kDeviceInternalRevenKeyboard:
         break;
       case DeviceType::kDeviceExternalChromeOsKeyboard:
       case DeviceType::kDeviceExternalAppleKeyboard:
@@ -66,11 +75,20 @@ absl::optional<ui::KeyboardDevice> GetPriorityExternalKeyboard() {
 absl::optional<ui::KeyboardDevice> GetInternalKeyboard() {
   for (const ui::KeyboardDevice& keyboard :
        ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
+    // If the input device settings controlled does not recognize the device as
+    // a keyboard, skip it.
+    if (features::IsInputDeviceSettingsSplitEnabled() &&
+        Shell::Get()->input_device_settings_controller()->GetKeyboardSettings(
+            keyboard.id) == nullptr) {
+      continue;
+    }
+
     const auto device_type =
         Shell::Get()->keyboard_capability()->GetDeviceType(keyboard);
     switch (device_type) {
       case DeviceType::kDeviceUnknown:
       case DeviceType::kDeviceInternalKeyboard:
+      case DeviceType::kDeviceInternalRevenKeyboard:
         return keyboard;
       case DeviceType::kDeviceExternalChromeOsKeyboard:
       case DeviceType::kDeviceExternalAppleKeyboard:
@@ -167,6 +185,16 @@ std::vector<ui::Accelerator> AcceleratorAliasConverter::CreateAcceleratorAlias(
   absl::optional<ui::KeyboardDevice> priority_external_keyboard =
       GetPriorityExternalKeyboard();
   absl::optional<ui::KeyboardDevice> internal_keyboard = GetInternalKeyboard();
+
+  // If the external and internal keyboards are either both non-chromeos
+  // keyboards (ex ChromeOS flex devices) or if they are both ChromeOS keyboards
+  // (ex ChromeOS external keyboard), do not show aliases for the internal
+  // keyboard.
+  if (priority_external_keyboard && internal_keyboard &&
+      (IsChromeOSKeyboard(*priority_external_keyboard) ==
+       IsChromeOSKeyboard(*internal_keyboard))) {
+    internal_keyboard = absl::nullopt;
+  }
 
   // Set is used to get rid of possible duplicate accelerators.
   base::flat_set<ui::Accelerator> aliases_set;
@@ -424,6 +452,16 @@ AcceleratorAliasConverter::FilterAliasBySupportedKeys(
   auto priority_keyboard = GetPriorityExternalKeyboard();
   auto internal_keyboard = GetInternalKeyboard();
 
+  // If the external and internal keyboards are either both non-chromeos
+  // keyboards (ex ChromeOS flex devices) or if they are both ChromeOS keyboards
+  // (ex ChromeOS external keyboard), do not show aliases for the internal
+  // keyboard.
+  if (priority_keyboard && internal_keyboard &&
+      (IsChromeOSKeyboard(*priority_keyboard) ==
+       IsChromeOSKeyboard(*internal_keyboard))) {
+    internal_keyboard = absl::nullopt;
+  }
+
   for (const auto& accelerator : accelerators) {
     if (auto action_key = ui::KeyboardCapability::ConvertToTopRowActionKey(
             accelerator.key_code());
@@ -523,6 +561,13 @@ AcceleratorAliasConverter::FilterAliasBySupportedKeys(
     // Search should be shown in the shortcuts app.
     if (accelerator.key_code() == ui::VKEY_MENU &&
         accelerator.modifiers() == ui::EF_COMMAND_DOWN) {
+      continue;
+    }
+
+    // VKEY_PLAY/PAUSE should not be shown as they are conceptual duplicates of
+    // VKEY_MEDIA_PLAY/VKEY_MEDIA_PAUSE.
+    if (accelerator.key_code() == ui::VKEY_PLAY ||
+        accelerator.key_code() == ui::VKEY_PAUSE) {
       continue;
     }
 

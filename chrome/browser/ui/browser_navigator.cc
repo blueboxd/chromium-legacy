@@ -464,6 +464,7 @@ base::WeakPtr<content::NavigationHandle> LoadURLInContents(
   load_url_params.href_translate = params->href_translate;
   load_url_params.reload_type = params->reload_type;
   load_url_params.impression = params->impression;
+  load_url_params.suggested_system_entropy = params->suggested_system_entropy;
 
   // |frame_tree_node_id| is kNoFrameTreeNodeId for main frame navigations.
   if (params->frame_tree_node_id ==
@@ -471,7 +472,8 @@ base::WeakPtr<content::NavigationHandle> LoadURLInContents(
     load_url_params.navigation_ui_data =
         ChromeNavigationUIData::CreateForMainFrameNavigation(
             target_contents, params->disposition,
-            params->is_using_https_as_default_scheme);
+            params->is_using_https_as_default_scheme,
+            params->url_typed_with_http_scheme);
   }
 
   if (params->post_data) {

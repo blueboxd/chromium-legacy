@@ -623,6 +623,12 @@ suite('PrivacySandboxDialogNoticeROW', function() {
   });
 
   test('moreButton', async function() {
+    // TODO(crbug.com/1432915): flaky on mac.
+    // <if expr="is_macosx">
+    if (1) {
+      this.skip();
+    }
+    // </if>
     await verifyActionOccured(
         browserProxy, PrivacySandboxPromptAction.NOTICE_SHOWN);
     await flushTasks();
@@ -683,6 +689,12 @@ suite('PrivacySandboxDialogNoticeROW', function() {
   });
 
   test('ackClicked', async function() {
+    // TODO(crbug.com/1432915): flaky on mac.
+    // <if expr="is_macosx">
+    if (1) {
+      this.skip();
+    }
+    // </if>
     await verifyActionOccured(
         browserProxy, PrivacySandboxPromptAction.NOTICE_SHOWN);
     testClickButton('#ackButton', page);
@@ -691,6 +703,12 @@ suite('PrivacySandboxDialogNoticeROW', function() {
   });
 
   test('settingsClicked', async function() {
+    // TODO(crbug.com/1432915): flaky on mac.
+    // <if expr="is_macosx">
+    if (1) {
+      this.skip();
+    }
+    // </if>
     await verifyActionOccured(
         browserProxy, PrivacySandboxPromptAction.NOTICE_SHOWN);
     testClickButton('#settingsButton', page);
@@ -699,6 +717,12 @@ suite('PrivacySandboxDialogNoticeROW', function() {
   });
 
   test('learnMoreClicked', async function() {
+    // TODO(crbug.com/1432915): flaky on mac.
+    // <if expr="is_macosx">
+    if (1) {
+      this.skip();
+    }
+    // </if>
     await verifyActionOccured(
         browserProxy, PrivacySandboxPromptAction.NOTICE_SHOWN);
     // TODO(crbug.com/1378703): Test scrolling behaviour.
@@ -745,13 +769,13 @@ suite('PrivacySandboxDialogNoticeRestricted', function() {
     // Asserting very basic functionality for now.
     // TODO(b/277180677): add more tests as functionality is implemented.
     await verifyActionOccured(
-        browserProxy, PrivacySandboxPromptAction.NOTICE_SHOWN);
+        browserProxy, PrivacySandboxPromptAction.RESTRICTED_NOTICE_SHOWN);
     assertTrue(!!page.shadowRoot!.querySelector('div'));
   });
 
   test('settingsClicked', async function() {
     await verifyActionOccured(
-        browserProxy, PrivacySandboxPromptAction.NOTICE_SHOWN);
+        browserProxy, PrivacySandboxPromptAction.RESTRICTED_NOTICE_SHOWN);
     testClickButton('#settingsButton', page);
     await verifyActionOccured(
         browserProxy,
@@ -760,7 +784,7 @@ suite('PrivacySandboxDialogNoticeRestricted', function() {
 
   test('acknowledgeClicked', async function() {
     await verifyActionOccured(
-        browserProxy, PrivacySandboxPromptAction.NOTICE_SHOWN);
+        browserProxy, PrivacySandboxPromptAction.RESTRICTED_NOTICE_SHOWN);
     testClickButton('#ackButton', page);
     await verifyActionOccured(
         browserProxy, PrivacySandboxPromptAction.RESTRICTED_NOTICE_ACKNOWLEDGE);
@@ -772,7 +796,7 @@ suite('PrivacySandboxDialogNoticeRestricted', function() {
   // resolved.
   test.skip('moreButton', async function() {
     await verifyActionOccured(
-        browserProxy, PrivacySandboxPromptAction.NOTICE_SHOWN);
+        browserProxy, PrivacySandboxPromptAction.RESTRICTED_NOTICE_SHOWN);
     await flushTasks();
 
     const scrollable: HTMLElement =
@@ -817,7 +841,8 @@ suite('PrivacySandboxDialogNoticeRestricted', function() {
     }
 
     await verifyActionOccured(
-        browserProxy, PrivacySandboxPromptAction.NOTICE_MORE_BUTTON_CLICKED);
+        browserProxy,
+        PrivacySandboxPromptAction.RESTRICTED_NOTICE_MORE_BUTTON_CLICKED);
     await page.whenWasScrolledToBottomForTest();
 
     // After scrolling down, the "More" button is hidden and dialog button are

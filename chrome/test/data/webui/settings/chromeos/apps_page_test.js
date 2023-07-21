@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://os-settings/chromeos/os_settings.js';
+import 'chrome://os-settings/os_settings.js';
 
-import {AndroidAppsBrowserProxyImpl, appNotificationHandlerMojom, Router, routes, routesMojom, setAppNotificationProviderForTesting} from 'chrome://os-settings/chromeos/os_settings.js';
+import {AndroidAppsBrowserProxyImpl, appNotificationHandlerMojom, Router, routes, routesMojom, setAppNotificationProviderForTesting} from 'chrome://os-settings/os_settings.js';
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {getDeepActiveElement} from 'chrome://resources/ash/common/util.js';
 import {createBoolPermission} from 'chrome://resources/cr_components/app_management/permission_util.js';
@@ -58,6 +58,22 @@ function setPrefs(restoreOption) {
         value: restoreOption,
       },
     },
+  };
+}
+
+/**
+ * @param {string} id
+ * @param {string} title
+ * @param {!Permission} permission
+ * @param {?Readiness} readiness
+ * @return {!App}
+ */
+function createApp(id, title, permission, readiness = Readiness.kReady) {
+  return {
+    id: id,
+    title: title,
+    notificationPermission: permission,
+    readiness: readiness,
   };
 }
 
@@ -183,6 +199,76 @@ class FakeAppNotificationHandler {
   }
 }
 
+suite('<os-apps-page> available settings rows', () => {
+  /** @type {OsSettingsAppsPageElement} */
+  let appsPage;
+
+  function initPage() {
+    loadTimeData.overrideValues({isPlayStoreAvailable: true});
+    appsPage = document.createElement('os-settings-apps-page');
+    appsPage.prefs = getFakePrefs();
+    document.body.appendChild(appsPage);
+    flush();
+  }
+
+  setup(async () => {
+    loadTimeData.overrideValues({showOsSettingsAppNotificationsRow: true});
+    androidAppsBrowserProxy = new TestAndroidAppsBrowserProxy();
+    AndroidAppsBrowserProxyImpl.setInstanceForTesting(androidAppsBrowserProxy);
+    PolymerTest.clearBody();
+  });
+
+  teardown(() => {
+    appsPage.remove();
+    appsPage = null;
+    Router.getInstance().resetRouteForTesting();
+  });
+
+  const queryAndroidAppsRow = () =>
+      appsPage.shadowRoot.querySelector('#android-apps');
+  const queryAppManagementRow = () =>
+      appsPage.shadowRoot.querySelector('#appManagement');
+  const queryAppsOnStartupRow = () =>
+      appsPage.shadowRoot.querySelector('#onStartupDropdown');
+
+  test('Only App Management is shown', () => {
+    loadTimeData.overrideValues({
+      showStartup: false,
+      androidAppsVisible: false,
+    });
+    initPage();
+
+    assertTrue(!!queryAppManagementRow());
+    assertEquals(null, queryAndroidAppsRow());
+    assertEquals(null, queryAppsOnStartupRow());
+  });
+
+  test('Android Apps and App Management are shown', () => {
+    loadTimeData.overrideValues({
+      showStartup: false,
+      androidAppsVisible: true,
+    });
+    initPage();
+
+    assertTrue(!!queryAppManagementRow());
+    assertTrue(!!queryAndroidAppsRow());
+    assertEquals(null, queryAppsOnStartupRow());
+  });
+
+  test('Android Apps, On Startup, and App Management are shown', () => {
+    loadTimeData.overrideValues({
+      showStartup: true,
+      androidAppsVisible: true,
+    });
+    initPage();
+
+    assertTrue(!!queryAppManagementRow());
+    assertTrue(!!queryAndroidAppsRow());
+    assertTrue(!!queryAppsOnStartupRow());
+    assertEquals(3, appsPage.onStartupOptions_.length);
+  });
+});
+
 suite('AppsPageTests', function() {
   /**
    * @type {
@@ -190,22 +276,6 @@ suite('AppsPageTests', function() {
    *  }
    */
   let mojoApi_;
-
-  /**
-   * @param {string} id
-   * @param {string} title
-   * @param {!Permission} permission
-   * @param {?Readiness} readiness
-   * @return {!App}
-   */
-  function createApp(id, title, permission, readiness = Readiness.kReady) {
-    return {
-      id: id,
-      title: title,
-      notificationPermission: permission,
-      readiness: readiness,
-    };
-  }
 
   /**
    * @return {!Promise}
@@ -220,7 +290,11 @@ suite('AppsPageTests', function() {
   }
 
   setup(async () => {
-    loadTimeData.overrideValues({showOsSettingsAppNotificationsRow: true});
+    loadTimeData.overrideValues({
+      showOsSettingsAppNotificationsRow: true,
+      isPlayStoreAvailable: true,
+      androidAppsVisible: true,
+    });
     androidAppsBrowserProxy = new TestAndroidAppsBrowserProxy();
     AndroidAppsBrowserProxyImpl.setInstanceForTesting(androidAppsBrowserProxy);
     PolymerTest.clearBody();
@@ -239,55 +313,17 @@ suite('AppsPageTests', function() {
     Router.getInstance().resetRouteForTesting();
   });
 
-  suite('Page Combinations', function() {
+  suite('Main Page', function() {
     setup(function() {
-      appsPage.havePlayStoreApp = true;
       appsPage.prefs = getFakePrefs();
-    });
-
-    const AndroidAppsShown = () =>
-        !!appsPage.shadowRoot.querySelector('#android-apps');
-    const AppManagementShown = () =>
-        !!appsPage.shadowRoot.querySelector('#appManagement');
-    const RestoreAppsOnStartupShown = () =>
-        !!appsPage.shadowRoot.querySelector('#onStartupDropdown');
-
-    test('Only App Management Shown', function() {
-      appsPage.showAndroidApps = false;
-      appsPage.showStartup = false;
+      appsPage.androidAppsInfo = {
+        playStoreEnabled: false,
+        settingsAppAvailable: false,
+      };
       flush();
-
-      assertTrue(AppManagementShown());
-      assertFalse(AndroidAppsShown());
-      assertFalse(RestoreAppsOnStartupShown());
-    });
-
-    test('Android Apps and App Management Shown', function() {
-      appsPage.showAndroidApps = true;
-      appsPage.showStartup = false;
-      flush();
-
-      assertTrue(AppManagementShown());
-      assertTrue(AndroidAppsShown());
-      assertFalse(RestoreAppsOnStartupShown());
-    });
-
-    test('Android Apps, On Startup and App Management Shown', function() {
-      appsPage.showAndroidApps = true;
-      appsPage.showStartup = true;
-      flush();
-
-      assertTrue(AppManagementShown());
-      assertTrue(AndroidAppsShown());
-      assertTrue(RestoreAppsOnStartupShown());
-      assertEquals(3, appsPage.onStartupOptions_.length);
     });
 
     test('App notification row', async () => {
-      appsPage.showAndroidApps = true;
-      appsPage.showStartup = true;
-      flush();
-
       const rowLink = appsPage.shadowRoot.querySelector('#appNotifications');
       assertTrue(!!rowLink);
       // Test default is to have 0 apps.
@@ -314,20 +350,6 @@ suite('AppsPageTests', function() {
       simulateNotificationAppChanged(app3);
       await flushTasks();
       assertEquals('1 apps', rowLink.subLabel);
-    });
-  });
-
-  suite('Main Page', function() {
-    setup(function() {
-      appsPage.showAndroidApps = true;
-      appsPage.havePlayStoreApp = true;
-      appsPage.showStartup = true;
-      appsPage.prefs = getFakePrefs();
-      appsPage.androidAppsInfo = {
-        playStoreEnabled: false,
-        settingsAppAvailable: false,
-      };
-      flush();
     });
 
     test('Clicking enable button enables ARC', function() {
@@ -384,7 +406,8 @@ suite('AppsPageTests', function() {
     });
 
     test('Deep link to manage android prefs', async () => {
-      appsPage.havePlayStoreApp = false;
+      // Simulate showing manage apps link
+      appsPage.set('isPlayStoreAvailable_', false);
       flush();
 
       const params = new URLSearchParams();
@@ -571,13 +594,13 @@ suite('AppsPageTests', function() {
 
     test('ManageUsbDevice', function() {
       // ARCVM is not enabled
-      subpage.showArcvmManageUsb = false;
+      subpage.isArcVmManageUsbAvailable = false;
       flush();
       assertFalse(
           !!subpage.shadowRoot.querySelector('#manageArcvmShareUsbDevices'));
 
       // ARCMV is enabled
-      subpage.showArcvmManageUsb = true;
+      subpage.isArcVmManageUsbAvailable = true;
       flush();
       assertTrue(
           !!subpage.shadowRoot.querySelector('#manageArcvmShareUsbDevices'));

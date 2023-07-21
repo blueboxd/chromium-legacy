@@ -32,15 +32,30 @@ struct CONTENT_EXPORT AttributionConfig {
     int64_t max_attribution_reporting_origins = 10;
 
     // Maximum number of attributions for a given <source site, destination
-    // site, reporting origin> in `time_window`.
+    // site, reporting site> in `time_window`.
     int64_t max_attributions = 100;
+
+    static constexpr int kDefaultMaxReportingOriginsPerSourceReportingSite = 1;
+
+    base::TimeDelta origins_per_site_window = base::Days(1);
+
+    int GetMaxSourceReportingOriginsPerReportingSite() const;
 
     // When adding new members, the corresponding `Validate()` definition and
     // `operator==()` definition in `attribution_interop_parser_unittest.cc`
     // should also be updated.
   };
 
-  struct EventLevelLimit {
+  struct CONTENT_EXPORT EventLevelLimit {
+    EventLevelLimit();
+
+    EventLevelLimit(const EventLevelLimit&);
+    EventLevelLimit(EventLevelLimit&&);
+    ~EventLevelLimit();
+
+    EventLevelLimit& operator=(const EventLevelLimit&);
+    EventLevelLimit& operator=(EventLevelLimit&&);
+
     // Returns true if this config is valid.
     [[nodiscard]] bool Validate() const;
 
@@ -70,10 +85,17 @@ struct CONTENT_EXPORT AttributionConfig {
     static constexpr base::TimeDelta kDefaultSecondReportWindowDeadline =
         base::Days(7);
 
-    // Controls the report window deadlines for scheduling report times.
-    base::TimeDelta first_report_window_deadline =
+    // Controls the report window deadlines for scheduling navigation report
+    // times.
+    base::TimeDelta first_navigation_report_window_deadline =
         kDefaultFirstReportWindowDeadline;
-    base::TimeDelta second_report_window_deadline =
+    base::TimeDelta second_navigation_report_window_deadline =
+        kDefaultSecondReportWindowDeadline;
+
+    // Controls the report window deadlines for scheduling event report times.
+    base::TimeDelta first_event_report_window_deadline =
+        kDefaultFirstReportWindowDeadline;
+    base::TimeDelta second_event_report_window_deadline =
         kDefaultSecondReportWindowDeadline;
 
     // When adding new members, the corresponding `Validate()` definition and
@@ -98,8 +120,8 @@ struct CONTENT_EXPORT AttributionConfig {
 
     // Default constants for the report delivery time to be used when declaring
     // field trial params.
-    static constexpr base::TimeDelta kDefaultMinDelay = base::Minutes(10);
-    static constexpr base::TimeDelta kDefaultDelaySpan = base::Minutes(50);
+    static constexpr base::TimeDelta kDefaultMinDelay = base::TimeDelta();
+    static constexpr base::TimeDelta kDefaultDelaySpan = base::Minutes(10);
 
     // Controls the report delivery time.
     base::TimeDelta min_delay = kDefaultMinDelay;
@@ -107,6 +129,8 @@ struct CONTENT_EXPORT AttributionConfig {
 
     double null_reports_rate_include_source_registration_time = .008;
     double null_reports_rate_exclude_source_registration_time = .05;
+
+    int max_aggregatable_reports_per_source = 20;
 
     // When adding new members, the corresponding `Validate()` definition and
     // `operator==()` definition in `attribution_interop_parser_unittest.cc`
@@ -121,8 +145,8 @@ struct CONTENT_EXPORT AttributionConfig {
 
   // Controls the maximum number of distinct attribution destinations that can
   // be in storage at any time for sources with the same <source site, reporting
-  // origin>.
-  int max_destinations_per_source_site_reporting_origin = 100;
+  // site>.
+  int max_destinations_per_source_site_reporting_site = 100;
 
   RateLimitConfig rate_limit;
   EventLevelLimit event_level_limit;

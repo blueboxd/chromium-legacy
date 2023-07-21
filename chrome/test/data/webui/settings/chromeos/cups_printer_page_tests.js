@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CupsPrintersBrowserProxyImpl, CupsPrintersEntryManager, PrinterSetupResult, PrinterType, PrintServerResult} from 'chrome://os-settings/chromeos/lazy_load.js';
-import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+import {CupsPrintersBrowserProxyImpl, CupsPrintersEntryManager, PrinterSetupResult, PrinterType, PrintServerResult} from 'chrome://os-settings/lazy_load.js';
+import {Router, routes} from 'chrome://os-settings/os_settings.js';
 import {webUIListenerCallback} from 'chrome://resources/ash/common/cr.m.js';
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
 import {NetworkStateProperties} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
@@ -47,18 +47,30 @@ function resetGetEulaUrl(cupsPrintersBrowserProxy, eulaUrl) {
 suite('CupsPrinterUITests', () => {
   let page = null;
 
+  /** @type {?settings.TestCupsPrintersBrowserProxy} */
+  let cupsPrintersBrowserProxy = null;
+
   setup(() => {
+    cupsPrintersBrowserProxy = new TestCupsPrintersBrowserProxy();
+    CupsPrintersBrowserProxyImpl.setInstanceForTesting(
+        cupsPrintersBrowserProxy);
+
+    resetPage();
+  });
+
+  teardown(() => {
+    cupsPrintersBrowserProxy.reset();
+    page.remove();
+    page = null;
+  });
+
+  function resetPage() {
     PolymerTest.clearBody();
     page = document.createElement('settings-cups-printers');
     document.body.appendChild(page);
     assertTrue(!!page);
     flush();
-  });
-
-  teardown(() => {
-    page.remove();
-    page = null;
-  });
+  }
 
   // Verify the Saved printers section strings.
   test('SavedPrintersText', () => {
@@ -115,6 +127,31 @@ suite('CupsPrinterUITests', () => {
       assertTrue(
           isVisible(page.shadowRoot.querySelector('#collapsibleSection')));
       assertTrue(isVisible(page.shadowRoot.querySelector('#helpSection')));
+    });
+  });
+
+  // Verify the Nearby printers section starts open when there are no saved
+  // printers or open when there's more than one saved printer.
+  test('CollapsibleNearbyPrinterSectionSavedPrinters', () => {
+    // Simulate no saved printers and expect the section to be open.
+    cupsPrintersBrowserProxy.printerList = {printerList: []};
+    resetPage();
+    return flushTasks().then(() => {
+      assertTrue(
+          isVisible(page.shadowRoot.querySelector('#collapsibleSection')));
+
+      // Simulate 1 saved printer on load and expect the section to be
+      // collapsed.
+      cupsPrintersBrowserProxy.printerList = {
+        printerList: [
+          createCupsPrinterInfo('nameA', 'address', 'idA'),
+        ],
+      };
+      resetPage();
+      return flushTasks().then(() => {
+        assertFalse(
+            isVisible(page.shadowRoot.querySelector('#collapsibleSection')));
+      });
     });
   });
 });

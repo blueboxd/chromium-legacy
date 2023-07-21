@@ -25,6 +25,12 @@
     width: calc(100% - 16px);
   }
 
+  :host-context([dir=rtl]) cr-toast {
+    left: auto;
+    right: 50%;
+    transform: translate(50%, 0);
+  }
+
   cr-toolbar-search-field {
     flex-shrink: 0;
     margin: 14px;
@@ -124,7 +130,6 @@
     --cr-toolbar-selection-overlay-padding: 16px;
     background: var(--edit-footer-background);
     color: var(--cr-secondary-text-color);
-    font-size: 12px;
   }
 
   cr-toolbar-selection-overlay::part(clearIcon) {
@@ -178,7 +183,8 @@
     </template>
   </div>
 
-  <div class="sp-card">
+  <div class="sp-card"
+      hidden$="[[shouldHideCard_(labels_.*, searchQuery_, shownBookmarks_)]]">
     <sp-heading
         hidden$="[[shouldHideHeader_(
             labels_.*, searchQuery_, shownBookmarks_)]]"
@@ -226,7 +232,8 @@
                               compactDescriptions_.*, expandedDescriptions_.*,
                               compact_)]]"
               compact="[[compact_]]" trailing-icon="cr:more-vert"
-              trailing-icon-aria-label="$i18n{bookmarkOptionsA11yLabel}"
+              trailing-icon-aria-label="[[getBookmarkMenuA11yLabel_(
+                                          item.url, item.title)]]"
               trailing-icon-tooltip="$i18n{tooltipMore}"
               has-checkbox="[[editing_]]"
               checkbox-disabled="[[!canEdit_(item)]]"
@@ -236,13 +243,15 @@
               on-trailing-icon-clicked="onShowContextMenuClicked_"
               on-checkbox-change="onRowSelectedChange_"
               on-input-change="onRename_"
-              row-aria-label="[[getBookmarkAllyLabel_(item)]]"
+              row-aria-label="[[getBookmarkA11yLabel_(item.url, item.title)]]"
               row-aria-description="[[getBookmarkA11yDescription_(item)]]"
               tabindex$="[[tabIndex]]"
               image-urls="[[getBookmarkImageUrls_(
                             item, item.*, imageUrls_.*)]]"
               force-hover="[[getBookmarkForceHover_(
-                            item, contextMenuBookmark_)]]">
+                            item, contextMenuBookmark_)]]"
+              draggable="[[canDrag_(editing_, renamingId_, searchQuery_,
+                           labels_.*)]]">
             <template is="dom-if" restamp
                 if="[[isPriceTracked(item, trackedProductInfos_.*)]]">
               <sp-list-item-badge slot="badges"

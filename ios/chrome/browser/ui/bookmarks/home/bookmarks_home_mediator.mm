@@ -17,7 +17,7 @@
 #import "components/prefs/pref_change_registrar.h"
 #import "components/prefs/pref_service.h"
 #import "components/sync/base/user_selectable_type.h"
-#import "components/sync/driver/sync_service.h"
+#import "components/sync/service/sync_service.h"
 #import "ios/chrome/browser/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #import "ios/chrome/browser/flags/system_flags.h"
@@ -29,8 +29,6 @@
 #import "ios/chrome/browser/shared/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
-#import "ios/chrome/browser/sync/sync_setup_service.h"
-#import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
@@ -85,8 +83,6 @@ bool IsABookmarkNodeSectionForIdentifier(
   std::unique_ptr<PrefChangeRegistrar> _prefChangeRegistrar;
   // The browser for this mediator.
   base::WeakPtr<Browser> _browser;
-  // The sync setup service for this mediator.
-  SyncSetupService* _syncSetupService;
   // Base view controller to present sign-in UI.
   UIViewController* _baseViewController;
 }
@@ -167,7 +163,6 @@ bool IsABookmarkNodeSectionForIdentifier(
       bookmarks::prefs::kManagedBookmarks, _prefChangeRegistrar.get());
 
   _syncService = SyncServiceFactory::GetForBrowserState(browserState);
-  _syncSetupService = SyncSetupServiceFactory::GetForBrowserState(browserState);
 
   [self computePromoTableViewData];
   [self computeBookmarkTableViewData];
@@ -177,7 +172,6 @@ bool IsABookmarkNodeSectionForIdentifier(
   [_bookmarkPromoController shutdown];
   _bookmarkPromoController.delegate = nil;
   _bookmarkPromoController = nil;
-  _syncSetupService = nullptr;
   _syncService = nullptr;
   _syncedBookmarksObserver = nullptr;
   _browser = nullptr;
@@ -234,14 +228,16 @@ bool IsABookmarkNodeSectionForIdentifier(
       bookmark_utils_ios::IsAccountBookmarkStorageOptedIn(_syncService) &&
       [self hasBookmarksOrFoldersInModel:_accountBookmarkModel.get()];
   if (showProfileSection) {
-    [self generateTableViewDataForModel:_profileBookmarkModel.get()
-                              inSection:
-                                  BookmarksHomeSectionIdentifierRootProfile];
+    [self
+        generateTableViewDataForModel:_profileBookmarkModel.get()
+                            inSection:BookmarksHomeSectionIdentifierRootProfile
+                  addManagedBookmarks:YES];
   }
   if (showAccountSection) {
-    [self generateTableViewDataForModel:_accountBookmarkModel.get()
-                              inSection:
-                                  BookmarksHomeSectionIdentifierRootAccount];
+    [self
+        generateTableViewDataForModel:_accountBookmarkModel.get()
+                            inSection:BookmarksHomeSectionIdentifierRootAccount
+                  addManagedBookmarks:NO];
   }
   if (showProfileSection && showAccountSection) {
     // Headers are only shown if both sections are visible.
@@ -252,7 +248,8 @@ bool IsABookmarkNodeSectionForIdentifier(
 
 - (void)generateTableViewDataForModel:(bookmarks::BookmarkModel*)model
                             inSection:(BookmarksHomeSectionIdentifier)
-                                          sectionIdentifier {
+                                          sectionIdentifier
+                  addManagedBookmarks:(BOOL)addManagedBookmarks {
   BOOL shouldDisplayCloudSlashIcon =
       [self shouldDisplayCloudSlashIconWithBookmarkModel:model];
   // Add "Mobile Bookmarks" to the table.
@@ -285,6 +282,9 @@ bool IsABookmarkNodeSectionForIdentifier(
                   toSectionWithIdentifier:sectionIdentifier];
   }
 
+  if (!addManagedBookmarks) {
+    return;
+  }
   // Add "Managed Bookmarks" to the table if it exists.
   ChromeBrowserState* browserState = [self originalBrowserState];
   bookmarks::ManagedBookmarkService* managedBookmarkService =
@@ -441,8 +441,8 @@ bool IsABookmarkNodeSectionForIdentifier(
 - (BOOL)shouldDisplayCloudSlashIconWithBookmarkModel:
     (bookmarks::BookmarkModel*)bookmarkModel {
   if (bookmarkModel == _profileBookmarkModel.get()) {
-    return bookmark_utils_ios::ShouldDisplayCloudSlashIconForProfileModel(
-        _syncSetupService);
+    return bookmark_utils_ios::IsAccountBookmarkStorageOptedIn(
+        self.syncService);
   }
   CHECK_EQ(bookmarkModel, _accountBookmarkModel.get())
       << "bookmarkModel: " << bookmarkModel
@@ -521,16 +521,21 @@ bool IsABookmarkNodeSectionForIdentifier(
   }
 }
 
+// `node` will be deleted from `folder`.
+- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+       willDeleteNode:(const bookmarks::BookmarkNode*)node
+           fromFolder:(const bookmarks::BookmarkNode*)folder {
+  DCHECK(node);
+  if (self.displayedNode && self.displayedNode->HasAncestor(node)) {
+    self.displayedNode = nullptr;
+  }
+}
+
 // `node` was deleted from `folder`.
 - (void)bookmarkModel:(bookmarks::BookmarkModel*)model
         didDeleteNode:(const bookmarks::BookmarkNode*)node
            fromFolder:(const bookmarks::BookmarkNode*)folder {
-  if (self.currentlyShowingSearchResults) {
-    [self.consumer refreshContents];
-  } else if (self.displayedNode == node) {
-    self.displayedNode = NULL;
-    [self.consumer refreshContents];
-  }
+  [self.consumer refreshContents];
 }
 
 // All non-permanent nodes have been removed.
@@ -667,8 +672,7 @@ bool IsABookmarkNodeSectionForIdentifier(
 }
 
 // The original chrome browser state used for services that don't exist in
-// incognito mode. E.g., `_syncSetupService`, `_syncService` and
-// `ManagedBookmarkService`.
+// incognito mode. E.g., `_syncService` and `ManagedBookmarkService`.
 - (ChromeBrowserState*)originalBrowserState {
   return _browser->GetBrowserState()->GetOriginalChromeBrowserState();
 }

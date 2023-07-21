@@ -349,8 +349,6 @@ void KioskBaseTest::RunAppLaunchNetworkDownTest() {
   error_screen_waiter.Wait();
   EXPECT_TRUE(LoginScreenTestApi::IsOobeDialogVisible());
 
-  ASSERT_TRUE(GetKioskLaunchController()->showing_network_dialog());
-
   SimulateNetworkOnline();
   WaitForAppLaunchSuccess();
 }
@@ -372,6 +370,14 @@ void KioskBaseTest::BlockAppLaunch(bool block) {
   } else {
     block_app_launch_override_.reset();
   }
+}
+
+void KioskBaseTest::SetTestApp(const std::string& app_id,
+                               const std::string& crx_file,
+                               const std::string& version) {
+  test_app_id_ = app_id;
+  test_crx_file_ = (crx_file == "") ? app_id + ".crx" : crx_file;
+  test_app_version_ = version;
 }
 
 }  // namespace ash

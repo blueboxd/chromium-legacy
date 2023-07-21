@@ -24,8 +24,13 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.app.tab_activity_glue.ReparentingDelegateFactory;
 import org.chromium.chrome.browser.app.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
 import org.chromium.chrome.browser.ntp.NewTabPageUtils;
+import org.chromium.chrome.browser.prefetch.settings.PreloadPagesSettingsBridge;
+import org.chromium.chrome.browser.prefetch.settings.PreloadPagesState;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.RedirectHandlerTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
@@ -42,6 +47,7 @@ import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.Visibility;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
@@ -145,6 +151,28 @@ public class ChromeTabCreator extends TabCreator {
                 assert false : "Unexpected serialization of tabLaunchType: " + tabLaunchType;
                 return "TypeUnknown";
         }
+    }
+
+    /**
+     * Preconnect to the URL and its subresources as the tab is being created.
+     * @param url URL to be preconnected to.
+     */
+    private void maybePreconnectUrlAndSubResources(GURL url) {
+        // This is an experimental performance optimization behind a flag that can speed up
+        // navigation by starting the connection earlier.
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.PRECONNECT_ON_TAB_CREATION)) return;
+
+        // We don't want to trigger preconnect for low end devices with low resources.
+        if (SysUtils.isLowEndDevice()) return;
+
+        // Skip preconnecting an empty URL.
+        if (url.isEmpty()) return;
+
+        // Only preconnect if we are allowed to trigger preloading.
+        if (PreloadPagesSettingsBridge.getState() == PreloadPagesState.NO_PRELOADING) return;
+
+        Profile profile = IncognitoUtils.getProfileFromWindowAndroid(mNativeWindow, mIncognito);
+        WarmupManager.getInstance().maybePreconnectUrlAndSubResources(profile, url.getScheme());
     }
 
     @Override
@@ -270,6 +298,9 @@ public class ChromeTabCreator extends TabCreator {
             loadUrlParams.setTransitionType(
                     getTransitionType(type, intent, loadUrlParams.getTransitionType()));
 
+            // Preconnect to the URL and its subresources as the tab is being created.
+            maybePreconnectUrlAndSubResources(url);
+
             // Check if the tab is being created asynchronously.
             int assignedTabId = IntentHandler.getTabId(intent);
             AsyncTabParams asyncParams = mAsyncTabParamsManager.remove(assignedTabId);
@@ -341,7 +372,11 @@ public class ChromeTabCreator extends TabCreator {
                                 mCompositorViewHolderSupplier.get(), mNativeWindow,
                                 createDefaultTabDelegateFactory()),
                         null);
-
+                // Set tab to visible before loading the url. This will ensure metrics are recorded
+                // correctly with spare tab.
+                if (openInForeground) {
+                    tab.getWebContents().updateWebContentsVisibility(Visibility.VISIBLE);
+                }
                 tab.loadUrl(loadUrlParams);
                 TraceEvent.end("ChromeTabCreator.loadUrlWithSpareTab");
             } else {

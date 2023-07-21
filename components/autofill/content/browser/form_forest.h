@@ -9,7 +9,7 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/span.h"
 #include "base/memory/raw_ptr.h"
-#include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/unique_ids.h"
@@ -146,6 +146,30 @@ namespace autofill::internal {
 // 2. GetBrowserForm() must only be called for known renderer forms. A renderer
 //    form is *known* after a corresponding UpdateTreeOfRendererForm() call
 //    until it is erased by EraseForms() or EraseFormsOfFrame().
+//
+// FormForest works with LocalFrameToken and resolves the RemoteFrameTokens in
+// FormData::child_frames to LocalFrameTokens.
+//
+// From the perspective of a frame F, a frame G is either local or remote:
+// - If G is local, G is hosted by the same render process as F.
+// - If G is remote, G may be hosted by another render process.
+//
+// Suppose F is the parent frame of G. If G is local to F, then F refers to G in
+// its FormData::child_frames by G's LocalFrameToken. Otherwise, if G is remote
+// to F, then F uses a RemoteFrameToken as a placeholder to refer to G in
+// FormData::child_frames.
+//
+// While LocalFrameTokens are unique identifiers at any point in time, they may
+// change when a navigation happens in the frame:
+// - If G is local to F and a navigation causes G's render process to be
+//   swapped so that G becomes remote, G gets a new LocalFrameToken and F will
+//   refer to G by a fresh RemoteFrameToken.
+// - If G is remote to F and a navigation causes G's render process to be
+//   swapped, then F may continue to refer to G by the same RemoteFrameToken
+//   as before even if G's LocalFrameToken has changed.
+// The first example is the reason why UpdateTreeOfRendererForm() may trigger a
+// reparse in a parent frame. The second example is the reason why we do not
+// cache LocalFrameTokens.
 class FormForest {
  public:
   // A FrameData is a frame node in the form tree. Its children are FormData
@@ -186,11 +210,11 @@ class FormForest {
     // itself as the parent of the child frame, even if no form in this frame
     // has been seen yet.
     absl::optional<FormGlobalId> parent_form = absl::nullopt;
-    // Pointer to the frame's ContentAutofillDriver. This can be null because an
+    // Pointer to the frame's AutofillDriver. This may be null because an
     // empty FrameData is created when a parent form can Resolve() a child's
     // LocalFrameToken and no form from that child frame has been seen yet.
     // However, if |child_forms| is non-empty, then driver is non-null.
-    raw_ptr<ContentAutofillDriver> driver = nullptr;
+    raw_ptr<AutofillDriver> driver = nullptr;
   };
 
   FormForest();
@@ -199,10 +223,10 @@ class FormForest {
   ~FormForest();
 
   // Adds or updates |renderer_form| and |driver| to/in the relevant tree, where
-  // |driver| must be the ContentAutofillDriver of `renderer_form.host_frame`.
+  // |driver| must be the AutofillDriver of `renderer_form.host_frame`.
   // Afterwards, `renderer_form.global_id()` is a known renderer form.
   void UpdateTreeOfRendererForm(FormData renderer_form,
-                                ContentAutofillDriver* driver) {
+                                AutofillDriver* driver) {
     UpdateTreeOfRendererForm(&renderer_form, driver);
   }
 
@@ -236,9 +260,8 @@ class FormForest {
   // The |field_type_map| should contain the field types of the fields in
   // |browser_form|.
   //
-  // There are two modes that determine whether a field is *safe to fill*.
-  // By default, a field is safe to fill iff at least one of the conditions
-  // (1–3) and additionally condition (4) hold:
+  // A field is *safe to fill* iff at least one of the conditions (1–3) and
+  // additionally condition (4) hold:
   //
   // (1) The field's origin is the |triggered_origin|.
   // (2) The field's origin is the main origin, the field's type in
@@ -247,16 +270,8 @@ class FormForest {
   //     frame.
   // (3) The |triggered_origin| is the main origin and the policy-controlled
   //     feature shared-autofill is enabled in the field's frame.
-  // (4) No frame on the shortest path from the field on which Autofill was
-  //     triggered to the field in question, except perhaps the shallowest
-  //     frame, is a fenced frame.
-  //
-  // If the Finch parameter relax_shared_autofill is true, the restriction to
-  // the main origin in condition 3 is lifted. Thus, conditions (2) and (3)
-  // reduce to the following:
-  //
-  // (2+3) The policy-controlled feature shared-autofill is enabled in the
-  //       field's document.
+  // (4) The field is in the same frame tree as the field on which Autofill was
+  //     triggered.
   //
   // The *origin of a field* is the origin of the frame that contains the
   // corresponding form-control element.
@@ -308,41 +323,6 @@ class FormForest {
     raw_ptr<FormData, DanglingUntriaged> form = nullptr;
   };
 
-  // Resolves a FrameToken |query| from the perspective of |reference| to the
-  // globally unique LocalFrameToken. `reference.driver` must be non-null.
-  //
-  // Frames identify each other using LocalFrameTokens and RemoteFrameTokens.
-  // - LocalFrameTokens are globally unique identifiers and hence suitable for
-  //   discrimating between frames.
-  // - RemoteFrameTokens are not unique and hence unsuitable to discriminate
-  //   between frames.
-  //
-  // Therefore, FormForest works with LocalFrameToken and resolves the
-  // RemoteFrameTokens in FormData::child_frames to LocalFrameTokens.
-  //
-  // From the perspective of a frame F, a frame G is either local or remote:
-  // - If G is local, G is hosted by the same render process as F.
-  // - If G is remote, G may be hosted by another render process.
-  //
-  // Suppose F is the parent frame of G. If G is local to F, then F refers to G
-  // in its FormData::child_frames by G's LocalFrameToken. Otherwise, if G is
-  // remote to F, then F uses a RemoteFrameToken as a placeholder to refer to G
-  // in FormData::child_frames.
-  //
-  // While LocalFrameTokens are unique identifiers at any point in time, they
-  // may change when a navigation happens in the frame:
-  // - If G is local to F and a navigation causes G's render process to be
-  //   swapped so that G becomes remote, G gets a new LocalFrameToken and F will
-  //   refer to G by a fresh RemoteFrameToken.
-  // - If G is remote to F and a navigation causes G's render process to be
-  //   swapped, then F may continue to refer to G by the same RemoteFrameToken
-  //   as before even if G's LocalFrameToken has changed.
-  // The first example is the reason why UpdateTreeOfRendererForm() may trigger
-  // a reparse in a parent frame. The second example is the reason why we do not
-  // cache LocalFrameTokens.
-  absl::optional<LocalFrameToken> Resolve(const FrameData& reference,
-                                          FrameToken query);
-
   // Returns the FrameData known for |frame|, or creates a new one and returns
   // it, in which case all members but FrameData::host_frame are uninitialized.
   FrameData* GetOrCreateFrameData(LocalFrameToken frame);
@@ -386,14 +366,14 @@ class FormForest {
       base::flat_set<FormGlobalId>* forms_with_removed_fields);
 
   // Adds |renderer_form| and |driver| to the relevant tree, where |driver| must
-  // be the ContentAutofillDriver of the |renderer_form|'s FormData::host_frame.
+  // be the AutofillDriver of the |renderer_form|'s FormData::host_frame.
   //
   // Afterwards, `renderer_form->global_id()` is a known renderer form.
   //
   // Leaves `*renderer_form` in a valid but unspecified state (like after a
   // move). In particular, `*renderer_form` and its members can be reassigned.
   void UpdateTreeOfRendererForm(FormData* renderer_form,
-                                ContentAutofillDriver* driver);
+                                AutofillDriver* driver);
 
   // The URL of a main frame managed by the FormForest.
   // TODO(crbug.com/1240247): Remove and make Resolve() static.

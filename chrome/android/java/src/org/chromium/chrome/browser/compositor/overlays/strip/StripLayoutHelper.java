@@ -244,6 +244,11 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     private boolean mTabGroupMarginAnimRunning;
     private boolean mTabCreating;
 
+    // TabModel info available before the tab state is actually initialized. Determined from frozen
+    // tab metadata.
+    private int mTabCountOnStartup;
+    private int mActiveTabIndexOnStartup;
+
     /**
      * Creates an instance of the {@link StripLayoutHelper}.
      * @param context         The current Android {@link Context}.
@@ -823,6 +828,33 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     }
 
     /**
+     * Set the relevant tab model metadata prior to the tab state initialization.
+     * @param activeTabIndexOnStartup What the active tab index should be after tabs finish
+     *                                restoring.
+     * @param tabCountOnStartup What the tab count should be after tabs finish restoring.
+     */
+    protected void setTabModelStartupInfo(int tabCountOnStartup, int activeTabIndexOnStartup) {
+        mTabCountOnStartup = tabCountOnStartup;
+        mActiveTabIndexOnStartup = activeTabIndexOnStartup;
+
+        // TODO(crbug.com/1444810): Create remaining placeholder tabs, if any.
+    }
+
+    /**
+     * @return The expected tab count after tabs finish restoring.
+     */
+    protected int getTabCountOnStartupForTesting() {
+        return mTabCountOnStartup;
+    }
+
+    /**
+     * @return The expected active tab index after tabs finish restoring.
+     */
+    protected int getActiveTabIndexOnStartupForTesting() {
+        return mActiveTabIndexOnStartup;
+    }
+
+    /**
      * Called to hide close tab buttons when tab width is <156dp when min tab width is 108dp or for
      * partially visible tabs at the edge of the tab strip when min tab width is set to >=156dp.
      */
@@ -1235,7 +1267,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         }
 
         // 4. Add new tab button offset animation.
-        if (!ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+        if (isNewTabButtonAnchorDisabled()) {
             CompositorAnimator newTabButtonOffsetAnimator = updateNewTabButtonState(true);
             if (newTabButtonOffsetAnimator != null) {
                 tabStripAnimators.add(newTabButtonOffsetAnimator);
@@ -1675,14 +1707,20 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         }
     }
 
+    private boolean isNewTabButtonAnchorDisabled() {
+        return !ChromeFeatureList.sTabStripRedesign.isEnabled()
+                || TabUiFeatureUtilities.isTabStripNtbAnchorDisabled()
+                || TabUiFeatureUtilities.isTabStripButtonStyleDisabled();
+    }
+
+    // @Todo (crbugs.com/1448590) Update NTB and incognito position for button style disabled param.
     private CompositorAnimator updateNewTabButtonState(boolean animate) {
         // 1. The NTB is faded out upon entering reorder mode and hidden when the model is empty.
         boolean isEmpty = mStripTabs.length == 0;
         mNewTabButton.setVisible(!isEmpty);
         if (mInReorderMode || isEmpty) return null;
 
-        if (!ChromeFeatureList.sTabStripRedesign.isEnabled()
-                || TabUiFeatureUtilities.isTabStripNtbAnchorDisabled()) {
+        if (isNewTabButtonAnchorDisabled()) {
             // 2. Get offset from strip stacker.
             float offset = mStripStacker.computeNewTabButtonOffset(mStripTabs, mTabOverlapWidth,
                     mLeftMargin, mRightMargin, mWidth, mNewTabButtonWidth,

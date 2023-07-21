@@ -6,7 +6,7 @@
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
-#include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_format_service_utils.h"
 #include "skia/ext/legacy_display_globals.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -81,8 +81,8 @@ class TestSkiaImageRepresentation : public SkiaGaneshImageRepresentation {
       return {};
     }
     SkSurfaceProps props = skia::LegacyDisplayGlobals::GetSkSurfaceProps();
-    auto surface =
-        SkSurface::MakeRasterN32Premul(size().width(), size().height(), &props);
+    auto surface = SkSurfaces::Raster(
+        SkImageInfo::MakeN32Premul(size().width(), size().height()), &props);
     if (!surface)
       return {};
     return {surface};

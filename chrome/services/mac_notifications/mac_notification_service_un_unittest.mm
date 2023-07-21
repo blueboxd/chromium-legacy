@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/mac/bundle_locations.h"
+#include "base/apple/bundle_locations.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/bind.h"
@@ -37,6 +37,13 @@
 namespace mac_notifications {
 
 namespace {
+
+struct NotificationActionParams {
+  NSString* action_identifier;
+  NotificationOperation operation;
+  int button_index;
+  absl::optional<std::u16string> reply;
+};
 
 class MockNotificationActionHandler
     : public mojom::MacNotificationActionHandler {
@@ -488,7 +495,7 @@ TEST_F(MacNotificationServiceUNTest, LogsMetricsForAlerts) {
   if (@available(macOS 10.14, *)) {
     base::HistogramTester histogram_tester;
     id mainBundleMock =
-        [OCMockObject partialMockForObject:base::mac::MainBundle()];
+        [OCMockObject partialMockForObject:base::apple::MainBundle()];
 
     // Mock the alert style to "alert" and verify we log the correct metrics.
     [[[mainBundleMock stub]
@@ -513,7 +520,7 @@ TEST_F(MacNotificationServiceUNTest, LogsMetricsForBanners) {
   if (@available(macOS 10.14, *)) {
     base::HistogramTester histogram_tester;
     id mainBundleMock =
-        [OCMockObject partialMockForObject:base::mac::MainBundle()];
+        [OCMockObject partialMockForObject:base::apple::MainBundle()];
 
     // Mock the alert style to "banner" and verify we log the correct metrics.
     [[[mainBundleMock stub]
@@ -560,13 +567,6 @@ TEST_F(MacNotificationServiceUNTest, InitializeDeliveredNotifications) {
         }));
   }
 }
-
-struct NotificationActionParams {
-  NSString* action_identifier;
-  NotificationOperation operation;
-  int button_index;
-  absl::optional<std::u16string> reply;
-};
 
 TEST_F(MacNotificationServiceUNTest, OnNotificationAction) {
   if (@available(macOS 10.14, *)) {

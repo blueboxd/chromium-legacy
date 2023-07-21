@@ -110,6 +110,7 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/parsed_headers.h"
 #include "services/network/public/cpp/simple_host_resolver.h"
+#include "services/network/public/cpp/thread_delegate.h"
 #include "services/network/public/mojom/clear_data_filter.mojom.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -818,7 +819,9 @@ void NetworkContext::OnComputedFirstPartySetMetadata(
 
   auto callback = base::BindOnce(&NetworkContext::OnRCMDisconnect,
                                  base::Unretained(this), ptr.get());
-  ptr->InstallReceiver(std::move(receiver), std::move(callback));
+  ptr->InstallReceiver(std::move(receiver),
+                       ThreadDelegate::GetHighPriorityTaskRunner(),
+                       std::move(callback));
   restricted_cookie_managers_.insert(std::move(ptr));
 }
 
@@ -1186,8 +1189,9 @@ void NetworkContext::QueueReport(
 #if BUILDFLAG(ENABLE_REPORTING)
   // If |reporting_source| is provided, it must not be empty.
   DCHECK(!(reporting_source.has_value() && reporting_source->is_empty()));
-  if (require_network_isolation_key_)
+  if (require_network_anonymization_key_) {
     DCHECK(!network_anonymization_key.IsEmpty());
+  }
 
   // Get the ReportingService.
   net::URLRequestContext* request_context = url_request_context();
@@ -1215,8 +1219,9 @@ void NetworkContext::QueueSignedExchangeReport(
     mojom::SignedExchangeReportPtr report,
     const net::NetworkAnonymizationKey& network_anonymization_key) {
 #if BUILDFLAG(ENABLE_REPORTING)
-  if (require_network_isolation_key_)
+  if (require_network_anonymization_key_) {
     DCHECK(!network_anonymization_key.IsEmpty());
+  }
 
   net::NetworkErrorLoggingService* logging_service =
       url_request_context_->network_error_logging_service();
@@ -1738,8 +1743,9 @@ void NetworkContext::VerifyCertForSignedExchange(
     const std::string& ocsp_result,
     const std::string& sct_list,
     VerifyCertForSignedExchangeCallback callback) {
-  if (require_network_isolation_key_)
+  if (require_network_anonymization_key_) {
     DCHECK(!network_anonymization_key.IsEmpty());
+  }
 
   uint64_t cert_verify_id = ++next_cert_verify_id_;
   CHECK_NE(0u, next_cert_verify_id_);  // The request ID should not wrap around.
@@ -1939,7 +1945,7 @@ void NetworkContext::PreconnectSockets(
     const GURL& original_url,
     bool allow_credentials,
     const net::NetworkAnonymizationKey& network_anonymization_key) {
-  DCHECK(!require_network_isolation_key_ ||
+  DCHECK(!require_network_anonymization_key_ ||
          !network_anonymization_key.IsEmpty());
 
   GURL url = GetHSTSRedirect(original_url);
@@ -2551,17 +2557,17 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
             std::move(params_->socket_broker)));
   }
 
-  // If `require_network_isolation_key_` is true, but the features that can
-  // trigger another URLRequest are not set to respect NetworkIsolationKeys,
-  // the URLRequests that they create might not have a NIK, so only set the
+  // If `require_network_anonymization_key_` is true, but the features that can
+  // trigger another URLRequest are not set to respect NetworkAnonymizationKeys,
+  // the URLRequests that they create might not have a NAK, so only set the
   // corresponding value in the URLRequestContext to true at the URLRequest
-  // layer if all those features are set to respect NIK.
-  if (require_network_isolation_key_ &&
+  // layer if all those features are set to respect NAK.
+  if (require_network_anonymization_key_ &&
       net::NetworkAnonymizationKey::IsPartitioningEnabled() &&
       base::FeatureList::IsEnabled(
           domain_reliability::features::
               kPartitionDomainReliabilityByNetworkIsolationKey)) {
-    builder.set_require_network_isolation_key(true);
+    builder.set_require_network_anonymization_key(true);
   }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -2574,7 +2580,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   auto result =
       URLRequestContextOwner(std::move(pref_service), builder.Build());
 
-  require_network_isolation_key_ = params_->require_network_isolation_key;
+  require_network_anonymization_key_ =
+      params_->require_network_anonymization_key;
 
   // Subscribe the CertVerifier to configuration changes that are exposed via
   // the mojom::SSLConfig, but which are not part of the

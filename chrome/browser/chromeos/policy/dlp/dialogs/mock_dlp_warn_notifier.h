@@ -33,8 +33,15 @@ class MockDlpWarnNotifier : public DlpWarnNotifier {
   MOCK_METHOD(base::WeakPtr<views::Widget>,
               ShowDlpWarningDialog,
               (OnDlpRestrictionCheckedCallback callback,
-               DlpWarnDialog::DlpWarnDialogOptions options,
-               gfx::NativeWindow modal_parent),
+               DlpWarnDialog::DlpWarnDialogOptions options),
+              (override));
+
+  MOCK_METHOD(base::WeakPtr<views::Widget>,
+              ShowDlpFilesWarningDialog,
+              (OnDlpRestrictionCheckedCallback callback,
+               const std::vector<DlpConfidentialFile>& confidential_files,
+               const DlpFileDestination& destination,
+               DlpFilesController::FileAction action),
               (override));
 
  private:

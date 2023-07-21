@@ -54,16 +54,6 @@ static_assert(sizeof(void*) != 8, "");
 #define PA_CONFIG_DYNAMICALLY_SELECT_POOL_SIZE() 0
 #endif  // BUILDFLAG(HAS_64_BIT_POINTERS) && BUILDFLAG(IS_IOS)
 
-// Puts the regular and BRP pools right next to each other, so that we can
-// check "belongs to one of the two pools" with a single bitmask operation.
-//
-// This setting is specific to 64-bit, as 32-bit has a different implementation.
-#if BUILDFLAG(HAS_64_BIT_POINTERS) && BUILDFLAG(GLUE_CORE_POOLS)
-#define PA_CONFIG_GLUE_CORE_POOLS() 1
-#else
-#define PA_CONFIG_GLUE_CORE_POOLS() 0
-#endif
-
 #if BUILDFLAG(HAS_64_BIT_POINTERS) && \
     (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_ANDROID))
 #include <linux/version.h>
@@ -167,6 +157,18 @@ static_assert(sizeof(void*) != 8, "");
 
 #if PA_CONFIG(HAS_MEMORY_TAGGING)
 static_assert(sizeof(void*) == 8);
+#endif
+
+// If memory tagging is enabled with BRP previous slot, the MTE tag and BRP ref
+// count will cause a race (crbug.com/1445816). To prevent this, the
+// ref_count_size is increased to the MTE granule size and the ref count is not
+// tagged.
+#if PA_CONFIG(HAS_MEMORY_TAGGING) &&            \
+    BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && \
+    BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
+#define PA_CONFIG_INCREASE_REF_COUNT_SIZE_FOR_MTE() 1
+#else
+#define PA_CONFIG_INCREASE_REF_COUNT_SIZE_FOR_MTE() 0
 #endif
 
 // Specifies whether allocation extras need to be added.
@@ -304,14 +306,8 @@ constexpr bool kUseLazyCommit = false;
 #define PA_CONFIG_ENABLE_MAC11_MALLOC_SIZE_HACK() \
   (BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && BUILDFLAG(IS_MAC))
 
-// Enables compressed (4-byte) pointers that can point within the core pools
-// (Regular + BRP).
-#if BUILDFLAG(HAS_64_BIT_POINTERS) && BUILDFLAG(ENABLE_POINTER_COMPRESSION)
-#define PA_CONFIG_POINTER_COMPRESSION() 1
+#if BUILDFLAG(ENABLE_POINTER_COMPRESSION)
 
-#if !PA_CONFIG(GLUE_CORE_POOLS)
-#error "Pointer compression works only with contiguous pools"
-#endif
 #if PA_CONFIG(DYNAMICALLY_SELECT_POOL_SIZE)
 #error "Dynamically selected pool size is currently not supported"
 #endif
@@ -319,10 +315,8 @@ constexpr bool kUseLazyCommit = false;
 // TODO(1376980): Address MTE once it's enabled.
 #error "Compressed pointers don't support tag in the upper bits"
 #endif
-#else  // BUILDFLAG(HAS_64_BIT_POINTERS) &&
-       // BUILDFLAG(ENABLE_POINTER_COMPRESSION)
-#define PA_CONFIG_POINTER_COMPRESSION() 0
-#endif
+
+#endif  // BUILDFLAG(ENABLE_POINTER_COMPRESSION)
 
 // PA_CONFIG(IS_NONCLANG_MSVC): mimics the compound condition used by
 // Chromium's `//base/compiler_specific.h` to detect true (non-Clang)

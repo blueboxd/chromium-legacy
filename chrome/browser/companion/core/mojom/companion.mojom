@@ -8,7 +8,7 @@ import "url/mojom/url.mojom";
 
 // Methods called on the browser from the companion UI.
 // Keep this file in sync with
-// google3/java/com/google/lens/web/interfaces/standalone/companionweb/service/companion_parent_communication_service.ts.
+// google3/java/com/google/lens/web/interfaces/standalone/commonweb/companionparent/companion_parent_communication_service.ts.
 enum MethodType {
   // Methods used in renderer -> browser communication.
   // Method corresponding to `CompanionPageHandler.OnPromoAction`.
@@ -39,12 +39,18 @@ enum MethodType {
   // Method corresponding to `CompanionPageHandler.OnCqJumptagClicked`.
   kOnCqJumptagClicked = 9,
 
+  // Method corresponding to `CompanionPageHandler.OpenUrlInBrowser`.
+  kOpenUrlInBrowser = 10,
+
   // Methods used in browser -> renderer communication.
   // Method corresponding to `CompanionPage.UpdateCompanionPage`.
   kUpdateCompanionPage = 31,
 
   // Method corresponding to `CompanionPage.OnCqFindTextResultsAvailable`.
   kOnCqFindTextResultsAvailable = 32,
+
+  // Method corresponding to `CompanionPage.NotifyLinkOpen`.
+  kNotifyLinkOpen = 34,
 };
 
 // Types of promos shown in the companion UI.
@@ -59,6 +65,9 @@ enum PromoType {
 
   // Promo to opt into experience api.
   kExps = 3,
+
+  // IPH about region search capability.
+  kRegionSearchIPH = 4,
 };
 
 // User actions taken on a promo.
@@ -84,6 +93,9 @@ enum PhFeedback {
 
   // User clicked thumbs down.
   kThumbsDown = 2,
+
+  // User clicked report content.
+  kReportContent = 3,
 };
 
 // Data for uploading an image query.
@@ -106,14 +118,44 @@ struct ImageQuery {
   uint32 downscaled_width;
 };
 
+// Metadata for NotifyLinkOpen
+// Keep this file in sync with
+// google3/java/com/google/lens/web/interfaces/standalone/companionweb/service/companion_parent_communication_service.ts.
+struct LinkOpenMetadata {
+  enum LinkOpenAction {
+    // Link was opened in a new tab.
+    kNewTab = 1,
+
+    // Link opened in the existing main active tab
+    kClobbered = 2,
+
+    // Link click was ignored and did not open
+    kIgnored = 3,
+  };
+  // How the link click was handled by the browser
+  LinkOpenAction open_action;
+
+  // Bool to help with HATS survey metadata
+  bool is_search_companion_pinned_by_default;
+};
+
 // Various UI surfaces on the companion page.
 // Keep this file in sync with
 // google3/java/com/google/lens/web/interfaces/standalone/companionweb/service/companion_parent_communication_service.ts.
 enum UiSurface {
   kUnknown = 0,
+  // Used for when the PH initial surface is shown that allows PH to be requested by the user.
   kPH = 1,
   kCQ = 2,
   kRegionSearch = 3,
+  kSearchBox = 4,
+  kVQ = 5,
+  kRelQr = 6,
+  kRelQs = 7,
+  kPageEntities = 8,
+  kATX = 9,
+  // Used for when requested PH is shown to report the resulting elements and interactions.
+  kPHResult = 10
 };
 
 // Factory method for creating a new WebUI page handler.
@@ -129,7 +171,8 @@ interface CompanionPageHandler {
   // Notify the backend that the UI is ready to be shown.
   ShowUI();
 
-  // Called to notify the browser about user action on a promo.
+  // Called to notify the browser about user action of type `promo_action` on a
+  // promo of type `promo_type`.
   OnPromoAction(PromoType promo_type, PromoAction promo_action);
 
   // Called to notify the browser that user has clicked on region search button.
@@ -148,12 +191,21 @@ interface CompanionPageHandler {
   // the companion page. Additionally indicates the number of child elements
   // shown within the surface, e.g. the number of related queries shown in
   // the related queries component.
-  RecordUiSurfaceShown(UiSurface ui_surface, uint32 child_element_count);
+  // `ui_surface_position` indicates the position of this UI surface within the
+  // page.
+  // `child_element_available_count` is the number of candidate children that
+  // were considered to be shown in the page.
+  // 'child_element_shown_count` is the number of children that were actually
+  // shown.
+  RecordUiSurfaceShown(UiSurface ui_surface, uint32 ui_surface_position,
+      uint32 child_element_available_count, uint32 child_element_shown_count);
 
   // For metrics only. Called to record that the user clicked on the given UI
   // surface on the companion page. These clicks are actual clicks on the
-  // surface which exclude clicks on the feedback elements.
-  RecordUiSurfaceClicked(UiSurface ui_surface);
+  // surface which exclude clicks on the feedback elements. The
+  // `click_position` refers to the position of the surface within a
+  // list. Applicable only to certain UI surfaces. Pass -1 when not applicable.
+  RecordUiSurfaceClicked(UiSurface ui_surface, int32 click_position);
 
   // Called to notify the browser that the cq candidates are available.
   OnCqCandidatesAvailable(array<string> text_directives);
@@ -165,6 +217,10 @@ interface CompanionPageHandler {
   // `text_directive` is the URL fragment for highlighting and scrolling-to.
   // Ref: https://wicg.github.io/scroll-to-text-fragment/#syntax.
   OnCqJumptagClicked(string text_directive);
+
+  // Generic method that can be used to open a URL in the browser. Ignored if
+  // `url_to_open` is invalid.
+  OpenUrlInBrowser(url.mojom.Url? url_to_open, bool use_new_tab);
 };
 
 // WebUI page handler for request from Browser side. (C++ -> TypeScript)
@@ -186,4 +242,8 @@ interface CompanionPage {
   // `text_directives` and `results` have the same length.
   OnCqFindTextResultsAvailable(array<string> text_directives,
     array<bool> results);
+
+  // Notify the frontend that the user clicked a link that is meant to open
+  // outside of side panel. `opened_url` is the link the user clicked on.
+  NotifyLinkOpen(url.mojom.Url opened_url, LinkOpenMetadata metadata );
 };

@@ -8,6 +8,7 @@ import {DialogPage, OperationType, UserAction} from 'chrome://cloud-upload/cloud
 import {CloudUploadBrowserProxy} from 'chrome://cloud-upload/cloud_upload_browser_proxy.js';
 import {CloudProvider, MoveConfirmationPageElement} from 'chrome://cloud-upload/move_confirmation_page.js';
 import {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertNotReached, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 import {CloudUploadTestBrowserProxy, ProxyOptions} from './cloud_upload_test_browser_proxy.js';
@@ -63,7 +64,8 @@ suite('<move-confirmation-page>', () => {
    * the <move-confirmation-page> component.
    */
   teardown(() => {
-    container.innerHTML = '';
+    assert(window.trustedTypes);
+    container.innerHTML = window.trustedTypes.emptyHTML;
     testProxy.handler.reset();
   });
 
@@ -474,7 +476,7 @@ suite('<move-confirmation-page>', () => {
     const checkbox = moveConfirmationPageApp.$<CrCheckboxElement>(
         '#always-copy-or-move-checkbox');
     assertTrue(!!checkbox);
-    assertTrue(checkbox.innerText.includes('Google Drive'));
+    assertTrue(checkbox.innerText.includes('Don\'t ask again'));
   });
 
   /**
@@ -502,7 +504,7 @@ suite('<move-confirmation-page>', () => {
     const checkbox = moveConfirmationPageApp.$<CrCheckboxElement>(
         '#always-copy-or-move-checkbox');
     assertTrue(!!checkbox);
-    assertTrue(checkbox.innerText.includes('OneDrive'));
+    assertTrue(checkbox.innerText.includes('Don\'t ask again'));
   });
 
   /**
@@ -521,12 +523,6 @@ suite('<move-confirmation-page>', () => {
     // Title.
     const titleElement = moveConfirmationPageApp.$<HTMLElement>('#title')!;
     assertTrue(titleElement.innerText.includes('Move'));
-
-    // Checkbox.
-    const checkbox = moveConfirmationPageApp.$<CrCheckboxElement>(
-        '#always-copy-or-move-checkbox');
-    assertTrue(!!checkbox);
-    assertTrue(checkbox.innerText.includes('Move'));
 
     // Button.
     const actionButton =
@@ -550,12 +546,6 @@ suite('<move-confirmation-page>', () => {
     // Title.
     const titleElement = moveConfirmationPageApp.$<HTMLElement>('#title')!;
     assertTrue(titleElement.innerText.includes('Copy'));
-
-    // Checkbox.
-    const checkbox = moveConfirmationPageApp.$<CrCheckboxElement>(
-        '#always-copy-or-move-checkbox');
-    assertTrue(!!checkbox);
-    assertTrue(checkbox.innerText.includes('Copy'));
 
     // Button.
     const actionButton =

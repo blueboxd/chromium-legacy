@@ -89,8 +89,8 @@
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/site_isolation/site_isolation_policy.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_user_settings.h"
+#include "components/sync/service/sync_service.h"
+#include "components/sync/service/sync_user_settings.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/back_forward_cache.h"
@@ -135,10 +135,12 @@
 #include "chrome/browser/password_manager/android/password_generation_controller.h"
 #include "chrome/browser/password_manager/android/password_manager_launcher_android.h"
 #include "chrome/browser/password_manager/android/password_manager_ui_util_android.h"
+#include "chrome/browser/touch_to_fill/password_generation/android/touch_to_fill_password_generation_controller.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_controller.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_controller_autofill_delegate.h"
 #include "components/messages/android/messages_feature.h"
 #include "components/password_manager/core/browser/credential_cache.h"
+#include "components/webauthn/android/webauthn_cred_man_delegate.h"
 #include "ui/base/ui_base_features.h"
 #else
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
@@ -339,6 +341,8 @@ void ChromePasswordManagerClient::FocusedInputChanged(
 #if BUILDFLAG(IS_ANDROID)
   ManualFillingController::GetOrCreate(web_contents())
       ->NotifyFocusedInputChanged(focused_field_id, focused_field_type);
+  GetOrCreatePasswordAccessory()->UpdateCredManReentryUi();
+
   password_manager::ContentPasswordManagerDriver* content_driver =
       static_cast<password_manager::ContentPasswordManagerDriver*>(driver);
   if (!ShouldAcceptFocusEvent(web_contents(), content_driver,
@@ -959,6 +963,18 @@ ChromePasswordManagerClient::GetWebAuthnCredentialsDelegateForDriver(
       ->GetDelegateForFrame(frame_host);
 }
 
+#if BUILDFLAG(IS_ANDROID)
+WebAuthnCredManDelegate*
+ChromePasswordManagerClient::GetWebAuthnCredManDelegateForDriver(
+    PasswordManagerDriver* driver) {
+  auto* frame_host =
+      static_cast<password_manager::ContentPasswordManagerDriver*>(driver)
+          ->render_frame_host();
+  return WebAuthnCredManDelegate::GetRequestDelegate(
+      content::WebContents::FromRenderFrameHost(frame_host));
+}
+#endif  // BUILDFLAG(IS_ANDROID)
+
 version_info::Channel ChromePasswordManagerClient::GetChannel() const {
   return chrome::GetChannel();
 }
@@ -1007,7 +1023,7 @@ void ChromePasswordManagerClient::AutomaticGenerationAvailable(
       ui_data.bounds);
 
   generation_controller->OnAutomaticGenerationAvailable(
-      driver->AsWeakPtr(), ui_data, element_bounds_in_screen_space);
+      base::AsWeakPtr(driver), ui_data, element_bounds_in_screen_space);
 #else
   password_manager::ContentPasswordManagerDriver* driver =
       driver_factory_->GetDriverForFrame(rfh);
@@ -1306,6 +1322,19 @@ void ChromePasswordManagerClient::PrimaryPageChanged(content::Page& page) {
   HideFillingUI();
 }
 
+void ChromePasswordManagerClient::RenderFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+#if BUILDFLAG(IS_ANDROID)
+  PasswordGenerationController* generation_controller =
+      PasswordGenerationController::GetIfExisting(web_contents());
+  // If the render frame for which the password generation was offered is
+  // deleted then hide the UI.
+  if (generation_controller) {
+    generation_controller->RenderFrameDeleted(render_frame_host);
+  }
+#endif  // BUILDFLAG(IS_ANDROID)
+}
+
 void ChromePasswordManagerClient::WebContentsDestroyed() {
   // crbug/1090011
   // Drop the connection before the WebContentsObserver destructors are invoked.
@@ -1336,6 +1365,12 @@ void ChromePasswordManagerClient::HideFillingUI() {
   // Hides all the manual filling UI if the controller already exists.
   if (mf_controller)
     mf_controller->Hide();
+
+  PasswordGenerationController* generation_controller =
+      PasswordGenerationController::GetIfExisting(web_contents());
+  if (generation_controller) {
+    generation_controller->HideBottomSheetIfNeeded();
+  }
 #endif  // BUILDFLAG(IS_ANDROID)
 }
 

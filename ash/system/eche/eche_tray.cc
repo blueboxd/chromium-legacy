@@ -27,6 +27,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/style/icon_button.h"
+#include "ash/style/typography.h"
 #include "ash/system/eche/eche_icon_loading_indicator_view.h"
 #include "ash/system/phonehub/phone_hub_tray.h"
 #include "ash/system/phonehub/ui_constants.h"
@@ -42,9 +43,11 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/multidevice/logging/logging.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/account_id/account_id.h"
 #include "components/session_manager/session_manager_types.h"
 #include "components/vector_icons/vector_icons.h"
@@ -52,6 +55,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -166,9 +170,12 @@ std::unique_ptr<views::Button> CreateButton(
     const gfx::VectorIcon& icon,
     int message_id) {
   auto button = views::CreateVectorImageButton(std::move(callback));
-  views::SetImageFromVectorIconWithColorId(button.get(), icon,
-                                           kColorAshIconColorPrimary,
-                                           kColorAshButtonIconDisabledColor);
+  views::SetImageFromVectorIconWithColorId(
+      button.get(), icon,
+      chromeos::features::IsJellyrollEnabled()
+          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysOnSurface)
+          : kColorAshIconColorPrimary,
+      kColorAshButtonIconDisabledColor);
   button->SetTooltipText(l10n_util::GetStringUTF16(message_id));
   button->SizeToPreferredSize();
 
@@ -194,12 +201,18 @@ void ConfigureLabelText(views::Label* title) {
           .WithWeight(1));
   title->SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
-  gfx::Font default_font;
-  gfx::Font text_font = default_font.Derive(
-      kAppStreamingTitleTextFontSize - default_font.GetFontSize(),
-      gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
-  gfx::FontList font_list(text_font);
-  title->SetFontList(font_list);
+  if (chromeos::features::IsJellyrollEnabled()) {
+    title->SetEnabledColorId(cros_tokens::kCrosSysOnSurface);
+    TypographyProvider::Get()->StyleLabel(ash::TypographyToken::kCrosHeadline1,
+                                          *title);
+  } else {
+    gfx::Font default_font;
+    gfx::Font text_font = default_font.Derive(
+        kAppStreamingTitleTextFontSize - default_font.GetFontSize(),
+        gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
+    gfx::FontList font_list(text_font);
+    title->SetFontList(font_list);
+  }
 }
 
 }  // namespace
@@ -430,33 +443,39 @@ void EcheTray::OnConnectionStatusChanged(
       break;
 
     case eche_app::mojom::ConnectionStatus::kConnectionStatusConnected:
+      PA_LOG(INFO) << "Connection successful, updating UI to connected.";
       eche_connection_status_handler_->SetConnectionStatusForUi(
           connection_status);
       has_reported_initializer_result_ = true;
       base::UmaHistogramBoolean("Eche.NetworkCheck.Result", true);
+      StartGracefulCloseInitializer();
       break;
     case eche_app::mojom::ConnectionStatus::kConnectionStatusFailed:
+      PA_LOG(WARNING) << "Connection failed, updating UI to error state.";
       eche_connection_status_handler_->SetConnectionStatusForUi(
           connection_status);
       base::UmaHistogramBoolean("Eche.NetworkCheck.Result", false);
       has_reported_initializer_result_ = true;
+      StartGracefulCloseInitializer();
       break;
     case eche_app::mojom::ConnectionStatus::kConnectionStatusDisconnected:
-      if (!has_reported_initializer_result_) {
-        // If we've timedout or been disconnected before a success/failure has
-        // come in, report failure.
+      // If we've timed out or been disconnected before a success/failure has
+      // come in, report failure, unless we intentionally disconnected in
+      // preparation for an app stream launch.
+      if (!has_reported_initializer_result_ && !on_initializer_closed_) {
+        PA_LOG(WARNING)
+            << "Disconnected without result, updating UI to error state.";
         base::UmaHistogramBoolean("Eche.NetworkCheck.Result", false);
         eche_connection_status_handler_->SetConnectionStatusForUi(
             eche_app::mojom::ConnectionStatus::kConnectionStatusFailed);
       }
-
-      StartGracefulCloseInitializer();
+      initializer_webview_.reset();
       break;
   }
 }
 
 void EcheTray::OnRequestBackgroundConnectionAttempt() {
-  if (!features::IsEcheNetworkConnectionStateEnabled() || IsInitialized()) {
+  if (!features::IsEcheNetworkConnectionStateEnabled() || web_view_) {
     return;
   }
   has_reported_initializer_result_ = false;
@@ -464,13 +483,30 @@ void EcheTray::OnRequestBackgroundConnectionAttempt() {
   initializer_webview_->Navigate(GURL(kEchePrewarmConnectionUrl));
   initializer_timeout_ = std::make_unique<base::DelayTimer>(
       FROM_HERE, kInitializerTimeout, this,
-      &EcheTray::StartGracefulCloseInitializer);
+      &EcheTray::OnBackgroundConnectionTimeout);
   initializer_timeout_->Reset();  // Starts the timer.
   SetIconVisibility(false);
 }
 
 void EcheTray::CloseInitializer() {
   initializer_webview_.reset();
+  if (on_initializer_closed_) {
+    std::move(on_initializer_closed_).Run();
+  }
+}
+
+void EcheTray::OnBackgroundConnectionTimeout() {
+  if (!initializer_webview_ || web_view_) {
+    return;
+  }
+
+  // Notify that the connection attempt failed reset the connection status for
+  // timeouts, this happens automatically for other failures.
+  eche_connection_status_handler_->SetConnectionStatusForUi(
+      eche_app::mojom::ConnectionStatus::kConnectionStatusFailed);
+  eche_connection_status_handler_->OnConnectionStatusChanged(
+      eche_app::mojom::ConnectionStatus::kConnectionStatusDisconnected);
+  StartGracefulCloseInitializer();
 }
 
 void EcheTray::StartGracefulCloseInitializer() {
@@ -598,9 +634,25 @@ void EcheTray::InitBubble(
     const std::u16string& phone_name,
     eche_app::mojom::ConnectionStatus last_connection_status,
     eche_app::mojom::AppStreamLaunchEntryPoint entry_point) {
+  // We only support a single connection between the phone and chromebook, if
+  // there's an existing background connection it must first be disconnected
+  // before we can continue with the app stream initialization.
+  // TODO(b/283880725) re-use the existing connection instead of terminating it
+  // and starting a new one.
+  if (initializer_webview_) {
+    PA_LOG(INFO)
+        << "Active background connection must be terminated prior to launching "
+           "app.  Saving launch details and will retry once ready.";
+    on_initializer_closed_ =
+        base::BindOnce(&EcheTray::InitBubble, base::Unretained(this),
+                       phone_name, last_connection_status, entry_point);
+    StartGracefulCloseInitializer();
+    return;
+  }
+
   if (features::IsEcheNetworkConnectionStateEnabled() &&
-      last_connection_status ==
-          eche_app::mojom::ConnectionStatus::kConnectionStatusFailed &&
+      last_connection_status !=
+          eche_app::mojom::ConnectionStatus::kConnectionStatusConnected &&
       entry_point == eche_app::mojom::AppStreamLaunchEntryPoint::NOTIFICATION) {
     base::UmaHistogramEnumeration(
         "Eche.StreamEvent.FromNotification.PreviousNetworkCheckFailed.Result",
@@ -609,6 +661,26 @@ void EcheTray::InitBubble(
     base::UmaHistogramEnumeration(
         "Eche.StreamEvent",
         eche_app::mojom::StreamStatus::kStreamStatusInitializing);
+    switch (entry_point) {
+      case eche_app::mojom::AppStreamLaunchEntryPoint::APPS_LIST:
+        base::UmaHistogramEnumeration(
+            "Eche.StreamEvent.FromLauncher",
+            eche_app::mojom::StreamStatus::kStreamStatusInitializing);
+        break;
+      case eche_app::mojom::AppStreamLaunchEntryPoint::NOTIFICATION:
+        base::UmaHistogramEnumeration(
+            "Eche.StreamEvent.FromNotification",
+            eche_app::mojom::StreamStatus::kStreamStatusInitializing);
+        break;
+      case eche_app::mojom::AppStreamLaunchEntryPoint::RECENT_APPS:
+        base::UmaHistogramEnumeration(
+            "Eche.StreamEvent.FromRecentApps",
+            eche_app::mojom::StreamStatus::kStreamStatusInitializing);
+        break;
+      case eche_app::mojom::AppStreamLaunchEntryPoint::UNKNOWN:
+        NOTREACHED();
+        break;
+    }
   }
   init_stream_timestamp_ = base::TimeTicks::Now();
   TrayBubbleView::InitParams init_params;
@@ -641,11 +713,6 @@ void EcheTray::InitBubble(
       ->SetFlexForView(header_view_, 0, true);
   static_cast<views::BoxLayout*>(bubble_view->GetLayoutManager())
       ->set_inside_border_insets(kBubblePadding);
-
-  // Stop any in-progress prewearm channel operation.
-  if (initializer_webview_) {
-    initializer_webview_.reset();
-  }
 
   // TODO(b/271478560): Re-use initializer_webview_ when available, once support
   // launching apps on prewarmed connection is available.

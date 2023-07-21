@@ -32,6 +32,10 @@
 #include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+#include "media/gpu/chromeos/video_decoder_pipeline.h"
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+
 namespace media {
 namespace test {
 
@@ -285,6 +289,35 @@ class VideoDecoderTest : public ::testing::Test {
 };
 
 }  // namespace
+
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+TEST_F(VideoDecoderTest, GetSupportedConfigs) {
+  if (g_env->GetDecoderImplementation() != DecoderImplementation::kVD) {
+    GTEST_SKIP() << "Re-initialization is only supported by the "
+                    "media::VideoDecoder interface;";
+  }
+  const media::VideoDecoderType decoder_type =
+#if BUILDFLAG(USE_VAAPI)
+      media::VideoDecoderType::kVaapi;
+#elif BUILDFLAG(USE_V4L2_CODEC)
+      media::VideoDecoderType::kV4L2;
+#else
+      media::VideoDecoderType::kUnknown;
+#endif
+  const auto supported_configs = VideoDecoderPipeline::GetSupportedConfigs(
+      decoder_type, gpu::GpuDriverBugWorkarounds());
+  ASSERT_FALSE(supported_configs->empty());
+
+  const bool contains_h264 =
+      std::find_if(supported_configs->begin(), supported_configs->end(),
+                   [](SupportedVideoDecoderConfig config) {
+                     return config.profile_min >= H264PROFILE_MIN &&
+                            config.profile_max <= H264PROFILE_MAX;
+                   }) != supported_configs->end();
+  // Every hardware video decoder in ChromeOS supports some kind of H.264.
+  EXPECT_TRUE(contains_h264);
+}
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 // Test initializing the video decoder for the specified video. Initialization
 // will be successful if the video decoder is capable of decoding the test

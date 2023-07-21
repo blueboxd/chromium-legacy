@@ -56,6 +56,8 @@ const char kNetLogCaptureMode[] = "net-log-capture-mode";
 // for the format.
 const char kSSLKeyLogFile[] = "ssl-key-log-file";
 
+const char kTestThirdPartyCookiePhaseout[] = "test-third-party-cookie-phaseout";
+
 // Treat given (insecure) origins as secure origins. Multiple origins can be
 // supplied as a comma-separated list. For the definition of secure contexts,
 // see https://w3c.github.io/webappsec-secure-contexts/ and
@@ -111,5 +113,9 @@ const char kUseFirstPartySet[] = "use-first-party-set";
 // And the Web Platform Test RFC #72 behind it:
 // https://github.com/web-platform-tests/rfcs/blob/master/rfcs/address_space_overrides.md
 const char kIpAddressSpaceOverrides[] = "ip-address-space-overrides";
+
+// Enables running high priority tasks in the network services using
+// ThreadDelegate::GetHighPriorityTaskRunner().
+const char kNetworkServiceScheduler[] = "network-service-scheduler";
 
 }  // namespace network::switches

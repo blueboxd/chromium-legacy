@@ -259,6 +259,51 @@ public class CookieManagerTest {
         }
     }
 
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testEmbedderCanSeePartitionedCookies() throws Throwable {
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            // Set a partitioned cookie and an unpartitioned cookie to ensure that they are all
+            // visible to CookieManager in the app.
+            String cookies[] = {"partitioned_cookie=foo; SameSite=None; Secure; Partitioned",
+                    "unpartitioned_cookie=bar; SameSite=None; Secure"};
+            List<Pair<String, String>> responseHeaders = new ArrayList<Pair<String, String>>();
+            for (String cookie : cookies) {
+                responseHeaders.add(Pair.create("Set-Cookie", cookie));
+            }
+            String url = webServer.setResponse("/", "test", responseHeaders);
+            mActivityTestRule.loadUrlSync(
+                    mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            waitForCookie(url);
+            assertHasCookies(url);
+            validateCookies(url, "partitioned_cookie", "unpartitioned_cookie");
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void setPartitionedCookieWithCookieManager() throws Throwable {
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            final String url = "https://www.example.com";
+            mCookieManager.setCookie(
+                    url, "partitioned=foo;Path=/;Secure;Partitioned;SameSite=None");
+
+            final String expected = "partitioned=foo; domain=www.example.com; path=/; "
+                    + "secure; partitioned; samesite=none";
+            List<String> cookieInfo = mCookieManager.getCookieInfo(url);
+            Assert.assertNotNull(cookieInfo);
+            Assert.assertEquals(expected, cookieInfo.get(0));
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
     private void setCookieWithDocumentCookieAPI(final String name, final String value)
             throws Throwable {
         JSUtils.executeJavaScriptAndWaitForResult(InstrumentationRegistry.getInstrumentation(),

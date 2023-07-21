@@ -561,7 +561,7 @@ String StylePropertySerializer::SerializeShorthand(
     case CSSPropertyID::kBorderStyle:
       return Get4Values(borderStyleShorthand());
     case CSSPropertyID::kColumnRule:
-      return GetShorthandValue(columnRuleShorthand());
+      return GetShorthandValueForColumnRule(columnRuleShorthand());
     case CSSPropertyID::kColumns:
       return GetShorthandValueForColumns(columnsShorthand());
     case CSSPropertyID::kContainIntrinsicSize:
@@ -695,6 +695,10 @@ String StylePropertySerializer::SerializeShorthand(
       // Temporary exceptions to the NOTREACHED() below.
       // TODO(crbug.com/1316689): Write something real here.
       return String();
+    case CSSPropertyID::kScrollStart:
+      return ScrollStartValue();
+    case CSSPropertyID::kScrollStartTarget:
+      return ScrollStartTargetValue();
     default:
       NOTREACHED()
           << "Shorthand property "
@@ -866,18 +870,31 @@ CSSValue* TimelineValueItem(wtf_size_t index,
   return list;
 }
 
+// TODO(crbug.com/1446702): Remove scroll/view-timeline-attachment.
+CSSValueList* DefaultAttachments(wtf_size_t size) {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  for (wtf_size_t i = 0; i < size; ++i) {
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kLocal));
+  }
+  return list;
+}
+
 }  // namespace
 
 String StylePropertySerializer::TimelineValue(
     const StylePropertyShorthand& shorthand) const {
-  CHECK_EQ(shorthand.length(), 3u);
+  CHECK_EQ(shorthand.length(),
+           RuntimeEnabledFeatures::ScrollTimelineAttachmentEnabled() ? 3u : 2u);
 
   const CSSValueList& name_list = To<CSSValueList>(
       *property_set_.GetPropertyCSSValue(*shorthand.properties()[0]));
   const CSSValueList& axis_list = To<CSSValueList>(
       *property_set_.GetPropertyCSSValue(*shorthand.properties()[1]));
-  const CSSValueList& attachment_list = To<CSSValueList>(
-      *property_set_.GetPropertyCSSValue(*shorthand.properties()[2]));
+  const CSSValueList& attachment_list =
+      RuntimeEnabledFeatures::ScrollTimelineAttachmentEnabled()
+          ? *To<CSSValueList>(
+                property_set_.GetPropertyCSSValue(*shorthand.properties()[2]))
+          : *DefaultAttachments(name_list.length());
 
   // The scroll/view-timeline shorthand can not expand to longhands of two
   // different lengths, so we can also not contract two different-longhands
@@ -899,24 +916,30 @@ String StylePropertySerializer::TimelineValue(
 }
 
 String StylePropertySerializer::ScrollTimelineValue() const {
-  CHECK_EQ(scrollTimelineShorthand().length(), 3u);
+  CHECK_GE(scrollTimelineShorthand().length(), 2u);
   CHECK_EQ(scrollTimelineShorthand().properties()[0],
            &GetCSSPropertyScrollTimelineName());
   CHECK_EQ(scrollTimelineShorthand().properties()[1],
            &GetCSSPropertyScrollTimelineAxis());
-  CHECK_EQ(scrollTimelineShorthand().properties()[2],
-           &GetCSSPropertyScrollTimelineAttachment());
+  if (RuntimeEnabledFeatures::ScrollTimelineAttachmentEnabled()) {
+    CHECK_EQ(scrollTimelineShorthand().length(), 3u);
+    CHECK_EQ(scrollTimelineShorthand().properties()[2],
+             &GetCSSPropertyScrollTimelineAttachment());
+  }
   return TimelineValue(scrollTimelineShorthand());
 }
 
 String StylePropertySerializer::ViewTimelineValue() const {
-  CHECK_EQ(viewTimelineShorthand().length(), 3u);
+  CHECK_GE(viewTimelineShorthand().length(), 2u);
   CHECK_EQ(viewTimelineShorthand().properties()[0],
            &GetCSSPropertyViewTimelineName());
   CHECK_EQ(viewTimelineShorthand().properties()[1],
            &GetCSSPropertyViewTimelineAxis());
-  CHECK_EQ(viewTimelineShorthand().properties()[2],
-           &GetCSSPropertyViewTimelineAttachment());
+  if (RuntimeEnabledFeatures::ScrollTimelineAttachmentEnabled()) {
+    CHECK_EQ(viewTimelineShorthand().length(), 3u);
+    CHECK_EQ(viewTimelineShorthand().properties()[2],
+             &GetCSSPropertyViewTimelineAttachment());
+  }
   return TimelineValue(viewTimelineShorthand());
 }
 
@@ -1589,10 +1612,15 @@ String StylePropertySerializer::GetLayeredShorthandValue(
       // The shorthand can not represent the following properties if they have
       // non-initial values. This is because they are always reset to their
       // initial value by the shorthand.
+      //
+      // Note that initial values for animation-* properties only contain
+      // one list item, hence the check for 'layer > 0'.
       if (property->IDEquals(CSSPropertyID::kAnimationTimeline)) {
         auto* ident = DynamicTo<CSSIdentifierValue>(value);
-        if (!ident || (ident->GetValueID() !=
-                       CSSAnimationData::InitialTimeline().GetKeyword())) {
+        if (!ident ||
+            (ident->GetValueID() !=
+             CSSAnimationData::InitialTimeline().GetKeyword()) ||
+            layer > 0) {
           DCHECK(RuntimeEnabledFeatures::ScrollTimelineEnabled());
           return g_empty_string;
         }
@@ -1600,14 +1628,16 @@ String StylePropertySerializer::GetLayeredShorthandValue(
       }
       if (property->IDEquals(CSSPropertyID::kAnimationDelayEnd)) {
         if (CSSToStyleMap::MapAnimationDelayEnd(*value) !=
-            CSSTimingData::InitialDelayEnd()) {
+                CSSTimingData::InitialDelayEnd() ||
+            layer > 0) {
           return g_empty_string;
         }
         is_initial_value = true;
       }
       if (property->IDEquals(CSSPropertyID::kAnimationRangeStart)) {
         auto* ident = DynamicTo<CSSIdentifierValue>(value);
-        if (!ident || (ident->GetValueID() != CSSValueID::kNormal)) {
+        if (!ident || (ident->GetValueID() != CSSValueID::kNormal) ||
+            layer > 0) {
           DCHECK(RuntimeEnabledFeatures::ScrollTimelineEnabled());
           return g_empty_string;
         }
@@ -1615,7 +1645,8 @@ String StylePropertySerializer::GetLayeredShorthandValue(
       }
       if (property->IDEquals(CSSPropertyID::kAnimationRangeEnd)) {
         auto* ident = DynamicTo<CSSIdentifierValue>(value);
-        if (!ident || (ident->GetValueID() != CSSValueID::kNormal)) {
+        if (!ident || (ident->GetValueID() != CSSValueID::kNormal) ||
+            layer > 0) {
           DCHECK(RuntimeEnabledFeatures::ScrollTimelineEnabled());
           return g_empty_string;
         }
@@ -1687,6 +1718,56 @@ String StylePropertySerializer::GetShorthandValue(
     }
     result.Append(value_text);
   }
+  return result.ReleaseString();
+}
+
+String StylePropertySerializer::GetShorthandValueForColumnRule(
+    const StylePropertyShorthand& shorthand) const {
+  DCHECK_EQ(shorthand.length(), 3u);
+
+  const CSSValue* column_rule_width =
+      property_set_.GetPropertyCSSValue(*shorthand.properties()[0]);
+  const CSSValue* column_rule_style =
+      property_set_.GetPropertyCSSValue(*shorthand.properties()[1]);
+  const CSSValue* column_rule_color =
+      property_set_.GetPropertyCSSValue(*shorthand.properties()[2]);
+
+  StringBuilder result;
+  if (!(IsA<CSSIdentifierValue>(column_rule_width) &&
+        To<CSSIdentifierValue>(column_rule_width)->GetValueID() ==
+            CSSValueID::kMedium) &&
+      !column_rule_width->IsInitialValue()) {
+    String column_rule_width_text = column_rule_width->CssText();
+    result.Append(column_rule_width_text);
+  }
+
+  if (!(IsA<CSSIdentifierValue>(column_rule_style) &&
+        To<CSSIdentifierValue>(column_rule_style)->GetValueID() ==
+            CSSValueID::kNone) &&
+      !column_rule_style->IsInitialValue()) {
+    String column_rule_style_text = column_rule_style->CssText();
+    if (!result.empty()) {
+      result.Append(" ");
+    }
+
+    result.Append(column_rule_style_text);
+  }
+  if (!(IsA<CSSIdentifierValue>(column_rule_color) &&
+        To<CSSIdentifierValue>(column_rule_color)->GetValueID() ==
+            CSSValueID::kCurrentcolor) &&
+      !column_rule_color->IsInitialValue()) {
+    String column_rule_color_text = column_rule_color->CssText();
+    if (!result.empty()) {
+      result.Append(" ");
+    }
+
+    result.Append(column_rule_color_text);
+  }
+
+  if (result.empty()) {
+    return "medium";
+  }
+
   return result.ReleaseString();
 }
 
@@ -2231,6 +2312,58 @@ String StylePropertySerializer::WhiteSpaceValue() const {
   // `IsValidWhiteSpace()` above.
   DCHECK(!result.empty());
   return result.ToString();
+}
+
+String StylePropertySerializer::ScrollStartValue() const {
+  CHECK_EQ(scrollStartShorthand().length(), 2u);
+  CHECK_EQ(scrollStartShorthand().properties()[0],
+           &GetCSSPropertyScrollStartBlock());
+  CHECK_EQ(scrollStartShorthand().properties()[1],
+           &GetCSSPropertyScrollStartInline());
+
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  const CSSValue* block_value =
+      property_set_.GetPropertyCSSValue(GetCSSPropertyScrollStartBlock());
+  const CSSValue* inline_value =
+      property_set_.GetPropertyCSSValue(GetCSSPropertyScrollStartInline());
+
+  DCHECK(block_value);
+  DCHECK(inline_value);
+
+  list->Append(*block_value);
+
+  if (!(IsA<CSSIdentifierValue>(inline_value) &&
+        To<CSSIdentifierValue>(*inline_value).GetValueID() ==
+            CSSValueID::kStart)) {
+    list->Append(*inline_value);
+  }
+
+  return list->CssText();
+}
+
+String StylePropertySerializer::ScrollStartTargetValue() const {
+  CHECK_EQ(scrollStartTargetShorthand().length(), 2u);
+  CHECK_EQ(scrollStartTargetShorthand().properties()[0],
+           &GetCSSPropertyScrollStartTargetBlock());
+  CHECK_EQ(scrollStartTargetShorthand().properties()[1],
+           &GetCSSPropertyScrollStartTargetInline());
+
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  const CSSValue* block_value =
+      property_set_.GetPropertyCSSValue(GetCSSPropertyScrollStartTargetBlock());
+  const CSSValue* inline_value = property_set_.GetPropertyCSSValue(
+      GetCSSPropertyScrollStartTargetInline());
+
+  DCHECK(block_value);
+  DCHECK(inline_value);
+
+  list->Append(*block_value);
+
+  if (To<CSSIdentifierValue>(*inline_value).GetValueID() != CSSValueID::kNone) {
+    list->Append(*inline_value);
+  }
+
+  return list->CssText();
 }
 
 }  // namespace blink

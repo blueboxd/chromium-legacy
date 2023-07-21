@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import './module_header.js';
+import './visit_tile.js';
 
 import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
@@ -12,9 +13,11 @@ import {Cluster, URLVisit} from '../../history_cluster_types.mojom-webui.js';
 import {I18nMixin, loadTimeData} from '../../i18n_setup.js';
 import {HistoryClustersProxyImpl} from '../history_clusters/history_clusters_proxy.js';
 import {InfoDialogElement} from '../info_dialog';
-import {ModuleDescriptorV2} from '../module_descriptor.js';
+import {ModuleDescriptor} from '../module_descriptor.js';
 
 import {getTemplate} from './module.html.js';
+
+export const MAX_MODULE_ELEMENT_INSTANCES = 3;
 
 export interface HistoryClustersModuleElement {
   $: {
@@ -43,12 +46,18 @@ export class HistoryClustersModuleElement extends I18nMixin
       },
 
       searchResultsPage_: Object,
+
+      format: {
+        type: String,
+        value: 'wide',
+        reflectToAttribute: true,
+      },
     };
   }
 
   cluster: Cluster;
+  format: string;
   private searchResultsPage_: URLVisit;
-
   private onClusterUpdated_() {
     this.searchResultsPage_ = this.cluster!.visits[0];
   }
@@ -91,27 +100,39 @@ export class HistoryClustersModuleElement extends I18nMixin
   private onOpenAllInTabGroupClick_() {
     const urls = [this.searchResultsPage_, ...this.cluster.visits].map(
         visit => visit.normalizedUrl);
-    HistoryClustersProxyImpl.getInstance().handler.openUrlsInTabGroup(urls);
+    HistoryClustersProxyImpl.getInstance().handler.openUrlsInTabGroup(
+        urls, this.cluster.tabGroupName ?? null);
   }
 }
 
 customElements.define(
     HistoryClustersModuleElement.is, HistoryClustersModuleElement);
 
-async function createElement(): Promise<HTMLElement> {
-  const {clusters} =
-      await HistoryClustersProxyImpl.getInstance().handler.getClusters();
-  // Do not show module if there are no clusters.
-  if (clusters.length === 0) {
-    return document.createElement('div');
-  }
-
+async function createElement(cluster: Cluster):
+    Promise<HistoryClustersModuleElement> {
   const element = new HistoryClustersModuleElement();
-  element.cluster = clusters[0];
+  element.cluster = cluster;
 
-  return element as HTMLElement;
+  return element;
 }
 
-export const historyClustersV2Descriptor: ModuleDescriptorV2 =
-    new ModuleDescriptorV2(
-        /*id=*/ 'history_clusters', createElement);
+async function createElements(): Promise<HTMLElement[]|null> {
+  const {clusters} =
+      await HistoryClustersProxyImpl.getInstance().handler.getClusters();
+  if (!clusters || clusters.length === 0) {
+    return null;
+  }
+
+  const elements: HistoryClustersModuleElement[] = [];
+  for (let i = 0; i < clusters.length; i++) {
+    if (elements.length === MAX_MODULE_ELEMENT_INSTANCES) {
+      break;
+    }
+    elements.push(await createElement(clusters[i]));
+  }
+
+  return (elements as unknown) as HTMLElement[];
+}
+
+export const historyClustersDescriptor: ModuleDescriptor = new ModuleDescriptor(
+    /*id=*/ 'history_clusters', createElements);

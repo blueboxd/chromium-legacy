@@ -798,16 +798,17 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
         ContentSettingsType::REVOKED_UNUSED_SITE_PERMISSIONS, delete_begin_,
         delete_end_, website_settings_filter);
-#endif
 
-    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
-        ContentSettingsType::NOTIFICATION_INTERACTIONS, delete_begin_,
-        delete_end_, website_settings_filter);
     host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
         ContentSettingsType::PRIVATE_NETWORK_GUARD, delete_begin_, delete_end_,
         website_settings_filter);
     host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
         ContentSettingsType::PRIVATE_NETWORK_CHOOSER_DATA, delete_begin_,
+        delete_end_, website_settings_filter);
+#endif
+
+    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
+        ContentSettingsType::NOTIFICATION_INTERACTIONS, delete_begin_,
         delete_end_, website_settings_filter);
 
     PermissionDecisionAutoBlockerFactory::GetForProfile(profile_)
@@ -842,6 +843,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         profile_, ServiceAccessType::EXPLICIT_ACCESS);
 
     if (password_store) {
+      // No sync completion callback is needed for profile passwords, since the
+      // login token is persisted and can be used after cookie deletion.
       // TODO:(crbug.com/1167715) - Test that associated compromised credentials
       // are removed.
       password_store->RemoveLoginsByURLAndTime(
@@ -898,6 +901,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         profile_, ServiceAccessType::EXPLICIT_ACCESS);
 
     if (account_store) {
+      // A sync completion callback is passed in for account
+      // passwords, in order to ensure that the passwords are cleared before the
+      // user is signed out via cookie deletion.
       // TODO:(crbug.com/1167715) - Test that associated compromised credentials
       // are removed.
       account_store->RemoveLoginsByURLAndTime(
@@ -1358,8 +1364,6 @@ const char* ChromeBrowsingDataRemoverDelegate::GetHistogramSuffix(
       return "PluginData";
     case TracingDataType::kDomainReliability:
       return "DomainReliability";
-    case TracingDataType::kNetworkPredictor:
-      return "NetworkPredictor";
     case TracingDataType::kWebrtcLogs:
       return "WebrtcLogs";
     case TracingDataType::kVideoDecodeHistory:

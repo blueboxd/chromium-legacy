@@ -47,6 +47,7 @@ const CountryLocaleMap& GetAllowedCountryToLocaleMap() {
     map[&ntp_features::kNtpChromeCartModule] = {{"us", {"en-us"}}};
     map[&kCommerceMerchantViewerRegionLaunched] = {{"us", {"en-us"}}};
     map[&kCommercePriceTrackingRegionLaunched] = {{"us", {"en-us"}}};
+    map[&kPriceInsightsRegionLaunched] = {{"us", {"en-us"}}};
 
     return map;
   }());
@@ -139,6 +140,10 @@ BASE_FEATURE(kCommerceMerchantViewerRegionLaunched,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
 
+BASE_FEATURE(kCommerceLocalPDPDetection,
+             "CommerceLocalPDPDetection",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kCommercePriceTracking,
              "CommercePriceTracking",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -156,6 +161,13 @@ BASE_FEATURE(kCommercePriceTrackingRegionLaunched,
              "CommercePriceTrackingRegionLaunched",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
+
+BASE_FEATURE(kPriceInsights,
+             "PriceInsights",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kPriceInsightsRegionLaunched,
+             "PriceInsightsRegionLaunched",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 const base::FeatureParam<bool> kDeleteAllMerchantsOnClearBrowsingHistory{
     &kCommerceMerchantViewer, "delete_all_merchants_on_clear_history", false};
@@ -201,7 +213,7 @@ BASE_FEATURE(kMerchantWidePromotion,
              "MerchantWidePromotion",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kCodeBasedRBD, "CodeBasedRBD", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kCodeBasedRBD, "CodeBasedRBD", base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kChromeCartDomBasedHeuristics,
              "ChromeCartDomBasedHeuristics",
@@ -318,7 +330,7 @@ const base::FeatureParam<bool> kReadyToFetchMerchantWidePromotion{
 
 const char kCodeBasedRuleDiscountParam[] = "code-based-rbd";
 const base::FeatureParam<bool> kCodeBasedRuleDiscount{
-    &commerce::kCodeBasedRBD, kCodeBasedRuleDiscountParam, false};
+    &commerce::kCodeBasedRBD, kCodeBasedRuleDiscountParam, true};
 const char kCodeBasedRuleDiscountCouponDeletionTimeParam[] =
     "coupon-deletion-time";
 const base::FeatureParam<base::TimeDelta>

@@ -437,6 +437,17 @@ ArcVmDataMigrationStatus GetArcVmDataMigrationStatus(PrefService* prefs) {
       prefs->GetInteger(prefs::kArcVmDataMigrationStatus));
 }
 
+ArcVmDataMigrationStrategy GetArcVmDataMigrationStrategy(PrefService* prefs) {
+  int value =
+      std::max(0, prefs->GetInteger(prefs::kArcVmDataMigrationStrategy));
+  if (value > static_cast<int>(ArcVmDataMigrationStrategy::kMaxValue)) {
+    LOG(ERROR) << "Unexpected value for ArcVmDataMigrationStrategy pref: "
+               << value;
+    value = static_cast<int>(ArcVmDataMigrationStrategy::kPrompt);
+  }
+  return static_cast<ArcVmDataMigrationStrategy>(value);
+}
+
 void SetArcVmDataMigrationStatus(PrefService* prefs,
                                  ArcVmDataMigrationStatus status) {
   prefs->SetInteger(prefs::kArcVmDataMigrationStatus, static_cast<int>(status));
@@ -536,7 +547,8 @@ uint64_t GetDesiredDiskImageSizeForArcVmDataMigrationInBytes(
 }
 
 uint64_t GetRequiredFreeDiskSpaceForArcVmDataMigrationInBytes(
-    uint64_t android_data_size_in_bytes,
+    uint64_t android_data_size_src_in_bytes,
+    uint64_t android_data_size_dest_in_bytes,
     uint64_t free_disk_space_in_bytes) {
   // Mask to make the required free disk space a multiple of 512 MB.
   constexpr uint64_t kRequiredFreeDiskSpaceMaskInBytes = ~((512ULL << 20) - 1);
@@ -546,13 +558,22 @@ uint64_t GetRequiredFreeDiskSpaceForArcVmDataMigrationInBytes(
 
   const uint64_t required_disk_image_size_in_bytes =
       GetRequiredDiskImageSizeForArcVmDataMigrationInBytes(
-          android_data_size_in_bytes);
+          android_data_size_dest_in_bytes);
 
   const uint64_t maximum_disk_space_overhead_in_bytes =
-      required_disk_image_size_in_bytes - android_data_size_in_bytes;
+      required_disk_image_size_in_bytes - android_data_size_dest_in_bytes;
+
+  // Amount of additional disk space required after the migration due to
+  // expanded sparse files in Android /data.
+  uint64_t android_data_expansion_size_in_bytes = 0;
+  if (android_data_size_dest_in_bytes > android_data_size_src_in_bytes) {
+    android_data_expansion_size_in_bytes =
+        android_data_size_dest_in_bytes - android_data_size_src_in_bytes;
+  }
 
   return (kMinimumRequiredFreeDiskSpaceInBytes +
-          maximum_disk_space_overhead_in_bytes) &
+          maximum_disk_space_overhead_in_bytes +
+          android_data_expansion_size_in_bytes) &
          kRequiredFreeDiskSpaceMaskInBytes;
 }
 

@@ -120,6 +120,7 @@ enum FieldTypeGroupForMetrics {
   GROUP_BIRTHDATE,
   GROUP_IBAN,
   GROUP_ADDRESS_HOME_LANDMARK,
+  GROUP_ADDRESS_HOME_BETWEEN_STREETS,
   // Add new entries here and update enums.xml.
   NUM_FIELD_TYPE_GROUPS_FOR_METRICS
 };
@@ -243,6 +244,9 @@ int GetFieldTypeGroupPredictionQualityMetric(
           break;
         case ADDRESS_HOME_LANDMARK:
           group = GROUP_ADDRESS_HOME_LANDMARK;
+          break;
+        case ADDRESS_HOME_BETWEEN_STREETS:
+          group = GROUP_ADDRESS_HOME_BETWEEN_STREETS;
           break;
         case UNKNOWN_TYPE:
           group = GROUP_UNKNOWN_TYPE;
@@ -836,6 +840,12 @@ void AutofillMetrics::LogCreditCardInfoBarMetric(
     base::UmaHistogramEnumeration(
         "Autofill.CreditCardInfoBar" + destination + ".WithMultipleLegalLines",
         metric, NUM_INFO_BAR_METRICS);
+  }
+
+  if (options.has_same_last_four_as_server_card_but_different_expiration_date) {
+    base::UmaHistogramEnumeration("Autofill.CreditCardInfoBar" + destination +
+                                      ".WithSameLastFourButDifferentExpiration",
+                                  metric, NUM_INFO_BAR_METRICS);
   }
 }
 
@@ -2036,8 +2046,7 @@ void AutofillMetrics::LogCreditCardSeamlessnessAtFillTime(
     return field.origin != triggered_origin &&
            (field.origin != main_origin ||
             IsSensitiveFieldType(field.Type().GetStorableType())) &&
-           (triggered_origin == main_origin ||
-            features::kAutofillSharedAutofillRelaxedParam.Get());
+           triggered_origin == main_origin;
   };
 
   bool some_field_needs_shared_autofill = false;
@@ -2463,6 +2472,16 @@ void AutofillMetrics::FormInteractionsUkmLogger::
   bool had_server_type = false;
   bool had_rationalization_event = false;
 
+  DenseSet<AutofillMetrics::AutofillStatus> autofill_status_vector;
+  auto SetStatusVector = [&autofill_status_vector](
+                             AutofillMetrics::AutofillStatus status,
+                             bool value) {
+    DCHECK(!autofill_status_vector.contains(status));
+    if (value) {
+      autofill_status_vector.insert(status);
+    }
+  };
+
   for (const auto& log_event : field_log_events) {
     static_assert(absl::variant_size<AutofillField::FieldLogEventType>() == 9,
                   "When adding new variants check that this function does not "
@@ -2583,40 +2602,46 @@ void AutofillMetrics::FormInteractionsUkmLogger::
       .SetFieldSessionIdentifier(
           AutofillMetrics::FieldGlobalIdToHash64Bit(field.global_id()))
       .SetFieldSignature(HashFieldSignature(field.GetFieldSignature()))
-      .SetWasFocused(OptionalBooleanToBool(was_focused))
-      .SetIsFocusable(field.IsFocusable())
-      .SetUserTypedIntoField(OptionalBooleanToBool(user_typed_into_field))
       .SetFormControlType(base::to_underlying(field.FormControlType()))
       .SetAutocompleteState(base::to_underlying(autocomplete_state));
 
+  SetStatusVector(AutofillStatus::kIsFocusable, field.IsFocusable());
+  SetStatusVector(AutofillStatus::kUserTypedIntoField,
+                  OptionalBooleanToBool(user_typed_into_field));
+  SetStatusVector(AutofillStatus::kWasFocused,
+                  OptionalBooleanToBool(was_focused));
   if (was_focused == OptionalBoolean::kTrue) {
-    builder
-        .SetSuggestionWasAvailable(
-            OptionalBooleanToBool(suggestion_was_available))
-        .SetSuggestionWasShown(OptionalBooleanToBool(suggestion_was_shown));
+    SetStatusVector(AutofillStatus::kSuggestionWasAvailable,
+                    OptionalBooleanToBool(suggestion_was_available));
+    SetStatusVector(AutofillStatus::kSuggestionWasShown,
+                    OptionalBooleanToBool(suggestion_was_shown));
   }
 
   if (suggestion_was_shown == OptionalBoolean::kTrue) {
-    builder.SetSuggestionWasAccepted(
-        OptionalBooleanToBool(suggestion_was_accepted));
+    SetStatusVector(AutofillStatus::kSuggestionWasAccepted,
+                    OptionalBooleanToBool(suggestion_was_accepted));
   }
 
+  SetStatusVector(AutofillStatus::kWasAutofillTriggered, autofill_count > 0);
   if (autofill_count > 0) {
+    SetStatusVector(AutofillStatus::kWasAutofilled,
+                    OptionalBooleanToBool(was_autofilled));
+    SetStatusVector(AutofillStatus::kHadValueBeforeFilling,
+                    OptionalBooleanToBool(had_value_before_filling));
+    SetStatusVector(AutofillStatus::kWasRefill, autofill_count > 1);
+
     static_assert(autofill_skipped_status.data().size() == 1);
-    builder.SetWasAutofilled(OptionalBooleanToBool(was_autofilled))
-        .SetHadValueBeforeFilling(
-            OptionalBooleanToBool(had_value_before_filling))
-        .SetAutofillSkippedStatus(autofill_skipped_status.data()[0])
-        .SetWasRefill(autofill_count > 1);
+    builder.SetAutofillSkippedStatus(autofill_skipped_status.data()[0]);
   }
 
   if (filled_value_was_modified != OptionalBoolean::kUndefined) {
-    builder.SetFilledValueWasModified(
-        OptionalBooleanToBool(filled_value_was_modified));
+    SetStatusVector(AutofillStatus::kFilledValueWasModified,
+                    OptionalBooleanToBool(filled_value_was_modified));
   }
 
   if (had_typed_or_filled_value_at_submission != OptionalBoolean::kUndefined) {
-    builder.SetHadTypedOrFilledValueAtSubmission(
+    SetStatusVector(
+        AutofillStatus::kHadTypedOrFilledValueAtSubmission,
         OptionalBooleanToBool(had_typed_or_filled_value_at_submission));
   }
 
@@ -2650,6 +2675,10 @@ void AutofillMetrics::FormInteractionsUkmLogger::
   if (rank_in_field_signature_group) {
     builder.SetRankInFieldSignatureGroup(rank_in_field_signature_group);
   }
+
+  // Serialize the DenseSet of the autofill status into int64_t.
+  static_assert(autofill_status_vector.data().size() == 1U);
+  builder.SetAutofillStatusVector(autofill_status_vector.data()[0]);
 
   builder.Record(ukm_recorder_);
 }

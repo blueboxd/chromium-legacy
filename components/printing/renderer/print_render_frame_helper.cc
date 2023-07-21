@@ -51,6 +51,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/css/page_orientation.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
+#include "third_party/blink/public/common/page/browsing_context_group_info.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom.h"
@@ -749,7 +750,8 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
       /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
       *source_frame.GetAgentGroupScheduler(),
       /*session_storage_namespace_id=*/base::EmptyString(),
-      /*page_base_background_color=*/absl::nullopt);
+      /*page_base_background_color=*/absl::nullopt,
+      blink::BrowsingContextGroupInfo::CreateUnique());
   web_view->GetSettings()->SetJavaScriptEnabled(true);
 
   class HeaderAndFooterClient final : public blink::WebLocalFrameClient {
@@ -831,19 +833,19 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
 }
 
 // static - Not anonymous so that platform implementations can use it.
-float PrintRenderFrameHelper::RenderPageContent(blink::WebLocalFrame* frame,
-                                                uint32_t page_number,
-                                                const gfx::Rect& canvas_area,
-                                                const gfx::Rect& content_area,
-                                                double scale_factor,
-                                                cc::PaintCanvas* canvas) {
+void PrintRenderFrameHelper::RenderPageContent(blink::WebLocalFrame* frame,
+                                               uint32_t page_number,
+                                               const gfx::Rect& canvas_area,
+                                               const gfx::Rect& content_area,
+                                               double scale_factor,
+                                               cc::PaintCanvas* canvas) {
   TRACE_EVENT1("print", "PrintRenderFrameHelper::RenderPageContent",
                "page_number", page_number);
 
   cc::PaintCanvasAutoRestore auto_restore(canvas, true);
   canvas->translate((content_area.x() - canvas_area.x()) / scale_factor,
                     (content_area.y() - canvas_area.y()) / scale_factor);
-  return frame->PrintPage(page_number, canvas);
+  frame->PrintPage(page_number, canvas);
 }
 
 // Class that calls the Begin and End print functions on the frame and changes
@@ -1043,7 +1045,8 @@ void PrepareFrameAndViewForPrint::CopySelection(
       /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
       agent_group_scheduler_,
       /*session_storage_namespace_id=*/base::EmptyString(),
-      /*page_base_background_color=*/absl::nullopt);
+      /*page_base_background_color=*/absl::nullopt,
+      blink::BrowsingContextGroupInfo::CreateUnique());
   blink::WebView::ApplyWebPreferences(prefs, web_view);
   blink::WebLocalFrame* main_frame = blink::WebLocalFrame::CreateMainFrame(
       web_view, this, nullptr, blink::LocalFrameToken(), blink::DocumentToken(),
@@ -2326,11 +2329,8 @@ bool PrintRenderFrameHelper::PrintPagesNative(
   page_params->content_area = gfx::Rect(print_params.page_size);
   bool is_pdf =
       IsPrintingPdfFrame(prep_frame_view_->frame(), prep_frame_view_->node());
-  PrintPageInternal(print_params, printed_pages[0], page_count,
-                    GetScaleFactor(print_params.scale_factor, is_pdf), frame,
-                    &metafile);
-  for (size_t i = 1; i < printed_pages.size(); ++i) {
-    PrintPageInternal(print_params, printed_pages[i], page_count,
+  for (uint32_t printed_page : printed_pages) {
+    PrintPageInternal(print_params, printed_page, page_count,
                       GetScaleFactor(print_params.scale_factor, is_pdf), frame,
                       &metafile);
   }
@@ -2603,10 +2603,8 @@ void PrintRenderFrameHelper::PrintPageInternal(const mojom::PrintParams& params,
                          final_scale_factor, *page_layout_in_points, params);
   }
 
-  float webkit_scale_factor =
-      RenderPageContent(frame, page_number, canvas_area, content_area,
-                        final_scale_factor, canvas);
-  DCHECK_GT(webkit_scale_factor, 0.0f);
+  RenderPageContent(frame, page_number, canvas_area, content_area,
+                    final_scale_factor, canvas);
 
   // Done printing. Close the canvas to retrieve the compiled metafile.
   bool ret = metafile->FinishPage();

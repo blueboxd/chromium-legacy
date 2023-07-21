@@ -15,16 +15,17 @@ import collections
 import copy
 import difflib
 import inspect
-import optparse
+import logging
 import os
+import pathlib
+import shlex
+import subprocess
 import sys
 import tempfile
 import unittest
-import jni_generator
-import jni_registration_generator
 import zipfile
-from util import build_utils
 
+_SCRIPT_DIR = os.path.normpath(os.path.dirname(__file__))
 _INCLUDES = ('base/android/jni_generator/jni_generator_helper.h')
 _JAVA_SRC_DIR = os.path.join('java', 'src', 'org', 'chromium', 'example',
                              'jni_generator')
@@ -34,70 +35,148 @@ _JAVA_SRC_DIR = os.path.join('java', 'src', 'org', 'chromium', 'example',
 _REBASELINE_ENV = 'REBASELINE'
 
 
-class JniGeneratorOptions(object):
-  """The mock options object which is passed to the jni_generator.py script."""
-
+class CommonOptions:
   def __init__(self):
-    self.namespace = None
+    self.enable_jni_multiplexing = False
+    self.package_prefix = None
+    self.use_proxy_hash = False
+
+  def to_args(self):
+    ret = []
+    if self.package_prefix:
+      ret += ['--package_prefix', self.package_prefix]
+    return ret
+
+
+class JniGeneratorOptions(CommonOptions):
+  def __init__(self):
+    super().__init__()
     self.includes = _INCLUDES
-    self.ptr_type = 'long'
-    self.cpp = 'cpp'
-    self.javap = build_utils.JAVAP_PATH
-    self.enable_profiling = False
-    self.use_proxy_hash = False
-    self.enable_jni_multiplexing = False
-    self.unchecked_exceptions = False
-    self.split_name = None
-    self.include_test_only = True
-    self.package_prefix = None
+    self.input_file = None
+    self.jar_file = None
+    self.output_dir = None
+    self.output_name = 'output.h'
+
+  def to_args(self):
+    ret = super().to_args()
+    ret += ['--output_dir', self.output_dir]
+    ret += ['--input_file', self.input_file]
+    ret += ['--output_name', self.output_name]
+    if self.jar_file:
+      ret += ['--jar_file', self.jar_file]
+    if self.enable_jni_multiplexing:
+      ret.append('--enable_jni_multiplexing')
+    if self.includes:
+      ret += ['--includes', self.includes, '--ptr_type', 'long']
+    if self.use_proxy_hash:
+      ret.append('--use_proxy_hash')
+    return ret
 
 
-class JniRegistrationGeneratorOptions(object):
+class JniRegistrationGeneratorOptions(CommonOptions):
   """The mock options object which is passed to the jni_generator.py script."""
 
   def __init__(self):
-    self.sources_exclusions = []
-    self.namespace = None
+    super().__init__()
+    self.add_stubs_for_missing_native = False
     self.enable_proxy_mocks = False
-    self.require_mocks = False
-    self.use_proxy_hash = False
-    self.enable_jni_multiplexing = False
-    self.manual_jni_registration = False
-    self.include_test_only = False
     self.header_path = None
+    self.include_test_only = False
+    self.manual_jni_registration = False
     self.module_name = ''
-    self.package_prefix = None
+    self.remove_uncalled_methods = False
+    self.require_mocks = False
+
+  def to_args(self):
+    ret = super().to_args()
+    if self.add_stubs_for_missing_native:
+      ret.append('--add-stubs-for-missing-native')
+    if self.enable_jni_multiplexing:
+      ret.append('--enable-jni-multiplexing')
+    if self.enable_proxy_mocks:
+      ret.append('--enable-proxy-mocks')
+    if self.header_path:
+      ret += ['--header-path', self.header_path]
+    if self.include_test_only:
+      ret.append('--include-test-only')
+    if self.manual_jni_registration:
+      ret.append('--manual-jni-registration')
+    if self.module_name:
+      ret += ['--module-name', self.module_name]
+    if self.package_prefix:
+      ret += ['--package_prefix', self.package_prefix]
+    if self.remove_uncalled_methods:
+      ret.append('--remove-uncalled-methods')
+    if self.require_mocks:
+      ret.append('--require-mocks')
+    if self.use_proxy_hash:
+      ret.append('--use-proxy-hash')
+    return ret
 
 
 class BaseTest(unittest.TestCase):
 
-  def _TestEndToEndGeneration(self, input_java, options, golden):
-    input_java_path = self._JoinScriptDir(
-        os.path.join(_JAVA_SRC_DIR, input_java))
+  def _TestEndToEndGeneration(self, input_file, options, golden):
     with tempfile.TemporaryDirectory() as tdir:
-      output_path = os.path.join(tdir, 'output.h')
-      jni_generator.GenerateJNIHeader(input_java_path, output_path, options)
+      relative_input_file = self._JoinScriptDir(
+          os.path.join(_JAVA_SRC_DIR, input_file))
+      if input_file.endswith('.class'):
+        jar_path = os.path.join(tdir, 'input.jar')
+        with zipfile.ZipFile(jar_path, 'w') as z:
+          z.write(relative_input_file, input_file)
+        options.jar_file = jar_path
+        options.input_file = input_file
+      else:
+        options.input_file = relative_input_file
+
+      options.output_dir = tdir
+      cmd = [self._JoinScriptDir('jni_generator.py')] + options.to_args()
+      logging.info('Running: %s', shlex.join(cmd))
+      subprocess.check_call(cmd)
+      output_path = os.path.join(tdir, options.output_name)
       with open(output_path, 'r') as f:
         contents = f.read()
       self.AssertGoldenTextEquals(contents, golden)
 
   def _TestEndToEndRegistration(self,
-                                input_java_src_files,
+                                input_src_files,
                                 options,
                                 name_to_goldens,
+                                src_files_for_asserts_and_stubs=None,
                                 header_golden=None):
     with tempfile.TemporaryDirectory() as tdir:
-      options.srcjar_path = os.path.join(tdir, 'srcjar.jar')
-      if header_golden:
-        options.header_path = os.path.join(tdir, 'header.h')
-
-      input_java_paths = [
+      native_sources = [
           self._JoinScriptDir(os.path.join(_JAVA_SRC_DIR, f))
-          for f in input_java_src_files
+          for f in input_src_files
       ]
 
-      jni_registration_generator._Generate(options, input_java_paths)
-      with zipfile.ZipFile(options.srcjar_path, 'r') as srcjar:
+      if src_files_for_asserts_and_stubs:
+        java_sources = [
+            self._JoinScriptDir(os.path.join(_JAVA_SRC_DIR, f))
+            for f in src_files_for_asserts_and_stubs
+        ]
+      else:
+        java_sources = native_sources
+
+      java_sources_file = pathlib.Path(tdir) / 'java_sources.txt'
+      java_sources_file.write_text('\n'.join(java_sources))
+      native_sources_file = pathlib.Path(tdir) / 'native_sources.txt'
+      native_sources_file.write_text('\n'.join(native_sources))
+
+      cmd = [self._JoinScriptDir('jni_registration_generator.py')]
+      cmd += ['--java-sources-files', str(java_sources_file)]
+      cmd += ['--native-sources-file', str(native_sources_file)]
+      srcjar_path = os.path.join(tdir, 'srcjar.jar')
+      cmd += ['--srcjar-path', srcjar_path]
+      if header_golden:
+        header_path = os.path.join(tdir, 'header.h')
+        cmd += ['--header-path', header_path]
+
+      cmd += options.to_args()
+      logging.info('Running: %s', shlex.join(cmd))
+      subprocess.check_call(cmd)
+
+      with zipfile.ZipFile(srcjar_path, 'r') as srcjar:
         for name in srcjar.namelist():
           self.assertTrue(
               name in name_to_goldens,
@@ -105,7 +184,7 @@ class BaseTest(unittest.TestCase):
           contents = srcjar.read(name).decode('utf-8')
           self.AssertGoldenTextEquals(contents, name_to_goldens[name])
       if header_golden:
-        with open(options.header_path, 'r') as f:
+        with open(header_path, 'r') as f:
           # Temp directory will cause some diffs each time we run if we don't
           # normalize.
           contents = f.read().replace(
@@ -113,8 +192,7 @@ class BaseTest(unittest.TestCase):
           self.AssertGoldenTextEquals(contents, header_golden)
 
   def _JoinScriptDir(self, path):
-    script_dir = os.path.dirname(sys.argv[0])
-    return os.path.join(script_dir, path)
+    return os.path.join(_SCRIPT_DIR, path)
 
   def _JoinGoldenPath(self, golden_file_name):
     return self._JoinScriptDir(os.path.join('golden', golden_file_name))
@@ -241,46 +319,55 @@ class Tests(BaseTest):
     options.use_proxy_hash = True
     options.module_name = 'module'
     name_to_goldens = {
-        'org/chromium/base/natives/GEN_JNI.java':
-        'SampleForAnnotationProcessor_proxy_GenJni.java.golden',
-        'J/N.java': 'SampleForAnnotationProcessor_proxy_JN.java.golden',
         'org/chromium/base/natives/module_GEN_JNI.java':
         'SampleModuleGenJni.golden',
         'J/module_N.java': 'SampleModuleJN.golden'
     }
     self._TestEndToEndRegistration(input_java_files, options, name_to_goldens)
 
+  def testStubRegistration(self):
+    input_java_files = ['SampleForAnnotationProcessor.java']
+    stubs_java_files = input_java_files + [
+        'TinySample.java', 'SampleProxyEdgeCases.java'
+    ]
+    extra_input_java_files = ['TinySample2.java']
+    options = JniRegistrationGeneratorOptions()
+    options.add_stubs_for_missing_native = True
+    options.remove_uncalled_methods = True
+    name_to_goldens = {
+        'org/chromium/base/natives/GEN_JNI.java': 'StubGenJni.golden',
+        'J/N.java': 'HashedSampleForAnnotationProcessorGenJni.golden'
+    }
+    self._TestEndToEndRegistration(
+        input_java_files + extra_input_java_files,
+        options,
+        name_to_goldens,
+        src_files_for_asserts_and_stubs=stubs_java_files)
+
   def testForTestingKept(self):
     input_java_file = 'SampleProxyEdgeCases.java'
     gen_options = JniGeneratorOptions()
-    gen_options.include_test_only = True
-    self._TestEndToEndGeneration(
-        input_java_file, gen_options,
-        'SampleForProxyEdgeCases_test_kept_jni.h.golden')
+    self._TestEndToEndGeneration(input_java_file, gen_options,
+                                 'SampleProxyEdgeCases_test_kept_jni.h.golden')
     options = JniRegistrationGeneratorOptions()
     options.use_proxy_hash = True
     options.include_test_only = True
     name_to_goldens = {
         'org/chromium/base/natives/GEN_JNI.java':
-        'SampleForProxyEdgeCases_test_kept_GenJni.java.golden',
-        'J/N.java': 'SampleForProxyEdgeCases_test_kept_JN.java.golden'
+        'SampleProxyEdgeCases_test_kept_GenJni.java.golden',
+        'J/N.java': 'SampleProxyEdgeCases_test_kept_JN.java.golden'
     }
     self._TestEndToEndRegistration([input_java_file], options, name_to_goldens)
 
   def testForTestingRemoved(self):
     input_java_file = 'SampleProxyEdgeCases.java'
-    gen_options = JniGeneratorOptions()
-    gen_options.include_test_only = False
-    self._TestEndToEndGeneration(
-        input_java_file, gen_options,
-        'SampleForProxyEdgeCases_test_removed_jni.h.golden')
     options = JniRegistrationGeneratorOptions()
     options.use_proxy_hash = True
     options.include_test_only = False
     name_to_goldens = {
         'org/chromium/base/natives/GEN_JNI.java':
-        'SampleForProxyEdgeCases_test_removed_GenJni.java.golden',
-        'J/N.java': 'SampleForProxyEdgeCases_test_removed_JN.java.golden'
+        'SampleProxyEdgeCases_test_removed_GenJni.java.golden',
+        'J/N.java': 'SampleProxyEdgeCases_test_removed_JN.java.golden'
     }
     self._TestEndToEndRegistration([input_java_file], options, name_to_goldens)
 
@@ -321,7 +408,10 @@ class Tests(BaseTest):
         'SampleForAnnotationProcessor_package_prefix_manual_GenJni.java.golden',
     }
     self._TestEndToEndRegistration(
-        input_java_files, options, name_to_goldens,
+        input_java_files,
+        options,
+        name_to_goldens,
+        header_golden=
         'SampleForAnnotationProcessor_package_prefix_manual.h.golden')
 
   def testPackagePrefixWithProxyHash(self):
@@ -350,7 +440,10 @@ class Tests(BaseTest):
         'SampleForAnnotationProcessor_package_prefix_proxy_manual_JN.java.golden',
     }
     self._TestEndToEndRegistration(
-        input_java_files, options, name_to_goldens,
+        input_java_files,
+        options,
+        name_to_goldens,
+        header_golden=
         'SampleForAnnotationProcessor_package_prefix_proxy_manual.h.golden')
 
   def testMultiplexing(self):
@@ -364,34 +457,11 @@ class Tests(BaseTest):
         'J/N.java': 'SampleForAnnotationProcessor_multiplexing_JN.java.golden',
     }
     self._TestEndToEndRegistration(
-        input_java_files, options, name_to_goldens,
-        'SampleForAnnotationProcessor_multiplexing.h.golden')
-
-
-def TouchStamp(stamp_path):
-  dir_name = os.path.dirname(stamp_path)
-  if not os.path.isdir(dir_name):
-    os.makedirs(dir_name)
-
-  with open(stamp_path, 'a'):
-    os.utime(stamp_path, None)
-
-
-def main(argv):
-  parser = optparse.OptionParser()
-  parser.add_option('--stamp', help='Path to touch on success.')
-  parser.add_option(
-      '-v', '--verbose', action='store_true', help='Whether to output details.')
-  options, _ = parser.parse_args(argv[1:])
-
-  test_result = unittest.main(
-      argv=argv[0:1], exit=False, verbosity=(2 if options.verbose else 1))
-
-  if test_result.result.wasSuccessful() and options.stamp:
-    TouchStamp(options.stamp)
-
-  return not test_result.result.wasSuccessful()
+        input_java_files,
+        options,
+        name_to_goldens,
+        header_golden='SampleForAnnotationProcessor_multiplexing.h.golden')
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  unittest.main()

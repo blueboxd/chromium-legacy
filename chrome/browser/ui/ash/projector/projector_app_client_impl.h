@@ -52,7 +52,7 @@ class ProjectorAppClientImpl : public ash::ProjectorAppClient {
   void OpenFeedbackDialog() const override;
   void GetVideo(
       const std::string& video_file_id,
-      const std::string& resource_key,
+      const absl::optional<std::string>& resource_key,
       ash::ProjectorAppClient::OnGetVideoCallback callback) const override;
   void SetAnnotatorPageHandler(
       ash::UntrustedAnnotatorPageHandlerImpl* handler) override;
@@ -64,6 +64,7 @@ class ProjectorAppClientImpl : public ash::ProjectorAppClient {
   void ToggleFileSyncingNotificationForPaths(
       const std::vector<base::FilePath>& screencast_paths,
       bool suppress) override;
+  void HandleAccountReauth(const std::string& email) override;
 
   ash::UntrustedAnnotatorPageHandlerImpl* get_annotator_handler_for_test() {
     return annotator_handler_;

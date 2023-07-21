@@ -35,6 +35,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/flex_layout_view.h"
+#include "ui/views/layout/table_layout_view.h"
 #include "ui/views/test/ax_event_counter.h"
 #include "ui/views/view_utils.h"
 
@@ -306,6 +307,45 @@ TEST_P(SearchResultImageViewTest, ImageListViewVisible) {
   client->set_search_callback(TestAppListClient::SearchCallback());
 }
 
+TEST_P(SearchResultImageViewTest, OneResultShowsImageInfo) {
+  GetAppListTestHelper()->ShowAppList();
+
+  TestAppListClient* const client = GetAppListTestHelper()->app_list_client();
+  client->set_search_callback(
+      base::BindLambdaForTesting([&](const std::u16string& query) {
+        if (query.empty()) {
+          AppListModelProvider::Get()->search_model()->DeleteAllResults();
+          return;
+        }
+        EXPECT_EQ(u"a", query);
+
+        auto* test_helper = GetAppListTestHelper();
+        SearchModel::SearchResults* results = test_helper->GetSearchResults();
+        // Only shows 1 result.
+        SetUpImageSearchResults(results, 1, 1);
+      }));
+
+  // Press a key to start a search.
+  PressAndReleaseKey(ui::VKEY_A);
+
+  // Check result container visibility.
+  std::vector<SearchResultContainerView*> result_containers =
+      GetSearchView()->result_container_views_for_test();
+  for (auto* container : result_containers) {
+    EXPECT_TRUE(container->RunScheduledUpdateForTest());
+  }
+
+  // SearchResultImageListView container should be visible.
+  EXPECT_TRUE(result_containers[2]->GetVisible());
+
+  SearchResultImageListView* image_list_view =
+      static_cast<SearchResultImageListView*>(result_containers[2]);
+
+  // Verify that the info container of the search result is visible
+  EXPECT_TRUE(image_list_view->image_info_container_for_test()->GetVisible());
+  client->set_search_callback(TestAppListClient::SearchCallback());
+}
+
 TEST_P(SearchResultImageViewTest, ShowContextMenu) {
   auto* test_helper = GetAppListTestHelper();
   test_helper->ShowAppList();
@@ -346,6 +386,52 @@ TEST_P(SearchResultImageViewTest, ShowContextMenu) {
 
   // The `SearchResultImageViewDelegate` should be showing a context menu.
   EXPECT_TRUE(SearchResultImageViewDelegate::Get()->HasActiveContextMenu());
+}
+
+TEST_P(SearchResultImageViewTest, ActivateImageResult) {
+  auto* test_helper = GetAppListTestHelper();
+  test_helper->ShowAppList();
+  const int init_id = 1;
+  const int activate_image_idx = 2;
+
+  // Press a key to start a search.
+  PressAndReleaseKey(ui::VKEY_A);
+
+  SearchModel::SearchResults* results = test_helper->GetSearchResults();
+  SetUpImageSearchResults(
+      results, init_id,
+      SharedAppListConfig::instance().image_search_max_results());
+
+  // Check result container visibility.
+  std::vector<SearchResultContainerView*> result_containers =
+      GetSearchView()->result_container_views_for_test();
+  ASSERT_EQ(static_cast<int>(result_containers.size()), kResultContainersCount);
+  for (auto* container : result_containers) {
+    EXPECT_TRUE(container->RunScheduledUpdateForTest());
+  }
+
+  // SearchResultImageListView container should be visible.
+  ASSERT_TRUE(
+      views::IsViewClass<SearchResultImageListView>(result_containers[2]));
+  EXPECT_TRUE(result_containers[2]->GetVisible());
+  auto* search_result_image_view =
+      result_containers[2]->GetResultViewAt(activate_image_idx);
+  ASSERT_TRUE(search_result_image_view->GetVisible());
+  ASSERT_TRUE(
+      views::IsViewClass<SearchResultImageView>(search_result_image_view));
+
+  // Click/Tap on `search_result_image_view`.
+  search_result_image_view->GetWidget()->LayoutRootViewIfNecessary();
+  if (tablet_mode()) {
+    GestureTapOn(search_result_image_view);
+  } else {
+    LeftClickOn(search_result_image_view);
+  }
+
+  // The image search result should be opened.
+  EXPECT_EQ(
+      base::NumberToString(init_id + activate_image_idx),
+      GetAppListTestHelper()->app_list_client()->last_opened_search_result());
 }
 
 TEST_P(SearchViewClamshellAndTabletTest, AnimateSearchResultView) {

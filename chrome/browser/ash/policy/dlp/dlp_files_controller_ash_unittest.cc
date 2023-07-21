@@ -911,7 +911,7 @@ TEST_F(DlpFilesControllerAshTest, GetDlpMetadata_WithComponent) {
       future;
   ASSERT_TRUE(files_controller_);
   files_controller_->GetDlpMetadata(
-      files_to_check, DlpFileDestination(DlpRulesManager::Component::kUsb),
+      files_to_check, DlpFileDestination(data_controls::Component::kUsb),
       future.GetCallback());
   EXPECT_TRUE(future.Wait());
   EXPECT_EQ(dlp_metadata, future.Take());
@@ -994,9 +994,11 @@ TEST_F(DlpFilesControllerAshTest, GetDlpRestrictionDetails_Mixed) {
 
   DlpRulesManager::AggregatedComponents components;
   components[DlpRulesManager::Level::kBlock].insert(
-      DlpRulesManager::Component::kUsb);
+      data_controls::Component::kUsb);
   components[DlpRulesManager::Level::kWarn].insert(
-      DlpRulesManager::Component::kDrive);
+      data_controls::Component::kDrive);
+  components[DlpRulesManager::Level::kReport].insert(
+      data_controls::Component::kOneDrive);
 
   EXPECT_CALL(*rules_manager_, GetAggregatedDestinations)
       .WillOnce(testing::Return(destinations));
@@ -1006,12 +1008,12 @@ TEST_F(DlpFilesControllerAshTest, GetDlpRestrictionDetails_Mixed) {
   ASSERT_TRUE(files_controller_);
   auto result = files_controller_->GetDlpRestrictionDetails(kExampleUrl1);
 
-  ASSERT_EQ(result.size(), 3u);
+  ASSERT_EQ(result.size(), 4u);
   std::vector<std::string> expected_urls;
-  std::vector<DlpRulesManager::Component> expected_components;
+  std::vector<data_controls::Component> expected_components;
   // Block:
   expected_urls.push_back(kExampleUrl2);
-  expected_components.push_back(DlpRulesManager::Component::kUsb);
+  expected_components.push_back(data_controls::Component::kUsb);
   EXPECT_EQ(result[0].level, DlpRulesManager::Level::kBlock);
   EXPECT_EQ(result[0].urls, expected_urls);
   EXPECT_EQ(result[0].components, expected_components);
@@ -1022,20 +1024,27 @@ TEST_F(DlpFilesControllerAshTest, GetDlpRestrictionDetails_Mixed) {
   EXPECT_EQ(result[1].level, DlpRulesManager::Level::kAllow);
   EXPECT_EQ(result[1].urls, expected_urls);
   EXPECT_EQ(result[1].components, expected_components);
+  // Report:
+  expected_urls.clear();
+  expected_components.clear();
+  expected_components.push_back(data_controls::Component::kOneDrive);
+  EXPECT_EQ(result[2].level, DlpRulesManager::Level::kReport);
+  EXPECT_EQ(result[2].urls, expected_urls);
+  EXPECT_EQ(result[2].components, expected_components);
   // Warn:
   expected_urls.clear();
   expected_components.clear();
-  expected_components.push_back(DlpRulesManager::Component::kDrive);
-  EXPECT_EQ(result[2].level, DlpRulesManager::Level::kWarn);
-  EXPECT_EQ(result[2].urls, expected_urls);
-  EXPECT_EQ(result[2].components, expected_components);
+  expected_components.push_back(data_controls::Component::kDrive);
+  EXPECT_EQ(result[3].level, DlpRulesManager::Level::kWarn);
+  EXPECT_EQ(result[3].urls, expected_urls);
+  EXPECT_EQ(result[3].components, expected_components);
 }
 
 TEST_F(DlpFilesControllerAshTest, GetDlpRestrictionDetails_Components) {
   DlpRulesManager::AggregatedDestinations destinations;
   DlpRulesManager::AggregatedComponents components;
   components[DlpRulesManager::Level::kBlock].insert(
-      DlpRulesManager::Component::kUsb);
+      data_controls::Component::kUsb);
 
   EXPECT_CALL(*rules_manager_, GetAggregatedDestinations)
       .WillOnce(testing::Return(destinations));
@@ -1046,8 +1055,8 @@ TEST_F(DlpFilesControllerAshTest, GetDlpRestrictionDetails_Components) {
   auto result = files_controller_->GetDlpRestrictionDetails(kExampleUrl1);
   ASSERT_EQ(result.size(), 1u);
   std::vector<std::string> expected_urls;
-  std::vector<DlpRulesManager::Component> expected_components;
-  expected_components.push_back(DlpRulesManager::Component::kUsb);
+  std::vector<data_controls::Component> expected_components;
+  expected_components.push_back(data_controls::Component::kUsb);
   EXPECT_EQ(result[0].level, DlpRulesManager::Level::kBlock);
   EXPECT_EQ(result[0].urls, expected_urls);
   EXPECT_EQ(result[0].components, expected_components);
@@ -1056,13 +1065,13 @@ TEST_F(DlpFilesControllerAshTest, GetDlpRestrictionDetails_Components) {
 TEST_F(DlpFilesControllerAshTest, GetBlockedComponents) {
   DlpRulesManager::AggregatedComponents components;
   components[DlpRulesManager::Level::kBlock].insert(
-      DlpRulesManager::Component::kArc);
+      data_controls::Component::kArc);
   components[DlpRulesManager::Level::kBlock].insert(
-      DlpRulesManager::Component::kCrostini);
+      data_controls::Component::kCrostini);
   components[DlpRulesManager::Level::kWarn].insert(
-      DlpRulesManager::Component::kUsb);
+      data_controls::Component::kUsb);
   components[DlpRulesManager::Level::kReport].insert(
-      DlpRulesManager::Component::kDrive);
+      data_controls::Component::kDrive);
 
   EXPECT_CALL(*rules_manager_, GetAggregatedComponents)
       .WillOnce(testing::Return(components));
@@ -1070,9 +1079,9 @@ TEST_F(DlpFilesControllerAshTest, GetBlockedComponents) {
   ASSERT_TRUE(files_controller_);
   auto result = files_controller_->GetBlockedComponents(kExampleUrl1);
   ASSERT_EQ(result.size(), 2u);
-  std::vector<DlpRulesManager::Component> expected_components;
-  expected_components.push_back(DlpRulesManager::Component::kArc);
-  expected_components.push_back(DlpRulesManager::Component::kCrostini);
+  std::vector<data_controls::Component> expected_components;
+  expected_components.push_back(data_controls::Component::kArc);
+  expected_components.push_back(data_controls::Component::kCrostini);
   EXPECT_EQ(result, expected_components);
 }
 
@@ -1156,7 +1165,7 @@ TEST_F(DlpFilesControllerAshTest, CheckReportingOnIsDlpPolicyMatched) {
             src_pattern, rule_name, rule_id,
             DlpRulesManager::Restriction::kFiles, level);
         event_builder->SetDestinationComponent(
-            DlpRulesManager::Component::kUnknownComponent);
+            data_controls::Component::kUnknownComponent);
         event_builder->SetContentName(filename);
         return event_builder->Create();
       };
@@ -1262,9 +1271,8 @@ TEST_F(DlpFilesControllerAshTest, CheckReportingOnIsFilesTransferRestricted) {
                          testing::SetArgPointee<5>(kRuleMetadata2),
                          testing::Return(DlpRulesManager::Level::kAllow)));
 
-  EXPECT_CALL(
-      *rules_manager_,
-      IsRestrictedComponent(_, DlpRulesManager::Component::kUsb, _, _, _))
+  EXPECT_CALL(*rules_manager_,
+              IsRestrictedComponent(_, data_controls::Component::kUsb, _, _, _))
       .WillOnce(
           testing::DoAll(testing::SetArgPointee<3>(kExampleSourcePattern1),
                          testing::SetArgPointee<4>(kRuleMetadata1),
@@ -1325,7 +1333,7 @@ TEST_F(DlpFilesControllerAshTest, CheckReportingOnIsFilesTransferRestricted) {
   event_builder->SetDestinationPattern(dst_pattern);
   const auto event1 = event_builder->Create();
 
-  event_builder->SetDestinationComponent(DlpRulesManager::Component::kUsb);
+  event_builder->SetDestinationComponent(data_controls::Component::kUsb);
   const auto event2 = event_builder->Create();
 
   base::TimeDelta cooldown_time =
@@ -1816,7 +1824,7 @@ TEST_F(DlpFilesTestWithMounts, FileCopyFromExternalTest) {
 class DlpFilesExternalDestinationTest
     : public DlpFilesTestWithMounts,
       public ::testing::WithParamInterface<
-          std::tuple<std::string, std::string, DlpRulesManager::Component>> {
+          std::tuple<std::string, std::string, data_controls::Component>> {
  public:
   DlpFilesExternalDestinationTest(const DlpFilesExternalDestinationTest&) =
       delete;
@@ -1835,16 +1843,16 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         std::make_tuple("android_files",
                         "path/in/android/filename",
-                        DlpRulesManager::Component::kArc),
+                        data_controls::Component::kArc),
         std::make_tuple("removable",
                         "MyUSB/path/in/removable/filename",
-                        DlpRulesManager::Component::kUsb),
+                        data_controls::Component::kUsb),
         std::make_tuple("crostini_test_termina_penguin",
                         "path/in/crostini/filename",
-                        DlpRulesManager::Component::kCrostini),
+                        data_controls::Component::kCrostini),
         std::make_tuple("drivefs-84675c855b63e12f384d45f033826980",
                         "root/path/in/mydrive/filename",
-                        DlpRulesManager::Component::kDrive)));
+                        data_controls::Component::kDrive)));
 
 TEST_P(DlpFilesExternalDestinationTest, IsFilesTransferRestricted_Component) {
   auto [mount_name, path, expected_component] = GetParam();
@@ -2114,14 +2122,21 @@ TEST_P(DlpFilesWarningDialogChoiceTest, FileDownloadWarned) {
   MockDlpWarnNotifier* mock_dlp_warn_notifier = wrapper.get();
   files_controller_->SetWarnNotifierForTesting(std::move(wrapper));
 
-  EXPECT_CALL(*mock_dlp_warn_notifier, ShowDlpWarningDialog).Times(1);
+  EXPECT_CALL(*mock_dlp_warn_notifier, ShowDlpFilesWarningDialog)
+      .WillOnce([&choice_result](
+                    OnDlpRestrictionCheckedCallback callback,
+                    const std::vector<DlpConfidentialFile>& confidential_files,
+                    const DlpFileDestination& destination,
+                    DlpFilesController::FileAction action) {
+        std::move(callback).Run(choice_result);
+        return nullptr;
+      });
 
   MockCheckIfDlpAllowedCallback cb;
   EXPECT_CALL(cb, Run(/*is_allowed=*/choice_result)).Times(1);
 
-  EXPECT_CALL(
-      *rules_manager_,
-      IsRestrictedComponent(_, DlpRulesManager::Component::kUsb, _, _, _))
+  EXPECT_CALL(*rules_manager_,
+              IsRestrictedComponent(_, data_controls::Component::kUsb, _, _, _))
       .WillOnce(
           testing::DoAll(testing::SetArgPointee<3>(kExampleSourcePattern1),
                          testing::SetArgPointee<4>(kRuleMetadata1),
@@ -2149,7 +2164,7 @@ TEST_P(DlpFilesWarningDialogChoiceTest, FileDownloadWarned) {
             : DlpPolicyEventBuilder::WarningProceededEvent(
                   kExampleSourcePattern1, kRuleName1, kRuleId1,
                   DlpRulesManager::Restriction::kFiles);
-    event_builder->SetDestinationComponent(DlpRulesManager::Component::kUsb);
+    event_builder->SetDestinationComponent(data_controls::Component::kUsb);
     event_builder->SetContentName(file_path.BaseName().value());
     return event_builder->Create();
   };
@@ -2356,33 +2371,37 @@ TEST_P(DlpFilesWarningDialogContentTest,
   AddFilesToDlpClient(std::move(files), files_urls);
 
   std::unique_ptr<MockDlpWarnNotifier> wrapper =
-      std::make_unique<MockDlpWarnNotifier>(false);
+      std::make_unique<MockDlpWarnNotifier>();
   MockDlpWarnNotifier* mock_dlp_warn_notifier = wrapper.get();
   files_controller_->SetWarnNotifierForTesting(std::move(wrapper));
-  std::vector<DlpConfidentialFile> expected_files;
 
+  std::vector<DlpConfidentialFile> expected_files;
   if (transfer_info.files_action !=
       DlpFilesControllerAsh::FileAction::kDownload) {
     for (const auto& file_path : transfer_info.file_paths) {
       expected_files.emplace_back(base::FilePath(file_path));
     }
   }
-  DlpWarnDialog::DlpWarnDialogOptions expected_dialog_options(
-      DlpWarnDialog::Restriction::kFiles, expected_files,
-      DlpFileDestination(DlpRulesManager::Component::kUsb),
-      transfer_info.files_action);
 
-  EXPECT_CALL(
-      *rules_manager_,
-      IsRestrictedComponent(_, DlpRulesManager::Component::kUsb, _, _, _))
+  EXPECT_CALL(*rules_manager_,
+              IsRestrictedComponent(_, data_controls::Component::kUsb, _, _, _))
       .WillRepeatedly(testing::Return(DlpRulesManager::Level::kWarn));
 
   EXPECT_CALL(*rules_manager_, GetReportingManager())
       .Times(::testing::AnyNumber());
 
   EXPECT_CALL(*mock_dlp_warn_notifier,
-              ShowDlpWarningDialog(_, expected_dialog_options, _))
-      .Times(1);
+              ShowDlpFilesWarningDialog(
+                  base::test::IsNotNullCallback(), expected_files,
+                  DlpFileDestination(data_controls::Component::kUsb),
+                  transfer_info.files_action))
+      .WillOnce([](OnDlpRestrictionCheckedCallback callback,
+                   const std::vector<DlpConfidentialFile>& confidential_files,
+                   const DlpFileDestination& destination,
+                   DlpFilesController::FileAction action) {
+        std::move(callback).Run(false);
+        return nullptr;
+      });
 
   MockIsFilesTransferRestrictedCallback cb;
   EXPECT_CALL(cb, Run(files_levels)).Times(1);

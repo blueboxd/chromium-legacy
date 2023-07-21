@@ -177,13 +177,23 @@ bool GetArcPermissionType(apps::PermissionType app_service_permission_type,
 
 apps::Permissions CreatePermissions(
     const base::flat_map<arc::mojom::AppPermission,
-                         arc::mojom::PermissionStatePtr>& new_permissions) {
+                         arc::mojom::PermissionStatePtr>& arc_permissions) {
   apps::Permissions permissions;
-  for (const auto& new_permission : new_permissions) {
+  for (const auto& [arc_permission_type, arc_permission_state] :
+       arc_permissions) {
+    apps::TriState value = arc_permission_state->granted
+                               ? apps::TriState::kAllow
+                               : apps::TriState::kBlock;
+    // Permissions in the one-time state will ask for permission again the next
+    // time they are used.
+    if (arc_permission_state->one_time) {
+      value = apps::TriState::kAsk;
+    }
+
     permissions.push_back(std::make_unique<apps::Permission>(
-        GetPermissionType(new_permission.first),
-        std::make_unique<apps::PermissionValue>(new_permission.second->granted),
-        new_permission.second->managed));
+        GetPermissionType(arc_permission_type),
+        std::make_unique<apps::PermissionValue>(value),
+        arc_permission_state->managed, arc_permission_state->details));
   }
   return permissions;
 }

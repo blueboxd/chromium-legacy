@@ -253,6 +253,8 @@ extern const char kHatsBluetoothRevampCycleEndTs[];
 extern const char kHatsBluetoothRevampIsSelected[];
 extern const char kHatsBatteryLifeCycleEndTs[];
 extern const char kHatsBatteryLifeIsSelected[];
+extern const char kHatsPeripheralsCycleEndTs[];
+extern const char kHatsPeripheralsIsSelected[];
 extern const char kHatsLastInteractionTimestamp[];
 extern const char kHatsSurveyCycleEndTimestamp[];
 extern const char kHatsDeviceIsSelected[];
@@ -396,9 +398,7 @@ extern const char kDefaultBrowserSettingEnabled[];
 #if BUILDFLAG(IS_MAC)
 extern const char kShowUpdatePromotionInfoBar[];
 #endif
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX)
 extern const char kUseCustomChromeFrame[];
 #endif
 extern const char kPartitionDefaultZoomLevel[];
@@ -546,6 +546,8 @@ extern const char kQuietNotificationPermissionPromoWasShown[];
 extern const char kNotificationPermissionActions[];
 extern const char kHadThreeConsecutiveNotificationPermissionDenies[];
 
+extern const char kDataUrlInSvgUseEnabled[];
+
 #if !BUILDFLAG(IS_ANDROID)
 extern const char kManagedSerialAllowAllPortsForUrls[];
 extern const char kManagedSerialAllowUsbDevicesForUrls[];
@@ -603,7 +605,6 @@ extern const char kDefaultTasksBySuffix[];
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kDefaultHandlersForFileExtensions[];
-extern const char kOfficeSetupComplete[];
 extern const char kOfficeFilesAlwaysMoveToDrive[];
 extern const char kOfficeFilesAlwaysMoveToOneDrive[];
 extern const char kOfficeMoveConfirmationShownForDrive[];
@@ -1243,6 +1244,7 @@ extern const char kLastWhatsNewVersion[];
 extern const char kLensRegionSearchEnabled[];
 extern const char kSidePanelHorizontalAlignment[];
 extern const char kSidePanelCompanionEntryPinnedToToolbar[];
+extern const char kGoogleSearchSidePanelEnabled[];
 extern const char kLensDesktopNTPSearchEnabled[];
 #endif
 

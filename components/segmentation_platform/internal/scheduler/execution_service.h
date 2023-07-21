@@ -12,6 +12,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/clock.h"
 #include "components/segmentation_platform/internal/data_collection/training_data_collector.h"
+#include "components/segmentation_platform/internal/database/cached_result_provider.h"
 #include "components/segmentation_platform/internal/execution/execution_request.h"
 #include "components/segmentation_platform/internal/execution/model_execution_manager_impl.h"
 #include "components/segmentation_platform/internal/scheduler/model_execution_scheduler.h"
@@ -60,16 +61,18 @@ class ExecutionService {
       const PlatformOptions& platform_options,
       std::unique_ptr<processing::InputDelegateHolder> input_delegate_holder,
       const std::vector<std::unique_ptr<Config>>* configs,
-      PrefService* profile_prefs);
+      PrefService* profile_prefs,
+      CachedResultProvider* cached_result_provider);
 
   // Returns the training data collector.
   TrainingDataCollector* training_data_collector() {
     return training_data_collector_.get();
   }
 
+  // DEPRECATED: New multi output supporting models doesn't use it.
   // Called whenever a new or updated model is available. Must be a valid
   // SegmentInfo with valid metadata and features.
-  void OnNewModelInfoReady(const proto::SegmentInfo& segment_info);
+  void OnNewModelInfoReadyLegacy(const proto::SegmentInfo& segment_info);
 
   // Gets the model provider for execution.
   ModelProvider* GetModelProvider(SegmentId segment_id);

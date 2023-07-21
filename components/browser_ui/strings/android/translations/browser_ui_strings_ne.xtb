@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ne">
 <translation id="1006017844123154345">अनलाइन खोल्नुहोस्</translation>
-<translation id="1036348656032585052">निस्कृय पार्नुहोस्</translation>
+<translation id="1036348656032585052">अफ गर्नुहोस्</translation>
 <translation id="1044891598689252897">साइटहरू सामान्य रूपमा चल्ने छन्</translation>
 <translation id="1124090076051167250">यस कार्यले साइट वा एपहरूले तपाईंको होम स्क्रिनमा भण्डारण गरेका <ph name="DATASIZE" /> बराबरका डेटा र कुकीहरू मेटाउने छ।</translation>
 <translation id="1178581264944972037">पज गर्नुहोस्</translation>
@@ -189,7 +189,6 @@
 <translation id="4412992751769744546">तेस्रो पक्षीय कुकीहरूलाई अनुमति दिनुहोस्</translation>
 <translation id="4428065317363009941">विज्ञापनको पर्सनलाइजेसन</translation>
 <translation id="4434045419905280838">पपअप तथा रिडिरेक्टहरू</translation>
-<translation id="4440642537584213025"><ph name="TARGET_DESCRIPTION" /> एक्स्पान्ड गर्नुहोस्</translation>
 <translation id="4468959413250150279">निश्चित साइटको ध्वनि म्युट गर्नुहोस्।</translation>
 <translation id="4475912480633855319">{COOKIES,plural, =1{# कुकी}other{# वटा कुकी}}</translation>
 <translation id="4478158430052450698">छुट्टा छुट्टै साइटहरूमा जुम गर्ने सुविधा सजिलैसँग कस्टमाइज गर्न मिल्ने बनाउनुहोस्</translation>
@@ -311,6 +310,7 @@
 <translation id="6612358246767739896">संरक्षित सामग्री</translation>
 <translation id="662080504995468778">यहीँ रहनुहोस्</translation>
 <translation id="6643016212128521049">खालि गर्नुहोस्</translation>
+<translation id="6653342741369270081">फुल स्क्रिनबाट बाहिरिन "पछाडि जानुहोस्" बटन थिच्नुहोस्।</translation>
 <translation id="6689172468748959065">प्रोफाइल तस्बिरहरू</translation>
 <translation id="6697925417670533197">जारी डाउनलोडहरू</translation>
 <translation id="6722828510648505498">पहिचान सेवा प्रदायकहरूबाट प्राप्त साइन इन गर्ने प्रम्प्टहरू ब्लक गरियोस्।</translation>
@@ -371,6 +371,7 @@
 <translation id="7846076177841592234">चयन रद्द गर्नुहोस्</translation>
 <translation id="7882806643839505685">निश्चित साइटको ध्वनिलाई अनुमति दिनुहोस्‌।</translation>
 <translation id="789180354981963912">इन्कोग्निटो मोडमा तेस्रो पक्षीय कुकीहरू ब्लक गरियोस्:</translation>
+<translation id="7895868624847501462">तपाईंले यो कारबाही गर्नुभयो भने कुकीहरूलगायतका सबै लोकल डेटा मेटिने छन् र <ph name="DOMAIN" /> तथा यस डोमेनअन्तर्गतका सबै साइटहरूलाई दिइएका सबै अनुमतिहरू रिसेट हुने छन्</translation>
 <translation id="7940722705963108451">मलाई स्मरण गराइयोस्</translation>
 <translation id="7974024493641668069">{COUNT,plural, =1{<ph name="FPS_OWNER" /> का साइटहरूको समूहमा भएको <ph name="FPS_MEMBERS_COUNT" /> वटा साइटले यस समूहमा तपाईंको गतिविधि देख्न सक्छ}other{<ph name="FPS_OWNER" /> का साइटहरूको समूहमा भएका <ph name="FPS_MEMBERS_COUNT" /> वटा साइटले यस समूहमा तपाईंको गतिविधि देख्न सक्छन्}}</translation>
 <translation id="7986741934819883144">कुनै सम्पर्क ठेगाना चयन गर्नुहोस्</translation>
@@ -396,6 +397,7 @@
 <translation id="8284326494547611709">क्याप्सन</translation>
 <translation id="8300705686683892304">अनुप्रयोगले व्यवस्थापन गरेको</translation>
 <translation id="8324158725704657629">फेरि नसोधियोस्</translation>
+<translation id="8338445138528827481">तपाईंले यो कारबाही गर्नुभयो भने कुकीहरूलगायतका सबै लोकल डेटा मेटिने छन् र <ph name="ORIGIN" /> लाई दिइएका सबै अनुमतिहरू रिसेट हुने छन्</translation>
 <translation id="8362795839483915693">तपाईं आफूले खोल्ने साइटहरूमा जुम इन वा जुम आउट गर्न सक्नुहुन्छ</translation>
 <translation id="8372893542064058268">कुनै विशेष साइटलाई पृष्ठभूमिमा सिंक गर्ने सुविधाको प्रयोग गर्ने अनुमति दिनुहोस्।</translation>
 <translation id="8376384591331888629">यस साइटका तेस्रो पक्षीय कुकीसमेत</translation>

@@ -265,7 +265,18 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     const base::Value::Dict* ads_dict = ads_value.GetIfDict();
     if (!ads_dict)
       return absl::nullopt;
-    const std::string* maybe_render_url = ads_dict->FindString("renderUrl");
+    const std::string* maybe_render_url = ads_dict->FindString("renderURL");
+    const std::string* maybe_render_url_deprecated =
+        ads_dict->FindString("renderUrl");
+    if (maybe_render_url_deprecated) {
+      if (maybe_render_url) {
+        if (*maybe_render_url != *maybe_render_url_deprecated) {
+          return absl::nullopt;
+        }
+      } else {
+        maybe_render_url = maybe_render_url_deprecated;
+      }
+    }
     if (!maybe_render_url)
       return absl::nullopt;
     blink::InterestGroup::Ad ad;
@@ -294,6 +305,10 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
         return absl::nullopt;
       }
       ad.metadata = std::move(metadata);
+    }
+    const std::string* maybe_ad_render_id = ads_dict->FindString("adRenderId");
+    if (maybe_ad_render_id) {
+      ad.ad_render_id = *maybe_ad_render_id;
     }
     ads.push_back(std::move(ad));
   }
@@ -427,20 +442,57 @@ absl::optional<InterestGroupUpdate> ParseUpdateJson(
   if (!TryToCopySellerCapabilities(*dict, interest_group_update)) {
     return absl::nullopt;
   }
-  const std::string* maybe_bidding_url = dict->FindString("biddingLogicUrl");
-  if (maybe_bidding_url)
+  const std::string* maybe_bidding_url = dict->FindString("biddingLogicURL");
+  const std::string* maybe_bidding_url_deprecated =
+      dict->FindString("biddingLogicUrl");
+  if (maybe_bidding_url_deprecated) {
+    if (maybe_bidding_url) {
+      if (*maybe_bidding_url_deprecated != *maybe_bidding_url) {
+        return absl::nullopt;
+      }
+    } else {
+      maybe_bidding_url = maybe_bidding_url_deprecated;
+    }
+  }
+  if (maybe_bidding_url) {
     interest_group_update.bidding_url = GURL(*maybe_bidding_url);
+  }
   const std::string* maybe_bidding_wasm_helper_url =
+      dict->FindString("biddingWasmHelperURL");
+  const std::string* maybe_bidding_wasm_helper_url_deprecated =
       dict->FindString("biddingWasmHelperUrl");
+  if (maybe_bidding_wasm_helper_url_deprecated) {
+    if (maybe_bidding_wasm_helper_url) {
+      if (*maybe_bidding_wasm_helper_url !=
+          *maybe_bidding_wasm_helper_url_deprecated) {
+        return absl::nullopt;
+      }
+    } else {
+      maybe_bidding_wasm_helper_url = maybe_bidding_wasm_helper_url_deprecated;
+    }
+  }
   if (maybe_bidding_wasm_helper_url) {
     interest_group_update.bidding_wasm_helper_url =
         GURL(*maybe_bidding_wasm_helper_url);
   }
-  const std::string* maybe_update_trusted_bidding_signals_url =
+  const std::string* maybe_trusted_bidding_signals_url =
+      dict->FindString("trustedBiddingSignalsURL");
+  const std::string* maybe_trusted_bidding_signals_url_deprecated =
       dict->FindString("trustedBiddingSignalsUrl");
-  if (maybe_update_trusted_bidding_signals_url) {
+  if (maybe_trusted_bidding_signals_url_deprecated) {
+    if (maybe_trusted_bidding_signals_url) {
+      if (*maybe_trusted_bidding_signals_url !=
+          *maybe_trusted_bidding_signals_url_deprecated) {
+        return absl::nullopt;
+      }
+    } else {
+      maybe_trusted_bidding_signals_url =
+          maybe_trusted_bidding_signals_url_deprecated;
+    }
+  }
+  if (maybe_trusted_bidding_signals_url) {
     interest_group_update.trusted_bidding_signals_url =
-        GURL(*maybe_update_trusted_bidding_signals_url);
+        GURL(*maybe_trusted_bidding_signals_url);
   }
   if (!TryToCopyTrustedBiddingSignalsKeys(*dict, interest_group_update)) {
     return absl::nullopt;

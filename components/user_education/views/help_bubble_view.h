@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -90,6 +91,8 @@ class HelpBubbleView : public views::BubbleDialogDelegateView {
   void OnThemeChanged() override;
   gfx::Size CalculatePreferredSize() const override;
   gfx::Rect GetAnchorRect() const override;
+  void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
+                                views::Widget* widget) const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HelpBubbleViewTimeoutTest,

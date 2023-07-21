@@ -6,7 +6,11 @@
 
 #include <memory>
 
+#include "base/functional/bind.h"
+#include "base/location.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/notreached.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -76,12 +80,17 @@ void SavedTabGroupKeyedService::StoreLocalToSavedId(
     return;
   }
 
+  // If there is no saved group with guid `saved_guid`, the group must
+  // have been unsaved since this session closed.
+  if (model()->is_loaded() && !group) {
+    return;
+  }
+
   // The model could already be loaded when restoring groups from a previously
   // crashed session / window. This means we will have to manually trigger the
   // local to saved group linking.
   if (model()->is_loaded()) {
-    model_.OnGroupOpenedInTabStrip(saved_guid, local_group_id);
-    ConnectLocalTabGroup(local_group_id, saved_guid);
+    ConnectLocalTabGroupIfPossible(local_group_id, saved_guid);
   } else {
     saved_guid_to_local_group_id_mapping_.emplace_back(saved_guid,
                                                        local_group_id);
@@ -100,32 +109,20 @@ void SavedTabGroupKeyedService::OpenSavedTabGroupInBrowser(
     return;
   }
 
-  // If the group already has a local group open, then activate it.
+  // Activate the first tab in a group if it is already open.
   if (saved_group->local_group_id().has_value()) {
-    Browser* browser_for_activation =
-        SavedTabGroupUtils::GetBrowserWithTabGroupId(
-            saved_group->local_group_id().value());
-
-    // Only activate the tab group's first tab if it exists in any browser's
-    // tabstrip model.
-    if (browser_for_activation) {
-      absl::optional<int> first_tab =
-          browser_for_activation->tab_strip_model()
-              ->group_model()
-              ->GetTabGroup(saved_group->local_group_id().value())
-              ->GetFirstTab();
-      DCHECK(first_tab.has_value());
-      browser_for_activation->ActivateContents(
-          browser_for_activation->tab_strip_model()->GetWebContentsAt(
-              first_tab.value()));
-      return;
-    }
+    FocusFirstTabInOpenGroup(saved_group->local_group_id().value());
+    return;
   }
 
   // If our tab group was not found in any tabstrip model, open the group in
   // this browser's tabstrip model.
   TabStripModel* tab_strip_model_for_creation = browser->tab_strip_model();
 
+  // TODO(crbug/1444508): Reduce logic / number of nested data structures to
+  // keep the webcontents and SavedTab Ids paired by using a mapping instead.
+  // Update the listeners to support this change. Then decouple the logic of the
+  // for loop below from this function to make crashes easier to parse.
   std::vector<content::WebContents*> opened_web_contents;
   std::vector<std::pair<content::WebContents*, base::Uuid>>
       local_and_saved_tab_mapping;
@@ -186,6 +183,9 @@ void SavedTabGroupKeyedService::OpenSavedTabGroupInBrowser(
 
   listener_.ConnectToLocalTabGroup(*model_.Get(saved_group_guid),
                                    local_and_saved_tab_mapping);
+
+  base::RecordAction(
+      base::UserMetricsAction("TabGroups_SavedTabGroups_Opened"));
 }
 
 void SavedTabGroupKeyedService::SaveGroup(
@@ -219,8 +219,7 @@ void SavedTabGroupKeyedService::SaveGroup(
     local_and_saved_tab_mapping.emplace_back(
         web_contents, saved_tab_group_tab.saved_tab_guid());
 
-    saved_tab_group.AddTab(std::move(saved_tab_group_tab),
-                           /*update_tab_positions=*/true);
+    saved_tab_group.AddTabLocally(std::move(saved_tab_group_tab));
   }
 
   const base::Uuid saved_group_guid = saved_tab_group.saved_guid();
@@ -265,7 +264,7 @@ void SavedTabGroupKeyedService::DisconnectLocalTabGroup(
   model_.OnGroupClosedInTabStrip(group_id);
 }
 
-void SavedTabGroupKeyedService::ConnectLocalTabGroup(
+void SavedTabGroupKeyedService::ConnectLocalTabGroupIfPossible(
     const tab_groups::TabGroupId& local_group_id,
     const base::Uuid& saved_guid) {
   const TabStripModel* tab_strip_model =
@@ -277,16 +276,21 @@ void SavedTabGroupKeyedService::ConnectLocalTabGroup(
   const gfx::Range& tab_range = tab_group->ListTabs();
   const SavedTabGroup* const saved_group = model_.Get(saved_guid);
   CHECK(saved_group);
-  CHECK(tab_range.length() == saved_group->saved_tabs().size());
+
+  if (tab_range.length() != saved_group->saved_tabs().size()) {
+    return;
+  }
 
   std::vector<std::pair<content::WebContents*, base::Uuid>>
       web_contents_to_guid_mapping;
 
-  for (size_t i = tab_range.start(); i < tab_range.end(); ++i) {
-    content::WebContents* web_contents = tab_strip_model->GetWebContentsAt(i);
+  for (size_t index_in_tabstrip = tab_range.start();
+       index_in_tabstrip < tab_range.end(); ++index_in_tabstrip) {
+    content::WebContents* web_contents =
+        tab_strip_model->GetWebContentsAt(index_in_tabstrip);
     CHECK(web_contents);
 
-    const size_t saved_tab_index = i - tab_range.start();
+    const int saved_tab_index = index_in_tabstrip - tab_range.start();
     const SavedTabGroupTab& saved_tab =
         saved_group->saved_tabs()[saved_tab_index];
 
@@ -294,6 +298,7 @@ void SavedTabGroupKeyedService::ConnectLocalTabGroup(
                                               saved_tab.saved_tab_guid());
   }
 
+  model_.OnGroupOpenedInTabStrip(saved_guid, local_group_id);
   listener_.ConnectToLocalTabGroup(*model_.Get(saved_guid),
                                    std::move(web_contents_to_guid_mapping));
 
@@ -303,8 +308,11 @@ void SavedTabGroupKeyedService::ConnectLocalTabGroup(
 void SavedTabGroupKeyedService::SavedTabGroupModelLoaded() {
   for (const auto& [saved_guid, local_group_id] :
        saved_guid_to_local_group_id_mapping_) {
-    model_.OnGroupOpenedInTabStrip(saved_guid, local_group_id);
-    ConnectLocalTabGroup(local_group_id, saved_guid);
+    if (model()->is_loaded() && !model()->Contains(saved_guid)) {
+      continue;
+    }
+
+    ConnectLocalTabGroupIfPossible(local_group_id, saved_guid);
   }
 
   // Clear `saved_guid_to_local_group_id_mapping_` to save space when finished.
@@ -345,6 +353,28 @@ void SavedTabGroupKeyedService::SavedTabGroupRemovedFromSync(
   listener_.RemoveLocalGroupFromSync(removed_group->local_group_id().value());
 }
 
+void SavedTabGroupKeyedService::FocusFirstTabInOpenGroup(
+    tab_groups::TabGroupId local_group_id) {
+  Browser* browser_for_activation =
+      SavedTabGroupUtils::GetBrowserWithTabGroupId(local_group_id);
+
+  // Only activate the tab group's first tab if it exists in any browser's
+  // tabstrip model.
+  CHECK(browser_for_activation);
+
+  absl::optional<int> first_tab = browser_for_activation->tab_strip_model()
+                                      ->group_model()
+                                      ->GetTabGroup(local_group_id)
+                                      ->GetFirstTab();
+  DCHECK(first_tab.has_value());
+  browser_for_activation->ActivateContents(
+      browser_for_activation->tab_strip_model()->GetWebContentsAt(
+          first_tab.value()));
+
+  base::RecordAction(
+      base::UserMetricsAction("TabGroups_SavedTabGroups_Focused"));
+}
+
 const TabStripModel* SavedTabGroupKeyedService::GetTabStripModelWithTabGroupId(
     const tab_groups::TabGroupId& local_group_id) {
   const Browser* const browser =
@@ -378,9 +408,37 @@ void SavedTabGroupKeyedService::RecordSavedTabGroupMetrics() {
   base::UmaHistogramCounts10000("TabGroups.SavedTabGroupCount",
                                 model()->Count());
 
+  const base::Time current_time = base::Time::Now();
+
   for (const SavedTabGroup& group : model()->saved_tab_groups()) {
     base::UmaHistogramCounts10000("TabGroups.SavedTabGroupTabCount",
                                   group.saved_tabs().size());
+
+    const base::TimeDelta duration_saved =
+        current_time - group.creation_time_windows_epoch_micros();
+    if (!duration_saved.is_negative()) {
+      base::UmaHistogramCounts1M("TabGroups.SavedTabGroupAge",
+                                 duration_saved.InMinutes());
+    }
+
+    const base::TimeDelta duration_since_group_modification =
+        current_time - group.update_time_windows_epoch_micros();
+    if (!duration_since_group_modification.is_negative()) {
+      base::UmaHistogramCounts1M("TabGroups.SavedTabGroupTimeSinceModification",
+                                 duration_since_group_modification.InMinutes());
+    }
+
+    for (const SavedTabGroupTab& tab : group.saved_tabs()) {
+      const base::TimeDelta duration_since_tab_modification =
+          current_time - tab.update_time_windows_epoch_micros();
+      if (duration_since_tab_modification.is_negative()) {
+        continue;
+      }
+
+      base::UmaHistogramCounts1M(
+          "TabGroups.SavedTabGroupTabTimeSinceModification",
+          duration_since_tab_modification.InMinutes());
+    }
   }
 }
 

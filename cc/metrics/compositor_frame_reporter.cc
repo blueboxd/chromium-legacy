@@ -11,7 +11,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "base/cpu_reduction_experiment.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
@@ -880,8 +879,10 @@ void CompositorFrameReporter::EndCurrentStage(base::TimeTicks end_time) {
 }
 
 void CompositorFrameReporter::ReportCompositorLatencyMetrics() const {
-  if (!base::ShouldLogHistogramForCpuReductionExperiment())
+  // Subsampling these metrics reduced CPU utilization (crbug.com/1295441).
+  if (!metrics_subsampler_.ShouldSample(0.001)) {
     return;
+  }
 
   if (global_trackers_.latency_ukm_reporter) {
     global_trackers_.latency_ukm_reporter->ReportCompositorLatencyUkm(
@@ -1358,44 +1359,64 @@ void CompositorFrameReporter::ReportScrollJankMetrics() const {
   float total_predicted_delta = 0;
   bool had_gesture_scrolls = false;
 
+  // This handles cases when we have multiple scroll events. Events for dropped
+  // frames are reported by the reporter for next presented frame which could
+  // lead to having multiple scroll events.
+  base::TimeTicks input_generation_ts = base::TimeTicks::Max();
+  base::TimeTicks last_coalesced_ts = base::TimeTicks::Min();
   for (const auto& event : events_metrics_) {
     TRACE_EVENT("input", "GestureType", "gesture", event->type());
+    const auto* scroll_update = event->AsScrollUpdate();
+    if (!scroll_update) {
+      continue;
+    }
+
+    total_predicted_delta += scroll_update->predicted_delta();
+    had_gesture_scrolls = true;
+    input_generation_ts = std::min(
+        input_generation_ts, event->GetDispatchStageTimestamp(
+                                 EventMetrics::DispatchStage::kGenerated));
+    last_coalesced_ts =
+        std::max(last_coalesced_ts, scroll_update->last_timestamp());
+
     switch (event->type()) {
-      case EventMetrics::EventType::kGestureScrollUpdate:
-        normal_input_count += event->AsScrollUpdate()->coalesced_event_count();
-        total_predicted_delta += event->AsScrollUpdate()->predicted_delta();
-        had_gesture_scrolls = true;
-        break;
       case EventMetrics::EventType::kFirstGestureScrollUpdate:
-        normal_input_count += event->AsScrollUpdate()->coalesced_event_count();
-        total_predicted_delta += event->AsScrollUpdate()->predicted_delta();
         if (global_trackers_.predictor_jank_tracker) {
           global_trackers_.predictor_jank_tracker
               ->ResetCurrentScrollReporting();
         }
-        had_gesture_scrolls = true;
+        ABSL_FALLTHROUGH_INTENDED;
+      case EventMetrics::EventType::kGestureScrollUpdate:
+        normal_input_count += scroll_update->coalesced_event_count();
         break;
       case EventMetrics::EventType::kInertialGestureScrollUpdate:
-        fling_input_count += event->AsScrollUpdate()->coalesced_event_count();
-        total_predicted_delta += event->AsScrollUpdate()->predicted_delta();
-        had_gesture_scrolls = true;
+        fling_input_count += scroll_update->coalesced_event_count();
         break;
       default:
-        continue;
+        NOTREACHED();
     }
   }
 
-  TRACE_EVENT("input", "PresentedFrameInformation",
+  TRACE_EVENT("input,input.scrolling", "PresentedFrameInformation",
               [events_metrics = std::cref(events_metrics_), fling_input_count,
                normal_input_count](perfetto::EventContext& ctx) {
                 TraceScrollJankMetrics(events_metrics, fling_input_count,
                                        normal_input_count, ctx);
               });
 
+  if (!had_gesture_scrolls) {
+    return;
+  }
+
   const auto end_timestamp = viz_breakdown_.presentation_feedback.timestamp;
-  if (had_gesture_scrolls && global_trackers_.predictor_jank_tracker) {
+  if (global_trackers_.predictor_jank_tracker) {
     global_trackers_.predictor_jank_tracker->ReportLatestScrollDelta(
         total_predicted_delta, end_timestamp, args_.interval);
+  }
+  if (global_trackers_.scroll_jank_dropped_frame_tracker) {
+    global_trackers_.scroll_jank_dropped_frame_tracker
+        ->ReportLatestPresentationData(input_generation_ts, last_coalesced_ts,
+                                       end_timestamp, args_.interval);
   }
 }
 

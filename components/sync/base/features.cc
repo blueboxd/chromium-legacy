@@ -97,7 +97,7 @@ BASE_FEATURE(kSyncEnableHistoryDataType,
 
 BASE_FEATURE(kSyncEnableContactInfoDataType,
              "SyncEnableContactInfoDataType",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSyncEnableContactInfoDataTypeEarlyReturnNoDatabase,
              "SyncEnableContactInfoDataTypeEarlyReturnNoDatabase",
@@ -165,4 +165,11 @@ BASE_FEATURE(kSyncIgnoreGetUpdatesRetryDelay,
              "SyncIgnoreGetUpdatesRetryDelay",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kSyncEnablePersistentStorageForAccountPreferences,
+             "SyncEnablePersistentStorageForAccountPreferences",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSyncAvoidReconfigurationIfAlreadyStopping,
+             "SyncAvoidReconfigurationIfAlreadyStopping",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 }  // namespace syncer

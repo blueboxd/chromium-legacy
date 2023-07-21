@@ -24,14 +24,14 @@
 #include "base/allocator/partition_allocator/partition_oom.h"
 #include "base/allocator/partition_allocator/partition_page.h"
 #include "base/allocator/partition_allocator/partition_ref_count.h"
-#include "base/allocator/partition_allocator/pkey.h"
 #include "base/allocator/partition_allocator/reservation_offset_table.h"
 #include "base/allocator/partition_allocator/tagging.h"
+#include "base/allocator/partition_allocator/thread_isolation/thread_isolation.h"
 #include "build/build_config.h"
 
-#if PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK) && BUILDFLAG(IS_APPLE)
+#if PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK)
 #include "base/allocator/partition_allocator/partition_alloc_base/mac/mac_util.h"
-#endif  // PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK) && BUILDFLAG(IS_APPLE)
+#endif
 
 #if BUILDFLAG(USE_STARSCAN)
 #include "base/allocator/partition_allocator/starscan/pcscan.h"
@@ -108,7 +108,6 @@ namespace partition_alloc {
 #if PA_CONFIG(USE_PARTITION_ROOT_ENUMERATOR)
 
 namespace {
-
 internal::Lock g_root_enumerator_lock;
 }
 
@@ -688,15 +687,17 @@ void DCheckIfManagedByPartitionAllocBRPPool(uintptr_t address) {
 }
 #endif
 
-#if BUILDFLAG(ENABLE_PKEYS)
-void PartitionAllocPkeyInit(int pkey) {
-  PkeySettings::settings.enabled = true;
-  PartitionAddressSpace::InitPkeyPool(pkey);
-  // Call TagGlobalsWithPkey last since we might not have write permissions to
-  // to memory tagged with `pkey` at this point.
-  TagGlobalsWithPkey(pkey);
+#if BUILDFLAG(ENABLE_THREAD_ISOLATION)
+void PartitionAllocThreadIsolationInit(ThreadIsolationOption thread_isolation) {
+#if BUILDFLAG(PA_DCHECK_IS_ON)
+  ThreadIsolationSettings::settings.enabled = true;
+#endif
+  PartitionAddressSpace::InitThreadIsolatedPool(thread_isolation);
+  // Call WriteProtectThreadIsolatedGlobals last since we might not have write
+  // permissions to to globals afterwards.
+  WriteProtectThreadIsolatedGlobals(thread_isolation);
 }
-#endif  // BUILDFLAG(ENABLE_PKEYS)
+#endif  // BUILDFLAG(ENABLE_THREAD_ISOLATION)
 
 }  // namespace internal
 
@@ -773,10 +774,10 @@ void PartitionRoot<thread_safe>::DestructForTesting() {
   // this function on PartitionRoots without a thread cache.
   PA_CHECK(!flags.with_thread_cache);
   auto pool_handle = ChoosePool();
-#if BUILDFLAG(ENABLE_PKEYS)
-  // The pages managed by pkey will be free-ed at UninitPKeyForTesting().
-  // Don't invoke FreePages() for the pages.
-  if (pool_handle == internal::kPkeyPoolHandle) {
+#if BUILDFLAG(ENABLE_THREAD_ISOLATION)
+  // The pages managed by thread isolated pool will be free-ed at
+  // UninitThreadIsolatedForTesting(). Don't invoke FreePages() for the pages.
+  if (pool_handle == internal::kThreadIsolatedPoolHandle) {
     return;
   }
   PA_DCHECK(pool_handle < internal::kNumPools);
@@ -802,8 +803,34 @@ void PartitionRoot<thread_safe>::DestructForTesting() {
 
 #if PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK)
 template <bool thread_safe>
-void PartitionRoot<thread_safe>::EnableMac11MallocSizeHackForTesting() {
+void PartitionRoot<thread_safe>::InitMac11MallocSizeHackUsableSize(
+    size_t ref_count_size) {
   flags.mac11_malloc_size_hack_enabled_ = true;
+
+  // 0 means reserve just enough extras to fit PartitionRefCount.
+  if (!ref_count_size) {
+    ref_count_size = sizeof(internal::PartitionRefCount);
+  }
+  // Request of 32B will fall into a 48B bucket in the presence of BRP
+  // ref-count, yielding |48 - ref_count_size| of actual usable space.
+  flags.mac11_malloc_size_hack_usable_size_ = 48 - ref_count_size;
+}
+
+template <bool thread_safe>
+void PartitionRoot<thread_safe>::EnableMac11MallocSizeHackForTesting(
+    size_t ref_count_size) {
+  flags.mac11_malloc_size_hack_enabled_ = true;
+  InitMac11MallocSizeHackUsableSize(ref_count_size);
+}
+
+template <bool thread_safe>
+void PartitionRoot<thread_safe>::EnableMac11MallocSizeHackIfNeeded(
+    size_t ref_count_size) {
+  flags.mac11_malloc_size_hack_enabled_ =
+      flags.brp_enabled_ && internal::base::mac::IsOS11();
+  if (flags.mac11_malloc_size_hack_enabled_) {
+    InitMac11MallocSizeHackUsableSize(ref_count_size);
+  }
 }
 #endif  // PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK)
 
@@ -868,10 +895,6 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
       return;
     }
 
-    // Swaps out the active no-op tagging intrinsics with MTE-capable ones, if
-    // running on the right hardware.
-    ::partition_alloc::internal::InitializeMTESupportIfNeeded();
-
 #if BUILDFLAG(HAS_64_BIT_POINTERS)
     // Reserve address space for partition alloc.
     internal::PartitionAddressSpace::Init();
@@ -887,14 +910,9 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     flags.brp_enabled_ =
         opts.backup_ref_ptr == PartitionOptions::BackupRefPtr::kEnabled;
-    flags.brp_zapping_enabled_ =
-        opts.backup_ref_ptr_zapping ==
-        PartitionOptions::BackupRefPtrZapping::kEnabled;
-    PA_CHECK(!flags.brp_zapping_enabled_ || flags.brp_enabled_);
-#if PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK) && BUILDFLAG(IS_APPLE)
-    flags.mac11_malloc_size_hack_enabled_ =
-        flags.brp_enabled_ && internal::base::mac::IsOS11();
-#endif  // PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK) && BUILDFLAG(IS_APPLE)
+#if PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK)
+    EnableMac11MallocSizeHackIfNeeded(opts.ref_count_size);
+#endif
 #else   // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     PA_CHECK(opts.backup_ref_ptr == PartitionOptions::BackupRefPtr::kDisabled);
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
@@ -904,28 +922,26 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
         IsConfigurablePoolAvailable();
     PA_DCHECK(!flags.use_configurable_pool || IsConfigurablePoolAvailable());
 #if PA_CONFIG(HAS_MEMORY_TAGGING)
-    TagViolationReportingMode memory_tagging_mode =
-        internal::GetMemoryTaggingModeForCurrentThread();
+    flags.memory_tagging_enabled_ =
+        opts.memory_tagging == PartitionOptions::MemoryTagging::kEnabled;
     // Memory tagging is not supported in the configurable pool because MTE
     // stores tagging information in the high bits of the pointer, it causes
     // issues with components like V8's ArrayBuffers which use custom pointer
     // representations. All custom representations encountered so far rely on an
     // "is in configurable pool?" check, so we use that as a proxy.
-    flags.memory_tagging_enabled_ =
-        !flags.use_configurable_pool &&
-        memory_tagging_mode != TagViolationReportingMode::kUndefined;
+    PA_CHECK(!flags.memory_tagging_enabled_ || !flags.use_configurable_pool);
 #endif
 
     // brp_enabled() is not supported in the configurable pool because
     // BRP requires objects to be in a different Pool.
     PA_CHECK(!(flags.use_configurable_pool && brp_enabled()));
 
-#if BUILDFLAG(ENABLE_PKEYS)
-    // BRP and pkey mode use different pools, so they can't be enabled at the
-    // same time.
-    PA_CHECK(opts.pkey == internal::kDefaultPkey ||
+#if BUILDFLAG(ENABLE_THREAD_ISOLATION)
+    // BRP and thread isolated mode use different pools, so they can't be
+    // enabled at the same time.
+    PA_CHECK(!opts.thread_isolation.enabled ||
              opts.backup_ref_ptr == PartitionOptions::BackupRefPtr::kDisabled);
-    flags.pkey = opts.pkey;
+    flags.thread_isolation = opts.thread_isolation;
 #endif
 
     // Ref-count messes up alignment needed for AlignedAlloc, making this
@@ -948,15 +964,20 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
       // TODO(tasak): In the PUT_REF_COUNT_IN_PREVIOUS_SLOT case, ref-count is
       // stored out-of-line for single-slot slot spans, so no need to
       // add/subtract its size in this case.
-      flags.extras_size += internal::kPartitionRefCountSizeAdjustment;
+      size_t ref_count_size = opts.ref_count_size;
+      if (!ref_count_size) {
+        ref_count_size = internal::kPartitionRefCountSizeAdjustment;
+      }
+#if PA_CONFIG(INCREASE_REF_COUNT_SIZE_FOR_MTE)
+      if (IsMemoryTaggingEnabled()) {
+        ref_count_size = internal::base::bits::AlignUp(
+            ref_count_size, internal::kMemTagGranuleSize);
+      }
+      flags.ref_count_size = ref_count_size;
+#endif  // PA_CONFIG(INCREASE_REF_COUNT_SIZE_FOR_MTE)
+      PA_CHECK(internal::kPartitionRefCountSizeAdjustment <= ref_count_size);
+      flags.extras_size += ref_count_size;
       flags.extras_offset += internal::kPartitionRefCountOffsetAdjustment;
-    }
-    if (opts.add_dummy_ref_count ==
-        PartitionOptions::AddDummyRefCount::kEnabled) {
-      // AddDummyRefCount will increase the size to simulate adding
-      // PartitionRefCount, but non of the BRP logic will run.
-      PA_CHECK(!brp_enabled());
-      flags.extras_size += internal::kPartitionRefCountSizeAdjustment;
     }
 #endif  // PA_CONFIG(EXTRAS_REQUIRED)
 
@@ -1027,9 +1048,9 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
   PartitionAllocMallocInitOnce();
 #endif
 
-#if BUILDFLAG(ENABLE_PKEYS)
-  if (flags.pkey != internal::kDefaultPkey) {
-    internal::PartitionAllocPkeyInit(flags.pkey);
+#if BUILDFLAG(ENABLE_THREAD_ISOLATION)
+  if (flags.thread_isolation.enabled) {
+    internal::PartitionAllocThreadIsolationInit(flags.thread_isolation);
   }
 #endif
 }
@@ -1133,6 +1154,7 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForDirectMap(
                 internal::PartitionPageSize());
 #endif
 
+  PA_DCHECK(new_slot_size > internal::kMaxMemoryTaggingSize);
   if (new_slot_size == current_slot_size) {
     // No need to move any memory around, but update size and cookie below.
     // That's because raw_size may have changed.
@@ -1147,9 +1169,10 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForDirectMap(
     // Grow within the actually reserved address space. Just need to make the
     // pages accessible again.
     size_t recommit_slot_size_growth = new_slot_size - current_slot_size;
-    RecommitSystemPagesForData(slot_start + current_slot_size,
-                               recommit_slot_size_growth,
-                               PageAccessibilityDisposition::kRequireUpdate);
+    // Direct map never uses tagging, as size is always >kMaxMemoryTaggingSize.
+    RecommitSystemPagesForData(
+        slot_start + current_slot_size, recommit_slot_size_growth,
+        PageAccessibilityDisposition::kRequireUpdate, false);
     // The recommited system pages had been already reserved and all the
     // entries in the reservation offset table (for entire reservation_size
     // region) have been already initialized.

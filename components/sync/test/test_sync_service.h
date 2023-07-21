@@ -11,9 +11,9 @@
 
 #include "base/observer_list.h"
 #include "components/signin/public/identity_manager/account_info.h"
-#include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/engine/sync_status.h"
+#include "components/sync/service/sync_service.h"
 #include "components/sync/test/test_sync_user_settings.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "url/gurl.h"
@@ -37,13 +37,15 @@ class TestSyncService : public SyncService {
   void SetAccountInfo(const CoreAccountInfo& account_info);
   void SetHasSyncConsent(bool has_consent);
   void SetSetupInProgress(bool in_progress);
+  void SetSyncFeatureDisabledViaDashboard(bool disabled_via_dashboard);
 
   // Setters to mimic common auth error scenarios. Note that these functions
   // may change the transport state, as returned by GetTransportState().
   void SetPersistentAuthError();
   void ClearAuthError();
 
-  void SetFirstSetupComplete(bool first_setup_complete);
+  void SetInitialSyncFeatureSetupComplete(
+      bool initial_sync_feature_setup_complete);
   void SetFailedDataTypes(const ModelTypeSet& types);
 
   void SetLastCycleSnapshot(const SyncCycleSnapshot& snapshot);
@@ -75,6 +77,7 @@ class TestSyncService : public SyncService {
   GoogleServiceAuthError GetAuthError() const override;
   base::Time GetAuthErrorTime() const override;
   bool RequiresClientUpgrade() const override;
+  bool IsSyncFeatureDisabledViaDashboard() const override;
 
   std::unique_ptr<SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;
@@ -107,6 +110,7 @@ class TestSyncService : public SyncService {
   void RemoveProtocolEventObserver(ProtocolEventObserver* observer) override;
   void GetAllNodesForDebugging(
       base::OnceCallback<void(base::Value::List)> callback) override;
+  ModelTypeDownloadStatus GetDownloadStatusFor(ModelType type) const override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
   void AddTrustedVaultDecryptionKeysFromWeb(
       const std::string& gaia_id,
@@ -121,6 +125,9 @@ class TestSyncService : public SyncService {
   // KeyedService implementation.
   void Shutdown() override;
 
+ protected:
+  bool IsSyncFeatureConsideredRequested() const override;
+
  private:
   TestSyncUserSettings user_settings_;
 
@@ -130,6 +137,7 @@ class TestSyncService : public SyncService {
   CoreAccountInfo account_info_;
   bool has_sync_consent_ = true;
   bool setup_in_progress_ = false;
+  bool sync_feature_disabled_via_dashboard_ = false;
 
   ModelTypeSet failed_data_types_;
 

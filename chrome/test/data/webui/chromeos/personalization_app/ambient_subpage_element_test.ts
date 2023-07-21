@@ -108,7 +108,7 @@ suite('AmbientSubpageTest', function() {
 
     const topicSourceItemPlaceholders =
         ambientSubpageElement.shadowRoot!.querySelectorAll(
-            '#topicSourceTextPlaceholder:not([hidden])');
+            '.topic-source-placeholder:not([hidden])');
     assertEquals(2, topicSourceItemPlaceholders!.length);
 
     // Should show placeholders for 2 weather unit radio buttons.
@@ -119,7 +119,7 @@ suite('AmbientSubpageTest', function() {
 
     const weatherUnitItemPlaceholders =
         ambientSubpageElement.shadowRoot!.querySelectorAll(
-            '#weatherUnitTextPlaceholder:not([hidden])');
+            '.weather-unit-placeholder:not([hidden])');
     assertEquals(2, weatherUnitItemPlaceholders!.length);
 
     personalizationStore.data.ambient.ambientModeEnabled = false;
@@ -208,7 +208,7 @@ suite('AmbientSubpageTest', function() {
     personalizationStore.setReducersEnabled(true);
     personalizationStore.expectAction(
         AmbientActionName.SET_AMBIENT_MODE_ENABLED);
-    toggleRow.click();
+    toggleButton.click();
     let action = await personalizationStore.waitForAction(
                      AmbientActionName.SET_AMBIENT_MODE_ENABLED) as
         SetAmbientModeEnabledAction;
@@ -218,7 +218,7 @@ suite('AmbientSubpageTest', function() {
 
     personalizationStore.expectAction(
         AmbientActionName.SET_AMBIENT_MODE_ENABLED);
-    toggleRow.click();
+    toggleButton.click();
     action = await personalizationStore.waitForAction(
                  AmbientActionName.SET_AMBIENT_MODE_ENABLED) as
         SetAmbientModeEnabledAction;
@@ -241,7 +241,7 @@ suite('AmbientSubpageTest', function() {
 
     personalizationStore.expectAction(
         AmbientActionName.SET_AMBIENT_MODE_ENABLED);
-    toggleRow.$.toggle.click();
+    toggleButton.click();
     let action = await personalizationStore.waitForAction(
                      AmbientActionName.SET_AMBIENT_MODE_ENABLED) as
         SetAmbientModeEnabledAction;
@@ -249,7 +249,7 @@ suite('AmbientSubpageTest', function() {
 
     personalizationStore.expectAction(
         AmbientActionName.SET_AMBIENT_MODE_ENABLED);
-    toggleRow.$.toggle.click();
+    toggleButton.click();
     action = await personalizationStore.waitForAction(
                  AmbientActionName.SET_AMBIENT_MODE_ENABLED) as
         SetAmbientModeEnabledAction;

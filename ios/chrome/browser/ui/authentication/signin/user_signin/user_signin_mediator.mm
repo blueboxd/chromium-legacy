@@ -168,7 +168,10 @@
     }
     case IdentitySigninStateSignedInWithSyncEnabled: {
       // Switching accounts is not possible without sign-out.
-      NOTREACHED_NORETURN();
+      // TODO(crbug.com/1410747): DCHECK failures are reported for this
+      // codepath that requires more investigation.
+      NOTREACHED();
+      break;
     }
   }
 }
@@ -251,7 +254,7 @@
 
   // FirstSetupComplete flag should be turned on after the authentication
   // service has granted user consent to start Sync when tapping "Yes, I'm in."
-  self.syncSetupService->SetFirstSetupComplete(
+  self.syncSetupService->SetInitialSyncFeatureSetupComplete(
       syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
   self.syncSetupService->CommitSyncChanges();
 

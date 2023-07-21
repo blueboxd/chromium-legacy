@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/fixed_flat_set.h"
+#include "base/dcheck_is_on.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/metrics/field_trial_param_associator.h"
@@ -3492,6 +3493,10 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
     return https_server_.GetURL("/critical_ch_dpr.html");
   }
 
+  GURL critical_ch_viewport_url() const {
+    return https_server_.GetURL("/critical_ch_viewport.html");
+  }
+
   GURL critical_ch_ua_full_version_list_url() const {
     return https_server_.GetURL("/critical_ch_ua_full_version_list.html");
   }
@@ -3525,6 +3530,21 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
     return ch_dpr_;
   }
 
+  const std::vector<std::string>& observed_ch_viewport_heights() {
+    base::AutoLock lock(ch_viewport_heights_lock_);
+    return ch_viewport_heights_;
+  }
+
+  const std::vector<std::string>& observed_ch_viewport_widths() {
+    base::AutoLock lock(ch_viewport_widths_lock_);
+    return ch_viewport_widths_;
+  }
+
+  const std::vector<std::string>& observed_ch_viewport_widths_deprecated() {
+    base::AutoLock lock(ch_viewport_widths_deprecated_lock_);
+    return ch_viewport_widths_deprecated_;
+  }
+
   void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
     if (request.headers.find("sec-ch-ua-full-version") !=
         request.headers.end()) {
@@ -3536,6 +3556,23 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
     }
     if (request.headers.find("sec-ch-dpr") != request.headers.end()) {
       SetChDpr(request.headers.at("sec-ch-dpr"));
+    }
+    if (request.headers.find("sec-ch-viewport-height") !=
+        request.headers.end()) {
+      AppendChViewportHeight(request.headers.at("sec-ch-viewport-height"));
+    } else {
+      AppendChViewportHeight("MISSING");
+    }
+    if (request.headers.find("sec-ch-viewport-width") !=
+        request.headers.end()) {
+      AppendChViewportWidth(request.headers.at("sec-ch-viewport-width"));
+    } else {
+      AppendChViewportWidth("MISSING");
+    }
+    if (request.headers.find("viewport-width") != request.headers.end()) {
+      AppendChViewportWidthDeprecated(request.headers.at("viewport-width"));
+    } else {
+      AppendChViewportWidthDeprecated("MISSING");
     }
   }
 
@@ -3586,6 +3623,22 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
     ch_dpr_ = ch_dpr;
   }
 
+  void AppendChViewportHeight(const std::string& ch_viewport_heights) {
+    base::AutoLock lock(ch_viewport_heights_lock_);
+    ch_viewport_heights_.push_back(ch_viewport_heights);
+  }
+
+  void AppendChViewportWidth(const std::string& ch_viewport_widths) {
+    base::AutoLock lock(ch_viewport_widths_lock_);
+    ch_viewport_widths_.push_back(ch_viewport_widths);
+  }
+
+  void AppendChViewportWidthDeprecated(
+      const std::string& ch_viewport_widths_deprecated) {
+    base::AutoLock lock(ch_viewport_widths_deprecated_lock_);
+    ch_viewport_widths_deprecated_.push_back(ch_viewport_widths_deprecated);
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer https_server_;
   base::Lock ch_ua_full_version_lock_;
@@ -3596,6 +3649,15 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
       GUARDED_BY(ch_ua_full_version_list_lock_);
   base::Lock ch_dpr_lock_;
   absl::optional<std::string> ch_dpr_ GUARDED_BY(ch_dpr_lock_);
+  base::Lock ch_viewport_heights_lock_;
+  std::vector<std::string> ch_viewport_heights_
+      GUARDED_BY(ch_viewport_heights_lock_);
+  base::Lock ch_viewport_widths_lock_;
+  std::vector<std::string> ch_viewport_widths_
+      GUARDED_BY(ch_viewport_widths_lock_);
+  base::Lock ch_viewport_widths_deprecated_lock_;
+  std::vector<std::string> ch_viewport_widths_deprecated_
+      GUARDED_BY(ch_viewport_widths_deprecated_lock_);
 };
 
 // Verify that setting Critical-CH in the response header causes the request to
@@ -3674,6 +3736,78 @@ IN_PROC_BROWSER_TEST_F(
                                 {network::mojom::WebClientHintsType::kDpr},
                                 /*loads=*/1);
 }
+
+// Some bots disable DCHECK, but GetRenderWidgetHostViewFromFrameTreeNode requires it's
+// on for the test specific code to be invoked. This is to reduce production overhead.
+#if DCHECK_IS_ON()
+
+// Verify that setting Critical-CH for a viewport hint when no size has been
+// cached doesn't cause an infinite redirect loop.
+IN_PROC_BROWSER_TEST_F(CriticalClientHintsBrowserTest,
+                       CriticalClientHintWithUncachedViewport) {
+  // Force an empty viewport size.
+  browser()
+      ->profile()
+      ->GetClientHintsControllerDelegate()
+      ->ForceEmptyViewportSizeForTesting(true);
+  // We should never see real sizes sent.
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), critical_ch_viewport_url()));
+  EXPECT_EQ(observed_ch_viewport_heights().size(), 1u);
+  EXPECT_EQ(observed_ch_viewport_heights()[0], "MISSING");
+  EXPECT_EQ(observed_ch_viewport_widths().size(), 1u);
+  EXPECT_EQ(observed_ch_viewport_widths()[0], "MISSING");
+  EXPECT_EQ(observed_ch_viewport_widths_deprecated().size(), 1u);
+  EXPECT_EQ(observed_ch_viewport_widths_deprecated()[0], "MISSING");
+  // Cleanup shim to prevent other tests from breaking.
+  browser()
+      ->profile()
+      ->GetClientHintsControllerDelegate()
+      ->ForceEmptyViewportSizeForTesting(false);
+}
+
+// Verify that setting Critical-CH for a viewport hint when no size has been
+// cached doesn't cause an infinite redirect loop even when hint was cached.
+IN_PROC_BROWSER_TEST_F(CriticalClientHintsBrowserTest,
+                       CriticalClientHintWithUncachedViewportAndCachedHints) {
+  // Force an empty viewport size.
+  browser()
+      ->profile()
+      ->GetClientHintsControllerDelegate()
+      ->ForceEmptyViewportSizeForTesting(true);
+  // Add setting for the host.
+  base::Value::List client_hints_list;
+  client_hints_list.Append(
+      static_cast<int>(network::mojom::WebClientHintsType::kViewportHeight));
+  client_hints_list.Append(
+      static_cast<int>(network::mojom::WebClientHintsType::kViewportWidth));
+  client_hints_list.Append(static_cast<int>(
+      network::mojom::WebClientHintsType::kViewportWidth_DEPRECATED));
+  base::Value::Dict client_hints_dictionary;
+  client_hints_dictionary.Set(client_hints::kClientHintsSettingKey,
+                              base::Value(std::move(client_hints_list)));
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+  host_content_settings_map->SetWebsiteSettingDefaultScope(
+      critical_ch_viewport_url(), GURL(), ContentSettingsType::CLIENT_HINTS,
+      base::Value(std::move(client_hints_dictionary)));
+  // We should never see real sizes sent.
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), critical_ch_viewport_url()));
+  EXPECT_EQ(observed_ch_viewport_heights().size(), 1u);
+  EXPECT_EQ(observed_ch_viewport_heights()[0], "MISSING");
+  EXPECT_EQ(observed_ch_viewport_widths().size(), 1u);
+  EXPECT_EQ(observed_ch_viewport_widths()[0], "MISSING");
+  EXPECT_EQ(observed_ch_viewport_widths_deprecated().size(), 1u);
+  EXPECT_EQ(observed_ch_viewport_widths_deprecated()[0], "MISSING");
+  // Cleanup shim to prevent other tests from breaking.
+  browser()
+      ->profile()
+      ->GetClientHintsControllerDelegate()
+      ->ForceEmptyViewportSizeForTesting(false);
+}
+
+#endif
 
 IN_PROC_BROWSER_TEST_F(CriticalClientHintsBrowserTest, OneRestartSingleOrigin) {
   AlternatingCriticalCHRequestHandler handler;
@@ -4211,7 +4345,7 @@ class SameOriginUaOriginTrialBrowserTest
     return last_ua_ch_val_;
   }
 
-  void CheckSecClientHintUaCount() {
+  void CheckSecClientHintUaCount(int additional_client_hint) {
     net::HttpRequestHeaders::Iterator header_iterator(
         url_loader_interceptor_->GetLastRequestHeaders());
     int sec_ch_ua_count = 0;
@@ -4223,19 +4357,32 @@ class SameOriginUaOriginTrialBrowserTest
     }
 
     if (GetParam() == UserAgentOriginTrialTestType::UAReductionAndDeprecation) {
-      // Two Accept-CH client hints in header: sec-ch-ua-reduced and
-      // sec-ch-ua-full.
-      EXPECT_EQ(sec_ch_ua_count, kSecChUaLowEntropyCount + 2);
+      // Three Accept-CH client hints in header: sec-ch-ua-reduced,
+      // sec-ch-ua-full and additional client hints added for the accept_ch
+      // header.
+      EXPECT_EQ(sec_ch_ua_count,
+                kSecChUaLowEntropyCount + 2 + additional_client_hint);
     } else {
-      // One Accept-CH client hint in header: sec-ch-ua-reduced or
-      // sec-ch-ua-full.
-      EXPECT_EQ(sec_ch_ua_count, kSecChUaLowEntropyCount + 1);
+      // Two Accept-CH client hint in header: sec-ch-ua-reduced or
+      // sec-ch-ua-full and additional client hints added for the accept_ch
+      // header.
+      EXPECT_EQ(sec_ch_ua_count,
+                kSecChUaLowEntropyCount + 1 + additional_client_hint);
     }
   }
 
   void VerifyNonAcceptCHNotAddedToHeader(const std::string& client_hint) {
     ASSERT_FALSE(url_loader_interceptor_->GetLastRequestHeaders().HasHeader(
         client_hint));
+  }
+
+  void VerifyAcceptCHAddedToHeader(const std::string& client_hint) {
+    ASSERT_TRUE(url_loader_interceptor_->GetLastRequestHeaders().HasHeader(
+        client_hint));
+  }
+
+  GURL basic_request_url() const {
+    return GURL(base::StrCat({kOriginUrl, "/basic.html"}));
   }
 
   GURL ua_with_valid_origin_trial_token_url() const {
@@ -4295,6 +4442,10 @@ class SameOriginUaOriginTrialBrowserTest
 
   GURL simple_request_url() const {
     return GURL(base::StrCat({kOriginUrl, "/simple.html"}));
+  }
+
+  GURL simple_with_subresource_request_url() const {
+    return GURL(base::StrCat({kOriginUrl, "/simple_with_subresource.html"}));
   }
 
   GURL style_css_request_url() const {
@@ -4469,8 +4620,7 @@ class SameOriginUaOriginTrialBrowserTest
     std::string path = "chrome/test/data/client_hints";
     path.append(static_cast<std::string>(params->url_request.url.path_piece()));
 
-    if (params->url_request.url.path() == "/style.css" ||
-        params->url_request.url.path() == "/simple.html") {
+    if (params->url_request.url.path() == "/basic.html") {
       URLLoaderInterceptor::WriteResponse(path, params->client.get());
       return true;
     }
@@ -4510,7 +4660,10 @@ class SameOriginUaOriginTrialBrowserTest
     switch (GetParam()) {
       case UserAgentOriginTrialTestType::UAReduction:
         if (test_options_.has_accept_ch_header) {
-          base::StrAppend(&headers, {"Accept-CH: ", "sec-ch-ua-reduced", "\n"});
+          base::StrAppend(
+              &headers,
+              {"Accept-CH: ", "sec-ch-ua-reduced, sec-ch-ua-platform-version",
+               "\n"});
         }
         if (test_options_.has_critical_ch_header) {
           base::StrAppend(&headers,
@@ -4526,7 +4679,9 @@ class SameOriginUaOriginTrialBrowserTest
         break;
       case UserAgentOriginTrialTestType::UADeprecation:
         if (test_options_.has_accept_ch_header) {
-          base::StrAppend(&headers, {"Accept-CH: ", "sec-ch-ua-full", "\n"});
+          base::StrAppend(&headers,
+                          {"Accept-CH: ",
+                           "sec-ch-ua-full, sec-ch-ua-platform-version", "\n"});
         }
         if (test_options_.has_critical_ch_header) {
           base::StrAppend(&headers, {"Critical-CH: ", "sec-ch-ua-full", "\n"});
@@ -4543,7 +4698,9 @@ class SameOriginUaOriginTrialBrowserTest
         if (test_options_.has_accept_ch_header) {
           base::StrAppend(
               &headers,
-              {"Accept-CH: ", "sec-ch-ua-reduced, sec-ch-ua-full", "\n"});
+              {"Accept-CH: ",
+               "sec-ch-ua-reduced, sec-ch-ua-full, sec-ch-ua-platform-version",
+               "\n"});
         }
         if (test_options_.has_critical_ch_header) {
           base::StrAppend(
@@ -4618,7 +4775,8 @@ IN_PROC_BROWSER_TEST_P(SameOriginUaOriginTrialBrowserTest,
             content::EvalJs(web_contents, "navigator.platform"));
 #endif
 
-  CheckSecClientHintUaCount();
+  // One additional client hints: sec-ch-ua-platform-version.
+  CheckSecClientHintUaCount(/*additional_client_hint=*/1);
 }
 
 IN_PROC_BROWSER_TEST_P(SameOriginUaOriginTrialBrowserTest,
@@ -4695,7 +4853,8 @@ IN_PROC_BROWSER_TEST_P(SameOriginUaOriginTrialBrowserTest,
       /*ch_ua_exist_expected=*/true,
       /*critical_ch_ua_exist_expected=*/true);
 
-  CheckSecClientHintUaCount();
+  // One additional client hints: sec-ch-ua-platform-version.
+  CheckSecClientHintUaCount(/*additional_client_hint=*/1);
 }
 
 IN_PROC_BROWSER_TEST_P(SameOriginUaOriginTrialBrowserTest,
@@ -4719,7 +4878,8 @@ IN_PROC_BROWSER_TEST_P(SameOriginUaOriginTrialBrowserTest,
   SetTestOptions(
       {/*has_ot_token=*/true, /*valid_ot_token=*/true,
        /*has_accept_ch_header=*/true, /*has_critical_ch_header=*/false},
-      {accept_ch_ua_iframe_request_url(), simple_request_url()});
+      {accept_ch_ua_iframe_request_url(), simple_request_url(),
+       simple_with_subresource_request_url()});
 
   // The last resource request processed for this navigation will be an embedded
   // iframe request. Since Accept-CH has either Sec-CH-UA-Reduced or
@@ -4732,7 +4892,14 @@ IN_PROC_BROWSER_TEST_P(SameOriginUaOriginTrialBrowserTest,
                               UserAgentOriginTrialTestType::UAReduction,
                           /*ch_ua_exist_expected=*/true);
 
-  CheckSecClientHintUaCount();
+  // One additional client hints: sec-ch-ua-platform-version.
+  CheckSecClientHintUaCount(/*additional_client_hint=*/1);
+
+  // Iframe request to simple_request_url should not clear existing client
+  // hints cache when response header has the client hints used for origin
+  // trial. The subresource request in simple_request_url should also send
+  // corresponding client hints.
+  VerifyAcceptCHAddedToHeader("sec-ch-ua-platform-version");
 
   // Make sure the last intercepted URL was the request for the embedded iframe.
   EXPECT_EQ(last_request_url().path(), "/simple.html");
@@ -4741,13 +4908,10 @@ IN_PROC_BROWSER_TEST_P(SameOriginUaOriginTrialBrowserTest,
 IN_PROC_BROWSER_TEST_P(SameOriginUaOriginTrialBrowserTest,
                        IframeRequestUaWithValidOriginTrialTokenIgnoreSandbox) {
   SetTestOptions(
-      {
-          /*has_ot_token=*/true,
-          /*valid_ot_token=*/true,
-          /*has_accept_ch_header=*/true,
-          /*has_critical_ch_header=*/false,
-      },
-      {accept_ch_ua_iframe_sandbox_request_url(), simple_request_url()});
+      {/*has_ot_token=*/true, /*valid_ot_token=*/true,
+       /*has_accept_ch_header=*/true, /*has_critical_ch_header=*/false},
+      {accept_ch_ua_iframe_sandbox_request_url(), simple_request_url(),
+       simple_with_subresource_request_url()});
 
   // Ensure that frames with sandbox flags don't interfere with the origin trial
   NavigateAndCheckHeaders(accept_ch_ua_iframe_sandbox_request_url(),
@@ -4755,7 +4919,10 @@ IN_PROC_BROWSER_TEST_P(SameOriginUaOriginTrialBrowserTest,
                               UserAgentOriginTrialTestType::UAReduction,
                           /*ch_ua_exist_expected=*/true);
 
-  CheckSecClientHintUaCount();
+  // The origin trial client hints don't honor sandbox flags, but no additional
+  // hints should send. Sandboxed frames should ignore the Accept-CH header and
+  // should not access Client Hints storage
+  CheckSecClientHintUaCount(/*additional_client_hint=*/0);
 
   // Make sure the last intercepted URL was the request for the embedded iframe.
   EXPECT_EQ(last_request_url().path(), "/simple.html");
@@ -4766,7 +4933,8 @@ IN_PROC_BROWSER_TEST_P(SameOriginUaOriginTrialBrowserTest,
   SetTestOptions(
       {/*has_ot_token=*/true, /*valid_ot_token=*/true,
        /*has_accept_ch_header=*/true, /*has_critical_ch_header=*/true},
-      {critical_ch_ua_iframe_request_url(), simple_request_url()});
+      {critical_ch_ua_iframe_request_url(), simple_request_url(),
+       simple_with_subresource_request_url()});
 
   // The last resource request processed for this navigation will be an embedded
   // iframe request. Since Accept-CH has either Sec-CH-UA-Reduced or
@@ -4779,7 +4947,14 @@ IN_PROC_BROWSER_TEST_P(SameOriginUaOriginTrialBrowserTest,
                               UserAgentOriginTrialTestType::UAReduction,
                           /*ch_ua_exist_expected=*/true);
 
-  CheckSecClientHintUaCount();
+  // One additional client hints: sec-ch-ua-platform-version.
+  CheckSecClientHintUaCount(/*additional_client_hint=*/1);
+
+  // Iframe request to simple_request_url should not clear existing client
+  // hints cache when response header has the client hints used for origin
+  // trial. The subresource request in simple_request_url should also send
+  // corresponding client hints.
+  VerifyAcceptCHAddedToHeader("sec-ch-ua-platform-version");
 
   // Make sure the last intercepted URL was the request for the embedded iframe.
   EXPECT_EQ(last_request_url().path(), "/simple.html");
@@ -4913,7 +5088,7 @@ IN_PROC_BROWSER_TEST_P(SameOriginUaOriginTrialBrowserTest,
   SetTestOptions(
       {/*has_ot_token=*/true, /*valid_ot_token=*/true,
        /*has_accept_ch_header=*/true, /*has_critical_ch_header=*/false},
-      {ua_with_valid_origin_trial_token_url(), simple_request_url()});
+      {ua_with_valid_origin_trial_token_url(), basic_request_url()});
 
   // The first navigation sets Sec-CH-UA-Reduced/Sec-CH-UA-Full in the client
   // hints storage for the origin.
@@ -4922,7 +5097,7 @@ IN_PROC_BROWSER_TEST_P(SameOriginUaOriginTrialBrowserTest,
                           /*ch_ua_exist_expected=*/false);
   // The second navigation doesn't contain an Accept-CH header in the
   // response, so Sec-CH-UA-Reduced/Sec-CH-UA-Full is removed from the storage.
-  NavigateAndCheckHeaders(simple_request_url(),
+  NavigateAndCheckHeaders(basic_request_url(),
                           /*ch_ua_reduced_expected=*/GetParam() ==
                               UserAgentOriginTrialTestType::UAReduction,
                           /*ch_ua_exist_expected=*/true);

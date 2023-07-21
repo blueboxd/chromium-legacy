@@ -70,11 +70,10 @@ class ExtensionMenuItemView : public views::FlexLayoutView {
   // Constructor for the kExtensionsMenuAccessControl feature.
   ExtensionMenuItemView(
       Browser* browser,
+      bool is_enterprise,
       std::unique_ptr<ToolbarActionViewController> controller,
-      views::Button::PressedCallback site_access_toggle_callback =
-          base::RepeatingClosure(base::NullCallback()),
-      views::Button::PressedCallback site_permissions_button_callback =
-          base::RepeatingClosure(base::NullCallback()));
+      base::RepeatingCallback<void(bool)> site_access_toggle_callback,
+      views::Button::PressedCallback site_permissions_button_callback);
   ExtensionMenuItemView(const ExtensionMenuItemView&) = delete;
   ExtensionMenuItemView& operator=(const ExtensionMenuItemView&) = delete;
   ~ExtensionMenuItemView() override;

@@ -85,6 +85,12 @@ swift_source_set("util_swift") {
   frameworks = [ "UIKit.framework" ]
 }
 
+swift_source_set("util_swiftui") {
+  sources = [ "ConditionalViewModifier.swift" ]
+  deps = []
+  frameworks = [ "SwiftUI.framework" ]
+}
+
 source_set("terms_util") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -96,7 +102,7 @@ source_set("terms_util") {
     "//components/resources:terms_resources",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/shared/model/application_context",
-    "//ios/chrome/browser/url:constants",
+    "//ios/chrome/browser/shared/model/url:constants",
     "//ui/base",
     "//url",
   ]

@@ -177,15 +177,15 @@ LocationBarView::LocationBarView(Browser* browser,
   set_suppress_default_focus_handling();
   if (!is_popup_mode_) {
     views::FocusRing::Install(this);
-    views::FocusRing::Get(this)->SetHasFocusPredicate([](View* view) -> bool {
-      DCHECK(views::IsViewClass<LocationBarView>(view));
-      auto* v = static_cast<LocationBarView*>(view);
-
-      // Show focus ring when the Omnibox is visibly focused and the popup is
-      // closed.
-      return v->omnibox_view_->model()->is_caret_visible() &&
-             !v->GetOmniboxPopupView()->IsOpen();
-    });
+    views::FocusRing::Get(this)->SetHasFocusPredicate(
+        base::BindRepeating([](const View* view) {
+          const auto* v = views::AsViewClass<LocationBarView>(view);
+          CHECK(v);
+          // Show focus ring when the Omnibox is visibly focused and the popup
+          // is closed.
+          return v->omnibox_view_->model()->is_caret_visible() &&
+                 !v->GetOmniboxPopupView()->IsOpen();
+        }));
     if (features::IsChromeRefresh2023()) {
       views::FocusRing::Get(this)->SetOutsetFocusRingDisabled(true);
     }
@@ -333,6 +333,7 @@ void LocationBarView::Init() {
   params.types_enabled.push_back(
       PageActionIconType::kVirtualCardManualFallback);
   params.types_enabled.push_back(PageActionIconType::kVirtualCardEnroll);
+  params.types_enabled.push_back(PageActionIconType::kMandatoryReauth);
 
   // TODO(crbug.com/1167060): Place this in the proper order upon having final
   // mocks.
@@ -578,6 +579,10 @@ void LocationBarView::Layout() {
                              !location_icon_view_->ShouldShowLabel() &&
                              !ShouldShowKeywordBubble();
 
+  const bool show_overriding_permission_chip =
+      chip_controller_ && chip_controller_->chip()->GetVisible() &&
+      !ShouldShowKeywordBubble();
+
   // There are 2 CR23 features that impact location bar layout. Make sure layout
   // is correct when neither, either, or both are enabled. Touch UI, whether the
   // popup is open (see `should_indent` comment above), whether a keyword is
@@ -600,21 +605,25 @@ void LocationBarView::Layout() {
   // Indentation to match the suggestion icons & texts when in keyword mode.
   int icon_keyword_indent = 0;
   int text_keyword_indent = 0;
+  // Indentation add padding when the permission chip is visible and replacing
+  // the LHS icon.
+  int text_overriding_permission_chip_indent = 0;
   if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled() &&
       OmniboxFieldTrial::IsCr23LayoutEnabled()) {
-    icon_left = 4;
+    icon_left = 5;
     text_left = 8;
-    icon_indent = 8;
+    icon_indent = 7;
     text_indent = 5;
-    icon_keyword_indent = 4;
+    icon_keyword_indent = 3;
     text_keyword_indent = -9;
   } else if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled()) {
-    icon_left = 4;
+    icon_left = 5;
     text_left = 5;
-    icon_indent = 2;
+    icon_indent = 1;
     text_indent = 12;
-    icon_keyword_indent = -2;
+    icon_keyword_indent = -3;
     text_keyword_indent = -6;
+    text_overriding_permission_chip_indent = 3;
   } else if (OmniboxFieldTrial::IsCr23LayoutEnabled()) {
     icon_left = 2;
     text_left = 0;
@@ -622,6 +631,7 @@ void LocationBarView::Layout() {
     text_indent = 9;
     icon_keyword_indent = 6;
     text_keyword_indent = -1;
+    text_overriding_permission_chip_indent = 8;
   } else {
     icon_left = 2;
     text_left = 0;
@@ -629,6 +639,7 @@ void LocationBarView::Layout() {
     text_indent = 11;
     icon_keyword_indent = 0;
     text_keyword_indent = 0;
+    text_overriding_permission_chip_indent = 8;
   }
   if (should_indent) {
     icon_left += icon_indent;
@@ -638,6 +649,8 @@ void LocationBarView::Layout() {
     icon_left += icon_keyword_indent;
     text_left += text_keyword_indent;
   }
+  if (show_overriding_permission_chip)
+    text_left += text_overriding_permission_chip_indent;
 
   LocationBarLayout leading_decorations(LocationBarLayout::Position::kLeftEdge,
                                         text_left);
@@ -663,8 +676,7 @@ void LocationBarView::Layout() {
   // label/chip.
   const double kLeadingDecorationMaxFraction = 0.5;
 
-  if (chip_controller_ && chip_controller_->chip()->GetVisible() &&
-      !ShouldShowKeywordBubble()) {
+  if (show_overriding_permission_chip) {
     leading_decorations.AddDecoration(vertical_padding, location_height, false,
                                       0, icon_left, chip_controller_->chip());
   }
@@ -840,10 +852,6 @@ void LocationBarView::Update(WebContents* contents) {
 
   RefreshPageActionIconViews();
   location_icon_view_->Update(/*suppress_animations=*/contents);
-
-  if (is_initialized_ && chip_controller_) {
-    chip_controller_->OnWebContentsChanged();
-  }
 
   if (intent_chip_)
     intent_chip_->Update();
@@ -1115,6 +1123,11 @@ bool LocationBarView::ShouldShowKeywordBubble() const {
 }
 
 OmniboxPopupView* LocationBarView::GetOmniboxPopupView() {
+  return const_cast<OmniboxPopupView*>(
+      std::as_const(*this).GetOmniboxPopupView());
+}
+
+const OmniboxPopupView* LocationBarView::GetOmniboxPopupView() const {
   DCHECK(IsInitialized());
   return omnibox_view_->model()->get_popup_view();
 }
@@ -1143,6 +1156,10 @@ GURL LocationBarView::GetDestinationURL() const {
 
 bool LocationBarView::IsInputTypedUrlWithoutScheme() const {
   return destination_url_entered_without_scheme();
+}
+
+bool LocationBarView::IsInputTypedUrlWithHttpScheme() const {
+  return destination_url_entered_with_http_scheme();
 }
 
 WindowOpenDisposition LocationBarView::GetWindowOpenDisposition() const {
@@ -1550,7 +1567,7 @@ void LocationBarView::UpdateChipVisibility() {
   if (IsEditingOrEmpty()) {
     // If a user starts typing, a permission request should be ignored and the
     // chip finalized.
-    chip_controller_->ResetChip();
+    chip_controller_->ResetPermissionPromptChip();
   }
 }
 

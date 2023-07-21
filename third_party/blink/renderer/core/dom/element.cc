@@ -2397,7 +2397,8 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
     //
     // TODO(tkent): We should avoid updating style.  We'd like to check only
     // DOM-level focusability here.
-    GetDocument().UpdateStyleAndLayoutTreeForNode(this);
+    GetDocument().UpdateStyleAndLayoutTreeForNode(this,
+                                                  DocumentUpdateReason::kFocus);
     if (!SupportsFocus() && !GetFocusableArea()) {
       blur();
     }
@@ -3053,10 +3054,10 @@ scoped_refptr<const ComputedStyle> Element::StyleForLayoutObject(
     DCHECK(IsPseudoElement());
     return nullptr;
   }
-  if (style->IsPseudoInitialStyle()) {
-    // @initial pseudo styles matched. We need to compute the style a second
-    // time to compute the actual style and trigger transitions using the
-    // starting from the :initial style.
+  if (style->IsStartingStyle()) {
+    // @starting-style styles matched. We need to compute the style a second
+    // time to compute the actual style and trigger transitions starting from
+    // style with @starting-style applied.
     new_style_recalc_context.old_style =
         style->Display() == EDisplay::kNone ? nullptr : style.get();
     style = HasCustomStyleCallbacks()
@@ -3209,9 +3210,8 @@ const ComputedStyle* Element::ParentComputedStyle() const {
 // that children must also be recalculated, call ourself recursively
 // on any children (via RecalcDescendantStyles()), and/or update
 // pseudo-elements.
-StyleRecalcChange Element::RecalcStyle(
-    const StyleRecalcChange change,
-    const StyleRecalcContext& style_recalc_context) {
+void Element::RecalcStyle(const StyleRecalcChange change,
+                          const StyleRecalcContext& style_recalc_context) {
   DCHECK(InActiveDocument());
   DCHECK(GetDocument().InStyleRecalc());
   DCHECK(!GetDocument().Lifecycle().InDetach());
@@ -3246,11 +3246,6 @@ StyleRecalcChange Element::RecalcStyle(
     ClearNeedsStyleRecalc();
   }
 
-  const StyleRecalcChange sibling_change =
-      child_change.RecalcSiblingDescendants()
-          ? StyleRecalcChange(StyleRecalcChange::kRecalcSiblingDescendants)
-          : StyleRecalcChange();
-
   // We may need to update the internal CSSContainerValues of the
   // ContainerQueryEvaluator if e.g. the value of the 'rem' unit or container-
   // relative units changed. It are not guaranteed to reach RecalcOwnStyle for
@@ -3266,7 +3261,7 @@ StyleRecalcChange Element::RecalcStyle(
     if (HasCustomStyleCallbacks()) {
       DidRecalcStyle(child_change);
     }
-    return sibling_change;
+    return;
   }
 
   if (LayoutObject* layout_object = GetLayoutObject()) {
@@ -3313,7 +3308,7 @@ StyleRecalcChange Element::RecalcStyle(
                   child_change);
         }
       } else if (SkipStyleRecalcForContainer(*style, child_change)) {
-        return sibling_change;
+        return;
       }
     }
     if (style->IsContainerForSizeContainerQueries()) {
@@ -3372,8 +3367,6 @@ StyleRecalcChange Element::RecalcStyle(
   if (HasCustomStyleCallbacks()) {
     DidRecalcStyle(child_change);
   }
-
-  return sibling_change;
 }
 
 scoped_refptr<const ComputedStyle> Element::PropagateInheritedProperties() {
@@ -3431,30 +3424,18 @@ static ContainerQueryEvaluator* ComputeContainerQueryEvaluator(
       return nullptr;
     }
   }
-  // If we're switching to display:contents, any existing results cached on
-  // ContainerQueryEvaluator are no longer valid, since any style recalc
-  // based on that information would *not* be corrected by a subsequent
-  // interleaved style recalc, since the element has no layout object.
-  if (old_style && !element.LayoutObjectIsNeeded(new_style) &&
-      element.LayoutObjectIsNeeded(*old_style)) {
-    return MakeGarbageCollected<ContainerQueryEvaluator>();
+  if (evaluator) {
+    return evaluator;
   }
-  // Otherwise, the existing ContainerQueryEvaluator can be used, if any.
-  if (!evaluator) {
-    evaluator = MakeGarbageCollected<ContainerQueryEvaluator>();
-  }
-  return evaluator;
+  return MakeGarbageCollected<ContainerQueryEvaluator>();
 }
 
 static const StyleRecalcChange ApplyComputedStyleDiff(
     const StyleRecalcChange change,
     ComputedStyle::Difference diff) {
-  if (change.RecalcSiblingDescendants() ||
+  if (change.RecalcDescendants() ||
       diff < ComputedStyle::Difference::kPseudoElementStyle) {
     return change;
-  }
-  if (diff == ComputedStyle::Difference::kSiblingDescendantAffecting) {
-    return change.EnsureAtLeast(StyleRecalcChange::kRecalcSiblingDescendants);
   }
   if (diff == ComputedStyle::Difference::kDescendantAffecting) {
     return change.EnsureAtLeast(StyleRecalcChange::kRecalcDescendants);
@@ -4087,20 +4068,20 @@ void Element::setEditContext(EditContext* edit_context) {
   // If an element is in focus when being attached to a new EditContext,
   // its old EditContext, if it has any, will get blurred,
   // and the new EditContext will automatically get focused.
-  if (edit_context && IsFocusedElementInDocument()) {
-    if (auto* old_edit_context = editContext()) {
+  if (auto* old_edit_context = editContext()) {
+    if (IsFocusedElementInDocument()) {
       old_edit_context->Blur();
     }
 
-    edit_context->Focus();
-  }
-
-  if (auto* old_edit_context = editContext()) {
     old_edit_context->DetachElement(this);
   }
 
   if (edit_context) {
     edit_context->AttachElement(this);
+
+    if (IsFocusedElementInDocument()) {
+      edit_context->Focus();
+    }
   }
 
   EnsureElementRareData().SetEditContext(edit_context);
@@ -5147,7 +5128,8 @@ void Element::Focus(const FocusParams& params) {
       params.gate_on_user_activation);
 
   // Ensure we have clean style (including forced display locks).
-  GetDocument().UpdateStyleAndLayoutTreeForNode(this);
+  GetDocument().UpdateStyleAndLayoutTreeForNode(this,
+                                                DocumentUpdateReason::kFocus);
 
   // https://html.spec.whatwg.org/C/#focusing-steps
   //
@@ -5406,7 +5388,8 @@ bool Element::IsFocusableStyleAfterUpdate() const {
           *this, DisplayLockActivationReason::kUserFocus)) {
     return false;
   }
-  GetDocument().UpdateStyleAndLayoutTreeForNode(this);
+  GetDocument().UpdateStyleAndLayoutTreeForNode(this,
+                                                DocumentUpdateReason::kFocus);
   return IsFocusableStyle();
 }
 
@@ -7116,10 +7099,10 @@ ScriptValue Element::requestPointerLock(ScriptState* script_state,
         "is no frame or that frame has no page.");
   }
 
-    if (exception_state.HadException()) {
-      resolver->Reject(exception_state);
-    }
-    return promise.AsScriptValue();
+  if (exception_state.HadException()) {
+    resolver->Reject(exception_state);
+  }
+  return promise.AsScriptValue();
 }
 
 SpellcheckAttributeState Element::GetSpellcheckAttributeState() const {
@@ -8574,21 +8557,28 @@ ALWAYS_INLINE void Element::SetAttributeInternal(
 
   const Attribute& existing_attribute =
       GetElementData()->Attributes().at(index);
-  AtomicString existing_attribute_value = existing_attribute.Value();
   QualifiedName existing_attribute_name = existing_attribute.GetName();
 
-  if (reason !=
-      AttributeModificationReason::kBySynchronizationOfLazyAttribute) {
-    WillModifyAttribute(existing_attribute_name, existing_attribute_value,
-                        new_value);
-  }
-  if (new_value != existing_attribute_value) {
-    EnsureUniqueElementData().Attributes().at(index).SetValue(new_value);
-  }
-  if (reason !=
-      AttributeModificationReason::kBySynchronizationOfLazyAttribute) {
-    DidModifyAttribute(existing_attribute_name, existing_attribute_value,
-                       new_value, reason);
+  if (new_value == existing_attribute.Value()) {
+    if (reason !=
+        AttributeModificationReason::kBySynchronizationOfLazyAttribute) {
+      WillModifyAttribute(existing_attribute_name, new_value, new_value);
+      DidModifyAttribute(existing_attribute_name, new_value, new_value, reason);
+    }
+  } else {
+    Attribute& new_attribute = EnsureUniqueElementData().Attributes().at(index);
+    AtomicString existing_attribute_value = std::move(new_attribute.Value());
+    if (reason !=
+        AttributeModificationReason::kBySynchronizationOfLazyAttribute) {
+      WillModifyAttribute(existing_attribute_name, existing_attribute_value,
+                          new_value);
+    }
+    new_attribute.SetValue(new_value);
+    if (reason !=
+        AttributeModificationReason::kBySynchronizationOfLazyAttribute) {
+      DidModifyAttribute(existing_attribute_name, existing_attribute_value,
+                         new_value, reason);
+    }
   }
 }
 

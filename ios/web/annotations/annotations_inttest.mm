@@ -197,8 +197,8 @@ class AnnotationTextManagerTest : public web::WebTestWithWebState {
     const base::TimeDelta kCallJavascriptFunctionTimeout =
         kWaitForJSCompletionTimeout;
     __block bool message_received = false;
-    std::vector<base::Value> params;
-    params.push_back(base::Value(1000));
+    base::Value::List params;
+    params.Append(1000);
     MainWebFrame()->CallJavaScriptFunctionInContentWorld(
         "annotationsTest.getPageTaggedText", params, content_world_,
         base::BindOnce(^(const base::Value* result) {
@@ -218,8 +218,8 @@ class AnnotationTextManagerTest : public web::WebTestWithWebState {
     const base::TimeDelta kCallJavascriptFunctionTimeout =
         kWaitForJSCompletionTimeout;
     __block bool message_received = false;
-    std::vector<base::Value> params;
-    params.push_back(base::Value(index));
+    base::Value::List params;
+    params.Append(index);
     MainWebFrame()->CallJavaScriptFunctionInContentWorld(
         "annotationsTest.clickAnnotation", params, content_world_,
         base::BindOnce(^(const base::Value* result) {
@@ -251,7 +251,7 @@ TEST_F(AnnotationTextManagerTest, ExtractText) {
                          "<p>Enjoy</p>"
                          "</body></html>");
 
-  EXPECT_EQ("\nYou'll find it on"
+  EXPECT_EQ("You'll find it on"
             "\nCastro Street, Mountain View, CA"
             "\nEnjoy",
             observer()->extracted_text());
@@ -266,7 +266,7 @@ TEST_F(AnnotationTextManagerTest, DecorateText) {
                          "<p>text</p>"
                          "</body></html>");
 
-  std::string text = "\ntext"
+  std::string text = "text"
                      "\nannotation"
                      "\ntext";
   EXPECT_EQ(text, observer()->extracted_text());
@@ -297,7 +297,7 @@ TEST_F(AnnotationTextManagerTest, NoDecorateText) {
                          "<p>text</p>"
                          "</body></html>");
 
-  std::string text = "\ntext"
+  std::string text = "text"
                      "annotation1"
                      "annotation2"
                      "\ntext";

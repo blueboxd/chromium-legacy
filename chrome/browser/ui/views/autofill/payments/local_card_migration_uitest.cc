@@ -187,7 +187,10 @@ class LocalCardMigrationBrowserTest
     RECEIVED_MIGRATE_CARDS_RESPONSE
   };
 
-  LocalCardMigrationBrowserTest() : SyncTest(SINGLE_CLIENT) {}
+  LocalCardMigrationBrowserTest() : SyncTest(SINGLE_CLIENT) {
+    feature_list_.InitAndDisableFeature(
+        features::kAutofillEnableNewCardArtAndNetworkImages);
+  }
 
   ~LocalCardMigrationBrowserTest() override {}
 
@@ -367,17 +370,17 @@ class LocalCardMigrationBrowserTest
 
     const std::string click_fill_button_js =
         "(function() { document.getElementById('fill_form').click(); })();";
-    ASSERT_TRUE(content::ExecuteScript(web_contents, click_fill_button_js));
+    ASSERT_TRUE(content::ExecJs(web_contents, click_fill_button_js));
 
     const std::string fill_cc_number_js =
         "(function() { document.getElementsByName(\"cc_number\")[0].value = " +
         card_number + "; })();";
-    ASSERT_TRUE(content::ExecuteScript(web_contents, fill_cc_number_js));
+    ASSERT_TRUE(content::ExecJs(web_contents, fill_cc_number_js));
 
     const std::string click_submit_button_js =
         "(function() { document.getElementById('submit').click(); })();";
     content::TestNavigationObserver nav_observer(web_contents);
-    ASSERT_TRUE(content::ExecuteScript(web_contents, click_submit_button_js));
+    ASSERT_TRUE(content::ExecJs(web_contents, click_submit_button_js));
     nav_observer.Wait();
   }
 
@@ -535,6 +538,7 @@ class LocalCardMigrationBrowserTest
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   std::unique_ptr<device::ScopedGeolocationOverrider> geolocation_overrider_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 class LocalCardMigrationBrowserUiTest

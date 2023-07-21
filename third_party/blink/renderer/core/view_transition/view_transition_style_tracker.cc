@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "ui/display/screen_info.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/transform.h"
@@ -266,6 +267,27 @@ gfx::Transform ConvertFromTopLeftToCenter(
   return transform_from_center;
 }
 
+float DevicePixelRatioFromDocument(Document& document) {
+  // Prefer to use the effective zoom. This should be the case in most
+  // situations, unless the transition is being started before first layout
+  // where documentElement gets a layout object.
+  if (document.documentElement() &&
+      document.documentElement()->GetLayoutObject()) {
+    return document.documentElement()
+        ->GetLayoutObject()
+        ->StyleRef()
+        .EffectiveZoom();
+  }
+
+  if (!document.GetPage() || !document.GetFrame()) {
+    return 0.f;
+  }
+  return document.GetPage()
+      ->GetChromeClient()
+      .GetScreenInfo(*document.GetFrame())
+      .device_scale_factor;
+}
+
 }  // namespace
 
 class ViewTransitionStyleTracker::ImageWrapperPseudoElement
@@ -330,7 +352,8 @@ class ViewTransitionStyleTracker::ImageWrapperPseudoElement
 };
 
 ViewTransitionStyleTracker::ViewTransitionStyleTracker(Document& document)
-    : document_(document) {}
+    : document_(document),
+      device_pixel_ratio_(DevicePixelRatioFromDocument(document)) {}
 
 ViewTransitionStyleTracker::ViewTransitionStyleTracker(
     Document& document,
@@ -344,7 +367,8 @@ ViewTransitionStyleTracker::ViewTransitionStyleTracker(
   VectorOf<AtomicString> transition_names;
   transition_names.ReserveInitialCapacity(captured_name_count_);
   for (const auto& transition_state_element : transition_state.elements) {
-    AtomicString name(transition_state_element.tag_name.c_str());
+    auto name =
+        AtomicString::FromUTF8(transition_state_element.tag_name.c_str());
     transition_names.push_back(name);
 
     if (transition_state_element.is_root) {
@@ -375,6 +399,8 @@ ViewTransitionStyleTracker::ViewTransitionStyleTracker(
     element_data->visual_overflow_rect_in_layout_space =
         PhysicalRect::EnclosingRect(
             transition_state_element.overflow_rect_in_layout_space);
+    element_data->captured_rect_in_layout_space =
+        transition_state_element.captured_rect_in_layout_space;
 
     element_data->CacheGeometryState();
 
@@ -668,6 +694,13 @@ bool ViewTransitionStyleTracker::Capture() {
   for (const auto& root_name : AllRootTags())
     transition_names.push_front(root_name);
 
+#if DCHECK_IS_ON()
+  for (wtf_size_t i = 0; i < transition_names.size(); ++i) {
+    DCHECK_EQ(transition_names.Find(transition_names[i]), i)
+        << " Duplicate transition name: " << transition_names[i];
+  }
+#endif
+
   // This informs the style engine the set of names we have, which will be used
   // to create the pseudo element tree.
   document_->GetStyleEngine().SetViewTransitionNames(transition_names);
@@ -761,7 +794,6 @@ bool ViewTransitionStyleTracker::Start() {
       data->element_index = next_index++;
       element_data_map_.insert(name, data);
     }
-
     // Reuse any previously generated snapshot_id for this element. If there was
     // none yet, then generate the resource id.
     auto& snapshot_id =
@@ -802,10 +834,18 @@ bool ViewTransitionStyleTracker::Start() {
   if (found_new_names) {
     VectorOf<std::pair<AtomicString, int>> new_name_pairs;
     int next_name_index = 0;
-    for (const auto& root_name : AllRootTags())
+    HashSet<AtomicString> unique_names;
+    for (const auto& root_name : AllRootTags()) {
       new_name_pairs.push_back(std::make_pair(root_name, ++next_name_index));
-    for (auto& [name, data] : element_data_map_)
-      new_name_pairs.push_back(std::make_pair(name, data->element_index));
+      DCHECK(!unique_names.Contains(root_name));
+      unique_names.insert(root_name);
+    }
+    for (auto& [name, data] : element_data_map_) {
+      if (!unique_names.Contains(name)) {
+        new_name_pairs.push_back(std::make_pair(name, data->element_index));
+        unique_names.insert(name);
+      }
+    }
 
     std::sort(new_name_pairs.begin(), new_name_pairs.end(),
               [](const std::pair<AtomicString, int>& left,
@@ -816,6 +856,13 @@ bool ViewTransitionStyleTracker::Start() {
     VectorOf<AtomicString> new_names;
     for (auto& [name, index] : new_name_pairs)
       new_names.push_back(name);
+
+#if DCHECK_IS_ON()
+    for (wtf_size_t i = 0; i < new_names.size(); ++i) {
+      DCHECK_EQ(new_names.Find(new_names[i]), i)
+          << " Duplicate transition name: " << new_names[i];
+    }
+#endif
 
     document_->GetStyleEngine().SetViewTransitionNames(new_names);
   }
@@ -1009,20 +1056,12 @@ bool ViewTransitionStyleTracker::RunPostPrePaintSteps() {
     return true;
   }
 
-  bool needs_style_invalidation = false;
-
-  // Use the document element's effective zoom, since that's what the parent
-  // effective zoom would be.
-  DCHECK(document_->documentElement());
-  float device_pixel_ratio = document_->documentElement()
-                                 ->GetLayoutObject()
-                                 ->StyleRef()
-                                 .EffectiveZoom();
-  if (device_pixel_ratio_ != device_pixel_ratio) {
-    // TODO(vmpstr): Changes to device pixel ratio are hard to deal with because
-    // of the cached content. We should just skip the transition here.
-    device_pixel_ratio_ = device_pixel_ratio;
-    needs_style_invalidation = true;
+  DCHECK(document_->documentElement() &&
+         document_->documentElement()->GetLayoutObject());
+  // We don't support changing device pixel ratio, because it's uncommon and
+  // textures may have already been captured at a different size.
+  if (device_pixel_ratio_ != DevicePixelRatioFromDocument(*document_)) {
+    return false;
   }
 
   if (SnapshotRootDidChangeSize()) {
@@ -1041,6 +1080,7 @@ bool ViewTransitionStyleTracker::RunPostPrePaintSteps() {
           *document_->GetFrame()),
       *snapshot_root_size_at_capture_);
 
+  bool needs_style_invalidation = false;
   for (auto& entry : element_data_map_) {
     auto& element_data = entry.value;
     if (!element_data->target_element)
@@ -1110,6 +1150,8 @@ bool ViewTransitionStyleTracker::RunPostPrePaintSteps() {
           LayoutSize(box_model->BorderBoundingBox().size());
     }
 
+    // If the object's effective zoom differs from device_pixel_ratio, adjust
+    // the border box size by that difference to get the css space size.
     if (float effective_zoom = layout_object->StyleRef().EffectiveZoom();
         std::abs(effective_zoom - device_pixel_ratio_) >=
         std::numeric_limits<float>::epsilon()) {
@@ -1504,9 +1546,10 @@ ViewTransitionState ViewTransitionStyleTracker::GetViewTransitionState() const {
     element.snapshot_id = element_data->old_snapshot_id;
     element.paint_order = element_data->element_index;
     element.is_root = false;
+    element.captured_rect_in_layout_space =
+        element_data->captured_rect_in_layout_space;
 
     // TODO(khushalsagar): Also writing mode.
-    // TODO(vmpstr): Also captured_rect_in_layout_space.
 
     DCHECK(!old_root_data_ || element.paint_order > 0);
   }
@@ -1704,8 +1747,7 @@ const String& ViewTransitionStyleTracker::UAStyleSheet() {
         auto layout_view_size = LayoutSize(GetSnapshotRootSize());
         // Note that we want the size in css space, which means we need to undo
         // the effective zoom.
-        layout_view_size.Scale(
-            1 / document_->GetLayoutView()->StyleRef().EffectiveZoom());
+        layout_view_size.Scale(1 / device_pixel_ratio_);
         builder.AddAnimationAndBlending(
             view_transition_name,
             ContainerProperties(layout_view_size, gfx::Transform()));

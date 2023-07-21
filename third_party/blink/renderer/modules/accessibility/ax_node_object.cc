@@ -2279,6 +2279,31 @@ AXObject* AXNodeObject::InPageLinkTarget() const {
   return ax_target;
 }
 
+const AtomicString& AXNodeObject::EffectiveTarget() const {
+  // The "target" attribute defines the target browser context and is supported
+  // on <a>, <area>, <base>, and <form>. Valid values are: "frame_name", "self",
+  // "blank", "top", and "parent", where "frame_name" is the value of the "name"
+  // attribute on any enclosing iframe.
+  //
+  // <area> is a subclass of <a>, while <base> provides the document's base
+  // target that any <a>'s or any <area>'s target can override.
+  // `HtmlAnchorElement::GetEffectiveTarget()` will take <base> into account.
+  //
+  // <form> is out of scope, because it affects the target to which the form is
+  // submitted, and could also be overridden by a "formTarget" attribute on e.g.
+  // a form's submit button. However, screen reader users have no need to know
+  // to which target (browser context) a form would be submitted.
+  const auto* anchor = DynamicTo<HTMLAnchorElement>(GetNode());
+  if (anchor) {
+    const AtomicString self_value("_self");
+    const AtomicString& effective_target = anchor->GetEffectiveTarget();
+    if (effective_target != self_value) {
+      return anchor->GetEffectiveTarget();
+    }
+  }
+  return AXObject::EffectiveTarget();
+}
+
 AccessibilityOrientation AXNodeObject::Orientation() const {
   const AtomicString& aria_orientation =
       GetAOMPropertyOrARIAAttribute(AOMStringProperty::kOrientation);
@@ -3187,9 +3212,18 @@ String AXNodeObject::GetValueForControl() const {
     if (auto* select_menu = HTMLSelectMenuElement::OwnerSelectMenu(node)) {
       DCHECK(RuntimeEnabledFeatures::HTMLSelectMenuElementEnabled());
       if (HTMLOptionElement* selected = select_menu->selectedOption()) {
-        if (selected->firstChild()) {
-          return selected->textContent();
-        }
+        // TODO(accessibility) Because these <option> elements can contain
+        // anything, we need to create an AXObject for the selected option, and
+        // use ax_selected_option->ComputedName(). However, for now, the
+        // AXObject is not created because AXObject::IsRelevantSlotElement()
+        // returns false for the invisible slot parent. Also, strangely,
+        // selected->innerText()/GetInnerTextWithoutUpdate() are returning "".
+        // See the following content_browsertest:
+        // All/DumpAccessibilityTreeTest.AccessibilitySelectMenu/blink.
+        // TODO(crbug.com/1401767): DCHECK fails with synchronous serialization.
+        DCHECK(selected->firstChild())
+            << "There is a selected option but it has no DOM children.";
+        return selected->textContent();
       }
       return String();
     }
@@ -4265,7 +4299,9 @@ void AXNodeObject::AddChildrenImpl() {
   DCHECK(children_dirty_);
 
   if (!CanHaveChildren()) {
-    NOTREACHED()
+    // TODO(crbug.com/1407397): Make sure this is no longer firing then
+    // transform this block to CHECK(CanHaveChildren());
+    DUMP_WILL_BE_NOTREACHED_NORETURN()
         << "Should not reach AddChildren() if CanHaveChildren() is false.\n"
         << ToString(true, true);
     return;
@@ -4707,7 +4743,8 @@ bool AXNodeObject::OnNativeBlurAction() {
     return false;
   }
 
-  document->UpdateStyleAndLayoutTreeForNode(node);
+  document->UpdateStyleAndLayoutTreeForNode(
+      node, DocumentUpdateReason::kAccessibility);
 
   // An AXObject's node will always be of type `Element`, `Document` or
   // `Text`. If the object we're currently on is associated with the currently
@@ -4737,7 +4774,8 @@ bool AXNodeObject::OnNativeFocusAction() {
   if (!document || !node)
     return false;
 
-  document->UpdateStyleAndLayoutTreeForNode(node);
+  document->UpdateStyleAndLayoutTreeForNode(
+      node, DocumentUpdateReason::kAccessibility);
 
   if (!CanSetFocusAttribute())
     return false;

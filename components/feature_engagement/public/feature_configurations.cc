@@ -102,6 +102,19 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     return config;
   }
 
+  if (kIPHReadingModeSidePanelFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 0);
+    // Show the promo up to 3 times a year.
+    config->trigger = EventConfig("iph_reading_mode_side_panel_trigger",
+                                  Comparator(LESS_THAN, 3), 360, 360);
+    config->used = EventConfig("reading_mode_side_panel_shown",
+                               Comparator(EQUAL, 0), 360, 360);
+    return config;
+  }
+
   if (kIPHGMCCastStartStopFeature.name == feature->name) {
     absl::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
@@ -238,6 +251,35 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     return config;
   }
 
+  if (kIPHCompanionSidePanelFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 0);
+    // Show the promo up to 3 times a year.
+    config->trigger = EventConfig("iph_companion_side_panel_trigger",
+                                  Comparator(LESS_THAN, 3), 360, 360);
+    config->used =
+        EventConfig("companion_side_panel_accessed_via_toolbar_button",
+                    Comparator(EQUAL, 0), 360, 360);
+    return config;
+  }
+
+  if (kIPHCompanionSidePanelRegionSearchFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 0);
+    // Show the promo up to 1 times a year.
+    config->trigger =
+        EventConfig("iph_companion_side_panel_region_search_trigger",
+                    Comparator(LESS_THAN, 1), 360, 360);
+    config->used =
+        EventConfig("companion_side_panel_region_search_button_clicked",
+                    Comparator(EQUAL, 0), 360, 360);
+    return config;
+  }
+
   if (kIPHDesktopCustomizeChromeFeature.name == feature->name) {
     absl::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
@@ -282,6 +324,20 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     // Allow snoozing for 7 days, up to 3 times.
     config->snooze_params.snooze_interval = 7;
     config->snooze_params.max_limit = 3;
+    return config;
+  }
+
+  if (kIPHBackNavigationMenuFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 0);
+    config->trigger = EventConfig("back_navigation_menu_iph_is_triggered",
+                                  Comparator(LESS_THAN_OR_EQUAL, 4), 360, 360);
+    config->used = EventConfig("back_navigation_menu_is_opened",
+                               Comparator(EQUAL, 0), 7, 360);
+    config->snooze_params.snooze_interval = 7;
+    config->snooze_params.max_limit = 4;
     return config;
   }
 

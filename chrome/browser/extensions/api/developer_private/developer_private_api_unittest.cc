@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind.h"
 #include "base/test/gtest_util.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
@@ -69,8 +70,8 @@
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "components/supervised_user/core/browser/supervised_user_service.h"
 #include "components/supervised_user/core/common/features.h"
 #endif
 
@@ -567,6 +568,17 @@ TEST_F(DeveloperPrivateApiUnitTest,
       base::BindRepeating(&SitePermissionsHelper::ShowAccessRequestsInToolbar,
                           base::Unretained(&helper), id),
       "showAccessRequestsInToolbar", id, /*expected_default_value=*/true);
+
+  auto has_acknowledged_safety_check = [&]() {
+    bool has_acknowledged = false;
+    return ExtensionPrefs::Get(profile())->ReadPrefAsBoolean(
+               id, kPrefAcknowledgeSafetyCheckWarning, &has_acknowledged) &&
+           has_acknowledged;
+  };
+
+  TestExtensionPrefSetting(
+      base::BindLambdaForTesting(has_acknowledged_safety_check),
+      "acknowledgeSafetyCheckWarning", id, /*expected_default_value=*/false);
 }
 
 // Test developerPrivate.reload.
@@ -1201,39 +1213,18 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateGetExtensionsInfo) {
   // ExtensionInfoGenerator's unittest), but rather just to make sure we can
   // serialize/deserialize the result - which implicity tests that everything
   // has a sane value.
-  {
-    auto function =
-        base::MakeRefCounted<api::DeveloperPrivateGetExtensionsInfoFunction>();
-    EXPECT_TRUE(RunFunction(function, base::Value::List()))
-        << function->GetError();
-    const base::Value::List* results = function->GetResultListForTest();
-    ASSERT_EQ(1u, results->size());
-    ASSERT_TRUE((*results)[0].is_list());
-    const base::Value::List& list = (*results)[0].GetList();
-    ASSERT_EQ(1u, list.size());
-    std::unique_ptr<api::developer_private::ExtensionInfo> info =
-        api::developer_private::ExtensionInfo::FromValueDeprecated(list[0]);
-    ASSERT_TRUE(info);
-  }
-
-  // As a sanity check, also run the GetItemsInfo and make sure it returns a
-  // sane value.
-  {
-    auto function =
-        base::MakeRefCounted<api::DeveloperPrivateGetItemsInfoFunction>();
-    base::Value::List args;
-    args.Append(false);
-    args.Append(false);
-    EXPECT_TRUE(RunFunction(function, args)) << function->GetError();
-    const base::Value::List* results = function->GetResultListForTest();
-    ASSERT_EQ(1u, results->size());
-    ASSERT_TRUE((*results)[0].is_list());
-    const base::Value::List& list = (*results)[0].GetList();
-    ASSERT_EQ(1u, list.size());
-    std::unique_ptr<api::developer_private::ItemInfo> item_info =
-        api::developer_private::ItemInfo::FromValueDeprecated(list[0]);
-    ASSERT_TRUE(item_info);
-  }
+  auto function =
+      base::MakeRefCounted<api::DeveloperPrivateGetExtensionsInfoFunction>();
+  EXPECT_TRUE(RunFunction(function, base::Value::List()))
+      << function->GetError();
+  const base::Value::List* results = function->GetResultListForTest();
+  ASSERT_EQ(1u, results->size());
+  ASSERT_TRUE((*results)[0].is_list());
+  const base::Value::List& list = (*results)[0].GetList();
+  ASSERT_EQ(1u, list.size());
+  std::unique_ptr<api::developer_private::ExtensionInfo> info =
+      api::developer_private::ExtensionInfo::FromValueDeprecated(list[0]);
+  ASSERT_TRUE(info);
 }
 
 // Test developerPrivate.deleteExtensionErrors.
@@ -2810,7 +2801,7 @@ TEST_P(DeveloperPrivateApiSupervisedUserUnitTest,
   base::FilePath path = data_dir().AppendASCII("simple_with_popup");
   api::EntryPicker::SkipPickerAndAlwaysSelectPathForTest(&path);
 
-  SupervisedUserService* service =
+  supervised_user::SupervisedUserService* service =
       SupervisedUserServiceFactory::GetForProfile(profile());
   EXPECT_NE(service, nullptr);
   if (extensions_permissions_for_supervised_users_on_desktop()) {

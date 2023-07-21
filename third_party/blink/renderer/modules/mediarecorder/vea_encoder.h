@@ -41,7 +41,8 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
              media::VideoCodecProfile codec,
              absl::optional<uint8_t> level,
              const gfx::Size& size,
-             bool use_native_input);
+             bool use_native_input,
+             bool is_screencast);
   ~VEAEncoder() override;
 
   // media::VideoEncodeAccelerator::Client implementation.
@@ -56,8 +57,17 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   base::WeakPtr<Encoder> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
 
  private:
-  using VideoFrameAndTimestamp =
-      std::pair<scoped_refptr<media::VideoFrame>, base::TimeTicks>;
+  struct VideoFrameAndMetadata {
+    VideoFrameAndMetadata(scoped_refptr<media::VideoFrame> frame,
+                          base::TimeTicks timestamp,
+                          bool request_keyframe)
+        : frame(frame),
+          timestamp(timestamp),
+          request_keyframe(request_keyframe) {}
+    scoped_refptr<media::VideoFrame> frame;
+    base::TimeTicks timestamp;
+    bool request_keyframe;
+  };
   using VideoParamsAndTimestamp =
       std::pair<media::Muxer::VideoParameters, base::TimeTicks>;
   friend class base::SequenceBound<blink::VEAEncoder,
@@ -76,7 +86,8 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   // VideoTrackRecorder::Encoder implementation.
   void Initialize() override;
   void EncodeFrame(scoped_refptr<media::VideoFrame> frame,
-                   base::TimeTicks capture_timestamp) override;
+                   base::TimeTicks capture_timestamp,
+                   bool request_keyframe) override;
 
   void ConfigureEncoder(const gfx::Size& size, bool use_native_input);
 
@@ -88,6 +99,7 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   // Attributes for initialization.
   const gfx::Size size_;
   const bool use_native_input_;
+  const bool is_screencast_;
 
   // The underlying VEA to perform encoding on.
   std::unique_ptr<media::VideoEncodeAccelerator> video_encoder_;
@@ -101,7 +113,7 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   bool error_notified_;
 
   // Tracks the last frame that we delay the encode.
-  std::unique_ptr<VideoFrameAndTimestamp> last_frame_;
+  std::unique_ptr<VideoFrameAndMetadata> last_frame_;
 
   // Size used to initialize encoder.
   gfx::Size input_visible_size_;
@@ -112,12 +124,6 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   // Frames and corresponding timestamps in encode as FIFO.
   // TODO(crbug.com/960665): Replace with a WTF equivalent.
   base::queue<VideoParamsAndTimestamp> frames_in_encode_;
-
-  // Number of encoded frames produced consecutively without a keyframe.
-  uint32_t num_frames_after_keyframe_;
-
-  // Forces next frame to be a keyframe.
-  bool force_next_frame_to_be_keyframe_;
 
   const VideoTrackRecorder::OnErrorCB on_error_cb_;
   base::WeakPtrFactory<VEAEncoder> weak_factory_{this};

@@ -202,12 +202,12 @@ AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAblateSendPendingAccessibilityEvents);
 AX_BASE_EXPORT bool IsAblateSendPendingAccessibilityEventsEnabled();
 
 #if BUILDFLAG(IS_ANDROID)
-// Enable AXModes based on running services. If disabled, then AXModes
+// Enable filtered AXModes based on running services. If disabled, then AXModes
 // will not be available to be set.
-AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityAXModes);
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityPerformanceFiltering);
 
-// Returns true if AXMode is enabled.
-AX_BASE_EXPORT bool IsAccessibilityAXModesEnabled();
+// Returns true if AXMode filtering for performance is enabled.
+AX_BASE_EXPORT bool IsAccessibilityPerformanceFilteringEnabled();
 
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -224,8 +224,8 @@ AX_BASE_EXPORT BASE_DECLARE_FEATURE(kReadAnythingWithScreen2x);
 // distills web pages using an ML model.
 AX_BASE_EXPORT bool IsReadAnythingWithScreen2xEnabled();
 
-// Returns true if Screen AI Service is needed as either
-// ScreenAIVisualAnnotations or ReadAnythingWithScreen2x are enabled.
+// Returns true if Screen AI Service is needed as any of the features relying on
+// it are enabled.
 AX_BASE_EXPORT bool IsScreenAIServiceNeeded();
 
 // If enabled, ScreenAI library writes some debug data in /tmp.

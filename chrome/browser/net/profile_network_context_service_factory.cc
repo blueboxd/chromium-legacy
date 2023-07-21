@@ -10,6 +10,11 @@
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "crypto/crypto_buildflags.h"
+
+#if BUILDFLAG(USE_NSS_CERTS)
+#include "chrome/browser/net/nss_service_factory.h"
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/certificate_provider/certificate_provider_service_factory.h"
@@ -31,7 +36,19 @@ ProfileNetworkContextServiceFactory::ProfileNetworkContextServiceFactory()
     : ProfileKeyedServiceFactory(
           "ProfileNetworkContextService",
           // Create separate service for incognito profiles.
-          ProfileSelections::BuildForRegularAndIncognito()) {
+          ProfileSelections::Builder()
+              .WithRegular(ProfileSelection::kOwnInstance)
+              // TODO(crbug.com/1418376): Check if this service is needed in
+              // Guest mode.
+              .WithGuest(ProfileSelection::kOwnInstance)
+              .Build()) {
+#if BUILDFLAG(USE_NSS_CERTS)
+  // On platforms that use NSS, NSS should be initialized when a
+  // ProfileNetworkContextService is created to ensure that NSS trust anchors
+  // are available and NSS can be used to enumerate client certificates if
+  // requested.
+  DependsOn(NssServiceFactory::GetInstance());
+#endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   DependsOn(chromeos::CertificateProviderServiceFactory::GetInstance());
 #endif

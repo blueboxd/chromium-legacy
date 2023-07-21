@@ -97,13 +97,14 @@ class PrivacySandboxService : public KeyedService {
     kConsentMoreButtonClicked = 14,
     kNoticeMoreButtonClicked = 15,
 
-    // Restricted notice interactions, including only the interactions that
-    // complete
-    // the notice, using the `kNoticeXxx` for all other interactions.
+    // Restricted notice interactions
     kRestrictedNoticeAcknowledge = 16,
     kRestrictedNoticeOpenSettings = 17,
+    kRestrictedNoticeShown = 18,
+    kRestrictedNoticeClosedNoInteraction = 19,
+    kRestrictedNoticeMoreButtonClicked = 20,
 
-    kMaxValue = kRestrictedNoticeOpenSettings,
+    kMaxValue = kRestrictedNoticeMoreButtonClicked,
   };
 
   // TODO(crbug.com/1378703): Integrate this when handling Notice and Consent
@@ -388,6 +389,15 @@ class PrivacySandboxService : public KeyedService {
   FRIEND_TEST_ALL_PREFIXES(
       PrivacySandboxServiceM1RestrictedNoticePromptTest,
       RecordPrivacySandbox4StartupMetrics_PromptNotSuppressed);
+  FRIEND_TEST_ALL_PREFIXES(
+      PrivacySandboxServiceM1RestrictedNoticeUserCurrentlyUnrestricted,
+      RecordPrivacySandbox4StartupMetrics_GraduationFlow);
+  FRIEND_TEST_ALL_PREFIXES(
+      PrivacySandboxServiceM1RestrictedNoticeUserCurrentlyRestricted,
+      RecordPrivacySandbox4StartupMetrics_GraduationFlow);
+  FRIEND_TEST_ALL_PREFIXES(
+      PrivacySandboxServiceM1RestrictedNoticeUserCurrentlyUnrestricted,
+      RecordPrivacySandbox4StartupMetrics_GraduationFlowWhenNoticeShownToGuardian);
 
   // Should be used only for tests when mocking the service.
   PrivacySandboxService();
@@ -477,10 +487,12 @@ class PrivacySandboxService : public KeyedService {
     kRestrictedNoticePromptWaiting = 12,
     kRestrictedNoticeFlowCompleted = 13,
     kRestrictedNoticeNotShownDueToFullNoticeAcknowledged = 14,
+    kWaitingForGraduationRestrictedNoticeFlowNotCompleted = 15,
+    kWaitingForGraduationRestrictedNoticeFlowCompleted = 16,
 
     // Add values above this line with a corresponding label in
     // tools/metrics/histograms/enums.xml
-    kMaxValue = kRestrictedNoticeNotShownDueToFullNoticeAcknowledged,
+    kMaxValue = kWaitingForGraduationRestrictedNoticeFlowCompleted,
   };
 
   // Helper function to log first party sets state.

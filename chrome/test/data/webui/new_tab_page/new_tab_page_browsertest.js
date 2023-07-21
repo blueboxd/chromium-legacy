@@ -37,6 +37,10 @@ TEST_F('NewTabPageAppTest', 'OgbThemingRemoveScrimTrue', function() {
   runMochaSuite('NewTabPageAppTest ogb theming removeScrim is true');
 });
 
+TEST_F('NewTabPageAppTest', 'OgbScrim', function() {
+  runMochaSuite('NewTabPageAppTest ogb scrim');
+});
+
 TEST_F('NewTabPageAppTest', 'Theming', function() {
   runMochaSuite('NewTabPageAppTest theming');
 });
@@ -347,17 +351,6 @@ var NewTabPageModulesRecipesTest = class extends NewTabPageBrowserTest {
 };
 
 TEST_F('NewTabPageModulesRecipesTest', 'All', function() {
-  mocha.run();
-});
-
-var NewTabPageModulesRecipesV2ModuleTest = class extends NewTabPageBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/recipes_v2/module_test.js';
-  }
-};
-
-TEST_F('NewTabPageModulesRecipesV2ModuleTest', 'All', function() {
   mocha.run();
 });
 

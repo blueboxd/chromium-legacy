@@ -24,6 +24,7 @@
 #include "components/commerce/core/metrics/metrics_utils.h"
 #include "components/commerce/core/metrics/scheduled_metrics_manager.h"
 #include "components/commerce/core/pref_names.h"
+#include "components/commerce/core/price_tracking_utils.h"
 #include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
 #include "components/commerce/core/proto/merchant_trust.pb.h"
 #include "components/commerce/core/proto/price_tracking.pb.h"
@@ -45,20 +46,30 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/search/ntp_features.h"
 #include "components/session_proto_db/session_proto_storage.h"
-#include "components/sync/driver/sync_service.h"
+#include "components/sync/service/sync_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace commerce {
 
-const char kOgTitle[] = "title";
+// Open graph keys.
 const char kOgImage[] = "image";
-const char kOgPriceCurrency[] = "price:currency";
 const char kOgPriceAmount[] = "price:amount";
+const char kOgPriceCurrency[] = "price:currency";
+const char kOgProductLink[] = "product_link";
+const char kOgTitle[] = "title";
+const char kOgType[] = "type";
+
+// Specific open graph values we're interested in.
+const char kOgTypeOgProduct[] = "og:product";
+const char kOgTypeProductItem[] = "product.item";
+
 const long kToMicroCurrency = 1e6;
 
 const char kImageAvailabilityHistogramName[] =
     "Commerce.ShoppingService.ProductInfo.ImageAvailability";
+const char kProductInfoJavascriptTime[] =
+    "Commerce.ShoppingService.ProductInfo.JavascriptExecutionTime";
 
 const uint64_t kProductInfoJavascriptDelayMs = 2000;
 
@@ -267,6 +278,7 @@ void ShoppingService::TryRunningJavascriptForProductInfo(
         ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
             IDR_QUERY_SHOPPING_META_JS);
 
+    it->second->javascript_execution_start_time = base::Time::Now();
     web->RunJavascript(
         base::UTF8ToUTF16(script),
         base::BindOnce(&ShoppingService::OnProductInfoJavascriptResult,
@@ -281,6 +293,16 @@ void ShoppingService::OnProductInfoJavascriptResult(const GURL url,
   if (!result.is_string()) {
     return;
   }
+
+  // Look up the entry again in case it was deleted (ex. by navigation).
+  auto it = product_info_cache_.find(url.spec());
+  if (it == product_info_cache_.end()) {
+    return;
+  }
+
+  base::UmaHistogramTimes(
+      kProductInfoJavascriptTime,
+      base::Time::Now() - it->second->javascript_execution_start_time);
 
   data_decoder::DataDecoder::ParseJsonIsolated(
       result.GetString(),
@@ -297,11 +319,59 @@ void ShoppingService::OnProductInfoJsonSanitizationCompleted(
     return;
 
   auto it = product_info_cache_.find(url.spec());
-  // If there was no entry or the data doesn't need javascript run, do
-  // nothing.
-  if (it != product_info_cache_.end())
-    MergeProductInfoData(it->second->product_info.get(),
-                         result.value().GetDict());
+
+  // If there was no entry, do nothing. Most likely this means the page
+  // navigated before the script finished running.
+  if (it == product_info_cache_.end()) {
+    return;
+  }
+
+  ProductInfo* cached_info = it->second->product_info.get();
+
+  bool pdp_detected_by_client = false;
+  bool pdp_detected_by_server = false;
+
+  // If there wasn't cached info but the javascript still ran, it means that
+  // the server didn't detect the page as a PDP, so we should try to determine
+  // whether it is using the meta extracted from the page. This will only
+  // happen if the |kCommerceLocalPDPDetection| flag is enabled.
+  pdp_detected_by_client = CheckIsPDPFromMetaOnly(result.value().GetDict());
+  if (cached_info) {
+    pdp_detected_by_server = true;
+
+    MergeProductInfoData(cached_info, result.value().GetDict());
+  }
+
+  if (base::FeatureList::IsEnabled(kCommerceLocalPDPDetection)) {
+    metrics::RecordPDPStateWithLocalMeta(pdp_detected_by_server,
+                                         pdp_detected_by_client);
+  }
+}
+
+bool ShoppingService::CheckIsPDPFromMetaOnly(
+    const base::Value::Dict& on_page_meta_map) {
+  const std::string* type = on_page_meta_map.FindString(kOgType);
+
+  // If the og:type meta is present and the value is either og:product or
+  // product.item, we'll consider it a product regardless of the other data.
+  if (type && (*type == kOgTypeProductItem || *type == kOgTypeOgProduct)) {
+    return true;
+  }
+
+  // Similarly, if there's a product link the page is probably a product.
+  if (on_page_meta_map.FindString(kOgProductLink)) {
+    return true;
+  }
+
+  const std::string* currency = on_page_meta_map.FindString(kOgPriceCurrency);
+  const std::string* amount = on_page_meta_map.FindString(kOgPriceCurrency);
+  const std::string* image = on_page_meta_map.FindString(kOgImage);
+
+  if (currency && amount && image) {
+    return true;
+  }
+
+  return false;
 }
 
 void ShoppingService::WebWrapperDestroyed(WebWrapper* web) {
@@ -374,8 +444,8 @@ void ShoppingService::PDPMetricsCallback(
   if (!IsPDPMetricsRecordingEnabled())
     return;
 
-  metrics::RecordPDPStateForNavigation(decision, metadata, pref_service_,
-                                       is_off_the_record);
+  metrics::RecordPDPMetrics(decision, metadata, pref_service_,
+                            is_off_the_record, IsShoppingListEligible());
 }
 
 void ShoppingService::GetProductInfoForUrl(const GURL& url,
@@ -450,6 +520,18 @@ size_t ShoppingService::GetMaxProductBookmarkUpdatesPerBatch() {
       MaxUrlsForOptimizationGuideServiceHintsFetch();
 }
 
+void ShoppingService::GetAllPriceTrackedBookmarks(
+    base::OnceCallback<void(std::vector<const bookmarks::BookmarkNode*>)>
+        callback) {
+  commerce::GetAllPriceTrackedBookmarks(this, bookmark_model_,
+                                        std::move(callback));
+}
+
+std::vector<const bookmarks::BookmarkNode*>
+ShoppingService::GetAllShoppingBookmarks() {
+  return commerce::GetAllShoppingBookmarks(bookmark_model_);
+}
+
 void ShoppingService::GetMerchantInfoForUrl(const GURL& url,
                                             MerchantInfoCallback callback) {
   if (!opt_guide_ || !IsMerchantViewerEnabled()) {
@@ -493,6 +575,16 @@ bool ShoppingService::IsCommercePriceTrackingEnabled() {
                                       country_on_startup_, locale_on_startup_);
 }
 
+bool ShoppingService::IsPriceInsightsEligible() {
+  if (!IsRegionLockedFeatureEnabled(kPriceInsights,
+                                    kPriceInsightsRegionLaunched,
+                                    country_on_startup_, locale_on_startup_)) {
+    return false;
+  }
+  return account_checker_ &&
+         account_checker_->IsAnonymizedUrlDataCollectionEnabled();
+}
+
 void ShoppingService::HandleOptGuideProductInfoResponse(
     const GURL& url,
     WebWrapper* web,
@@ -503,6 +595,15 @@ void ShoppingService::HandleOptGuideProductInfoResponse(
   // empty data object.
   if (decision != optimization_guide::OptimizationGuideDecision::kTrue) {
     std::move(callback).Run(url, absl::nullopt);
+
+    // If doing local PDP detection, we might still want to run this.
+    if (base::FeatureList::IsEnabled(kCommerceLocalPDPDetection)) {
+      UpdateProductInfoCache(url, true, nullptr);
+      if (web) {
+        ScheduleProductInfoJavascript(web);
+      }
+    }
+
     return;
   }
 

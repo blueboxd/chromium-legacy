@@ -41,6 +41,7 @@ using ::base::BindOnce;
 using ::base::JoinString;
 using ::base::StrCat;
 using ::base::StringPiece;
+using ::base::StringPrintf;
 using ::base::TimeDelta;
 using ::base::TimeTicks;
 using ::base::UmaHistogramEnumeration;
@@ -65,17 +66,28 @@ bool HasHttpOkResponse(const network::SimpleURLLoader& loader) {
          net::HTTP_OK;
 }
 
-int CombineNetAndHttpErrors(const network::SimpleURLLoader& loader) {
-  if (loader.NetError() != net::OK || !loader.ResponseInfo() ||
-      !loader.ResponseInfo()->headers) {
-    return loader.NetError();
+// Return HTTP status if available, or net::Error otherwise. HTTP status takes
+// precedence to avoid masking it by net::ERR_HTTP_RESPONSE_CODE_FAILURE.
+// Returned value is positive for HTTP status and negative for net::Error,
+// consistent with
+// tools/metrics/histograms/enums.xml://enum[@name='CombinedHttpResponseAndNetErrorCode']
+int HttpStatusOrNetError(const network::SimpleURLLoader& loader) {
+  if (loader.ResponseInfo() && loader.ResponseInfo()->headers) {
+    return loader.ResponseInfo()->headers->response_code();
   }
-  return loader.ResponseInfo()->headers->response_code();
+  return loader.NetError();
+}
+
+std::string CreateAuthorizationHeader(
+    const signin::AccessTokenInfo& access_token_info) {
+  // Do not use StringPiece with StringPrintf, see crbug/1444165
+  return base::StrCat(
+      {supervised_user::kAuthorizationHeader, " ", access_token_info.token});
 }
 
 // TODO(b/276898959): Support payload for POST requests.
 std::unique_ptr<network::SimpleURLLoader> InitializeSimpleUrlLoader(
-    StringPiece access_token,
+    const signin::AccessTokenInfo access_token_info,
     const supervised_user::FetcherConfig& fetcher_config,
     const GURL& url) {
   std::unique_ptr<ResourceRequest> resource_request =
@@ -85,8 +97,7 @@ std::unique_ptr<network::SimpleURLLoader> InitializeSimpleUrlLoader(
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->headers.SetHeader(
       net::HttpRequestHeaders::kAuthorization,
-      base::StringPrintf(supervised_user::kAuthorizationHeaderFormat,
-                         access_token));
+      CreateAuthorizationHeader(access_token_info));
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader =
       network::SimpleURLLoader::Create(std::move(resource_request),
                                        fetcher_config.traffic_annotation());
@@ -141,9 +152,10 @@ class FetcherImpl final : public KidsExternalFetcher<Request, Response> {
     RecordStabilityMetrics(latency, status);
 
     // Record additional metrics for various failures.
-    if (status.state() == KidsExternalFetcherStatus::State::NET_OR_HTTP_ERROR) {
-      UmaHistogramSparse(GetMetricKey("NetOrHttpStatus"),
-                         status.net_or_http_error_code().value());
+    if (status.state() ==
+        KidsExternalFetcherStatus::State::HTTP_STATUS_OR_NET_ERROR) {
+      UmaHistogramSparse(GetMetricKey("HttpStatusOrNetError"),
+                         status.http_status_or_net_error().value());
     }
 
     DCHECK(
@@ -151,11 +163,11 @@ class FetcherImpl final : public KidsExternalFetcher<Request, Response> {
     std::move(callback).Run(status, std::move(response));
   }
 
-  std::string GetMetricKey(base::StringPiece metric_id) const {
+  std::string GetMetricKey(StringPiece metric_id) const {
     return JoinString({config_.histogram_basename, metric_id}, ".");
   }
-  std::string GetMetricKey(base::StringPiece metric_id,
-                           base::StringPiece metric_suffix) const {
+  std::string GetMetricKey(StringPiece metric_id,
+                           StringPiece metric_suffix) const {
     return JoinString({config_.histogram_basename, metric_id, metric_suffix},
                       ".");
   }
@@ -183,7 +195,7 @@ class FetcherImpl final : public KidsExternalFetcher<Request, Response> {
 
     // TODO(b/276898959): add optional payload for POST requests.
     simple_url_loader_ = InitializeSimpleUrlLoader(
-        access_token.value().token, config_,
+        access_token.value(), config_,
         supervised_user::CreateRequestUrl<Request>(config_));
 
     simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
@@ -200,19 +212,21 @@ class FetcherImpl final : public KidsExternalFetcher<Request, Response> {
                                  std::unique_ptr<std::string> response_body) {
     if (!IsLoadingSuccessful(*simple_url_loader_) ||
         !HasHttpOkResponse(*simple_url_loader_)) {
-      std::move(callback).Run(KidsExternalFetcherStatus::NetOrHttpError(
-                                  CombineNetAndHttpErrors(*simple_url_loader_)),
-                              std::make_unique<Response>());
+      std::move(callback).Run(KidsExternalFetcherStatus::HttpStatusOrNetError(
+                                  HttpStatusOrNetError(*simple_url_loader_)),
+                              nullptr);
       return;
     }
 
     std::unique_ptr<Response> response = std::make_unique<Response>();
     if (!response->ParseFromString(*response_body)) {
       std::move(callback).Run(KidsExternalFetcherStatus::InvalidResponse(),
-                              std::move(response));
+                              nullptr);
       return;
     }
 
+    CHECK(response) << "KidsExternalFetcherStatus::Ok implies non-empty "
+                       "response (which is always a valid message).";
     std::move(callback).Run(std::move(KidsExternalFetcherStatus::Ok()),
                             std::move(response));
   }
@@ -235,8 +249,9 @@ KidsExternalFetcherStatus::KidsExternalFetcherStatus(State state)
   DCHECK(state != State::GOOGLE_SERVICE_AUTH_ERROR);
 }
 KidsExternalFetcherStatus::KidsExternalFetcherStatus(
-    NetOrHttpErrorType error_code)
-    : state_(State::NET_OR_HTTP_ERROR), net_or_http_error_code_(error_code) {}
+    HttpStatusOrNetErrorType http_status_or_net_error)
+    : state_(State::HTTP_STATUS_OR_NET_ERROR),
+      http_status_or_net_error_(http_status_or_net_error) {}
 KidsExternalFetcherStatus::KidsExternalFetcherStatus(
     class GoogleServiceAuthError google_service_auth_error)
     : KidsExternalFetcherStatus(GOOGLE_SERVICE_AUTH_ERROR,
@@ -254,9 +269,10 @@ KidsExternalFetcherStatus KidsExternalFetcherStatus::GoogleServiceAuthError(
     class GoogleServiceAuthError error) {
   return KidsExternalFetcherStatus(error);
 }
-KidsExternalFetcherStatus KidsExternalFetcherStatus::NetOrHttpError(
-    int net_or_http_error_code) {
-  return KidsExternalFetcherStatus(NetOrHttpErrorType(net_or_http_error_code));
+KidsExternalFetcherStatus KidsExternalFetcherStatus::HttpStatusOrNetError(
+    int http_status_or_net_error) {
+  return KidsExternalFetcherStatus(
+      HttpStatusOrNetErrorType(http_status_or_net_error));
 }
 KidsExternalFetcherStatus KidsExternalFetcherStatus::InvalidResponse() {
   return KidsExternalFetcherStatus(State::INVALID_RESPONSE);
@@ -269,7 +285,7 @@ bool KidsExternalFetcherStatus::IsOk() const {
   return state_ == State::OK;
 }
 bool KidsExternalFetcherStatus::IsTransientError() const {
-  if (state_ == State::NET_OR_HTTP_ERROR) {
+  if (state_ == State::HTTP_STATUS_OR_NET_ERROR) {
     return true;
   }
   if (state_ == State::GOOGLE_SERVICE_AUTH_ERROR) {
@@ -298,10 +314,10 @@ std::string KidsExternalFetcherStatus::ToString() const {
       return base::StrCat(
           {"KidsExternalFetcherStatus::GOOGLE_SERVICE_AUTH_ERROR: ",
            google_service_auth_error().ToString()});
-    case KidsExternalFetcherStatus::NET_OR_HTTP_ERROR:
+    case KidsExternalFetcherStatus::HTTP_STATUS_OR_NET_ERROR:
       return base::StringPrintf(
-          "KidsExternalFetcherStatus::NET_OR_HTTP_ERROR: %d",
-          net_or_http_error_code_.value());
+          "KidsExternalFetcherStatus::HTTP_STATUS_OR_NET_ERROR: %d",
+          http_status_or_net_error_.value());
     case KidsExternalFetcherStatus::INVALID_RESPONSE:
       return "KidsExternalFetcherStatus::INVALID_RESPONSE";
     case KidsExternalFetcherStatus::DATA_ERROR:
@@ -310,18 +326,18 @@ std::string KidsExternalFetcherStatus::ToString() const {
 }
 
 // The returned value must match one of the labels in
-// chromium/src/tools/metrics/histograms/enums.xml/histogram-configuration/enums/enum[@name='KidsExternalFetcherStatus'],
+// chromium/src/tools/metrics/histograms/enums.xml://enum[@name='KidsExternalFetcherStatus'],
 // and should be reflected in tokens in histogram defined for this fetcher.
 // See example at
-// chromium/src/tools/metrics/histograms/metadata/signin/histograms.xml/histogram-configuration/histograms/histogram[@name='Signin.ListFamilyMembersRequest.{Status}.*']
+// tools/metrics/histograms/metadata/signin/histograms.xml://histogram[@name='Signin.ListFamilyMembersRequest.{Status}.*']
 std::string KidsExternalFetcherStatus::ToMetricEnumLabel() const {
   switch (state_) {
     case KidsExternalFetcherStatus::OK:
       return "NoError";
     case KidsExternalFetcherStatus::GOOGLE_SERVICE_AUTH_ERROR:
       return "AuthError";
-    case KidsExternalFetcherStatus::NET_OR_HTTP_ERROR:
-      return "HttpError";
+    case KidsExternalFetcherStatus::HTTP_STATUS_OR_NET_ERROR:
+      return "HttpStatusOrNetError";
     case KidsExternalFetcherStatus::INVALID_RESPONSE:
       return "ParseError";
     case KidsExternalFetcherStatus::DATA_ERROR:
@@ -332,9 +348,9 @@ std::string KidsExternalFetcherStatus::ToMetricEnumLabel() const {
 KidsExternalFetcherStatus::State KidsExternalFetcherStatus::state() const {
   return state_;
 }
-KidsExternalFetcherStatus::NetOrHttpErrorType
-KidsExternalFetcherStatus::net_or_http_error_code() const {
-  return net_or_http_error_code_;
+KidsExternalFetcherStatus::HttpStatusOrNetErrorType
+KidsExternalFetcherStatus::http_status_or_net_error() const {
+  return http_status_or_net_error_;
 }
 
 const GoogleServiceAuthError&

@@ -180,6 +180,12 @@ class CreditCardAccessManager : public CreditCardCvcAuthenticator::Requester,
     return ShouldOfferFidoOptInDialog(response);
   }
 
+  void OnVirtualCardUnmaskResponseReceivedForTesting(
+      AutofillClient::PaymentsRpcResult result,
+      payments::PaymentsClient::UnmaskResponseDetails& response_details) {
+    OnVirtualCardUnmaskResponseReceived(result, response_details);
+  }
+
 #if BUILDFLAG(IS_ANDROID)
   bool ShouldOfferFidoAuthForTesting() { return ShouldOfferFidoAuth(); }
 #endif
@@ -193,11 +199,6 @@ class CreditCardAccessManager : public CreditCardCvcAuthenticator::Requester,
                            PreflightCallRateLimited);
   FRIEND_TEST_ALL_PREFIXES(CreditCardAccessManagerTest,
                            UnmaskAuthFlowEvent_AlsoLogsVirtualCardSubhistogram);
-  FRIEND_TEST_ALL_PREFIXES(CreditCardAccessManagerTest,
-                           RiskBasedVirtualCardUnmasking_Success);
-  FRIEND_TEST_ALL_PREFIXES(
-      CreditCardAccessManagerTest,
-      RiskBasedVirtualCardUnmasking_AuthenticationRequired_OtpOnly);
   FRIEND_TEST_ALL_PREFIXES(
       CreditCardAccessManagerTest,
       RiskBasedVirtualCardUnmasking_AuthenticationRequired_FidoAndOtp_PrefersFido);
@@ -216,9 +217,6 @@ class CreditCardAccessManager : public CreditCardCvcAuthenticator::Requester,
   FRIEND_TEST_ALL_PREFIXES(
       CreditCardAccessManagerTest,
       RiskBasedVirtualCardUnmasking_CreditCardAccessManagerReset_TriggersOtpAuthenticatorResetOnFlowCancelled);
-  FRIEND_TEST_ALL_PREFIXES(
-      CreditCardAccessManagerTest,
-      RiskBasedVirtualCardUnmasking_Failure_MerchantOptedOut);
   FRIEND_TEST_ALL_PREFIXES(
       CreditCardAccessManagerTest,
       RiskBasedVirtualCardUnmasking_Failure_NoOptionReturned);
@@ -423,6 +421,9 @@ class CreditCardAccessManager : public CreditCardCvcAuthenticator::Requester,
       const std::u16string& cvc,
       bool successful_auth);
 
+  // Callback that resets `device_authenticator_` after an authentication.
+  void OnReauthCompleted();
+
   // The current form of authentication in progress.
   UnmaskAuthFlowType unmask_auth_flow_type_ = UnmaskAuthFlowType::kNone;
 
@@ -518,6 +519,13 @@ class CreditCardAccessManager : public CreditCardCvcAuthenticator::Requester,
   // Cached data of cards which have been unmasked. This is cleared upon page
   // navigation. Map key is the card's server_id.
   std::unordered_map<std::string, CachedServerCardInfo> unmasked_card_cache_;
+
+  // Used to authenticate autofills when there was no interactive
+  // authentication. This class must keep this reference to
+  // `device_authenticator_` alive while an authentication is in progress. Set
+  // when we initiate a re-auth using `DeviceAuthenticator`, and reset once the
+  // authentication has finished.
+  scoped_refptr<device_reauth::DeviceAuthenticator> device_authenticator_;
 
   base::WeakPtrFactory<CreditCardAccessManager> weak_ptr_factory_{this};
 };

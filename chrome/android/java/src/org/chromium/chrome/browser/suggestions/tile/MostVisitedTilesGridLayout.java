@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.suggestions.tile;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
@@ -24,7 +25,7 @@ import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 /**
  * A layout that arranges tiles in a grid.
  */
-public class MostVisitedTilesGridLayout extends FrameLayout {
+public class MostVisitedTilesGridLayout extends FrameLayout implements MostVisitedTilesLayout {
     private final int mMinHorizontalSpacing;
     private final int mMaxHorizontalSpacing;
     private final int mMaxWidth;
@@ -33,6 +34,10 @@ public class MostVisitedTilesGridLayout extends FrameLayout {
     private int mMaxRows;
     private int mMaxColumns;
     private boolean mSearchProviderHasLogo = true;
+    private boolean mIsMultiColumnFeedOnTabletEnabled;
+    private final int mMvtContainer2SidesMarginTablet;
+    private final int mTileViewLandscapeEdgePaddingTablet;
+    private final int mTileViewPortraitEdgePaddingTablet;
 
     /**
      * Constructor for inflating from XML.
@@ -54,6 +59,14 @@ public class MostVisitedTilesGridLayout extends FrameLayout {
         styledAttrs.recycle();
         mMaxHorizontalSpacing = Integer.MAX_VALUE;
         mMaxWidth = Integer.MAX_VALUE;
+
+        mMvtContainer2SidesMarginTablet =
+                getResources().getDimensionPixelOffset(R.dimen.ntp_search_box_start_margin) * 2
+                + getResources().getDimensionPixelOffset(R.dimen.tile_grid_layout_bleed);
+        mTileViewLandscapeEdgePaddingTablet = getResources().getDimensionPixelOffset(
+                R.dimen.tile_grid_layout_landscape_edge_margin_tablet);
+        mTileViewPortraitEdgePaddingTablet = getResources().getDimensionPixelOffset(
+                R.dimen.tile_grid_layout_portrait_edge_margin_tablet);
     }
 
     /**
@@ -73,6 +86,9 @@ public class MostVisitedTilesGridLayout extends FrameLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int totalWidth = Math.min(MeasureSpec.getSize(widthMeasureSpec), mMaxWidth);
+        if (mIsMultiColumnFeedOnTabletEnabled) {
+            totalWidth = totalWidth - mMvtContainer2SidesMarginTablet;
+        }
         int childCount = getChildCount();
         if (childCount == 0) {
             setMeasuredDimension(totalWidth, resolveSize(0, heightMeasureSpec));
@@ -97,7 +113,7 @@ public class MostVisitedTilesGridLayout extends FrameLayout {
         // Determine how much padding to use between and around the tiles.
         int gridWidthMinusColumns = Math.max(0, totalWidth - numColumns * childWidth);
         Pair<Integer, Integer> gridProperties =
-                computeHorizontalDimensions(true, gridWidthMinusColumns, numColumns);
+                computeHorizontalDimensions(gridWidthMinusColumns, numColumns);
         int gridStart = gridProperties.first;
         int horizontalSpacing = gridProperties.second;
 
@@ -134,25 +150,30 @@ public class MostVisitedTilesGridLayout extends FrameLayout {
     }
 
     /**
-     * @param spreadTiles Whether to spread the tiles with the same space between and around them.
      * @param availableWidth The space available to spread between and around the tiles.
      * @param numColumns The number of columns to be organised.
      * @return The [gridStart, horizontalSpacing] pair of dimensions.
      */
     @VisibleForTesting
-    Pair<Integer, Integer> computeHorizontalDimensions(
-            boolean spreadTiles, int availableWidth, int numColumns) {
+    Pair<Integer, Integer> computeHorizontalDimensions(int availableWidth, int numColumns) {
         int gridStart;
         float horizontalSpacing;
-        if (spreadTiles) {
+        if (mIsMultiColumnFeedOnTabletEnabled) {
+            gridStart = getResources().getConfiguration().orientation
+                            == Configuration.ORIENTATION_LANDSCAPE
+                    ? mTileViewLandscapeEdgePaddingTablet
+                    : mTileViewPortraitEdgePaddingTablet;
+            horizontalSpacing =
+                    (float) (availableWidth - gridStart * 2) / Math.max(1, numColumns - 1);
+        } else {
             // Identically sized spacers are added both between and around the tiles.
             int spacerCount = numColumns + 1;
             horizontalSpacing = (float) availableWidth / spacerCount;
             gridStart = Math.round(horizontalSpacing);
-            if (horizontalSpacing < mMinHorizontalSpacing) {
-                return computeHorizontalDimensions(false, availableWidth, numColumns);
-            }
-        } else {
+        }
+
+        if (horizontalSpacing < mMinHorizontalSpacing
+                || horizontalSpacing > mMaxHorizontalSpacing) {
             // Ensure column spacing isn't greater than mMaxHorizontalSpacing.
             long gridSidePadding = availableWidth - (long) mMaxHorizontalSpacing * (numColumns - 1);
             if (gridSidePadding > 0) {
@@ -187,6 +208,21 @@ public class MostVisitedTilesGridLayout extends FrameLayout {
         mSearchProviderHasLogo = searchProviderHasLogo;
         mVerticalSpacing =
                 getResources().getDimensionPixelOffset(getGridMVTVerticalSpacingResourcesId());
+    }
+
+    @Override
+    public void setIsMultiColumnFeedOnTabletEnabled(boolean isMultiColumnFeedOnTabletEnabled) {
+        mIsMultiColumnFeedOnTabletEnabled = isMultiColumnFeedOnTabletEnabled;
+    }
+
+    @VisibleForTesting
+    public int getMinHorizontalSpacingForTesting() {
+        return mMinHorizontalSpacing;
+    }
+
+    @VisibleForTesting
+    public int getMaxHorizontalSpacingForTesting() {
+        return mMaxHorizontalSpacing;
     }
 
     // TODO(crbug.com/1329288): Remove this method when the Feed position experiment is cleaned up.

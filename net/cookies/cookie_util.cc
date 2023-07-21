@@ -283,6 +283,22 @@ void FireStorageAccessHistogram(StorageAccessResult result) {
   UMA_HISTOGRAM_ENUMERATION("API.StorageAccess.AllowedRequests2", result);
 }
 
+void FireStorageAccessInputHistogram(bool has_opt_in, bool has_grant) {
+  StorageAccessInputState input_state;
+  if (has_opt_in && has_grant) {
+    input_state = StorageAccessInputState::kOptInWithGrant;
+  } else if (has_opt_in && !has_grant) {
+    input_state = StorageAccessInputState::kOptInWithoutGrant;
+  } else if (!has_opt_in && has_grant) {
+    input_state = StorageAccessInputState::kGrantWithoutOptIn;
+  } else if (!has_opt_in && !has_grant) {
+    input_state = StorageAccessInputState::kNoOptInNoGrant;
+  } else {
+    NOTREACHED_NORETURN();
+  }
+  base::UmaHistogramEnumeration("API.StorageAccess.InputState", input_state);
+}
+
 bool DomainIsHostOnly(const std::string& domain_string) {
   return (domain_string.empty() || domain_string[0] != '.');
 }
@@ -326,7 +342,7 @@ bool GetCookieDomainWithString(const GURL& url,
   // a sequence of individual domain name labels"; a label can only be empty if
   // it is the last label in the name, but a name ending in `..` would have an
   // empty label in the penultimate position and is thus invalid.
-  if (url_host.ends_with("..")) {
+  if (base::EndsWith(url_host, "..")) {
     return false;
   }
   // If no domain was specified in the domain string, default to a host cookie.
@@ -863,6 +879,14 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForSubresource(
   return CookieOptions::SameSiteCookieContext::MakeInclusive();
 }
 
+bool IsPortBoundCookiesEnabled() {
+  return base::FeatureList::IsEnabled(features::kEnablePortBoundCookies);
+}
+
+bool IsSchemeBoundCookiesEnabled() {
+  return base::FeatureList::IsEnabled(features::kEnableSchemeBoundCookies);
+}
+
 bool IsSchemefulSameSiteEnabled() {
   return base::FeatureList::IsEnabled(features::kSchemefulSameSite);
 }
@@ -976,6 +1000,12 @@ NET_EXPORT void DCheckIncludedAndExcludedCookieLists(
   // Check that the included cookies are still in the correct order.
   DCHECK(
       base::ranges::is_sorted(included_cookies, CookieWithAccessResultSorter));
+}
+
+NET_EXPORT bool IsForceThirdPartyCookieBlockingEnabled() {
+  return base::FeatureList::IsEnabled(
+             features::kForceThirdPartyCookieBlocking) &&
+         base::FeatureList::IsEnabled(features::kThirdPartyStoragePartitioning);
 }
 
 }  // namespace net::cookie_util

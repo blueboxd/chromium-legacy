@@ -161,9 +161,21 @@ found in the LICENSE file.
     <dimen name="tile_grid_layout_bottom_margin_push_down_large">64dp</dimen>
     <dimen name="tile_grid_layout_bottom_margin_pull_up">24dp</dimen>
     <dimen name="tile_carousel_layout_bottom_margin">24dp</dimen>
+    <dimen name="mvt_container_to_ntp_right_extra_margin_two_feed_tablet">16dp</dimen>
+    <dimen name="mvt_container_bottom_margin_tablet">48dp</dimen>
+    <dimen name="tile_grid_layout_landscape_edge_margin_tablet">100dp</dimen>
+    <dimen name="tile_grid_layout_portrait_edge_margin_tablet">84dp</dimen>
+    <dimen name="tile_carousel_layout_max_interval_margin_tablet">48dp</dimen>
+    <dimen name="tile_carousel_layout_min_interval_margin_tablet">16dp</dimen>
+    <dimen name="single_tab_card_top_margin_tablet">48dp</dimen>
+    <dimen name="single_tab_card_bottom_margin_tablet">40dp</dimen>
+    <dimen name="ntp_iph_searchbox_y_inset">6dp</dimen>
     <dimen name="ntp_logo_height">100dp</dimen>
     <dimen name="ntp_logo_margin_top">26dp</dimen>
     <dimen name="ntp_logo_margin_bottom">23dp</dimen>
+    <dimen name="ntp_logo_height_shrink">72dp</dimen>
+    <dimen name="ntp_logo_vertical_top_margin_tablet">36dp</dimen>
+    <dimen name="ntp_logo_vertical_bottom_margin_tablet">24dp</dimen>
     <dimen name="ntp_search_box_height">48dp</dimen>
     <dimen name="ntp_search_box_bottom_margin">1dp</dimen>
     <dimen name="ntp_search_box_start_margin">44dp</dimen>
@@ -183,6 +195,7 @@ found in the LICENSE file.
     <dimen name="feed_header_icon_size">20dp</dimen>
     <dimen name="feed_header_tab_layout_height">40dp</dimen>
     <dimen name="feed_v2_header_menu_width">20dp</dimen>
+    <dimen name="feed_header_tab_list_view_top_bottom_margin">8dp</dimen>
 
     <!-- Incognito NTP -->
     <dimen name="incognito_ntp_total_space_between_views">14sp</dimen>
@@ -220,10 +233,16 @@ found in the LICENSE file.
     <dimen name="bookmark_list_view_padding_top">64dp</dimen>
     <dimen name="bookmark_dialog_toolbar_shadow_height">4dp</dimen>
     <dimen name="bookmark_reading_list_section_header_padding_top">15dp</dimen>
-    <!-- The size of the icon view, but not the size of the fetched image. -->
-    <dimen name="improved_bookmark_icon_size">48dp</dimen>
-    <!-- The size of the icon view and the size of the fetched image. -->
-    <dimen name="improved_bookmark_icon_visual_size">80dp</dimen>
+
+     <!-- Improved bookmark row properties. -->
+     <!-- The size of the start image for compact rows.. -->
+    <dimen name="improved_bookmark_start_image_size_compact">48dp</dimen>
+     <!-- The size of the start image for visual rows.. -->
+    <dimen name="improved_bookmark_start_image_size_visual">80dp</dimen>
+    <!-- The size of displayed favicons for each row. -->
+    <dimen name="improved_bookmark_favicon_display_size">24dp</dimen>
+    <dimen name="improved_bookmark_icon_radius">24dp</dimen>
+    <dimen name="bookmark_search_hint_horizontal_padding">30dp</dimen>
 
     <!-- Bookmark visual refresh dimensions. -->
      <dimen name="bookmark_refresh_preferred_start_icon_size">32dp</dimen>
@@ -381,9 +400,6 @@ found in the LICENSE file.
     <dimen name="long_screenshots_button_padding">8dp</dimen>
     <dimen name="long_screenshots_button_margin">17dp</dimen>
 
-    <!-- Video tutorials dimensions -->
-    <dimen name="video_tutorial_try_now_iph_ntp_searchbox_y_inset">6dp</dimen>
-
     <!-- IPH shared highlighting builder padding top -->
     <dimen name="iph_shared_highlighting_padding_top">120dp</dimen>
 
@@ -412,4 +428,13 @@ found in the LICENSE file.
 
     <!-- Price Drop dimensions -->
     <dimen name="price_drop_spotted_iph_ntp_tabswitcher_y_inset">4dp</dimen>
+
+    <!-- Improved bookmark row folder dimensions. -->
+    <dimen name="improved_bookmark_row_outer_corner_radius">16dp</dimen>
+    <dimen name="improved_bookmark_row_inner_corner_radius">6dp</dimen>
+    <dimen name="improved_bookmark_row_size">80dp</dimen>
+    <dimen name="improved_bookmark_row_secondary_outer_size">41dp</dimen>
+    <dimen name="improved_bookmark_row_secondary_inner_size">39dp</dimen>
+    <dimen name="improved_bookmark_row_secondary_inner_half_size">19.5dp</dimen>
+
 </resources>

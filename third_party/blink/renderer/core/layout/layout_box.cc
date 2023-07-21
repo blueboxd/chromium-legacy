@@ -90,6 +90,7 @@
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
+#include "third_party/blink/renderer/core/layout/text_utils.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -146,6 +147,13 @@ namespace {
 
 LayoutUnit TextAreaIntrinsicInlineSize(const HTMLTextAreaElement& textarea,
                                        const LayoutBox& box) {
+  int scrollbar_thickness = 0;
+  if (!RuntimeEnabledFeatures::LayoutNewTextAreaScrollbarEnabled() ||
+      box.StyleRef().OverflowBlockDirection() == EOverflow::kScroll ||
+      box.StyleRef().OverflowBlockDirection() == EOverflow::kAuto) {
+    scrollbar_thickness = layout_text_control::ScrollbarThickness(box);
+  }
+
   // <textarea>'s intrinsic inline-size always contains the scrollbar thickness
   // regardless of actual existence of a scrollbar.
   //
@@ -153,7 +161,7 @@ LayoutUnit TextAreaIntrinsicInlineSize(const HTMLTextAreaElement& textarea,
   // ComputeIntrinsicLogicalWidths()|.
   return LayoutUnit(ceilf(layout_text_control::GetAvgCharWidth(box.StyleRef()) *
                           textarea.cols())) +
-         layout_text_control::ScrollbarThickness(box);
+         scrollbar_thickness;
 }
 
 LayoutUnit TextFieldIntrinsicInlineSize(const HTMLInputElement& input,
@@ -210,12 +218,15 @@ LayoutUnit TextAreaIntrinsicBlockSize(const HTMLTextAreaElement& textarea,
   const LayoutBox& inner_box = *inner_editor->GetLayoutBox();
   const ComputedStyle& inner_style = inner_box.StyleRef();
   // We are able to have a horizontal scrollbar if the overflow style is
-  // scroll, or if its auto and there's no word wrap.
+  // scroll, or if it's auto and there's no word wrap and new textarea
+  // scrollbar logic is disabled.
   int scrollbar_thickness = 0;
   if (box.StyleRef().OverflowInlineDirection() == EOverflow::kScroll ||
-      (box.StyleRef().OverflowInlineDirection() == EOverflow::kAuto &&
-       inner_style.OverflowWrap() == EOverflowWrap::kNormal))
+      (!RuntimeEnabledFeatures::LayoutNewTextAreaScrollbarEnabled() &&
+       box.StyleRef().OverflowInlineDirection() == EOverflow::kAuto &&
+       inner_style.OverflowWrap() == EOverflowWrap::kNormal)) {
     scrollbar_thickness = layout_text_control::ScrollbarThickness(box);
+  }
   return inner_box.FirstLineHeight() * textarea.rows() + scrollbar_thickness;
 }
 
@@ -240,15 +251,13 @@ LayoutUnit FileUploadControlIntrinsicInlineSize(const HTMLInputElement& input,
   constexpr int kDefaultWidthNumChars = 34;
   constexpr UChar kCharacter = '0';
   const String character_as_string = String(&kCharacter, 1u);
-  const Font& font = box.StyleRef().GetFont();
   const float min_default_label_width =
       kDefaultWidthNumChars *
-      font.Width(ConstructTextRun(character_as_string, box.StyleRef()));
+      ComputeTextWidth(character_as_string, box.StyleRef());
 
   const String label =
       input.GetLocale().QueryString(IDS_FORM_FILE_NO_FILE_LABEL);
-  float default_label_width =
-      font.Width(ConstructTextRun(label, box.StyleRef()));
+  float default_label_width = ComputeTextWidth(label, box.StyleRef());
   if (HTMLInputElement* button = input.UploadButton()) {
     if (auto* button_box = button->GetLayoutBox()) {
       LayoutUnit max;
@@ -330,9 +339,8 @@ LayoutUnit MenuListIntrinsicInlineSize(const HTMLSelectElement& select,
       style.ApplyTextTransform(&text);
       // We apply SELECT's style, not OPTION's style because max_option_width is
       // used to determine intrinsic width of the menulist box.
-      TextRun text_run = ConstructTextRun(text, style);
       max_option_width =
-          std::max(max_option_width, style.GetFont().Width(text_run));
+          std::max(max_option_width, ComputeTextWidth(text, style));
     }
   }
 
@@ -1559,8 +1567,9 @@ PhysicalRect LayoutBox::PhysicalBackgroundRect(
       }
 
       // The background color is painted into the last layer.
-      if (!cur->Next() && !background_color.HasAlpha())
+      if (!cur->Next() && background_color.IsOpaque()) {
         layer_known_opaque = true;
+      }
 
       // If neither the image nor the color are opaque then skip this layer.
       if (!layer_known_opaque)
@@ -1569,7 +1578,7 @@ PhysicalRect LayoutBox::PhysicalBackgroundRect(
       // Ignore invisible background layers for kBackgroundPaintedExtent.
       DCHECK_EQ(rect_type, kBackgroundPaintedExtent);
       if (!cur->GetImage() &&
-          (cur->Next() || background_color.AlphaAsInteger() == 0)) {
+          (cur->Next() || background_color.IsFullyTransparent())) {
         continue;
       }
       // A content-box clipped fill layer can be scrolled into the padding box
@@ -6158,21 +6167,25 @@ bool LayoutBox::BackgroundClipBorderBoxIsEquivalentToPaddingBox() const {
   }
 
   if (StyleRef().BorderTopWidth() &&
-      (ResolveColor(GetCSSPropertyBorderTopColor()).HasAlpha() ||
-       StyleRef().BorderTopStyle() != EBorderStyle::kSolid))
+      (!ResolveColor(GetCSSPropertyBorderTopColor()).IsOpaque() ||
+       StyleRef().BorderTopStyle() != EBorderStyle::kSolid)) {
     return false;
+  }
   if (StyleRef().BorderRightWidth() &&
-      (ResolveColor(GetCSSPropertyBorderRightColor()).HasAlpha() ||
-       StyleRef().BorderRightStyle() != EBorderStyle::kSolid))
+      (!ResolveColor(GetCSSPropertyBorderRightColor()).IsOpaque() ||
+       StyleRef().BorderRightStyle() != EBorderStyle::kSolid)) {
     return false;
+  }
   if (StyleRef().BorderBottomWidth() &&
-      (ResolveColor(GetCSSPropertyBorderBottomColor()).HasAlpha() ||
-       StyleRef().BorderBottomStyle() != EBorderStyle::kSolid))
+      (!ResolveColor(GetCSSPropertyBorderBottomColor()).IsOpaque() ||
+       StyleRef().BorderBottomStyle() != EBorderStyle::kSolid)) {
     return false;
+  }
   if (StyleRef().BorderLeftWidth() &&
-      (ResolveColor(GetCSSPropertyBorderLeftColor()).HasAlpha() ||
-       StyleRef().BorderLeftStyle() != EBorderStyle::kSolid))
+      (!ResolveColor(GetCSSPropertyBorderLeftColor()).IsOpaque() ||
+       StyleRef().BorderLeftStyle() != EBorderStyle::kSolid)) {
     return false;
+  }
 
   return true;
 }
@@ -6214,7 +6227,7 @@ BackgroundPaintLocation LayoutBox::ComputeBackgroundPaintLocationIfComposited()
     // bottommost value from the background property (see final-bg-layer in
     // https://drafts.csswg.org/css-backgrounds/#the-background).
     if (!layer->GetImage() && !layer->Next() &&
-        background_color.AlphaAsInteger() > 0 &&
+        !background_color.IsFullyTransparent() &&
         StyleRef().IsScrollbarGutterAuto()) {
       // Solid color layers with an effective background clip of the padding box
       // can be treated as local.
@@ -6233,7 +6246,7 @@ BackgroundPaintLocation LayoutBox::ComputeBackgroundPaintLocationIfComposited()
         // iterations of the loop). For the latter case, the first paint of the
         // images doesn't matter because it will be covered by the second paint
         // of the opaque color.
-        if (!background_color.HasAlpha()) {
+        if (background_color.IsOpaque()) {
           paint_location = kBackgroundPaintInBothSpaces;
           continue;
         }
@@ -6333,6 +6346,86 @@ PhysicalOffset LayoutBox::AnchorScrollTranslationOffset() const {
       return data->TranslationAsPhysicalOffset();
   }
   return PhysicalOffset();
+}
+
+namespace {
+
+template <typename Function>
+void ForEachAnchorQueryOnContainer(const LayoutBox& box, Function func) {
+  const LayoutObject* container = box.Container();
+  if (container->IsLayoutBlock()) {
+    for (const NGPhysicalBoxFragment& fragment :
+         To<LayoutBlock>(container)->PhysicalFragments()) {
+      if (const NGPhysicalAnchorQuery* anchor_query = fragment.AnchorQuery()) {
+        func(*anchor_query);
+      }
+    }
+    return;
+  }
+
+  // Now the container is a relatively positioned inline.
+  CHECK(container->IsLayoutInline());
+  CHECK(container->IsRelPositioned());
+  const LayoutInline* inline_container = To<LayoutInline>(container);
+  if (!inline_container->HasInlineFragments()) {
+    return;
+  }
+  NGInlineCursor cursor;
+  cursor.MoveTo(*container);
+  for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
+    if (const NGPhysicalBoxFragment* fragment =
+            cursor.Current().BoxFragment()) {
+      if (const NGPhysicalAnchorQuery* anchor_query = fragment->AnchorQuery()) {
+        func(*anchor_query);
+      }
+    }
+  }
+}
+
+}  // namespace
+
+const LayoutObject* LayoutBox::FindTargetAnchor(
+    const ScopedCSSName& anchor_name) const {
+  if (!IsOutOfFlowPositioned()) {
+    return nullptr;
+  }
+
+  // Go through the already built NGPhysicalAnchorQuery to avoid tree traversal.
+  const LayoutObject* anchor = nullptr;
+  auto search_for_anchor = [&](const NGPhysicalAnchorQuery& anchor_query) {
+    if (const LayoutObject* current =
+            anchor_query.AnchorLayoutObject(*this, &anchor_name)) {
+      if (!anchor ||
+          (anchor != current && anchor->IsBeforeInPreOrder(*current))) {
+        anchor = current;
+      }
+    }
+  };
+  ForEachAnchorQueryOnContainer(*this, search_for_anchor);
+  return anchor;
+}
+
+const LayoutObject* LayoutBox::AcceptableImplicitAnchor() const {
+  if (!IsOutOfFlowPositioned()) {
+    return nullptr;
+  }
+  Element* element = DynamicTo<Element>(GetNode());
+  Element* anchor_element =
+      element ? element->ImplicitAnchorElement() : nullptr;
+  LayoutObject* anchor_layout_object =
+      anchor_element ? anchor_element->GetLayoutObject() : nullptr;
+  if (!anchor_layout_object) {
+    return nullptr;
+  }
+  // Go through the already built NGPhysicalAnchorQuery to avoid tree traversal.
+  bool is_acceptable_anchor = false;
+  auto validate_anchor = [&](const NGPhysicalAnchorQuery& anchor_query) {
+    if (anchor_query.AnchorLayoutObject(*this, anchor_layout_object)) {
+      is_acceptable_anchor = true;
+    }
+  };
+  ForEachAnchorQueryOnContainer(*this, validate_anchor);
+  return is_acceptable_anchor ? anchor_layout_object : nullptr;
 }
 
 }  // namespace blink

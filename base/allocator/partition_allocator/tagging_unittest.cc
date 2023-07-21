@@ -16,7 +16,6 @@ namespace partition_alloc::internal {
 
 // Check whether we can call the tagging intrinsics safely on all architectures.
 TEST(PartitionAllocMemoryTaggingTest, TagMemoryRangeRandomlySafe) {
-  ::partition_alloc::internal::InitializeMTESupportIfNeeded();
   uintptr_t buffer =
       AllocPages(PageAllocationGranularity(), PageAllocationGranularity(),
                  PageAccessibilityConfiguration(
@@ -32,7 +31,6 @@ TEST(PartitionAllocMemoryTaggingTest, TagMemoryRangeRandomlySafe) {
 }
 
 TEST(PartitionAllocMemoryTaggingTest, TagMemoryRangeIncrementSafe) {
-  ::partition_alloc::internal::InitializeMTESupportIfNeeded();
   base::CPU cpu;
   uintptr_t buffer =
       AllocPages(PageAllocationGranularity(), PageAllocationGranularity(),
@@ -54,7 +52,6 @@ TEST(PartitionAllocMemoryTaggingTest, TagMemoryRangeIncrementSafe) {
 #if defined(ARCH_CPU_64_BITS)
 // Size / alignment constraints are only enforced on 64-bit architectures.
 TEST(PartitionAllocMemoryTaggingTest, TagMemoryRangeBadSz) {
-  ::partition_alloc::internal::InitializeMTESupportIfNeeded();
   base::CPU cpu;
   uintptr_t buffer =
       AllocPages(PageAllocationGranularity(), PageAllocationGranularity(),
@@ -71,7 +68,6 @@ TEST(PartitionAllocMemoryTaggingTest, TagMemoryRangeBadSz) {
 }
 
 TEST(PartitionAllocMemoryTaggingTest, TagMemoryRangeRandomlyNoSz) {
-  ::partition_alloc::internal::InitializeMTESupportIfNeeded();
   base::CPU cpu;
   uintptr_t buffer =
       AllocPages(PageAllocationGranularity(), PageAllocationGranularity(),
@@ -87,7 +83,6 @@ TEST(PartitionAllocMemoryTaggingTest, TagMemoryRangeRandomlyNoSz) {
 }
 
 TEST(PartitionAllocMemoryTaggingTest, TagMemoryRangeRandomlyBadAlign) {
-  ::partition_alloc::internal::InitializeMTESupportIfNeeded();
   base::CPU cpu;
   uintptr_t buffer =
       AllocPages(PageAllocationGranularity(), PageAllocationGranularity(),
@@ -104,7 +99,6 @@ TEST(PartitionAllocMemoryTaggingTest, TagMemoryRangeRandomlyBadAlign) {
 }
 
 TEST(PartitionAllocMemoryTaggingTest, TagMemoryRangeIncrementBadSz) {
-  ::partition_alloc::internal::InitializeMTESupportIfNeeded();
   base::CPU cpu;
   uintptr_t buffer =
       AllocPages(PageAllocationGranularity(), PageAllocationGranularity(),
@@ -120,7 +114,6 @@ TEST(PartitionAllocMemoryTaggingTest, TagMemoryRangeIncrementBadSz) {
 }
 
 TEST(PartitionAllocMemoryTaggingTest, TagMemoryRangeIncrementNoSz) {
-  ::partition_alloc::internal::InitializeMTESupportIfNeeded();
   base::CPU cpu;
   uintptr_t buffer =
       AllocPages(PageAllocationGranularity(), PageAllocationGranularity(),
@@ -136,7 +129,6 @@ TEST(PartitionAllocMemoryTaggingTest, TagMemoryRangeIncrementNoSz) {
 }
 
 TEST(PartitionAllocMemoryTaggingTest, TagMemoryRangeIncrementBadAlign) {
-  ::partition_alloc::internal::InitializeMTESupportIfNeeded();
   base::CPU cpu;
   uintptr_t buffer =
       AllocPages(PageAllocationGranularity(), PageAllocationGranularity(),
@@ -151,5 +143,74 @@ TEST(PartitionAllocMemoryTaggingTest, TagMemoryRangeIncrementBadAlign) {
   FreePages(buffer, PageAllocationGranularity());
 }
 #endif  // defined(ARCH_CPU_64_BITS)
+
+#if PA_CONFIG(HAS_MEMORY_TAGGING)
+#if BUILDFLAG(IS_ANDROID)
+TEST(PartitionAllocMemoryTaggingTest,
+     ChangeMemoryTaggingModeForAllThreadsPerProcess) {
+  base::CPU cpu;
+  // If the underlying platform does not support MTE, skip this test to avoid
+  // hiding failures.
+  if (!cpu.has_mte()) {
+    GTEST_SKIP();
+  }
+
+  // The mode should be set to synchronous on startup by AndroidManifest.xml
+  // for base_unittests.
+  EXPECT_EQ(GetMemoryTaggingModeForCurrentThread(),
+            TagViolationReportingMode::kSynchronous);
+
+  // Skip changing to kDisabled, because scudo does not support enabling MTE
+  // once it is disabled.
+  ChangeMemoryTaggingModeForAllThreadsPerProcess(
+      TagViolationReportingMode::kAsynchronous);
+  EXPECT_EQ(GetMemoryTaggingModeForCurrentThread(),
+            TagViolationReportingMode::kAsynchronous);
+  ChangeMemoryTaggingModeForAllThreadsPerProcess(
+      TagViolationReportingMode::kSynchronous);
+  // End with mode changed back to synchronous.
+  EXPECT_EQ(GetMemoryTaggingModeForCurrentThread(),
+            TagViolationReportingMode::kSynchronous);
+}
+#endif  // BUILDFLAG(IS_ANDROID)
+
+TEST(PartitionAllocMemoryTaggingTest, ChangeMemoryTaggingModeForCurrentThread) {
+  base::CPU cpu;
+  // If the underlying platform does not support MTE, skip this test to avoid
+  // hiding failures.
+  if (!cpu.has_mte()) {
+    GTEST_SKIP();
+  }
+
+  TagViolationReportingMode original_mode =
+      GetMemoryTaggingModeForCurrentThread();
+
+  ChangeMemoryTaggingModeForCurrentThread(TagViolationReportingMode::kDisabled);
+  EXPECT_EQ(GetMemoryTaggingModeForCurrentThread(),
+            TagViolationReportingMode::kDisabled);
+  ChangeMemoryTaggingModeForCurrentThread(
+      TagViolationReportingMode::kSynchronous);
+  EXPECT_EQ(GetMemoryTaggingModeForCurrentThread(),
+            TagViolationReportingMode::kSynchronous);
+  ChangeMemoryTaggingModeForCurrentThread(
+      TagViolationReportingMode::kAsynchronous);
+  EXPECT_EQ(GetMemoryTaggingModeForCurrentThread(),
+            TagViolationReportingMode::kAsynchronous);
+  ChangeMemoryTaggingModeForCurrentThread(
+      TagViolationReportingMode::kSynchronous);
+  EXPECT_EQ(GetMemoryTaggingModeForCurrentThread(),
+            TagViolationReportingMode::kSynchronous);
+  ChangeMemoryTaggingModeForCurrentThread(TagViolationReportingMode::kDisabled);
+  EXPECT_EQ(GetMemoryTaggingModeForCurrentThread(),
+            TagViolationReportingMode::kDisabled);
+  ChangeMemoryTaggingModeForCurrentThread(
+      TagViolationReportingMode::kAsynchronous);
+  EXPECT_EQ(GetMemoryTaggingModeForCurrentThread(),
+            TagViolationReportingMode::kAsynchronous);
+
+  // Restore mode to original.
+  ChangeMemoryTaggingModeForCurrentThread(original_mode);
+}
+#endif  // PA_CONFIG(HAS_MEMORY_TAGGING)
 
 }  // namespace partition_alloc::internal

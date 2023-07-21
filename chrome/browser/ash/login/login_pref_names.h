@@ -26,7 +26,6 @@ extern const char kSamlLockScreenOfflineSigninTimeLimitDays[];
 extern const char kSamlInSessionPasswordChangeEnabled[];
 extern const char kSamlPasswordExpirationAdvanceWarningDays[];
 extern const char kLockScreenReauthenticationEnabled[];
-extern const char kSamlPasswordSyncToken[];
 extern const char kActivityTimeAfterOnboarding[];
 extern const char kOobeGuestMetricsEnabled[];
 extern const char kOobeGuestAcceptedTos[];
@@ -38,6 +37,7 @@ extern const char kUrlParameterToAutofillSAMLUsername[];
 extern const char kChoobeSelectedScreens[];
 extern const char kChoobeCompletedScreens[];
 extern const char kOobeDrivePinningEnabledDeferred[];
+extern const char kOobeDisplaySizeFactorDeferred[];
 
 }  // namespace prefs
 }  // namespace ash

@@ -73,7 +73,7 @@
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/sync/driver/sync_service.h"
+#include "components/sync/service/sync_service.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -523,6 +523,10 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
     source->AddLocalizedString("modulesCartDiscountConsentContent",
                                IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_CONTENT);
   }
+
+  source->AddBoolean(
+      "modulesOverflowScrollbarEnabled",
+      base::FeatureList::IsEnabled(ntp_features::kNtpModulesOverflowScrollbar));
 
   source->AddString("photosModuleCustomArtWork",
                     base::GetFieldTrialParamValueByFeature(

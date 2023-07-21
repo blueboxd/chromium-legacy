@@ -648,6 +648,15 @@ const char kHatsBatteryLifeCycleEndTs[] =
 // life experience survey.
 const char kHatsBatteryLifeIsSelected[] = "hats_battery_life_is_selected";
 
+// An int64 pref. This is the timestamp, microseconds after epoch, that
+// indicates the end of the Peripherals experience survey.
+const char kHatsPeripheralsCycleEndTs[] =
+    "hats_peripherals_cycle_end_timestamp";
+
+// A boolean pref. Indicates if the device is selected for the HaTS Peripherals
+// experience survey.
+const char kHatsPeripheralsIsSelected[] = "hats_peripherals_is_selected";
+
 // An int64 pref. This is a timestamp, microseconds after epoch, of the most
 // recent time the profile took or dismissed HaTS (happiness-tracking) survey.
 const char kHatsLastInteractionTimestamp[] = "hats_last_interaction_timestamp";
@@ -1289,9 +1298,7 @@ const char kShowUpdatePromotionInfoBar[] =
     "browser.show_update_promotion_info_bar";
 #endif
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX)
 // Boolean that is false if we should show window manager decorations.  If
 // true, we draw a custom chrome frame (thicker title bar and blue border).
 const char kUseCustomChromeFrame[] = "browser.custom_chrome_frame";
@@ -1651,6 +1658,11 @@ const char kQuietNotificationPermissionPromoWasShown[] =
     "profile.content_settings.quiet_permission_ui_promo.was_shown."
     "notifications";
 
+// Boolean indicating whether support for Data URLs in SVGUseElement should be
+// removed.
+const char kDataUrlInSvgUseEnabled[] =
+    "profile.content_settings.data_url_in_svg_use_enabled";
+
 // Boolean indicating if JS dialogs triggered from a different origin iframe
 // should be blocked. Has no effect if
 // "SuppressDifferentOriginSubframeJSDialogs" feature is disabled.
@@ -1674,6 +1686,9 @@ const char kSidePanelHorizontalAlignment[] = "side_panel.is_right_aligned";
 // a button in the toolbar.
 const char kSidePanelCompanionEntryPinnedToToolbar[] =
     "side_panel.companion_pinned_to_toolbar";
+// Corresponds to the enterprise policy.
+const char kGoogleSearchSidePanelEnabled[] =
+    "side_panel.google_search_side_panel_enabled";
 #endif
 
 // Number of minutes of inactivity before running actions from
@@ -1842,9 +1857,6 @@ const char kDefaultTasksBySuffix[] = "filebrowser.tasks.default_by_suffix";
 // DefaultHandlersForFileExtensions policy.
 const char kDefaultHandlersForFileExtensions[] =
     "filebrowser.default_handlers_for_file_extensions";
-
-// Whether the office files setup flow has ever been completed by the user.
-const char kOfficeSetupComplete[] = "filebrowser.office.setup_complete";
 
 // Whether we should always move office files to Google Drive without prompting
 // the user first.

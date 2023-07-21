@@ -137,7 +137,7 @@ RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager()
     // By default, we check all types except a few.
     static_assert(
         network::mojom::RequestDestination::kMaxValue ==
-            network::mojom::RequestDestination::kWebIdentity,
+            network::mojom::RequestDestination::kDictionary,
         "Decide if new request destination should be skipped on mobile.");
     for (int t_int = 0;
          t_int <=
@@ -285,13 +285,16 @@ void RemoteSafeBrowsingDatabaseManager::
                                 result);
 }
 
-bool RemoteSafeBrowsingDatabaseManager::CheckUrlForHighConfidenceAllowlist(
+void RemoteSafeBrowsingDatabaseManager::CheckUrlForHighConfidenceAllowlist(
     const GURL& url,
-    const std::string& metric_variation) {
+    const std::string& metric_variation,
+    base::OnceCallback<void(bool)> callback) {
   DCHECK(sb_task_runner()->RunsTasksInCurrentSequence());
 
   if (!enabled_ || !CanCheckUrl(url)) {
-    return false;
+    sb_task_runner()->PostTask(FROM_HERE,
+                               base::BindOnce(std::move(callback), false));
+    return;
   }
 
   // TODO(crbug.com/1318105): To debug experiment metrics, we need to compare
@@ -310,10 +313,14 @@ bool RemoteSafeBrowsingDatabaseManager::CheckUrlForHighConfidenceAllowlist(
                     match_result == IsInAllowlistResult::kAllowlistUnavailable;
     LogCheckUrlForHighConfidenceAllowlistResults(is_allowlisted_result,
                                                  is_match);
-    return is_match;
+    sb_task_runner()->PostTask(FROM_HERE,
+                               base::BindOnce(std::move(callback), is_match));
+    return;
   }
 
-  return is_allowlisted_result.value_or(false);
+  sb_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                is_allowlisted_result.value_or(false)));
 }
 
 bool RemoteSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
@@ -358,10 +365,12 @@ AsyncMatch RemoteSafeBrowsingDatabaseManager::CheckCsdAllowlistUrl(
   return is_match ? AsyncMatch::MATCH : AsyncMatch::NO_MATCH;
 }
 
-bool RemoteSafeBrowsingDatabaseManager::MatchDownloadAllowlistUrl(
-    const GURL& url) {
+void RemoteSafeBrowsingDatabaseManager::MatchDownloadAllowlistUrl(
+    const GURL& url,
+    base::OnceCallback<void(bool)> callback) {
   NOTREACHED();
-  return true;
+  sb_task_runner()->PostTask(FROM_HERE,
+                             base::BindOnce(std::move(callback), true));
 }
 
 safe_browsing::ThreatSource RemoteSafeBrowsingDatabaseManager::GetThreatSource()

@@ -11,6 +11,7 @@
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fido_assertion_info.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/random_session_id.h"
@@ -119,6 +120,8 @@ class Connection
       base::OnceCallback<void(absl::optional<std::vector<uint8_t>>)>;
   using PayloadResponseCallback =
       base::OnceCallback<void(absl::optional<std::vector<uint8_t>>)>;
+  using BootstrapConfigurationsCallback =
+      base::OnceCallback<void(absl::optional<std::vector<uint8_t>>)>;
 
   // TargetDeviceConnectionBroker::AuthenticatedConnection:
   void RequestWifiCredentials(int32_t session_id,
@@ -128,6 +131,11 @@ class Connection
   void RequestAccountTransferAssertion(
       const std::string& challenge_b64url,
       RequestAccountTransferAssertionCallback callback) override;
+  void WaitForUserVerification(AwaitUserVerificationCallback callback) override;
+  void OnUserVerificationRequested(
+      AwaitUserVerificationCallback callback,
+      absl::optional<mojom::UserVerificationRequested>
+          user_verification_request);
 
   void OnNotifySourceOfUpdateResponse(
       NotifySourceOfUpdateCallback callback,
@@ -145,6 +153,10 @@ class Connection
       RequestAccountTransferAssertionCallback callback,
       ::ash::quick_start::mojom::GetAssertionResponsePtr response);
 
+  void OnBootstrapConfigurationsResponse(
+      BootstrapConfigurationsCallback callback,
+      absl::optional<std::vector<uint8_t>> response_bytes);
+
   void SendMessage(std::unique_ptr<QuickStartMessage> message,
                    ConnectionResponseCallback callback);
 
@@ -154,6 +166,8 @@ class Connection
 
   void OnConnectionClosed(
       TargetDeviceConnectionBroker::ConnectionClosedReason reason);
+
+  void OnResponseTimeout();
 
   template <typename T>
   using DecoderResponseCallback =
@@ -177,6 +191,7 @@ class Connection
                   OnDecodingCompleteCallback<T> on_decoding_complete,
                   absl::optional<std::vector<uint8_t>> data);
 
+  base::OneShotTimer response_timeout_timer_;
   raw_ptr<NearbyConnection, ExperimentalAsh> nearby_connection_;
   RandomSessionId random_session_id_;
   SharedSecret shared_secret_;

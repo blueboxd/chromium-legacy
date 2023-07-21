@@ -367,6 +367,7 @@
     BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_connector_service_factory.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_service_factory.h"
+#include "chrome/browser/enterprise/signals/user_permission_service_factory.h"
 #endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
@@ -420,14 +421,13 @@
 #include "chrome/browser/speech/speech_recognition_service_factory.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service_factory.h"
 #include "chrome/browser/ui/performance_controls/performance_controls_hats_service_factory.h"
-#include "chrome/browser/ui/user_education/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/user_notes/user_note_service_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 #include "chrome/browser/accessibility/ax_screen_ai_annotator_factory.h"
 #include "chrome/browser/accessibility/pdf_ocr_controller_factory.h"
-#include "components/services/screen_ai/public/cpp/screen_ai_service_router_factory.h"
+#include "chrome/browser/screen_ai/screen_ai_service_router_factory.h"
 #endif
 
 #if BUILDFLAG(USE_NSS_CERTS)
@@ -622,6 +622,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   enterprise::ProfileIdServiceFactory::GetInstance();
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS_ASH)
+  enterprise_signals::UserPermissionServiceFactory::GetInstance();
   enterprise_connectors::DeviceTrustServiceFactory::GetInstance();
   enterprise_connectors::DeviceTrustConnectorServiceFactory::GetInstance();
 #endif
@@ -818,9 +819,6 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
   PrefMetricsService::Factory::GetInstance();
   PrefsTabHelper::GetServiceInstance();
-#if !BUILDFLAG(IS_ANDROID)
-  ReopenTabInProductHelpFactory::GetInstance();
-#endif
   SafeSearchFactory::GetInstance();
   SearchPrefetchServiceFactory::GetInstance();
 #if !BUILDFLAG(IS_ANDROID)

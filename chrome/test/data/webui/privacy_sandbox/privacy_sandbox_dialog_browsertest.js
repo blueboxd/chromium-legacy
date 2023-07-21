@@ -49,6 +49,13 @@ var PrivacySandboxDialogBigWindowTest = class extends PolymerTest {
   }
 };
 
-TEST_F('PrivacySandboxDialogBigWindowTest', 'All', function() {
+// TODO(https://crbug.com/1446188): Re-enable the test.
+GEN('#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)');
+GEN('# define MAYBE_All DISABLED_All');
+GEN('#else');
+GEN('# define MAYBE_All All');
+GEN('#endif');
+
+TEST_F('PrivacySandboxDialogBigWindowTest', 'MAYBE_All', function() {
   mocha.run();
 });

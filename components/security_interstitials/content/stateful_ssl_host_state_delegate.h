@@ -26,7 +26,7 @@ class FilePath;
 namespace content {
 class BrowserContext;
 class StoragePartition;
-}
+}  // namespace content
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -67,12 +67,14 @@ class StatefulSSLHostStateDelegate : public content::SSLHostStateDelegate,
       const net::X509Certificate& cert,
       int error,
       content::StoragePartition* storage_partition) override;
+
   void HostRanInsecureContent(const std::string& host,
                               int child_id,
                               InsecureContentType content_type) override;
   bool DidHostRunInsecureContent(const std::string& host,
                                  int child_id,
                                  InsecureContentType content_type) override;
+
   void AllowHttpForHost(const std::string& host,
                         content::StoragePartition* storage_partition) override;
   bool IsHttpAllowedForHost(
@@ -89,6 +91,9 @@ class StatefulSSLHostStateDelegate : public content::SSLHostStateDelegate,
   bool IsHttpsEnforcedForHost(
       const std::string& host,
       content::StoragePartition* storage_partition) override;
+
+  // Clears all entries from the HTTP allowlist.
+  void ClearHttpsOnlyModeAllowlist();
 
   // RevokeUserAllowExceptionsHard is the same as RevokeUserAllowExceptions but
   // additionally may close idle connections in the process. This should be used
@@ -122,6 +127,15 @@ class StatefulSSLHostStateDelegate : public content::SSLHostStateDelegate,
   int GetRecurrentInterstitialThreshold() const;
   int GetRecurrentInterstitialResetTime() const;
 
+  // Returns whether the user has allowed a certificate error exception for
+  // |host|.
+  bool HasCertAllowException(const std::string& host,
+                             content::StoragePartition* storage_partition);
+
+  // Returns whether the user has allowed an HTTP exception for |host|.
+  bool HasHttpAllowException(const std::string& host,
+                             content::StoragePartition* storage_partition);
+
  private:
   // Used to specify whether new content setting entries should be created if
   // they don't already exist when querying the user's settings.
@@ -129,11 +143,6 @@ class StatefulSSLHostStateDelegate : public content::SSLHostStateDelegate,
     CREATE_DICTIONARY_ENTRIES,
     DO_NOT_CREATE_DICTIONARY_ENTRIES
   };
-
-  // Returns whether the user has allowed a certificate error exception for
-  // |host|.
-  bool HasCertAllowException(const std::string& host,
-                             content::StoragePartition* storage_partition);
 
   // Returns a dictionary of certificate fingerprints and errors that have been
   // allowed as exceptions by the user.

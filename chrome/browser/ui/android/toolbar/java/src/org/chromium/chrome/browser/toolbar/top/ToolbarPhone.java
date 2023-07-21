@@ -302,18 +302,9 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     public ToolbarPhone(Context context, AttributeSet attrs) {
         super(context, attrs);
         mShouldShowModernizeVisualUpdate = OmniboxFeatures.shouldShowModernizeVisualUpdate(context);
-        final int edgePaddingRes = mShouldShowModernizeVisualUpdate
-                ? OmniboxResourceProvider.selectMarginDimen(R.dimen.toolbar_edge_padding_modern,
-                        R.dimen.toolbar_edge_padding_modern_smaller, R.dimen.toolbar_edge_padding)
-                : R.dimen.toolbar_edge_padding;
-        mToolbarSidePadding = getResources().getDimensionPixelOffset(edgePaddingRes);
-
-        mBackgroundHeightIncreaseWhenFocus = mShouldShowModernizeVisualUpdate
-                ? getResources().getDimensionPixelSize(
-                        OmniboxFeatures.shouldShowActiveColorOnOmnibox()
-                                ? R.dimen.toolbar_url_focus_height_increase_active_color
-                                : R.dimen.toolbar_url_focus_height_increase_no_active_color)
-                : 0;
+        mToolbarSidePadding = OmniboxResourceProvider.getToolbarSidePadding(context);
+        mBackgroundHeightIncreaseWhenFocus =
+                OmniboxResourceProvider.getToolbarOnFocusHeightIncrease(context);
     }
 
     @Override
@@ -1133,7 +1124,10 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
      * Updates the toolbar height and bottom padding during URL focus changing.
      */
     private void updateToolbarLayoutForUrlFocusChangeAnimation() {
-        if (!OmniboxFeatures.shouldShowModernizeVisualUpdate(getContext())) {
+        // With the smallest margins variant enabled, we still increase the height of the location
+        // bar bg but don't increase the height of the toolbar.
+        if (!OmniboxFeatures.shouldShowModernizeVisualUpdate(getContext())
+                || OmniboxFeatures.shouldShowSmallestMargins(getContext())) {
             return;
         }
 
@@ -1791,8 +1785,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     }
 
     @Override
-    public void setTabSwitcherMode(boolean inTabSwitcherMode, boolean showToolbar,
-            boolean delayAnimation, MenuButtonCoordinator menuButtonCoordinator) {
+    public void setTabSwitcherMode(boolean inTabSwitcherMode) {
         // This method is only used for grid tab switcher with the start surface disabled. When
         // start surface is enabled, omnibox state is updated in onStartSurfaceStateChanged(), which
         // is always called before setTabSwitcherMode(), so skip here.
@@ -2761,8 +2754,11 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         if (!mShouldShowModernizeVisualUpdate) {
             return;
         }
+
         mDropdownListScrolled = true;
-        mLocationBar.setStatusIconBackgroundVisibility(true);
+        if (!OmniboxFeatures.shouldShowActiveColorOnOmnibox()) {
+            mLocationBar.setStatusIconBackgroundVisibility(true);
+        }
         updateToolbarAndLocationBarColor();
     }
 
@@ -2771,8 +2767,11 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         if (!mShouldShowModernizeVisualUpdate) {
             return;
         }
+
         mDropdownListScrolled = false;
-        mLocationBar.setStatusIconBackgroundVisibility(false);
+        if (!OmniboxFeatures.shouldShowActiveColorOnOmnibox()) {
+            mLocationBar.setStatusIconBackgroundVisibility(false);
+        }
         updateToolbarAndLocationBarColor();
     }
 

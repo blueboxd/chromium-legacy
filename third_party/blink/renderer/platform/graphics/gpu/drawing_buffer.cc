@@ -203,14 +203,17 @@ scoped_refptr<DrawingBuffer> DrawingBuffer::Create(
   if (discard_framebuffer_supported)
     extensions_util->EnsureExtensionEnabled("GL_EXT_discard_framebuffer");
 
+  bool texture_storage_enabled =
+      extensions_util->IsExtensionEnabled("GL_EXT_texture_storage");
+
   scoped_refptr<DrawingBuffer> drawing_buffer =
       base::AdoptRef(new DrawingBuffer(
           std::move(context_provider), graphics_info, using_swap_chain,
           desynchronized, std::move(extensions_util), client,
-          discard_framebuffer_supported, want_alpha_channel,
-          premultiplied_alpha, preserve, webgl_version, want_depth_buffer,
-          want_stencil_buffer, chromium_image_usage, filter_quality,
-          color_space, gpu_preference));
+          discard_framebuffer_supported, texture_storage_enabled,
+          want_alpha_channel, premultiplied_alpha, preserve, webgl_version,
+          want_depth_buffer, want_stencil_buffer, chromium_image_usage,
+          filter_quality, color_space, gpu_preference));
   if (!drawing_buffer->Initialize(size, multisample_supported)) {
     drawing_buffer->BeginDestruction();
     return scoped_refptr<DrawingBuffer>();
@@ -226,6 +229,7 @@ DrawingBuffer::DrawingBuffer(
     std::unique_ptr<Extensions3DUtil> extensions_util,
     Client* client,
     bool discard_framebuffer_supported,
+    bool texture_storage_enabled,
     bool want_alpha_channel,
     bool premultiplied_alpha,
     PreserveDrawingBuffer preserve,
@@ -244,6 +248,7 @@ DrawingBuffer::DrawingBuffer(
       gl_(ContextProvider()->ContextGL()),
       extensions_util_(std::move(extensions_util)),
       discard_framebuffer_supported_(discard_framebuffer_supported),
+      texture_storage_enabled_(texture_storage_enabled),
       requested_alpha_type_(want_alpha_channel
                                 ? (premultiplied_alpha ? kPremul_SkAlphaType
                                                        : kUnpremul_SkAlphaType)
@@ -784,7 +789,7 @@ scoped_refptr<CanvasResource> DrawingBuffer::ExportLowLatencyCanvasResource(
       context_provider_->GetWeakPtr(), resource_provider,
       cc::PaintFlags::FilterQuality::kLow,
       /*is_origin_top_left=*/opengl_flip_y_extension_,
-      /*is_overlay_candidate=*/true);
+      /*is_overlay_candidate=*/canvas_resource_buffer->is_overlay_candidate);
 }
 
 scoped_refptr<CanvasResource> DrawingBuffer::ExportCanvasResource() {
@@ -1236,11 +1241,41 @@ bool DrawingBuffer::ReallocateDefaultFramebuffer(const gfx::Size& size,
     gl_->GenTextures(1, &staging_texture_);
     gl_->BindTexture(GL_TEXTURE_2D, staging_texture_);
     GLenum internal_format = requested_format_;
-    if (requested_format_ == GL_RGB8) {
-      internal_format = color_buffer_format_.HasAlpha() ? GL_RGBA8 : GL_RGB8;
+
+    // TexStorage is not core in GLES2 (webgl1) and enabling (or emulating) it
+    // universally can cause issues with BGRA formats.
+    // See: crbug.com/1443160#c38
+    if (!texture_storage_enabled_ &&
+        base::FeatureList::IsEnabled(
+            features::kUseImageInsteadOfStorageForStagingBuffer)) {
+      switch (requested_format_) {
+        case GL_RGB8:
+          internal_format = color_buffer_format_.HasAlpha() ? GL_RGBA : GL_RGB;
+          break;
+        case GL_SRGB8_ALPHA8:
+          internal_format = GL_SRGB_ALPHA_EXT;
+          break;
+        case GL_RGBA8:
+        case GL_RGBA16F:
+          internal_format = GL_RGBA;
+          break;
+        default:
+          NOTREACHED();
+          break;
+      }
+
+      gl_->TexImage2D(GL_TEXTURE_2D, 0, internal_format, size.width(),
+                      size.height(), 0, internal_format,
+                      requested_format_ == GL_RGBA16F ? GL_HALF_FLOAT_OES
+                                                      : GL_UNSIGNED_BYTE,
+                      nullptr);
+    } else {
+      if (requested_format_ == GL_RGB8) {
+        internal_format = color_buffer_format_.HasAlpha() ? GL_RGBA8 : GL_RGB8;
+      }
+      gl_->TexStorage2DEXT(GL_TEXTURE_2D, 1, internal_format, size.width(),
+                           size.height());
     }
-    gl_->TexStorage2DEXT(GL_TEXTURE_2D, 1, internal_format, size.width(),
-                         size.height());
   }
 
   AttachColorBufferToReadFramebuffer();
@@ -1850,13 +1885,12 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     front_buffer_mailbox = mailboxes.front_buffer;
   } else {
     if (ShouldUseChromiumImage()) {
-      gfx::BufferFormat buffer_format =
-          BufferFormat(color_buffer_format_.resource_format());
-      if (buffer_format == gfx::BufferFormat::RGBX_8888 &&
+      viz::SharedImageFormat si_format = color_buffer_format_;
+      if (si_format == viz::SinglePlaneFormat::kRGBX_8888 &&
           gpu::IsImageFromGpuMemoryBufferFormatSupported(
               gfx::BufferFormat::BGRX_8888,
               ContextProvider()->GetCapabilities())) {
-        buffer_format = gfx::BufferFormat::BGRX_8888;
+        si_format = viz::SinglePlaneFormat::kBGRX_8888;
       }
       // TODO(crbug.com/911176): When RGB emulation is not needed, we should use
       // the non-GMB CreateSharedImage with gpu::SHARED_IMAGE_USAGE_SCANOUT in
@@ -1870,16 +1904,17 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
       }
 
       if (gpu::IsImageFromGpuMemoryBufferFormatSupported(
-              buffer_format, ContextProvider()->GetCapabilities())) {
+              viz::BufferFormat(si_format.resource_format()),
+              ContextProvider()->GetCapabilities())) {
         gpu_memory_buffer = gpu_memory_buffer_manager->CreateGpuMemoryBuffer(
-            size, buffer_format, buffer_usage, gpu::kNullSurfaceHandle,
-            nullptr);
+            size, viz::BufferFormat(si_format.resource_format()), buffer_usage,
+            gpu::kNullSurfaceHandle, nullptr);
         if (gpu_memory_buffer) {
           gpu_memory_buffer->SetColorSpace(color_space_);
           back_buffer_mailbox = sii->CreateSharedImage(
-              gpu_memory_buffer.get(), gpu_memory_buffer_manager, color_space_,
-              origin, back_buffer_alpha_type, usage | additional_usage_flags,
-              "WebGLDrawingBuffer");
+              si_format, size, color_space_, origin, back_buffer_alpha_type,
+              usage | additional_usage_flags, "WebGLDrawingBuffer",
+              gpu_memory_buffer->CloneHandle());
 #if BUILDFLAG(IS_MAC)
           // A CHROMIUM_image backed texture requires a specialized set of
           // parameters on OSX.
@@ -1932,7 +1967,7 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     front_color_buffer_ = base::MakeRefCounted<ColorBuffer>(
         weak_factory_.GetWeakPtr(), size, color_space_, color_buffer_format_,
         back_buffer_alpha_type, texture_target, texture_id, nullptr,
-        /*is_overlay_candidate=*/false, front_buffer_mailbox);
+        /*is_overlay_candidate=*/true, front_buffer_mailbox);
   }
 
   // Import the backbuffer of swap chain or allocated SharedImage into GL.
@@ -1959,7 +1994,7 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
                               texture_target, 0, 0);
     gl_->DeleteFramebuffers(1, &fbo);
   }
-  const bool is_overlay_candidate = !!gpu_memory_buffer;
+  const bool is_overlay_candidate = !!gpu_memory_buffer || using_swap_chain_;
 
   return base::MakeRefCounted<ColorBuffer>(
       weak_factory_.GetWeakPtr(), size, color_space_, color_buffer_format_,

@@ -87,9 +87,6 @@ EXCLUDED_TESTS = [
 EXCLUDED_TESTS_WINDOWS = [
     # https://github.com/rust-lang/rust/issues/96464
     os.path.join('tests', 'codegen', 'vec-shrink-panik.rs'),
-    # TODO(crbug.com/1442943): Re-enable when fixed.
-    os.path.join('tests', 'ui', 'native-library-link-flags',
-                 'msvc-non-utf8-output.rs'),
 ]
 
 CLANG_SCRIPTS_DIR = os.path.join(THIS_DIR, '..', 'clang', 'scripts')
@@ -536,11 +533,12 @@ def MakeVersionStamp(git_hash):
 
 def GetLatestRustCommit():
     """Get the latest commit hash in the LLVM monorepo."""
+    url = (
+        'https://chromium.googlesource.com/external/' +
+        'github.com/rust-lang/rust/+/refs/heads/master?format=JSON'  # nocheck
+    )
     main = json.loads(
-        urllib.request.urlopen('https://chromium.googlesource.com/external/' +
-                               'github.com/rust-lang/rust/' +
-                               '+/refs/heads/main?format=JSON').read().decode(
-                                   "utf-8").replace(")]}'", ""))
+        urllib.request.urlopen(url).read().decode("utf-8").replace(")]}'", ""))
     return main['commit']
 
 

@@ -10,6 +10,7 @@
 #include "base/files/file.h"
 #include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/policy/dlp/dialogs/files_policy_dialog.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -23,10 +24,6 @@ enum class State {
 
   // Task has started, but some initial scanning is performed.
   kScanning,
-
-  // Task is waiting on user's feedback to a Data Leak Prevention (DLP) or
-  // Enterprise Connectors warning.
-  kWarning,
 
   // Task is currently running.
   kInProgress,
@@ -67,12 +64,12 @@ enum class OperationType {
   kZip,
 };
 
-// The type of security policy error that occurred.
-enum class SecurityErrorType {
-  // Error caused by Data Leak Prevention block policy.
+// The type of Data Protection policy error that occurred.
+enum class PolicyErrorType {
+  // Error caused by Data Leak Prevention policy.
   kDlp,
 
-  // Error caused by Enterprise Connectors block policy.
+  // Error caused by Enterprise Connectors policy.
   kEnterpriseConnectors,
 
   // Error caused by Data Leak Prevention warning timing out.
@@ -82,9 +79,9 @@ enum class SecurityErrorType {
 // Unique identifier for any type of task.
 using IOTaskId = uint64_t;
 
-// I/O task state::PAUSED parameters. Currently, only CopyOrMoveIOTask can
-// pause to resolve a file name conflict.
-struct PauseParams {
+// I/O task state::PAUSED parameters when paused to resolve a file name
+// conflict. Currently, only supported by CopyOrMoveIOTask.
+struct ConflictPauseParams {
   // The conflict file name.
   std::string conflict_name;
 
@@ -96,16 +93,72 @@ struct PauseParams {
 
   // The conflict copy or move target URL.
   std::string conflict_target_url;
+
+  bool operator==(const ConflictPauseParams& other) const;
 };
 
-// Resume I/O task parameters.
-struct ResumeParams {
+// I/O task state::PAUSED parameters when paused to show a policy warning.
+// Currently, only supported by CopyOrMovePolicyIOTask.
+struct PolicyPauseParams {
+  // One of kDlp, kEnterpriseConnectors.
+  policy::Policy type;
+
+  bool operator==(const PolicyPauseParams& other) const;
+};
+
+// I/O task state::PAUSED parameters. Only one of conflict or policy params
+// should be set.
+struct PauseParams {
+  PauseParams();
+
+  PauseParams(const PauseParams& other);
+  PauseParams& operator=(const PauseParams& other);
+
+  PauseParams(PauseParams&& other);
+  PauseParams& operator=(PauseParams&& other);
+
+  bool operator==(const PauseParams& other) const;
+
+  ~PauseParams();
+
+  // Set iff pausing due to name conflict.
+  absl::optional<ConflictPauseParams> conflict_params;
+  // Set iff pausing due to a policy warning.
+  absl::optional<PolicyPauseParams> policy_params;
+};
+
+// Resume I/O task parameters when paused because of a name conflict.
+struct ConflictResumeParams {
   // How to resolve a CopyOrMoveIOTask file name conflict: either 'keepboth'
   // or 'replace'.
   std::string conflict_resolve;
 
   // True if |conflict_resolve| should apply to future file name conflicts.
   bool conflict_apply_to_all = false;
+};
+
+// Resume I/O task parameters when paused because of a policy.
+struct PolicyResumeParams {
+  // One of kDlp, kEnterpriseConnectors.
+  policy::Policy type;
+};
+
+// Resume I/O task parameters.
+struct ResumeParams {
+  ResumeParams();
+
+  ResumeParams(const ResumeParams& other);
+  ResumeParams& operator=(const ResumeParams& other);
+
+  ResumeParams(ResumeParams&& other);
+  ResumeParams& operator=(ResumeParams&& other);
+
+  ~ResumeParams();
+
+  // Set iff paused due to name conflict.
+  absl::optional<ConflictResumeParams> conflict_params;
+  // Set iff paused due to a policy warning.
+  absl::optional<PolicyResumeParams> policy_params;
 };
 
 // Represents the status of a particular entry in an I/O task.
@@ -122,11 +175,6 @@ struct EntryStatus {
 
   // May be empty if the entry has not been fully processed yet.
   absl::optional<base::File::Error> error;
-
-  // Type of security error that occurred, if any. Empty otherwise.
-  // Can be set only if Data Leak Prevention or Enterprise Connectors policies
-  // apply.
-  absl::optional<SecurityErrorType> security_error;
 
   // True if entry is a directory when its metadata is processed.
   bool is_directory = false;
@@ -156,7 +204,10 @@ class ProgressStatus {
 
   // True if the task completed with security errors due to Data Leak Prevention
   // or Enterprise Connectors policies.
-  bool HasSecurityError() const;
+  bool HasPolicyError() const;
+
+  // True if the task is in scanning state.
+  bool IsScanning() const;
 
   // Returns a default method for obtaining the source name.
   std::string GetSourceName(Profile* profile) const;
@@ -174,10 +225,10 @@ class ProgressStatus {
   // Task state.
   State state;
 
-  // Type of security error that occurred, if any. Empty otherwise.
+  // Type of policy error that occurred, if any. Empty otherwise.
   // Can be set only if Data Leak Prevention or Enterprise Connectors policies
   // apply.
-  absl::optional<SecurityErrorType> security_error;
+  absl::optional<PolicyErrorType> policy_error;
 
   // I/O Operation type (e.g. copy, move).
   OperationType type;
@@ -239,6 +290,9 @@ class IOTask {
   virtual void Execute(ProgressCallback progress_callback,
                        CompleteCallback complete_callback) = 0;
 
+  // Pauses a task.
+  virtual void Pause(PauseParams params);
+
   // Resumes a task.
   virtual void Resume(ResumeParams params);
 
@@ -246,6 +300,10 @@ class IOTask {
   // but not call any of Execute()'s callbacks. The task will be deleted
   // synchronously after this call returns.
   virtual void Cancel() = 0;
+
+  // Aborts the task because of policy error. This should set `policy_error` in
+  // the progress and complete the task setting the progress state to |kError|.
+  virtual void CompleteWithError(PolicyErrorType policy_error);
 
   // Gets the current progress status of the task.
   const ProgressStatus& progress() { return progress_; }
@@ -272,10 +330,13 @@ class DummyIOTask : public IOTask {
               bool show_notification = true);
   ~DummyIOTask() override;
 
+  // IOTask overrides:
   void Execute(ProgressCallback progress_callback,
                CompleteCallback complete_callback) override;
-
+  void Pause(PauseParams pause_params) override;
+  void Resume(ResumeParams resume_params) override;
   void Cancel() override;
+  void CompleteWithError(PolicyErrorType policy_error) override;
 
  private:
   void DoProgress();

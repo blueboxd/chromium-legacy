@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "ash/public/mojom/input_device_settings.mojom-shared.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -46,15 +47,16 @@ mojom::MetaKey GetMetaKeyForKeyboard(const ui::KeyboardDevice& keyboard) {
     case ui::KeyboardCapability::DeviceType::kDeviceInternalKeyboard:
     case ui::KeyboardCapability::DeviceType::kDeviceExternalChromeOsKeyboard:
     case ui::KeyboardCapability::DeviceType::kDeviceHotrodRemote:
-    case ui::KeyboardCapability::DeviceType::kDeviceUnknown:
     case ui::KeyboardCapability::DeviceType::kDeviceVirtualCoreKeyboard:
       return Shell::Get()->keyboard_capability()->HasLauncherButton(keyboard)
                  ? mojom::MetaKey::kLauncher
                  : mojom::MetaKey::kSearch;
     case ui::KeyboardCapability::DeviceType::kDeviceExternalAppleKeyboard:
       return mojom::MetaKey::kCommand;
+    case ui::KeyboardCapability::DeviceType::kDeviceUnknown:
     case ui::KeyboardCapability::DeviceType::kDeviceExternalGenericKeyboard:
     case ui::KeyboardCapability::DeviceType::kDeviceExternalUnknown:
+    case ui::KeyboardCapability::DeviceType::kDeviceInternalRevenKeyboard:
       return mojom::MetaKey::kExternalMeta;
   };
 }
@@ -140,26 +142,43 @@ bool KeyboardSettingsAreValid(
           settings.top_row_are_fkeys) {
     return false;
   }
-  return keyboard.is_external || (settings.suppress_meta_fkey_rewrites ==
-                                  kDefaultSuppressMetaFKeyRewrites);
+
+  const bool is_non_chromeos_keyboard =
+      (keyboard.meta_key != mojom::MetaKey::kLauncher &&
+       keyboard.meta_key != mojom::MetaKey::kSearch);
+  const bool is_meta_suppressed_setting_default =
+      settings.suppress_meta_fkey_rewrites == kDefaultSuppressMetaFKeyRewrites;
+
+  // The suppress_meta_fkey_rewrites setting can only be changed if the device
+  // is a non-chromeos keyboard.
+  return is_non_chromeos_keyboard || is_meta_suppressed_setting_default;
 }
 
-void RecordSetKeyboardSetttingsValidMetric(bool is_valid) {
+// The haptic_enabled and haptic_sensitivity are allowed to change only if the
+// touchpad is haptic.
+bool TouchpadSettingsAreValid(const mojom::Touchpad& touchpad,
+                              const mojom::TouchpadSettings& settings) {
+  return touchpad.is_haptic ||
+         (touchpad.settings->haptic_enabled == settings.haptic_enabled &&
+          touchpad.settings->haptic_sensitivity == settings.haptic_sensitivity);
+}
+
+void RecordSetKeyboardSettingsValidMetric(bool is_valid) {
   base::UmaHistogramBoolean(
       "ChromeOS.Settings.Device.Keyboard.SetSettingsSucceeded", is_valid);
 }
 
-void RecordSetTouchpadSetttingsValidMetric(bool is_valid) {
+void RecordSetTouchpadSettingsValidMetric(bool is_valid) {
   base::UmaHistogramBoolean(
       "ChromeOS.Settings.Device.Touchpad.SetSettingsSucceeded", is_valid);
 }
 
-void RecordSetPointingStickSetttingsValidMetric(bool is_valid) {
+void RecordSetPointingStickSettingsValidMetric(bool is_valid) {
   base::UmaHistogramBoolean(
       "ChromeOS.Settings.Device.PointingStick.SetSettingsSucceeded", is_valid);
 }
 
-void RecordSetMouseSetttingsValidMetric(bool is_valid) {
+void RecordSetMouseSettingsValidMetric(bool is_valid) {
   base::UmaHistogramBoolean(
       "ChromeOS.Settings.Device.Mouse.SetSettingsSucceeded", is_valid);
 }
@@ -581,17 +600,17 @@ void InputDeviceSettingsControllerImpl::SetKeyboardSettings(
   // If a device with the given id does not exist, do nothing.
   auto found_keyboard_iter = keyboards_.find(id);
   if (found_keyboard_iter == keyboards_.end()) {
-    RecordSetKeyboardSetttingsValidMetric(/*is_valid=*/false);
+    RecordSetKeyboardSettingsValidMetric(/*is_valid=*/false);
     return;
   }
 
   auto& found_keyboard = *found_keyboard_iter->second;
   if (!KeyboardSettingsAreValid(found_keyboard, *settings,
                                 policy_handler_->keyboard_policies())) {
-    RecordSetKeyboardSetttingsValidMetric(/*is_valid=*/false);
+    RecordSetKeyboardSettingsValidMetric(/*is_valid=*/false);
     return;
   }
-  RecordSetKeyboardSetttingsValidMetric(/*is_valid=*/true);
+  RecordSetKeyboardSettingsValidMetric(/*is_valid=*/true);
   const auto old_settings = std::move(found_keyboard.settings);
   found_keyboard.settings = settings.Clone();
   keyboard_pref_handler_->UpdateKeyboardSettings(
@@ -620,14 +639,16 @@ void InputDeviceSettingsControllerImpl::SetTouchpadSettings(
   // If a device with the given id does not exist, do nothing.
   auto found_touchpad_iter = touchpads_.find(id);
   if (found_touchpad_iter == touchpads_.end()) {
-    RecordSetTouchpadSetttingsValidMetric(/*is_valid=*/false);
+    RecordSetTouchpadSettingsValidMetric(/*is_valid=*/false);
     return;
   }
-  RecordSetTouchpadSetttingsValidMetric(/*is_valid=*/true);
 
-  // TODO(dpad): Validate incoming settings to make sure the settings can
-  // apply to the given device.
   auto& found_touchpad = *found_touchpad_iter->second;
+  if (!TouchpadSettingsAreValid(found_touchpad, *settings)) {
+    RecordSetTouchpadSettingsValidMetric(/*is_valid=*/false);
+    return;
+  }
+  RecordSetTouchpadSettingsValidMetric(/*is_valid=*/true);
   const auto old_settings = std::move(found_touchpad.settings);
   found_touchpad.settings = settings.Clone();
   touchpad_pref_handler_->UpdateTouchpadSettings(active_pref_service_,
@@ -655,10 +676,10 @@ void InputDeviceSettingsControllerImpl::SetMouseSettings(
   // If a device with the given id does not exist, do nothing.
   auto found_mouse_iter = mice_.find(id);
   if (found_mouse_iter == mice_.end()) {
-    RecordSetMouseSetttingsValidMetric(/*is_valid=*/false);
+    RecordSetMouseSettingsValidMetric(/*is_valid=*/false);
     return;
   }
-  RecordSetMouseSetttingsValidMetric(/*is_valid=*/true);
+  RecordSetMouseSettingsValidMetric(/*is_valid=*/true);
 
   auto& found_mouse = *found_mouse_iter->second;
   const auto old_settings = std::move(found_mouse.settings);
@@ -687,10 +708,10 @@ void InputDeviceSettingsControllerImpl::SetPointingStickSettings(
   // If a device with the given id does not exist, do nothing.
   auto found_pointing_stick_iter = pointing_sticks_.find(id);
   if (found_pointing_stick_iter == pointing_sticks_.end()) {
-    RecordSetPointingStickSetttingsValidMetric(/*is_valid=*/false);
+    RecordSetPointingStickSettingsValidMetric(/*is_valid=*/false);
     return;
   }
-  RecordSetPointingStickSetttingsValidMetric(/*is_valid=*/true);
+  RecordSetPointingStickSettingsValidMetric(/*is_valid=*/true);
 
   auto& found_pointing_stick = *found_pointing_stick_iter->second;
   const auto old_settings = std::move(found_pointing_stick.settings);
@@ -903,6 +924,22 @@ void InputDeviceSettingsControllerImpl::OnPointingStickListUpdated(
   }
 
   RefreshStoredLoginScreenPointingStickSettings();
+}
+
+void InputDeviceSettingsControllerImpl::
+    RestoreDefaultKeyboardModifierRemappings(DeviceId id) {
+  DCHECK(base::Contains(keyboards_, id));
+  auto& keyboard = *keyboards_.at(id);
+  mojom::KeyboardSettingsPtr new_settings = keyboard.settings->Clone();
+  new_settings->modifier_remappings = {};
+  if (keyboard.meta_key == mojom::MetaKey::kCommand) {
+    new_settings->modifier_remappings[ui::mojom::ModifierKey::kControl] =
+        ui::mojom::ModifierKey::kMeta;
+    new_settings->modifier_remappings[ui::mojom::ModifierKey::kMeta] =
+        ui::mojom::ModifierKey::kControl;
+  }
+  metrics_manager_->RecordKeyboardNumberOfKeysReset(keyboard, *new_settings);
+  SetKeyboardSettings(id, std::move(new_settings));
 }
 
 void InputDeviceSettingsControllerImpl::InitializeKeyboardSettings(

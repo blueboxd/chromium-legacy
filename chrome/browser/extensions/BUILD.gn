@@ -129,16 +129,12 @@ static_library("extensions") {
     "api/desktop_capture/desktop_capture_base.h",
     "api/developer_private/developer_private_api.cc",
     "api/developer_private/developer_private_api.h",
-    "api/developer_private/developer_private_mangle.cc",
-    "api/developer_private/developer_private_mangle.h",
     "api/developer_private/entry_picker.cc",
     "api/developer_private/entry_picker.h",
     "api/developer_private/extension_info_generator.cc",
     "api/developer_private/extension_info_generator.h",
     "api/developer_private/inspectable_views_finder.cc",
     "api/developer_private/inspectable_views_finder.h",
-    "api/developer_private/show_permissions_dialog_helper.cc",
-    "api/developer_private/show_permissions_dialog_helper.h",
     "api/downloads/downloads_api.cc",
     "api/downloads/downloads_api.h",
     "api/downloads_internal/downloads_internal_api.cc",
@@ -815,6 +811,7 @@ static_library("extensions") {
     "//chrome/browser/safe_browsing:metrics_collector",
     "//chrome/browser/ui/tabs:tab_enums",
     "//chrome/browser/web_applications",
+    "//chromeos/components/kiosk",
     "//components/cbor:cbor",
     "//components/commerce/core:pref_names",
     "//components/device_reauth",
@@ -914,7 +911,6 @@ static_library("extensions") {
     "//components/undo",
     "//components/unified_consent",
     "//components/update_client",
-    "//components/update_client:buildflags",
     "//components/update_client:common_impl",
     "//components/url_formatter",
     "//components/url_matcher",
@@ -983,6 +979,10 @@ static_library("extensions") {
     "//url",
   ]
 
+  if (enable_supervised_users) {
+    deps += [ "//components/supervised_user/core/browser" ]
+  }
+
   if (is_linux || is_mac || is_win) {
     sources += [
       "api/system_indicator/system_indicator_api.cc",
@@ -1038,6 +1038,7 @@ static_library("extensions") {
       "system_display/display_info_provider_utils.cc",
       "system_display/display_info_provider_utils.h",
     ]
+    deps += [ "//chromeos/components/kiosk" ]
     if (use_cups) {
       sources += [
         "api/printing/print_job_submitter.cc",
@@ -1053,6 +1054,7 @@ static_library("extensions") {
       deps += [
         # TODO(crbug.com/1340540): Find an appropriate spot for printing_metrics.
         "//chrome/browser/chromeos/extensions/printing_metrics",
+        "//chrome/browser/pdf:pdf_pref_names",
         "//chromeos/printing",
         "//printing/backend",
       ]

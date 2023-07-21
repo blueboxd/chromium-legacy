@@ -386,7 +386,6 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
         -([self stickyOmniboxHeight] + [self feedHeaderHeight]);
     [self.contentSuggestionsViewController.view setNeedsLayout];
     [self.contentSuggestionsViewController.view layoutIfNeeded];
-    [self.ntpContentDelegate reloadContentSuggestions];
   }
 
   if (previousTraitCollection.preferredContentSizeCategory !=
@@ -453,8 +452,6 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
                                      kContentSuggestionsReset];
   }
 
-  [self addViewControllerAboveFeed:self.contentSuggestionsViewController];
-
   // Adds the feed top section to the view hierarchy if it exists.
   if (self.feedTopSectionViewController) {
     [self addViewControllerAboveFeed:self.feedTopSectionViewController];
@@ -466,6 +463,8 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   if (self.feedHeaderViewController) {
     [self addViewControllerAboveFeed:self.feedHeaderViewController];
   }
+
+  [self addViewControllerAboveFeed:self.contentSuggestionsViewController];
 
   [self addViewControllerAboveFeed:self.headerViewController];
 
@@ -1174,12 +1173,14 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 
 // Sets an top inset to the feed collection view to fit the content above it.
 - (void)updateFeedInsetsForContentAbove {
-  self.collectionView.contentInset = UIEdgeInsetsMake(
-      [self heightAboveFeed], 0, self.collectionView.contentInset.bottom, 0);
+  CGFloat heightAboveFeed = [self heightAboveFeed];
   // Updates `additionalOffset` using the content above the feed.
-  self.additionalOffset = [self heightAboveFeed];
-  // Update `scrolledToMinimumHeight` after updating `additionalOffset`.
-  [self updateScrolledToMinimumHeight];
+  self.additionalOffset = heightAboveFeed;
+  // Setting the contentInset will cause a scroll, which will call
+  // scrollViewDidScroll which calls updateScrolledToMinimumHeight. So no need
+  // to call here.
+  self.collectionView.contentInset = UIEdgeInsetsMake(
+      heightAboveFeed, 0, self.collectionView.contentInset.bottom, 0);
 }
 
 // Checks whether the feed top section is visible and updates the
@@ -1479,17 +1480,12 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 // The y-position content offset for when the fake omnibox
 // should stick to the top of the NTP.
 - (CGFloat)offsetToStickOmnibox {
-  CGFloat offset =
-      -(self.headerViewController.view.frame.size.height -
-        [self stickyOmniboxHeight] -
-        [self.feedHeaderViewController customSearchEngineViewHeight]);
-  if (IsSplitToolbarMode(self)) {
-    offset -= [self contentSuggestionsContentHeight];
-  }
-  if (self.feedTopSectionViewController) {
-    offset -= self.feedTopSectionViewController.view.frame.size.height;
-  }
-  return offset;
+  // Do not need to factor in safeAreaInsets.top because the fake omnibox sticks
+  // below it, so it is effectively just the scroll distance between top of
+  // NTPHeader and the top of the Fake Omnibox.
+  return -([self heightAboveFeed] -
+           [self.headerViewController
+                   offsetToBeginFakeOmniboxExpansionForSplitMode]);
 }
 
 // Whether the collection view has attained its minimum height.

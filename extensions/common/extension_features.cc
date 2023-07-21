@@ -16,6 +16,11 @@ BASE_FEATURE(kApiRuntimeGetContexts,
              "ApiRuntimeGetContexts",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Controls the availability of the sidePanel.open() API.
+BASE_FEATURE(kApiSidePanelOpen,
+             "ApiSidePanelOpen",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 ///////////////////////////////////////////////////////////////////////////////
 // Other Features
 ///////////////////////////////////////////////////////////////////////////////
@@ -102,6 +107,12 @@ BASE_FEATURE(kExtensionsMenuAccessControlWithPermittedSites,
 // Forces requests to go through WebRequestProxyingURLLoaderFactory.
 BASE_FEATURE(kForceWebRequestProxyForTest,
              "ForceWebRequestProxyForTest",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Launches Native Host executables directly on Windows rather than using a
+// cmd.exe process as a proxy.
+BASE_FEATURE(kLaunchWindowsNativeHostsDirectly,
+             "LaunchWindowsNativeHostsDirectly",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether extensions can use the new favicon fetching in Manifest V3.

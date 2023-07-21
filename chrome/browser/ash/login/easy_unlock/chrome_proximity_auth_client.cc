@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/ash/device_sync/device_sync_client_factory.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
-#include "chrome/browser/ash/login/easy_unlock/easy_unlock_service_regular.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chromeos/ash/components/multidevice/logging/logging.h"
@@ -37,14 +36,6 @@ void ChromeProximityAuthClient::FinalizeUnlock(bool success) {
   EasyUnlockService* service = EasyUnlockService::Get(profile_);
   if (service)
     service->FinalizeUnlock(success);
-}
-
-proximity_auth::ProximityAuthPrefManager*
-ChromeProximityAuthClient::GetPrefManager() {
-  EasyUnlockService* service = EasyUnlockService::Get(profile_);
-  if (service)
-    return service->GetProximityAuthPrefManager();
-  return nullptr;
 }
 
 }  // namespace ash

@@ -159,7 +159,7 @@ class CanvasResourceProviderBitmap : public CanvasResourceProvider {
 
     const auto info = GetSkImageInfo().makeAlphaType(kPremul_SkAlphaType);
     const auto props = GetSkSurfaceProps();
-    return SkSurface::MakeRaster(info, &props);
+    return SkSurfaces::Raster(info, &props);
   }
 };
 
@@ -183,8 +183,8 @@ class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
  private:
   scoped_refptr<CanvasResource> CreateResource() final {
     SkImageInfo info = GetSkImageInfo();
-    if (!IsBitmapFormatSupported(
-            viz::SkColorTypeToResourceFormat(info.colorType()))) {
+    if (!viz::SkColorTypeToSinglePlaneSharedImageFormat(info.colorType())
+             .IsBitmapFormatSupported()) {
       // If the rendering format is not supported, downgrade to 8-bits.
       // TODO(junov): Should we try 12-12-12-12 and 10-10-10-2?
       info = info.makeColorType(kN32_SkColorType);
@@ -556,7 +556,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
 
     const auto props = GetSkSurfaceProps();
     if (is_accelerated_) {
-      return SkSurface::MakeFromBackendTexture(
+      return SkSurfaces::WrapBackendTexture(
           GetGrContext(), CreateGrTextureForResource(), GetGrSurfaceOrigin(),
           0 /* msaa_sample_count */, GetSkImageInfo().colorType(),
           GetSkImageInfo().refColorSpace(), &props);
@@ -565,7 +565,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     // For software raster path, we render into cpu memory managed internally
     // by SkSurface and copy the rendered results to the GMB before dispatching
     // it to the display compositor.
-    return SkSurface::MakeRaster(resource_->CreateSkImageInfo(), &props);
+    return SkSurfaces::Raster(resource_->CreateSkImageInfo(), &props);
   }
 
   GrBackendTexture CreateGrTextureForResource() const {
@@ -844,7 +844,7 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
                                             GrMipMapped::kNo, texture_info);
 
     const auto props = GetSkSurfaceProps();
-    return SkSurface::MakeFromBackendTexture(
+    return SkSurfaces::WrapBackendTexture(
         GetGrContext(), backend_texture, kTopLeft_GrSurfaceOrigin,
         0 /* msaa_sample_count */, GetSkImageInfo().colorType(),
         GetSkImageInfo().refColorSpace(), &props);

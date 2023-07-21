@@ -73,6 +73,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelperJni;
+import org.chromium.chrome.browser.ui.signin.DeviceLockActivityLauncher;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.share.ShareImageFileUtils;
@@ -94,7 +95,6 @@ import org.chromium.url.ShadowGURL;
  * Test for {@link AndroidShareSheetController} and {@link AndroidCustomActionProvider}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Features.EnableFeatures({ChromeFeatureList.SHARE_SHEET_CUSTOM_ACTIONS_POLISH})
 @Features.DisableFeatures(
         {ChromeFeatureList.WEBNOTES_STYLIZE, ChromeFeatureList.SEND_TAB_TO_SELF_SIGNIN_PROMO})
 @Config(shadows = {ShadowShareImageFileUtils.class, ShadowGURL.class})
@@ -137,6 +137,8 @@ public class AndroidShareSheetControllerUnitTest {
     TabModelSelector mTabModelSelector;
     @Mock
     Tab mTab;
+    @Mock
+    DeviceLockActivityLauncher mDeviceLockActivityLauncher;
     @Mock
     Profile mProfile;
     @Mock
@@ -183,7 +185,9 @@ public class AndroidShareSheetControllerUnitTest {
         doReturn(mWindow).when(mTab).getWindowAndroid();
 
         mController = new AndroidShareSheetController(mBottomSheetController,
-                () -> mTab, () -> mTabModelSelector, () -> mProfile, mPrintCallback::notifyCalled);
+                ()
+                        -> mTab,
+                () -> mTabModelSelector, () -> mProfile, mPrintCallback::notifyCalled, null);
     }
 
     @After
@@ -213,7 +217,7 @@ public class AndroidShareSheetControllerUnitTest {
                 intent.getParcelableArrayExtra(INTENT_EXTRA_CHOOSER_CUSTOM_ACTIONS));
 
         assertCustomActions(intent, R.string.sharing_copy_url, R.string.sharing_long_screenshot,
-                R.string.print_share_activity_title, R.string.send_tab_to_self_share_activity_title,
+                R.string.print_share_activity_title, R.string.sharing_send_tab_to_self,
                 R.string.qr_code_share_icon_label);
     }
 
@@ -252,7 +256,11 @@ public class AndroidShareSheetControllerUnitTest {
                 new ChromeShareExtras.Builder().setIsUrlOfVisiblePage(true).build();
         AndroidShareSheetController.showShareSheet(params, chromeShareExtras,
                 mBottomSheetController,
-                () -> mTab, () -> mTabModelSelector, () -> mProfile, mPrintCallback::notifyCalled);
+                ()
+                        -> mTab,
+                ()
+                        -> mTabModelSelector,
+                () -> mProfile, mPrintCallback::notifyCalled, mDeviceLockActivityLauncher);
 
         Intent intent = Shadows.shadowOf((Activity) mActivity).peekNextStartedActivity();
         chooseCustomAction(intent, R.string.print_share_activity_title);
@@ -279,8 +287,30 @@ public class AndroidShareSheetControllerUnitTest {
 
         Intent intent = Shadows.shadowOf((Activity) mActivity).peekNextStartedActivity();
         Intent sharingIntent = intent.getParcelableExtra(Intent.EXTRA_INTENT);
-        Assert.assertEquals("ImageUri does not match.", JUnitTestGURLs.GOOGLE_URL_DOGS,
-                sharingIntent.getStringExtra(Intent.EXTRA_TEXT));
+        Assert.assertEquals("ImageUri does not match. Page URL should be used.",
+                JUnitTestGURLs.GOOGLE_URL, sharingIntent.getStringExtra(Intent.EXTRA_TEXT));
+    }
+
+    @Test
+    public void shareImageWithLinkUrl() {
+        Uri testImageUri = Uri.parse("content://test.image.uri");
+        ShareParams params = new ShareParams.Builder(mWindow, "", JUnitTestGURLs.EXAMPLE_URL)
+                                     .setFileContentType("image/png")
+                                     .setSingleImageUri(testImageUri)
+                                     .setBypassFixingDomDistillerUrl(true)
+                                     .build();
+        ChromeShareExtras chromeShareExtras =
+                new ChromeShareExtras.Builder()
+                        .setDetailedContentType(DetailedContentType.IMAGE)
+                        .setContentUrl(JUnitTestGURLs.getGURL(JUnitTestGURLs.GOOGLE_URL))
+                        .setImageSrcUrl(JUnitTestGURLs.getGURL(JUnitTestGURLs.GOOGLE_URL_DOGS))
+                        .build();
+        mController.showShareSheet(params, chromeShareExtras, 1L);
+
+        Intent intent = Shadows.shadowOf((Activity) mActivity).peekNextStartedActivity();
+        Intent sharingIntent = intent.getParcelableExtra(Intent.EXTRA_INTENT);
+        Assert.assertEquals("ImageUri does not match. Link URL has higher priority over page URL.",
+                JUnitTestGURLs.EXAMPLE_URL, sharingIntent.getStringExtra(Intent.EXTRA_TEXT));
     }
 
     @Test
@@ -301,8 +331,8 @@ public class AndroidShareSheetControllerUnitTest {
         mController.showShareSheet(params, chromeShareExtras, 1L);
 
         Intent intent = Shadows.shadowOf((Activity) mActivity).peekNextStartedActivity();
-        assertCustomActions(intent, R.string.sharing_copy_image, R.string.sharing_long_screenshot,
-                R.string.send_tab_to_self_share_activity_title, R.string.qr_code_share_icon_label);
+        assertCustomActions(intent, R.string.sharing_copy_image, R.string.sharing_send_tab_to_self,
+                R.string.qr_code_share_icon_label);
     }
 
     @Test
@@ -373,7 +403,11 @@ public class AndroidShareSheetControllerUnitTest {
                         .build();
         AndroidShareSheetController.showShareSheet(params, chromeShareExtras,
                 mBottomSheetController,
-                () -> mTab, () -> mTabModelSelector, () -> mProfile, mPrintCallback::notifyCalled);
+                ()
+                        -> mTab,
+                ()
+                        -> mTabModelSelector,
+                () -> mProfile, mPrintCallback::notifyCalled, mDeviceLockActivityLauncher);
 
         Intent chooserIntent = Shadows.shadowOf((Activity) mActivity).peekNextStartedActivity();
         Intent shareIntent = chooserIntent.getParcelableExtra(Intent.EXTRA_INTENT);
@@ -381,8 +415,8 @@ public class AndroidShareSheetControllerUnitTest {
                 "\"highlight\"\n " + JUnitTestGURLs.TEXT_FRAGMENT_URL,
                 shareIntent.getStringExtra(Intent.EXTRA_TEXT));
 
-        assertCustomActions(chooserIntent, R.string.sharing_copy, R.string.sharing_long_screenshot,
-                R.string.send_tab_to_self_share_activity_title, R.string.qr_code_share_icon_label);
+        assertCustomActions(chooserIntent, R.string.sharing_copy, R.string.sharing_send_tab_to_self,
+                R.string.qr_code_share_icon_label);
 
         // Toggle the modify action again, link is removed from text.
         runModifyActionFromChooserIntent(chooserIntent);
@@ -391,8 +425,7 @@ public class AndroidShareSheetControllerUnitTest {
         Assert.assertEquals("Text being shared is different.", "highlight",
                 shareIntent2.getStringExtra(Intent.EXTRA_TEXT));
 
-        assertCustomActions(
-                chooserIntent2, R.string.sharing_copy_text, R.string.sharing_long_screenshot);
+        assertCustomActions(chooserIntent2, R.string.sharing_copy_text);
 
         // Toggle the modify action again, link is reattached with the text.
         runModifyActionFromChooserIntent(chooserIntent2);
@@ -421,7 +454,11 @@ public class AndroidShareSheetControllerUnitTest {
                         .build();
         AndroidShareSheetController.showShareSheet(params, chromeShareExtras,
                 mBottomSheetController,
-                () -> mTab, () -> mTabModelSelector, () -> mProfile, mPrintCallback::notifyCalled);
+                ()
+                        -> mTab,
+                ()
+                        -> mTabModelSelector,
+                () -> mProfile, mPrintCallback::notifyCalled, mDeviceLockActivityLauncher);
 
         // Since link to share failed, the content being shared is a plain text.
         Intent chooserIntent = Shadows.shadowOf((Activity) mActivity).peekNextStartedActivity();
@@ -431,8 +468,7 @@ public class AndroidShareSheetControllerUnitTest {
         Assert.assertNull("Modify action should be null when generating link to text failed.",
                 chooserIntent.getParcelableExtra(INTENT_EXTRA_CHOOSER_MODIFY_SHARE_ACTION));
 
-        assertCustomActions(
-                chooserIntent, R.string.sharing_copy_text, R.string.sharing_long_screenshot);
+        assertCustomActions(chooserIntent, R.string.sharing_copy_text);
     }
 
     @Test
@@ -456,11 +492,11 @@ public class AndroidShareSheetControllerUnitTest {
         mController.showShareSheet(params, chromeShareExtras, 1L);
 
         Intent intent = Shadows.shadowOf((Activity) mActivity).peekNextStartedActivity();
-        assertCustomActions(intent, R.string.sharing_copy_image, R.string.sharing_long_screenshot,
-                R.string.send_tab_to_self_share_activity_title, R.string.qr_code_share_icon_label);
+        assertCustomActions(intent, R.string.sharing_copy_image, R.string.sharing_send_tab_to_self,
+                R.string.qr_code_share_icon_label);
         chooseCustomAction(intent, R.string.qr_code_share_icon_label);
 
-        Assert.assertEquals("Last URL does not match content being shared.",
+        Assert.assertEquals("Image source URL should be used for QR Code.",
                 JUnitTestGURLs.GOOGLE_URL_DOGS, ShadowQrCodeDialog.sLastUrl);
     }
 
@@ -485,8 +521,8 @@ public class AndroidShareSheetControllerUnitTest {
 
         // No download option here.
         Intent intent = Shadows.shadowOf((Activity) mActivity).peekNextStartedActivity();
-        assertCustomActions(intent, R.string.sharing_long_screenshot, R.string.sharing_copy_image,
-                R.string.send_tab_to_self_share_activity_title, R.string.qr_code_share_icon_label);
+        assertCustomActions(intent, R.string.sharing_copy_image, R.string.sharing_send_tab_to_self,
+                R.string.qr_code_share_icon_label);
     }
 
     private void setFaviconToFetchForTest(Bitmap favicon) {

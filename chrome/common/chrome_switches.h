@@ -193,6 +193,7 @@ extern const char kWebRtcRemoteEventLogProactivePruningDelta[];
 extern const char kWebRtcRemoteEventLogUploadDelayMs[];
 extern const char kWebRtcRemoteEventLogUploadNoSuppression[];
 extern const char kWebRtcIPHandlingPolicy[];
+extern const char kWindowName[];
 extern const char kWindowPosition[];
 extern const char kWindowSize[];
 extern const char kWindowWorkspace[];
@@ -243,7 +244,6 @@ extern const char kMakeChromeDefault[];
 #endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_WIN)
-extern const char kDisableWindows10CustomTitlebar[];
 extern const char kEnableProfileShortcutManager[];
 extern const char kFromInstaller[];
 extern const char kHideIcons[];

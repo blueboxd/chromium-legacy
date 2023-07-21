@@ -273,7 +273,7 @@ class ABSL_LOCKABLE Mutex {
   // Aliases for `Mutex::Lock()`, `Mutex::Unlock()`, and `Mutex::TryLock()`.
   //
   // These methods may be used (along with the complementary `Reader*()`
-  // methods) to distingish simple exclusive `Mutex` usage (`Lock()`,
+  // methods) to distinguish simple exclusive `Mutex` usage (`Lock()`,
   // etc.) from reader/writer lock usage.
   void WriterLock() ABSL_EXCLUSIVE_LOCK_FUNCTION() { this->Lock(); }
 
@@ -1104,23 +1104,6 @@ void RegisterMutexTracer(void (*fn)(const char *msg, const void *obj,
 // This has the same ordering and single-use limitations as
 // RegisterMutexProfiler() above.
 void RegisterCondVarTracer(void (*fn)(const char *msg, const void *cv));
-
-// Register a hook for symbolizing stack traces in deadlock detector reports.
-//
-// 'pc' is the program counter being symbolized, 'out' is the buffer to write
-// into, and 'out_size' is the size of the buffer.  This function can return
-// false if symbolizing failed, or true if a NUL-terminated symbol was written
-// to 'out.'
-//
-// This has the same ordering and single-use limitations as
-// RegisterMutexProfiler() above.
-//
-// DEPRECATED: The default symbolizer function is absl::Symbolize() and the
-// ability to register a different hook for symbolizing stack traces will be
-// removed on or after 2023-05-01.
-ABSL_DEPRECATED("absl::RegisterSymbolizer() is deprecated and will be removed "
-                "on or after 2023-05-01")
-void RegisterSymbolizer(bool (*fn)(const void *pc, char *out, int out_size));
 
 // EnableMutexInvariantDebugging()
 //

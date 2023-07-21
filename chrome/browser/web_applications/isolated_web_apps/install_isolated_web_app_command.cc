@@ -25,6 +25,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
+#include "chrome/browser/web_applications/isolated_web_apps/error/unusable_swbn_file_error.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_dev_mode.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_response_reader.h"
@@ -66,14 +67,6 @@ namespace {
 
 bool IsUrlLoadingResultSuccess(WebAppUrlLoader::Result result) {
   return result == WebAppUrlLoader::Result::kUrlLoaded;
-}
-
-absl::optional<std::string> UTF16ToUTF8(base::StringPiece16 src) {
-  std::string dest;
-  if (!base::UTF16ToUTF8(src.data(), src.length(), &dest)) {
-    return absl::nullopt;
-  }
-  return dest;
 }
 
 }  // namespace
@@ -204,9 +197,8 @@ void InstallIsolatedWebAppCommand::CheckTrustAndSignaturesOfBundle(
       /*skip_signature_verification=*/false,
       base::BindOnce(
           [](base::expected<std::unique_ptr<IsolatedWebAppResponseReader>,
-                            IsolatedWebAppResponseReaderFactory::Error> reader)
-              -> base::expected<void,
-                                IsolatedWebAppResponseReaderFactory::Error> {
+                            UnusableSwbnFileError> reader)
+              -> base::expected<void, UnusableSwbnFileError> {
             if (!reader.has_value()) {
               return base::unexpected(std::move(reader.error()));
             }
@@ -218,10 +210,10 @@ void InstallIsolatedWebAppCommand::CheckTrustAndSignaturesOfBundle(
 }
 
 void InstallIsolatedWebAppCommand::OnTrustAndSignaturesChecked(
-    base::expected<void, IsolatedWebAppResponseReaderFactory::Error> result) {
-  if (!result.has_value()) {
+    base::expected<void, UnusableSwbnFileError> status) {
+  if (!status.has_value()) {
     ReportFailure(
-        IsolatedWebAppResponseReaderFactory::ErrorToString(result.error()));
+        IsolatedWebAppResponseReaderFactory::ErrorToString(status.error()));
     return;
   }
 
@@ -277,23 +269,18 @@ base::expected<WebAppInstallInfo, std::string>
 InstallIsolatedWebAppCommand::CreateInstallInfoFromManifest(
     const blink::mojom::Manifest& manifest,
     const GURL& manifest_url) {
-  WebAppInstallInfo info;
+  if (!manifest.id.is_valid()) {
+    return base::unexpected(
+        "Manifest `id` is not present or invalid. manifest_url: " +
+        manifest_url.possibly_invalid_spec());
+  }
+
+  WebAppInstallInfo info(manifest.id);
   UpdateWebAppInfoFromManifest(manifest, manifest_url, &info);
 
-  if (!manifest.id.has_value()) {
-    return base::unexpected("Manifest `id` is not present. manifest_url: " +
-                            manifest_url.possibly_invalid_spec());
-  }
+  std::string encoded_id = manifest.id.path();
 
-  // In other installations the best-effort encoding is fine, but for isolated
-  // apps we have the opportunity to report this error.
-  absl::optional<std::string> encoded_id = UTF16ToUTF8(*manifest.id);
-  if (!encoded_id.has_value()) {
-    return base::unexpected(
-        "Failed to convert manifest `id` from UTF16 to UTF8.");
-  }
-
-  if (!encoded_id->empty()) {
+  if (encoded_id != "/") {
     // Recommend to use "/" for manifest id and not empty manifest id because
     // the manifest parser does additional work on resolving manifest id taking
     // `start_url` into account. (See https://w3c.github.io/manifest/#id-member
@@ -304,7 +291,7 @@ InstallIsolatedWebAppCommand::CreateInstallInfoFromManifest(
     // to identify Isolated Web Apps by origin because there is always only 1
     // app per origin.
     return base::unexpected(
-        R"(Manifest `id` must be "/". Resolved manifest id: )" + *encoded_id);
+        R"(Manifest `id` must be "/". Resolved manifest id: )" + encoded_id);
   }
 
   url::Origin origin = url_info_.origin();
@@ -321,7 +308,6 @@ InstallIsolatedWebAppCommand::CreateInstallInfoFromManifest(
          manifest_url.possibly_invalid_spec()}));
   }
 
-  info.manifest_id = "";
   info.user_display_mode = mojom::UserDisplayMode::kStandalone;
 
   return info;

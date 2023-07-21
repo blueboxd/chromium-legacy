@@ -17,6 +17,10 @@ animationFillMode
 animationIterationCount
 animationName
 animationPlayState
+animationRange
+animationRangeEnd
+animationRangeStart
+animationTimeline
 animationTimingFunction
 appRegion
 appearance
@@ -370,6 +374,9 @@ scrollPaddingTop
 scrollSnapAlign
 scrollSnapStop
 scrollSnapType
+scrollTimeline
+scrollTimelineAxis
+scrollTimelineName
 scrollbarGutter
 setProperty
 shapeImageThreshold
@@ -438,6 +445,10 @@ unicodeRange
 userSelect
 vectorEffect
 verticalAlign
+viewTimeline
+viewTimelineAxis
+viewTimelineInset
+viewTimelineName
 viewTransitionName
 visibility
 webkitAlignContent

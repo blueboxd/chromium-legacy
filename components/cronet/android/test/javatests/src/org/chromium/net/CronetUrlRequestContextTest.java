@@ -4,7 +4,8 @@
 
 package org.chromium.net;
 
-import static org.junit.Assert.assertEquals;
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -44,7 +45,6 @@ import org.chromium.net.CronetTestRule.RequiresMinAndroidApi;
 import org.chromium.net.CronetTestRule.RequiresMinApi;
 import org.chromium.net.NetworkChangeNotifierAutoDetect.ConnectivityManagerDelegate;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;
-import org.chromium.net.impl.CronetEngineBuilderImpl;
 import org.chromium.net.impl.CronetLibraryLoader;
 import org.chromium.net.impl.CronetUrlRequestContext;
 import org.chromium.net.impl.NativeCronetEngineBuilderImpl;
@@ -175,7 +175,7 @@ public class CronetUrlRequestContextTest {
                 NativeTestServer.getEchoHeaderURL(userAgentName), callback, callback.getExecutor());
         urlRequestBuilder.build().start();
         callback.blockForDone();
-        assertEquals(userAgentValue, callback.mResponseAsString);
+        assertThat(callback.mResponseAsString).isEqualTo(userAgentValue);
     }
 
     @Test
@@ -197,26 +197,26 @@ public class CronetUrlRequestContextTest {
             testFramework.mCronetEngine.shutdown();
             fail("Should throw an exception");
         } catch (Exception e) {
-            assertEquals("Cannot shutdown with active requests.", e.getMessage());
+            assertThat(e).hasMessageThat().isEqualTo("Cannot shutdown with running requests.");
         }
 
         callback.waitForNextStep();
-        assertEquals(ResponseStep.ON_RESPONSE_STARTED, callback.mResponseStep);
+        assertThat(callback.mResponseStep).isEqualTo(ResponseStep.ON_RESPONSE_STARTED);
         try {
             testFramework.mCronetEngine.shutdown();
             fail("Should throw an exception");
         } catch (Exception e) {
-            assertEquals("Cannot shutdown with active requests.", e.getMessage());
+            assertThat(e).hasMessageThat().isEqualTo("Cannot shutdown with running requests.");
         }
         callback.startNextRead(urlRequest);
 
         callback.waitForNextStep();
-        assertEquals(ResponseStep.ON_READ_COMPLETED, callback.mResponseStep);
+        assertThat(callback.mResponseStep).isEqualTo(ResponseStep.ON_READ_COMPLETED);
         try {
             testFramework.mCronetEngine.shutdown();
             fail("Should throw an exception");
         } catch (Exception e) {
-            assertEquals("Cannot shutdown with active requests.", e.getMessage());
+            assertThat(e).hasMessageThat().isEqualTo("Cannot shutdown with running requests.");
         }
 
         // May not have read all the data, in theory. Just enable auto-advance
@@ -265,7 +265,7 @@ public class CronetUrlRequestContextTest {
             cronetEngine.getUrlRequestContextAdapter();
             fail("Should throw an exception.");
         } catch (Exception e) {
-            assertEquals("Engine is shut down.", e.getMessage());
+            assertThat(e).hasMessageThat().isEqualTo("Engine is shut down.");
         }
     }
 
@@ -289,7 +289,7 @@ public class CronetUrlRequestContextTest {
                     cronetEngine.getUrlRequestContextAdapter();
                     fail("Should throw an exception.");
                 } catch (Exception e) {
-                    assertEquals("Engine is shut down.", e.getMessage());
+                    assertThat(e).hasMessageThat().isEqualTo("Engine is shut down.");
                 }
                 block.open();
             }
@@ -309,7 +309,7 @@ public class CronetUrlRequestContextTest {
             testFramework.mCronetEngine.shutdown();
             fail("Should throw an exception");
         } catch (Exception e) {
-            assertEquals("Engine is shut down.", e.getMessage());
+            assertThat(e).hasMessageThat().isEqualTo("Engine is shut down.");
         }
     }
 
@@ -347,10 +347,10 @@ public class CronetUrlRequestContextTest {
             testFramework.mCronetEngine.shutdown();
             fail("Should throw an exception");
         } catch (Exception e) {
-            assertEquals("Cannot shutdown with active requests.", e.getMessage());
+            assertThat(e).hasMessageThat().isEqualTo("Cannot shutdown with running requests.");
         }
         callback.waitForNextStep();
-        assertEquals(ResponseStep.ON_RESPONSE_STARTED, callback.mResponseStep);
+        assertThat(callback.mResponseStep).isEqualTo(ResponseStep.ON_RESPONSE_STARTED);
         urlRequest.cancel();
         testFramework.mCronetEngine.shutdown();
     }
@@ -388,7 +388,7 @@ public class CronetUrlRequestContextTest {
 
         // Resume callback execution.
         callback.waitForNextStep();
-        assertEquals(ResponseStep.ON_RESPONSE_STARTED, callback.mResponseStep);
+        assertThat(callback.mResponseStep).isEqualTo(ResponseStep.ON_RESPONSE_STARTED);
         callback.setAutoAdvance(true);
         callback.startNextRead(urlRequest);
         callback.blockForDone();
@@ -449,7 +449,7 @@ public class CronetUrlRequestContextTest {
                 ApiHelper.doesContextExistForNetwork(testFramework.mCronetEngine, defaultNetwork));
 
         callback.waitForNextStep();
-        assertEquals(ResponseStep.ON_RESPONSE_STARTED, callback.mResponseStep);
+        assertThat(callback.mResponseStep).isEqualTo(ResponseStep.ON_RESPONSE_STARTED);
         assertTrue(
                 ApiHelper.doesContextExistForNetwork(testFramework.mCronetEngine, defaultNetwork));
         // Cronet registers for NCN notifications on the init thread (see
@@ -599,24 +599,24 @@ public class CronetUrlRequestContextTest {
         TestUrlRequestCallback callback2 = new TestUrlRequestCallback();
         callback1.setAutoAdvance(false);
         callback2.setAutoAdvance(false);
-        assertEquals(0, cronetEngine.getActiveRequestCount());
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(0);
         UrlRequest request1 =
                 cronetEngine.newUrlRequestBuilder(mUrl, callback1, callback1.getExecutor()).build();
         UrlRequest request2 =
                 cronetEngine.newUrlRequestBuilder(mUrl, callback2, callback2.getExecutor()).build();
         request1.start();
         request2.start();
-        assertEquals(2, cronetEngine.getActiveRequestCount());
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(2);
         callback1.waitForNextStep();
         callback1.setAutoAdvance(true);
         callback1.startNextRead(request1);
         callback1.blockForDone();
-        assertEquals(1, cronetEngine.getActiveRequestCount());
+        waitForActiveRequestCount(cronetEngine, 1);
         callback2.waitForNextStep();
         callback2.setAutoAdvance(true);
         callback2.startNextRead(request2);
         callback2.blockForDone();
-        assertEquals(0, cronetEngine.getActiveRequestCount());
+        waitForActiveRequestCount(cronetEngine, 0);
     }
 
     @Test
@@ -627,18 +627,19 @@ public class CronetUrlRequestContextTest {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         callback.setAutoAdvance(false);
         callback.setBlockOnTerminalState(true);
-        assertEquals(0, cronetEngine.getActiveRequestCount());
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(0);
         UrlRequest request =
                 cronetEngine.newUrlRequestBuilder(mUrl, callback, callback.getExecutor()).build();
         request.start();
-        assertEquals(1, cronetEngine.getActiveRequestCount());
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(1);
         callback.waitForNextStep();
         callback.startNextRead(request);
         callback.waitForNextStep();
         callback.startNextRead(request);
         callback.blockForDone();
-        assertEquals(0, cronetEngine.getActiveRequestCount());
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(1);
         callback.setBlockOnTerminalState(false);
+        waitForActiveRequestCount(cronetEngine, 0);
     }
 
     @Test
@@ -649,17 +650,18 @@ public class CronetUrlRequestContextTest {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         callback.setAutoAdvance(false);
         callback.setBlockOnTerminalState(true);
-        assertEquals(0, cronetEngine.getActiveRequestCount());
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(0);
         UrlRequest request =
                 cronetEngine.newUrlRequestBuilder(mUrl, callback, callback.getExecutor()).build();
         request.start();
-        assertEquals(1, cronetEngine.getActiveRequestCount());
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(1);
         request.cancel();
         callback.blockForDone();
-        assertEquals(0, cronetEngine.getActiveRequestCount());
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(1);
         callback.setBlockOnTerminalState(false);
         assertTrue(callback.mOnCanceledCalled);
-        assertEquals(ResponseStep.ON_CANCELED, callback.mResponseStep);
+        assertThat(callback.mResponseStep).isEqualTo(ResponseStep.ON_CANCELED);
+        waitForActiveRequestCount(cronetEngine, 0);
     }
 
     @Test
@@ -671,16 +673,66 @@ public class CronetUrlRequestContextTest {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         callback.setAutoAdvance(false);
         callback.setBlockOnTerminalState(true);
-        assertEquals(0, cronetEngine.getActiveRequestCount());
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(0);
         UrlRequest request =
                 cronetEngine.newUrlRequestBuilder(badUrl, callback, callback.getExecutor()).build();
         request.start();
-        assertEquals(1, cronetEngine.getActiveRequestCount());
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(1);
         callback.blockForDone();
-        assertEquals(0, cronetEngine.getActiveRequestCount());
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(1);
         callback.setBlockOnTerminalState(false);
         assertTrue(callback.mOnErrorCalled);
-        assertEquals(ResponseStep.ON_FAILED, callback.mResponseStep);
+        assertThat(callback.mResponseStep).isEqualTo(ResponseStep.ON_FAILED);
+        waitForActiveRequestCount(cronetEngine, 0);
+    }
+
+    @Test
+    @SmallTest
+    // TODO: the Java implementation currently fails this test - it incorrectly
+    // increments the count on the second start.
+    @OnlyRunNativeCronet
+    public void testGetActiveRequestCountOnDoubleStart() throws Exception {
+        CronetEngine cronetEngine = mTestRule.startCronetTestFramework().mCronetEngine;
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        callback.setAutoAdvance(false);
+        UrlRequest request =
+                cronetEngine.newUrlRequestBuilder(mUrl, callback, callback.getExecutor()).build();
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(0);
+        request.start();
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(1);
+        boolean threwException = false;
+        try {
+            request.start();
+        } catch (Exception e) {
+            threwException = true;
+        }
+        assertTrue(threwException);
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(1);
+        callback.setAutoAdvance(true);
+        callback.blockForDone();
+        waitForActiveRequestCount(cronetEngine, 0);
+    }
+
+    @Test
+    @SmallTest
+    // Only native Cronet has code paths that throw exceptions directly from start() on invalid
+    // requests.
+    @OnlyRunNativeCronet
+    public void testGetActiveRequestCountOnInvalidRequest() throws Exception {
+        CronetEngine cronetEngine = mTestRule.startCronetTestFramework().mCronetEngine;
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest request = cronetEngine.newUrlRequestBuilder("", callback, callback.getExecutor())
+                                     .setHttpMethod("")
+                                     .build();
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(0);
+        boolean threwException = false;
+        try {
+            request.start();
+        } catch (Exception e) {
+            threwException = true;
+        }
+        assertTrue(threwException);
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(0);
     }
 
     @Test
@@ -692,24 +744,24 @@ public class CronetUrlRequestContextTest {
         TestUrlRequestCallback callback2 = new TestUrlRequestCallback();
         callback1.setAutoAdvance(false);
         callback2.setAutoAdvance(false);
-        assertEquals(0, cronetEngine.getActiveRequestCount());
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(0);
         UrlRequest request1 =
                 cronetEngine.newUrlRequestBuilder(mUrl, callback1, callback1.getExecutor()).build();
         UrlRequest request2 =
                 cronetEngine.newUrlRequestBuilder(mUrl, callback2, callback2.getExecutor()).build();
         request1.start();
         request2.start();
-        assertEquals(2, cronetEngine.getActiveRequestCount());
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(2);
         request1.cancel();
         callback1.blockForDone();
         assertTrue(callback1.mOnCanceledCalled);
-        assertEquals(ResponseStep.ON_CANCELED, callback1.mResponseStep);
-        assertEquals(1, cronetEngine.getActiveRequestCount());
+        assertThat(callback1.mResponseStep).isEqualTo(ResponseStep.ON_CANCELED);
+        waitForActiveRequestCount(cronetEngine, 1);
         callback2.waitForNextStep();
         callback2.setAutoAdvance(true);
         callback2.startNextRead(request2);
         callback2.blockForDone();
-        assertEquals(0, cronetEngine.getActiveRequestCount());
+        waitForActiveRequestCount(cronetEngine, 0);
     }
 
     @Test
@@ -721,8 +773,9 @@ public class CronetUrlRequestContextTest {
         TestUrlRequestCallback callback1 = new TestUrlRequestCallback();
         TestUrlRequestCallback callback2 = new TestUrlRequestCallback();
         callback1.setAutoAdvance(false);
+        callback1.setBlockOnTerminalState(true);
         callback2.setAutoAdvance(false);
-        assertEquals(0, cronetEngine.getActiveRequestCount());
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(0);
         UrlRequest request1 =
                 cronetEngine.newUrlRequestBuilder(badUrl, callback1, callback1.getExecutor())
                         .build();
@@ -730,16 +783,114 @@ public class CronetUrlRequestContextTest {
                 cronetEngine.newUrlRequestBuilder(mUrl, callback2, callback2.getExecutor()).build();
         request1.start();
         request2.start();
-        assertEquals(2, cronetEngine.getActiveRequestCount());
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(2);
+        callback1.setBlockOnTerminalState(false);
         callback1.blockForDone();
         assertTrue(callback1.mOnErrorCalled);
-        assertEquals(ResponseStep.ON_FAILED, callback1.mResponseStep);
-        assertEquals(1, cronetEngine.getActiveRequestCount());
+        assertThat(callback1.mResponseStep).isEqualTo(ResponseStep.ON_FAILED);
+        waitForActiveRequestCount(cronetEngine, 1);
         callback2.waitForNextStep();
         callback2.setAutoAdvance(true);
         callback2.startNextRead(request2);
         callback2.blockForDone();
-        assertEquals(0, cronetEngine.getActiveRequestCount());
+        waitForActiveRequestCount(cronetEngine, 0);
+    }
+
+    @Test
+    @SmallTest
+    // Request finished listeners are only supported by native Cronet.
+    @OnlyRunNativeCronet
+    public void testGetActiveRequestCountOnRequestFinishedListener() throws Exception {
+        final CronetTestFramework testFramework = mTestRule.startCronetTestFramework();
+        CronetEngine cronetEngine = testFramework.mCronetEngine;
+        TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
+        requestFinishedListener.blockListener();
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest request =
+                cronetEngine.newUrlRequestBuilder(mUrl, callback, callback.getExecutor())
+                        .setRequestFinishedListener(requestFinishedListener)
+                        .build();
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(0);
+        request.start();
+        callback.blockForDone();
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(1);
+        requestFinishedListener.blockUntilDone();
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(1);
+        requestFinishedListener.unblockListener();
+        waitForActiveRequestCount(cronetEngine, 0);
+    }
+
+    @Test
+    @SmallTest
+    // Request finished listeners are only supported by native Cronet.
+    @OnlyRunNativeCronet
+    public void testGetActiveRequestCountOnThrowingRequestFinishedListener() throws Exception {
+        final CronetTestFramework testFramework = mTestRule.startCronetTestFramework();
+        CronetEngine cronetEngine = testFramework.mCronetEngine;
+        TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
+        requestFinishedListener.makeListenerThrow();
+        requestFinishedListener.blockListener();
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest request =
+                cronetEngine.newUrlRequestBuilder(mUrl, callback, callback.getExecutor())
+                        .setRequestFinishedListener(requestFinishedListener)
+                        .build();
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(0);
+        request.start();
+        callback.blockForDone();
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(1);
+        requestFinishedListener.blockUntilDone();
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(1);
+        requestFinishedListener.unblockListener();
+        waitForActiveRequestCount(cronetEngine, 0);
+    }
+
+    @Test
+    @SmallTest
+    // Request finished listeners are only supported by native Cronet.
+    @OnlyRunNativeCronet
+    public void testGetActiveRequestCountOnThrowingEngineRequestFinishedListener()
+            throws Exception {
+        final CronetTestFramework testFramework = mTestRule.startCronetTestFramework();
+        CronetEngine cronetEngine = testFramework.mCronetEngine;
+        TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
+        requestFinishedListener.makeListenerThrow();
+        requestFinishedListener.blockListener();
+        cronetEngine.addRequestFinishedListener(requestFinishedListener);
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest request =
+                cronetEngine.newUrlRequestBuilder(mUrl, callback, callback.getExecutor()).build();
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(0);
+        request.start();
+        callback.blockForDone();
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(1);
+        requestFinishedListener.blockUntilDone();
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(1);
+        requestFinishedListener.unblockListener();
+        waitForActiveRequestCount(cronetEngine, 0);
+    }
+
+    @Test
+    @SmallTest
+    // Request finished listeners are only supported by native Cronet.
+    @OnlyRunNativeCronet
+    public void testGetActiveRequestCountOnEngineRequestFinishedListener() throws Exception {
+        final CronetTestFramework testFramework = mTestRule.startCronetTestFramework();
+        CronetEngine cronetEngine = testFramework.mCronetEngine;
+        TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
+        requestFinishedListener.blockListener();
+        cronetEngine.addRequestFinishedListener(requestFinishedListener);
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest request =
+                cronetEngine.newUrlRequestBuilder(mUrl, callback, callback.getExecutor()).build();
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(0);
+        request.start();
+        callback.blockForDone();
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(1);
+        requestFinishedListener.blockUntilDone();
+        assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(1);
+        requestFinishedListener.unblockListener();
+        waitForActiveRequestCount(cronetEngine, 0);
     }
 
     @Test
@@ -905,7 +1056,7 @@ public class CronetUrlRequestContextTest {
         urlRequestBuilder.allowDirectExecutor();
         urlRequestBuilder.build().start();
         callback.blockForDone();
-        assertTrue(thrown.get() instanceof RuntimeException);
+        assertThat(thrown.get()).isInstanceOf(RuntimeException.class);
         cronetEngine.shutdown();
     }
 
@@ -949,7 +1100,7 @@ public class CronetUrlRequestContextTest {
                 cronetEngine.newUrlRequestBuilder(url, callback, callback.getExecutor());
         urlRequestBuilder.build().start();
         callback.blockForDone();
-        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
         assertTrue(callback.mResponseInfo.wasCached());
         assertTrue(callback.mOnCanceledCalled);
     }
@@ -972,7 +1123,7 @@ public class CronetUrlRequestContextTest {
             testFramework.mCronetEngine.startNetLogToFile(file.getPath(), false);
             fail("Should throw an exception.");
         } catch (Exception e) {
-            assertEquals("Engine is shut down.", e.getMessage());
+            assertThat(e).hasMessageThat().isEqualTo("Engine is shut down.");
         }
         assertFalse(hasBytesInNetLog(file));
         assertTrue(file.delete());
@@ -1001,7 +1152,7 @@ public class CronetUrlRequestContextTest {
                     netLogDir.getPath(), false, MAX_FILE_SIZE);
             fail("Should throw an exception.");
         } catch (Exception e) {
-            assertEquals("Engine is shut down.", e.getMessage());
+            assertThat(e).hasMessageThat().isEqualTo("Engine is shut down.");
         }
         assertFalse(logFile.exists());
         FileUtils.recursivelyDeleteFile(netLogDir);
@@ -1205,7 +1356,7 @@ public class CronetUrlRequestContextTest {
                 engine.newUrlRequestBuilder(url, callback, callback.getExecutor()).build();
         request.start();
         callback.blockForDone();
-        assertEquals(expectedStatusCode, callback.mResponseInfo.getHttpStatusCode());
+        assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(expectedStatusCode);
     }
 
     private void checkRequestCaching(CronetEngine engine, String url, boolean expectCached) {
@@ -1222,8 +1373,8 @@ public class CronetUrlRequestContextTest {
         }
         urlRequestBuilder.build().start();
         callback.blockForDone();
-        assertEquals(expectCached, callback.mResponseInfo.wasCached());
-        assertEquals("this is a cacheable file\n", callback.mResponseAsString);
+        assertThat(callback.mResponseInfo.wasCached()).isEqualTo(expectCached);
+        assertThat(callback.mResponseAsString).isEqualTo("this is a cacheable file\n");
     }
 
     @Test
@@ -1275,7 +1426,7 @@ public class CronetUrlRequestContextTest {
             createCronetEngineWithCache(CronetEngine.Builder.HTTP_CACHE_DISK);
             fail();
         } catch (IllegalStateException e) {
-            assertEquals("Disk cache storage path already in use", e.getMessage());
+            assertThat(e).hasMessageThat().isEqualTo("Disk cache storage path already in use");
         }
         String url = NativeTestServer.getFileURL("/cacheable.txt");
         checkRequestCaching(cronetEngine, url, false);
@@ -1367,7 +1518,7 @@ public class CronetUrlRequestContextTest {
                 cronetEngine.newUrlRequestBuilder(mUrl, callback, callback.getExecutor());
         urlRequestBuilder.build().start();
         callback.blockForDone();
-        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
         cronetEngine.shutdown();
     }
 
@@ -1386,8 +1537,7 @@ public class CronetUrlRequestContextTest {
             callback.blockForDone();
             statusCodes[i] = callback.mResponseInfo.getHttpStatusCode();
         }
-        assertEquals(200, statusCodes[0]);
-        assertEquals(404, statusCodes[1]);
+        assertThat(statusCodes).asList().containsExactly(200, 404).inOrder();
         cronetEngine.shutdown();
     }
 
@@ -1404,8 +1554,8 @@ public class CronetUrlRequestContextTest {
         runBlocker.open();
         thread1.join();
         thread2.join();
-        assertEquals(200, thread1.mCallback.mResponseInfo.getHttpStatusCode());
-        assertEquals(404, thread2.mCallback.mResponseInfo.getHttpStatusCode());
+        assertThat(thread1.mCallback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
+        assertThat(thread2.mCallback.mResponseInfo.getHttpStatusCode()).isEqualTo(404);
     }
 
     @Test
@@ -1419,8 +1569,8 @@ public class CronetUrlRequestContextTest {
         thread1.join();
         thread2.start();
         thread2.join();
-        assertEquals(200, thread1.mCallback.mResponseInfo.getHttpStatusCode());
-        assertEquals(404, thread2.mCallback.mResponseInfo.getHttpStatusCode());
+        assertThat(thread1.mCallback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
+        assertThat(thread2.mCallback.mResponseInfo.getHttpStatusCode()).isEqualTo(404);
     }
 
     @Test
@@ -1483,7 +1633,7 @@ public class CronetUrlRequestContextTest {
         builder.enablePublicKeyPinningBypassForLocalTrustAnchors(false);
         CronetUrlRequestContextTestJni.get().verifyUrlRequestContextConfig(
                 CronetUrlRequestContext.createNativeUrlRequestContextConfig(
-                        (CronetEngineBuilderImpl) builder.mBuilderDelegate),
+                        CronetTestUtil.getCronetEngineBuilderImpl(builder)),
                 getTestStorage(getContext()));
     }
 
@@ -1506,7 +1656,7 @@ public class CronetUrlRequestContextTest {
         builder.enablePublicKeyPinningBypassForLocalTrustAnchors(false);
         CronetUrlRequestContextTestJni.get().verifyUrlRequestContextQuicOffConfig(
                 CronetUrlRequestContext.createNativeUrlRequestContextConfig(
-                        (CronetEngineBuilderImpl) builder.mBuilderDelegate),
+                        CronetTestUtil.getCronetEngineBuilderImpl(builder)),
                 getTestStorage(getContext()));
     }
 
@@ -1602,7 +1752,7 @@ public class CronetUrlRequestContextTest {
                 requestUrl.toString(), callback, callback.getExecutor());
         urlRequestBuilder.build().start();
         callback.blockForDone();
-        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
     }
 
     /**
@@ -1669,6 +1819,18 @@ public class CronetUrlRequestContextTest {
         return task.get();
     }
 
+    /**
+     * Cronet does not currently provide an API to wait for the active request
+     * count to change. We can't just wait for the terminal callback to fire
+     * because Cronet updates the count some time *after* we return from the
+     * callback. We hack around this by polling the active request count in a
+     * loop.
+     */
+    private static void waitForActiveRequestCount(CronetEngine engine, int expectedCount)
+            throws Exception {
+        while (engine.getActiveRequestCount() != expectedCount) Thread.sleep(100);
+    }
+
     @Test
     @SmallTest
     @RequiresMinApi(6) // setThreadPriority added in API 6: crrev.com/472449
@@ -1680,19 +1842,19 @@ public class CronetUrlRequestContextTest {
             builder.setThreadPriority(-21);
             fail();
         } catch (IllegalArgumentException e) {
-            assertEquals("Thread priority invalid", e.getMessage());
+            assertThat(e).hasMessageThat().isEqualTo("Thread priority invalid");
         }
         try {
             builder.setThreadPriority(20);
             fail();
         } catch (IllegalArgumentException e) {
-            assertEquals("Thread priority invalid", e.getMessage());
+            assertThat(e).hasMessageThat().isEqualTo("Thread priority invalid");
         }
         // Test that valid thread priority range (-20..19) is working.
         for (int threadPriority = -20; threadPriority < 20; threadPriority++) {
             builder.setThreadPriority(threadPriority);
             CronetEngine engine = builder.build();
-            assertEquals(threadPriority, getThreadPriority(engine));
+            assertThat(getThreadPriority(engine)).isEqualTo(threadPriority);
             engine.shutdown();
         }
     }

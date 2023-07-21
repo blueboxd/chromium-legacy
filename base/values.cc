@@ -909,6 +909,30 @@ Value::List::const_iterator Value::List::cend() const {
                         base::to_address(storage_.cend()));
 }
 
+// TODO(crbug.com/1446739): Implement reverse iterators in
+// CheckedContiguousIterator and use them here.
+std::vector<Value>::reverse_iterator Value::List::rend() {
+  return storage_.rend();
+}
+
+// TODO(crbug.com/1446739): Implement reverse iterators in
+// CheckedContiguousIterator and use them here.
+std::vector<Value>::const_reverse_iterator Value::List::rend() const {
+  return storage_.rend();
+}
+
+// TODO(crbug.com/1446739): Implement reverse iterators in
+// CheckedContiguousIterator and use them here.
+std::vector<Value>::reverse_iterator Value::List::rbegin() {
+  return storage_.rbegin();
+}
+
+// TODO(crbug.com/1446739): Implement reverse iterators in
+// CheckedContiguousIterator and use them here.
+std::vector<Value>::const_reverse_iterator Value::List::rbegin() const {
+  return storage_.rbegin();
+}
+
 const Value& Value::List::front() const {
   CHECK(!storage_.empty());
   return storage_.front();
@@ -1150,102 +1174,6 @@ bool operator<=(const Value::List& lhs, const Value::List& rhs) {
 
 bool operator>=(const Value::List& lhs, const Value::List& rhs) {
   return !(lhs < rhs);
-}
-
-absl::optional<bool> Value::FindBoolKey(StringPiece key) const {
-  return GetDict().FindBool(key);
-}
-
-absl::optional<int> Value::FindIntKey(StringPiece key) const {
-  return GetDict().FindInt(key);
-}
-
-const std::string* Value::FindStringKey(StringPiece key) const {
-  return GetDict().FindString(key);
-}
-
-std::string* Value::FindStringKey(StringPiece key) {
-  return GetDict().FindString(key);
-}
-
-Value* Value::SetKey(StringPiece key, Value&& value) {
-  return GetDict().Set(key, std::move(value));
-}
-
-Value* Value::SetStringKey(StringPiece key, StringPiece value) {
-  return GetDict().Set(key, value);
-}
-
-Value* Value::SetStringKey(StringPiece key, StringPiece16 value) {
-  return GetDict().Set(key, value);
-}
-
-Value* Value::SetStringKey(StringPiece key, const char* value) {
-  return GetDict().Set(key, value);
-}
-
-Value* Value::SetStringKey(StringPiece key, std::string&& value) {
-  return GetDict().Set(key, std::move(value));
-}
-
-bool Value::RemoveKey(StringPiece key) {
-  return GetDict().Remove(key);
-}
-
-Value* Value::FindPath(StringPiece path) {
-  return GetDict().FindByDottedPath(path);
-}
-
-const Value* Value::FindPath(StringPiece path) const {
-  return GetDict().FindByDottedPath(path);
-}
-
-absl::optional<bool> Value::FindBoolPath(StringPiece path) const {
-  return GetDict().FindBoolByDottedPath(path);
-}
-
-absl::optional<int> Value::FindIntPath(StringPiece path) const {
-  return GetDict().FindIntByDottedPath(path);
-}
-
-absl::optional<double> Value::FindDoublePath(StringPiece path) const {
-  return GetDict().FindDoubleByDottedPath(path);
-}
-
-const std::string* Value::FindStringPath(StringPiece path) const {
-  return GetDict().FindStringByDottedPath(path);
-}
-
-std::string* Value::FindStringPath(StringPiece path) {
-  return GetDict().FindStringByDottedPath(path);
-}
-
-const Value* Value::FindDictPath(StringPiece path) const {
-  const Value* cur = GetDict().FindByDottedPath(path);
-  if (!cur || cur->type() != Type::DICT) {
-    return nullptr;
-  }
-  return cur;
-}
-
-Value* Value::FindDictPath(StringPiece path) {
-  return const_cast<Value*>(std::as_const(*this).FindDictPath(path));
-}
-
-const Value* Value::FindListPath(StringPiece path) const {
-  const Value* cur = GetDict().FindByDottedPath(path);
-  if (!cur || cur->type() != Type::LIST) {
-    return nullptr;
-  }
-  return cur;
-}
-
-Value* Value::FindListPath(StringPiece path) {
-  return const_cast<Value*>(std::as_const(*this).FindListPath(path));
-}
-
-size_t Value::DictSize() const {
-  return GetDict().size();
 }
 
 bool operator==(const Value& lhs, const Value& rhs) {

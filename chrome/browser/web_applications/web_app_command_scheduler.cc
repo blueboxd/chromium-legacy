@@ -26,6 +26,7 @@
 #include "chrome/browser/web_applications/commands/install_placeholder_command.h"
 #include "chrome/browser/web_applications/commands/manifest_update_check_command.h"
 #include "chrome/browser/web_applications/commands/manifest_update_finalize_command.h"
+#include "chrome/browser/web_applications/commands/navigate_and_trigger_install_dialog_command.h"
 #include "chrome/browser/web_applications/commands/os_integration_synchronize_command.h"
 #include "chrome/browser/web_applications/commands/run_on_os_login_command.h"
 #include "chrome/browser/web_applications/commands/update_file_handler_command.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/web_applications/isolated_web_apps/get_isolated_web_app_browsing_data_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/install_isolated_web_app_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
+#include "chrome/browser/web_applications/isolated_web_apps/register_controlled_frame_partition_command.h"
 #include "chrome/browser/web_applications/locks/all_apps_lock.h"
 #include "chrome/browser/web_applications/locks/app_lock.h"
 #include "chrome/browser/web_applications/locks/noop_lock.h"
@@ -313,6 +315,29 @@ void WebAppCommandScheduler::FetchInstallabilityForChromeManagement(
       location);
 }
 
+void WebAppCommandScheduler::ScheduleNavigateAndTriggerInstallDialog(
+    const GURL& install_url,
+    const GURL& origin,
+    bool is_renderer_initiated,
+    NavigateAndTriggerInstallDialogCommandCallback callback,
+    const base::Location& location) {
+  if (IsShuttingDown()) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       NavigateAndTriggerInstallDialogCommandResult::kFailure));
+    return;
+  }
+
+  provider_->command_manager().ScheduleCommand(
+      std::make_unique<NavigateAndTriggerInstallDialogCommand>(
+          install_url, origin, is_renderer_initiated, std::move(callback),
+          provider_->ui_manager().GetWeakPtr(),
+          std::make_unique<WebAppUrlLoader>(),
+          std::make_unique<WebAppDataRetriever>(), &*profile_),
+      location);
+}
+
 void WebAppCommandScheduler::InstallIsolatedWebApp(
     const IsolatedWebAppUrlInfo& url_info,
     const IsolatedWebAppLocation& location,
@@ -356,6 +381,25 @@ void WebAppCommandScheduler::GetIsolatedWebAppBrowsingData(
       std::make_unique<GetIsolatedWebAppBrowsingDataCommand>(
           &profile_.get(), std::move(callback)),
       call_location);
+}
+
+void WebAppCommandScheduler::RegisterControlledFramePartition(
+    const AppId& app_id,
+    const std::string& partition_name,
+    base::OnceClosure callback,
+    const base::Location& location) {
+  if (IsShuttingDown()) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(callback));
+    return;
+  }
+
+  provider_->scheduler().ScheduleCallbackWithLock<AppLock>(
+      "RegisterControlledFramePartition",
+      std::make_unique<AppLockDescription>(app_id),
+      base::BindOnce(&RegisterControlledFramePartitionWithLock, app_id,
+                     partition_name, std::move(callback)),
+      location);
 }
 
 void WebAppCommandScheduler::InstallFromSync(const WebApp& web_app,

@@ -869,12 +869,101 @@ testcase.hideSearchInTrash = async () => {
   // Navigate to Trash and confirm that the search button is now hidden.
   await navigateWithDirectoryTree(appId, '/Trash');
   searchButton = await remoteCall.waitForElementStyles(
-      appId, ['#search-button'], ['display']);
-  chrome.test.assertTrue(searchButton.styles['display'] === 'none');
+      appId, ['#search-button'], ['visibility']);
+  chrome.test.assertTrue(searchButton.styles['visibility'] === 'hidden');
+
+  // Try to use keyboard shortcuts Ctrl+F to launch search anyway.
+  const ctrlF = ['#file-list', 'f', true, false, false];
+  await remoteCall.fakeKeyDown(appId, ...ctrlF);
+
+  const searchWrapper =
+      await remoteCall.waitForElement(appId, ['#search-wrapper']);
+  // Confirm that search wrapper is still in collapsed state.
+  chrome.test.assertEq(searchWrapper.attributes.collapsed, '');
 
   // Go back to Downloads and confirm that the search button is visible again.
   await navigateWithDirectoryTree(appId, '/My files/Downloads');
   searchButton = await remoteCall.waitForElementStyles(
-      appId, ['#search-button'], ['display']);
-  chrome.test.assertTrue(searchButton.styles['display'] !== 'none');
+      appId, ['#search-button'], ['visibility']);
+  chrome.test.assertTrue(searchButton.styles['visibility'] !== 'hidden');
+
+  // Make sure that search still works.
+  await remoteCall.typeSearchText(appId, 'hello');
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows([ENTRIES.hello]));
+};
+
+/**
+ * Checks that files in trash do not appear in the search results when trash
+ * is enabled, and appear when it is disabled.
+ */
+testcase.searchTrashedFiles = async () => {
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Search for all files with "hello" in their name.
+  await remoteCall.typeSearchText(appId, 'hello');
+  // Confirm that we can find hello.txt.
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows([ENTRIES.hello]));
+
+  // Clear and close search.
+  await remoteCall.waitAndClickElement(appId, '#search-box .clear');
+
+  // Select hello.txt.
+  await remoteCall.waitAndClickElement(
+      appId, '#file-list [file-name="hello.txt"]');
+  // Delete hello.txt and wait for it to be moved to trash.
+  await remoteCall.clickTrashButton(appId);
+
+  // Search for all files with "hello" in their name.
+  await remoteCall.typeSearchText(appId, 'hello');
+  // Confirm that we cannot find it.
+  await remoteCall.waitForFiles(appId, TestEntryInfo.getExpectedRows([]));
+
+  // Disable trash.
+  await sendTestMessage({name: 'setTrashEnabled', enabled: false});
+
+  // Search for all files with "hello" in their name.
+  await remoteCall.typeSearchText(appId, 'hello');
+  // Confirm that we can find it. We also expect trashinfo file to appear.
+  const helloTrashinfo = ENTRIES.hello.cloneWith({
+    nameText: 'hello.txt.trashinfo',
+    typeText: 'TRASHINFO file',
+  });
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows([ENTRIES.hello, helloTrashinfo]),
+      {ignoreLastModifiedTime: true, ignoreFileSize: true});
+};
+
+/**
+ * Checcks that finding files directly in Shared with me, or in folders nested
+ * in Shared with me, works.
+ */
+testcase.searchSharedWithMe = async () => {
+  // Create a shared file for nested directory. It must have SHARED_WITH_ME
+  // attribute on it, as NESTED_SHARED_WITH_ME does not have shared metadata
+  // set on it.
+  const nestedTestSharedFile = ENTRIES.sharedWithMeDirectoryFile.cloneWith({
+    sharedOption: SharedOption.SHARED_WITH_ME,
+    targetPath: 'Shared Directory/nested.txt',
+    nameText: 'nested.txt',
+  });
+  // Open Files app on Drive containing "Shared with me" file entries.
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE, [], [
+    ENTRIES.testSharedFile,
+    ENTRIES.sharedWithMeDirectory,
+    nestedTestSharedFile,
+  ]);
+
+  await navigateWithDirectoryTree(appId, '/Shared with me');
+
+  // Find the specific file, test.txt
+  await remoteCall.typeSearchText(appId, 'test.txt');
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows([ENTRIES.testSharedFile]));
+
+  // Search for the file nested in the shared directory.
+  await remoteCall.typeSearchText(appId, 'nested.txt');
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows([nestedTestSharedFile]));
 };

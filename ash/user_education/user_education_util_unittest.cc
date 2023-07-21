@@ -17,8 +17,10 @@
 #include "ash/test/test_widget_builder.h"
 #include "ash/user_education/user_education_types.h"
 #include "components/account_id/account_id.h"
+#include "components/user_education/common/help_bubble_params.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/interaction/element_tracker.h"
 #include "ui/views/metadata/view_factory.h"
 #include "ui/views/view.h"
@@ -29,9 +31,10 @@ namespace ash::user_education_util {
 namespace {
 
 // Aliases.
-using session_manager::SessionState;
-using testing::AnyOf;
-using testing::Eq;
+using ::session_manager::SessionState;
+using ::testing::AnyOf;
+using ::testing::Eq;
+using ::user_education::HelpBubbleParams;
 
 // Helpers ---------------------------------------------------------------------
 
@@ -54,12 +57,52 @@ std::unique_ptr<views::Widget> ShowFramelessTestWidgetOnDisplay(
 // UserEducationUtilTest -------------------------------------------------------
 
 // Base class for tests of user education utilities.
-using UserEducationUtilTest = NoSessionAshTestBase;
+using UserEducationUtilTest = ::testing::Test;
+
+// Tests -----------------------------------------------------------------------
+
+// Verifies that `CreateExtendedProperties()` can be used to create extended
+// properties for a help bubble having set ID, and that `GetHelpBubbleId()` can
+// be used to retrieve help bubble ID from extended properties.
+TEST_F(UserEducationUtilTest, ExtendedPropertiesWithId) {
+  EXPECT_EQ(GetHelpBubbleId(CreateExtendedProperties(HelpBubbleId::kTest)),
+            HelpBubbleId::kTest);
+}
+
+// Verifies that `CreateExtendedProperties()` can be used to create extended
+// properties for a help bubble having set style, and `GetHelpBubbleStyle()` can
+// be used to retrieve help bubble style from extended properties.
+TEST_F(UserEducationUtilTest, ExtendedPropertiesWithStyle) {
+  EXPECT_EQ(
+      GetHelpBubbleStyle(CreateExtendedProperties(HelpBubbleStyle::kNudge)),
+      HelpBubbleStyle::kNudge);
+
+  // It is permissible to query help bubble style even when absent.
+  EXPECT_EQ(GetHelpBubbleStyle(HelpBubbleParams::ExtendedProperties()),
+            absl::nullopt);
+}
+
+// Verifies that `ToString()` is working as intended.
+TEST_F(UserEducationUtilTest, ToString) {
+  std::set<std::string> tutorial_id_strs;
+  for (size_t i = static_cast<size_t>(TutorialId::kMinValue);
+       i <= static_cast<size_t>(TutorialId::kMaxValue); ++i) {
+    // Currently the only constraint on `ToString()` is that it returns a unique
+    // value for each distinct tutorial ID.
+    auto tutorial_id_str = ToString(static_cast<TutorialId>(i));
+    EXPECT_TRUE(tutorial_id_strs.emplace(std::move(tutorial_id_str)).second);
+  }
+}
+
+// UserEducationUtilAshTest ----------------------------------------------------
+
+// Base class for tests of user education utilities which require Ash.
+using UserEducationUtilAshTest = NoSessionAshTestBase;
 
 // Tests -----------------------------------------------------------------------
 
 // Verifies that `GetAccountId()` is working as intended.
-TEST_F(UserEducationUtilTest, GetAccountId) {
+TEST_F(UserEducationUtilAshTest, GetAccountId) {
   // Case: null `UserSession`.
   AccountId account_id;
   EXPECT_EQ(GetAccountId(/*user_session=*/nullptr), account_id);
@@ -72,7 +115,7 @@ TEST_F(UserEducationUtilTest, GetAccountId) {
 }
 
 // Verifies that `GetMatchingViewInRootWindow()` is working as intended.
-TEST_F(UserEducationUtilTest, GetMatchingViewInRootWindow) {
+TEST_F(UserEducationUtilAshTest, GetMatchingViewInRootWindow) {
   // Set up a primary and secondary display.
   UpdateDisplay("1024x768,1024x768");
 
@@ -154,7 +197,7 @@ TEST_F(UserEducationUtilTest, GetMatchingViewInRootWindow) {
 }
 
 // Verifies that `IsPrimaryAccountActive()` is working as intended.
-TEST_F(UserEducationUtilTest, IsPrimaryAccountActive) {
+TEST_F(UserEducationUtilAshTest, IsPrimaryAccountActive) {
   AccountId primary_account_id = AccountId::FromUserEmail("primary@test");
   AccountId secondary_account_id = AccountId::FromUserEmail("secondary@test");
 
@@ -189,7 +232,7 @@ TEST_F(UserEducationUtilTest, IsPrimaryAccountActive) {
 }
 
 // Verifies that `IsPrimaryAccountId()` is working as intended.
-TEST_F(UserEducationUtilTest, IsPrimaryAccountId) {
+TEST_F(UserEducationUtilAshTest, IsPrimaryAccountId) {
   AccountId primary_account_id = AccountId::FromUserEmail("primary@test");
   AccountId secondary_account_id = AccountId::FromUserEmail("secondary@test");
 
@@ -207,18 +250,6 @@ TEST_F(UserEducationUtilTest, IsPrimaryAccountId) {
   EXPECT_FALSE(IsPrimaryAccountId(AccountId()));
   EXPECT_TRUE(IsPrimaryAccountId(primary_account_id));
   EXPECT_FALSE(IsPrimaryAccountId(secondary_account_id));
-}
-
-// Verifies that `ToString()` is working as intended.
-TEST_F(UserEducationUtilTest, ToString) {
-  std::set<std::string> tutorial_id_strs;
-  for (size_t i = static_cast<size_t>(TutorialId::kMinValue);
-       i <= static_cast<size_t>(TutorialId::kMaxValue); ++i) {
-    // Currently the only constraint on `ToString()` is that it returns a unique
-    // value for each distinct tutorial ID.
-    auto tutorial_id_str = ToString(static_cast<TutorialId>(i));
-    EXPECT_TRUE(tutorial_id_strs.emplace(std::move(tutorial_id_str)).second);
-  }
 }
 
 }  // namespace ash::user_education_util

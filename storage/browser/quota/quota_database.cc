@@ -22,8 +22,8 @@
 #include "components/services/storage/public/cpp/buckets/constants.h"
 #include "components/services/storage/public/cpp/quota_error_or.h"
 #include "sql/database.h"
+#include "sql/error_delegate_util.h"
 #include "sql/meta_table.h"
-#include "sql/sqlite_result_code.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "storage/browser/quota/quota_database_migrations.h"
@@ -205,6 +205,7 @@ QuotaDatabase::QuotaDatabase(const base::FilePath& profile_path)
 QuotaDatabase::~QuotaDatabase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (db_) {
+    db_->reset_error_callback();
     db_->CommitTransaction();
   }
 }
@@ -797,6 +798,14 @@ QuotaError QuotaDatabase::SetIsBootstrapped(bool bootstrap_flag) {
 
 QuotaError QuotaDatabase::RazeAndReopen() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Opening failed, don't bother to try again. If the error occurred while
+  // opening the db, it won't be open and trying to raze it will result in a
+  // MISUSE error.
+  if (db_ && !db_->is_open()) {
+    return QuotaError::kDatabaseError;
+  }
+
   // Try creating a database one last time if there isn't one.
   if (!db_) {
     if (!db_file_path_.empty()) {
@@ -810,13 +819,13 @@ QuotaError QuotaDatabase::RazeAndReopen() {
   // Abort the long-running transaction.
   db_->RollbackTransaction();
 
-  // Raze and close the database. Reset `db_` to nullptr so EnsureOpened will
-  // recreate the database.
+  // Raze and close the database.
   if (!db_->Raze()) {
     return QuotaError::kDatabaseError;
   }
-  db_ = nullptr;
 
+  // Reset `db_` to nullptr so EnsureOpened will recreate the database.
+  db_.reset();
   return EnsureOpened();
 }
 
@@ -917,21 +926,19 @@ QuotaError QuotaDatabase::EnsureOpened() {
   db_->set_histogram_tag("Quota");
 
   db_->set_error_callback(base::BindRepeating(
-      [](base::RepeatingClosure full_disk_error_callback,
+      [](base::RepeatingCallback<void(int)> db_error_callback,
          int* sqlite_error_code_out, int sqlite_error_code,
          sql::Statement* statement) {
+        // This check is here to DCHECK the error code in a place that gives a
+        // useful stack trace.
+        sql::IsErrorCatastrophic(sqlite_error_code);
         *sqlite_error_code_out = sqlite_error_code;
 
-        sql::UmaHistogramSqliteResult("Quota.QuotaDatabaseError",
-                                      sqlite_error_code);
-
-        if (!full_disk_error_callback.is_null() &&
-            static_cast<sql::SqliteErrorCode>(sqlite_error_code) ==
-                sql::SqliteErrorCode::kFullDisk) {
-          full_disk_error_callback.Run();
+        if (db_error_callback) {
+          db_error_callback.Run(sqlite_error_code);
         }
       },
-      full_disk_error_callback_, &sqlite_error_code_));
+      db_error_callback_, &sqlite_error_code_));
 
   // Migrate an existing database from the old path.
   if (!db_file_path_.empty() && !MoveLegacyDatabase()) {
@@ -1231,10 +1238,9 @@ QuotaErrorOr<BucketInfo> QuotaDatabase::CreateBucketInternal(
                                         /*last_accessed=*/now,
                                         /*last_modified=*/now, statement);
   QuotaErrorOr<BucketInfo> result = BucketInfoFromSqlStatement(statement);
-  const bool done = !statement.Step();
-  DCHECK(done);
 
   if (result.has_value()) {
+    CHECK(!statement.Step());
     // Commit immediately so that we persist the bucket metadata to disk before
     // we inform other services / web apps (via the Buckets API) that we did so.
     // Once informed, that promise should persist across power failures.
@@ -1244,9 +1250,9 @@ QuotaErrorOr<BucketInfo> QuotaDatabase::CreateBucketInternal(
   return result;
 }
 
-void QuotaDatabase::SetOnFullDiskErrorCallback(
-    const base::RepeatingClosure& callback) {
-  full_disk_error_callback_ = callback;
+void QuotaDatabase::SetDbErrorCallback(
+    const base::RepeatingCallback<void(int)>& db_error_callback) {
+  db_error_callback_ = db_error_callback;
 }
 
 }  // namespace storage

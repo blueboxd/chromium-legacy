@@ -6,7 +6,7 @@
 
 #import "base/ios/ios_util.h"
 #import "base/metrics/field_trial_params.h"
-#import "ios/chrome/browser/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -70,6 +70,10 @@ BASE_FEATURE(kWebFeedFeedbackReroute,
 BASE_FEATURE(kEnableFollowManagementInstantReload,
              "EnableFollowManagementInstantReload",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableSignedOutViewDemotion,
+             "EnableSignedOutViewDemotion",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #pragma mark - Feature parameters
 
@@ -199,4 +203,8 @@ bool IsWebFeedFeedbackRerouteEnabled() {
 
 bool IsFollowManagementInstantReloadEnabled() {
   return base::FeatureList::IsEnabled(kEnableFollowManagementInstantReload);
+}
+
+bool IsSignedOutViewDemotionEnabled() {
+  return base::FeatureList::IsEnabled(kEnableSignedOutViewDemotion);
 }

@@ -130,8 +130,7 @@ std::string DisplaySurfaceTypeAsString(
     case DisplaySurfaceType::kScreen:
       return "screen";
   }
-  NOTREACHED();
-  return "error";
+  NOTREACHED_NORETURN();
 }
 
 void RunGetDisplayMedia(content::WebContents* tab,
@@ -857,8 +856,7 @@ class GetDisplayMediaVideoTrackBrowserTest
       case DisplaySurfaceType::kScreen:
         return "MediaStreamTrack";
     }
-    NOTREACHED();
-    return "Error";
+    NOTREACHED_NORETURN();
   }
 
  protected:
@@ -1424,8 +1422,7 @@ class WebRtcScreenCaptureSelectAllScreensTest
   ~WebRtcScreenCaptureSelectAllScreensTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Enables GetDisplayMedia and GetDisplayMediaSetAutoSelectAllScreens
-    // features for multi surface capture.
+    // Enables GetAllScreensMedia features for multi surface capture.
     // TODO(simonha): remove when feature becomes stable.
     if (test_config_.enable_select_all_screens) {
       command_line->AppendSwitch(switches::kEnableBlinkTestFeatures);

@@ -15,16 +15,24 @@
 #include "ash/public/cpp/holding_space/holding_space_model.h"
 #include "ash/public/cpp/holding_space/holding_space_util.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller.h"
+#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/holding_space/holding_space_tray.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/user_education/user_education_constants.h"
+#include "ash/user_education/user_education_help_bubble_controller.h"
+#include "ash/user_education/user_education_ping_controller.h"
 #include "ash/user_education/user_education_types.h"
+#include "ash/user_education/user_education_util.h"
 #include "ash/wallpaper/wallpaper_drag_drop_delegate.h"
+#include "ash/wallpaper/wallpaper_view.h"
+#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "base/check_op.h"
 #include "base/containers/cxx20_erase_vector.h"
 #include "base/files/file_path.h"
 #include "base/pickle.h"
+#include "base/scoped_observation.h"
 #include "components/user_education/common/tutorial_description.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -32,8 +40,15 @@
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
+#include "ui/color/color_provider.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/layer_owner.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/views/interaction/element_tracker_views.h"
+#include "ui/views/view.h"
+#include "ui/views/view_observer.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
@@ -90,6 +105,80 @@ Shelf* GetShelfNearestPoint(const gfx::Point& location_in_screen) {
       GetDisplayNearestPoint(location_in_screen).id()));
 }
 
+HoldingSpaceTray* GetHoldingSpaceTrayNearestPoint(
+    const gfx::Point& location_in_screen) {
+  return GetShelfNearestPoint(location_in_screen)
+      ->status_area_widget()
+      ->holding_space_tray();
+}
+
+WallpaperView* GetWallpaperViewNearestPoint(
+    const gfx::Point& location_in_screen) {
+  return RootWindowController::ForWindow(
+             GetRootWindowForDisplayId(
+                 GetDisplayNearestPoint(location_in_screen).id()))
+      ->wallpaper_widget_controller()
+      ->wallpaper_view();
+}
+
+// Highlight -------------------------------------------------------------------
+
+// A class which adds a highlight layer to the region above the associated
+// `view`. On destruction, the highlight layer is automatically removed from
+// the associated `view`. It is not required for the associated `view` to
+// outlive its highlight.
+class Highlight : public ui::LayerOwner, public views::ViewObserver {
+ public:
+  explicit Highlight(views::View* view)
+      : ui::LayerOwner(std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR)) {
+    // The associated `view` must have a layer to support layer regions.
+    CHECK(view->layer());
+
+    // Name the highlight layer so it is easy to identify in debugging/testing.
+    layer()->SetName(HoldingSpaceTourController::kHighlightLayerName);
+
+    // Initialize highlight layer properties.
+    layer()->SetFillsBoundsOpaquely(false);
+    OnViewThemeChanged(view);
+    OnViewBoundsChanged(view);
+
+    // Add the highlight layer to the region above `view` layers so that it is
+    // always shown on top of the `view`.
+    view->AddLayerToRegion(layer(), views::LayerRegion::kAbove);
+
+    // Observe the `view` to keep the highlight layer in sync.
+    view_observation_.Observe(view);
+  }
+
+  Highlight(const Highlight&) = delete;
+  Highlight& operator=(const Highlight&) = delete;
+  ~Highlight() override = default;
+
+ private:
+  // views::ViewObserver:
+  void OnViewBoundsChanged(views::View* view) override {
+    // Match the highlight layer bounds to the associated `view`. Note that
+    // because the highlight layer was added to the region above `view` layers,
+    // the highlight layer and `view` layer are siblings and so share the same
+    // coordinate system.
+    layer()->SetBounds(view->layer()->bounds());
+  }
+
+  void OnViewIsDeleting(views::View* view) override {
+    view_observation_.Reset();
+  }
+
+  void OnViewThemeChanged(views::View* view) override {
+    layer()->SetColor(SkColorSetA(
+        view->GetColorProvider()->GetColor(cros_tokens::kCrosSysPrimaryLight),
+        0.4f * SK_AlphaOPAQUE));
+  }
+
+  // Observe the associated view in order to keep the highlight layer in sync.
+  base::ScopedObservation<views::View, views::ViewObserver> view_observation_{
+      this};
+};
+
 // DragDropDelegate ------------------------------------------------------------
 
 // An implementation of the singleton drag-and-drop delegate, owned by the
@@ -117,6 +206,12 @@ class DragDropDelegate : public WallpaperDragDropDelegate {
 
   void OnDragEntered(const ui::OSExchangeData& data,
                      const gfx::Point& location_in_screen) override {
+    // Highlight the wallpaper when `data` is dragged over it so that the user
+    // better understands the wallpaper is a drop target.
+    CHECK(!wallpaper_highlight_);
+    wallpaper_highlight_ = std::make_unique<Highlight>(
+        GetWallpaperViewNearestPoint(location_in_screen));
+
     // If the `drag_drop_observer_` already exists, we are already observing the
     // current drag-and-drop sequence and can no-op here.
     if (drag_drop_observer_) {
@@ -147,14 +242,29 @@ class DragDropDelegate : public WallpaperDragDropDelegate {
                          : ui::DragDropTypes::DragOperation::DRAG_NONE;
   }
 
+  void OnDragExited() override {
+    // When `data` is dragged out of the wallpaper, remove the highlight which
+    // was used to indicate the wallpaper was a drop target.
+    CHECK(wallpaper_highlight_);
+    wallpaper_highlight_.reset();
+  }
+
   ui::mojom::DragOperation OnDrop(
       const ui::OSExchangeData& data,
       const gfx::Point& location_in_screen) override {
+    // When `data` is dropped on the wallpaper, remove the highlight which was
+    // used to indicate the wallpaper was a drop target.
+    CHECK(wallpaper_highlight_);
+    wallpaper_highlight_.reset();
+
+    // No-op if no holding space `client` is registered since we will be unable
+    // to handle the dropped `data`.
     HoldingSpaceClient* const client = HoldingSpaceController::Get()->client();
     if (!client) {
       return ui::mojom::DragOperation::kNone;
     }
 
+    // No-op if the dropped `data` does not contain any unpinned files.
     const std::vector<base::FilePath> unpinned_file_paths =
         ExtractUnpinnedFilePaths(data);
     if (unpinned_file_paths.empty()) {
@@ -169,10 +279,7 @@ class DragDropDelegate : public WallpaperDragDropDelegate {
     // Open the holding space tray so that the user can see the newly pinned
     // files and understands the relationship between the action they took on
     // the wallpaper and its effect in holding space.
-    GetShelfNearestPoint(location_in_screen)
-        ->status_area_widget()
-        ->holding_space_tray()
-        ->ShowBubble();
+    GetHoldingSpaceTrayNearestPoint(location_in_screen)->ShowBubble();
 
     return ui::mojom::DragOperation::kCopy;
   }
@@ -236,6 +343,45 @@ class DragDropDelegate : public WallpaperDragDropDelegate {
       force_holding_space_show_in_shelf_ =
           std::make_unique<HoldingSpaceController::ScopedForceShowInShelf>();
     }
+
+    // Cache the `holding_space_tray` nearest the `location_in_screen` so that
+    // we can show an associated help bubble.
+    // TODO(http://b/283169466): Rate limit showing the help bubble.
+    HoldingSpaceTray* const holding_space_tray =
+        GetHoldingSpaceTrayNearestPoint(location_in_screen.value());
+
+    // Configure the help bubble.
+    // TODO(http://b/283169365): Finalize strings.
+    user_education::HelpBubbleParams help_bubble_params;
+    help_bubble_params.arrow = user_education::HelpBubbleArrow::kBottomRight;
+    help_bubble_params.body_text =
+        u"[i18n] Drop files on the desktop to add them to Tote. You can't add "
+        u"files to desktop.";
+    help_bubble_params.extended_properties =
+        user_education_util::CreateExtendedProperties(HelpBubbleStyle::kNudge);
+
+    // While the help bubble is showing, do not allow either the associated
+    // `shelf` or `holding_space_tray` to hide.
+    // TODO(http://b/283171784): Explicitly close the help bubble if the user
+    // opens holding space or successfully pins a file to holding space.
+    base::OnceClosure close_callback = base::BindOnce(
+        [](Shelf::ScopedDisableAutoHide*,
+           HoldingSpaceController::ScopedForceShowInShelf*) {},
+        base::Owned(std::make_unique<Shelf::ScopedDisableAutoHide>(shelf)),
+        base::Owned(std::make_unique<
+                    HoldingSpaceController::ScopedForceShowInShelf>()));
+
+    // Attempt to show the help bubble.
+    if (UserEducationHelpBubbleController::Get()->CreateHelpBubble(
+            HelpBubbleId::kHoldingSpaceTour, std::move(help_bubble_params),
+            kHoldingSpaceTrayElementId,
+            views::ElementTrackerViews::GetContextForView(holding_space_tray),
+            std::move(close_callback))) {
+      // If successful in showing the help bubble, ping the `holding_space_tray`
+      // to further attract the user's attention.
+      UserEducationPingController::Get()->CreatePing(PingId::kHoldingSpaceTour,
+                                                     holding_space_tray);
+    }
   }
 
   // Used to observe a single drag-and-drop sequence once the user has dragged
@@ -250,6 +396,10 @@ class DragDropDelegate : public WallpaperDragDropDelegate {
   // while an observed drag-and-drop sequence is in progress.
   std::unique_ptr<HoldingSpaceController::ScopedForceShowInShelf>
       force_holding_space_show_in_shelf_;
+
+  // Used to highlight the wallpaper when data is dragged over it so that the
+  // user better understands the wallpaper is a drop target.
+  std::unique_ptr<Highlight> wallpaper_highlight_;
 };
 
 }  // namespace

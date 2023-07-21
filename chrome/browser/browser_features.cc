@@ -45,13 +45,6 @@ BASE_FEATURE(kDevToolsTabTarget,
              "DevToolsTabTarget",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Normally the toolbar texture is discarded when the toolbar is no longer
-// visible. This feature keeps the texture around so it does not need to get
-// re-uploaded when the toolbar becomes visible again.
-BASE_FEATURE(kKeepToolbarTexture,
-             "KeepToolbarTexture",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Nukes profile directory before creating a new profile using
 // ProfileManager::CreateMultiProfileAsync().
 BASE_FEATURE(kNukeProfileBeforeCreateMultiAsync,
@@ -157,14 +150,13 @@ BASE_FEATURE(kTriggerNetworkDataMigration,
 //
 // TODO(crbug.com/1251999): Remove this flag once we confirm that blue border
 // works fine on ChromeOS.
+//
+// b/279051234: We suspect the tab sharing blue border may cause a bad issue
+// on ChromeOS where a window can not be interacted at all. Disable the feature
+// on ChromeOS.
 BASE_FEATURE(kTabCaptureBlueBorderCrOS,
              "TabCaptureBlueBorderCrOS",
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 // Enables runtime detection of USB devices which provide a WebUSB landing page
@@ -185,14 +177,6 @@ BASE_FEATURE(kLargeFaviconFromGoogle,
              base::FEATURE_DISABLED_BY_DEFAULT);
 const base::FeatureParam<int> kLargeFaviconFromGoogleSizeInDip{
     &kLargeFaviconFromGoogle, "favicon_size_in_dip", 128};
-
-// Enables the use of a `ProfileManagerObserver` to trigger the post profile
-// init step of the browser startup. This affects the initialization order of
-// some features with the goal to improve startup performance in some cases.
-// See https://bit.ly/chromium-startup-no-guest-profile.
-BASE_FEATURE(kObserverBasedPostProfileInit,
-             "ObserverBasedPostProfileInit",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the static key pinning list can be updated via component
 // updater.
